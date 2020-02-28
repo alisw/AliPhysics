@@ -14,50 +14,54 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUHostDataTypes.h
-/// \author David Rohr
+/// \file MCLabelAccumulator.cxx
+/// \author Felix Weiglhofer
 
-#ifndef GPUHOSTDATATYPES_H
-#define GPUHOSTDATATYPES_H
+#include "MCLabelAccumulator.h"
 
-#include "GPUCommonDef.h"
-
-// These are complex data types wrapped in simple structs, which can be forward declared.
-// Structures used on the GPU can have pointers to these wrappers, when the wrappers are forward declared.
-// These wrapped complex types are not meant for usage on GPU
-
-#if defined(GPUCA_GPUCODE)
-#error "GPUHostDataTypes.h should never be included on GPU."
-#endif
-
-#include <vector>
-#include <array>
-#include <memory>
-#include <mutex>
-#include "DataFormatsTPC/Constants.h"
+#include "GPUHostDataTypes.h"
+#include "GPUTPCClusterFinder.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
-#include "SimulationDataFormat/MCCompLabel.h"
 
-namespace GPUCA_NAMESPACE
+using namespace GPUCA_NAMESPACE::gpu;
+
+MCLabelAccumulator::MCLabelAccumulator(GPUTPCClusterFinder& clusterer)
+  : mIndexMap(clusterer.mPindexMap), mLabels(clusterer.mPinputLabels), mOutput(clusterer.mPlabelsByRow)
 {
-namespace gpu
+  mClusterLabels.reserve(32);
+}
+
+void MCLabelAccumulator::collect(const ChargePos& pos, Charge q)
 {
+  if (q == 0 || !engaged()) {
+    return;
+  }
 
-struct GPUTPCDigitsMCInput {
-  std::array<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*, o2::tpc::Constants::MAXSECTOR> v;
-};
+  uint index = mIndexMap[pos];
 
-struct GPUTPCClusterMCInterim {
-  std::vector<uint64_t> labels;
-  uint offset;
-};
+  auto labels = mLabels->getLabels(index);
 
-struct GPUTPCLinearLabels {
-  std::vector<o2::dataformats::MCTruthHeaderElement> header;
-  std::vector<o2::MCCompLabel> data;
-};
+  for (const auto& label : labels) {
+    int h = label.getRawValue() % mMaybeHasLabel.size();
 
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
+    if (mMaybeHasLabel[h]) {
+      auto lookup = std::find(mClusterLabels.begin(), mClusterLabels.end(), label);
+      if (lookup != mClusterLabels.end()) {
+        continue;
+      }
+    }
 
-#endif
+    mMaybeHasLabel[h] = true;
+    mClusterLabels.emplace_back(label);
+  }
+}
+
+void MCLabelAccumulator::commit(Row row, uint indexInRow, uint maxElemsPerBucket)
+{
+  if (indexInRow > maxElemsPerBucket || !engaged()) {
+    return;
+  }
+
+  auto& out = mOutput[row * maxElemsPerBucket + indexInRow];
+  out.labels = std::move(mClusterLabels);
+}

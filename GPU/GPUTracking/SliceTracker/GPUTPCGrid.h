@@ -34,6 +34,7 @@ namespace gpu
  * used by GPUTPCTracker to speed-up the hit operations
  * grid axis are named Z,Y to be similar to TPC row coordinates.
  */
+MEM_CLASS_PRE()
 class GPUTPCGrid
 {
  public:
@@ -59,6 +60,8 @@ class GPUTPCGrid
   GPUd() float StepZInv() const { return mStepZInv; }
 
  private:
+  friend class GPUTPCNeighboursFinder;
+
   unsigned int mNy; //* N bins in Y
   unsigned int mNz; //* N bins in Z
   unsigned int mN;  //* total N bins

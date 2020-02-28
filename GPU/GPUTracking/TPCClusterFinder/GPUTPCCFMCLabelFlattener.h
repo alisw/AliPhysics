@@ -14,47 +14,54 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUHostDataTypes.h
-/// \author David Rohr
+/// \file GPUTPCCFMCLabelFlattener.h
+/// \author Felix Weiglhofer
 
-#ifndef GPUHOSTDATATYPES_H
-#define GPUHOSTDATATYPES_H
+#ifndef O2_GPU_GPUTPCCF_MCLABEL_FLATTENER_H
+#define O2_GPU_GPUTPCCF_MCLABEL_FLATTENER_H
 
-#include "GPUCommonDef.h"
+#include "GPUGeneralKernels.h"
 
-// These are complex data types wrapped in simple structs, which can be forward declared.
-// Structures used on the GPU can have pointers to these wrappers, when the wrappers are forward declared.
-// These wrapped complex types are not meant for usage on GPU
-
-#if defined(GPUCA_GPUCODE)
-#error "GPUHostDataTypes.h should never be included on GPU."
-#endif
-
-#include <vector>
-#include <array>
-#include <memory>
-#include <mutex>
-#include "DataFormatsTPC/Constants.h"
-#include "SimulationDataFormat/MCTruthContainer.h"
-#include "SimulationDataFormat/MCCompLabel.h"
+#include "clusterFinderDefs.h"
+#include "GPUTPCClusterFinder.h"
+#include "GPUConstantMem.h"
 
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
 
-struct GPUTPCDigitsMCInput {
-  std::array<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*, o2::tpc::Constants::MAXSECTOR> v;
-};
+struct GPUTPCLinearLabels;
 
-struct GPUTPCClusterMCInterim {
-  std::vector<uint64_t> labels;
-  uint offset;
-};
+class GPUTPCCFMCLabelFlattener : public GPUKernelTemplate
+{
 
-struct GPUTPCLinearLabels {
-  std::vector<o2::dataformats::MCTruthHeaderElement> header;
-  std::vector<o2::MCCompLabel> data;
+ public:
+  struct GPUSharedMemory {
+  };
+
+  enum K : int {
+    setRowOffsets,
+    flatten,
+  };
+
+#ifdef HAVE_O2HEADERS
+  typedef GPUTPCClusterFinder processorType;
+  GPUhdi() static processorType* Processor(GPUConstantMem& processors)
+  {
+    return processors.tpcClusterer;
+  }
+#endif
+
+  GPUhdi() CONSTEXPR static GPUDataTypes::RecoStep GetRecoStep()
+  {
+    return GPUDataTypes::RecoStep::TPCClusterFinding;
+  }
+
+  template <int iKernel = defaultKernel, typename... Args>
+  GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer, Args... args);
+
+  static void setGlobalOffsetsAndAllocate(GPUTPCClusterFinder&, GPUTPCLinearLabels&);
 };
 
 } // namespace gpu
