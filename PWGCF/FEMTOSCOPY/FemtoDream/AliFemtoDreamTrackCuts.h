@@ -197,14 +197,20 @@ class AliFemtoDreamTrackCuts {
   }
   ;
   void SetPID(AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3.,
-              bool AllowITSonly = false, float sigValITS = 3., bool CombITSTPC = false) {
+              bool AllowITSonly = false, float sigValITS = 3.) {
     fParticleID = pid;
     fPIDPTPCThreshold = pTPCThresh;
     fNSigValue = sigVal;
     fAllowITSonly = AllowITSonly;
     fNSigValueITS = sigValITS;
-    fCombITSTPC = CombITSTPC;
     fCutPID = kTRUE;
+  }
+  ;
+  void SetCutITSPID(float pITSThresh = 0.0, double sigValITSmin = -3., double sigValITSmax = 3.) {
+    fPIDPITSThreshold = pITSThresh;
+    fNSigValueITSmin = sigValITSmin;
+    fNSigValueITSmax = sigValITSmax;
+    fdoITSnSigmaCut = kTRUE;
   }
   ;
   void SetRejLowPtPionsTOF(bool use) {
@@ -257,6 +263,7 @@ class AliFemtoDreamTrackCuts {
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDCuts(AliFemtoDreamTrack *Track);
+  bool ITSPIDAODCuts(AliFemtoDreamTrack *Track);
   bool SmallestNSig(AliFemtoDreamTrack *Track);
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
@@ -311,10 +318,13 @@ class AliFemtoDreamTrackCuts {
   bool fAllowITSonly;                       //
   bool fCutHighPtSig;  // Reject tracks which have a lower Sigma for other particles (implemented for electrons, pion, kaons and protons)
   AliPID::EParticleType fParticleID;  //
-  float fNSigValue;                  // defaults to 3
-  float fNSigValueITS;                  // defaults to 3
-  bool  fCombITSTPC;                    // defaults is false 
-  float fPIDPTPCThreshold;           // defaults to 0
+  float fNSigValue;                   // defaults to 3
+  float fNSigValueITSmin;             // defaults to -3
+  float fNSigValueITSmax;             // defaults to +3
+  float fdoITSnSigmaCut;              // defaults is false
+  float fNSigValueITS;                // defaults to 3
+  float fPIDPTPCThreshold;            // defaults to 0
+  float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
 ClassDef(AliFemtoDreamTrackCuts,9)
   ;

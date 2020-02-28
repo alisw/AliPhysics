@@ -126,12 +126,14 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fCutCounter->GetXaxis()->SetBinLabel(22, "ITS PID");
   fCutCounter->GetXaxis()->SetBinLabel(23, "TPC PID");
   fCutCounter->GetXaxis()->SetBinLabel(24, "TPC TOF PID");
-  fCutCounter->GetXaxis()->SetBinLabel(25, "ITS TPC PID");
-  fCutCounter->GetXaxis()->SetBinLabel(26, "Reject Pions");
-  fCutCounter->GetXaxis()->SetBinLabel(27, "Smallest Sig");
-  fCutCounter->GetXaxis()->SetBinLabel(28, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(25, "Reject Pions");
+  fCutCounter->GetXaxis()->SetBinLabel(26, "Smallest Sig");
+  fCutCounter->GetXaxis()->SetBinLabel(27, "Passes PID");
+  fCutCounter->GetXaxis()->SetBinLabel(28, "Passes ITS_d PID");
   fCutCounter->GetXaxis()->SetBinLabel(29, "DCA_{Z}");
   fCutCounter->GetXaxis()->SetBinLabel(30, "DCA_{XY}");
+  fCutCounter->GetXaxis()->SetBinLabel(31, "ITS_d status Ok");
+  fCutCounter->GetXaxis()->SetBinLabel(32, "ITS_d PID");//_d stands for deuteron analysis
   fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
