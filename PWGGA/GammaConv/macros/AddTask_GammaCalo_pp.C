@@ -1882,6 +1882,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00074113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, no NL VOHM
     cuts.AddCutCalo("00076113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, no NL VOHM with SPD
 
+  } else if( trainConfig == 890){ // PHOS swapping background test
+    cuts.AddCutCalo("00010113","24466190pa092200000","0r63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0s63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0t63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0u63103100000010"); // INT7 no Trigger
   // *********************************************************************************************************
   // 5 TeV 2017 pp - Jet configurations
   // *********************************************************************************************************
@@ -2214,6 +2219,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2052){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM
     cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
+  } else if (trainConfig == 2060){  // EMCAL+DCAL clusters swapping background standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","411791206f032230000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0s631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0t631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0u631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2061){  // EMCAL+DCAL clusters swapping background standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","411791206f032230000","0v631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0w631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0x631031000000d0"); // INT7 NL 12 + TB
 
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
