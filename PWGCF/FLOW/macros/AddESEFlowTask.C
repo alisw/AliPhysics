@@ -62,7 +62,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
 
     task->SetFilterBit(96);
-    task->SetEtaGap(1.0);
     task->SetVtxZCut(10.0);
     task->SetPhiBins(120);
     task->SetEtaBins(32);
@@ -77,12 +76,13 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetRejectAddPileUp(kTRUE);
     task->SetFlowRFPsPt(0.2,5.0);
     task->SetFlowPOIsPt(0.0,10.0);
-    task->SetRedFlowPt(0.2,5.0);
+    task->SetRedFlowPt(0.2,20.0);
     task->SetTPCEse(kTRUE);
     task->SetV0CEse(kTRUE);
     task->SetV0AEse(kTRUE);
     task->SetSampling(kFALSE,1); //(kFALSE,1) for no sampling and only 1 sample size
     task->SetHasEtaGap(kTRUE);
+    task->SetEtaGap(1.0);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M
