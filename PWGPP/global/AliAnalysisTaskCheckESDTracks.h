@@ -88,7 +88,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=35};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);
@@ -141,6 +141,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+
+  TH2F* fHistPtTPCInwVsPtTPCsel;          //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistDeltaPtTPCInwPtTPCsel;       //!<!  histo of pt inw vs. pt refit
 
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
@@ -250,7 +253,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,20);
+  ClassDef(AliAnalysisTaskCheckESDTracks,21);
 };
 
 

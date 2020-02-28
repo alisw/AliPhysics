@@ -19,6 +19,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckESDTracks.h"
 
+
 /**************************************************************************
  * Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -81,6 +82,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistEtaPhiPtTPCselTOFbc{nullptr},
   fHistEtaPhiPtTPCselITSrefTOFbc{nullptr},
   fHistEtaPhiPtTPCselSPDanyTOFbc{nullptr},
+  fHistPtTPCInwVsPtTPCsel{nullptr},
+  fHistDeltaPtTPCInwPtTPCsel{nullptr},
   fHistEtaPhiPtInnerTPCsel{nullptr},
   fHistEtaPhiPtInnerTPCselITSref{nullptr},
   fHistEtaPhiPtInnerTPCselSPDany{nullptr},
@@ -245,6 +248,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistEtaPhiPtTPCselTOFbc;
     delete fHistEtaPhiPtTPCselITSrefTOFbc;
     delete fHistEtaPhiPtTPCselSPDanyTOFbc;
+    delete fHistPtTPCInwVsPtTPCsel;
+    delete fHistDeltaPtTPCInwPtTPCsel;
     delete fHistEtaPhiPtInnerTPCsel;
     delete fHistEtaPhiPtInnerTPCselITSref;
     delete fHistEtaPhiPtInnerTPCselSPDany;
@@ -365,27 +370,28 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   floatVarName[10]="pxtpc";
   floatVarName[11]="pytpc";
   floatVarName[12]="pztpc";
-  floatVarName[13]="ptttpc";
+  floatVarName[13]="pttpc";
   floatVarName[14]="ptpc";
   floatVarName[15]="etatpc";
   floatVarName[16]="phitpc";
   floatVarName[17]="phipostpc";
-  floatVarName[18]="d0xy";
-  floatVarName[19]="d0z";
-  floatVarName[20]="chi2clustpc";
-  floatVarName[21]="croverfind";
-  floatVarName[22]="dedxTPC";
-  floatVarName[23]="nsigel";
-  floatVarName[24]="nsigpi";
-  floatVarName[25]="nsigk";
-  floatVarName[26]="nsigp";
-  floatVarName[27]="pxgen";
-  floatVarName[28]="pygen";
-  floatVarName[29]="pzgen";
-  floatVarName[30]="ptgen";
-  floatVarName[31]="pgen";
-  floatVarName[32]="etagen";
-  floatVarName[33]="phigen";
+  floatVarName[18]="pttpcinw";
+  floatVarName[19]="d0xy";
+  floatVarName[20]="d0z";
+  floatVarName[21]="chi2clustpc";
+  floatVarName[22]="croverfind";
+  floatVarName[23]="dedxTPC";
+  floatVarName[24]="nsigel";
+  floatVarName[25]="nsigpi";
+  floatVarName[26]="nsigk";
+  floatVarName[27]="nsigp";
+  floatVarName[28]="pxgen";
+  floatVarName[29]="pygen";
+  floatVarName[30]="pzgen";
+  floatVarName[31]="ptgen";
+  floatVarName[32]="pgen";
+  floatVarName[33]="etagen";
+  floatVarName[34]="phigen";
   Int_t usedVar=kNumOfFloatVar-7;
   if(fReadMC) usedVar=kNumOfFloatVar;
   for(Int_t ivar=0; ivar<usedVar; ivar++){
@@ -540,6 +546,11 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistEtaPhiPtTPCselITSrefTOFbc);
   fOutput->Add(fHistEtaPhiPtTPCselSPDanyTOFbc);
 
+  fHistPtTPCInwVsPtTPCsel = new TH2F("hPtTPCInwVsPtTPCsel"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
+  fHistDeltaPtTPCInwPtTPCsel = new TH2F("hDeltaPtTPCInwPtTPCsel"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw}-p_{T}^{refit} (GeV/c) (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-5.,5.);
+  fOutput->Add(fHistPtTPCInwVsPtTPCsel);
+  fOutput->Add(fHistDeltaPtTPCInwPtTPCsel);
+  
   fHistEtaPhiPtInnerTPCsel = new TH3F("hEtaPhiPtInnerTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtInnerTPCselITSref = new TH3F("hEtaPhiPtInnerTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtInnerTPCselSPDany = new TH3F("hEtaPhiPtInnerTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -882,11 +893,17 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       fTreeVarFloat[10]=ippar->Px();
       fTreeVarFloat[11]=ippar->Py();
       fTreeVarFloat[12]=ippar->Pz();
-      fTreeVarFloat[13]=ippar->Pt();
-      fTreeVarFloat[14]=ippar->P();
+      fTreeVarFloat[13]=pttrackTPC;
+      fTreeVarFloat[14]=ptrackTPC;
       fTreeVarFloat[15]=ippar->Eta();
-      fTreeVarFloat[16]=ippar->Phi();
+      fTreeVarFloat[16]=phitrackTPC;
       fTreeVarFloat[17]=ippar->PhiPos();
+    }
+    const AliExternalTrackParam* tpc0par=track->GetTPCInnerParam();
+    Double_t pttrack0tpc=-999.;
+    if(tpc0par){
+      pttrack0tpc=tpc0par->Pt();
+      fTreeVarFloat[18]=pttrack0tpc;
     }
     Float_t impactXY=-999, impactZ=-999;
     track->GetImpactParameters(impactXY, impactZ);
@@ -919,10 +936,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       // is equivalent to TMath::Abs(trc->GetTOFExpTDiff())<12.5 
       // since aliased to TMath::Nint(  trc->GetTOFExpTDiff()/25 )
     }
-    fTreeVarFloat[18]=impactXY;
-    fTreeVarFloat[19]=impactZ;
-    fTreeVarFloat[20]=chi2clus;
-    fTreeVarFloat[21]=ratioCrossedRowsOverFindableClustersTPC;
+    fTreeVarFloat[19]=impactXY;
+    fTreeVarFloat[20]=impactZ;
+    fTreeVarFloat[21]=chi2clus;
+    fTreeVarFloat[22]=ratioCrossedRowsOverFindableClustersTPC;
 
     fTreeVarInt[2]=chtrack;
     fTreeVarInt[3]=itsRefit;
@@ -949,11 +966,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	}
       }
     }
-    fTreeVarFloat[22]=dedx;
-    fTreeVarFloat[23]=nSigmaTPC[0];
-    fTreeVarFloat[24]=nSigmaTPC[2];
-    fTreeVarFloat[25]=nSigmaTPC[3];
-    fTreeVarFloat[26]=nSigmaTPC[4];
+    fTreeVarFloat[23]=dedx;
+    fTreeVarFloat[24]=nSigmaTPC[0];
+    fTreeVarFloat[25]=nSigmaTPC[2];
+    fTreeVarFloat[26]=nSigmaTPC[3];
+    fTreeVarFloat[27]=nSigmaTPC[4];
     fTreeVarInt[10]=pidtr;
     fTreeVarInt[11]=pidtr0;
     
@@ -994,13 +1011,13 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	  }
 	}
       }
-      fTreeVarFloat[27]=pxgen;
-      fTreeVarFloat[28]=pygen;
-      fTreeVarFloat[29]=pzgen;
-      fTreeVarFloat[30]=ptgen;
-      fTreeVarFloat[31]=pgen;
-      fTreeVarFloat[32]=etagen;
-      fTreeVarFloat[33]=phigen;
+      fTreeVarFloat[28]=pxgen;
+      fTreeVarFloat[29]=pygen;
+      fTreeVarFloat[30]=pzgen;
+      fTreeVarFloat[31]=ptgen;
+      fTreeVarFloat[32]=pgen;
+      fTreeVarFloat[33]=etagen;
+      fTreeVarFloat[34]=phigen;
       fTreeVarInt[12]=trlabel;
       fTreeVarInt[13]=pdgCode;
     }
@@ -1017,7 +1034,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     for(Int_t iBit=0; iBit<6; iBit++){
       if(clumap&(1<<iBit)) fHistCluInITSLay->Fill(iBit);
     }
-
     fHistEtaPhiPtTPCsel->Fill(etatrack,phitrack,pttrack);
     if(chtrack>0){
       fHistEtaPhiPtPosChargeTPCsel->Fill(etatrack,phitrack,pttrack);
@@ -1025,6 +1041,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     }else if(chtrack<0){
       fHistEtaPhiPtNegChargeTPCsel->Fill(etatrack,phitrack,pttrack);
       fHistEtaPhiPositionPtNegChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
+    }
+    if(pttrack0tpc>=0){
+      fHistPtTPCInwVsPtTPCsel->Fill(pttrack,pttrack0tpc);
+      fHistDeltaPtTPCInwPtTPCsel->Fill(pttrack,pttrack0tpc-pttrack);
     }
     fHistEtaPhiPtInnerTPCsel->Fill(etatrackTPC,phitrackTPC,pttrackTPC);
     fHistNtrackeltsPtTPCsel->Fill(ntracklets,pttrack);
