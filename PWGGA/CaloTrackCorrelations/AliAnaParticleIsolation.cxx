@@ -1388,11 +1388,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   // Same as done in AliIsolationCut::GetCreateOutput()
   if ( method >= AliIsolationCut::kSumBkgSubIC )
   {
-    ptsummin   = ptsummin-20;
-    nptsumbins = nptsumbins*(1.+20./(ptsummax-ptsummin));
+    ptsummin   = -50;
+    ptsummax   = 100;
+    nptsumbins = 300;
   }
 
   TString sThreshold[] = {"",""};
+  TString ueType = "";
   if      ( method == AliIsolationCut::kSumPtIC ||  
             method >= AliIsolationCut::kSumBkgSubIC )
   {
@@ -1406,12 +1408,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     sThreshold[1] = Form(", #Sigma #it{p}_{T}^{in cone} < %2.2f GeV/#it{c}",
     GetIsolationCut()->GetSumPtThreshold());
     
-    if      ( method == AliIsolationCut::kSumBkgSubIC ) {
-      sThreshold[0]+="-UE #perp cones" ; sThreshold[1]+="-UE #perp cones" ; }
-    else if ( method == AliIsolationCut::kSumBkgSubEtaBandIC ) {
-      sThreshold[0]+="-UE #eta band"   ; sThreshold[1]+="-UE #perp cones" ; }
-    else if ( method == AliIsolationCut::kSumBkgSubPhiBandIC ) {
-      sThreshold[0]+="-UE #varphi band"; sThreshold[1]+="-UE #perp cones" ; }
+    if      ( method == AliIsolationCut::kSumBkgSubIC ) 
+      ueType = ", UE #perp cones" ; 
+    else if ( method == AliIsolationCut::kSumBkgSubEtaBandIC ) 
+      ueType = ", UE #eta band"   ;  
+    else if ( method == AliIsolationCut::kSumBkgSubPhiBandIC ) 
+      ueType = ", UE #varphi band";  
+    
+    sThreshold[0]+=ueType;
+    sThreshold[1]+=ueType;
   }
   else if ( method == AliIsolationCut::kPtThresIC)
   {
@@ -1430,16 +1435,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     sThreshold[1] = sThreshold[0];
   }
   
-  TString sParticle = ", x^{0,#pm}";
-  if      ( particle == AliIsolationCut::kOnlyNeutral )  sParticle = ", x^{0}";
-  else if ( particle == AliIsolationCut::kOnlyCharged )  sParticle = ", x^{#pm}";
+  TString sParticle = ", x^{  0,#pm}";
+  if      ( particle == AliIsolationCut::kOnlyNeutral )  sParticle = ", x^{ 0}";
+  else if ( particle == AliIsolationCut::kOnlyCharged )  sParticle = ", x^{  #pm}";
   
   TString parTitle[2];
   parTitle[0] = Form("#it{R} = %2.2f%s%s",GetIsolationCut()->GetConeSize(),sThreshold[0].Data(),sParticle.Data());
   parTitle[1] = Form("#it{R} = %2.2f%s%s",GetIsolationCut()->GetConeSize(),sThreshold[1].Data(),sParticle.Data());
-  TString parTitleR   = Form("#it{R} = %2.2f%s"       ,GetIsolationCut()->GetConeSize(),sParticle.Data());
-  TString parTitleRCh = Form("#it{R} = %2.2f, x^{#pm}",GetIsolationCut()->GetConeSize());
-  TString parTitleRNe = Form("#it{R} = %2.2f, x^{0}"  ,GetIsolationCut()->GetConeSize());
+  TString parTitleR   = Form("#it{R} = %2.2f%s%s"        ,GetIsolationCut()->GetConeSize(),sParticle.Data(),ueType.Data());
+  TString parTitleRCh = Form("#it{R} = %2.2f, x^{ #pm}%s",GetIsolationCut()->GetConeSize(),ueType.Data());
+  TString parTitleRNe = Form("#it{R} = %2.2f, x^{ 0}%s"  ,GetIsolationCut()->GetConeSize(),ueType.Data());
   
   if( GetIsolationCut()->GetMinDistToTrigger() > 0 )
   {
@@ -1644,7 +1649,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       sumBinning.SetMinimum(0.0);
       if ( method >= AliIsolationCut::kSumBkgSubIC )
       {
-        sumBinning.SetMinimum(-50.0);
+        sumBinning.SetMinimum(-100.0);
+        sumBinning.AddStep(-50,  5.0); // 10
         sumBinning.AddStep(-25, 2.50); // 10
         sumBinning.AddStep(-10, 1.00); // 15
         sumBinning.AddStep(-4 , 0.50); // 12
@@ -1672,7 +1678,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       ssBinning.CreateBinEdges(ssBinsArray);
       
       fhPtM02SumPtCone = new TH3F
-      ("hPtM02SumPtCone",Form("#it{R} = %2.2f",r),
+      ("hPtM02SumPtCone",Form("%s",parTitleR.Data()),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1683,13 +1689,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if ( IsHighMultiplicityAnalysisOn() )
       {
-        printf("*** N centrality bins %d\n",GetNCentrBin());
+        //printf("*** N centrality bins %d\n",GetNCentrBin());
         fhPtM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
         for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
         {
           fhPtM02SumPtConeCent[icent] = new TH3F
           (Form("hPtM02SumPtCone_Cent%d",icent),
-           Form("#it{R} = %2.2f, centrality bin %d",r, icent),
+           Form("%s, centrality bin %d",parTitleR.Data(), icent),
             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1706,8 +1712,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtM02SumPtConeMC[imc] = new TH3F
           (Form("hPtM02SumPtCone_MC%s",mcPartName[imc].Data()),
-           Form("#it{R} = %2.2f, MC %s"
-                , r, mcPartType[imc].Data()),
+           Form("%s, MC %s"
+                , parTitleR.Data(), mcPartType[imc].Data()),
             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
@@ -1722,7 +1728,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhConeSumPtM02Cut[ishsh] = new TH2F
         (Form("hConeSumPtM02%s",m02Name[ishsh].Data()),
-         Form("#it{R} = %2.2f%s",r,m02Title[ishsh].Data()),
+         Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
          nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
         fhConeSumPtM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhConeSumPtM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
@@ -1732,7 +1738,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhConeSumPtCentM02Cut[ishsh] = new TH3F
           (Form("hConeSumPtCentM02%s",m02Name[ishsh].Data()),
-           Form("#it{R} = %2.2f%s",r,m02Title[ishsh].Data()),
+           Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
            nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, GetNCentrBin(),0,100); 
           fhConeSumPtCentM02Cut[ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhConeSumPtCentM02Cut[ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
@@ -1746,7 +1752,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           {
             fhConeSumPtM02CutMC[imc][ishsh] = new TH2F
             (Form("hConeSumPtM02%s_MC%s",m02Name[ishsh].Data(),mcPartName[imc].Data()),
-             Form("#it{R} = %2.2f%s, MC %s",r, m02Title[ishsh].Data(), mcPartType[imc].Data()),
+             Form("%s%s, MC %s",parTitleR.Data(), m02Title[ishsh].Data(), mcPartType[imc].Data()),
              nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax); 
             fhConeSumPtM02CutMC[imc][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             fhConeSumPtM02CutMC[imc][ishsh]->SetYTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
@@ -1794,11 +1800,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
     if ( IsHighMultiplicityAnalysisOn() )
     {
-      fhPtInConeCent  = new TH2F("hPtInConeCent",
-                                 Form("#it{p}_{T} in isolation cone for %s",parTitleR.Data()),
-                                 100,0,100,nptinconebins,ptinconemin,ptinconemax);
+      fhPtInConeCent  = new TH2F
+      ("hPtInConeCent",
+       Form("%s",parTitleR.Data()),
+       100,0,100,nptinconebins,ptinconemin,ptinconemax);
       fhPtInConeCent->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
-      fhPtInConeCent->SetXTitle("centrality");
+      fhPtInConeCent->SetXTitle("Centrality (%)");
       outputContainer->Add(fhPtInConeCent) ;
     }
     
@@ -1810,7 +1817,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtPerSM[ism]  = new TH2F
         (Form("hConePtSum_SM%d",ism),
-         Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, SM %d",r,ism),
+         Form("Cone track+cluster #Sigma #it{p}_{T} for %s, SM %d",parTitleR.Data(),ism),
          nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtPerSM[ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1818,7 +1825,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPtInConePerSM[ism]  = new TH2F
         (Form("hPtInCone_SM%d",ism),
-         Form("#it{p}_{T} of clusters and tracks in isolation cone for %s, SM %d", parTitleR.Data(),ism),
+         Form("Cone track+cluster #it{p}_{T} for %s, SM %d", parTitleR.Data(),ism),
          nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtInConePerSM[ism]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtInConePerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1832,7 +1839,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {        
         fhConeSumPtPerTCardIndex[itc]  = new TH2F
         (Form("hConePtSum_TC%d",itc),
-         Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, TC index %d",r,itc),
+         Form("#it{p}_{T}#Sigma #it{p}_{T} for %s, TC index %d",parTitleR.Data(),itc),
          nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtPerTCardIndex[itc]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1840,7 +1847,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPtInConePerTCardIndex[itc]  = new TH2F
         (Form("hPtInCone_TC%d",itc),
-         Form("#it{p}_{T} of clusters and tracks in isolation cone for %s, TC index %d", parTitleR.Data(),itc),
+         Form("Cone track+cluster #it{p}_{T} for %s, TC index %d", parTitleR.Data(),itc),
          nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtInConePerTCardIndex[itc]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtInConePerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1852,15 +1859,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     {
       fhConeSumPtExoTrigger  = new TH2F
       ("hConePtSumExoTrigger",
-       Form("#Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, exo trigger",r),
+       Form("Cone #Sigma #it{p}_{T} for %s, exo trigger",parTitleR.Data()),
        nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
       fhConeSumPtExoTrigger->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtExoTrigger) ;
     
-      fhPtInConeExoTrigger  = new TH2F("hPtInConeExoTrigger",
-                                       Form("#it{p}_{T}  in isolation cone for %s, exotic trigger",parTitleR.Data()),
-                                       nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtInConeExoTrigger  = new TH2F
+      ("hPtInConeExoTrigger",
+       Form("Cone #it{p}_{T} for %s, exotic trigger",parTitleR.Data()),
+       nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
       fhPtInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtInConeExoTrigger) ;
@@ -1937,7 +1945,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
 
-        if(IsDataMC())
+        if ( IsDataMC() )
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
@@ -1961,7 +1969,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           } // MC particle loop
         }
         
-        if(fFillSSHisto)
+        if ( fFillSSHisto )
         {
           fhPtLeadConeBinLambda0[ibin]  = new TH2F
           (Form("hPtLeadConeLambda0_Bin%d",ibin),
@@ -1979,7 +1987,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhSumPtConeBinLambda0[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhSumPtConeBinLambda0[ibin]) ;
           
-          if(IsDataMC())
+          if ( IsDataMC() )
           {
             for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
             {
@@ -2024,7 +2032,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtTrigBinSumPtClusterConeDecay = new TH1F*[fNPtTrigBin*fNDecayBits];
       } 
       
-      if(IsDataMC())
+      if ( IsDataMC() )
       {
         fhPtTrigBinPtLeadConeMC = new TH1F*[fNPtTrigBin*fgkNmcTypes];
         fhPtTrigBinSumPtConeMC  = new TH1F*[fNPtTrigBin*fgkNmcTypes];
@@ -2107,7 +2115,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhPtTrigBinSumPtClusterCone[ibin]) ;
         }
         
-        if(fFillTaggedDecayHistograms)
+        if ( fFillTaggedDecayHistograms )
         {
           for(Int_t idecay = 0; idecay < fNDecayBits; idecay++)
           {
@@ -2150,7 +2158,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
         
-        if(IsDataMC())
+        if ( IsDataMC() )
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
@@ -2192,7 +2200,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           } // MC particle loop
         } // MC
         
-        if(fFillSSHisto)
+        if ( fFillSSHisto )
         {
           fhPtTrigBinLambda0vsPtLeadCone[ibin]  = new TH2F
           (Form("hPtTrigBin_PtLeadConeVSLambda0_Bin%d",ibin),
@@ -2229,7 +2237,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterCone[ibin]) ;
           }
           
-          if(IsDataMC())
+          if ( IsDataMC() )
           {
             for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
             {              
@@ -2273,7 +2281,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtClusterConeMC[binmc]) ;
               }
               
-              if(fFillOverlapHistograms)
+              if ( fFillOverlapHistograms )
               {  
                 fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[binmc]  = new TH2F
                 (Form("hPtTrigBin_SumPtConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
@@ -2293,7 +2301,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
                 fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]->SetXTitle("#Sigma #it{p}_{T}^{in cone} (GeV/#it{c})");
                 outputContainer->Add(fhPtTrigBinLambda0vsSumPtConeMC1Overlap[binmc]) ;
 
-                if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
+                if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                 {
                   fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap[binmc]  = new TH2F
                   (Form("hPtTrigBin_SumPtTrackConeVSLambda0_Bin%d_MC_NoOverlap%s",ibin,mcPartName[imc].Data()),
@@ -2350,7 +2358,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhConeSumPtClusterPerSM[ism]  = new TH2F
           (Form("hConePtSumCluster_SM%d",ism),
-           Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, SM %d",r,ism),
+           Form("Clusters cone #Sigma #it{p}_{T} for %s, SM %d",parTitleR.Data(),ism),
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtClusterPerSM[ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtClusterPerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2358,7 +2366,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtClusterInConePerSM[ism]  = new TH2F
           (Form("hPtClusterInCone_SM%d",ism),
-           Form("#it{p}_{T} of clusters in isolation cone for %s, SM %d", parTitleR.Data(),ism),
+           Form("Clusters cone #it{p}_{T} for %s, SM %d", parTitleR.Data(),ism),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtClusterInConePerSM[ism]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
           fhPtClusterInConePerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2372,7 +2380,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhConeSumPtClusterPerTCardIndex[itc]  = new TH2F
           (Form("hConePtSumCluster_TC%d",itc),
-           Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, TC index %d",r,itc),
+           Form("Cluster cone #Sigma #it{p}_{T} %s, TC index %d",parTitleR.Data(),itc),
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtClusterPerTCardIndex[itc]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtClusterPerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2380,7 +2388,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtClusterInConePerTCardIndex[itc]  = new TH2F
           (Form("hPtClusterInCone_TC%d",itc),
-           Form("#it{p}_{T} of clusters in isolation cone for %s, TC index %d", parTitleR.Data(),itc),
+           Form("Clusters cone #it{p}_{T} for %s, TC index %d", parTitleR.Data(),itc),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtClusterInConePerTCardIndex[itc]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
           fhPtClusterInConePerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2392,7 +2400,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhConeNClusterPerMinPtCut = new TH2F
         ("hConeNClusterPerMinPtCut",
-         Form("N clusters, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax);
         fhConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
         fhConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2402,7 +2410,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeNClusterPerMinPtCutLargePtTrig = new TH2F
         ("hConeNClusterPerMinPtCutLargePtTrig",
-         Form("N cluster, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Cluster, different min #it{p}_{T} cut in cone for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax);
         fhConeNClusterPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{cluster}");
         fhConeNClusterPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2412,7 +2420,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
         fhConeSumPtClusterPerMinPtCut = new TH2F
         ("hConePtSumClusterPerMinPtCut",
-         Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2422,7 +2430,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtClusterPerMinPtCutLargePtTrig = new TH2F
         ("hConePtSumClusterPerMinPtCutLargePtTrig",
-         Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerMinPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2432,7 +2440,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
         fhConeSumPtClusterPerMaxPtCut = new TH2F
         ("hConePtSumClusterPerMaxPtCut",
-         Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cut in cone for %s",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterPerMaxPtCut->SetXTitle("#it{p}_{T, max} (GeV/#it{c})");
@@ -2442,7 +2450,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtClusterPerMaxPtCutLargePtTrig = new TH2F
         ("hConePtSumClusterPerMaxPtCutLargePtTrig",
-         Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cut in cone for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerMaxPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterPerMaxPtCutLargePtTrig->SetXTitle("#it{p}_{T, max} (GeV/#it{c})");
@@ -2554,7 +2562,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {  
         fhConeSumPtClusterExoTrigger  = new TH2F
         ("hConePtSumClusterExoTrigger",
-         Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, exo trigger",r),
+         Form("Cluster #Sigma #it{p}_{T} in isolation cone for %s, exo trigger",parTitleR.Data()),
          nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterExoTrigger->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtClusterExoTrigger->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
@@ -2598,7 +2606,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPtClusterInConeExoTrigger  = new TH2F
         ("hPtClusterInConeExoTrigger",
-         Form("#it{p}_{T} of clusters in isolation cone for #it{R} = %2.2f, exotic trigger",r),
+         Form("Cluster cone #it{p}_{T} for %s, exotic trigger",parTitleR.Data()),
          nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtClusterInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtClusterInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2617,7 +2625,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConePerSM[ism]  = new TH2F
           (Form("hPtTrackInCone_SM%d",ism),
-           Form("#it{p}_{T} of tracks in isolation cone for %s, SM %d", parTitleR.Data(),ism),
+           Form("Track cone #it{p}_{T} for %s, SM %d", parTitleR.Data(),ism),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConePerSM[ism]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
           fhPtTrackInConePerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2625,7 +2633,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhConeSumPtTrackPerSM[ism]  = new TH2F
           (Form("hConePtSumTrack_SM%d",ism),
-           Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, SM %d",r,ism),
+           Form("Track cone #Sigma #it{p}_{T} for %s, SM %d", parTitleR.Data(),ism),
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtTrackPerSM[ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtTrackPerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2639,7 +2647,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {            
           fhPtTrackInConePerTCardIndex[itc]  = new TH2F
           (Form("hPtTrackInCone_TC%d",itc),
-           Form("#it{p}_{T} of tracks in isolation cone for %s, TC index %d", parTitleR.Data(),itc),
+           Form("Tracks cone #it{p}_{T} for %s, TC index %d", parTitleR.Data(),itc),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConePerTCardIndex[itc]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
           fhPtTrackInConePerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2647,7 +2655,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhConeSumPtTrackPerTCardIndex[itc]  = new TH2F
           (Form("hConePtSumTrack_TC%d",itc),
-           Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f, TC index %d",r,itc),
+           Form("Track cone #Sigma #it{p}_{T} for %s, TC index %d",parTitleR.Data(),itc),
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtTrackPerTCardIndex[itc]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtTrackPerTCardIndex[itc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2662,7 +2670,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         {
           fhPtTrackInConeMCPrimary[imc]  = new TH2F
           (Form("hPtTrackInCone_Primary_%s",mcChPartName[imc].Data()),
-           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           Form("Track cone reco #it{p}_{T} for %s, primary MC %s",parTitleR.Data(),mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCPrimary[imc]->SetYTitle("#it{p}_{T in cone}^{reco} (GeV/#it{c})");
           fhPtTrackInConeMCPrimary[imc]->SetXTitle("#it{p}_{T}^{reco} (GeV/#it{c})");
@@ -2670,7 +2678,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConeMCSecondary[imc]  = new TH2F
           (Form("hPtTrackInCone_Secondary_%s",mcChPartName[imc].Data()),
-           Form("reconstructed #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, secondary MC %s",r,mcChPartName[imc].Data()),
+           Form("Track cone reco #it{p}_{T} for %s, secondary MC %s",parTitleR.Data(),mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCSecondary[imc]->SetYTitle("#it{p}_{T in cone}^{reco} (GeV/#it{c})");
           fhPtTrackInConeMCSecondary[imc]->SetXTitle("#it{p}_{T}^{reco} (GeV/#it{c})");
@@ -2678,7 +2686,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConeMCPrimaryGener[imc]  = new TH2F
           (Form("hPtTrackInCone_Gener_Primary_%s",mcChPartName[imc].Data()),
-           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, primary MC %s",r,mcChPartName[imc].Data()),
+           Form("Track cone gener #it{p}_{T} for %s, primary MC %s",parTitleR.Data(),mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCPrimaryGener[imc]->SetYTitle("#it{p}_{T in cone}^{gener} (GeV/#it{c})");
           fhPtTrackInConeMCPrimaryGener[imc]->SetXTitle("#it{p}_{T}^{gener} (GeV/#it{c})");
@@ -2686,7 +2694,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           
           fhPtTrackInConeMCSecondaryGener[imc]  = new TH2F
           (Form("hPtTrackInCone_Gener_Secondary_%s",mcChPartName[imc].Data()),
-           Form("generated #it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, secondary MC %s",r,mcChPartName[imc].Data()),
+           Form("Track cone gener #it{p}_{T} for %s, secondary MC %s",parTitleR.Data(),mcChPartName[imc].Data()),
            nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
           fhPtTrackInConeMCSecondaryGener[imc]->SetYTitle("#it{p}_{T in cone}^{gener} (GeV/#it{c})");
           fhPtTrackInConeMCSecondaryGener[imc]->SetXTitle("#it{p}_{T}^{gener} (GeV/#it{c})");
@@ -2698,7 +2706,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhConeNTrackPerMinPtCut = new TH2F
         ("hConeNTrackPerMinPtCut",
-         Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("N tracks, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
         fhConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
         fhConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2708,7 +2716,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeNTrackPerMinPtCutLargePtTrig = new TH2F
         ("hConeNTrackPerMinPtCutLargePtTrig",
-         Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Different track cone #it{p}_{T} cut for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
         fhConeNTrackPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{track}");
         fhConeNTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2718,7 +2726,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
         fhConeSumPtTrackPerMinPtCut = new TH2F
         ("hConePtSumTrackPerMinPtCut",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("Track cone #Sigma #it{p}_{T}, different #it{p}_{T} cut for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2728,7 +2736,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtTrackPerMinPtCutLargePtTrig = new TH2F
         ("hConePtSumTrackPerMinPtCutLargePtTrig",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Track cone #Sigma #it{p}_{T}, different #it{p}_{T} cut for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerMinPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2738,7 +2746,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
         fhPerpConeNTrackPerMinPtCut = new TH2F
         ("hPerpConeNTrackPerMinPtCut",
-         Form("N tracks, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f",r),
+         Form("Different track #it{p}_{T} cuts in perpendicular cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
         fhPerpConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
         fhPerpConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2748,7 +2756,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPerpConeNTrackPerMinPtCutLargePtTrig = new TH2F
         ("hPerpConeNTrackPerMinPtCutLargePtTrig",
-         Form("N tracks, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Different track cone #it{p}_{T} cut for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
         fhPerpConeNTrackPerMinPtCutLargePtTrig->SetYTitle("#it{N}^{track}");
         fhPerpConeNTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2758,7 +2766,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPerpConeSumPtTrackPerMinPtCut = new TH2F
         ("hPerpConePtSumTrackPerMinPtCut",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f",r),
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhPerpConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPerpConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2768,7 +2776,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPerpConeSumPtTrackPerMinPtCutLargePtTrig = new TH2F
         ("hPerpConePtSumTrackPerMinPtCutLargePtTrig",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2778,7 +2786,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhConeSumPtTrackPerMaxPtCut = new TH2F
         ("hConePtSumTrackPerMaxPtCut",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for #it{R} = %2.2f",r),
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerMaxPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2799,18 +2807,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if ( fStudyEtaCutInCone )
       {
-        fhConeSumPtTrackPerEtaCut = new TH2F("hConePtSumTrackPerEtaCut",
-                                             Form("Track #Sigma #it{p}_{T}, different #eta cuts in isolation cone for #it{R} = %2.2f",r),
-                                             fNEtaCutsInCone,0.5,fNEtaCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtTrackPerEtaCut = new TH2F
+        ("hConePtSumTrackPerEtaCut",
+         Form("Track cone #Sigma #it{p}_{T}, different #eta cuts for %s",parTitleR.Data()),
+         fNEtaCutsInCone,0.5,fNEtaCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerEtaCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerEtaCut->SetXTitle("#eta_{max}");
           for(Int_t i = 1; i <= fNEtaCutsInCone; i++)
         fhConeSumPtTrackPerEtaCut->GetXaxis()->SetBinLabel(i, Form("%2.2f",fEtaCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtTrackPerEtaCut) ;
         
-        fhConeSumPtTrackPerEtaCutLargePtTrig = new TH2F("hConePtSumTrackPerEtaCutLargePtTrig",
-                                                        Form("Track #Sigma #it{p}_{T}, different #eta cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
-                                                        fNEtaCutsInCone,0.5,fNEtaCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtTrackPerEtaCutLargePtTrig = new TH2F
+        ("hConePtSumTrackPerEtaCutLargePtTrig",
+         Form("Track cone #Sigma #it{p}_{T}, different #eta cut for %s, #it{p}_{T}^{trig} > 10 GeV",parTitleR.Data()),
+         fNEtaCutsInCone,0.5,fNEtaCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerEtaCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrackPerEtaCutLargePtTrig->SetXTitle("#eta_{max}");
         for(Int_t i = 1; i <= fNEtaCutsInCone; i++)
@@ -2921,7 +2931,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       { 
         fhPtTrackInConeExoTrigger  = new TH2F
         ("hPtTrackInConeExoTrigger",
-         Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, exotic trigger",r),
+         Form("Track cone #it{p}_{T} for %s, exotic trigger",parTitleR.Data()),
          nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtTrackInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtTrackInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3010,21 +3020,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtTrackInConeVtxBC0) ;
         
         fhEtaPhiTrackInCone = new TH2F("hEtaPhiTrackInCone",
-                                       Form("#eta vs #varphi of Tracks in cone for #it{R} = %2.2f",r),
+                                       Form("#eta vs #varphi of Tracks in cone for %s",parTitleR.Data()),
                                        netabins,-1,1,nphibins,0,TMath::TwoPi());
         fhEtaPhiTrackInCone->SetXTitle("#eta");
         fhEtaPhiTrackInCone->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTrackInCone) ;
         
         fhEtaTrackInCone = new TH2F("hEtaTrackInCone",
-                                    Form("#eta vs #it{p}_{T} of Tracks in cone for #it{R} = %2.2f",r),
+                                    Form("#eta vs #it{p}_{T} of Tracks in cone for %s",parTitleR.Data()),
                                     nptbins,ptmin,ptmax,netabins,-1,1);
         fhEtaTrackInCone->SetYTitle("#eta");
         fhEtaTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhEtaTrackInCone) ;
         
         fhPhiTrackInCone = new TH2F("hPhiTrackInCone",
-                                    Form("#varphi vs #it{p}_{T} of Tracks in cone for #it{R} = %2.2f",r),
+                                    Form("#varphi vs #it{p}_{T} of Tracks in cone for %s",parTitleR.Data()),
                                     nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
         fhPhiTrackInCone->SetYTitle("#varphi (rad)");
         fhPhiTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3510,7 +3520,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
           fhPtPerSM[iso] = new TH2F
           (Form("hPtPerSM_%s",isoName[iso].Data()),
-           Form("%s candidate #it{p}_{T} and super-module number, %s",isoTitle[iso].Data(), parTitle[iso].Data()),
+           Form("%s candidate #it{p}_{T} and SM number, %s",isoTitle[iso].Data(), parTitle[iso].Data()),
            nptbins,ptmin,ptmax,totalSM,fFirstModule-0.5,fLastModule+0.5);
           fhPtPerSM[iso]->SetYTitle("SuperModule ");
           fhPtPerSM[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3587,22 +3597,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
         
-        if(IsDataMC())
+        if ( IsDataMC() )
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
           {
             fhPtLambda0MC[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+             Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s",
+                  isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
             fhPtLambda0MC[imc][iso]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0MC[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MC[imc][iso]) ;
           
             fhPtLambda0MCConv[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%sConv",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+             Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s, from conversion",
+                  isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+             nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
             fhPtLambda0MCConv[imc][iso]->SetYTitle("#sigma_{long}^{2}");
             fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
@@ -3611,7 +3623,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             {
               fhPtLambda0MCNCellCut[imc][iso]  = new TH2F
               (Form("hPtLambda0%s_MC%sNCellCut",isoName[iso].Data(),mcPartName[imc].Data()),
-               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, n_{cell}^{w>0.1} > 4: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}, n_{cell}^{w>0.1} > 4: %s %s",
+                    isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle[iso].Data()),
                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
               fhPtLambda0MCNCellCut[imc][iso]->SetYTitle("#sigma_{long}^{2}");
               fhPtLambda0MCNCellCut[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
@@ -3678,7 +3691,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
         
-        if(fIsoDetector==kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
+        if ( fIsoDetector==kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 )
         {
           fhPtLambda0TRD[iso]  = new TH2F
           (Form("hPtLambda0TRD%s",isoName[iso].Data()),
@@ -3796,7 +3809,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         }
       } // regions in EMCal
       
-      if(IsDataMC() && fStudyMCConversionRadius)
+      if (IsDataMC() && fStudyMCConversionRadius )
       {
         fhMCConversionVertex[iso] = new TH2F(Form("hMCPhotonConversionVertex%s",isoName[iso].Data()),
                                              Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s",
@@ -3842,20 +3855,22 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
     } // control histograms for isolated and non isolated objects
     
-    if(IsPileUpAnalysisOn())
+    if ( IsPileUpAnalysisOn() )
     {
-      if(fStudyTracksInCone)
+      if ( fStudyTracksInCone )
       {
-        fhPtTrackInConeOtherBCPileUpSPD  = new TH2F("hPtTrackInConeOtherBCPileUpSPD",
-                                                    Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0, pile-up from SPD",r),
-                                                    nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtTrackInConeOtherBCPileUpSPD  = new TH2F
+        ("hPtTrackInConeOtherBCPileUpSPD",
+         Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0, pile-up from SPD",r),
+         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtTrackInConeOtherBCPileUpSPD->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtTrackInConeOtherBCPileUpSPD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtTrackInConeOtherBCPileUpSPD) ;
         
-        fhPtTrackInConeBC0PileUpSPD  = new TH2F("hPtTrackInConeBC0PileUpSPD",
-                                                Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC==0, pile-up from SPD",r),
-                                                nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtTrackInConeBC0PileUpSPD  = new TH2F
+        ("hPtTrackInConeBC0PileUpSPD",
+         Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC==0, pile-up from SPD",r),
+         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtTrackInConeBC0PileUpSPD->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtTrackInConeBC0PileUpSPD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtTrackInConeBC0PileUpSPD) ;
@@ -3863,269 +3878,305 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       for (Int_t i = 0; i < 7 ; i++)
       {
-        fhPtInConePileUp[i]  = new TH2F(Form("hPtInConePileUp%s",pileUpName[i].Data()),
-                                        Form("#it{p}_{T} in isolation cone for #it{R} =  %2.2f, from pile-up (%s)",r,pileUpName[i].Data()),
-                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtInConePileUp[i]  = new TH2F
+        (Form("hPtInConePileUp%s",pileUpName[i].Data()),
+         Form("#it{p}_{T} in isolation cone for #it{R} =  %2.2f, from pile-up (%s)",r,pileUpName[i].Data()),
+         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
         fhPtInConePileUp[i]->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
         fhPtInConePileUp[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtInConePileUp[i]) ;
       }
     }
     
-    if(IsDataMC())
+    if ( IsDataMC() )
     {
       // For histograms in arrays, index in the array, corresponding to any particle origin
       
       for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
       {
-        fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",ppname[i].Data()),
-                                 Form("primary photon  %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-                                 nptbins,ptmin,ptmax);
+        fhPtPrimMC[i]  = new TH1F
+        (Form("hPtPrim_MC%s",ppname[i].Data()),
+         Form("primary photon  %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMC[i]) ;
-
-        fhPtPrimMCiso[i]  = new TH1F(Form("hPtPrim_MCiso%s",ppname[i].Data()),
-                                     Form("primary isolated photon %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-                                     nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCiso[i]  = new TH1F
+        (Form("hPtPrim_MCiso%s",ppname[i].Data()),
+         Form("primary isolated photon %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCiso[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCiso[i]) ;
         
-        fhEtaPrimMC[i]  = new TH2F(Form("hEtaPrim_MC%s",ppname[i].Data()),
-                                   Form("primary photon %s : #eta vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-                                   nptbins,ptmin,ptmax,200,-2,2);
+        fhEtaPrimMC[i]  = new TH2F
+        (Form("hEtaPrim_MC%s",ppname[i].Data()),
+         Form("primary photon %s : #eta vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax,200,-2,2);
         fhEtaPrimMC[i]->SetYTitle("#eta");
         fhEtaPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhEtaPrimMC[i]) ;
         
-        fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",ppname[i].Data()),
-                                   Form("primary photon %s : #varphi vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
-                                   nptbins,ptmin,ptmax,200,0.,TMath::TwoPi());
+        fhPhiPrimMC[i]  = new TH2F
+        (Form("hPhiPrim_MC%s",ppname[i].Data()),
+         Form("primary photon %s : #varphi vs #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax,200,0.,TMath::TwoPi());
         fhPhiPrimMC[i]->SetYTitle("#varphi (rad)");
         fhPhiPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPhiPrimMC[i]) ;
       }
       
-      if(fMakePrimaryPi0DecayStudy)
+      if ( fMakePrimaryPi0DecayStudy )
       {
-        fhPtPrimMCPi0DecayPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPt",
-                                                            Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                            nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPt  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPt",
+         Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPt",
-                                                               Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
-                                                                    pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                               nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPt",
+         Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
-                                                                     Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
-                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
+         Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap) ;
         
-        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
-                                                                        Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
-                                                                             pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                                        nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlap",
+         Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap) ;
-
-        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
-                                                                     Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
-                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                                     nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+         Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE) ;
-
-        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
-                                                                        Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
-                                                                             pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                                        nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairAcceptInConeLowPtNoOverlapCaloE",
+         Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE) ;
-
         
-        fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
-                                                                     Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
-                                                                          pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                                     nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCPi0DecayPairNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairNoOverlap",
+         Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairNoOverlap) ;
-
-        fhPtPrimMCPi0DecayIsoPairNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairNoOverlap",
-                                                    Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
-                                                         pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                    nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCPi0DecayIsoPairNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairNoOverlap",
+         Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairNoOverlap) ;
         
-        fhPtPrimMCPi0DecayPairOutOfCone  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfCone",
-                                                    Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfCone  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairOutOfCone",
+         Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfCone) ;
         
-        fhPtPrimMCPi0DecayIsoPairOutOfCone  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfCone",
-                                                       Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
-                                                            pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                       nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairOutOfCone  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairOutOfCone",
+         Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfCone) ;
         
-        fhPtPrimMCPi0DecayPairOutOfAcceptance  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptance",
-                                                          Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfAcceptance  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptance",
+         Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptance) ;
         
-        fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
-                                                          Form("primary photon %s : #it{p}_{T}, pair out of acceptance, no overlap, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
+         Form("primary photon %s : #it{p}_{T}, pair out of acceptance, no overlap, %s",pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap) ;
         
-        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptance",
-                                                             Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
-                                                                  pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                             nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptance  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptance",
+         Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptance) ;
- 
-        fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
-                                                             Form("isolated primary photon %s, pair out of acceptance, no overlap : #it{p}_{T}, %s",
-                                                                  pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
-                                                             nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonPi0DecayPairOutOfAcceptanceNoOverlap",
+         Form("isolated primary photon %s, pair out of acceptance, no overlap : #it{p}_{T}, %s",
+              pptype[kmcPrimPi0Decay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap) ;
         
-        fhPtPrimMCPi0Overlap  = new TH1F("hPtPrim_MCPi0Overlap",
-                                         Form("primary %s, overlap: #it{p}_{T}, %s",
-                                              pptype[kmcPrimPi0].Data(),parTitle[1].Data()),
-                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0Overlap  = new TH1F
+        ("hPtPrim_MCPi0Overlap",
+         Form("primary %s, overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0Overlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0Overlap) ;
         
-        fhPtPrimMCPi0IsoOverlap  = new TH1F("hPtPrim_MCisoPi0Overlap",
-                                         Form("primary %s, overlap: #it{p}_{T}, %s",
-                                              pptype[kmcPrimPi0].Data(),parTitle[1].Data()),
-                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCPi0IsoOverlap  = new TH1F
+        ("hPtPrim_MCisoPi0Overlap",
+         Form("primary %s, overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimPi0].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCPi0IsoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCPi0IsoOverlap) ;
-
         
-        fhPtPrimMCEtaDecayPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPt",
-                                                            Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                            nptbins,ptmin,ptmax);
+        
+        fhPtPrimMCEtaDecayPairAcceptInConeLowPt  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPt",
+         Form("primary photon  %s : #it{p}_{T}, pair in cone, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPt",
-                                                               Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
-                                                                    pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                               nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPt",
+         Form("isolated primary photon %s, pair in cone : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt) ;
         
-        fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPtNoOverlap",
-                                                                     Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
-                                                                          pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                     nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPtNoOverlap",
+         Form("primary photon  %s, no overlap, pair in cone : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap) ;
         
-        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPtNoOverlap",
-                                                                        Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
-                                                                             pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                        nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPtNoOverlap",
+         Form("isolated primary photon  %s, pair in cone,no overlap : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap) ;
         
-        fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPtNoOverlapCaloE",
-                                                                          Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
-                                                                               pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairAcceptInConeLowPtNoOverlapCaloE",
+         Form("primary photon  %s, no overlap, pair in cone, E > calo min: #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE) ;
         
-        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPtNoOverlapCaloE",
-                                                                             Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
-                                                                                  pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                             nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairAcceptInConeLowPtNoOverlapCaloE",
+         Form("isolated primary photon  %s, pair in cone,no overlap, E > calo min: #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE) ;
         
         
-        fhPtPrimMCEtaDecayPairNoOverlap  = new TH1F("hPtPrim_MCPhotonEtaDecayPairNoOverlap",
-                                                    Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
-                                                         pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairNoOverlap",
+         Form("primary photon  %s, no overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairNoOverlap) ;
         
-        fhPtPrimMCEtaDecayIsoPairNoOverlap  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairNoOverlap",
-                                                       Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
-                                                            pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                       nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairNoOverlap",
+         Form("isolated primary photon  %s, no overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairNoOverlap) ;
         
-        fhPtPrimMCEtaDecayPairOutOfCone  = new TH1F("hPtPrim_MCPhotonEtaDecayPairOutOfCone",
-                                                    Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                    nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairOutOfCone  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairOutOfCone",
+         Form("primary photon %s : #it{p}_{T}, pair out of cone, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairOutOfCone) ;
         
-        fhPtPrimMCEtaDecayIsoPairOutOfCone  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairOutOfCone",
-                                                       Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
-                                                            pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                       nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairOutOfCone  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairOutOfCone",
+         Form("isolated primary photon %s, pair out of cone : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairOutOfCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairOutOfCone) ;
         
-        fhPtPrimMCEtaDecayPairOutOfAcceptance  = new TH1F("hPtPrim_MCPhotonEtaDecayPairOutOfAcceptance",
-                                                          Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                          nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairOutOfAcceptance  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairOutOfAcceptance",
+         Form("primary photon %s : #it{p}_{T}, pair out of acceptance, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairOutOfAcceptance) ;
         
-        fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCPhotonEtaDecayPairOutOfAcceptanceNoOverlap",
-                                                                   Form("primary photon %s : #it{p}_{T}, pair out of acceptance, no overlap, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                   nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap  = new TH1F
+        ("hPtPrim_MCPhotonEtaDecayPairOutOfAcceptanceNoOverlap",
+         Form("primary photon %s : #it{p}_{T}, pair out of acceptance, no overlap, %s",pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap) ;
         
-        fhPtPrimMCEtaDecayIsoPairOutOfAcceptance  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairOutOfAcceptance",
-                                                             Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
-                                                                  pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                             nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairOutOfAcceptance  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairOutOfAcceptance",
+         Form("isolated primary photon %s, pair out of acceptance : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairOutOfAcceptance->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairOutOfAcceptance) ;
         
-        fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap  = new TH1F("hPtPrim_MCisoPhotonEtaDecayPairOutOfAcceptanceNoOverlap",
-                                                                      Form("isolated primary photon %s, pair out of acceptance, no overlap : #it{p}_{T}, %s",
-                                                                           pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
-                                                                      nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap  = new TH1F
+        ("hPtPrim_MCisoPhotonEtaDecayPairOutOfAcceptanceNoOverlap",
+         Form("isolated primary photon %s, pair out of acceptance, no overlap : #it{p}_{T}, %s",
+              pptype[kmcPrimEtaDecay].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap) ;
         
-        fhPtPrimMCEtaOverlap  = new TH1F("hPtPrim_MCEtaOverlap",
-                                         Form("primary %s, overlap: #it{p}_{T}, %s",
-                                              pptype[kmcPrimEta].Data(),parTitle[1].Data()),
-                                         nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaOverlap  = new TH1F
+        ("hPtPrim_MCEtaOverlap",
+         Form("primary %s, overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimEta].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaOverlap) ;
         
-        fhPtPrimMCEtaIsoOverlap  = new TH1F("hPtPrim_MCisoEtaOverlap",
-                                            Form("primary %s, overlap: #it{p}_{T}, %s",
-                                                 pptype[kmcPrimEta].Data(),parTitle[1].Data()),
-                                            nptbins,ptmin,ptmax);
+        fhPtPrimMCEtaIsoOverlap  = new TH1F
+        ("hPtPrim_MCisoEtaOverlap",
+         Form("primary %s, overlap: #it{p}_{T}, %s",
+              pptype[kmcPrimEta].Data(),parTitle[1].Data()),
+         nptbins,ptmin,ptmax);
         fhPtPrimMCEtaIsoOverlap->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCEtaIsoOverlap) ;
-
       }
       
     }//Histos with MC
@@ -4136,52 +4187,61 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         for(Int_t iso = 0; iso < 2; iso++)
         {
-          fhPtPileUp[i][iso]  = new TH1F(Form("hPt%sPileUp%s",isoName[iso].Data(),pileUpName[i].Data()),
-                                         Form("Number of %s particles vs #it{p}_{T}, %s, pile-up event by %s",
-                                              isoTitle[iso].Data(),parTitle[iso].Data(),pileUpName[i].Data()),
-                                         nptbins,ptmin,ptmax);
+          fhPtPileUp[i][iso]  = new TH1F
+          (Form("hPt%sPileUp%s",isoName[iso].Data(),pileUpName[i].Data()),
+           Form("Number of %s particles vs #it{p}_{T}, %s, pile-up event by %s",
+                isoTitle[iso].Data(),parTitle[iso].Data(),pileUpName[i].Data()),
+           nptbins,ptmin,ptmax);
           fhPtPileUp[i][iso]->SetYTitle("d#it{N} / #it{p}_{T}");
           fhPtPileUp[i][iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhPtPileUp[i][iso]) ;
         }
       }
       
-      fhTimeENoCut  = new TH2F ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeENoCut  = new TH2F 
+      ("hTimeE_NoCut","time of cluster vs E of clusters, no cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeENoCut->SetXTitle("#it{E} (GeV)");
       fhTimeENoCut->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeENoCut);
       
-      fhTimeESPD  = new TH2F ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeESPD  = new TH2F 
+      ("hTimeE_SPD","time of cluster vs E of clusters, SPD cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeESPD->SetXTitle("#it{E} (GeV)");
       fhTimeESPD->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeESPD);
       
-      fhTimeESPDMulti  = new TH2F ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
+      fhTimeESPDMulti  = new TH2F 
+      ("hTimeE_SPDMulti","time of cluster vs E of clusters, SPD multi cut", nptbins,ptmin,ptmax, ntimebins,timemin,timemax);
       fhTimeESPDMulti->SetXTitle("#it{E} (GeV)");
       fhTimeESPDMulti->SetYTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeESPDMulti);
       
-      fhTimeNPileUpVertSPD  = new TH2F ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
+      fhTimeNPileUpVertSPD  = new TH2F 
+      ("hTime_NPileUpVertSPD","time of cluster vs N pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
       fhTimeNPileUpVertSPD->SetYTitle("# vertex ");
       fhTimeNPileUpVertSPD->SetXTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeNPileUpVertSPD);
       
-      fhTimeNPileUpVertTrack  = new TH2F ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 );
+      fhTimeNPileUpVertTrack  = new TH2F 
+      ("hTime_NPileUpVertTracks","time of cluster vs N pile-up Tracks vertex", ntimebins,timemin,timemax, 50,0,50 );
       fhTimeNPileUpVertTrack->SetYTitle("# vertex ");
       fhTimeNPileUpVertTrack->SetXTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeNPileUpVertTrack);
       
-      fhTimeNPileUpVertContributors  = new TH2F ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
+      fhTimeNPileUpVertContributors  = new TH2F 
+      ("hTime_NPileUpVertContributors","time of cluster vs N constributors to pile-up SPD vertex", ntimebins,timemin,timemax,50,0,50);
       fhTimeNPileUpVertContributors->SetYTitle("# vertex ");
       fhTimeNPileUpVertContributors->SetXTitle("#it{time} (ns)");
       outputContainer->Add(fhTimeNPileUpVertContributors);
       
-      fhTimePileUpMainVertexZDistance  = new TH2F ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50);
+      fhTimePileUpMainVertexZDistance  = new TH2F 
+      ("hTime_PileUpMainVertexZDistance","time of cluster vs distance in Z pile-up SPD vertex - main SPD vertex",ntimebins,timemin,timemax,100,0,50);
       fhTimePileUpMainVertexZDistance->SetYTitle("distance #it{z} (cm) ");
       fhTimePileUpMainVertexZDistance->SetXTitle("#it{time} (ns)");
       outputContainer->Add(fhTimePileUpMainVertexZDistance);
       
-      fhTimePileUpMainVertexZDiamond  = new TH2F ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50);
+      fhTimePileUpMainVertexZDiamond  = new TH2F 
+      ("hTime_PileUpMainVertexZDiamond","time of cluster vs distance in Z pile-up SPD vertex - z diamond",ntimebins,timemin,timemax,100,0,50);
       fhTimePileUpMainVertexZDiamond->SetYTitle("diamond distance #it{z} (cm) ");
       fhTimePileUpMainVertexZDiamond->SetXTitle("#it{time} (ns)");
       outputContainer->Add(fhTimePileUpMainVertexZDiamond);
@@ -4383,7 +4443,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhEtaPhiFracPtSumDecayIso[icone][ipt]->SetXTitle("#eta");
           fhEtaPhiFracPtSumDecayIso[icone][ipt]->SetYTitle("#varphi (rad)");
           outputContainer->Add(fhEtaPhiFracPtSumDecayIso[icone][ipt]) ;
-          
         }
         
         if(IsDataMC())
@@ -4419,9 +4478,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }//icone loop
     }//ipt loop
   }
-  
-  
-    
   
   // Get histograms created and filled in AliIsolationCut and put them in the output list
   //
