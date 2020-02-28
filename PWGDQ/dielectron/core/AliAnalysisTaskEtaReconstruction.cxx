@@ -1573,16 +1573,48 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
 
 
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE" << std::endl;
                                                                                 // if (fdebug) {
                                                                                 //   // if ((negGMPdgCode != 111 && negGMPdgCode != 221) || (posGMPdgCode != 111 && posGMPdgCode != 221)) {
+                                                                                //   if (grandMotherLabel1 == grandMotherLabel2) {
                                                                                 //     std::cout << __LINE__ << "                      ------------------------------------                              " << std::endl;
                                                                                 //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Neg Part.   PdgCode = " << negPdgCode << ", PdgCode Mother1 = " << negMPdgCode  << ", PdgCode GrandMother1 = " << negGMPdgCode << std::endl;
                                                                                 //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Pos Part.   PdgCode = " << posPdgCode << ", PdgCode Mother2 = " << posMPdgCode  << ", PdgCode GrandMother2 = " << posGMPdgCode << std::endl;
                                                                                 //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Neg Part. fMC Label = " << label1     << ", NegMotherLabel  = " << motherLabel1 << ", negGrandMotherLabel  = " << grandMotherLabel1 << std::endl;
                                                                                 //     std::cout << __LINE__ << " DEBUG_AnalysisTask: Pos Part. fMC Label = " << label2     << ", PosMotherLabel  = " << motherLabel2 << ", posGrandMotherLabel  = " << grandMotherLabel2 << std::endl;
+                                                                                //
+                                                                                //     std::cout << __LINE__ << "                      ------------------------------------                              " << std::endl;
+                                                                                //     int NDauthersGM1 =fMC->GetTrack(grandMotherLabel1)->GetNDaughters();
+                                                                                //     // int NDauthersGM2 =fMC->GetTrack(grandMotherLabel2)->GetNDaughters();
+                                                                                //     std::cout << __LINE__ << " DEBUG_AnalysisTask: GrandMother1 :: PdgCode = " << fMC->GetTrack(grandMotherLabel1)->PdgCode() << ", Number of Daughters of GrandMother1 = " << NDauthersGM1 << std::endl;
+                                                                                //     for (int NGDaughters = 0; NGDaughters < NDauthersGM1; NGDaughters++) {
+                                                                                //       int GDaughterID = fMC->GetTrack(grandMotherLabel1)->GetDaughterFirst()+NGDaughters;
+                                                                                //       int NDauthersM =fMC->GetTrack(GDaughterID)->GetNDaughters(); // Anzahl der Toechter von der Tochter der GrandMother (toechter der mutter)
+                                                                                //       std::cout << __LINE__ << " DEBUG_AnalysisTask: Mother :: " << NGDaughters+1 <<  " Daughter of GrandMother: PdgCode = " << fMC->GetTrack(GDaughterID)->PdgCode() << ", Number of Daughters from Mother = " << NDauthersM << std::endl;
+                                                                                //       for (int NMDaughters = 0; NMDaughters < NDauthersM; NMDaughters++) {
+                                                                                //         int MDaughterID = fMC->GetTrack(GDaughterID)->GetDaughterFirst()+NMDaughters;
+                                                                                //         std::cout << __LINE__ << " DEBUG_AnalysisTask: Particle " << NMDaughters+1 <<  " :: Daughter of Mother: PdgCode = " << fMC->GetTrack(MDaughterID)->PdgCode() << std::endl;
+                                                                                //       }
+                                                                                //     }
+                                                                                //
+                                                                                //     // std::cout << __LINE__ << "                      ------------------------------------                              " << std::endl;
+                                                                                //     // std::cout << __LINE__ << " DEBUG_AnalysisTask: GrandMother2 :: PdgCode = " << fMC->GetTrack(grandMotherLabel2)->PdgCode() << ", Number of Daughters of GrandMother2 = " << NDauthersGM2 << std::endl;
+                                                                                //     // for (int NGDaughters = 0; NGDaughters < NDauthersGM2; NGDaughters++) {
+                                                                                //       // int GDaughterID = fMC->GetTrack(grandMotherLabel2)->GetDaughterFirst()+NGDaughters;
+                                                                                //       // int NDauthersM =fMC->GetTrack(GDaughterID)->GetNDaughters();
+                                                                                //       // std::cout << __LINE__ << " DEBUG_AnalysisTask: Mother :: " << NGDaughters+1 <<  " Daughter of GrandMother: PdgCode = " << fMC->GetTrack(GDaughterID)->PdgCode() << ", Number of Daughters from Mother = " << NDauthersM << std::endl;
+                                                                                //       // for (int NMDaughters = 0; NMDaughters < NDauthersM; NMDaughters++) {
+                                                                                //         // int MDaughterID = fMC->GetTrack(GDaughterID)->GetDaughterFirst()+NMDaughters;
+                                                                                //         // std::cout << __LINE__ << " DEBUG_AnalysisTask: Particle :: " << NMDaughters+1 <<  " Daughter of Mother: PdgCode = " << fMC->GetTrack(MDaughterID)->PdgCode() << std::endl;
+                                                                                //       // }
+                                                                                //     // }
+                                                                                //
                                                                                 //     std::cout << __LINE__ << "                      ====================================                              " << std::endl;
-                                                                                // // }
+                                                                                //   }
                                                                                 // }
+
+
+
 
 
 
@@ -1712,9 +1744,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                                                                                   DoFourPairing(fGenSmearedPairVec_primary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, centralityWeight);
                                                                                 }
                                                                                 if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ << " Before PREFILTER size of fRecPairVec_primary: " << fRecPairVec_primary.size() << ", size of fRecV0Pair: " << fRecV0Pair.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " Before PREFILTER size of fRecPairVec_primary: " << fRecPairVec_primary.size() << ", size of fRecV0Pair: " << fRecV0Pair.size() << std::endl;
                                                                                 if(fUsePreFilter)DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
-                                                                                if(fdebug) std::cout << __LINE__ << " After PREFILTER size of fRecPairVec_primary: " << fRecPairVec_primary.size() << ", size of fRecV0Pair: " << fRecV0Pair.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " After PREFILTER size of fRecPairVec_primary: " << fRecPairVec_primary.size() << ", size of fRecV0Pair: " << fRecV0Pair.size() << std::endl;
                                                                                 DoFourPairing(fRecPairVec_primary, fRecV0Pair, ReconstructedPair, !SmearedPair, centralityWeight);
                                                                                 // DoFourPairing(fRecPairVec_primary, fRecPairVec_secondary, ReconstructedPair, !SmearedPair, centralityWeight);
 
@@ -2926,14 +2958,18 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         // Check if electrons are from MCSignal Generator
               // if (!fGenPosPart[sec_i].GetMCSignalPair() || !fGenNegPart[prim_i].GetMCSignalPair() || !fGenNegPart[neg_j].GetMCSignalPair() || !fGenPosPart[pos_j].GetMCSignalPair()) continue;
 
+              // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
         // Apply MC signals
         // Check MCSignal based on particles (not fully implemented! Check AliDielectronMC & AliDielectronSignalMC)
         for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal.size()/2 && j < fFourPairMCSignal.size(); ++i, j+=2){
           mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal[j]), &(fFourPairMCSignal[j+1]));
         }
+        // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
 
         // check if at least one mc signal is true
         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
+        // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
       }
 
       if (CaseRec == kTRUE) {
