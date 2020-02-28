@@ -66,6 +66,7 @@ public:
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
 
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
@@ -153,6 +154,7 @@ private:
   Int_t fFMDcutmode;
   Bool_t fptdiff;
   Bool_t fmakehole;
+  Bool_t ffillcorrelation;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -257,6 +259,7 @@ private:
   TH2F* fHistCentzvertex;
   TH2F* fHistCentV0vsTracklets;
   TH2F* fHistCentV0vsTrackletsbefore;
+  TH2F* fHistV0vsTracks;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
