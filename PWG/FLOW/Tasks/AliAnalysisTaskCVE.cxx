@@ -336,7 +336,7 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
 
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90};
 
-  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,50,-0.5,0.5);
+  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",10,centRange,500,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
 
 		 
@@ -398,12 +398,14 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
   Int_t gCentForNUA[6] = {0,5,10,20,40,90};
   Char_t cpid[10];
 
-  if(fParticle==1)      sprintf(cpid,"Pion,Id %d",fParticle);
+ 
+  if(fParticle==1) sprintf(cpid,"Pion,Id %d",fParticle);
   else if(fParticle==2) sprintf(cpid,"Kaon,Id %d",fParticle);
   else if(fParticle==3) sprintf(cpid,"Prot,Id %d",fParticle);
   else  sprintf(cpid,"Charge,Id %d",fParticle);
-  
-  for(int i=0; i<5; i++){
+
+ 
+  for(int i=0; i<5; i++){  //centrality bins
     sprintf(name,"fHistEtaPhiVz_%d_Pos_Cent%d_Run%d",fParticle,i,1); 
     sprintf(title,"%s Pos, Cent%d-%d, FB %d",cpid,gCentForNUA[i],gCentForNUA[i+1],fFilterBit);
     fHFillNUAPosPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
@@ -414,7 +416,6 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
     fHFillNUANegPID[i] = new TH3F(name,title,10,-10,10,50,0,6.283185,16,-0.8,0.8); 
     fListHist->Add(fHFillNUANegPID[i]);    
   }
-      
 
 
 
@@ -1148,15 +1149,18 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 	///---------- pT cut for v2 vs Ach -------------
 	
-	if(trkPt > 2.0) continue;
+	// if(trkPt > 2.0) continue;
 
 
 	
 	
 	if(trkChrg > 0){
 	
-	  fHistv2AchChrgPos[0][iCent]->Fill(fAchrgNet,  (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt); //This Trk weigth is for uQ	  
+	  fHistv2AchChrgPos[0][iCent]->Fill(fAchrgNet,  (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt); //This Trk weigth is for uQ
 
+	  if(fParticle==0)
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgPosEtaPos += trkWgt*uqRe;
 	    sumQ2yChrgPosEtaPos += trkWgt*uqIm;
@@ -1223,6 +1227,9 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	  
 	  fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet,   (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt);
 
+	  if(fParticle==0)
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	  
 	  if(trkEta > fEtaGapPos){
 	    sumQ2xChrgNegEtaPos += trkWgt*uqRe;
 	    sumQ2yChrgNegEtaPos += trkWgt*uqIm;
