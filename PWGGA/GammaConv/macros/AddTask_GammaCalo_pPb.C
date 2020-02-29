@@ -1439,6 +1439,22 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d103","4117931050030230000","01631031000000d0"); // EG1
 
 
+  } else if (trainConfig == 2100) { // CALO variations
+    cuts.AddCutCalo("80010103","111113205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
+    cuts.AddCutCalo("80010103","111113205f03i230000","01631031000000d0"); // NCell cut effi MC (param 2)
+    cuts.AddCutCalo("80010103","111113205f03j230000","01631031000000d0"); // NCell cut effi data (param 1)
+    cuts.AddCutCalo("80010103","111113205f03k230000","01631031000000d0"); // NCell cut effi data (param 2)
+  } else if (trainConfig == 2101) { // CALO variations
+    cuts.AddCutCalo("80085103","111113205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
+    cuts.AddCutCalo("80085103","111113205f03i230000","01631031000000d0"); // NCell cut effi MC (param 2)
+    cuts.AddCutCalo("80085103","111113205f03j230000","01631031000000d0"); // NCell cut effi data (param 1)
+    cuts.AddCutCalo("80085103","111113205f03k230000","01631031000000d0"); // NCell cut effi data (param 2)
+  } else if (trainConfig == 2102) { // CALO variations
+    cuts.AddCutCalo("80083103","111113205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
+    cuts.AddCutCalo("80083103","111113205f03i230000","01631031000000d0"); // NCell cut effi MC (param 2)
+    cuts.AddCutCalo("80083103","111113205f03j230000","01631031000000d0"); // NCell cut effi data (param 1)
+    cuts.AddCutCalo("80083103","111113205f03k230000","01631031000000d0"); // NCell cut effi data (param 2)
+
   // systematics for pPb8TeV PRL
   } else if (trainConfig == 2200) { // CALO variations
     cuts.AddCutCalo("80010103","411793205f032230000","01631031000000d0"); // std
@@ -1477,6 +1493,8 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 2207) { // CALO variations
     cuts.AddCutCalo("80010103","411793205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
     cuts.AddCutCalo("80010103","411793205f03i230000","01631031000000d0"); // NCell cut effi MC (param 2)
+    cuts.AddCutCalo("80010103","411793205f03j230000","01631031000000d0"); // NCell cut effi data (param 1)
+    cuts.AddCutCalo("80010103","411793205f03k230000","01631031000000d0"); // NCell cut effi data (param 2)
 
 
   } else if (trainConfig == 2210) { // CALO variations
