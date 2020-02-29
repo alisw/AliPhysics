@@ -28,10 +28,7 @@ R__ADD_INCLUDE_PATH($ALICE_ROOT)
 
 #include <vector>
 
-/*  ROUGH MACRO TO ANALSE SigmaC TASK OUTPUT
- A. Rossi, M. Faggin
-
- Future Goal: bash script that reproduces all plots, studies and results
+/* Goal: bash script that reproduces all plots, studies and results
    - yield extraction:
            - study of Lc SB for background shape, rotational background
 	          - chi2 shape selection for functional forms?
@@ -64,7 +61,7 @@ Double_t ptbinsGlobal[nbinsGlobal+1]={1.,2.,4.,6.,8,12,24.};
 Int_t skipBinGlobal[nbinsGlobal]={0,0,0,0,0,0};
 
 // pT to consider for the Sc analysis
-//  0: pT of Lc
+//  0: pT of Lc(<-Sc)
 //  10: pT of SigmaC
 //
 //  TODO
@@ -78,10 +75,10 @@ TH1D *hEffRecoLcSc;
 //
 TH1D *hEffRecoLc_direct, *hEffRecoLc_res2, *hEffRecoLc_res3, *hEffRecoLc_res4;
 TH1D *hEffRecoLcSc_direct, *hEffRecoLcSc_res2, *hEffRecoLcSc_res3, *hEffRecoLcSc_res4;
-double br_direct = 1.;  double err_br_direct = 0.;
-double br_res_2  = 1.;  double err_br_res_2  = 0.;
-double br_res_3  = 1.;  double err_br_res_3  = 0.;
-double br_res_4  = 1.;  double err_br_res_4  = 0.;
+double br_direct = 3.50/100;  double err_br_direct = 0.40/100;  // decay in pK-pi+ (direct)
+double br_res_2  = 1.96/100;  double err_br_res_2  = 0.27/100;  // decay in pK*(892) case
+double br_res_3  = 1.08/100;  double err_br_res_3  = 0.25/100;  // decay in Δ(1232)++ K-
+double br_res_4  = 2.20/100;  double err_br_res_4  = 0.50/100;  // decay in Lambda(1520) pi+
 
 TH1D *hRawYieldLc;
 TH1D *hRawYieldLcSc;
@@ -1777,6 +1774,7 @@ void SetQM2019MassPlotCuts(const Int_t nptbins,const Double_t *ptbins,Double_t c
   Double_t sigmaCMincosthetaStarDefCut=-1.1;
   const Int_t nptbinsPrel=6;
   Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,16,24.};
+  /*Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,12,24.};*/
   if(nptbinsPrel!=nptbins){
     Printf("SetQM2019MassPlotCuts:  incompatible number of ptbins ");
     return;
@@ -1967,7 +1965,9 @@ void CalculateCombinedEff(TH1D** hCombined, TH1D** hEffDirect, TH1D** hEffRes2, 
 
 }
 
-void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0){
+void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0
+, bool useScpt=false  // mfaggin
+){
 
   TDatime *t=new TDatime();
   TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
@@ -1976,17 +1976,23 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   const Int_t nVarSc=10;
   const Int_t nVarLc=8;
   Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+  /*Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,12,24.};*/
   Int_t skipBinLocal[6]={1,1,0,0,0,1};
   Double_t *ptbins=(useGlobalPt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
   Int_t *skipBin=(useGlobalPt ? &skipBinGlobal[0] : &skipBinLocal[0]);//new Int_t[nbins]);
 
-
+  // Lc
   TH1D *hLcMCRecoPID=new TH1D("hLcMCRecoPID","hLcMCRecoPID",nbins,ptbins);
   TH1D *hLcMCGenLimAcc=new TH1D("hLcMCGenLimAcc","hLcMCGenLimAcc",nbins,ptbins);
   TH1D *hLcMCGenAcc=new TH1D("hLcMCGenAcc","hLcMCGenAcc",nbins,ptbins);
-  TH1D *hLcScMCRecoPID=new TH1D("hLcScMCRecoPID","hLcScMCRecoPID",nbins,ptbins);
-  TH1D *hLcScMCGenLimAcc=new TH1D("hLcScMCGenLimAcc","hLcScMCGenLimAcc",nbins,ptbins);
-  TH1D *hLcScMCGenAcc=new TH1D("hLcScMCGenAcc","hLcScMCGenAcc",nbins,ptbins);
+  // Lc(<-Sc) or Sc
+  TH1D *hLcScMCRecoPID  =new TH1D(useScpt?"hScMCRecoPID"  :"hLcScMCRecoPID"  ,useScpt?"hScMCRecoPID"  :"hLcScMCRecoPID"  ,nbins,ptbins);
+  TH1D *hLcScMCGenLimAcc=new TH1D(useScpt?"hScMCGenLimAcc":"hLcScMCGenLimAcc",useScpt?"hScMCGenLimAcc":"hLcScMCGenLimAcc",nbins,ptbins);
+  TH1D *hLcScMCGenAcc   =new TH1D(useScpt?"hScMCGenAcc"   :"hLcScMCGenAcc"   ,useScpt?"hScMCGenAcc"   :"hLcScMCGenAcc"   ,nbins,ptbins);
+  // Sc
+  //TH1D *hScMCRecoPID  =new TH1D("hScMCRecoPID"  ,"hScMCRecoPID",nbins,ptbins);
+  //TH1D *hScMCGenLimAcc=new TH1D("hScMCGenLimAcc","hScMCGenLimAcc",nbins,ptbins);
+  //TH1D *hScMCGenAcc   =new TH1D("hScMCGenAcc"   ,"hScMCGenAcc",nbins,ptbins);
 
   Double_t cutsMinSigmaC[nbins][nVarSc];
   Double_t cutsMaxSigmaC[nbins][nVarSc];
@@ -1998,14 +2004,15 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   TFile *f=TFile::Open(strfile.Data(),"READ");
   THnSparseF *hsparseLcAllAxes,*hsparseScAllAxes;
   THnSparseF *hsparseMCLcFromSc;
-  THnF *hNdMCLc;  // new
-  TH3F *h3dMCLc;
+  THnF *hNdMCLc, *hNdMcSigmaC;  // new
+  TH3F *h3dMCLc, *h3dMCSigmaC;  // new (second TH3F)
   if(strDir.Contains("-1")){
     hsparseLcAllAxes=(THnSparseF*)f->Get("fhSparseAnalysis");
     hsparseScAllAxes=(THnSparseF*)f->Get("fhSparseAnalysisSigma");
     //h3dMCLc=(TH3F*)f->Get("fhistMCSpectrumAccLc");
     hNdMCLc=(THnF*)f->Get("fhistMCSpectrumAccLc");
     hsparseMCLcFromSc=(THnSparseF*)f->Get("fhistMCSpectrumAccLcFromSc");
+    hNdMcSigmaC=(THnF*)f->Get("fhistMCSpectrumAccSc");
   }
   else{
     TDirectory *ddir=f->GetDirectory(Form("%s%s",strDir.Data(),strSuff.Data()));
@@ -2015,6 +2022,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
     //h3dMCLc=(TH3F*)lis->FindObject("fhistMCSpectrumAccLc");
     hNdMCLc=(THnF*)lis->FindObject("fhistMCSpectrumAccLc");
     hsparseMCLcFromSc=(THnSparseF*)lis->FindObject("fhistMCSpectrumAccLcFromSc");
+    hNdMcSigmaC=(THnF*)lis->FindObject("fhistMCSpectrumAccSc");
   }
   TString strvar[7]={"pt","mass","lxy","nLxy","cosThetaP","nDCA","SelSpec"};
   
@@ -2029,8 +2037,12 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   //
   hsparseMCLcFromSc->GetAxis(6)->SetRangeUser(lowch,upch);
   std::cout << "===> [Lc(<-Sc) - generated] Set decay channel: " << lowch << "," << upch << std::endl;
-  //  MISSING: CASE FOR SC GENERATED
-  /* [...] */
+  //
+  // SigmaC
+  hNdMcSigmaC->GetAxis(3)->SetRangeUser(lowch,upch);  // info about the Lc decay channel
+  h3dMCSigmaC = (TH3F*) hNdMcSigmaC->Projection(0,1,2,"d");
+  std::cout << "===> [Sc - generated] Set decay channel for Lc: " << lowch << "," << upch << std::endl;
+
   //
   //  Reconstructed level
   //
@@ -2040,22 +2052,42 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   hsparseScAllAxes->GetAxis(13)->SetRangeUser(lowch,upch);
   std::cout << "===> [Lc(<-Sc) - reconstructed] Set decay channel: " << lowch << "," << upch << std::endl;
 
+  //
+  //  Select only prompt reconstructed for Sc (for Lc it is done through the SetLcCutsFromSigmaC function)
+  //
+  hsparseScAllAxes->GetAxis(11)->SetRangeUser(4,4);
+  std::cout << "######### HELLO ########" << std::endl;
+
+  //
   // Gen level
-  TAxis *axStepMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(1);
-  TAxis *axOriginMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(2);
-  axStepMClcFromSc->SetRangeUser(kGenLimAcc,kGenLimAcc);
-  axOriginMClcFromSc->SetRange(1,1);// prompt 
+  //
+
+  // Lc(<-Sc) or Sc
+  TH1D *hLcFromScGenLimAcc, *hLcFromScGenAcc;
+  if(!useScpt){ // Lc(<-Sc)
+    std::cout << "---> Taking GenAcc and GenLimAcc stuff from Lc(<-Sc) sparse" << std::endl;
+    TAxis *axStepMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(1);
+    TAxis *axOriginMClcFromSc=(TAxis*)hsparseMCLcFromSc->GetAxis(2);
+    axStepMClcFromSc->SetRangeUser(kGenLimAcc,kGenLimAcc);
+    axOriginMClcFromSc->SetRange(1,1);// prompt 
+
+    hLcFromScGenLimAcc=hsparseMCLcFromSc->Projection(0);
+    hLcFromScGenLimAcc->SetName(Form("hLcFromScGenLimAcc_%d_%d",lowch,upch));
+
+    axStepMClcFromSc->SetRangeUser(kGenAcc,kGenAcc);
+    hLcFromScGenAcc=hsparseMCLcFromSc->Projection(0);
+    hLcFromScGenAcc->SetName(Form("hLcFromScGenAcc_%d_%d",lowch,upch));
+  }
+  else{ // Sc prompt (1,1 bin)
+    std::cout << "---> Taking GenAcc and GenLimAcc stuff from Sc THnF (projected to a TH3F)" << std::endl;
+    hLcFromScGenLimAcc=h3dMCSigmaC->ProjectionX(Form("hScMCGenLimAccYield_%d_%d",lowch,upch),h3dMCSigmaC->GetYaxis()->FindBin(kGenLimAcc),h3dMCSigmaC->GetYaxis()->FindBin(kGenLimAcc),1,1);
+    hLcFromScGenAcc   =h3dMCSigmaC->ProjectionX(Form("hScMCGenAccYield_%d_%d",lowch,upch)   ,h3dMCSigmaC->GetYaxis()->FindBin(kGenAcc)   ,h3dMCSigmaC->GetYaxis()->FindBin(kGenAcc),1,1);
+  }
   
-  TH1D *hLcFromScGenLimAcc=hsparseMCLcFromSc->Projection(0);
-  hLcFromScGenLimAcc->SetName(Form("hLcFromScGenLimAcc_%d_%d",lowch,upch));
-
-  axStepMClcFromSc->SetRangeUser(kGenAcc,kGenAcc);
-  TH1D *hLcFromScGenAcc=hsparseMCLcFromSc->Projection(0);
-  hLcFromScGenAcc->SetName(Form("hLcFromScGenAcc_%d_%d",lowch,upch));
-
-
+  // Lc prompt (1,1 bin)
   TH1D *hLcGenLimAcc=h3dMCLc->ProjectionX(Form("hLcMCGenLimAccYield_%d_%d",lowch,upch),h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),h3dMCLc->GetYaxis()->FindBin(kGenLimAcc),1,1);
   TH1D *hLcGenAcc=h3dMCLc->ProjectionX(Form("hLcMCGenAccYield_%d_%d",lowch,upch),h3dMCLc->GetYaxis()->FindBin(kGenAcc),h3dMCLc->GetYaxis()->FindBin(kGenAcc),1,1);
+
 
   for(Int_t jpt=0;jpt<nbins;jpt++){
     hLcScMCGenLimAcc->SetBinContent(hLcScMCGenLimAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenLimAcc->Integral(hLcFromScGenLimAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenLimAcc->GetXaxis()->FindBin(ptbins[jpt+1]*0.9999)));
@@ -2063,6 +2095,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
 
     hLcScMCGenAcc->SetBinContent(hLcScMCGenAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenAcc->Integral(hLcFromScGenAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcFromScGenAcc->GetXaxis()->FindBin(ptbins[jpt+1]*0.9999)));
     hLcMCGenAcc->SetBinContent(hLcMCGenAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcGenAcc->Integral(hLcGenAcc->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hLcGenAcc->GetXaxis()->FindBin(ptbins[jpt+1]*0.9999)));
+
   }
 
   // RECO PART
@@ -2113,6 +2146,12 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
     }
     else{
       dimredSc[ndimredSc]=j;
+      if(j==0 && useScpt){  // mfaggin
+        std::cout << "###" << std::endl;
+        std::cout << "### [StudyEfficiency] BEWARE: putting pT of Sigma c in position 0 before reducing the sparse!" << std::endl;
+        std::cout << "###" << std::endl;
+        dimredSc[ndimredSc]=10; // pT of Sc
+      }
       ndimredSc++;
     }
   }
@@ -2123,6 +2162,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   THnSparseF *hsparseSc=(THnSparseF*)hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A");
   hsparseSc->SetName(Form("hsparseSc_%d_%d",lowch,upch));
   TAxis *axptSc=hsparseSc->GetAxis(0);
+  std::cout << "---> [StudyEfficiency] used pT (reco) for Sc analysis: " << axptSc->GetTitle() << std::endl;
   
   Int_t dimredLc[nVarLc];
   Int_t ndimredLc=0;
@@ -2229,21 +2269,21 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   hLcScMCGenLimAcc->Sumw2();
   hLcScMCGenLimAcc->SetMarkerStyle(20);
   hLcScMCGenLimAcc->SetMarkerColor(hLcScMCGenLimAcc->GetLineColor());
-  hLcScMCGenLimAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hLcScMCGenLimAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
   hLcScMCGenLimAcc->Draw();
 
   hLcScMCGenAcc->SetLineColor(kBlue);
   hLcScMCGenAcc->Sumw2();
   hLcScMCGenAcc->SetMarkerStyle(20);
   hLcScMCGenAcc->SetMarkerColor(hLcScMCGenAcc->GetLineColor());
-  hLcScMCGenAcc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hLcScMCGenAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
   hLcScMCGenAcc->Draw("sames");
 
   hLcScMCRecoPID->SetLineColor(kRed);
   hLcScMCRecoPID->Sumw2();
   hLcScMCRecoPID->SetMarkerStyle(20);
   hLcScMCRecoPID->SetMarkerColor(hLcScMCRecoPID->GetLineColor());
-  hLcScMCRecoPID->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hLcScMCRecoPID->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
   hLcScMCRecoPID->Draw("sames");
 
   legGenReco->Draw();
@@ -2294,7 +2334,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   (*heff_ptr_Lc)->SetLineColor(kBlack);
   (*heff_ptr_Lc)->SetMarkerColor((*heff_ptr_Lc)->GetLineColor());
   (*heff_ptr_Lc)->Draw();
-  (*heff_ptr_LcSc) = (TH1D*)hLcScMCRecoPID->Clone("hEfficiencyLcSc_RecoGenLimAcc");
+  (*heff_ptr_LcSc) = (TH1D*)hLcScMCRecoPID->Clone(useScpt?"hEfficiencySc_RecoGenLimAcc":"hEfficiencyLcSc_RecoGenLimAcc");
   (*heff_ptr_LcSc)->Divide((*heff_ptr_LcSc),hLcScMCGenLimAcc,1.,1.,"B");
   (*heff_ptr_LcSc)->SetLineColor(kRed);
   (*heff_ptr_LcSc)->Draw("same");
@@ -2313,7 +2353,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   hGenAccOverLimAccLc->SetMarkerColor(hGenAccOverLimAccLc->GetLineColor());
   hGenAccOverLimAccLc->Draw();
 
-  TH1D *hGenAccOverLimAccLcSc=(TH1D*)hLcScMCGenAcc->Clone("hEfficiencyLcSc_GenAccLimAcc");
+  TH1D *hGenAccOverLimAccLcSc=(TH1D*)hLcScMCGenAcc->Clone(useScpt?"hEfficiencySc_GenAccLimAcc":"hEfficiencyLcSc_GenAccLimAcc");
   hGenAccOverLimAccLcSc->Divide(hGenAccOverLimAccLcSc,hLcScMCGenLimAcc,1.,1.,"B");
   hGenAccOverLimAccLcSc->SetLineColor(kRed);
   hGenAccOverLimAccLcSc->SetMarkerColor(hGenAccOverLimAccLcSc->GetLineColor());
@@ -2331,7 +2371,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
 //    1. with separation of decay channels
 //    2. without separation of decay channels
 //
-void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0){
+void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0,bool useScpt=false){
 
   std::cout << "=========================================================" << std::endl;
   std::cout << "========== CalculateEfficiency function called ==========" << std::endl;
@@ -2341,23 +2381,23 @@ void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisRe
   if(!do_channel_separation){
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      NO channel separation     ===" << std::endl;
-    StudyEfficiency(1,4,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    StudyEfficiency(1,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
   }
 
   // with channel separation
   else{
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===         Direct channel         ===" << std::endl;
-    StudyEfficiency(1,1,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    StudyEfficiency(1,1,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (2)      ===" << std::endl;
-    StudyEfficiency(2,2,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    StudyEfficiency(2,2,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (3)      ===" << std::endl;
-    StudyEfficiency(3,3,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    StudyEfficiency(3,3,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (4)      ===" << std::endl;
-    StudyEfficiency(4,4,strfile,strSuff,strDir,useGlobalPt,cutSet);
+    StudyEfficiency(4,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
 
     //
     //  Calculate now the combined efficiency as the weighted sum of the 
@@ -2378,26 +2418,29 @@ void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisRe
     CalculateCombinedEff( &hEffRecoLc, &hEffRecoLc_direct, &hEffRecoLc_res2, &hEffRecoLc_res3, &hEffRecoLc_res4, "Lc" );
     // LcSc
     std::cout << " ---> calculation for LcSc" << std::endl;
-    CalculateCombinedEff( &hEffRecoLcSc, &hEffRecoLcSc_direct, &hEffRecoLcSc_res2, &hEffRecoLcSc_res3, &hEffRecoLcSc_res4, "LcSc" );
+    CalculateCombinedEff( &hEffRecoLcSc, &hEffRecoLcSc_direct, &hEffRecoLcSc_res2, &hEffRecoLcSc_res3, &hEffRecoLcSc_res4, useScpt?"Sc":"LcSc" );
     
   }
 
   if(!hEffRecoLc || !hEffRecoLcSc){
     std::cout << "ERROR: no total efficiency computed" << std::endl;
     std::cout << "hEffRecoLc "  << hEffRecoLc   << std::endl;
-    std::cout << "hEffRecoLcSc" << hEffRecoLcSc << std::endl;
+    std::cout << (useScpt?"hEffRecoSc":"hEffRecoLcSc") << hEffRecoLcSc << std::endl;
     return;
   }
 
   return;
 }
 
-void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0){
+void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0
+, bool useScpt=false  // mfaggin
+){
 
     TDatime *t=new TDatime();
     TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
     const Int_t nbins=(useGlobalPt ? nbinsGlobal : 6);
     Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+    /*Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,12,24.};*/
     Int_t skipBinLocal[6]={1,1,0,0,0,1};
     const Int_t nVarSc=10;
     const Int_t nVarLc=8;
@@ -2405,7 +2448,7 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
     Int_t *skipBin=(useGlobalPt ? &skipBinGlobal[0] : &skipBinLocal[0]);//new Int_t[nbins]);
 
     hRawYieldLc=new TH1D("hRawYieldLc","hRawYieldLc",nbins,ptbins);
-    hRawYieldLcSc=new TH1D("hRawYieldLcSc","hRawYieldLcSc",nbins,ptbins);
+    hRawYieldLcSc=new TH1D(useScpt?"hRawYieldSc":"hRawYieldLcSc",useScpt?"hRawYieldSc":"hRawYieldLcSc",nbins,ptbins);
 
     Double_t cutsMinSigmaC[nbins][nVarSc];
     Double_t cutsMaxSigmaC[nbins][nVarSc];
@@ -2558,14 +2601,20 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
           // REDUCED SPARSES TO SPEED UP PROJECTIONS
           Int_t dimredSc[nVarSc];
           Int_t ndimredSc=0;
-          for(Int_t j=0;j<nVarSc;j++){
+          for(Int_t j=0;j<nVarSc;j++){  // Lc(<-Sc) or Sc
             if(isPtCommonCutSigmaC[j]==1){
-      	TAxis *ax=hsparseScAllAxes->GetAxis(j);
-      	ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
+      	      TAxis *ax=hsparseScAllAxes->GetAxis(j);
+      	      ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
             }
             else{
-      	dimredSc[ndimredSc]=j;
-      	ndimredSc++;
+      	      dimredSc[ndimredSc]=j;
+              if(j==0 && useScpt){  // mfaggin
+                std::cout << "###" << std::endl;
+                std::cout << "### [StudyFit] BEWARE: putting pT of Sigma c in position 0 before reducing the sparse!" << std::endl;
+                std::cout << "###" << std::endl;
+                dimredSc[ndimredSc]=10; // pT of Sc
+              }
+      	      ndimredSc++;
             }
           }
           //     TAxis *axM=hsparseScAllAxes->GetAxis(8);
@@ -2580,12 +2629,12 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
           Int_t ndimredLc=0;
           for(Int_t j=0;j<nVarLc;j++){
             if(isPtCommonCutLc[j]==1){
-      	TAxis *ax=hsparseLcAllAxes->GetAxis(j);
-      	ax->SetRangeUser(cutsMinLc[0][j]< 0 ? cutsMinLc[0][j]*0.999 : cutsMinLc[0][j]*1.001,cutsMaxLc[0][j] < 0 ? cutsMaxLc[0][j]*1.0001 : cutsMaxLc[0][j]*0.999);// the pt index should not matter!
+      	      TAxis *ax=hsparseLcAllAxes->GetAxis(j);
+      	      ax->SetRangeUser(cutsMinLc[0][j]< 0 ? cutsMinLc[0][j]*0.999 : cutsMinLc[0][j]*1.001,cutsMaxLc[0][j] < 0 ? cutsMaxLc[0][j]*1.0001 : cutsMaxLc[0][j]*0.999);// the pt index should not matter!
             }
             else{
-      	dimredLc[ndimredLc]=j;
-      	ndimredLc++;
+      	      dimredLc[ndimredLc]=j;
+      	      ndimredLc++;
             }
           }
           if(ifile==0)  hsparseLc=(THnSparseF*)(hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A"))->Clone();
@@ -2597,6 +2646,7 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
     }
     hsparseSc->SetName("hsparseSc");
     TAxis *axptSc=hsparseSc->GetAxis(0);
+    std::cout << "---> [StudyFit] used pT (reco) for Sc analysis: " << axptSc->GetTitle() << std::endl;
     hsparseLc->SetName("hsparseLc");
     TAxis *axptLc=hsparseLc->GetAxis(0); 
     
@@ -2662,7 +2712,7 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
       TH1D *hSc=hsparseSc->Projection(1);
       hSc->Sumw2();
       hSc->SetName(Form("hScPt%d",jpt));
-      hSc->SetTitle(Form("Sc %.0f<pt<%.0f",ptbins[jpt],ptbins[jpt+1]));	 
+      hSc->SetTitle(Form("Sc %.0f<#it{p}_{T}^{%s}<%.0f",ptbins[jpt],useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})",ptbins[jpt+1]));	 
       hSc->Draw();
       if(significanceLc>3.8){
 	Printf("fitting Sc");
@@ -2693,7 +2743,7 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
 	TF1 *fSign=new TF1(*f);//->Clone("fsign");
 	fSign->SetName("fsign");
 	fSign->SetParameter(3,0);
-	if(produceQM2019Performance && (jpt==2 || jpt==3)){
+	if(produceQM2019Performance&(!useScpt) && (jpt==2 || jpt==3)){
 	  TPad *pdPerf=(TPad*)cPerfQM2019->cd(1+jpt-2);
 	  pdPerf->SetTopMargin(0.04);
 	  pdPerf->SetBottomMargin(0.12);
@@ -2750,34 +2800,40 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
 void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t cutset=0,TString strSuffData="AR",TString strDirData="PWG3_D2H_XicpKpi",TString strSuffMC="AR",TString strDirMC="PWG3_D2H_XicpKpi"
 , bool useGlobalpt = false  // mfaggin
 , bool do_ch_separation = false // mfaggin
+, bool useScpt = false  // mfaggin
 ){
   
   //StudyEfficiency(strFileMC,strSuffMC,strDirMC,kTRUE,cutset); // arossi
   //StudyFit(strFileData,strSuffData,strDirData,kTRUE,kTRUE,cutset);  // arossi
   
   //StudyEfficiency(strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset);
-  CalculateEfficiency(do_ch_separation,strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset);
-  StudyFit(vec_files,strSuffData,strDirData,useGlobalpt,kTRUE,cutset);
+  CalculateEfficiency(do_ch_separation,strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset,useScpt);
+  StudyFit(vec_files,strSuffData,strDirData,useGlobalpt,kTRUE,cutset,useScpt);
+
+  Int_t skipBinLocal[6]={1,1,0,0,0,1};
+  Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+  Double_t *ptbins=(useGlobalpt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
+  Int_t *skipBin=(useGlobalpt ? &skipBinGlobal[0] : &skipBinLocal[0]);//new Int_t[nbins]);
 
   Double_t nev=normCount->GetNEventsForNorm();
 
   TH1D *hCrossSectionLc=(TH1D*)hRawYieldLc->Clone("hCrossSectionLc");
   hCrossSectionLc->Divide(hEffRecoLc);
   for(Int_t i=1;i<=hCrossSectionLc->GetNbinsX();i++){
-    if(skipBinGlobal[i-1])hCrossSectionLc->SetBinContent(i,0);
+    if(skipBin[i-1])hCrossSectionLc->SetBinContent(i,0);
     else {
-      hCrossSectionLc->SetBinContent(i,hCrossSectionLc->GetBinContent(i)/2./(ptbinsGlobal[i]-ptbinsGlobal[i-1])/nev*57.8*1000.);//microbarn/GeV/c
-      hCrossSectionLc->SetBinError(i,hCrossSectionLc->GetBinError(i)/2./(ptbinsGlobal[i]-ptbinsGlobal[i-1])/nev*57.8*1000.);//microbarn/GeV/c
+      hCrossSectionLc->SetBinContent(i,hCrossSectionLc->GetBinContent(i)/2./(ptbins[i]-ptbins[i-1])/nev*57.8*1000.);//microbarn/GeV/c
+      hCrossSectionLc->SetBinError(i,hCrossSectionLc->GetBinError(i)/2./(ptbins[i]-ptbins[i-1])/nev*57.8*1000.);//microbarn/GeV/c
     }
   }
 
-  TH1D *hCrossSectionLcSc=(TH1D*)hRawYieldLcSc->Clone("hCrossSectionLcSc");
+  TH1D *hCrossSectionLcSc=(TH1D*)hRawYieldLcSc->Clone(useScpt?"hCrossSectionSc":"hCrossSectionLcSc");
   hCrossSectionLcSc->Divide(hEffRecoLcSc);
   for(Int_t i=1;i<=hCrossSectionLcSc->GetNbinsX();i++){
-    if(skipBinGlobal[i-1])hCrossSectionLcSc->SetBinContent(i,0);
+    if(skipBin[i-1])hCrossSectionLcSc->SetBinContent(i,0);
     else {
-      hCrossSectionLcSc->SetBinContent(i,hCrossSectionLcSc->GetBinContent(i)/2./(ptbinsGlobal[i]-ptbinsGlobal[i-1])/nev*57.8*1000.);//microbarn/GeV/c
-      hCrossSectionLcSc->SetBinError(i,hCrossSectionLcSc->GetBinError(i)/2./(ptbinsGlobal[i]-ptbinsGlobal[i-1])/nev*57.8*1000.);//microbarn/GeV/c
+      hCrossSectionLcSc->SetBinContent(i,hCrossSectionLcSc->GetBinContent(i)/2./(ptbins[i]-ptbins[i-1])/nev*57.8*1000.);//microbarn/GeV/c
+      hCrossSectionLcSc->SetBinError(i,hCrossSectionLcSc->GetBinError(i)/2./(ptbins[i]-ptbins[i-1])/nev*57.8*1000.);//microbarn/GeV/c
     }
   }
 
@@ -2791,7 +2847,7 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hRawYieldLcSc->SetLineColor(kRed);
   hRawYieldLcSc->SetMarkerColor(hRawYieldLcSc->GetLineColor());
   hRawYieldLcSc->SetMarkerStyle(20);
-  hRawYieldLcSc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hRawYieldLcSc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
   hRawYieldLcSc->Draw("Same");
   gPad->SetTicks();
   gPad->SetLogy();
@@ -2832,20 +2888,27 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hPrel->Draw("same");
   legCrossSection->AddEntry(hPrel,"#Lambda_{c} preliminary");
 
+  //
+  //  NB: it makes sense only with same binning!
+  //
   TCanvas *cLcCompare=new TCanvas("cLcCompare","cLcCompare",800,800);
   cLcCompare->cd();
   TH1D *hCrossSectionRatioLcMineLcPrel=(TH1D*)hCrossSectionLc->Clone("hCrossSectionRatioLcMineLcPrel");  
   hCrossSectionRatioLcMineLcPrel->Divide(hPrel);
   hCrossSectionRatioLcMineLcPrel->Draw();
+  //
 
+  if(!useScpt){
+    TCanvas *cRatiosLcOverSc=new TCanvas("cRatiosLcOverSc","cRatiosLcOverSc",800,800);
+    cRatiosLcOverSc->cd();
+    TH1D *hCrossSectionRatioLcSc=(TH1D*)hCrossSectionLcSc->Clone("hCrossSectionRatioLcSc");
+    hCrossSectionRatioLcSc->Divide(hCrossSectionLc);
+    hCrossSectionRatioLcSc->Draw();
+  }
 
-  TCanvas *cRatiosLcOverSc=new TCanvas("cRatiosLcOverSc","cRatiosLcOverSc",800,800);
-  cRatiosLcOverSc->cd();
-  TH1D *hCrossSectionRatioLcSc=(TH1D*)hCrossSectionLcSc->Clone("hCrossSectionRatioLcSc");
-  hCrossSectionRatioLcSc->Divide(hCrossSectionLc);
-  hCrossSectionRatioLcSc->Draw();
-
-  
+  //
+  //  NB: it makes sense only with same binning!
+  //
   TCanvas *cCompareToD0=new TCanvas("cCompareToD0","cCompareToD0",800,800);
   cCompareToD0->cd();
   
@@ -2866,7 +2929,6 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hCrossSectionLcScBRcorr->Scale(1./0.0635);
   hCrossSectionLcScBRcorr->Draw("same");
 
-
   TCanvas *cRatioToD0=new TCanvas("cRatioToD0","cRatioToD0",800,800);
   cRatioToD0->cd();
   TH1D *hCrossSectionLcBRcorrRatioToD0=(TH1D*)hCrossSectionLcBRcorr->Clone("hCrossSectionLcBRcorrRatioToD0");
@@ -2882,7 +2944,7 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->SetLineStyle(2);
   hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");
 
-  TCanvas *cCompareRatioToModels=new TCanvas("cCompareRatioToModels","cCompareRatioToModels",800,800);
+  /*TCanvas *cCompareRatioToModels=new TCanvas("cCompareRatioToModels","cCompareRatioToModels",800,800);
   cCompareRatioToModels->cd();
 
   TFile *f=TFile::Open("/Users/administrator/soft/PYTHIA8/RunOnGrid/PYTHIA8243/HFbaryon/13TeV/2019Oct26/SIGMACplots/LcFromScOverD0Ratio_Mode2VsMonash.root");
@@ -2899,27 +2961,30 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   TH1D *h1DtempLcY05_Md2_13tev=(TH1D*)cModels->FindObject("h1DtempLcY05_Md2_13tev");
   h1DtempLcY05_Md2_13tev->Draw("HIST C same");
   hCrossSectionLcBRcorrRatioToD0->Draw("same");
-  hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");
+  hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");*/
 
   TH1D* hPrelLcOverD0=(TH1D*)hPrel->Clone("hLcOverD0WithPreliminaryInputs");
   hPrelLcOverD0->Scale(1./0.0635);
   hPrelLcOverD0->Divide(hPrelD0);
   hPrelLcOverD0->Draw("same");
+  //
 
-  TLegend *leg=(TLegend*)cModels->FindObject("TPave");
-  leg->Draw("same");
+  /*TLegend *leg=(TLegend*)cModels->FindObject("TPave");
+  leg->Draw("same");*/
   
 
 }
 
-void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0){
+void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0
+, bool useScpt = false  // mfaggin
+){
 
 
     TDatime *t=new TDatime();
     TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
     const Int_t nbins=(useGlobalPt ? nbinsGlobal : 6);
     Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
-    Int_t skipBinLocal[6]={1,0,0,0,0,1};
+    Int_t skipBinLocal[6]={1,1,0,0,0,1};
     const Int_t nVarSc=10;
     //    const Int_t nVarLc=8;
     Double_t *ptbins=(useGlobalPt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
@@ -3000,12 +3065,18 @@ void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString st
     Int_t ndimredSc=0;
     for(Int_t j=0;j<nVarSc;j++){
       if(isPtCommonCutSigmaC[j]==1){
-	TAxis *ax=hsparseScAllAxes->GetAxis(j);
-	ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
+	      TAxis *ax=hsparseScAllAxes->GetAxis(j);
+	      ax->SetRangeUser(cutsMinSigmaC[0][j]< 0 ? cutsMinSigmaC[0][j]*0.99999 : cutsMinSigmaC[0][j]*1.00001,cutsMaxSigmaC[0][j] < 0 ? cutsMaxSigmaC[0][j]*1.000001 : cutsMaxSigmaC[0][j]*0.999999);// the pt index should not matter!
       }
       else{
-	dimredSc[ndimredSc]=j;
-	ndimredSc++;
+	      dimredSc[ndimredSc]=j;
+        if(j==0 && useScpt){  // mfaggin
+          std::cout << "###" << std::endl;
+          std::cout << "### [StudyRotationalBackground] BEWARE: putting pT of Sigma c in position 0 before reducing the sparse!" << std::endl;
+          std::cout << "###" << std::endl;
+          dimredSc[ndimredSc]=10; // pT of Sc
+        }
+	      ndimredSc++;
       }
     }
     dimredSc[ndimredSc]=12;// adding rotation axis
@@ -3014,6 +3085,7 @@ void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString st
     THnSparseF *hsparseSc=(THnSparseF*)hsparseScAllAxes->Projection(ndimredSc,dimredSc,"A");
     hsparseSc->SetName("hsparseSc");
     TAxis *axptSc=hsparseSc->GetAxis(0);
+    std::cout << "---> [StudyRotationalBackground] used pT (reco) for Sc analysis: " << axptSc->GetTitle() << std::endl;
 
     //     Int_t dimredLc[nVarLc];
     //     Int_t ndimredLc=0;
@@ -3207,7 +3279,9 @@ void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString st
 
 }
 
-void CombinedAnalyseSigmaCLambdaC(Int_t readMC=0,Int_t tryFitData=0,Int_t useCuts=2,Bool_t lowField=kFALSE,Int_t varscan0=3/*2=Lxy,3=nLxy,4=cosThetaP,5=nDCA*/,Int_t varscan1=4,Int_t caseSelForUseCuts2=-1,TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi"){
+void CombinedAnalyseSigmaCLambdaC(Int_t readMC=0,Int_t tryFitData=0,Int_t useCuts=2,Bool_t lowField=kFALSE,Int_t varscan0=3/*2=Lxy,3=nLxy,4=cosThetaP,5=nDCA*/,Int_t varscan1=4,Int_t caseSelForUseCuts2=-1,TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi"
+, bool useScpt=false  // mfaggin
+){
 
   // TO-DO LIST:
   //    affianca plot dei residui come sottrazione del fondo dal fit, ai casi con gli studi vs. i tagli
@@ -3700,6 +3774,12 @@ void CombinedAnalyseSigmaCLambdaC(Int_t readMC=0,Int_t tryFitData=0,Int_t useCut
 
     // REDUCE SPARSE DIMENSION TO SPEED UP
     const Int_t ndimred=4; Int_t dimred[ndimred]={0,1,varscan0,varscan1};
+    if(useScpt){
+      std::cout << "###" << std::endl;
+      std::cout << "### [CombinedAnalyseSigmaCLambdaC] BEWARE: putting pT of Sigma c in position 0 before reducing the sparse!" << std::endl;
+      std::cout << "###" << std::endl;
+      dimred[0]=10; // pT of Sc
+    }
     THnSparseF *hsparseLc=(THnSparseF*)hsparseLcAllAxes->Projection(ndimred,dimred,"A");
     hsparseLc->SetName("hsparseLc");
     THnSparseF *hsparseSc=(THnSparseF*)hsparseScAllAxes->Projection(ndimred,dimred,"A");
@@ -3711,7 +3791,8 @@ void CombinedAnalyseSigmaCLambdaC(Int_t readMC=0,Int_t tryFitData=0,Int_t useCut
   TAxis *axVar0Sc=hsparseSc->GetAxis(2);
   TAxis *axVar1Sc=hsparseSc->GetAxis(3);
   TAxis *axptLc=hsparseLc->GetAxis(0); 
-  TAxis *axptSc=hsparseSc->GetAxis(0); 
+  TAxis *axptSc=hsparseSc->GetAxis(0);
+  std::cout << "---> [CombinedAnalyseSigmaCLambdaC] used pT (reco) for Sc analysis: " << axptSc->GetTitle() << std::endl;
     //
     for(Int_t jpt=0;jpt<nbins;jpt++){
       if(skipBin[jpt])continue;
