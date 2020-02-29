@@ -28,7 +28,10 @@ R__ADD_INCLUDE_PATH($ALICE_ROOT)
 
 #include <vector>
 
-/* Goal: bash script that reproduces all plots, studies and results
+/* ROUGH MACRO TO ANALYSE SigmaC TASK OUTPUT
+   A. Rossi, M. Faggin
+
+   Goal: bash script that reproduces all plots, studies and results
    - yield extraction:
            - study of Lc SB for background shape, rotational background
 	          - chi2 shape selection for functional forms?
