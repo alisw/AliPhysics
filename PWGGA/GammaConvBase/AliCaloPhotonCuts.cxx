@@ -152,6 +152,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseTimingEfficiencyMCSimCluster(0),
   fFuncTimingEfficiencyMCSimCluster(0),
   fFuncTimingEfficiencyMCSimClusterHighPt(0),
+  fTimingEfficiencyMCSimClusterLowPtEnd(4),
+  fTimingEfficiencyMCSimClusterHighPtStart(6),
   fFuncNCellCutEfficiencyEMCal(0),
   fMinTMDistSigma(10),
   fUseEOverPVetoTM(0),
@@ -369,6 +371,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseTimingEfficiencyMCSimCluster(ref.fUseTimingEfficiencyMCSimCluster),
   fFuncTimingEfficiencyMCSimCluster(ref.fFuncTimingEfficiencyMCSimCluster),
   fFuncTimingEfficiencyMCSimClusterHighPt(ref.fFuncTimingEfficiencyMCSimClusterHighPt),
+  fTimingEfficiencyMCSimClusterLowPtEnd(ref.fTimingEfficiencyMCSimClusterLowPtEnd),
+  fTimingEfficiencyMCSimClusterHighPtStart(ref.fTimingEfficiencyMCSimClusterHighPtStart),
   fFuncNCellCutEfficiencyEMCal(ref.fFuncNCellCutEfficiencyEMCal),
   fMinTMDistSigma(ref.fMinTMDistSigma),
   fUseEOverPVetoTM(ref.fUseEOverPVetoTM),
@@ -2091,14 +2095,14 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         return kFALSE;
       }
     }
-    if( ((fUseTimingEfficiencyMCSimCluster==1) || (fUseTimingEfficiencyMCSimCluster==2)) && isMC && cluster->E() < 4 && cluster->E() > fMinEnergy ){
+    if( ((fUseTimingEfficiencyMCSimCluster==1) || (fUseTimingEfficiencyMCSimCluster==2)) && isMC && cluster->E() < fTimingEfficiencyMCSimClusterLowPtEnd && cluster->E() > fMinEnergy ){
       fRandom.SetSeed(0);
       if( fRandom.Uniform(1) > fFuncTimingEfficiencyMCSimCluster->Eval(cluster->E()) ){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
         return kFALSE;
       }
     }
-    if(cluster->IsPHOS() && fUseTimingEfficiencyMCSimCluster==1 && isMC && cluster->E() > 6){
+    if(cluster->IsPHOS() && fUseTimingEfficiencyMCSimCluster==1 && isMC && cluster->E() > fTimingEfficiencyMCSimClusterHighPtStart){
       fRandom.SetSeed(0);
       if( fRandom.Uniform(1) > fFuncTimingEfficiencyMCSimClusterHighPt->Eval(cluster->E()) ){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//1
@@ -4751,6 +4755,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.51165e+00,6.41558e-02,1.24776e+01,1.32035e-01,-1.15887e+00,3.89796e+02,2.02598e+03);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]*x+[1]");
@@ -4761,6 +4767,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-50e-9;
     fMaxTimeDiff=50e-9;//50ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(8.36250e-01,1.00398e-01,1.43170e+01,1.04184e-01,-1.24269e+00,3.30702e+02,9.49252e+02);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]*x+[1]");
@@ -4771,6 +4779,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-12.5e-9;//-12.5ns
     fMaxTimeDiff=13e-9;//13ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.29282e+00,6.50756e-02,9.57716e+00,2.44441e-01,-1.29253e+00,3.00901e+02,9.62463e+02);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]*x+[1]");
@@ -4781,6 +4791,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//12.5ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(9.92263e-01,1.00921e+00,1.37239e-02,6.56658e-01,2.75953e-01,2.24610e+02,7.98508e+01);
     break;
@@ -4789,6 +4801,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-50e-9;
     fMaxTimeDiff=50e-9;//50ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(9.91952e-01,1.01113e+00,1.08929e-02,6.86663e-01,1.75156e-01,2.19392e+02,9.84879e+01);
     break;
@@ -4797,6 +4811,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-12.5e-9;//-12.5ns
     fMaxTimeDiff=13e-9;//13ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.61742e+00,1.69595e+00,1.07106e-01,4.83419e-01,1.42459e-01,1.97986e+02,1.82539e+02);
     break;
@@ -4805,6 +4821,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]*(x-[1])");
@@ -4815,6 +4833,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4827,6 +4847,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiffHighPt=-150e-9;
     fMaxTimeDiffHighPt=150e-9;//150ns
     fUseTimingEfficiencyMCSimCluster = 2;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "1 /([0]/([1]*(1./(1.+[2]*exp(-x/[3]))* 1./(1.+[4]*exp((x-[5])/[6])))))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(1.01021e+00,1.00143e+00,1.36545e+01,1.49372e-01,-1.09826e-01,5.56485e+02,1.25420e+01);
     break;
@@ -4835,6 +4857,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-8.26274e+01,6.47055e+01,2.18057e+01,1.36203e+02,1.06448e+03);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4845,6 +4869,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-8.44603e+01,5.31853e+01,1.77562e+01,1.07382e+02,9.87056e+02);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4855,6 +4881,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-8.26114e+01,7.42155e+01,2.29183e+01,-7.33891e+01,9.01119e+02);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4874,6 +4902,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-1.79400e+02,1.55956e+02,4.63098e+01,-4.57991e+00,2.16391e+03);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4883,6 +4913,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-3.27696e+02,2.73887e+02,7.92510e+01,1.94926e+02,4.24588e+03);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
@@ -4892,6 +4924,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
+    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-3.09428e+03,2.54179e+03,7.33582e+02,3.05956e+03,4.07905e+04);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
