@@ -83,6 +83,13 @@ fFlagSparse(kFALSE),
 fUseTender(kTRUE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
+fEMCEG1(kFALSE),
+fEMCEG2(kFALSE),
+fDCalDG1(kFALSE),
+fDCalDG2(kFALSE),
+fTriggersInfo(0),
+fThresholdEG2(89),
+fThresholdEG1(140),
 fMCparticle(0),
 fMCArray(0),
 fMultSelection(0),
@@ -328,6 +335,13 @@ fFlagSparse(kFALSE),
 fUseTender(kTRUE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
+fEMCEG1(kFALSE),
+fEMCEG2(kFALSE),
+fDCalDG1(kFALSE),
+fDCalDG2(kFALSE),
+fTriggersInfo(0),
+fThresholdEG2(89),
+fThresholdEG1(140),
 fMCparticle(0),
 fMCArray(0),
 fMultSelection(0),
@@ -710,6 +724,12 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     
     fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",500,0,50,1800,-900,900);
     fOutputList->Add(fHistoTimeEMC);
+    
+    fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution for trigger cluster; Cluster E;counts", 500, 0.0, 50.0);
+    fOutputList->Add(fHistClustEEG1);
+    
+    fHistClustEEG2 = new TH1F("fHistClustEEG2", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
+    fOutputList->Add(fHistClustEEG2);
     
     fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
     fOutputList->Add(fNegTrkIDPt);
@@ -1253,10 +1273,30 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
     ///////////////////
     fpidResponse = fInputHandler->GetPIDResponse();
     
+    /////////////////
+    //trigger check//
+    /////////////////
+    TString firedTrigger;
+    TString TriggerEG1("EG1");
+    TString TriggerEG2("EG2");
+    TString TriggerDG1("DG1");
+    TString TriggerDG2("DG2");
+    fVevent->GetFiredTriggerClasses();
+    if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+    
+    Bool_t EG1tr = kFALSE;
+    Bool_t EG2tr = kFALSE;
+    if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
+    if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
+    
+    if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
+    if(fEMCEG2){if(!firedTrigger.Contains(TriggerEG2))return;}
+    if(fDCalDG1){if(!firedTrigger.Contains(TriggerDG1))return;}
+    if(fDCalDG2){if(!firedTrigger.Contains(TriggerDG2))return;}
+    
     ///////////////////
     // centrality
     /////////////////////
-    
     Double_t centrality = -1;
     AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality();
     //centrality = fCentrality->GetCentralityPercentile("V0M");
@@ -1903,6 +1943,15 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             
             Float_t tof = clust->GetTOF()*1e+9; // ns
             fHistoTimeEMC->Fill(clustE_NL,tof);
+            
+            //-----Plots for EMC trigger
+            Bool_t hasfiredEG1=0;
+            Bool_t hasfiredEG2=0;
+            FindPatches(hasfiredEG1,hasfiredEG2,emceta,emcphi);
+            if(hasfiredEG1)
+                fHistClustEEG1->Fill(clustE_NL);
+            if(hasfiredEG2)
+                fHistClustEEG2->Fill(clustE_NL);
             
             NclustAll++;
         }
@@ -3093,6 +3142,26 @@ AliAODVertex* AliAnalysisTaskHFEBESpectraEMC::RemoveDaughtersFromPrimaryVtx(cons
     AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
     
     return vtxAODNew;
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta,Double_t emcphi)
+{
+    //Find trigger patches
+    
+    fTriggersInfo = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers"));
+    if(!fTriggersInfo) return;
+    Int_t nPatch = fTriggersInfo->GetEntries();;
+    AliEMCALTriggerPatchInfo* patch=0;
+    for( int iPatch = 0; iPatch < nPatch; iPatch++ ){
+        patch = (AliEMCALTriggerPatchInfo*)fTriggersInfo->At( iPatch );
+        if(patch->GetADCAmp()<fThresholdEG2) continue;
+        if(patch->GetEtaMin()>emceta) continue;
+        if(patch->GetEtaMax()<emceta) continue;
+        if(patch->GetPhiMin()>emcphi) continue;
+        if(patch->GetPhiMax()<emcphi) continue;
+        if(patch->GetADCAmp()>fThresholdEG2)  hasfiredEG2=1;
+        if(patch->GetADCAmp()>fThresholdEG1)  hasfiredEG1=1;
+    }
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::Terminate(Option_t *)
