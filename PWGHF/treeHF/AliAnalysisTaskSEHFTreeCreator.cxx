@@ -1413,9 +1413,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fMultGenV0C = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
   }
 
-  fEventID    = (unsigned int)(GetEvID() & 0xffffffff);
-  fEventIDExt = (unsigned int)(GetEvID() >> 32);
-  fEventIDLong = GetEvID();
+  fEventIDLong = aod->GetHeader()->GetEventIdAsLong();
+  if (!fEventIDLong)
+    fEventIDLong = (uint64_t(aod->GetTimeStamp()) << 32) + uint64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
+  fEventIDExt = UInt_t(fEventIDLong >> 32);
+  fEventID    = UInt_t(fEventIDLong & 0xffffffff);
+
   // Extract fired triggers
   fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
   fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);
