@@ -291,6 +291,10 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
         IsEvtSelected = true; // all events are already filtered
         // Get default values from NanoHeader
         fCent = nanoHeader->GetCentr("V0M");
+        static int inel_index = -1;
+        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstIsINELgt0");
+        if (nanoHeader->GetVar(inel_index) < 0.5)
+            fCent = -0.5;
     }
 
     if (!IsEvtSelected) {
