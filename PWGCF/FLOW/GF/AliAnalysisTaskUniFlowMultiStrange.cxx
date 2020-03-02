@@ -1324,8 +1324,9 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
     {if(!(fSelectMask & (AliVEvent::kINT7))) { return;}}
    }
   }
-
+  if(fFillQA){
   fhEvent->Fill(fIndexCentrality);
+  }
   // events passing physics && trigger selection
   fhEventCounter->Fill("Physics selection OK",1);
 
