@@ -239,7 +239,7 @@ class AliForwardSettings : public TObject {
   Bool_t normal_analysis;
 
   Int_t runnumber;
-
+  Double_t TPC_maxeta;
 private:
   ClassDef(AliForwardSettings, 1);
 };
