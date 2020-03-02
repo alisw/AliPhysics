@@ -479,7 +479,7 @@ class AliAnalysisTaskSEDvsMultiplicity_BDT : public AliAnalysisTaskSE
   TString               fBDTClassifierVarString;
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity_BDT,20); /// charmed hadrons vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity_BDT,21); /// charmed hadrons vs. mult task
   /// \endcond
 };
 
