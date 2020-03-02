@@ -64,6 +64,6 @@ AliForwardSettings::AliForwardSettings() :
   decorr_analysis(kTRUE),
   normal_analysis(kTRUE),
   runnumber(0),
-  TPC_maxeta(0),
+  TPC_maxeta(0)
 {
 }
