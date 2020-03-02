@@ -510,6 +510,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fUseTimingEfficiencyMCSimCluster;         // flag for switching on TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimCluster;        // TF1 for TimingEfficiencyMCSimCluster
     TF1*      fFuncTimingEfficiencyMCSimClusterHighPt;  // TF1 for fFuncTimingEfficiencyMCSimClusterHighPt
+    Float_t   fTimingEfficiencyMCSimClusterLowPtEnd;    // fFuncTimingEfficiencyMCSimCluster is used until this Threshold; above 1 is used until fFuncTimingEfficiencyMCSimClusterHighPt is used
+    Float_t   fTimingEfficiencyMCSimClusterHighPtStart; // fFuncTimingEfficiencyMCSimClusterHighPt is used above this Threshold
     TF1*      fFuncNCellCutEfficiencyEMCal;             // TF1 for NCell cut efficiency applied on EMCal MC clusters with NCell<2
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
@@ -684,7 +686,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,103)
+    ClassDef(AliCaloPhotonCuts,104)
 };
 
 #endif
