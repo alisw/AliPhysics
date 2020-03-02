@@ -646,6 +646,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         // ----------------------------------------------------------------------
     } else {
         fCent = nanoHeader->GetCentr("V0M");
+        static int inel_index = -1;
+        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstIsINELgt0");
+        if (nanoHeader->GetVar(inel_index) < 0.5)
+            fCent = -0.5
         static int v0mValueIndex =
             nanoHeader->GetVarIndex("MultSelection.V0M.Value");
         static int trkValueIndex =
