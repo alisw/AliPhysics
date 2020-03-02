@@ -8061,6 +8061,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
 
   // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
+            namePeriod.CompareTo("LHC16P1Pyt8NomB") ==0 ||
             namePeriod.CompareTo("LHC17f6") == 0 ||
             namePeriod.CompareTo("LHC17d17") == 0 ||
             namePeriod.CompareTo("LHC17f5") == 0 ||
@@ -8152,6 +8153,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC18a9") == 0 ||
             namePeriod.CompareTo("LHC18a1") == 0 ||
             namePeriod.CompareTo("LHC18c12") == 0 ||
+            namePeriod.CompareTo("LHC17P1Pyt8") == 0 ||
             namePeriod.CompareTo("LHC19g7b") == 0 )     return kPP13T17P1Pyt8;
   else if ( namePeriod.CompareTo("LHC17h7b") ==0 )      return kPP13T17P1Pho;
   else if ( namePeriod.CompareTo("LHC17h7a") ==0 )      return kPP13T17P1Pyt6;
@@ -8177,6 +8179,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC18d2_3") == 0 )    return kXeXe5T17HIJING;
   //pp 13 TeV LHC18
   else if ( namePeriod.CompareTo("LHC18P1Pyt8NomB") ==0 ||
+            namePeriod.CompareTo("LHC18P1Pyt8") ==0 ||
             namePeriod.CompareTo("LHC18g4") ==0 ||
             namePeriod.CompareTo("LHC18g5") ==0 ||
             namePeriod.CompareTo("LHC18g6") == 0 ||
