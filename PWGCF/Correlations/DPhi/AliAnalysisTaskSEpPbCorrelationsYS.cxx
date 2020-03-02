@@ -1132,6 +1132,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524,
        4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123,
        4.712389};
+   const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 5., 10.,  20., 30., 40., 50.,60.,70.};
    const Int_t nEvtVars = 2;
    const Int_t iEvtBin[2] = {11, 11};
 
@@ -1175,7 +1176,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Int_t nEvtVarsV0Leading=3;
      Double_t binning_cent_trig[8] = {0., 5.,  10., 20.
 				      , 40., 60.,70.,100.1};
-     Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
+     //     Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
      Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
      Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
      //     Double_t binning_mult_trig[10]={0,10,20,40,50,60,80,100,120,150};
@@ -1198,8 +1199,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fHistTriggerTrack->SetBinLimits(0,binning_mult_trig);
      }else{
        if(fcollisiontype=="HMPP")  fHistTriggerTrack->SetBinLimits(0,binning_cent_HMPP);
-       else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(0,binning_cent_MBPP);
-       else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(0,binning_cent_trig_PbPb);
+       else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(0, binning_cent_MBPP);
+       else if(fcollisiontype=="PbPb")  fHistTriggerTrack->SetBinLimits(0, binning_cent_fmdfmd_PbPb);
        else fHistTriggerTrack->SetBinLimits(0,binning_cent_trig);
      }
      if(fAnaMode=="FMDFMD") fHistTriggerTrack->SetBinLimits(1,binning_etafmd);
@@ -1254,7 +1255,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      }else{
        if(fcollisiontype=="HMPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_HMPP);
        else if(fcollisiontype=="MBPP")  fHistTriggerTrack->SetBinLimits(1,binning_cent_MBPP);
-       else if(fcollisiontype=="PbPb") fHistTriggerTrack->SetBinLimits(1,binning_cent_trig_PbPb);
+       else if(fcollisiontype=="PbPb")  fHistTriggerTrack->SetBinLimits(1, binning_cent_fmdfmd_PbPb);
        else fHistTriggerTrack->SetBinLimits(1,binning_cent_trig);
      }
      fHistTriggerTrack->SetBinLimits(2, -10.,10.);
@@ -1440,7 +1441,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      Double_t binning_pt_fmdtpc[5] = {0.2, 0.5, 1.0, 3.0, 8.0};
      const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
      const Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
-     const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
+     //     const Double_t binning_cent_fmdfmd_PbPb[9] = {0.,5., 10.,  20., 30., 40., 50.,60.,70.};
      const Double_t binning_cent_fmdfmd_HMPP[8]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5};
 
      Double_t binning_mult[10]={0,20,40,60,80,100,120,140,160,200};
@@ -1532,7 +1533,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      const Double_t binning_cent_fmdfmd_HMPP[8]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5};
      const Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
      Double_t binning_mult[10]={0,20,40,60,80,100,120,140,160,200};
-     const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
+     //     const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 5., 10.,  20., 30., 40., 50.,60.,70.};
      
      Int_t ncentbin;
      if(fCentType=="Manual")        ncentbin=9;
@@ -4372,7 +4373,7 @@ Double_t AliAnalysisTaskSEpPbCorrelationsYS::RangePhi2(Double_t DPhi) {
 
 void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
 {
-  /*  
+  /*
   if(note) {
     printf("TObjectTable::%s",note);
   }
