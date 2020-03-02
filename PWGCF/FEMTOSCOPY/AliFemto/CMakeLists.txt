@@ -123,6 +123,7 @@ set(SRCS
   AliFemtoTrioDEtaDPhiFctn.cxx
   AliFemtoEventReaderNanoAOD.cxx
   AliFemtoEventReaderNanoAODChain.cxx
+  AliFemtoCutMonitorParticleYPt_proton.cxx
   )
 
 # Headers from sources
