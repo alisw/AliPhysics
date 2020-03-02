@@ -440,7 +440,7 @@ Bool_t AliForwardTaskValidation::HasEntriesFMD() {
   Double_t fmdsum = 0;
   for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
     for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
-      fmdsum += forwardDist->GetBinContent(etaBin, phiBin);//forwardDist->GetXaxis()->GetBinCenter(etaBin),
+      fmdsum += forwardDist->GetBinContent(etaBin, phiBin);
     }
   }
 
@@ -492,18 +492,17 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
     this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
   }
-
-  // Cut on V0 - FMD outliers outliers
-  //  if (nV0A_hits + nV0C_hits < (nFMD_fwd_hits + nFMD_bwd_hits - 40)) {
-  //if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits)-40) {// - 20
-  if (fUtil.PbPb_lowIR_Run(fSettings.runnumber) || fUtil.PbPb_highIR_Run(fSettings.runnumber)){
-    if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) {// - 20
-      return false;
+  if (!fSettings.mc){
+    // Cut on V0 - FMD outliers outliers
+    if (fUtil.PbPb_lowIR_Run(fSettings.runnumber) || fUtil.PbPb_highIR_Run(fSettings.runnumber)){
+      if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) {// - 20
+        return false;
+      }
     }
-  }
-  if (fUtil.pPb_Run(fSettings.runnumber)){
-    if (nV0A_hits + nV0C_hits < 1.95*(nFMD_fwd_hits + nFMD_bwd_hits)-200) {// - 20
-      return false;
+    if (fUtil.pPb_Run(fSettings.runnumber)){
+      if (nV0A_hits + nV0C_hits < 1.95*(nFMD_fwd_hits + nFMD_bwd_hits)-200) {// - 20
+        return false;
+      }
     }
   }
 
