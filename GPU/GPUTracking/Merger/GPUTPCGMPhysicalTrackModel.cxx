@@ -22,7 +22,7 @@
 
 using namespace GPUCA_NAMESPACE::gpu;
 
-GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLight(float x, float Bz, float& dLp)
+GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLight(float x, float Bz, float& GPUrestrict() dLp)
 {
   GPUTPCGMPhysicalTrackModel t = *this;
   if (CAMath::Abs(x - t.X()) < 1.e-8f) {
@@ -37,7 +37,7 @@ GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLight(float x, float Bz, fl
   return 0;
 }
 
-GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLightNoUpdate(float x, float Bz, float& dLp)
+GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLightNoUpdate(float x, float Bz, float& GPUrestrict() dLp)
 {
   //
   // transport the track to X=x in magnetic field B = ( 0, 0, Bz[kG*0.000299792458] )
@@ -91,7 +91,7 @@ GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBzLightNoUpdate(float x, floa
   return 0;
 }
 
-GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBxByBz(float x, float Bx, float By, float Bz, float& dLp)
+GPUd() int GPUTPCGMPhysicalTrackModel::PropagateToXBxByBz(float x, float Bx, float By, float Bz, float& GPUrestrict() dLp)
 {
   //
   // transport the track to X=x in magnetic field B = ( Bx, By, Bz )[kG*0.000299792458]

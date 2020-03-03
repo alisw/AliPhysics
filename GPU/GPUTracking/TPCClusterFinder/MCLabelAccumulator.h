@@ -14,47 +14,53 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUHostDataTypes.h
-/// \author David Rohr
+/// \file MCLabelAccumulator.h
+/// \author Felix Weiglhofer
 
-#ifndef GPUHOSTDATATYPES_H
-#define GPUHOSTDATATYPES_H
+#ifndef O2_GPU_MC_LABEL_ACCUMULATOR_H
+#define O2_GPU_MC_LABEL_ACCUMULATOR_H
 
-#include "GPUCommonDef.h"
-
-// These are complex data types wrapped in simple structs, which can be forward declared.
-// Structures used on the GPU can have pointers to these wrappers, when the wrappers are forward declared.
-// These wrapped complex types are not meant for usage on GPU
-
-#if defined(GPUCA_GPUCODE)
-#error "GPUHostDataTypes.h should never be included on GPU."
-#endif
-
-#include <vector>
-#include <array>
-#include <memory>
-#include <mutex>
-#include "DataFormatsTPC/Constants.h"
-#include "SimulationDataFormat/MCTruthContainer.h"
+#include "clusterFinderDefs.h"
+#include "Array2D.h"
 #include "SimulationDataFormat/MCCompLabel.h"
+#include <bitset>
+#include <vector>
 
 namespace GPUCA_NAMESPACE
 {
+namespace dataformats
+{
+template <typename T>
+class MCTruthContainer;
+}
+
 namespace gpu
 {
 
-struct GPUTPCDigitsMCInput {
-  std::array<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*, o2::tpc::Constants::MAXSECTOR> v;
-};
+class GPUTPCClusterFinder;
+struct GPUTPCClusterMCInterim;
 
-struct GPUTPCClusterMCInterim {
-  std::vector<uint64_t> labels;
-  uint offset;
-};
+class MCLabelAccumulator
+{
 
-struct GPUTPCLinearLabels {
-  std::vector<o2::dataformats::MCTruthHeaderElement> header;
-  std::vector<o2::MCCompLabel> data;
+ public:
+  MCLabelAccumulator(GPUTPCClusterFinder&);
+
+  void collect(const ChargePos&, Charge);
+
+  bool engaged() const { return mLabels != nullptr && mOutput != nullptr; }
+
+  void commit(Row, uint, uint);
+
+ private:
+  using MCLabelContainer = o2::dataformats::MCTruthContainer<o2::MCCompLabel>;
+
+  Array2D<const uint> mIndexMap;
+  const MCLabelContainer* mLabels = nullptr;
+  GPUTPCClusterMCInterim* mOutput = nullptr;
+
+  std::bitset<64> mMaybeHasLabel;
+  std::vector<uint64_t> mClusterLabels;
 };
 
 } // namespace gpu

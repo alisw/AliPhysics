@@ -32,7 +32,6 @@ using namespace GPUCA_NAMESPACE::gpu;
 
 #include "GPUTPCTrackParam.cxx"
 #include "GPUTPCTrack.cxx"
-#include "GPUTPCHitArea.cxx"
 #include "GPUTPCGrid.cxx"
 #include "GPUTPCRow.cxx"
 #include "GPUParam.cxx"
@@ -79,6 +78,7 @@ using namespace GPUCA_NAMESPACE::gpu;
 #include "GPUTPCCFNoiseSuppression.cxx"
 #include "GPUTPCCFClusterizer.cxx"
 #include "GPUTPCCFDeconvolution.cxx"
+#include "GPUTPCCFMCLabelFlattener.cxx"
 #include "GPUTPCCFDecodeZS.cxx"
 
 // Files for TRD Tracking
@@ -90,7 +90,14 @@ using namespace GPUCA_NAMESPACE::gpu;
 
 // Files for ITS Track Fit
 #include "GPUITSFitterKernels.cxx"
-#if !defined(GPUCA_O2_LIB) && defined(__CUDACC__) && !defined(GPUCA_NO_ITS_TRAITS)
+
+#if !defined(GPUCA_O2_LIB) && defined(__HIPCC__) && !defined(GPUCA_NO_ITS_TRAITS)
+#include "VertexerTraitsHIP.hip.cxx"
+#include "ContextHIP.hip.cxx"
+#include "DeviceStoreVertexerHIP.hip.cxx"
+#include "ClusterLinesHIP.hip.cxx"
+#include "UtilsHIP.hip.cxx"
+#elif !defined(GPUCA_O2_LIB) && defined(__CUDACC__) && !defined(GPUCA_NO_ITS_TRAITS)
 #include "TrackerTraitsNV.cu"
 #include "VertexerTraitsGPU.cu"
 #include "Context.cu"
@@ -100,14 +107,6 @@ using namespace GPUCA_NAMESPACE::gpu;
 #include "ClusterLinesGPU.cu"
 #include "Utils.cu"
 #endif // !defined(GPUCA_O2_LIB) && defined(__CUDACC__) && !defined(GPUCA_NO_ITS_TRAITS)
-
-#if !defined(GPUCA_O2_LIB) && defined(__HIPCC__) && !defined(GPUCA_NO_ITS_TRAITS)
-#include "VertexerTraitsHIP.hip.cxx"
-#include "ContextHIP.hip.cxx"
-#include "DeviceStoreVertexerHIP.hip.cxx"
-#include "ClusterLinesHIP.hip.cxx"
-#include "UtilsHIP.hip.cxx"
-#endif // !defined(GPUCA_O2_LIB) && defined(__HIPCC__) && !defined(GPUCA_NO_ITS_TRAITS)
 
 #endif // HAVE_O2HEADERS
 #endif // (!defined(__OPENCL__) || defined(__OPENCLCPP__)) && !defined(GPUCA_ALIROOT_LIB)

@@ -197,6 +197,7 @@ class GPUReconstructionCPU : public GPUReconstructionKernels<GPUReconstructionCP
   unsigned int mCompression2ThreadCount = 0;
   unsigned int mCFDecodeThreadCount = 0;
   unsigned int mFitThreadCount = 0;
+  unsigned int mWarpSize = 0;
   unsigned int mITSThreadCount = 0;
 
   int mThreadId = -1; // Thread ID that is valid for the local CUDA context
@@ -225,6 +226,7 @@ class GPUReconstructionCPU : public GPUReconstructionKernels<GPUReconstructionCP
   constexpr static int N_RECO_STEPS = sizeof(GPUDataTypes::RECO_STEP_NAMES) / sizeof(GPUDataTypes::RECO_STEP_NAMES[0]);
   std::vector<std::unique_ptr<timerMeta>> mTimers;
   RecoStepTimerMeta mTimersRecoSteps[N_RECO_STEPS];
+  HighResTimer timerTotal;
   template <class T, int I = 0, int J = -1>
   HighResTimer& getKernelTimer(RecoStep step, int num = 0);
   template <class T, int J = -1>

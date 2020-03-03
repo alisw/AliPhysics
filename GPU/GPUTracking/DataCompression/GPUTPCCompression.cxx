@@ -34,7 +34,9 @@ void* GPUTPCCompression::SetPointersOutputHost(void* mem)
 void* GPUTPCCompression::SetPointersScratch(void* mem)
 {
   computePointerWithAlignment(mem, mClusterStatus, mMaxClusters);
-  SetPointersCompressedClusters(mem, mPtrs, mMaxTrackClusters, mMaxTracks, mMaxClusters, false);
+  if (mRec->GetDeviceProcessingSettings().tpcCompressionGatherMode == 0) {
+    SetPointersCompressedClusters(mem, mPtrs, mMaxTrackClusters, mMaxTracks, mMaxClusters, false);
+  }
   computePointerWithAlignment(mem, mClusterSortBuffer, mNGPUBlocks * mNMaxClusterSliceRow);
   return mem;
 }
@@ -42,6 +44,9 @@ void* GPUTPCCompression::SetPointersScratch(void* mem)
 void* GPUTPCCompression::SetPointersOutput(void* mem)
 {
   computePointerWithAlignment(mem, mAttachedClusterFirstIndex, mMaxTrackClusters);
+  if (mRec->GetDeviceProcessingSettings().tpcCompressionGatherMode == 1) {
+    SetPointersCompressedClusters(mem, mPtrs, mMaxTrackClusters, mMaxTracks, mMaxClusters, false);
+  }
   return mem;
 }
 

@@ -136,6 +136,8 @@ class GPUProcessor
 
  private:
   bool mAllocateAndInitializeLate;
+
+  friend class GPUTPCNeighboursFinder;
 };
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

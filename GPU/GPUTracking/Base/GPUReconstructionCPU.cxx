@@ -160,7 +160,7 @@ int GPUReconstructionCPU::ExitDevice()
 }
 
 void GPUReconstructionCPU::SetThreadCounts() { mThreadCount = mBlockCount = mConstructorBlockCount = mSelectorBlockCount = mConstructorThreadCount = mSelectorThreadCount = mFinderThreadCount = mTRDThreadCount = mClustererThreadCount = mScanThreadCount = mConverterThreadCount =
-                                                 mCompression1ThreadCount = mCompression2ThreadCount = mCFDecodeThreadCount = mFitThreadCount = mITSThreadCount = 1; }
+                                                 mCompression1ThreadCount = mCompression2ThreadCount = mCFDecodeThreadCount = mFitThreadCount = mITSThreadCount = mWarpSize = 1; }
 
 void GPUReconstructionCPU::SetThreadCounts(RecoStep step)
 {
@@ -197,7 +197,6 @@ int GPUReconstructionCPU::RunChains()
     mThreadId = GetThread();
   }
 
-  HighResTimer timerTotal;
   timerTotal.Start();
   for (unsigned int i = 0; i < mChains.size(); i++) {
     int retVal = mChains[i]->RunChain();
@@ -257,9 +256,12 @@ int GPUReconstructionCPU::RunChains()
     }
     printf("Execution Time: Total   : %50s Time: %'10d us\n", "Total kernel time", (int)(kernelTotal * 1000000 / mStatNEvents));
     printf("Execution Time: Total   : %50s Time: %'10d us\n", "Total time", (int)(timerTotal.GetElapsedTime() * 1000000 / mStatNEvents));
+  } else if (GetDeviceProcessingSettings().debugLevel >= 0) {
+    printf("Total Time: %'d us\n", (int)(timerTotal.GetElapsedTime() * 1000000 / mStatNEvents));
   }
   if (mDeviceProcessingSettings.resetTimers) {
     mStatNEvents = 0;
+    timerTotal.Reset();
   }
 
   return 0;
