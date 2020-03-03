@@ -239,14 +239,25 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
     DoAdditionalWork(task);
   }
 
-  // Adding secondary electron cutsettings
+  // Adding standard secondary electron cutsettings
   TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_sec->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_secondary(filter);
+    task->AddTrackCuts_secondary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding loose secondary electron cutsettings
+  TObjArray*  arrNames_sec_loose=names_Sec_loose_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec_loose->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec_loose->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_secondary_loose(filter);
     DoAdditionalWork(task);
   }
 
