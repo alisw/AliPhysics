@@ -352,7 +352,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
     Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
     Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
-    void        FillEtaPhiMapForClusterInBg(const Double_t eta, const Double_t phi, const Double_t weight){  if(fHistClusterEtavsPhiBackground && !fDoLightOutput) fHistClusterEtavsPhiBackground->Fill(phi, eta, weight);}
+    void        FillEtaPhiMapForClusterInBg(const Double_t eta, const Double_t phi, const Double_t weight){  if(fHistClusterEtavsPhiBackground && !fDoLightOutput && fUseEtaPhiMapForBackCand) fHistClusterEtavsPhiBackground->Fill(phi, eta, weight);}
+    void        SetUseEtaPhiMapForBackCand(const Bool_t tmp)    {fUseEtaPhiMapForBackCand = tmp;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -476,6 +477,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
 
     Bool_t     fIsCurrentClusterAcceptedBeforeTM;       // flag if latest checked cluster would have been accepted before track matching cut
+
+    Bool_t     fUseEtaPhiMapForBackCand;                // flag to switch on Eta Phi Map for cluster candidates when doinf background calculation (for swapping method)
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader

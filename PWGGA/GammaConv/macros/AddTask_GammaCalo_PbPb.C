@@ -1504,7 +1504,6 @@ void AddTask_GammaCalo_PbPb(
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
-    analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(enableLightOutput);
@@ -1514,6 +1513,9 @@ void AddTask_GammaCalo_PbPb(
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+
+    if(analysisMesonCuts[i]->DoGammaSwappForBg()) analysisClusterCuts[i]->SetUseEtaPhiMapForBackCand(kTRUE);
+    analysisClusterCuts[i]->SetFillCutHistograms("");
   }
   task->SetAllowOverlapHeaders(enableHeaderOverlap);
   task->SetEventCutList(numberOfCuts,EventCutList);

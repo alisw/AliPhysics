@@ -115,6 +115,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fDoLightOutput(kFALSE),
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
+  fUseEtaPhiMapForBackCand(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
@@ -334,6 +335,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fDoLightOutput(ref.fDoLightOutput),
   fIsMC(ref.fIsMC),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
+  fUseEtaPhiMapForBackCand(ref.fUseEtaPhiMapForBackCand),
   fV0ReaderName(ref.fV0ReaderName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
@@ -681,10 +683,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-      fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
-      fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
-      fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
-      fHistograms->Add(fHistClusterEtavsPhiBackground);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -705,10 +709,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-      fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
-      fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
-      fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
-      fHistograms->Add(fHistClusterEtavsPhiBackground);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -726,10 +732,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-      fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
-      fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
-      fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
-      fHistograms->Add(fHistClusterEtavsPhiBackground);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -745,10 +753,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-      fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
-      fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
-      fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
-      fHistograms->Add(fHistClusterEtavsPhiBackground);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -764,10 +774,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
-      fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
-      fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
-      fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
-      fHistograms->Add(fHistClusterEtavsPhiBackground);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -779,7 +791,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     if(!fDoLightOutput){
       fHistClusterEtavsPhiBeforeAcc->Sumw2();
       fHistClusterEtavsPhiAfterAcc->Sumw2();
-      fHistClusterEtavsPhiBackground->Sumw2();
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground->Sumw2();
+      }
     }
     fHistClusterEtavsPhiAfterQA->Sumw2();
   }
