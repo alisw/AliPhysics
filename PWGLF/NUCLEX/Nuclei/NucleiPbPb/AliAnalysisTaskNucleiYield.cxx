@@ -21,6 +21,7 @@
 // ALIROOT includes
 #include "AdditionalFunctions.h"
 #include "AliAnalysisManager.h"
+#include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliPWGFunc.h"
 #include "AliPDG.h"
@@ -191,6 +192,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTOFT0FillSignal{nullptr}
    ,fTOFNoT0FillSignal{nullptr}
    ,fTPCcounts{nullptr}
+   ,fMultDistributionTPC{nullptr}
+   ,fMultDistributionTOF{nullptr}
    ,fTOFnSigma{nullptr}
    ,fTOFT0FillNsigma{nullptr}
    ,fTOFNoT0FillNsigma{nullptr}
@@ -205,6 +208,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTRDin{false}
    ,fNanoPIDindexTPC{-1}
    ,fNanoPIDindexTOF{-1}
+   ,fRefMult{-1}
    {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
@@ -317,6 +321,18 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     for (int i = 0; i <= nTOFSigmaBins; ++i)
       tofSigmaBins[i] = -12.f + i * 0.1;
 
+    float nSigmasBins[51];
+    float multBins[51];
+    for (int i = 0; i <= 50; ++i) {
+      nSigmasBins[i] = -5. + i * 0.2;
+      multBins[i] = i * 2.;
+    }
+  
+    fMultDistributionTPC = new TH3F("fMultDistributionTPC",";Reference Multiplicity;#it{p}_{T} (Gev/#it{c});TPC n#sigma", 50, multBins, nPtBins,pTbins, 50, nSigmasBins);
+    fMultDistributionTOF = new TH3F("fMultDistributionTOF",";Reference Multiplicity;#it{p}_{T} (Gev/#it{c});TOF n#sigma", 50, multBins, nPtBins,pTbins, 50, nSigmasBins);
+    fList->Add(fMultDistributionTPC);
+    fList->Add(fMultDistributionTOF);
+
     for (int iC = 0; iC < 2; ++iC) {
       fTOFsignal[iC] = new TH3F(Form("f%cTOFsignal",letter[iC]),
           ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
@@ -340,6 +356,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
+
       fList->Add(fTOFsignal[iC]);
       fList->Add(fTOFT0FillSignal[iC]);
       fList->Add(fTOFNoT0FillSignal[iC]);
@@ -470,6 +487,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fNormalisationHist->Fill(fCentrality,iC);
       }
     }
+    AliAODHeader* aodHeader = dynamic_cast<AliAODHeader*>(fInputEvent->GetHeader());
+    fRefMult = aodHeader->GetRefMultiplicityComb08();
   }
 
   if (!EventAccepted) {

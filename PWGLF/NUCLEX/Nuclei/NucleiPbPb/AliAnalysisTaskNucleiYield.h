@@ -277,6 +277,8 @@ private:
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
 
   // Data histograms
+  TH3F                 *fMultDistributionTPC;    //!<! *(Data only)* Multiplicity distribution for antimatter
+  TH3F                 *fMultDistributionTOF;    //!<! *(Data only)* Multiplicity distribution for antimatter
   TH3F                 *fTOFnSigma[2];           //!<! *(Data only)* TOF nSigma counts for (anti-)matter
   TH3F                 *fTOFT0FillNsigma[2];     //!<! *(Data only)* TOF nSigma counts for (anti-)matter
   TH3F                 *fTOFNoT0FillNsigma[2];   //!<! *(Data only)* TOF nSigma counts for (anti-)matter
@@ -295,6 +297,7 @@ private:
   bool fTRDin;               /// if true only tracks within TRD area are considered
   int  fNanoPIDindexTPC;
   int  fNanoPIDindexTOF;
+  int  fRefMult;
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
@@ -396,6 +399,14 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
     float tpc_n_sigma = GetTPCsigmas(track);
     float tof_n_sigma = iTof ? GetTOFsigmas(track) : -999.f;
+
+    if (iC == 0) {
+      if (std::abs(tpc_n_sigma) < 5.)
+        fMultDistributionTPC->Fill(fRefMult, pT, tpc_n_sigma);
+      if (std::abs(tpc_n_sigma) < 3.5 && std::abs(tof_n_sigma) < 5.)
+        fMultDistributionTOF->Fill(fRefMult, pT, tof_n_sigma);
+    }
+
     for (int iR = iTof; iR >= 0; iR--) {
 
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
