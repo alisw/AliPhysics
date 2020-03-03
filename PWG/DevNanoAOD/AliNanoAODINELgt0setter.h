@@ -18,7 +18,10 @@ public:
     if (fIndex >= 0)
       head->SetVar(fIndex, AliMultSelectionTask::IsINELgtZERO(event) ? 1 : 0);
   } 
-  virtual void SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) =0;
+  virtual void SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) {
+      // This function will not be used in this class.
+      return;
+  };
 
   protected:
   bool fGoodToGo;
