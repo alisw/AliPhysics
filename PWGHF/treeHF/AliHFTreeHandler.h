@@ -82,10 +82,10 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
-    bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
+    bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
 
     void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
@@ -238,7 +238,9 @@ class AliHFTreeHandler : public TObject
     bool fFillOnlySignal; ///flag to enable only signal filling
     bool fIsMCGenTree; ///flag to know if is a tree for MC generated particles
     bool fDauInAcceptance; ///flag to know if the daughter are in acceptance in case of MC gen
-    unsigned int fEvID; ///event ID corresponding to the one set in fTreeEvChar
+    int fEvID; ///event ID corresponding to the one set in fTreeEvChar, first 32 bit of fEvIDLong
+    int fEvIDExt; ///event ID corresponding to the one set in fTreeEvChar, second 32 bit of fEvIDLong
+    Long64_t fEvIDLong; ///event ID corresponding to the one set in fTreeEvChar, full fEvIDLong
     int fRunNumber; ///run number
     int fRunNumberPrevCand; ///run number of previous candidate
     bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction

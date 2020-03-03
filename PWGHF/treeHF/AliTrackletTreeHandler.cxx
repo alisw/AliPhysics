@@ -53,7 +53,9 @@ AliTrackletTreeHandler::AliTrackletTreeHandler():
   fTrackletEta(-999.),
   fTrackletPhi(-999.),
   fRunNumber(0),
-  fEventID(0)
+  fEventID(0), 
+  fEventIDExt(0),
+  fEventIDLong(0)
 {
 }
 
@@ -79,6 +81,8 @@ TTree* AliTrackletTreeHandler::BuildTree(TString name, TString title)
   // Create branches for each particle variable
   fTreeTracklet->Branch("run_number", &fRunNumber);
   fTreeTracklet->Branch("ev_id",&fEventID);
+  fTreeTracklet->Branch("ev_id_ext",&fEventIDExt);
+  fTreeTracklet->Branch("ev_id_long",&fEventIDLong);
   fTreeTracklet->Branch("TrackletEta",&fTrackletEta);
   fTreeTracklet->Branch("TrackletPhi",&fTrackletPhi);
   
@@ -89,11 +93,13 @@ TTree* AliTrackletTreeHandler::BuildTree(TString name, TString title)
  * Set tree variables and fill them
  */
 //________________________________________________________________
-void AliTrackletTreeHandler::FillTree(int runNumber, unsigned int eventID)
+void AliTrackletTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long)
 {
   
   fRunNumber = runNumber;
   fEventID = eventID;
+  fEventIDExt = eventID_Ext;
+  fEventIDLong = eventID_Long;
   Int_t nTr=fTrackletContainer->GetNumberOfTracklets();
   for(Int_t iTr=0; iTr<nTr; iTr++){
     Double_t phi=fTrackletContainer->GetPhi(iTr);

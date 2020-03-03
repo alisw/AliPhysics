@@ -57,6 +57,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fIsMCGenTree(false),
   fDauInAcceptance(false),
   fEvID(9999),
+  fEvIDExt(9999),
+  fEvIDLong(9999),
   fRunNumber(9999),
   fRunNumberPrevCand(9999),
   fApplyNsigmaTPCDataCorr(false),
@@ -159,6 +161,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fIsMCGenTree(false),
   fDauInAcceptance(false),
   fEvID(9999),
+  fEvIDExt(9999),
+  fEvIDLong(9999),
   fRunNumber(9999),
   fRunNumberPrevCand(9999),
   fApplyNsigmaTPCDataCorr(false),
@@ -258,6 +262,8 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
   fTreeVar = new TTree(name.Data(),title.Data());
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
+  fTreeVar->Branch("ev_id_ext",&fEvIDExt);
+  fTreeVar->Branch("ev_id_long",&fEvIDLong);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("pt_cand",&fPt);
   fTreeVar->Branch("y_cand",&fY);
@@ -271,13 +277,15 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandler::SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart) {
+bool AliHFTreeHandler::SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart) {
 
   if(!mcpart) return false;
   if(!(fCandType&kSignal)) return true; // fill only signal in the generated
 
   fRunNumber = runnumber;
   fEvID = eventID;
+  fEvIDExt = eventID_Ext;
+  fEvIDLong = eventID_Long;
   fPt = mcpart->Pt();
   fY = mcpart->Y();
   fEta = mcpart->Eta();
@@ -306,6 +314,8 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
 
   fTreeVar->Branch("run_number",&fRunNumber);
   fTreeVar->Branch("ev_id",&fEvID);
+  fTreeVar->Branch("ev_id_ext",&fEvIDExt);
+  fTreeVar->Branch("ev_id_long",&fEvIDLong);
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);

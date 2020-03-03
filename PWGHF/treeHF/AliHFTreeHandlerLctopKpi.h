@@ -40,7 +40,7 @@ class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerLctopKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     void SetVariableResonantDecay(int restype) {fResonantDecayType = restype;}
     void SetMCGenVariableResonantDecay(int restype) {fResonantDecayTypeMC = restype;}
     void AddBranchResonantDecay(TTree *t);
