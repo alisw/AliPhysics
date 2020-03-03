@@ -36,6 +36,12 @@ class AliHFJet : public TObject
   Float_t GetN() {return fN;}
   Float_t GetZg() {return fZg;}
   Float_t GetRg() {return fRg;}
+  Float_t GetNsd() {return fNsd;}
+  Float_t GetPt_mother() {return fPt_mother;}
+  Float_t Getk0() {return fk0;}
+  Float_t Getk1() {return fk1;}
+  Float_t Getk2() {return fk2;}
+  Float_t GetkT() {return fkT;}
 
     
 
@@ -50,6 +56,12 @@ class AliHFJet : public TObject
   Float_t fN;         //number of jet constituents
   Float_t fZg;        //soft dropped splitting momentum fraction
   Float_t fRg;        //soft dropped splitting angle
+  Float_t fNsd;       //number of splittings passing soft drop
+  Float_t fPt_mother; //total pT going into soft drop splitting
+  Float_t fk0;         //dynamical grooming kappa with alpha=0
+  Float_t fk1;         //dynamical grooming kappa with alpha=1
+  Float_t fk2;         //dynamical grooming kappa with alpha=2
+  Float_t fkT;         //Splitting witht the largest kT (following hardest branch)
 
 
   /// \cond CLASSIMP

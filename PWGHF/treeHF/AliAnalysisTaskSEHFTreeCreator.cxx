@@ -261,10 +261,12 @@ fCosPOnFlyCut(-9999.),
 fCosPXYOnFlyCut(-9999.),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
 fJetRadius(0.4),
-fSubJetRadius(0.2),
+fSubJetRadius(0.0),
 fJetAlgorithm(JetAlgorithm::antikt),
 fSubJetAlgorithm(JetAlgorithm::ca),
 fMinJetPt(0.0),
+fSoftDropZCut(0.1),
+fSoftDropBeta(0.0),
 fTrackingEfficiency(1.0),
 fGoodTrackFilterBit(-1),
 fGoodTrackEtaRange(999.),
@@ -653,7 +655,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerD0->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerD0->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerD0->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerD0->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerD0->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeD0 = (TTree*)fTreeHandlerD0->BuildTree(nameoutput,nameoutput);
     fVariablesTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeD0);
@@ -665,7 +667,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenD0->SetFillJets(fFillJets);
       fTreeHandlerGenD0->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenD0->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenD0->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenD0->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeD0 = (TTree*)fTreeHandlerGenD0->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeD0->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeD0);
@@ -683,7 +685,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerDs->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerDs->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerDs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerDs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeDs = (TTree*)fTreeHandlerDs->BuildTree(nameoutput,nameoutput);
     fVariablesTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeDs);
@@ -695,7 +697,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenDs->SetFillJets(fFillJets);
       fTreeHandlerGenDs->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenDs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenDs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenDs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeDs = (TTree*)fTreeHandlerGenDs->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeDs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeDs);
@@ -712,7 +714,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerDplus->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerDplus->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerDplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerDplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeDplus = (TTree*)fTreeHandlerDplus->BuildTree(nameoutput,nameoutput);
     fVariablesTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeDplus);
@@ -723,7 +725,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenDplus->SetFillJets(fFillJets);
       fTreeHandlerGenDplus->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenDplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenDplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenDplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeDplus = (TTree*)fTreeHandlerGenDplus->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeDplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeDplus);
@@ -740,7 +742,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLctopKpi->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerLctopKpi->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLctopKpi->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerLctopKpi->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerLctopKpi->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeLctopKpi = (TTree*)fTreeHandlerLctopKpi->BuildTree(nameoutput,nameoutput);
     fVariablesTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeLctopKpi);
@@ -751,7 +753,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenLctopKpi->SetFillJets(fFillJets);
       fTreeHandlerGenLctopKpi->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenLctopKpi->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenLctopKpi->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenLctopKpi->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeLctopKpi = (TTree*)fTreeHandlerGenLctopKpi->BuildTreeMCGen(nameoutput,nameoutput);
       fTreeHandlerGenLctopKpi->AddBranchResonantDecay(fGenTreeLctopKpi);
       fGenTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
@@ -769,7 +771,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerBplus->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerBplus->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerBplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerBplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerBplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeBplus = (TTree*)fTreeHandlerBplus->BuildTree(nameoutput,nameoutput);
     fVariablesTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeBplus);
@@ -780,7 +782,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenBplus->SetFillJets(fFillJets);
       fTreeHandlerGenBplus->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenBplus->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenBplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenBplus->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeBplus = (TTree*)fTreeHandlerGenBplus->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeBplus->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeBplus);
@@ -797,7 +799,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerDstar->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerDstar->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerDstar->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerDstar->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerDstar->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeDstar = (TTree*)fTreeHandlerDstar->BuildTree(nameoutput,nameoutput);
     fVariablesTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeDstar);
@@ -808,7 +810,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenDstar->SetFillJets(fFillJets);
       fTreeHandlerGenDstar->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenDstar->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenDstar->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenDstar->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeDstar = (TTree*)fTreeHandlerGenDstar->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeDstar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeDstar);
@@ -826,7 +828,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLc2V0bachelor->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerLc2V0bachelor->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLc2V0bachelor->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerLc2V0bachelor->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerLc2V0bachelor->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeLc2V0bachelor = (TTree*)fTreeHandlerLc2V0bachelor->BuildTree(nameoutput,nameoutput);
     fVariablesTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeLc2V0bachelor);
@@ -837,7 +839,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenLc2V0bachelor->SetFillJets(fFillJets);
       fTreeHandlerGenLc2V0bachelor->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenLc2V0bachelor->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenLc2V0bachelor->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenLc2V0bachelor->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeLc2V0bachelor = (TTree*)fTreeHandlerGenLc2V0bachelor->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeLc2V0bachelor->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeLc2V0bachelor);
@@ -855,7 +857,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerBs->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerBs->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerBs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerBs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerBs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeBs = (TTree*)fTreeHandlerBs->BuildTree(nameoutput,nameoutput);
     fVariablesTreeBs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeBs);
@@ -866,7 +868,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenBs->SetFillJets(fFillJets);
       fTreeHandlerGenBs->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenBs->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenBs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenBs->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeBs = (TTree*)fTreeHandlerGenBs->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeBs->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeBs);
@@ -883,7 +885,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fTreeHandlerLb->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerLb->SetTrackingEfficiency(fTrackingEfficiency);
     fTreeHandlerLb->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-    fTreeHandlerLb->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+    fTreeHandlerLb->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
     fVariablesTreeLb = (TTree*)fTreeHandlerLb->BuildTree(nameoutput,nameoutput);
     fVariablesTreeLb->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeLb);
@@ -894,7 +896,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       fTreeHandlerGenLb->SetFillJets(fFillJets);
       fTreeHandlerGenLb->SetDoJetSubstructure(fDoJetSubstructure);
       fTreeHandlerGenLb->SetJetProperties(fJetRadius,fJetAlgorithm,fMinJetPt);
-      fTreeHandlerGenLb->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm);
+      fTreeHandlerGenLb->SetSubJetProperties(fSubJetRadius,fSubJetAlgorithm,fSoftDropZCut,fSoftDropBeta);
       fGenTreeLb = (TTree*)fTreeHandlerGenLb->BuildTreeMCGen(nameoutput,nameoutput);
       fGenTreeLb->SetMaxVirtualSize(1.e+8/nEnabledTrees);
       fTreeEvChar->AddFriend(fGenTreeLb);
