@@ -112,7 +112,7 @@ class AliHFTreeHandler : public TObject
     void SetDoJetSubstructure(bool DoJetSubstructure) {fDoJetSubstructure=DoJetSubstructure;}
     void SetTrackingEfficiency(Double_t TrackingEfficiency) {fTrackingEfficiency=TrackingEfficiency;}
     void SetJetProperties(Double_t JetRadius,Int_t JetAlgorithm,Double_t MinJetPt) {fJetRadius=JetRadius;fJetAlgorithm=JetAlgorithm;fMinJetPt=MinJetPt;}
-    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;}
+    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm,Double_t SoftDropZCut,Double_t SoftDropBeta) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;fSoftDropZCut=SoftDropZCut;fSoftDropBeta=SoftDropBeta;}
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
     void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
@@ -272,6 +272,18 @@ class AliHFTreeHandler : public TObject
     float fZgGenJet; //gen zg
     float fRgJet; //Rg
     float fRgGenJet; //gen Rg
+    float fNsdJet; //Nsd
+    float fNsdGenJet; //gen Nsd
+    float fPt_motherJet; //Pt_mother
+    float fPt_motherGenJet; //gen Pt_mother
+    float fk0Jet; //k0
+    float fk0GenJet; //gen k0
+    float fk1Jet; //k1
+    float fk1GenJet; //gen k1
+    float fk2Jet; //k2
+    float fk2GenJet; //gen k2
+    float fkTJet; //kT
+    float fkTGenJet; //gen kT
     bool  fFillJets; //fill jets
     bool  fDoJetSubstructure; //fill jet substructure
     Double_t fJetRadius; //Jet finding radius
@@ -279,6 +291,8 @@ class AliHFTreeHandler : public TObject
     Int_t fJetAlgorithm; //Jet finding algorithm
     Int_t fSubJetAlgorithm; //SubJet finding algorithm
     Double_t fMinJetPt; //Jet finding mimimum Jet pT
+    Double_t fSoftDropZCut; //soft drop z parameter
+    Double_t fSoftDropBeta; //soft drop beta  parameter
     Double_t fTrackingEfficiency;
 
   /// \cond CLASSIMP
