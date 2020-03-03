@@ -442,15 +442,16 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 	  softdropped=kTRUE;
 	}
 	Nsd++;
-	k0_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,0.1);
-	k1_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,1);
-	k2_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,2);
-	kT_temp=zg*Pt_mother*TMath::Sin(rg);
-	if (k0_temp > k0) k0=k0_temp;
-	if (k1_temp > k1) k1=k1_temp;
-	if (k2_temp > k2) k2=k2_temp;
-	if (kT_temp > kT) kT=kT_temp;
       }
+      k0_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,0.1);
+      k1_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,1);
+      k2_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,2);
+      kT_temp=zg*Pt_mother*TMath::Sin(rg);
+      if (k0_temp > k0) k0=k0_temp;
+      if (k1_temp > k1) k1=k1_temp;
+      if (k2_temp > k2) k2=k2_temp;
+      if (kT_temp > kT) kT=kT_temp;
+      
       daughter_jet=parent_subjet_1;
     }
     if (constituents.size() > 1){
