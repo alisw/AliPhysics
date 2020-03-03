@@ -195,6 +195,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
     Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
+    Bool_t   DoGammaSwappForBg(){return fDoGammaSwappForBg;}
+    Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
+    Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
+    Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
     Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
@@ -302,6 +306,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
+    Bool_t      fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
+    Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
+    Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
+    Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
     Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
@@ -331,7 +339,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,40)
+    ClassDef(AliConversionMesonCuts,41)
     /// \endcond
 };
 

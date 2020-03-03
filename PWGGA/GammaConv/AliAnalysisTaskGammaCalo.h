@@ -17,6 +17,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -545,6 +546,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TObjString*           fFileNameBroken;                                      // string object for broken file name
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
+    TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
@@ -555,7 +557,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 74);
+    ClassDef(AliAnalysisTaskGammaCalo, 75);
 };
 
 #endif

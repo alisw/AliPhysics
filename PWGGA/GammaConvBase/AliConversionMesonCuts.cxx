@@ -150,6 +150,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
+  fDoGammaSwappForBg(kFALSE),
+  fDoWeightingInSwappBg(kFALSE),
+  fGammaSwappMethodBg(0),
+  fNumberOfSwappsForBg(1),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
   fAllowCombOnlyInSameRecMethod(kFALSE),
@@ -262,6 +266,10 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoJetPtMixing(ref.fDoJetPtMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
+  fDoGammaSwappForBg(ref.fDoGammaSwappForBg),
+  fDoWeightingInSwappBg(ref.fDoWeightingInSwappBg),
+  fGammaSwappMethodBg(ref.fGammaSwappMethodBg),
+  fNumberOfSwappsForBg(ref.fNumberOfSwappsForBg),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
   fAllowCombOnlyInSameRecMethod(ref.fAllowCombOnlyInSameRecMethod),
@@ -3257,6 +3265,47 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fBackgroundMode             = 3;
+    break;
+  case 27: // r cluster swapping method with 90 degree rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    break;
+  case 28: // s cluster swapping method with 90 degree rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    break;
+  case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 1;
+    fNumberOfSwappsForBg        = 1;
+  case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 1;
+    fNumberOfSwappsForBg        = 4;
+    break;
+  case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 10;
+    fNumberOfSwappsForBg        = 20;
+    break;
+  case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 10;
+    fNumberOfSwappsForBg        = 20;
+    break;
+  case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 11;
+    fNumberOfSwappsForBg        = 20;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
