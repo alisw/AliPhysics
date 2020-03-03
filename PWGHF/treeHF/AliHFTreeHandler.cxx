@@ -279,13 +279,15 @@ TTree* AliHFTreeHandler::BuildTreeMCGen(TString name, TString title) {
 //________________________________________________________________
 bool AliHFTreeHandler::SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart) {
 
-  if(!mcpart) return false;
-  if(!(fCandType&kSignal)) return true; // fill only signal in the generated
-
   fRunNumber = runnumber;
   fEvID = eventID;
   fEvIDExt = eventID_Ext;
   fEvIDLong = eventID_Long;
+  
+  if(!mcpart) return false;
+  if(!(fCandType&kSignal)) return true; // fill only signal in the generated
+
+
   fPt = mcpart->Pt();
   fY = mcpart->Y();
   fEta = mcpart->Eta();

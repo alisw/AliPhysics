@@ -1,4 +1,5 @@
 /**************************************************************************
+:q
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -1123,8 +1124,11 @@ std::string AliAnalysisTaskSEHFTreeCreator::GetPeriod(const AliVEvent* event){
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
-
-{
+{ 
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  
+  //setbuf(stdout, NULL);
+  //fflush(stdout);
   /// Execute analysis for current event:
   
   if(fEnableEventDownsampling) {
@@ -1133,11 +1137,14 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
             return;
   }
 
-  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  
   fBC = aod->GetBunchCrossNumber();
   fOrbit = (Int_t)(aod->GetOrbitNumber());
   fPeriod = (Int_t)(aod->GetPeriodNumber());
+  fEventIDLong = (Long64_t)(aod->GetHeader()->GetEventIdAsLong());
+  if (!fEventIDLong)
+    fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
+  fEventIDExt = Int_t(fEventIDLong >> 32);
+  fEventID    = Int_t(fEventIDLong & 0xffffffff);
 
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
@@ -1330,7 +1337,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
       fHistoNormCounter->Fill(3.,fCentrality);
     }
   }
-
   Bool_t isEvRejCent  = fEvSelectionCuts->IsEventRejectedDueToCentrality();
   
   if(!isEvSel && (isEvRejCent || (fApplyPhysicsSelOnline && isEvRejPhysSel))){
@@ -1414,11 +1420,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   }
 
 
-  fEventIDLong = (Long64_t)(aod->GetHeader()->GetEventIdAsLong());
-  if (!fEventIDLong)
-    fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
-  fEventIDExt = Int_t(fEventIDLong >> 32);
-  fEventID    = Int_t(fEventIDLong & 0xffffffff);
   // Extract fired triggers
   fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
   fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);
@@ -1452,9 +1453,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerOnlineINT7 = (inputV0C && inputV0A) ?
                        (TESTBIT(triggerBits, inputV0C->GetIndexCTP() - 1) &&
                         TESTBIT(triggerBits, inputV0A->GetIndexCTP() - 1)) : -1;
-
-  fTreeEvChar->Fill();
   
+  fTreeEvChar->Fill(); 
   //get PID response
   if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   
