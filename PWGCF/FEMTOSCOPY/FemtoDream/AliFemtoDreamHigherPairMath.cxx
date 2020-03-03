@@ -122,8 +122,8 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
               - TMath::ASin(
                   0.1 * chg * fBField * 0.3 * TPCradii[radius] * 0.01
                       / (2. * pt)));
-      counter++;
     }
+    counter++;
     part.SetPhiAtRadius(tmpVec);
   }
 }
