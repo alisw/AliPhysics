@@ -404,6 +404,20 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         int momLab = IsTrueHyperTriton3Candidate(deu, p, pi, mcEvent);
         if ((momLab == -1) && fOnlyTrueCandidates) continue;
 
+        LVector_t deu4Vector, p4Vector, pi4Vector, hyp4Vector;
+
+        deu4Vector.SetCoordinates(deu->Px(), deu->Py(), deu->Pz(), AliPID::ParticleMass(AliPID::kDeuteron));
+        p4Vector.SetCoordinates(p->Px(), p->Py(), p->Pz(), AliPID::ParticleMass(AliPID::kProton));
+        pi4Vector.SetCoordinates(pi->Px(), pi->Py(), pi->Pz(), AliPID::ParticleMass(AliPID::kPion));
+
+        hyp4Vector = deu4Vector + p4Vector + pi4Vector;
+
+        float hypPt = hyp4Vector.Pt();
+        float hypM  = hyp4Vector.M();
+
+        if ((hypPt < fMinCanidatePtToSave) || (fMaxCanidatePtToSave < hypPt)) continue;
+        if (hypM < 2.9 || hypM > 3.2) continue;
+
         bool recoVertex = fVertexer.FindDecayVertex(deu, p, pi, b);
         if (!recoVertex) continue;
 
@@ -421,20 +435,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         deu->PropagateToDCA(decayVtx, b, 1000., dcaDecayDeu);
         p->PropagateToDCA(decayVtx, b, 1000., dcaDecayP);
         pi->PropagateToDCA(decayVtx, b, 1000., dcaDecayPi);
-
-        LVector_t deu4Vector, p4Vector, pi4Vector, hyp4Vector;
-
-        deu4Vector.SetCoordinates(deu->Px(), deu->Py(), deu->Pz(), AliPID::ParticleMass(AliPID::kDeuteron));
-        p4Vector.SetCoordinates(p->Px(), p->Py(), p->Pz(), AliPID::ParticleMass(AliPID::kProton));
-        pi4Vector.SetCoordinates(pi->Px(), pi->Py(), pi->Pz(), AliPID::ParticleMass(AliPID::kPion));
-
-        hyp4Vector = deu4Vector + p4Vector + pi4Vector;
-
-        float hypPt = hyp4Vector.Pt();
-        float hypM  = hyp4Vector.M();
-
-        if ((hypPt < fMinCanidatePtToSave) || (fMaxCanidatePtToSave < hypPt)) continue;
-        if (hypM < 2.9 || hypM > 3.2) continue;
 
         double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
                                      decayLenght[2] * decayLenght[2]);
