@@ -1136,8 +1136,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
   fBC = aod->GetBunchCrossNumber();
-  fOrbit = aod->GetOrbitNumber();
-  fPeriod = aod->GetPeriodNumber();
+  fOrbit = (Int_t)(aod->GetOrbitNumber());
+  fPeriod = (Int_t)(aod->GetPeriodNumber());
 
   fNentries->Fill(0); // all events
   if(fAODProtection>=0){
@@ -1413,9 +1413,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fMultGenV0C = AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(arrayMC,-3.7,-1.7);
   }
 
-  fEventID    = (unsigned int)(GetEvID() & 0xffffffff);
-  fEventIDExt = (unsigned int)(GetEvID() >> 32);
-  fEventIDLong = GetEvID();
+
+  fEventIDLong = (Long64_t)(aod->GetHeader()->GetEventIdAsLong());
+  if (!fEventIDLong)
+    fEventIDLong = (Long64_t(aod->GetTimeStamp()) << 32) + Long64_t((aod->GetNumberOfTPCClusters()<<5) | (aod->GetNumberOfTPCTracks()));
+  fEventIDExt = Int_t(fEventIDLong >> 32);
+  fEventID    = Int_t(fEventIDLong & 0xffffffff);
   // Extract fired triggers
   fTriggerMask = static_cast<AliVAODHeader*>(aod->GetHeader())->GetOfflineTrigger();
   fTriggerBitINT7 = static_cast<bool>(fTriggerMask & AliVEvent::kINT7);

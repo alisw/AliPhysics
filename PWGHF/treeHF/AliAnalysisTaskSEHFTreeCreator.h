@@ -357,11 +357,11 @@ private:
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UShort_t                fBC;                                   /// bunch crossing number
-    UInt_t                  fOrbit;                                /// orbit
-    UInt_t                  fPeriod;                               /// period
-    UInt_t                  fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
-    UInt_t                  fEventIDExt;                           /// upper 32-bit of event ID
-    ULong_t                 fEventIDLong;                          /// single unique event id (unsigned long)
+    Int_t                   fOrbit;                                /// orbit
+    Int_t                   fPeriod;                               /// period
+    Int_t                   fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
+    Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
+    Long64_t                fEventIDLong;                          /// single unique event id (long64)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
