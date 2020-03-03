@@ -2178,17 +2178,18 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 912){  //PHOS MB and PHI7 Timing Cut 0; 100MeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661900a09cc00000","0163103100000010"); //PHI7
-  } else if ( trainConfig == 913){  //PHOS Triggers Timing Cut Studies
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
+  } else if ( trainConfig == 913){ //PHOS MB and PHI7 Timing Cut 0; 300MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661900a01cc00000","0163103100000010"); //no Trigger
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661900a01cc00000","0163103100000010"); //PHI7
   } else if ( trainConfig == 914){  //PHOS Triggers Timing Cut Studies
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
-  } else if ( trainConfig == 917){ // Material Budget Checks
-    cuts.AddCutPCMCalo("00010113","0d200009f9730000dge0404000","24466190pa01cc00000","0163103100000010");
-    cuts.AddCutPCMCalo("00010113","0da00009f9730000dge0404000","24466190pa01cc00000","0163103100000010");
-    cuts.AddCutPCMCalo("00010113","0db00009f9730000dge0404000","24466190pa01cc00000","0163103100000010");
-    cuts.AddCutPCMCalo("00010113","0dc00009f9730000dge0404000","24466190pa01cc00000","0163103100000010");
+  } else if ( trainConfig == 916){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, HighPt const
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190ua01cc00000","0163103100000010"); //INT7
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190ua01cc00000","0163103100000010"); //PHI7
+  } else if ( trainConfig == 917){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger, HighPt const
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190va01cc00000","0163103100000010"); //INT7
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190va01cc00000","0163103100000010"); //PHI7
   } else if ( trainConfig == 918){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190wa01cc00000","0163103100000010"); //INT7
     cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190wa01cc00000","0163103100000010"); //PHI7

@@ -1832,18 +1832,24 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m0110113","24466190pa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("m1510113","24466190pa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("m5a10113","24466190pa01cc00000","0163103100000010"); // INT7
-  } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0
+  } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0, 100 MeV
     cuts.AddCutCalo("00010113","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661900a09cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig ==813){//PHOS Triggers Timing Cut Studies
-    cuts.AddCutCalo("00010113","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
-    cuts.AddCutCalo("00062113","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
+  } else if (trainConfig ==813){//PHOS Triggers Timing Cut 0, 300 MeV
+    cuts.AddCutCalo("00010113","244661900a01cc00000","0163103100000010"); //no Trigger
+    cuts.AddCutCalo("00062113","244661900a01cc00000","0163103100000010"); //PHI7
   } else if (trainConfig ==814){ //PHOS Triggers Timing Cut Studies without throwing out clusters
     cuts.AddCutCalo("00010113","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutCalo("00062113","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
   } else if (trainConfig == 815){ // NCell Cut Variations, without E>1GeV
     cuts.AddCutCalo("00010113","24466190pa012200000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190pa01cc00000","0163103100000010"); // INT7 NCells 2
+  } else if (trainConfig == 816){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, High Pt const
+    cuts.AddCutCalo("00010113","24466190ua01cc00000","0163103100000010"); //INT7
+    cuts.AddCutCalo("00062113","24466190ua01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 817){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger, High Pt const
+    cuts.AddCutCalo("00010113","24466190va01cc00000","0163103100000010"); //INT7
+    cuts.AddCutCalo("00062113","24466190va01cc00000","0163103100000010"); //PHI7
   } else if (trainConfig == 818){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB
     cuts.AddCutCalo("00010113","24466190wa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190wa01cc00000","0163103100000010"); //PHI7
