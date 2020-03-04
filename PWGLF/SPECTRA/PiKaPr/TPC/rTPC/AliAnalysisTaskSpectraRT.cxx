@@ -144,6 +144,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hNchTSGen(0x0),
 		hNchTSRec(0x0),
 		hNchTSGen_1(0x0),
+		hNchTSContamination(0x0),
 		hNchTSRecAll(0x0),
 		hNchResponse(0x0),
 		hNchTSGenTest(0x0),
@@ -161,6 +162,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 
 	for(int pid = 0; pid < nPid; ++pid){
 		hNchGenVsPtGenIn[pid] = 0;
+		hNchRecVsPtGenIn[pid] = 0;
 		hNchGenVsPtGenPosIn[pid] = 0;
 		hNchGenVsPtGenNegIn[pid] = 0;
 		hNchGenVsPtRecIn[pid] = 0;
@@ -252,6 +254,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hNchTSGen(0x0),
 	hNchTSRec(0x0),
 	hNchTSGen_1(0x0),
+	hNchTSContamination(0x0),
 	hNchTSRecAll(0x0),
 	hNchResponse(0x0),
 	hNchTSGenTest(0x0),
@@ -269,6 +272,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 
 	for(int pid = 0; pid < nPid; ++pid){
 		hNchGenVsPtGenIn[pid] = 0;
+		hNchRecVsPtGenIn[pid] = 0;
 		hNchGenVsPtGenPosIn[pid] = 0;
 		hNchGenVsPtGenNegIn[pid] = 0;
 		hNchGenVsPtRecIn[pid] = 0;
@@ -389,246 +393,236 @@ l: fMeanChT = 7.266
 o: fMeanChT = 7.211
 p: fMeanChT = 7.216
 
-THIS WAS USED IN THE LAST GRID RUN
-
-const int nBinsRT = 51;
-double binsRT[nBinsRT+1] = {0};
-
-for(int i = 0; i <= nBinsRT; ++i){
-binsRT[i] = (double)(i-1)/6.0;
-printf("RT edged = %f      RT Gen = %f  RT Rec = %f   RT Data = %f\n",binsRT[i],(double)i/7.442,(double)i/6.172,(double)i/7.261);
-}
-
-
 
 */
 
-printf("<Nch>_{gen} = %f  <Nch>_{rec} = %f  <Nch>_{dat} = %f\n",fMeanMultTSMCGen,fMeanMultTSMCRec,fMeanChT);
+	printf("<Nch>_{gen} = %f  <Nch>_{rec} = %f  <Nch>_{dat} = %f\n",fMeanMultTSMCGen,fMeanMultTSMCRec,fMeanChT);
 
-/*	//Binning with holes 
+	//const int nBinsRT = 19;
+	////double binsRT[nBinsRT+1] = { -0.069252078, 0.069252078, 0.207756233, 0.346260388, 0.5, 0.623268698, 0.761772853, 0.900277008, 1.038781163, 1.177285319, 1.315789474, 1.454293629, 1.592797784, 1.731301939, 1.869806094, 2.0, 2.5, 3.5, 5.0, 10.0 };
+	
+	const int nBinsRT = 14;
+	double binsRT[nBinsRT+1] = { -0.0692, 0.0692, 0.2077, 0.3462, 0.5, 0.6232, 0.7617, 0.9, 1.0, 1.5, 2.0, 2.5, 3.5, 5.0, 10.0 };
 
-	const int nBinsRT = 100;
-	double binsRT[nBinsRT+1] = {0};
+	const char* ending[nHists] = {"02", "24", "46", "68"};
 
-	for(int i = 0; i <= nBinsRT; ++i){
-	binsRT[i] = (((double)i)-0.5)/9.0;
-	printf("RT edged = %f      RT Gen = %f  RT Rec = %f   RT Data = %f\n",binsRT[i],(double)i/fMeanMultTSMCGen,(double)i/fMeanMultTSMCRec,(double)i/fMeanChT);
-	}
-	*/
-const int nBinsRT = 19;
-double binsRT[nBinsRT+1] = { -0.069252078, 0.069252078, 0.207756233, 0.346260388, 0.5, 0.623268698, 0.761772853, 0.900277008, 1.038781163, 1.177285319, 1.315789474, 1.454293629, 1.592797784, 1.731301939, 1.869806094, 2.0, 2.5, 3.5, 5.0, 10.0 };
+	fcutDCAxy = new TF1("fMaxDCAxy","[0]+[1]/(x^[2])",0,1e10);
+	fcutDCAxy->SetParameter(0,0.0105);
+	fcutDCAxy->SetParameter(1,0.0350);
+	fcutDCAxy->SetParameter(2,1.1);
 
-const char* ending[nHists] = {"02", "24", "46", "68"};
+	fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+TMath::Pi()/18.0-0.025", 0, 50);
+	fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+TMath::Pi()/18.0+0.035", 0, 50);
 
-fcutDCAxy = new TF1("fMaxDCAxy","[0]+[1]/(x^[2])",0,1e10);
-fcutDCAxy->SetParameter(0,0.0105);
-fcutDCAxy->SetParameter(1,0.0350);
-fcutDCAxy->SetParameter(2,1.1);
+	fEtaCalibration   = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
+	fEtaCalibrationEl = new TF1("fDeDxVsEtaEl", "pol4", 0.0, 1.0);
 
-fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+TMath::Pi()/18.0-0.025", 0, 50);
-fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+TMath::Pi()/18.0+0.035", 0, 50);
+	hNchTSData = new TH1D("hNchTSData",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
+	hNchTSData->Sumw2();
+	fListOfObjects->Add(hNchTSData);
 
-fEtaCalibration   = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
-fEtaCalibrationEl = new TF1("fDeDxVsEtaEl", "pol4", 0.0, 1.0);
+	hRTData = new TH1D("hRTData",";#it{N}_{acc} mult; Entries",nBinsRT,binsRT);
+	hRTData->Sumw2();
+	fListOfObjects->Add(hRTData);
 
-hNchTSData = new TH1D("hNchTSData",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
-hNchTSData->Sumw2();
-fListOfObjects->Add(hNchTSData);
+	hPtLVsRT = new TH2D("hPtLVsRT", "; #it{R}_{T}; #it{p}^{L}_{rec} (GeV/#it{c})",nPtBins,ptBins,nBinsRT,binsRT);
+	hPtLVsRT->Sumw2();
+	fListOfObjects->Add(hPtLVsRT);
 
-hRTData = new TH1D("hRTData",";#it{N}_{acc} mult; Entries",nBinsRT,binsRT);
-hRTData->Sumw2();
-fListOfObjects->Add(hRTData);
+	for(int r = 0; r < 3; ++r){
 
-hPtLVsRT = new TH2D("hPtLVsRT", "; #it{R}_{T}; #it{p}^{L}_{rec} (GeV/#it{c})",nPtBins,ptBins,nBinsRT,binsRT);
-hPtLVsRT->Sumw2();
-fListOfObjects->Add(hPtLVsRT);
-
-for(int r = 0; r < 3; ++r){
-
-	hPhiData[r] = new TH1D(Form("hPhiData_%s",Region[r]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-	hPhiData[r]->Sumw2();
-
-	for(int pid = 0; pid < nPid; ++pid){
-
-		hNchVsPtDataTPC[r][pid] = new TH2D(Form("hNchVsPtData_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataTPC[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataTPC[r][pid]);
-
-		hNchVsPtDataPosTPC[r][pid] = new TH2D(Form("hNchVsPtData_Pos_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataPosTPC[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataPosTPC[r][pid]);
-
-		hNchVsPtDataNegTPC[r][pid] = new TH2D(Form("hNchVsPtData_Neg_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataNegTPC[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataNegTPC[r][pid]);
-
-		hNchVsPtDataTOF[r][pid] = new TH2D(Form("hNchVsPtData_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataTOF[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataTOF[r][pid]);
-
-		hNchVsPtDataPosTOF[r][pid] = new TH2D(Form("hNchVsPtData_Pos_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataPosTOF[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataPosTOF[r][pid]);
-
-		hNchVsPtDataNegTOF[r][pid] = new TH2D(Form("hNchVsPtData_Neg_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchVsPtDataNegTOF[r][pid]->Sumw2();
-		fListOfObjects->Add(hNchVsPtDataNegTOF[r][pid]);
-
-	}
-
-	fListOfObjects->Add(hPhiData[r]);
-	///		fListOfObjects->Add(hPtVsUEData[r]);
-
-}
-
-for( int j = 0; j < nHists; j++ ){
-
-	hPtVsP[j] = new TH2D(Form("hPtVsP_%s",ending[j]),";#it{p} [GeV/c]; #it{p}_{T}",nPtBins,ptBins,nPtBins,ptBins);
-	hPtVsP[j]->Sumw2();
-	////		fListOfObjects->Add(hPtVsP[j]);
-
-}
-
-if(fAnalysisMC){
-
-	hMultTSRec = new TH1D("hMultTSRec",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
-	hMultTSRec->Sumw2();
-	fListOfObjects->Add(hMultTSRec);
-
-	hMultTSGen = new TH1D("hMultTSGen",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
-	hMultTSGen->Sumw2();
-	fListOfObjects->Add(hMultTSGen);
-
-	fPtLVsNchGen = new TH2D("fPtLVsNchGen", "; #it{p}^{L}_{gen} (GeV/#it{c}); #it{R}_{T}",nPtBins,ptBins,nBinsRT,binsRT);
-	fPtLVsNchGen->Sumw2();
-	fListOfObjects->Add(fPtLVsNchGen);
-
-	fPtLVsNchRec = new TH2D("fPtLVsNchRec", "; #it{p}^{L}_{rec} (GeV/#it{c}); #it{R}_{T}",nPtBins,ptBins,nBinsRT,binsRT);
-	fPtLVsNchRec->Sumw2();
-	fListOfObjects->Add(fPtLVsNchRec);
-
-	hNchTSGen = new TH1D("hNchTSGen","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSGen->Sumw2();
-	fListOfObjects->Add(hNchTSGen);
-
-	hNchTSRec = new TH1D("hNchTSRec","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSRec->Sumw2();
-	fListOfObjects->Add(hNchTSRec);
-
-	hNchTSGen_1 = new TH1D("hNchTSGen_RecGreaterThanZero","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSGen_1->Sumw2();
-	fListOfObjects->Add(hNchTSGen_1);
-
-	hNchTSRecAll = new TH1D("hNchTSRecAll","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSRecAll->Sumw2();
-	fListOfObjects->Add(hNchTSRecAll);
-
-	hNchTSGenTest = new TH1D("hNchTSGenTest","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSGenTest->Sumw2();
-	fListOfObjects->Add(hNchTSGenTest);
-
-	hNchTSRecTest = new TH1D("hNchTSRecTest","; #it{R}_{T}; Entries",nBinsRT,binsRT);
-	hNchTSRecTest->Sumw2();
-	fListOfObjects->Add(hNchTSRecTest);
-
-	for( int i = 0; i < 3; ++i ){
-
-		hPhiGen[i]= new TH1D(Form("hPhiGen_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-		hPhiGen[i]->Sumw2();
-		fListOfObjects->Add(hPhiGen[i]);
-
-		hPhiRec[i] = new TH1D(Form("hPhiRec_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-		hPhiRec[i]->Sumw2();
-		fListOfObjects->Add(hPhiRec[i]);
-
+		hPhiData[r] = new TH1D(Form("hPhiData_%s",Region[r]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+		hPhiData[r]->Sumw2();
 
 		for(int pid = 0; pid < nPid; ++pid){
-			hNchGenVsPtGenPID[i][pid] = new TH2D(Form("hNchGenVsPtGen_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
-			hNchGenVsPtGenPID[i][pid]->Sumw2();
-			fListOfObjects->Add(hNchGenVsPtGenPID[i][pid]);
 
-			hNchGenVsPtRec[i][pid] = new TH2D(Form("hNchGenVsPtRec_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
-			hNchGenVsPtRec[i][pid]->Sumw2();
-			fListOfObjects->Add(hNchGenVsPtRec[i][pid]);
+			hNchVsPtDataTPC[r][pid] = new TH2D(Form("hNchVsPtData_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataTPC[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataTPC[r][pid]);
+
+			hNchVsPtDataPosTPC[r][pid] = new TH2D(Form("hNchVsPtData_Pos_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataPosTPC[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataPosTPC[r][pid]);
+
+			hNchVsPtDataNegTPC[r][pid] = new TH2D(Form("hNchVsPtData_Neg_TPC_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataNegTPC[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataNegTPC[r][pid]);
+
+			hNchVsPtDataTOF[r][pid] = new TH2D(Form("hNchVsPtData_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataTOF[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataTOF[r][pid]);
+
+			hNchVsPtDataPosTOF[r][pid] = new TH2D(Form("hNchVsPtData_Pos_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataPosTOF[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataPosTOF[r][pid]);
+
+			hNchVsPtDataNegTOF[r][pid] = new TH2D(Form("hNchVsPtData_Neg_TOF_%s_%s",Region[r],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{rec};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchVsPtDataNegTOF[r][pid]->Sumw2();
+			fListOfObjects->Add(hNchVsPtDataNegTOF[r][pid]);
+
 		}
-	}
 
-	for(int pid = 0; pid < nPid; pid++){
-
-		hPtResponsePID[pid] = new TH2D(Form("hPtResponse_%s",Pid[pid]),"; #it{p}_{T}^{rec}; #it{p}_{T}^{gen}",nPtBins,ptBins,nPtBins,ptBins);
-		hPtResponsePID[pid]->Sumw2();
-		fListOfObjects->Add(hPtResponsePID[pid]);
-
-		hNchGenVsPtGenIn[pid] = new TH2D(Form("hNchGenVsPtGenIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtGenIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtGenIn[pid]);
-
-		hNchGenVsPtGenPosIn[pid] = new TH2D(Form("hNchGenVsPtGenPosIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtGenPosIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtGenPosIn[pid]);
-
-		hNchGenVsPtGenNegIn[pid] = new TH2D(Form("hNchGenVsPtGenNegIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtGenNegIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtGenNegIn[pid]);
-
-		hNchGenVsPtRecIn[pid] = new TH2D(Form("hNchGenVsPtRecIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecIn[pid]);
-
-		hNchGenVsPtRecPosIn[pid] = new TH2D(Form("hNchGenVsPtRecPosIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecPosIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecPosIn[pid]);
-
-		hNchGenVsPtRecNegIn[pid] = new TH2D(Form("hNchGenVsPtRecNegIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecNegIn[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecNegIn[pid]);
-
-		hNchGenVsPtRecInTOF[pid] = new TH2D(Form("hNchGenVsPtRecInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecInTOF[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecInTOF[pid]);
-
-		hNchGenVsPtRecPosInTOF[pid] = new TH2D(Form("hNchGenVsPtRecPosInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecPosInTOF[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecPosInTOF[pid]);
-
-		hNchGenVsPtRecNegInTOF[pid] = new TH2D(Form("hNchGenVsPtRecNegInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-		hNchGenVsPtRecNegInTOF[pid]->Sumw2();
-		fListOfObjects->Add(hNchGenVsPtRecNegInTOF[pid]);
+		fListOfObjects->Add(hPhiData[r]);
+		///		fListOfObjects->Add(hPtVsUEData[r]);
 
 	}
 
-	hNchResponse = new TH2D("hNchResponse","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}",nBinsRT,binsRT,nBinsRT,binsRT);
-	hNchResponse->Sumw2();
-	fListOfObjects->Add(hNchResponse);
+	for( int j = 0; j < nHists; j++ ){
 
-	hNchRecVsPtRecOut = new TH2D("hNchRecVsPtRecOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-	hNchRecVsPtRecOut->Sumw2();
-	fListOfObjects->Add(hNchRecVsPtRecOut);
+		hPtVsP[j] = new TH2D(Form("hPtVsP_%s",ending[j]),";#it{p} [GeV/c]; #it{p}_{T}",nPtBins,ptBins,nPtBins,ptBins);
+		hPtVsP[j]->Sumw2();
+		////		fListOfObjects->Add(hPtVsP[j]);
 
-	hNchRecVsPtGenOut = new TH2D("hNchRecVsPtGenOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
-	hNchRecVsPtGenOut->Sumw2();
-	fListOfObjects->Add(hNchRecVsPtGenOut);
+	}
 
-	hPtPriGen = new TH1D("hPtPriGen","; #it{p}_{T}; Entries",nPtBins,ptBins);
-	hPtPriGen->Sumw2();
-	fListOfObjects->Add(hPtPriGen);
+	if(fAnalysisMC){
 
-	hPtRec = new TH1D("hPtRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
-	hPtRec->Sumw2();
-	fListOfObjects->Add(hPtRec);
+		hMultTSRec = new TH1D("hMultTSRec",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
+		hMultTSRec->Sumw2();
+		fListOfObjects->Add(hMultTSRec);
 
-	hPtPriRec = new TH1D("hPtPriRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
-	hPtPriRec->Sumw2();
-	fListOfObjects->Add(hPtPriRec);
+		hMultTSGen = new TH1D("hMultTSGen",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
+		hMultTSGen->Sumw2();
+		fListOfObjects->Add(hMultTSGen);
 
-	hPtSecRec = new TH1D("hPtSecRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
-	hPtSecRec->Sumw2();
-	fListOfObjects->Add(hPtSecRec);
+		fPtLVsNchGen = new TH2D("fPtLVsNchGen", "; #it{p}^{L}_{gen} (GeV/#it{c}); #it{R}_{T}",nPtBins,ptBins,nBinsRT,binsRT);
+		fPtLVsNchGen->Sumw2();
+		fListOfObjects->Add(fPtLVsNchGen);
 
-}
+		fPtLVsNchRec = new TH2D("fPtLVsNchRec", "; #it{p}^{L}_{rec} (GeV/#it{c}); #it{R}_{T}",nPtBins,ptBins,nBinsRT,binsRT);
+		fPtLVsNchRec->Sumw2();
+		fListOfObjects->Add(fPtLVsNchRec);
 
-fEventCuts.AddQAplotsToList(fListOfObjects);
-PostData(1, fListOfObjects);
+		hNchTSGen = new TH1D("hNchTSGen","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSGen->Sumw2();
+		fListOfObjects->Add(hNchTSGen);
+
+		hNchTSRec = new TH1D("hNchTSRec","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSRec->Sumw2();
+		fListOfObjects->Add(hNchTSRec);
+
+		hNchTSGen_1 = new TH1D("hNchTSGen_RecGreaterThanZero","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSGen_1->Sumw2();
+		fListOfObjects->Add(hNchTSGen_1);
+
+		hNchTSContamination = new TH1D("hNchTSContamination","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSContamination->Sumw2();
+		fListOfObjects->Add(hNchTSContamination);
+
+		hNchTSRecAll = new TH1D("hNchTSRecAll","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSRecAll->Sumw2();
+		fListOfObjects->Add(hNchTSRecAll);
+
+		hNchTSGenTest = new TH1D("hNchTSGenTest","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSGenTest->Sumw2();
+		fListOfObjects->Add(hNchTSGenTest);
+
+		hNchTSRecTest = new TH1D("hNchTSRecTest","; #it{R}_{T}; Entries",nBinsRT,binsRT);
+		hNchTSRecTest->Sumw2();
+		fListOfObjects->Add(hNchTSRecTest);
+
+		for( int i = 0; i < 3; ++i ){
+
+			hPhiGen[i]= new TH1D(Form("hPhiGen_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+			hPhiGen[i]->Sumw2();
+			fListOfObjects->Add(hPhiGen[i]);
+
+			hPhiRec[i] = new TH1D(Form("hPhiRec_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+			hPhiRec[i]->Sumw2();
+			fListOfObjects->Add(hPhiRec[i]);
+
+
+			for(int pid = 0; pid < nPid; ++pid){
+				hNchGenVsPtGenPID[i][pid] = new TH2D(Form("hNchGenVsPtGen_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
+				hNchGenVsPtGenPID[i][pid]->Sumw2();
+				fListOfObjects->Add(hNchGenVsPtGenPID[i][pid]);
+
+				hNchGenVsPtRec[i][pid] = new TH2D(Form("hNchGenVsPtRec_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
+				hNchGenVsPtRec[i][pid]->Sumw2();
+				fListOfObjects->Add(hNchGenVsPtRec[i][pid]);
+			}
+		}
+
+		for(int pid = 0; pid < nPid; pid++){
+
+			hPtResponsePID[pid] = new TH2D(Form("hPtResponse_%s",Pid[pid]),"; #it{p}_{T}^{rec}; #it{p}_{T}^{gen}",nPtBins,ptBins,nPtBins,ptBins);
+			hPtResponsePID[pid]->Sumw2();
+			fListOfObjects->Add(hPtResponsePID[pid]);
+
+			hNchGenVsPtGenIn[pid] = new TH2D(Form("hNchGenVsPtGenIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtGenIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtGenIn[pid]);
+
+			hNchGenVsPtGenPosIn[pid] = new TH2D(Form("hNchGenVsPtGenPosIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtGenPosIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtGenPosIn[pid]);
+
+			hNchGenVsPtGenNegIn[pid] = new TH2D(Form("hNchGenVsPtGenNegIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{gen}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtGenNegIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtGenNegIn[pid]);
+
+			hNchGenVsPtRecIn[pid] = new TH2D(Form("hNchGenVsPtRecIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecIn[pid]);
+
+			hNchGenVsPtRecPosIn[pid] = new TH2D(Form("hNchGenVsPtRecPosIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecPosIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecPosIn[pid]);
+
+			hNchGenVsPtRecNegIn[pid] = new TH2D(Form("hNchGenVsPtRecNegIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecNegIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecNegIn[pid]);
+
+			hNchRecVsPtGenIn[pid] = new TH2D(Form("hNchRecVsPtGenIn_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchRecVsPtGenIn[pid]->Sumw2();
+			fListOfObjects->Add(hNchRecVsPtGenIn[pid]);
+
+			hNchGenVsPtRecInTOF[pid] = new TH2D(Form("hNchGenVsPtRecInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecInTOF[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecInTOF[pid]);
+
+			hNchGenVsPtRecPosInTOF[pid] = new TH2D(Form("hNchGenVsPtRecPosInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecPosInTOF[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecPosInTOF[pid]);
+
+			hNchGenVsPtRecNegInTOF[pid] = new TH2D(Form("hNchGenVsPtRecNegInTOF_%s",Pid[pid]),"; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenVsPtRecNegInTOF[pid]->Sumw2();
+			fListOfObjects->Add(hNchGenVsPtRecNegInTOF[pid]);
+
+		}
+
+		hNchResponse = new TH2D("hNchResponse","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}",nBinsRT,binsRT,nBinsRT,binsRT);
+		hNchResponse->Sumw2();
+		fListOfObjects->Add(hNchResponse);
+
+		hNchRecVsPtRecOut = new TH2D("hNchRecVsPtRecOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+		hNchRecVsPtRecOut->Sumw2();
+		fListOfObjects->Add(hNchRecVsPtRecOut);
+
+		hNchRecVsPtGenOut = new TH2D("hNchRecVsPtGenOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
+		hNchRecVsPtGenOut->Sumw2();
+		fListOfObjects->Add(hNchRecVsPtGenOut);
+
+		hPtPriGen = new TH1D("hPtPriGen","; #it{p}_{T}; Entries",nPtBins,ptBins);
+		hPtPriGen->Sumw2();
+		fListOfObjects->Add(hPtPriGen);
+
+		hPtRec = new TH1D("hPtRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
+		hPtRec->Sumw2();
+		fListOfObjects->Add(hPtRec);
+
+		hPtPriRec = new TH1D("hPtPriRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
+		hPtPriRec->Sumw2();
+		fListOfObjects->Add(hPtPriRec);
+
+		hPtSecRec = new TH1D("hPtSecRec","; #it{p}_{T}; Entries",nPtBins,ptBins);
+		hPtSecRec->Sumw2();
+		fListOfObjects->Add(hPtSecRec);
+
+	}
+
+	fEventCuts.AddQAplotsToList(fListOfObjects);
+	PostData(1, fListOfObjects);
 
 }
 //______________________________________________________________________________
@@ -1229,6 +1223,7 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 	}
 
 	hNchTSRecAll->Fill(RTrec);
+	if(RTgen==0)hNchTSContamination->Fill(RTrec);
 
 	for (int i = 0; i < fMC->GetNumberOfTracks(); i++){
 
@@ -1246,6 +1241,8 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 		pidCodeMC = GetPidCode(pdgCode);
 
 		hNchGenVsPtGenIn[0]->Fill(RTgen,particle->Pt());
+		hNchRecVsPtGenIn[0]->Fill(RTrec,particle->Pt());
+		hNchRecVsPtGenOut->Fill(RTrec,particle->Pt());
 
 		if(particle->Charge() > 0)
 			hNchGenVsPtGenPosIn[0]->Fill(RTgen,particle->Pt());
@@ -1253,11 +1250,10 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 		if(particle->Charge() < 0)
 			hNchGenVsPtGenNegIn[0]->Fill(RTgen,particle->Pt());
 
-		hNchRecVsPtGenOut->Fill(RTrec,particle->Pt());
-
 		if(pidCodeMC==1){
 
 			hNchGenVsPtGenIn[1]->Fill(RTgen,particle->Pt());
+			hNchRecVsPtGenIn[1]->Fill(RTrec,particle->Pt());
 
 			if(particle->Charge() > 0)
 				hNchGenVsPtGenPosIn[1]->Fill(RTgen,particle->Pt());
@@ -1269,6 +1265,7 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 		else if(pidCodeMC==2){
 
 			hNchGenVsPtGenIn[2]->Fill(RTgen,particle->Pt());
+			hNchRecVsPtGenIn[2]->Fill(RTrec,particle->Pt());
 
 			if(particle->Charge() > 0)
 				hNchGenVsPtGenPosIn[2]->Fill(RTgen,particle->Pt());
@@ -1279,6 +1276,7 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 		else if(pidCodeMC==3){
 
 			hNchGenVsPtGenIn[3]->Fill(RTgen,particle->Pt());
+			hNchRecVsPtGenIn[3]->Fill(RTrec,particle->Pt());
 
 			if(particle->Charge() > 0)
 				hNchGenVsPtGenPosIn[3]->Fill(RTgen,particle->Pt());

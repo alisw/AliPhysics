@@ -143,6 +143,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		bool       fdEdxCalibrated;
 		TH2D* hNchRecVsPtRecOut;
 		TH2D* hNchGenVsPtGenIn[4];
+		TH2D* hNchRecVsPtGenIn[4];
 		TH2D* hNchGenVsPtGenPosIn[4];
 		TH2D* hNchGenVsPtGenNegIn[4];
 		TH2D* hNchGenVsPtRecIn[4];
@@ -169,6 +170,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH1D* hNchTSGen;
 		TH1D* hNchTSRec;
 		TH1D* hNchTSGen_1;
+		TH1D* hNchTSContamination;
 		TH1D* hNchTSRecAll;
 		TH2D* hNchResponse;
 		TH2D* hPtResponsePID[4];
