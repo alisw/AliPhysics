@@ -28,23 +28,23 @@ ClassImp(AliHFJet);
 
 
 AliHFJet::AliHFJet():
-  fID(-99.),
-  fHFMeson(-99.),
-  fPt(-99.),
-  fEta(-99.),
-  fPhi(-99.),
-  fDeltaEta(-99.),
-  fDeltaPhi(-99.),
-  fDeltaR(-99.),
-  fN(-99.),
-  fZg(-99.),
-  fRg(-99.),
-  fNsd(-99.),
-  fPt_mother(-99.),
-  fk0(-99.),
-  fk1(-99.),
-  fk2(-99.),
-  fkT(-99.)
+  fID(-1.),
+  fHFMeson(-1.),
+  fPt(-1.),
+  fEta(-1.),
+  fPhi(-1.),
+  fDeltaEta(-1.),
+  fDeltaPhi(-1.),
+  fDeltaR(-1.),
+  fN(-1.),
+  fZg(-1.),
+  fRg(-1.),
+  fNsd(-1.),
+  fPt_mother(-1.),
+  fk0(-1.),
+  fk1(-1.),
+  fk2(-1.),
+  fkT(-1.)
 {
 }
 
@@ -84,22 +84,22 @@ AliHFJet::~AliHFJet()
 // Reset the current object
 void AliHFJet::Reset()
 {
-  fID =-99.;
-  fHFMeson=-99.;
-  fPt = -99.;
-  fEta = -99.;
-  fPhi = -99.;
-  fDeltaEta = -99.;
-  fDeltaPhi = -99.;
-  fDeltaR = -99.;
-  fN=-99.;
-  fZg=-99.;
-  fRg=-99.;
-  fNsd=-99.;
-  fPt_mother=-99.;
-  fk0=-99.;
-  fk1=-99.;
-  fk2=-99.;
-  fkT=-99.;
+  fID =-1.;
+  fHFMeson=-1.;
+  fPt = -1.;
+  fEta = -1.;
+  fPhi = -1.;
+  fDeltaEta = -1.;
+  fDeltaPhi = -1.;
+  fDeltaR = -1.;
+  fN=-1.;
+  fZg=-1.;
+  fRg=-1.;
+  fNsd=-1.;
+  fPt_mother=-1.;
+  fk0=-1.;
+  fk1=-1.;
+  fk2=-1.;
+  fkT=-1.;
 
 }
