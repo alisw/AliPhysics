@@ -135,7 +135,6 @@ class AliAnalysisTaskSigmaPlToProtonPiZero : public AliAnalysisTaskSE
         Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
         Int_t                 fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
 
-        Int_t                 fNDimensions;
                                               // flag for MC information
                                            // switches ranges of histograms and binnings to pi0 specific analysis
     private:
