@@ -437,7 +437,8 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
       fMCEvent = MCEvent();
       IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
     }
-    fCent = fEventCuts.GetCentrality(0);
+    // fCent = fEventCuts.GetCentrality(0);
+    fCent = AliMultSelectionTask::IsINELgtZERO(lAODevent) ? fEventCuts.GetCentrality() : -0.5;
     fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
     if (!fPIDResponse)
       AliInfo("No PIDd");
