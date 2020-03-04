@@ -39,6 +39,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
+#include "AliMultSelectionTask.h"
 #include "AliPIDResponse.h"
 #include "TChain.h"
 
@@ -438,7 +439,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
       IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
     }
     // fCent = fEventCuts.GetCentrality(0);
-    fCent = AliMultSelectionTask::IsINELgtZERO(lAODevent) ? fEventCuts.GetCentrality() : -0.5;
+    fCent = AliMultSelectionTask::IsINELgtZERO(event) ? fEventCuts.GetCentrality() : -0.5;
     fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
     if (!fPIDResponse)
       AliInfo("No PIDd");
