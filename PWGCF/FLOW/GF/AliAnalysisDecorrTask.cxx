@@ -87,6 +87,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEtaBinNum{0},
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
+    fUseOwnWeights(kFALSE),
     fFillWeights(kFALSE),
     fNumSamples{1},
 
@@ -145,6 +146,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fEtaBinNum{0},
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
+    fUseOwnWeights(kFALSE),
     fFillWeights(kFALSE),
     fNumSamples{1},
 
@@ -375,22 +377,44 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
 Bool_t AliAnalysisDecorrTask::LoadWeights()
 {
-    if(!fUseWeights3D)
-    {
-        TList* listFlowWeights = nullptr;
-       
-        listFlowWeights = (TList*) fWeightList->FindObject(Form("%d", fAOD->GetRunNumber()));
 
-        if(!listFlowWeights) 
+    if(fUseOwnWeights)
+    {
+        if(!fUseWeights3D)
         {
-            // run-specific weights not found for this run; loading run-averaged instead
-            AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
-            listFlowWeights = (TList*) fWeightList->FindObject("averaged");
-            if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
+            TList* listFlowWeights = nullptr;
+        
+            listFlowWeights = (TList*) fWeightList->FindObject(Form("%d", fAOD->GetRunNumber()));
+
+            if(!listFlowWeights) 
+            {
+                // run-specific weights not found for this run; loading run-averaged instead
+                AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
+                listFlowWeights = (TList*) fWeightList->FindObject("averaged");
+                if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
+            }
+            
+            fh2Weights = (TH2D*) listFlowWeights->FindObject("Refs");
+            return kTRUE;   
+        } 
+        else
+        {
+            TList* listFlowWeights = nullptr;
+        
+            listFlowWeights = (TList*) fWeightList->FindObject(Form("%d", fAOD->GetRunNumber()));
+
+            if(!listFlowWeights) 
+            {
+                // run-specific weights not found for this run; loading run-averaged instead
+                AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
+                listFlowWeights = (TList*) fWeightList->FindObject("averaged");
+                if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fWeightList->ls(); return kFALSE; }
+            }
+            
+            fh3Weights = (TH3D*) listFlowWeights->FindObject("Refs");
+            return kTRUE;   
         }
         
-        fh2Weights = (TH2D*) listFlowWeights->FindObject("Refs");
-        return kTRUE;
     }
     else 
     {
@@ -472,10 +496,12 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         bPtA = task->fbDoPtA;
         bPtRef = task->fbDoPtRef; 
         bPtB = task->fbDoPtB; 
-        CalculateCorrelations(task, centrality, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE);
+        if(bRef) { CalculateCorrelations(task, centrality, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); }
 
         int iNumPtBins = fPtAxis->GetNbins();
         //Loop over Pt bins
+        if(bDiff || bPtA || bPtRef || bPtB)
+        {
             for(int iPtA(1); iPtA < iNumPtBins+1; ++iPtA)
             {
                 double dPt = fPtAxis->GetBinCenter(iPtA);
@@ -485,7 +511,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 FillPOIvectors(dEtaGap, dPtLow, dPtHigh);       //Fill POI vectors
                 CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, bPtA, bPtRef, kFALSE);
                                 
-                if(dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
+                if(bPtB && dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
                 {
                     // Too slow  -- reimplement maybe
                     for(int iPtB(1); iPtB < iNumPtBins+1; ++iPtB)
@@ -498,6 +524,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                     } //End PtB loop
                 } 
             } //End PtA loop
+        }
     } //End task loop
     
     PostData(1, fFlowList);
@@ -585,7 +612,7 @@ void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* c
                 } 
                 if(bPtB) {
                     cDnPtB = FourDiff_PtA_PtB(0,0,0,0);
-                    cNumPtB = FourDiff_PtA_PtB(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+                    cNumPtB = FourDiff_PtA_PtB(task->fiHarm[0],task->fiHarm[2],task->fiHarm[1],task->fiHarm[3]);
                 }
                 if(bRef) {
                     cDn = Four(0,0,0,0);
@@ -1108,11 +1135,20 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp() const
 double AliAnalysisDecorrTask::GetWeights(double dPhi, double dEta, double dVz)
 {
     double dWeight = 1.0;
-    if(!fUseWeights3D)
+    if(fUseOwnWeights)
     {
-        Int_t iBin = fh2Weights->FindFixBin(dPhi,dEta);
-        dWeight = fh2Weights->GetBinContent(iBin);
-        return dWeight;
+        if(!fUseWeights3D)
+        {
+            Int_t iBin = fh2Weights->FindFixBin(dPhi,dEta);
+            dWeight = fh2Weights->GetBinContent(iBin);
+            return dWeight;
+        }
+        else
+        {
+            Int_t iBin = fh3Weights->FindFixBin(dPhi,dEta,dVz);
+            dWeight = fh3Weights->GetBinContent(iBin);
+            return dWeight;
+        }
     }
     else
     {
