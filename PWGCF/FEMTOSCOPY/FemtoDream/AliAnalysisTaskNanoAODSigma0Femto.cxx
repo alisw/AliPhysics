@@ -508,19 +508,15 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
 
   if (fUseDumpster) {
     fProtonSigmaDump = new AliFemtoDreamDump("pSigma0");
-    fProtonSigmaDump->SetkstarThreshold(3);
     fDumpster->Add(fProtonSigmaDump->GetOutput());
 
     fAntiProtonAntiSigmaDump = new AliFemtoDreamDump("apaSigma0");
-    fAntiProtonAntiSigmaDump->SetkstarThreshold(3);
     fDumpster->Add(fAntiProtonAntiSigmaDump->GetOutput());
 
     fProtonSBDump = new AliFemtoDreamDump("pSB");
-    fProtonSBDump->SetkstarThreshold(3);
     fDumpster->Add(fProtonSBDump->GetOutput());
 
     fAntiProtonAntiSBDump = new AliFemtoDreamDump("apaSB");
-    fAntiProtonAntiSBDump->SetkstarThreshold(3);
     fDumpster->Add(fAntiProtonAntiSBDump->GetOutput());
   }
 
