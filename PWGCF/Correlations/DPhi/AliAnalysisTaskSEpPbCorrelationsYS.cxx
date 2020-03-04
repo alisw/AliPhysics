@@ -844,7 +844,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   
 	 
 	 Float_t nmutFoward;
-	 if(fcollisiontype=="PbPb") nmutFoward=2000.;
+	 if(fcollisiontype=="PbPb"||fcollisiontype=="pPb") nmutFoward=2000.;
 	 else nmutFoward=1000.;
 	 
 	 fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",2000, 0, 2*nmutFoward, 2000, 0, 2*nmutFoward);
@@ -2297,6 +2297,30 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutapar1=150;
        FMDcutcpar0=1.4;
        FMDcutcpar1=120;
+       break;
+     case 7:
+       FMDcutapar0=1.64755;
+       FMDcutapar1=119.602;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=150.31;
+       break;
+     case 8:
+       FMDcutapar0=1.64755;
+       FMDcutapar1=159.47;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=200.413;
+       break;
+     case 9:
+       FMDcutapar0=1.2031;
+       FMDcutapar1=73.123;
+       FMDcutcpar0=2.25453;
+       FMDcutcpar1=104.941;
+       break;
+     case 10:
+       FMDcutapar0=1.2031;
+       FMDcutapar1=97.4973;
+       FMDcutcpar0=2.25453;
+       FMDcutcpar1=139.921;
        break;
      default: break;
      }

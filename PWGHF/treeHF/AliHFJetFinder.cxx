@@ -408,10 +408,10 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
   Float_t rg=0.0;
   Float_t Nsd=0.0;
   Float_t Pt_mother=0.0;
-  Float_t k0, k0_temp=0.0;
-  Float_t k1, k1_temp=0.0;
-  Float_t k2, k2_temp=0.0;
-  Float_t kT, kT_temp=0.0;
+  Float_t k0=0.0, k0_temp=0.0;
+  Float_t k1=0.0, k1_temp=0.0;
+  Float_t k2=0.0, k2_temp=0.0;
+  Float_t kT=0.0, kT_temp=0.0;
 
   if (fSubJetRadius==0.0) fSubJetRadius=fJetRadius*2.5;
 

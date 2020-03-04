@@ -104,9 +104,12 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH1I *fFOcount;
 	TH1F *TPCclustersP;
 	TH1F *TPCclustersN;
+	TH1F *fDeltaPhiRho;
+	TH1F *fDeltaPhiEe;
 	TH2F *dEdx;
 	TH2F *EtaPhiP;
 	TH2F *EtaPhiN;
+
 	// dEdx histograms
 	TH2F *fHistdEdxVsP1;
 	TH2F *fHistdEdxVsP2;

@@ -65,7 +65,8 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
-	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) 
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) , fDeltaPhiRho(0), 
+	fDeltaPhiEe(0)
 {
 //Dummy constructor
 }
@@ -86,7 +87,8 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
-	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0)
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0), fDeltaPhiRho(0), 
+	fDeltaPhiEe(0)
 {
   if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
@@ -233,6 +235,9 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// eta-phi
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
+	// phitest
+	fDeltaPhiRho = new TH1F("fDeltaPhiRho","fDeltaPhiRho",100,-6,6); fListHist->Add(fDeltaPhiRho);
+	fDeltaPhiEe = new TH1F("fDeltaPhiEe","fDeltaPhiEe",100,-6,6); fListHist->Add(fDeltaPhiEe);
 
 	fHistdEdxVsP1 = new TH2F("fHistdEdxVsP_Electron","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
 	fListHist->Add(fHistdEdxVsP1);
@@ -447,12 +452,16 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	// Tracklets
 	Ntracklets_T = esd->GetMultiplicity()->GetNumberOfTracklets();
 
+	Double_t PhiPlus = 0;
 	// loop over two good tracks
   	for(Int_t i=0; i<2; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
 
 		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
 		ITSModuleOuter_T[i] = trk->GetITSModuleIndex(1)/1000000;
+
+		// phi test
+		if (trk->Charge()>0) PhiPlus = trk->Phi();
 
 		// TPC PID n-sigma
 		PIDTPCElectron_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -506,6 +515,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		}
 
 		lv[i].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+
   	} // end loop over two good tracks
 
   	lvSum = lv[0]+lv[1];
@@ -516,6 +526,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	Pt_T = lvSum.Pt();
 	Rapidity_T = lvSum.Rapidity();
 	Phi_T = lvSum.Phi();
+
+	// phi test
+	if (!LikeSign_T && fabs(Rapidity_T)<0.8 && Pt_T<0.1 && (pow(PIDTPCPion_T[0],2)+pow(PIDTPCPion_T[1],2)<9) ) fDeltaPhiRho->Fill(Phi_T-PhiPlus);
+	if (!LikeSign_T && fabs(Rapidity_T)<0.8 && Pt_T<0.1 && (pow(PIDTPCElectron_T[0],2)+pow(PIDTPCElectron_T[1],2)<9) ) fDeltaPhiEe->Fill(Phi_T-PhiPlus);
 
 	// virtual cut on FO chip matching
 	Int_t SPDInner[20]; for (Int_t i=0; i<20; ++i) SPDInner[i]=0;

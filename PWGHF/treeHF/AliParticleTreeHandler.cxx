@@ -52,7 +52,9 @@ AliParticleTreeHandler::AliParticleTreeHandler():
   fParticleEta(-999.),
   fParticlePhi(-999.),
   fRunNumber(0),
-  fEventID(0)
+  fEventID(0), 
+  fEventIDExt(0), 
+  fEventIDLong(0) 
 {
 }
 
@@ -78,6 +80,8 @@ TTree* AliParticleTreeHandler::BuildTree(TString name, TString title)
   // Create branches for each particle variable
   fTreeParticle->Branch("run_number", &fRunNumber);
   fTreeParticle->Branch("ev_id",&fEventID);
+  fTreeParticle->Branch("ev_id_ext",&fEventIDExt);
+  fTreeParticle->Branch("ev_id_long",&fEventIDLong);
   fTreeParticle->Branch("ParticlePt",&fParticlePt);
   fTreeParticle->Branch("ParticleEta",&fParticleEta);
   fTreeParticle->Branch("ParticlePhi",&fParticlePhi);
@@ -89,11 +93,13 @@ TTree* AliParticleTreeHandler::BuildTree(TString name, TString title)
  * Set tree variables and fill them
  */
 //________________________________________________________________
-void AliParticleTreeHandler::FillTree(int runNumber, unsigned int eventID)
+void AliParticleTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long)
 {
   
   fRunNumber = runNumber;
   fEventID = eventID;
+  fEventIDExt = eventID_Ext;
+  fEventIDLong = eventID_Long;
   
   AliTLorentzVector partVec;
   for (const auto particleIterator : fParticleContainer->accepted_momentum()) {

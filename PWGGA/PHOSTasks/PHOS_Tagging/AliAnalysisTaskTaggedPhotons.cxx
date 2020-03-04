@@ -898,7 +898,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       else
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
     }
-    
     if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,cluE);
@@ -1395,7 +1394,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
     Double_t ptP1 = p1->Pt() ;
     Double_t w1=fCentWeight*p1->GetWeight() ;
     Double_t w1TOF = 1.; 
-    if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+    if(fIsMC){ //simulate TOF cut efficiency
       w1TOF=TOFCutEff(ptP1) ; 
     }
     for(Int_t j = i+1 ; j < n ; j++) {
@@ -1414,7 +1413,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-      if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+      if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
       }
@@ -1673,7 +1672,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         Double_t w2=fCentWeight*p2->GetWeight() ;
         Double_t w1TOF = 1.; 
         Double_t w2TOF = 1.; 
-        if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+        if(fIsMC ){ //simulate TOF cut efficiency
           w1TOF=TOFCutEff(ptP1) ; 
           w2TOF=TOFCutEff(ptP2) ; 
           w*=w1TOF*w2TOF ;
@@ -1778,9 +1777,18 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 //   //Parameterization 13.10.2018
 //   Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
   
-  //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0mean =1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
-  
+  Double_t mpi0mean = 0; 
+  Double_t mpi0sigma=1.;
+  if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst
+     mpi0mean = -8.62422e-01+(2.63467e-02+7.57835e-02*pt+1.78852e-01*pt*pt+ 2.94777e-01*pt*pt*pt+pt*pt*pt*pt)/(2.63711e-02+7.56551e-02*pt+1.79822e-01*pt*pt+2.94594e-01*pt*pt*pt+pt*pt*pt*pt) ;
+     mpi0sigma =-1.25637e-04/pt/pt+1.33167e-03/pt+4.91759e-03-7.48837e-04*sqrt(pt)+2.18500e-04*pt ;
+  }
+  else{
+     //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
+     mpi0mean = 1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
+     //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
+     mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
+  }   
   
   //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
   //Parameterization of data 30.08.2014
@@ -1788,9 +1796,6 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 
 //   //Parameterization 13.10.2018
 //   Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
-  
-  //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
   
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
