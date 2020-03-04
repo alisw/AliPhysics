@@ -69,7 +69,7 @@ public:
     
     //Static Event Selection Functions 
     static Bool_t IsSelectedTrigger                    (AliVEvent* event, UInt_t lCheckedTrig);
-    static Bool_t IsINELgtZERO                         (AliVEvent *event);
+    static Bool_t IsINELgtZERO                         (const AliVEvent *event);
     static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
     static Bool_t IsNotPileupSPD                       (AliVEvent *event);
     static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);

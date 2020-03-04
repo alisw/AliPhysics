@@ -2,7 +2,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update Feb 2019
+//Update Mar 2019
 
 #ifndef AliAnalysisTaskNetLambdaMCTrad_h
 #define AliAnalysisTaskNetLambdaMCTrad_h
@@ -49,16 +49,11 @@ protected:
     TH2F*  f2fHistGenCentVsPtAntiLambda;
     TH2F*  f2fHistXiPlus;
     TH2F*  f2fHistXiMinus;
-    
-    TH2F*  f2fHistGenCentVsPtLambdacopy;
-    TH2F*  f2fHistGenCentVsPtAntiLambdacopy;
-    TH2F*  f2fHistXiPluscopy;
-    TH2F*  f2fHistXiMinuscopy;
+  
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreetight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreetight;
+
     
     TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
@@ -68,8 +63,7 @@ protected:
     
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourSigthreetight;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthreetight;
+
     
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut;

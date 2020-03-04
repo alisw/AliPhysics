@@ -307,7 +307,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
               if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
                 part.SetMCParticleRePart(mcPart);
                 PhiTRUE.push_back(part);
-                continue;
               }
             }
           }
@@ -329,7 +328,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
                 if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
                   part.SetMCParticleRePart(mcPart);
                   PhiPRIM.push_back(part);
-                  continue;
                 }
               }
             }
@@ -345,7 +343,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
           if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
             part.SetMCParticleRePart(mcPart);
             ProtonNOprim.push_back(part);
-            continue;
           }
         }
       }
@@ -357,7 +354,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
           if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
             part.SetMCParticleRePart(mcPart);
             AProtonNOprim.push_back(part);
-            continue;
           }
         }
       }
@@ -369,7 +365,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
           part.SetMCParticleRePart(mcPart);
           ProtonTRUE.push_back(part);
-          continue;
         }
       }
 
@@ -379,7 +374,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
           part.SetMCParticleRePart(mcPart);
           AProtonTRUE.push_back(part);
-          continue;
         }
       }
 

@@ -352,6 +352,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
     Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
     Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
+    void        FillEtaPhiMapForClusterInBg(const Double_t eta, const Double_t phi, const Double_t weight){  if(fHistClusterEtavsPhiBackground && !fDoLightOutput && fUseEtaPhiMapForBackCand) fHistClusterEtavsPhiBackground->Fill(phi, eta, weight);}
+    void        SetUseEtaPhiMapForBackCand(const Bool_t tmp)    {fUseEtaPhiMapForBackCand = tmp;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -370,6 +372,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
+    Bool_t      CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event);
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
 
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
@@ -397,6 +400,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     //Set Electron Cluster calibration
     void        SetElectronClusterCalibration(Bool_t calib)     {fUseElectronClusterCalibration = calib; return;};
     Bool_t      GetElectronClusterCalibration()                 {return fUseElectronClusterCalibration;};
+
+    // GetCellIds for EMCal PHOS
+    Int_t       GetCaloCellIdFromEtaPhi(const Double_t eta, const Double_t phi);
 
     // Set Individual Cuts
     Bool_t      SetClusterTypeCut(Int_t);
@@ -438,6 +444,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
     void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
 
+    Float_t     GetMinClusterEnergy()                           { return fMinEnergy;};
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
@@ -454,6 +462,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
+    AliPHOSGeoUtils*    fPHOSGeoUtils;                  // pointer to PHOS geoUtils
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
     Int_t      fPHOSCurrentRun;                         // PHOS: current processed run for bad channel map
     TObjArray* fEMCALBadChannelsMap;                    // pointer to EMCAL bad channel map
@@ -468,6 +477,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
 
     Bool_t     fIsCurrentClusterAcceptedBeforeTM;       // flag if latest checked cluster would have been accepted before track matching cut
+
+    Bool_t     fUseEtaPhiMapForBackCand;                // flag to switch on Eta Phi Map for cluster candidates when doinf background calculation (for swapping method)
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader
@@ -569,6 +580,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
+    TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction

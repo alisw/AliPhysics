@@ -102,6 +102,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
+  fPHOSGeoUtils(NULL),
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
@@ -114,6 +115,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fDoLightOutput(kFALSE),
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
+  fUseEtaPhiMapForBackCand(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
@@ -204,6 +206,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
+  fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
@@ -321,6 +324,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
+  fPHOSGeoUtils(NULL),
   fPHOSInitialized(kFALSE),
   fPHOSCurrentRun(-1),
   fEMCALBadChannelsMap(NULL),
@@ -333,6 +337,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fDoLightOutput(ref.fDoLightOutput),
   fIsMC(ref.fIsMC),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
+  fUseEtaPhiMapForBackCand(ref.fUseEtaPhiMapForBackCand),
   fV0ReaderName(ref.fV0ReaderName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
@@ -423,6 +428,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEtavsPhiBeforeAcc(NULL),
   fHistClusterEtavsPhiAfterAcc(NULL),
   fHistClusterEtavsPhiAfterQA(NULL),
+  fHistClusterEtavsPhiBackground(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
   fHistEnergyOfClusterBeforeNL(NULL),
@@ -681,6 +687,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -701,6 +713,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -718,6 +736,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -733,6 +757,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -748,6 +778,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->GetXaxis()->SetTitle("#varphi (rad)");
       fHistClusterEtavsPhiAfterAcc->GetYaxis()->SetTitle("#eta");
       fHistograms->Add(fHistClusterEtavsPhiAfterAcc);
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground  = new TH2F(Form("EtaPhi_Background %s",GetCutNumber().Data()),"EtaPhi_Background",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -759,6 +795,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     if(!fDoLightOutput){
       fHistClusterEtavsPhiBeforeAcc->Sumw2();
       fHistClusterEtavsPhiAfterAcc->Sumw2();
+      if(fUseEtaPhiMapForBackCand){
+        fHistClusterEtavsPhiBackground->Sumw2();
+      }
     }
     fHistClusterEtavsPhiAfterQA->Sumw2();
   }
@@ -1891,6 +1930,7 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
       }
     }
 
+    if(!fPHOSGeoUtils) fPHOSGeoUtils = new AliPHOSGeoUtils("IHEP","");
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster || fUseElectronClusterCalibration) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && ( fUseDistTrackToCluster || fUseElectronClusterCalibration )){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
@@ -3466,6 +3506,180 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
   return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event)
+{
+
+  if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
+  if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
+  if( fClusterType == 2 ) fGeomPHOS = AliPHOSGeometry::GetInstance();
+
+  Int_t largestCellicol = -1, largestCellirow = -1;
+  Int_t rowdiff =  0, coldiff =  0;
+
+  Int_t CelliMod = GetModuleNumberAndCellPosition(CellID, largestCellicol, largestCellirow);
+  if(CelliMod < 0) return kTRUE;
+
+  Int_t nMinRows = 0, nMaxRows = 0;
+  Int_t nMinCols = 0, nMaxCols = 0;
+
+  Bool_t checkNextSM = kFALSE;
+  Int_t distanceForLoop = 2;
+  Int_t fMinDistanceToBadChannelSwapping = 1;
+
+  Bool_t isDCal = kFALSE;
+  if(fClusterType == 4){
+    if (phiCluster < 0) phiCluster += 2*TMath::Pi();
+    if (phiCluster > fMinPhiCut && phiCluster < fMaxPhiCut)
+      isDCal = kFALSE;
+    else if (phiCluster > fMinPhiCutDMC && phiCluster < fMaxPhiCutDMC)
+      isDCal = kTRUE;
+  }
+
+  if( fClusterType == 1 || (fClusterType == 4 && !isDCal)){
+    nMinRows = largestCellirow - distanceForLoop;
+    nMaxRows = largestCellirow + distanceForLoop;
+    if(nMinRows < 0) nMinRows = 0;
+    if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows;
+
+    nMinCols = largestCellicol - distanceForLoop;
+    nMaxCols = largestCellicol + distanceForLoop;
+
+    if(CelliMod%2){
+      if(nMinCols < 0){
+        nMinCols = 0;
+        checkNextSM = kTRUE;
+      }
+      if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols) nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+    }else{
+      if(nMinCols < 0) nMinCols = 0;
+      if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols){
+        nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+        checkNextSM = kTRUE;
+      }
+    }
+  }else if( fClusterType == 3 || (fClusterType == 4 && isDCal)){
+    nMinRows = largestCellirow - distanceForLoop;
+    nMaxRows = largestCellirow + distanceForLoop;
+    if(nMinRows < 0) nMinRows = 0;
+    if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows; //AliEMCALGeoParams::fgkDCALRows; <- doesnt exist yet (DCAl = EMCAL here)
+
+    nMinCols = largestCellicol - distanceForLoop;
+    nMaxCols = largestCellicol + distanceForLoop;
+    if(nMinCols < 0) nMinCols = 0;
+    if(nMaxCols > fgkDCALCols) nMaxCols = fgkDCALCols; // AliEMCALGeoParams::fgkDCALCols; <- doesnt exist yet
+
+  }else if( fClusterType == 2 ){
+    nMinRows = largestCellirow - distanceForLoop;
+    nMaxRows = largestCellirow + distanceForLoop;
+    if (nMinRows < 0) nMinRows = 0;
+    if (nMaxRows > fGeomPHOS->GetNPhi()) nMaxRows = fGeomPHOS->GetNPhi();
+
+    nMinCols = largestCellicol - distanceForLoop;
+    nMaxCols = largestCellicol + distanceForLoop;
+    if(nMinCols < 0) nMinCols = 0;
+    if(nMaxCols > fGeomPHOS->GetNZ()) nMaxCols = fGeomPHOS->GetNZ();
+  }
+
+//  cout << "Cluster: " << fClusterType << ",checkNextSM: " << checkNextSM << endl;
+//  cout << "largestCell: " << largestCellID << ",mod: " << CelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
+//  cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
+
+  //check bad cells within respective SM
+  for (Int_t irow = nMinRows;irow < nMaxRows;irow++)
+  {
+    for (Int_t icol = nMinCols;icol < nMaxCols;icol++)
+    {
+      if(irow == largestCellirow && icol == largestCellicol) continue;
+
+      Int_t iBadCell = 0;
+      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && CelliMod<fEMCALBadChannelsMap->GetEntries()){
+        iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(CelliMod))->GetBinContent(icol,irow);
+      }else if( fClusterType == 2 && fPHOSBadChannelsMap[CelliMod+1]){
+        iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[CelliMod+1])->GetBinContent(icol,irow);
+      }
+      //cout << "CelliMod: " << CelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
+      if(iBadCell==0) continue;
+
+      rowdiff = TMath::Abs( largestCellirow - irow ) ;
+      coldiff = TMath::Abs( largestCellicol - icol ) ;
+      //cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
+      if ((coldiff + rowdiff <= fMinDistanceToBadChannelSwapping )) return kTRUE;
+
+      //cout << "not within distanceToBadChannel!" << endl;
+    }
+  }
+
+  //check bad cells in neighboring SM only if within chosen distanceToBadChannel from maxEnergyCell the next SM could be reached
+  if(checkNextSM) {
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
+    // C Side impair SM, nSupMod%2=1;A side pair SM nSupMod%2=0
+    if( fClusterType == 1 || fClusterType == 4){
+      if(CelliMod%2){
+        nMinCols = largestCellicol - distanceForLoop + AliEMCALGeoParams::fgkEMCALCols;
+        nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+
+        CelliMod -= 1;
+        largestCellicol += AliEMCALGeoParams::fgkEMCALCols;
+      }else{
+        nMinCols = 0;
+        nMaxCols = largestCellicol + distanceForLoop - AliEMCALGeoParams::fgkEMCALCols;
+
+        CelliMod += 1;
+        largestCellicol -= AliEMCALGeoParams::fgkEMCALCols;
+      }
+    }else if( fClusterType == 2 ){
+     // nMaxRows = 64;
+     // nMaxCols = 56;
+    }
+    //cout << "largestCell: " << largestCellID << ",mod: " << CelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
+    //cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
+    for (Int_t irow = nMinRows;irow < nMaxRows;irow++)
+    {
+      for (Int_t icol = nMinCols;icol < nMaxCols;icol++)
+      {
+        Int_t iBadCell = 0;
+        if( (fClusterType == 1 || fClusterType == 4) && CelliMod<fEMCALBadChannelsMap->GetEntries()){
+          iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(CelliMod))->GetBinContent(icol,irow);
+        }else if( fClusterType == 2 && fPHOSBadChannelsMap[CelliMod+1]){
+          iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[CelliMod+1])->GetBinContent(icol,irow);
+        }
+        //cout << "CelliMod: " << CelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
+        if(iBadCell==0) continue;
+
+        rowdiff = TMath::Abs( largestCellirow - irow ) ;
+        coldiff = TMath::Abs( largestCellicol - icol ) ;
+        //cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
+        if ((coldiff + rowdiff <= fMinDistanceToBadChannelSwapping )) return kTRUE;
+        //cout << "not within distanceToBadChannel!" << endl;
+      }
+    }
+  }
+
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Int_t  AliCaloPhotonCuts::GetCaloCellIdFromEtaPhi(const Double_t eta, const Double_t phi){
+  Int_t cellId = -1;
+  if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+    if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
+    if(!fGeomEMCAL){ AliFatal("ERROR: EMCal geometry not initialized for cluster swapping method");}
+    fGeomEMCAL->GetAbsCellIdFromEtaPhi(eta, phi, cellId);
+  }
+  else if(fClusterType == 2){
+    if(!fPHOSGeoUtils){ AliFatal("PHOS geoUtils not initialized!");}
+    Double_t tmpVtx[] = {0,0,0};
+    Int_t modNr;
+    Double_t x, z;
+    if(fPHOSGeoUtils->ImpactOnEmc(tmpVtx, 2*atan(exp(-eta)), phi, modNr, z, x)){
+      fPHOSGeoUtils->RelPosToAbsId(modNr, x, z, cellId);
+    }
+  }
+  return cellId;
+
+}
+
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, AliMCEvent * mcEvent, Int_t isMC, Double_t weight, Long_t clusterID)
@@ -4905,28 +5119,28 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimCluster->SetParameters(-1.79400e+02,1.55956e+02,4.63098e+01,-4.57991e+00,2.16391e+03);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
     fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.22806e-01, 6.81347e-01, 1.55597e+01, 4.02791e-03);
-  case 30: //u PHOS timing cut, 13TeV Trigger 30ns, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<250ns, LowPt from MB; HighPt from Trigger
+  case 30: //u PHOS timing cut, 13TeV Trigger 30ns by Signal Extraction, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, LowPt from MB; HighPt constant
     if (!fUseTimeDiff) fUseTimeDiff=1;
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
-    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
-    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 5.5;
+    fTimingEfficiencyMCSimClusterHighPtStart = 100e+00;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
-    fFuncTimingEfficiencyMCSimCluster->SetParameters(-3.27696e+02,2.73887e+02,7.92510e+01,1.94926e+02,4.24588e+03);
-    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
-    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.23094e-01, 6.79660e-01, 1.56379e+01, 4.06454e-03);
-  case 31: //v PHOS timing cut, 13TeV Trigger 30ns, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<500ns, LowPt from MB; HighPt from Trigger
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-2.81491e+01, 2.71243e+01, 1.14455e+01, 1.12762e+02, 7.06898e+02);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameter(0, 1.);
+  case 31: //v PHOS timing cut, 13TeV Trigger 30ns by Signal Extraction, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, LowPt from Tr; HighPt constant
     if (!fUseTimeDiff) fUseTimeDiff=1;
     fMinTimeDiff=-30e-9;
     fMaxTimeDiff=30e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
-    fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
-    fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 5.5;
+    fTimingEfficiencyMCSimClusterHighPtStart = 100e+00;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
-    fFuncTimingEfficiencyMCSimCluster->SetParameters(-3.09428e+03,2.54179e+03,7.33582e+02,3.05956e+03,4.07905e+04);
-    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
-    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.24406e-01, 6.77829e-01, 1.56648e+01, 3.96817e-03);
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-2.36670e+01, 2.27558e+01, 9.74890e+00,  2.59148e+01, 4.35144e+02);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameter(0, 1.);
   case 32: //w PHOS timing cut, 13TeV Trigger 30ns by Signal Extraction, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, LowPt from MB; HighPt from Trigger
     if (!fUseTimeDiff) fUseTimeDiff=1;
     fMinTimeDiff=-30e-9;

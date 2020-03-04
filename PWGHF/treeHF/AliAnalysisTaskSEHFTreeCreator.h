@@ -153,6 +153,8 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetSoftDropZCut(Double_t d) {fSoftDropZCut = d; }
+    void SetSoftDropBeta(Double_t d) {fSoftDropBeta = d; }
     void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
@@ -411,6 +413,8 @@ private:
     Int_t                   fJetAlgorithm;                         /// Setting the jet finding algorithm
     Int_t                   fSubJetAlgorithm;                      /// Setting the jet finding algorithm
     Double_t                fMinJetPt;                             /// Setting the jet finding min pT
+    Double_t                fSoftDropZCut;                         /// setting the soft drop z parameter
+    Double_t                fSoftDropBeta;                         /// setting the soft drop beta parameter
     Double_t                fTrackingEfficiency;                   /// Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate

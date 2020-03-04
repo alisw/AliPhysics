@@ -1223,19 +1223,33 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::InitializeTask()
   {
     fPIDCorrectionFile = TFile::Open(Form("%s",fPIDCorrectionPath.Data()));
     if(!fPIDCorrectionFile) { AliFatal("PID correction file not found! Terminating!"); return kFALSE; }
+    TList * listPID = (TList*)(fPIDCorrectionFile->Get("PIDCorrection"));
 
-    histMeanPionq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qpimean");
-    histMeanKaonq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qKmean");
-    histMeanProtonq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qpmean");
-    histSigmaPionq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qpisigma");
-    histSigmaKaonq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qKsigma");
-    histSigmaProtonq = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018qpsigma");
-    histMeanPionr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rpimean");
-    histMeanKaonr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rKmean");
-    histMeanProtonr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rpmean");
-    histSigmaPionr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rpisigma");
-    histSigmaKaonr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rKsigma");
-    histSigmaProtonr = (TH3D*) fPIDCorrectionFile->Get("hPIDcorrectionfor2018rpsigma");
+    histMeanPionq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qpimean");
+    if(!histMeanPionq) { AliFatal("histMeanPionq not found! Terminating!"); return kFALSE; }
+    histMeanKaonq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qKmean");
+    if(!histMeanKaonq) { AliFatal("histMeanKaonq not found! Terminating!"); return kFALSE; }
+    histMeanProtonq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qpmean");
+    if(!histMeanProtonq) { AliFatal("histMeanProtonq not found! Terminating!"); return kFALSE; }
+    histSigmaPionq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qpisigma");
+    if(!histSigmaPionq) { AliFatal("histSigmaPionq not found! Terminating!"); return kFALSE; }
+    histSigmaKaonq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qKsigma");
+    if(!histSigmaKaonq) { AliFatal("histSigmaKaonq not found! Terminating!"); return kFALSE; }
+    histSigmaProtonq = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018qpsigma");
+    if(!histSigmaProtonq) { AliFatal("histSigmaProtonq not found! Terminating!"); return kFALSE; }
+    histMeanPionr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rpimean");
+    if(!histMeanPionr) { AliFatal("histMeanPionr not found! Terminating!"); return kFALSE; }
+    histMeanKaonr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rKmean");
+    if(!histMeanKaonr) { AliFatal("histMeanKaonr not found! Terminating!"); return kFALSE; }
+    histMeanProtonr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rpmean");
+    if(!histMeanProtonr) { AliFatal("histMeanProtonr not found! Terminating!"); return kFALSE; }
+    histSigmaPionr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rpisigma");
+    if(!histSigmaPionr) { AliFatal("histSigmaPionr not found! Terminating!"); return kFALSE; }
+    histSigmaKaonr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rKsigma");
+    if(!histSigmaKaonr) { AliFatal("histSigmaKaonr not found! Terminating!"); return kFALSE; }
+    histSigmaProtonr = (TH3D*) listPID->FindObject("hPIDcorrectionfor2018rpsigma");
+    if(!histSigmaProtonr) { AliFatal("histSigmaProtonr not found! Terminating!"); return kFALSE; }
+  
  }
 
   // creating particle vectors & reserving capacity in order to avoid memory re-allocation

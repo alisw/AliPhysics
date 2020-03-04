@@ -141,7 +141,7 @@ class LMEECutLib {
         varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
         varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
 
-        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  4.0,6.1);
+        varCuts->AddCut(AliDielectronVarManager::kNclsITS,  3.9,6.1);
         varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
 
         //varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//should not be used in 2018 PbPb analyses
@@ -171,13 +171,6 @@ class LMEECutLib {
     }
 
     AliAnalysisCuts *SetupPIDCuts(){
-      //AliDielectronPID *pid = new AliDielectronPID();
-      //if(fCutName.Contains("noPID",TString::kIgnoreCase) || fCutName.Contains("postPIDCalib",TString::kIgnoreCase) ) return pid;
-      //pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-      //pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,1. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-      //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-      //pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-      //return pid;
 
       if(fCutName.Contains("DefaultPID",TString::kIgnoreCase)){
         AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts", "cuts", AliDielectronCutGroup::kCompAND);
@@ -194,13 +187,13 @@ class LMEECutLib {
         AliDielectronCutGroup* hadrej = new AliDielectronCutGroup("hadrej","hadrej", AliDielectronCutGroup::kCompOR);
         AliDielectronPID* cutsTPC = new AliDielectronPID("cutsTCP", "cutsTCP");
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon    ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton  ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
         recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         hadrej->AddCut(cutsTPC);
@@ -211,12 +204,12 @@ class LMEECutLib {
         AliDielectronCutGroup* hadrej = new AliDielectronCutGroup("hadrej","hadrej", AliDielectronCutGroup::kCompOR);
         AliDielectronPID* cutsTPC = new AliDielectronPID("cutsTCP", "cutsTCP");
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon    ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton  ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
         recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         hadrej->AddCut(cutsTPC);
         hadrej->AddCut(recoverTOF);
@@ -225,7 +218,7 @@ class LMEECutLib {
       else if(fCutName.Contains("ITSTPChadrej",TString::kIgnoreCase)){
         AliDielectronPID* cutsTPC = new AliDielectronPID("TPCHadRej", "TPCHadRej");
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon    ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton  ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
@@ -234,7 +227,7 @@ class LMEECutLib {
       else if(fCutName.Contains("TPChadrej",TString::kIgnoreCase)){
         AliDielectronPID* cutsTPC = new AliDielectronPID("TPCHadRej", "TPCHadRej");
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kKaon    ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         cutsTPC->AddCut(AliDielectronPID::kTPC, AliPID::kProton  ,   -3., 3., 0., 100., kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         return cutsTPC;
@@ -242,7 +235,7 @@ class LMEECutLib {
       else if(fCutName.Contains("ITSTOFrecover",TString::kIgnoreCase)){
         AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
         recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kITS, AliPID::kElectron,   -3., 1., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         return recoverTOF;
@@ -250,7 +243,7 @@ class LMEECutLib {
       else if(fCutName.Contains("TOFrecover",TString::kIgnoreCase)){
         AliDielectronPID* recoverTOF = new AliDielectronPID("recoverTOF", "recoverTOF");
         recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 4., 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        recoverTOF->AddCut(AliDielectronPID::kTPC, AliPID::kPion    , -100., 3.5, 0., 100., kTRUE , AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         return recoverTOF;
       }
@@ -267,7 +260,7 @@ class LMEECutLib {
 		AliAnalysisCuts *SetupPIDCutsForTag(){
 			//AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts", "cuts", AliDielectronCutGroup::kCompAND);
 			AliDielectronPID* cutsPIDtag   = new AliDielectronPID("PIDtag", "PIDtag");
-			cutsPIDtag->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -100,4. ,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+			cutsPIDtag->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -100, 3.5,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 			cutsPIDtag->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 			cutsPIDtag->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 			return cutsPIDtag;

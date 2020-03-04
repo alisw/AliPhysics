@@ -1832,18 +1832,24 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m0110113","24466190pa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("m1510113","24466190pa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("m5a10113","24466190pa01cc00000","0163103100000010"); // INT7
-  } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0
+  } else if (trainConfig ==812){//PHOS Triggers Timing Cut 0, 100 MeV
     cuts.AddCutCalo("00010113","244661900a09cc00000","0163103100000010"); //no Trigger
     cuts.AddCutCalo("00062113","244661900a09cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig ==813){//PHOS Triggers Timing Cut Studies
-    cuts.AddCutCalo("00010113","24466190ga01cc00000","0163103100000010"); //no Trigger, Mike's Timing
-    cuts.AddCutCalo("00062113","24466190ga01cc00000","0163103100000010"); //PHI7, Mike's Timing
+  } else if (trainConfig ==813){//PHOS Triggers Timing Cut 0, 300 MeV
+    cuts.AddCutCalo("00010113","244661900a01cc00000","0163103100000010"); //no Trigger
+    cuts.AddCutCalo("00062113","244661900a01cc00000","0163103100000010"); //PHI7
   } else if (trainConfig ==814){ //PHOS Triggers Timing Cut Studies without throwing out clusters
     cuts.AddCutCalo("00010113","244661907a01cc00000","0163103100000010"); //no Trigger, Mike's Timing
     cuts.AddCutCalo("00062113","244661907a01cc00000","0163103100000010"); //PHI7, Mike's Timing
   } else if (trainConfig == 815){ // NCell Cut Variations, without E>1GeV
     cuts.AddCutCalo("00010113","24466190pa012200000","0163103100000010"); // INT7 NCells 3
     cuts.AddCutCalo("00010113","24466190pa01cc00000","0163103100000010"); // INT7 NCells 2
+  } else if (trainConfig == 816){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB, High Pt const
+    cuts.AddCutCalo("00010113","24466190ua01cc00000","0163103100000010"); //INT7
+    cuts.AddCutCalo("00062113","24466190ua01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 817){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger, High Pt const
+    cuts.AddCutCalo("00010113","24466190va01cc00000","0163103100000010"); //INT7
+    cuts.AddCutCalo("00062113","24466190va01cc00000","0163103100000010"); //PHI7
   } else if (trainConfig == 818){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from MB
     cuts.AddCutCalo("00010113","24466190wa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190wa01cc00000","0163103100000010"); //PHI7
@@ -1880,6 +1886,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00074113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, no NL VOHM
     cuts.AddCutCalo("00076113","2446600044012300000","0163103100000010"); // -50ns, 30ns timing cut, no NL VOHM with SPD
 
+  } else if( trainConfig == 890){ // PHOS swapping background test
+    cuts.AddCutCalo("00010113","24466190pa092200000","0r63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0s63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0t63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0u63103100000010"); // INT7 no Trigger
   // *********************************************************************************************************
   // 5 TeV 2017 pp - Jet configurations
   // *********************************************************************************************************
@@ -2212,6 +2223,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2052){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM
     cuts.AddCutCalo("0008d113","411791206f032230000","01631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
+  } else if (trainConfig == 2060){  // EMCAL+DCAL clusters swapping background standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","411791206f032230000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0s631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0t631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0u631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2061){  // EMCAL+DCAL clusters swapping background standard cuts, INT7, NL , std TM
+    cuts.AddCutCalo("00010113","411791206f032230000","0v631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0w631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411791206f032230000","0x631031000000d0"); // INT7 NL 12 + TB
 
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
@@ -2764,7 +2784,7 @@ void AddTask_GammaCalo_pp(
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
-    analysisClusterCuts[i]->SetFillCutHistograms("");
+
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
@@ -2774,6 +2794,9 @@ void AddTask_GammaCalo_pp(
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+
+    if(analysisMesonCuts[i]->DoGammaSwappForBg()) analysisClusterCuts[i]->SetUseEtaPhiMapForBackCand(kTRUE);
+    analysisClusterCuts[i]->SetFillCutHistograms("");
   }
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
