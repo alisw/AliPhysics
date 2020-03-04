@@ -55,6 +55,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetPhiBins(Int_t bins) { fPhiBinNum = bins; }
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
         void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
+        void                    SetUseOwnWeights(Bool_t use) { fUseOwnWeights = use; }
         void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; } 
@@ -211,6 +212,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Int_t                   fEtaBinNum;
         Int_t                   fPhiBinNum;
         Bool_t                  fUseWeights3D;
+        Bool_t                  fUseOwnWeights;
         Bool_t                  fFillWeights;
         Int_t                   fNumSamples;        //Number of samples for bootstrapping
         Bool_t                  bHasGap;
