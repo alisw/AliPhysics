@@ -269,9 +269,10 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
     fFlag |= BIT(kINELgt0);
-  } else if (!fSelectInelGt0) { // for simple INEL events multiplicity is not defined.
-    fCentPercentiles[0] = -0.5;
-    fCentPercentiles[1] = -0.5;
+    if (!fSelectInelGt0) { // for simple INEL events multiplicity is not defined.
+      fCentPercentiles[0] = -0.5;
+      fCentPercentiles[1] = -0.5;
+    }
   }
 
   /// If the correlation plots are defined, we should fill them
