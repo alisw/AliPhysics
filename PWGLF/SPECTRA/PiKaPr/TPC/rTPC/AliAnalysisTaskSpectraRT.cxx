@@ -417,15 +417,15 @@ p: fMeanChT = 7.216
 	fEtaCalibration   = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
 	fEtaCalibrationEl = new TF1("fDeDxVsEtaEl", "pol4", 0.0, 1.0);
 
-	hNchTSData = new TH1D("hNchTSData",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
+	hNchTSData = new TH1D("hMultTSData",";#it{N}_{acc} mult; Entries",100,-0.5,99.5);
 	hNchTSData->Sumw2();
 	fListOfObjects->Add(hNchTSData);
 
-	hRTData = new TH1D("hRTData",";#it{N}_{acc} mult; Entries",nBinsRT,binsRT);
+	hRTData = new TH1D("hRTData",";#it{R}_{T}; Entries",nBinsRT,binsRT);
 	hRTData->Sumw2();
 	fListOfObjects->Add(hRTData);
 
-	hPtLVsRT = new TH2D("hPtLVsRT", "; #it{R}_{T}; #it{p}^{L}_{rec} (GeV/#it{c})",nPtBins,ptBins,nBinsRT,binsRT);
+	hPtLVsRT = new TH2D("hPtLVsRTData", "; #it{p}^{L}_{rec} (GeV/#it{c}); #it{R}_{T}",nPtBins,ptBins,nBinsRT,binsRT);
 	hPtLVsRT->Sumw2();
 	fListOfObjects->Add(hPtLVsRT);
 
@@ -812,14 +812,9 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 			AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
 
 			if(!track) continue;
-
-			if(!fTrackFilterGolden->IsSelected(track))
-				continue;
-
-			if(TMath::Abs(track->Eta()) > fEtaCut)
-				continue;
-
-			if( track->Pt() < fPtMin)continue;
+			if(!fTrackFilterGolden->IsSelected(track)) continue;
+			if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+			if( track->Pt() < fPtMin) continue;
 
 			if (flPt<track->Pt()){
 				flPt  = track->Pt();
@@ -1495,7 +1490,7 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 	hNchTSData->Fill(multTSdata);
 
 	double RT = multTSdata/fMeanChT;
-	hPtLVsRT->Fill(fRecLeadIn,RT);
+	hPtLVsRT->Fill(fRecLeadPt,RT);
 	hRTData->Fill(RT);
 
 	for(int iT = 0; iT < iTracks; iT++) {
@@ -1509,8 +1504,6 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		if(!fTrackFilterGolden->IsSelected(esdTrack)) continue;
 
 		double DPhi = DeltaPhi(esdTrack->Phi(), fRecLeadPhi);
-		///		double eta      = esdTrack->Eta();
-		///		double pt       = esdTrack->Pt();
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 			hNchVsPtDataTPC[0][0]->Fill(RT,esdTrack->Pt());
