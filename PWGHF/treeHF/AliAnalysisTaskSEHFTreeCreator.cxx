@@ -1,5 +1,4 @@
 /**************************************************************************
-:q
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -4062,4 +4061,3 @@ AliJetContainer* AliAnalysisTaskSEHFTreeCreator::GetJetContainer(Int_t i) const
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }
-
