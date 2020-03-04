@@ -297,10 +297,10 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
   std::vector<double> centaxisbin;
   (fIsHM)
       ? centaxisbin = {0, 0.001, 0.01, 0.05, 0.1}
-      : centaxisbin = {0,  1,  5,  10, 15, 20, 30, 40,
+      : centaxisbin = {-1, 0,  1,  5,  10, 15, 20, 30, 40,
                        50, 60, 70, 80, 90, 100};  // can be use from pp to PbPb
   if (fIsMC)
-    centaxisbin = {0,  0.001, 0.01, 0.05, 0.1, 1,  5,  10, 15, 20,
+    centaxisbin = {-1, 0,  0.001, 0.01, 0.05, 0.1, 1,  5,  10, 15, 20,
                    30, 40,    50,   60,   70,  80, 90, 100};  // for general MC
   fBinCent = AxisVar("Cent", centaxisbin);
   auto binPt = AxisFix("Pt", 200, 0, 20);
@@ -324,7 +324,7 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
   if (fIsHM)
     fHistos->CreateTH1("hMultiplicity", "", 100, 0, 0.1, "s");
   else
-    fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
+    fHistos->CreateTH1("hMultiplicity", "", 101, -1, 100, "s");
   if (fFillQAPlot) {
     fHistos->CreateTH2("QA/hTPCPIDPion", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH1("QA/hEtaPion", "", 20, -1.0, 1.0);
