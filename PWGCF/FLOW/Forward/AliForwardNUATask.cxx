@@ -18,7 +18,6 @@
 #include "AliCollisionGeometry.h"
 #include "AliLog.h"
 #include "AliForwardNUATask.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowRun2Task.h"
 #include "TObjectTable.h"

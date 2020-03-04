@@ -41,8 +41,6 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
-    fVertex(0),
-    fCentrality(0),
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -52,6 +50,8 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality(0),      
+    fVertex(0),       
     centralDist(),
     refDist(),
     forwardDist(),
@@ -76,8 +76,6 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
-    fVertex(0),
-    fCentrality(0),    
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -87,6 +85,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality(0),      
+    fVertex(0),   
     centralDist(),
     refDist(),
     forwardDist(),
@@ -463,7 +463,7 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Overlap regions between the two detectors
   // Float_t fmd_v0a_overlap[2] = {2.8, 5.03};
   // Float_t fmd_v0c_overlap[2] = {-3.4, -2.01};
-  
+
   Tracks v0hits = this->GetV0hits();
   Tracks fmdhits = this->GetFMDhits();
 

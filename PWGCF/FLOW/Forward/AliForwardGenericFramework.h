@@ -37,7 +37,7 @@ public:
   /*
   * Constructor
   */
-  AliForwardGenericFramework();
+  AliForwardGenericFramework(Int_t refbins);
 
   /**
    * Destructor
@@ -71,6 +71,9 @@ public:
    */
   void reset();
 
+  THnD* fQvector_per_detector;//!     // Accumulated reference particles
+  TH1D* fAutoDiff;//!     // Accumulated reference particles
+  TH1D* fAutoRef;//!     // Accumulated reference particles
   THnD* fQvector;//!     // Accumulated reference particles
   THnD* fpvector;//!    // Accumulated differential particles
   THnD* fqvector;//!    // Accumulated differential particles

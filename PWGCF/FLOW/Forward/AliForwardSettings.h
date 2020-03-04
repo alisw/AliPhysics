@@ -240,6 +240,12 @@ class AliForwardSettings : public TObject {
 
   Int_t runnumber;
   Double_t TPC_maxeta;
+
+  TString nua_file;
+  TString nue_file;
+  TString sec_file;
+  TString sec_cent_file;
+
 private:
   ClassDef(AliForwardSettings, 1);
 };
