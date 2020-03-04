@@ -343,6 +343,8 @@ void AliSigma0PhotonCuts::PhotonCuts(
             photon.SetID(mcPartPos->GetMother());
 
             if (mcParticle) {
+              if (mcParticle->IsSecondaryFromMaterial()) continue;
+
               photon.SetMCParticle(mcParticle, mcEvent);
               photon.SetMCPDGCode(mcParticle->GetPdgCode());
               photon.SetMotherID(mcParticle->GetMother());  // otherwise the Sigma0 is not set properly as the mother of the photon
