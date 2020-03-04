@@ -21,8 +21,9 @@
 
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum3_pt75_sec_OnlyChi2NDF;JPID_sum4_pt75_sec_OnlyLegDist;JPID_sum5_pt75_sec_OnlyR;JPID_sum6_pt75_sec_OnlyPsiPair;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_wCos;JPID_sum2_pt75_sec_wCosChi2;JPID_sum3_pt75_sec_wCosChi2LegDist;JPID_sum4_pt75_sec_wCosChi2LegDistR;JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
+TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
 // TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
@@ -38,8 +39,10 @@ TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID
 
 // TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyChi2NDF;kV0OnlyLegDist;kV0OnlyR;kV0OnlyPsiPair;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Cuts=("noPID;kV0wCosOpenAngle;kV0wChi2NDF;kV0wCosChi2LegDist;wCosChi2LegDistR;wCosChi2LegDistRPsiPair;kV0wCosChi2LegDistRPsiPairM;kV0wCosChi2LegDistRPsiPairMArmPt;kV0wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+// TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
+TString names_Sec_Cuts=("noPID;kV0");
+// TString names_Sec_Cuts=("noPID;kV0_loose");
 
 
                                                                                 // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
@@ -47,6 +50,9 @@ TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0Only
                                                                                 // TString names_Sec_Cuts=("cut1_pt75");
                                                                                 // TString names_Sec_Cuts=("noPID;cut1_pt75_secondary");
 
+
+// TString names_Sec_loose_Cuts=("noPID;kV0");
+TString names_Sec_loose_Cuts=("noPID;kV0_loose");
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // 400 MEV CUT !!!!!!!!!!!!!!!
@@ -411,6 +417,21 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
 
     AnaCut.SetPairCutsAna(LMEECutLib::kV0);
+
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0_loose"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_loose);
 
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();

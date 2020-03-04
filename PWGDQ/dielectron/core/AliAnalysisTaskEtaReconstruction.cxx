@@ -16,7 +16,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-//       Single Electron and Pair Efficiency Task                        //
+//       Eta Reconstruction Task via the Dalitz decay channel            //
 //                                        (description in .h file)       //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////

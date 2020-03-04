@@ -1,16 +1,16 @@
 # ifndef AliAnalysisTaskEtaReconstruction_H
 # define AliAnalysisTaskEtaReconstruction_H
 
-//###########################################################
-//#                                                         #
-//#             Single Electron Efficiency Task             #
-//#             Pair Efficiency Task                        #
-//#             Track Resolution                            #
-//#                                                         #
-//#  Authors:                                               #
-//#   Carsten Klein, Uni Frankfurt / Carsten.Klein@cern.ch  #
-//#                                                         #
-//###########################################################
+//#################################################################
+//#                                                               #
+//#             Single Electron Efficiency Task                   #
+//#             Pair Efficiency Task                              #
+//#             Track Resolution                                  #
+//#                                                               #
+//#  Authors:                                                     #
+//#   Florian Eisenhut, Uni Frankfurt / florian.eisenhut@cern.ch  #
+//#                                                               #
+//#################################################################
 
 #include "AliAnalysisTaskSE.h"
 #include "AliDielectronSignalMC.h"
