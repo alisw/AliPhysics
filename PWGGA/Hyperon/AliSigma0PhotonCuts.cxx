@@ -349,6 +349,22 @@ void AliSigma0PhotonCuts::PhotonCuts(
               photon.SetMCPDGCode(mcParticle->GetPdgCode());
               photon.SetMotherID(mcParticle->GetMother());  // otherwise the Sigma0 is not set properly as the mother of the photon
 
+              //check for secondary and set origin and mother
+              if (mcParticle->IsPhysicalPrimary() &&
+                  !mcParticle->IsSecondaryFromWeakDecay()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+              } else if (mcParticle->IsSecondaryFromWeakDecay() &&
+                         !mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+                photon.SetPDGMotherWeak(
+                    ((AliAODMCParticle *)mcarray->At(mcParticle->GetMother()))
+                        ->PdgCode());
+              } else if (mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+              } else {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+              }
+
               if (mcParticle->PdgCode() == 22) {
                 fHistMCV0Pt->Fill(photon.GetPt());
                 const int pdgMother = ((AliAODMCParticle*) mcarray->At(
