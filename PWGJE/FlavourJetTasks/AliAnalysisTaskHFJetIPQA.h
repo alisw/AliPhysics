@@ -124,7 +124,7 @@ public:
 
     enum TCTagType{
         TCNo,
-        TCIPSig,
+        TCIPSigPtDep,
         TCIPFixedPt
     };
 
@@ -337,8 +337,9 @@ public:
     //_______________________________
     //Filling Histograms
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
-    void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
-    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
+    void FillRecHistograms(int jetflavour, double recjetpt, AliEmcalJet *jetgen,double eta, double phi, int fUnfoldFracCalc);
+    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen, int fUnfoldFracCalc);
+    Bool_t PerformGenLevAcceptanceCuts(AliEmcalJet* jetgen);
     void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
     void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
     void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
@@ -365,15 +366,18 @@ public:
     void setGlobalVertex(Bool_t value){fGlobalVertex = value;}
     void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
-    void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
+    void setDoTCTagging(Int_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
     void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
     void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
-    void setfNThresholds(Int_t value){fNThresholds=value;}
+    void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
+    void SetTagSettings(int iTagSetting);
+    void SetfUnfoldPseudoDataFrac(int frac){fUnfoldPseudeDataFrac=frac;}
+    void setfResponseMode(bool value){fResponseMode=value;}
 
     //_____________________________
     //Lund Plane
@@ -396,7 +400,7 @@ public:
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
@@ -491,6 +495,7 @@ private:
     Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
     Bool_t fDoMCEffs;//
     Bool_t fUseSignificance;//
+    Bool_t fResponseMode;//
 
     //_____________________
     //variables
@@ -499,14 +504,17 @@ private:
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
+    Int_t fNTrackTypes;//
     vector<TString> sTemplateFlavour;
+    Int_t fNEvent;
+    Int_t fUnfoldPseudeDataFrac;//
 
     //______________________
     //Cuts
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
-    Double_t fTCThresholdPtFixed;
+    Double_t fTCThresholdPtFixed; //
     //_____________________
     //TGraphs
     TGraph * fGraphMean;//!
@@ -675,7 +683,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 54)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 55)
 };
 
 #endif
