@@ -99,10 +99,13 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		if (LooseTrackCuts(track0) == false || LooseTrackCuts(track1) == false) continue;
 
 		// Loose cut on CosPointingAngle
-		if (v0->CosPointingAngle(vertex) < 0.95) continue;
+		if (v0->CosPointingAngle(vertex) < 0.99) continue;
 
 		// Loose cut on dca
-		if (v0->DcaV0Daughters() > 1.5) continue;
+		if (v0->DcaV0Daughters() > 1.0) continue;
+
+		// Online Vertex finder
+		if (!v0->GetOnFlyStatus()) continue;
 
 		////////////////////////////
 		fAnalysis_V0.Reset();
@@ -112,12 +115,20 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 		fAnalysis_V0.decayRadius = v0->DecayLengthV0(vertex);
 
 		Bool_t isDeuteron[2] = {kFALSE, kFALSE};
-		isDeuteron[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kDeuteron)) < 3.5;
-		isDeuteron[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kDeuteron)) < 3.5;
+		isDeuteron[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kDeuteron)) < 4.;
+		isDeuteron[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kDeuteron)) < 4.;
+
+		// for p (measured by TPC) > 1.5 I also look at TOF
+		if (isDeuteron[0] && track0->GetTPCmomentum() > 1.5) {
+			if ( fabs(fPID->NumberOfSigmasTOF(track0, AliPID::kDeuteron)) >= 4.) continue;
+		}
+		else if (isDeuteron[1] && track1->GetTPCmomentum() > 1.5) {
+			if ( fabs(fPID->NumberOfSigmasTOF(track1, AliPID::kDeuteron)) >= 4.) continue;
+		}
 
 		Bool_t isPion[2] = {kFALSE, kFALSE};
-		isPion[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kPion)) < 3.5;
-		isPion[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kPion)) < 3.5;
+		isPion[0] = fabs(fPID->NumberOfSigmasTPC(track0, AliPID::kPion)) < 4.;
+		isPion[1] = fabs(fPID->NumberOfSigmasTPC(track1, AliPID::kPion)) < 4.;
 
 		// AntiLambdaN ////////
 		if (isDeuteron[0] == kTRUE && track0->Charge() < 0 &&
@@ -142,8 +153,8 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 //_____________________________________________________________________________
 bool AliAnalysisTaskLambdaNRun2::LooseTrackCuts(AliAODTrack *track) {
 
-	// |eta| < 0.9 (0.8 analysis cut)
-	if (fabs(track->Eta()) >= 0.9) return false;
+	// |eta| < 0.8
+	if (fabs(track->Eta()) >= 0.8) return false;
 
 	// TPC clusters > 70 (80 analysis cut)
 	if (track->GetTPCNcls() <= 70) return false;
