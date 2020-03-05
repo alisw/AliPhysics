@@ -556,11 +556,11 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name) {
 ///
 /// \return the newly created AliESDtrackCuts or 0 in case of error
 
-AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutMode) {
+AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutMode, bool _SaveHistos) {
 	TString o(option);
 	AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
 	o.ToLower();
-
+    
 	// if eta ranges is provided set the eta range
 	// and remove the part of the string containting the eta range
 	if (o.Contains("eta05")) {
@@ -795,6 +795,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
 		cuts = 0;
 	}
 
+    if(_SaveHistos){
+        cuts->DefineHistograms(kRed);
+    }
+    
 	return cuts;
 }
 

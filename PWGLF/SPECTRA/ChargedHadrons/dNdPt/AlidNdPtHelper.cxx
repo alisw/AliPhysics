@@ -42,6 +42,7 @@
 #include <AliESDtrackCuts.h>
 #include <AliTracker.h>
 #include "AlidNdPtEventCuts.h"
+#include "AliEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
 #include <AliGenEventHeader.h>
 #include <AliGenPythiaEventHeader.h>
@@ -1187,6 +1188,56 @@ Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEven
 
     return mult;
 }
+
+Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AliEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts){
+    //
+    // calculate mc event true track multiplicity
+    //
+    if(!mcEvent) return 0;
+
+    AliStack* stack = 0;
+    Int_t mult = 0;
+
+    // MC particle stack
+    stack = mcEvent->Stack();
+    if (!stack) return 0;
+
+    //
+    //printf("minZv %f, maxZv %f \n", evtCuts->GetMinZv(), evtCuts->GetMaxZv());
+    //
+
+    Bool_t isEventOK = evtCuts->AcceptEvent(mcEvent);
+    if(!isEventOK) return 0;
+
+    Int_t nPart  = stack->GetNtrack();
+    for (Int_t iMc = 0; iMc < nPart; ++iMc)
+    {
+        TParticle* particle = stack->Particle(iMc);
+        if (!particle)
+            continue;
+
+        // only charged particles
+        if(!particle->GetPDG()) continue;
+        Double_t charge = particle->GetPDG()->Charge()/3.;
+        if (TMath::Abs(charge) < 0.001)
+            continue;
+
+        // physical primary
+        Bool_t prim = stack->IsPhysicalPrimary(iMc);
+        if(!prim) continue;
+
+        // checked accepted including pt cut
+        //if(accCuts->AcceptTrack(particle))
+        if( particle->Eta() > accCuts->GetMinEta() && particle->Eta() < accCuts->GetMaxEta() && particle->Pt() > accCuts->GetMinPt() && particle->Pt() < accCuts->GetMaxPt() )
+
+        {
+            mult++;
+        }
+    }
+
+    return mult;
+}
+
 
 //_____________________________________________________________________________
 Int_t AlidNdPtHelper::GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift)

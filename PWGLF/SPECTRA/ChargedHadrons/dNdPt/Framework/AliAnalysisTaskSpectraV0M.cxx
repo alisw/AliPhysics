@@ -17,18 +17,18 @@
 #include "AliESDtrackCuts.h"
 #include "AlidNdPtTools.h"
 #include "AliAnalysisTaskMKBase.h"
-#include "AliAnalysisTaskSpectra.h"
+#include "AliAnalysisTaskSpectraV0M.h"
 
-class AliAnalysisTaskSpectra;
+class AliAnalysisTaskSpectraV0M;
 
 using namespace std;
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSpectra)
+ClassImp(AliAnalysisTaskSpectraV0M)
 /// \endcond
 //_____________________________________________________________________________
 
-AliAnalysisTaskSpectra::AliAnalysisTaskSpectra() 
+AliAnalysisTaskSpectraV0M::AliAnalysisTaskSpectraV0M() 
     : AliAnalysisTaskMKBase()
     , fHistEffCont(0)
     , fHistTrack(0)   
@@ -39,7 +39,7 @@ AliAnalysisTaskSpectra::AliAnalysisTaskSpectra()
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskSpectra::AliAnalysisTaskSpectra(const char* name) 
+AliAnalysisTaskSpectraV0M::AliAnalysisTaskSpectraV0M(const char* name) 
     : AliAnalysisTaskMKBase(name)
     , fHistEffCont(0)
     , fHistTrack(0)
@@ -50,14 +50,14 @@ AliAnalysisTaskSpectra::AliAnalysisTaskSpectra(const char* name)
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskSpectra::~AliAnalysisTaskSpectra()
+AliAnalysisTaskSpectraV0M::~AliAnalysisTaskSpectraV0M()
 {
     // destructor
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AddOutput()
+void AliAnalysisTaskSpectraV0M::AddOutput()
 {        
     AddAxis("cent");
     AddAxis("nAcc","mult6kcoarse");
@@ -69,15 +69,15 @@ void AliAnalysisTaskSpectra::AddOutput()
     fOutputList->Add(fHistEffCont);
     
     AddAxis("cent");
-    AddAxis("nAcc","mult6kcoarse"); 
-    AddAxis("pt");         
-    AddAxis("Q",3,-1.5,1.5);        
+    AddAxis("multV0","mult6kfine");
+    AddAxis("pt");             
     fHistTrack = CreateHist("fHistTrack");
     fOutputList->Add(fHistTrack);
         
-    AddAxis("cent");    
-    AddAxis("nAcc","mult6kfine");
-    AddAxis("zV",8,-20,20);
+    
+    AddAxis("cent");
+    AddAxis("multV0","mult6kfine");
+    AddAxis("nAcc","mult6kcoarse");
     fHistEvent = CreateHist("fHistEvent");
     fOutputList->Add(fHistEvent);    
     
@@ -85,35 +85,34 @@ void AliAnalysisTaskSpectra::AddOutput()
 
 //_____________________________________________________________________________
 
-Bool_t AliAnalysisTaskSpectra::IsEventSelected()
+Bool_t AliAnalysisTaskSpectraV0M::IsEventSelected()
 {
     return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AnaEvent()
+void AliAnalysisTaskSpectraV0M::AnaEvent()
 {
    
    LoopOverAllTracks();
-   if (fIsMC) LoopOverAllParticles();
+//    if (fIsMC) LoopOverAllParticles();
    
-   FillHist(fHistEvent, fMultPercentileV0M, fNTracksAcc, fZv);
-   
+   FillHist(fHistEvent, fMultPercentileV0M, fMultV0MmultSelection, fNTracksAcc);
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AnaTrack(Int_t flag)
+void AliAnalysisTaskSpectraV0M::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrackM) return;
     
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign);
+    FillHist(fHistTrack, fMultPercentileV0M, fMultV0MmultSelection, fPt);
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AnaTrackMC(Int_t flag)
+void AliAnalysisTaskSpectraV0M::AnaTrackMC(Int_t flag)
 {
     if (!fAcceptTrackM) return;
      
@@ -126,7 +125,7 @@ void AliAnalysisTaskSpectra::AnaTrackMC(Int_t flag)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSpectra::AnaParticleMC(Int_t flag)
+void AliAnalysisTaskSpectraV0M::AnaParticleMC(Int_t flag)
 {            
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
@@ -141,18 +140,18 @@ void AliAnalysisTaskSpectra::AnaParticleMC(Int_t flag)
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskSpectra* AliAnalysisTaskSpectra::AddTaskSpectra(const char* name, const char* outfile) 
+AliAnalysisTaskSpectraV0M* AliAnalysisTaskSpectraV0M::AddTaskSpectraV0M(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskSpectra", "No analysis manager to connect to.");
+        ::Error("AddTaskSpectraV0M", "No analysis manager to connect to.");
         return 0;
     }
 
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskSpectra", "This task requires an input event handler");
+        ::Error("AddTaskSpectraV0M", "This task requires an input event handler");
         return NULL;
     }
     
@@ -168,7 +167,7 @@ AliAnalysisTaskSpectra* AliAnalysisTaskSpectra::AddTaskSpectra(const char* name,
 
     // create the task
     //===========================================================================
-    AliAnalysisTaskSpectra *task = new AliAnalysisTaskSpectra(name);  
+    AliAnalysisTaskSpectraV0M *task = new AliAnalysisTaskSpectraV0M(name);  
     if (!task) { return 0; }
     
     // configure the task

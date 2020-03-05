@@ -51,7 +51,7 @@ class AlidNdPtTools : public TObject
         static void            Range2Pi(Double_t &val) {while (val>=2*TMath::Pi()) val-=2*TMath::Pi(); while (val<0) val+=2*TMath::Pi(); } // change range: 0 <= val < 2Pi
         static void            Range1Pi(Double_t &val) {while (val>=TMath::Pi()) val-=2*TMath::Pi(); while (val<-TMath::Pi()) val+=2*TMath::Pi(); }  // change range: -Pi <= val < Pi
 
-        static AliESDtrackCuts* CreateESDtrackCuts(const char* option, int _cutMode=100); // options
+        static AliESDtrackCuts* CreateESDtrackCuts(const char* option, int _cutMode=100, bool _SaveHistos=false); // options
 
     private:
         static THnSparseD*      fSparseTmp;    //! temporary histogram for internal use only
