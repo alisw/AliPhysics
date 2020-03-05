@@ -31,6 +31,7 @@ public:
   
   enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta } ; 
   enum cutType{kDefCut, kLowECut} ;
+  enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
     
   AliAnalysisTaskTaggedPhotons() ;
   AliAnalysisTaskTaggedPhotons(const char *name) ;
@@ -45,6 +46,7 @@ public:
   virtual void Terminate(Option_t * opt = "") ;
 
   void SetTrigger(Bool_t isPHOSTrig){fIsMB=isPHOSTrig;}   //Analyse MinBias of PHOS triggered events
+  void SetPHOSTrigger(phosTriggerType t=kPHOSL0){fPHOSTrigger=t;}
   void UseCaloFast(Bool_t use=kTRUE){fUseCaloFastTr=use ;} //Use PHOS trigger in CaloFast cluster
   void SetMC(Bool_t isMC=kTRUE){fIsMC=isMC;}              //Is is MC or real data
   void SetMCType(mcType a){ fIsMC = kTRUE; fMCType = a; } 
@@ -134,6 +136,7 @@ private:
   Int_t   fNPID ;               // Number of PID cuts
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis
+  phosTriggerType fPHOSTrigger; // Kind of PHOS trigger: L0,L1
   
   //
   TH2I * fPHOSBadMap[6] ;        //! 
