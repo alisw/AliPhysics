@@ -28,6 +28,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   void SetINEL(Bool_t input) { fIsINEL = input; }
   void SetHighMult(Bool_t input) { fIsHM = input; }
   void SetAsymmCut(Bool_t input) { fUseAsymmCut = input; }
+  void SetOnlyUseOnTheFlyV0(Bool_t input) { fOnlyUseOnTheFlyV0 = input; }
   void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
   // Setter for cut variables
@@ -137,16 +138,17 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   TNtupleD* fNtupleSigma1385;  //!
   TClonesArray* fMCArray;      //!
 
-  Bool_t fIsAOD;        //!
-  Bool_t fIsNano;       //!
-  Bool_t fSetMixing;    //
-  Bool_t fFillQAPlot;   //
-  Bool_t fIsMC;         //
-  Bool_t fIsPrimaryMC;  //
-  Bool_t fFillnTuple;   //
-  Bool_t fIsINEL;       //
-  Bool_t fIsHM;         //
-  Bool_t fUseAsymmCut;  //
+  Bool_t fIsAOD;              //!
+  Bool_t fIsNano;             //!
+  Bool_t fSetMixing;          //
+  Bool_t fFillQAPlot;         //
+  Bool_t fIsMC;               //
+  Bool_t fIsPrimaryMC;        //
+  Bool_t fFillnTuple;         //
+  Bool_t fIsINEL;             //
+  Bool_t fIsHM;               //
+  Bool_t fUseAsymmCut;        //
+  Bool_t fOnlyUseOnTheFlyV0;  //
 
   mixingpool fEMpool;  //!
   TAxis fBinCent;      //!
@@ -189,7 +191,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   std::vector<UInt_t> fGoodTrackArray;
   std::vector<std::vector<UInt_t>> fGoodV0Array;
 
-  ClassDef(AliAnalysisTaskSigma1385PM, 11);
+  ClassDef(AliAnalysisTaskSigma1385PM, 12);
   // Add rapidity/radius/Lifetime/Y cut of lambda
   // Add NanoOption
   // 4: Add GetImpactParm function for nano
@@ -200,6 +202,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   // 9: Update class format
   // 10: Fix streamer issue
   // 11: Add Asymm cut option
+  // 12: Add OnTheFlyV0 option
 };
 
 #endif

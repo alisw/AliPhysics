@@ -142,6 +142,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
       fUseAsymmCut(kFALSE),
+      fOnlyUseOnTheFlyV0(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -198,6 +199,7 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
       fUseAsymmCut(kFALSE),
+      fOnlyUseOnTheFlyV0(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -606,6 +608,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
   AliESDv0* v0ESD;
   AliAODv0* v0AOD;
   Bool_t lPIDLambda, lPIDAntiLambda;
+  Bool_t lOntheFlyV0;
   Double_t lDCADist_LambdaProton_PV, lDCADist_LambdaPion_PV;
   Double_t lDCADistLambda, lDCADistLambda_PV, lLambdaCPA;
   Double_t nTPCNSigProton, nTPCNSigAntiProton, nTPCNSigPion, nTPCNSigAntiPion;
@@ -626,6 +629,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       isAntiCheck = 0;
       v0ESD = ((AliESDEvent*)fEvt)->GetV0(it);
       if (!v0ESD)
+        continue;
+      
+      lOntheFlyV0 = v0ESD->GetOnFlyStatus();
+      if (fOnlyUseOnTheFlyV0 && !lOntheFlyV0) 
         continue;
 
       if (TMath::Abs(v0ESD->GetPindex()) == TMath::Abs(v0ESD->GetNindex()))
@@ -847,6 +854,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       isAntiCheck = 0;
       v0AOD = ((AliAODEvent*)fEvt)->GetV0(it);
       if (!v0AOD)
+        continue;
+
+      lOntheFlyV0 = v0AOD->GetOnFlyStatus();
+      if (fOnlyUseOnTheFlyV0 && !lOntheFlyV0) 
         continue;
 
       if (TMath::Abs(v0AOD->GetPosID()) == TMath::Abs(v0AOD->GetNegID()))
