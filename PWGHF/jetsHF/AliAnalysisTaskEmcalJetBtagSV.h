@@ -120,6 +120,13 @@ public:
 
   void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
 
+
+  void SetEmbedding(TString inhybrjets){  //EMB
+      fDoEmbedding         = kTRUE;                            //EMB
+      fHybridJetContName   = inhybrjets;                       //EMB
+  }
+
+
 protected:
   // Implementation of interface methods
   virtual void    UserCreateOutputObjects();
@@ -161,6 +168,8 @@ protected:
   //Int_t  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t, Int_t);      //newDeltaPt//
   Double_t GetDeltaPtRandomConeWithoutSignalPt (Double_t, Double_t, Double_t, Double_t);	 
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
+
+
 
 private:
 
@@ -277,7 +286,14 @@ private:
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 10);  // analysis task for MC study //AID//
+  Bool_t                      fDoEmbedding;         ///< EMB flag to do embedding from file
+  TString                     fHybridJetContName;   ///< EMB Name of the hybrid jet container created from tracks and embedded tracks 
+  TClonesArray*               fHybridJetCont;       ///< EMB hybrid jet container
+  TH1F*                       fhDeltaPtEmbedd;      //!<! EMB delta pt distribution, based on embedding of tracks to event//  //AID_emb
+  TH2F*                       fhDeltaPtEmbeddCorrelation;  //!<! EMB
+
+
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 11);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------
