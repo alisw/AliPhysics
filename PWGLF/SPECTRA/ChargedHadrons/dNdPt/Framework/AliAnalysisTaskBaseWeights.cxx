@@ -67,15 +67,17 @@ void AliAnalysisTaskBaseWeights::BaseAddOutput()
     AliAnalysisTaskMKBase::BaseAddOutput();
 
     // TODO add some control histograms here
-
+    
     // if there are weights and they are used add them to the ouput
     if (fMCSpectraWeights && fUseMCWeights) {
         //TODO
         // removed after comment from patrick, only store the histogram (see below)
         //fOutputList->Add(fMCSpectraWeights);
         fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCGenPrimTrackParticles());
+        fOutputList->Add((TObject*)fMCSpectraWeights->GetHistDataFraction());
+        fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCFraction());
+        fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeights());
     }
-
 }
 
 
@@ -113,7 +115,7 @@ void AliAnalysisTaskBaseWeights::LoopOverAllTracks(Int_t flag)
         Double_t s = fMCweight;
         while (s >= 1) {
             BaseAnaTrack(flag);
-            s--;
+            --s;
         }
         if (s > 0) {
             if (!fRand) { fRand = new TRandom3(); }
@@ -170,7 +172,7 @@ Double_t AliAnalysisTaskBaseWeights::MCScalingFactor()
         // TODO check if this the correct one or what should be passed
 
         // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use
-        cout<<"fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)= "<<fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)<<endl; //DEBUG
+//        cout<<"fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)= "<<fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC)<<endl; //DEBUG
         return fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), fMC);
     }
 
@@ -190,11 +192,9 @@ void AliAnalysisTaskBaseWeights::FillDefaultHistograms(Int_t step)
     // because this might depent on the derived task
 
     //protection
-    if (fMCSpectraWeights && step==0) {
+    if (fMCSpectraWeights && step==1) {
         if(fMCSpectraWeights->GetTaskStatus() < AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
             // for now I pass the V0M multiplicity percentile
-            // TODO check if this the correct one or what should be passed
-            // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use
             fMCSpectraWeights->FillMCSpectra(fMC);
             cout<<"fMCSpectraWeights->FillMCSpectra(fMC);"<<endl; //DEBUG
         }

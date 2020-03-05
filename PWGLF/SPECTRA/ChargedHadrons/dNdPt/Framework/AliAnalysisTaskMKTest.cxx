@@ -120,7 +120,7 @@ AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name, co
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+//    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================

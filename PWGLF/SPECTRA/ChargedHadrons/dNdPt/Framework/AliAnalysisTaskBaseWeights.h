@@ -65,7 +65,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Bool_t               fUseMCWeights;      ///  use mc weights (default) or do nothing
         Bool_t               fUseRandomSeed;     ///  use a random seed or a deterministic one (default)        
         TRandom*             fRand;              //-> random generator to be used
-        AliMCSpectraWeights* fMCSpectraWeights;  //-> object to determine efficiency scaling        
+        AliMCSpectraWeights* fMCSpectraWeights;  //-> object to determine efficiency scaling
         Double_t             fMCweight;          //!<! MC weight of the current track/particle
         
     private:

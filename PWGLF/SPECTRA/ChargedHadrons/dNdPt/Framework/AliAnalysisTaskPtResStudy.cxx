@@ -61,7 +61,7 @@ void AliAnalysisTaskPtResStudy::AddOutput()
 {    
     // data histogram for covariance matrix entries at high pt
     // signed 1/pt : sigma(1/pt) : ntracks
-    AddAxis("signed1pt","1/pT",200,-1,1);    
+    AddAxis("signed1pt","1/pT",2000,-10,10);    
     AddAxis("sigma1pt","#sigma(1/pT)",1000,0,0.1);    
     AddAxis("nTracks","mult6kcoarse");
     fHistPtResCov = CreateHist("fHistPtResCov");

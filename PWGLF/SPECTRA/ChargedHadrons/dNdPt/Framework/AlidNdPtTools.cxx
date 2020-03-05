@@ -560,10 +560,6 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
 	TString o(option);
 	AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
 	o.ToLower();
-
-    if(_SaveHistos){
-        cuts->DefineHistograms(kRed);
-    }
     
 	// if eta ranges is provided set the eta range
 	// and remove the part of the string containting the eta range
@@ -799,6 +795,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
 		cuts = 0;
 	}
 
+    if(_SaveHistos){
+        cuts->DefineHistograms(kRed);
+    }
+    
 	return cuts;
 }
 
