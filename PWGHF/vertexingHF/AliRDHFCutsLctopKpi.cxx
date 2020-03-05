@@ -1491,7 +1491,7 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
     
     
   Bool_t recoLc=true;
-  Bool_t v=false;
+  Bool_t v, vv=false;
   Int_t chargeLc=0;
   //compute pt and charge
   Double_t px=0, py=0;
@@ -1508,10 +1508,8 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
      
      }
   }
-  Double_t ptLc=TMath::Sqrt(px*px+py*py);
-    if (ptLc < 1.5) recoLc=false;
-       // printf("Pt Lc: %f\n", ptLc);
-    
+
+   Double_t ptLc=TMath::Sqrt(px*px+py*py);
   Int_t ptbin=PtBin(ptLc);
   Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
   for(Int_t iDaught=0; iDaught<3; iDaught++) {
@@ -1533,7 +1531,9 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
       }
     }
   }
-    
+ 
+    if (ptLc > 2.0) vv=true;
+    if(!vv) recoLc=false;
 
     
   return recoLc;
