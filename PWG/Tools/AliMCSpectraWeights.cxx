@@ -145,7 +145,7 @@ AliMCSpectraWeights::~AliMCSpectraWeights() {
         fMCEvent = 0;
 }
 
-void AliMCSpectraWeights::SetBinsPt(std::vector<double> bins) {
+void AliMCSpectraWeights::SetBinsPt(std::vector<float> bins) {
     fBinsPt.clear();
     fBinsPt.reserve(bins.size());
     for (auto& x : bins) {
@@ -153,7 +153,7 @@ void AliMCSpectraWeights::SetBinsPt(std::vector<double> bins) {
     }
 }
 
-void AliMCSpectraWeights::SetBinsMultCent(std::vector<double> bins) {
+void AliMCSpectraWeights::SetBinsMultCent(std::vector<float> bins) {
     fBinsMultCent.clear();
     fBinsMultCent.reserve(bins.size());
     for (auto& x : bins) {
@@ -460,7 +460,7 @@ bool AliMCSpectraWeights::CalcMCFractions() {
                     continue;
                 // fHistMCFractions : pt-mult-ipart
                 std::array<float, 3> binEntry{
-                    pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
+                    pt, AliMCSpectraWeights::GetMultFromCent(icent),
                     static_cast<float>(AliMCSpectraWeights::GetPartTypeNumber(
                         fstPartTypes[ipart]))};
                 auto const _FractionValue =
@@ -626,9 +626,11 @@ void AliMCSpectraWeights::CountEventMult() {
     float eta = 0.5;
     //    if (fstCollisionSystem.find("pp") != std::string::npos)
     //        eta = 0.5;
+    if(!fMCEvent) return;
     AliStack* fMCStack = fMCEvent->Stack();
     for (int ipart = 0; ipart < fMCStack->GetNtrack(); ipart++) {
         TParticle* mcGenParticle = fMCStack->Particle(ipart);
+        if(!mcGenParticle) continue;
         if (!fMCStack->IsPhysicalPrimary(ipart))
             continue; // secondary rejection
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
@@ -784,7 +786,7 @@ int AliMCSpectraWeights::IdentifyMCParticle(TParticle* mcParticle) {
  *  @param[in] CentBin
  *  @return
  */
-double AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
+float AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
     if (fstCollisionSystem.find("pp") != std::string::npos &&
         fstCollisionSystem.find("ppb") == std::string::npos) {
         // for | eta | < 0.5
@@ -895,7 +897,7 @@ double AliMCSpectraWeights::GetMultFromCent(int CentBin) const {
  *  @param[in] cent
  *  @return
  */
-double AliMCSpectraWeights::GetMultFromCent(std::string cent) {
+float AliMCSpectraWeights::GetMultFromCent(std::string cent) {
     return GetMultFromCent(GetCentFromString(cent));
 }
 
@@ -953,7 +955,7 @@ int AliMCSpectraWeights::GetCentFromString(std::string cent) {
  *  @return
  */
 // TODO: implement
-double AliMCSpectraWeights::GetCentFromMult(double dMult) {
+float AliMCSpectraWeights::GetCentFromMult(float dMult) {
     if (fstCollisionSystem.find("pp") != std::string::npos) {
         if (dMult > 18)
             return 0;
