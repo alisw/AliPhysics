@@ -7,6 +7,7 @@ AliGFWWeights::AliGFWWeights():
   fW_mcrec(0),
   fW_mcgen(0),
   fEffInt(0),
+  fIntEff(0),
   fAccInt(0),
   fNbinsPt(0),
   fbinsPt(0)
@@ -18,6 +19,7 @@ AliGFWWeights::~AliGFWWeights()
   delete fW_mcrec;
   delete fW_mcgen;
   delete fEffInt;
+  delete fIntEff;
   delete fAccInt;
   if(fbinsPt) delete [] fbinsPt;
 };
@@ -289,3 +291,34 @@ Long64_t AliGFWWeights::Merge(TCollection *collist) {
   };
   return nmerged;
 };
+TH1D *AliGFWWeights::GetIntegratedEfficiencyHist() {
+  if(!fW_mcgen) { printf("MCGen array does not exist!\n"); return 0; };
+  if(!fW_mcrec) { printf("MCRec array does not exist!\n"); return 0; };
+  if(!fW_mcgen->GetEntries()) { printf("MCGen array is empty!\n"); return 0; };
+  if(!fW_mcrec->GetEntries()) { printf("MCRec array is empty!\n"); return 0; };
+  TH3D *num = (TH3D*)fW_mcrec->At(0)->Clone("Numerator");
+  for(Int_t i=1;i<fW_mcrec->GetEntries();i++) num->Add((TH3D*)fW_mcrec->At(i));
+  TH3D *den = (TH3D*)fW_mcgen->At(0)->Clone("Denominator");
+  for(Int_t i=1;i<fW_mcgen->GetEntries();i++) den->Add((TH3D*)fW_mcgen->At(i));
+  TH1D *num1d = (TH1D*)num->Project3D("x");
+  num1d->SetName("retHist");
+  num1d->Sumw2();
+  TH1D *den1d = (TH1D*)den->Project3D("x");
+  den1d->Sumw2();
+  num1d->Divide(den1d);
+  delete num;
+  delete den;
+  delete den1d;
+  return num1d;
+}
+Bool_t AliGFWWeights::CalculateIntegratedEff() {
+  if(fIntEff) delete fIntEff;
+  fIntEff = GetIntegratedEfficiencyHist();
+  if(!fIntEff) { return kFALSE; };
+  fIntEff->SetName("IntegratedEfficiency");
+  return kTRUE;
+}
+Double_t AliGFWWeights::GetIntegratedEfficiency(Double_t pt) {
+  if(!fIntEff) if(!CalculateIntegratedEff()) return 0;
+  return fIntEff->GetBinContent(fIntEff->FindBin(pt));
+}
