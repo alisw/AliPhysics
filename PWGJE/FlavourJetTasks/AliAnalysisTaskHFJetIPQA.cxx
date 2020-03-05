@@ -582,20 +582,26 @@ void AliAnalysisTaskHFJetIPQA::FillRecHistograms(int jetflavour, double recjetpt
         //Filling matched b jet pt histograms:
         //particle level jets without acceptance cuts, detector level jets with acceptance cuts. This is taken care of by using DefineCutsTaskpp cuts only for detlevel jets!
         if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
-          //printf("Filling PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
-          if((recjetpt>5)&&(recjetpt<100)){
+          if((recjetpt>5)&&(recjetpt<120)){
+              //printf("Filling fh1dJetTrueMatchedPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
               FillHist("fh1dJetTrueMatchedPtb_PseudoData",GetPtCorrectedMC(jetgen), 1);
-              if(PerformGenLevAcceptanceCuts(jetgen))FillHist("fh1dJetGenMatchedPtb_PseudoData",GetPtCorrectedMC(jetgen), 1);
           }
-          if(PerformGenLevAcceptanceCuts(jetgen))FillHist("fh2dJetGenPtVsJetRecPt_PseudoData",recjetpt, GetPtCorrectedMC(jetgen),1);
+          if(PerformGenLevAcceptanceCuts(jetgen)){
+              //printf("Filling fh2dJetGenPtVsJetRecPt_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              FillHist("fh2dJetGenPtVsJetRecPt_PseudoData",recjetpt, GetPtCorrectedMC(jetgen),1);
+              FillHist("fh2dJetGenPtVsJetWideRecPt_PseudoData",recjetpt, GetPtCorrectedMC(jetgen),1);
+          }
         }
         else{
-          //printf("Filling Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
-           if((recjetpt>5)&&(recjetpt<100)){
-               FillHist("fh1dJetTrueMatchedPtb_Response", GetPtCorrectedMC(jetgen), 1);
-              if(PerformGenLevAcceptanceCuts(jetgen))FillHist("fh1dJetGenMatchedPtb_Response",GetPtCorrectedMC(jetgen), 1);
+           if((recjetpt>5)&&(recjetpt<120)){
+              //printf("Filling fh1dJetTrueMatchedPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              FillHist("fh1dJetTrueMatchedPtb_Response", GetPtCorrectedMC(jetgen), 1);
            }
-          if(PerformGenLevAcceptanceCuts(jetgen))FillHist("fh2dJetGenPtVsJetRecPt_Response",recjetpt, GetPtCorrectedMC(jetgen),1);
+          if(PerformGenLevAcceptanceCuts(jetgen)){
+              //printf("Filling fh2dJetGenPtVsJetRecPt_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+              FillHist("fh2dJetGenPtVsJetRecPt_Response",recjetpt, GetPtCorrectedMC(jetgen),1);
+              FillHist("fh2dJetGenPtVsJetWideRecPt_Response",recjetpt, GetPtCorrectedMC(jetgen),1);
+          }
         }
       }
       else if(jetflavour==4)FillHist("fh1dJetRecPts", recjetpt, 1);
@@ -617,11 +623,11 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
     else if(jetflavour ==2) FillHist("fh1dJetGenPtc",GetPtCorrectedMC(jetgen), 1);
     else if(jetflavour ==3){
         if(fUnfoldFracCalc<fUnfoldPseudeDataFrac) {
-            //printf("Filling PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+            //printf("Filling fh1dJetGenPtb_PseudoData b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
             FillHist("fh1dJetGenPtb_PseudoData",GetPtCorrectedMC(jetgen), 1);
         }
         else{
-            //printf("Filling Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
+            //printf("Filling fh1dJetGenPtb_Response b hist fNEvent=%i, fUnfoldFracCalc=%i\n", fNEvent, fUnfoldFracCalc);
             FillHist("fh1dJetGenPtb_Response",GetPtCorrectedMC(jetgen), 1);
         }
     }
@@ -2353,21 +2359,23 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",250,0,250,"s");
     fHistManager.CreateTH1("fh1dJetGenPts","generator level s jets;pt (GeV/c); count",250,0,250,"s");
 
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_PseudoData","detector momentum response;gen pt;rec pt",400,0,200,230,5,120,"s");
-    fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_Response","detector momentum response;gen pt;rec pt",400,0,200,230,5,120,"s");
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_PseudoData","detector momentum response;red pt;gen pt",115,5,120,200,0,200,"s");
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt_Response","detector momentum response;rec pt;gen pt",115,5,120,200,0,200,"s");
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_PseudoData","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");;
+    fHistManager.CreateTH2("fh2dJetGenPtVsJetWideRecPt_Response","detector momentum response;rec pt;gen pt",300,0,300,200,0,200,"s");
 
-    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetGenPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_PseudoData","generator level b jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetGenMatchedPtb_Response","generator level b jets;pt (GeV/c); count",200,0,200,"s");
 
     fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",500,0,250,"s");
     fHistManager.CreateTH1("fh1dJetRecPts","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",500,0,250,"s");
-    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_PseudoData","detector level jets;pt (GeV/c); count",200,0,200,"s");
+    fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",200,0,200,"s");
   }
 
   fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
