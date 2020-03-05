@@ -117,6 +117,7 @@ public:
   //..Functions for mixed event purposes
   void                        InitEventMixer(Int_t MixMode = 0); // 0: Init for Mixed Tracks.  1: Init for Mixed Triggers
   void                        InitClusMixer()											  ;
+  Int_t                       CalculateEventHash(); // Calculate a hash for the event for classifying and avoiding autocorrelations
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Function for event plane purposes
@@ -193,6 +194,7 @@ public:
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
+  static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
 
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
@@ -312,6 +314,7 @@ public:
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
+  TH1F           *fHistEventHash;            //!<! Histogram tracking the event hash for dividing data
 
   // Position Swap Correction Histograms
   Bool_t          bEnablePosSwapHists;  ///<  Whether to produce the following histograms for investigating the position swap method (very memory intensive, should have high cluster cut)
