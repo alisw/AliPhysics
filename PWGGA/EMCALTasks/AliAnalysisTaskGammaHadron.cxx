@@ -70,7 +70,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -110,7 +110,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -558,6 +558,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   Create Histograms
 	//
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  // Event Hash tracking histogram
+  fHistEventHash = new TH1F("HistEventHash","Event Hash Value;Hash Value",11,-0.5,10.5);
+  fOutput->Add(fHistEventHash);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the 2D histograms
@@ -1574,14 +1578,15 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 //	const Int_t nUsedEvtPlaneBins = 3;
 //	Double_t fEventPlaneArray[nUsedEvtPlaneBins+1] = {0,1,2,3}; // In Plane, MP, Out of Plane}
 	// Fake event plane array:
-	const Int_t nUsedEvtPlaneBins = 1;
-	Double_t fEventPlaneArray[nUsedEvtPlaneBins+1] = {0,1};
+	//const Int_t nUsedEvtPlaneBins = 1;
 
+	Double_t fEventPlaneArray[3] = {-0.5,0.5,1.5}; //0 and 1 used for even/odd events
+  Int_t nUsedEvtPlaneBins = 1;
+  if (bEnableEventHashMixing) nUsedEvtPlaneBins = 2;
 
 	//..Pt Pools
 	// using fArray_G_BinsValue [5+1]
 //	Int_t nUsedTriggerPtBins = 5;
-
 
 	//..in case no external pool is provided create one here
 	if(!fPoolMgr)
@@ -1909,6 +1914,9 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 {
 	//..This function is called in AliAnalysisTaskEmcal::UserExec.
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::FillHistograms()"<<endl;
+
+  Int_t iEventHash = CalculateEventHash();
+  fHistEventHash->Fill((float) iEventHash);
 
   // Getting corrected event plane, saving information
   LoadQnCorrectedEventPlane();
@@ -2683,6 +2691,13 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		AliEventPool * pool = 0x0;
 		// maybe iterate over pt bins?
 		Double_t EventPlaneAngle = 0.;
+
+    // Use event hash to split data set, avoid autocorrelation
+    Int_t iEventHash = CalculateEventHash();
+    if (bEnableEventHashMixing) {
+      EventPlaneAngle = (Double_t) !(iEventHash); // use pool 0 for 1, pool 1 for 0
+    }
+
 		for (Int_t PtIndex = 0; PtIndex < kUsedPi0TriggerPtBins; PtIndex++) {
 			pool = fPoolMgr->GetEventPool(fCent, zVertex,EventPlaneAngle,PtIndex);
 			if (!pool) {
@@ -2776,6 +2791,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 //					Double_t evtPlaneAngle= DeltaPhi(aliCaloClusterVecpi0,fEPV0);
 					Double_t evtPlaneCategory=0;
+
+          Int_t iEventHash = CalculateEventHash();
+          if (bEnableEventHashMixing) {
+            evtPlaneCategory = (Double_t) iEventHash; // are you a 1 or a 0?
+          }
 /*
 					Double_t angleFromAxis;
 					//..fold around 0 axis
@@ -3968,6 +3988,25 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
 	}
 
 	return DetectionEff;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskGammaHadron::CalculateEventHash() {
+
+  //UInt_t fTimeStamp = InputEvent()->GetTimeStamp();
+  Int_t nTracks = InputEvent()->GetNumberOfTracks();
+  Int_t nClusters = InputEvent()->GetNumberOfCaloClusters();
+  //Double_t fT0TOF = (Double_t) InputEvent()->GetT0TOF()[0];
+
+  UInt_t iOrbitNumber = InputEvent()->GetOrbitNumber();
+  UInt_t iBC = (UInt_t) InputEvent()->GetBunchCrossNumber();
+  //Int_t iEventNumberInFile = InputEvent()->GetEventNumberInFile();
+
+  if (!fIsMC) { // Data
+    return (iOrbitNumber) % 2;
+  } else { // MC
+    // orbit number and bunch cross not defined in MC,
+    return (nTracks-nClusters) % 2;
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
