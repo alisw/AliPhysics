@@ -112,6 +112,27 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 
    return cosThetaStar;
 }
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaStarAbs(Bool_t useMC)
+{
+    TLorentzVector &mother    = fSum[ID(useMC)];
+    TLorentzVector &daughter0 = fP1[ID(useMC)];
+    TVector3 momentumM(mother.Vect());
+    TVector3 normal(mother.Y()/momentumM.Pt(), -mother.X()/momentumM.Pt(), 0.0);
+    
+    // Computes components
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+    
+    // Computes Lorentz transformation of the momentum of the first daughter
+    // into the rest frame of the mother and theta*
+    
+    daughter0.Boost(betaX, betaY, betaZ);
+    TVector3 momentumD = daughter0.Vect();
+    Double_t cosThetaStarAbs = TMath::Abs(normal.Dot(momentumD)/momentumD.Mag());
+    return cosThetaStarAbs;
+}
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::CosThetaJackson(Bool_t useMC)
