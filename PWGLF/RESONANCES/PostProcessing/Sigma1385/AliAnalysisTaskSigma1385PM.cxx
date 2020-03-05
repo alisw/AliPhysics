@@ -142,6 +142,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
       fUseAsymmCut(kFALSE),
+      fOnlyUseOnTheFlyV0(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -198,6 +199,7 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fIsINEL(kFALSE),
       fIsHM(kFALSE),
       fUseAsymmCut(kFALSE),
+      fOnlyUseOnTheFlyV0(kFALSE),
       fEMpool(0),
       fBinCent(),
       fBinZ(),
@@ -627,6 +629,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       v0ESD = ((AliESDEvent*)fEvt)->GetV0(it);
       if (!v0ESD)
         continue;
+      
+      if (fOnlyUseOnTheFlyV0 && !v0ESD->GetOnFlyStatus()) 
+        continue;
 
       if (TMath::Abs(v0ESD->GetPindex()) == TMath::Abs(v0ESD->GetNindex()))
         continue;
@@ -847,6 +852,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       isAntiCheck = 0;
       v0AOD = ((AliAODEvent*)fEvt)->GetV0(it);
       if (!v0AOD)
+        continue;
+
+      if (fOnlyUseOnTheFlyV0 && !v0AOD->GetOnFlyStatus()) 
         continue;
 
       if (TMath::Abs(v0AOD->GetPosID()) == TMath::Abs(v0AOD->GetNegID()))
