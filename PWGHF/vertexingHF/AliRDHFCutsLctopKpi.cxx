@@ -1510,6 +1510,9 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
   }
 
    Double_t ptLc=TMath::Sqrt(px*px+py*py);
+    if (ptLc < 2.0) {recoLc=false;
+        return recoLc;}
+    
   Int_t ptbin=PtBin(ptLc);
   Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
   for(Int_t iDaught=0; iDaught<3; iDaught++) {
@@ -1532,8 +1535,7 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
     }
   }
  
-    if (ptLc > 2.0) vv=true;
-    if(!vv) recoLc=false;
+  
 
     
   return recoLc;
