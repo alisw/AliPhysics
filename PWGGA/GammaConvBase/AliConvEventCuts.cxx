@@ -1117,7 +1117,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
     } else if ( fModCentralityClass == 2){
       printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     } else if ( fModCentralityClass == 20){
-      printf("\t %d - %d \n", fCentralityMin*0.1, fCentralityMax*0.1);
+      printf("\t %f - %f \n", fCentralityMin*0.1, fCentralityMax*0.1);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){

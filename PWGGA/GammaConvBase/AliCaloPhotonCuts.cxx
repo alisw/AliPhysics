@@ -3968,16 +3968,16 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
 
-  Int_t nClus = 0;
-  TClonesArray * arrClustersMatch = NULL;
-  if(!fCorrTaskSetting.CompareTo("")){
-    nClus = event->GetNumberOfCaloClusters();
-  } else {
-    arrClustersMatch = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-    if(!arrClustersMatch)
-      AliFatal(Form("%sClustersBranch was not found in AliCaloPhotonCuts::FillHistogramsExtendedQA! Check the correction framework settings!",fCorrTaskSetting.Data()));
-    nClus = arrClustersMatch->GetEntries();
-  }
+//  Int_t nClus = 0;
+//  TClonesArray * arrClustersMatch = NULL;
+//  if(!fCorrTaskSetting.CompareTo("")){
+//    nClus = event->GetNumberOfCaloClusters();
+//  } else {
+//    arrClustersMatch = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+//    if(!arrClustersMatch)
+//      AliFatal(Form("%sClustersBranch was not found in AliCaloPhotonCuts::FillHistogramsExtendedQA! Check the correction framework settings!",fCorrTaskSetting.Data()));
+//    nClus = arrClustersMatch->GetEntries();
+//  }
 
   if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
     fGeomEMCAL = AliEMCALGeometry::GetInstance();
@@ -4005,13 +4005,13 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     if(esdev){
       inTrack = esdev->GetTrack(vElectronTracks[itr]);
       if(!inTrack) continue;
-      AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
-      const AliExternalTrackParam *in = esdt->GetInnerParam();
-      if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
+//      AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+//      const AliExternalTrackParam *in = esdt->GetInnerParam();
+//      if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
     } else if(aodev) {
       inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(vElectronTracks[itr]));
       if(!inTrack) {cout<<"track not valid..."<<endl; continue;}
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+//      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
 
     }
 
@@ -4024,12 +4024,12 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     }
 
     cluster->GetPosition(clsPos);
-    Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
-    Float_t dR2 = dPhi*dPhi + dEta*dEta;
+//    Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
+//    Float_t dR2 = dPhi*dPhi + dEta*dEta;
 
     Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
     Bool_t match_dPhi = kFALSE;
-    Bool_t vetoEOverP = kFALSE;
+//    Bool_t vetoEOverP = kFALSE;
 
     if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
     else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;

@@ -149,7 +149,7 @@ protected:
   AliCaloPhotonCuts*                  fCaloPhotonCuts;                        // CaloPhotonCutObject
   AliConversionMesonCuts*             fMesonCuts;                             // MesonCutObject
   AliEMCALGeometry*                   fGeomEMCAL;                             // pointer to EMCAL geometry
-  AliDalitzElectronSelector*          fElecSelector;							            // basic electron Selection
+  AliDalitzElectronSelector*          fElecSelector;					      // basic electron Selection
 
   TList**                             fCutFolder;                             // Array of lists for containers belonging to cut
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties

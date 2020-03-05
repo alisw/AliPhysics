@@ -2903,11 +2903,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                ->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
               && pi0cand->Pt() > fMinPi0Pt){
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
-            if( !(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
+            if( (!(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
               ((pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
-                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh())) ||
+                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh())) ) || (
               ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
-              ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0) )) {
+              ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0) ))) {
               //change energy of pi0 candidate s.t. its mass is the pdg mass
               pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
@@ -3002,11 +3002,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                ->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
               && pi0cand->Pt() > fMinPi0Pt){
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
-            if( !(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
+            if( (!(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
               ((pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
-                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh())) ||
+                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh())) ) || (
               ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetUsePtDepSelectionWindow(kTRUE)) &&
-              ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0) )) {
+              ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0) ))) {
             // if(pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
             //    pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
               //change energy of pi0 candidate s.t. its mass is the pdg mass

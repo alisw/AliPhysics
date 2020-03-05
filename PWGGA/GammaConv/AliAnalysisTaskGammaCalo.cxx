@@ -6881,7 +6881,8 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
     TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
     // Needed for TGenPhaseSpace
     TVector3 tvEtaPhigamma1, tvEtaPhigamma2, tvEtaPhigamma1Decay, tvEtaPhigamma2Decay, tvNormBeforeDecay, tvNormAfterDecay;
-    Float_t asymBeforeDecay, asymAfterDecay;
+    Float_t asymBeforeDecay = 0.;
+    Float_t asymAfterDecay = 0.;
     Double_t massGamma[2] = {0,0};
 
     Int_t cellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
@@ -7002,13 +7003,13 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
         tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPT.size());
       }
-      for(Int_t i = 0; i < vSwappingInvMassPT.size(); i++){
+      for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
         fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*tempBGCandidateWeight);
       }
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPTAlphaCut.size() > 0){
         tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPTAlphaCut.size());
       }
-      for(Int_t i = 0; i < vSwappingInvMassPTAlphaCut.size(); i++){
+      for(Int_t i = 0; i < (Int_t)vSwappingInvMassPTAlphaCut.size(); i++){
         fHistoMotherBackInvMassECalib[fiCut]->Fill(vSwappingInvMassPTAlphaCut.at(i)[0], vSwappingInvMassPTAlphaCut.at(i)[1],tempMultWeightSwapping*tempBGCandidateWeight);
       }
     }

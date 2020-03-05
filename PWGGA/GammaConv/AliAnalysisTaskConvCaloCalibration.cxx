@@ -76,6 +76,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fCaloPhotonCuts(NULL),
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
+  fElecSelector(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -88,6 +89,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fClusterCutArray(NULL),
   fMesonCutArray(NULL),
   fReaderGammas(NULL),
+  fSelectorElectronIndex(),
+  fSelectorPositronIndex(),
+  fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fFileNameBroken(NULL),
@@ -164,8 +168,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
   fTrackMatcherRunningMode(0),
-  fUseEletronMatchingCalibration(kFALSE),
-  fElecSelector(NULL)
+  fUseEletronMatchingCalibration(kFALSE)
 {
 
 }
@@ -186,6 +189,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fCaloPhotonCuts(NULL),
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
+  fElecSelector(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -198,6 +202,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fClusterCutArray(NULL),
   fMesonCutArray(NULL),
   fReaderGammas(NULL),
+  fSelectorElectronIndex(),
+  fSelectorPositronIndex(),
+  fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fFileNameBroken(NULL),
@@ -274,8 +281,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
   fTrackMatcherRunningMode(0),
-  fUseEletronMatchingCalibration(kFALSE),
-  fElecSelector(NULL)
+  fUseEletronMatchingCalibration(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1217,10 +1223,10 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     delete clus;
     delete tmpvec;
   }
-  Bool_t rejected = kFALSE;
+  //Bool_t rejected = kFALSE;
   // run conversion recovery in addition
   if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
-    rejected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
+    /*rejected = */((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
   }
   
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
