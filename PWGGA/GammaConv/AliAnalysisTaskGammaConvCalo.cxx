@@ -3531,10 +3531,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     delete tmpvec;
   }
 
-  Bool_t rejected = kFALSE;
+  //Bool_t rejected = kFALSE;
   // run conversion recovery in addition
   if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
-    rejected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
+    /*rejected = */((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
   }
 
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
@@ -6747,7 +6747,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
       tempMultWeightSwapping = (fGammaCandidates->GetEntries()*fClusterCandidates->GetEntries())/(vSwappingInvMassPT.size());
     }
-    for(Int_t i = 0; i < vSwappingInvMassPT.size(); i++){
+    for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
       fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightJetJetMC);
       if(!fDoLightOutput || fDoECalibOutput) fHistoMotherBackInvMassECalib[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1],tempMultWeightSwapping*fWeightJetJetMC);
     }

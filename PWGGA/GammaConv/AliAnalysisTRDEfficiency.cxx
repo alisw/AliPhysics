@@ -110,9 +110,11 @@ ClassImp(AliAnalysisTRDEfficiency) // classimp: necessary for root
 AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(), 
     fAOD(0), 
     fOutputList(0),
+    fHistPt(0),
+
     file(0),
     fConversionGammas(0),
-    fHistPt(0),
+
     fhm1pt2(0), 
     fhNpttr(0), 
     fhNptun(0),
@@ -133,8 +135,8 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     
     // gamma tracks
     fhgpt(0),
-    fhgRpt(0),
     fhgpttrd(0),
+    fhgRpt(0),
     fhgRpttrd(0),
     
     fhgMinvM(0),
@@ -147,6 +149,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fhgetaphi(0),
     fhgetaphihqu(0),
     
+    fhgxy(0),
+    fhgxyhqu(0),
+
     // v0 daughters
     fhdn(0),
     fhdpt(0),
@@ -190,9 +195,11 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
 AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalysisTaskSE(name),
     fAOD(0), 
     fOutputList(0), 
+    fHistPt(0),
+
     file(0),
     fConversionGammas(0),
-    fHistPt(0),
+
     fhm1pt2(0), 
     fhNpttr(0), 
     fhNptun(0),
@@ -214,8 +221,8 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     
     // gamma tracks
     fhgpt(0),
-    fhgRpt(0),
     fhgpttrd(0),
+    fhgRpt(0),
     fhgRpttrd(0),
     
     fhgMinvM(0),
@@ -228,6 +235,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhgetaphi(0),
     fhgetaphihqu(0),
     
+    fhgxy(0),
+    fhgxyhqu(0),
+
     // v0 daughters
     fhdn(0),
     fhdpt(0),
@@ -236,7 +246,16 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhna(0),
     fhnp(0),
     fhnhqu(0),
-    
+
+    fhgevent2(0),
+    fhgevent3(0),
+    fhgevent4(0),
+    fhgevent5(0),
+    fhgevent6(0),
+    fhgevent7(0),
+    fhgevent8(0),
+    fhgevent9(0),
+
     fhgevent(0),
     fhevent(0),
     
@@ -367,9 +386,9 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fhevent     = new TH1F("fhevent", "fhevent",    10, 0, 10);
     
      dim = 4;          // dimensions
-     Int_t bins1[4]     = {10000, 10000};   // # of bins
-	 Int_t xmin1[4]     = {0, 0};           //         min 
-	 Int_t xmax1[4]     = {10000, 10000};  // max
+//     Int_t bins1[4]     = {10000, 10000};   // # of bins
+//	 Int_t xmin1[4]     = {0, 0};           //         min
+//	 Int_t xmax1[4]     = {10000, 10000};  // max
     //fhtrckvnt   = new THnSparseD("fhtrckvnt", "fhtrckvnt",          dim, bins1, xmin1, xmax1);
     //fhtrckvnthqu= new THnSparseD("fhtrckvnthqu", "fhtrckvnthqu",    dim, bins1, xmin1, xmax1);
     
@@ -388,7 +407,7 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     
     //fOutputList->Add(fHistPt);          // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
-    ///fOutputList->Add(fhm1pt2);
+    //fOutputList->Add(fhm1pt2);
     //fOutputList->Add(fhNpttr);
     //fOutputList->Add(fhNptun);
     //fOutputList->Add(fhfA);
@@ -580,7 +599,7 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
         Double_t phig= gamma->GetPhotonPhi();
         Double_t Rg  = gamma->GetConversionRadius();
                     
-        AliConversionPhotonCuts *cuts = new AliConversionPhotonCuts("00000003_06000008d00100001100000000");
+//        AliConversionPhotonCuts *cuts = new AliConversionPhotonCuts("00000003_06000008d00100001100000000");
                     
         fhgetaphi1->Fill(phig, etag);
         fhgR1->Fill(Rg);
@@ -598,10 +617,10 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                 //fhn->FillBin(track->Pt(), 1);
 
                 // aodtracks                        
-            Double_t lst[15] = {0, 0, 0, 0,    // { hqutrack->Pt(), hqutrack->Eta(),        hqutrack->Phi(),        hqutrack->GetA(), hqutrack->GetB(),
-                                0, 0, 0, 0,    //   trdtrack->Pt(), trdtrack->Eta(),        trdtrack->Phi(),        trdtrack->GetA(), trdtrack->GetB(),    
-                                0, 0, 0,       //   track->Pt(),    track->Eta(),           track->Phi(),
-                                0, 0, 0, 0};   //   gamma->Pt(),    gamma->GetPhotonEta(),  gamma->GetPhotonPhi(),  gamma->GetConversionRadius() };
+//            Double_t lst[15] = {0, 0, 0, 0,    // { hqutrack->Pt(), hqutrack->Eta(),        hqutrack->Phi(),        hqutrack->GetA(), hqutrack->GetB(),
+//                                0, 0, 0, 0,    //   trdtrack->Pt(), trdtrack->Eta(),        trdtrack->Phi(),        trdtrack->GetA(), trdtrack->GetB(),
+//                                0, 0, 0,       //   track->Pt(),    track->Eta(),           track->Phi(),
+//                                0, 0, 0, 0};   //   gamma->Pt(),    gamma->GetPhotonEta(),  gamma->GetPhotonPhi(),  gamma->GetConversionRadius() };
                 
                 
             for (Int_t k = 0; k < fAODEvent->GetNumberOfTrdTracks(); k++){  // get the corresponding trd track
@@ -793,14 +812,14 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //cout << "get cut number" << acs->GetCutString() << endl;
     //cout << "number of good photons " << acs->GetGoodGammas() << endl; //->GetNumberOfPhotons() << endl;
    
-    TClonesArray *photons = new TClonesArray();
+//    TClonesArray *photons = new TClonesArray();
     //photons->Add();
     //Bool_t bl = acs->ProcessEvent( photons, fAOD, NULL);
     //cout << "ending boolean " << bl << endl;
     
     Int_t tracks    = fAOD->GetNumberOfTracks();
     Int_t trdtracks = fAOD->GetNumberOfTrdTracks();
-    Int_t v0tracks  = fAOD->GetNumberOfV0s();
+//    Int_t v0tracks  = fAOD->GetNumberOfV0s();
    
     //cout << "v0tracks  " << v0tracks << endl;
     //cout << "vzero     " << fAOD->GetVZEROData() << endl;
@@ -811,7 +830,7 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //Photons(fAOD);   // vertices
    
 
-    Bool_t hasgamma = kFALSE;
+//    Bool_t hasgamma = kFALSE;
     Bool_t hasmatch = kFALSE;
     Bool_t haspt    = kFALSE;
     Bool_t haspid   = kFALSE;

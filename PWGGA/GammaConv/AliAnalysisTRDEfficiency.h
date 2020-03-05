@@ -101,8 +101,8 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         //track the events
         THnSparse*              fhtrckvnt;   // track event
         THnSparse*              fhtrckvnthqu;// track hqu event
-        TH1*                   fhtrvnt;
-        TH1*                   fhtrvnthqu;
+        TH1*                    fhtrvnt;
+        TH1*                    fhtrvnthqu;
         TList*                  lsttrckvnt;
         TList*                  lsttrckvnthqu;
         //AliConversionPhotonCuts fConversionCuts;

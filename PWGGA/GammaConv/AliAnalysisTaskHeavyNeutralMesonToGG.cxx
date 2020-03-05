@@ -1823,10 +1823,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
     delete tmpvec;
   }
   
-  Bool_t rejected = kFALSE;
+  //Bool_t rejected = kFALSE;
   // run conversion recovery in addition
   if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
-    rejected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
+    /*rejected = */((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
   }
   
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){

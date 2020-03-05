@@ -5108,8 +5108,8 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
     TLorentzVector lvRotationPhoton2;   // photon candidates which get rotated
     TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
 
-    Int_t CellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
-    Int_t CellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
+//    Int_t CellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
+//    Int_t CellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
 
     std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
     std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
@@ -5179,7 +5179,7 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
         tempMultWeightSwapping = (0.5*(fGammaCandidates->GetEntries()*fGammaCandidates->GetEntries() - fGammaCandidates->GetEntries()))/(vSwappingInvMassPT.size());
       }
-      for(Int_t i = 0; i < vSwappingInvMassPT.size(); i++){
+      for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
         if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightCentrality[fiCut]*fWeightJetJetMC);
         else fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightJetJetMC);
       }
