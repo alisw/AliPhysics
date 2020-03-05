@@ -126,8 +126,7 @@ AliAnalysisTaskSigmaPlToProtonPiZero::AliAnalysisTaskSigmaPlToProtonPiZero() : A
   fDoInOutTimingCluster(kFALSE),                                // manual timing cut for cluster to combine cluster within timing cut and without
   fMinTimingCluster(0),                                    // corresponding ranges, min
   fMaxTimingCluster(0),                                    // corresponding ranges, max
-  fTrackMatcherRunningMode(0),
-  fNDimensions(5)
+  fTrackMatcherRunningMode(0)
 
 
 							// fESD(0), fOutputList(0), fHistAllTracksPt(0), fHistProtonPt(0), fHistVertexzPos(0), fHistVertexzPosTrue(0), fHistThetaPhi(0), fHistThetaPhiProton(0)
@@ -184,8 +183,7 @@ AliAnalysisTaskSigmaPlToProtonPiZero::AliAnalysisTaskSigmaPlToProtonPiZero(const
   fDoInOutTimingCluster(kFALSE),                                // manual timing cut for cluster to combine cluster within timing cut and without
   fMinTimingCluster(0),                                    // corresponding ranges, min
   fMaxTimingCluster(0),                                    // corresponding ranges, max
-  fTrackMatcherRunningMode(0),
-  fNDimensions(5)
+  fTrackMatcherRunningMode(0)
 
 
 {
@@ -216,9 +214,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
       fOutputList->SetOwner(kTRUE);
     }
 	// example of a histogram
-	const Int_t Anzahl_Bins[fNDimensions] = {20, 30, 15, 10, 10};
-	const Double_t Lower_bin_edges[fNDimensions] = {1.1 ,0. ,0. ,0. ,0.};
-	const Double_t upper_bin_edges[fNDimensions] = {1.3, 30., 15., 250., pi};
+	const Int_t Anzahl_Bins[5] = {20, 30, 15, 10, 10};
+	const Double_t Lower_bin_edges[5] = {1.1 ,0. ,0. ,0. ,0.};
+	const Double_t upper_bin_edges[5] = {1.3, 30., 15., 250., pi};
 
 	fESDList            = new TList*[fnCuts];
 
@@ -262,7 +260,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
     	fESDList[iCut]->SetName(Form("%s_%s_%s ESD histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
     	fOutputList->Add(fESDList[iCut]);
 
-	  	fHistSigmaPlus[iCut] = new THnD("fHistSigmaPlus", "", fNDimensions, Anzahl_Bins, Lower_bin_edges, upper_bin_edges );
+	  	fHistSigmaPlus[iCut] = new THnD("fHistSigmaPlus", "", 5, Anzahl_Bins, Lower_bin_edges, upper_bin_edges );
 		fHistSigmaPlus[iCut]->Sumw2();
 		fESDList[iCut]->Add(fHistSigmaPlus[iCut]);
 		fHistReconstructedMassPi0[iCut] = new TH2F("fHistReconstructedMassPi0",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 60, 0., 0.3, 30, 0., 15.);
@@ -374,7 +372,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 			fESDList[iCut]->Add(fFitPi0MassMCLowPt[iCut]);
 			fESDList[iCut]->Add(fFitWidthMC[iCut]);
 
-			fHistSigmaPlusMC[iCut] = new THnD("fHistSigmaPlusMC", "", fNDimensions, Anzahl_Bins, Lower_bin_edges, upper_bin_edges );
+			fHistSigmaPlusMC[iCut] = new THnD("fHistSigmaPlusMC", "", 5, Anzahl_Bins, Lower_bin_edges, upper_bin_edges );
 			fHistSigmaPlusMC[iCut]->Sumw2();
 			fESDList[iCut]->Add(fHistSigmaPlusMC[iCut]);
 
@@ -394,6 +392,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 {
 
+	
 	fEvent = InputEvent();
 	if (!fEvent) {
 		Printf("ERROR: Could not retrieve event");
@@ -659,7 +658,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 									sigmaVektor = protonVektor + rekombinatedPi0;
 									fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
 									fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, protonVektor));
-									Double_t farrSigma[fNDimensions] = {sigmaVektor.M(), sigmaVektor.Pt(), protonVektor.Pt(), kinkDistanceToVertex, rekombinatedPi0.Angle(protonVektor.Vect())};
+									Double_t farrSigma[5] = {sigmaVektor.M(), sigmaVektor.Pt(), protonVektor.Pt(), kinkDistanceToVertex, rekombinatedPi0.Angle(protonVektor.Vect())};
 									fHistSigmaPlus[iCut]-> Fill(farrSigma);
 									if(trueSigmaProton == kTRUE && trueSigmaPhoton1 == kTRUE && trueSigmaPhoton2 ==kTRUE && fIsMC > 0){
 										fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
