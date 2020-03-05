@@ -97,7 +97,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   //Deafult constructor
   //no memory allocations
@@ -156,7 +157,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   // Constructor.
 
@@ -210,7 +212,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)  
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -677,9 +680,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       fUtils = new AliAnalysisUtils();
   
   if((!fIsFastMC) && (!fIsMC)){
-
+    TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
     if(fUseCaloFastTr){
-      TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
       if(fIsMB){  //Select only INT7 events
         if( !trigClasses.Contains("CINT7-B-NOPF-") ){
           PostData(1, fOutputContainer);
@@ -693,8 +695,28 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         }
       }  
     } else{
+        
       Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
       Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+      
+      switch(fPHOSTrigger){
+      case kPHOSL0: isPHI7 = ( trigClasses.Contains("CPHI7-B-NOPF-") && 
+                              !trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
+                              !trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
+                              !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                    break ;
+      case kPHOSL1low : isPHI7 =( trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
+                                 !trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
+                                 !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                        break ;
+      case kPHOSL1med: isPHI7 =( trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                       break ;
+      case kPHOSL1high: isPHI7=( trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                        break ;
+      case kPHOSAny: ; //do nothing
+      default: ;
+      }
         
       if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
         PostData(1, fOutputContainer);
