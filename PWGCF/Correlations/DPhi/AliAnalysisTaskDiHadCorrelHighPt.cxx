@@ -825,10 +825,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 continue;
             }
 
-            if( mcTrack->IsPhysicalPrimary()&&mcTrack->Charge()!=0){
+            Double_t trackPseudorap = mcTrack->Eta();
+
+            if( mcTrack->IsPhysicalPrimary()&&mcTrack->Charge()!=0&&((trackPseudorap>-3.7&&trackPseudorap<-1.7)||(trackPseudorap>2.8&&trackPseudorap<5.1))){
                 nAcceptedParticles += 1;
             }
         }
+
+        fHistGenMultiplicity->Fill(nAcceptedParticles);
 
         AliMCParticle *mcMotherParticle = 0x0;
         AliMCParticle* daughter0 = 0x0;
@@ -970,7 +974,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             //h-V0
             if(fhV0Corr) Corelations(mcTracksTrigSel,mcV0AssocSel,fHistMCKorelacie, lPVz,fHistNumberOfTriggersGen, kFALSE, kTRUE,nAcceptedParticles,fHistPtHard,ptHard,kTRUE,kFALSE);
             
-            fHistGenMultiplicity->Fill(nAcceptedParticles);
         }
     }
 
