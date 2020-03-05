@@ -17,7 +17,6 @@
 #include "AliAODEvent.h"
 
 #include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
 
@@ -41,7 +40,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Default constructor
@@ -61,7 +60,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Constructor
@@ -72,7 +71,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
-
   DefineOutput(1, AliForwardFlowResultStorage::Class());
 }
 
@@ -83,6 +81,24 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   //  Create output objects
   //
   //bool saveAutoAdd = TH1::AddDirectoryStatus();
+  std::cout << "void AliForwardFlowRun2Task::UserCreateOutputObjects()"<< std::endl;
+
+  fWeights = AliForwardWeights();
+  fWeights.fSettings = this->fSettings;
+  std::cout << "fSettings.nua_file" << fSettings.nua_file << std::endl;
+  if (fSettings.nua_file != "") fWeights.connectNUA();
+  if (fSettings.nue_file != "") fWeights.connectNUE();
+  if (fSettings.sec_file != "") fWeights.connectSec();
+  if (fSettings.sec_cent_file != "") fWeights.connectSecCent();
+  this->fSettings = fWeights.fSettings;
+
+
+  if (fSettings.etagap){
+    fCalculator = AliForwardGenericFramework(2);
+  }
+  else{
+    fCalculator = AliForwardGenericFramework(3);
+  }
 
   fOutputList = new TList();          // the final output list
   fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
@@ -127,9 +143,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Double_t negonly_max[dimensions]={3,double(fSettings.fnoSamples), fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
   Double_t non_max[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
 
-
-  Double_t sc_two_dmax[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
-  Int_t    sc_two_dbins[dimensions-1] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 14, fSettings.fCentBins};
 
   if ((fSettings.normal_analysis || fSettings.second_analysis) || fSettings.SC_analysis){
     fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions-1,non_rbins,non_min,non_max);
@@ -230,7 +243,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-  
+
+
+    std::cout << "void AliForwardFlowRun2Task::UserExec()"<< std::endl;
+
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
   
@@ -272,6 +288,10 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
   }
   else {
+    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+  }
+  if (!fSettings.etagap){
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
     fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
   

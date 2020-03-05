@@ -11,8 +11,9 @@
 using namespace std;
 
 //_____________________________________________________________________
-AliForwardGenericFramework::AliForwardGenericFramework():
+AliForwardGenericFramework::AliForwardGenericFramework(Int_t refbins):
   fSettings(),
+  fQvector_per_detector(),
   fQvector(),
   fpvector(),
   fqvector(),
@@ -36,9 +37,7 @@ AliForwardGenericFramework::AliForwardGenericFramework():
 {
   Int_t rbins[4] = {2, 6, 4, 2} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
-  if (fSettings.etagap) {
-     rbins[3] = 2; // two bins in eta for gap, one for standard
-  }
+  rbins[3] = refbins; // two bins in eta for gap, one for standard
 
   Double_t xmin[4] = {-1.0, -0.5, 0.5, -6}; // kind (real or imaginary), n, p, eta
   Double_t xmax[4] = { 1,   5.5, 4.5,  6}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
@@ -53,13 +52,11 @@ AliForwardGenericFramework::AliForwardGenericFramework():
 
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, dxmin, dxmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, dxmin, dxmax);
-  //fpvector->SetDirectory(0);
-  //fqvector->SetDirectory(0);
 
-  // fAutoRef = TH1F("fAutoRef","fAutoRef", 2, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
-  // fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
-  // fAutoRef.SetDirectory(0);
-  // fAutoDiff.SetDirectory(0);
+  fAutoRef =  new TH1D("fAutoRef", "fAutoRef", refbins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
+  fAutoDiff = new TH1D("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge);
+  fAutoRef->SetDirectory(0);
+  fAutoDiff->SetDirectory(0);
 }
 
 
@@ -121,6 +118,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
             if ((useFMD && ((fSettings.ref_mode & fSettings.kFMDref))) || (!(useFMD) && (fSettings.ref_mode & fSettings.kTPCref))) {
               fqvector->Fill(re, realPart);
               fqvector->Fill(im, imPart);
+              fAutoDiff->Fill(weight_new*weight_new - weight_new);
             }
           }
 
@@ -135,8 +133,10 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
             }
             Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
             Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
+              
             fQvector->Fill(req, realPart);
             fQvector->Fill(imq, imPart);
+           
           }
         } // end p loop
       } // End of n loop
@@ -153,9 +153,14 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
   // For each n we loop over the hists
   Double_t sample = static_cast<Double_t>(r);
+  Int_t refEtaBinA;
+  Int_t refEtaBinB;
+  Int_t etaBinB;
+  Double_t refEtaA;
 
   for (Int_t n = 2; n <= 4; n++) {
     Int_t prevRefEtaBin = kTRUE;
+    Int_t prevbin = 0;
 
     for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
       Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
@@ -174,16 +179,16 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
       // index to get sum of weights
       Int_t index1[4] = {2, 1, 1, refEtaBinB};
-      if (!(fQvector->GetBinContent(index1) > 0)) continue;
+      if (fSettings.etagap & (!(fQvector->GetBinContent(index1) > 0))) continue;
       // REFERENCE FLOW --------------------------------------------------------------------------------
-      if (prevRefEtaBin){ // only used once
+      if (prevRefEtaBin & (prevbin != refEtaBinB)){ // only used once
 
         // two-particle cumulant
         if ((fSettings.normal_analysis || fSettings.SC_analysis) || fSettings.second_analysis){
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
           if (n==2){
-            double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
+            double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re() + fAutoRef->GetBinContent(refEtaBinA);
             fill(cumu_rW2, -n, ptn, sample, zvertex, refEtaA, cent, dn2);
           }
         }
@@ -193,20 +198,21 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
           fill(cumu_rW4Four, n, ptn, sample, zvertex, refEtaA, cent, four);
           if (n==2){
-            double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();         
+            double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
             fill(cumu_rW4, -n, ptn, sample, zvertex, refEtaA, cent, dn4);
           }
         }
-        prevRefEtaBin = kFALSE;
+        if (fSettings.etagap) prevRefEtaBin = kFALSE;
+        prevbin = refEtaBinB;
       }
 
       // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
       if ((fSettings.normal_analysis || fSettings.decorr_analysis) || fSettings.second_analysis){
         if (n==2){
-          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re() + fAutoDiff->GetBinContent(etaBin);
           fill(cumu_dW2B, -n, ptn, sample, zvertex, eta, cent, dn2diff);          
         }
-        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
+        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re() + fAutoDiff->GetBinContent(etaBin);;
         fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
       }
       if (fSettings.decorr_analysis){
@@ -310,7 +316,10 @@ TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t e
 
 TComplex AliForwardGenericFramework::TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin)
 {
-  return p(n1,1, diffetabin)*Q(n2,1, refetabin);// - q(n1+n2,1, diffetabin);
+  if (fSettings.etagap){
+    return p(n1,1, diffetabin)*Q(n2,1, refetabin);
+  }
+  else return p(n1,1, diffetabin)*Q(n2,1, refetabin) - q(n1+n2,1, diffetabin);
 }
 
 
@@ -355,19 +364,19 @@ TComplex AliForwardGenericFramework::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4
 TComplex AliForwardGenericFramework::FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin)
 {
   TComplex formula = 0;
-  // if (refetabinPos == refetabinNeg){
-  //   formula = p(n1,1,diffetabin)*Q(n2,1,refetabin)*Q(n3,1,refetabin)*Q(n4,1,refetabin)-q(n1+n2,2,qetabin)*Q(n3,1,refetabin)*Q(n4,1,refetabin)-Q(n2,1,refetabin)*q(n1+n3,2,qetabin)*Q(n4,1,refetabin)
-  //           - p(n1,1,diffetabin)*Q(n2+n3,2,refetabin)*Q(n4,1,refetabin)+2.*q(n1+n2+n3,3,qetabin)*Q(n4,1,refetabin)-Q(n2,1,refetabin)*Q(n3,1,refetabin)*q(n1+n4,2,qetabin)
-  //           + Q(n2+n3,2,refetabin)*q(n1+n4,2,qetabin)-p(n1,1,diffetabin)*Q(n3,1,refetabin)*Q(n2+n4,2,refetabin)+q(n1+n3,2,qetabin)*Q(n2+n4,2,refetabin)
-  //           + 2.*Q(n3,1,refetabin)*q(n1+n2+n4,3,qetabin)-p(n1,1,diffetabin)*Q(n2,1,refetabin)*Q(n3+n4,2,refetabin)+q(n1+n2,2,qetabin)*Q(n3+n4,2,refetabin)
-  //           + 2.*Q(n2,1,refetabin)*q(n1+n3+n4,3,qetabin)+2.*p(n1,1,diffetabin)*Q(n2+n3+n4,3,refetabin)-6.*q(n1+n2+n3+n4,4,qetabin);
-  // }
-  // else{
+  if (!fSettings.etagap){
+    formula = p(n1,1,diffetabin)*Q(n2,1,refetabinA)*Q(n3,1,refetabinA)*Q(n4,1,refetabinA)-q(n1+n2,2,qetabin)*Q(n3,1,refetabinA)*Q(n4,1,refetabinA)-Q(n2,1,refetabinA)*q(n1+n3,2,qetabin)*Q(n4,1,refetabinA)
+            - p(n1,1,diffetabin)*Q(n2+n3,2,refetabinA)*Q(n4,1,refetabinA)+2.*q(n1+n2+n3,3,qetabin)*Q(n4,1,refetabinA)-Q(n2,1,refetabinA)*Q(n3,1,refetabinA)*q(n1+n4,2,qetabin)
+            + Q(n2+n3,2,refetabinA)*q(n1+n4,2,qetabin)-p(n1,1,diffetabin)*Q(n3,1,refetabinA)*Q(n2+n4,2,refetabinA)+q(n1+n3,2,qetabin)*Q(n2+n4,2,refetabinA)
+            + 2.*Q(n3,1,refetabinA)*q(n1+n2+n4,3,qetabin)-p(n1,1,diffetabin)*Q(n2,1,refetabinA)*Q(n3+n4,2,refetabinA)+q(n1+n2,2,qetabin)*Q(n3+n4,2,refetabinA)
+            + 2.*Q(n2,1,refetabinA)*q(n1+n3+n4,3,qetabin)+2.*p(n1,1,diffetabin)*Q(n2+n3+n4,3,refetabinA)-6.*q(n1+n2+n3+n4,4,qetabin);
+  }
+  else{
     formula = p(n1,1,diffetabin)*Q(n2,1,refetabinA)*Q(n3,1,refetabinB)*Q(n4,1,refetabinB)
             - q(n1+n2,2,qetabin)*Q(n3,1,refetabinB)*Q(n4,1,refetabinB)
             - p(n1,1,diffetabin)*Q(n2,1,refetabinA)*Q(n3+n4,2,refetabinB)
             + q(n1+n2,2,qetabin)*Q(n3+n4,2,refetabinB);
-  // }
+  }
   return formula;
 }
 

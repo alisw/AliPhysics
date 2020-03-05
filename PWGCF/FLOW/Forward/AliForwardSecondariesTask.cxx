@@ -36,7 +36,6 @@
 
 #include "AliLog.h"
 #include "AliForwardSecondariesTask.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 
 #include "AliAODForwardMult.h"

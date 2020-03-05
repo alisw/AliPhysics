@@ -20,6 +20,8 @@
 #include "AliForwardFlowUtil.h"
 #include "AliForwardFlowResultStorage.h"
 #include "AliForwardGenericFramework.h"
+#include "AliForwardWeights.h"
+
 class TH2D;
 class THn;
 
@@ -119,7 +121,7 @@ public:
   // Class for flow calculations using the Generic Framework
   AliForwardGenericFramework fCalculator;
 
-
+  AliForwardWeights fWeights;
   ClassDef(AliForwardFlowRun2Task, 1); // Analysis task for flow analysis
 };
 

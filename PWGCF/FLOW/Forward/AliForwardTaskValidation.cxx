@@ -41,8 +41,6 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
-    fVertex(0),
-    fCentrality(0),
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -52,6 +50,8 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality(0),      
+    fVertex(0),       
     centralDist(),
     refDist(),
     forwardDist(),
@@ -76,8 +76,6 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fQA_event_discard_flow(0),
     fQA_event_discard_flow_MC(0),
     fQA_track_discard_flow(0),
-    fVertex(0),
-    fCentrality(0),    
     fEventCuts(0),
     fUtils(),
     fFMDV0(0),
@@ -87,6 +85,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality(0),      
+    fVertex(0),   
     centralDist(),
     refDist(),
     forwardDist(),
@@ -463,50 +463,73 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Overlap regions between the two detectors
   // Float_t fmd_v0a_overlap[2] = {2.8, 5.03};
   // Float_t fmd_v0c_overlap[2] = {-3.4, -2.01};
+
   Tracks v0hits = this->GetV0hits();
   Tracks fmdhits = this->GetFMDhits();
 
   // Calculate hits on each detector in overlap region
-  Float_t nV0A_hits =
-    std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
-		    });
-  Float_t nFMD_fwd_hits =
-    std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
-		    });
-  Float_t nV0C_hits =
-    std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
-		    });
-  Float_t nFMD_bwd_hits =
-    std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
-		    });
-  if (fill_qa) {
+  if (fUtil.pPb_Run(fSettings.runnumber)){
+    Float_t nV0A_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((2.8 < t.eta && t.eta < 5.1) ? t.weight : 0.0f);
+          });
+    Float_t nFMD_fwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((1.7 < t.eta && t.eta < 3.68) ? t.weight : 0.0f);
+          });
+    Float_t nV0C_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((-3.7 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
+          });
+    Float_t nFMD_bwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((-3.4 < t.eta && t.eta < 1.7) ? t.weight : 0.0f);
+          });
     this->fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-  }
-  if (!fSettings.mc){
-    // Cut on V0 - FMD outliers outliers
-    if (fUtil.PbPb_lowIR_Run(fSettings.runnumber) || fUtil.PbPb_highIR_Run(fSettings.runnumber)){
-      if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) {// - 20
-        return false;
-      }
-    }
-    if (fUtil.pPb_Run(fSettings.runnumber)){
-      if (nV0A_hits + nV0C_hits < 1.95*(nFMD_fwd_hits + nFMD_bwd_hits)-200) {// - 20
-        return false;
-      }
-    }
+
+    if (nV0A_hits < 1.5*(nFMD_fwd_hits)-100) return false;
+    if (nV0C_hits < 2.3*(nFMD_bwd_hits)-100) return false;
+
+    this->fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+    this->fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
+    this->fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);    
   }
 
-  if (fill_qa) {
+  if (fUtil.PbPb_lowIR_Run(fSettings.runnumber) || fUtil.PbPb_highIR_Run(fSettings.runnumber)){
+    Float_t nV0A_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+  		    });
+    Float_t nFMD_fwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+  		    });
+    Float_t nV0C_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
+  		    });
+    Float_t nFMD_bwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
+  		    });
+
+    this->fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+    this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
+    this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
+
+    // Cut on V0 - FMD outliers outliers
+    if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) return false;
+
     this->fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
