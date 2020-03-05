@@ -149,7 +149,12 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fStartBin(0),
   fMaxFacPtHard(0),  //FK
   fPtCut(0.15),     //AID//
-  fEtaCut(0.9)      //AID//
+  fEtaCut(0.9),      //AID//
+  fDoEmbedding(kFALSE),     //EMB
+  fHybridJetContName(""),   //EMB
+  fHybridJetCont(0x0),      //EMB
+  fhDeltaPtEmbedd(0x0),      //EMB
+  fhDeltaPtEmbeddCorrelation(0x0)  //EMB
 {
   // default constructor
 }
@@ -243,7 +248,12 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fStartBin(0),
   fMaxFacPtHard(0), //FK
   fPtCut(0.15),     //AID//
-  fEtaCut(0.9)      //AID//
+  fEtaCut(0.9),      //AID//
+  fDoEmbedding(kFALSE),     //EMB
+  fHybridJetContName(""),   //EMB
+  fHybridJetCont(0x0),      //EMB
+  fhDeltaPtEmbedd(0x0),      //EMB
+  fhDeltaPtEmbeddCorrelation(0x0)  //EMB
 {
   // standard constructor
   AliInfo(MSGINFO("+++ Executing Constructor +++"));
@@ -462,7 +472,17 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
     fOutputList->Add(fhDeltaPtLxy7);  //newDeltaPt//  
   }
 
-  
+  if(fDoEmbedding){   //EMB
+     fhDeltaPtEmbedd  = new TH1F("fhDeltaPtEmbedd", "DeltaPt distribution based on track embedding", 500, -125, +125);
+     fhDeltaPtEmbedd-> Sumw2();
+     fOutputList->Add(fhDeltaPtEmbedd);
+
+     fhDeltaPtEmbeddCorrelation = new TH2F("fhDeltaPtEmbeddCorrelation", "DeltaPt distribution based on track embedding vs pT of Embedded Track", 200, 0, 200, 500, -125, +125);
+     fhDeltaPtEmbeddCorrelation->Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddCorrelation);
+  }
+ 
+ 
   fhXsec = new TProfile("hXsec", "xsec from pyxsec.root", 1, 0.5, 1.5);
   fhXsec->GetXaxis()->SetBinLabel(1, Form("SelEvent_%s", fPtHardName.Data()));
   fhXsec->GetXaxis()->SetTitle("p_{T} hard bin");
@@ -811,6 +831,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
 
   AliEmcalJet* jet;
   Int_t fillDelPtMask = 0; //newDelPt// 
+  Int_t fSVreconstucted=0;
   for(Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
      jet = (AliEmcalJet*) fRecJetArray->UncheckedAt(jetcand);
      
@@ -831,20 +852,20 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
                                        fV0gTrkMap,
                                        aVtxDisp,
                                        nDauRejCount);
-    fhHFjetQa->Fill(12, nDauRejCount);
-    if(nVtx < 0){
+     fhHFjetQa->Fill(12, nDauRejCount);
+     if(nVtx < 0){
        fhHFjetQa->Fill(-1 * nVtx);
        continue;
-    }
-    //------------------------newDeltaPt-------------------------
-   if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
-      //if(deltapt<9999){ 
-         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);      
-      //} 
-   }  
- //-------------------------------------------------
+     }
+     //------------------------newDeltaPt-------------------------
+     if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
+     
+        fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);     
+        if(((fillDelPtMask & 4) >> 2) == 1) fSVreconstucted=1; 
+     }  
+     //-------------------------------------------------
     
-    fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
+     fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
                                      nVtx,
                                      fZNApercentile,
                                      ptJet_wBkgRej,
@@ -854,9 +875,38 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
                                      jet,
                                      fMCWeight);
 
-    fHFvertexing->Clear();
-    aVtxDisp.clear();
+     fHFvertexing->Clear();
+     aVtxDisp.clear();
   }
+
+  //EMB
+  if(fSVreconstucted == 1 && fDoEmbedding){
+     AliVParticle*  hytrk  = NULL;  //track hybrid event jet
+     AliEmcalJet*   hyjet  = NULL; //hybrid event jet
+     Double_t sumTrkEmbeddedPt=0;
+     
+
+     //EMB loop over jets in hybrid event
+     for(Int_t i = 0; i < fHybridJetCont->GetEntries(); i++) {
+        hyjet = static_cast<AliEmcalJet*>(fHybridJetCont->UncheckedAt(i));
+        if(!hyjet)  continue;
+        if(!fCutsHFjets->IsJetSelected(hyjet)) continue;
+
+        sumTrkEmbeddedPt=0;
+        for(Int_t iq=0; iq < hyjet->GetNumberOfTracks(); iq++) {
+           hytrk = static_cast<AliVParticle*> (hyjet->Track(iq));
+           if(!hytrk) continue;
+           //cout<<"HYTRACK "<<hytrk->Pt()<<"   "<< hytrk->Eta()<<"   "<< hytrk->Phi()<<"  " <<hytrk->Charge()<<endl;
+           if(hytrk->Charge()==3) sumTrkEmbeddedPt += hytrk->Pt();
+        }
+
+        if(sumTrkEmbeddedPt>0){ 
+           Double_t deltaPtEmb = hyjet->Pt() - hyjet->Area() * rho - sumTrkEmbeddedPt;
+           fhDeltaPtEmbedd->Fill(deltaPtEmb);
+           fhDeltaPtEmbeddCorrelation->Fill(sumTrkEmbeddedPt, deltaPtEmb);
+        }
+     }
+  }//EMB
 
   delete esdVtx;
 }
@@ -992,10 +1042,8 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
 
       //------------------------newDeltaPt-------------------------
 
-      if (fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
-          //if(deltapt<9999){ 
-            fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
-          //} 
+      if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
+         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
       }  
       //-------------------------------------------------
       // Fill jet-with-vertex container
@@ -1336,6 +1384,17 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays()
       return kFALSE;
     }
   }
+
+  //EMB
+  if(fDoEmbedding){
+
+      fHybridJetCont   = static_cast<TClonesArray*> (fEvent->FindListObject(fHybridJetContName.Data())); 
+      if(!fHybridJetCont){
+          AliError( MSGERROR("HYBRID JET CONTAINER not found!"));
+          return kFALSE;
+      } 
+  }//EMB
+
 
   CheckTrackQAinJets();
 
