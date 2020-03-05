@@ -700,19 +700,16 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
       
       switch(fPHOSTrigger){
-      case kPHOSL0: isPHI7 = ( trigClasses.Contains("CPHI7-B-NOPF-") && 
-                              !trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
-                              !trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
-                              !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+      case kPHOSL0: isPHI7 = (trigClasses.Contains("CPHI7-B-NOPF-")) ;
                     break ;
       case kPHOSL1low : isPHI7 =( trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
-                                 !trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
-                                 !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                                 !trigClasses.Contains("CPHI7-B-NOPF-") ) ;
                         break ;
       case kPHOSL1med: isPHI7 =( trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
-                                !trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+                                !trigClasses.Contains("CPHI7PHL-B-NOPF-")) ;
                        break ;
-      case kPHOSL1high: isPHI7=( trigClasses.Contains("CPHI7PHH-B-NOPF-")) ;
+      case kPHOSL1high: isPHI7=( trigClasses.Contains("CPHI7PHH-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHM-B-NOPF-")) ;
                         break ;
       case kPHOSAny: ; //do nothing
       default: ;
