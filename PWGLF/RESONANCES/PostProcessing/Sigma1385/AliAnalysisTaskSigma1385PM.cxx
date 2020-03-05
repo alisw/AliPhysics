@@ -652,7 +652,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           (TMath::Abs(nTPCNSigAntiPion) > fTPCNsigLambdaPionCut))
         AcceptedV0 = kFALSE;
 
-      if (nTrackV0->GetSign() < 0) {
+      if ((TMath::Abs(nTPCNSigProton) <= fTPCNsigLambdaProtonCut) && 
+          (TMath::Abs(nTPCNSigPion) <= fTPCNsigLambdaPionCut)) {
         lPIDLambda = kTRUE;
         v0ESD->ChangeMassHypothesis(kLambda0);
         isAnti = 0;
@@ -662,7 +663,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           fHistos->FillTH2("QA/hTPCPIDLambdaPion", nTrackV0->GetTPCmomentum(),
                            nTrackV0->GetTPCsignal());
         }
-      } else if (nTrackV0->GetSign() > 0) {
+      } else if ((TMath::Abs(nTPCNSigAntiProton) <= fTPCNsigLambdaProtonCut) && 
+                 (TMath::Abs(nTPCNSigAntiPion) <= fTPCNsigLambdaPionCut)) {
         v0ESD->ChangeMassHypothesis(kLambda0Bar);
         lPIDAntiLambda = kTRUE;
         isAnti = 1;
@@ -677,9 +679,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       } else
         AcceptedV0 = kFALSE;
 
-      if (nTrackV0->GetSign() < 0)
+      if (lPIDLambda)
         isAntiCheck += 1;
-      if (nTrackV0->GetSign() > 0)
+      if (lPIDAntiLambda)
         isAntiCheck += 2;
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLambdaAntiCheck", isAntiCheck);
@@ -835,7 +837,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           (TMath::Abs(nTPCNSigAntiPion) > fTPCNsigLambdaPionCut))
         AcceptedV0 = kFALSE;
 
-      if (nTrackV0->GetSign() < 0) {
+      if ((TMath::Abs(nTPCNSigProton) <= fTPCNsigLambdaProtonCut) && 
+          (TMath::Abs(nTPCNSigPion) <= fTPCNsigLambdaPionCut)) {
         lPIDLambda = kTRUE;
         isAnti = 0;
         if (fFillQAPlot) {
@@ -844,7 +847,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           fHistos->FillTH2("QA/hTPCPIDLambdaPion", nTrackV0->GetTPCmomentum(),
                            nTrackV0->GetTPCsignal());
         }
-      } else if (nTrackV0->GetSign() > 0) {
+      } else if ((TMath::Abs(nTPCNSigAntiProton) <= fTPCNsigLambdaProtonCut) && 
+                 (TMath::Abs(nTPCNSigAntiPion) <= fTPCNsigLambdaPionCut)) {
         lPIDAntiLambda = kTRUE;
         isAnti = 1;
         if (fFillQAPlot) {
@@ -857,9 +861,9 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
         }
       } else
         AcceptedV0 = kFALSE;
-      if (nTrackV0->GetSign() < 0)
+      if (lPIDLambda)
         isAntiCheck += 1;
-      if (nTrackV0->GetSign() > 0)
+      if (lPIDAntiLambda)
         isAntiCheck += 2;
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLambdaAntiCheck", isAntiCheck);

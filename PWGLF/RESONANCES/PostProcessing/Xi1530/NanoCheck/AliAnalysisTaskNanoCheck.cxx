@@ -99,7 +99,7 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
     fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 
     fHistos = new THistManager("NanoCheckhists");
-    fHistos->CreateTH1("hMultiplicity", "", 100, 0, 100, "s");
+    fHistos->CreateTH1("hMultiplicity", "", 101, -1, 100, "s");
     if (checkTracks)
         fHistos->CreateTH1("hNofTracks", "", 2, 0, 2, "s");
     if (checkV0s) {
@@ -292,7 +292,7 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
         // Get default values from NanoHeader
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
-        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstIsINELgt0");
+        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
         if (nanoHeader->GetVar(inel_index) < 0.5)
             fCent = -0.5;
     }
@@ -438,8 +438,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
             TPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
             if ((TMath::Abs(TPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(TPCNSigPion) < fTPCNsigLambdaPionCut) 
-                && (nTrackV0->GetSign() < 0) ){
+                && (TMath::Abs(TPCNSigPion) < fTPCNsigLambdaPionCut) ){
                 
                 v0ESD->ChangeMassHypothesis(kLambda0);
                 isAnti = 0;
@@ -452,8 +451,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                                  nTrackV0->GetTPCsignal());
             }
             else if ((TMath::Abs(TPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(TPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
-                    && (nTrackV0->GetSign() > 0)){
+                    && (TMath::Abs(TPCNSigAntiPion) < fTPCNsigLambdaPionCut) ){
 
                 v0ESD->ChangeMassHypothesis(kLambda0Bar);
                 isAnti = 1;
@@ -586,9 +584,8 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
             TPCNSigPion = GetTPCnSigma(nTrackV0, AliPID::kPion);
             TPCNSigAntiPion = GetTPCnSigma(pTrackV0, AliPID::kPion);
 
-            if ((TMath::Abs(TPCNSigProton) < fTPCNsigLambdaProtonCut) 
-                && (TMath::Abs(TPCNSigPion) < fTPCNsigLambdaPionCut) 
-                && (nTrackV0->GetSign() < 0) ){
+            if ((TMath::Abs(TPCNSigProton) <= fTPCNsigLambdaProtonCut) 
+                && (TMath::Abs(TPCNSigPion) <= fTPCNsigLambdaPionCut) ){
                 
                 isAnti = 0;
 
@@ -599,9 +596,8 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
                                  nTrackV0->GetTPCmomentum(),
                                  nTrackV0->GetTPCsignal());
             }
-            else if ((TMath::Abs(TPCNSigAntiProton) < fTPCNsigLambdaProtonCut) 
-                    && (TMath::Abs(TPCNSigAntiPion) < fTPCNsigLambdaPionCut) 
-                    && (nTrackV0->GetSign() > 0)){
+            else if ((TMath::Abs(TPCNSigAntiProton) <= fTPCNsigLambdaProtonCut) 
+                    && (TMath::Abs(TPCNSigAntiPion) <= fTPCNsigLambdaPionCut) ){
 
                 isAnti = 1;
 
