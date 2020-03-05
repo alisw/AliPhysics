@@ -91,7 +91,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         
         static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase", const char* outfile = 0);
         enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
-        void                   SetCentralityEstimator(CentralityEstimator _est) {fCentralityEstimator=_est;}
+        void                   SetCentralityEstimator(CentralityEstimator const _est) {fCentralityEstimator=_est;}
         CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
     protected:
         
@@ -303,6 +303,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fPtInnerTPC;                //!<! tpc inner pt                                                      --InitTrackTPC()
         Double_t                        fEtaInnerTPC;               //!<! tpc inner eta                                                     --InitTrackTPC()
         Double_t                        fPhiInnerTPC;               //!<! tpc inner phi                                                     --InitTrackTPC()
+        Double_t                        fZInnerTPC; //!<! tpc inner parameter of track --InitTrackTPC
         Float_t                         fDCATPC[2];                 //!<! TPC impact parameter (DCA)                                        --InitTrackTPC()
         Float_t                         fDCACovTPC[3];              //!<! TPC impat parameter (DCA) covariance                              --InitTrackTPC()
         Double_t                        fDCArTPC;                   //!<! TPC impact parameter (DCA) in xy-direction                        --InitTrackTPC()
