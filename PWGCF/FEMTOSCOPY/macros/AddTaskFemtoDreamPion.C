@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     bool isMC=false, bool MCtemplatefit=false, bool doSharedCut=false, float fSpherDown=0.7, float fdPhidEta=0.01,
-    TString CentEst="kInt7", const char *cutVar = "0") {
+    TString CentEst="kInt7", bool doVar=false, const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
@@ -69,8 +69,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     //fTrackCutsPosPion->SetPlotContrib(true);
     fTrackCutsPosPion->CheckParticleMothers(true);
     fTrackCutsPosPion->SetPlotDCADist(true);
+    fTrackCutsPosPion->SetFillQALater(false);
     //fTrackCutsPosPion->SetOriginMultiplicityHists(true);
-    fTrackCutsPosPion->SetFillQALater(true);
   }
 
   //The same things for negative pions
@@ -102,9 +102,80 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     fTrackCutsNegPion->CheckParticleMothers(true);
     fTrackCutsNegPion->SetPlotDCADist(true);
     //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
-    fTrackCutsNegPion->SetFillQALater(true);
+    fTrackCutsNegPion->SetFillQALater(false);
   }
 
+
+  //Getting the limits for the cut variations
+  if (doVar) {
+	  if ( suffix == 10 ) {//pT low
+	    fTrackCutsPosPion->SetPtRange(0.11, 4.0);
+	    fTrackCutsNegPion->SetPtRange(0.11, 4.0);
+	  } else if ( suffix == 11 ) {//pT high
+	    fTrackCutsPosPion->SetPtRange(0.14, 5.0);
+	    fTrackCutsNegPion->SetPtRange(0.14, 5.0);
+	  } else if ( suffix == 20 ) {//eta low
+	    fTrackCutsPosPion->SetEtaRange(-0.6, 0.6);
+	    fTrackCutsNegPion->SetEtaRange(-0.6, 0.6);
+	  } else if ( suffix == 21 ) {//eta high
+	    fTrackCutsPosPion->SetEtaRange(-0.9, 0.9);
+	    fTrackCutsNegPion->SetEtaRange(-0.9, 0.9);
+	  } else if ( suffix == 22 ) {//eta high conservative
+	    fTrackCutsPosPion->SetEtaRange(-0.85, 0.85);
+	    fTrackCutsNegPion->SetEtaRange(-0.85, 0.85);
+	  } else if ( suffix == 23 ) {//eta low conservative
+	    fTrackCutsPosPion->SetEtaRange(-0.75, 0.75);
+	    fTrackCutsNegPion->SetEtaRange(-0.75, 0.75);
+	  } else if ( suffix == 30 ) {//#TPC Cls low
+	    fTrackCutsPosPion->SetNClsTPC(70);
+	    fTrackCutsNegPion->SetNClsTPC(70);
+	  } else if ( suffix == 31 ) {//#TPC Cls high conservative
+	    fTrackCutsPosPion->SetNClsTPC(85);
+	    fTrackCutsNegPion->SetNClsTPC(85);
+	  } else if ( suffix == 32 ) {//#TPC Cls high 
+	    fTrackCutsPosPion->SetNClsTPC(90);
+	    fTrackCutsNegPion->SetNClsTPC(90);
+	  } else if ( suffix == 33 ) {//#TPC Cls low conservative
+	    fTrackCutsPosPion->SetNClsTPC(75);
+	    fTrackCutsNegPion->SetNClsTPC(75);
+	  } else if ( suffix == 40 ) {//DCA XYZ low conservative
+	    fTrackCutsPosPion->SetDCAVtxZ(0.28);
+	    fTrackCutsPosPion->SetDCAVtxXY(0.28);
+	    fTrackCutsNegPion->SetDCAVtxZ(0.28);
+	    fTrackCutsNegPion->SetDCAVtxXY(0.28);
+	  } else if ( suffix == 41 ) {//DCA XYZ high conservative
+	    fTrackCutsPosPion->SetDCAVtxZ(0.32);
+	    fTrackCutsPosPion->SetDCAVtxXY(0.32);
+	    fTrackCutsNegPion->SetDCAVtxZ(0.32);
+	    fTrackCutsNegPion->SetDCAVtxXY(0.32);
+	  } else if ( suffix == 42 ) {//DCA XYZ high 
+	    fTrackCutsPosPion->SetDCAVtxZ(0.35);
+	    fTrackCutsPosPion->SetDCAVtxXY(0.35);
+	    fTrackCutsNegPion->SetDCAVtxZ(0.35);
+	    fTrackCutsNegPion->SetDCAVtxXY(0.35);
+	  } else if ( suffix == 42 ) {//DCA XYZ low 
+	    fTrackCutsPosPion->SetDCAVtxZ(0.25);
+	    fTrackCutsPosPion->SetDCAVtxXY(0.25);
+	    fTrackCutsNegPion->SetDCAVtxZ(0.25);
+	    fTrackCutsNegPion->SetDCAVtxXY(0.25);
+	  } else if ( suffix == 50 ) {//Sphericity low
+	    fSpherDown = 0.6;
+            evtCuts->SetSphericityCuts(fSpherDown, 1.0);
+	  } else if ( suffix == 51 ) {//Sphericity high
+	    fSpherDown = 0.8;
+            evtCuts->SetSphericityCuts(fSpherDown, 1.0);
+	  } else if ( suffix == 60 ) {//PID low
+ 	    fTrackCutsPosPion->SetPID(AliPID::kPion, 0.45);
+ 	    fTrackCutsNegPion->SetPID(AliPID::kPion, 0.45);
+	  } else if ( suffix == 61 ) {//PID high
+ 	    fTrackCutsPosPion->SetPID(AliPID::kPion, 0.55);
+ 	    fTrackCutsNegPion->SetPID(AliPID::kPion, 0.55);
+	  } else if ( suffix == 70 ) {//CPR low
+	    fdPhidEta=0.008;
+	  } else if ( suffix == 71 ) {//CPR high
+	    fdPhidEta=0.012;
+  	  }
+  }
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -161,7 +232,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
 
-  if (suffix == "5") {
+  if (suffix == "73") {
     //Deactivate the ClosePairRejection
     fdPhidEta=0.;
     closeRejection.clear();
