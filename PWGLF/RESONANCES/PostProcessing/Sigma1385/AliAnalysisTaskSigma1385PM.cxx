@@ -638,7 +638,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
 
       // filter like-sign V0
       if (TMath::Abs(((pTrackV0->GetSign()) - (nTrackV0->GetSign()))) < 0.1)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // PID cuts
       nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
@@ -650,7 +653,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           (TMath::Abs(nTPCNSigPion) > fTPCNsigLambdaPionCut) &&
           (TMath::Abs(nTPCNSigAntiProton) > fTPCNsigLambdaProtonCut) &&
           (TMath::Abs(nTPCNSigAntiPion) > fTPCNsigLambdaPionCut))
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       if ((TMath::Abs(nTPCNSigProton) <= fTPCNsigLambdaProtonCut) && 
           (TMath::Abs(nTPCNSigPion) <= fTPCNsigLambdaPionCut)) {
@@ -677,7 +683,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                            pTrackV0->GetTPCsignal());
         }
       } else
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       if (lPIDLambda)
         isAntiCheck += 1;
@@ -692,7 +701,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCA_lambdaDaughters", lDCADistLambda);
       if (lDCADistLambda > fDCADistLambdaDaughtersCut)
-        AcceptedV0 = kFALSE;  // DCA proton-pion
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;  // DCA proton-pion
 
       // DCA to PV V0
       lDCADistLambda_PV =
@@ -700,7 +712,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCAlambdaPV", lDCADistLambda_PV);
       if (lDCADistLambda_PV > fDCArDistLambdaPVCut)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // DCA to PV daughter
       // Adopted from AliRsnCutV0 fCustomTrackDCACuts
@@ -724,9 +739,15 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCALambdaPVPion", lDCADist_LambdaPion_PV);
       if (TMath::Abs(lDCADist_LambdaProton_PV) < fDCAPositiveTrack)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
       if (TMath::Abs(lDCADist_LambdaPion_PV) < fDCANegativeTrack)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // CPA cut
       lLambdaCPA = TMath::Abs(
@@ -734,13 +755,19 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hCosPAlambda", lLambdaCPA);
       if (lLambdaCPA < fV0CosineOfPointingAngleCut || lLambdaCPA >= 1)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Rapidity cut
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hYlambda", v0ESD->RapLambda());
       if (TMath::Abs(v0ESD->RapLambda()) > fMaxLambdaRapidity)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Radius cut
       v0ESD->GetXYZ(v0Position[0], v0Position[1], v0Position[2]);
@@ -748,7 +775,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLambdaRxy", radius);
       if ((radius < fLambdaLowRadius) || (radius > fLambdaHighRadius))
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Life time cut
       lV0TotalMomentum = v0ESD->P();
@@ -759,14 +789,20 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLifetimelambda", lLifetime);
       if (lLifetime > fLambdaLifetime)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Mass window cut
       fMassV0 = v0ESD->GetEffMass();
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hMassLambda", fMassV0);
       if (TMath::Abs(fMassV0 - v0Mass) > fV0MassWindowCut)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // After selection above
       if (AcceptedV0) {
@@ -823,7 +859,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
 
       // filter like-sign V0
       if (TMath::Abs(((pTrackV0->GetSign()) - (nTrackV0->GetSign()))) < 0.1)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // PID cuts
       nTPCNSigProton = GetTPCnSigma(pTrackV0, AliPID::kProton);
@@ -835,7 +874,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
           (TMath::Abs(nTPCNSigPion) > fTPCNsigLambdaPionCut) &&
           (TMath::Abs(nTPCNSigAntiProton) > fTPCNsigLambdaProtonCut) &&
           (TMath::Abs(nTPCNSigAntiPion) > fTPCNsigLambdaPionCut))
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       if ((TMath::Abs(nTPCNSigProton) <= fTPCNsigLambdaProtonCut) && 
           (TMath::Abs(nTPCNSigPion) <= fTPCNsigLambdaPionCut)) {
@@ -860,7 +902,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
                            pTrackV0->GetTPCsignal());
         }
       } else
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
       if (lPIDLambda)
         isAntiCheck += 1;
       if (lPIDAntiLambda)
@@ -873,7 +918,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCA_lambdaDaughters", lDCADistLambda);
       if (lDCADistLambda > fDCADistLambdaDaughtersCut)
-        AcceptedV0 = kFALSE;  // DCA proton-pion
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;  // DCA proton-pion
 
       // DCA to PV daughter
       // Adopted from AliRsnCutV0 fCustomTrackDCACuts
@@ -885,9 +933,15 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
         lDCADist_LambdaProton_PV = v0AOD->DcaNegToPrimVertex();
       }
       if (TMath::Abs(lDCADist_LambdaProton_PV) < fDCAPositiveTrack)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
       if (TMath::Abs(lDCADist_LambdaPion_PV) < fDCANegativeTrack)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCALambdaPVProton", lDCADist_LambdaProton_PV);
       if (fFillQAPlot)
@@ -898,27 +952,39 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hDCAlambdaPV", lDCADistLambda_PV);
       if (lDCADistLambda_PV > fDCArDistLambdaPVCut)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // CPA cut
       lLambdaCPA = TMath::Abs(v0AOD->CosPointingAngle(fVertex));
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hCosPAlambda", lLambdaCPA);
       if (lLambdaCPA < fV0CosineOfPointingAngleCut || lLambdaCPA >= 1)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Rapidity cut
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hYlambda", v0AOD->RapLambda());
       if (TMath::Abs(v0AOD->RapLambda()) > fMaxLambdaRapidity)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Radius cut
       radius = v0AOD->RadiusV0();
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLambdaRxy", radius);
       if ((radius < fLambdaLowRadius) || (radius > fLambdaHighRadius))
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Life time cut
       lV0TotalMomentum = TMath::Sqrt(v0AOD->Ptot2V0());
@@ -927,7 +993,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hLifetimelambda", lLifetime);
       if (lLifetime > fLambdaLifetime)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // Mass window cut
       fMassV0 = -999;
@@ -938,7 +1007,10 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (fFillQAPlot)
         fHistos->FillTH1("QA/hMassLambda", fMassV0);
       if (TMath::Abs(fMassV0 - v0Mass) > fV0MassWindowCut)
-        AcceptedV0 = kFALSE;
+        if (fFillQAPlot) 
+          AcceptedV0 = kFALSE;
+        else
+          continue;
 
       // After selection above
       if (AcceptedV0) {
