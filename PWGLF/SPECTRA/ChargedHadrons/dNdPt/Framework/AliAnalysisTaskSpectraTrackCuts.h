@@ -1,13 +1,11 @@
-/// \class AliAnalysisTaskTrackCuts
-/// \brief AnalysisTask to study track cuts
+/// \class AliAnalysisTaskSpectraTrackCuts
+/// \brief Simple task for quick look at track cuts
 ///
-/// Fills Histograms of AliESDTrackCuts class
-///
-/// \author Patrick Huhn <patrick.huhn@cern.ch>
-/// \date Feb. 21, 2020
+/// \author Patrick Huhn <patrick.huhn@cern.ch>, CERN
+/// \date Mar 25, 2019
 
-#ifndef AliAnalysisTaskTrackCuts_H
-#define AliAnalysisTaskTrackCuts_H
+#ifndef AliAnalysisTaskSpectraTrackCuts_H
+#define AliAnalysisTaskSpectraTrackCuts_H
 
 #include "AliAnalysisTaskMKBase.h"
 
@@ -22,24 +20,35 @@ class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
 
-class AliAnalysisTaskSpectraTrackCuts : public AliAnalysisTaskMKBase
-{
-    public:
-                                AliAnalysisTaskSpectraTrackCuts();
-                                AliAnalysisTaskSpectraTrackCuts(const char *name);
-        virtual                 ~AliAnalysisTaskSpectraTrackCuts();
+class AliAnalysisTaskSpectraTrackCuts : public AliAnalysisTaskMKBase {
+  public:
+    AliAnalysisTaskSpectraTrackCuts();
+    AliAnalysisTaskSpectraTrackCuts(const char* name);
+    virtual ~AliAnalysisTaskSpectraTrackCuts();
 
-        virtual void           Terminate(Option_t* option);
+    virtual void Terminate(Option_t *option="");
 
-        static AliAnalysisTaskSpectraTrackCuts* AddTaskTrackCuts(const char* name = "TrackCuts", const char* outfile = 0, int _cutMode=100);
+    virtual Bool_t IsEventSelected(); // called for each event
+    virtual void AnaEvent();          // called once for every selected event
+    virtual void
+    AnaTrack(Int_t flag = 0); // called once for every track in DATA+MC event
+    virtual void
+    AnaTrackMC(Int_t flag = 0); // called once for every track in DATA event
+    virtual void
+    AnaParticleMC(Int_t flag = 0); // called once for every track in MC event
 
-        
-    private:
-        AliAnalysisTaskSpectraTrackCuts(const AliAnalysisTaskSpectraTrackCuts&); // not implemented
-        AliAnalysisTaskSpectraTrackCuts& operator=(const AliAnalysisTaskSpectraTrackCuts&); // not implemented
-        
+    static AliAnalysisTaskSpectraTrackCuts*
+    AddTaskSpectraTrackCuts(const char* name = "TaskSpectraEtaPhi",
+                            const char* outfile = 0, int _CutMode = 100);
+
+  private:
+    AliAnalysisTaskSpectraTrackCuts(
+        const AliAnalysisTaskSpectraTrackCuts&); // not implemented
+    AliAnalysisTaskSpectraTrackCuts&
+    operator=(const AliAnalysisTaskSpectraTrackCuts&); // not implemented
+
     /// \cond CLASSIMP
-        ClassDef(AliAnalysisTaskSpectraTrackCuts, 1);
+    ClassDef(AliAnalysisTaskSpectraTrackCuts, 1);
     /// \endcond
 };
 
