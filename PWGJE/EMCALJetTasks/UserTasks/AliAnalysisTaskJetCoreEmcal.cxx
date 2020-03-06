@@ -761,6 +761,13 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 		return kTRUE;
 	}
 
+	// centrality selection 
+	if(fDebug) Printf("centrality: %f\n", fCent);
+	if (fCent>fCentMax || fCent<fCentMin) {
+		fHistEvtSelection->Fill(4);
+		return kTRUE;
+	}
+
   if(fFillJetHistograms) DoJetLoop();
   if(fFillTrackHistograms) DoTrackLoop();
   //DoClusterLoop();
@@ -796,13 +803,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 		return;
 	}
 
-	// centrality selection 
-	if(fDebug) Printf("centrality: %f\n", fCent);
-	if (fJetShapeType==AliAnalysisTaskJetCoreEmcal::kData && 
-			((fCent>fCentMax) || (fCent<fCentMin))) {
-		fHistEvtSelection->Fill(4);
-		return;
-	}
 	fHistEvtSelection->Fill(0); 
 
 	// Background
