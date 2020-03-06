@@ -624,6 +624,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 	{"NclsITS4",                   "N_{cls}^{ITS4}",                                 ""},
 	{"NclsITS5",                   "N_{cls}^{ITS5}",                                 ""},
 	{"NclsITS6",                   "N_{cls}^{ITS6}",                                 ""},
+	{"NSPDclsEvent",               "N_{cls}^{SPD}",                                  ""},
+	{"NSDDclsEvent",               "N_{cls}^{SDD}",                                  ""},
+	{"NSSDclsEvent",               "N_{cls}^{SSD}",                                  ""},
+	{"NSDDSSDclsEvent",            "N_{cls}^{SDD+SSD}",                              ""},
+
 	{"TPCpileupZA",                "Z_{pileup}^{A}",                             "(cm)"},
 	{"TPCpileupZC",                "Z_{pileup}^{C}",                             "(cm)"},
 	{"TPCpileupZ",                 "Z_{pileup}",                                 "(cm)"},
