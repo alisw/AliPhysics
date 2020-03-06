@@ -83,6 +83,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetSampling(kFALSE,1); //(kFALSE,1) for no sampling and only 1 sample size
     task->SetHasEtaGap(kTRUE);
     task->SetEtaGap(1.0);
+    task->SetTPCEseqnBins(100,0.0,8.0);
+    task->SetV0EseqnBins(100,0.0,15.0);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M
