@@ -3516,13 +3516,14 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
         } else if ( fPeriodEnum == kLHC18l2 ){
-          Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
-          Double_t weightsBins[6]      = { 0.000103227,      1.31851e-05,     1.94129e-06,     3.26392e-07,    6.51801e-08,
-                                            2.21123e-08 };
+          Double_t ptHardBinRanges[13]  = { 5, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 10000};
+          Double_t weightsBins[12]      = { 0.000103227, 0.000103227, 1.31851e-05, 1.31851e-05, 1.94129e-06,  
+                                            1.94129e-06, 3.26392e-07, 3.26392e-07, 6.51801e-08, 6.51801e-08,
+                                            2.21123e-08, 2.21123e-08 };
 
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-          if (bin < 6) weight = weightsBins[bin];
+          if (bin < 12) weight = weightsBins[bin];
           if(fUseFilePathForPthard && (pthardbin > -1)) weight = weightsBins[pthardbin-1];
         } else if ( fPeriodEnum == kLHC12P2JJ ){
           Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
@@ -4743,7 +4744,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if(!triggercont){
       AliFatal("Trigger decision container not found in event - not possible to select EMCAL triggers");
     } else {
-      if( fSpecialTrigger == 5 ){
+      if( fSpecialTrigger == 5 || fSpecialTrigger == 10 ){
         if( triggercont->IsEventSelected("EMCL0") || triggercont->IsEventSelected("DMCL0") ) return kTRUE;
       } else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ){
         if( (triggercont->IsEventSelected("EG2")) || (triggercont->IsEventSelected("DG2")) ) return kTRUE;
@@ -4817,7 +4818,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
       }
       // EMCal L0 trigger
-      if(fSpecialTrigger == 5 ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
+      if(fSpecialTrigger == 5 || fSpecialTrigger == 10) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
       // EMCal L1 G2 trigger
       else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
       // EMCal L1 G1 trigger
@@ -7616,7 +7617,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.Contains("LHC18b10")){
     fPeriodEnum = kLHC18b10;
     fEnergyEnum = k5TeV;
-  } else if ( periodName.Contains("LHC18l2")){
+  } else if ( periodName.Contains("LHC18l2") || periodName.Contains("LHC18g7") ){
     fPeriodEnum = kLHC18l2;
     fEnergyEnum = k5TeV;
 
