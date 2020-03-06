@@ -720,7 +720,9 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+
+      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
@@ -734,9 +736,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 
 	//------> Get NUA weights for EP <----------
 
-	if(trkPt > 2.0) continue; ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
-	
-	WgtNUA = 1.0;
+	WgtNUA  = 1.0;
 	ptWgtMC = 1.0;
 	
 	if(trkChrg>0){
@@ -776,18 +776,7 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	//if(iTrack%10==0){
 	//std::cout<<" pT = "<<trkPt<<"\t MCWgt = "<<ptWgtMC<<"\t Eta = "<<trkEta<<"\t NUAwgt = "<<WgtNUA<<"\t TotalWgt = "<<trkWgt<<endl;
 	//}
-       
-	
-	if(trkEta < fEtaGapNeg){
-	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
-	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
-	  fSumWgtEtaNeg  += trkWgt;
-	}
-	else if(trkEta > fEtaGapPos){
-	  fSumTPCQn2xPos += trkWgt*TMath::Cos(gPsiN*trkPhi);
-	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
-	  fSumWgtEtaPos  += trkWgt;
-	}
+
 
 	if(trkChrg > 0){	  
 	  fNumOfPos += trkWgt;
@@ -797,7 +786,20 @@ void AliAnalysisTaskCVE::UserExec(Option_t*) {
 	}
 
 
+
 	
+	if(trkPt <= 2.0) { //////**** For Event Plane: 0.2 < pT < 2.0; 
+	  if(trkEta < fEtaGapNeg){
+	    fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	    fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	    fSumWgtEtaNeg  += trkWgt;
+	  }
+	  else if(trkEta > fEtaGapPos){
+	    fSumTPCQn2xPos += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	    fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	    fSumWgtEtaPos  += trkWgt;
+	  }
+	}
 	
 	//<---------- User track analysis Done---------------
 
