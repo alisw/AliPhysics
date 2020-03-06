@@ -84,7 +84,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fHeaderList(NULL),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
   fEventQuality(-1),
   fGeomEMCAL(NULL),
   fIsHeavyIon(0),
@@ -383,6 +383,11 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     delete fHistograms;
     fHistograms=NULL;
   }
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     fHistograms->SetOwner(kTRUE);

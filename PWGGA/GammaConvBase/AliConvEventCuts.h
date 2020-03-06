@@ -566,7 +566,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    PrintCutsWithValues();
       void    InitCutHistograms(  TString name="",
                                   Bool_t preCut = kTRUE);
-      void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+      void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
       void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
 
       ///Cut functions
@@ -629,7 +629,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TList*                      fHistograms;                            ///<
       TList*                      fHeaderList;                            ///<
 
-      Bool_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+      Int_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       //cuts
