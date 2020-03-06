@@ -29,6 +29,13 @@ class AliAnalysisTaskFilterHe3 : public AliAnalysisTaskSE
 
   void SetUseMultTaskCentrality(Bool_t useMultTaskCentrality = kTRUE) {fUseMultTaskCentrality = useMultTaskCentrality;};
 
+  // Setters for some cuts
+  void SetMinNsig3He(Double_t nsmin = 3) { fMinNSigma3He = nsmin; }
+  void SetMaxNsig3He(Double_t nsmax = 10) { fMaxNSigma3He = nsmax; }
+  void SetNclsTPC(Double_t ncltpc = 50) { fMinNclsTPC = ncltpc; }
+  void SetPtotmin(Double_t ptotmin = 0.5) { fMinPtot = ptotmin; }
+  void SetPtotmax(Double_t ptotmax = 20) { fMaxPtot = ptotmax; }
+
  private:
   AliESDEvent* fESD;                           //! input event
   TList* fOutputList;                          //! output list
@@ -41,6 +48,14 @@ class AliAnalysisTaskFilterHe3 : public AliAnalysisTaskSE
   //
   Int_t fEventIdFile;                        //! event id in file
   TString fFileName;                           //! chunk file name
+
+  // Cut params
+  Double_t fMinNSigma3He;
+  Double_t fMaxNSigma3He;
+  Double_t fMinNclsTPC;
+  Double_t fMinPtot;
+  Double_t fMaxPtot;
+
   //
   // histograms
   //
