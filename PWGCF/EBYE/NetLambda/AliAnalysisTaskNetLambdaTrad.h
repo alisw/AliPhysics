@@ -23,7 +23,7 @@ class TH3F;
 class AliAnalysisTaskNetLambdaTrad : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskNetLambdaTrad(const char* name="AliAnalysisTaskNetLambdaTrad");
-    virtual ~AliAnalysisTaskNetLambdaTrad(){};
+    virtual ~AliAnalysisTaskNetLambdaTrad ();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     void SetEventSelection(UInt_t val) {fEvSel = val;}

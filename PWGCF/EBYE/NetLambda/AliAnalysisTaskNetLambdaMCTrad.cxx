@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Mar 3, reduce pT binning
+// Updated Mar 5, reduce pT binning & delete allocator
 
 
 #include "AliAnalysisManager.h"
@@ -94,7 +94,14 @@ fPtBinNplusNminusChTruth(NULL)
     DefineOutput(1,TList::Class());
     
 }
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+AliAnalysisTaskNetLambdaMCTrad::~AliAnalysisTaskNetLambdaMCTrad()
+{
+    // Default destructor
+    if( fListHist ) delete fListHist;
+}
+//----------------------------------------------------------------------------------------------------
 
 void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
 {
