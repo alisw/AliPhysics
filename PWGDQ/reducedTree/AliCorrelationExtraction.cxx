@@ -123,6 +123,7 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fResonanceFits(0x0),
   fOptionBkgMethod(kBkgNone),
   fBkgFitFunction(0x0),
+  fFitPrecision(1.e-06),
   fNBackgroundMassRanges(0),
   fBackgroundMassRanges(),
   fMassSignalRange(),
@@ -1094,20 +1095,29 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       }
 
       // fit background
-      TFitResultPtr fitResult = 0;
-      if (fInclusiveCF1DInvMass[phiBin][etaBin]->GetEntries()) {
-        fitResult = fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin]->Fit(fBackgroundCF1DInvMassFit[phiBin][etaBin], "ISQMNEF", "",
-                                                                              fBackgroundMassRanges[0][0],
-                                                                              fBackgroundMassRanges[0][1]);
+      TFitResultPtr fitResultBkg = 0;
+      if (fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin]->GetEntries()) {
+        fitResultBkg = fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin]->Fit(fBackgroundCF1DInvMassFit[phiBin][etaBin], "SQNF", "",
+                                                                                 fBackgroundMassRanges[0][0],
+                                                                                 fBackgroundMassRanges[0][1]);
       } else {
-        fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin] = NULL;
+        fBackgroundCF1DInvMassFit[phiBin][etaBin] = NULL;
       }
 
       // fit full distribution
-      if (fInclusiveCF1DInvMass[phiBin][etaBin]->GetEntries() && fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin]) {
-        fInclusiveCF1DInvMass[phiBin][etaBin]->Fit(fInclusiveCF1DInvMassFit[phiBin][etaBin], "ISQMNEF", "",
-                                                   fBackgroundMassRanges[0][0],
-                                                   fBackgroundMassRanges[0][1]);
+      TFitResultPtr fitResultFull = 0;
+      if (fInclusiveCF1DInvMass[phiBin][etaBin]->GetEntries() && fBackgroundCF1DInvMassFit[phiBin][etaBin]) {
+        (TVirtualFitter::GetFitter())->SetPrecision(fFitPrecision);
+        fitResultFull = fInclusiveCF1DInvMass[phiBin][etaBin]->Fit(fInclusiveCF1DInvMassFit[phiBin][etaBin], "SQNMEF", "",
+                                                                   fBackgroundMassRanges[0][0],
+                                                                   fBackgroundMassRanges[0][1]);
+
+        if (fitResultFull) {
+          // try again in case of error code from fit (status!=0)
+          fitResultFull = fInclusiveCF1DInvMass[phiBin][etaBin]->Fit(fInclusiveCF1DInvMassFit[phiBin][etaBin], "SQNMEF", "",
+                                                                     fBackgroundMassRanges[0][0],
+                                                                     fBackgroundMassRanges[0][1]);
+        }
       } else {
         fInclusiveCF1DInvMassFit[phiBin][etaBin]  = NULL;
       }
@@ -1128,8 +1138,10 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
 
       // assign background fit parameters after full fit
       if (fInclusiveCF1DInvMassFit[phiBin][etaBin]) {
-        for (Int_t i=0; i<fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar(); ++i)
+        for (Int_t i=0; i<fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetNpar(); ++i) {
           fBackgroundCF1DInvMassFit[phiBin][etaBin]->SetParameter(i, fInclusiveCF1DInvMassFit[phiBin][etaBin]->GetParameter(i+3));
+          fBackgroundCF1DInvMassFit[phiBin][etaBin]->SetParError( i, fInclusiveCF1DInvMassFit[phiBin][etaBin]->GetParError( i+3));
+        }
       } else {
         fBackgroundCF1DInvMassFit[phiBin][etaBin] = NULL;
       }
@@ -1141,7 +1153,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
         bkg     = fBackgroundCF1DInvMassFit[phiBin][etaBin]->Integral(fMassSignalRange[0], fMassSignalRange[1]);
         bkgErr  = fBackgroundCF1DInvMassFit[phiBin][etaBin]->IntegralError(fMassSignalRange[0], fMassSignalRange[1],
                                                                            fBackgroundCF1DInvMassFit[phiBin][etaBin]->GetParameters(),
-                                                                           fitResult->GetCovarianceMatrix().GetMatrixArray());
+                                                                           fitResultBkg->GetCovarianceMatrix().GetMatrixArray());
 
         bkg     = bkg/(fMassSignalRange[1]-fMassSignalRange[0]);
         bkgErr  = bkgErr/(fMassSignalRange[1]-fMassSignalRange[0]);

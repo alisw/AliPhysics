@@ -238,6 +238,7 @@ class AliCorrelationExtraction : public TObject {
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
     void SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta=kFALSE);
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
+    void SetFitPrecision(Double_t prec=1.e-06) {fFitPrecision = prec;}
     void SetSignalMassWindow(Double_t min, Double_t max) {fMassSignalRange[0] = min; fMassSignalRange[1] = max; fProcessDone = kFALSE;}
     void SetBackgroundMassWindows(Int_t n, Double_t* min, Double_t* max);
     void SetMassExclusionRange(Double_t min, Double_t max) {fMassExclusionRange[0] = min, fMassExclusionRange[1] = max;}
@@ -395,6 +396,7 @@ class AliCorrelationExtraction : public TObject {
     AliResonanceFits* fResonanceFits;
     Int_t             fOptionBkgMethod;
     TF1*              fBkgFitFunction;
+    Double_t          fFitPrecision;
   
     // mass ranges
     Int_t     fNBackgroundMassRanges;                               // number of background mass windows
@@ -430,7 +432,7 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateSignalCorrelation();
     Bool_t  HadronEfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 5);
+  ClassDef(AliCorrelationExtraction, 6);
 };
 
 #endif
