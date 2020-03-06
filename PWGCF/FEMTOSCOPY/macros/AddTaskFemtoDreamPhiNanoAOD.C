@@ -364,9 +364,40 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //    TrackCutsPhi->SetMinimalBooking(true);
   //  }
 
-  if (suffix == "1") {
-    evtCuts->SetSphericityCuts(0, 1);
-  }
+    if (suffix == "1") {
+      TrackCutsPhi->SetCutWindow(0.987, 1.011);
+    }
+    if (suffix == "2") {
+      TrackCutsPhi->SetCutWindow(1.027, 1.1);
+    }
+    if (suffix == "3") {
+      evtCuts->SetSphericityCuts(0, 1);
+    }
+    if (suffix == "4") {
+      TrackCutsPhi->SetCutWindow(0.987, 1.011);
+      evtCuts->SetSphericityCuts(0, 1);
+    }
+    if (suffix == "5") {
+      TrackCutsPhi->SetCutWindow(1.027, 1.1);
+      evtCuts->SetSphericityCuts(0, 1);
+    }
+    if (suffix == "7") {
+      TrackCutsPhi->SetCutWindow(0.987, 1.011);
+    }
+    if (suffix == "8") {
+      TrackCutsPhi->SetCutWindow(1.027, 1.1);
+    }
+    if (suffix == "9") {
+      evtCuts->SetSphericityCuts(0, 1);
+    }
+    if (suffix == "10") {
+      TrackCutsPhi->SetCutWindow(0.987, 1.011);
+      evtCuts->SetSphericityCuts(0, 1);
+    }
+    if (suffix == "11") {
+      TrackCutsPhi->SetCutWindow(1.027, 1.1);
+      evtCuts->SetSphericityCuts(0, 1);
+    }
 
   //  if (suffix == "1") {
   //    TrackCutsPhi->SetCutWindow(0.987, 1.011);
@@ -455,18 +486,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);  // 0
-  PDGParticles.push_back(2212);  // 1
-  PDGParticles.push_back(333);   // 2
-  PDGParticles.push_back(2212);  // 3
-  PDGParticles.push_back(2212);  // 4
-  PDGParticles.push_back(333);   // 5
-  PDGParticles.push_back(333);   // 6
-  PDGParticles.push_back(2212);  // 7
-  PDGParticles.push_back(2212);  // 8
-  PDGParticles.push_back(333);   // 9
-  PDGParticles.push_back(2212);  // 10
-  PDGParticles.push_back(2212);  // 11
+  PDGParticles.push_back(2212);  // 0 protons
+  PDGParticles.push_back(2212);  // 1 antiprot
+  PDGParticles.push_back(333);   // 2 v0 particle
+  PDGParticles.push_back(2212);  // 3 proton truth
+  PDGParticles.push_back(2212);  // 4 antiprot truth
+  PDGParticles.push_back(333);   // 5 phi truth
+  PDGParticles.push_back(333);   // 6 phiall
+//  PDGParticles.push_back(2212);  // 7 proton common
+//  PDGParticles.push_back(2212);  // 8 aproton common
+//  PDGParticles.push_back(333);   // 9 phi common
+//  PDGParticles.push_back(2212);  // 10 proton no prim
+//  PDGParticles.push_back(2212);  // 11 antiprot no prim
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -538,7 +569,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12); i++) {
+ // for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12); i++) {
+
+
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
@@ -548,30 +582,30 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   pairQA[0] = 10;   // pp
   pairQA[1] = 10;    // pap
   pairQA[2] = 10;   // pphi
-  pairQA[12] = 10;  // apap
-  pairQA[13] = 10;  // apphi
-  pairQA[23] = 10;  // phiphi
+  pairQA[7] = 10;  // apap
+  pairQA[8] = 10;  // apphi
+  pairQA[13] = 10;  // phiphi
 
   if (isMC) {
-    pairQA[33] = 10;  // TRUE
-    pairQA[34] = 10;
-    pairQA[35] = 10;
-    pairQA[42] = 10;
-    pairQA[43] = 10;
-    pairQA[50] = 10;
+    pairQA[18] = 10;  // TRUE
+    pairQA[19] = 10;
+    pairQA[20] = 10;
+    pairQA[22] = 10;
+    pairQA[23] = 10;
+    pairQA[25] = 10;
 
-    pairQA[63] = 10;  // COMMON
-    pairQA[64] = 10;
-    pairQA[65] = 10;
-    pairQA[68] = 10;
-    pairQA[69] = 10;
-    pairQA[72] = 10;
+//    pairQA[63] = 10;  // COMMON
+//    pairQA[64] = 10;
+//    pairQA[65] = 10;
+//    pairQA[68] = 10;
+//    pairQA[69] = 10;
+//    pairQA[72] = 10;
 
-    pairQA[36] = 10;  // phiPRIM pTRUE
-    pairQA[44] = 10;
+    pairQA[21] = 10;  // phiALL pTRUE
+    pairQA[24] = 10;
 
-    pairQA[55] = 10;  // phiTURE pNOprim
-    pairQA[56] = 10;
+//    pairQA[55] = 10;  // phiTURE pNOprim
+//    pairQA[56] = 10;
   }
 
   AliFemtoDreamCollConfig *config =
@@ -596,11 +630,58 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     config->SetMixingDepth(10);
   }
   if (suffix == "2") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "3") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "4") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "5") {
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);
+  }
+  if (suffix == "6") {
     config->SetUseEventMixing(false);
     config->SetUsePhiSpinning(true);
     config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
     config->SetSpinningDepth(1);
   }
+  if (suffix == "7") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+  if (suffix == "8") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+  if (suffix == "9") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+  if (suffix == "10") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+  if (suffix == "11") {
+    config->SetUseEventMixing(false);
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+    config->SetSpinningDepth(1);
+  }
+
 
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
@@ -682,6 +763,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
+  task->SetUseDumpster(true);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -702,6 +784,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
                                    AliAnalysisManager::kOutputContainer,
                                    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
+
+  AliAnalysisDataContainer *coutputDumpsterQA;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpsterQA = mgr->CreateContainer(
+      DumpsterName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 2, coutputDumpsterQA);
 
   return task;
 }
