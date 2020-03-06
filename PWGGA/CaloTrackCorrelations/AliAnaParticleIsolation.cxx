@@ -24,21 +24,24 @@
 #include "TDatabasePDG.h"
 #include <TCustomBinning.h>
 
-// --- Analysis system ---
-#include "AliAnaParticleIsolation.h"
-#include "AliCaloTrackReader.h"
-#include "AliMCEvent.h"
-#include "AliIsolationCut.h"
-#include "AliFiducialCut.h"
-#include "AliMCAnalysisUtils.h"
-#include "AliNeutralMesonSelection.h"
+// --- AliRoot/Analysis system ---
 #include "AliVParticle.h"
-#include "AliCaloTrackParticleCorrelation.h"
-#include "AliMCAnalysisUtils.h"
 #include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+
+// --- CaloTrackCorr classes ---
+#include "AliAnaParticleIsolation.h"
+#include "AliCaloTrackReader.h"
+#include "AliIsolationCut.h"
+#include "AliFiducialCut.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliNeutralMesonSelection.h"
+#include "AliCaloTrackParticleCorrelation.h"
+#include "AliMCAnalysisUtils.h"
 
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
@@ -5257,7 +5260,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
   AliDebug(1,"Start");
   
-  //Double_t photonY   = -100 ;
+  Double_t photonY   = -100 ;
   Double_t photonE   = -1 ;
   Double_t photonPt  = -1 ;
   Double_t photonPhi =  100 ;
@@ -5291,10 +5294,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     minECalo = GetReader()->GetPHOSEMin();
   }
 
-  for(Int_t i=0 ; i < nprim; i++)
+  Int_t firstParticle = 0;
+  
+  // Loop only over likely final particles not partons
+  if ( GetReader()->GetGenPythiaEventHeader() ) 
+    firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
+  
+  for(Int_t i = firstParticle ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
-    
     
     primary = GetMC()->GetTrack(i) ;
     if(!primary)
@@ -5302,23 +5310,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       AliWarning("primaries pointer not available!!");
       continue;
     }
-      
-      pdg    = primary->PdgCode();
-      status = primary->MCStatusCode();
-      
-      // Protection against floating point exception
-      if ( primary->E() == TMath::Abs(primary->Pz()) || 
-          (primary->E() - primary->Pz()) < 1e-3      ||
-          (primary->E() + primary->Pz()) < 0           )  continue ; 
-      
-      //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
-      //       primary->GetName(), primary->GetPdgCode());
-      
-      //photonY   = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->Energy()-prim->Pz())) ;
-      
-      //Photon kinematics
-      primary->Momentum(fMomentum);
-        
+    
+    pdg    = primary->PdgCode();
+    status = primary->MCStatusCode();
+    
+    // Protection against floating point exception
+    if ( primary->E() == TMath::Abs(primary->Pz()) || 
+        (primary->E() - primary->Pz()) < 1e-3      ||
+        (primary->E() + primary->Pz()) < 0           )  continue ; 
+    
+    //printf("i %d, %s %d  %s %d \n",i, GetMC()->Particle(i)->GetName(), GetMC()->Particle(i)->GetPdgCode(),
+    //       primary->GetName(), primary->GetPdgCode());
+    
     // Select only photons in the final state
     if(pdg != 22  && pdg!=111 && pdg !=221) continue ;
     
@@ -5326,12 +5329,33 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // status 1 is the usual one, in case of not being ok, leave the possibility
     // to not consider this.
     if( pdg == 22 && status != 1 &&
-        GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
+       GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) continue ;
+    
+    // Not interested in large rapidity, cut those
+    photonY = 0.5*TMath::Log((primary->E()+primary->Pz())/(primary->E()-primary->Pz())) ;
+    if ( TMath::Abs(photonY) > 1.0 ) continue;
+    
+    // Photon kinematics
+    primary->Momentum(fMomentum);
     
     // If too small or too large pt, skip, same cut as for data analysis
     photonPt  = fMomentum.Pt () ;
     
-    if(photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
+    if ( photonPt < GetMinPt() || photonPt > GetMaxPt() ) continue ;
+    
+    // Avoid too large pT particle in pT hard binned productions
+    if ( GetReader()->GetGenPythiaEventHeader() ) 
+    {
+      Float_t pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
+      
+      if ( pTHard / photonPt < 0.5 ) 
+      {
+        AliInfo(Form("Reject primary particle pdg %d mcTag %d, pT %f larger than pT hard %f, ratio %f",
+                     pdg, mcIndex, photonPt, pTHard, pTHard/photonPt));
+        //GetMCAnalysisUtils()->PrintAncestry(GetMC(),i);
+        continue;
+      }
+    }
     
     photonE   = fMomentum.E  () ;
     photonEta = fMomentum.Eta() ;
@@ -5363,10 +5387,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       continue;
     }
     
-    /// Particle ID and pT dependent Weight
-    Int_t index     = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    // Particle ID and pT dependent Weight
+    Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
     Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
-    ///
+    //
     
     // Check the origin of the photon or if it is a pi0, assing a tag
     Int_t pi0d1Label = -1, pi0d2Label = -1;
@@ -5382,10 +5406,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // Get also the opening angle and check if decays likely overlap
       Bool_t okpi0 = kFALSE;
       Int_t ndaugh = GetMCAnalysisUtils()->GetNDaughters(i,GetMC(), okpi0);
-     // printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
+      // printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
       Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
       Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
-
+      
       if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetMC(),d1Pdg, d1Status,ok1, pi0d1Label,fProdVertex);
       if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetMC(),d2Pdg, d2Status,ok2, pi0d2Label,fProdVertex);
       
@@ -5449,7 +5473,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Int_t partInConeCharge = 0, npart = 0, partInConePDG = 0;
     Bool_t physPrimary = kFALSE;
     
-    for(Int_t ip = 0; ip < nprim ; ip++)
+    for(Int_t ip = firstParticle; ip < nprim ; ip++)
     {
       if(ip==i) continue;
       
@@ -5524,15 +5548,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 //             photonEta, photonPhi, partInConeEta, partInConePhi);
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
-
+      
       if(dR < GetIsolationCut()->GetMinDistToTrigger())
         continue;
       
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
-            
-      if (  fFillTrackOriginHistograms && 
-            partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
+      
+      if ( fFillTrackOriginHistograms && 
+           partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
         if      ( TMath::Abs(partInConePDG) == 211  )  mcChTag = 0;
@@ -5543,10 +5567,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
         else
           fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
-
+        
         //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
       }
-        
+      
       if ( !physPrimary ) continue ; 
       
       sumPtInCone += partInConePt;
@@ -5702,7 +5726,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         } // eta decay
         
       } // eta or pi0 decay
-
+      
       if(overlapPi0)
       {
         if( mcIndex == kmcPrimPi0) fhPtPrimMCPi0Overlap->Fill(photonPt, GetEventWeight()*weightPt);
@@ -5710,13 +5734,20 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       }
     }
     
-    // Isolated?
-    Bool_t isolated = kFALSE;
-    if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kSumPtIC   &&
-       (sumPtInCone < GetIsolationCut()->GetSumPtThreshold() ||
-        sumPtInCone > GetIsolationCut()->GetSumPtThresholdMax()))
+    // Check if candiate is isolated.
+    //
+    // Only for isolation based on sum pT. 
+    // In case of UE subtraction it needs revision!!!, 
+    // implementing same approach as in reconstructed clusters.
+    
+    Bool_t isolated  = kFALSE;
+    Int_t  isoMethod = GetIsolationCut()->GetICMethod();
+    if ( ( isoMethod == AliIsolationCut::kSumPtIC || 
+           isoMethod >= AliIsolationCut::kSumBkgSubIC ) &&
+         ( sumPtInCone < GetIsolationCut()->GetSumPtThreshold() || 
+           sumPtInCone > GetIsolationCut()->GetSumPtThresholdMax() ) )
       isolated = kTRUE;
-   
+    
     //printf("Primary in cone n Part %d sum pT in cone %2.2f\n",npart, sumPtInCone);
     
     if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
@@ -5800,7 +5831,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
       }
     } // isolated
-
+    
   }//loop on primaries
   
   AliDebug(1,"End");
