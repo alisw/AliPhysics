@@ -18,6 +18,7 @@ laura.serksnyte@cern.ch
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "TH1F.h"
+#include "TString.h"
 
 //================================================================================================================
 
@@ -55,7 +56,20 @@ class AliAnalysisTaskNBodyFemtoscopy : public AliAnalysisTaskSE{
    this->fMaxBinPt = max;
   };
 
- private:
+  void SetCentralityEstimator(TString estimatorName)
+  {
+   this->fCentralityEstimator = estimatorName;
+  };
+
+  void SetCentralityBinning(Int_t const nbins, Float_t min, Float_t max)
+  {
+   this->fNbinsCentrality = nbins;
+   this->fMinCentrality = min;
+   this->fMaxCentrality = max;
+  };
+
+
+   private:
   AliAnalysisTaskNBodyFemtoscopy(const AliAnalysisTaskNBodyFemtoscopy& aatmpf);
   AliAnalysisTaskNBodyFemtoscopy& operator=(const AliAnalysisTaskNBodyFemtoscopy& aatmpf);
   
@@ -65,15 +79,20 @@ class AliAnalysisTaskNBodyFemtoscopy : public AliAnalysisTaskSE{
   // 1.) Control histograms:  
   TList *fControlHistogramsList; // list to hold all control histograms
   TH1F *fPtHist;                 // atrack->Pt()
+  TH1F *fCentralityHist;         // ams->GetMultiplicityPercentile()
   Int_t fNbinsPt;                // number of bins
   Float_t fMinBinPt;             // min bin
   Float_t fMaxBinPt;             // min bin
+  TString fCentralityEstimator;  // centrality estimator choice
+  Float_t fNbinsCentrality;      // cenrality bin number
+  Float_t fMinCentrality;        // min centrality
+  Float_t fMaxCentrality;        // max centrality
   
   // 2.) Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
 
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskNBodyFemtoscopy,1);
+  ClassDef(AliAnalysisTaskNBodyFemtoscopy,2);
 
 };
 

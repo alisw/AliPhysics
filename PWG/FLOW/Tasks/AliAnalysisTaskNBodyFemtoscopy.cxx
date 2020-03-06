@@ -26,6 +26,8 @@
 #include "AliAODInputHandler.h"
 #include "TFile.h"
 
+#include "AliMultSelection.h"
+
 using std::cout;
 using std::endl;
 
@@ -39,9 +41,15 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
+ fCentralityHist(NULL),
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
+ fNbinsCentrality(100),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+ fCentralityEstimator("V0M"),
+
  // Final results:
  fFinalResultsList(NULL)
  {
@@ -85,9 +93,14 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
+ fCentralityHist(NULL),
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
+ fNbinsCentrality(100),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+ fCentralityEstimator("V0M"),
  // Final results:
  fFinalResultsList(NULL)
 {
@@ -141,7 +154,7 @@ void AliAnalysisTaskNBodyFemtoscopy::UserCreateOutputObjects()
 void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *) 
 {
  // Main loop (called for each event).
- // a) Get pointer to AOD event:
+ // a) Get pointer to AOD event, chech multiplicity:
  // b) Start analysis over AODs;
  // c) Reset event-by-event objects;
  // d) PostData.
@@ -149,6 +162,20 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  // a) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
+
+ // Check Multiplicity
+ AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
+ if(!ams){return;}
+ // Use centrality estimator
+ if(ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())) >= fMinCentrality && ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())) < fMaxCentrality)
+ {
+  fCentralityHist->Fill(ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())));
+ }
+ else
+ {
+  return; 
+ }
+
 
  // b) Start analysis over AODs:
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
@@ -251,7 +278,7 @@ void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
  // Book all control histograms.
 
  // a) Book histogram to hold pt spectra;
- // b) ...
+ // b) Book histogram for centrality distribution
 
  // a) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbinsPt,fMinBinPt,fMaxBinPt);
@@ -260,8 +287,12 @@ void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
  
- // b) ...
-
+ // b) Book histogram for centrality distribution:
+ fCentralityHist = new TH1F("fCentralityHist","ams->GetMultiplicityPercentile()",fNbinsCentrality,fMinCentrality,fMaxCentrality);
+ fCentralityHist->SetStats(kFALSE);
+ fCentralityHist->SetFillColor(kRed-10);
+ fCentralityHist->GetXaxis()->SetTitle("Multiplicity");
+ fControlHistogramsList->Add(fCentralityHist);
 } // void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
 
 //=======================================================================================================================
