@@ -12,17 +12,14 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 									 bool isMC = false,				                        //2
 									 int fFilterBit = 128,			                      //3
-									 int phiSpinning =0,			                        //4
-                   int nSpins = 1,				                          //5
-									 double corrRange = 0.1,		                      //6
-									 TString triggerData = "kInt7",	                  //7
-                   bool DodPhidEtaPlots = false,                    //8
-                   bool Systematic = false,		                      //9
-									 const char *sTcut = "8",		                      //10
-									 bool DoSpherocity = false,		                    //11
-									 const char *s0cut = "08",		                    //12
-                   bool DoAncestors = false,                        //13
-                   const char *cutVariation = "0") {                //14
+									 TString triggerData = "kInt7",	                  //4
+                   bool DodPhidEtaPlots = false,                    //5
+                   bool Systematic = false,		                      //6
+									 const char *sTcut = "8",		                      //7
+									 bool DoSpherocity = false,		                    //8
+									 const char *s0cut = "08",		                    //9
+                   bool DoAncestors = false,                        //10
+                   const char *cutVariation = "0") {                //11
 
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
@@ -170,16 +167,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(211);
 
-  if (!fullBlastQA) {
-    evtCuts->SetMinimalBooking(true);
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
-    v0Cuts->SetMinimalBooking(true);
-    Antiv0Cuts->SetMinimalBooking(true);
-    CascadeCuts->SetMinimalBooking(true);
-    AntiCascadeCuts->SetMinimalBooking(true);
-  }
-    if (Systematic) {
+  if (!fullBlastQA || Systematic) {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -204,30 +192,30 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   std::vector<float> kMin;
   std::vector<float> kMax;
   std::vector<int> pairQA;
+  std::vector<int> pairQASyst;
   std::vector<bool> closeRejection;
   //pairs:
   //pp                0
   //p bar p           1
   //p La              2
   //p bar La          3
-  //bar p bar p       4
-  //bar p La          5
-  //bar p bar La      6
-  //p Xi              7
-  //p bar Xi          8
+  //p  Xi             4
+  //p  bar Xi         5
+  //bar p bar p       6
+  //bar p La          7
+  //bar p bar La      8
   //bar p Xi          9
   //bar p bar Xi      10
   //La La             11
   //La bar La         12
-  //bar La bar La     13
-  //La Xi             14
-  //bar La Xi         15
+  //La Xi             13
+  //La bar Xi         14
+  //bar La bar La     15
   //La bar Xi         16
   //bar La bar Xi     17
   //Xi Xi             18
   //Xi bar Xi         19
   //Xi bar Xi bar     20
-
 
   const int nPairs = 21;
   for (int i = 0; i < nPairs; ++i) {
@@ -237,33 +225,46 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     kMin.push_back(0.);
     kMax.push_back(6.);
   }
+  if (Systematic){
   pairQA[0] = 11;
   pairQA[1] = 11;
   pairQA[2] = 12;
   pairQA[3] = 12;
-  pairQA[4] = 11;
-  pairQA[5] = 12;
-  pairQA[6] = 12;
-  pairQA[7] = 13;
-  pairQA[8] = 13;
+  pairQA[6] = 11;
+  pairQA[7] = 12;
+  pairQA[8] = 12;
+  pairQA[11] = 22;
+  pairQA[12] = 22;
+  pairQA[15] = 22;
+  closeRejection[0] = true;  // pp
+  closeRejection[6] = true;  // barp barp
+  } else {
+  pairQA[0] = 11;
+  pairQA[1] = 11;
+  pairQA[2] = 12;
+  pairQA[3] = 12;
+  pairQA[4] = 13;
+  pairQA[5] = 13;
+  pairQA[6] = 11;
+  pairQA[7] = 12;
+  pairQA[8] = 12;
   pairQA[9] = 13;
   pairQA[10] = 13;
   pairQA[11] = 22;
   pairQA[12] = 22;
-  pairQA[13] = 22;
+  pairQA[13] = 23;
   pairQA[14] = 23;
-  pairQA[15] = 23;
+  pairQA[15] = 22;
   pairQA[16] = 23;
   pairQA[17] = 23;
   pairQA[18] = 33;
   pairQA[19] = 33;
   pairQA[20] = 33;
-
   closeRejection[0] = true;  // pp
-  closeRejection[4] = true;  // barp barp
-
+  closeRejection[6] = true;  // barp barp
   closeRejection[18] = true;  // Xi Xi
   closeRejection[20] = true;  // barXi barXi
+  }
 
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -274,26 +275,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  if (phiSpinning == 0) {
-    config->SetMixingDepth(10);
-    config->SetUseEventMixing(true);
-  } else if (phiSpinning == 1) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
-    config->SetCorrelationRange(corrRange);
-    config->SetSpinningDepth(nSpins);
-  } else if (phiSpinning == 2) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
-    config->SetSpinningDepth(1);
-  } else if (phiSpinning == 3) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
-    config->SetSpinningDepth(nSpins);
-  }
+  config->SetMixingDepth(10);
+  config->SetUseEventMixing(true);
+
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   std::vector<int> MultBins;
@@ -341,22 +325,24 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   config->SetZBins(ZVtxBins);
 
-  config->SetMultBinning(true);
-  config->SetmTBinning(true);
-
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(DodPhidEtaPlots);
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
-    config->SetkTBinning(true);
-    config->SetPtQA(true);
+  config->SetkTBinning(true);
+  config->SetPtQA(true);
+  config->SetMultBinning(true);
+  config->SetmTBinning(true);
   }
 
-  if (!fullBlastQA) {
+  if (!fullBlastQA || Systematic) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
+    config->SetMultBinning(true);
+    config->SetmTBinning(true);
   }
+
 
   if (isMC) {
     config->SetMomentumResolution(true);//kstar true vs. kstar reco
