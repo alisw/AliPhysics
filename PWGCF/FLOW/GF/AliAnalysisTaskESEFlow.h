@@ -57,6 +57,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetV0CEse(Bool_t actV0CEse) { fV0CEse = actV0CEse; }
         void                    SetV0AEse(Bool_t actV0AEse) { fV0AEse = actV0AEse; }
 
+        void                    SetTPCEseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { TPCqnBins = nBins; TPCqnBinMin = binMin; TPCqnBinMax = binMax; }
+        void                    SetV0EseqnBins(Int_t nBins, Double_t binMin, Double_t binMax) { V0qnBins = nBins; V0qnBinMin = binMin; V0qnBinMax = binMax; }
+
         void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
 
         void                    SetWeights(Bool_t kOwn) { bUseOwnWeights = kOwn; }
@@ -369,6 +372,15 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   fNumSamples;
 
         Bool_t                  fSPAnalysis;
+        
+        Int_t                   TPCqnBins;
+        Double_t                TPCqnBinMin;
+        Double_t                TPCqnBinMax;
+
+        Int_t                   V0qnBins;
+        Double_t                V0qnBinMin;
+        Double_t                V0qnBinMax;
+
 
 
         std::vector<AliUniFlowCorrTask*>    fVecCorrTask;
