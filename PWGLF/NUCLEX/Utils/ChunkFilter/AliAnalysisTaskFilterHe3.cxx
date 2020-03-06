@@ -42,7 +42,12 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3() : AliAnalysisTaskSE(), fESD
   fHistdEdxHe3Param(0),
   fHistdEdxTritonParam(0),
   fHistTof(0),
-  fHistCent(0)
+  fHistCent(0),
+  fMinNSigma3He(0),
+  fMaxNSigma3He(0),
+  fMinNclsTPC(0),
+  fMinPtot(0),
+  fMaxPtot(0)
 {
   //
   // default contstructor: do nothing
@@ -61,7 +66,12 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char* name): AliAnalysi
   fHistdEdxHe3Param(0),
   fHistdEdxTritonParam(0),
   fHistTof(0),
-  fHistCent(0)
+  fHistCent(0),
+  fMinNSigma3He(0),
+  fMaxNSigma3He(0),
+  fMinNclsTPC(0),
+  fMinPtot(0),
+  fMaxPtot(0)
 {
   //
   // main constructor
@@ -310,20 +320,25 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t*) {
   	//
     // TRIGGER CONDITION
     //
-  	if (hasTOF && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) {
+    if (hasTOF && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
       fHistTof->Fill(ptot*sign,mass);
       //
-      if (1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > 80) {
-        if (sign < 0 && ptot > 0.5 && ptot < 20.0) isTriggered = kTRUE;
-        if (sign > 0 && ptot > 1.5 && ptot < 20.0) isTriggered = kTRUE;
+    if (nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He && 1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > fMinNclsTPC)
+    {
+      if (sign < 0 && ptot > fMinPtot && ptot < fMaxPtot)
+        isTriggered = kTRUE;
+      if (sign > 0 && ptot > fMinPtot && ptot < fMaxPtot)
+        isTriggered = kTRUE;
       }
-    }
-    if (sign < 0 && ptot > 0.5 && ptot < 20.0 && 
-        track->GetTPCsignalN() > 80 && 
-        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) isTriggered = kTRUE;
-    if (sign > 0 && ptot > 2.0 && ptot < 20.0 && 
-        track->GetTPCsignalN() > 80 && 
-        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < 10.0 && nSigmaHe3 > -4.0) isTriggered = kTRUE;  
+
+    if (sign < 0 && ptot > fMinPtot && ptot < fMaxPtot &&
+        track->GetTPCsignalN() > fMinNclsTPC &&
+        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
+      isTriggered = kTRUE;
+    if (sign > 0 && ptot > fMinPtot && ptot < fMaxPtot &&
+        track->GetTPCsignalN() > fMinNclsTPC &&
+        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
+      isTriggered = kTRUE;
 
   } // end track loop
   //
