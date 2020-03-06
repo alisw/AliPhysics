@@ -18,21 +18,24 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include "AliVParticle.h"
 #include "TDatabasePDG.h"
 
-// --- Analysis system ---
+// --- AliRoot/Analysis system ---
+#include "AliVParticle.h"
+#include "AliVCluster.h"
+#include "AliMixedEvent.h"
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+
+// --- CaloTrackCorr system ---
 #include "AliAnaPhoton.h"
 #include "AliCaloTrackReader.h"
 #include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
-#include "AliVCluster.h"
-#include "AliMixedEvent.h"
-#include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
 
 // --- Detectors ---
 #include "AliPHOSGeoUtils.h"
@@ -1035,7 +1038,13 @@ void AliAnaPhoton::FillAcceptanceHistograms()
 
   AliVParticle * primary = 0;
   
-  for(Int_t i=0 ; i < nprim; i++)
+  Int_t firstParticle = 0;
+  
+  // Loop only over likely final particles not partons
+  if ( GetReader()->GetGenPythiaEventHeader() ) 
+    firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
+  
+  for(Int_t i = firstParticle ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
@@ -1114,7 +1123,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(status > 1) continue ; // Avoid "partonic" photons
     
     /// Particle ID and pT dependent Weight
-    Int_t index      = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
     Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
     ///
     
@@ -1158,21 +1167,41 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       mcIndex = kmcPOtherDecay;
     } // Other origin
     
-    if(!takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay)) takeIt = kTRUE ;
+    if ( !takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay) ) takeIt = kTRUE ;
 
-    if(!takeIt) continue ;
+    if ( !takeIt ) continue ;
     
-    // Fill histograms for all photons
+    // Fill rapidity histograms
     fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
-    if(TMath::Abs(photonY) < 1.0)
+    if ( mcIndex < fNPrimaryHistograms )
+         fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    
+    // Not interested in large rapidity, cut those
+    if ( TMath::Abs(photonY) > 1.0 ) continue;
+    
+    // Avoid too large pT particle in pT hard binned productions
+    if ( GetReader()->GetGenPythiaEventHeader() ) 
     {
-      fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
-      fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
-      fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
-      fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
+      Float_t pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
+      
+      if ( pTHard / photonPt < 0.5 ) 
+      {
+        AliInfo(Form("Reject primary particle pdg %d mcTag %d, pT %f larger than pT hard %f, ratio %f",
+                     pdg, mcIndex, photonPt, pTHard, pTHard/photonPt));
+    
+        //GetMCAnalysisUtils()->PrintAncestry(GetMC(),i);
+        continue;
+      }
     }
     
-    if(inacceptance)
+    // Fill histograms for all photons
+    //
+    fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
+    fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+    fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+    fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
+    
+    if ( inacceptance )
     {
       fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
       fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
@@ -1182,18 +1211,15 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     } // Accepted
     
     // Fill histograms for photons origin
-    if(mcIndex < fNPrimaryHistograms)
+    //
+    if ( mcIndex < fNPrimaryHistograms )
     {
-      fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
-      if(TMath::Abs(photonY) < 1.0)
-      {
-        fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
-        fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
-        fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
-        fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
-      }
+      fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
+      fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
       
-      if(inacceptance)
+      if ( inacceptance )
       {
         fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
         fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
