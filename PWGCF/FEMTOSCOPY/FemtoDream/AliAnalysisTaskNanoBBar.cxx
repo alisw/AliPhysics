@@ -299,7 +299,6 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fQA->SetOwner();
   fQA->SetName("QA");
   fQA->Add(fEvent->GetEvtCutList());
-  fQA->Add(fPairCleaner->GetHistList());
 
   fDumpster = new TList();
   fDumpster->SetName("Dumpster");
@@ -361,7 +360,6 @@ void AliAnalysisTaskNanoBBar::UserCreateOutputObjects() {
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-
   if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
     if (!fConfig->GetMinimalBookingME()) {
