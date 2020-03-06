@@ -630,6 +630,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (!v0ESD)
         continue;
       
+      if (!fOnlyUseOnTheFlyV0 && v0ESD->GetOnFlyStatus()) 
+        continue;
       if (fOnlyUseOnTheFlyV0 && !v0ESD->GetOnFlyStatus()) 
         continue;
 
@@ -854,6 +856,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodV0Selection() {
       if (!v0AOD)
         continue;
 
+      if (!fOnlyUseOnTheFlyV0 && v0AOD->GetOnFlyStatus()) 
+        continue;
       if (fOnlyUseOnTheFlyV0 && !v0AOD->GetOnFlyStatus()) 
         continue;
 
