@@ -3331,6 +3331,10 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
       }
     }
     (*pcstream)<<tname<<"\n";
+    delete graphHisto;
+    delete graphCumulative;
+    graphHisto=NULL;
+    graphCumulative=NULL;
     if (hDump)	{
       (*pcstream)<<TString::Format("%sDump", tname).Data()<<"\n";
       hfit->GetListOfFunctions()->RemoveLast();
