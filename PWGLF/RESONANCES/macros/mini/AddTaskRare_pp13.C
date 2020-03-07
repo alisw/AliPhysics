@@ -3350,7 +3350,7 @@ Bool_t Config_Xikx(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass= 0.493677+1.32171;
+    Double_t mass= 0.493677+1672.43;//1.32171;
     
     // set cuts for primary kaon
     if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
@@ -3384,7 +3384,7 @@ Bool_t Config_Xikx(
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     
-    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
+    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kOmegaMinus);//kXiMinus);
     cutXi->SetPIDCutV0Proton(XiPIDcut);
     cutXi->SetPIDCutV0Pion(XiPIDcut);
     cutXi->SetPIDCutBachelor(XiPIDcut);
@@ -3407,7 +3407,7 @@ Bool_t Config_Xikx(
     cutXi->SetMaxPseudorapidity(0.8);
     cutXi->SetMinTPCcluster(-1);
     
-    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar);
+    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kOmegaPlusBar);//kXiPlusBar);
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
@@ -3450,13 +3450,13 @@ Bool_t Config_Xikx(
         AddMonitorOutput(isMC,cutSetK->GetMonitorOutput());
         AddMonitorOutputV0(isMC, cutSetXi->GetMonitorOutput(), "Lambda", "nokine");
         AddMonitorOutputV0(isMC, cutSetXibar->GetMonitorOutput(), "AntiLambda", "nokine");
-        AddMonitorOutputCascade(isMC, cutSetXi->GetMonitorOutput(), "Xi");
-        AddMonitorOutputCascade(isMC, cutSetXibar->GetMonitorOutput(), "AntiXi");
+        AddMonitorOutputCascade(isMC, cutSetXi->GetMonitorOutput(), "Omega");//"Xi");
+        AddMonitorOutputCascade(isMC, cutSetXibar->GetMonitorOutput(), "AntiOmega");//"AntiXi");
     }
     
     // pair cuts
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-    if(system!=1) cutY->SetRangeD(-0.5,0.5);
+    if(system!=1) cutY->SetRangeD(-0.8,0.8);
     else cutY->SetRangeD(-0.465,0.035);
     
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
@@ -3573,7 +3573,7 @@ Bool_t Config_Xikx(
         ipdg=(i==0)?3324:-3324;
         
         out=task->CreateOutput(Form("Xikx_%s%s",name.Data(),suffix),"HIST",comp.Data());
-        out->SetDaughter(0,AliRsnDaughter::kXi);
+        out->SetDaughter(0,AliRsnDaughter::kOmega);//kXi);
         out->SetCutID(0,cut1);
         out->SetCharge(0,charge1);
         
