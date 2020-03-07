@@ -210,9 +210,10 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   fOutputContainer->Add(hEventSummary);
 
   //event character histogram
-  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ;Zvtx (cm)",100,-50.,50.));
-  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent;Zvtx (cm)",100,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ;Zvtx (cm)",1000,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent;Zvtx (cm)",1000,-50.,50.));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsNContributor",fEstimator.Data()),Form("Centrality %s vs. Ncontributor;centrality (%%);N_{contributor}",fEstimator.Data()),101,0.,101,500,0,5000));
+  fOutputContainer->Add(new TH2F("hNTPCclsvsNSDDSSDcls","N_{cls}^{TPC} vs. N_{cls}^{SDD+SSD};N_{cls}^{TPC};N_{cls}^{SDD+SSD}",300,0,6e+6,300,0,6e+4));//for pileup plot
 
 	//simple track QA
 	const Int_t Ndim    = 3;
@@ -395,7 +396,9 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 	}
   FillHistogramTH1(fOutputContainer,"hEventSummary",2);//after physics selection
 
-	if(!fEventFilter->IsSelected(InputEvent())){
+	UInt_t selectedMask_ev = (1<<fEventFilter->GetCuts()->GetEntries())-1;
+	UInt_t cutmask_ev = fEventFilter->IsSelected(InputEvent());
+	if(cutmask_ev != selectedMask_ev){
 		AliInfo("event is rejected by event filter. return.");
 		return;
 	}
@@ -409,6 +412,12 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 	AliDielectronVarManager::SetPIDResponse( fInputHandler->GetPIDResponse() );
 	AliDielectronVarManager::SetFillMap(fUsedVars);
 	AliDielectronVarManager::SetEvent( InputEvent() );
+
+
+//	if(!fEventFilter->IsSelected(InputEvent())){
+//		AliInfo("event is rejected by event filter. return.");
+//		return;
+//	}
 
 	AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
 	for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
@@ -448,6 +457,19 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
   FillHistogramTH1(fOutputContainer,"hEventSummary",3);//selected
   FillHistogramTH1(fOutputContainer,"hVertexZSelectEvent" ,fVertex[2]);
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNContributor",fEstimator.Data()),fCentrality,Ncontributor);
+
+	//Int_t NclsSPD0 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(0);
+	//Int_t NclsSPD1 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(1);
+	Int_t NclsSDD0 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(2);
+	Int_t NclsSDD1 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(3);
+	Int_t NclsSSD0 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(4);
+	Int_t NclsSSD1 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(5);
+
+	Int_t NclsTPC  = 0;
+	if(fESDEvent) NclsTPC = fESDEvent->GetNumberOfTPCClusters();
+	else if(fAODEvent) NclsTPC = fAODEvent->GetNumberOfTPCClusters();
+
+	FillHistogramTH2(fOutputContainer,"hNTPCclsvsNSDDSSDcls",NclsTPC,NclsSDD0+NclsSDD1+NclsSSD0+NclsSSD1);
 
 	if(!fEventList[0][fZvtxBin]) fEventList[0][fZvtxBin] = new TList();//0 -> probe
 	if(!fEventList[1][fZvtxBin]) fEventList[1][fZvtxBin] = new TList();//1 -> passing probe
