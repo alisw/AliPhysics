@@ -8335,7 +8335,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.Contains("LHC18b8") )      return k18b8;
   // pp 5 TeV 2015 GJ pass 4
   else if ( namePeriod.Contains("LHC18b10") )      return k18b10;
-  else if ( namePeriod.Contains("LHC18l2") )      return k18l2;
+  else if ( namePeriod.Contains("LHC18l2") ||
+            namePeriod.Contains("LHC18g7") )      return k18l2;
   // PbPb 5TeV 2015 MB prods
   else if ( namePeriod.Contains("LHC18e1") || namePeriod.CompareTo("LHC16h4") == 0 )    return kPbPb5T15HIJING;
   else if ( namePeriod.CompareTo("LHC16k3b") == 0 ||                    // special pileup prods
