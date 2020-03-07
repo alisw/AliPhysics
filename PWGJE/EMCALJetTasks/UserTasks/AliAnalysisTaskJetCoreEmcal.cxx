@@ -84,7 +84,11 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fh1TrigRef(0x0),
 	fh1TrigSig(0x0),
 	fh2Ntriggers(0x0),
+	fhRhoCentSig(0x0),
+	fhRhoCentRef(0x0),
+	fhDphiPtSigPi(0x0),
 	fhDphiPtSig(0x0),
+	fhDphiPtRefPi(0x0),
 	fhDphiPtRef(0x0),
 	fhPtDetPart(0x0),
 	fhPtHybrDet(0x0),
@@ -165,7 +169,11 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fh1TrigRef(0x0),
 	fh1TrigSig(0x0),
 	fh2Ntriggers(0x0),
+	fhRhoCentSig(0x0),
+	fhRhoCentRef(0x0),
+	fhDphiPtSigPi(0x0),
 	fhDphiPtSig(0x0),
+	fhDphiPtRefPi(0x0),
 	fhDphiPtRef(0x0),
 	fhPtDetPart(0x0),
 	fhPtHybrDet(0x0),
@@ -492,38 +500,53 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fh1TrigSig=new TH1D("Trig Sig","",10,0.,10);  
 	fh2Ntriggers=new TH2F("# of triggers","",100,0.,100.,50,0.,50.);
 
+  fhRhoCentSig=new TH2F("hRhoCentSig","rho vs centrality signal",1500,0,300,100,0,100);
+  fhRhoCentRef=new TH2F("hRhoCentRef","rho vs centrality reference",1500,0,300,100,0,100);
+
 	fOutput->Add(fHistEvtSelection);
 
 	fOutput->Add(fh1TrigRef);
 	fOutput->Add(fh1TrigSig); 
 	fOutput->Add(fh2Ntriggers);
+  fOutput->Add(fhRhoCentSig);
+  fOutput->Add(fhRhoCentRef);
 
 	if(fFillRecoilTHnSparse) {
 		const Int_t dimSpec = 6;
-		const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
+		const Int_t nBinsSpec[dimSpec]     = {10,10, 280, 50,200, fNRPBins};
 		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,0, 0};
 		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,2*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
 		fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-	}
 
-	// comment out since I want finer binning in jet area, to make it easier
-	// to change selection on jet area (Leticia used 0.8*R^2*Pi whereas 0.6 is used
-	// for inclusive jets)
 	//change binning in jet area
-//	Double_t *xPt6 = new Double_t[7];
-//	xPt6[0] = 0.;
-//	xPt6[1]=0.07;
-//	xPt6[2]=0.2;
-//	xPt6[3]=0.4;
-//	xPt6[4]=0.6;
-//	xPt6[5]=0.8; 
-//	xPt6[6]=1;
-//	fHJetSpec->SetBinEdges(1,xPt6);
-//	delete [] xPt6;
+    Double_t *xArea = new Double_t[11];
+    xArea[0]=0.;
+    xArea[1]=0.06;
+    xArea[2]=0.07;
+    xArea[3]=0.08;
+    xArea[4]=0.36;
+    xArea[5]=0.4;
+    xArea[6]=0.44;
+    xArea[7]=0.55;
+    xArea[8]=0.6;
+    xArea[9]=0.65;
+    xArea[10]=1.;
+ //   Double_t xArea[11] = {0., 0.06, 0.07, 0.08, 0.36, 0.4, 0.44, 0.55, 0.6, 0.65, 1.};
+    fHJetSpec->SetBinEdges(1,xArea);
+    delete [] xArea;
+
+	}
 
 	fOutput->Add(fHJetSpec);  
 
 	// azimuthal correlation
+
+	fhDphiPtSigPi = new TH2F("hDphiPtSPi","recoil #Delta #phi vs jet pT signal",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtSigPi->GetXaxis()->SetTitle("#Delta #phi"); 
+	fhDphiPtSigPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
+	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
+	fhDphiPtRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 
 	fhDphiPtSig = new TH2F("hDphiPtS","recoil #Delta #phi vs jet pT signal",100,-2,5,250,-50,200);  
 	fhDphiPtSig->GetXaxis()->SetTitle("#Delta #phi"); 
@@ -532,8 +555,11 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhDphiPtRef->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtRef->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 
+
 	fOutput->Add(fhDphiPtRef);  
 	fOutput->Add(fhDphiPtSig);  
+	fOutput->Add(fhDphiPtRefPi);  
+	fOutput->Add(fhDphiPtSigPi);  
 
 
 	fhPtHybrDet= new TH2F("hPtHybrDet","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
@@ -735,6 +761,13 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 		return kTRUE;
 	}
 
+	// centrality selection 
+	if(fDebug) Printf("centrality: %f\n", fCent);
+	if (fCent>fCentMax || fCent<fCentMin) {
+		fHistEvtSelection->Fill(4);
+		return kTRUE;
+	}
+
   if(fFillJetHistograms) DoJetLoop();
   if(fFillTrackHistograms) DoTrackLoop();
   //DoClusterLoop();
@@ -770,13 +803,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 		return;
 	}
 
-	// centrality selection 
-	if(fDebug) Printf("centrality: %f\n", fCent);
-	if (fJetShapeType==AliAnalysisTaskJetCoreEmcal::kData && 
-			((fCent>fCentMax) || (fCent<fCentMin))) {
-		fHistEvtSelection->Fill(4);
-		return;
-	}
 	fHistEvtSelection->Fill(0); 
 
 	// Background
@@ -817,8 +843,14 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	if(fDebug) Printf("%s class ---> n triggers between %f and %f = %i, index of trigger chosen = %i",dice>fFrac?"ref.":"sig.",minT,maxT,number,nT);
 	if(nT<0) return;
 
-	if(dice>fFrac) fh1TrigRef->Fill(number);
-	if(dice<=fFrac)fh1TrigSig->Fill(number);
+	if(isSignal) {
+    fh1TrigSig->Fill(number);
+    fhRhoCentSig->Fill(rho,fCent);
+  }
+  else         {
+    fh1TrigRef->Fill(number);
+    fhRhoCentRef->Fill(rho,fCent);
+  }
 
 
 	// particle loop - 
@@ -872,8 +904,14 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(dPhiShiftPi<0)              dPhiShiftPi += 2*TMath::Pi();
 
 
-			if(isSignal) fhDphiPtSig->Fill(dPhiShift,ptcorr);
-			else         fhDphiPtRef->Fill(dPhiShift,ptcorr);
+			if(isSignal) {
+        fhDphiPtSigPi->Fill(dPhiShiftPi,ptcorr);
+        fhDphiPtSig->Fill(dPhiShift,ptcorr);
+      }
+			else         {
+        fhDphiPtRefPi->Fill(dPhiShiftPi,ptcorr);
+        fhDphiPtRef->Fill(dPhiShift,ptcorr);
+      }
 
 			// selection on relative phi
 			if(fJetHadronDeltaPhi>0. &&

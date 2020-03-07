@@ -134,7 +134,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
+	TH2F *fhRhoCentSig; //!<!
+	TH2F *fhRhoCentRef; //!<!
+	TH2F *fhDphiPtSigPi; //!<!
 	TH2F *fhDphiPtSig; //!<!
+	TH2F *fhDphiPtRefPi; //!<!
 	TH2F *fhDphiPtRef; //!<!
 	// embedding histograms
 	// inclusive jets
