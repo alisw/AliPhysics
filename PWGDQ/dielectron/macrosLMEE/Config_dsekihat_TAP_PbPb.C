@@ -28,6 +28,7 @@ void Config_dsekihat_TAP_PbPb(
 	AliAnalysisCuts *filter_track_passingprobe = lib->SetupTrackCutsForPassingProbe();//same as real anslysis
 
 	if(type.Contains("PID",TString::kIgnoreCase)){
+	    printf("PID efficiency will be evaluated");
 		task->GetProbeFilter()->AddCuts(esdTrackCuts);
 		task->GetProbeFilter()->AddCuts(filter_track_passingprobe);
 		task->GetProbeFilter()->AddCuts(prefilter_pid_probe);
@@ -37,12 +38,29 @@ void Config_dsekihat_TAP_PbPb(
 		task->GetPassingProbeFilter()->AddCuts(filter_pid_passingprobe);//difference between probe and passingprobe should be only PID
 	}
 	else if(type.Contains("Track",TString::kIgnoreCase)){
+	    printf("Track efficiency will be evaluated");
 		task->GetProbeFilter()->AddCuts(prefilter_track_probe);
 		task->GetProbeFilter()->AddCuts(filter_pid_passingprobe);
 
 		task->GetPassingProbeFilter()->AddCuts(filter_track_passingprobe);//difference between probe and passingprobe should be only track cuts
 		task->GetPassingProbeFilter()->AddCuts(filter_pid_passingprobe);
 	}
+
+
+	if(cutname.Contains("woPU")){
+		printf("apply pileup cut!\n");
+		TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+		f1min->SetNpx(1000);
+		f1min->FixParameter(0,-3000);
+		f1min->FixParameter(1,0.0099);
+		f1min->FixParameter(2,9.42e-10);
+
+		AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+		pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+		pileupcuts->Print();
+		task->GetEventFilter()->AddCuts(pileupcuts);
+	}
+
 
 }
 //______________________________________________________________________________________

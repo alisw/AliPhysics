@@ -125,7 +125,10 @@ class LMEECutLib {
 
         trCG->AddCut(varCuts);
       }
-      else{
+      else if(fCutName.Contains("Loose",TString::kIgnoreCase)){
+				trCG = (AliDielectronCutGroup*)SetupPreTrackCutsForProbe();
+			}
+			else{//Default
         AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
         trCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
         //trCuts->SetRequireITSRefit(kTRUE);
@@ -175,7 +178,6 @@ class LMEECutLib {
       if(fCutName.Contains("DefaultPID",TString::kIgnoreCase)){
         AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts", "cuts", AliDielectronCutGroup::kCompAND);
         AliDielectronPID* cutsPID   = new AliDielectronPID("PID", "PID");
-
         cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
         cutsPID->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,1. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
         cutsPID->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 1e+10, kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
@@ -247,6 +249,19 @@ class LMEECutLib {
         recoverTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
         return recoverTOF;
       }
+      else if(fCutName.Contains("TightTPCTOF",TString::kIgnoreCase)){
+        AliDielectronPID* cutsPID = new AliDielectronPID("PID", "PID");
+        cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2. ,2. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+        cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+        cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0., 100., kFALSE, AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+        return cutsPID;
+      }
+      else if(fCutName.Contains("TightTPC",TString::kIgnoreCase)){
+        AliDielectronPID* cutsPID = new AliDielectronPID("PID", "PID");
+        cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2. ,2. ,0.0, 1e+10, kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+        cutsPID->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 1e+10, kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+        return cutsPID;
+      }
       else if(fCutName.Contains("PIDCalib",TString::kIgnoreCase) || fCutName.Contains("noPID",TString::kIgnoreCase)){
         AliDielectronPID* cutsPID   = new AliDielectronPID("PID", "PID");
         return cutsPID;
@@ -278,8 +293,10 @@ class LMEECutLib {
 			varCuts->AddCut(AliDielectronVarManager::kPt, 0.2,10.0);
 			varCuts->AddCut(AliDielectronVarManager::kEta,-0.8,+0.8);
 
-			varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
-			varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
+			//varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
+			//varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
+			varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-0.5,+0.5);
+			varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -1.0,+1.0);
 
 			varCuts->AddCut(AliDielectronVarManager::kNclsITS,  4.0,6.1);
 			varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,5.0);
@@ -294,12 +311,12 @@ class LMEECutLib {
 			AliDielectronVarCuts *varCuts_ITSsc0 = new AliDielectronVarCuts("VarCuts_ITSsc0","VarCuts_ITSsc0");
 			varCuts_ITSsc0->AddCut(AliDielectronVarManager::kNclsSITS,-0.1,+0.1);//accept only Nsc = 0 on ITS
 
-			AliDielectronVarCuts *varCuts_ITSsc1 = new AliDielectronVarCuts("VarCuts_ITSsc1","VarCuts_ITSsc1");
-			varCuts_ITSsc1->AddCut(AliDielectronVarManager::kNclsSITS, 0.9, 1.1);//accept Nsc = 1, but not exactly on first SPD
-			varCuts_ITSsc1->AddCut(AliDielectronVarManager::kClsS1ITS,-0.1,+0.1);//accept Nsc = 1, but not exactly on first SPD//be carefull! value is double
+			//AliDielectronVarCuts *varCuts_ITSsc1 = new AliDielectronVarCuts("VarCuts_ITSsc1","VarCuts_ITSsc1");
+			//varCuts_ITSsc1->AddCut(AliDielectronVarManager::kNclsSITS, 0.9, 1.1);//accept Nsc = 1, but not exactly on first SPD
+			//varCuts_ITSsc1->AddCut(AliDielectronVarManager::kClsS1ITS,-0.1,+0.1);//accept Nsc = 1, but not exactly on first SPD//be carefull! value is double
 
 			ITSscCG->AddCut(varCuts_ITSsc0);
-			ITSscCG->AddCut(varCuts_ITSsc1);
+			//ITSscCG->AddCut(varCuts_ITSsc1);
 			trCG->AddCut(ITSscCG);
 			return trCG;
 		}
@@ -310,11 +327,32 @@ class LMEECutLib {
 			return precutsPID;
 		}
 		AliAnalysisCuts *SetupPreTrackCutsForProbe(){
+			//do not use AOD filter bit or ESDtrackCuts
 			AliDielectronCutGroup *trCG = new AliDielectronCutGroup("TrackCutsGroup","TrackCutsGroup",AliDielectronCutGroup::kCompAND);
 			AliDielectronTrackCuts *trCuts = new AliDielectronTrackCuts("TrackCuts","TrackCuts");
-			trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+			//trCuts->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+			trCuts->SetRequireITSRefit(kTRUE);
+			trCuts->SetRequireTPCRefit(kTRUE);
 			trCG->AddCut(trCuts);
-			trCG->AddCut(SetupESDtrackCuts());
+
+			AliDielectronVarCuts *varCuts = new AliDielectronVarCuts("VarCuts","VarCuts");
+
+			varCuts->AddCut(AliDielectronVarManager::kPt, 0.2,10.0);
+			varCuts->AddCut(AliDielectronVarManager::kEta,-0.8,+0.8);
+
+			varCuts->AddCut(AliDielectronVarManager::kImpactParXY,-1.0,+1.0);
+			varCuts->AddCut(AliDielectronVarManager::kImpactParZ, -3.0,+3.0);
+
+			varCuts->AddCut(AliDielectronVarManager::kNclsITS, -0.1,6.1);
+			varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,0.0,36.0);
+
+			varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,     70.0, 160.0);//crossed rows
+			varCuts->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1e+10);
+			varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   4.0);
+			varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,    -0.1,  +0.1);//should be kFALSE for no kink
+			trCG->AddCut(varCuts);
+
+			//trCG->AddCut(SetupESDtrackCuts());
 			return trCG;
 		}
 
