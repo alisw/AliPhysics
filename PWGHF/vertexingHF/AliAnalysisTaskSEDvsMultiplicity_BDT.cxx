@@ -772,7 +772,13 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::UserCreateOutputObjects()
                         }    
                         else{ // Deal with the real data stuff, need both steps BDT
                           if(fGetRespTree){
-                                  TNtuple *NtupleData = new TNtuple(Form("NtupleData%s",ptstring.Data()), " Data", "mass");
+                                  TNtuple *NtupleData;
+                                  if(fPdgMeson==421){
+                                     NtupleData = new TNtuple(Form("NtupleData%s",ptstring.Data()), " Data", "mass:coutMulti");
+                                  }
+                                  else{
+                                     NtupleData = new TNtuple(Form("NtupleData%s",ptstring.Data()), " Data", "mass");
+                                  }
                                   TTree *BDTRespTree = new TTree(Form("BDTRespTree%s",ptstring.Data()),"BDT2 Response");
                                   BDTRespTree->Branch("BDT1",&BDT1,"BDT1Resp");
                                   BDTRespTree->Branch("BDT2",&BDT2,"BDT2RespLL:BDT2RespL:BDT2RespML:BDT2RespMH:BDT2RespH:BDT2RespHH");
@@ -1708,7 +1714,7 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::FillMCMassHistos(TClonesArray *arrayM
 //_____________________________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTD0(AliAODEvent *aod, AliAODRecoDecayHF *partHF, AliRDHFCuts *CutsAnalysis, Double_t bfield, TClonesArray *arrayMC, Int_t passCutsValue, Int_t coutMulti)
 {
-   
+    //Xiuxiu Jiang 
     fDaughterTracks.AddAt((AliAODTrack*)partHF->GetDaughter(0), 0);
     fDaughterTracks.AddAt((AliAODTrack*)partHF->GetDaughter(1), 1);
     AliAODTrack *prong2 = (AliAODTrack*)fDaughterTracks.UncheckedAt(0);
@@ -1921,7 +1927,7 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTD0(AliAODEvent *aod, AliAOD
                     if(bdt1resp>fBDTRespCut&&bdt2resp[0]>fBDTRespCut&&bdt2resp[1]>fBDTRespCut&&bdt2resp[2]>fBDTRespCut&&bdt2resp[3]>fBDTRespCut&&bdt2resp[4]>fBDTRespCut&&bdt2resp[5]>fBDTRespCut){ // BDT response cut
                         BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
                         BDTRespTree->SetBranchAddress("BDT2",&bdt2resp);
-                        NtupleData->Fill(tmp[8]);
+                        NtupleData->Fill(tmp[8],tmp[34]);
                         BDTRespTree->Fill();
                         BDTRespTree->ResetBranchAddresses();
                     }
@@ -1986,7 +1992,7 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTD0(AliAODEvent *aod, AliAOD
                    if(bdt1resp>fBDTRespCut&&bdt2resp[0]>fBDTRespCut&&bdt2resp[1]>fBDTRespCut&&bdt2resp[2]>fBDTRespCut&&bdt2resp[3]>fBDTRespCut&&bdt2resp[4]>fBDTRespCut&&bdt2resp[5]>fBDTRespCut){ // BDT response cut
                       BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
                       BDTRespTree->SetBranchAddress("BDT2",&bdt2resp);
-                      NtupleData->Fill(tmp[8]);
+                      NtupleData->Fill(tmp[8],tmp[34]);
                       BDTRespTree->Fill();
                       BDTRespTree->ResetBranchAddresses();
                    }
