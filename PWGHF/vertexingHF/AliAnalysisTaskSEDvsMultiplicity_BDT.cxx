@@ -773,7 +773,7 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::UserCreateOutputObjects()
                         else{ // Deal with the real data stuff, need both steps BDT
                           if(fGetRespTree){
                                   TNtuple *NtupleData;
-                                  if(fPdgMeson==421){
+                                  if(fPdgMeson==421||fPdgMeson==431){
                                      NtupleData = new TNtuple(Form("NtupleData%s",ptstring.Data()), " Data", "mass:coutMulti");
                                   }
                                   else{
@@ -786,19 +786,42 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::UserCreateOutputObjects()
                                   fListBDTResp->Add(BDTRespTree);
                               }   
                               else{
-                                  TH3F *h3InvmassBDTResp[6];
-                                  h3InvmassBDTResp[0] = new TH3F(Form("h3MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt",100,1.68,2.10,70,-0.05,0.30,70,-0.05,0.30);     
-                                  h3InvmassBDTResp[1] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_2",ptstring.Data()));
-                                  h3InvmassBDTResp[2] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_3",ptstring.Data()));
-                                  h3InvmassBDTResp[3] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_4",ptstring.Data()));
-                                  h3InvmassBDTResp[4] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_5",ptstring.Data()));
-                                  h3InvmassBDTResp[5] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_6",ptstring.Data()));
-                                  fListBDTResp->Add(h3InvmassBDTResp[0]);
-                                  fListBDTResp->Add(h3InvmassBDTResp[1]);
-                                  fListBDTResp->Add(h3InvmassBDTResp[2]);
-                                  fListBDTResp->Add(h3InvmassBDTResp[3]);
-                                  fListBDTResp->Add(h3InvmassBDTResp[4]);
-                                  fListBDTResp->Add(h3InvmassBDTResp[5]);
+                                  TH3F *h3InvmassBDTResp[6];  THnSparseF *h4InvmassBDTResp[6]; 
+                                  if (fPdgMeson==421||fPdgMeson==431){ 
+                                     Double_t low_mass =1.68;
+                                     Double_t up_mass =2.10;
+                                     if(fPdgMeson==421){low_mass=1.68;up_mass =2.10;}
+                                     if(fPdgMeson==431){low_mass=1.68;up_mass =2.15;}
+                                     Int_t nbins[4]={100,70,70,100};
+                                     Double_t xmin[4]={low_mass,-0.05,-0.05,0};
+                                     Double_t xmax[4]={up_mass,0.30,0.30,100};
+                                    
+                                     h4InvmassBDTResp[0] = new THnSparseF(Form("h4MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt vs multiplity",4,nbins,xmin,xmax);
+                                     h4InvmassBDTResp[1] = (THnSparseF*)h4InvmassBDTResp[0]->Clone(Form("h4MassBDTResp%s_2",ptstring.Data()));
+                                     h4InvmassBDTResp[2] = (THnSparseF*)h4InvmassBDTResp[0]->Clone(Form("h4MassBDTResp%s_3",ptstring.Data()));
+                                     h4InvmassBDTResp[3] = (THnSparseF*)h4InvmassBDTResp[0]->Clone(Form("h4MassBDTResp%s_4",ptstring.Data()));
+                                     h4InvmassBDTResp[4] = (THnSparseF*)h4InvmassBDTResp[0]->Clone(Form("h4MassBDTResp%s_5",ptstring.Data()));
+                                     h4InvmassBDTResp[5] = (THnSparseF*)h4InvmassBDTResp[0]->Clone(Form("h4MassBDTResp%s_6",ptstring.Data()));
+                                     fListBDTResp->Add(h4InvmassBDTResp[0]);
+                                     fListBDTResp->Add(h4InvmassBDTResp[1]);
+                                     fListBDTResp->Add(h4InvmassBDTResp[2]);
+                                     fListBDTResp->Add(h4InvmassBDTResp[3]);
+                                     fListBDTResp->Add(h4InvmassBDTResp[4]);
+                                     fListBDTResp->Add(h4InvmassBDTResp[5]);
+                                  }else{
+                                    h3InvmassBDTResp[0] = new TH3F(Form("h3MassBDTResp%s_1",ptstring.Data()),"Invmass vs BDT1Resp vs BDT2Resp pt",100,1.68,2.10,70,-0.05,0.30,70,-0.05,0.30);     
+                                    h3InvmassBDTResp[1] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_2",ptstring.Data()));
+                                    h3InvmassBDTResp[2] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_3",ptstring.Data()));
+                                    h3InvmassBDTResp[3] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_4",ptstring.Data()));
+                                    h3InvmassBDTResp[4] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_5",ptstring.Data()));
+                                    h3InvmassBDTResp[5] = (TH3F*)h3InvmassBDTResp[0]->Clone(Form("h3MassBDTResp%s_6",ptstring.Data()));
+                                    fListBDTResp->Add(h3InvmassBDTResp[0]);
+                                    fListBDTResp->Add(h3InvmassBDTResp[1]);
+                                    fListBDTResp->Add(h3InvmassBDTResp[2]);
+                                    fListBDTResp->Add(h3InvmassBDTResp[3]);
+                                    fListBDTResp->Add(h3InvmassBDTResp[4]);
+                                    fListBDTResp->Add(h3InvmassBDTResp[5]);
+                                 }
                               }   
                                   
                        }          
@@ -1932,21 +1955,28 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTD0(AliAODEvent *aod, AliAOD
                         BDTRespTree->ResetBranchAddresses();
                     }
                 }
-                else{
-                    TH3F *h3_0 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_1",ptstring.Data()));
-                    TH3F *h3_1 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_2",ptstring.Data()));
-                    TH3F *h3_2 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_3",ptstring.Data()));
-                    TH3F *h3_3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_4",ptstring.Data()));
-                    TH3F *h3_4 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_5",ptstring.Data()));
-                    TH3F *h3_5 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_6",ptstring.Data()));
+                else{ 
+                    if (fPdgMeson==421){ 
+                    THnSparseF *h4_0 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_1",ptstring.Data()));
+                    THnSparseF *h4_1 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_2",ptstring.Data()));
+                    THnSparseF *h4_2 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_3",ptstring.Data()));
+                    THnSparseF *h4_3 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_4",ptstring.Data()));
+                    THnSparseF *h4_4 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_5",ptstring.Data()));
+                    THnSparseF *h4_5 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_6",ptstring.Data()));
                     if(bdt1resp>fBDTRespCut){
-                        if(bdt2resp[0]>fBDTRespCut) h3_0->Fill(tmp[8],bdt1resp,bdt2resp[0]);
-                        if(bdt2resp[1]>fBDTRespCut) h3_1->Fill(tmp[8],bdt1resp,bdt2resp[1]);
-                        if(bdt2resp[2]>fBDTRespCut) h3_2->Fill(tmp[8],bdt1resp,bdt2resp[2]);
-                        if(bdt2resp[3]>fBDTRespCut) h3_3->Fill(tmp[8],bdt1resp,bdt2resp[3]);
-                        if(bdt2resp[4]>fBDTRespCut) h3_4->Fill(tmp[8],bdt1resp,bdt2resp[4]);
-                        if(bdt2resp[5]>fBDTRespCut) h3_5->Fill(tmp[8],bdt1resp,bdt2resp[5]);
-                    }
+                        Double_t arrayForSparse0[4]={tmp[8],bdt1resp,bdt2resp[0],tmp[34]};
+                        Double_t arrayForSparse1[4]={tmp[8],bdt1resp,bdt2resp[1],tmp[34]};
+                        Double_t arrayForSparse2[4]={tmp[8],bdt1resp,bdt2resp[2],tmp[34]};
+                        Double_t arrayForSparse3[4]={tmp[8],bdt1resp,bdt2resp[3],tmp[34]};
+                        Double_t arrayForSparse4[4]={tmp[8],bdt1resp,bdt2resp[4],tmp[34]};
+                        Double_t arrayForSparse5[4]={tmp[8],bdt1resp,bdt2resp[5],tmp[34]}; 
+                        if(bdt2resp[0]>fBDTRespCut) h4_0->Fill(arrayForSparse0);
+                        if(bdt2resp[1]>fBDTRespCut) h4_1->Fill(arrayForSparse1);
+                        if(bdt2resp[2]>fBDTRespCut) h4_2->Fill(arrayForSparse2);
+                        if(bdt2resp[3]>fBDTRespCut) h4_3->Fill(arrayForSparse3);
+                        if(bdt2resp[4]>fBDTRespCut) h4_4->Fill(arrayForSparse4);
+                        if(bdt2resp[5]>fBDTRespCut) h4_5->Fill(arrayForSparse5);
+                   } }
                 }
             }
         }
@@ -1998,20 +2028,27 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTD0(AliAODEvent *aod, AliAOD
                    }
                }
                else{
-                  TH3F *h3_0 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_1",ptstring.Data()));
-                  TH3F *h3_1 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_2",ptstring.Data()));
-                  TH3F *h3_2 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_3",ptstring.Data()));
-                  TH3F *h3_3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_4",ptstring.Data()));
-                  TH3F *h3_4 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_5",ptstring.Data()));
-                  TH3F *h3_5 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_6",ptstring.Data()));
-                  if(bdt1resp>fBDTRespCut){
-                     if(bdt2resp[0]>fBDTRespCut) h3_0->Fill(tmp[8],bdt1resp,bdt2resp[0]);
-                     if(bdt2resp[1]>fBDTRespCut) h3_1->Fill(tmp[8],bdt1resp,bdt2resp[1]);
-                     if(bdt2resp[2]>fBDTRespCut) h3_2->Fill(tmp[8],bdt1resp,bdt2resp[2]);
-                     if(bdt2resp[3]>fBDTRespCut) h3_3->Fill(tmp[8],bdt1resp,bdt2resp[3]);
-                     if(bdt2resp[4]>fBDTRespCut) h3_4->Fill(tmp[8],bdt1resp,bdt2resp[4]);
-                     if(bdt2resp[5]>fBDTRespCut) h3_5->Fill(tmp[8],bdt1resp,bdt2resp[5]);
-                  }      
+                    if (fPdgMeson==421){
+                    THnSparseF *h4_0 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_1",ptstring.Data()));
+                    THnSparseF *h4_1 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_2",ptstring.Data()));
+                    THnSparseF *h4_2 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_3",ptstring.Data()));
+                    THnSparseF *h4_3 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_4",ptstring.Data()));
+                    THnSparseF *h4_4 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_5",ptstring.Data()));
+                    THnSparseF *h4_5 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_6",ptstring.Data()));
+                    if(bdt1resp>fBDTRespCut){
+                        Double_t arrayForSparse0[4]={tmp[8],bdt1resp,bdt2resp[0],tmp[34]};
+                        Double_t arrayForSparse1[4]={tmp[8],bdt1resp,bdt2resp[1],tmp[34]};
+                        Double_t arrayForSparse2[4]={tmp[8],bdt1resp,bdt2resp[2],tmp[34]};
+                        Double_t arrayForSparse3[4]={tmp[8],bdt1resp,bdt2resp[3],tmp[34]};
+                        Double_t arrayForSparse4[4]={tmp[8],bdt1resp,bdt2resp[4],tmp[34]};
+                        Double_t arrayForSparse5[4]={tmp[8],bdt1resp,bdt2resp[5],tmp[34]};
+                        if(bdt2resp[0]>fBDTRespCut) h4_0->Fill(arrayForSparse0);
+                        if(bdt2resp[1]>fBDTRespCut) h4_1->Fill(arrayForSparse1);
+                        if(bdt2resp[2]>fBDTRespCut) h4_2->Fill(arrayForSparse2);
+                        if(bdt2resp[3]>fBDTRespCut) h4_3->Fill(arrayForSparse3);
+                        if(bdt2resp[4]>fBDTRespCut) h4_4->Fill(arrayForSparse4);
+                        if(bdt2resp[5]>fBDTRespCut) h4_5->Fill(arrayForSparse5);
+                }  }      
               }
 
             }
@@ -2211,27 +2248,35 @@ void AliAnalysisTaskSEDvsMultiplicity_BDT::ProcessBDTDs(AliAODRecoDecayHF *part,
                    if(bdt1resp>fBDTRespCut&&bdt2resp[0]>fBDTRespCut&&bdt2resp[1]>fBDTRespCut&&bdt2resp[2]>fBDTRespCut&&bdt2resp[3]>fBDTRespCut&&bdt2resp[4]>fBDTRespCut&&bdt2resp[5]>fBDTRespCut){ // BDT response cut
                        BDTRespTree->SetBranchAddress("BDT1",&bdt1resp);
                        BDTRespTree->SetBranchAddress("BDT2",&bdt2resp);
-                       NtupleDsData->Fill(tmp[0]);
+                       NtupleDsData->Fill(tmp[0],tmp[4]);
                        BDTRespTree->Fill();
                        BDTRespTree->ResetBranchAddresses();
                    }
                }
                else{
-                   TH3F *h3_0 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_1",ptstring.Data()));
-                   TH3F *h3_1 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_2",ptstring.Data()));
-                   TH3F *h3_2 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_3",ptstring.Data()));
-                   TH3F *h3_3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_4",ptstring.Data()));
-                   TH3F *h3_4 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_5",ptstring.Data()));
-                   TH3F *h3_5 = (TH3F*)fListBDTResp->FindObject(Form("h3MassBDTResp%s_6",ptstring.Data()));
-                   if(bdt1resp>fBDTRespCut){
-                       if(bdt2resp[0]>fBDTRespCut) h3_0->Fill(tmp[0],bdt1resp,bdt2resp[0]);
-                       if(bdt2resp[1]>fBDTRespCut) h3_1->Fill(tmp[0],bdt1resp,bdt2resp[1]);
-                       if(bdt2resp[2]>fBDTRespCut) h3_2->Fill(tmp[0],bdt1resp,bdt2resp[2]);
-                       if(bdt2resp[3]>fBDTRespCut) h3_3->Fill(tmp[0],bdt1resp,bdt2resp[3]);
-                       if(bdt2resp[4]>fBDTRespCut) h3_4->Fill(tmp[0],bdt1resp,bdt2resp[4]);
-                       if(bdt2resp[5]>fBDTRespCut) h3_5->Fill(tmp[0],bdt1resp,bdt2resp[5]);
-                   }
-               }
+                    if (fPdgMeson==431){
+                       THnSparseF *h4_0 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_1",ptstring.Data()));
+                       THnSparseF *h4_1 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_2",ptstring.Data()));
+                       THnSparseF *h4_2 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_3",ptstring.Data()));
+                       THnSparseF *h4_3 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_4",ptstring.Data()));
+                       THnSparseF *h4_4 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_5",ptstring.Data()));
+                       THnSparseF *h4_5 = (THnSparseF*)fListBDTResp->FindObject(Form("h4MassBDTResp%s_6",ptstring.Data()));
+                     if(bdt1resp>fBDTRespCut){
+                        Double_t arrayForSparse0[4]={tmp[0],bdt1resp,bdt2resp[0],tmp[4]};
+                        Double_t arrayForSparse1[4]={tmp[0],bdt1resp,bdt2resp[1],tmp[4]};
+                        Double_t arrayForSparse2[4]={tmp[0],bdt1resp,bdt2resp[2],tmp[4]};
+                        Double_t arrayForSparse3[4]={tmp[0],bdt1resp,bdt2resp[3],tmp[4]};
+                        Double_t arrayForSparse4[4]={tmp[0],bdt1resp,bdt2resp[4],tmp[4]};
+                        Double_t arrayForSparse5[4]={tmp[0],bdt1resp,bdt2resp[5],tmp[4]};
+                        if(bdt2resp[0]>fBDTRespCut) h4_0->Fill(arrayForSparse0);
+                        if(bdt2resp[1]>fBDTRespCut) h4_1->Fill(arrayForSparse1);
+                        if(bdt2resp[2]>fBDTRespCut) h4_2->Fill(arrayForSparse2);
+                        if(bdt2resp[3]>fBDTRespCut) h4_3->Fill(arrayForSparse3);
+                        if(bdt2resp[4]>fBDTRespCut) h4_4->Fill(arrayForSparse4);
+                        if(bdt2resp[5]>fBDTRespCut) h4_5->Fill(arrayForSparse5);  
+                }
+              } 
+            }
            }
        }  
      }
