@@ -2999,6 +2999,11 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
 /// \param projectionInfo     -
 /// \param options            - option - parameterize statistic to extract
 /// \param verbose            - verbosity of extraction
+/// Example:
+/// options["exportGraph"]="1";
+///  options["exportGraphCumulative"]="1";
+///  options["LTMestimators"]="0.6:0.5:0.4";
+//  options["LTMFitRange"]="0.6:5:1";
 void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, std::map<std::string, std::string> pdfOptions, Int_t verbose)
 {
   //
@@ -3012,6 +3017,8 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
   Float_t kDumpHistoFraction=0;
   Bool_t exportGraph=kFALSE;
   Bool_t exportGraphCumulative=kFALSE;
+  Bool_t LTMFitRange=kFALSE;
+  Float_t LTMFitInfo[3]={};
   TGraphErrors *graphHisto=0;
   TGraphErrors *graphCumulative=0;
 
@@ -3020,13 +3027,14 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
   if ( pdfOptions[string("DumpHistFraction")] != "" ) kDumpHistoFraction = atof(pdfOptions[string("DumpHistFraction")].data());
   if ( pdfOptions[string("exportGraph")] == "1" )      exportGraph=kTRUE;
   if ( pdfOptions[string("exportGraphCumulative")] == "1" ) exportGraphCumulative=kTRUE;
+  if ( pdfOptions[string("LTMFitRange")] != "" ) LTMFitRange=kTRUE;
 
   // Check options
   if (fractionCut<0 || fractionCut>0.4){
     ::Error("TStatToolkit::MakeDistortionMapFast","Invalid input fraction cut %f\r. Should be in range <0,0.4>", fractionCut);
     return;
   }
-  const Double_t kMinEntries=30, kUseLLFrom=20;
+  const Double_t kMinEntries=30, kUseLLFrom=20, kMinStatLTM=5;
   char tname[100];
   char aname[100];
   char bname[100];
@@ -3040,6 +3048,15 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
     for (Int_t iest=0; iest<nestimators; iest++){
       fractionLTM[iest]=TString(array->At(iest)->GetName()).Atof();
     }
+  }
+  if (LTMFitRange){
+    TObjArray * array=TString(pdfOptions[string("LTMFitRange")]).Tokenize(":");
+    Int_t nInfo=array->GetEntries();
+    for (Int_t i=0; i<nInfo; i++){
+      LTMFitInfo[i]=TString(array->At(i)->GetName()).Atof();
+    }
+    fractionLTM[nestimators]=LTMFitInfo[0];
+    nestimators++;
   }
   for (Int_t iest=0; iest<nestimators; iest++) {
     vecLTM[iest]=new TVectorF(10);
@@ -3190,7 +3207,7 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
     Int_t nbins1D=hfit->GetNbinsX();
     Float_t binMedian=0;
     Double_t limits[2]={hfit->GetBinCenter(1), hfit->GetBinCenter(nbins1D)};
-    if (nrm>5) {
+    if (nrm>kMinStatLTM) {
       for (Int_t iest=0; iest<nestimators; iest++){
         TStatToolkit::LTMHisto(hfit, *(vecLTM[iest]), fractionLTM[iest]);
       }
@@ -3212,7 +3229,7 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
         }
       }
     }
-    if (nrm>5&&fractionCut>0 &&rms>0) {
+    if (nrm>kMinStatLTM&&fractionCut>0 &&rms>0) {
       hfit->GetXaxis()->SetRangeUser(limits[0], limits[1]);
       mean=hfit->GetMean();
       rms=hfit->GetRMS();
@@ -3224,7 +3241,18 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
     }else{
       fgaus.SetRange(xax->GetXmin(),xax->GetXmax());
     }
-
+    if (nrm>kMinStatLTM&&LTMFitInfo){  /// id specified in options - set fit ranges as nsigma of LTM. if range smaller than 3 bins add bin before and after
+      if ((*vecLTM[nestimators-1])[1]>5) {
+        Double_t xMin = (*vecLTM[nestimators - 1])[1] - (*vecLTM[nestimators - 1])[2] * LTMFitInfo[1] - LTMFitInfo[2];
+        Double_t xMax = (*vecLTM[nestimators - 1])[1] + (*vecLTM[nestimators - 1])[2] * LTMFitInfo[1] + LTMFitInfo[2];
+        if (xMax - xMin < 4 * hfit->GetXaxis()->GetBinWidth(0)) {
+          xMax += 2. * hfit->GetXaxis()->GetBinWidth(0);
+          xMin -= 2. * hfit->GetXaxis()->GetBinWidth(0);
+        }
+        hfit->GetXaxis()->SetRangeUser(xMin, xMax);
+        fgaus.SetRange(xMin, xMax);
+      }
+    }
 
     Bool_t isFitValid=kFALSE;
     if (nrm>=kMinEntries && rms>hfit->GetBinWidth(nbins1D)/TMath::Sqrt(12.)) {
@@ -3358,6 +3386,10 @@ void TStatToolkit::MakePDFMap(THnBase *histo, TTreeSRedirector *pcstream, TMatri
   delete hfit;
   sw.Stop();
   sw.Print();
+  for (Int_t iest=0; iest<nestimators; iest++) {
+    delete vecLTM[iest];
+  }
+
   /*
   int nb = histo->GetNbins();
   int prc = nb/100;
