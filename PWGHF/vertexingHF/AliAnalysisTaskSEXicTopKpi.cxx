@@ -1681,7 +1681,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	  cosThetaStarSoftPi=CosThetaStar(psigma,psoft,TDatabasePDG::Instance()->GetParticle(4222)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass());
 	  pointSigma[9]=cosThetaStarSoftPi;
 	  pointSigma[1]=deltaM;
-	  //	pointSigma[10]=lsum.Pt(); // not needed
+	  pointSigma[10]=lsum.Pt(); // not needed
 	  if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
 	    if(!pSigmaC)fhSparseAnalysisSigma->Fill(pointSigma);	    
 	    else {
