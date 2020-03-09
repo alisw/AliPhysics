@@ -10,7 +10,7 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 //
-Bool_t AddTaskKStarPlusMinusTest
+Bool_t ConfigKStarPlusMinusTest
 (
  AliRsnMiniAnalysisTask *task,
  Bool_t                  isPP,
