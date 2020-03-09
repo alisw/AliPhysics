@@ -77,6 +77,11 @@ public:
     TList                              *tlAntiCascadeCutsXi;   //!
     TList                              *tlResults;             //!
     TList                              *tlResultsQA;           //!
+    // MC Container
+    TList                              *tlProtonMC;            //!
+    TList                              *tlAntiProtonMC;        //!
+    TList                              *tlLambdaMC;            //!
+    TList                              *tlAntiLambdaMC;        //!
   
     ClassDef(AliAnalysisTaskPOmegaPenne,8)
 };

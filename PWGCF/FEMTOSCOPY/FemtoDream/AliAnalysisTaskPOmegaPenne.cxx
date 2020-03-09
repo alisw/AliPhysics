@@ -38,7 +38,11 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 tlCascadeCutsXi(0),
                                                                 tlAntiCascadeCutsXi(0),
                                                                 tlResults(0),
-                                                                tlResultsQA(0)
+                                                                tlResultsQA(0),
+                                                                tlProtonMC(0),
+                                                                tlAntiProtonMC(0),
+                                                                tlLambdaMC(0),
+                                                                tlAntiLambdaMC(0)
 {
 }
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
@@ -69,7 +73,11 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       tlCascadeCutsXi(0),
                                                                                       tlAntiCascadeCutsXi(0),
                                                                                       tlResults(0),
-                                                                                      tlResultsQA(0)
+                                                                                      tlResultsQA(0),
+                                                                                      tlProtonMC(0),
+                                                                                      tlAntiProtonMC(0),
+                                                                                      tlLambdaMC(0),
+                                                                                      tlAntiLambdaMC(0)
 {
     DefineOutput(1, TList::Class());    // Event Cuts
     DefineOutput(2, TList::Class());    // Proton Track Cuts
@@ -91,10 +99,6 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
 }
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 {
-    // if (&vAntiProtons)  delete &vAntiProtons;
-    // if (&vProtons)      delete &vProtons;
-    // if (&vXions)        delete &vXions;
-    // if (&vAntiXions)    delete &vAntiXions;
     delete aaEvent;
     delete aaTrack;
     delete fEvent;
@@ -121,7 +125,11 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete tlAntiCascadeCutsXi;
     delete tlResults;
     delete tlResultsQA;
-}
+    delete tlProtonMC;
+    delete tlAntiProtonMC;
+    delete tlLambdaMC;
+    delete tlAntiLambdaMC;
+    }
 
 // // Copy Constructor
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne &obj) : AliAnalysisTaskSE(obj),
@@ -152,7 +160,12 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 tlCascadeCutsXi(obj.tlCascadeCutsXi),
                                                                                                 tlAntiCascadeCutsXi(obj.tlAntiCascadeCutsXi),
                                                                                                 tlResults(obj.tlResults),
-                                                                                                tlResultsQA(obj.tlResultsQA)
+                                                                                                tlResultsQA(obj.tlResultsQA),
+                                                                                                tlProtonMC(obj.tlProtonMC),
+                                                                                                tlAntiProtonMC(obj.tlAntiProtonMC),
+                                                                                                tlLambdaMC(obj.tlLambdaMC),
+                                                                                                tlAntiLambdaMC(obj.tlAntiLambdaMC)
+
 {
 }
 
@@ -217,13 +230,13 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fv0->SetPDGDaughterNeg(211);
     // ##
 
-    // Xion Cuts    ###########
+    // Xi Cuts    ###########
     if (!fCascadeCutsXi){AliFatal("Track Cuts for Particle Xi not set!");}
     fCascadeCutsXi->Init();
     fCascadeCutsXi->SetName("Xi");
     // ##
     
-    // AntiXion Cuts    ###########
+    // AntiXi Cuts    ###########
     if (!fCascadeCutsAntiXi){AliFatal("Track Cuts for Particle AntiXi not set!");}
     fCascadeCutsAntiXi->Init();
     fCascadeCutsAntiXi->SetName("AntiXi");
@@ -280,6 +293,27 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     PostData(7, tlAntiCascadeCutsXi);
     PostData(8, tlResults);
     PostData(9, tlResultsQA);
+
+    if (fTrackCutsProton->GetIsMonteCarlo())
+    {
+        tlProtonMC = fTrackCutsProton->GetMCQAHists();
+        PostData(10, tlProtonMC);
+    }
+    if (fTrackCutsAntiProton->GetIsMonteCarlo())
+    {
+        tlAntiProtonMC = fTrackCutsAntiProton->GetMCQAHists();
+        PostData(11, tlAntiProtonMC);
+    }
+    if (fLambdaV0Cuts->GetIsMonteCarlo())
+    {
+        tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();
+        PostData(12, tlLambdaMC);
+    }
+    if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
+    {
+        tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();
+        PostData(13, tlAntiLambdaMC);
+    }
 }
 
 static std::vector<AliFemtoDreamBasePart> vProtons;         // Particle Vectors  
@@ -390,6 +424,22 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             PostData(7, tlAntiCascadeCutsXi);
             PostData(8, tlResults);
             PostData(9, tlResultsQA);
+            if (fTrackCutsProton->GetIsMonteCarlo())
+            {
+                PostData(10, tlProtonMC);
+            }
+            if (fTrackCutsAntiProton->GetIsMonteCarlo())
+            {
+                PostData(11, tlAntiProtonMC);
+            }
+            if (fLambdaV0Cuts->GetIsMonteCarlo())
+            {
+                PostData(12, tlLambdaMC);
+            }
+            if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
+            {
+                PostData(13, tlAntiLambdaMC);
+            }
         }
     }
 }
