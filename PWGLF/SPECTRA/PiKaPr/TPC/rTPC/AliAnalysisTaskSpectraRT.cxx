@@ -398,11 +398,14 @@ p: fMeanChT = 7.216
 
 	printf("<Nch>_{gen} = %f  <Nch>_{rec} = %f  <Nch>_{dat} = %f\n",fMeanMultTSMCGen,fMeanMultTSMCRec,fMeanChT);
 
-	//const int nBinsRT = 19;
-	////double binsRT[nBinsRT+1] = { -0.069252078, 0.069252078, 0.207756233, 0.346260388, 0.5, 0.623268698, 0.761772853, 0.900277008, 1.038781163, 1.177285319, 1.315789474, 1.454293629, 1.592797784, 1.731301939, 1.869806094, 2.0, 2.5, 3.5, 5.0, 10.0 };
-	
-	const int nBinsRT = 14;
-	double binsRT[nBinsRT+1] = { -0.0692, 0.0692, 0.2077, 0.3462, 0.5, 0.6232, 0.7617, 0.9, 1.0, 1.5, 2.0, 2.5, 3.5, 5.0, 10.0 };
+//	const int nBinsRT = 14;
+//	double binsRT[nBinsRT+1] = { -0.0692, 0.0692, 0.2077, 0.3462, 0.5, 0.6232, 0.7617, 0.9, 1.0, 1.5, 2.0, 2.5, 3.5, 5.0, 10.0 };
+
+	const int nBinsRT = 100;
+	double binsRT[nBinsRT+1] = {0};
+
+	for(int i = 0; i <= nBinsRT; ++i)
+		binsRT[i] = (((double)i)-0.5)/1.0;
 
 	const char* ending[nHists] = {"02", "24", "46", "68"};
 
