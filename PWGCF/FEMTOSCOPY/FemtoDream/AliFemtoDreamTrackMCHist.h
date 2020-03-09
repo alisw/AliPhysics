@@ -157,20 +157,22 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fHistMCMother;            //!
   TH1I *fHistMCMotherPDG;         //!
 
-  TH2F *fMCPrimDCAXYPtBins;       //!
-  TH2F *fMCMaterialDCAXYPtBins;   //!
-  TH2F *fMCSecondaryDCAXYPtBins;  //!
-  TH2F *fMCSecLambdaDCAXYPtBins;  //!
-  TH2F *fMCSecSigmaDCAXYPtBins;   //!
-  TH2F *fMCSecXiDCAXYPtBins;  	  //!
-  TH2F *fMCSecOmegaDCAXYPtBins;   //!
-  TH2F *fMCSecKlongDCAXYPtBins;   //!
-  TH2F *fMCSecKshortDCAXYPtBins;  //!
-  TH2F *fMCSecKchDCAXYPtBins;     //!
+  TH2F *fMCPrimDCAXYPtBins;           //!
+  TH2F *fMCMaterialDCAXYPtBins;       //!
+  TH2F *fMCSecondaryDCAXYPtBins;      //!
+  TH2F *fMCSecLambdaDCAXYPtBins;      //!
+  TH2F *fMCSecSigmaDCAXYPtBins;       //!
+  TH2F *fMCSecSigmaPlusDCAXYPtBins;   //!
+  TH2F *fMCSecSigmaMinusDCAXYPtBins;  //!
+  TH2F *fMCSecXiDCAXYPtBins;  	      //!
+  TH2F *fMCSecOmegaDCAXYPtBins;       //!
+  TH2F *fMCSecKlongDCAXYPtBins;       //!
+  TH2F *fMCSecKshortDCAXYPtBins;      //!
+  TH2F *fMCSecKchDCAXYPtBins;         //!
 
   TH2F *fMCPrimDCAXYPtBinsMult[3];       //!
   TH2F *fMCMaterialDCAXYPtBinsMult[3];   //!
-  TH2F *fMCSecondaryDCAXYPtBinsMult[3];  //!
+  TH2F *fMCSecondaryDCAXYPtBinsMult[3];	 //!
   TH2F *fMCSecLambdaDCAXYPtBinsMult[3];  //!
   TH2F *fMCSecSigmaDCAXYPtBinsMult[3];   //!
 
@@ -181,7 +183,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCDCAxy[4];              //!
   TH2F *fMCDCAz[4];               //!
 
-  TH2F *fMCTPCCrossedRows[4];     //!
+  TH2F *fMCTPCCrossedRows[4];	  //!
   TH2F *fMCTPCRatio[4];           //!
 
   TH2F *fMCTPCdedx[4];            //!
