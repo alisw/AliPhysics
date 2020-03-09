@@ -141,7 +141,9 @@ class AliAnalysisTaskSigmaPlToProtonPiZero : public AliAnalysisTaskSE
         AliAnalysisTaskSigmaPlToProtonPiZero(const AliAnalysisTaskSigmaPlToProtonPiZero&); // not implemented
         AliAnalysisTaskSigmaPlToProtonPiZero& operator=(const AliAnalysisTaskSigmaPlToProtonPiZero&); // not implemented
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZero, 14);
+        void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
+
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZero, 15);
 };
 
 #endif
