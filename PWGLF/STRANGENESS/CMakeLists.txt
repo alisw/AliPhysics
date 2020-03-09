@@ -60,6 +60,7 @@ set(SRCS
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityEERun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
