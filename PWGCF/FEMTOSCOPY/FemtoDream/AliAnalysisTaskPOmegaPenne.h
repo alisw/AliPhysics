@@ -32,7 +32,7 @@ public:
     AliAnalysisTaskPOmegaPenne();
     AliAnalysisTaskPOmegaPenne(const char *name, bool isMC);
     AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne&);    // copy ctor
-    AliAnalysisTaskPOmegaPenne& operator=(const AliAnalysisTaskPOmegaPenne&) = delete; // copy operator
+    AliAnalysisTaskPOmegaPenne& operator=(const AliAnalysisTaskPOmegaPenne&); // copy operator
     virtual ~AliAnalysisTaskPOmegaPenne();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
@@ -42,8 +42,8 @@ public:
     void SetTrackCutsAntiProton(  AliFemtoDreamTrackCuts   *trkCuts )  { fTrackCutsAntiProton  =   trkCuts;  };
     void Setv0Cuts(               AliFemtoDreamv0Cuts      *v0Cuts  )  { fLambdaV0Cuts         =   v0Cuts;   }
     void SetAntiv0Cuts(           AliFemtoDreamv0Cuts      *v0Cuts  )  { fAntiLambdaV0Cuts     =   v0Cuts;   }
-    void SetTrackCutsXion(        AliFemtoDreamCascadeCuts *cascCuts)  { fCascadeCutsXion      =   cascCuts; };
-    void SetTrackCutsAntiXion(    AliFemtoDreamCascadeCuts *cascCuts)  { fCascadeCutsAntiXion  =   cascCuts; };
+    void SetTrackCutsXion(        AliFemtoDreamCascadeCuts *cascCuts)  { fCascadeCutsXi        =   cascCuts; };
+    void SetTrackCutsAntiXion(    AliFemtoDreamCascadeCuts *cascCuts)  { fCascadeCutsAntiXi    =   cascCuts; };
     void SetCollectionConfig(     AliFemtoDreamCollConfig  *config  )  { fConfig               =   config;   };
  private:
     void ResetGlobalTrackReference();
@@ -60,8 +60,8 @@ public:
     AliFemtoDreamv0                    *fv0;                   //!
     AliFemtoDreamv0Cuts                *fLambdaV0Cuts;         //
     AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts;     //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsXion;      //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXion;  //
+    AliFemtoDreamCascadeCuts           *fCascadeCutsXi;        //
+    AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi;    //
     AliFemtoDreamCollConfig            *fConfig;               //
     AliFemtoDreamPairCleaner           *fPairCleaner;          //!
     AliFemtoDreamPartCollection        *fPartColl;             //!
@@ -78,7 +78,7 @@ public:
     TList                              *tlResults;             //!
     TList                              *tlResultsQA;           //!
   
-    ClassDef(AliAnalysisTaskPOmegaPenne,7)
+    ClassDef(AliAnalysisTaskPOmegaPenne,8)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */

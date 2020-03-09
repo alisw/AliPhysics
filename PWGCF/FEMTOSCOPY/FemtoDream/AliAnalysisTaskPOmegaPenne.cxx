@@ -23,8 +23,8 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 fv0(0),
                                                                 fLambdaV0Cuts(0),
                                                                 fAntiLambdaV0Cuts(0),
-                                                                fCascadeCutsXion(0),
-                                                                fCascadeCutsAntiXion(0),
+                                                                fCascadeCutsXi(0),
+                                                                fCascadeCutsAntiXi(0),
                                                                 fConfig(0),
                                                                 fPairCleaner(0),
                                                                 fPartColl(0),
@@ -54,8 +54,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       fv0(0),
                                                                                       fLambdaV0Cuts(0),
                                                                                       fAntiLambdaV0Cuts(0),
-                                                                                      fCascadeCutsXion(0),
-                                                                                      fCascadeCutsAntiXion(0),
+                                                                                      fCascadeCutsXi(0),
+                                                                                      fCascadeCutsAntiXi(0),
                                                                                       fConfig(0),
                                                                                       fPairCleaner(0),
                                                                                       fPartColl(0),
@@ -80,6 +80,14 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
     DefineOutput(7, TList::Class());    // Anti Xi Track Cuts
     DefineOutput(8, TList::Class());    // Results
     DefineOutput(9, TList::Class());    // QA Results
+    if (isMC)
+    {
+        DefineOutput(10, TList::Class());    // MC Track Proton
+        DefineOutput(11, TList::Class());    // MC Track AntiProton
+        DefineOutput(12, TList::Class());    // MC V0 - Lamba
+        DefineOutput(13, TList::Class());    // MC AntiV0 - AntiLambda
+    }
+    
 }
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 {
@@ -98,8 +106,8 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete fv0;
     delete fLambdaV0Cuts;
     delete fAntiLambdaV0Cuts;
-    delete fCascadeCutsXion;
-    delete fCascadeCutsAntiXion;
+    delete fCascadeCutsXi;
+    delete fCascadeCutsAntiXi;
     delete fConfig;
     delete fPairCleaner;
     delete fPartColl;
@@ -129,8 +137,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 fv0(obj.fv0),
                                                                                                 fLambdaV0Cuts(obj.fLambdaV0Cuts),
                                                                                                 fAntiLambdaV0Cuts(obj.fAntiLambdaV0Cuts),
-                                                                                                fCascadeCutsXion(obj.fCascadeCutsXion),
-                                                                                                fCascadeCutsAntiXion(obj.fCascadeCutsAntiXion),
+                                                                                                fCascadeCutsXi(obj.fCascadeCutsXi),
+                                                                                                fCascadeCutsAntiXi(obj.fCascadeCutsAntiXi),
                                                                                                 fConfig(obj.fConfig),
                                                                                                 fPairCleaner(obj.fPairCleaner),
                                                                                                 fPartColl(obj.fPartColl),
@@ -161,8 +169,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
 //     this->fEventCuts = other.fEventCuts;
 //     this->fTrackCutsProton = other.fTrackCutsProton;
 //     this->fTrackCutsAntiProton = other.fTrackCutsAntiProton;
-//     this->fCascadeCutsXion = other.fCascadeCutsXion;
-//     this->fCascadeCutsAntiXion = other.fCascadeCutsAntiXion;
+//     this->fCascadeCutsXi = other.fCascadeCutsXi;
+//     this->fCascadeCutsAntiXi = other.fCascadeCutsAntiXi;
 //     this->fConfig = other.fConfig;
 //     this->fPairCleaner = other.fPairCleaner;
 //     this->fPartColl = other.fPartColl;
@@ -210,28 +218,28 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     // ##
 
     // Xion Cuts    ###########
-    if (!fCascadeCutsXion){AliFatal("Track Cuts for Particle Xi not set!");}
-    fCascadeCutsXion->Init();
-    fCascadeCutsXion->SetName("Xions");
+    if (!fCascadeCutsXi){AliFatal("Track Cuts for Particle Xi not set!");}
+    fCascadeCutsXi->Init();
+    fCascadeCutsXi->SetName("Xi");
     // ##
     
     // AntiXion Cuts    ###########
-    if (!fCascadeCutsAntiXion){AliFatal("Track Cuts for Particle AntiXi not set!");}
-    fCascadeCutsAntiXion->Init();
-    fCascadeCutsAntiXion->SetName("AntiXions");
+    if (!fCascadeCutsAntiXi){AliFatal("Track Cuts for Particle AntiXi not set!");}
+    fCascadeCutsAntiXi->Init();
+    fCascadeCutsAntiXi->SetName("AntiXi");
     // ##
 
     // Cascade Cuts     #########
     fCascade = new AliFemtoDreamCascade();          // Initial Cascade Object
-    fCascade->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    fCascade->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
     //PDG Codes should be set assuming Xi- to also work for Xi+
     fCascade->SetPDGCode(3312);
     fCascade->SetPDGDaugPos(2212);
-    fCascade->GetPosDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    fCascade->GetPosDaug()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
     fCascade->SetPDGDaugNeg(211);
-    fCascade->GetNegDaug()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    fCascade->GetNegDaug()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
     fCascade->SetPDGDaugBach(211);
-    fCascade->GetBach()->SetUseMCInfo(fCascadeCutsXion->GetIsMonteCarlo() || fCascadeCutsAntiXion->GetIsMonteCarlo());
+    fCascade->GetBach()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
     fCascade->Setv0PDGCode(3122);
     // ##
 
@@ -256,8 +264,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlAntiTrackCutsProton   = fTrackCutsAntiProton->GetQAHists();
     tlLambdaList            = fLambdaV0Cuts->GetQAHists();
     tlAntiLambdaList        = fAntiLambdaV0Cuts->GetQAHists();
-    tlCascadeCutsXi->Add(     fCascadeCutsXion->GetQAHists());
-    tlAntiCascadeCutsXi->Add( fCascadeCutsAntiXion->GetQAHists());
+    tlCascadeCutsXi         = fCascadeCutsXi->GetQAHists();
+    tlAntiCascadeCutsXi     = fCascadeCutsAntiXi->GetQAHists();
     tlResults               = fPartColl->GetHistList();
     tlResultsQA->Add(         fPartColl->GetQAList());
     tlResultsQA->Add(         fPairCleaner->GetHistList());
@@ -346,11 +354,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 AliAODcascade *casc = aaEvent->GetCascade(iCasc);
                 fCascade->SetCascade(aaEvent, casc);
-                if (fCascadeCutsXion->isSelected(fCascade))
+                if (fCascadeCutsXi->isSelected(fCascade))
                 {
                     vXions.push_back(*fCascade);
                 }
-                if (fCascadeCutsAntiXion->isSelected(fCascade))
+                if (fCascadeCutsAntiXi->isSelected(fCascade))
                 {
                     vAntiXions.push_back(*fCascade);
                 }
