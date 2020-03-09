@@ -225,6 +225,9 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
     // V0 Candidates
     fv0 = new AliFemtoDreamv0();
+    fv0->SetUseMCInfo(fIsMC);
+    fv0->GetPosDaughter()->SetUseMCInfo(fIsMC); 
+    fv0->GetNegDaughter()->SetUseMCInfo(fIsMC); 
     fv0->SetPDGCode(3122);
     fv0->SetPDGDaughterPos(2212);
     fv0->SetPDGDaughterNeg(211);
@@ -244,15 +247,15 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
     // Cascade Cuts     #########
     fCascade = new AliFemtoDreamCascade();          // Initial Cascade Object
-    fCascade->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
+    fCascade->SetUseMCInfo(fIsMC);
     //PDG Codes should be set assuming Xi- to also work for Xi+
     fCascade->SetPDGCode(3312);
     fCascade->SetPDGDaugPos(2212);
-    fCascade->GetPosDaug()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
+    fCascade->GetPosDaug()->SetUseMCInfo(fIsMC);
     fCascade->SetPDGDaugNeg(211);
-    fCascade->GetNegDaug()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
+    fCascade->GetNegDaug()->SetUseMCInfo(fIsMC);
     fCascade->SetPDGDaugBach(211);
-    fCascade->GetBach()->SetUseMCInfo(fCascadeCutsXi->GetIsMonteCarlo() || fCascadeCutsAntiXi->GetIsMonteCarlo());
+    fCascade->GetBach()->SetUseMCInfo(fIsMC);
     fCascade->Setv0PDGCode(3122);
     // ##
 
@@ -318,8 +321,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
 static std::vector<AliFemtoDreamBasePart> vProtons;         // Particle Vectors  
 static std::vector<AliFemtoDreamBasePart> vAntiProtons;     
-static std::vector<AliFemtoDreamBasePart> vXions;           
-static std::vector<AliFemtoDreamBasePart> vAntiXions;       
+static std::vector<AliFemtoDreamBasePart> vXi;           
+static std::vector<AliFemtoDreamBasePart> vAntiXi;       
 
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
@@ -350,8 +353,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
             vProtons.clear();
             vAntiProtons.clear();
-            vXions.clear();
-            vAntiXions.clear();
+            vXi.clear();
+            vAntiXi.clear();
             
             for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
             {
@@ -363,7 +366,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
                 fTrack->SetTrack(aaTrack);
 
-                // mark track (anti-)proton and/or (anti-)xion
+                // mark track (anti-)proton and/or (anti-)xi
                 if (fTrackCutsProton->isSelected(fTrack))
                 {
                     vProtons.push_back(*fTrack);
@@ -390,25 +393,25 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 fCascade->SetCascade(aaEvent, casc);
                 if (fCascadeCutsXi->isSelected(fCascade))
                 {
-                    vXions.push_back(*fCascade);
+                    vXi.push_back(*fCascade);
                 }
                 if (fCascadeCutsAntiXi->isSelected(fCascade))
                 {
-                    vAntiXions.push_back(*fCascade);
+                    vAntiXi.push_back(*fCascade);
                 }
             }                                                                         
             // remove double-matched tracks
             fPairCleaner->ResetArray();
-            fPairCleaner->CleanTrackAndDecay(&vProtons, &vXions, 0);
-            fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiXions, 1);
+            fPairCleaner->CleanTrackAndDecay(&vProtons, &vXi, 0);
+            fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiXi, 1);
             
-            fPairCleaner->CleanDecay(&vXions, 0);
-            fPairCleaner->CleanDecay(&vAntiXions, 1);
+            fPairCleaner->CleanDecay(&vXi, 0);
+            fPairCleaner->CleanDecay(&vAntiXi, 1);
             
             fPairCleaner->StoreParticle(vProtons);
             fPairCleaner->StoreParticle(vAntiProtons);
-            fPairCleaner->StoreParticle(vXions);
-            fPairCleaner->StoreParticle(vAntiXions);
+            fPairCleaner->StoreParticle(vXi);
+            fPairCleaner->StoreParticle(vAntiXi);
 
             // lambdas nicht in storeparticle weil sonst mit setevent pairQA betrieben wird was wir nicht brauchen
             fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());

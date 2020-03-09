@@ -40,11 +40,11 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     //
     AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
 
-    AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
-    AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
 
     v0Cuts->SetCutTransverseRadius(1.4, 200);           // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
-                                                        // dann hau ich auch alle raus d
+                                                        // 
     v0Cuts->SetCutCPA(0.97);                            // CPA für sekundäre kleiner?
     v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
     v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -55,9 +55,9 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
 
     AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
 
-    AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
     PosAntiv0Daug->SetCutCharge(1);
-    AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     NegAntiv0Daug->SetCutCharge(-1);
 
     Antiv0Cuts->SetCutTransverseRadius(1.4, 200);       // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
