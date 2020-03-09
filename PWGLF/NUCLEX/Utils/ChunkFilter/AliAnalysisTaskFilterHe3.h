@@ -32,8 +32,10 @@ public:
   void SetMinNsig3He(Double_t nsmin = 3) { fMinNSigma3He = nsmin; }
   void SetMaxNsig3He(Double_t nsmax = 10) { fMaxNSigma3He = nsmax; }
   void SetNclsTPC(Double_t ncltpc = 50) { fMinNclsTPC = ncltpc; }
-  void SetPtotmin(Double_t ptotmin = 0.5) { fMinPtot = ptotmin; }
-  void SetPtotmax(Double_t ptotmax = 20) { fMaxPtot = ptotmax; }
+  void SetPtotPosMin(Double_t ptotposmin = 0.5) { fMinPtotPos = ptotposmin; }
+  void SetPtotNegMin(Double_t ptotnegmin = 0.5) { fMinPtotNeg = ptotnegmin; }
+  void SetPtotPosMax(Double_t ptotposmax = 20) { fMaxPtotPos = ptotposmax; }
+  void SetPtotNegMax(Double_t ptotnegmax = 20) { fMaxPtotNeg = ptotnegmax; }
   void SetFillSecifTOF (Bool_t flgsectof = kFALSE) {fillSecifTOF = flgsectof; }
 
 private:
@@ -53,8 +55,10 @@ private:
   Double_t fMinNSigma3He;
   Double_t fMaxNSigma3He;
   Double_t fMinNclsTPC;
-  Double_t fMinPtot;
-  Double_t fMaxPtot;
+  Double_t fMinPtotPos;
+  Double_t fMinPtotNeg;
+  Double_t fMaxPtotPos;
+  Double_t fMaxPtotNeg;
   Bool_t fillSecifTOF;
 
   //
