@@ -2,21 +2,22 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="PbPb",//MBPP,HMPP, pPb,PbPb
+								       TString  fCollisiontype ="pPb",//MBPP,HMPP, pPb,PbPb
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
 								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
-								       TString anacent         ="V0M",
+								       TString anacent         ="V0A",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =768,
-								       Int_t fFMDcutpar        =3,
+								       Int_t ffilterbit        =32,
+								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
 								       Float_t fmaxpt          =3.0,
 								       Int_t fMinNTracksInPool =5000,
-								       Int_t fMinNEventsInPool =5
-								       //   Bool_t fFillcorrelation=kFALSE
+								       Int_t fMinNEventsInPool =5,
+								       Bool_t fefficalib       =kTRUE
+								       //Bool_t fFillcorrelation=kTRUE
 								       )
 {
   // Get the current analysis manager.
@@ -81,6 +82,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetAnalysisCollisionType(fCollisiontype);
   
   //  myTask->SetFillCorrelation(fFillcorrelation);
+  myTask->SetEfficiencyCorrection(fefficalib);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
