@@ -25,7 +25,6 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "TFile.h"
-
 #include "AliMultSelection.h"
 
 using std::cout;
@@ -42,6 +41,11 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
  fControlHistogramsList(NULL),
  fPtHist(NULL),
  fCentralityHist(NULL),
+ fNumberOfTracksHist(NULL),
+ fCentralityHistVzCut(NULL),
+ fPtHistEtaCut(NULL),
+ fPtHistEtaCutPTCut(NULL),
+ fPtHistEtaCutPTCutPhiCut(NULL),
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
@@ -51,7 +55,17 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
  fCentralityEstimator("V0M"),
 
  // Final results:
- fFinalResultsList(NULL)
+ fFinalResultsList(NULL),
+  // Global track cuts:
+ fApplyCommonTrackCuts(kTRUE),
+ fPtRange({0.2,5.0}),
+ fEtaRange({-0.8,0.8}),
+ fPhiRange({0.,TMath::TwoPi()}),
+ fFilterBit(128),
+ fRejectEventsNoPrimaryVertex(kTRUE),
+ fCutOnVertexZ(kTRUE),
+ fVertexZ({-10.0,10.0})
+
  {
   // Constructor.
  
@@ -94,6 +108,11 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
  fControlHistogramsList(NULL),
  fPtHist(NULL),
  fCentralityHist(NULL),
+ fNumberOfTracksHist(NULL),
+ fCentralityHistVzCut(NULL),
+ fPtHistEtaCut(NULL),
+ fPtHistEtaCutPTCut(NULL),
+ fPtHistEtaCutPTCutPhiCut(NULL),
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
@@ -102,7 +121,16 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
  fMaxCentrality(100.),
  fCentralityEstimator("V0M"),
  // Final results:
- fFinalResultsList(NULL)
+ fFinalResultsList(NULL),
+  // Global track cuts:
+ fApplyCommonTrackCuts(kTRUE),
+ fPtRange({0.2,5.0}),
+ fEtaRange({-0.8,0.8}),
+ fPhiRange({0.,TMath::TwoPi()}),
+ fFilterBit(128),
+ fRejectEventsNoPrimaryVertex(kTRUE),
+ fCutOnVertexZ(kTRUE),
+ fVertexZ({-10.0,10.0})
 {
   // Dummy constructor.
  
@@ -154,7 +182,7 @@ void AliAnalysisTaskNBodyFemtoscopy::UserCreateOutputObjects()
 void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *) 
 {
  // Main loop (called for each event).
- // a) Get pointer to AOD event, chech multiplicity:
+ // a) Get pointer to AOD event, chech multiplicity, apply event cuts;
  // b) Start analysis over AODs;
  // c) Reset event-by-event objects;
  // d) PostData.
@@ -162,11 +190,9 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  // a) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
-
  // Check Multiplicity
  AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
  if(!ams){return;}
- // Use centrality estimator
  if(ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())) >= fMinCentrality && ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())) < fMaxCentrality)
  {
   fCentralityHist->Fill(ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())));
@@ -175,36 +201,24 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  {
   return; 
  }
-
+ //Apply other event cuts
+ if(!this->CommonEventCuts(aAOD, ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())))){
+ 	return;
+ }
 
  // b) Start analysis over AODs:
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
+ fNumberOfTracksHist->Fill(nTracks);
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
-  if(!aTrack){continue;} // protection against NULL pointers
-  if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks, use only them for the analysis
+  if(!aTrack){ continue;} // protection against NULL pointers
 
-  // example variables for each track: (for more options, please see class STEER/AOD/AliAODTrack.h)  
   Double_t pt = aTrack->Pt(); // Pt
-  //Double_t px = aTrack->Px(); // x-component of momenta
-  //Double_t py = aTrack->Py(); // y-component of momenta
-  //Double_t pz = aTrack->Pz(); // z-component of momenta
-  //Double_t e = aTrack->E();  // energy
-  //Double_t phi = aTrack->Phi(); // azimuthal angle
-  //Double_t eta = aTrack->Eta(); // pseudorapidity
-  //Double_t charge = aTrack->Charge(); // charge
- 
-  // apply some cuts: e.g. take for the analysis only particles in 0.2 < pT < 5.0 GeV
-  if( (0.2 < pt) && (pt < 5.0) ) // example cuts
-  {
-   // fill some control histograms:
-   fPtHist->Fill(pt); // filling pt distribution
- 
-   // do some analysis only with the particles which passed the cuts
-   // ... your analysis code ... 
-
-  } // if( (0.2 < pT) && (pT < 5.0) )
+  // Fill pt control histogram before cuts
+  fPtHist->Fill(pt); // filling pt distribution
+  // Apply analysis cuts, fill histograms inside the cut function
+  if(!this->CommonTrackCuts(aTrack)){continue;}
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
   
@@ -216,6 +230,76 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
 
 } // void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
 
+
+
+
+//================================================================================================================
+
+Bool_t AliAnalysisTaskNBodyFemtoscopy::CommonEventCuts(AliVEvent *ave, Float_t centrality)
+{
+ // Apply event cuts.
+
+ // a) Check which event type
+ AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ if(aMC)
+ {
+  // TBI
+ }
+ else if(aESD)
+ {
+  // TBI
+ }
+ else if(aAOD)
+ {
+  // a) Cuts on AliAODEvent:
+  if(fRejectEventsNoPrimaryVertex && !aAOD->GetPrimaryVertex()) return kFALSE;
+
+  // b) Cuts on AliAODVertex:
+  AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+  if(fCutOnVertexZ)
+  {
+   if(avtx->GetZ() < fVertexZ[0]) return kFALSE;
+   if(avtx->GetZ() > fVertexZ[1]) return kFALSE;
+  }
+
+ } // else if(aAOD)
+ fCentralityHistVzCut->Fill(centrality);
+
+ return kTRUE;
+
+} // Bool_t AliAnalysisTaskNBodyFemtoscopy::CommonEventCuts(AliVEvent *ave)
+
+
+
+//================================================================================================================
+Bool_t AliAnalysisTaskNBodyFemtoscopy::CommonTrackCuts(AliAODTrack *atrack)
+{
+ // Apply track cuts.
+ if(fApplyCommonTrackCuts) {
+
+  TString sMethodName = "Bool_t AliAnalysisTaskNBodyFemtoscopy::CommonTrackCuts(AliAODTrack *atrack)";
+  if(!atrack){Fatal(sMethodName.Data(),"!atrack");}
+
+  if(!atrack->TestFilterBit(128)) return kFALSE; 
+
+  Double_t pt = atrack->Pt(); // Pt
+  if(atrack->Eta()<fEtaRange[0]) return kFALSE;
+  if(atrack->Eta()>=fEtaRange[1]) return kFALSE;
+  fPtHistEtaCut->Fill(pt); // filling pt distribution after eta cuts
+  if(pt<fPtRange[0]) return kFALSE;
+  if(pt>=fPtRange[1]) return kFALSE;
+  fPtHistEtaCutPTCut->Fill(pt); // filling pt distribution after eta and pt cuts
+  if(atrack->Phi()<fPhiRange[0]) return kFALSE;
+  if(atrack->Phi()>=fPhiRange[1]) return kFALSE;
+  fPtHistEtaCutPTCutPhiCut->Fill(pt); // filling pt distribution after eta, pt and phi cuts
+  
+ }
+ return kTRUE;
+
+} // Bool_t AliAnalysisTaskNBodyFemtoscopy::CommonTrackCuts(AliAODTrack *atrack)
 //================================================================================================================
 
 void AliAnalysisTaskNBodyFemtoscopy::Terminate(Option_t *)
@@ -279,20 +363,52 @@ void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
 
  // a) Book histogram to hold pt spectra;
  // b) Book histogram for centrality distribution
+ // c) Book histogram for track number distribution
+ // d) Book histogram for centrality distribution after event cuts
+ // e) Book histogram for pt spectra after track cuts
 
- // a) Book histogram to hold pt spectra:
+ // a) Book histogram to hold pt spectra before cuts:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbinsPt,fMinBinPt,fMaxBinPt);
- fPtHist->SetStats(kFALSE);
  fPtHist->SetFillColor(kBlue-10);
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
  
- // b) Book histogram for centrality distribution:
+ // b) Book histogram for centrality distribution before cuts:
  fCentralityHist = new TH1F("fCentralityHist","ams->GetMultiplicityPercentile()",fNbinsCentrality,fMinCentrality,fMaxCentrality);
- fCentralityHist->SetStats(kFALSE);
  fCentralityHist->SetFillColor(kRed-10);
- fCentralityHist->GetXaxis()->SetTitle("Multiplicity");
+ fCentralityHist->GetXaxis()->SetTitle("Centrality percentile");
  fControlHistogramsList->Add(fCentralityHist);
+
+ // c) Book histogram for track number distribution
+ fNumberOfTracksHist = new TH1F("fNumberOfTracksHist","aAOD->GetNumberOfTracks()",100,0,20000);
+ fNumberOfTracksHist->SetFillColor(kRed-10);
+ fNumberOfTracksHist->GetXaxis()->SetTitle("Number of tracks");
+ fControlHistogramsList->Add(fNumberOfTracksHist);
+
+ // c) Book histogram for centrality distribution after event cuts
+ fCentralityHistVzCut = new TH1F("fCentralityHistVzCut","ams->GetMultiplicityPercentile() after vz cut",fNbinsCentrality,fMinCentrality,fMaxCentrality);
+ fCentralityHistVzCut->SetFillColor(kRed-10);
+ fCentralityHistVzCut->GetXaxis()->SetTitle("Centrality percentile");
+ fControlHistogramsList->Add(fCentralityHistVzCut);
+
+ // d) Book histogram for pt spectra after track cuts
+ fPtHistEtaCut = new TH1F("fPtHistEtaCut","atrack->Pt() after Eta cuts",fNbinsPt,fMinBinPt,fMaxBinPt);
+ fPtHistEtaCut->SetFillColor(kBlue-10);
+ fPtHistEtaCut->GetXaxis()->SetTitle("p_{t}");
+ fControlHistogramsList->Add(fPtHistEtaCut);
+
+ fPtHistEtaCutPTCut = new TH1F("fPtHistEtaCutPTCut","atrack->Pt() after Eta and pT cuts",fNbinsPt,fMinBinPt,fMaxBinPt);
+ fPtHistEtaCutPTCut->SetFillColor(kBlue-10);
+ fPtHistEtaCutPTCut->GetXaxis()->SetTitle("p_{t}");
+ fControlHistogramsList->Add(fPtHistEtaCutPTCut);
+
+ fPtHistEtaCutPTCutPhiCut = new TH1F("fPtHistEtaCutPTCutPhiCut","atrack->Pt() after Eta, pT and Phi cuts",fNbinsPt,fMinBinPt,fMaxBinPt);
+ fPtHistEtaCutPTCutPhiCut->SetFillColor(kBlue-10);
+ fPtHistEtaCutPTCutPhiCut->GetXaxis()->SetTitle("p_{t}");
+ fControlHistogramsList->Add(fPtHistEtaCutPTCutPhiCut);
+
+
+ 
 } // void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
 
 //=======================================================================================================================
