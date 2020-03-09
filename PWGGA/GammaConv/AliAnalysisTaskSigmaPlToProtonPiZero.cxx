@@ -655,14 +655,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 											if(fHistSigmaPlusMC [iCut]) fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
 										}
 									}
-								}
-								delete PhotonCandidate2;
-								delete tmpvec2;
-								delete pi0cand;
+								}								
 							}
 						}
-						delete tmpvec1;
-						delete PhotonCandidate1;
 					}
 				}
 			}
