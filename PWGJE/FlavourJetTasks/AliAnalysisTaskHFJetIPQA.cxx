@@ -75,7 +75,7 @@ fRunSmearing(kFALSE),
 fUsePIDJetProb(kFALSE),
 fDoMCCorrection(kFALSE),
 fDoUnderlyingEventSub(kFALSE),
-fApplyV0Rej(kFALSE),
+fApplyV0Rej(0),
 fDoFlavourMatching(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
@@ -211,7 +211,7 @@ fRunSmearing(kFALSE),
 fUsePIDJetProb(kFALSE),
 fDoMCCorrection(kFALSE),
 fDoUnderlyingEventSub(kFALSE),
-fApplyV0Rej(kFALSE),
+fApplyV0Rej(0),
 fDoFlavourMatching(kFALSE),
 fParam_Smear_Sigma(1.),
 fParam_Smear_Mean(0.),
@@ -1687,7 +1687,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
     jetconrec->ResetCurrentID();
 
-    if(fApplyV0Rej){
+    if(fApplyV0Rej!=V0RejNo){
       SelectV0Candidates(ev);
       if(fIsPythia) GetV0MCTrueCandidates(ev);
     }
@@ -1814,7 +1814,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           if (!trackV || !jetrec)            continue;
           if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,jetflavour))   continue;
 
-          isV0=IsV0Daughter(trackV);
+          if(fApplyV0Rej!=V0RejNo) isV0=IsV0Daughter(trackV);
           ++NJetParticles;
 
           //FillTrackTypeResHists();
@@ -1854,6 +1854,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                   //printf("V0MC set to V0TrueRec!\n");
                   break;
               }
+            }
+            if((fApplyV0Rej==V0Rej)&&(isV0)){
+                continue;
             }
 
             SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
@@ -1912,7 +1915,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 //V0 tag decisions
                 //printf("isV0=%i, jetflaovur=%i, jetpt=%f", );
                 bool isV0Jet=kFALSE;
-                if((hasIPs[0])&&(!fIsPythia)&&(sImpParXYSig[0].is_V0==V0Rec))isV0Jet=kTRUE;
+                if((hasIPs[0])&&(!fIsPythia)&&(sImpParXYSig[0].is_V0==V0Rec)&&(fApplyV0Rej==V0JetRej)){
+                    isV0Jet=kTRUE;
+                }
                 //printf("New jetflavour=%i, isV0Jet=%i\n",jetflavour, isV0Jet);
 
                 if(fIsPythia){
@@ -2521,7 +2526,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     }
 
     //V0Cuts
-    if(fApplyV0Rej){
+    if(fApplyV0Rej!=V0RejNo){
       //V0s from reconstruction
       const Int_t iNDimInJC = 5;
       Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,5};
@@ -2642,7 +2647,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
     fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
     PrintSettings();
-    if(fApplyV0Rej) PrintV0Settings();
+    if(fApplyV0Rej!=V0RejNo) PrintV0Settings();
 }
 
 void AliAnalysisTaskHFJetIPQA::PrintV0Settings(){
@@ -2680,8 +2685,9 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     TString jetcuts="";
     TString trackcuts="";
     TString vertexcuts="";
-    Int_t version=4;
+    Int_t version=5;
 
+    printf("Cut Jet Settings: %s\n",jetcuts.Data());
 
     jetcuts+=version;
     jetcuts+="+";
@@ -2778,11 +2784,13 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     vertexcuts+="+";
     vertexcuts+=fNTrackTypes;
     vertexcuts+="+";
+    vertexcuts+=fApplyV0Rej;
+    vertexcuts+="+";
     vertexcuts+=Form("%0.3f",fTCThresholdPtFixed);
 
     fh1dCutsPrinted->SetTitle(jetcuts.Data());
-    fh1dCutsPrinted->GetXaxis()->SetTitle(trackcuts.Data());
-    fh1dCutsPrinted->GetYaxis()->SetTitle(vertexcuts.Data());
+    fh1dCutsPrinted->GetXaxis()->SetTitle(vertexcuts.Data());
+    fh1dCutsPrinted->GetYaxis()->SetTitle(trackcuts.Data());
 
     printf("Vertex Cuts: %s\n",vertexcuts.Data());
 }
@@ -4425,7 +4433,7 @@ void AliAnalysisTaskHFJetIPQA::SetTCThresholds(TObjArray** &threshs){
   for(int iProbSet=0;iProbSet<fNThresholds;iProbSet++){
     TObjArray* oa=(TObjArray*)threshs[iProbSet];
 
-    //printf("Pointer oa=%p\n",oa);
+    printf("Pointer oa=%p\n",oa);
 
     h1DThresholdsFirst.push_back((TH1D*)oa->At(0));
     h1DThresholdsSecond.push_back((TH1D*)oa->At(1));
@@ -4599,7 +4607,7 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(double jetpt, bool* hasIPs, double* i
       if(kTagLevel<2){
         //printf("Single catch\n");
         if(ipval[0]>IPthresN1[iThresh]) {
-          //printf("Single1st %f!\n",fFracs[iThresh]);
+          //printf("Single1st %f, %f!\n",fFracs[iThresh], IPthresN1[iThresh]);
           kTagDec[iThresh][Full]=kTRUE; kTagDec[iThresh][Single1st]=kTRUE;
         }
       }

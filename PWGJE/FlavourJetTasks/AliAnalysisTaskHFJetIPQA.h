@@ -141,6 +141,12 @@ public:
         V0TrueRec
     };
 
+    enum V0RejType{
+        V0RejNo,
+        V0Rej,
+        V0JetRej
+    };
+
     enum TemplateFlavour{
         Unid,
         UDSG,
@@ -351,7 +357,7 @@ public:
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
-    void setFApplyV0Rec(Bool_t value){fApplyV0Rej=value;}
+    void setFApplyV0Rec(int value){fApplyV0Rej=value;}
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setV0Cut(int iCut,double value){fV0Cuts[iCut]=value;}
 
@@ -481,7 +487,7 @@ private:
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
-    Bool_t   fApplyV0Rej;//
+    int   fApplyV0Rej;//
 
     Bool_t   fDoFlavourMatching;//
     Double_t fParam_Smear_Sigma;//
@@ -683,7 +689,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 55)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 56)
 };
 
 #endif
