@@ -207,7 +207,10 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCinnerP", &tracks.fTPCinnerP, "fTPCinnerP/F");
     tTracks->Branch("fFlags", &tracks.fFlags, "fFlags/l");
     tTracks->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
-    tTracks->Branch("fTPCncls", &tracks.fTPCncls, "fTPCncls/s");
+    tTracks->Branch("fTPCnclsFindable", &tracks.fTPCnclsFindable, "fTPCnclsFindable/b");
+    tTracks->Branch("fTPCnclsFindableMinusFound",&tracks.fTPCnclsFindableMinusFound, "fTPCnclsFindableMinusFound/B");
+    tTracks->Branch("fTPCnclsFindableMinusCrossedRows", &tracks.fTPCnclsFindableMinusCrossedRows, "fTPCnclsFindableMinusCrossedRows/B");
+    tTracks->Branch("fTPCnclsShared", &tracks.fTPCnclsShared, "fTPCnclsShared/b");
     tTracks->Branch("fTRDntracklets", &tracks.fTRDntracklets, "fTRDntracklets/b");
     tTracks->Branch("fITSchi2Ncl", &tracks.fITSchi2Ncl, "fITSchi2Ncl/F");
     tTracks->Branch("fTPCchi2Ncl", &tracks.fTPCchi2Ncl, "fTPCchi2Ncl/F");
@@ -574,7 +577,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fFlags = track->GetStatus();
 
     tracks.fITSClusterMap = track->GetITSClusterMap();
-    tracks.fTPCncls = track->GetTPCNcls();
+    tracks.fTPCnclsFindable = track->GetTPCNclsF();
+    tracks.fTPCnclsFindableMinusFound = tracks.fTPCnclsFindable - track->GetTPCNcls();
+    tracks.fTPCnclsFindableMinusCrossedRows = tracks.fTPCnclsFindable - track->GetTPCCrossedRows();
+    tracks.fTPCnclsShared = (track->GetTPCSharedMap()).CountBits();
     tracks.fTRDntracklets = track->GetTRDntracklets();
 
     tracks.fITSchi2Ncl = (track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0);
