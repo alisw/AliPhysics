@@ -160,6 +160,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fmaxpT_treeFill(36.),
   fCompute_dist12_dist23(kFALSE),
   fExplore_PIDstdCuts(kFALSE),
+  fOnlyBayesPIDbin(kFALSE),
   fLcMassWindowForSigmaC(0.030),
   fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
@@ -249,6 +250,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fmaxpT_treeFill(36.),
   fCompute_dist12_dist23(kFALSE),
   fExplore_PIDstdCuts(kFALSE),
+  fOnlyBayesPIDbin(kFALSE),
   fLcMassWindowForSigmaC(0.030),
   fSigmaCDeltaMassWindow(0.230),
   fSigmaCfromLcOnTheFly(kTRUE),
@@ -596,12 +598,28 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     lowEdges[1] = 2.95;
     upEdges[1] = 3.45;
   }
+  if(fExplore_PIDstdCuts && fOnlyBayesPIDbin){
+    printf("\n##############################################################################\n");
+    printf("ATTENTION: bins for PID axis in reco THnSparse for Lc (Xic) reduced from 11 to 1\n");
+    printf("##############################################################################\n");
+    // only Bayes PID
+    nbinsSparse[7]=1;
+    upEdges[7]=0.5;
+  }
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
   
   // add also here the axis for Lc decay channel (MC)
   Int_t nbinsSparseSigma[14]={16,400,10,12,10,10,1,11,22,20,16,2,1,6};
   Double_t lowEdgesSigma[14]={0,0.130,0.,0,0.8,0,-0.5,-0.5,2.266,-1,0,3.5,0.5,-1.5};
   Double_t upEdgesSigma[14]={16,0.330,0.0500,6.,1.,5,0.5,10.5,2.306,1,16,5.5,1.5,4.5};
+  if(fExplore_PIDstdCuts && fOnlyBayesPIDbin){
+    printf("\n#########################################################################################\n");
+    printf("ATTENTION: bins for PID axis in reco THnSparse for Lc(<-Sc) and Sc reduced from 11 to 1\n");
+    printf("#########################################################################################\n");
+    // only Bayes PID
+    nbinsSparseSigma[7]=1;
+    upEdgesSigma[7]=0.5;
+  }
   if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin;isRotated;channel",14,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   fCosPointDistrAll=new TH1F("fCosPointDistrAll","fCosPointDistrAll",200,-1.1,1.1);
