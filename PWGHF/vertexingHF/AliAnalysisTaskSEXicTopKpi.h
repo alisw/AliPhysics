@@ -332,7 +332,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fhighMass_tree_Fill;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,9); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,10); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
