@@ -80,7 +80,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   //
   //  Create output objects
   //
-  //bool saveAutoAdd = TH1::AddDirectoryStatus();
   std::cout << "void AliForwardFlowRun2Task::UserCreateOutputObjects()"<< std::endl;
 
   fWeights = AliForwardWeights();
@@ -185,7 +184,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
     fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions, negonly_bins, dmin, negonly_max) ;
     TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
-  
   }
 
   if (fSettings.SC_analysis){
@@ -228,6 +226,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
+  
+  fCalculator.fSettings = fSettings;
+  fUtil.fSettings = fSettings;
 
   PostData(1, fStorage);
 
@@ -243,12 +244,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-
-
-    std::cout << "void AliForwardFlowRun2Task::UserExec()"<< std::endl;
-
-  fCalculator.fSettings = fSettings;
-  fUtil.fSettings = fSettings;
   
   if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
@@ -285,13 +280,13 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   */
 
   if (fSettings.ref_mode & fSettings.kFMDref) {
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
   }
   else {
     fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
   if (!fSettings.etagap){
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
     fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
   

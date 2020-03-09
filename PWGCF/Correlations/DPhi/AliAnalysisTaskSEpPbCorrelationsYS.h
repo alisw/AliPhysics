@@ -67,6 +67,7 @@ public:
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
+  virtual void SetEfficiencyCorrection(Bool_t mode) { fefficalib = mode; }
 
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
@@ -155,6 +156,7 @@ private:
   Bool_t fptdiff;
   Bool_t fmakehole;
   Bool_t ffillcorrelation;
+  Bool_t fefficalib;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
@@ -273,7 +275,7 @@ private:
   TH1F*frefetac;
   TH1F*frefetaa;
   TH1F*frefvz;
-  TH2D*fhcorr[10];
+  TH3D*fhcorr[10];
 
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];

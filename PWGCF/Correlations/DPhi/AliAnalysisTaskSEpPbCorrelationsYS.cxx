@@ -107,6 +107,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fptdiff(kFALSE),
       fmakehole(kFALSE),
       ffillcorrelation(kTRUE),
+      fefficalib(kTRUE),
       fOnfly(kFALSE),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
@@ -330,6 +331,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fptdiff(kFALSE),
       fmakehole(kFALSE),
       ffillcorrelation(kTRUE),
+      fefficalib(kTRUE),
       fOnfly(kFALSE),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
@@ -621,8 +623,18 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   //fhcorr[i]=(TH2D*)file->Get(Form("fRefetaphiclone_%d",i));
   // fOutputList2->Add(fhcorr[i]);
   // }
+  
+  if(fefficalib){
+  TGrid::Connect("alien://");
+  TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
+  if(!file) AliError("No correction factor");
+  for(Int_t i=0;i<10;i++){
+    fhcorr[i]=(TH3D*)file->Get(Form("effi_%d",i));
+    // fOutputList2->Add(fhcorr[i]);
+  }
 
- 
+  }
+  
    fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
    if (!fPoolMgr)
    return;
@@ -1224,7 +1236,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      Double_t binning_cent_trig[8] = {0., 5.,  10., 20.
 				      , 40., 60.,70.,100.1};
      Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};
-     Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
+     //     Double_t binning_cent_trig_PbPb[9] = {0., 10.,  20., 30., 40., 50.,60.,70.,80.};
      Double_t binning_mult_trig[10]={0,20,40,60,80,100,120,140,160,200};
 
      const Int_t nEvtVarsFMD = 4;
@@ -2202,7 +2214,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 	 
 	 Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 	 fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2],mostProbableN);
-	 //Float_t corrfactor=fhcorr[ivzbin-1]->GetBinContent(iEta,iPhi);
+
 	 if (mostProbableN > 0) {
 	   if(eta>0){
 	     nFMD_fwd_hits+=mostProbableN;
@@ -3849,7 +3861,9 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedTrack(const AliAODTrack *ao
       if(fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fCutChargedDCAxyMax) return kFALSE;
     }
   }else{
-    if (!aodTrack->TestFilterMask(BIT(ffilterbit)))  return kFALSE; 
+    //    if(aodTrack->TestFilterMask(BIT(5))!=aodTrack->TestFilterBit(32)) cout<<"bad!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+    //    if (!aodTrack->TestFilterMask(BIT(ffilterbit)))  return kFALSE;
+    if (!aodTrack->TestFilterBit(ffilterbit)) return kFALSE;
   }
   /*
   if (!aodTrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
@@ -3943,7 +3957,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
 	binscontTrig[0] = triggerPt;
 	binscontTrig[1] = centrality;
 	binscontTrig[2] = fPrimaryZVtx;
-	triggerHist->Fill(binscontTrig, 0);
+	Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+	Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(triggerPt);
+	Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(triggerEta);
+	Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(triggerPhi);
+	Float_t efficiency=999;
+	if(fefficalib)efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
+	else efficiency=1.;
+	if(efficiency==0.) continue;
+	triggerHist->Fill(binscontTrig, 0,efficiency);
 	for (Int_t j = 0; j < selectedTrackArray->GetEntriesFast(); j++) {
 	  AliAssociatedTrackYS *associate =   (AliAssociatedTrackYS*)selectedTrackArray->At(j);
 	  if (!associate)        continue;
@@ -3965,12 +3987,19 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
 	  binscont[3] = centrality;
 	  binscont[4] = RangePhi(triggerPhi - associate->Phi());
 	  binscont[5] = fPrimaryZVtx;
+	  Int_t iPt1=fhcorr[ivzbin-1]->GetXaxis()->FindBin(associate->Pt());
+	  Int_t iEta1=fhcorr[ivzbin-1]->GetYaxis()->FindBin(associate->Eta());
+	  Int_t iPhi1=fhcorr[ivzbin-1]->GetZaxis()->FindBin(associate->Phi());
+	  Float_t efficiency1=999.;
+	  if(fefficalib) efficiency1=fhcorr[ivzbin-1]->GetBinContent(iPt1,iEta1,iPhi1);
+	  else  efficiency1=1.;
+	  if(efficiency==0.) continue;
 	  Int_t SpAsso = associate->WhichCandidate();
 	  if (fasso == "V0" || fasso == "Phi" || fasso == "Cascade" ||  (fasso == "PID")) {
 	    if (SpAsso < 0)          continue;
 	    associateHist->Fill(binscont, SpAsso);
 	  }else if(fasso=="hadron"){
-	    associateHist->Fill(binscont, 0);
+	    associateHist->Fill(binscont, 0,1./(efficiency*efficiency1));
 	  }
 	}
       }
@@ -3987,8 +4016,18 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
       binscontTrig[1]=centrality;
       binscontTrig[2]=fPrimaryZVtx;
       binscontTrig[3]=triggerEta;
+      Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+      Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(triggerPt);
+      Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(triggerEta);
+      Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(triggerPhi);
+      Float_t efficiency;
+      if(fefficalib) efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
+      else efficiency=1.;
+      if(fefficalib==0.) {
+	continue;
+      }
       Int_t SpAsso= trigger->WhichCandidate();
-      triggerHist->Fill(binscontTrig,SpAsso);
+      triggerHist->Fill(binscontTrig,SpAsso,1./efficiency);
       for (Int_t j=0; j<selectedTrackArray->GetEntriesFast(); j++){
         AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*) selectedTrackArray->At(j);
         if(!associate)continue;
@@ -4010,7 +4049,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
 	else if(triggerEta>0.4 && triggerEta<0.8) nstep=3;
 	else nstep=999;
 	*/
-	associateHist->Fill(binscont, 0, (Double_t)associate->Multiplicity());
+	associateHist->Fill(binscont, 0, (Double_t)associate->Multiplicity()/efficiency);
 	  
       }
     }
@@ -4177,7 +4216,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
           counterMix++;
           binscontTrig[0] = triggerPt;
           binscontTrig[1] = centrality;
-          triggerHist->Fill(binscontTrig, 0);
+	  Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+	  Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(triggerPt);
+	  Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(triggerEta);
+	  Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(triggerPhi);
+	  Float_t efficiency;
+	  if(fefficalib)efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
+	  else efficiency=1.;
+	  
+	  triggerHist->Fill(binscontTrig, 0,efficiency);
           for (Int_t j = 0; j < mixEvents->GetEntriesFast(); j++) {
             AliAssociatedTrackYS *associate =  (AliAssociatedTrackYS *)mixEvents->At(j);
             if (!associate) continue;
@@ -4189,12 +4236,20 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
 	    binscont[3] = centrality;
 	    binscont[4] = RangePhi(triggerPhi - associate->Phi());
 	    binscont[5] = pvxMix;
+	    
+	    Int_t iPt1=fhcorr[ivzbin-1]->GetXaxis()->FindBin(associate->Pt());
+	    Int_t iEta1=fhcorr[ivzbin-1]->GetYaxis()->FindBin(associate->Eta());
+	    Int_t iPhi1=fhcorr[ivzbin-1]->GetZaxis()->FindBin(associate->Phi());
+	    Float_t efficiency1;
+	    if(fefficalib)efficiency1=fhcorr[ivzbin-1]->GetBinContent(iPt1,iEta1,iPhi1);
+	    else efficiency1=1.;
+	  
 	    Int_t SpAsso = associate->WhichCandidate();
 	    if (fasso == "V0" || fasso == "Phi" || fasso == "Cascade" || (fasso == "PID")) {
 	      if (SpAsso < 0)   continue;
 	      associateHist->Fill(binscont, SpAsso, 1. / (Double_t)nMix);
 	    }else if(fasso=="hadron"){
-	      associateHist->Fill(binscont, 0,1./(Double_t)nMix);
+	      associateHist->Fill(binscont, 0,1./(efficiency*efficiency1*(Double_t)nMix));
 	    }
 	  }
 	}
@@ -4212,7 +4267,14 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
           counterMix++;
           binscontTrig[0]=triggerPt;
           binscontTrig[1]=centrality;
-          triggerHist->Fill(binscontTrig,SpAsso);
+	  Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+	  Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(triggerPt);
+	  Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(triggerEta);
+	  Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(triggerPhi);
+	  Float_t efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
+	  if(!fefficalib) efficiency=1.;
+	  if(efficiency==0.) continue;
+	  triggerHist->Fill(binscontTrig,SpAsso);
           for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
             AliAssociatedTrackYS* associate=(AliAssociatedTrackYS*)  mixEvents->At(j);
             
@@ -4231,7 +4293,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
 	    else if(triggerEta>0 && triggerEta<0.4) nstep=2;
 	    else if(triggerEta>0.4 && triggerEta<0.8) nstep=3;
 	    */
-              associateHist->Fill(binscont, 0,(Double_t)associate->Multiplicity()/(Double_t)nMix);
+	    associateHist->Fill(binscont, 0,(Double_t)associate->Multiplicity()/(efficiency*(Double_t)nMix));
   
           }
         }
