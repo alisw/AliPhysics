@@ -46,8 +46,10 @@ ClassImp(AliAnalysisTaskFilterHe3)
                                                            fMinNSigma3He(0),
                                                            fMaxNSigma3He(0),
                                                            fMinNclsTPC(0),
-                                                           fMinPtot(0),
-                                                           fMaxPtot(0),
+                                                           fMinPtotPos(0),
+                                                           fMinPtotNeg(0),
+                                                           fMaxPtotPos(0),
+                                                           fMaxPtotNeg(0),
                                                            fillSecifTOF(kFALSE)
 {
   //
@@ -70,8 +72,10 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char *name) : AliAnalys
                                                                        fMinNSigma3He(0),
                                                                        fMaxNSigma3He(0),
                                                                        fMinNclsTPC(0),
-                                                                       fMinPtot(0),
-                                                                       fMaxPtot(0),
+                                                                       fMinPtotPos(0),
+                                                                       fMinPtotNeg(0),
+                                                                       fMaxPtotPos(0),
+                                                                       fMaxPtotNeg(0),
                                                                        fillSecifTOF(kFALSE)
 {
   //
@@ -340,37 +344,36 @@ void AliAnalysisTaskFilterHe3::UserExec(Option_t *)
     // TRIGGER CONDITION
     //
 
-    if (fillSecifTOF == kFALSE)
+    Bool_t PosAndMomInRng = kFALSE;
+    Bool_t NegAndMomInRng = kFALSE;
+    if (sign < 0)
     {
-      if (nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He && 1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > fMinNclsTPC)
-      {
-        if (sign < 0 && ptot > fMinPtot && ptot < fMaxPtot)
-          isTriggered = kTRUE;
-        if (sign > 0 && ptot > fMinPtot && ptot < fMaxPtot)
-          isTriggered = kTRUE;
-      }
+      if (ptot > fMinPtotNeg && ptot < fMaxPtotNeg)
+        NegAndMomInRng = kTRUE;
     }
-    else if (hasTOF && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
+    else if (ptot > fMinPtotPos && ptot < fMaxPtotPos)
+      PosAndMomInRng = kTRUE;
+
+    
+    if (hasTOF && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
     {
       fHistTof->Fill(ptot * sign, mass);
       //
-      if (1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > fMinNclsTPC)
+      if (fillSecifTOF && 1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > fMinNclsTPC)
       {
-        if (sign < 0 && ptot > fMinPtot && ptot < fMaxPtot)
-          isTriggered = kTRUE;
-        if (sign > 0 && ptot > fMinPtot && ptot < fMaxPtot)
+        if (PosAndMomInRng || NegAndMomInRng)
           isTriggered = kTRUE;
       }
     }
 
-    if (sign < 0 && ptot > fMinPtot && ptot < fMaxPtot &&
-        track->GetTPCsignalN() > fMinNclsTPC &&
-        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
-      isTriggered = kTRUE;
-    if (sign > 0 && ptot > fMinPtot && ptot < fMaxPtot &&
-        track->GetTPCsignalN() > fMinNclsTPC &&
-        fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
-      isTriggered = kTRUE;
+    if (PosAndMomInRng || NegAndMomInRng)
+    {
+      if (track->GetTPCsignalN() > fMinNclsTPC &&
+          fESDtrackCutsPrimary->AcceptTrack(track) && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He)
+        isTriggered = kTRUE;
+      if (fillSecifTOF == kFALSE && nSigmaHe3 < fMaxNSigma3He && nSigmaHe3 > fMinNSigma3He && 1.0 < mass && mass < 2.3 && track->GetTPCsignalN() > fMinNclsTPC)
+        isTriggered = kTRUE;
+    }
 
   } // end track loop
   //
