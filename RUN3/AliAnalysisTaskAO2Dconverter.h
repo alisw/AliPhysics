@@ -180,10 +180,13 @@ private:
     // Track quality parameters
     ULong64_t fFlags = 0u;       /// Reconstruction status flags
 
-    // Clusters
-    UChar_t fITSClusterMap = 0u; /// ITS map of clusters, one bit per a layer
-    UShort_t fTPCncls = 0u;      /// number of clusters assigned in the TPC
-    UChar_t fTRDntracklets = 0u; /// number of TRD tracklets used for tracking/PID (TRD/TOF pattern)
+    // Clusters and tracklets
+    UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
+    UChar_t fTPCnclsFindable = 0u; /// number of clusters that could be assigned in the TPC
+    Char_t fTPCnclsFindableMinusFound = 0;       /// difference between foundable and found clusters
+    Char_t fTPCnclsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
+    UChar_t fTPCnclsShared = 0u;   /// Number of shared clusters
+    UChar_t fTRDntracklets = 0u;   /// number of TRD tracklets used for tracking/PID (TRD/TOF pattern)
 
     // Chi2
     Float_t fITSchi2Ncl = -999.f; /// chi2/Ncl ITS
@@ -382,7 +385,7 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 5);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 6);
 };
 
 #endif
