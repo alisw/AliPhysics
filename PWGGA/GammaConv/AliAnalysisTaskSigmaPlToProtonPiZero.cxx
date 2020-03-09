@@ -125,7 +125,7 @@ AliAnalysisTaskSigmaPlToProtonPiZero::AliAnalysisTaskSigmaPlToProtonPiZero() : A
   fIsMC(0),
   fDoInOutTimingCluster(kFALSE),                                // manual timing cut for cluster to combine cluster within timing cut and without
   fMinTimingCluster(0),                                    // corresponding ranges, min
-  fMaxTimingCluster(0),                                    // corresponding ranges, max
+  fMaxTimingCluster(0),                                   Clus // corresponding ranges, max
   fTrackMatcherRunningMode(0)
 
 
@@ -556,6 +556,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 					photon.push_back(clus);
 					if(fHistClusterE[iCut]) fHistClusterE[iCut]-> Fill(clus->E());
 					nClusWCuts+= 1;
+				} else {
+					delete clus;
 				}
 				clus = NULL;
 			}
@@ -655,7 +657,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 											if(fHistSigmaPlusMC [iCut]) fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
 										}
 									}
-								}								
+								}
 							}
 						}
 					}
