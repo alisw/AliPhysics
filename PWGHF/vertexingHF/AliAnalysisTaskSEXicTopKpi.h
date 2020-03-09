@@ -113,6 +113,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // exporation of PID cuts with standard strategy
   void SetExplorePIDstd(Bool_t flag){ fExplore_PIDstdCuts=flag; }
+  // dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  void SetOnlyBayesPIDbin_recoSparse(Bool_t flag) {fOnlyBayesPIDbin=flag;}
+
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
@@ -310,7 +313,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
    Float_t fminpT_treeFill;   /// min. pT
    Float_t fmaxpT_treeFill;   /// max. pT
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
+
   Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
+  Bool_t fOnlyBayesPIDbin;  /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+
   Double_t fLcMassWindowForSigmaC; /// lc mass window for used in sigma_C loop
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
@@ -326,7 +332,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fhighMass_tree_Fill;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,9); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,10); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
