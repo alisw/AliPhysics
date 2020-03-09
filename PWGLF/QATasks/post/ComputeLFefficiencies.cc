@@ -16,6 +16,7 @@
 #include "AliAnalysisTaskLFefficiencies.h"
 
 const char* TOF_cut_names[7] = {"","","","FB5 + TOF matching", "FB5 + TOF pid", "FB5 + TOF matching - TOF mismatch","FB5 + TOF matching - TOF mismatch + TOF pid"};
+const int kNoCheckTOFmismatch = 5;
 
 void DivideBinomial(TH1* num, const TH1* den) {
   for (int iBin = 1; iBin <= num->GetNbinsX(); ++iBin) {
@@ -88,7 +89,7 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
           eff->SetTitle("FB5 + TOF matching - mismatch");
         }
         DivideBinomial(eff,gen);
-        eff->Draw("same PLC PMC");
+        if(iCut < kNoCheckTOFmismatch) eff->Draw("same PLC PMC");
         vec.first[(iSpecies - 2) * 2 + iCharge].push_back(static_cast<TH1D*>(eff->Clone()));
         vec.first[(iSpecies - 2) * 2 + iCharge].back()->SetDirectory(0);
 
@@ -97,7 +98,7 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
         recEta[iCut] = rec3Deta->ProjectionZ(Form("RecEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut),2,9);
         TH1D* effEta = (TH1D*)recEta[iCut]->Clone(Form("EffEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut));
         DivideBinomial(effEta,genEta);
-        effEta->Draw("same PLC PMC");
+        if(iCut < kNoCheckTOFmismatch) effEta->Draw("same PLC PMC");
 
         output_file.cd();
         eff->Write();
