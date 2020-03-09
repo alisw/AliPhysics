@@ -334,8 +334,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 		}
 
 
-		fFitPi0MassDataLowPt[iCut] = new TF1("fFitPi0MassDataLowPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.1,25.);
-		fFitPi0MassDataHighPt[iCut] = new TF1("fFitPi0MassDataHighPt","[0]*x*x+[1]*x+[2]",0.3,1.2);
+		fFitPi0MassDataHighPt[iCut] = new TF1("fFitPi0MassDataHighPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.1,25.);
+		fFitPi0MassDataLowPt[iCut] = new TF1("fFitPi0MassDataLowPt","[0]*x*x+[1]*x+[2]",0.3,1.2);
 		fFitWidthData[iCut] = new TF1("fFitWidthData","[0]*exp(x*[1]+[2])+[3]*x+ [4] + [5]",0.3,25.);
 
 		if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType() == 2){
@@ -354,8 +354,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 
 		if(fIsMC > 0){
 
-			fFitPi0MassMCLowPt[iCut] = new TF1("fFitPi0MassMCLowPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.,25.);
-			fFitPi0MassMCHighPt[iCut] = new TF1("fFitPi0MassMCHighPt","[0]*x*x+[1]*x+[2]",0.3,1.05);
+			fFitPi0MassMCHighPt[iCut] = new TF1("fFitPi0MassMCHighPt","[0]*1/x*log(x*x)+[1]*1/(x*x)+[2]",1.,25.);
+			fFitPi0MassMCLowPt[iCut] = new TF1("fFitPi0MassMCLowPt","[0]*x*x+[1]*x+[2]",0.3,1.05);
 			fFitWidthMC[iCut] = new TF1("fFitWidthMC","[0]*exp(x*[1]+[2])+[3]*x+[4] +[5]",0.3,25.);
 
 			if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType() == 2){
@@ -392,7 +392,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 {
 
-	
 	fEvent = InputEvent();
 	if (!fEvent) {
 		Printf("ERROR: Could not retrieve event");
@@ -416,25 +415,26 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 			return;
 		}
   	}
-	// //Generiertes Spektrum der Sigma+
-	if(fIsMC > 0){
-      for(Int_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
-      	TParticle* sigma = (TParticle *)fMCEvent->Particle(i);
-		if (!sigma) continue;
-		if(sigma->GetPdgCode() == 3222){
-			Double_t sigmaPt = sigma->Pt();
-			fHistSigmaPlusMCGen->Fill(sigmaPt);
-		}
-	  }
-	}
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
 	if(fEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
 	  for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-		fHistNEvents[iCut]->Fill(eventQuality);
+		FillfHistNEvents(iCut,eventQuality);
 		// if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 	  }
 	  return;
+	}
+
+	// Generiertes Spektrum der Sigma+
+	if(fIsMC > 0){
+		for(Int_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+			TParticle* sigma = (TParticle *)fMCEvent->Particle(i);
+			if (!sigma) continue;
+			if(sigma->GetPdgCode() == 3222){
+				Double_t sigmaPt = sigma->Pt();
+				if(fHistSigmaPlusMCGen) fHistSigmaPlusMCGen->Fill(sigmaPt);
+			}
+		}
 	}
 
 
@@ -486,7 +486,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fEvent,fMCEvent,fIsHeavyIon, isRunningEMCALrelAna);
 
     	if(eventNotAccepted != 0){ // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
-      		// if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
+      		// if (fIsMC>1) if(fHistoNEventsWOWeight[iCut]) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       		// 	// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       		// if (eventNotAccepted==3 && fIsMC > 0){
             //   triggered = kFALSE;
@@ -494,13 +494,13 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 			//   continue;
       		// }
 			if (eventNotAccepted==3 && fIsMC > 0){
-				fHistNEvents[iCut]->Fill(0);
+				FillfHistNEvents(iCut,0);
 			} else {
-				fHistNEvents[iCut]->Fill(eventNotAccepted);
+				FillfHistNEvents(iCut,eventNotAccepted);
 				continue;
 			}
     	} else {
-			fHistNEvents[iCut]->Fill(eventNotAccepted);
+			FillfHistNEvents(iCut,eventNotAccepted);
 		}
 
 		AliESDtrack* track;
@@ -513,16 +513,14 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 				continue;
 			}
 			track = new AliESDtrack(*tracktmp);
-			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			//Kinks der Daughters
+			//Kinks of doughter
 			if(track->GetKinkIndex(0) > 0){
 				double protonSignal = (fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)); //numbers of sigmas of TPC signal
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				// Protonen Kandidaten über TPC ermitteln
+				// Select Proton Candidates
 				if (std::abs(protonSignal) < 3 ) {
-					fHistProtonPt[iCut]->Fill(track->Pt());
-					fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi());
-					fHistTPCSignal[iCut]->Fill(track->Pt(), protonSignal);
+					if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt());
+					if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi());
+					if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->Pt(), protonSignal);
 					proton.push_back(track);
 				} else {
 					tracks.push_back(track);
@@ -530,148 +528,153 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 			} else {
 				tracks.push_back(track);
 			}
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			fHistAllTracksPt[iCut]->Fill(track->Pt());
-			fHistThetaPhi[iCut]->Fill(track->Theta(), track->Phi());
+			if(fHistAllTracksPt[iCut]) fHistAllTracksPt[iCut]->Fill(track->Pt());
+			if(fHistThetaPhi[iCut]) fHistThetaPhi[iCut]->Fill(track->Theta(), track->Phi());
 			//dE/dx Plot
 			if (!track->GetInnerParam()) continue;
 			Double_t ptot = track->GetInnerParam()->P();
 			Double_t tpcSignal = track->GetTPCsignal();
-			fHistDEDx[iCut]->Fill(ptot, tpcSignal);
+			if(fHistDEDx[iCut]) fHistDEDx[iCut]->Fill(ptot, tpcSignal);
 		}
 
-		//Find gammas
-		Int_t nclus                     = 0;
-		Int_t nClusWCuts                = 0;
-		nclus = fESD->GetNumberOfCaloClusters();
-		fHistNClusWoCuts[iCut]->Fill(nclus);
-		if(nclus == 0)  continue;
-		AliVCluster* clus = NULL;
-		for(Int_t i=0; i < nclus; ++i){
-			clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fEvent->GetCaloCluster(i));
-			if(!clus) {
-				Printf("ERROR: Could not find clus %i",i);
-				continue;
+		if(proton.size() > 0){
+			//Find gammas
+			Int_t nclus                     = 0;
+			Int_t nClusWCuts                = 0;
+			nclus = fESD->GetNumberOfCaloClusters();
+			if(fHistNClusWoCuts[iCut]) fHistNClusWoCuts[iCut]->Fill(nclus);
+			if(nclus == 0)  continue;
+			AliVCluster* clus = NULL;
+			for(Int_t i=0; i < nclus; ++i){
+				clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fEvent->GetCaloCluster(i));
+				if(!clus) {
+					Printf("ERROR: Could not find clus %i",i);
+					continue;
+				}
+				if(fHistClusterEWOCuts[iCut]) fHistClusterEWOCuts[iCut]-> Fill(clus->E());
+				if((((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->ClusterIsSelected(clus,fESD,fMCEvent,fIsMC, 1.,i)) == kTRUE){
+					photon.push_back(clus);
+					if(fHistClusterE[iCut]) fHistClusterE[iCut]-> Fill(clus->E());
+					nClusWCuts+= 1;
+				}
+				clus = NULL;
 			}
-			fHistClusterEWOCuts[iCut]-> Fill(clus->E());
-			if((((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->ClusterIsSelected(clus,fESD,fMCEvent,fIsMC, 1.,i)) == kTRUE){
-				photon.push_back(clus);
-				fHistClusterE[iCut]-> Fill(clus->E());
-				nClusWCuts+= 1;
-			}
-			clus = NULL;
-		}
-		fHistNClusWCuts[iCut]->Fill(nClusWCuts);
-		//Paaring
-		TLorentzVector rekombinatedPi0;
-		TLorentzVector photonCandidate1;
-		TLorentzVector photonCandidate2;
-		TLorentzVector protonVektor;
-		TLorentzVector sigmaVektor;
-		Bool_t trueSigmaProton = kFALSE;
-		Bool_t trueSigmaPhoton1 = kFALSE;
-		Bool_t trueSigmaPhoton2 = kFALSE;
-		Bool_t mesonSelected = kFALSE;
+			if(fHistNClusWCuts[iCut]) fHistNClusWCuts[iCut]->Fill(nClusWCuts);
+			//Paaring
+			TLorentzVector rekombinatedPi0;
+			TLorentzVector photonCandidate1;
+			TLorentzVector photonCandidate2;
+			TLorentzVector protonVektor;
+			TLorentzVector sigmaVektor;
+			Bool_t trueSigmaProton = kFALSE;
+			Bool_t trueSigmaPhoton1 = kFALSE;
+			Bool_t trueSigmaPhoton2 = kFALSE;
+			Bool_t mesonSelected = kFALSE;
 
-		if(proton.size() > 0 && photon.size() > 1){
-			for(unsigned int iProton = 0; iProton < proton.size(); ++iProton){
-				trueSigmaProton = kFALSE;
-				if(!proton[iProton]) {
-					Printf("ERROR: Could not find proton[%i][%i]",iCut,iProton);
-					continue;
-				}
-				AliESDtrack* protonCandidate = proton[iProton];
-				protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
-				AliESDkink *kink=fESD->GetKink(TMath::Abs(protonCandidate->GetKinkIndex(0))-1);
-				if(!kink){
-					Printf("ERROR: Could not find kink[%i][%i]",iCut,iProton);
-					continue;
-				}
-				const TVector3 vposKink(kink->GetPosition());
-				Double_t trackKink[3] = {vposKink[0], vposKink[1], vposKink[2]};
-				Double_t kinkDistanceToVertex = sqrt(vposKink[0] * vposKink[0] + vposKink[1] * vposKink[1] + vposKink[2] * vposKink[2]);
-				if(fIsMC > 0){
-					trueSigmaProton = IsRealProtonKink(kink, fMCStack);
-				}
-				for(unsigned int iPhoton1 = 0; iPhoton1 < photon.size(); ++iPhoton1) {
-					trueSigmaPhoton1 = kFALSE;
-					if(!photon[iPhoton1]) {
-						Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
+			if( photon.size() > 1){
+				for(unsigned int iProton = 0; iProton < proton.size(); ++iProton){
+					trueSigmaProton = kFALSE;
+					if(!proton[iProton]) {
+						Printf("ERROR: Could not find proton[%i][%i]",iCut,iProton);
 						continue;
 					}
-					AliVCluster* gamma1 = photon[iPhoton1];
-					TLorentzVector clusterVector1;
-				    gamma1->GetMomentum(clusterVector1,trackKink);
-				    TLorentzVector* tmpvec1 = new TLorentzVector();
-				    tmpvec1->SetPxPyPzE(clusterVector1.Px(),clusterVector1.Py(),clusterVector1.Pz(),clusterVector1.E());
-				    // convert to AODConversionPhoton
-				    AliAODConversionPhoton *PhotonCandidate1=new AliAODConversionPhoton(tmpvec1);
-				    if(!PhotonCandidate1){ delete tmpvec1; continue;}
-				    // Flag Photon as CaloPhoton
-				    PhotonCandidate1->SetIsCaloPhoton(2);
-				    PhotonCandidate1->SetCaloClusterRef(iPhoton1);
-				    PhotonCandidate1->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma1,fEvent));
-				    // get MC label
-				    if(fIsMC> 0){
-						PhotonCandidate1->SetNCaloPhotonMCLabels(gamma1->GetNLabels());
-						trueSigmaPhoton1 = IsRealPhoton(PhotonCandidate1, fMCEvent);
+					AliESDtrack* protonCandidate = proton[iProton];
+					protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
+					AliESDkink *kink=fESD->GetKink(TMath::Abs(protonCandidate->GetKinkIndex(0))-1);
+					if(!kink){
+						Printf("ERROR: Could not find kink[%i][%i]",iCut,iProton);
+						continue;
 					}
-					for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
-						if( iPhoton2 > iPhoton1){
-							AliVCluster* gamma2 = photon[iPhoton2];
-							// TLorentzvector with cluster
-							trueSigmaPhoton2 = kFALSE;
-						    // TLorentzvector with cluster
-						    TLorentzVector clusterVector2;
-						    gamma2->GetMomentum(clusterVector2,trackKink);
-						    TLorentzVector* tmpvec2 = new TLorentzVector();
-						    tmpvec2->SetPxPyPzE(clusterVector2.Px(),clusterVector2.Py(),clusterVector2.Pz(),clusterVector2.E());
-						    // convert to AODConversionPhoton
-						    AliAODConversionPhoton *PhotonCandidate2=new AliAODConversionPhoton(tmpvec2);
-						    if(!PhotonCandidate2){ delete tmpvec2; continue;}
-						    // Flag Photon as CaloPhoton
-						    PhotonCandidate2->SetIsCaloPhoton(2);
-						    PhotonCandidate2->SetCaloClusterRef(iPhoton2);
-						    PhotonCandidate2->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma2,fEvent));
-						    // get MC label
-						    if(fIsMC> 0){
-								PhotonCandidate2->SetNCaloPhotonMCLabels(gamma2->GetNLabels());
-								trueSigmaPhoton2 = IsRealPhoton(PhotonCandidate2, fMCEvent);
-							}
-						    AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
-						    if(!pi0cand){ delete PhotonCandidate2;delete tmpvec2;continue;}
-							pi0cand->SetLabels(iPhoton1,iPhoton2);
-							if((((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift(),PhotonCandidate1->GetLeadingCellID(),PhotonCandidate2->GetLeadingCellID()))){
-								fHistReconstructedMassPi0[iCut]->Fill(pi0cand->M(), pi0cand->Pt());
-								if(trueSigmaPhoton1 == kTRUE && trueSigmaPhoton2 ==kTRUE && fIsMC > 0){
-									fHistReconstructedMassPi0MC[iCut]->Fill(pi0cand->M(), pi0cand->Pt());
+					const TVector3 vposKink(kink->GetPosition());
+					Double_t trackKink[3] = {vposKink[0], vposKink[1], vposKink[2]};
+					Double_t kinkDistanceToVertex = sqrt(vposKink[0] * vposKink[0] + vposKink[1] * vposKink[1] + vposKink[2] * vposKink[2]);
+					if(fIsMC > 0){
+						trueSigmaProton = IsRealProtonKink(kink, fMCStack);
+					}
+					for(unsigned int iPhoton1 = 0; iPhoton1 < photon.size(); ++iPhoton1) {
+						trueSigmaPhoton1 = kFALSE;
+						if(!photon[iPhoton1]) {
+							Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
+							continue;
+						}
+						AliVCluster* gamma1 = photon[iPhoton1];
+						TLorentzVector clusterVector1;
+					    gamma1->GetMomentum(clusterVector1,trackKink);
+					    TLorentzVector* tmpvec1 = new TLorentzVector();
+					    tmpvec1->SetPxPyPzE(clusterVector1.Px(),clusterVector1.Py(),clusterVector1.Pz(),clusterVector1.E());
+					    // convert to AODConversionPhoton
+					    AliAODConversionPhoton *PhotonCandidate1=new AliAODConversionPhoton(tmpvec1);
+					    if(!PhotonCandidate1){ delete tmpvec1; continue;}
+					    // Flag Photon as CaloPhoton
+					    PhotonCandidate1->SetIsCaloPhoton(2);
+					    PhotonCandidate1->SetCaloClusterRef(iPhoton1);
+					    PhotonCandidate1->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma1,fEvent));
+					    // get MC label
+					    if(fIsMC> 0){
+							PhotonCandidate1->SetNCaloPhotonMCLabels(gamma1->GetNLabels());
+							trueSigmaPhoton1 = IsRealPhoton(PhotonCandidate1, fMCEvent);
+						}
+						for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
+							if( iPhoton2 > iPhoton1){
+								if(!photon[iPhoton2]) {
+									Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton2);
+									continue;
 								}
-								mesonSelected = kFALSE;
-								if(fIsMC > 0 ) {
-									mesonSelected = IsPi0SelectedMC(pi0cand, fFitPi0MassMCLowPt[iCut], fFitPi0MassMCHighPt[iCut], fFitWidthData[iCut]);
+								AliVCluster* gamma2 = photon[iPhoton2];
+								// TLorentzvector with cluster
+								trueSigmaPhoton2 = kFALSE;
+							    // TLorentzvector with cluster
+							    TLorentzVector clusterVector2;
+							    gamma2->GetMomentum(clusterVector2,trackKink);
+							    TLorentzVector* tmpvec2 = new TLorentzVector();
+							    tmpvec2->SetPxPyPzE(clusterVector2.Px(),clusterVector2.Py(),clusterVector2.Pz(),clusterVector2.E());
+							    // convert to AODConversionPhoton
+							    AliAODConversionPhoton *PhotonCandidate2=new AliAODConversionPhoton(tmpvec2);
+							    if(!PhotonCandidate2){ delete tmpvec2; continue;}
+							    // Flag Photon as CaloPhoton
+							    PhotonCandidate2->SetIsCaloPhoton(2);
+							    PhotonCandidate2->SetCaloClusterRef(iPhoton2);
+							    PhotonCandidate2->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma2,fEvent));
+							    // get MC label
+							    if(fIsMC> 0){
+									PhotonCandidate2->SetNCaloPhotonMCLabels(gamma2->GetNLabels());
+									trueSigmaPhoton2 = IsRealPhoton(PhotonCandidate2, fMCEvent);
 								}
-								if(fIsMC == 0 ) {
-									mesonSelected = IsPi0Selected(pi0cand, fFitPi0MassDataLowPt[iCut], fFitPi0MassDataHighPt[iCut], fFitWidthData[iCut]);
-								}
-								if(mesonSelected == kTRUE){
-									rekombinatedPi0.SetPtEtaPhiM(pi0cand->Pt(), pi0cand->Eta(), pi0cand->Phi(), 0.135);
-									sigmaVektor = protonVektor + rekombinatedPi0;
-									fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
-									fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, protonVektor));
-									Double_t farrSigma[5] = {sigmaVektor.M(), sigmaVektor.Pt(), protonVektor.Pt(), kinkDistanceToVertex, rekombinatedPi0.Angle(protonVektor.Vect())};
-									fHistSigmaPlus[iCut]-> Fill(farrSigma);
-									if(trueSigmaProton == kTRUE && trueSigmaPhoton1 == kTRUE && trueSigmaPhoton2 ==kTRUE && fIsMC > 0){
-										fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
+							    AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
+							    if(!pi0cand){ delete PhotonCandidate2;delete tmpvec2;continue;}
+								pi0cand->SetLabels(iPhoton1,iPhoton2);
+								if((((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift(),PhotonCandidate1->GetLeadingCellID(),PhotonCandidate2->GetLeadingCellID()))){
+									if(fHistReconstructedMassPi0[iCut]) fHistReconstructedMassPi0[iCut]->Fill(pi0cand->M(), pi0cand->Pt());
+									if(trueSigmaPhoton1 == kTRUE && trueSigmaPhoton2 ==kTRUE && fIsMC > 0){
+										if(fHistReconstructedMassPi0MC[iCut]) fHistReconstructedMassPi0MC[iCut]->Fill(pi0cand->M(), pi0cand->Pt());
+									}
+									mesonSelected = kFALSE;
+									if(fIsMC > 0 ) {
+										mesonSelected = IsPi0SelectedMC(pi0cand, fFitPi0MassMCLowPt[iCut], fFitPi0MassMCHighPt[iCut], fFitWidthData[iCut]);
+									}
+									if(fIsMC == 0 ) {
+										mesonSelected = IsPi0Selected(pi0cand, fFitPi0MassDataLowPt[iCut], fFitPi0MassDataHighPt[iCut], fFitWidthData[iCut]);
+									}
+									if(mesonSelected == kTRUE){
+										rekombinatedPi0.SetPtEtaPhiM(pi0cand->Pt(), pi0cand->Eta(), pi0cand->Phi(), 0.135);
+										sigmaVektor = protonVektor + rekombinatedPi0;
+										if(fHistPodolanski[iCut]) fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, rekombinatedPi0));
+										if(fHistPodolanski[iCut]) fHistPodolanski[iCut]->Fill(GetPodAlpha(sigmaVektor, protonVektor, rekombinatedPi0),GetQT(sigmaVektor, protonVektor));
+										Double_t farrSigma[5] = {sigmaVektor.M(), sigmaVektor.Pt(), protonVektor.Pt(), kinkDistanceToVertex, rekombinatedPi0.Angle(protonVektor.Vect())};
+										if(fHistSigmaPlus[iCut]) fHistSigmaPlus[iCut]-> Fill(farrSigma);
+										if(trueSigmaProton == kTRUE && trueSigmaPhoton1 == kTRUE && trueSigmaPhoton2 ==kTRUE && fIsMC > 0){
+											if(fHistSigmaPlusMC [iCut]) fHistSigmaPlusMC [iCut]-> Fill(farrSigma);
+										}
 									}
 								}
+								delete PhotonCandidate2;
+								delete tmpvec2;
+								delete pi0cand;
 							}
-							delete PhotonCandidate2;
-							delete tmpvec2;
-							delete pi0cand;
 						}
+						delete tmpvec1;
+						delete PhotonCandidate1;
 					}
-					delete tmpvec1;
-					delete PhotonCandidate1;
 				}
 			}
 		}
@@ -696,7 +699,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 	// it to a file
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMother* pi0cand, TF1* fFitPi0MassDataLowPt, TF1* fFitPi0MassDataHighPt, TF1* fFitWidthData)
+Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMother* pi0cand, TF1* fitPi0MassDataLowPt, TF1* fitPi0MassDataHighPt, TF1* fitWidthData)
 {
 	Double_t minPt = 0.3;
 	// Double_t maxPtMassDataFirst = 1.2;
@@ -709,12 +712,11 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMothe
 	Double_t meanMass = 0;
 
 	if ( (pi0cand->Pt()) > minPt && (pi0cand->Pt()) < maxPt) {
-		if((pi0cand->Pt()) < minPtMassDataFirst ){
-			width = fFitWidthData->Eval(pi0cand->Pt());
-			meanMass = fFitPi0MassDataLowPt->Eval(pi0cand->Pt());
+		width = fitWidthData->Eval(pi0cand->Pt());
+		if((pi0cand->Pt()) <= minPtMassDataFirst ){
+			meanMass = fitPi0MassDataLowPt->Eval(pi0cand->Pt());
 		} else if((pi0cand->Pt()) > minPtMassDataFirst){
-			width = fFitWidthData->Eval(pi0cand->Pt());
-			meanMass = fFitPi0MassDataHighPt->Eval(pi0cand->Pt());
+			meanMass = fitPi0MassDataHighPt->Eval(pi0cand->Pt());
 		} else {
 			return kFALSE;
 		}
@@ -727,7 +729,7 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMothe
 	return kFALSE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0SelectedMC(AliAODConversionMother *pi0cand, TF1* fFitPi0MassMCLowPt, TF1* fFitPi0MassMCHighPt, TF1* fFitWidthMC)
+Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0SelectedMC(AliAODConversionMother *pi0cand, TF1* fitPi0MassMCLowPt, TF1* fitPi0MassMCHighPt, TF1* fitWidthMC)
 {
 	Double_t minPt = 0.3;
 	// Double_t maxPtMassMCFirst = 1.05;
@@ -740,12 +742,11 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0SelectedMC(AliAODConversionMot
 	Double_t meanMass = 0;
 
 	if ( (pi0cand->Pt()) > minPt && (pi0cand->Pt()) < maxPt) {
-		if((pi0cand->Pt()) < minPtMassMCSecond ){
-			width = fFitWidthMC->Eval(pi0cand->Pt());
-			meanMass = fFitPi0MassMCLowPt->Eval(pi0cand->Pt());
+		width = fitWidthMC->Eval(pi0cand->Pt());
+		if((pi0cand->Pt()) <= minPtMassMCSecond ){
+			meanMass = fitPi0MassMCLowPt->Eval(pi0cand->Pt());
 		} else if((pi0cand->Pt()) > minPtMassMCSecond ){
-			width = fFitWidthMC->Eval(pi0cand->Pt());
-			meanMass = fFitPi0MassMCHighPt->Eval(pi0cand->Pt());
+			meanMass = fitPi0MassMCHighPt->Eval(pi0cand->Pt());
 		} else {
 			return kFALSE;
 		}

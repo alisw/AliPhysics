@@ -126,7 +126,6 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
     fListHistos = NULL;
   }
 
-  if(fDoLightOutput) return;
 
   if(fListHistos == NULL){
     fListHistos = new TList();
@@ -136,6 +135,7 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
     else
       fListHistos->SetName(Form("CaloTrackMatcher_%i_%i_%s",fClusterType,fRunningMode,fCorrTaskSetting.Data()));
   }
+  if(fDoLightOutput) return;
 
   // Create User Output Objects
   fHistControlMatches  = new TH2F(Form("ControlMatches_%i_%i",fClusterType,fRunningMode),Form("ControlMatches_%i_%i",fClusterType,fRunningMode),7,-0.5,6.5,50,0.05,200.0);
