@@ -125,7 +125,7 @@ AliAnalysisTaskSigmaPlToProtonPiZero::AliAnalysisTaskSigmaPlToProtonPiZero() : A
   fIsMC(0),
   fDoInOutTimingCluster(kFALSE),                                // manual timing cut for cluster to combine cluster within timing cut and without
   fMinTimingCluster(0),                                    // corresponding ranges, min
-  fMaxTimingCluster(0),                                   Clus // corresponding ranges, max
+  fMaxTimingCluster(0),                                   // corresponding ranges, max
   fTrackMatcherRunningMode(0)
 
 
