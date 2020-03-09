@@ -87,7 +87,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fEtaBinNum{0},
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
-    fUseOwnWeights(kFALSE),
+    fUseOwnWeights(kTRUE),
     fFillWeights(kFALSE),
     fNumSamples{1},
 
@@ -146,7 +146,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fEtaBinNum{0},
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
-    fUseOwnWeights(kFALSE),
+    fUseOwnWeights(kTRUE),
     fFillWeights(kFALSE),
     fNumSamples{1},
 

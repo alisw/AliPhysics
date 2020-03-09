@@ -55,9 +55,10 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetPhiBins(Int_t bins) { fPhiBinNum = bins; }
         void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }
         void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
-        void                    SetUseOwnWeights(Bool_t use) { fUseOwnWeights = use; }
+        void                    SetUseOwnWeights(Bool_t useOwn) { fUseOwnWeights = useOwn; }
         void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Only fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
+        Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; } 
         //void                    CalculateHigherOrderVn(Bool_t calc) { bHigherOrder = calc; }   //Calculate higher order particle correlation differential vn with jack-knife resampling
 
