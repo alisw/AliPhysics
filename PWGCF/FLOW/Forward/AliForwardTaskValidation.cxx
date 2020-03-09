@@ -437,14 +437,19 @@ Bool_t AliForwardTaskValidation::HasTracklets() {
 }
 
 Bool_t AliForwardTaskValidation::HasEntriesFMD() {
-  Double_t fmdsum = 0;
-  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+  Double_t fmdsum1 = 0;
+  Double_t fmdsum2 = 0;
+  for (Int_t etaBin = 1; etaBin < forwardDist->GetNbinsX()/2; etaBin++) {
     for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
-      fmdsum += forwardDist->GetBinContent(etaBin, phiBin);
+      fmdsum1 += forwardDist->GetBinContent(etaBin, phiBin);
     }
   }
-
-  if (fmdsum > 0) return true;
+  for (Int_t etaBin = forwardDist->GetNbinsX()/2; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+      fmdsum2 += forwardDist->GetBinContent(etaBin, phiBin);
+    }
+  }
+  if ((fmdsum1 > 0) & (fmdsum2 > 0)) return true;
   else return false;
 }
 
