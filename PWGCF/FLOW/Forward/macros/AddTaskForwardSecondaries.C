@@ -19,9 +19,6 @@
  *
  * @ingroup pwglf_forward_flow
  */
- // #include "AliForwardSettings.h"
- // #include "AliAnalysisDataContainer.h"
- // #include "AliAnalysisDataSlot.h"
 
 AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containerName){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
