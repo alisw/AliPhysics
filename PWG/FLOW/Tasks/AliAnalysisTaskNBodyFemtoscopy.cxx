@@ -49,23 +49,19 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
+ fCentralityEstimator("V0M"),
  fNbinsCentrality(100),
  fMinCentrality(0.),
  fMaxCentrality(100.),
- fCentralityEstimator("V0M"),
-
  // Final results:
  fFinalResultsList(NULL),
-  // Global track cuts:
- fApplyCommonTrackCuts(kTRUE),
- fPtRange({0.2,5.0}),
- fEtaRange({-0.8,0.8}),
- fPhiRange({0.,TMath::TwoPi()}),
- fFilterBit(128),
  fRejectEventsNoPrimaryVertex(kTRUE),
  fCutOnVertexZ(kTRUE),
- fVertexZ({-10.0,10.0})
-
+  // Global track cuts:
+ fApplyCommonTrackCuts(kTRUE),
+ fFilterBit(128)
+ 
+ 
  {
   // Constructor.
  
@@ -73,7 +69,7 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
 
   // Base list:
   fHistList = new TList();
-  fHistList->SetName("outputStudentAnalysis");
+  fHistList->SetName("FemtoNBody");
   fHistList->SetOwner(kTRUE);
 
   // Initialize all arrays:
@@ -116,25 +112,22 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
  fNbinsPt(1000),
  fMinBinPt(0.),
  fMaxBinPt(10.),
+ fCentralityEstimator("V0M"),
  fNbinsCentrality(100),
  fMinCentrality(0.),
  fMaxCentrality(100.),
- fCentralityEstimator("V0M"),
  // Final results:
  fFinalResultsList(NULL),
-  // Global track cuts:
- fApplyCommonTrackCuts(kTRUE),
- fPtRange({0.2,5.0}),
- fEtaRange({-0.8,0.8}),
- fPhiRange({0.,TMath::TwoPi()}),
- fFilterBit(128),
  fRejectEventsNoPrimaryVertex(kTRUE),
  fCutOnVertexZ(kTRUE),
- fVertexZ({-10.0,10.0})
+  // Global track cuts:
+ fApplyCommonTrackCuts(kTRUE),
+ fFilterBit(128)
 {
   // Dummy constructor.
  
   AliDebug(2,"AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy()");
+  this->InitializeArrays();
 
 } // AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
 
@@ -203,7 +196,7 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  }
  //Apply other event cuts
  if(!this->CommonEventCuts(aAOD, ams->GetMultiplicityPercentile(Form("%s", fCentralityEstimator.Data())))){
- 	return;
+  return;
  }
 
  // b) Start analysis over AODs:
@@ -326,6 +319,15 @@ void AliAnalysisTaskNBodyFemtoscopy::Terminate(Option_t *)
 void AliAnalysisTaskNBodyFemtoscopy::InitializeArrays()
 {
  // Initialize all data members which are arrays in this method.
+  fPtRange[0]=0.2;
+  fPtRange[1]=5.0;
+  fEtaRange[0]=-0.8;
+  fEtaRange[1]=0.8;
+  fVertexZ[0]=-10.0;
+  fVertexZ[1]=10.0;
+  fPhiRange[0]=0.0;
+  fPhiRange[1]=TMath::TwoPi();
+
 
 } // void AliAnalysisTaskNBodyFemtoscopy::InitializeArrays()
 
