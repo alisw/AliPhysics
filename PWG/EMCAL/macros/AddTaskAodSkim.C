@@ -50,7 +50,7 @@ AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
     output->SetFillAOD(1);
     output->SetFillAODforRun(1);
     output->SetFillExtension(0);
-    output->SetTreeBuffSize(30*1024*1024);
+    output->SetTreeBuffSize(60*1024*1024);
     mgr->SetOutputEventHandler(output);
   }
 

@@ -41,6 +41,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyTrdTracks(Bool_t b)          {fDoCopyTrdTracks=b;}
     void                  SetCopyTrigger(Bool_t b)            {fDoCopyTrigger=b;}
     void                  SetCopyV0s(Bool_t b)                {fDoCopyV0s=b;}
+    void                  SetCopyUserTree(Bool_t b)           {fDoCopyUserTree=b;}
     void                  SetCopyVZERO(Bool_t b)              {fDoCopyVZERO=b;}
     void                  SetCopyVertices(Bool_t b)           {fDoCopyVertices=b;}
     void                  SetCopyZDC(Bool_t b)                {fDoCopyZDC=b;}
@@ -56,11 +57,16 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetYCutMC(Double_t v)               {fYCutMC=v;}
     const char           *Str() const;
   protected:
+    virtual void          CleanTrack(AliAODTrack *t);
+    const char           *GetVersion() const { return "1.4"; }
+    virtual Bool_t        KeepTrack(AliAODTrack *t);
+    Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
+    virtual Bool_t        SelectEvent();
+    void                  Terminate(Option_t* option);
     void                  UserCreateOutputObjects();
     void                  UserExec(Option_t* option);
     Bool_t                UserNotify();
-    void                  Terminate(Option_t* option);
-    Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
+
     Double_t              fClusMinE;              //  minimum cluster energy to accept event
     Double_t              fTrackMinPt;            //  minimum track pt to accept event
     Double_t              fTrackMaxPt;            //  maximum track pt to accept event
@@ -97,6 +103,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoVertWoRefs;          //  if true then do not copy TRefs in vertices
     Bool_t                fDoVertMain;            //  if true then only copy main vertices
     Bool_t                fDoCleanTracklets;      //  if true then clean tracklets
+    Bool_t                fDoCopyUserTree;        //  if true copy input user tree
     UInt_t                fTrials;                //! events seen since last acceptance
     Float_t               fPyxsec;                //! pythia xsection
     Float_t               fPytrials;              //! pythia trials
@@ -107,12 +114,9 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TH1F                 *fHevs;                  //! events processed/accepted
     TH1F                 *fHclus;                 //! cluster distribution
     TH1F                 *fHtrack;                //! track distribution
-    const char           *GetVersion() const { return "1.4"; }
-    virtual Bool_t        KeepTrack(AliAODTrack *t);
-    virtual void          CleanTrack(AliAODTrack *t);
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 7); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 8); // AliAodSkimTask
 };
 #endif
