@@ -29,6 +29,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/GlauberMCDist.root)
       PMTGainsdata.txt
       SpectatorSignal.root
       SpectatorsFromData.root
+      fragmentsDD5TeV.root
       fragmSpecDataDriven.root
       ZNsignalntu.root
       ZPsignalntu.root
