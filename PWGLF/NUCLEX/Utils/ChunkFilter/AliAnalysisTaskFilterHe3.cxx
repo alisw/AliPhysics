@@ -42,15 +42,8 @@ ClassImp(AliAnalysisTaskFilterHe3)
                                                            fHistdEdxHe3Param(0),
                                                            fHistdEdxTritonParam(0),
                                                            fHistTof(0),
-                                                           fHistCent(0),
-                                                           fMinNSigma3He(0),
-                                                           fMaxNSigma3He(0),
-                                                           fMinNclsTPC(0),
-                                                           fMinPtotPos(0),
-                                                           fMinPtotNeg(0),
-                                                           fMaxPtotPos(0),
-                                                           fMaxPtotNeg(0),
-                                                           fillSecifTOF(kFALSE)
+                                                           fHistCent(0)
+                                                           
 {
   //
   // default contstructor: do nothing
@@ -68,15 +61,8 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char *name) : AliAnalys
                                                                        fHistdEdxHe3Param(0),
                                                                        fHistdEdxTritonParam(0),
                                                                        fHistTof(0),
-                                                                       fHistCent(0),
-                                                                       fMinNSigma3He(0),
-                                                                       fMaxNSigma3He(0),
-                                                                       fMinNclsTPC(0),
-                                                                       fMinPtotPos(0),
-                                                                       fMinPtotNeg(0),
-                                                                       fMaxPtotPos(0),
-                                                                       fMaxPtotNeg(0),
-                                                                       fillSecifTOF(kFALSE)
+                                                                       fHistCent(0)
+                                                                       
 {
   //
   // main constructor
