@@ -541,8 +541,6 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   //
   if(fDebug > 1) {
     printf("AliAnalysisTaskSED0Correlations::UserCreateOutputObjects() \n");
-    printf("Cut object D0 = %p\n",fCutsD0);
-    printf("Cut object AssTrk = %p\n",fCutsTracks);
   }
   //HFCorrelator creation and definition
   fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsD0);//fSys=0 use multiplicity, =1 use centrality
@@ -960,10 +958,12 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   ((TH1F*)fOutputStudy->FindObject("hMultEvV0M"))->Fill(fMultEvV0M);
   ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqual"))->Fill(fMultEvV0MEqual);
   ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1"))->Fill(fMultEvOrig);
-  ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1Equal"))->Fill(fMultEv);
   ((TH1F*)fOutputStudy->FindObject("hZvtxEvts"))->Fill(vtx1->GetZ());
-  ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtx"))->Fill(vtx1->GetZ(),fMultEvOrig);   
-  if(fEqualizeTracklets) ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtx"))->Fill(vtx1->GetZ(),fMultEv); 
+  if(fEqualizeTracklets) {
+    ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1Equal"))->Fill(fMultEv);
+    ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtx"))->Fill(vtx1->GetZ(),fMultEvOrig);   
+    ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtx"))->Fill(vtx1->GetZ(),fMultEv); 
+  }
   
   //Select Centrality range for V2 in pp analysis
   if(fVsMultAnalysis) {
@@ -978,9 +978,11 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       ((TH1F*)fOutputStudy->FindObject("hMultEvV0MSelEvents"))->Fill(fMultEvV0M);
       ((TH1F*)fOutputStudy->FindObject("hMultEvV0MEqualSelEvents"))->Fill(fMultEvV0MEqual);
       ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1SelEvents"))->Fill(fMultEvOrig);
-      ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1EqualSelEvents"))->Fill(fMultEv);    
-      ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEvOrig);   
-      if(fEqualizeTracklets) ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEv);   
+      if(fEqualizeTracklets) {
+        ((TH1F*)fOutputStudy->FindObject("hMultEvTrkl1EqualSelEvents"))->Fill(fMultEv);    
+        ((TH2F*)fOutputStudy->FindObject("hNtrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEvOrig);   
+        ((TH2F*)fOutputStudy->FindObject("hNtrCorrVsZvtxSelEvents"))->Fill(vtx1->GetZ(),fMultEv);   
+      }
     }
   }
  
@@ -2284,10 +2286,10 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   if(fPurityStudies) {
     
-    TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+    TString namebinD[6] = {"2to3","3to5","5to8","8to16","16to24","24to36"};
     TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
-    for(int i=0; i<5; i++) { //pTD
+    for(int i=0; i<6; i++) { //pTD
       for(int j=0; j<7; j++) { //pTass
 	namePlot=Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
         TH1F *hpurity_prim = new TH1F(namePlot.Data(), "Prim accepted",1,-0.5,0.5);
@@ -3641,7 +3643,7 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
 
   if(!fReadMC || !fRecoD0 || !fRecoTr) return;
 
-  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinD[6] = {"2to3","3to5","5to8","8to16","16to24","24to36"};
   TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
   AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
@@ -3658,6 +3660,7 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[2]; okpTD = kTRUE;}
   if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[3]; okpTD = kTRUE;}
   if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[4]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 24 && fBinLimsCorr.at(ptbin) < 36) {stringpTD = namebinD[5]; okpTD = kTRUE;}
 
   if(pTtr >= 0.3) fillAssocRange[0] = kTRUE;
   if(pTtr >= 0.3 && pTtr < 1) fillAssocRange[1] = kTRUE;
