@@ -6,40 +6,24 @@
 // TString names=("cut5_pt75;cut5_pt75_noPID_wSharedCluster;cut5_pt75_noPID_noSharedCluster");
 // TString names=("cut1_pt75;cut2_pt75;cut3_pt75;cut4_pt75;cut5_pt75;cut6_pt75;cut7_pt75;cut8_pt75;cut9_pt75;cut10_pt75");
 
-// +++++++++++++++++ Cuts for primary electrons +++++++++++++++++
+// +++++++++++++++++ Cuts for primary single electrons +++++++++++++++++
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
-// TString names_Prim_Cuts=("noPID_pt200");  // still has kin cuts (pt 200 MeV/c)
-// TString names_Prim_Cuts=("onlyJPID_sum_noTrackCuts");
 // TString names_Prim_Cuts=("JPID_sum_pt75");
-// TString names_Prim_Cuts=("JPID_sum_pt200");
-// TString names_Prim_Cuts=("JPID_sum_pt75_secondary");
-// TString names_Prim_Cuts=("JPID_sum1_pt75_sec_kV0");
-// TString names_Prim_Cuts=("TESTCutskV0");
-
-// TString names_Prim_Cuts=("noPID;JPID_sum1_pt75_sec_OnlyImpParXY;JPID_sum2_pt75_sec_OnlyImpParZ;JPID_sum3_pt75_sec_OnlyNclsTPC;JPID_sum4_pt75_sec_OnlyTPCchi2Cl;JPID_sum5_pt75_sec_OnlySharedCls;JPID_sum1_pt75_sec_kV0;JPID_sum_pt75");
-// TString names_Prim_Cuts=("noPID;JPID_sum1_pt75_sec_wImpParXY;JPID_sum2_pt75_sec_wImpParXYZ;JPID_sum3_pt75_sec_wImpParXYZ_NclsTPC;JPID_sum4_pt75_sec_wImpParXYZ_NclsTPC_TPCchi2Cl;JPID_sum5_pt75_sec_wImpParXYZ_NclsTPC_TPCchi2Cl_SharedCls;JPID_sum_pt75");
-
-// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum3_pt75_sec_OnlyChi2NDF;JPID_sum4_pt75_sec_OnlyLegDist;JPID_sum5_pt75_sec_OnlyR;JPID_sum6_pt75_sec_OnlyPsiPair;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
-// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_wCos;JPID_sum2_pt75_sec_wCosChi2;JPID_sum3_pt75_sec_wCosChi2LegDist;JPID_sum4_pt75_sec_wCosChi2LegDistR;JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
+TString names_Prim_Single_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+
+// +++++++++++++++++ Cuts for primary pairs  +++++++++++++++++
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
 // TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
-// TString names_Sec_Cuts=("noPID_pt200");   // still has kin cuts (pt 200 MeV/c)
-// TString names_Sec_Cuts=("onlyJPID_sum_noTrackCuts");
-// TString names_Sec_Cuts=("JPID_sum_pt75");
 // TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
-// TString names_Sec_Cuts=("JPID_sum_pt200_secondary");
 // TString names_Sec_Cuts=("kV0");
-
-// TString names_Sec_Cuts=("noPID;TESTCutsOnlyImpParXY;TESTCutsOnlyImpParZ;TESTCutsOnlyNclsTPC;TESTCutsOnlyTPCchi2Cl;TESTCutsOnlySharedCls;TESTCutskV0;JPID_sum_pt75_secondary");
-// TString names_Sec_Cuts=("noPID;TESTCuts_wImpParXY;TESTCuts_wImpParXYZ;TESTCuts_wImpParXYZ_NclsTPC;TESTCuts_wImpParXYZ_NclsTPC_TPCchi2Cl;TESTCuts_wImpParXYZ_NclsTPC_TPCchi2Cl_SharedCls;JPID_sum_pt75_secondary");
-
-// TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyChi2NDF;kV0OnlyLegDist;kV0OnlyR;kV0OnlyPsiPair;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
-// TString names_Sec_Cuts=("noPID;kV0wCosOpenAngle;kV0wChi2NDF;kV0wCosChi2LegDist;wCosChi2LegDistR;wCosChi2LegDistRPsiPair;kV0wCosChi2LegDistRPsiPairM;kV0wCosChi2LegDistRPsiPairMArmPt;kV0wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+// TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
 // TString names_Sec_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
+TString names_Sec_Cuts=("noPID;kV0");
+// TString names_Sec_Cuts=("noPID;kV0_loose");
 
 
                                                                                 // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
@@ -47,6 +31,9 @@ TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0Only
                                                                                 // TString names_Sec_Cuts=("cut1_pt75");
                                                                                 // TString names_Sec_Cuts=("noPID;cut1_pt75_secondary");
 
+
+// TString names_Sec_loose_Cuts=("noPID;kV0");
+TString names_Sec_loose_Cuts=("noPID;kV0_loose");
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // 400 MEV CUT !!!!!!!!!!!!!!!
@@ -68,7 +55,6 @@ Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
-bool SetGeneratedSmearingHistos = false;
 
 bool debug = false;
 
@@ -77,6 +63,8 @@ bool DoFourPairing  = true;
 bool UsePreFilter   = true;
 bool DoULSLS        = false;
 bool DoMassCut      = false;
+
+bool UseMCDataSig   = false;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -341,8 +329,9 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  // Primary Cut settings
-  /////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+  //             primary single cut settings             //
+  /////////////////////////////////////////////////////////
   else if (cutDefinition == "JPID_sum_pt75"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
@@ -360,7 +349,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-    // TEST Cut settings
+
   else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"                   || cutDefinition == "JPID_sum1_pt75_sec_wCos"                               ||
            cutDefinition == "JPID_sum2_pt75_sec_OnlyCosOpenAngle"      || cutDefinition == "JPID_sum2_pt75_sec_wCosChi2"                           ||
            cutDefinition == "JPID_sum3_pt75_sec_OnlyChi2NDF"           || cutDefinition == "JPID_sum3_pt75_sec_wCosChi2LegDist"                    ||
@@ -379,9 +368,28 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
+  /////////////////////////////////////////////////////////
+  //              primary pair cut settings              //
+  /////////////////////////////////////////////////////////
+  else if (cutDefinition == "pairJPID_sum_pt75"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
 
-  // Secondary Cut settings
-  /////////////////////////////////////////////////////
+  else if (cutDefinition == "pairJPID_sum1_pt75_sec_kV0"){
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  /////////////////////////////////////////////////////////
+  //             secondary pair cut settings             //
+  /////////////////////////////////////////////////////////
   else if (cutDefinition == "JPID_sum_pt75_secondary"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
@@ -411,6 +419,21 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
 
     AnaCut.SetPairCutsAna(LMEECutLib::kV0);
+
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "kV0_loose"){
+    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
+    // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_loose);
 
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -637,11 +660,11 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 // #########################################################
 // #########################################################
 std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* task){
-  /*AliDielectronSignalMC partFinalState("partFinalState","partFinalState");
-  partFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
-  partFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  partFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  */
+  AliDielectronSignalMC anyPartFinalState("anyPartFinalState","anyPartFinalState");
+  anyPartFinalState.SetLegPDGs(0,1);//dummy second leg (never MCtrue)\n"
+  anyPartFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  anyPartFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCtrue)
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -723,8 +746,9 @@ std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* 
 
 
 
+  if(UseMCDataSig) task->AddSinglePrimaryLegMCSignal(anyPartFinalState);
+
   task->AddSinglePrimaryLegMCSignal(eleFinalState);
-  // task->AddSinglePrimaryLegMCSignal(partFinalState);
   task->AddSinglePrimaryLegMCSignal(eleFinalStateFromPion);
   // task->AddSinglePrimaryLegMCSignal(eleFinalStateFromD);
   // task->AddSinglePrimaryLegMCSignal(eleFinalStateFromB);
@@ -737,7 +761,6 @@ std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* 
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromB);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromSameMotherMeson);
   // task->AddSinglePrimaryLegMCSignal(PhotonFinalStateFromEta);
-
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
@@ -754,7 +777,7 @@ std::vector<bool> AddSinglePrimaryLegMCSignal(AliAnalysisTaskEtaReconstruction* 
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
+ if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
  return DielectronsPairNotFromSameMother;
 }
 
@@ -800,6 +823,13 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
   eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
 
+  AliDielectronSignalMC anyPartSecondary("anyPartSecondary","anyPartSecondary");
+  anyPartSecondary.SetLegPDGs(0,1);
+  anyPartSecondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  anyPartSecondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+
+
+  if(UseMCDataSig) task->AddSingleSecondaryLegMCSignal(anyPartSecondary);
   //
   // task->AddSingleSecondaryLegMCSignal(eleDontCare);
   // task->AddSingleSecondaryLegMCSignal(eleSecondary);
@@ -808,7 +838,6 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
   // task->AddSingleSecondaryLegMCSignal(PhotonSecondary);
   // task->AddSingleSecondaryLegMCSignal(PhotonDontCare);
 
-
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
  std::vector<bool> DielectronsPairNotFromSameMother;
@@ -816,7 +845,7 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
  // DielectronsPairNotFromSameMother.push_back(false);
- // DielectronsPairNotFromSameMother.push_back(false);
+ if(UseMCDataSig) DielectronsPairNotFromSameMother.push_back(false);
  return DielectronsPairNotFromSameMother;
 }
 
@@ -917,6 +946,15 @@ void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
 
+    AliDielectronSignalMC pair_anyPart_UndefinedMother_finalstate("pair_anyPart_UndefinedMother_finalstate","pair_anyPart_UndefinedMother_finalstate");
+    pair_anyPart_UndefinedMother_finalstate.SetLegPDGs(0,0);
+    pair_anyPart_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_anyPart_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    //mother
+    pair_anyPart_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+    if(UseMCDataSig) task->AddPrimaryPairMCSignal(pair_anyPart_UndefinedMother_finalstate);
 
     task->AddPrimaryPairMCSignal(pair_sameMother_finalstate);
     task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
@@ -1037,6 +1075,13 @@ void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     pair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
     pair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+
+    AliDielectronSignalMC pair_anyPart_random_secondary("pair_anyPart_random_secondary","pair_anyPart_random_secondary");
+    pair_anyPart_random_secondary.SetLegPDGs(0,0);
+    pair_anyPart_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_anyPart_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+
+    if(UseMCDataSig) task->AddSecondaryPairMCSignal(pair_anyPart_random_secondary);
 
     // task->AddSecondaryPairMCSignal(pair_sameMother_secondary);
     // task->AddSecondaryPairMCSignal(pair_UndefinedMother_secondary);
@@ -1212,6 +1257,25 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
         FourElePair2_FromEta_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
 
+    //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourAnyPartPair1_FinalState("FourAnyPartPair1_FinalState","FourAnyPartPair1_FinalState");
+        FourAnyPartPair1_FinalState.SetLegPDGs(0,0);
+        FourAnyPartPair1_FinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair1_FinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        //mother
+        FourAnyPartPair1_FinalState.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+      // Second Pair
+        AliDielectronSignalMC FourAnyPartPair2_Secondary("FourAnyPartPair2_Secondary","FourAnyPartPair2_Secondary");
+        FourAnyPartPair2_Secondary.SetLegPDGs(0,0);
+        FourAnyPartPair2_Secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair2_Secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair2_Secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
 //________________________________________________________
     task->AddFourPairMCSignal(FourElePair1_FinalState);
     task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
@@ -1230,4 +1294,7 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
     task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
     task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
+
+    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState);
+    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary);
 }

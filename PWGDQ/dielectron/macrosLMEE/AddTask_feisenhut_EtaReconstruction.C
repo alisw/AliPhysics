@@ -174,7 +174,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
-  task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -229,13 +228,24 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // #########################################################
   // Adding primary electron cutsettings
-  TObjArray*  arrNames_prim=names_Prim_Cuts.Tokenize(";");
+  TObjArray*  arrNames_prim=names_Prim_Single_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_prim->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_primary(filter);
+    task->AddTrackCuts_primary_single(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding primary electron cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Pair_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary_pair(filter);
     DoAdditionalWork(task);
   }
 
