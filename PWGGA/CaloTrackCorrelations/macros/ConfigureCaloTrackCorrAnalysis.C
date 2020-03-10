@@ -944,9 +944,21 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     ic->SwitchOffFillHighMultHistograms ();
       
   if ( kAnaCutsString.Contains("FixIsoConeExcess") ) 
-    ic->SwitchOnConeExcessCorrectionHistograms();
+    ic->SwitchOnConeExcessCorrection();
   else                                         
-    ic->SwitchOffConeExcessCorrectionHistograms();
+    ic->SwitchOffConeExcessCorrection();
+  
+  if ( kAnaCutsString.Contains("IsoBandUERecGap") ) 
+  {
+    ic->SetBandExclusionRectangular(kTRUE);
+    ic->SetConeSizeBandGap(0.05); // do not count UE particles near the cone limit > R+0.05
+  }
+  else    
+  {
+    ic->SetBandExclusionRectangular(kFALSE);
+    //ic->SetConeSizeBandGap(0.0);
+  }
+  
 }
 
 ///
