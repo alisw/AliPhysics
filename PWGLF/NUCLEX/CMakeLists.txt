@@ -111,6 +111,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	  ${SRCS}
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
+      Hypernuclei/Hyp3Body/AliAnalysisTaskHyperTriton3KF.cxx
 	  )
 endif()
 

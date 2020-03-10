@@ -114,6 +114,12 @@
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class AliAnalysisTaskHyperTriton3KF+;
+#pragma link C++ class REvent3KF+;
+#pragma link C++ class RHyperTriton3KF+;
+#pragma link C++ class SHyperTriton3KF+;
+#pragma link C++ class std::vector<RHyperTriton3KF>+;
+#pragma link C++ class std::vector<SHyperTriton3KF>+;
 #pragma link C++ class RHypertriton3+;
 #pragma link C++ class SHypertriton3+;
 #pragma link C++ class MLSelected+;
