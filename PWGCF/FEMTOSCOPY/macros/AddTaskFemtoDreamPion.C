@@ -63,6 +63,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
   fTrackCutsPosPion->SetPlotDCADist(true);
+  //fTrackCutsPosPion->SetFillQALater(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -95,6 +96,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
   fTrackCutsNegPion->SetPlotDCADist(true);
+  //fTrackCutsNegPion->SetFillQALater(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {

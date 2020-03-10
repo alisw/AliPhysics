@@ -9,7 +9,9 @@
 #include "TMath.h"
 ClassImp(AliFemtoDreamTrackHist)
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
-    : fMinimalBooking(false),
+    : fpTmin(0),
+      fpTmax(0),
+      fMinimalBooking(false),
       fMultRangeLow(27),
       fMultRangeHigh(55),
       fHistList(0),
@@ -52,8 +54,10 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i] = nullptr;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM)
-    : fMinimalBooking(false),
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax)
+    : fpTmin(pTmin),
+      fpTmax(pTmax),
+      fMinimalBooking(false),
       fMultRangeLow(27),
       fMultRangeHigh(55) {
   TString sName[2] = { "before", "after" };
@@ -431,8 +435,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   }
   if (DCADist) {
     TString dcaPtBinName = Form("DCAXYPtBinningTot");
-    fDCAXYPtBins = new TH2F(dcaPtBinName.Data(), dcaPtBinName.Data(), 20, 0.5,
-                            4.05, 500, -5, 5);
+    fDCAXYPtBins = new TH2F(dcaPtBinName.Data(), dcaPtBinName.Data(), 20, pTmin,
+                            pTmax, 500, -5, 5);
     fDCAXYPtBins->GetXaxis()->SetTitle("P#_{T}");
     fDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fHistList->Add(fDCAXYPtBins);
