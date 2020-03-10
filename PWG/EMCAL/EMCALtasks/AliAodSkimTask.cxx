@@ -25,7 +25,7 @@ AliAodSkimTask::AliAodSkimTask(const char* name) :
   AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0),
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0),
-  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0),
+  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0), fDoCopyUserTree(0),
   fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0), fHtrack(0)
 {
   if (name) {
@@ -42,22 +42,6 @@ AliAodSkimTask::~AliAodSkimTask()
   delete fHevs;
   delete fHclus;
   delete fHtrack;
-}
-
-Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
-{
-  if (!fDoRemoveTracks)
-    return kTRUE;
-  //cout << "Keep tracks " << endl;
-  if (t->IsMuonGlobalTrack())
-    return kFALSE;
-  if (t->Pt()<fCutMinPt)
-    return kFALSE;
-  if (fCutFilterBit!=(UInt_t)-1) {
-    if (t->TestFilterBit(fCutFilterBit)==0)
-      return kFALSE;
-  }
-  return kTRUE;
 }
 
 void AliAodSkimTask::CleanTrack(AliAODTrack *t)
@@ -103,40 +87,99 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
   }
 }
 
-void AliAodSkimTask::UserCreateOutputObjects()
+Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
 {
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
-  if (oh) {
-    TFile *fout = oh->GetTree()->GetCurrentFile();
-    fout->SetCompressionLevel(2);
+  if (!fDoRemoveTracks)
+    return kTRUE;
+  //cout << "Keep tracks " << endl;
+  if (t->IsMuonGlobalTrack())
+    return kFALSE;
+  if (t->Pt()<fCutMinPt)
+    return kFALSE;
+  if (fCutFilterBit!=(UInt_t)-1) {
+    if (t->TestFilterBit(fCutFilterBit)==0)
+      return kFALSE;
   }
-
-  fOutputList = new TList;
-  fOutputList->SetOwner();
-  fHevs = new TH1F("hEvs","",2,-0.5,1.5);
-  fOutputList->Add(fHevs);
-  fHclus = new TH1F("hClus",";E (GeV)",200,0,100);
-  fOutputList->Add(fHclus);
-  fHtrack = new TH1F("hTrack",";p_{T} (GeV/c)",200,0,100);
-  fOutputList->Add(fHtrack);
-  PostData(1, fOutputList);
+  return kTRUE;
 }
 
-void AliAodSkimTask::UserExec(Option_t *)
+Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
 {
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!fAOD)
-    return;
+  TString file(currFile);
+  xsec = 0;
+  trials = 1;
 
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
-  if (!oh) {
-    AliFatal(Form("%s: No output handler found", GetName()));
-    return;
+  if (file.Contains(".zip#")) {
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  } else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  oh->SetFillAOD(kFALSE);
+  AliDebug(1,Form("File name: %s",file.Data()));
 
+  // Get the pt hard bin
+  TString strPthard(file);
+
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(strPthard.Last('/'));
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(0,strPthard.Last('/')+1);
+  if (strPthard.IsDec()) {
+    pthard = strPthard.Atoi();
+  }
+  else {
+    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+    pthard = -1;
+  }
+
+  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
+  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root"));
+
+  if (!fxsec) {
+    // next trial fetch the histgram file
+    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+    if (!fxsec) {
+      // not a severe condition but inciate that we have no information
+      return kFALSE;
+    } else {
+      // find the tlist we want to be independtent of the name so use the Tkey
+      TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
+      if (!key) {
+        fxsec->Close();
+        return kFALSE;
+      }
+      TList *list = dynamic_cast<TList*>(key->ReadObj());
+      if (!list) {
+        fxsec->Close();
+        return kFALSE;
+      }
+      xsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
+      trials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
+      fxsec->Close();
+    }
+  } else { // no tree pyxsec.root
+    TTree *xtree = static_cast<TTree*>(fxsec->Get("Xsection"));
+    if (!xtree) {
+      fxsec->Close();
+      return kFALSE;
+    }
+    UInt_t   ntrials  = 0;
+    Double_t  xsection  = 0;
+    xtree->SetBranchAddress("xsection",&xsection);
+    xtree->SetBranchAddress("ntrials",&ntrials);
+    xtree->GetEntry(0);
+    trials = ntrials;
+    xsec = xsection;
+    fxsec->Close();
+  }
+  return kTRUE;
+}
+
+Bool_t AliAodSkimTask::SelectEvent()
+{
   // Accept event only if an EMCal-cluster with a minimum energy of fClusMinE has been found in the event
   Bool_t storeE = kFALSE;
   if (fClusMinE>0) {
@@ -190,6 +233,87 @@ void AliAodSkimTask::UserExec(Option_t *)
     store     = kTRUE;
   }
 
+  return store;
+}
+
+const char *AliAodSkimTask::Str() const
+{
+  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+              fClusMinE,
+              fCutMC,
+              fYCutMC,
+              fDoCopyHeader,
+              fDoCopyVZERO,
+              fDoCopyTZERO,
+              fDoCopyVertices,
+              fDoCopyTOF,
+              fDoCopyTracklets,
+              fDoCopyTracks,
+              fDoCopyTrigger,
+              fDoCopyPTrigger,
+              fDoCopyCells,
+              fDoCopyPCells,
+              fDoCopyClusters,
+              fDoCopyDiMuons,
+              fDoCopyTrdTracks,
+              fDoCopyV0s,
+              fDoCopyCascades,
+              fDoCopyZDC,
+              fDoCopyConv,
+              fDoCopyMC,
+              fDoCopyMCHeader);
+}
+
+void AliAodSkimTask::Terminate(Option_t *)
+{
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+   if (man->GetAnalysisType()!=0)
+     return;
+   if (fHevs==0)
+     return;
+   Int_t norm = fHevs->GetEntries();
+   if (norm<1)
+     norm=1;
+   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/norm
+	<< " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
+}
+
+void AliAodSkimTask::UserCreateOutputObjects()
+{
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  if (oh) {
+    TFile *fout = oh->GetTree()->GetCurrentFile();
+    fout->SetCompressionLevel(2);
+  }
+
+  fOutputList = new TList;
+  fOutputList->SetOwner();
+  fHevs = new TH1F("hEvs","",2,-0.5,1.5);
+  fOutputList->Add(fHevs);
+  fHclus = new TH1F("hClus",";E (GeV)",200,0,100);
+  fOutputList->Add(fHclus);
+  fHtrack = new TH1F("hTrack",";p_{T} (GeV/c)",200,0,100);
+  fOutputList->Add(fHtrack);
+  PostData(1, fOutputList);
+}
+
+void AliAodSkimTask::UserExec(Option_t *)
+{
+  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  if (!fAOD)
+    return;
+
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  if (!oh) {
+    AliFatal(Form("%s: No output handler found", GetName()));
+    return;
+  }
+  oh->SetFillAOD(kFALSE);
+
+  Bool_t store = SelectEvent();
+  
   if (!store) {
     ++fTrials;
     fHevs->Fill(0);
@@ -202,7 +326,7 @@ void AliAodSkimTask::UserExec(Option_t *)
   AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
   AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
   TTree *tout = oh->GetTree();
-  if (tout) {
+  if (fDoCopyUserTree) {
     TList *lout = tout->GetUserInfo();
     if (lout->FindObject("alirootVersion")==0) {
       TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
@@ -247,10 +371,10 @@ void AliAodSkimTask::UserExec(Option_t *)
       Int_t nc = v->CountRealContributors();
       Int_t nd = v->GetNDaughters();
       if (fDoVertWoRefs) {
-      if (nc>0)
-        v->SetNContributors(nc);
-      else
-        v->SetNContributors(nd);
+        if (nc>0)
+          v->SetNContributors(nc);
+        else
+          v->SetNContributors(nd);
       }
       if (fDoVertMain) {
         TString tmp(v->GetName());
@@ -259,12 +383,13 @@ void AliAodSkimTask::UserExec(Option_t *)
         marked=i;
         break;
       }
-      if (marked>0) {
-        out->RemoveRange(marked,out->GetEntries());
-        out->Compress();
-      }
+    }
+    if (marked>0) {
+      out->RemoveRange(marked,out->GetEntries());
+      out->Compress();
     }
   }
+  
   if (fDoCopyTOF) {
     AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());
     const AliTOFHeader *in = evin->GetTOFHeader();
@@ -490,122 +615,5 @@ Bool_t AliAodSkimTask::UserNotify()
   }
 
   return res;
-}
-
-void AliAodSkimTask::Terminate(Option_t *)
-{
-   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-   if (man->GetAnalysisType()!=0)
-     return;
-   if (fHevs==0)
-     return;
-   Int_t norm = fHevs->GetEntries();
-   if (norm<1)
-     norm=1;
-   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/norm
-	<< " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
-}
-
-Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
-{
-  TString file(currFile);
-  xsec = 0;
-  trials = 1;
-
-  if (file.Contains(".zip#")) {
-    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
-    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
-    file.Replace(pos+1,pos2-pos1,"");
-  } else {
-    // not an archive take the basename....
-    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
-  }
-  AliDebug(1,Form("File name: %s",file.Data()));
-
-  // Get the pt hard bin
-  TString strPthard(file);
-
-  strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(strPthard.Last('/'));
-  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec()) {
-    pthard = strPthard.Atoi();
-  }
-  else {
-    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
-    pthard = -1;
-  }
-
-  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root"));
-
-  if (!fxsec) {
-    // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if (!fxsec) {
-      // not a severe condition but inciate that we have no information
-      return kFALSE;
-    } else {
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
-      if (!key) {
-        fxsec->Close();
-        return kFALSE;
-      }
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) {
-        fxsec->Close();
-        return kFALSE;
-      }
-      xsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
-      trials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
-    }
-  } else { // no tree pyxsec.root
-    TTree *xtree = static_cast<TTree*>(fxsec->Get("Xsection"));
-    if (!xtree) {
-      fxsec->Close();
-      return kFALSE;
-    }
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    trials = ntrials;
-    xsec = xsection;
-    fxsec->Close();
-  }
-  return kTRUE;
-}
-
-const char *AliAodSkimTask::Str() const
-{
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
-              fClusMinE,
-              fCutMC,
-              fYCutMC,
-              fDoCopyHeader,
-              fDoCopyVZERO,
-              fDoCopyTZERO,
-              fDoCopyVertices,
-              fDoCopyTOF,
-              fDoCopyTracklets,
-              fDoCopyTracks,
-              fDoCopyTrigger,
-              fDoCopyPTrigger,
-              fDoCopyCells,
-              fDoCopyPCells,
-              fDoCopyClusters,
-              fDoCopyDiMuons,
-              fDoCopyTrdTracks,
-              fDoCopyV0s,
-              fDoCopyCascades,
-              fDoCopyZDC,
-              fDoCopyConv,
-              fDoCopyMC,
-              fDoCopyMCHeader);
 }
 
