@@ -387,7 +387,8 @@ void Exec( Int_t opt = 2,
         //printf("Get fragment %d\n",iprod);
         h2ABFragment[iprod] = (TH2F*) f[iprod]->Get("AnaIsolPhoton_hPtLambda0Iso_MCPhotonFrag");
         h2CDFragment[iprod] = (TH2F*) f[iprod]->Get("AnaIsolPhoton_hPtLambda0NoIso_MCPhotonFrag");
-        
+        //printf("Get fragment %d %p %p\n",iprod,h2ABFragment[iprod],h2CDFragment[iprod] );
+
         if ( removeFragmentation )
         {
           h2AB[iprod] ->Add(h2ABFragment[iprod],-1);
@@ -411,11 +412,7 @@ void Exec( Int_t opt = 2,
             h2CD[iprod] ->Add( (TH2F*) f[iprod]->Get("AnaIsolPhoton_hPtLambda0NoIso_MCHadron"),1);
           }
         }
-        else
-        {
-          h2ABFragment[iprod] = 0;
-          h2CDFragment[iprod] = 0;
-        }
+        
       } // not data
       
 //      printf("iprod %d - 2AB %p 2CD %p - Frag 2AB %p 2CD %p \n", iprod,
@@ -1109,6 +1106,7 @@ void Exec( Int_t opt = 2,
   //printf("Purity calculation");
 
   TH1F* hPurityDD[nPeriod];
+  TH1F* hPurityDDRatio[nPeriod];
   TH1F* hPurity  [nPeriod];
   TH1F* hPurityMC[nPeriod];
   TH1F* hPurityInput[nPeriod];
@@ -1117,7 +1115,12 @@ void Exec( Int_t opt = 2,
   {
     if ( !hA[iprod] ) continue;
 
-    if ( iprod == 1 ) continue; // skip GJ
+    if ( iprod == 1 ) 
+    {
+      hPurityDD[iprod] = 0;
+      hPurity  [iprod] = 0;
+      continue; // skip GJ
+    }
     
     //TString tag = Form("MC_%s%s",period[iprod].Data(),tagName.Data());
     TString tag = Form("%s",period[iprod].Data());
@@ -1153,6 +1156,15 @@ void Exec( Int_t opt = 2,
       Float_t content = hPurityDD[iprod]->GetBinContent(ix);
       if ( content > 0 ) hPurityDD[iprod]->SetBinContent(ix,1-content);
     }
+    
+    // Ratio to data
+    if ( !period[iprod].Contains("Data") && !period[iprod].Contains("GJ") )
+    {
+      hPurityDDRatio[iprod] = (TH1F*) hPurityDD[iprod]->Clone(Form("PurityDDRatio_%s",period[iprod].Data()));
+      hPurityDDRatio[iprod]->Divide(hPurityDDRatio[iprod],hPurityDD[0],1,1,"B");
+      //printf("%d, pdd rat %p\n",iprod,hPurityDDRatio[iprod]);
+    }
+    else hPurityDDRatio[iprod] = 0;
     
     // Input purity, A region GJ / JJ+GJ
      if ( iprod > 1 )
@@ -1195,29 +1207,22 @@ void Exec( Int_t opt = 2,
   (Form("cPurityDD%s",tagName.Data()),
    Form("Purity data-driven %s",tagName.Data()),
    1*800,1*600);
-  
-  cPurityDD->Divide(1,1);
-  
+    
   //c->cd(icen+1);
   //gPad->SetLogy();
   gPad->SetLogx();
   //gPad->SetGridx();
   
   hPurityDD[0]->Draw("");
-  hPurityDD[0]->SetTitle("");
-  hPurityDD[0]->SetYTitle("P_{dd}");
-  hPurityDD[0]->SetMaximum(1.2);
-  hPurityDD[0]->SetMinimum(0.1);
-  legPdd->AddEntry(hPurityDD[0],perString[0].Data(),"PL");
-  for(Int_t iprod = 2; iprod < nPeriod; iprod++)
+
+  for(Int_t iprod = 0; iprod < nPeriod; iprod++)
   {
-    if ( !hA[iprod] ) continue;
+    if ( !hPurityDD[iprod] ) continue;
 
-    hPurityDD[iprod]->SetAxisRange(ptmin,ptmax,"X");
-    if(period[iprod].Contains("low"))  hPurityDD[iprod]->SetAxisRange(ptmin,60,"X");
-
+    hPurityDD[iprod]->SetYTitle("#it{P}_{dd}");
+    hPurityDD[iprod]->SetMaximum(1.2);
+    hPurityDD[iprod]->SetMinimum(0.1);
     hPurityDD[iprod]->GetXaxis()->SetMoreLogLabels(kTRUE);
-
     legPdd->AddEntry(hPurityDD[iprod],perString[iprod].Data(),"PL");
 
     hPurityDD[iprod]->Draw("same");
@@ -1230,6 +1235,42 @@ void Exec( Int_t opt = 2,
   
   //--------------------------------------------------------
 
+  TLegend *legPddR = new TLegend(0.15,0.7,0.45,0.97);
+  legPddR->SetTextSize(0.045);
+  legPddR->SetFillColor(kWhite);
+  legPddR->SetLineColor(0);
+  //legPddR->SetBorderColor(0);
+  
+  TCanvas * cPurityDDRat = new TCanvas
+  (Form("cPurityDD%sRat",tagName.Data()),
+   Form("Purity data-driven %s ratio",tagName.Data()),
+   1*800,1*600);
+    
+  //c->cd(icen+1);
+  //gPad->SetLogy();
+  gPad->SetLogx();
+  gPad->SetGridy();
+  
+  for(Int_t iprod = 2; iprod < nPeriod; iprod++)
+  {
+    if ( !hPurityDDRatio[iprod] ) continue;
+    
+    if ( iprod==2 ) hPurityDDRatio[iprod]->Draw("");
+    else            hPurityDDRatio[iprod]->Draw("same");
+    hPurityDDRatio[iprod]->SetYTitle("P_{dd} ratio MC / Data");
+//    hPurityDDRatio[iprod]->SetMaximum(1.5);
+//    hPurityDDRatio[iprod]->SetMinimum(0.0);
+     hPurityDDRatio[iprod]->SetMaximum( hPurityDDRatio[iprod]->GetMaximum()*1.5);
+    legPddR->AddEntry(hPurityDDRatio[iprod],perString[iprod].Data(),"PL");
+    hPurityDDRatio[iprod]->GetXaxis()->SetMoreLogLabels(kTRUE);        
+  }
+  
+  legPddR->Draw("same");
+    
+  cPurityDDRat->Print(Form("figures/PurityDD_Ratio%s.eps",tagName.Data()));
+  
+  //--------------------------------------------------------
+  
   TLegend *legP = new TLegend(0.15,0.7,0.45,0.97);
   legP->SetTextSize(0.045);
   legP->SetFillColor(kWhite);
@@ -1308,7 +1349,6 @@ void Exec( Int_t opt = 2,
         hPurityRatio[iprod]->Fit("pol0","","NRO",20,60);
       else                            
         hPurityRatio[iprod]->Fit("pol0","","NRO",20,200);
-      //hPurityRatio[iprod]->Fit("pol0","","NRO",20,100);
     }
   }
   legR->Draw("same");
@@ -1426,7 +1466,7 @@ void DrawIsoABCDAlphaPurity()
     }
   }
   
-  Int_t opt = 2; /// Use 1 and 3 only for recent aliroot from 03/2020
+  Int_t opt = 2; /// Use 1 and 3 only for recent aliroot from 03/2020 (not tested)
  
   Float_t ptmin     = 10.0;  Float_t ptmax     = 200;
   Float_t sumSigMin = -200;  Float_t sumSigMax = 2;

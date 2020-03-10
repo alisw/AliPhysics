@@ -132,7 +132,9 @@ class AliIsolationCut : public TObject {
 
   // Parameter setters and getters
 
+  Bool_t     IsBandExclusionRectangular() const { return fUEBandRectangularExclusion ; }
   Float_t    GetConeSize()            const { return fConeSize       ; }
+  Float_t    GetConeSizeBandGap()     const { return fConeSizeBandGap; }
   Float_t    GetPtThreshold()         const { return fPtThreshold    ; }
   Float_t    GetPtThresholdMax()      const { return fPtThresholdMax ; }
   Float_t    GetSumPtThreshold()      const { return fSumPtThreshold ; }
@@ -147,7 +149,9 @@ class AliIsolationCut : public TObject {
   Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
 
+  void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
+  void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
   void       SetPtThresholdMax(Float_t pt)                     { fPtThresholdMax    = pt   ; }
   void       SetSumPtThreshold(Float_t s)                      { fSumPtThreshold    = s    ; }
@@ -170,8 +174,8 @@ class AliIsolationCut : public TObject {
   void       SwitchOnFillHighMultHistograms ()                 { fFillHighMultHistograms = kTRUE  ; }
   void       SwitchOffFillHighMultHistograms()                 { fFillHighMultHistograms = kFALSE ; }
   
-  void       SwitchOnConeExcessCorrectionHistograms ()         { fMakeConeExcessCorr = kTRUE  ; }
-  void       SwitchOffConeExcessCorrectionHistograms()         { fMakeConeExcessCorr = kFALSE ; }
+  void       SwitchOnConeExcessCorrection ()                   { fMakeConeExcessCorr = kTRUE  ; }
+  void       SwitchOffConeExcessCorrection()                   { fMakeConeExcessCorr = kFALSE ; }
   
  private:
 
@@ -184,7 +188,11 @@ class AliIsolationCut : public TObject {
   Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
   
   Float_t    fConeSize ;                               ///< Size of the isolation cone
+ 
+  Float_t    fConeSizeBandGap ;                        ///< Gap to add to size of the isolation cone when filling eta/phi bands for UE estimation
 
+  Bool_t     fUEBandRectangularExclusion ;             ///< UE band signal exclusion region is rectangular, not just the isolation cone zone
+  
   Float_t    fPtThreshold ;                            ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
 
   Float_t    fPtThresholdMax ;                         ///< Maximum pt of the particles outside the cone (needed to fit shower distribution isolated/non-isolated particles)
@@ -344,7 +352,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,14) ;
+  ClassDef(AliIsolationCut,15) ;
   /// \endcond
 
 } ;

@@ -45,7 +45,8 @@ AliIsolationCut::AliIsolationCut() :
 TObject(),
 fFillHistograms(0),  fFillEtaPhiHistograms(0),      fFillHighMultHistograms(0), 
 fMakeConeExcessCorr(0),
-fConeSize(0.),       fPtThreshold(0.),              fPtThresholdMax(10000.),
+fConeSize(0.),       fConeSizeBandGap(0.),          fUEBandRectangularExclusion(0),
+fPtThreshold(0.),    fPtThresholdMax(10000.),
 fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fSumPtThresholdGap(0.),
 fPtFraction(0.),     fICMethod(0),                  fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
@@ -257,7 +258,12 @@ void AliIsolationCut::CalculateCaloSignalInCone
     if ( fICMethod >= kSumBkgSubIC && rad > fConeSize )
     {
       // phi band
-      if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize))
+      Bool_t takeIt = kTRUE;
+      if ( fUEBandRectangularExclusion             && 
+           phi < (phiC+fConeSize+fConeSizeBandGap) &&   
+           phi > (phiC-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
+      
+      if ( eta > (etaC-fConeSize) && eta < (etaC+fConeSize) && takeIt )
       {
         phiBandPtSumCluster += pt;
         
@@ -274,7 +280,12 @@ void AliIsolationCut::CalculateCaloSignalInCone
       } // phi band
       
       // eta band
-      if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize))
+      takeIt = kTRUE;
+      if ( fUEBandRectangularExclusion            && 
+          eta < (etaC+fConeSize+fConeSizeBandGap) &&   
+          eta > (etaC-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
+      
+      if ( phi > (phiC-fConeSize) && phi < (phiC+fConeSize) && takeIt )
       {
         etaBandPtSumCluster += pt;
         
@@ -580,8 +591,15 @@ void AliIsolationCut::CalculateTrackSignalInCone
     if ( fICMethod >= kSumBkgSubIC && rad > fConeSize )
     {
       // Phi band
-      if ( etaTrack > (etaTrig-fConeSize) && etaTrack < (etaTrig+fConeSize) &&
-          TMath::Abs(phiTrig-phiTrack) < TMath::PiOver2() )  // Look only half TPC with respect candidate, avoid opposite side jet 
+      Bool_t takeIt = kTRUE;
+      if ( fUEBandRectangularExclusion                     && 
+           phiTrack < (phiTrig+fConeSize+fConeSizeBandGap) &&   
+           phiTrack > (phiTrig-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
+      
+      if ( etaTrack > (etaTrig-fConeSize) &&  // Within eta cone size 
+           etaTrack < (etaTrig+fConeSize) &&  // Within eta cone size 
+           takeIt                         &&  // avoid particles in and close to the cone in phi
+           TMath::Abs(phiTrig-phiTrack) < TMath::PiOver2() ) // Look only half TPC with respect candidate, avoid opposite side jet 
       {
         phiBandPtSumTrack += ptTrack;
         
@@ -598,7 +616,13 @@ void AliIsolationCut::CalculateTrackSignalInCone
       } // phi band
       
       // Eta band
-      if ( phiTrack > (phiTrig-fConeSize) && phiTrack < (phiTrig+fConeSize) ) 
+      takeIt = kTRUE;
+      if ( fUEBandRectangularExclusion                     && 
+           etaTrack < (etaTrig+fConeSize+fConeSizeBandGap) &&   
+           etaTrack > (etaTrig-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
+      
+      if ( phiTrack > (phiTrig-fConeSize) && 
+           phiTrack < (phiTrig+fConeSize) && takeIt )
       {
         etaBandPtSumTrack += ptTrack;
         
@@ -794,64 +818,114 @@ void AliIsolationCut::CalculateTrackSignalInCone
 //_________________________________________________________________________________________________________________________________
 /// Get normalization of cluster background band.
 //_________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandClusterNormalization( Float_t   etaC,                  Float_t   phiC,
-                                                           Float_t   excessEta,             Float_t   excessPhi,         
-                                                           Float_t   excessAreaEta,         Float_t   excessAreaPhi,         
-                                                           Float_t   etaUEptsumCluster,     Float_t   phiUEptsumCluster,
-                                                           Float_t & etaUEptsumClusterNorm, Float_t & phiUEptsumClusterNorm) const
+void AliIsolationCut::CalculateUEBandClusterNormalization
+( 
+ Float_t   etaC,                  Float_t   phiC,
+ Float_t   excessEta,             Float_t   excessPhi,         
+ Float_t   excessAreaEta,         Float_t   excessAreaPhi,         
+ Float_t   etaUEptsumCluster,     Float_t   phiUEptsumCluster,
+ Float_t & etaUEptsumClusterNorm, Float_t & phiUEptsumClusterNorm) const
 {
-  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
-  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
+  // Cone area
+  Float_t coneArea = fConeSize*fConeSize*TMath::Pi(); // Area = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneArea -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   Float_t fEMCPhiSize = fEMCPhiMax-fEMCPhiMin;
   
-  /* //Catherine code
-   if(((((2*fConeSize*fEMCPhiSize)-coneA))*phiBandBadCellsCoeff)!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*fConeSize*fEMCPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
-   if(((((2*(fConeSize-excess)*fEMCPhiSize)-(coneA-excessFracEta))*etaBandBadCellsCoeff))!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA *coneBadCellsCoeff/ (((2*(fConeSize-excess)*fEMCPhiSize)-(coneA/excessFracEta))*etaBandBadCellsCoeff));
-   if(((2*(fConeSize-excess)*fEMCEtaSize)-(coneA-excessFracPhi))*phiBandBadCellsCoeff!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*(fConeSize-excess)*fEMCEtaSize)-(coneA/excessFracPhi))*phiBandBadCellsCoeff));
-   */
-  
-  // UE band cans also be out of acceptance, need to estimate corrected area
+  // UE band can also be out of acceptance, need to estimate corrected area
   //
-  if ( excessEta != 0 ) coneA /=  excessAreaEta;
-  if ( excessPhi != 0 ) coneA /=  excessAreaPhi;
-  if ( excessPhi != 0 ) coneA /=  excessAreaPhi;
+  if ( excessEta != 0 ) coneArea /= excessAreaEta;
+  if ( excessPhi != 0 ) coneArea /= excessAreaPhi;
+
+  Float_t coneAreaPhi = coneArea; 
+  Float_t coneAreaEta = coneArea; 
   
-  // Calculate normalization
-  //    
-  if(((2*fConeSize-excessEta)*fEMCPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excessEta)*fEMCPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
-  if(((2*fConeSize-excessPhi)*fEMCEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((((2*fConeSize-excessPhi)*fEMCEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
+  // Consider exclusion area around cone with rectangular shape
+  // Area = (2 * cone radius - excess) * 2 * ( cone radius + gap )
+  if ( fUEBandRectangularExclusion )
+  {
+    coneAreaPhi = 2 * ( fConeSize + fConeSizeBandGap) * ( 2 * fConeSize - excessEta ); 
+    coneAreaEta = 2 * ( fConeSize + fConeSizeBandGap) * ( 2 * fConeSize - excessPhi ); 
+  }
+  
+  // Area of band, rectangle minus isolation region
+  //
+  Float_t etaBandArea = ( 2 * fConeSize - excessPhi ) * fEMCEtaSize - coneAreaEta;
+  Float_t phiBandArea = ( 2 * fConeSize - excessEta ) * fEMCPhiSize - coneAreaPhi;
+  
+  // Calculate normalization factor and rescale UE band sum pT to cone area
+  // 
+  // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+  if ( phiBandArea > 0 ) 
+    phiUEptsumClusterNorm = phiUEptsumCluster * ( coneArea / phiBandArea ); 
+  
+  // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
+  if ( etaBandArea > 0 ) 
+    etaUEptsumClusterNorm = etaUEptsumCluster * ( coneArea / etaBandArea ); 
+  
+//  printf("clust band area: cone Area %2.2f, Gap Area eta %2.2f phi %2.2f, EMC eta size %2.2f, EMC phi size %2.2f\n"
+//         "etaBandArea %2.2f phiBandArea %2.2f, norm factor phi %2.2f, norm factor eta %2.2f\n",
+//         coneArea, coneAreaEta, coneAreaPhi, fEMCEtaSize,fEMCPhiSize,
+//         etaBandArea,phiBandArea,coneArea/phiBandArea,coneArea/etaBandArea);
+  
+  if ( etaBandArea < 0 || phiBandArea < 0 )
+    printf("Negative clust band area: cone Area %2.2f, Gap Area eta %2.2f phi %2.2f, EMC eta size %2.2f, EMC phi size %2.2f\n",
+           coneArea, coneAreaEta, coneAreaPhi, fEMCEtaSize, fEMCPhiSize);
 }
 
 //________________________________________________________________________________________________________________________________
 /// Get normalization of track background band.
 //________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandTrackNormalization  (Float_t   etaC               ,  
-                                                          Float_t   excessEta          ,          
-                                                          Float_t   excessAreaEta      ,         
-                                                          Float_t   etaUEptsumTrack    ,  Float_t   phiUEptsumTrack,
-                                                          Float_t & etaUEptsumTrackNorm,  Float_t & phiUEptsumTrackNorm) const
+void AliIsolationCut::CalculateUEBandTrackNormalization  
+(
+ Float_t   etaC               ,  
+ Float_t   excessEta          ,          
+ Float_t   excessAreaEta      ,         
+ Float_t   etaUEptsumTrack    ,  Float_t   phiUEptsumTrack,
+ Float_t & etaUEptsumTrackNorm,  Float_t & phiUEptsumTrackNorm) const
 {
-  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
-  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
+  // Cone area
+  Float_t coneArea = fConeSize*fConeSize*TMath::Pi(); // Area = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneArea -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
-  /*//Catherine code
-   //phiUEptsumTrackNorm = phiUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*tpcPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-   //etaUEptsumTrackNorm = etaUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*fTPCEtaSize)-coneA))*etaBandBadCellsCoeff); // pi * R^2 / (2 R * 1.6)  -  trigger cone
-   if((2*fConeSize*tpcPhiSize-coneA)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-   if((2*fConeSize*fTPCEtaSize-coneA)!=0)etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*fTPCEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
-   if((2*(fConeSize-excess)*tpcPhiSize)-(coneA-excessFracEta)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*(fConeSize-excess)*tpcPhiSize)-(coneA/excessFracEta))));
-   */ //end Catherine code
-
-  // UE band cans also be out of acceptance, need to estimate corrected area
+  // UE band can also be out of acceptance, need to estimate corrected area
   //
-  if ( excessEta != 0 ) coneA /=  excessAreaEta;
+  if ( excessEta != 0 ) coneArea /= excessAreaEta;
   
-  // Calculate normalization
+  Float_t coneAreaPhi = coneArea; 
+  Float_t coneAreaEta = coneArea; 
+  
+  // Including cone rectangle area with gap
+  // Area = (2 * cone radius - excess) * 2 * ( cone radius + gap )
+  if ( fUEBandRectangularExclusion )
+  {
+    coneAreaPhi = 2 * ( fConeSize + fConeSizeBandGap) * ( 2 * fConeSize - excessEta ); 
+    coneAreaEta = 2 * ( fConeSize + fConeSizeBandGap) * ( 2 * fConeSize             ); 
+  }
+  
+  // Area of band, rectangle minus isolation region
   //
-  if(((2*fConeSize-excessEta)*fTPCPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excessEta)*fTPCPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-  if(( 2*fConeSize           *fTPCEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize           *fTPCEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
-
+  Float_t etaBandArea =   2*fConeSize               * fTPCEtaSize - coneAreaEta;
+  Float_t phiBandArea = ( 2*fConeSize - excessEta ) * fTPCPhiSize - coneAreaPhi; 
+  
+  // Calculate normalization factor and rescale UE band sum pT to cone area
+  //
+  // pi * R^2 / (2 R * 2 pi) -  trigger cone
+  if ( phiBandArea > 0 ) 
+    phiUEptsumTrackNorm = phiUEptsumTrack * ( coneArea / phiBandArea ); 
+  
+  // pi * R^2 / (2 R * 1.6)  -  trigger cone
+  if ( etaBandArea > 0 ) 
+    etaUEptsumTrackNorm = etaUEptsumTrack * ( coneArea / etaBandArea ); 
+  
+//  printf("track band area: cone Area %2.2f, Gap Area eta %2.2f phi %2.2f, EMC eta size %2.2f, EMC phi size %2.2f\n"
+//          "etaBandArea %2.2f phiBandArea %2.2f, norm factor phi %2.2f, norm factor eta %2.2f\n",
+//          coneArea, coneAreaEta, coneAreaPhi, fTPCEtaSize,fTPCPhiSize,
+//          etaBandArea,phiBandArea,coneArea/phiBandArea,coneArea/etaBandArea);
+  
+  if ( etaBandArea < 0 || phiBandArea < 0 )
+    printf("Negative track band area: cone Area %2.2f, Gap Area eta %2.2f phi %2.2f, TPC eta size %2.2f, TPC phi size %2.2f\n",
+           coneArea, coneAreaEta, coneAreaPhi, fTPCEtaSize, fTPCPhiSize);
 }
 
 //________________________________________________________________________
@@ -897,13 +971,17 @@ void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
   if ( TMath::Abs(etaC)+fConeSize > fTPCEtaSize/2. )
     excessTrkEta = TMath::Abs(etaC) + fConeSize - fTPCEtaSize/2.;
   
-  if(TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2.)
+  if ( TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2. )
     excessClsEta = TMath::Abs(etaC) + fConeSize - fEMCEtaSize/2.;
     
   if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
     excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
-  else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMax )
+  else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMin )
     excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+  
+  if( excessTrkEta < 0 || excessClsEta < 0 || excessClsPhi < 0 )
+    AliInfo(Form("Fix negative excess: trk eta %f, cls eta %f, cls phi %f",
+           excessTrkEta,excessClsEta,excessClsPhi));
   
   excessAreaTrkEta = CalculateExcessAreaFraction(excessTrkEta);
   excessAreaClsEta = CalculateExcessAreaFraction(excessClsEta);
@@ -945,10 +1023,6 @@ void AliIsolationCut::GetDetectorAngleLimits ( AliCaloTrackReader * reader, Int_
   AliDebug(1,Form("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f",
                   fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
                   fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg()));
-  
-//  printf("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f\n",
-//         fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
-//         fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg());
 }
 
 //_________________________________________________________________________________
@@ -1712,7 +1786,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   } // UE, neutral + charged
   
   
-  if( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
+  if ( fMakeConeExcessCorr )
   {
     fhFractionClusterOutConeEta  = new TH2F
     ("hFractionClusterOutConeEta",
@@ -1988,7 +2062,7 @@ TString AliIsolationCut::GetICParametersList()
   
   snprintf(onePar,buffersize,"--- AliIsolationCut ---:") ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fConeSize=%1.2f;",fConeSize) ;
+  snprintf(onePar,buffersize,"fConeSize=%1.2f; Gap %1.2f, UE exclusion %d",fConeSize,fConeSizeBandGap,fUEBandRectangularExclusion) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fPtThreshold>%2.2f;<%2.2f;",fPtThreshold,fPtThresholdMax) ;
   parList+=onePar ;
@@ -2008,7 +2082,8 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fFillHistograms=%d,fFillEtaPhiHistograms=%d;",fFillHistograms,fFillEtaPhiHistograms) ;
   parList+=onePar ;
-  
+  snprintf(onePar,buffersize,"fMakeConeExcessCorr=%d;",fMakeConeExcessCorr) ;
+  parList+=onePar ;
   return parList;
 }
 
@@ -2022,6 +2097,9 @@ void AliIsolationCut::InitParameters()
   fFillHighMultHistograms = kFALSE;
   fNCentBins            = 10 ;
   fConeSize             = 0.4 ;
+  fConeSizeBandGap      = 0.0 ;
+  fUEBandRectangularExclusion = kTRUE;
+  fMakeConeExcessCorr   = kFALSE;
   fPtThreshold          = 0.5  ;
   fPtThresholdMax       = 10000.;
   fSumPtThreshold       = 2.0 ;
@@ -2126,7 +2204,12 @@ void  AliIsolationCut::MakeIsolationCut
   // Add leading found information to candidate object
   pCandidate->SetNeutralLeadPtInCone(coneptLeadCluster);
   pCandidate->SetChargedLeadPtInCone(coneptLeadTrack);
-  
+
+  // Get detectors acceptance
+  // Do it once, needed for Band UE estimation and excess area determination
+  if ( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
+    GetDetectorAngleLimits(reader,calorimeter); 
+
   // Calculate how much of the cone got out the detectors acceptance
   //
   Float_t excessAreaTrkEta = 1;
@@ -2136,10 +2219,8 @@ void  AliIsolationCut::MakeIsolationCut
   Float_t excessClsEta     = 0;
   Float_t excessClsPhi     = 0;
   
-  if( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
+  if ( fMakeConeExcessCorr )
   {
-    GetDetectorAngleLimits(reader,calorimeter); // Do it once, check done inside
-    
     CalculateExcessAreaFractionForChargedAndNeutral(etaC, phiC, 
                                                     excessTrkEta, excessAreaTrkEta, 
                                                     excessClsEta, excessAreaClsEta, 
@@ -2300,13 +2381,13 @@ void  AliIsolationCut::MakeIsolationCut
           coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
         }
         
-        
-        //      printf("Cluster: sumpT %2.2f, phi: sum pT %2.2f, sumpT norm %2.2f, excess %2.2f;\n"
-        //             "\t eta: sum pT %2.2f, sumpT norm %2.2f, excess %2.2f;\n"
-        //             "\t subtracted:  %2.2f\n",
-        //             coneptsumCluster, phiBandPtSumCluster, coneptsumBkgCls, excessFracPhiCluster, 
-        //             coneptsumBkgClsRaw, coneptsumBkgCls, excessFracEtaCluster,
-        //             coneptsumClusterSubEta);
+//        printf("Cluster: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
+//               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
+//               "\t subtracted:  %2.2f\n",
+//               coneptsumCluster, 
+//               phiBandPtSumCluster, phiBandPtSumClusterNorm, 
+//               etaBandPtSumCluster, etaBandPtSumClusterNorm,
+//               coneptsumClusterSub);
         
         if ( fFillHistograms )
         {
@@ -2341,12 +2422,13 @@ void  AliIsolationCut::MakeIsolationCut
           coneptsumTrackSub  = coneptsumTrack - coneptsumBkgTrk;
         }
         
-        //      printf("Track: sumpT %2.2f, phi: sum pT %2.2f, sumpT norm %2.2f, excess %2.2f;\n"
-        //             "\t eta: sum pT %2.2f, sumpT norm %2.2f, excess %2.2f;\n"
-        //             "\t subtracted: %2.2f\n",
-        //             coneptsumTrack, phiBandPtSumTrack, coneptsumBkgTrk, excessFracPhiTrack, 
-        //             etaBandPtSumTrack, coneptsumBkgTrk, excessFracEtaTrack,
-        //             coneptsumTrackSub);  
+//        printf("Track: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
+//               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
+//               "\t subtracted: %2.2f\n",
+//               coneptsumTrack, 
+//               phiBandPtSumTrack, phiBandPtSumTrackNorm, 
+//               etaBandPtSumTrack, etaBandPtSumTrackNorm, 
+//               coneptsumTrackSub);  
         
         if ( fFillHistograms )
         {          
@@ -2357,6 +2439,12 @@ void  AliIsolationCut::MakeIsolationCut
             fhConeSumPtUEBandNormTrackCent->Fill(ptC, coneptsumBkgTrk, centrality, histoWeight);
         } // fill 
       } // tracks in cone
+   
+//     // Uncomment if perp cone is hacked to be calculated
+//      printf("UE BKG per method:\n \t Perp Cone %2.2f (cl %2.2f, tr %2.2f)\n \t Phi Band %2.2f (cl %2.2f, tr %2.2f)\n \t Eta Band %2.2f (cl %2.2f, tr %2.2f)\n",
+//             perpPtSumTrack+perpPtSumTrack*fNeutralOverChargedRatio, perpPtSumTrack*fNeutralOverChargedRatio,perpPtSumTrack,
+//             phiBandPtSumTrackNorm+phiBandPtSumClusterNorm,phiBandPtSumClusterNorm,phiBandPtSumTrackNorm,
+//             etaBandPtSumTrackNorm+etaBandPtSumClusterNorm,etaBandPtSumClusterNorm,etaBandPtSumTrackNorm);
       
       //printf("Pass track\n");
 
@@ -2491,6 +2579,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
 
   printf("IC method          =     %d\n",    fICMethod   ) ;
   printf("Cone Size          =     %1.2f\n", fConeSize   ) ;
+  printf("Cone Size UE Gap   =     %1.2f\n", fConeSizeBandGap ) ;
+  printf("UE rectangle signal zone = %d\n" , fUEBandRectangularExclusion ) ;
   printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold, fPtThresholdMax) ;
   printf("Sum pT threshold   =     >%2.1f;<%2.1f, gap = %2.1f\n", fSumPtThreshold, fSumPtThresholdMax, fSumPtThresholdGap) ;
   printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
