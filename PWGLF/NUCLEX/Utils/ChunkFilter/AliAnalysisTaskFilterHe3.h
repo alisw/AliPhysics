@@ -29,14 +29,14 @@ public:
   void SetUseMultTaskCentrality(Bool_t useMultTaskCentrality = kTRUE) { fUseMultTaskCentrality = useMultTaskCentrality; };
 
   // Setters for some cuts
-  void SetMinNsig3He(Double_t nsmin = 3) { fMinNSigma3He = nsmin; }
-  void SetMaxNsig3He(Double_t nsmax = 10) { fMaxNSigma3He = nsmax; }
-  void SetNclsTPC(Double_t ncltpc = 50) { fMinNclsTPC = ncltpc; }
-  void SetPtotPosMin(Double_t ptotposmin = 0.5) { fMinPtotPos = ptotposmin; }
-  void SetPtotNegMin(Double_t ptotnegmin = 0.5) { fMinPtotNeg = ptotnegmin; }
-  void SetPtotPosMax(Double_t ptotposmax = 20) { fMaxPtotPos = ptotposmax; }
-  void SetPtotNegMax(Double_t ptotnegmax = 20) { fMaxPtotNeg = ptotnegmax; }
-  void SetFillSecifTOF (Bool_t flgsectof = kFALSE) {fillSecifTOF = flgsectof; }
+  void SetMinNsig3He(Double_t opt) { fMinNSigma3He = opt; }
+  void SetMaxNsig3He(Double_t opt) { fMaxNSigma3He = opt; }
+  void SetNclsTPC(Double_t opt) { fMinNclsTPC = opt; }
+  void SetPtotPosMin(Double_t opt) { fMinPtotPos = opt; }
+  void SetPtotNegMin(Double_t opt) { fMinPtotNeg = opt; }
+  void SetPtotPosMax(Double_t opt) { fMaxPtotPos = opt; }
+  void SetPtotNegMax(Double_t opt) { fMaxPtotNeg = opt; }
+  void SetFillSecifTOF(Bool_t opt) { fillSecifTOF = opt; }
 
 private:
   AliESDEvent *fESD;                     //! input event
@@ -52,14 +52,14 @@ private:
   TString fFileName;  //! chunk file name
 
   // Cut params
-  Double_t fMinNSigma3He;
-  Double_t fMaxNSigma3He;
-  Double_t fMinNclsTPC;
-  Double_t fMinPtotPos;
-  Double_t fMinPtotNeg;
-  Double_t fMaxPtotPos;
-  Double_t fMaxPtotNeg;
-  Bool_t fillSecifTOF;
+  Double_t fMinNSigma3He = -4.0;
+  Double_t fMaxNSigma3He = 10.0;
+  Double_t fMinNclsTPC = 50;
+  Double_t fMinPtotPos = 1.5;
+  Double_t fMinPtotNeg = 0.5;
+  Double_t fMaxPtotPos = 20.0;
+  Double_t fMaxPtotNeg = 20.0;
+  Bool_t fillSecifTOF = kTRUE;
 
   //
   // histograms
