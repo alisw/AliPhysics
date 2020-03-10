@@ -82,6 +82,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
   DefineOutput(1, TList::Class()); // define the ouptut of the analysis: in this case it's a list of histograms
                                    // you can add more output objects by calling DefineOutput(2, classname::Class())
                                    // if you add more output objects, make sure to call PostData for all of them, and to
+//  if (fTreemode)
+  DefineOutput(2, TTree::Class());
 }
 
 AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
@@ -97,6 +99,9 @@ AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
 
   if (fOutputList)
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function
+
+  if (fTreeTrack)
+    delete fTreeTrack;
 }
 
 void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
@@ -161,9 +166,30 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     }
   }
 
+  // Tree
+  if (fTreemode)
+  {
+    OpenFile(2);
+    fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
+    //fTreeTrack->Branch("tP", &tP, "tP/D");
+    fTreeTrack->Branch("tPt", &tPt, "tPt/D");
+    fTreeTrack->Branch("tEta", &tEta, "tEta/D");
+    fTreeTrack->Branch("tPhi", &tPhi, "tPhi/D");
+    fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/D");
+    fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/D");
+    fTreeTrack->Branch("tmass2", &tmass2, "tmass2/D");
+    fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/I");
+    fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/D");
+    fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/D");
+    fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
+    fTreeTrack->Branch("tID", &tID, "tID/I");
+  }
   fEventCuts.AddQAplotsToList(fOutputList);
 
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
+
+  if (fTreemode)
+    PostData(2, fTreeTrack);
 
   for (int iFunction = 0; iFunction < 4; ++iFunction)
   {
@@ -250,6 +276,27 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       if ((1 - beta * beta) > 0)
         mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
     }
+
+    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4])) < 6)
+    {
+      //tP = track->GetInnerParam()->GetP();
+      tPt = track->GetInnerParam()->GetSignedPt();
+      tEta = track->GetInnerParam()->Eta();
+      tPhi = track->GetInnerParam()->Phi();
+      tmass2 = mass2;
+      tnPIDclsTPC = track->GetTPCsignalN();
+      tTOFsigDx = track->GetTOFsignalDx();
+      tTOFsigDz = track->GetTOFsignalDz();
+      tTOFclsN = track->GetTOFclusterN();
+      tID = track->GetID();
+      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
+      {
+        tnsigTPC[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
+        tnsigTOF[iSpecies] = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[iSpecies]);
+      }
+      fTreeTrack->Fill();
+    }
+
     //
     double sign = track->GetSign();
     // fill QA histograms
@@ -336,4 +383,5 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   // post the data
   PostData(1, fOutputList);
+  PostData(2, fTreeTrack);
 } // end the UserExec
