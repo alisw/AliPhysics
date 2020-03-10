@@ -112,7 +112,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fNMaxEMCalModules(12),
   fNMaxPHOSModules(5),
   fHistoModifyAcc(NULL),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fUseEtaPhiMapForBackCand(kFALSE),
@@ -571,6 +571,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     delete fHistograms;
     fHistograms=NULL;
   }
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms     = new TList();
     fHistograms->SetOwner(kTRUE);

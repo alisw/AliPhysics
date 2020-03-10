@@ -71,7 +71,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
-    void SetLightOutput                 ( Bool_t flag )                                     { fDoLightOutput = flag                       ;}
+    void SetLightOutput                 ( Int_t flag )                                     { fDoLightOutput = flag                       ;}
     void SetECalibOutput                ( Bool_t flag )                                     { fDoECalibOutput = flag                      ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
@@ -569,7 +569,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fiCut;                                              // current cut
     Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
-    Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t                   fDoLightOutput;                                     // switch for running light output, 0 -> normal mode, 1 -> light mode, 2 -> minimum
     Bool_t                  fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA

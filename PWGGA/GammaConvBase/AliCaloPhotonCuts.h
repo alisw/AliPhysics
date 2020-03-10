@@ -288,7 +288,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate);
 
-    void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
+    void        SetLightOutput( Int_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
     void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
@@ -473,7 +473,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
     TH1S*      fHistoModifyAcc;                         // hisogram for modified acceptance, if leadCellID->1 accept cluster, if leadCellID->0 reject cluster
 
-    Bool_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
 
     Bool_t     fIsCurrentClusterAcceptedBeforeTM;       // flag if latest checked cluster would have been accepted before track matching cut
