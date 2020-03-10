@@ -5390,8 +5390,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
 //    fVar_Xic0[78] = lab_Xic0;
 //  }
 
-
-  fTree_Xic0->Fill();
+  if (fVar_Xic0[27]>0.9999) fTree_Xic0->Fill();
 
   return;
 }

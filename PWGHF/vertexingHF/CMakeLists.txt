@@ -20,12 +20,16 @@ add_subdirectory (TMVA)
 add_subdirectory (vHFBDT)
 add_subdirectory (vHFML)
 
+find_package(KFParticle)
+
+
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${ROOT_INCLUDE_PATH}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
@@ -159,6 +163,14 @@ set(SRCS
   AliAnalysisTaskSECharmHadronvnTMVA.cxx
 )
 
+if(KFParticle_FOUND)
+  include_directories(SYSTEM ${KFPARTICLE_INCLUDE_DIR})
+  link_directories(${KFPARTICLE_LIBPATH})
+  set(SRCS ${SRCS} AliRDHFCutsKFP.cxx
+  AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
+  )
+endif(KFParticle_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
@@ -174,6 +186,10 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW)
+# Adding KFParticle to depedencies of the ROOTmap file
+if(KFParticle_FOUND)
+  set(LIBDEPS ${LIBDEPS} KFParticle::KFParticle)
+endif(KFParticle_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
