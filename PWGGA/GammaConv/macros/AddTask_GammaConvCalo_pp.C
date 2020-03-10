@@ -2404,16 +2404,16 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901060032230000","0163103100b00010"); //
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901061032230000","0163103100b00010"); //
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901066032230000","0163103100b00010"); //
+} else if (trainConfig == 2025){ // min nCells & M02 variation // std: min nCells = 1
+  cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067031230000","0163103100b00010"); //   min nCells = 1
+  cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067033230000","0163103100b00010"); //   min nCells = 3
   } else if (trainConfig == 2026){ // min energy variation std 0.7 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067002230000","0163103100b00010"); //     0.1 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067012230000","0163103100b00010"); //     0.5 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067022230000","0163103100b00010"); //     0.6 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067042230000","0163103100b00010"); //     0.8 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067052230000","0163103100b00010"); //     0.9 GeV/c
-  } else if (trainConfig == 2027){ // min nCells & M02 variation
-    // std: min nCells = 1; M02 max=0.7, min=0.1
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067031230000","0163103100b00010"); //   min nCells = 1
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067033230000","0163103100b00010"); //   min nCells = 3
+  } else if (trainConfig == 2027){ // min nCells & M02 variation  // std: M02 max=0.7, min=0.1
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032210000","0163103100b00010"); //   max M02    = 1
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032240000","0163103100b00010"); //   max M02    = 0.4
 } else if (trainConfig == 2028){ // exotic cluster
