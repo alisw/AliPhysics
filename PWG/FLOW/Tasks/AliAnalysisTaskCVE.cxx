@@ -339,55 +339,93 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
   fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",10,centRange,500,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
 
-		 
+
+  // Acharge Binning with Equal Event per bin:
+  //Cent 0-5
+  Double_t fAchBinCent0[6] = {-1.0,-0.01,-0.006,-0.002,0.004,1.0};
+  //Cent 5-10
+  Double_t fAchBinCent1[6] = {-1.0,-0.012,-0.006,-0.002,0.004,1.0};
+  //Cent 10-20 
+  Double_t fAchBinCent2[6] = {-1.0,-0.012,-0.006, 0, 0.006, 1.0};
+  //Cent 20-30 
+  Double_t fAchBinCent3[6] = {-1.0,-0.014,-0.006, 0, 0.008, 1.0};
+  //Cent 30-40 
+  Double_t fAchBinCent4[6] = {-1.0,-0.016,-0.006, 0.002,0.012,1.0};
+  //Cent 40-50 
+  Double_t fAchBinCent5[6] = {-1.0,-0.02,-0.008,0.002,0.016,1.0};
+  //Cent 50-60 
+  Double_t fAchBinCent6[6] = {-1.0,-0.026,-0.01,0.004,0.022,1.0};
+  //Cent 60-70 
+  Double_t fAchBinCent7[6] = {-1.0,-0.038,-0.012,0.008,0.032,1.0};
+  //Cent 70-80 
+  Double_t fAchBinCent8[6] = {-1.0,-0.054,-0.018,0.012,0.05,1.0};
+  //Cent 80-90 
+  Double_t fAchBinCent9[6] = {-1.0,-0.088,-0.028,0.022,0.084,1.0};
+
+
+  
+ Double_t fAchBinSelect[6] = {0,};
+ 
   // v2 vs Ach
   for(int i=0;i<2;i++){
     for(int j=0;j<10;j++){
+
+      if(j==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
+      if(j==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
+      if(j==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
+      if(j==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
+      if(j==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent4[k]; } }
+      if(j==5){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent5[k]; } }
+      if(j==6){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
+      if(j==7){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
+      if(j==8){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
+      if(j==9){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent9[k]; } }
+            
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchChrgPos[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPos[i][j]);
       sprintf(name,"fHistv2AchChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);      
 
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchPionPos[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPos[i][j]);
       sprintf(name,"fHistv2AchPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchPionNeg[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNeg[i][j]);      
  
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchKaonPos[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPos[i][j]);
       sprintf(name,"fHistv2AchKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNeg[i][j]);      
 
       //// Proton:
       sprintf(name,"fHistv2AchProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPos[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchProtPos[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPos[i][j]);
       sprintf(name,"fHistv2AchProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNeg[i][j] = new TProfile(name,title,10,-0.1,0.1,"");
+      fHistv2AchProtNeg[i][j] = new TProfile(name,title,5, fAchBinSelect,"");
       fHistv2AchProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNeg[i][j]);      
     }
@@ -421,20 +459,44 @@ void AliAnalysisTaskCVE::UserCreateOutputObjects()
 
   
   for(int i=0; i<10; i++){
+
+    if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
+    if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
+    if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
+    if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
+    if(i==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent4[k]; } }
+    if(i==5){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent5[k]; } }
+    if(i==6){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
+    if(i==7){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
+    if(i==8){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
+    if(i==9){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent9[k]; } }
+          
     ////Charge:
     sprintf(name,"fHistResolutionvsAch_Cent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; Resolution",centRange[i],centRange[i+1]);
-    fHistEPResolutionAch[i] = new TProfile(name,title,10,-0.1,0.1,"");
+    fHistEPResolutionAch[i] = new TProfile(name,title,5, fAchBinSelect,"");
     fHistEPResolutionAch[i]->Sumw2();
     fListHist->Add(fHistEPResolutionAch[i]);
   }
 
   
   for(int i=0; i<10; i++){
+
+    if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
+    if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
+    if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
+    if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
+    if(i==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent4[k]; } }
+    if(i==5){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent5[k]; } }
+    if(i==6){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
+    if(i==7){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
+    if(i==8){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
+    if(i==9){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent9[k]; } }
+         
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
-    fHistv2cumAchChrgAll[i] = new TProfile(name,title,10,-0.1,0.1,"");
+    fHistv2cumAchChrgAll[i] = new TProfile(name,title,5, fAchBinSelect,"");
     fHistv2cumAchChrgAll[i]->Sumw2();
     fListHist->Add(fHistv2cumAchChrgAll[i]);
   }
