@@ -2316,7 +2316,7 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 2001){ // EMCAL clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117900007032230000","0163103100000010"); // no timing cut, no NL INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // -30ns, 35ns timing cut, NL 11, INT7
-  } else if ( trainConfig == 2000){ // EMCAL clusters
+  } else if ( trainConfig == 2002){ // EMCAL clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // Mixed bck
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032230000","0r63103100b00010"); // 90 degree rotation wo evt. weight
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901067032230000","0s63103100b00010"); // 90 degree rotation with evt. weight
@@ -2355,11 +2355,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("n4510113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 40-50%
     cuts.AddCutPCMCalo("n5a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 50-100%
   } else if (trainConfig == 2007) {  //   (fPSigSmearing, fPSigSmearingCte)
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117901067032230000", "0163103100e00010"); // smearing (0.0275, 0.040)
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117901067032230000", "0163103100a00010"); // smearing (0.0275, 0.025)
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117901067032230000", "0163103100b00010"); // smearing (0.025,  0.030)
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117901067032230000", "0163103100c00010"); // smearing (0.0275, 0.020)
-    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117901067032230000", "0163103100d00010"); // smearing (0.0275, 0.035)
+    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117912067032230000", "0163103100a00010"); // smearing (0.0275, 0.025)
+    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117912067032230000", "0163103100b00010"); // smearing (0.025,  0.030)
+    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117912067032230000", "0163103100c00010"); // smearing (0.0275, 0.020)
+    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117912067032230000", "0163103100f00010"); // smearing (0.0275, 0.015)
+    cuts.AddCutPCMCalo("00010113", "0dm00009f9730000dge0404000","4117912067032230000", "0163103100g00010"); // smearing (0.025,  0.020)
   } else if ( trainConfig == 2008){ // EMCAL clusters
     cuts.AddCutPCMCalo("0008e113", "0dm00009f9730000dge0404000","4117901007032230000","0163103100000010"); // no timing cut, no NL INT7
     cuts.AddCutPCMCalo("0008d113", "0dm00009f9730000dge0404000","4117901007032230000","0163103100000010"); // no timing cut, no NL INT7
@@ -2879,7 +2879,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","388553207f032230000","0s63103100b00010"); //
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","388553207f032230000","0t63103100b00010"); //
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","388553207f032230000","0u63103100b00010"); //
-    
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
@@ -3040,12 +3040,12 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "0dm00009f97300008ge0404000","24466190sa01cc00000", "0163103100b00010"); //g: PsiPair<0.18exp(-0.055chi2)
     cuts.AddCutPCMCalo("00010113", "0dm00009f97300008hf0404000","24466190sa01cc00000", "0163103100b00010"); //h: PsiPair<0.20exp(-0.050chi2)
   //----------------------------------------------------------------------------------------------------------------------------------------
- 
+
   } else if (trainConfig == 3010){ // settings Dmitri
     cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000","24466640ya09dc00000", "0163103100b00010"); // INT7
   } else if (trainConfig == 3011){ // settings Dmitri
     cuts.AddCutPCMCalo("00062103", "0dm00009f9730000dge0404000","24466640ya09dc00000", "0163103100b00010"); // PHI7
- 
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
