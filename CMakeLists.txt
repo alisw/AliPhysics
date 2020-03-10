@@ -117,6 +117,28 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
+if(NOT ALIROOT_ONLINE_MODE)
+  # Not in "online mode": optimize install speed on macOS and fix install dirs
+
+  # Be sure about where libraries and binaries are put
+  set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+  set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+  # Build targets with install rpath on Mac to dramatically speed up installation
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+  if("${isSystemDir}" STREQUAL "-1")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+      message(STATUS "RPATH settings ***")
+      set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+    endif()
+  endif()
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  endif()
+  unset(isSystemDir)
+endif()
+
 # HLT/ZMQ and HLT/BASE/util need X11
 find_package(X11)
 if(X11_FOUND)
@@ -430,25 +452,6 @@ else()
     string(REPLACE ";" " " ALIROOT_MODULES_NOONLINE_FLAT "${ALIROOT_MODULES_NOONLINE}")
     message(WARNING "Online build detected: disabling unneeded modules: ${ALIROOT_MODULES_NOONLINE_FLAT}")
     list(APPEND EXCLUDE_MODULES "${ALIROOT_MODULES_NOONLINE}")
-  else(ALIROOT_ONLINE_MODE)
-    # Not in "online mode": optimize install speed on macOS and fix install dirs
-
-    # Be sure about where libraries and binaries are put
-    set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
-    set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-
-    # Build targets with install rpath on Mac to dramatically speed up installation
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-    if("${isSystemDir}" STREQUAL "-1")
-      if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-        set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-      endif()
-    endif()
-    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-      set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    endif()
-    unset(isSystemDir)
   endif()
 
   # Selectively exclude modules (with -DEXCLUDE_MODULES="mod1;mod2"...)
@@ -532,4 +535,3 @@ else()
   install(DIRECTORY test/ DESTINATION test USE_SOURCE_PERMISSIONS)
 
 endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
- 
