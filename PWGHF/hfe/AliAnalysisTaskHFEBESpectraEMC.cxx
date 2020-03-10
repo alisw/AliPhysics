@@ -1616,10 +1616,10 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             m20 =clustMatch->GetM20();
             
             if(track->Pt()>3.0){
-                fHistdEdxEop->Fill(eop_NL,dEdx);
-                fHistNsigEop->Fill(eop_NL,fTPCnSigma);
-                fM20EovP->Fill(eop_NL,clustMatch->GetM20());
-                fM02EovP->Fill(eop_NL,clustMatch->GetM02());
+                fHistdEdxEop->Fill(eop,dEdx);
+                fHistNsigEop->Fill(eop,fTPCnSigma);
+                fM20EovP->Fill(eop,clustMatch->GetM20());
+                fM02EovP->Fill(eop,clustMatch->GetM02());
             }
             fM20->Fill(track->Pt(),clustMatch->GetM20());
             fM02->Fill(track->Pt(),clustMatch->GetM02());
@@ -1721,7 +1721,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
                     fHadEovp_AftEID->Fill(TrkPt,eop);
                     fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
 
-                    if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
+                    if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
                 }
         }
         if(TrkPt >= 8.0){
@@ -1729,7 +1729,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
             {
                 fHadEovp_AftEID->Fill(TrkPt,eop);
                 fHadEovpNL_AftEID->Fill(TrkPt,eop_NL);
-                if(eop_NL > fEovPMin && eop_NL < fEovPMax) hadTrk=kTRUE;
+                if(eop > fEovPMin && eop < fEovPMax) hadTrk=kTRUE;
             }
         }
     }
@@ -1747,7 +1747,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::PassEIDCuts(AliVTrack *track, AliVCluster
     fEop_AftEID->Fill(TrkPt,eop);
     fEopNL_AftEID->Fill(TrkPt,eop_NL);
     
-    if(eop_NL < fEovPMin || eop_NL > fEovPMax) return kFALSE;
+    if(eop < fEovPMin || eop > fEovPMax) return kFALSE;
     
     return kTRUE;
 }
@@ -1909,7 +1909,8 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         if(clust && clust->IsEMCAL())
         {
             Double_t clustE_NL = clust->GetNonLinCorrEnergy();
-            if(clustE_NL < 0.3) continue;
+            Double_t clustE = clust->E()
+            if(clustE < 0.3) continue;
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//
@@ -1936,22 +1937,22 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             
            // if(centrality>-1)fHistClustEcent->Fill(centrality,clustE_NL);
             fEMCClsEtaPhi->Fill(emceta,emcphi);
-            fHistoNCells->Fill(clustE_NL,clust->GetNCells());
+            fHistoNCells->Fill(clustE,clust->GetNCells());
             Double_t EperCell = -999.9;
-            if(clust->GetNCells()>0)EperCell = clustE_NL/clust->GetNCells();
-            fHistoEperCell->Fill(clustE_NL,EperCell);
+            if(clust->GetNCells()>0)EperCell = clustE/clust->GetNCells();
+            fHistoEperCell->Fill(clustE,EperCell);
             
             Float_t tof = clust->GetTOF()*1e+9; // ns
-            fHistoTimeEMC->Fill(clustE_NL,tof);
+            fHistoTimeEMC->Fill(clustE,tof);
             
             //-----Plots for EMC trigger
             Bool_t hasfiredEG1=0;
             Bool_t hasfiredEG2=0;
             FindPatches(hasfiredEG1,hasfiredEG2,emceta,emcphi);
             if(hasfiredEG1)
-                fHistClustEEG1->Fill(clustE_NL);
+                fHistClustEEG1->Fill(clustE);
             if(hasfiredEG2)
-                fHistClustEEG2->Fill(clustE_NL);
+                fHistClustEEG2->Fill(clustE);
             
             NclustAll++;
         }
@@ -2472,12 +2473,15 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
     Double_t eop_NL = -1.0;
     Double_t m02 = -999,m20 = -999;
     Double_t clustE_NL = clust->GetNonLinCorrEnergy();
+    Double_t clustE = clust->E();
     Double_t TrkPt = track->Pt();
-    if(track->P()>0)eop_NL = clustE_NL/track->P();
     m02 =clust->GetM02();
     m20 =clust->GetM20();
     
-    if(eop_NL > fEovPMin && eop_NL < fEovPMax){
+    if(track->P()>0)eop_NL = clustE_NL/track->P();
+    if(track->P()>0)eop = clustE/track->P();
+    
+    if(eop > fEovPMin && eop < fEovPMax){
         if(IsMCEle) fInclElePhysPriEovP->Fill(TrkPt);
         if(IsMCHFEle) fHFEPhysPriEovP->Fill(TrkPt);
         if(IsMCBEle) fBEPhysPriEovP->Fill(TrkPt);
@@ -2489,7 +2493,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
             if(IsMCBEle) fBEPhysPriTPCnsig->Fill(TrkPt);
             if(IsMCDEle) fDEPhysPriTPCnsig->Fill(TrkPt);
             
-            if(eop_NL > fEovPMin && eop_NL < fEovPMax){
+            if(eop > fEovPMin && eop < fEovPMax){
                 if(IsMCEle) fInclElePhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCHFEle) fHFEPhysPriEovPBfrSS->Fill(TrkPt);
                 if(IsMCBEle) fBEPhysPriEovPBfrSS->Fill(TrkPt);
