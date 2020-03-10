@@ -1909,7 +1909,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         if(clust && clust->IsEMCAL())
         {
             Double_t clustE_NL = clust->GetNonLinCorrEnergy();
-            Double_t clustE = clust->E()
+            Double_t clustE = clust->E();
             if(clustE < 0.3) continue;
             
             /////////////////////////////////
@@ -2470,7 +2470,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEIDRecoEffi(AliVTrack *track, AliVCluste
     
     Bool_t PassSSCut = kFALSE;
     
-    Double_t eop_NL = -1.0;
+    Double_t eop=-1.0, eop_NL = -1.0;
     Double_t m02 = -999,m20 = -999;
     Double_t clustE_NL = clust->GetNonLinCorrEnergy();
     Double_t clustE = clust->E();
