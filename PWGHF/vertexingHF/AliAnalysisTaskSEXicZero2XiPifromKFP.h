@@ -27,11 +27,11 @@
 
 // includes added to play with KFParticle
 #include <vector>
-#include "KFParticleBase.h"
-#include "KFParticle.h"
-#include "KFPTrack.h"
-#include "KFPVertex.h"
-#include "KFVertex.h"
+#include "KFParticle/KFParticleBase.h"
+#include "KFParticle/KFParticle.h"
+#include "KFParticle/KFPTrack.h"
+#include "KFParticle/KFPVertex.h"
+#include "KFParticle/KFVertex.h"
 
 class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE  
 {
