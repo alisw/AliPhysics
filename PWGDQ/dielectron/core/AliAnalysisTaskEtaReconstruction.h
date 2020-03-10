@@ -97,7 +97,6 @@ public:
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
-   void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
    void   SetResolutionEtaBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("eta_reso", min, max, steps);}
@@ -163,28 +162,27 @@ public:
 
 
    // Track cuts setter
-   void   AddTrackCuts_primary  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
+   void   AddTrackCuts_primary_single  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
 
    // Pair cuts setter
-   void   AddTrackCuts_secondary_loose(AliAnalysisFilter* filter) {fTrackCuts_secondary_loose.push_back(filter);}
-   void   AddTrackCuts_secondary_standard(AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
+   void   AddTrackCuts_primary_pair  (AliAnalysisFilter* filter) {fPairCuts_primary.push_back(filter);}
+   void   AddTrackCuts_secondary_loose(AliAnalysisFilter* filter) {fPairCuts_secondary_loose.push_back(filter);}
+   void   AddTrackCuts_secondary_standard(AliAnalysisFilter* filter) {fPairCuts_secondary_standard.push_back(filter);}
 
 
 
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary(), primaryDielectronPairFromSameMother(), secondaryDielectronPairFromSameMother() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary(), primaryDielectronPairFromSameMother(), secondaryDielectronPairFromSameMother() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), fGrandMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal_primary(), isMCSignal_secondary(), isReconstructed_primary(), isReconstructed_secondary() {}
 
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
     void SetGrandMotherID(int id) {fGrandMotherID = id;}
     void SetMCSignalPair (bool value) {fMCSignalPair = value;}
     void SetULSSignalPair(bool value) {fULSSignalPair = value;}
-    void SetprimaryDielectronPairFromSameMother(std::vector<Bool_t> vec){primaryDielectronPairFromSameMother = vec;}
-    void SetsecondaryDielectronPairFromSameMother(std::vector<Bool_t> vec){secondaryDielectronPairFromSameMother = vec;}
 
 
     int  GetTrackID() {return fTrackID;}
@@ -209,16 +207,14 @@ public:
     std::vector<Bool_t> isMCSignal_secondary;
     std::vector<Bool_t> isReconstructed_primary;
     std::vector<Bool_t> isReconstructed_secondary;
-    std::vector<Bool_t> primaryDielectronPairFromSameMother;
-    std::vector<Bool_t> secondaryDielectronPairFromSameMother;
   };
 
   class TwoPair{
   public:
     TwoPair() :
-      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary() {}
+      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary() {}
     TwoPair(double pt, double eta, double phi, double mass, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_secondary(){}
+      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary(){}
 
     void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
     void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
@@ -244,6 +240,7 @@ public:
     std::vector<Bool_t> fMCTwoSignal_acc_sec;
     std::vector<Bool_t> fFirstPartIsReconstructed;
     std::vector<Bool_t> fSecondPartIsReconstructed;
+    std::vector<Bool_t> isReconstructed_primary;
     std::vector<Bool_t> isReconstructed_secondary;
 
   };
@@ -298,6 +295,16 @@ private:
 
   TList* fOutputList;
   TList* fSingleElectronList;
+  TList* fGeneratedPrimaryList;
+  TList* fGeneratedSecondaryList;
+  TList* fGeneratedSmearedPrimaryList;
+  TList* fGeneratedSmearedSecondaryList;
+  TList* fRecPrimaryList;
+  TList* fRecSecondaryList;
+  TList* fGeneratedPrimaryPairsList;
+  TList* fGeneratedSecondaryPairsList;
+  TList* fGeneratedSmearedPrimaryPairsList;
+  TList* fGeneratedSmearedSecondaryPairsList;
   TList* fPairList;
   TList* fFourPairList;
   TList* fResolutionList;
@@ -332,7 +339,6 @@ private:
   std::vector<double> fResolutionThetaBins;
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
-  bool fDoGenSmearing;
 
   double  fPtMin; // Kinematic cut for pairing
   double  fPtMax; // Kinematic cut for pairing
@@ -375,8 +381,9 @@ private:
   Bool_t fSelectPhysics;
   Int_t  fTriggerMask;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary;
-  std::vector<AliAnalysisFilter*> fTrackCuts_secondary_loose;
-  std::vector<AliAnalysisFilter*> fTrackCuts_secondary_standard;
+  std::vector<AliAnalysisFilter*> fPairCuts_primary;
+  std::vector<AliAnalysisFilter*> fPairCuts_secondary_loose;
+  std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;
   TBits*  fUsedVars;                // used variables by AliDielectronVarManager
 
   int fSupportMCSignal; // Setting for which the support histograms are filled
@@ -396,8 +403,10 @@ private:
   TH1F* fHistCentralityCorrection;
   TList* fOutputListSupportHistos;
 
-  std::vector<TList*> fCutListVecPrim;    // Vector filled with each applied primary cutsetting
-  std::vector<TList*> fCutListVecSec;     // Vector filled with each applied secondary cutsetting
+  std::vector<TList*> fTrackCutListVecPrim;    // Vector filled with each applied track primary cutsetting
+  std::vector<TList*> fTrackCutListVecSec;     // Vector filled with each applied track secondary cutsetting
+  std::vector<TList*> fPairCutListVecSec;     // Vector filled with each applied track secondary cutsetting
+  std::vector<TList*> fFourPairCutListVec;     // Vector filled with each applied track secondary cutsetting
   // TList* fPrimarySupportHistos;
   // TList* fSecondarySupportHistos;
 
@@ -456,14 +465,10 @@ private:
   Bool_t fDoMassCut;
   Bool_t fPhotonMass;
 
-  std::vector<Particle> fGenNegPart;
-  std::vector<Particle> fGenPosPart;
   std::vector<Particle> fGenNegPart_primary;
   std::vector<Particle> fGenPosPart_primary;
   std::vector<Particle> fGenNegPart_secondary;
   std::vector<Particle> fGenPosPart_secondary;
-  std::vector<Particle> fGenSmearedNegPart;
-  std::vector<Particle> fGenSmearedPosPart;
   std::vector<Particle> fGenSmearedNegPart_primary;
   std::vector<Particle> fGenSmearedPosPart_primary;
   std::vector<Particle> fGenSmearedNegPart_secondary;

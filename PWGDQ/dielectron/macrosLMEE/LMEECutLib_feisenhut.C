@@ -182,9 +182,14 @@ public:
     AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
     cgPIDCutsAna->AddCut(etaRange);
     cgPIDCutsAna->AddCut(ptRange);
+                                                                                Printf("%d DEBUG CutLib before PID " , __LINE__);
     cgPIDCutsAna->AddCut(PID);
+                                                                                Printf("%d DEBUG CutLib after PID " , __LINE__);
+
     cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
-                                                                                cgPIDCutsAna->AddCut(GetPairCutsAna(AnaCut));
+                                                                                Printf("%d DEBUG CutLib after GetTrackSelectionAna " , __LINE__);
+    cgPIDCutsAna->AddCut(GetPairCutsAna(AnaCut));
+                                                                                Printf("%d DEBUG CutLib after GetPairCutsAna " , __LINE__);
     return cgPIDCutsAna;
   }
 
