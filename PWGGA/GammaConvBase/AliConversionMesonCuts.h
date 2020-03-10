@@ -132,7 +132,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   PrintCuts();
     void   PrintCutsWithValues();
 
-    void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
     void    SetRunningMode(Int_t mode){fMode = mode; return;}
     void    InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
     void    SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
@@ -292,7 +292,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundHandler;             ///<
     Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
 
-    Bool_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis

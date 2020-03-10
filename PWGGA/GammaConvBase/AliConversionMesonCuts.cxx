@@ -135,7 +135,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fElectronLabelArray(NULL),
   fBackgroundHandler(0),
   fMassParamFunction(0),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
   fDoMinPtCut(kFALSE),
   fEnableMassCut(kFALSE),
   fAcceptMesonMass(kTRUE),
@@ -351,6 +351,12 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     fHistograms->SetOwner(kTRUE);
@@ -3559,6 +3565,18 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.0275;
       fPSigSmearingCte  = 0.04;
+      break;
+    case 15:     //f
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.0275;
+      fPSigSmearingCte  = 0.015;
+      break;
+    case 16:     //g
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.025;
+      fPSigSmearingCte  = 0.020;
       break;
 
     default:
