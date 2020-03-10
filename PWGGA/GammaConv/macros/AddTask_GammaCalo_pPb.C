@@ -374,10 +374,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","411793105f032230000","01633031000000d0"); // rapidity variation  y<0.6
     cuts.AddCutCalo("80010123","411793105f032230000","01634031000000d0"); // rapidity variation  y<0.5
     cuts.AddCutCalo("80010123","411793105f032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
-    cuts.AddCutCalo("80010123","411793105f032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
-} else if (trainConfig == 2360) {
-  r6
-  
+    cuts.AddCutCalo("80010123","411793105f032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75  
     
     
   } else if (trainConfig == 100){ // EMCAL clusters standard cuts, cent vars
