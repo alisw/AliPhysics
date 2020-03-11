@@ -210,6 +210,7 @@ Bool_t AliTPythia8::Initialize(Int_t idAin, Int_t idBin, Double_t ecms)
 {
    // Initialization
    AddParticlesToPdgDataBase();
+   UpdateParticleProperties();
    ReadString(Form("Beams:eCM = %13.4f", ecms));
    ReadString(Form("Beams:idA = %10d", idAin));
    ReadString(Form("Beams:idB = %10d", idBin));
@@ -536,3 +537,10 @@ void AliTPythia8::AddParticlesToPdgDataBase() const
                       0, 1, "QCD diffr. state", 9902210);
 }
 
+//___________________________________________________________________________
+void AliTPythia8::UpdateParticleProperties() const
+{
+  // Set up2date lifetimes for hadrons
+  // lambda_b from PDG 2019: tau0 = 1.471 ps = 441 m/c = 0.441 mm/c
+  ReadString("5122:tau0 = 4.41000e-01");
+}
