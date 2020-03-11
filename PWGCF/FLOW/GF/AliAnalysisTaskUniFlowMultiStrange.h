@@ -202,18 +202,20 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetXiEtaMin(Double_t value){fXiPseMin = value;}
       void  SetXiEtaMax(Double_t value){fXiPseMax = value;}
       void  SetV0RadiusXiMin(Double_t value){fV0RadiusXiMin = value;}
-      void  SetV0RadiusXiMax(Double_t value){fV0RadiusXiMax = value;}
       void  SetXiRadiusMin(Double_t value){fXiRadiusMin = value;}
-      void  SetXiRadiusMax(Double_t value){fXiRadiusMax = value;}
       void  SetDCAXiDaughtersMax(Double_t value){fdcaXiDaughtersMax = value;}
       void  SetXiCosOfPointingAngleMin(Double_t value){fXiCosOfPointingAngleMin = value;}
       void  SetDCAV0ToPrimaryVtxXiMin(Double_t value){fdcaV0ToPrimaryVtxXiMin = value;}
       void  SetDCABachToPrimaryVtxXiMin(Double_t value){fdcaBachToPrimaryVtxXiMin = value;}
+      void  SetDCABachToPrimaryVtxXiMinLowPt(Double_t value){fdcaBachToPrimaryVtxXiMinLowPt = value;}
       void  SetLambdaMassWindow(Double_t value){fLambdaMassWind = value;}
       void  SetDCAV0DaughtersXi(Double_t value){fdcaV0DaughtersXi = value;}
       void  SetV0CosOfPointingAngleXiMin(Double_t value){fV0CosOfPointingAngleXiMin = value;}
       void  SetDCAPosToPrimaryVtxXiMin(Double_t value){fdcaPosToPrimaryVtxXiMin = value;}
       void  SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
+      void  SetDCAPosToPrimaryVtxXiMinLowPt(Double_t value){fdcaPosToPrimaryVtxXiMinLowPt = value;}
+      void  SetDCANegToPrimaryVtxXiMinLowPt(Double_t value){fdcaNegToPrimaryVtxXiMinLowPt = value;}
+
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
       void  SetXiMasswindow(Double_t value){fXiMasswindow = value;}
@@ -238,8 +240,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      static const Int_t      fCascadesNumBinsMass = 120;
-
+      static const Int_t      fCascadesNumBinsMass = 60;
       static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
 
       const char*             GetSpeciesName(PartSpecies species) const;
@@ -323,18 +324,19 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
-       Double_t fV0RadiusXiMax;//
        Double_t fXiRadiusMin;//
-       Double_t fXiRadiusMax;//
        Double_t fdcaXiDaughtersMax;//
        Double_t fXiCosOfPointingAngleMin;//
        Double_t fdcaV0ToPrimaryVtxXiMin;//
        Double_t fdcaBachToPrimaryVtxXiMin;//
+       Double_t fdcaBachToPrimaryVtxXiMinLowPt;//
        Double_t fLambdaMassWind;//
        Double_t fdcaV0DaughtersXi;//
        Double_t fV0CosOfPointingAngleXiMin;//
        Double_t fdcaPosToPrimaryVtxXiMin;//
        Double_t fdcaNegToPrimaryVtxXiMin;//
+       Double_t fdcaPosToPrimaryVtxXiMinLowPt;//
+       Double_t fdcaNegToPrimaryVtxXiMinLowPt;//
        Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
        Double_t fXiPIDsigma;//
        Double_t fXiMasswindow;//
@@ -449,6 +451,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       std::vector<Bool_t>  fAddFourGapIsRefs; // 
       std::vector<Bool_t>  fAddFourGapIsPOIs; //
 
+    
 
       //cuts & selection: analysis
       RunMode                 fRunMode; // running mode (not grid related)
