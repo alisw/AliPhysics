@@ -75,7 +75,7 @@ struct RLightNucleus {
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
   char       centrality;
   unsigned char tpcPIDcls;
-  unsigned char flags;       //
+  unsigned char flag;       //
 };
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
@@ -330,7 +330,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         good2save = false;
     }
     if (good2save) {
-      AliTOFPIDResponse& tofPID = mPIDresponse->GetTOFResponse();
+      AliTOFPIDResponse& tofPID = fPID->GetTOFResponse();
 
       fRecNucleus.pt = track->Pt() * track->Charge();
       fRecNucleus.eta = track->Eta();
