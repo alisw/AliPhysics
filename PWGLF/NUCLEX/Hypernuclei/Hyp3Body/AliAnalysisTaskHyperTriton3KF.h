@@ -38,7 +38,8 @@ struct SHyperTriton3KF {
   float py = -999.f;
   float pz = -999.f;
   float l = -1.f;
-  int reco = -1;
+  float t = -1.f;
+  bool positive = false;
 };
 
 
@@ -53,6 +54,24 @@ struct RHyperTriton3KF {
   float chi2_topology = -1.f;
   float cosPA = -1.f;
   float m = -1;
+  Double32_t dca_de = 2.0; //[0.0,2.0,8]
+  Double32_t dca_pr = 2.0; //[0.0,2.0,8]
+  Double32_t dca_pi = 2.0; //[0.0,2.0,8]
+  Double32_t tpcNsig_de = -4.0; //[-4.0,4.0,8]
+  Double32_t tpcNsig_pr = -4.0; //[-4.0,4.0,8]
+  Double32_t tpcNsig_pi = -4.0; //[-4.0,4.0,8]
+  Double32_t tofNsig_de = -4.0; //[-4.0,4.0,8]
+  Double32_t tofNsig_pr = -4.0; //[-4.0,4.0,8]
+  Double32_t tofNsig_pi = -4.0; //[-4.0,4.0,8]
+  Double32_t dca_de_pr = -4.0; //[0.0,2.0,8]
+  Double32_t dca_de_pi = -4.0; //[0.0,2.0,8]
+  Double32_t dca_pr_pi = -4.0; //[0.0,2.0,8]
+  bool hasTOF_de;
+  bool hasTOF_pr;
+  bool hasTOF_pi;
+  UChar_t tpcClus_de = 0u;
+  UChar_t tpcClus_pr = 0u;
+  UChar_t tpcClus_pi = 0u;
 };
 
 class AliAnalysisTaskHyperTriton3KF : public AliAnalysisTaskSE {
@@ -125,6 +144,7 @@ private:
 
   REvent3KF                    fREvent;
   std::vector<SHyperTriton3KF> fGenHyp;
+  std::vector<int>             fGenRecMap;
   std::vector<RHyperTriton3KF> fRecHyp;
 
   AliAnalysisTaskHyperTriton3KF(const AliAnalysisTaskHyperTriton3KF &);               // not implemented
