@@ -647,10 +647,11 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin, fpTmax);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
-                                              fDoMultBinning, fCheckMother);
+                                              fDoMultBinning, fCheckMother,
+					      fpTmin, fpTmax);
     }
     BookTrackCuts();
   } else {

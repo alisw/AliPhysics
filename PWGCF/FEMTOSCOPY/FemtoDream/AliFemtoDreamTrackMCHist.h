@@ -19,7 +19,8 @@ class AliFemtoDreamTrackMCHist {
   AliFemtoDreamTrackMCHist();
   AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist,
                            bool DoMultBinning = false,
-                           bool checkMother = false);
+                           bool checkMother = false,
+			   float pTmin = 0.5, float pTmax = 4.05);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth,
                          float pT, float dcaxy, int multiplicity);
@@ -118,7 +119,6 @@ class AliFemtoDreamTrackMCHist {
   void SetMultRangeHigh(int range) {
     fMultRangeHigh = range;
   }
-
   void SetName(TString name) {
     fMCList->SetName(name.Data());
   }
@@ -134,14 +134,14 @@ class AliFemtoDreamTrackMCHist {
  private:
   AliFemtoDreamTrackMCHist &operator=(const AliFemtoDreamTrackMCHist &obj);
   AliFemtoDreamTrackMCHist(const AliFemtoDreamTrackMCHist&);
-  float fpTmin;                  //!
-  float fpTmax;                  //!
   float fpTbins;                 //!
   float fMultRangeLow;			 //!
   float fMultRangeHigh;			 //!
   bool fDoSplitting;              //!
   bool fDoDCAPlots;               //!
   bool fDoMultiplicityBinning;    //!
+  float fpTmin;                   //!
+  float fpTmax;                   //!
 
   TList *fMCList;                 //!
   TList *fMCQAPlots[4];           //!
