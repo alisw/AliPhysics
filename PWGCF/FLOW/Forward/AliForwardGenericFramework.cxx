@@ -13,7 +13,6 @@ using namespace std;
 //_____________________________________________________________________
 AliForwardGenericFramework::AliForwardGenericFramework(Int_t refbins):
   fSettings(),
-  fQvector_per_detector(),
   fQvector(),
   fpvector(),
   fqvector(),
@@ -106,7 +105,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
             if ((useFMD && ((fSettings.ref_mode & fSettings.kFMDref))) || (!(useFMD) && (fSettings.ref_mode & fSettings.kTPCref))) {
               fqvector->Fill(re, realPart);
               fqvector->Fill(im, imPart);
-              if (TMath::Abs(refEta)>1.5)  fAutoDiff->Fill(eta,weight*weight - weight);
+              if ((TMath::Abs(refEta)>1.5) & !fSettings.etagap) fAutoDiff->Fill(refEta,weight*weight - weight);
             }
           }
 
@@ -123,7 +122,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
             Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
             Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-            if (TMath::Abs(refEta)>1.5) fAutoRef->Fill(refEta,weight*weight - weight);  
+            if ((TMath::Abs(refEta)>1.5) & !fSettings.etagap) fAutoRef->Fill(refEta,weight*weight - weight);  
             fQvector->Fill(req, realPart);
             fQvector->Fill(imq, imPart);
           }
@@ -151,13 +150,13 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
 
       refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
+      refEtaA    = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
       refEtaBinB = refEtaBinA;
       etaBinB    = etaBin;
-      refEtaA = fQvector->GetAxis(3)->GetBinCenter(refEtaBinA);
 
       if ((fSettings.etagap)) {
         refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
-        etaBinB = fpvector->GetAxis(3)->FindBin(-eta);
+        etaBinB    = fpvector->GetAxis(3)->FindBin(-eta);
       }
 
       // index to get sum of weights
@@ -192,10 +191,12 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
       if ((fSettings.normal_analysis || fSettings.decorr_analysis) || fSettings.second_analysis){
         if (n==2){
-          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re() + fAutoDiff->GetBinContent(etaBin);
+          double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
+          if (!fSettings.etagap) dn2diff += fAutoDiff->GetBinContent(etaBin);
           fill(cumu_dW2B, -n, ptn, sample, zvertex, eta, cent, dn2diff);          
         }
-        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re() + fAutoDiff->GetBinContent(etaBin);;
+        double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
+        if (!fSettings.etagap) twodiff += fAutoDiff->GetBinContent(etaBin);
         fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
       }
       if (fSettings.decorr_analysis){
