@@ -318,7 +318,7 @@ class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
 
       void                    Propagate( Double_t vv[3],Double_t x[3],Double_t p[3],Double_t bz,Double_t sign) const;
       Double_t                PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
-
+       Int_t   nPtbins;//
        Bool_t  Is2018Data;//
        Bool_t  IsPIDorrection;//
        Bool_t  IsAdditional2018DataEventCut;//
