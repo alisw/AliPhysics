@@ -11,9 +11,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
     : TNamed(),
       fMultBinning(false),
       fCentBinning(false),
-      fkTandMultBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -41,8 +41,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
-      fAncestors(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -55,9 +56,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
     : TNamed(config),
       fMultBinning(config.fMultBinning),
       fCentBinning(config.fCentBinning),
-      fkTandMultBinning(config.fkTandMultBinning),
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
+      fkTandMultBinning(config.fkTandMultBinning),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -85,8 +86,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCorrelationRange(config.fCorrelationRange),
       fkTCentrality(config.fkTCentrality),
       fmTdEtadPhi(config.fmTdEtadPhi),
-      fAncestors(config.fAncestors),
+      fmTMultBinning(config.fmTMultBinning),
       fEst(config.fEst),
+      fAncestors(config.fAncestors),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
@@ -99,9 +101,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
     : TNamed(name, title),
       fMultBinning(false),
       fCentBinning(false),
-      fkTandMultBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -129,8 +131,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
-      fAncestors(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -142,9 +145,9 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     TNamed::operator=(config);
     this->fMultBinning = config.fMultBinning;
     this->fCentBinning = config.fCentBinning;
-    this->fkTandMultBinning = config.fkTandMultBinning;
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
+    this->fkTandMultBinning = config.fkTandMultBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
@@ -172,8 +175,9 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCorrelationRange = config.fCorrelationRange;
     this->fkTCentrality = config.fkTCentrality;
     this->fmTdEtadPhi = config.fmTdEtadPhi;
-    this->fAncestors = config.fAncestors;
+    this->fmTMultBinning = config.fmTMultBinning; 
     this->fEst = config.fEst;
+    this->fAncestors = config.fAncestors;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
@@ -295,9 +299,8 @@ std::vector<int> AliFemtoDreamCollConfig::GetCentBins() {
   }
   return fCentBins;
 }
-void AliFemtoDreamCollConfig::SetmTdEtadPhiBins(std::vector<float> mTBins) {
-  //Set Bins for the deta dphi mT Binning
-  fmTdEtadPhi = true;
+void AliFemtoDreamCollConfig::SetmTBins(std::vector<float> mTBins) {
+  //Set Bins for the deta dphi and multiplicity mT Binning 
   fmTBins = mTBins;
 }
 std::vector<float> AliFemtoDreamCollConfig::GetmTBins() {
