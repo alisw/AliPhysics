@@ -360,9 +360,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-  //  if (suffix != "0") {
-  //    TrackCutsPhi->SetMinimalBooking(true);
-  //  }
+//    if (suffix != "0") {
+//      TrackCutsPhi->SetMinimalBooking(true);
+//    }
 
     if (suffix == "1") {
       TrackCutsPhi->SetCutWindow(0.987, 1.011);
@@ -763,7 +763,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
-  task->SetUseDumpster(true);
+  task->SetUseDumpster(false);
+
+  if (suffix == "0") {
+      task->SetUseDumpster(true);
+  }
+
+
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
