@@ -33,7 +33,7 @@
 #include "AliAnaElectron.h"
 #include "AliAnaPi0.h"
 #include "AliAnaPi0EbE.h"
-#include "AliHistogramRanges.h"
+#include "AliAnaRandomTrigger.h"
 #include "AliAnaParticleIsolation.h"
 #include "AliAnaParticleHadronCorrelation.h"
 #include "AliAnaChargedParticles.h"
@@ -44,6 +44,8 @@
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliAnaParticleJetFinderCorrelation.h"
+#include "AliHistogramRanges.h"
+
 #endif
 
 /// Global name to be composed of the settings, used to set the AOD branch name
@@ -872,6 +874,81 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   
   return ana;
 }
+
+///
+/// Configure the task generating random ghost particles
+///
+/// \param detector : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
+AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis
+( TString detector     , Int_t  year,
+  Bool_t  printSettings, Int_t  debug, 
+  TString histoString
+ )
+{
+  AliAnaRandomTrigger *ana = new AliAnaRandomTrigger();
+  ana->SetDebug(debug); //10 for lots of messages
+  
+  ana->SetTriggerDetector(detector);
+  
+  // selection cuts
+  
+  // A Flat pT distribution within these numbers
+  ana->SetMinPt(10.); 
+  ana->SetMaxPt(60.);   
+  
+  // A flat eta and phi distribution limited to known detectors
+  if      ( detector=="EMCAL" )
+  {
+    ana->SetEtaCut(-0.7,0.7);
+    ana->SetPhiCut(80*TMath::DegToRad(), 187*TMath::DegToRad());
+    if      ( year == 2010 ) ana->SetPhiCut(80*TMath::DegToRad(), 120*TMath::DegToRad());
+    else if ( year <  2014 ) ana->SetPhiCut(80*TMath::DegToRad(), 180*TMath::DegToRad());
+
+  }
+  else if ( detector=="DCAL" )
+   {
+     ana->SetEtaCut(0.22,0.7);
+     ana->SetPhiCut(260*TMath::DegToRad(), 327*TMath::DegToRad());
+   }
+  else if ( detector=="PHOS" )
+  {
+    ana->SetEtaCut(-0.13,0.13);
+    ana->SetPhiCut(250*TMath::DegToRad(), 320*TMath::DegToRad());
+    if ( year <  2014 ) ana->SetPhiCut(260*TMath::DegToRad(), 320*TMath::DegToRad());
+
+  }
+  else if ( detector=="CTS" )
+  {
+    ana->SetEtaCut(-0.9,0.9);
+    ana->SetPhiCut(0, TMath::TwoPi());
+  }
+  
+  // AOD branch
+  ana->SetOutputAODName(Form("RandomTrigger_%s",kAnaCaloTrackCorr.Data()));
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+  
+  //Set Histograms name tag, bins and ranges
+  ana->AddToHistogramsName("AnaRandom_");
+  
+  SetAnalysisCommonParameters(ana,histoString,detector,year,"pp",kFALSE,printSettings,debug) ; // see method below
+
+  // Reset histogram bins, no need for fine bins
+  ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 50) ;
+  ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1., 1., 50) ;
+  ana->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 50) ;
+  
+  
+  if ( printSettings ) ana->Print("");
+  
+  return ana;
+}
+
+
 
 ///
 /// Configure the isolation cuts 
@@ -1916,23 +1993,29 @@ void ConfigureCaloTrackCorrAnalysis
     
     if ( analysisString.Contains("DecayPi0") )
     {
+      // Pi0 event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
                      ("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Pi0 event by event selection, invariant mass and photon tagging from decay
+                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
+      // Eta event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
                      ("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Eta event by event selection, invariant mass and photon tagging from decay
+                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
+      // Pi0 out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
                      ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Pi0 out of peak event by event selection, and photon tagging from decay
+                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
+      // Eta out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
                      ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Eta out of peak event by event selection, and photon tagging from decay
+                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
     }
     
+    // Photon isolation
+    //
     if ( analysisString.Contains("Isolation") )
     {
       if (analysisString.Contains("MultiIsoUESubMethods"))
@@ -1952,43 +2035,46 @@ void ConfigureCaloTrackCorrAnalysis
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
                         isoCone,isoConeMin,isoPtTh, kFALSE,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Photon isolation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
                         isoCone,isoConeMin,isoPtTh, kFALSE,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Photon isolation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
                         isoCone,isoConeMin,isoPtTh, kFALSE,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Photon isolation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
       else
       {
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Photon isolation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
       
     }
     
+    // Gamma-hadron correlation
+    //
     if( analysisString.Contains("Correlation") )
     {
       if ( !analysisString.Contains("MultiIso") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
                        ("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Gamma-hadron correlation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       }
       
       if ( analysisString.Contains("Isolation")  )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
                        ("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); 
       }
     } // correlation
     
-    //Gamma-jet correlation
+    // Gamma-jet correlation
+    //
     if ( analysisString.Contains("GammaJet") ) 
     {
       if( analysisString.Contains("Isolation") )
@@ -2003,33 +2089,120 @@ void ConfigureCaloTrackCorrAnalysis
   //
   if ( analysisString.Contains("MergedPi0") )
   {
+    // Pi0 event by event selection, cluster splitting
+    //
     anaList->AddAt(ConfigurePi0EbEAnalysis
                    ("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,kTRUE,
-                    col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Pi0 event by event selection, cluster splitting
+                    col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+    
+    // Merged pi0 isolation
+    //
     if ( analysisString.Contains("Isolation") )
     {
       anaList->AddAt(ConfigureIsolationAnalysis
                      ("Pi0SS", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
-                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);          // Pi0 isolation, cluster splits
+                      col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);   
       
     }
     
+    // Merged Pi0-hadron correlation
+    //
     if( analysisString.Contains("Correlation") )
     {
       if ( !analysisString.Contains("MultiIso") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
                        ("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);  // Pi0-hadron correlation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);  
       }
       
       if ( analysisString.Contains("Isolation") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
                        ("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated pi0-hadron correlation
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); 
       }
     } // correlation
+  }
+  
+  //
+  // Random ghost trigger analysis
+  //
+  if ( analysisString.Contains("Random") )
+  {
+    // Random trigger generation over selected acceptance
+    //
+    anaList->AddAt(ConfigureRandomTriggerAnalysis
+                   (calorimeter,year,printSettings,debug,histoString), n++); 
+    
+    // Random trigger isolation on data 
+    //
+    if ( analysisString.Contains("Isolation") )
+    {
+      if (analysisString.Contains("MultiIsoUESubMethods"))
+      {
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubEtaBandIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
+                        isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+      }
+      else
+      {
+        anaList->AddAt(ConfigureIsolationAnalysis
+                       ("Random", leading, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, kFALSE,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+      }
+      
+    }
+    
+    // Random trigger correlation with data
+    //
+    if( analysisString.Contains("Correlation") )
+    {
+      if ( !analysisString.Contains("MultiIso") )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Random", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Gamma-hadron correlation
+      }
+      
+      if ( analysisString.Contains("Isolation")  )
+      {
+        anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                       ("Random", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
+      }
+    } // correlation
+    
+    // Random-jet correlation
+    //
+    if ( analysisString.Contains("GammaJet") ) 
+    {
+      if( analysisString.Contains("Isolation") )
+        anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,year,kTRUE ,isoCone,simulation,col,printSettings,debug,histoString), n++);
+      else
+        anaList->AddAt(ConfigureGammaJetAnalysis(calorimeter,year,kFALSE,isoCone,simulation,col,printSettings,debug,histoString), n++);
+    }// end of gamma-jet correlation
   }
   
   // Check the generated kinematics
