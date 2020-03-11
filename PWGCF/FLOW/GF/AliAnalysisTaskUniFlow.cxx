@@ -3577,7 +3577,7 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
     AliUniFlowCorrTask* nextTask = nullptr;
     if(iTask+1 < iNumTasks) {
       nextTask = (AliUniFlowCorrTask*) fVecCorrTask.at(iTask+1);
-      if(thisTask->fMaxHarm < nextTask->fMaxHarm && thisTask->fiNumGaps == nextTask->fiNumGaps){
+      if(thisTask->fiNumHarm < nextTask->fiNumHarm && thisTask->fiHarm[0] == nextTask->fiHarm[0] && thisTask->fiNumGaps == nextTask->fiNumGaps){
         isLowerOrder = kTRUE;
         for(Int_t gaps(0); gaps < thisTask->fiNumGaps; gaps++){
           if(thisTask->fdGaps[gaps] != nextTask->fdGaps[gaps]) isLowerOrder = kFALSE;
