@@ -104,7 +104,7 @@ bool AliHFMLVarHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float 
 
     double d0[2], cov[3];
     cand->PropagateToDCA(cand->GetPrimaryVtx(), 0., 3., d0, cov); //propagate as a straight line
-    fDCA = TMath::Sqrt(d0[0]*d0[0]+d0[1]*d0[1])
+    fDCA = TMath::Sqrt(d0[0]*d0[0]+d0[1]*d0[1]);
 
     //D+ -> Kpipi variables
     AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;
