@@ -76,7 +76,8 @@ class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
-       void                   SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
+      void                    SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
+      void                    SetSameEventAsRFPID(){IsFilterSame = kTRUE;}
       void                    SetPIDCorrection(const char* file){IsPIDorrection = kTRUE; fPIDCorrectionPath = file;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
@@ -298,6 +299,8 @@ class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
       // Flow related methods
       void                    FillRefsVectors(Double_t dGap, PartSpecies species); // fill flow vector Q with RFPs for reference flow
       Int_t                    FillPIDRefsVectors(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh);
+      Int_t                   FilterSameEventAsRefs(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh);
+
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
@@ -315,12 +318,13 @@ class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
 
       void                    Propagate( Double_t vv[3],Double_t x[3],Double_t p[3],Double_t bz,Double_t sign) const;
       Double_t                PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
-
+       Int_t   nPtbins;//
        Bool_t  Is2018Data;//
        Bool_t  IsPIDorrection;//
        Bool_t  IsAdditional2018DataEventCut;//
        Bool_t  IsPosAndNegRF;//
        Bool_t  IsPIDRFFlow;//
+       Bool_t  IsFilterSame;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
@@ -568,6 +572,8 @@ class AliAnalysisTaskFlowSquareBracket : public AliAnalysisTaskSE
 
       TH2D*                   fh2Weights[kUnknown]; //! container for GF weights (phi,eta,pt) (2D)
       TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
+      
+      THnSparseD*             fhFillWeights[kUnknown]; //!
       TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
       TH3D*                   fh3AfterWeights[kUnknown]; //! distribution after applying GF weights - full QA (phi,eta,pt)
 

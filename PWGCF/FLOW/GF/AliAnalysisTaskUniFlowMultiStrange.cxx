@@ -290,20 +290,21 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fXiPseMin(-0.8),
   fXiPseMax(0.8),
   fV0RadiusXiMin(3),
-  fV0RadiusXiMax(100),
-  fXiRadiusMin(0.9),
-  fXiRadiusMax(100),
+  fXiRadiusMin(1.0),
   fdcaXiDaughtersMax(0.3),
   fXiCosOfPointingAngleMin(0.999),
-  fdcaV0ToPrimaryVtxXiMin(0.05),
-  fdcaBachToPrimaryVtxXiMin(0.05),
+  fdcaV0ToPrimaryVtxXiMin(0.1),
+  fdcaBachToPrimaryVtxXiMin(0.03),
+  fdcaBachToPrimaryVtxXiMinLowPt(0.1),
   fLambdaMassWind(0.008),
   fdcaV0DaughtersXi(1),
   fV0CosOfPointingAngleXiMin(0.998),
-  fdcaPosToPrimaryVtxXiMin(0.15),
-  fdcaNegToPrimaryVtxXiMin(0.15),
+  fdcaPosToPrimaryVtxXiMin(0.1),
+  fdcaPosToPrimaryVtxXiMinLowPt(0.2),
+  fdcaNegToPrimaryVtxXiMin(0.1),
+  fdcaNegToPrimaryVtxXiMinLowPt(0.2),
   fCutCascadesrejectKinks(kTRUE),
-  fXiMasswindow(0.01),
+  fXiMasswindow(0.008),
   fXiPIDsigma(5),
   //--------track-------------------------------------------------  
    // fPrimaryTrackEta(0),
@@ -635,23 +636,24 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fXiPseMin(-0.8),
   fXiPseMax(0.8),
   fV0RadiusXiMin(3),
-  fV0RadiusXiMax(100),
-  fXiRadiusMin(0.9),
-  fXiRadiusMax(100),
+  fXiRadiusMin(1.0),
   fdcaXiDaughtersMax(0.3),
   fXiCosOfPointingAngleMin(0.999),
-  fdcaV0ToPrimaryVtxXiMin(0.05),
-  fdcaBachToPrimaryVtxXiMin(0.05),
+  fdcaV0ToPrimaryVtxXiMin(0.1),
+  fdcaBachToPrimaryVtxXiMin(0.03),
+  fdcaBachToPrimaryVtxXiMinLowPt(0.1),
   fLambdaMassWind(0.008),
   fdcaV0DaughtersXi(1),
   fV0CosOfPointingAngleXiMin(0.998),
-  fdcaPosToPrimaryVtxXiMin(0.15),
-  fdcaNegToPrimaryVtxXiMin(0.15),
+  fdcaPosToPrimaryVtxXiMin(0.1),
+  fdcaPosToPrimaryVtxXiMinLowPt(0.2),
+  fdcaNegToPrimaryVtxXiMin(0.1),
+  fdcaNegToPrimaryVtxXiMinLowPt(0.2),
   fCutCascadesrejectKinks(kTRUE),
-  fXiMasswindow(0.01),
+  fXiMasswindow(0.008),
   fXiPIDsigma(5),
   //--------track-------------------------------------------------  
-   // fPrimaryTrackEta(0),
+  // fPrimaryTrackEta(0),
   fTrackEta(0.8),
   fTrackPtMin(0.15),
   fTPCNcls(70),
@@ -4043,6 +4045,23 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
   // create output objects
   // this function is called ONCE at the start of your analysis (RUNTIME)
   // *************************************************************
+  
+  Int_t nptXi=15;
+  Int_t nptOmega=8;
+  Double_t ptBinEdgeXi[] = {0.8,1,1.2,1.4,1.6,1.8,2,2.25,2.5,2.75,3,3.5,4,5,6,10}; 
+  Double_t ptBinEdgeOmega[] = {1,1.5,2,2.5,3,3.5,4,5,6};
+
+
+  Double_t CentBinEdge[fCentBinNum+1];
+  Double_t MassBinEdgeXi[fCascadesNumBinsMass+1];
+  Double_t MassBinEdgeOmega[fCascadesNumBinsMass+1];
+  for(Int_t icent =0; icent<fCentBinNum+1; icent++){
+   CentBinEdge[icent] = ((fCentMax-fCentMin)/fCentBinNum)*icent + fCentMin;
+  }
+  for(Int_t imass =0; imass<fCascadesNumBinsMass+1; imass++){
+   MassBinEdgeXi[imass] = ((fCutCascadesInvMassXiMax-fCutCascadesInvMassXiMin)/fCascadesNumBinsMass)*imass + fCutCascadesInvMassXiMin;
+   MassBinEdgeOmega[imass] = ((fCutCascadesInvMassOmegaMax-fCutCascadesInvMassOmegaMin)/fCascadesNumBinsMass)*imass + fCutCascadesInvMassOmegaMin;  
+  }
 
   DumpTObjTable("UserCreateOutputObjects: start");
 
@@ -4194,15 +4213,16 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
 
           case kXi:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassXiMin,fCutCascadesInvMassXiMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassXiMin,fCutCascadesInvMassXiMax); }
+              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptXi,ptBinEdgeXi,fCascadesNumBinsMass,MassBinEdgeXi);
+              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptXi,ptBinEdgeXi,fCascadesNumBinsMass,MassBinEdgeXi); 
+             }
               break;
             }
-
             case kOmega:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassOmegaMin,fCutCascadesInvMassOmegaMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassOmegaMin,fCutCascadesInvMassOmegaMax); }
+              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptOmega,ptBinEdgeOmega,fCascadesNumBinsMass,MassBinEdgeOmega);
+             if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptOmega,ptBinEdgeOmega,fCascadesNumBinsMass,MassBinEdgeOmega); 
+            }
               break;
             }
 
@@ -4293,20 +4313,19 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
 
    if(fProcessSpec[kXi] || fProcessSpec[kOmega])
     {
+      iNumBinsCand[SparseCand::kPt] = nptXi;
       iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutCascadesInvMassXiMin; dMaxCand[SparseCand::kInvMass] = fCutCascadesInvMassXiMax;
       fhsCandXi = new THnSparseD("fhsCandXi",Form("#Xi: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandXi->Sumw2();
+      fhsCandXi->SetBinEdges(2,ptBinEdgeXi);
       fListFlow[kXi]->Add(fhsCandXi);
-
+      iNumBinsCand[SparseCand::kPt] = nptOmega;
       iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutCascadesInvMassOmegaMin; dMaxCand[SparseCand::kInvMass] = fCutCascadesInvMassOmegaMax;
       fhsCandOmega = new THnSparseD("fhsCandOmega",Form("#Omega: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandOmega->Sumw2();
+      fhsCandOmega->SetBinEdges(2,ptBinEdgeOmega);
       fListFlow[kOmega]->Add(fhsCandOmega);
     }
-
-
-
-
 
   } // end-if {fRunMode != fSkipFlow || iNumCorrTask > 0 }
 
@@ -4942,8 +4961,6 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsCascadeSelected(const AliAODcascade
                                    bestPrimaryVtxPos[2]);//3
 
 
-
-
    Double_t dcaBachToPrimaryVtxXi = xi->DcaBachToPrimVertex();//4
    Double_t dcaV0ToPrimaryVtxXi = xi->DcaV0ToPrimVertex();//5
 
@@ -4953,24 +4970,39 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::IsCascadeSelected(const AliAODcascade
    Double_t  dcaPosToPrimaryVtxXi = xi->DcaPosToPrimVertex();//3
    Double_t  dcaNegToPrimaryVtxXi = xi->DcaNegToPrimVertex();//3
 
+
+   Double_t posXi[3] = {-1000., -1000., -1000.};
+   posXi[0] = xi->DecayVertexXiX();
+   posXi[1] = xi->DecayVertexXiY();
+   posXi[2] = xi->DecayVertexXiZ();
+   Double_t XiRadius = TMath::Sqrt(posXi[0]*posXi[0]
+                           +posXi[1]*posXi[1]);
+   Double_t posV0Xi[3] = {-1000., -1000., -1000.};
+   posV0Xi[0] = xi->DecayVertexV0X();
+   posV0Xi[1] = xi->DecayVertexV0Y();
+   posV0Xi[2] = xi->DecayVertexV0Z();
+   Double_t V0RadiusXi = TMath::Sqrt(posV0Xi[0]*posV0Xi[0]
+                             +posV0Xi[1]*posV0Xi[1]);
+
+
  //----------------------------------------candidate selection cut------------------------------
  //on xi vertex
 
     if(TMath::Abs(invMassLambdaAsCascDghter-1.11568) > fLambdaMassWind) return kFALSE;//1 
     if(dcaXiDaughters > fdcaXiDaughtersMax) return kFALSE;//2
     if(XiCosOfPointingAngle < fXiCosOfPointingAngleMin) return kFALSE;//3
-    if(dcaBachToPrimaryVtxXi < fdcaBachToPrimaryVtxXiMin) return kFALSE;//4
+    if((XiPt>1.5) && (dcaBachToPrimaryVtxXi < fdcaBachToPrimaryVtxXiMin)) return kFALSE;//4
+    if((XiPt<=1.5) && (dcaBachToPrimaryVtxXi < fdcaBachToPrimaryVtxXiMinLowPt)) return kFALSE;//4
     if(dcaV0ToPrimaryVtxXi < fdcaV0ToPrimaryVtxXiMin) return kFALSE;//5
-
+    if(XiRadius < fXiRadiusMin) return kFALSE;//5   
+    if(V0RadiusXi < fV0RadiusXiMin) return kFALSE;//5  
   //  fhV0sCounter->Fill("Cascade daugter cut",1);
- //on v0 vertex
-    
+  //on v0 vertex
     if(dcaV0DaughtersXi > fdcaV0DaughtersXi) return kFALSE;//1
-    if(dcaPosToPrimaryVtxXi < fdcaPosToPrimaryVtxXiMin) return kFALSE;//2
-    if(dcaNegToPrimaryVtxXi < fdcaNegToPrimaryVtxXiMin) return kFALSE;//3
-
-  //  fhV0sCounter->Fill("V0 daugter cut",1);
-
+    if((XiPt>1.5) && (dcaPosToPrimaryVtxXi < fdcaPosToPrimaryVtxXiMin)) return kFALSE;//2
+    if((XiPt<=1.5) && (dcaPosToPrimaryVtxXi < fdcaPosToPrimaryVtxXiMinLowPt)) return kFALSE;//2
+    if((XiPt<=1.5) && (dcaNegToPrimaryVtxXi < fdcaNegToPrimaryVtxXiMinLowPt)) return kFALSE;//3
+    //fhV0sCounter->Fill("V0 daugter cut",1);
     return kTRUE;
 
 }
