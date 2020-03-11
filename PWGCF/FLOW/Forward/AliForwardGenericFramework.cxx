@@ -162,7 +162,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 
       // index to get sum of weights
       Int_t index1[4] = {2, 1, 1, refEtaBinB};
-      if (fSettings.etagap & (!(fQvector->GetBinContent(index1) > 0))) continue;
+      if (!(fQvector->GetBinContent(index1) > 0)) continue;
       // REFERENCE FLOW --------------------------------------------------------------------------------
       if (prevRefEtaBin & (prevbin != refEtaBinB)){ // only used once
 
