@@ -67,7 +67,10 @@ class AliFemtoDreamCorrHists {
     return fmTDetaDPhi;
   }
   ;
-    bool GetDoAncestorsPlots() {
+  bool GetDomTMultPlots() {
+    return fmTMultPlots;
+  }
+  bool GetDoAncestorsPlots() {
     return fAncestors;
   }
   void FillSameEventDist(int i, float RelK) {
@@ -101,6 +104,7 @@ class AliFemtoDreamCorrHists {
     if (fSameEventmTDist[i])
       fSameEventmTDist[i]->Fill(RelK, mT);
   }
+  void FillSameEventmTMultDist(int i, float mT, int iMult, float RelK);
   void FillMixedEventDist(int i, float RelK) {
     fMixedEventDist[i]->Fill(RelK);
   }
@@ -180,6 +184,7 @@ class AliFemtoDreamCorrHists {
     if (fMixedEventmTDist[i])
       fMixedEventmTDist[i]->Fill(RelK, mT);
   }
+  void FillMixedEventmTMultDist(int i, float mT, int iMult, float RelK);
   void FillPartnersSE(int hist, int nPart1, int nPart2) {
     if (!fMinimalBooking)
       fPairCounterSE[hist]->Fill(nPart1, nPart2);
@@ -316,6 +321,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTandMultDist;
   TH2F ***fSameEventkTCentDist;
+  TH2F ***fSameEventmTMultDist;
   TH2F **fPtQADist;
   TH2F **fPtQADistSEPartOne;
   TH2F **fPtQADistSEPartTwo;
@@ -332,6 +338,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fMixedEventkTDist;
   TH2F ***fMixedEventkTandMultDist;
   TH2F ***fMixedEventkTCentDist;
+  TH2F ***fMixedEventmTMultDist;
   TH2F **fPairCounterME;
   TH2F **fMomResolutionSE;
   TH2F **fMomResolutionSEAll;
@@ -368,6 +375,7 @@ class AliFemtoDreamCorrHists {
   bool fDokTandMultBinning;
   bool fDokTBinning;
   bool fDomTBinning;
+  bool fmTMultPlots;
   bool fPtQA;
   bool fMassQA;
   bool fDokTCentralityBins;
@@ -376,10 +384,10 @@ class AliFemtoDreamCorrHists {
   bool fmTDetaDPhi;
   bool fAncestors;
   std::vector<int> fPDGCode;
-  std::vector<float> fmTdEtadPhiBins;
+  std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<int> fCentBins;ClassDef(AliFemtoDreamCorrHists,9)
-  ;
+  std::vector<int> fCentBins;
+  ClassDef(AliFemtoDreamCorrHists,10);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
