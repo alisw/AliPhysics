@@ -43,8 +43,8 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
         pth = 2.1;
     }
     else{
-        ptl = 0.35;
-        pth = 1.05;
+        ptl = 0.4;
+        pth = 1.5;
     }
     
     
@@ -84,7 +84,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
         task->SetNumberOfPtBins( 16 );
     }
     else{
-        task->SetNumberOfPtBins( 19 );
+        task->SetNumberOfPtBins( 8 );
     }
     task->SetTPCTrackQualityCuts( TPCCrossRow, Chi2NDF );
     task->SetCentralityEstimator( CentEstimator );
