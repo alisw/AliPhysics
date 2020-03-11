@@ -13,11 +13,15 @@ public:
   AliNanoAODINELgt0setter(const char * name = "AliNanoAODINELgt0setter") : AliNanoAODCustomSetter(name), fIndex(-1) {;}
   virtual ~AliNanoAODINELgt0setter() {;}
   inline virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) {
-    if (fIndex == -1)
+    AliNanoAODSimpleSetter simpleSetter;
+    simpleSetter.SetNanoAODHeader(event,head,varListHeader);
+    if (fIndex < 0)
       fIndex = varListHeader.Contains("cstINELgt0") ? head->GetVarIndex("cstINELgt0") : -2;
     if (fIndex >= 0)
       head->SetVar(fIndex, AliMultSelectionTask::IsINELgtZERO(event) ? 1 : 0);
-  } 
+    else
+      AliFatal("Can't Init cstINELgt0, Remove this setter from the setter list");
+  }
   virtual void SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) {
       // This function will not be used in this class.
       return;
