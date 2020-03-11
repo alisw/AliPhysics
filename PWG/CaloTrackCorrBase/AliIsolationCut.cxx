@@ -206,7 +206,6 @@ void AliIsolationCut::CalculateCaloSignalInCone
       if ( reader->GetMixedEvent() )
         evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ;
       
-      
       // Do not count the candidate (photon or pi0) or the daughters of the candidate
       if ( calo->GetID() == pCandidate->GetCaloLabel(0) ||
            calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
@@ -258,11 +257,20 @@ void AliIsolationCut::CalculateCaloSignalInCone
     if ( fICMethod >= kSumBkgSubIC && rad > fConeSize )
     {
       // phi band
+      //  
       Bool_t takeIt = kTRUE;
+      
+      // Exclude clusters in rectangle containing isolation cone
       if ( fUEBandRectangularExclusion             && 
            phi < (phiC+fConeSize+fConeSizeBandGap) &&   
            phi > (phiC-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
       
+      // Look only at 90 degrees with respect candidate, avoid opposite side jet 
+      // In case of presence of DCal or combination EMCal+DCal+PHOS, 
+      // anyway Phi band should not be used for DCal/PHOS, there is no space.
+      if ( TMath::Abs(phi-phiC) > TMath::PiOver2() ) takeIt = kFALSE ;
+
+      // Within eta cone size
       if ( eta > (etaC-fConeSize) && eta < (etaC+fConeSize) && takeIt )
       {
         phiBandPtSumCluster += pt;
@@ -280,11 +288,15 @@ void AliIsolationCut::CalculateCaloSignalInCone
       } // phi band
       
       // eta band
+      //
       takeIt = kTRUE;
+      
+      // Exclude clusters in rectangle containing isolation cone
       if ( fUEBandRectangularExclusion            && 
           eta < (etaC+fConeSize+fConeSizeBandGap) &&   
           eta > (etaC-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
-      
+            
+      // Within phi cone size
       if ( phi > (phiC-fConeSize) && phi < (phiC+fConeSize) && takeIt )
       {
         etaBandPtSumCluster += pt;
@@ -305,10 +317,10 @@ void AliIsolationCut::CalculateCaloSignalInCone
     //-------------------------------------------------------------
     // ** For the isolated particle **
     //-------------------------------------------------------------
-    
-    // Only loop the particle at the same side of candidate
-    if ( TMath::Abs(phi-phiC)>TMath::PiOver2() ) continue ;
-    
+    //
+    //      // Only loop the particle at the same side of candidate
+    //      if ( TMath::Abs(phi-phiC)>TMath::PiOver2() ) continue ;
+    //
     //      // If at the same side has particle larger than candidate,
     //      // then candidate can not be the leading, skip such events
     //      if(pt > ptC)
@@ -336,9 +348,9 @@ void AliIsolationCut::CalculateCaloSignalInCone
     //        }
     //        return ;
     //      }
-    
-    AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
-                    ipr,pt,eta,phi,rad));
+    //
+    //AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
+    //                ipr,pt,eta,phi,rad));
     
     //
     // Select calorimeter clusters inside the isolation radius 
@@ -401,7 +413,9 @@ void AliIsolationCut::CalculateCaloSignalInCone
     }
     
   }// neutral particle loop
+  
   //printf("end loop, fill histo\n");
+  
   if ( fFillHistograms ) // Do not fill in perp cones case
   {
     //printf("A\n");
@@ -441,10 +455,10 @@ void AliIsolationCut::CalculateCaloSignalInCone
     } // UE sub
   } // fill histo
   
-  // Add calculated values to pCandidate, might be modified later 
+  // Add reference clusters arrays to AOD when filling AODs only
+  // Add selected clusters in cone to pCandidate, might be modified later 
   // if UE subtraction and normalization requested
-  
-  // Add reference arrays to AOD when filling AODs only
+  //
   if ( bFillAOD && refclusters ) pCandidate->AddObjArray(refclusters);  
 }
 
@@ -591,15 +605,18 @@ void AliIsolationCut::CalculateTrackSignalInCone
     if ( fICMethod >= kSumBkgSubIC && rad > fConeSize )
     {
       // Phi band
+      //
       Bool_t takeIt = kTRUE;
+      // Exclude tracks in rectangle containing isolation cone
       if ( fUEBandRectangularExclusion                     && 
            phiTrack < (phiTrig+fConeSize+fConeSizeBandGap) &&   
            phiTrack > (phiTrig-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
       
-      if ( etaTrack > (etaTrig-fConeSize) &&  // Within eta cone size 
-           etaTrack < (etaTrig+fConeSize) &&  // Within eta cone size 
-           takeIt                         &&  // avoid particles in and close to the cone in phi
-           TMath::Abs(phiTrig-phiTrack) < TMath::PiOver2() ) // Look only half TPC with respect candidate, avoid opposite side jet 
+      // Look only half TPC with respect candidate, avoid opposite side jet 
+      if ( TMath::Abs(phiTrig-phiTrack) > TMath::PiOver2() )  takeIt = kFALSE;
+      
+      // Within eta cone size
+      if ( etaTrack > (etaTrig-fConeSize) && etaTrack < (etaTrig+fConeSize) &&  takeIt ) 
       {
         phiBandPtSumTrack += ptTrack;
         
@@ -616,13 +633,15 @@ void AliIsolationCut::CalculateTrackSignalInCone
       } // phi band
       
       // Eta band
+      //
       takeIt = kTRUE;
+      // Exclude tracks in rectangle containing isolation cone
       if ( fUEBandRectangularExclusion                     && 
            etaTrack < (etaTrig+fConeSize+fConeSizeBandGap) &&   
            etaTrack > (etaTrig-fConeSize-fConeSizeBandGap)    ) takeIt = kFALSE;
       
-      if ( phiTrack > (phiTrig-fConeSize) && 
-           phiTrack < (phiTrig+fConeSize) && takeIt )
+      // Within phi cone size
+      if ( phiTrack > (phiTrig-fConeSize) && phiTrack < (phiTrig+fConeSize) && takeIt )
       {
         etaBandPtSumTrack += ptTrack;
         
@@ -671,13 +690,14 @@ void AliIsolationCut::CalculateTrackSignalInCone
         }
       }
     }
+    
     //-------------------------------------------------------------
     // ** For the isolated particle **
     //-------------------------------------------------------------
-
-    // Only loop the particle at the same side of candidate
-    if ( TMath::Abs(phiTrack-phiTrig) > TMath::PiOver2() ) continue ;
-    
+    //
+    //      // Only loop the particle at the same side of candidate
+    //      if ( TMath::Abs(phiTrack-phiTrig) > TMath::PiOver2() ) continue ;
+    //
     //      // If at the same side has particle larger than candidate,
     //      // then candidate can not be the leading, skip such events
     //      if(pt > ptTrig)
@@ -697,9 +717,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
     //
     //        return ;
     //      }
-    
-    AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
-                    ipr,ptTrack,etaTrack,phiTrack,rad));
+    //
+    //AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
+    //                ipr,ptTrack,etaTrack,phiTrack,rad));
     
     //
     // Select tracks inside the isolation radius
@@ -808,10 +828,10 @@ void AliIsolationCut::CalculateTrackSignalInCone
     } // UE sub
   } // fill histograms
 
-  // Add calculated values to pCandidate, might be modified later 
+  // Add reference track arrays to AOD when filling AODs only
+  // Add selected tracks in cone to pCandidate, might be modified later 
   // if UE subtraction and normalization requested
-  
-  // Add reference arrays to AOD when filling AODs only
+  //
   if ( bFillAOD && reftracks ) pCandidate->AddObjArray(reftracks);  
 }
 
@@ -2359,7 +2379,27 @@ void  AliIsolationCut::MakeIsolationCut
       Float_t  coneptsumClusterSub = 0 ;
   
       // Normalize background to cone area
-      if     ( fPartInCone != kOnlyCharged )
+      
+      // Check clusters band
+      //
+      // If DCal or PHOS trigger clusters, it does not make sense, 
+      // just use track based estimation later 
+      Bool_t checkClustersBand = kTRUE;
+      
+      if ( fPartInCone == kNeutralAndCharged )
+      {
+        if      ( pCandidate->GetDetectorTag() != AliFiducialCut::kEMCAL ) 
+          checkClustersBand = kFALSE;
+        // if declared as emcal because analyze all calo together 
+        // but within phos/dcal phi acceptance 
+        else if ( phiC > 4.35 && phiC < 5.71 )  
+          checkClustersBand = kFALSE; 
+        
+//        if ( !checkClustersBand ) printf("Cluster band not checked! det %d phi %f\n",
+//                                         pCandidate->GetDetectorTag(),phiC);
+      }
+      
+      if ( fPartInCone != kOnlyCharged && checkClustersBand )
       {
         CalculateUEBandClusterNormalization(etaC                   , phiC                  ,
                                             excessClsEta           , excessClsPhi          ,
@@ -2371,16 +2411,15 @@ void  AliIsolationCut::MakeIsolationCut
         {
           coneptsumBkgClsRaw  = etaBandPtSumCluster; 
           coneptsumBkgCls     = etaBandPtSumClusterNorm; 
-          coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
-
         }
         else  if( fICMethod == kSumBkgSubPhiBandIC )
         {
           coneptsumBkgClsRaw  = phiBandPtSumCluster; 
           coneptsumBkgCls     = phiBandPtSumClusterNorm;
-          coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
         }
-        
+
+        coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
+
 //        printf("Cluster: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
 //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
 //               "\t subtracted:  %2.2f\n",
@@ -2401,7 +2440,7 @@ void  AliIsolationCut::MakeIsolationCut
       
       //printf("Pass cluster\n");
 
-      if     ( fPartInCone != kOnlyNeutral )
+      if ( fPartInCone != kOnlyNeutral )
       {
         CalculateUEBandTrackNormalization(etaC                 ,
                                           excessTrkEta         ,    
@@ -2413,15 +2452,15 @@ void  AliIsolationCut::MakeIsolationCut
         {
           coneptsumBkgTrkRaw = etaBandPtSumTrack; 
           coneptsumBkgTrk    = etaBandPtSumTrackNorm; 
-          coneptsumTrackSub  = coneptsumTrack - coneptsumBkgTrk;
         }
         else  if( fICMethod == kSumBkgSubPhiBandIC )
         {
           coneptsumBkgTrkRaw = phiBandPtSumTrack; 
           coneptsumBkgTrk    = phiBandPtSumTrackNorm; 
-          coneptsumTrackSub  = coneptsumTrack - coneptsumBkgTrk;
         }
         
+        coneptsumTrackSub  = coneptsumTrack - coneptsumBkgTrk;
+
 //        printf("Track: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
 //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
 //               "\t subtracted: %2.2f\n",
@@ -2440,6 +2479,14 @@ void  AliIsolationCut::MakeIsolationCut
         } // fill 
       } // tracks in cone
    
+      // In case of DCal and PHOS, estimate the bkg in clusters from tracks
+      //
+      if ( fPartInCone == kNeutralAndCharged && !checkClustersBand )
+      {
+        coneptsumBkgCls     = coneptsumBkgTrk*fNeutralOverChargedRatio; 
+        coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
+      }
+      
 //     // Uncomment if perp cone is hacked to be calculated
 //      printf("UE BKG per method:\n \t Perp Cone %2.2f (cl %2.2f, tr %2.2f)\n \t Phi Band %2.2f (cl %2.2f, tr %2.2f)\n \t Eta Band %2.2f (cl %2.2f, tr %2.2f)\n",
 //             perpPtSumTrack+perpPtSumTrack*fNeutralOverChargedRatio, perpPtSumTrack*fNeutralOverChargedRatio,perpPtSumTrack,
