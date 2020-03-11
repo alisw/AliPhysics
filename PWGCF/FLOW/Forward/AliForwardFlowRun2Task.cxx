@@ -270,15 +270,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
 
-
-  /*
-  if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
-    fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,true,false);
-  }
-  else{
-  */
-
   if (fSettings.ref_mode & fSettings.kFMDref) {
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
   }

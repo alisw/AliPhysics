@@ -106,7 +106,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
             if ((useFMD && ((fSettings.ref_mode & fSettings.kFMDref))) || (!(useFMD) && (fSettings.ref_mode & fSettings.kTPCref))) {
               fqvector->Fill(re, realPart);
               fqvector->Fill(im, imPart);
-              fAutoDiff->Fill(eta,weight*weight - weight);
+              if (TMath::Abs(refEta)>1.5)  fAutoDiff->Fill(eta,weight*weight - weight);
             }
           }
 
@@ -123,7 +123,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
             Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
             Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-            fAutoRef->Fill(refEta,weight*weight - weight);  
+            if (TMath::Abs(refEta)>1.5) fAutoRef->Fill(refEta,weight*weight - weight);  
             fQvector->Fill(req, realPart);
             fQvector->Fill(imq, imPart);
           }
@@ -286,7 +286,7 @@ TComplex AliForwardGenericFramework::q(Int_t n, Int_t p, Int_t etabin)
 TComplex AliForwardGenericFramework::Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2)
 {
   TComplex formula = 0;
-  if (eta1 == eta2) {
+  if (!fSettings.etagap) {
      formula = Q(n1,1,eta1)*Q(n2,1,eta1) - Q(n1+n2,2,eta1);
   }
   else{
