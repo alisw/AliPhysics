@@ -114,6 +114,7 @@ protected:
     
 private:
    void                    AddParticlesToPdgDataBase() const;
+   void                    UpdateParticleProperties() const;
    ClassDef(AliTPythia8, 3)   // Interface class of Pythia8
 };
 
