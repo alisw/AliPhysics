@@ -39,6 +39,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
 #include "AliPIDResponse.h"
+#include "AliMultSelectionTask.h"
 
 // for NanoAOD
 #include <AliNanoAODHeader.h>
@@ -280,7 +281,9 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
             IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
         }
         // Get default values from AliEventCuts
-        fCent = fEventCuts.GetCentrality(0);
+        fCent = AliMultSelectionTask::IsINELgtZERO(event) 
+                    ? fEventCuts.GetCentrality() 
+                    : -0.5;
         // PID response
         fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
         if (!fPIDResponse)
@@ -293,7 +296,7 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
         if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
-        if (nanoHeader->GetVar(inel_index) < 0.5)
+        if ((inel_index > 0) && (nanoHeader->GetVar(inel_index) < 0.5))
             fCent = -0.5;
     }
 
@@ -416,6 +419,10 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0ESD = ((AliESDEvent*)fEvt)->GetV0(it);
+            
+            if (fOnlyUseOnTheFlyV0 && !v0ESD->GetOnFlyStatus()) 
+                continue;
+
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0ESD->GetPindex()) ==
                 TMath::Abs(v0ESD->GetNindex()))
@@ -564,6 +571,10 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0AOD = ((AliAODEvent*)fEvt)->GetV0(it);
+
+            if (fOnlyUseOnTheFlyV0 && !v0AOD->GetOnFlyStatus()) 
+                continue;
+
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0AOD->GetPosID()) == TMath::Abs(v0AOD->GetNegID()))
                 continue;
