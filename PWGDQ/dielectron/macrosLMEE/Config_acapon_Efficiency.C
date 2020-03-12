@@ -153,36 +153,40 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
   LMEECutLib* LMcutlib = new LMEECutLib(wSDD);
   if(cutDefinition == "kResolutionCuts"){
     std::cout << "Resolution Track Cuts being set" << std::endl;
-    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolutionTrackCuts, LMEECutLib::kResolutionTrackCuts));
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolution, LMEECutLib::kResolution));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutSet1"){ // Standard analysis withSDD analysis cuts and MVA ePID
+  // Standard analysis withSDD analysis cuts and MVA ePID
+  else if(cutDefinition == "kCutSet1"){
     std::cout << "Setting up cut set 1" << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kCutSet2"){ // kCutSet1 w/o ITSshared cut
-    std::cout << "Setting up cut set 2" << std::endl;
-    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kAccAllITSshared, LMEECutLib::kMVA1));
-    anaFilter->SetName(cutDefinition);
-    anaFilter->Print();
-  }
-  else if(cutDefinition == "kCutSet3"){ // Standard noSDD analysis cuts using MVA ePID(req.ITS PID)
+  // Standard noSDD analysis cuts using MVA ePID(req.ITS PID)
+  else if(cutDefinition == "kCutSet3"){ 
     std::cout << "Setting up cut set 3" << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kMVA1));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kTheoPID"){ // PID cut set from a Run 1 pPb analysis. Standard track cuts
+  // PID cut set from a Run 1 pPb analysis. Standard track cuts
+  else if(cutDefinition == "kTheoPID"){ 
     std::cout << "Setting up Theo PID. Standard track cuts." << std::endl;
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kTheoPID));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
-  else if(cutDefinition == "kScheidCuts"){ // Standard analysis cuts with hadron rejection ePID
+  // Standard analysis cuts with hadron rejection ePID
+  else if(cutDefinition == "kScheidCuts"){ 
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kHadRej));
+    anaFilter->SetName(cutDefinition);
+    anaFilter->Print();
+  }
+  // Standard analysis cuts with 7TeV diElec ePID scheme
+  else if(cutDefinition == "k7TeVpaper"){
+    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::k7TeVtrack, LMEECutLib::k7TeVPID));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
@@ -214,16 +218,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t wSDD)
   }
   else if(cutDefinition == "kITSshared6"){
     anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kHadRej));
-    anaFilter->SetName(cutDefinition);
-    anaFilter->Print();
-  }
-  else if(cutDefinition == "kITSmin"){
-    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmin, LMEECutLib::kHadRej));
-    anaFilter->SetName(cutDefinition);
-    anaFilter->Print();
-  }
-  else if(cutDefinition == "kITSmax"){
-    anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmax, LMEECutLib::kHadRej));
     anaFilter->SetName(cutDefinition);
     anaFilter->Print();
   }
