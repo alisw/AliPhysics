@@ -1808,11 +1808,11 @@ void AddTask_GammaCalo_pp(
     //cuts.AddCutCalo("00010113","24466510sa01cc00000","0163103100000010"); // 51 Nonlin MB
     //cuts.AddCutCalo("00062113","24466510sa01cc00000","0163103100000010"); // 51 Nonlin Triggered
     //-
-    cuts.AddCutCalo("00010113","24466110sa01cc00000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM MB PCMPHOS
-    cuts.AddCutCalo("00062113","24466110sa01cc00000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM Triggered PCMPHOS
+    //cuts.AddCutCalo("00010113","24466110sa01cc00000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM MB PCMPHOS
+    //cuts.AddCutCalo("00062113","24466110sa01cc00000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM Triggered PCMPHOS
     //-
-    cuts.AddCutCalo("00010113","24466120sa01cc00000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM MB PHOSPHOS
-    cuts.AddCutCalo("00062113","24466120sa01cc00000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM Triggered PHOSPHOS
+    //cuts.AddCutCalo("00010113","24466120sa01cc00000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM MB PHOSPHOS
+    //cuts.AddCutCalo("00062113","24466120sa01cc00000","0163103100000010"); // INT7 //case 12=> FunctionNL_kSDM Triggered PHOSPHOS
     //
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); // INT7 //case 19=> FunctionNL_kSDM MB PCMPHOS, Tuned with PHOSPHOS
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); // INT7 //case 19=> FunctionNL_kSDM Triggered PCMPHOS, Tuned with PHOSPHOS
