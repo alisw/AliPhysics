@@ -1,4 +1,4 @@
-AliAnalysisTaskFilterHe3Local *AddTask_FilterHe3Local(TString name = "standard")
+AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(TString name = "standard")
 {
 
   //get the current analysis manager
@@ -17,7 +17,7 @@ AliAnalysisTaskFilterHe3Local *AddTask_FilterHe3Local(TString name = "standard")
 
 
   //========= Add task to the ANALYSIS manager =====
-  AliAnalysisTaskFilterHe3Local *task = new AliAnalysisTaskFilterHe3Local(Form("akalweitTaskFilterHe3_%s", name.Data()));
+  AliAnalysisTaskFilterHe3 *task = new AliAnalysisTaskFilterHe3(Form("akalweitTaskFilterHe3_%s", name.Data()));
   //task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
 
    
