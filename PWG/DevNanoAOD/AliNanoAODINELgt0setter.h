@@ -13,8 +13,6 @@ public:
   AliNanoAODINELgt0setter(const char * name = "AliNanoAODINELgt0setter") : AliNanoAODCustomSetter(name), fIndex(-1) {;}
   virtual ~AliNanoAODINELgt0setter() {;}
   inline virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) {
-    AliNanoAODSimpleSetter simpleSetter;
-    simpleSetter.SetNanoAODHeader(event,head,varListHeader);
     if (fIndex == -1)
       fIndex = varListHeader.Contains("cstINELgt0") ? head->GetVarIndex("cstINELgt0") : -2;
     if (fIndex >= 0)
