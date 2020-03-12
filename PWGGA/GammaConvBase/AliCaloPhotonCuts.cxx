@@ -7122,6 +7122,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          if(fCurrentMC==kPP8T12P2Pho || fCurrentMC==kPP8T12P2Pyt8 || fCurrentMC==kPP8T12P2JJ || fCurrentMC==kPP8T12P2GJLow || fCurrentMC==kPP8T12P2GJHigh) energy /= 0.9875; // additional finetuning needed for pp 8 TeV
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
         }
