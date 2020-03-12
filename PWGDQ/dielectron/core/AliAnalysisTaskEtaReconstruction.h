@@ -122,7 +122,6 @@ public:
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
    void   SetUsePreFilter(Bool_t usePreFilter) {fUsePreFilter = usePreFilter;}
-   void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Single leg from Pair related setter
@@ -266,6 +265,7 @@ private:
   // Function to do reconstructed two pairing and filling histogramms
   void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, Bool_t SmearedPair, double centralityWeight);
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
+  void   DoRecTwoPairingV0(std::vector<AliDielectronSignalMC> fPairMCSignal);
   void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
   void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
   void   ApplySecondaryCutsAndFillHists(std::vector<TwoPair>*  fSecPairVec, std::vector<AliAnalysisFilter*> fTrackCuts_secondary, double centralityWeight);
@@ -307,6 +307,8 @@ private:
   TList* fGeneratedSmearedSecondaryPairsList;
   TList* fPairList;
   TList* fFourPairList;
+  TList* fGeneratedFourPairsList;
+  TList* fGeneratedSmearedFourPairsList;
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
@@ -407,8 +409,6 @@ private:
   std::vector<TList*> fTrackCutListVecSec;     // Vector filled with each applied track secondary cutsetting
   std::vector<TList*> fPairCutListVecSec;     // Vector filled with each applied track secondary cutsetting
   std::vector<TList*> fFourPairCutListVec;     // Vector filled with each applied track secondary cutsetting
-  // TList* fPrimarySupportHistos;
-  // TList* fSecondarySupportHistos;
 
   std::vector<TH3D*> fHistGenPrimaryPosPart;
   std::vector<TH3D*> fHistGenPrimaryNegPart;
@@ -461,7 +461,6 @@ private:
   Bool_t fDoPairing;
   Bool_t fDoFourPairing;
   Bool_t fUsePreFilter;
-  Bool_t fDoULSandLS;
   Bool_t fDoMassCut;
   Bool_t fPhotonMass;
 
@@ -477,8 +476,6 @@ private:
   std::vector<Particle> fRecPosPart_primary;
   std::vector<Particle> fRecNegPart_secondary;
   std::vector<Particle> fRecPosPart_secondary;
-  std::vector<Particle> fRecNegPart_PrimAndSec;
-  std::vector<Particle> fRecPosPart_PrimAndSec;
 
   std::vector<TwoPair>  fGenPairVec_primary;
   std::vector<TwoPair>  fGenPairVec_secondary;
