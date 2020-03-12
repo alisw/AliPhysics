@@ -1738,43 +1738,42 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
     cuts.AddCutCalo("00010113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
 
-
   // Variations for systematics
   } else if ( trainConfig == 750) { // NL variations (standard: 42 PHOS ML)
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0163103100000010");
-    cuts.AddCutCalo("00062113","24466540g001cc00000","0163103100000010");
-    cuts.AddCutCalo("00062113","24466010g001cc00000","0163103100000010"); // PHOS group NL
-    cuts.AddCutCalo("00062113","24466000g001cc00000","0163103100000010"); // PHOS group NL
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0163103100000010");
+    cuts.AddCutCalo("000ap113","24466540g001cc00000","0163103100000010");
+    cuts.AddCutCalo("000ap113","24466010g001cc00000","0163103100000010"); // PHOS group NL
+    cuts.AddCutCalo("000ap113","24466000g001cc00000","0163103100000010"); // PHOS group NL
   } else if ( trainConfig == 751) { // distance to bad channel variations (standard: no cut)
-    cuts.AddCutCalo("00062113","24466531g001cc00000","0163103100000010"); // dist. to bad channel = 1
-    cuts.AddCutCalo("00062113","24466532g001cc00000","0163103100000010"); // dist. to bad channel = 2
-    cuts.AddCutCalo("00062113","24466533g001cc00000","0163103100000010"); // dist. to bad channel = 3
+    cuts.AddCutCalo("000ap113","24466531g001cc00000","0163103100000010"); // dist. to bad channel = 1
+    cuts.AddCutCalo("000ap113","24466532g001cc00000","0163103100000010"); // dist. to bad channel = 2
+    cuts.AddCutCalo("000ap113","24466533g001cc00000","0163103100000010"); // dist. to bad channel = 3
   } else if ( trainConfig == 752) {  // timing variations - bunch spacing: 100ns (standard: 50ns)
                                     // min. number of cells per cluster variations (standard: 2)
-    cuts.AddCutCalo("00062113","244665300001cc00000","0163103100000010"); // 30ns
-    cuts.AddCutCalo("00062113","24466530i001cc00000","0163103100000010"); // 30ns
-    cuts.AddCutCalo("00062113","24466530h001cc00000","0163103100000010"); // -20ns/25ns
-    cuts.AddCutCalo("00062113","24466530g001dc00000","0163103100000010"); // nCells > 3 above 1 GeV
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0263303100000010"); // BG
+    cuts.AddCutCalo("000ap113","244665300001cc00000","0163103100000010"); // 30ns
+    cuts.AddCutCalo("000ap113","24466530i001cc00000","0163103100000010"); // 30ns
+    cuts.AddCutCalo("000ap113","24466530h001cc00000","0163103100000010"); // -20ns/25ns
+    cuts.AddCutCalo("000ap113","24466530g001dc00000","0163103100000010"); // nCells > 3 above 1 GeV
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0263303100000010"); // BG
   } else if ( trainConfig == 754) { // min. cluster energy variations (standard: 0.5 MeV)
-    cuts.AddCutCalo("00062113","24466530g007cc00000","0163103100000010"); // 0.2 MeV
-    cuts.AddCutCalo("00062113","24466530g009cc00000","0163103100000010"); // 0.1 MeV
-    cuts.AddCutCalo("00062113","24466530g008cc00000","0163103100000010"); // 0.4 MeV
-    cuts.AddCutCalo("00062113","24466530g002cc00000","0163103100000010"); // 0.5 MeV
+    cuts.AddCutCalo("000ap113","24466530g007cc00000","0163103100000010"); // 0.2 MeV
+    cuts.AddCutCalo("000ap113","24466530g009cc00000","0163103100000010"); // 0.1 MeV
+    cuts.AddCutCalo("000ap113","24466530g008cc00000","0163103100000010"); // 0.4 MeV
+    cuts.AddCutCalo("000ap113","24466530g002cc00000","0163103100000010"); // 0.5 MeV
   } else if ( trainConfig == 755) {
-    cuts.AddCutCalo("00062113","24466530g001cb00000","0163103100000010"); // M02 min 0.002, E > 1 GeV
-    cuts.AddCutCalo("00062113","24466530g001cd00000","0163103100000010"); // M02 min 0.2, E > 1 GeV
-    cuts.AddCutCalo("00062113","24466530g001cc00010","0163103100000010"); // dispersion < 2
-    cuts.AddCutCalo("00062113","24466530g001cc00030","0163103100000010"); // dispersion < 2
+    cuts.AddCutCalo("000ap113","24466530g001cb00000","0163103100000010"); // M02 min 0.002, E > 1 GeV
+    cuts.AddCutCalo("000ap113","24466530g001cd00000","0163103100000010"); // M02 min 0.2, E > 1 GeV
+    cuts.AddCutCalo("000ap113","24466530g001cc00010","0163103100000010"); // dispersion < 2
+    cuts.AddCutCalo("000ap113","24466530g001cc00030","0163103100000010"); // dispersion < 2
   } else if ( trainConfig == 756){ // MESON
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0163303100000010"); // rapidity variation  y<0.5
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0163803100000010"); // rapidity variation  y<0.5
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
-    cuts.AddCutCalo("00062113","24466530g001cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0163303100000010"); // rapidity variation  y<0.5
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0163803100000010"); // rapidity variation  y<0.5
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
+    cuts.AddCutCalo("000ap113","24466530g001cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
   } else if( trainConfig == 757){ // fourth set of variations
-    cuts.AddCutCalo("00062113","24466530g001cc00300","0163103100000000"); // conv rec 0.03
-    cuts.AddCutCalo("00062113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
-    cuts.AddCutCalo("00062113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
+    cuts.AddCutCalo("000ap113","24466530g001cc00300","0163103100000000"); // conv rec 0.03
+    cuts.AddCutCalo("000ap113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
+    cuts.AddCutCalo("000ap113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
 
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
