@@ -15,12 +15,10 @@ public:
   inline virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head , TString varListHeader  ) {
     AliNanoAODSimpleSetter simpleSetter;
     simpleSetter.SetNanoAODHeader(event,head,varListHeader);
-    if (fIndex < 0)
+    if (fIndex == -1)
       fIndex = varListHeader.Contains("cstINELgt0") ? head->GetVarIndex("cstINELgt0") : -2;
     if (fIndex >= 0)
       head->SetVar(fIndex, AliMultSelectionTask::IsINELgtZERO(event) ? 1 : 0);
-    else
-      AliFatal("Can't Init cstINELgt0, Remove this setter from the setter list");
   }
   virtual void SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) {
       // This function will not be used in this class.
