@@ -359,7 +359,7 @@ class AliFemtoDreamCorrHists {
   TH2F ***fdEtadPhiMEmT;
   TH1F **fEffMixingDepth;
   TH1F **fSameEventDistCommon;
-  TH1F **fSameEventDistNonCommon;
+  TH1F **fSameEventDistNonCommon;   
   TH2F **fdEtadPhiSECommon;
   TH2F **fdEtadPhiSENonCommon;
   TH2F **fSameEventMultDistCommon;

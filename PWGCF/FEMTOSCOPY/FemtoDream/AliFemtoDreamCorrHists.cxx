@@ -260,6 +260,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDokTCentralityBins = conf->GetDokTCentralityBinning();
   fDokTandMultBinning = conf->GetDokTandMultBinning();
   fDomTBinning = conf->GetDomTBinning();
+  fmTMultPlots = conf->GetmTMultBinning(); 
   fPtQA = conf->GetDoPtQA();
   fMassQA = conf->GetDoMassQA();
   fPDGCode = conf->GetPDGCodes();
@@ -426,6 +427,13 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fSameEventmTDist = nullptr;
     fMixedEventmTDist = nullptr;
   }
+  if (fmTMultPlots) {
+    fSameEventmTMultDist = new TH2F**[nHists];
+    fMixedEventmTMultDist = new TH2F**[nHists];
+  } else {
+    fSameEventmTMultDist = nullptr; 
+    fMixedEventmTMultDist = nullptr;
+  }
   if (fPtQA) {
     fPtQADist = new TH2F*[nHists];
     fPtQADistSEPartOne = new TH2F*[nHists];
@@ -467,21 +475,21 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fdEtadPhiSEmT = nullptr;
     fdEtadPhiMEmT = nullptr;
   }
-    if (fAncestors) {
-      fSameEventDistCommon = new TH1F*[nHists];
-      fSameEventDistNonCommon = new TH1F*[nHists];
-      if (fdPhidEtaPlots) {
+  if (fAncestors) {
+    fSameEventDistCommon = new TH1F*[nHists];
+    fSameEventDistNonCommon = new TH1F*[nHists];
+    if (fdPhidEtaPlots) {
       fdEtadPhiSECommon = new TH2F*[nHists];
       fdEtadPhiSENonCommon = new TH2F*[nHists];
-      }
-      if (fDoMultBinning) {
-       fSameEventMultDistCommon = new TH2F*[nHists];
-       fSameEventMultDistNonCommon = new TH2F*[nHists];
-      }
-      if (fDomTBinning) {
-       fSameEventmTDistCommon = new TH2F*[nHists];
-       fSameEventmTDistNonCommon = new TH2F*[nHists];
-      }
+    }
+    if (fDoMultBinning) {
+      fSameEventMultDistCommon = new TH2F*[nHists];
+      fSameEventMultDistNonCommon = new TH2F*[nHists];
+    }
+    if (fDomTBinning) {
+      fSameEventmTDistCommon = new TH2F*[nHists];
+      fSameEventmTDistNonCommon = new TH2F*[nHists];
+    }
   } else {
     fSameEventDistCommon = nullptr;
     fSameEventDistNonCommon = nullptr;
@@ -637,7 +645,27 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fPairs[Counter]->Add(fMixedEventkTCentDist[Counter][iCent]);
         }
       }
+      if (fillHists && fmTMultPlots) {
+	fSameEventmTMultDist[Counter] = new TH2F*[nmTBins];
+	fMixedEventmTMultDist[Counter] = new TH2F*[nmTBins]; 
+	for (unsigned int imT = 0; imT < nmTBins; ++imT) {
+	  TString SameEventmTMultName =
+	    TString::Format("SEmTMult_%d_Particle%d_Particle%d", imT, iPar1, iPar2);
+	  fSameEventmTMultDist[Counter][imT] = new TH2F(SameEventmTMultName.Data(),
+							SameEventmTMultName.Data(),
+							*itNBins, *itKMin, *itKMax,
+							multbins, 1, multbins + 1); 
+	  fPairs[Counter]->Add(fSameEventmTMultDist[Counter][imT]);
 
+	  TString MixedEventmTMultName =
+	    TString::Format("MEmTMult_%d_Particle%d_Particle%d", imT, iPar1, iPar2);
+	  fMixedEventmTMultDist[Counter][imT] = new TH2F(MixedEventmTMultName.Data(),
+							 MixedEventmTMultName.Data(),
+							 *itNBins, *itKMin, *itKMax,
+							 multbins, 1, multbins + 1); 
+	  fPairs[Counter]->Add(fMixedEventmTMultDist[Counter][imT]);
+	}
+      } 
       if (fillHists && fDomTBinning) {
         TString SamemTEventName = TString::Format("SEmTDist_Particle%d_Particle%d", iPar1,
                                        iPar2);
@@ -1368,7 +1396,7 @@ void AliFemtoDreamCorrHists::FillSameEventmTMultDist(int iHist, float mT, int iM
       TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
       AliWarning(WarnMe.Data());
     } else {
-    
+      fSameEventmTMultDist[iHist][pos]->Fill(RelK, iMult); 
     }
   } 
 }
@@ -1385,6 +1413,8 @@ void AliFemtoDreamCorrHists::FillMixedEventmTMultDist(int iHist, float mT, int i
     if (pos >= fmTBins.size()) {
       TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
       AliWarning(WarnMe.Data());
-    } 
+    } else {
+      fMixedEventmTMultDist[iHist][pos]->Fill(RelK, iMult); 
+    }
   } 
 }

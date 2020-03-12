@@ -95,6 +95,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {1.0, 1.14, 1.26, 999.};
   //pairs:
   //pp                0
   //p bar p           1
@@ -130,7 +131,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
   if (phiSpinning == 0) {
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
