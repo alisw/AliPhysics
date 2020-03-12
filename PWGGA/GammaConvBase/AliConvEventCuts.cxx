@@ -4744,12 +4744,12 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if(!triggercont){
       AliFatal("Trigger decision container not found in event - not possible to select EMCAL triggers");
     } else {
-      if( fSpecialTrigger == 5 || fSpecialTrigger == 10 ){
-        if( triggercont->IsEventSelected("EMCL0") || triggercont->IsEventSelected("DMCL0") ) return kTRUE;
-      } else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ){
+      if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ){
         if( (triggercont->IsEventSelected("EG2")) || (triggercont->IsEventSelected("DG2")) ) return kTRUE;
       } else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ){
         if( (triggercont->IsEventSelected("EG1")) || (triggercont->IsEventSelected("DG1")) ) return kTRUE;
+      } else if( fSpecialTrigger == 5 || fSpecialTrigger == 10 ){
+        if( triggercont->IsEventSelected("EMCL0") || triggercont->IsEventSelected("DMCL0") ) return kTRUE;
       } else {
         return kTRUE; // In case no suitable fSpecialTrigger was selected
       }
@@ -4818,12 +4818,13 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
       }
       // EMCal L0 trigger
-      if(fSpecialTrigger == 5 || fSpecialTrigger == 10) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
-      // EMCal L1 G2 trigger
-      else if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
+      if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 ||        
+          fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
       // EMCal L1 G1 trigger
       else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
       // PHOS L0 trigger
+      else if(fSpecialTrigger == 5 || fSpecialTrigger == 10) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
+      // EMCal L1 G2 trigger
       else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("CPHI7")==0 )) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
       // return true if mimicking for fSpecialTrigger is not defined
       else return kTRUE;
