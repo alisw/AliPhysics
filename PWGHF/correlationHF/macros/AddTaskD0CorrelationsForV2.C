@@ -196,10 +196,10 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
     }
 
     if(sample=="pp13TeV") {
-      const Char_t* periodNames[32]={"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p",
+      const Char_t* periodNames[33]={"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p",
                                      "LHC17c","LHC17e","LHC17f","LHC17h","LHC17i","LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r",
-                                     "LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
-      TProfile *multEstimatorAvg[32];
+                                     "LHC18b","LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+      TProfile *multEstimatorAvg[33];
       for(Int_t ip=0;ip<9; ip++){
         multEstimatorAvg[ip] = (TProfile*)(fprof1->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
         if (!multEstimatorAvg[ip]) {
@@ -216,7 +216,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
         }
         massD0Task->SetMultiplVsZProfile(multEstimatorAvg[ip],ip);        
       }
-      for(Int_t ip=20;ip<32; ip++){
+      for(Int_t ip=20;ip<33; ip++){
         multEstimatorAvg[ip] = (TProfile*)(fprof3->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
         if (!multEstimatorAvg[ip]) {
           printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
@@ -224,7 +224,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
         }
         massD0Task->SetMultiplVsZProfile(multEstimatorAvg[ip],ip);     
       }        
-      for(Int_t ip=0;ip<32;ip++) printf("Estimator for %d = %s\n",ip,multEstimatorAvg[ip]->GetName());//just a cross-check
+      for(Int_t ip=0;ip<33;ip++) printf("Estimator for %d = %s\n",ip,multEstimatorAvg[ip]->GetName());//just a cross-check
     } else { //not pp@13 TeV
       printf("Year not configured! Exiting...\n");
       return;
