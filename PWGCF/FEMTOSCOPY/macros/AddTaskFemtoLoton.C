@@ -95,6 +95,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {1.14, 1.26, 999.};
   //pairs:
   //pp                0
   //p bar p           1
@@ -130,7 +131,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
   if (phiSpinning == 0) {
     config->SetMixingDepth(10);
     config->SetUseEventMixing(true);
@@ -180,7 +182,22 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   MultBins.push_back(92);
   MultBins.push_back(96);
   MultBins.push_back(100);
-
+  MultBins.push_back(104);
+  MultBins.push_back(108);
+  MultBins.push_back(112);
+  MultBins.push_back(116);
+  MultBins.push_back(120);
+  MultBins.push_back(124);
+  MultBins.push_back(128);
+  MultBins.push_back(132);
+  MultBins.push_back(136);
+  MultBins.push_back(140);
+  MultBins.push_back(144);
+  MultBins.push_back(148);
+  MultBins.push_back(152);
+  MultBins.push_back(156);
+  MultBins.push_back(160);
+        
   config->SetMultBins(MultBins);
 
   std::vector<float> ZVtxBins;
