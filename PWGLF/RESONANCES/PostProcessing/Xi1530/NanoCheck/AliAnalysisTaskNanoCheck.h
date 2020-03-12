@@ -24,6 +24,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     void DisableTrackCheck(Bool_t param = kFALSE){ checkTracks = param;  };
     void DisableV0Check(Bool_t param = kFALSE){ checkV0s = param;  };
     void DisableCascadeCheck(Bool_t param = kFALSE){ checkCascades = param;  };
+    void SetOnlyUseOnTheFlyV0(Bool_t input) { fOnlyUseOnTheFlyV0 = input; }
 
     Bool_t GoodTracksSelection();
     Bool_t GoodV0Selection();
@@ -68,6 +69,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     Bool_t checkTracks = kTRUE;
     Bool_t checkV0s = kTRUE;
     Bool_t checkCascades = kTRUE;
+    Bool_t fOnlyUseOnTheFlyV0 = kFALSE;
     TClonesArray* fMCArray = nullptr;  //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!

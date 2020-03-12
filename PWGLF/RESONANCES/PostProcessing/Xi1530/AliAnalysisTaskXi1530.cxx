@@ -530,7 +530,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         }
 
         // fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
-        fCent = fEventCuts.GetCentrality(0);
+        fCent = AliMultSelectionTask::IsINELgtZERO(event) 
+                    ? fEventCuts.GetCentrality() 
+                    : -0.5;
 
         // PID response
         // ----------------------------------------------------------
@@ -647,8 +649,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     } else {
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
-        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstIsINELgt0");
-        if (nanoHeader->GetVar(inel_index) < 0.5)
+        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
+        if ((inel_index > 0) && (nanoHeader->GetVar(inel_index) < 0.5))
             fCent = -0.5;
         static int v0mValueIndex =
             nanoHeader->GetVarIndex("MultSelection.V0M.Value");
