@@ -186,8 +186,8 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   
   if ( cutsString.Contains("NCellCutEnDep") )
   {
-    // from 40 GeV, ncell > 4.5 + 0.05 * En
-    reader->SetEMCALEnDepNCellsCut(40,4.5,0.05);
+    // from 40 GeV, ncell > 4.9 + 0.04 * En
+    reader->SetEMCALEnDepNCellsCut(40,4.9,0.04);
   }
   
   reader->SetEMCALBadChannelMinDist(2);
