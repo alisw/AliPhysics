@@ -558,6 +558,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		)) ChipCut_T = 1;
+	if ((fTriggerName == "CCUP11-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
 
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
