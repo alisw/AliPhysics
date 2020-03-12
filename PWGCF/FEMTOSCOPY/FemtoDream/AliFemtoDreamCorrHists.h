@@ -257,36 +257,36 @@ class AliFemtoDreamCorrHists {
   }
 
   void FillSameEventDistCommon(int i, float RelK) {
-  if (!fMinimalBooking) {
-   if (fAncestors)
-    fSameEventDistCommon[i]->Fill(RelK);
-  }
-  }
-  ;
-    void FillSameEventDistNonCommon(int i, float RelK) {
-   if (!fMinimalBooking) {
-     if (fAncestors)
-    fSameEventDistNonCommon[i]->Fill(RelK);
-   }
+    if (!fMinimalBooking) {
+      if (fAncestors)
+	fSameEventDistCommon[i]->Fill(RelK);
+    }
   }
   ;
-    void FillSameEventMultDistCommon(int i, int iMult, float RelK) {
-         if (!fMinimalBooking) {
-    if (fSameEventMultDistCommon[i])
-      fSameEventMultDistCommon[i]->Fill(RelK, iMult);
-         }
+  void FillSameEventDistNonCommon(int i, float RelK) {
+    if (!fMinimalBooking) {
+      if (fAncestors)
+	fSameEventDistNonCommon[i]->Fill(RelK);
+    }
   }
-    void FillSameEventMultDistNonCommon(int i, int iMult, float RelK) {
-         if (!fMinimalBooking) {
-    if (fSameEventMultDistNonCommon[i])
-      fSameEventMultDistNonCommon[i]->Fill(RelK, iMult);
-         }
+  ;
+  void FillSameEventMultDistCommon(int i, int iMult, float RelK) {
+    if (!fMinimalBooking) {
+      if (fSameEventMultDistCommon[i])
+	fSameEventMultDistCommon[i]->Fill(RelK, iMult);
+    }
   }
-    void FillSameEventmTDistCommon(int i, float mT, float RelK) {
+  void FillSameEventMultDistNonCommon(int i, int iMult, float RelK) {
+    if (!fMinimalBooking) {
+      if (fSameEventMultDistNonCommon[i])
+	fSameEventMultDistNonCommon[i]->Fill(RelK, iMult);
+    }
+  }
+  void FillSameEventmTDistCommon(int i, float mT, float RelK) {
     if (fSameEventmTDistCommon[i])
       fSameEventmTDistCommon[i]->Fill(RelK, mT);
   }
-    void FillSameEventmTDistNonCommon(int i, float mT, float RelK) {
+  void FillSameEventmTDistNonCommon(int i, float mT, float RelK) {
     if (fSameEventmTDistNonCommon[i])
       fSameEventmTDistNonCommon[i]->Fill(RelK, mT);
   }
