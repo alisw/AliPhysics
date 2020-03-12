@@ -38,6 +38,8 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(samp.fRejPairs),
       fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
+      fDeltaPhiSqMax(samp.fDeltaPhiSqMax),
+      fDeltaEtaSqMax(samp.fDeltaEtaSqMax),
       fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
       fRandom(),
       fPi(TMath::Pi()) {
@@ -51,6 +53,10 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
   fHists = math.fHists;
   fWhichPairs = math.fWhichPairs;
   fBField = math.fBField;
+  fRejPairs = math.fRejPairs;
+  fDoDeltaEtaDeltaPhiCut = math.fDoDeltaEtaDeltaPhiCut;
+  fDeltaPhiSqMax = math.fDeltaPhiSqMax;
+  fDeltaEtaSqMax = math.fDeltaEtaSqMax; 
   fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
   fRandom = math.fRandom;
   fPi = TMath::Pi();
@@ -60,7 +66,6 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
 bool AliFemtoDreamHigherPairMath::PassesPairSelection(
     int iHC, AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2,
     float RelativeK, bool SEorME, bool Recalculate) {
-  bool outBool = true;
   //Method calculates the average separation between two tracks
   //at different radii within the TPC and rejects pairs which a
   //too low separation
@@ -168,6 +173,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillSameEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
                                        RelativeK, Mult + 1);
   }
+  if (fillHists && fHists->GetDomTMultPlots()) {
+    fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
+				   RelativeK); 
+  }   
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
@@ -178,13 +187,20 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     bool isAlabama = CommonAncestors(part1,part2);
     if (isAlabama) {
       fHists->FillSameEventDistCommon(iHC, RelativeK);
-      if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
-      if (fHists->GetDomTBinning()) fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      if (fHists->GetDoMultBinning()) {
+	fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+      }
+      if (fHists->GetDomTBinning()) {
+	fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      }
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
-      if (fHists->GetDoMultBinning()) fHists->FillSameEventMultDistNonCommon(iHC, Mult + 1, RelativeK);
-      if (fHists->GetDomTBinning()) fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
-
+      if (fHists->GetDoMultBinning()) {
+	fHists->FillSameEventMultDistNonCommon(iHC, Mult + 1, RelativeK);
+      }
+      if (fHists->GetDomTBinning()) {
+	fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      }
     }
   }
   return RelativeK;
@@ -248,6 +264,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
     fHists->FillMixedEventkTandMultDist(iHC, RelativePairkT(PartOne, PartTwo),
                                         RelativeK, Mult + 1);
   }
+  if (fillHists && fHists->GetDomTMultPlots()) {
+    fHists->FillMixedEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
+				   RelativeK); 
+  }   
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
     fHists->FillPtMETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);
@@ -482,7 +502,7 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
     TString outMessage =
         TString::Format(
             "For pair number %u your number of Daughters 1 (%u) and Radii 1 (%u) do not correspond \n",
-            Hist, nDaug1, part1.GetPhiAtRaidius().size());
+            Hist, nDaug1, (unsigned int)part1.GetPhiAtRaidius().size());
     AliWarning(outMessage.Data());
   }
   unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
@@ -491,7 +511,7 @@ bool AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
     TString outMessage =
         TString::Format(
             "For pair number %u your number of Daughters 2 (%u) and Radii 2 (%u) do not correspond \n",
-            Hist, nDaug2, part2.GetPhiAtRaidius().size());
+            Hist, nDaug2, (unsigned int)part2.GetPhiAtRaidius().size());
     AliWarning(outMessage.Data());
   }
   std::vector<float> eta1 = part1.GetEta();

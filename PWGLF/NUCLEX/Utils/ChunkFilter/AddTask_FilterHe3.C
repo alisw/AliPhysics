@@ -1,5 +1,5 @@
-AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
-
+AliAnalysisTaskFilterHe3Local *AddTask_FilterHe3Local(TString name = "standard")
+{
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,7 +17,7 @@ AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
 
 
   //========= Add task to the ANALYSIS manager =====
-  AliAnalysisTaskFilterHe3* task = new AliAnalysisTaskFilterHe3("akalweitTaskFilterHe3");
+  AliAnalysisTaskFilterHe3Local *task = new AliAnalysisTaskFilterHe3Local(Form("akalweitTaskFilterHe3_%s", name.Data()));
   //task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
 
    
@@ -35,9 +35,8 @@ AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
 
 // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("akalweit_filterHe3_hist", TList::Class(),AliAnalysisManager::kOutputContainer, "AnalysisResults.root:FilterHe3");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("akalweit_filterHe3_names", TTree::Class(),AliAnalysisManager::kOutputContainer, "AnalysisResults.root:FilterHe3_List");
-
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("akalweit_filterHe3_hist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:FilterHe3_%s", name.Data()));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("akalweit_filterHe3_names", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:FilterHe3_List_%s", name.Data()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);

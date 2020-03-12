@@ -18,7 +18,7 @@
 class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
-  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM);
+  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05);
   AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
   void FillConfig(int iBin, float val) {
@@ -216,6 +216,8 @@ class AliFemtoDreamTrackHist {
   bool fMinimalBooking;     //!
   int fMultRangeLow;		//!
   int fMultRangeHigh;		//!
+  float fpTmin;              //!
+  float fpTmax;              //!
   TList *fHistList;         //!
   TList *fTrackCutQA[2];    //!
   TProfile *fConfig;        //!
@@ -254,7 +256,7 @@ class AliFemtoDreamTrackHist {
   TH2F  *fNSigComTPCTOF[2];   //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];  //!
-ClassDef(AliFemtoDreamTrackHist,4)
+ClassDef(AliFemtoDreamTrackHist,5)
   ;
 };
 

@@ -141,5 +141,7 @@
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
+#pragma link C++ class AliRDHFCutsKFP+;
+#pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromKFP+;
 
 #endif

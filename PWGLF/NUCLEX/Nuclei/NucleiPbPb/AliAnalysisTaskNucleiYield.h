@@ -61,18 +61,21 @@ struct SLightNucleus {
 };
 
 struct RLightNucleus {
+  enum { 
+    kT0fill,
+    kPrimary,
+    kSecondaryMaterial,
+    kSecondaryWeakDecay
+  };
   float pt;
   float eta;
-  float phi;
-  Double32_t m2;             //[1.1,21.58,13]
   Double32_t dcaxy;          //[-2,2,10]
   Double32_t dcaz;           //[-2,2,10]
-  Double32_t tpcNsigmaD;     //[-6.4,6.4,8]
-  Double32_t tpcNsigmaT;     //[-6.4,6.4,8]
-  Double32_t tpcNsigmaHe3;   //[-6.4,6.4,8]
-  Double32_t centrality;     //[0,128,8]
-  unsigned char itsCls;
+  Double32_t tofNsigma;      //[-12.8,12.8,12]
+  Double32_t tpcNsigma;      //[-6.4,6.4,8]
+  char       centrality;
   unsigned char tpcPIDcls;
+  unsigned char flag;       //
 };
 
 class AliAnalysisTaskNucleiYield : public AliAnalysisTaskSE {
@@ -327,23 +330,23 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         good2save = false;
     }
     if (good2save) {
+      AliTOFPIDResponse& tofPID = fPID->GetTOFResponse();
+
       fRecNucleus.pt = track->Pt() * track->Charge();
       fRecNucleus.eta = track->Eta();
-      fRecNucleus.phi = track->Phi();
-      fRecNucleus.m2 = m2;
       fRecNucleus.dcaxy = dca[0];
       fRecNucleus.dcaz = dca[1];
-      fRecNucleus.tpcNsigmaD = fPID->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-      fRecNucleus.tpcNsigmaT = fPID->NumberOfSigmasTPC(track, AliPID::kTriton);
-      fRecNucleus.tpcNsigmaHe3 = fPID->NumberOfSigmasTPC(track, AliPID::kHe3);
+      fRecNucleus.tpcNsigma = fPID->NumberOfSigmasTPC(track, fParticle);
+      fRecNucleus.tofNsigma = fPID->NumberOfSigmasTOF(track, fParticle);
       fRecNucleus.centrality = fCentrality;
-      fRecNucleus.itsCls = track->GetITSClusterMap();
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
-      if ((fRecNucleus.tpcNsigmaD > -5. && track->Pt() < 1.4) ||
-          (fRecNucleus.tpcNsigmaT > -5. && track->Pt() < 1.6) ||
-          (fRecNucleus.tpcNsigmaHe3 > -6.) ||
-          (m2 > 1.11 && m2 < 21.58)
-        )
+      fRecNucleus.flag |= !tofPID.GetT0binMask(tofPID.GetMomBin(track->GetTPCmomentum())) ? RLightNucleus::kT0fill : 0;
+      if (fIsMC) {
+        fRecNucleus.flag |= fSimNucleus.flag == 1 ? RLightNucleus::kPrimary : 0;
+        fRecNucleus.flag |= fSimNucleus.flag == 2 ? RLightNucleus::kSecondaryWeakDecay : 0;
+        fRecNucleus.flag |= fSimNucleus.flag == 4 ? RLightNucleus::kSecondaryMaterial : 0;
+      }
+      if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
         fRTree->Fill();
     }
   }

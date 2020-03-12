@@ -59,7 +59,6 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -120,7 +119,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species

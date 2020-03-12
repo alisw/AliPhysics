@@ -144,7 +144,7 @@ class AliAnalysisTaskNBodyFemtoscopy : public AliAnalysisTaskSE{
 
 
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskNBodyFemtoscopy, 3);
+  ClassDef(AliAnalysisTaskNBodyFemtoscopy, 4);
 
 };
 

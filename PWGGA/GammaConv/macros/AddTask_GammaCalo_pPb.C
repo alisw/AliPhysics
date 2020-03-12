@@ -374,8 +374,9 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","411793105f032230000","01633031000000d0"); // rapidity variation  y<0.6
     cuts.AddCutCalo("80010123","411793105f032230000","01634031000000d0"); // rapidity variation  y<0.5
     cuts.AddCutCalo("80010123","411793105f032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
-    cuts.AddCutCalo("80010123","411793105f032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
-
+    cuts.AddCutCalo("80010123","411793105f032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75  
+    
+    
   } else if (trainConfig == 100){ // EMCAL clusters standard cuts, cent vars
     cuts.AddCutCalo("a0110113","111113105f032230000","01631031000000d0"); // 0-5
     cuts.AddCutCalo("a1210113","111113105f032230000","01631031000000d0"); // 5-10
@@ -742,7 +743,12 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80083123","111113205f032230000","0w631031000000d0"); // 
     cuts.AddCutCalo("80083123","111113205f032230000","0x631031000000d0"); // 
     
-
+  } else if (trainConfig == 291) {
+    cuts.AddCutCalo("00010113","388553205f032230000","01631031000000d0"); 
+    cuts.AddCutCalo("00010113","388553205f032230000","0r631031000000d0"); 
+    cuts.AddCutCalo("00010113","388553205f032230000","0s631031000000d0"); 
+    cuts.AddCutCalo("00010113","388553205f032230000","0t631031000000d0"); 
+    cuts.AddCutCalo("00010113","388553205f032230000","0u631031000000d0"); 
     
   // ===============================================================================================
   // Run 1 data PHOS clusters pPb 5TeV

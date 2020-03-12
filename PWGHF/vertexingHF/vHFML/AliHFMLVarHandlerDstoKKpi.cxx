@@ -111,8 +111,11 @@ bool AliHFMLVarHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
     fCosP = cand->CosPointingAngle();
     fCosPXY = cand->CosPointingAngleXY();
     fImpParXY = cand->ImpParXY();
-    fDCA = cand->GetDCA();
     fNormd0MeasMinusExp = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bfield);
+
+    double d0[2], cov[3];
+    cand->PropagateToDCA(cand->GetPrimaryVtx(), 0., 3., d0, cov); //propagate as a straight line
+    fDCA = TMath::Sqrt(d0[0]*d0[0]+d0[1]*d0[1]);
 
     //Ds+ -> KKpi variables
     AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;

@@ -815,9 +815,11 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHist
     AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    Bool_t isZNAhit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNAhit() : 1;
+    Bool_t isZNChit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNChit() : 1;
     if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
-    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->IsZNAhit() ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
-    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->IsZNChit() ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
+    for (Int_t i=0;i<4;i++) zna[i] = isZNAhit ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
+    for (Int_t i=0;i<4;i++) znc[i] = isZNChit ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
   } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
     const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
     AliAODZDC* aodZDC = aod->GetZDCData();
@@ -862,8 +864,10 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliVEvent* event, AliceSide si
     AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
-    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->IsZNAhit() ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
-    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->IsZNChit() ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
+    Bool_t isZNAhit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNAhit() : 1;
+    Bool_t isZNChit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNChit() : 1;
+    for (Int_t i=0;i<4;i++) zna[i] = isZNAhit ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
+    for (Int_t i=0;i<4;i++) znc[i] = isZNChit ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
   } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
     const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
     AliAODZDC* aodZDC = aod->GetZDCData();

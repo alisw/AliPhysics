@@ -11,6 +11,7 @@ class THnSparse;
 class TNtuple;
 class AliJetContainer;
 class AliParticleContainer;
+class TRandom;
 
 //#include "AliAnalysisTaskEmcal.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -60,12 +61,20 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   std::vector<split>   ReclusterFindHardSplits(std::vector <fastjet::PseudoJet> const & particles);
   std::vector<split>   FindHardSplits(fastjet::PseudoJet const & jet);
 
+  void FilterJets(std::vector<fastjet::PseudoJet> const & jets, std::vector<fastjet::PseudoJet> & jets_filtered, Float_t pt_cut);
+
   int InitializeSubtractor(std::vector <fastjet::PseudoJet> const & event_full, Double_t & rho, Double_t & rho_sparse, Int_t opt = 0);
-  void SetJetByJetConstSubtractionMode() { fCSOption = 1; }
+
+  void SetFullEventConstSubtractionMode() { fCSOption = 0; }
+  void SetJetByJetConstSubtractionMode()  { fCSOption = 1; }
+  void SetAlphaDeltaRmaxConstSubtraction(Double_t alpha, Double_t drmax) {
+    fCSAlpha = alpha;
+    fCSDeltaRmax = drmax;
+  }
 
   std::vector<fastjet::PseudoJet> GetBackSubJets(std::vector<fastjet::PseudoJet> const & event_full);
 
-  void                 AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event);
+  void                 AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event, Double_t const efficiency = 10.0, TRandom* fRandom = nullptr);
   void                 FillTree(std::vector<fastjet::PseudoJet> const & jets, TNtuple* tree);
   void                 FillTree(AliJetContainer *jets, TNtuple* tree);
 
@@ -89,12 +98,15 @@ class AliAnalysisTaskSDKL : public AliAnalysisTaskEmcalJet {
   AliParticleContainer       *fTracksCont;             //! Tracks
   Int_t                       fbcoption;
   Int_t                       fCSOption;
+  Double_t                    fCSAlpha;
+  Double_t                    fCSDeltaRmax;
   fastjet::contrib::ConstituentSubtractor *fCSubtractor; //!
   fastjet::ClusterSequenceArea            *fCSubtractorCS; //!
 
  private:
   AliAnalysisTaskSDKL(const AliAnalysisTaskSDKL&);            // not implemented
   AliAnalysisTaskSDKL &operator=(const AliAnalysisTaskSDKL&); // not implemented
+
 
   ClassDef(AliAnalysisTaskSDKL, 1) // jet sample analysis task
 

@@ -422,7 +422,7 @@ void AliEbyEPhiDistNew::CreateEffCont() {
     fPtArray = new Double_t[fNptBins+1];
     
     Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
-    Double_t pidPtBins[15] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05};
+    Double_t pidPtBins[9] = { 0.4, 0.6, 0.8, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
     
     if( fPidType == 0) fPtArray = chPtBins;
     else fPtArray = pidPtBins;
@@ -557,26 +557,20 @@ void AliEbyEPhiDistNew::CreateEffCont() {
         
     }
     else {//for PID
-        const Int_t dim = 29; //1 centrality bin + (14 pt bins) * 2
+        const Int_t dim = 17; //1 centrality bin + (8 pt bins) * 2
         Int_t bin[dim]    = { 100,
             500, 500, 500,
             500, 500, 500, 500, 500, 500, 500, 500,
-            200, 200, 200, 200, 200, 200, 200, 200,
-            500, 500, 500,
-            500, 500, 500, 500, 500, 500};
+            200, 200, 200, 200, 200};
         
         Double_t min[dim] = { -0.5,
             -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5};
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5};
         
         Double_t max[dim] = { 99.5,
             499.5, 499.5, 499.5,
             499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
-            499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
+            199.5, 199.5, 199.5, 199.5, 199.5};
         
         fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
         fThnList->Add(fPtBinNplusNminusCh);
@@ -1084,7 +1078,8 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
         }//for
     }
     else {
-        Double_t pidPtBins[15] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05};
+        Double_t pidPtBins[9] = { 0.4, 0.6, 0.8, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+
         for(Int_t iBin = 0; iBin < fNptBins; iBin++){
             
             if( iBin == fNptBins-1){

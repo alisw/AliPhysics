@@ -8,8 +8,8 @@
 #include "AliFemtoDreamTrackMCHist.h"
 #include "AliLog.h"
 AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
-    : fpTmin(0.5),
-      fpTmax(4.05),
+    : fpTmin(0),
+      fpTmax(0),
       fpTbins(20),
       fMultRangeLow(27),
       fMultRangeHigh(55),
@@ -76,9 +76,11 @@ AliFemtoDreamTrackMCHist::~AliFemtoDreamTrackMCHist() {
 AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
                                                    bool DCADist,
                                                    bool DoMultBinning,
-                                                   bool checkMother)
-    : fpTmin(0.5),
-      fpTmax(4.05),
+                                                   bool checkMother,
+						   float pTmin,
+						   float pTmax)
+    : fpTmin(pTmin),
+      fpTmax(pTmax),
       fpTbins(20),
       fMultRangeLow(27),
       fMultRangeHigh(55),

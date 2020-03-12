@@ -1823,7 +1823,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         //ESD and AOD CaloCells carries the same information
         AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
         if(clus && clus->IsEMCAL()){
-            fClsEAll->Fill(clus->GetNonLinCorrEnergy()); //E of all clusters
+            fClsEAll->Fill(clus->E()); //E of all clusters
         }
     }*/
     for (Int_t icl = 0; icl < nclus; icl++) {
@@ -1855,7 +1855,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            //fClsEAll->Fill(clus->GetNonLinCorrEnergy()); //E of all clusters
+            //fClsEAll->Fill(clus->E()); //E of all clusters
         }
     }
     
@@ -2073,11 +2073,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
             if(emcphi > 1.39 && emcphi < 3.265) {
                 fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
-                //fClsEamEMCal->Fill(clustMatch->GetNonLinCorrEnergy());
+                //fClsEamEMCal->Fill(clustMatch->E());
             }
             if(emcphi > 4.53 && emcphi < 5.708) {
                 fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
-                //fClsEamDCal->Fill(clustMatch->GetNonLinCorrEnergy());
+                //fClsEamDCal->Fill(clustMatch->E());
             }
             
             //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
@@ -2087,7 +2087,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            fClsEnoTimeCut->Fill(clustMatch->GetNonLinCorrEnergy());
+            fClsEnoTimeCut->Fill(clustMatch->E());
             
             if (fApplyTimeCut) {
                 Float_t tof = clustMatch->GetTOF()*1e+9; // ns
@@ -2097,10 +2097,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            fClsE->Fill(clustMatch->GetNonLinCorrEnergy());
+            fClsE->Fill(clustMatch->E());
             
-            //if(fClsTypeEMC) fClsEamEMCal->Fill(clustMatch->GetNonLinCorrEnergy());
-            //if(fClsTypeDCAL) fClsEamDCal->Fill(clustMatch->GetNonLinCorrEnergy());
+            //if(fClsTypeEMC) fClsEamEMCal->Fill(clustMatch->E());
+            //if(fClsTypeDCAL) fClsEamDCal->Fill(clustMatch->E());
             
             if(kTruElec == kTRUE) fElecAftTrkMatch->Fill(track->Pt());
             if(kTruHFElec == kTRUE) fHFElecAftTrkMatch->Fill(track->Pt());
@@ -2461,7 +2461,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             /////////////////////
             // Electron sparse //
             /////////////////////
-            Double_t EovP = (clustMatch->GetNonLinCorrEnergy())/(track->P());
+            Double_t EovP = (clustMatch->E())/(track->P());
             Double_t M20 = clustMatch->GetM20();
             Double_t M02 = clustMatch->GetM02();
             
@@ -2610,8 +2610,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(kTruHFElec == kTRUE) fHFElecAftTPCeID->Fill(track->Pt());
             if(kTruBElec == kTRUE) fBElecAftTPCeID->Fill(track->Pt());
             
-            //if(fClsTypeDCAL) fClsEamElecDC->Fill(clustMatch->GetNonLinCorrEnergy());
-            //if(fClsTypeEMC) fClsEamElecEMC->Fill(clustMatch->GetNonLinCorrEnergy());
+            //if(fClsTypeDCAL) fClsEamElecDC->Fill(clustMatch->E());
+            //if(fClsTypeEMC) fClsEamElecEMC->Fill(clustMatch->E());
             
             /////////////////////////
             // Plot Reco Electrons //
@@ -2902,6 +2902,43 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             fpidSort = 6; //Mom is J/psi
         }
         
+        //Using Jonghan's method to find beauty feeddown for the D mesons
+        if((int(pidM/100.)%10) == 4 || (int(pidM/1000.)%10) == 4) {
+            
+            // iterate until you find B hadron as a mother or become top ancestor
+            AliAODMCParticle *dummyPart; //dummy particle for iteration
+            int grandMaPDG;
+            
+            for (int i=1; i<100; i++){
+                int jLabel = partM->GetMother();
+                if (jLabel == -1) {
+                    break;
+                }
+                if ((jLabel<0)){
+                    AliDebug(1, "Stack label is negative, return\n");
+                    break;
+                }
+                
+                // if there is an ancestor
+                if(!(dummyPart = dynamic_cast<AliAODMCParticle *>(fMCarray->At(TMath::Abs(jLabel))))) {
+                    break;
+                }
+                grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
+                if (grandMaPDG>500 && grandMaPDG<599){
+                    fpidSort = 20; //B mother feeddown
+                    momPt = dummyPart->Pt();
+                    break;
+                }
+                if (grandMaPDG>5000 && grandMaPDG<5999){
+                    fpidSort = 21; //b baryon mother feeddown
+                    momPt = dummyPart->Pt();
+                    break;
+                }
+                partM = dummyPart;
+            } // end of iteration
+        }
+        
+        
         if(ilabelGM>0){
             AliAODMCParticle *partGM = (AliAODMCParticle*)fMCarray->At(ilabelGM); // get GMa particle
             Int_t pidGM = TMath::Abs(partGM->GetPdgCode()); //ask for grandma's pid
@@ -2938,7 +2975,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             
             
             //check if D grandma is B
-            if(pidM>400 && pidM<499){
+            /*if(pidM>400 && pidM<499){
                 if(pidGM>500 && pidGM<599){
                     fpidSort = 1; //GMa is B
                     momPt = partGM->Pt();
@@ -2956,14 +2993,14 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 if(pidGM>5000 && pidGM<5999){
                     fpidSort = 10; //GMa is b baryon
                 }
-            }
+            }*/
             if(ilabelGGM>0){
                 AliAODMCParticle *partGGM = (AliAODMCParticle*)fMCarray->At(ilabelGGM); // get GGMa particle
                 Int_t pidGGM = TMath::Abs(partGGM->GetPdgCode()); //ask for ggma's pid
                 ilabelGGGM = partGGM->GetMother();//get MC for Great Grandma
                 
                 //check if D great grandma is B
-                if(pidM>400 && pidM<499){
+                /*if(pidM>400 && pidM<499){
                     if(pidGGM>500 && pidGGM<599){
                         fpidSort = 1; //GGMa is B
                         momPt = partGGM->Pt();
@@ -2981,7 +3018,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                     if(pidGGM>5000 && pidGGM<5999){
                         fpidSort = 10; //GGMa is b baryon
                     }
-                }
+                }*/
                 
                 //check if gamma great grandma is eta
                 if(pidM==22){
