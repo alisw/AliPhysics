@@ -95,7 +95,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  std::vector<float> mTBins = {1.0, 1.14, 1.26, 999.};
+  std::vector<float> mTBins = {1.14, 1.26, 999.};
   //pairs:
   //pp                0
   //p bar p           1
