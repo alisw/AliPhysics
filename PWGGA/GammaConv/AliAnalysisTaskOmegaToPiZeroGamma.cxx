@@ -2889,6 +2889,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                 dropOutGammas_CALO.insert(secondGammaIndex);
               }
             }
+            delete pi0cand;
+            pi0cand=0x0;
           }
         }
       }
@@ -2982,9 +2984,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
                 dropOutGammas_PCM.insert(firstGammaIndex);
                 dropOutGammas_PCM.insert(secondGammaIndex);
               }
-              delete pi0cand;
-              pi0cand=0x0;
             }
+            delete pi0cand;
+            pi0cand=0x0;
           }
         }
       }
