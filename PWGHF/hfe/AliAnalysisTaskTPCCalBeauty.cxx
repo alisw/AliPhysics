@@ -2902,6 +2902,43 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             fpidSort = 6; //Mom is J/psi
         }
         
+        //Using Jonghan's method to find beauty feeddown for the D mesons
+        if((int(pidM/100.)%10) == 4 || (int(pidM/1000.)%10) == 4) {
+            
+            // iterate until you find B hadron as a mother or become top ancestor
+            AliAODMCParticle *dummyPart; //dummy particle for iteration
+            int grandMaPDG;
+            
+            for (int i=1; i<100; i++){
+                int jLabel = partM->GetMother();
+                if (jLabel == -1) {
+                    break;
+                }
+                if ((jLabel<0)){
+                    AliDebug(1, "Stack label is negative, return\n");
+                    break;
+                }
+                
+                // if there is an ancestor
+                if(!(dummyPart = dynamic_cast<AliAODMCParticle *>(fMCarray->At(TMath::Abs(jLabel))))) {
+                    break;
+                }
+                grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
+                if (grandMaPDG>500 && grandMaPDG<599){
+                    fpidSort = 20; //B mother feeddown
+                    momPt = dummyPart->Pt();
+                    break;
+                }
+                if (grandMaPDG>5000 && grandMaPDG<5999){
+                    fpidSort = 21; //b baryon mother feeddown
+                    momPt = dummyPart->Pt();
+                    break;
+                }
+                partM = dummyPart;
+            } // end of iteration
+        }
+        
+        
         if(ilabelGM>0){
             AliAODMCParticle *partGM = (AliAODMCParticle*)fMCarray->At(ilabelGM); // get GMa particle
             Int_t pidGM = TMath::Abs(partGM->GetPdgCode()); //ask for grandma's pid
@@ -2938,7 +2975,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             
             
             //check if D grandma is B
-            if(pidM>400 && pidM<499){
+            /*if(pidM>400 && pidM<499){
                 if(pidGM>500 && pidGM<599){
                     fpidSort = 1; //GMa is B
                     momPt = partGM->Pt();
@@ -2956,14 +2993,14 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 if(pidGM>5000 && pidGM<5999){
                     fpidSort = 10; //GMa is b baryon
                 }
-            }
+            }*/
             if(ilabelGGM>0){
                 AliAODMCParticle *partGGM = (AliAODMCParticle*)fMCarray->At(ilabelGGM); // get GGMa particle
                 Int_t pidGGM = TMath::Abs(partGGM->GetPdgCode()); //ask for ggma's pid
                 ilabelGGGM = partGGM->GetMother();//get MC for Great Grandma
                 
                 //check if D great grandma is B
-                if(pidM>400 && pidM<499){
+                /*if(pidM>400 && pidM<499){
                     if(pidGGM>500 && pidGGM<599){
                         fpidSort = 1; //GGMa is B
                         momPt = partGGM->Pt();
@@ -2981,7 +3018,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                     if(pidGGM>5000 && pidGGM<5999){
                         fpidSort = 10; //GGMa is b baryon
                     }
-                }
+                }*/
                 
                 //check if gamma great grandma is eta
                 if(pidM==22){
