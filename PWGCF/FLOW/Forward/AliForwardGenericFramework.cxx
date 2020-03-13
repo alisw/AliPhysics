@@ -77,7 +77,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
     for (Int_t phiBin = 1; phiBin <= dNdetadphi->GetNbinsY(); phiBin++) {
 
       Double_t phi = dNdetadphi->GetYaxis()->GetBinCenter(phiBin);
-      Double_t weight = dNdetadphi->GetBinContent(etaBin, phiBin);
+      Double_t mult_weight = dNdetadphi->GetBinContent(etaBin, phiBin);
+      Double_t weight = mult_weight;
 
       if (fSettings.doNUA){
         if (useFMD) weight = applyNUAforward(dNdetadphi, etaBin, phiBin, eta, phi, zvertex, weight);
@@ -102,10 +103,12 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
             fpvector->Fill(re, realPart);
             fpvector->Fill(im, imPart);
 
-            if ((useFMD & !(fSettings.etagap)) || (!(useFMD) && (fSettings.ref_mode & fSettings.kTPCref))) {
+            if ((useFMD & !(fSettings.etagap)) ||
+                (!(useFMD) && (fSettings.ref_mode & fSettings.kTPCref)) ||
+                (useFMD && (fSettings.ref_mode & fSettings.kFMDref))) {
               fqvector->Fill(re, realPart);
               fqvector->Fill(im, imPart);
-              if ((TMath::Abs(refEta)>1.1) & !fSettings.etagap) fAutoDiff->Fill(refEta,weight*(weight - 1));
+              if ((mult_weight > 1.0) & !fSettings.etagap) fAutoDiff->Fill(refEta,weight*(weight - 1));
             }
           }
 
@@ -122,7 +125,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
             Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
             Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-            if ((TMath::Abs(refEta)>1.5) & !fSettings.etagap) fAutoRef->Fill(refEta,weight*(weight - 1));  
+            if ((mult_weight > 1.0) & !fSettings.etagap) fAutoRef->Fill(refEta,weight*(weight - 1));  
             fQvector->Fill(req, realPart);
             fQvector->Fill(imq, imPart);
           }
@@ -168,11 +171,11 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         // two-particle cumulant
         if ((fSettings.normal_analysis || fSettings.SC_analysis) || fSettings.second_analysis){
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
-          if (!fSettings.etagap & (TMath::Abs(refEtaA) > 1.5)) two += fAutoRef->GetBinContent(refEtaBinA);
+          if (!fSettings.etagap) two += fAutoRef->GetBinContent(refEtaBinA);
           fill(cumu_rW2Two, n, ptn, sample, zvertex, refEtaA, cent, two);
           if (n==2){
             double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
-            if (!fSettings.etagap & (TMath::Abs(refEtaA) > 1.5)) dn2 += fAutoRef->GetBinContent(refEtaBinA);
+            if (!fSettings.etagap) dn2 += fAutoRef->GetBinContent(refEtaBinA);
             fill(cumu_rW2, -n, ptn, sample, zvertex, refEtaA, cent, dn2);
           }
         }
@@ -194,11 +197,11 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
       if ((fSettings.normal_analysis || fSettings.decorr_analysis) || fSettings.second_analysis){
         if (n==2){
           double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
-          if (!fSettings.etagap & (TMath::Abs(eta) > 1.5)) dn2diff += fAutoDiff->GetBinContent(etaBin);
+          if (!fSettings.etagap) dn2diff += fAutoDiff->GetBinContent(etaBin);
           fill(cumu_dW2B, -n, ptn, sample, zvertex, eta, cent, dn2diff);          
         }
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
-        if (!fSettings.etagap & (TMath::Abs(eta) > 1.5)) twodiff += fAutoDiff->GetBinContent(etaBin);
+        if (!fSettings.etagap) twodiff += fAutoDiff->GetBinContent(etaBin);
         fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
       }
       if (fSettings.decorr_analysis){
@@ -308,24 +311,11 @@ TComplex AliForwardGenericFramework::TwoDiff(Int_t n1, Int_t n2, Int_t refetabin
 }
 
 
-
 TComplex AliForwardGenericFramework::TwoTwoDiff(Int_t n1, Int_t n2, Int_t diffetabin1, Int_t diffetabin2)
 {
-  return p(n1,1, diffetabin1)*p(n2,1, diffetabin2);// - q(n1+n2,1, diffetabin);
+  return p(n1,1, diffetabin1)*p(n2,1, diffetabin2);
 }
 
-
-// TComplex AliForwardGenericFramework::TwoTwoDiff1(Int_t n1, Int_t n2, Int_t ref1, Int_t ref2, Int_t diff1,Int_t diff2)
-// {
-//   // 
-//   return Q(n2,1, ref1)*p(n1,1, diff2)*Q(n2,1, ref2)*p(n1,1, diff1);// - q(n1+n2,1, diffetabin);
-// }
-
-// TComplex AliForwardGenericFramework::TwoTwoDiff2(Int_t n1, Int_t n2, Int_t ref1, Int_t ref2, Int_t diff1,Int_t diff2)
-// {
-//   // 
-//   return Q(n2,1, ref1)*p(n1,1, diff2)*Q(n2,1, ref2)*p(n1,1, diff1);// - q(n1+n2,1, diffetabin);
-// }
 
 TComplex AliForwardGenericFramework::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2)
 {
@@ -343,8 +333,7 @@ TComplex AliForwardGenericFramework::Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4
   }
   return formula;
 }
-//FourDiff(4, 2, -4, -2, refEtaBinA,refEtaBinB, etaBin,etaBin).Re();
-// n1 = diff, n2
+
 
 TComplex AliForwardGenericFramework::FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinA, Int_t refetabinB, Int_t diffetabin,Int_t qetabin)
 {
@@ -366,16 +355,13 @@ TComplex AliForwardGenericFramework::FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_
 }
 
 
-// n, n, -n, -n, refEtaBinA, refEtaBinB, etaBin,etaBin
 TComplex AliForwardGenericFramework::FourDiff_SC(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t diffetabinA, Int_t refetabinA, Int_t diffetabinB,Int_t refetabinB)
 {
   TComplex formula = 0;
-
-
-    formula = p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
-            - p(n1+n2,2,diffetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
-            - p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3+n4,2,diffetabinB)
-            + p(n1+n2,2,diffetabinA)*p(n3+n4,2,diffetabinB);
+  formula = p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
+          - p(n1+n2,2,diffetabinA)*p(n3,1,diffetabinB)*Q(n4,1,refetabinB)
+          - p(n1,1,diffetabinA)*Q(n2,1,refetabinA)*p(n3+n4,2,diffetabinB)
+          + p(n1+n2,2,diffetabinA)*p(n3+n4,2,diffetabinB);
   return formula;
 }
 
@@ -383,4 +369,6 @@ void AliForwardGenericFramework::reset() {
   fQvector->Reset();
   fpvector->Reset();
   fqvector->Reset();
+  fAutoRef->Reset();
+  fAutoDiff->Reset();
 }
