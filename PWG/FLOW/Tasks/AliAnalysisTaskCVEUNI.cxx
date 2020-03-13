@@ -791,8 +791,9 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
 	//if(iTrack%10==0){
 	//std::cout<<" pT = "<<trkPt<<"\t MCWgt = "<<ptWgtMC<<"\t Eta = "<<trkEta<<"\t NUAwgt = "<<WgtNUA<<"\t TotalWgt = "<<trkWgt<<endl;
 	//}
-       
-	
+
+	if (trkPt<2.0)
+	  {
 	if(trkEta < fEtaGapNeg){
 	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
 	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
@@ -803,7 +804,7 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
 	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
 	  fSumWgtEtaPos  += trkWgt;
 	}
-
+	  }
 	
 
 
