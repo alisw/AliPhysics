@@ -257,7 +257,6 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
 }
 
 
-
 TComplex AliForwardGenericFramework::Q(Int_t n, Int_t p, Int_t etabin)
 {
   double sign = (n < 0) ? -1 : 1;

@@ -84,10 +84,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
   fWeights = AliForwardWeights();
   fWeights.fSettings = this->fSettings;
-  std::cout << "fSettings.nua_file" << fSettings.nua_file << std::endl;
-  if (fSettings.nua_file != "") fWeights.connectNUA();
-  if (fSettings.nue_file != "") fWeights.connectNUE();
-  if (fSettings.sec_file != "") fWeights.connectSec();
+
+  if (fSettings.nua_file != "") fWeights.connectNUA(); else fWeights.fSettings.doNUA = kFALSE;
+  if (fSettings.nue_file != "") fWeights.connectNUE(); else fWeights.fSettings.doNUE = kFALSE;
+  if (fSettings.sec_file != "") fWeights.connectSec(); else fWeights.fSettings.sec_corr = kFALSE;
   if (fSettings.sec_cent_file != "") fWeights.connectSecCent();
   this->fSettings = fWeights.fSettings;
 
