@@ -180,13 +180,15 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
       return;
 
   if (fUseAliEventCuts) {
-    fEventCuts.AcceptEvent(lAODevent);
+    auto isEventSelected_EventCuts = fEventCuts.AcceptEvent(lAODevent);
     double mult = AliMultSelectionTask::IsINELgtZERO(lAODevent) ? fEventCuts.GetCentrality() : -0.5;
     fNormalisation->FillSelected(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent),
                                  fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections),
                                  fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex),
                                  fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesAllCuts),
                                  mult);
+    if(!isEventSelected_EventCuts)
+      return;
   } else
     fNormalisation->FillSelected(kTRUE, kTRUE, kTRUE, kTRUE, 0);
 
