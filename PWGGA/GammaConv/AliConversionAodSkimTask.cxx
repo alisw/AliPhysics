@@ -62,7 +62,7 @@ void AliConversionAodSkimTask::UserCreateOutputObjects()
   {
     if (strcmp(obj->ClassName(), "AliV0ReaderV1") == 0)
     {
-      AliFatal("Skim task is running but detected V0Reader running in addition. This will cause problems due to relabelling already done now by the V0Reader!");
+      AliFatal("Skim task is running but detected V0Reader running in addition! This will cause problems due to relabelling already done now by the V0Reader!");
     }
   }
 
