@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Mar 5, reduce pT binning & delete allocator
+// Updated Mar 12, collect rec
 
 
 #include "AliAnalysisManager.h"
@@ -78,7 +78,7 @@ f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree(0x0),
 fCentrality(-1),
 fTreeVariablePID(-1),
 
-fNptBins(3),
+fNptBins(23),
 fIsMC(kTRUE),
 fEvSel(AliVEvent::kINT7),
 
@@ -120,7 +120,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
     Double_t CentBins[101] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100};
     Long_t CentbinNum = sizeof(CentBins)/sizeof(Double_t) - 1;
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    Double_t LambdaPtBins[4] = {0.9,1.0,4.0,4.2};
+     Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2, 4.4};
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     Double_t xibinlimits[26] = {0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0};
     Long_t xibinnumb = sizeof(xibinlimits)/sizeof(Double_t) - 1;
@@ -133,7 +133,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
     Long_t Massbinnumb = sizeof(MassBins)/sizeof(Double_t) - 1;
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //THNSPARSE BINNING
-    const Int_t dim = 7; //23 pt bins*2 + 1 cent bin
+    const Int_t dim = 47; //23 pt bins*2 + 1 cent bin
     Int_t bin[dim];
     bin[0] = 81;
     for(Int_t ibin = 1; ibin < dim; ibin++) bin[ibin] = 500;
@@ -198,7 +198,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         //---
         f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree = new TH2F("f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree","#bar{#Lambda} primaries",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree);
-
+        
         //FD
         
         f3fHistLambdafromXiFourSigthree = new TH3F("f3fHistLambdafromXiFourSigthree","f3fHistLambdafromXiFourSigthree ", fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
@@ -207,7 +207,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         //-
         f3fHistAntiLambdafromXiFourSigthree = new TH3F("f3fHistAntiLambdafromXiFourSigthree","f3fHistAntiLambdafromXiFourSigthree ",fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
         fListHist->Add(f3fHistAntiLambdafromXiFourSigthree);
-
+        
         //REC
         
         f3fHistCentInvMassVsPtLambdaRecFourSigthree = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthree","f3fHistCentInvMassVsPtLambdaRecFourSigthree",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
@@ -316,7 +316,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             
             AliMCParticle* mctrack = (AliMCParticle*)fMCEvent->GetTrack(iGen);
             if(!mctrack) continue;
-            if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
+//            if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
             
             TParticle *part = mctrack->Particle();
             genpid = part->GetPdgCode();
@@ -621,7 +621,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                 }// |eta| < 0.5
-          
+                
             } //MC condition
         }// zero onfly V0
     }// end of V0 loop
@@ -655,8 +655,8 @@ Int_t AliAnalysisTaskNetLambdaMCTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-    Double_t LambdaPtBins[4] = {0.9,1.0,4.0,4.2};
-
+    Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2,4.4};
+    
     for(Int_t iBin = 0; iBin < fNptBins; iBin++)
     {
         
@@ -687,7 +687,3 @@ Double_t AliAnalysisTaskNetLambdaMCTrad::MyRapidity(Double_t rE, Double_t rPz) c
     }
     return ReturnValue;
 }
-
-
-
-
