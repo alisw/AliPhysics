@@ -5171,6 +5171,18 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
     fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(5.71917e+00, 1.87419e-01, 5.80457e-01, 1.28769e+01, 5.37268e-03);
     break;
+  case 34: //y PHOS timing cut, pPb8TeV Trigger 30ns from Dmitri
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-30e-9;
+    fMaxTimeDiff=30e-9;//30ns
+    fUseTimingEfficiencyMCSimCluster = 1;
+    fTimingEfficiencyMCSimClusterLowPtEnd = 1e5;
+    fTimingEfficiencyMCSimClusterHighPtStart = 1e6;
+    fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "(x<2.5)*exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))+(x>=2.5)*[5]");
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-7.35340e+01, 7.14029e+01, 2.25335e+01,  4.99060e+01, 1.28905e+03, 0.9975);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameter(0, 1.0);
+    break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));
     return kFALSE;
@@ -7660,10 +7672,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // EDC based nonlinearity DExp or DPow
     case 64:
       // apply testbeam nonlinearity (same as case 4) but with resolution uncertainy
-      if(isMC){
-        energy /= FunctionNL_OfficialTB_300MeV_MC(energy);
-      } else {
-        energy /= FunctionNL_OfficialTB_300MeV_Data(energy);
+      if (fClusterType == 2){
+        if(isMC){
+          energy *= 1.0245*(1.- 0.013*TMath::Exp(energy*-0.5));
+        }
       }
       break;
     case 65: //50MeV TB update
