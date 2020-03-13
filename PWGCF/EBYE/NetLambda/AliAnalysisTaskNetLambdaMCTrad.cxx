@@ -574,7 +574,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         if(fTreeVariablePID == 3122)
                         {
                             f3fHistCentInvMassVsPtLambdaRecFourSigthree->Fill(fCentrality,invMassLambda,mcpt);
-                            if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;}
+//                            if(isPrim)
+//                            {
+//                            }
+                            f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;
                             if(isSecFromWeakDecay)
                             {
                                 f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
@@ -604,7 +607,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         if(fTreeVariablePID == -3122)
                         {
                             f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;}
+//                            if(isPrim)
+//                            {
+//                            }
+                            f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;
                             if(isSecFromWeakDecay)
                             {
                                 f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
