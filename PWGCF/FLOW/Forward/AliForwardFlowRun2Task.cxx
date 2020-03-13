@@ -84,10 +84,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
   fWeights = AliForwardWeights();
   fWeights.fSettings = this->fSettings;
-  std::cout << "fSettings.nua_file" << fSettings.nua_file << std::endl;
-  if (fSettings.nua_file != "") fWeights.connectNUA();
-  if (fSettings.nue_file != "") fWeights.connectNUE();
-  if (fSettings.sec_file != "") fWeights.connectSec();
+
+  if (fSettings.nua_file != "") fWeights.connectNUA(); else fWeights.fSettings.doNUA = kFALSE;
+  if (fSettings.nue_file != "") fWeights.connectNUE(); else fWeights.fSettings.doNUE = kFALSE;
+  if (fSettings.sec_file != "") fWeights.connectSec(); else fWeights.fSettings.sec_corr = kFALSE;
   if (fSettings.sec_cent_file != "") fWeights.connectSecCent();
   this->fSettings = fWeights.fSettings;
 
@@ -270,15 +270,18 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t zvertex = fUtil.GetZ();
 
-  if (fSettings.ref_mode & fSettings.kFMDref) {
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
-  }
-  else {
-    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
-  }
+
   if (!fSettings.etagap){
     fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
     fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+  }
+  else{
+    if (fSettings.ref_mode & fSettings.kFMDref) {
+      fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
+    }
+    else {
+      fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+    }
   }
   
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  

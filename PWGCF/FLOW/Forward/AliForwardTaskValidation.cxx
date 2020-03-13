@@ -354,7 +354,8 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
         break;
       case EventValidation::kHasEntriesFMD:
-        this->fIsValidEvent = this->HasEntriesFMD(); break;
+        if (fSettings.use_primaries_fwd & fSettings.use_primaries_fwdref) continue;
+        else this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
         this->fIsValidEvent = this->HasValidFMD(); break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:
