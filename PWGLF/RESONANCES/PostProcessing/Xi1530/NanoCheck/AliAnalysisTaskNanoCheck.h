@@ -29,6 +29,8 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     Bool_t GoodTracksSelection();
     Bool_t GoodV0Selection();
     Bool_t GoodCascadeSelection();
+    Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
+    Bool_t IsSelectedTPCGeoCut(AliESDtrack *track);
 
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
     void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
@@ -54,6 +56,16 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     TAxis AxisStr(TString name, std::vector<TString> bin);
 
     AliEventCuts fEventCuts;  // Event cuts
+
+    // TPC GeoCut
+    int fMode = 0;
+    Double_t fDeltaY = 3.0;
+    Double_t fDeltaZ = 220.0;
+    Double_t fMagField;
+    Double_t fRequireCutGeoNcrNclLength = 130;
+    Double_t fRequireCutGeoNcrNclGeom1Pt = 1.5;
+    Double_t fCutGeoNcrNclFractionNcr = 0.85;
+    Double_t fCutGeoNcrNclFractionNcl = 0.7;
 
    private:
     AliESDtrackCuts* fTrackCuts = nullptr;   //!

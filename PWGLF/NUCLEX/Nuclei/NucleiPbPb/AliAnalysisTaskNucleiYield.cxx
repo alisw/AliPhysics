@@ -897,7 +897,9 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliAODTrack *track) {
   return checkResult;
 }
 Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
-  Bool_t checkResult = kTRUE;
-  // Currently NanoCut is not implemented !!
-  return checkResult;
+  static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
+  if(static_cast<AliNanoAODTrack*>(track)->GetVar(tpcGeo_index) > 0.5)
+    return kTRUE;
+  else
+    return kFALSE;
 }
