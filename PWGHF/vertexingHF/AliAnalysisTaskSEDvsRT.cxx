@@ -61,11 +61,15 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fOutput(0),
    fListCuts(0),
    fOutputCounters(0),
+   fListQAhists(0),
    fUpmasslimit(1.965),
    fLowmasslimit(1.765),
    fNMassBins(200),
    fRDCutsAnalysis(0),
    fHistNEvents(0),
+   fGlobalRT(0),
+   fHistPtLead(0),
+   fRTvsZvtxvsMult(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -94,11 +98,15 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fOutput(0),
    fListCuts(0),
    fOutputCounters(0),
+   fListQAhists(0),
    fUpmasslimit(1.965),
    fLowmasslimit(1.765),
    fNMassBins(200),
    fRDCutsAnalysis(cuts),
    fHistNEvents(0),
+   fGlobalRT(0),
+   fHistPtLead(0),
+   fRTvsZvtxvsMult(0),
    fCounter(0),
    fReadMC(kFALSE),
    fMCOption(0),
@@ -145,7 +153,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
       DefineOutput(1,TList::Class()); //Output slot 1: fOutput TList container
       DefineOutput(2,TList::Class()); //Output slot 2: fListCuts
       DefineOutput(3,TList::Class()); //Output slot 3: normalisation counters
-      DefineOutput(4,THnSparse::Class()); // Output slot 4: HnSparse for 
+      DefineOutput(4,TList::Class()); // Output slot 4: list for QA plots
       for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
 }   
    
@@ -167,6 +175,10 @@ AliAnalysisTaskSEDvsRT::~AliAnalysisTaskSEDvsRT()
    if (fOutputCounters) {
       delete fOutputCounters;
       fOutputCounters = 0x0;
+   }
+   if (fListQAhists) {
+      delete fListQAhists;
+      fListQAhists = 0x0;
    }
 }
 
@@ -373,13 +385,22 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
   }
 
    
+   fListQAhists = new TList();
+   fListQAhists->SetOwner();
+   fListQAhists->SetName("QAhists");
+   
+   fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",10,0,10);
+   fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
+   fRTvsZvtxvsMult = new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",10,0,10,200,-10,10,200,0,200);
    
    
-   
+   fListQAhists->Add(fGlobalRT);
+   fListQAhists->Add(fHistPtLead);
+   fListQAhists->Add(fRTvsZvtxvsMult); 
    
    PostData(1,fOutput);
    PostData(3,fOutputCounters);
-   
+   PostData(4,fListQAhists);
    return;   
 }
 
@@ -505,6 +526,19 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   if (rtval < 0.) return;  // event rejected during RT calculation
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,rtval);
   fHistNEvents->Fill(0);
+  fGlobalRT->Fill(rtval);
+  
+  AliAODTracklets* tracklets = aod->GetTracklets();
+  Int_t nTr = tracklets->GetNumberOfTracklets();
+  Int_t countMult = 0;
+  Double_t theta, eta;
+  for (Int_t iTr = 0; iTr<nTr; iTr++) { //count Ntr in eta < 1 for QA
+   theta = tracklets->GetTheta(iTr);
+   eta = -TMath::Log(TMath::Tan(theta/2.));
+   if (eta > -1.0 && eta < 1.0) countMult++;
+  }
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  fRTvsZvtxvsMult->Fill(rtval,vtx1->GetZ(),countMult);  /// QA plot for RT vs Zvtx vs Ntrk
   Double_t weight = 1.; //dummy weight for filling (needed later?)
   //!----l.839-888: multiplicity correction
   
@@ -719,7 +753,7 @@ TClonesArray *arrayMC=0;
   PostData(1, fOutput);
   PostData(2, fListCuts);
   PostData(3, fOutputCounters);
-   
+  PostData(4, fListQAhists);
 }
 
 Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
@@ -778,11 +812,12 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
          
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
+         fHistPtLead->Fill(LeadingPt);
       }
       
    }
    
-   
+ 
   return trackRTval; 
 }
 

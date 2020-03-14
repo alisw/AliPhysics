@@ -76,6 +76,8 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TList *fOutput;         //!<! list to send on output slot 1
    TList *fListCuts;       ///list of cuts
    TList *fOutputCounters; //!<! list to send on output slot 3
+   TList *fListQAhists;    //!<! list of QA plots on output slot 4
+   
    
    Double_t fUpmasslimit;  /// upper inv. mass limit for histos
    Double_t fLowmasslimit; /// lower inv. mass limit for histos
@@ -85,6 +87,11 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    
    
    TH1F *fHistNEvents;     //!<! hist. for number of events
+   TH1F *fGlobalRT;        //!<! hist for RT distribution without D-meson selection
+   TH1F *fHistPtLead;      //!<! hist for pT distribution of leading track
+   TH3F *fRTvsZvtxvsMult;        //!<! distribution of RT as function of z of primary vertex and tracklet multiplicity
+   
+   
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
    Int_t  fMCOption;       /// 0 = keep all cand, 1 = keep only signal, 2 = keep only bkg
@@ -112,7 +119,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,1); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,2); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

@@ -116,15 +116,19 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   TString outname = "coutput";
   TString cutsname = "coutputCuts";
   TString normname = "coutputNorm";
+  TString qaname = "coutputQA";
   
   inname   += channel.Data();
   outname  += channel.Data();
   cutsname += channel.Data();
   normname += channel.Data();
+  qaname += channel.Data();
+ 
   inname   += finDirname.Data();
   outname  += finDirname.Data();
   cutsname += finDirname.Data();
   normname += finDirname.Data();
+  qaname   += finDirname.Data();
   
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname, TChain::Class(), AliAnalysisManager::kInputContainer);
   
@@ -135,12 +139,14 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(qaname,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   
   mgr->ConnectInput(dRTTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dRTTask,1,coutput);
   mgr->ConnectOutput(dRTTask,2,coutputCuts);
   mgr->ConnectOutput(dRTTask,3,coutputNorm);
+  mgr->ConnectOutput(dRTTask,4,coutputQA);
   
   return dRTTask;
   
