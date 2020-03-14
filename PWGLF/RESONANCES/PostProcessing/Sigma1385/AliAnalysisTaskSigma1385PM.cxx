@@ -452,6 +452,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
     if (!fIsNano)
       fIsNano = kTRUE;
     IsEvtSelected = true;
+    fCent = nanoHeader->GetCentr("V0M");
     static int inel_index = -1;
     if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
     if ((inel_index > 0) && (nanoHeader->GetVar(inel_index) < 0.5))
