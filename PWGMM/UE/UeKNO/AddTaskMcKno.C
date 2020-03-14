@@ -36,7 +36,7 @@ AliAnalysisTaskMcKno* AddTaskMcKno(const Char_t* taskname="McKno", Bool_t  useMC
     mgr->AddTask(taskKno);
 
     mgr->ConnectInput(taskKno,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskKno,1,mgr->CreateContainer(Form("cList%s_%1.2f",taskname,minpT), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
+    mgr->ConnectOutput(taskKno,1,mgr->CreateContainer(Form("cList%s_%1.2f_%1.1f_%1.1f_%1.1f_%1.1f",taskname,minpT,PtLmin,PtLmax,V0Mmin,V0Mmax), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname)));
 
     return taskKno;
 }
