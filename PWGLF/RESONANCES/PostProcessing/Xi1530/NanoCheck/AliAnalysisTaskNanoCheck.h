@@ -58,6 +58,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     AliEventCuts fEventCuts;  // Event cuts
 
     // TPC GeoCut
+    Bool_t fCheckTPCGeo = kFALSE;
     int fMode = 0;
     Double_t fDeltaY = 3.0;
     Double_t fDeltaZ = 220.0;

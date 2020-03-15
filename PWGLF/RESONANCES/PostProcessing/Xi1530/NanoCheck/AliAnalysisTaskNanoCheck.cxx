@@ -116,7 +116,8 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
         fHistos->CreateTH1("QA_pion/hEtaPion", "", 40, -2, 2);
         fHistos->CreateTH1("QA_pion/hDCAPVPion", "", 300, 0, 3, "s");
         fHistos->CreateTH1("QA_pion/hDCArPVPion", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QA_pion/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
+        if(fCheckTPCGeo)
+            fHistos->CreateTH1("QA_pion/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     }
     if (checkV0s) {
         fHistos->CreateTH2("QA_V0/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
@@ -174,7 +175,8 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
         fHistos->CreateTH1("QA_pionCut/hEtaPion", "", 40, -2, 2);
         fHistos->CreateTH1("QA_pionCut/hDCAPVPion", "", 300, 0, 3, "s");
         fHistos->CreateTH1("QA_pionCut/hDCArPVPion", "", 300, 0, 3, "s");
-        fHistos->CreateTH1("QA_pionCut/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
+        if(fCheckTPCGeo)
+            fHistos->CreateTH1("QA_pionCut/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     }
     if (checkV0s) {
         fHistos->CreateTH2("QA_V0Cut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
@@ -355,18 +357,22 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         if (!IsAOD) {
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
                 continue;
-            isTPCGeo = IsSelectedTPCGeoCut(((AliESDtrack*)track)) ? 1 : 0;
+            if(fCheckTPCGeo)
+                isTPCGeo = IsSelectedTPCGeoCut(((AliESDtrack*)track)) ? 1 : 0;
         }  // ESD Case
         else {
             if (!IsNano) {
                 if (!((AliAODTrack*)track)->TestFilterBit(32))
                     continue;
-                isTPCGeo = IsSelectedTPCGeoCut(((AliAODTrack*)track)) ? 1 : 0;
+                if(fCheckTPCGeo)
+                    isTPCGeo = IsSelectedTPCGeoCut(((AliAODTrack*)track)) ? 1 : 0;
             } else {
                 if (!(static_cast<AliNanoAODTrack*>(track)->TestFilterBit(32)))
                     continue;
-                static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
-                isTPCGeo = (static_cast<AliNanoAODTrack*>(track)->GetVar(tpcGeo_index) > 0.5) ? 1 : 0;
+                if(fCheckTPCGeo) {
+                    static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
+                    isTPCGeo = (static_cast<AliNanoAODTrack*>(track)->GetVar(tpcGeo_index) > 0.5) ? 1 : 0;
+                }
             }
         }
 
@@ -382,7 +388,8 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         fHistos->FillTH1("QA_pion/hEtaPion", pionEta);
         fHistos->FillTH2("QA_pion/hTPCPIDPion", track->GetTPCmomentum(),
                          track->GetTPCsignal());
-        fHistos->FillTH1("QA_pion/hTPCGeoCheck", isTPCGeo);
+        if(fCheckTPCGeo)
+            fHistos->FillTH1("QA_pion/hTPCGeoCheck", isTPCGeo);
 
         if (TMath::Abs(TPCNSigPion) > fTPCNsigNanoCheckerPionCut)
             continue;
@@ -402,7 +409,8 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         fHistos->FillTH1("QA_pionCut/hEtaPion", pionEta);
         fHistos->FillTH2("QA_pionCut/hTPCPIDPion", track->GetTPCmomentum(),
                          track->GetTPCsignal());
-        fHistos->FillTH1("QA_pionCut/hTPCGeoCheck", isTPCGeo);
+        if(fCheckTPCGeo)
+            fHistos->FillTH1("QA_pionCut/hTPCGeoCheck", isTPCGeo);
         
         goodtrackindices.push_back(it);
     }
