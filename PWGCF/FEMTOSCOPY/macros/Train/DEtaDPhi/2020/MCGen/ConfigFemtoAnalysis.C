@@ -223,10 +223,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				  
 				  //Setting up model calculations
 				  tFreeze[aniter] = new AliFemtoModelGausRinvFreezeOutGenerator();
-				  tFreeze[aniter]->SetSizeInv(2.0*TMath::Sqrt(2.0)); //source size
+				  tFreeze[aniter]->SetSizeInv(1.0*TMath::Sqrt(2.0)); //source size
 				  // And the weight generator
 				  tWeight[aniter] = new AliFemtoModelWeightGeneratorLednicky();
-				  tWeight[aniter]->SetCoulOff();
+				  //tWeight[aniter]->SetCoulOff(); //Coulomb ON or OFF
 				  // Create a model manager that will connect it all
 				  tModelManager[aniter] = new AliFemtoModelManager();
 				  // connect the freeze-out generator
