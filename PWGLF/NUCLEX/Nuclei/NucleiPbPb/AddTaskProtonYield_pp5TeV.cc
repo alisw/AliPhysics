@@ -1,12 +1,3 @@
-/// \file AddTaskNucleiYield.C
-/// \brief Simple macro to add the task to a grid job
-///
-/// The task is here added several times to analyse different particle species and to investigate
-/// different set of cuts in only one run.
-///
-/// \author Maximiliano Puccio <maximiliano.puccio@cern.ch>, University and INFN Torino
-/// \date Feb 19th, 2015
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Rtypes.h>
 #include <TString.h>
@@ -16,7 +7,7 @@
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskNucleiYield* AddTaskNucleiYield__pp2016(Bool_t isMC = kFALSE,
+AliAnalysisTaskNucleiYield* AddTaskNucleiYield_pp5TeV(Bool_t isMC = kFALSE,
     AliPID::EParticleType part = AliPID::kProton,
     Int_t pdgCode = 2212,
     TString tskname = "proton",
@@ -25,13 +16,13 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield__pp2016(Bool_t isMC = kFALSE,
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskNucleiYield", "No analysis manager found.");
+    Error("AddTaskProtonYield_pp5TeV", "No analysis manager found.");
     return 0x0;
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskProtonYield__pp5TeV", "This task requires an input event handler");
+    ::Error("AddTaskProtonYield_pp5TeV", "This task requires an input event handler");
     return 0x0;
   }
 
