@@ -7,7 +7,7 @@
 #include "AliPID.h"
 #endif
 
-AliAnalysisTaskNucleiYield* AddTaskNucleiYield_pp5TeV(Bool_t isMC = kFALSE,
+AliAnalysisTaskNucleiYield* AddTaskProtonYield_pp5TeV(Bool_t isMC = kFALSE,
     AliPID::EParticleType part = AliPID::kProton,
     Int_t pdgCode = 2212,
     TString tskname = "proton",
