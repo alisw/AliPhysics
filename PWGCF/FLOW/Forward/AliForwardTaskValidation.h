@@ -30,8 +30,8 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // fEventValidators by the user when configuring their task
   enum EventValidation {
       kNoEventCut,
-      kTrigger,
       kPassesAliEventCuts,
+      kTrigger,
       kHasFMD,
       kHasEntriesFMD,
       kHasValidFMD,
