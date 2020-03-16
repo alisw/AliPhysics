@@ -405,11 +405,11 @@ void AddTask_GammaHeavyMeson_CaloMode_pp(
     // *****************************************************************************************************
 
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM
-    cuts.AddCutCalo("00010113","411792106f032230000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792106f032230000","01631031000000d0"); // INT7 NL 12 + TB
   } else if (trainConfig == 2021){ // EMCAL+DCAL clusters standard cuts, EG2, NL , std TM
-    cuts.AddCutCalo("0008e113","411792106f032230000","0r631031000000d0"); // EG2  NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","01631031000000d0"); // EG2  NL 12 + TB
   } else if (trainConfig == 2022){ // EMCAL+DCAL clusters standard cuts, EG1, NL , std TM
-    cuts.AddCutCalo("0008d113","411792106f032230000","0r631031000000d0"); // EG1  NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","01631031000000d0"); // EG1  NL 12 + TB
   } else if (trainConfig == 2023){ //EMCal + DCal INT7 cut var. NonLins
     cuts.AddCutCalo("00010113","411791106f032230000","01631031000000d0"); // INT7 NL11
     cuts.AddCutCalo("00010113","411792106f032230000","01631031000000d0"); // INT7 NL12
