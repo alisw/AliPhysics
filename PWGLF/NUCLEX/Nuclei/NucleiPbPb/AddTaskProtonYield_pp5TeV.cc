@@ -43,6 +43,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield__pp2016(Bool_t isMC = kFALSE,
   task->SetPDG(pdgCode);
   task->SetIsMC(isMC);
   task->SetDCABins(80,-0.5,0.5);
+	task->SaveTrees();
 
   task->SetRequireTPCpidSigmas(3.f);
   float cent[14] = {-5.f,0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};

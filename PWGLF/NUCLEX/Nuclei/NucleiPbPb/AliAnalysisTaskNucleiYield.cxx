@@ -559,7 +559,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   PostData(1, fList);
   if (fSaveTrees) {
     PostData(2, fRTree);
-    PostData(3, fSTree);
+    if (fIsMC) {
+      PostData(3, fSTree);
+    }
   }
 }
 
