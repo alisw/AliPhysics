@@ -250,10 +250,10 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
 	  
 	  //** DCA******
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.4); 	//DCA xy 
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.4);	//DCA Z
-	  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.4); 	//DCA xy
-	  dtc2etaphitpc[aniter]->SetMaxImpactZ(0.4);	//DCA Z
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.25); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.25);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.25); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(0.25);	//DCA Z
 	  
 	  //****** Track quality cuts ******
 	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
