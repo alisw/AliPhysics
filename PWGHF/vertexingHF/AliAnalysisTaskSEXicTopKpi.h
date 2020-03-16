@@ -128,6 +128,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // set mass range for ttree filling
   void SetMassRangeTTreeFill( Double_t min, Double_t max )  {flowMass_treeFill=min;  fhighMass_tree_Fill=max;}
 
+  // Sc peak studies in MC
+  void SetStudyScPeakMC(Bool_t flag)  {fStudyScPeakMC=flag;}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -331,8 +334,12 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t flowMass_treeFill;
   Double_t fhighMass_tree_Fill;
 
+  // THnSparse for Sc peak studies in MC
+  Bool_t fStudyScPeakMC;
+  THnSparseF* fhsparseMC_ScPeak; //!
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,10); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,11); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

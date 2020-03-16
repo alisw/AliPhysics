@@ -172,6 +172,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fPdgFiducialYreco(4122)
   ,flowMass_treeFill(2.)
   ,fhighMass_tree_Fill(2.7)
+  ,fStudyScPeakMC(kFALSE)
+  ,fhsparseMC_ScPeak(0x0)
 {
   /// Default constructor
 
@@ -262,6 +264,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fPdgFiducialYreco(4122)
   ,flowMass_treeFill(2.)
   ,fhighMass_tree_Fill(2.7)
+  ,fStudyScPeakMC(kFALSE)
+  ,fhsparseMC_ScPeak(0x0)
 {
   /// Default constructor
 
@@ -345,6 +349,7 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fnSigmaPIDtpcPion)delete fnSigmaPIDtpcPion;
   if(fnSigmaPIDtpcKaon)delete fnSigmaPIDtpcKaon;
   if(fTreeVar)delete fTreeVar;
+  if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
 }  
 
 //________________________________________________________________________
@@ -665,6 +670,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fTreeVar->Branch(varNames[33].Data(),&resp);
   //  fOutput->Add(fTreeVar);
 
+  //
+  //  THnSparse to study the Sc peak in MC
+  //
+  Int_t bin_ScPeakMC[6]        = {16,  400,  400,   800,   3,  11};
+  Double_t lowEdge_ScPeakMC[6] = { 0,2.250,2.250,-0.200,-0.5,-0.5};
+  Double_t upEdge_ScPeakMC[6]  = {16,2.650,2.650, 0.200, 2.5,10.5};
+  if(fStudyScPeakMC)  fhsparseMC_ScPeak = new THnSparseF("fhsparseMC_ScPeak","fhsparseMC_ScPeak;ptgen_Sc;recoMass_Sc;MCcalcMass_Sc;recoMinusMCcalc_mass_Sc;charge;PIDcase;",6,bin_ScPeakMC,lowEdge_ScPeakMC,upEdge_ScPeakMC);
+
 
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
@@ -693,6 +706,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fnSigmaPIDtpcProton);
   fOutput->Add(fnSigmaPIDtpcPion);
   fOutput->Add(fnSigmaPIDtpcKaon);
+  if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
 
 
   // Post the data
@@ -1626,20 +1640,79 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	      if(TMath::Abs(pProt->GetPdgCode())==2212){
-		pointSigma[10]=ptsigmacMC;
-		pointSigma[0]=ptlambdacMC;
-		fhSparseAnalysisSigma->Fill(pointSigma);
-		//fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
-    const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};	
-    fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);      
-		pointlcsc[0]=ptlambdacMC;
-		pointlcsc[1]=kRecoPID;
-		pointlcsc[2]=checkorigin;
-		pointlcsc[3]=ylambdacMC;
-		pointlcsc[4]=ptsigmacMC;
-		pointlcsc[5]=ysigmacMC;
-    pointlcsc[6]=decay_channel;
-		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		      pointSigma[10]=ptsigmacMC;
+		      pointSigma[0]=ptlambdacMC;
+		      fhSparseAnalysisSigma->Fill(pointSigma);
+		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
+          const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};	
+          fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);      
+		      pointlcsc[0]=ptlambdacMC;
+		      pointlcsc[1]=kRecoPID;
+		      pointlcsc[2]=checkorigin;
+		      pointlcsc[3]=ylambdacMC;
+		      pointlcsc[4]=ptsigmacMC;
+		      pointlcsc[5]=ysigmacMC;
+          pointlcsc[6]=decay_channel;
+		      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+
+          //
+          //  Sc peak in MC
+          //
+          if(fStudyScPeakMC){
+            Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+
+            // reconstructed Sc mass
+            arr_ScPeakMC[1] = lsum.M();
+
+            //////////////////////////////////////////
+            // Sc mass calculated from generated pT //
+            //////////////////////////////////////////
+            Double_t arr_pGenP[3]      = {-1.,-1.,-1.};
+            Double_t arr_pGenK[3]      = {-1.,-1.,-1.};
+            Double_t arr_pGenPi[3]     = {-1.,-1.,-1.};
+            Double_t arr_pGenSoftPi[3] = {-1.,-1.,-1.};
+            //
+            // proton (NB: here the daughter 0 is the proton)
+            pProt->PxPyPz(arr_pGenP);
+            Double_t m_prot  = 0.938272081;  // proton mass from PDG (GeV/c)
+            Double_t E_pProt = TMath::Sqrt( m_prot*m_prot + arr_pGenP[0]*arr_pGenP[0] + arr_pGenP[1]*arr_pGenP[1] + arr_pGenP[2]*arr_pGenP[2] );
+            //
+            // kaon
+            AliAODTrack *trkd1=(AliAODTrack*)io3Prong->GetDaughter(1);
+	          AliAODMCParticle* pKaon=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd1->GetLabel()));
+            if(TMath::Abs(pKaon->PdgCode())==321) pKaon->PxPyPz(arr_pGenK);
+            else  printf("### WARNING: track 1 for Lc(<-Sc) NOT a kaon!\n");
+            Double_t m_kaon = 0.493677; // mass kaon from PDG (GeV/c)
+            Double_t E_pKaon = TMath::Sqrt( m_kaon*m_kaon + arr_pGenK[0]*arr_pGenK[0] + arr_pGenK[1]*arr_pGenK[1] + arr_pGenK[2]*arr_pGenK[2] );
+            //
+            // pion
+            AliAODTrack *trkd2=(AliAODTrack*)io3Prong->GetDaughter(2);
+	          AliAODMCParticle* pPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd2->GetLabel()));
+            if(TMath::Abs(pPion->PdgCode())==211) pPion->PxPyPz(arr_pGenPi);
+            else  printf("### WARNING: track 2 for Lc(<-Sc) NOT a pion!\n");
+            Double_t m_pion = 0.13957;  // mass pion from PDG (GeV/c)
+            Double_t E_pPion = TMath::Sqrt( m_pion*m_pion + arr_pGenPi[0]*arr_pGenPi[0] + arr_pGenPi[1]*arr_pGenPi[1] + arr_pGenPi[2]*arr_pGenPi[2] );
+            //
+            // soft pion
+            AliAODMCParticle* pSoftPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(tracksoft->GetLabel()));
+            if(TMath::Abs(pSoftPion->PdgCode())==211) pSoftPion->PxPyPz(arr_pGenSoftPi);
+            else  printf("### WARNING: tracksoft for Sc NOT a pion!\n");
+            Double_t E_pSoftPion = TMath::Sqrt( m_pion*m_pion + arr_pGenSoftPi[0]*arr_pGenSoftPi[0] + arr_pGenSoftPi[1]*arr_pGenSoftPi[1] + arr_pGenSoftPi[2]*arr_pGenSoftPi[2] );
+            //
+            //  create a TLorentzVector with generated p, K, pi and the soft pion
+            TLorentzVector genSc_pKpi (arr_pGenP[0]+arr_pGenK[0]+arr_pGenPi[0]+arr_pGenSoftPi[0],arr_pGenP[1]+arr_pGenK[1]+arr_pGenPi[1]+arr_pGenSoftPi[1],arr_pGenP[2]+arr_pGenK[2]+arr_pGenPi[2]+arr_pGenSoftPi[2],E_pProt+E_pKaon+E_pPion+E_pSoftPion);
+            //
+            //  mass value computed with generated momenta
+            arr_ScPeakMC[2] = genSc_pKpi.M();
+
+            // difference between the reconstructed mass and the one computed from generated particles
+            arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+
+            // fill the sparse
+            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+            fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
+          }
+
 	      }
 	    }
 	  }
@@ -1666,6 +1739,65 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[5]=ysigmacMC;
         pointlcsc[6]=decay_channel;
 		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+
+        //
+        //  Sc peak in MC
+        //
+        if(fStudyScPeakMC){
+          Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+
+          // reconstructed Sc mass
+          arr_ScPeakMC[1] = lsum.M();
+
+          //////////////////////////////////////////
+          // Sc mass calculated from generated pT //
+          //////////////////////////////////////////
+          Double_t arr_pGenP[3]  = {-1.,-1.,-1.};
+          Double_t arr_pGenK[3]  = {-1.,-1.,-1.};
+          Double_t arr_pGenPi[3] = {-1.,-1.,-1.};
+          Double_t arr_pGenSoftPi[3] = {-1.,-1.,-1.};
+
+          //
+          // proton (NB: here the daughter 0 is the proton)
+          pProt->PxPyPz(arr_pGenP);
+          Double_t m_prot  = 0.938272081;  // proton mass from PDG (GeV/c)
+          Double_t E_pProt = TMath::Sqrt( m_prot*m_prot + arr_pGenP[0]*arr_pGenP[0] + arr_pGenP[1]*arr_pGenP[1] + arr_pGenP[2]*arr_pGenP[2] );
+          //
+          // kaon
+          AliAODTrack *trkd1=(AliAODTrack*)io3Prong->GetDaughter(1);
+	        AliAODMCParticle* pKaon=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd1->GetLabel()));
+          if(TMath::Abs(pKaon->PdgCode())==321) pKaon->PxPyPz(arr_pGenK);
+          else  printf("### WARNING: track 1 for Lc(<-Sc) NOT a kaon!\n");
+          Double_t m_kaon = 0.493677; // mass kaon from PDG (GeV/c)
+          Double_t E_pKaon = TMath::Sqrt( m_kaon*m_kaon + arr_pGenK[0]*arr_pGenK[0] + arr_pGenK[1]*arr_pGenK[1] + arr_pGenK[2]*arr_pGenK[2] );
+          //
+          // pion
+          AliAODTrack *trkd2=(AliAODTrack*)io3Prong->GetDaughter(2);
+	        AliAODMCParticle* pPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd2->GetLabel()));
+          if(TMath::Abs(pPion->PdgCode())==211) pPion->PxPyPz(arr_pGenPi);
+          else  printf("### WARNING: track 2 for Lc(<-Sc) NOT a pion!\n");
+          Double_t m_pion = 0.13957;  // mass pion from PDG (GeV/c)
+          Double_t E_pPion = TMath::Sqrt( m_pion*m_pion + arr_pGenPi[0]*arr_pGenPi[0] + arr_pGenPi[1]*arr_pGenPi[1] + arr_pGenPi[2]*arr_pGenPi[2] );
+          //
+          // soft pion
+          AliAODMCParticle* pSoftPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(tracksoft->GetLabel()));
+          if(TMath::Abs(pSoftPion->PdgCode())==211) pSoftPion->PxPyPz(arr_pGenSoftPi);
+          else  printf("### WARNING: tracksoft for Sc NOT a pion!\n");
+          Double_t E_pSoftPion = TMath::Sqrt( m_pion*m_pion + arr_pGenSoftPi[0]*arr_pGenSoftPi[0] + arr_pGenSoftPi[1]*arr_pGenSoftPi[1] + arr_pGenSoftPi[2]*arr_pGenSoftPi[2] );
+          //
+          //  create a TLorentzVector with generated p, K, pi and the soft pion
+          TLorentzVector genSc_pKpi (arr_pGenP[0]+arr_pGenK[0]+arr_pGenPi[0]+arr_pGenSoftPi[0],arr_pGenP[1]+arr_pGenK[1]+arr_pGenPi[1]+arr_pGenSoftPi[1],arr_pGenP[2]+arr_pGenK[2]+arr_pGenPi[2]+arr_pGenSoftPi[2],E_pProt+E_pKaon+E_pPion+E_pSoftPion);
+          //
+          //  mass value computed with generated momenta
+          arr_ScPeakMC[2] = genSc_pKpi.M();
+
+          // difference between the reconstructed mass and the one computed from generated particles
+          arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+
+          // fill the sparse
+          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+          fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
+        }
 		  }
 		}
 	      }
@@ -1706,20 +1838,78 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	      if(TMath::Abs(pProt->GetPdgCode())==2212){
-		pointSigma[10]=ptsigmacMC;
-		pointSigma[0]=ptlambdacMC;
-		fhSparseAnalysisSigma->Fill(pointSigma);
-		//fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
-    const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};
-    fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);
-		pointlcsc[0]=ptlambdacMC;
-		pointlcsc[1]=kRecoPID;
-		pointlcsc[2]=checkorigin;
-		pointlcsc[3]=ylambdacMC;
-		pointlcsc[4]=ptsigmacMC;
-		pointlcsc[5]=ysigmacMC;
-    pointlcsc[6]=decay_channel;
-		fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		      pointSigma[10]=ptsigmacMC;
+		      pointSigma[0]=ptlambdacMC;
+		      fhSparseAnalysisSigma->Fill(pointSigma);
+		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
+          const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};
+          fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);
+		      pointlcsc[0]=ptlambdacMC;
+		      pointlcsc[1]=kRecoPID;
+		      pointlcsc[2]=checkorigin;
+		      pointlcsc[3]=ylambdacMC;
+		      pointlcsc[4]=ptsigmacMC;
+		      pointlcsc[5]=ysigmacMC;
+          pointlcsc[6]=decay_channel;
+		      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+
+          //
+          //  Sc peak in MC
+          //
+          if(fStudyScPeakMC){
+            Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+
+            // reconstructed Sc mass
+            arr_ScPeakMC[1] = lsum.M();
+
+            //////////////////////////////////////////
+            // Sc mass calculated from generated pT //
+            //////////////////////////////////////////
+            Double_t arr_pGenP[3]  = {-1.,-1.,-1.};
+            Double_t arr_pGenK[3]  = {-1.,-1.,-1.};
+            Double_t arr_pGenPi[3] = {-1.,-1.,-1.};
+            Double_t arr_pGenSoftPi[3] = {-1.,-1.,-1.};
+            //
+            // proton (NB: here the daughter 2 is the proton)
+            pProt->PxPyPz(arr_pGenP);
+            Double_t m_prot  = 0.938272081;  // proton mass from PDG (GeV/c)
+            Double_t E_pProt = TMath::Sqrt( m_prot*m_prot + arr_pGenP[0]*arr_pGenP[0] + arr_pGenP[1]*arr_pGenP[1] + arr_pGenP[2]*arr_pGenP[2] );
+            //
+            // kaon
+            AliAODTrack *trkd1=(AliAODTrack*)io3Prong->GetDaughter(1);
+	          AliAODMCParticle* pKaon=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd1->GetLabel()));
+            if(TMath::Abs(pKaon->PdgCode())==321) pKaon->PxPyPz(arr_pGenK);
+            else  printf("### WARNING: track 1 for Lc(<-Sc) NOT a kaon!\n");
+            Double_t m_kaon = 0.493677; // mass kaon from PDG (GeV/c)
+            Double_t E_pKaon = TMath::Sqrt( m_kaon*m_kaon + arr_pGenK[0]*arr_pGenK[0] + arr_pGenK[1]*arr_pGenK[1] + arr_pGenK[2]*arr_pGenK[2] );
+            //
+            // pion
+            AliAODTrack *trkd0=(AliAODTrack*)io3Prong->GetDaughter(0);
+	          AliAODMCParticle* pPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd0->GetLabel()));
+            if(TMath::Abs(pPion->PdgCode())==211) pPion->PxPyPz(arr_pGenPi);
+            else  printf("### WARNING: track 0 for Lc(<-Sc) NOT a pion!\n");
+            Double_t m_pion = 0.13957;  // mass pion from PDG (GeV/c)
+            Double_t E_pPion = TMath::Sqrt( m_pion*m_pion + arr_pGenPi[0]*arr_pGenPi[0] + arr_pGenPi[1]*arr_pGenPi[1] + arr_pGenPi[2]*arr_pGenPi[2] );
+            //
+            // soft pion
+            AliAODMCParticle* pSoftPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(tracksoft->GetLabel()));
+            if(TMath::Abs(pSoftPion->PdgCode())==211) pSoftPion->PxPyPz(arr_pGenSoftPi);
+            else  printf("### WARNING: tracksoft for Sc NOT a pion!\n");
+            Double_t E_pSoftPion = TMath::Sqrt( m_pion*m_pion + arr_pGenSoftPi[0]*arr_pGenSoftPi[0] + arr_pGenSoftPi[1]*arr_pGenSoftPi[1] + arr_pGenSoftPi[2]*arr_pGenSoftPi[2] );
+            //
+            //  create a TLorentzVector with generated p, K, pi and the soft pion
+            TLorentzVector genSc_pKpi (arr_pGenP[0]+arr_pGenK[0]+arr_pGenPi[0]+arr_pGenSoftPi[0],arr_pGenP[1]+arr_pGenK[1]+arr_pGenPi[1]+arr_pGenSoftPi[1],arr_pGenP[2]+arr_pGenK[2]+arr_pGenPi[2]+arr_pGenSoftPi[2],E_pProt+E_pKaon+E_pPion+E_pSoftPion);
+            //
+            //  mass value computed with generated momenta
+            arr_ScPeakMC[2] = genSc_pKpi.M();
+
+            // difference between the reconstructed mass and the one computed from generated particles
+            arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+
+            // fill the sparse
+            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+            fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
+          }
 	      }
 	    }
 	  }
@@ -1746,6 +1936,64 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[5]=ysigmacMC;
         pointlcsc[6]=decay_channel;
 		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+
+        //
+        //  Sc peak in MC
+        //
+        if(fStudyScPeakMC){
+          Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+
+          // reconstructed Sc mass
+          arr_ScPeakMC[1] = lsum.M();
+
+          //////////////////////////////////////////
+          // Sc mass calculated from generated pT //
+          //////////////////////////////////////////
+          Double_t arr_pGenP[3]  = {-1.,-1.,-1.};
+          Double_t arr_pGenK[3]  = {-1.,-1.,-1.};
+          Double_t arr_pGenPi[3] = {-1.,-1.,-1.};
+          Double_t arr_pGenSoftPi[3] = {-1.,-1.,-1.};
+          //
+          // proton (NB: here the daughter 2 is the proton)
+          pProt->PxPyPz(arr_pGenP);
+          Double_t m_prot  = 0.938272081;  // proton mass from PDG (GeV/c)
+          Double_t E_pProt = TMath::Sqrt( m_prot*m_prot + arr_pGenP[0]*arr_pGenP[0] + arr_pGenP[1]*arr_pGenP[1] + arr_pGenP[2]*arr_pGenP[2] );
+          //
+          // kaon
+          AliAODTrack *trkd1=(AliAODTrack*)io3Prong->GetDaughter(1);
+	        AliAODMCParticle* pKaon=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd1->GetLabel()));
+          if(TMath::Abs(pKaon->PdgCode())==321) pKaon->PxPyPz(arr_pGenK);
+          else  printf("### WARNING: track 1 for Lc(<-Sc) NOT a kaon!\n");
+          Double_t m_kaon = 0.493677; // mass kaon from PDG (GeV/c)
+          Double_t E_pKaon = TMath::Sqrt( m_kaon*m_kaon + arr_pGenK[0]*arr_pGenK[0] + arr_pGenK[1]*arr_pGenK[1] + arr_pGenK[2]*arr_pGenK[2] );
+          //
+          // pion
+          AliAODTrack *trkd0=(AliAODTrack*)io3Prong->GetDaughter(0);
+	        AliAODMCParticle* pPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd0->GetLabel()));
+          if(TMath::Abs(pPion->PdgCode())==211) pPion->PxPyPz(arr_pGenPi);
+          else  printf("### WARNING: track 0 for Lc(<-Sc) NOT a pion!\n");
+          Double_t m_pion = 0.13957;  // mass pion from PDG (GeV/c)
+          Double_t E_pPion = TMath::Sqrt( m_pion*m_pion + arr_pGenPi[0]*arr_pGenPi[0] + arr_pGenPi[1]*arr_pGenPi[1] + arr_pGenPi[2]*arr_pGenPi[2] );
+          //
+          // soft pion
+          AliAODMCParticle* pSoftPion=(AliAODMCParticle*)fmcArray->At(TMath::Abs(tracksoft->GetLabel()));
+          if(TMath::Abs(pSoftPion->PdgCode())==211) pSoftPion->PxPyPz(arr_pGenSoftPi);
+          else  printf("### WARNING: tracksoft for Sc NOT a pion!\n");
+          Double_t E_pSoftPion = TMath::Sqrt( m_pion*m_pion + arr_pGenSoftPi[0]*arr_pGenSoftPi[0] + arr_pGenSoftPi[1]*arr_pGenSoftPi[1] + arr_pGenSoftPi[2]*arr_pGenSoftPi[2] );
+          //
+          //  create a TLorentzVector with generated p, K, pi and the soft pion
+          TLorentzVector genSc_pKpi (arr_pGenP[0]+arr_pGenK[0]+arr_pGenPi[0]+arr_pGenSoftPi[0],arr_pGenP[1]+arr_pGenK[1]+arr_pGenPi[1]+arr_pGenSoftPi[1],arr_pGenP[2]+arr_pGenK[2]+arr_pGenPi[2]+arr_pGenSoftPi[2],E_pProt+E_pKaon+E_pPion+E_pSoftPion);
+          //
+          //  mass value computed with generated momenta
+          arr_ScPeakMC[2] = genSc_pKpi.M();
+
+          // difference between the reconstructed mass and the one computed from generated particles
+          arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+
+          // fill the sparse
+          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+          fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
+        }
 		  }
 		}	      
 	      }
