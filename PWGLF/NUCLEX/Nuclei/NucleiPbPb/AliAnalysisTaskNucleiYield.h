@@ -53,6 +53,11 @@ class AliPWGFunc;
 class AliNanoAODTrack;
 
 struct SLightNucleus {
+  enum {
+    kPrimary = BIT(0),
+    kSecondaryMaterial = BIT(1),
+    kSecondaryWeakDecay = BIT(2)
+  };
   float pt;
   float eta;
   float phi;
@@ -62,10 +67,10 @@ struct SLightNucleus {
 
 struct RLightNucleus {
   enum { 
-    kT0fill,
-    kPrimary,
-    kSecondaryMaterial,
-    kSecondaryWeakDecay
+    kT0fill = BIT(0),
+    kPrimary = BIT(1),
+    kSecondaryMaterial = BIT(2),
+    kSecondaryWeakDecay = BIT(3)
   };
   float pt;
   float eta;
@@ -317,6 +322,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   if (beta > 1. - EPS) beta = -1;
   const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
+  if (!acceptedTrack) return;
+
   if (fSaveTrees && track->Pt() < 10.) {
     //double mcPt = 0;
     bool good2save{true};
@@ -342,16 +349,15 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
       fRecNucleus.flag |= !tofPID.GetT0binMask(tofPID.GetMomBin(track->GetTPCmomentum())) ? RLightNucleus::kT0fill : 0;
       if (fIsMC) {
-        fRecNucleus.flag |= fSimNucleus.flag == 1 ? RLightNucleus::kPrimary : 0;
-        fRecNucleus.flag |= fSimNucleus.flag == 2 ? RLightNucleus::kSecondaryWeakDecay : 0;
-        fRecNucleus.flag |= fSimNucleus.flag == 4 ? RLightNucleus::kSecondaryMaterial : 0;
+        fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;
+        fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
+        fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
       if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
         fRTree->Fill();
     }
   }
 
-  if (!acceptedTrack) return;
   bool positive = track->Charge() > 0;
   if (fHist2Phi[positive]) fHist2Phi[positive]->Fill(track->Phi() , track->Pt() );
 

@@ -559,7 +559,9 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   PostData(1, fList);
   if (fSaveTrees) {
     PostData(2, fRTree);
-    PostData(3, fSTree);
+    if (fIsMC) {
+      PostData(3, fSTree);
+    }
   }
 }
 
@@ -835,11 +837,11 @@ void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLight
   snucl.phi = part->Phi();
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())
-    snucl.flag = 1;
+    snucl.flag = SLightNucleus::kPrimary;
   else if (part->IsSecondaryFromWeakDecay())
-    snucl.flag = 2;
+    snucl.flag = SLightNucleus::kSecondaryWeakDecay;
   else
-    snucl.flag = 4;
+    snucl.flag = SLightNucleus::kSecondaryMaterial;
 }
 
 /// This function checks whether a track has or has not a prolongation in TOF.
