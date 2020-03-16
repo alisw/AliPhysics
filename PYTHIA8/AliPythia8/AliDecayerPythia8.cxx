@@ -93,17 +93,11 @@ void AliDecayerPythia8::Init()
 	    fPythia8->ReadString(Form("%d:onMode = on", heavy[j]));
 	}
     }
+ 
+    fPythia8->ReadString("111:onMode = on");
     
-
-//...Switch off decay of pi0, K0S, Lambda, Sigma+-, Xi0-, Omega-.
-    
-    if (fDecay != kNeutralPion) {
-	fPythia8->ReadString("111:onMode = off");
-    } else {
-	fPythia8->ReadString("111:onMode = on");
-    }
-
-    fPythia8->ReadString("310:onMode = off");
+//...Switch off decay of K0S, Lambda, Sigma+-, Xi0-, Omega-.
+    fPythia8->ReadString("310:onMode  = off");
     fPythia8->ReadString("3122:onMode = off");
     fPythia8->ReadString("3112:onMode = off");
     fPythia8->ReadString("3222:onMode = off");
