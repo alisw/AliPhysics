@@ -98,7 +98,12 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fKFPXi_Chi2geoMax(100.),
   fKFPXi_Chi2topoMax(100.),
   fKFPXi_lDeltalMin(0.),
-  fKFPXic0_Chi2geoMax(100.)
+  fKFPXic0_Chi2geoMax(100.),
+  fProdTrackTPCNCrossedRowsMin(0),
+  fProdTrackTPCNCrossedRowsRatioMin(0.),
+  fProdTrackTPCsignalNMin(0),
+  fPriTrackChi2perNDFMax(99.),
+  fPriTrackITSNclsMin(0)
 {
   //
   // Default Constructor
@@ -202,7 +207,12 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fKFPXi_Chi2geoMax(source.fKFPXi_Chi2geoMax),
   fKFPXi_Chi2topoMax(source.fKFPXi_Chi2topoMax),
   fKFPXi_lDeltalMin(source.fKFPXi_lDeltalMin),
-  fKFPXic0_Chi2geoMax(source.fKFPXic0_Chi2geoMax)
+  fKFPXic0_Chi2geoMax(source.fKFPXic0_Chi2geoMax),
+  fProdTrackTPCNCrossedRowsMin(source.fProdTrackTPCNCrossedRowsMin),
+  fProdTrackTPCNCrossedRowsRatioMin(source.fProdTrackTPCNCrossedRowsRatioMin),
+  fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
+  fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
+  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin)
 {
   //
   // Copy constructor
@@ -262,6 +272,12 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fKFPXi_Chi2topoMax = source.fKFPXi_Chi2topoMax;
   fKFPXi_lDeltalMin = source.fKFPXi_lDeltalMin;
   fKFPXic0_Chi2geoMax = source.fKFPXic0_Chi2geoMax;
+  fProdTrackTPCNCrossedRowsMin = source.fProdTrackTPCNCrossedRowsMin;
+  fProdTrackTPCNCrossedRowsRatioMin = source.fProdTrackTPCNCrossedRowsRatioMin;
+  fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
+  fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
+  fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
+
 
   return *this;
 }
@@ -580,14 +596,14 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
 
   // Track Selection Cuts (TPC)
 //  if ( trk->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( trk->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( trk->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( trk->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(trk->GetTPCNCrossedRows())/static_cast<Double_t>(trk->GetTPCNclsF()) <= 0.8 ) return kFALSE;
-  if ( trk->GetTPCsignalN() <= 50 ) return kFALSE; // number of points used for TPC dE/dx
-  if ( trk->Chi2perNDF() >= 5) return kFALSE;
+  if ( static_cast<Double_t>(trk->GetTPCNCrossedRows())/static_cast<Double_t>(trk->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( trk->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE; // number of points used for TPC dE/dx
+  if ( trk->Chi2perNDF() >= fPriTrackChi2perNDFMax ) return kFALSE;
 
   // Track Selection Cuts (ITS)
-  if ( trk->GetITSNcls() <= 3 ) return kFALSE;//require at least 4 or 5
+  if ( trk->GetITSNcls() <= fPriTrackITSNclsMin ) return kFALSE;//require at least 4 or 5
 //  if (!trk->HasPointOnITSLayer(0)) return kFALSE;
 //  if (!trk->HasPointOnITSLayer(1)) return kFALSE;
 
@@ -622,10 +638,10 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk)
 
   // Track Selection Cuts (TPC)
 //  if ( trk->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( trk->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( trk->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( trk->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(trk->GetTPCNCrossedRows())/static_cast<Double_t>(trk->GetTPCNclsF()) <= 0.8 ) return kFALSE;
-  if ( trk->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(trk->GetTPCNCrossedRows())/static_cast<Double_t>(trk->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( trk->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( trk->Chi2perNDF() >= 5) return kFALSE;
 
   // PID
@@ -695,17 +711,17 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 
   // Track Selection Cuts (TPC)
 //  if ( trackP->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( trackP->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( trackP->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( trackP->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(trackP->GetTPCNCrossedRows())/static_cast<Double_t>(trackP->GetTPCNclsF()) <= 0.8) return kFALSE;
-  if ( trackP->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(trackP->GetTPCNCrossedRows())/static_cast<Double_t>(trackP->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( trackP->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( trackP->Chi2perNDF() >= 5) return kFALSE;
 
 //  if ( trackN->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( trackN->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( trackN->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( trackN->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(trackN->GetTPCNCrossedRows())/static_cast<Double_t>(trackN->GetTPCNclsF()) <= 0.8) return kFALSE;
-  if ( trackN->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(trackN->GetTPCNCrossedRows())/static_cast<Double_t>(trackN->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( trackN->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( trackN->Chi2perNDF() >= 5) return kFALSE;
 
 /*
@@ -776,17 +792,17 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc)
 
   // Track Selection Cuts (TPC)
 //  if ( ptrack->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( ptrack->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( ptrack->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( ptrack->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(ptrack->GetTPCNCrossedRows())/static_cast<Double_t>(ptrack->GetTPCNclsF()) <= 0.8) return kFALSE;
-  if ( ptrack->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(ptrack->GetTPCNCrossedRows())/static_cast<Double_t>(ptrack->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( ptrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( ptrack->Chi2perNDF() >= 5) return kFALSE;
 
 //  if ( ntrack->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( ntrack->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( ntrack->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( ntrack->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(ntrack->GetTPCNCrossedRows())/static_cast<Double_t>(ntrack->GetTPCNclsF()) <= 0.8) return kFALSE;
-  if ( ntrack->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(ntrack->GetTPCNCrossedRows())/static_cast<Double_t>(ntrack->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( ntrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( ntrack->Chi2perNDF() >= 5) return kFALSE;
 
 /*
@@ -814,10 +830,10 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc)
 
   // Track Selection Cuts (TPC)
 //  if ( btrack->GetTPCNcls() <= 70 ) return kFALSE;
-  if ( btrack->GetTPCNCrossedRows() <= 70 ) return kFALSE;
+  if ( btrack->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
   if ( btrack->GetTPCNclsF()==0 ) return kFALSE;
-  if ( static_cast<Double_t>(btrack->GetTPCNCrossedRows())/static_cast<Double_t>(btrack->GetTPCNclsF()) <= 0.8 ) return kFALSE;
-  if ( btrack->GetTPCsignalN() <= 50 ) return kFALSE;
+  if ( static_cast<Double_t>(btrack->GetTPCNCrossedRows())/static_cast<Double_t>(btrack->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( btrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
 //  if ( btrack->Chi2perNDF() >= 5) return kFALSE;
 // ==============================
 

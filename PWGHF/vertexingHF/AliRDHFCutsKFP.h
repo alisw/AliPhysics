@@ -123,6 +123,11 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetKFPXi_Chi2topoMax(Double_t a) {fKFPXi_Chi2topoMax=a;}
   void SetKFPXi_lDeltalMin(Double_t a) {fKFPXi_lDeltalMin=a;}
   void SetKFPXic0_Chi2geoMax(Double_t a) {fKFPXic0_Chi2geoMax=a;}
+  void SetProdTrackTPCNCrossedRowsMin(Int_t a) {fProdTrackTPCNCrossedRowsMin=a;}
+  void SetProdTrackTPCNCrossedRowsRatioMin(Double_t a) {fProdTrackTPCNCrossedRowsRatioMin=a;}
+  void SetProdTrackTPCsignalNMin(Int_t a) {fProdTrackTPCsignalNMin=a;}
+  void SetPriTrackChi2perNDFMax(Double_t a) {fPriTrackChi2perNDFMax=a;}
+  void SetPriTrackITSNclsMin(Int_t a) {fPriTrackITSNclsMin=a;}
 
   Double_t GetPtMinXic0(){return fPtMinXic0;}
   Double_t GetPtMinPiFromXic0(){return fPtMinPiFromXic0;}
@@ -161,6 +166,11 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t GetKFPXi_Chi2topoMax() {return fKFPXi_Chi2topoMax;}
   Double_t GetKFPXi_lDeltalMin() {return fKFPXi_lDeltalMin;}
   Double_t GetKFPXic0_Chi2geoMax() {return fKFPXic0_Chi2geoMax;}
+  Int_t    GetProdTrackTPCNCrossedRowsMin() {return fProdTrackTPCNCrossedRowsMin;}
+  Double_t GetProdTrackTPCNCrossedRowsRatioMin() {return fProdTrackTPCNCrossedRowsRatioMin;}
+  Int_t    GetProdTrackTPCsignalNMin() {return fProdTrackTPCsignalNMin;}
+  Double_t GetPriTrackChi2perNDFMax() {return fPriTrackChi2perNDFMax;}
+  Int_t    GetPriTrackITSNclsMin() {return fPriTrackITSNclsMin;}
 
   void useSetNPtBins(Int_t nptBins){SetNPtBins(nptBins);}
  protected:
@@ -206,6 +216,11 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
   Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
+  Int_t    fProdTrackTPCNCrossedRowsMin; /// Minimum number of TPC crossed rows
+  Double_t fProdTrackTPCNCrossedRowsRatioMin; /// Minimum ratio of TPC crossed rows / findable ratio
+  Int_t    fProdTrackTPCsignalNMin; /// Minimum number of TPC clusters for dE/dx
+  Double_t fPriTrackChi2perNDFMax; /// Max. chi2/NDF of momentum fit
+  Int_t    fPriTrackITSNclsMin; /// Min. number of points in ITS
 
   Double_t fKFPLam_Chi2geoMax;          /// chi2/ndf cut of lambda reconstruction from KFParticle
   Double_t fKFPLam_Chi2topoMax;          /// chi2/ndf cut of lambda reconstruction from KFParticle
@@ -217,7 +232,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 2);
+  ClassDef(AliRDHFCutsKFP, 3);
   /// \endcond
 };
 
