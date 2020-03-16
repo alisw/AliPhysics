@@ -185,13 +185,13 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH2D* hPtLVsRT;
 		TH1D* hPhiData[3];
 
-		TH2D* hNchVsPtDataTPC[3][4];
-		TH2D* hNchVsPtDataPosTPC[3][4];
-		TH2D* hNchVsPtDataNegTPC[3][4];
+		TH3D* hNchVsPtDataTPC[3][4];
+		TH3D* hNchVsPtDataPosTPC[3][4];
+		TH3D* hNchVsPtDataNegTPC[3][4];
 
-		TH2D* hNchVsPtDataTOF[3][4];
-		TH2D* hNchVsPtDataPosTOF[3][4];
-		TH2D* hNchVsPtDataNegTOF[3][4];
+		TH3D* hNchVsPtDataTOF[3][4];
+		TH3D* hNchVsPtDataPosTOF[3][4];
+		TH3D* hNchVsPtDataNegTOF[3][4];
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;
