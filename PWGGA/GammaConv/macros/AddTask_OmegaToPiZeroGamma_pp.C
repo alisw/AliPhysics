@@ -66,6 +66,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
                                 TString   photonCutNumberV0Reader       = "",                     // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
+                                Bool_t    enableLightOutput             = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
                                 Int_t     DoPiZeroGammaAngleCut         = kFALSE,                 // flag for enabling cut on pi0-gamma angle
                                 Double_t  lowerFactor                   = 0.75,                   // scale factor for lower limit in pi0-gamma angle cut
                                 Double_t  upperFactor                   = 2.5,                    // scale factor for upper limit in pi0-gamma angle cut
@@ -712,6 +713,8 @@ void AddTask_OmegaToPiZeroGamma_pp(
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("MesonCuts");
     if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
+    if(analysisMesonCuts[i]->DoGammaSwappForBg()) analysisClusterCuts[i]->SetUseEtaPhiMapForBackCand(kTRUE);
+    analysisClusterCuts[i]->SetFillCutHistograms("");
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
