@@ -161,12 +161,13 @@ public:
 
 
    // Track cuts setter
-   void   AddTrackCuts_primary_single  (AliAnalysisFilter* filter) {fTrackCuts_primary.push_back(filter);}
+   void   AddTrackCuts_primary_standard  (AliAnalysisFilter* filter)  {fTrackCuts_primary_standard.push_back(filter);}
+   void   AddTrackCuts_primary_PreFilter  (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
 
    // Pair cuts setter
-   void   AddTrackCuts_primary_pair  (AliAnalysisFilter* filter) {fPairCuts_primary.push_back(filter);}
-   void   AddTrackCuts_secondary_loose(AliAnalysisFilter* filter) {fPairCuts_secondary_loose.push_back(filter);}
-   void   AddTrackCuts_secondary_standard(AliAnalysisFilter* filter) {fPairCuts_secondary_standard.push_back(filter);}
+   void   AddPairCuts_primary  (AliAnalysisFilter* filter) {fPairCuts_primary.push_back(filter);}
+   void   AddPairCuts_secondary_PreFilter(AliAnalysisFilter* filter) {fPairCuts_secondary_PreFilter.push_back(filter);}
+   void   AddPairCuts_secondary_standard(AliAnalysisFilter* filter)  {fPairCuts_secondary_standard.push_back(filter);}
 
 
 
@@ -268,7 +269,7 @@ private:
   void   DoRecTwoPairingV0(std::vector<AliDielectronSignalMC> fPairMCSignal);
   void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
   void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
-  void   ApplySecondaryCutsAndFillHists(std::vector<TwoPair>*  fSecPairVec, std::vector<AliAnalysisFilter*> fTrackCuts_secondary, double centralityWeight);
+  void   ApplyStandardCutsAndFillHists(std::vector<TwoPair>* fPairVec, std::vector<AliAnalysisFilter*> fTrackCuts, Bool_t TrackCuts, Bool_t PairPrimary, double centralityWeight) {
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
@@ -382,9 +383,10 @@ private:
 
   Bool_t fSelectPhysics;
   Int_t  fTriggerMask;
-  std::vector<AliAnalysisFilter*> fTrackCuts_primary;
+  std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
+  std::vector<AliAnalysisFilter*> fTrackCuts_primary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_primary;
-  std::vector<AliAnalysisFilter*> fPairCuts_secondary_loose;
+  std::vector<AliAnalysisFilter*> fPairCuts_secondary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;
   TBits*  fUsedVars;                // used variables by AliDielectronVarManager
 

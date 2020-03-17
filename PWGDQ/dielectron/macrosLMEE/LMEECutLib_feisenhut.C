@@ -95,7 +95,7 @@ public:
     kPairCutsAna, // Cut off (theta < 0.05) && (Minv < 0.02)
     kNoPairCutsAna, // No Cuts applied, since 18.02.2014
     kV0,
-    kV0_loose,
+    kV0_PreFilter,
     kV0_onlyCos,
     kV0_onlyChi2NDF,
     kV0_onlyLegDist,
@@ -520,9 +520,9 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(AnalysisCut AnaCut, Int_t togglePC) 
       pairCuts = cgTrackCutsV0select;
       break;
 
-      case kV0_loose:
+      case kV0_PreFilter:
         // primarily meant for inclusion, for quite pure sample...
-        std::cout << "Using kV0_loose Cutsetting" << std::endl;
+        std::cout << "Using kV0_PreFilter Cutsetting" << std::endl;
         // AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
         AliDielectronVarCuts* gammaV0Cuts =new AliDielectronVarCuts("gammaV0Cuts","gammaV0Cuts");
         gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle,              0.8,  1.0,  kFALSE);

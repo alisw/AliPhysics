@@ -184,48 +184,64 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
 
 
   // #########################################################
+  // #                set track cutsettings                  #
   // #########################################################
-  // Adding primary electron cutsettings
-  TObjArray*  arrNames_prim=names_Prim_Single_Cuts.Tokenize(";");
+  // Adding standard primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_standard_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_prim->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_primary_single(filter);
+    task->AddTrackCuts_primary_standard(filter);
     DoAdditionalWork(task);
   }
 
-  // Adding primary electron cutsettings
+  // Adding PreFilter primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary_PreFilter(filter);
+    DoAdditionalWork(task);
+  }
+
+
+  // #########################################################
+  // #                 set pair cutsettings                  #
+  // #########################################################
+  // Adding primary pair cutsettings
   TObjArray*  arrNames_prim=names_Prim_Pair_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_prim->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_primary_pair(filter);
+    task->AddPairCuts_primary(filter);
     DoAdditionalWork(task);
   }
 
-  // Adding standard secondary electron cutsettings
-  TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
+  // Adding standard secondary pair cutsettings
+  TObjArray*  arrNames_sec=names_Sec_Pair_standard_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_sec->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_secondary_standard(filter);
+    task->AddPairCuts_secondary_standard(filter);
     DoAdditionalWork(task);
   }
 
-  // Adding loose secondary electron cutsettings
-  TObjArray*  arrNames_sec_loose=names_Sec_loose_Cuts.Tokenize(";");
-  const Int_t nDie=arrNames_sec_loose->GetEntriesFast();
+  // Adding PreFilter secondary pair cutsettings
+  TObjArray*  arrNames_sec_PreFilter=names_Sec_Pair_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec_PreFilter->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
-    TString cutDefinition(arrNames_sec_loose->At(iCut)->GetName());
+    TString cutDefinition(arrNames_sec_PreFilter->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_secondary_loose(filter);
+    task->AddPairCuts_secondary_PreFilter(filter);
     DoAdditionalWork(task);
   }
 
