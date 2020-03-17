@@ -144,8 +144,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int gammacut = 0;	// cut na ee z gamma 
 	
-	double shqmax = 8.0; 
-	int nbinssh = 2000;
+	double shqmax = 4.0; 
+	int nbinssh = 100;
 
 	// AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
 	// Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kReferenceITSTPC);
