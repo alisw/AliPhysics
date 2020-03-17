@@ -5111,29 +5111,29 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
     fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(5.60995e+00, 1.74831e-01, 9.28195e-01, 8.92803e+00,  0.00000e+00);
     break;
-  case 29: //t PHOS timing cut, 13TeV Trigger 30ns, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<150ns, LowPt from MB; HighPt from Trigger
+  case 29: //t PHOS timing cut, 13TeV Trigger 25ns, by Signal Extraction; 2GeV<ETag<5.5GeV, |TimingTag|<25ns, |TimingProbe|<1000ns, LowPt from Trigger; HighPt from Trigger
     if (!fUseTimeDiff) fUseTimeDiff=1;
-    fMinTimeDiff=-30e-9;
-    fMaxTimeDiff=30e-9;//30ns
+    fMinTimeDiff=-25e-9;
+    fMaxTimeDiff=25e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
     fTimingEfficiencyMCSimClusterLowPtEnd = 4.0;
     fTimingEfficiencyMCSimClusterHighPtStart = 6.0;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
-    fFuncTimingEfficiencyMCSimCluster->SetParameters(-1.79400e+02,1.55956e+02,4.63098e+01,-4.57991e+00,2.16391e+03);
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-1.92595e+01,  2.16880e+01, 9.09869e+00, -5.34259e+01, 9.34326e+01);
     fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
-    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(6.00000e+00, 3.22806e-01, 6.81347e-01, 1.55597e+01, 4.02791e-03);
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(5.50000e+00, 1.75640e-01, 8.83017e-01, 9.15908e+00, 0.00000e+00);
     break;
-  case 30: //u PHOS timing cut, 13TeV Trigger 30ns by Signal Extraction, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, LowPt from MB; HighPt constant
+  case 30: //u PHOS timing cut, 13TeV Trigger 50ns, by Signal Extraction; 2GeV<ETag<5.5GeV, |TimingTag|<50ns, |TimingProbe|<1000ns, LowPt from Trigger; HighPt from Trigger
     if (!fUseTimeDiff) fUseTimeDiff=1;
-    fMinTimeDiff=-30e-9;
-    fMaxTimeDiff=30e-9;//30ns
+    fMinTimeDiff=-50e-9;
+    fMaxTimeDiff=50e-9;//30ns
     fUseTimingEfficiencyMCSimCluster = 1;
     fTimingEfficiencyMCSimClusterLowPtEnd = 5.5;
     fTimingEfficiencyMCSimClusterHighPtStart = 100e+00;
     fFuncTimingEfficiencyMCSimCluster = new TF1("FuncTimingEfficiencyMCSimCluster", "exp(([0]+[1]*x-[2]*x*x+x*x*x)/(1.-[3]*x+[4]*x*x+x*x*x))");
-    fFuncTimingEfficiencyMCSimCluster->SetParameters(-2.81491e+01, 2.71243e+01, 1.14455e+01, 1.12762e+02, 7.06898e+02);
-    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "[0]");
-    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameter(0, 1.);
+    fFuncTimingEfficiencyMCSimCluster->SetParameters(-6.60829e+00, 1.08812e+01, 7.38930e+00, 9.63108e+01, 5.55664e+02);
+    fFuncTimingEfficiencyMCSimClusterHighPt = new TF1("FuncTimingEfficiencyMCSimClusterHighPt", "(x<[3])*(((1.-[2])*exp(-([1]*(x-[0]))))+[2])+(x>[3])*((((1.-[2])*exp(-([1]*([3]-[0]))))+[2])+((x-[3])*[4]))");
+    fFuncTimingEfficiencyMCSimClusterHighPt->SetParameters(5.50000e+00, 2.62837e-01, 9.84211e-01,  9.25566e+00, 0.00000e+00);
     break;
   case 31: //v PHOS timing cut, 13TeV Trigger 30ns by Signal Extraction, applying timing cut efficiency in MC; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, LowPt from Tr; HighPt constant
     if (!fUseTimeDiff) fUseTimeDiff=1;
