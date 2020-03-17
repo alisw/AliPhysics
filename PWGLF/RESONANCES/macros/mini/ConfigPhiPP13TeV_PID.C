@@ -299,8 +299,8 @@ Bool_t ConfigPhiPP13TeV_PID(
         out->SetMotherPDG(333);
         out->SetMotherMass(1.019461);
         out->SetPairCuts(cutsPair);
-        out->AddAxis(imID, 215, 0.985, 1.2);
-        out->AddAxis(ptID, npt1, ptbins1);
+        out->AddAxis(imID, 115, 0.985, 1.1);
+        out->AddAxis(ptID, npt2, ptbins2);
         out->AddAxis(centID, nmult, multbins);
         // if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
         // else outm->AddAxis(centID,161,-0.5,160.5);
