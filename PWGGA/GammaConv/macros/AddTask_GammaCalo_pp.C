@@ -2243,6 +2243,26 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106f032230000","0w631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106f032230000","0x631031000000d0"); // INT7 NL 12 + TB
 
+  } else if (trainConfig == 2062){  // EMCAL+DCAL clusters swapping background standard cuts, EG2, NL , std TM
+    cuts.AddCutCalo("0008e113","411792106f032230000","0r631031000000d0"); // EG2 NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","0s631031000000d0"); // EG2 NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","0t631031000000d0"); // EG2 NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","0u631031000000d0"); // EG2 NL 12 + TB
+  } else if (trainConfig == 2063){  // EMCAL+DCAL clusters swapping background standard cuts, EG2, NL , std TM
+    cuts.AddCutCalo("0008e113","411792106f032230000","0v631031000000d0"); // EG2 NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","0w631031000000d0"); // EG2 NL 12 + TB
+    cuts.AddCutCalo("0008e113","411792106f032230000","0x631031000000d0"); // EG2 NL 12 + TB
+
+  } else if (trainConfig == 2064){  // EMCAL+DCAL clusters swapping background standard cuts, EG1, NL , std TM
+    cuts.AddCutCalo("0008d113","411792106f032230000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","0s631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","0t631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","0u631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2065){  // EMCAL+DCAL clusters swapping background standard cuts, EG1, NL , std TM
+    cuts.AddCutCalo("0008d113","411792106f032230000","0v631031000000d0"); // EG1 NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","0w631031000000d0"); // EG1 NL 12 + TB
+    cuts.AddCutCalo("0008d113","411792106f032230000","0x631031000000d0"); // EG1 NL 12 + TB
+
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 test beam NL
