@@ -1892,6 +1892,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466190pa092200000","0s63103100000010"); // INT7 no Trigger
     cuts.AddCutCalo("00010113","24466190pa092200000","0t63103100000010"); // INT7 no Trigger
     cuts.AddCutCalo("00010113","24466190pa092200000","0u63103100000010"); // INT7 no Trigger
+  } else if( trainConfig == 891){ // PHOS swapping background test with TGPS
+    cuts.AddCutCalo("00010113","24466190pa092200000","0v63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0w63103100000010"); // INT7 no Trigger
+    cuts.AddCutCalo("00010113","24466190pa092200000","0x63103100000010"); // INT7 no Trigger
+
   // *********************************************************************************************************
   // 5 TeV 2017 pp - Jet configurations
   // *********************************************************************************************************
