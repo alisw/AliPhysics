@@ -80,7 +80,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
-
+    
+    //to select events with high energy cluster (to mimic the trigger)
+    void Set_Select_trigger_events2() {fSelect_trigger_events2=kTRUE;};
+    void Set_Select_trigger_events1() {fSelect_trigger_events1=kTRUE;};
 	//Setters analysis cuts
     
     //event cut
@@ -150,6 +153,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	Bool_t				fUseTender;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_MSparse;
+    Bool_t              fSelect_trigger_events1;
+    Bool_t              fSelect_trigger_events2;
     
     //new organization of tender using global variables
     TString        fTenderClusterName;//
@@ -368,7 +373,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				*fHist_InvMass_pt_ULS_KF;
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
-   // TH2F                *fHist_InvMass_pt_ULS_KF_weight;
+   TH2F                *fHist_InvMass_pt_ULS_KF_weight;
     
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1;
@@ -387,7 +392,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     //KF
     
     
-    /*
+    
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight;
@@ -400,7 +405,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_3_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_4_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_5_weight;
-	*/
+	
     
 	//generators
 	//BB
