@@ -124,6 +124,7 @@ set(SRCS
   AliFemtoEventReaderNanoAOD.cxx
   AliFemtoEventReaderNanoAODChain.cxx
   AliFemtoCutMonitorParticleYPt_proton.cxx
+  AliFemtoEventReaderAODKinematicsMultSelection.cxx
   )
 
 # Headers from sources

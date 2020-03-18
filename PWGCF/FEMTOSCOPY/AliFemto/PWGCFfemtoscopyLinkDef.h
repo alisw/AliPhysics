@@ -113,6 +113,7 @@
 #pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
 #pragma link C++ class AliFemtoEventReaderNanoAOD+;
 #pragma link C++ class AliFemtoEventReaderNanoAODChain+;
+#pragma link C++ class AliFemtoEventReaderAODKinematicsMultSelection+;
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
