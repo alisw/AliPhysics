@@ -126,7 +126,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoDcaPi2Casc(0),
   fHistoLikeDecayLength(0),
   fHistoLikeDecayLengthXY(0),
-  fHistoXicCosPAXY(0),
+  fHistoXicCosPA(0),
   fHistoXiMass(0),
   fHistoCascDcaXiDaughters(0),
   fHistoCascDcaV0Daughters(0),
@@ -208,7 +208,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoDcaPi2Casc(0),
   fHistoLikeDecayLength(0),
   fHistoLikeDecayLengthXY(0),
-  fHistoXicCosPAXY(0),
+  fHistoXicCosPA(0),
   fHistoXiMass(0),
   fHistoCascDcaXiDaughters(0),
   fHistoCascDcaV0Daughters(0),
@@ -680,6 +680,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	Int_t mclabxic = 0;
 	Int_t nmclabxic = 0;
 	Bool_t isXic = kFALSE;
+	Int_t checkOrigin=-9999;
 	
 	if(fUseMCInfo)
 	{
@@ -693,7 +694,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	  if(mclabxic>-1){
 	    mcxic = (AliAODMCParticle*) mcArray->At(mclabxic);
 	    if (mcxic){
-	      Int_t checkOrigin=AliVertexingHFUtils::CheckOrigin(mcArray,mcxic,kTRUE);
+	      checkOrigin=AliVertexingHFUtils::CheckOrigin(mcArray,mcxic,kTRUE);
 	      Bool_t isInAcc=kTRUE;
 	      if(fAnalCuts){
 		if(!fAnalCuts->IsInFiducialAcceptance(mcxic->Pt(),mcxic->Y())) isInAcc=kFALSE;
@@ -764,7 +765,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		      }
 		    }
 		  }
-		}
+		} //end of loop over xic daughters
 	      if(nFound==5){
 		if(isInAcc){
 		  if ((TMath::Abs(mcdaughter1->Eta())>0.9) || (TMath::Abs(mcdaughter2->Eta())>0.9) || (TMath::Abs(mcdaughterProtonFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromXi->Eta())>0.9)){ //to check also the y acceptance of Xi and Lambda?
@@ -793,8 +794,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	} //if useMCinfo
        
 	//if(!fAnalCuts->IsInFiducialAcceptance(xicobj->Pt(),xicobj->Y(4232))) continue;
-	//cout<<"================== > xicobj->Y() = " << xicobj->Y(4232) << endl;
-	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic); //AliAODRecoCascadeHF3Prong,
+	cout<<"================== > xicobj->Y() = " << xicobj->YXicPlus() << endl;
+	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic,checkOrigin); //AliAODRecoCascadeHF3Prong,
 	
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
 	xicobj->UnsetOwnPrimaryVtx();
@@ -807,7 +808,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused, Bool_t isXic) 
+void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused, Bool_t isXic, Int_t checkOrigin) 
 {
   //
   // Fill histogram or Tree depending on fWriteVariableTree flag
@@ -855,8 +856,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[ 7] = part2->Pz();
       fCandidateVariables[ 8] = casc->MassXi();
       fCandidateVariables[ 9] = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)); 
-      if(xicobj->GetCharge()==-1)  fCandidateVariables[10] = casc->MassLambda();
-      else fCandidateVariables[10] = casc->MassAntiLambda();
+      if(xicobj->GetCharge()==-1)  fCandidateVariables[10] = casc->MassAntiLambda();
+      else fCandidateVariables[10] = casc->MassLambda();
       fCandidateVariables[11]= casc->Pt();
       if(casc->ChargeXi()==-1) fCandidateVariables[12]= TMath::Sqrt(pow( casc->MomPosX(),2)+pow( casc->MomPosY(),2)); ///AGGIUSta
       else fCandidateVariables[12]=TMath::Sqrt(pow( casc->MomNegX(),2)+pow( casc->MomNegY(),2));
@@ -911,6 +912,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[52] = -9999;
       fCandidateVariables[53] = -9999;
       fCandidateVariables[54] = -9999;
+      fCandidateVariables[58] = -9999;
  
  
       if(fUseMCInfo){
@@ -939,6 +941,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	    fCandidateVariables[52] = mcdaughter1->Pt();
 	    fCandidateVariables[53] = mcdaughter2->Pt();
 	    fCandidateVariables[54] = mcdaughterxi->Pt();
+	    fCandidateVariables[58] = static_cast<Float_t>(checkOrigin);
 	  }
 	}
       }
@@ -946,11 +949,13 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[55] = xicobj->GetSecondaryVtx()->GetX();
       fCandidateVariables[56] = xicobj->GetSecondaryVtx()->GetY();
       fCandidateVariables[57] = xicobj->GetSecondaryVtx()->GetZ();
+      fCandidateVariables[59] = xicobj->YXicPlus();
       
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
   }//fWriteTree
 
+  //NOTE: Important: need to add a selection on the Y of the XiCPlus
   if(fFillSparse){ //if you prefer to fill the histograms
     Double_t trueXic=-9999;
     if(isXic) trueXic=1.;
@@ -959,8 +964,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
     
     fSparseXicMass->Fill(point);
   }
+    //NOTE: Important: need to add a selection on the Y of the XiCPlus
   if(!fFillSparse && !fWriteVariableTree){
-    if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
+    if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){ 
       Double_t cont[3];
       cont[0] = xicobj->InvMassPiXiPi();
       cont[1] = xicobj->Pt();
@@ -973,7 +979,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fHistoDcaPi2Casc->Fill(dca[1]);
       fHistoLikeDecayLength->Fill(xicobj->DecayLength());
       fHistoLikeDecayLengthXY->Fill(xicobj->DecayLengthXY());
-      fHistoXicCosPAXY->Fill(xicobj->XicCosPointingAngle());
+      fHistoXicCosPA->Fill(xicobj->XicCosPointingAngle());
       fHistoXiMass->Fill(xicobj->CascMassXi());
       fHistoCascDcaXiDaughters->Fill(xicobj->CascDcaXiDaughters());
       fHistoCascDcaV0Daughters->Fill(xicobj->CascDcaV0Daughters());
@@ -1006,7 +1012,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 58;
+  Int_t nVar = 60;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1052,7 +1058,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
 
   fCandidateVariableNames[35]="DecayLength"; //for pions only?
   fCandidateVariableNames[36]="DecayLengthXY"; //for pions only??
-  fCandidateVariableNames[37]="XicCosPAXY"; //
+  fCandidateVariableNames[37]="XicCosPA"; //
   fCandidateVariableNames[38]="BachelorsCosPAXY";
   
   fCandidateVariableNames[39]="nSigmaTPCpi1"; //
@@ -1076,7 +1082,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[55]="XicVertX";
   fCandidateVariableNames[56]="XicVertY";
   fCandidateVariableNames[57]="XicVertZ";
- 
+  
+  fCandidateVariableNames[58]="isPrompt";
+  fCandidateVariableNames[59]="Xicy";
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }
@@ -1221,9 +1229,9 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineAnalysisHistograms()
 
   if (fFillSparse){
     Int_t bins_sparse[22]=   {      100,  20,  50,  50,  50,  50,  50,  50, 50, 50, 50, 50, 50, 50,  20,         50,   50,  50,  50,  50,  50,    2};
-    Double_t xmin_sparse[22]={2.468-0.2,  0.,  0.,  0.,  0.,  0.,  0., -1., 0., 0., 0., 0., 0., 0., 0.8, 1.322-0.05,   0., -5., -5., -5., -5., -0.5};
-    Double_t xmax_sparse[22]={2.468+0.2, 20., 0.5, 0.5, 0.5, 0.2, 0.2,  1., 1., 1., 1., 1., 1., 1.,  1., 1.322-0.05,  10.,  5.,  5.,  5.,  5.,  1.5};
-    fSparseXicMass = new THnSparseF("fSparseXicMass","fSparseXicMass;mass:pt:dcapi1pi2:dcapi1Xi:dcapi2Xi:decayLengthPi1Pi2:DecayLengthPi1P2XY:XicCosPAXY:DCAXidau:DCAV0dau:CascV0toPV:DCAPosToPrim:DCANegToPrim:DCABachToPrim:CosPAXiPrim:MassXi:XiPt:nSigmaTPCPi1:nSigmaTPCPi2:nSigmaTOFPi1:nSigmaTOFp2:isXic",22,bins_sparse,xmin_sparse, xmax_sparse);
+    Double_t xmin_sparse[22]={2.468-0.2,  0.,  0.,  0.,  0.,  0.,  0., -1., 0., 0. , 0.,  0.,  0., 0., 0.9, 1.322-0.05,   0., -5., -5., -5., -5., -0.5};
+    Double_t xmax_sparse[22]={2.468+0.2, 20., 0.5,  5.,  5.,  3.,  3.,  1., 2., 1.5, 5., 0.5, 0.5, 1.,  1., 1.322+0.05,  10.,  5.,  5.,  5.,  5.,  1.5};
+    fSparseXicMass = new THnSparseF("fSparseXicMass","fSparseXicMass;mass:pt:dcapi1pi2:dcapi1Xi:dcapi2Xi:decayLengthPi1Pi2:DecayLengthPi1P2XY:XicCosPA:DCAXidau:DCAV0dau:CascV0toPV:DCAPosToPrim:DCANegToPrim:DCABachToPrim:CosPAXiPrim:MassXi:XiPt:nSigmaTPCPi1:nSigmaTPCPi2:nSigmaTOFPi1:nSigmaTOFp2:isXic",22,bins_sparse,xmin_sparse, xmax_sparse);
     fOutputAll->Add(fSparseXicMass);
   }
   else {
@@ -1240,8 +1248,8 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLikeDecayLength);
   fHistoLikeDecayLengthXY = new TH1F("fHistoLikeDecayLengthXY","Decay Length (#pi-#pi)",100,0.,0.2);
   fOutputAll->Add(fHistoLikeDecayLengthXY);
-  fHistoXicCosPAXY = new TH1F("fHistoXicCosPAXY","#Xi_{c} cos(pa) ",100,-1.0,1.0);
-  fOutputAll->Add(fHistoXicCosPAXY);
+  fHistoXicCosPA = new TH1F("fHistoXicCosPA","#Xi_{c} cos(pa) ",100,-1.0,1.0);
+  fOutputAll->Add(fHistoXicCosPA);
   fHistoXiMass=new TH1F("fHistoXiMass","#Xi^{-} Mass",100,1.322-0.05,1.322+0.05);
   fOutputAll->Add(fHistoXiMass);
   fHistoCascDcaXiDaughters=new TH1F("fHistoCascDcaXiDaughters","DCA #Xi daughters ",100,0.0,1.0);
@@ -1419,9 +1427,9 @@ AliAODVertex* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CallReconstructSecon
   Double_t dcap1p2 = cptrk1->GetDCA(cptrk2,fBzkG,xdummy,ydummy);
   fQAHistoDCApi1pi2->Fill(dcap1p2);
   AliAODVertex *secvertex=0;
-	if(dcap1p2<fAnalCuts->GetProdLikeSignDcaMax()){
-		secvertex = ReconstructSecondaryVertex(trkArray,dispersion);
-	}
+  if(dcap1p2<fAnalCuts->GetProdLikeSignDcaMax()){
+    secvertex = ReconstructSecondaryVertex(trkArray,dispersion);
+  }
   
   for(Int_t i=0;i<2;i++)
     {
