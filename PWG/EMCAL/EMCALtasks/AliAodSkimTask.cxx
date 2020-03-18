@@ -25,8 +25,8 @@ AliAodSkimTask::AliAodSkimTask(const char* name) :
   AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0),
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0),
-  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0), fDoCopyUserTree(0),
-  fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0), fHtrack(0)
+  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyKinks(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0),
+  fDoCopyUserTree(0), fDoPhosFilt(0), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0), fHtrack(0)
 {
   if (name) {
     DefineInput(0, TChain::Class());
@@ -85,6 +85,409 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
     delete pid;
     t->SetDetPID(nid);
   }
+}
+
+void AliAodSkimTask::CopyCascades()
+{
+  if (!fDoCopyCascades)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetCascades();
+  TClonesArray *in  = evin->GetCascades();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyCells()
+{
+  if (!fDoCopyCells)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODCaloCells *out = eout->GetEMCALCells();
+  AliAODCaloCells *in  = evin->GetEMCALCells();
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyCellsP()
+{
+  if (!fDoCopyPCells)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODCaloCells *out = eout->GetPHOSCells();
+  AliAODCaloCells *in  = evin->GetPHOSCells();
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyClusters()
+{
+  if (!fDoCopyClusters)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetCaloClusters();
+  TClonesArray *in  = evin->GetCaloClusters();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous clusters not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyConv()
+{
+  if (!fDoCopyConv)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = dynamic_cast<TClonesArray*>(eout->FindListObject(fGammaBr));
+  TClonesArray *in  = dynamic_cast<TClonesArray*>(evin->FindListObject(fGammaBr));
+  if (!in) {
+    evin->GetList()->ls();
+    AliFatal(Form("%s: Could not find conversion branch with name %s!",GetName(), fGammaBr.Data()));
+  }
+  if (in && !out) {
+    out = new TClonesArray("AliAODConversionPhoton",2*in->GetEntries());
+    out->SetName(fGammaBr);
+    oh->AddBranch("TClonesArray", &out);
+  }
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    out->Delete();
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyDimuons()
+{
+  if (!fDoCopyDiMuons)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetDimuons();
+  TClonesArray *in  = evin->GetDimuons();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous dimuons not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyHeader()
+{
+  if (!fDoCopyHeader)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODHeader *out = (AliAODHeader*)eout->GetHeader();
+  AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();
+  *out = *in;
+  out->SetUniqueID(fTrials);
+}
+
+void AliAodSkimTask::CopyKinks()
+{
+  if (!fDoCopyKinks)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetKinks();
+  TClonesArray *in  = evin->GetKinks();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous kinks not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyMc()
+{
+  if (!fDoCopyMC)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
+  TClonesArray *in  = static_cast<TClonesArray*>(evin->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (in && !out) {
+    fgAODMCParticles = new TClonesArray("AliAODMCParticle",2*in->GetEntries());
+    fgAODMCParticles->SetName(AliAODMCParticle::StdBranchName());
+    oh->AddBranch("TClonesArray", &fgAODMCParticles);
+    out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
+  }
+  if (in && out) {
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous mcparticles not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+    if (fCutMC) {
+      for (Int_t i=0;i<out->GetEntriesFast();++i) {
+        AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(in->At(i));
+        if ((mc==0)&&(i==0)) {
+          AliError(Form("%s: No MC info, skipping this event!",GetName()));
+          oh->SetFillAOD(kFALSE);
+          return;
+        }
+        if ((mc==0)||(TMath::Abs(mc->Y())>fYCutMC))
+          new ((*out)[i]) AliAODMCParticle;
+      }
+    }
+  }
+}
+
+void AliAodSkimTask::CopyMcHeader()
+{
+  if (!fDoCopyMCHeader)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODMCHeader *out = static_cast<AliAODMCHeader*>(eout->FindListObject(AliAODMCHeader::StdBranchName()));
+  AliAODMCHeader *in  = static_cast<AliAODMCHeader*>(evin->FindListObject(AliAODMCHeader::StdBranchName()));
+  if (in && !out) {
+    fAODMcHeader = new AliAODMCHeader();
+    fAODMcHeader->SetName(AliAODMCHeader::StdBranchName());
+    oh->AddBranch("AliAODMCHeader",&fAODMcHeader);
+    out = static_cast<AliAODMCHeader*>(eout->FindListObject(AliAODMCHeader::StdBranchName()));
+  }
+  if (in && out) {
+    *out = *in;
+    if ((in->GetCrossSection()==0) && (fPyxsec>0)) {
+      out->SetCrossSection(fPyxsec);
+      out->SetTrials(fPytrials);
+      out->SetPtHard(fPypthardbin);
+    }
+  }
+}
+
+void AliAodSkimTask::CopyUserTree()
+{
+  if (!fDoCopyUserTree)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  TTree *tout = oh->GetTree();
+  TList *lout = tout->GetUserInfo();
+  if (lout->FindObject("alirootVersion")==0) {
+    TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
+    TString apver(gSystem->BaseName(gSystem->Getenv("ALICE_PHYSICS")));
+    lout->Add(new TObjString(Form("AodSkim: ver %s, tag %s with settings %s",GetVersion(),apver.Data(),Str())));
+    AliInfo(Form("%s: Set user info %s", GetName(), lout->At(0)->GetName()));
+    for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) {
+      lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
+    }
+  }
+}
+
+void AliAodSkimTask::CopyTof()
+{
+  if (!fDoCopyTOF)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());
+  const AliTOFHeader *in = evin->GetTOFHeader();
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyTracklets()
+{
+  if (!fDoCopyTracklets)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODTracklets *out = eout->GetTracklets();
+  AliAODTracklets *in  = evin->GetTracklets();
+  *out = *in;
+  if (fDoCleanTracklets) {
+    Int_t n=in->GetNumberOfTracklets();
+    out->SetTitle(Form("Ntracklets=%d",n));
+    out->DeleteContainer();
+  }
+}
+
+void AliAodSkimTask::CopyTracks()
+{
+  if (!fDoCopyTracks)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetTracks();
+  TClonesArray *in  = evin->GetTracks();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous tracks not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+  for (Int_t i=0;i<out->GetEntries();++i) {
+    AliAODTrack *t = static_cast<AliAODTrack*>(out->At(i));
+    if (KeepTrack(t)) {
+      CleanTrack(t);
+      if (fDoVertMain)
+        t->SetProdVertex(0);
+    } else {
+      t->~AliAODTrack();
+      new ((*out)[i]) AliAODTrack;
+    }
+  }
+}
+
+void AliAodSkimTask::CopyTrdTracks()
+{
+  if (!fDoCopyTrdTracks)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
+  TClonesArray *in  = static_cast<TClonesArray*>(evin->FindListObject("trdTracks"));
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous trdtracks not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyTrigger()
+{
+  if (!fDoCopyTrigger)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODCaloTrigger *out = eout->GetCaloTrigger("EMCAL");
+  AliAODCaloTrigger *in  = evin->GetCaloTrigger("EMCAL");
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyTriggerP()
+{
+  if (!fDoCopyPTrigger)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODCaloTrigger *out = eout->GetCaloTrigger("PHOS");
+  AliAODCaloTrigger *in  = evin->GetCaloTrigger("PHOS");
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyTZero()
+{
+  if (!fDoCopyTZERO)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODTZERO *out = eout->GetTZEROData();
+  AliAODTZERO *in  = evin->GetTZEROData();
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyV0s()
+{
+  if (!fDoCopyV0s)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetV0s();
+  TClonesArray *in  = evin->GetV0s();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous v0s not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+}
+
+void AliAodSkimTask::CopyVertices()
+{
+  if (!fDoCopyVertices)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  TClonesArray *out = eout->GetVertices();
+  TClonesArray *in  = evin->GetVertices();
+  if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+    AliFatal(Form("%s: Previous vertices not deleted. This should not happen!",GetName()));
+  }
+  out->AbsorbObjects(in);
+  Int_t marked=-1;
+  for (Int_t i=0; i<out->GetEntries(); ++i) {
+    AliAODVertex *v = static_cast<AliAODVertex*>(out->At(i));
+    Int_t nc = v->CountRealContributors();
+    Int_t nd = v->GetNDaughters();
+    if (fDoVertWoRefs) {
+      if (nc>0)
+        v->SetNContributors(nc);
+      else
+        v->SetNContributors(nd);
+    }
+    if (fDoVertMain) {
+      TString tmp(v->GetName());
+      if (!tmp.Contains("PrimaryVertex")&&!tmp.Contains("SPDVertex")&&!tmp.Contains("TPCVertex"))
+        continue;
+      marked=i+1;
+    }
+  }
+  if (marked>0) {
+    out->RemoveRange(marked,out->GetEntries());
+    out->Compress();
+  }
+}
+
+void AliAodSkimTask::CopyVZero()
+{
+  if (!fDoCopyVZERO)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODVZERO *out = eout->GetVZEROData();
+  AliAODVZERO *in  = evin->GetVZEROData();
+  *out = *in;
+}
+
+void AliAodSkimTask::CopyZdc()
+{
+  if (!fDoCopyZDC)
+    return;
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
+  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
+  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODZDC *out = eout->GetZDCData();
+  AliAODZDC *in  = evin->GetZDCData();
+  *out = *in;
 }
 
 Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
@@ -186,7 +589,9 @@ Bool_t AliAodSkimTask::SelectEvent()
     TClonesArray *cls  = fAOD->GetCaloClusters();
     for (Int_t i=0; i<cls->GetEntriesFast(); ++i) {
       AliAODCaloCluster *clus = static_cast<AliAODCaloCluster*>(cls->At(i));
-      if (!clus->IsEMCAL())
+      if (fDoPhosFilt && clus->IsEMCAL())
+        continue;
+      if (!fDoPhosFilt && !clus->IsEMCAL())
         continue;
       Double_t e = clus->E();
       fHclus->Fill(e);
@@ -217,7 +622,6 @@ Bool_t AliAodSkimTask::SelectEvent()
     storePt = kTRUE;
   }
 
-
   Bool_t store = kFALSE;
   if (fDoBothMinTrackAndClus && fClusMinE>0 && fTrackMinPt > 0){
     // request that both conditions are full-filled for propagating the event
@@ -238,7 +642,7 @@ Bool_t AliAodSkimTask::SelectEvent()
 
 const char *AliAodSkimTask::Str() const
 {
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
               fClusMinE,
               fCutMC,
               fYCutMC,
@@ -260,6 +664,7 @@ const char *AliAodSkimTask::Str() const
               fDoCopyCascades,
               fDoCopyZDC,
               fDoCopyConv,
+              fDoCopyKinks,
               fDoCopyMC,
               fDoCopyMCHeader);
 }
@@ -321,254 +726,35 @@ void AliAodSkimTask::UserExec(Option_t *)
   }
 
   fHevs->Fill(1);
-
   oh->SetFillAOD(kTRUE);
-  AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
-  AliAODEvent *evin = dynamic_cast<AliAODEvent*>(InputEvent());
-  TTree *tout = oh->GetTree();
-  if (fDoCopyUserTree) {
-    TList *lout = tout->GetUserInfo();
-    if (lout->FindObject("alirootVersion")==0) {
-      TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
-      TString apver(gSystem->BaseName(gSystem->Getenv("ALICE_PHYSICS")));
-      lout->Add(new TObjString(Form("AodSkim: ver %s, tag %s with settings %s",GetVersion(),apver.Data(),Str())));
-      AliInfo(Form("%s: Set user info %s", GetName(), lout->At(0)->GetName()));
-      for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) {
-        lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
-      }
-    }
-  }
 
-  if (fDoCopyHeader) {
-    AliAODHeader *out = (AliAODHeader*)eout->GetHeader();
-    AliAODHeader *in  = (AliAODHeader*)evin->GetHeader();
-    *out = *in;
-    out->SetUniqueID(fTrials);
-  }
+  CopyUserTree();
+  CopyHeader();
+  CopyVZero();
+  CopyTZero();
+  CopyVertices();
+  CopyTof();
+  CopyTracklets();
+  CopyTracks();
+  CopyTrigger();
+  CopyTriggerP();
+  CopyCells();
+  CopyCellsP();
+  CopyClusters();
+  CopyDimuons();
+  CopyTrdTracks();
+  CopyV0s();
+  CopyCascades();
+  CopyZdc();
+  CopyConv();
+  CopyKinks();
+  CopyMc();
+  CopyMcHeader();
 
-  if (fDoCopyVZERO) {
-    AliAODVZERO *out = eout->GetVZEROData();
-    AliAODVZERO *in  = evin->GetVZEROData();
-    *out = *in;
-  }
-
-  if (fDoCopyTZERO) {
-    AliAODTZERO *out = eout->GetTZEROData();
-    AliAODTZERO *in  = evin->GetTZEROData();
-    *out = *in;
-  }
-
-  if (fDoCopyVertices) {
-    TClonesArray *out = eout->GetVertices();
-    TClonesArray *in  = evin->GetVertices();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous vertices not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-    Int_t marked=-1;
-    for (Int_t i=0; i<out->GetEntries(); ++i) {
-      AliAODVertex *v = static_cast<AliAODVertex*>(out->At(i));
-      Int_t nc = v->CountRealContributors();
-      Int_t nd = v->GetNDaughters();
-      if (fDoVertWoRefs) {
-        if (nc>0)
-          v->SetNContributors(nc);
-        else
-          v->SetNContributors(nd);
-      }
-      if (fDoVertMain) {
-        TString tmp(v->GetName());
-        if (!tmp.Contains("PrimaryVertex")&&!tmp.Contains("SPDVertex")&&!tmp.Contains("TPCVertex"))
-          continue;
-        marked=i;
-        break;
-      }
-    }
-    if (marked>0) {
-      out->RemoveRange(marked,out->GetEntries());
-      out->Compress();
-    }
-  }
+  CopyMore();
   
-  if (fDoCopyTOF) {
-    AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader());
-    const AliTOFHeader *in = evin->GetTOFHeader();
-    *out = *in;
-  }
-
-  if (fDoCopyTracks) {
-    TClonesArray *out = eout->GetTracks();
-    TClonesArray *in  = evin->GetTracks();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous tracks not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-    for (Int_t i=0;i<out->GetEntries();++i) {
-      AliAODTrack *t = static_cast<AliAODTrack*>(out->At(i));
-      if (KeepTrack(t)) {
-        CleanTrack(t);
-        if (fDoVertMain)
-          t->SetProdVertex(0);
-      } else {
-        t->~AliAODTrack();
-        new ((*out)[i]) AliAODTrack;
-      }
-    }
-  }
-
-  if (fDoCopyTracklets) {
-    AliAODTracklets *out = eout->GetTracklets();
-    AliAODTracklets *in  = evin->GetTracklets();
-    *out = *in;
-    if (fDoCleanTracklets) {
-      Int_t n=in->GetNumberOfTracklets();
-      out->SetTitle(Form("Ntracklets=%d",n));
-      out->DeleteContainer();
-    }
-  }
-
-  if (fDoCopyTrigger) {
-    AliAODCaloTrigger *out = eout->GetCaloTrigger("EMCAL");
-    AliAODCaloTrigger *in  = evin->GetCaloTrigger("EMCAL");
-    *out = *in;
-  }
-
-  if (fDoCopyPTrigger) {
-    AliAODCaloTrigger *out = eout->GetCaloTrigger("PHOS");
-    AliAODCaloTrigger *in  = evin->GetCaloTrigger("PHOS");
-    *out = *in;
-  }
-
-  if (fDoCopyCells) {
-    AliAODCaloCells *out = eout->GetEMCALCells();
-    AliAODCaloCells *in  = evin->GetEMCALCells();
-      *out = *in;
-  }
-
-  if (fDoCopyPCells) {
-    AliAODCaloCells *out = eout->GetPHOSCells();
-    AliAODCaloCells *in  = evin->GetPHOSCells();
-    *out = *in;
-  }
-
-  if (fDoCopyClusters) {
-    TClonesArray *out = eout->GetCaloClusters();
-    TClonesArray *in  = evin->GetCaloClusters();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous clusters not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyTrdTracks) {
-    TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
-    TClonesArray *in  = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous trdtracks not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyV0s) {
-    TClonesArray *out = eout->GetV0s();
-    TClonesArray *in  = evin->GetV0s();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous v0s not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyCascades) {
-    TClonesArray *out = eout->GetCascades();
-    TClonesArray *in  = evin->GetCascades();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyZDC) {
-    AliAODZDC *out = eout->GetZDCData();
-    AliAODZDC *in  = evin->GetZDCData();
-    *out = *in;
-  }
-
-  if (fDoCopyDiMuons) {
-    TClonesArray *out = eout->GetDimuons();
-    TClonesArray *in  = evin->GetDimuons();
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous dimuons not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyConv) {
-    TClonesArray *out = dynamic_cast<TClonesArray*>(eout->FindListObject(fGammaBr));
-    TClonesArray *in  = dynamic_cast<TClonesArray*>(evin->FindListObject(fGammaBr));
-    if (!in) {
-      evin->GetList()->ls();
-      AliFatal(Form("%s: Could not find conversion branch with name %s!",GetName(), fGammaBr.Data()));
-    }
-    if (in && !out) {
-      out = new TClonesArray("AliAODConversionPhoton",2*in->GetEntries());
-      out->SetName(fGammaBr);
-      oh->AddBranch("TClonesArray", &out);
-    }
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      out->Delete();
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyMC) {
-    TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
-    TClonesArray *in  = static_cast<TClonesArray*>(evin->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (in && !out) {
-      fgAODMCParticles = new TClonesArray("AliAODMCParticle",2*in->GetEntries());
-      fgAODMCParticles->SetName(AliAODMCParticle::StdBranchName());
-      oh->AddBranch("TClonesArray", &fgAODMCParticles);
-      out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
-    }
-    if (in && out) {
-      if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-        AliFatal(Form("%s: Previous mcparticles not deleted. This should not happen!",GetName()));
-      }
-      out->AbsorbObjects(in);
-      if (fCutMC) {
-        for (Int_t i=0;i<out->GetEntriesFast();++i) {
-          AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(in->At(i));
-          if ((mc==0)&&(i==0)) {
-            AliError(Form("%s: No MC info, skipping this event!",GetName()));
-            oh->SetFillAOD(kFALSE);
-            return;
-          }
-          if ((mc==0)||(TMath::Abs(mc->Y())>fYCutMC))
-            new ((*out)[i]) AliAODMCParticle;
-        }
-      }
-    }
-  }
-
-  if (fDoCopyMCHeader) {
-    AliAODMCHeader *out = static_cast<AliAODMCHeader*>(eout->FindListObject(AliAODMCHeader::StdBranchName()));
-    AliAODMCHeader *in  = static_cast<AliAODMCHeader*>(evin->FindListObject(AliAODMCHeader::StdBranchName()));
-    if (in && !out) {
-      fAODMcHeader = new AliAODMCHeader();
-      fAODMcHeader->SetName(AliAODMCHeader::StdBranchName());
-      oh->AddBranch("AliAODMCHeader",&fAODMcHeader);
-      out = static_cast<AliAODMCHeader*>(eout->FindListObject(AliAODMCHeader::StdBranchName()));
-    }
-    if (in && out) {
-      *out = *in;
-      if ((in->GetCrossSection()==0) && (fPyxsec>0)) {
-	out->SetCrossSection(fPyxsec);
-	out->SetTrials(fPytrials);
-	out->SetPtHard(fPypthardbin);
-      }
-    }
-  }
-
   if (gDebug>10) {
+    AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
     Int_t  run = eout->GetRunNumber();
     AliAODVertex *v=(AliAODVertex*)eout->GetVertices()->At(0);
     Int_t   vzn = v->GetNContributors();
@@ -613,7 +799,5 @@ Bool_t AliAodSkimTask::UserNotify()
     fPytrials    = trials;
     fPypthardbin = pthardbin;
   }
-
   return res;
 }
-
