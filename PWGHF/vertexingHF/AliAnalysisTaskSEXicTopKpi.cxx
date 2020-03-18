@@ -625,6 +625,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparseSigma[7]=1;
     upEdgesSigma[7]=0.5;
   }
+  if(fReadMC){
+    // save the generated pT for reco particles with finer binning
+    nbinsSparseSigma[0]=80;
+    nbinsSparseSigma[10]=80;
+  }
   if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin;isRotated;channel",14,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   fCosPointDistrAll=new TH1F("fCosPointDistrAll","fCosPointDistrAll",200,-1.1,1.1);
