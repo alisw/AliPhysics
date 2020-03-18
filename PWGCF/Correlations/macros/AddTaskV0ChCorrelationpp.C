@@ -81,7 +81,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetPtArmV0AlphaV0(0.2);
   
   //-------------------------------------PID--------------------------------
-  task->SetV0PIDSigma(3);
+  task->SetV0PIDSigma(2);
   //-------------------------------------------------------------------------
   mgr->AddTask(task);
     
