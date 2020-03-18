@@ -59,7 +59,7 @@ AliForwardSettings::AliForwardSettings() :
   correct_nua_mc(),
   run_list(0),
   second_analysis(kFALSE),
-  SC_analysis(kTRUE),
+  SC_analysis(kFALSE),
   decorr_analysis(kTRUE),
   normal_analysis(kTRUE),
   runnumber(0),
@@ -67,6 +67,7 @@ AliForwardSettings::AliForwardSettings() :
   nua_file(""),
   nue_file(""),
   sec_file(""),
-  sec_cent_file("")
+  sec_cent_file(""),
+  XeXe(kFALSE)
 {
 }
