@@ -56,7 +56,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC, Int_t checkOrigin);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   
@@ -127,7 +127,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistoDcaPi2Casc;                    //!<! DCA between pi and cascade
   TH1F*  fHistoLikeDecayLength;              //!<! Decay length
   TH1F*  fHistoLikeDecayLengthXY;            //!<! Decay length in XY
-  TH1F*  fHistoXicCosPAXY;                   //!<! Xic cosine pointing angle
+  TH1F*  fHistoXicCosPA;                   //!<! Xic cosine pointing angle
   
   TH1F*  fHistoXiMass;                       //!<! mass of xi
   TH1F*  fHistoCascDcaXiDaughters;           //!<! DCA of xi daughgers
