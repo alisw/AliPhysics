@@ -188,7 +188,6 @@ set(HDRS ${HDRS}
   AliFemtoTrioFctnCollection.h
   AliFemtoEventReaderNanoAOD.h
   AliFemtoEventReaderNanoAODChain.h
-  AliFemtoEventReaderAODKinematicsMultSelection.h
   )
 
 set ( FSRCS
