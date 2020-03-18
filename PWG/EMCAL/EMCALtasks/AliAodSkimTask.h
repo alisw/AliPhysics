@@ -32,6 +32,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyHeader(Bool_t b)             {fDoCopyHeader=b;}
     void                  SetCopyMC(Bool_t b)                 {fDoCopyMC=b;}
     void                  SetCopyMCHeader(Bool_t b)           {fDoCopyMCHeader=b;}
+    void                  SetCopyKinks(Bool_t b)              {fDoCopyKinks=b;}
     void                  SetCopyPCells(Bool_t b)             {fDoCopyPCells=b;}
     void                  SetCopyPTrigger(Bool_t b)           {fDoCopyPTrigger=b;}
     void                  SetCopyTOF(Bool_t b)                {fDoCopyTOF=b;}
@@ -49,6 +50,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCutMC(Bool_t b)                  {fCutMC=b;}
     void                  SetDoVertMain(Bool_t b)             {fDoVertMain=b;}
     void                  SetDoVertWoRefs(Bool_t b)           {fDoVertWoRefs=b;}
+    void                  SetDoPhosFilter(Bool_t b)           {fDoPhosFilt=b;}
     void                  SetGammaBrName(TString s)           {fGammaBr=s;}
     void                  SetMinCutPt(Double_t pt)            {fCutMinPt=pt;}
     void                  SetRemCovMat(Bool_t b)              {fDoRemCovMat=b;}
@@ -58,7 +60,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     const char           *Str() const;
   protected:
     virtual void          CleanTrack(AliAODTrack *t);
-    const char           *GetVersion() const { return "1.4"; }
+    const char           *GetVersion() const { return "1.5"; }
     virtual Bool_t        KeepTrack(AliAODTrack *t);
     Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
     virtual Bool_t        SelectEvent();
@@ -67,6 +69,30 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  UserExec(Option_t* option);
     Bool_t                UserNotify();
 
+    virtual void          CopyCascades();
+    virtual void          CopyCells();
+    virtual void          CopyCellsP();
+    virtual void          CopyConv();
+    virtual void          CopyClusters();
+    virtual void          CopyDimuons();
+    virtual void          CopyHeader();
+    virtual void          CopyKinks();
+    virtual void          CopyMc();
+    virtual void          CopyMcHeader();
+    virtual void          CopyTof();
+    virtual void          CopyTracklets();
+    virtual void          CopyTracks();
+    virtual void          CopyTrdTracks();
+    virtual void          CopyTrigger();
+    virtual void          CopyTriggerP();
+    virtual void          CopyTZero();
+    virtual void          CopyUserTree();
+    virtual void          CopyVertices();
+    virtual void          CopyV0s();
+    virtual void          CopyVZero();
+    virtual void          CopyZdc();
+    virtual void          CopyMore() {;}
+  
     Double_t              fClusMinE;              //  minimum cluster energy to accept event
     Double_t              fTrackMinPt;            //  minimum track pt to accept event
     Double_t              fTrackMaxPt;            //  maximum track pt to accept event
@@ -98,12 +124,14 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyCascades;        //  if true copy cascades
     Bool_t                fDoCopyZDC;             //  if true copy zdc
     Bool_t                fDoCopyConv;            //  if true copy conversions
+    Bool_t                fDoCopyKinks;           //  if true copy kinks
     Bool_t                fDoCopyMC;              //  if true copy MC particles
     Bool_t                fDoCopyMCHeader;        //  if true copy MC header
     Bool_t                fDoVertWoRefs;          //  if true then do not copy TRefs in vertices
     Bool_t                fDoVertMain;            //  if true then only copy main vertices
     Bool_t                fDoCleanTracklets;      //  if true then clean tracklets
     Bool_t                fDoCopyUserTree;        //  if true copy input user tree
+    Bool_t                fDoPhosFilt;            //  if true filter on phos (clusters and min energy cut)
     UInt_t                fTrials;                //! events seen since last acceptance
     Float_t               fPyxsec;                //! pythia xsection
     Float_t               fPytrials;              //! pythia trials
@@ -117,6 +145,6 @@ class AliAodSkimTask: public AliAnalysisTaskSE
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 8); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 9); // AliAodSkimTask
 };
 #endif
