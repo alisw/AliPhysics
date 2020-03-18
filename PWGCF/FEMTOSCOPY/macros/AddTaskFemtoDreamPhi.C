@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSphericityCuts(0.7, 1);
+  //evtCuts->SetSphericityCuts(0.7, 1);
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -214,7 +214,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
     pairQA[21] = 11;  // ptphiall
     pairQA[24] = 11;  // aptphiall
-    pairQA[27] = 11;  // phiallphiall
   }
 
   AliFemtoDreamCollConfig *config =

@@ -248,71 +248,69 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     }
   }
 
+
   if (fIsMC) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         Event->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
     int mcpdg;
     AliFemtoDreamBasePart part;
+    AliFemtoDreamBasePart part2;
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
       if (!(mcPart)) {
         std::cout << "NO MC particle" << std::endl;
         continue;
       }
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
       mcpdg = mcPart->GetPdgCode();
       if (mcpdg == 333) {
         int firstdaughter = mcPart->GetDaughterFirst();
-        AliAODMCParticle *mcDaughter =
-            (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
+        if (firstdaughter <= noPart) {
+          AliAODMCParticle *mcDaughter =
+              (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
 
-        if (mcDaughter) {
-          int dpdg = mcDaughter->GetPdgCode();
-          double dpt = mcDaughter->Pt();
-          double deta = mcDaughter->Eta();
-          if (std::abs(dpdg) == 321) {
-            if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
-              part.SetMCParticleRePart(mcPart);
-              PhiTRUE.push_back(part);
-              continue;
+          if (mcDaughter) {
+            int dpdg = mcDaughter->GetPdgCode();
+            double dpt = mcDaughter->Pt();
+            double deta = mcDaughter->Eta();
+            if (std::abs(dpdg) == 321) {
+              if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+                part.SetMCParticleRePart(mcPart);
+                PhiTRUE.push_back(part);
+              }
             }
           }
         }
       }
 
       if (mcpdg == 333) {
-        double pt = mcPart->Pt();
-        double eta = mcPart->Eta();
-        if ((pt < 999 && pt > 0.4) && (eta > -0.8 && eta < 0.8)) {
-          part.SetMCParticleRePart(mcPart);
-          PhiALL.push_back(part);
-        }
+        part.SetMCParticleRePart(mcPart);
+        PhiALL.push_back(part);
       }
 
-      if (mcpdg == 2212) {
-        if (mcPart->IsPhysicalPrimary()) {
-          double pt = mcPart->Pt();
-          double eta = mcPart->Eta();
 
-          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
-            part.SetMCParticleRePart(mcPart);
-            ProtonTRUE.push_back(part);
-            continue;
-          }
+      if (mcpdg == 2212) {
+        double pt = mcPart->Pt();
+        double eta = mcPart->Eta();
+
+        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
+          ProtonTRUE.push_back(part);
         }
       }
 
       if (mcpdg == -2212) {
-        if (mcPart->IsPhysicalPrimary()) {
-          double pt = mcPart->Pt();
-          double eta = mcPart->Eta();
-          if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
-            part.SetMCParticleRePart(mcPart);
-            AProtonTRUE.push_back(part);
-            continue;
-          }
+        double pt = mcPart->Pt();
+        double eta = mcPart->Eta();
+        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
+          AProtonTRUE.push_back(part);
         }
       }
+
     }
   }
 
