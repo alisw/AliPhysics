@@ -9,11 +9,11 @@
 #include "AliJEfficiency.h"
 #pragma GCC diagnostic warning "-Wall"
 
-ClassImp(AliJFFlucAnalysis)
+//ClassImp(AliJFFlucAnalysis)
 
 		//________________________________________________________________________
-AliJFFlucAnalysis::AliJFFlucAnalysis()
-	: AliAnalysisTaskSE(),
+AliJFFlucAnalysis::AliJFFlucAnalysis() :
+	//: AliAnalysisTaskSE(),
 	fInputList(0),
 	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
@@ -58,8 +58,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 }
 
 //________________________________________________________________________
-AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
-	: AliAnalysisTaskSE(name),
+AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) :
+	//: AliAnalysisTaskSE(name),
 	fInputList(0),
 	fEfficiency(0),
 	fVertex(0),
@@ -125,7 +125,7 @@ UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof
 
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
-	AliAnalysisTaskSE(a.GetName()),
+	//AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
 	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
