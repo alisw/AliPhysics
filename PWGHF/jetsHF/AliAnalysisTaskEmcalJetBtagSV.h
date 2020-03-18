@@ -18,15 +18,19 @@
 class TH1F;
 class TList;
 class TRandom3;
+class TRandom;
 class THn;
 class THnSparse;
 class TProfile;
 class AliAODMCHeader;
 class AliMultSelection;
+class AliFJWrapper; //EMB_clus
 
 //--AliRoot--
-#include "AliLog.h"
+
+#include "AliLog.h"  
 #include "AliAnalysisTaskEmcalJet.h"
+//#include "AliFJWrapper.h"  //EMB_clus
 
 class AliAnalysisUtils;
 class AliParticleContainer;
@@ -64,6 +68,10 @@ public:
   void SetDoDetRespMtx(Bool_t domtx) {fDoDetRespMtx = domtx;};
 
   void SetDoOnlyMtxAna(Bool_t onlyMtx) {fDoOnlyMtxAna = onlyMtx;};
+
+  void SetEmbeddPerpendicular(Bool_t EmbeddPerpendicular) {fEmbeddPerpendicular = EmbeddPerpendicular;};  //EMB_clus
+
+  
 
   void SetRecJetsBranch(const char* branch) {fRecJetsBranch = branch;}
 
@@ -173,6 +181,8 @@ protected:
 
 private:
 
+
+ 
   Bool_t      fCorrMode;             // enable correction or data modes
   Bool_t      fDoBkgRej;             // enable background rejection
   Bool_t      fDoRndmCone;           // enable random cone method
@@ -181,6 +191,8 @@ private:
   Bool_t      fDoDetRespMtx;        // enable detector repsonse matrix output
   Bool_t      fDoOnlyMtxAna;        // enable only det. matrix analysis
   Bool_t      fUseTriggerData;       // use emacal trigger
+  Bool_t      fEmbeddPerpendicular;  // EMB_clus use perpendicular track embedding
+
 
   const char* fRecJetsBranch;        // name of the AOD REC-jets branch
   const char* fGenJetsBranch;        // name of the AOD GEN-jets branch
@@ -293,7 +305,13 @@ private:
   TH2F*                       fhDeltaPtEmbeddCorrelation;  //!<! EMB
 
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 11);  // analysis task for MC study //AID//
+  TH1F*                       fhDeltaPtEmbeddPerpendicular;      //!<! EMB_clus 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular;  //!<! EMB
+  AliFJWrapper*		      fFastJetWrapper;  	///< EMB_clus wrapper for fast jet finding
+  TRandom*		      fTrackGenerator; 		///< EMB_clus generator for track perpendicular to signal jet
+
+
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 12);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------
