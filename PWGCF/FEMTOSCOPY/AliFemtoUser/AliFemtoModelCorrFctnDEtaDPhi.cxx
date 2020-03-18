@@ -45,45 +45,50 @@ AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(const char* title, 
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0)
+  fDCosPtDenominator(0),
+  fphiL(0.0),
+  fphiT(0.0)
 {
+  fphiL = (-(int)(aPhiBins / 4) + 0.5) * 2. * TMath::Pi() / aPhiBins;
+  fphiT = 2 * TMath::Pi() + (-(int)(aPhiBins / 4) + 0.5) * 2. * TMath::Pi() / aPhiBins;
+  
   // set up numerator
   char tTitNumDT[101] = "NumDPhiDEtaTrue";
   strncat(tTitNumDT,title, 100);
-  fDPhiDEtaNumeratorTrue = new TH2D(tTitNumDT,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumeratorTrue = new TH2D(tTitNumDT,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
   char tTitNumDF[101] = "NumDPhiDEtaFake";
   strncat(tTitNumDF,title, 100);
-  fDPhiDEtaNumeratorFake = new TH2D(tTitNumDF,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumeratorFake = new TH2D(tTitNumDF,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
 
   // set up denominator
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
   // set up numerator
   char tTitNumR[101] = "NumDPhiDEtaCol";
   strncat(tTitNumR,title, 100);
-  fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
   // set up denominator
   char tTitDenR[101] = "DenDPhiDEtaCol";
   strncat(tTitDenR,title, 100);
-  fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
   // set up numerator
   char tTitNumDPhiT[101] = "NumDPhiTrue";
   strncat(tTitNumDPhiT,title, 100);
-  fDPhiNumeratorTrue = new TH1D(tTitNumDPhiT,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fDPhiNumeratorTrue = new TH1D(tTitNumDPhiT,title,aPhiBins*2,fphiL,fphiT);
   // set up numerator
   char tTitNumDPhiF[101] = "NumDPhiFake";
   strncat(tTitNumDPhiF,title, 100);
-  fDPhiNumeratorFake = new TH1D(tTitNumDPhiF,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fDPhiNumeratorFake = new TH1D(tTitNumDPhiF,title,aPhiBins*2,fphiL,fphiT);
 
   // set up denominator
   char tTitDenDPhi[101] = "DenDPhi";
   strncat(tTitDenDPhi,title, 100);
-  fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,fphiL,fphiT);
 
   // set up numerator
   char tTitNumDCosT[101] = "NumDCosTrue";
@@ -102,11 +107,11 @@ AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(const char* title, 
   // set up numerator
   char tTitNumDPhiPt[101] = "NumDPhiPt";
   strncat(tTitNumDPhiPt,title, 100);
-  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,fphiL,fphiT, 30, 0.0, 3.0);
   // set up denominator
   char tTitDenDPhiPt[101] = "DenDPhiPt";
   strncat(tTitDenDPhiPt,title, 100);
-  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,fphiL,fphiT, 30, 0.0, 3.0);
 
   // set up numerator
   char tTitNumDCosPt[101] = "NumDCosPt";
@@ -153,7 +158,9 @@ AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(const AliFemtoModel
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
-  fDCosPtDenominator(0)
+  fDCosPtDenominator(0),
+  fphiL(aCorrFctn.fphiL),
+  fphiT(aCorrFctn.fphiT)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumeratorTrue)
@@ -322,6 +329,9 @@ AliFemtoModelCorrFctnDEtaDPhi& AliFemtoModelCorrFctnDEtaDPhi::operator=(const Al
   else
     fDCosPtDenominator = 0;
 
+  fphiL = aCorrFctn.fphiL;
+  fphiT = aCorrFctn.fphiT;
+  
   return *this;
 }
 //_________________________
