@@ -1734,10 +1734,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466530g001cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
     cuts.AddCutCalo("00010113","24466530g001cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
   } else if( trainConfig == 747){ // fourth set of variations
-    cuts.AddCutCalo("00010113","24466530g001cc00300","0163103100000000"); // conv rec 0.03
-    cuts.AddCutCalo("00010113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
+    cuts.AddCutCalo("00010113","24466530g001cc00300","0163103100000010"); // conv rec 0.03
+    cuts.AddCutCalo("00010113","24466530g001cc00200","0163103100000010"); // conv rec 0.025
     cuts.AddCutCalo("00010113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
-
+  } else if (trainConfig == 748){ // settings
+    cuts.AddCutCalo("00010113","24466640ya09dc00000","0163103100000010"); // INT7
+    
   // Variations for systematics
   } else if ( trainConfig == 750) { // NL variations (standard: 42 PHOS ML)
     cuts.AddCutCalo("000ap113","24466530g001cc00000","0163103100000010");
@@ -1771,9 +1773,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000ap113","24466530g001cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
     cuts.AddCutCalo("000ap113","24466530g001cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
   } else if( trainConfig == 757){ // fourth set of variations
-    cuts.AddCutCalo("000ap113","24466530g001cc00300","0163103100000000"); // conv rec 0.03
-    cuts.AddCutCalo("000ap113","24466530g001cc00200","0163103100000030"); // conv rec 0.025
+    cuts.AddCutCalo("000ap113","24466530g001cc00300","0163103100000010"); // conv rec 0.03
+    cuts.AddCutCalo("000ap113","24466530g001cc00200","0163103100000010"); // conv rec 0.025
     cuts.AddCutCalo("000ap113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
+  } else if (trainConfig == 758){ // 
+    cuts.AddCutCalo("000ap113","24466640ya09dc00000","0163103100000010"); // INT7
 
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations

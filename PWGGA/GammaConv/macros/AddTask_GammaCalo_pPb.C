@@ -1115,9 +1115,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","24466530ha01cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
     cuts.AddCutCalo("80010113","24466530ha01cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
   } else if( trainConfig == 537){ // fourth set of variations
-    cuts.AddCutCalo("80010113","24466530ha01cc00300","0163103100000000"); // conv rec 0.03
-    cuts.AddCutCalo("80010113","24466530ha01cc00200","0163103100000030"); // conv rec 0.025
+    cuts.AddCutCalo("80010113","24466530ha01cc00300","0163103100000010"); // conv rec 0.03
+    cuts.AddCutCalo("80010113","24466530ha01cc00200","0163103100000010"); // conv rec 0.025
     cuts.AddCutCalo("80010113","24466530ha01cc00400","0163103100000010"); // conv rec 0.035
+  } else if (trainConfig == 538){ // 
+    cuts.AddCutCalo("80010113","24466640ya09dc00000","0163103100000010"); // INT7
     
 // Variations for systematics - JJ MC
   } else if (trainConfig == 540) { // NL variations (standard: 42 PHOS ML)
@@ -1155,11 +1157,15 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","24466530ha01cc00000","0163106100000010"); // alpha meson variation 1 0<alpha<0.8
     cuts.AddCutCalo("80010123","24466530ha01cc00000","0163105100000010"); // alpha meson variation 2 0<alpha<0.75
   } else if( trainConfig == 567){ // fourth set of variations
-    cuts.AddCutCalo("80010123","24466530ha01cc00300","0163103100000000"); // conv rec 0.03
-    cuts.AddCutCalo("80010123","24466530ha01cc00200","0163103100000030"); // conv rec 0.025
+    cuts.AddCutCalo("80010123","24466530ha01cc00300","0163103100000010"); // conv rec 0.03
+    cuts.AddCutCalo("80010123","24466530ha01cc00200","0163103100000010"); // conv rec 0.025
     cuts.AddCutCalo("80010123","24466530ha01cc00400","0163103100000010"); // conv rec 0.035
     
+  } else if (trainConfig == 568){ // settings Jens
+    cuts.AddCutCalo("80010123","24466640ya09dc00000","0163103100000010"); // INT7
 
+    
+    
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 8TeV
   // ===============================================================================================
