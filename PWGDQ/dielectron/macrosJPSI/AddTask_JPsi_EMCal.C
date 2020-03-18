@@ -13,10 +13,11 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
             Bool_t V0correction = kFALSE,
             Bool_t SPDcorrection = kTRUE,
             TString cfg = "Config_JPsi_EMCal",
-            Bool_t is_ESparse,
-            Bool_t is_MSparse
-			
-                                               //kFALSE, kFALSE, "16l", 4, 0, kFALSE, "profile_SPD_16l", "2dprofile_V0_16l", kFALSE, kFALSE, kFALSE, kFALSE, "Config_JPsi_EMCal"
+            Bool_t is_ESparse = kTRUE,
+            Bool_t is_MSparse = kFALSE,
+            Bool_t is_EventsEG1 = kFALSE,
+            Bool_t is_EventsEG2 = kFALSE
+			//kFALSE, kFALSE, "16l", 4, 0, kFALSE, "profile_SPD_16l", "2dprofile_V0_16l", kFALSE, kFALSE, kFALSE, kFALSE, "Config_JPsi_EMCal"
 )
 {
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,13 +53,13 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
     // >>> aliroot config
     else if(!alienconf){
         configFile=alirootPath_config.Data();
-        printf("Configuration file from aliphysics\n");
+        //printf("Configuration file from aliphysics\n");
     }
     // >>> alien config
     else{
         if(!gSystem->Exec(Form("alien_cp %s/%s.C .",alienPath.Data(),cfg.Data()))) {
             configFile=gSystem->pwd();
-            printf("Configuration file from alien cjahnke\n");
+           // printf("Configuration file from alien cjahnke\n");
         }
         else {
             printf("ERROR: couldn't copy file %s/%s.C from grid \n", alienPath.Data(),cfg.Data() );
@@ -79,7 +80,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_MSparse);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_MSparse, is_EventsEG1, is_EventsEG2);
 	
 	//_______________________
 	//Trigger
@@ -300,7 +301,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 	mgr->ConnectInput(task, 0, cinput);
 	mgr->ConnectOutput(task, 1, coutput);
     
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Multi_%d_config_%d", trigger_index, config), TList::Class(), AliAnalysisManager::kOutputContainer, "OutPutData.root"));
+   // mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Multi_%d_config_%d", trigger_index, config), TList::Class(), AliAnalysisManager::kOutputContainer, "OutPutData.root"));
 	
 	return task;
 }

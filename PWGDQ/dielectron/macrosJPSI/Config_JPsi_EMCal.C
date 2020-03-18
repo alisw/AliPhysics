@@ -12,7 +12,10 @@ Int_t trigger_index=0,
 Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
-Bool_t is_MSparse
+Bool_t is_MSparse,
+Bool_t is_EventsEG1,
+Bool_t is_EventsEG2
+                                            
                                               
 )
 
@@ -33,6 +36,8 @@ Bool_t is_MSparse
     if(is_ESparse)task->Set_Fill_ESparse();
     if(is_MSparse)task->Set_Fill_MSparse();
     
+    if(is_EventsEG1)task->Set_Select_trigger_events1();
+    if(is_EventsEG2)task->Set_Select_trigger_events2();
     
     //event cuts
     task->SetVertexCut(10.0);
