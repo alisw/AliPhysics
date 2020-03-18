@@ -794,7 +794,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	} //if useMCinfo
        
 	//if(!fAnalCuts->IsInFiducialAcceptance(xicobj->Pt(),xicobj->Y(4232))) continue;
-	cout<<"================== > xicobj->Y() = " << xicobj->YXicPlus() << endl;
 	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic,checkOrigin); //AliAODRecoCascadeHF3Prong,
 	
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
