@@ -53,6 +53,7 @@ public:
     kMCvtx,
     kRange,
     kLabels,
+    kTrigger,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -138,6 +139,11 @@ private:
 
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
+  struct {
+    ULong64_t fEventId = 0u;     /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
+    ULong64_t fTriggerMask = 0u; /// Trigger class mask
+  } trigger; //! structure to keep trigger-related info
+  
   struct {
     // Track data
 

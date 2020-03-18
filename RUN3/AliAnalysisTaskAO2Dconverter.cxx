@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -175,6 +175,16 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   }
   PostTree(kEvents);
 
+  // Associate branches for fEventTree
+  TTree* tTrigger = CreateTree(kTrigger);
+  tTrigger->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kTrigger]) {
+    tTrigger->Branch("fEventId", &trigger.fEventId, "fEventId/l");
+    tTrigger->Branch("fTriggerMask", &trigger.fTriggerMask, "fTriggerMask/l");
+  }
+  PostTree(kTrigger);
+
+  
   // Associate branches for fTrackTree
   TTree* tTracks = CreateTree(kTracks);
   tTracks->SetAutoFlush(fNumberOfEventsPerCluster);
@@ -531,6 +541,13 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   vtx.fEventTime = TMath::Mean(10,eventTime,eventTimeWeight); // Weighted mean of times per momentum interval
   vtx.fEventTimeRes = TMath::Sqrt(9./10.)*TMath::Mean(10,eventTimeRes); // PH bad approximation
 
+  //---------------------------------------------------------------------------
+  // Trigger data
+  
+  trigger.fEventId = GetEventIdAsLong(fESD->GetHeader());
+  trigger.fTriggerMask = fESD->GetTriggerMask();
+  FillTree(kTrigger);
+  
   //---------------------------------------------------------------------------
   // Track data
 
