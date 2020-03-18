@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2020/02/27)                      //
+//                         (Last Modified 2020/03/17)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -30,8 +30,8 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "THnSparse.h"
-
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -42,15 +42,18 @@
 #include "AliPIDCombined.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
-#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliMultSelection.h"
 //#include "AliHelperPID.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEventHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
@@ -66,12 +69,14 @@ ClassImp(AliEbyEPhiDistNew)
 AliEbyEPhiDistNew::AliEbyEPhiDistNew()
 : AliAnalysisTaskSE(),
 fThnList(NULL),
-fPtArray(NULL),
+fInputHandler(NULL),
+fMCEventHandler(NULL),
+fVevent(NULL),
 fArrayMC(0x0),
 fESDtrackCuts(0x0),
 fMCEvent(0x0),
 fMCStack(0x0),
-fanaUtils(0x0),
+fEventCuts(NULL),
 fRun("LHC10h"),
 fCentralityEstimator("V0M"),
 
@@ -81,11 +86,12 @@ fVyMax(3.),
 fVzMax(10.),
 fPtMin(0.15),
 fPtMax(3.15),
-fEtaMin(-1.),
-fEtaMax(1.),
 fPhiMin(0.0),
 fPhiMax(6.28),
+fEtaMin(-1.),
+fEtaMax(1.),
 fNptBins(22),
+fNphiBins(18),
 fDcaXy(10.),
 fDcaZ(10.),
 fNcrossRows(80),
@@ -117,8 +123,11 @@ fMaxPtForTPClow(0.69),
 fParticleSpecies(AliPID::kPion),
 
 fHistTPC(NULL),
+fHistTPCAf(NULL),
 fHistTOF(NULL),
+fHistTOFAf(NULL),
 fHistITS(NULL),
+fHistITSAf(NULL),
 
 fHistTPCc(NULL),
 fHistTOFc(NULL),
@@ -168,12 +177,14 @@ fTHnCentNplusNminusCh(NULL)
 AliEbyEPhiDistNew::AliEbyEPhiDistNew( const char *name )
 : AliAnalysisTaskSE(name),
 fThnList(NULL),
-fPtArray(NULL),
+fInputHandler(NULL),
+fMCEventHandler(NULL),
+fVevent(NULL),
 fArrayMC(NULL),
 fESDtrackCuts(NULL),
 fMCEvent(NULL),
 fMCStack(NULL),
-fanaUtils(NULL),
+fEventCuts(NULL),
 fRun("LHC10h"),
 fCentralityEstimator("V0M"),
 
@@ -183,17 +194,18 @@ fVyMax(3.),
 fVzMax(10.),
 fPtMin(0.15),
 fPtMax(3.15),
-fEtaMin(-1.),
-fEtaMax(1.),
 fPhiMin(0.0),
 fPhiMax(6.28),
+fEtaMin(-1.),
+fEtaMax(1.),
 fNptBins(22),
+fNphiBins(18),
 fDcaXy(10.),
 fDcaZ(10.),
 fNcrossRows(80),
 fChi2NDF(4),
 
-fIsMC(kFALSE),
+fIsMC(kTRUE),
 fIsAOD(kFALSE),
 fIsQA(kFALSE),
 fIsTrig(kFALSE),
@@ -218,8 +230,11 @@ fMinPtForTOFRequired(0.69),
 fMaxPtForTPClow(0.69),
 fParticleSpecies(AliPID::kPion),
 fHistTPC(NULL),
+fHistTPCAf(NULL),
 fHistTOF(NULL),
+fHistTOFAf(NULL),
 fHistITS(NULL),
+fHistITSAf(NULL),
 
 fHistTPCc(NULL),
 fHistTOFc(NULL),
@@ -269,19 +284,27 @@ AliEbyEPhiDistNew::~AliEbyEPhiDistNew() {
     
     if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
         delete fThnList;
-        delete [] fPtArray;
+        //delete [] fPtArray;
     }
+    if( fEventCuts ) delete fEventCuts;
+    if( fESDtrackCuts ) delete fESDtrackCuts;
 }
 
 //---------------------------------------------------------------------------------
 void AliEbyEPhiDistNew::UserCreateOutputObjects(){
     
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-    inputHandler->SetNeedField();
-    fPIDResponse = inputHandler->GetPIDResponse();
-    
-    fanaUtils = new AliAnalysisUtils();
+    fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(!fInputHandler){
+        AliError("No PID response task found !!");
+    }
+    fPIDResponse = dynamic_cast<AliInputEventHandler *>(fInputHandler)->GetPIDResponse();
+    if (!fPIDResponse){
+        AliError("No PID response task found !!");
+    }
+    if(!fIsMC){
+        if (fRun == "LHC15o"){
+            fEventCuts = new AliEventCuts();
+        }}
     
     fThnList = new TList();
     fThnList->SetOwner(kTRUE);
@@ -307,7 +330,7 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
             } else {
                 if( fDcaXy < 2) fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0156+0.03/pt^1.01"); //tight cut
                 else if( fDcaXy > 2) fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0208+0.04/pt^1.01");//losse cut
-                else if( fDcaXy == 2) fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");//default
+                else if( fDcaXy == 2) fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.015+0.0350/pt^1.1");//default
             }
             
             
@@ -325,27 +348,9 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
         } else
             Printf(" >>>>  User Track Cuts <<<< ");
         
-        /*
-         fESDtrackCuts->Print();
-         
-         Printf(" >>> DCAxy in TC [%8.4f:%8.4f]",
-         fESDtrackCuts->GetMinDCAToVertexXY(), fESDtrackCuts->GetMaxDCAToVertexXY());
-         Printf(" >>> DCAz in TC  [%8.4f:%8.4f]",
-         fESDtrackCuts->GetMinDCAToVertexZ(), fESDtrackCuts->GetMaxDCAToVertexZ());
-         
-         Float_t r1,r2;
-         fESDtrackCuts->GetPtRange(r1,r2);
-         Printf(" >>> Pt in TC  [%10.4f:%10.4f]",r1,r2);
-         
-         fESDtrackCuts->GetRapRange(r1,r2);
-         Printf(" >>> Rap in TC [%10.4f:%10.4f]",r1,r2);
-         
-         fESDtrackCuts->GetEtaRange(r1,r2);
-         Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
-         */
     }
     
-    CreateEffCont();
+    CreatePhiHist();
     
     fHistCent = new TH1F("fHistCentPid","Centrality", 100, -0.5, 99.5);
     fThnList->Add(fHistCent);
@@ -358,19 +363,26 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
 }
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNew::CreateEffCont() {
+void AliEbyEPhiDistNew::CreatePhiHist() {
     
     if(fIsQA && fPidType != 0){
         
         const Char_t *pidname[4] = {" ", "Pion", "Kaon", "Proton"};
         
-        fHistTOF = new TH2F("fHistPID_TOF","TOF Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 440, -1.1, 1.1);
-        fHistTPC = new TH2F("fHistPID_TPC","TPC Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 1600, -800, 800);
-        fHistITS = new TH2F("fHistPID_ITS","ITS Signal;#it{p_{T}} (GeV/#it{c});", 50, 0, 5, 1600, -800, 800);
+        fHistTOF = new TH2F("fHistPID_TOF","TOF Signal;#it{p} (GeV/#it{c});", 50,0,3, 210, 0,1.1);
+        fHistTOFAf = new TH2F("fHistPID_TOFAf","TOF Signal;#it{p}} (GeV/#it{c});", 50,0,3, 210, 0,1.1);
+        fHistTPC = new TH2F("fHistPID_TPC","TPC Signal;#it{p} (GeV/#it{c});", 50,0,3, 800, 0,800);
+        fHistTPCAf = new TH2F("fHistPID_TPCAf","TPC Signal;#it{p} (GeV/#it{c});", 50,0,3, 800, 0,800);
+        fHistITS = new TH2F("fHistPID_ITS","ITS Signal;#it{p} (GeV/#it{c});", 50,0,3, 800, 0,800);
+        fHistITSAf = new TH2F("fHistPID_ITSAf","ITS Signal;#it{p} (GeV/#it{c});", 50,0,3, 800, 0,800);
+        //TH2F *hTPCPID_QA = new TH2F(“hTPCPID_QA","PID via TPC after cut",500,0,20,500,0,200);
         
         fThnList->Add(fHistTOF);
+        fThnList->Add(fHistTOFAf);
         fThnList->Add(fHistTPC);
         fThnList->Add(fHistITS);
+        fThnList->Add(fHistITSAf);
+        fThnList->Add(fHistTPCAf);
         
         fHistTOFc  = new TH2F("fHistPID_TOFcut",Form("TOF Signal (Selected %s);#it{p_{T}} (GeV/#it{c});",pidname[fPidType]),50, 0, 5,  440, -1.1,1.1);
         fHistTPCc  = new TH2F("fHistPID_TPCcut",Form("TPC Signal (Selected %s);#it{p_{T}} (GeV/#it{c});",pidname[fPidType]),50, 0, 5, 1600, -800,800);
@@ -410,8 +422,8 @@ void AliEbyEPhiDistNew::CreateEffCont() {
     };
     const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
     
-    Int_t ybins[3] = {30, 32, 66};
-    Double_t yaxis[2][3] = {{0.15,-0.8,0.}, {3.15,0.8,6.6}};
+    Int_t ybins[3] = {11, 32, 18};
+    Double_t yaxis[2][3] = {{0.4,-0.8,0.0}, {1.5,0.8,6.28}};
     
     const Int_t xNbins = 100;
     Double_t xBinEdge[xNbins+1];
@@ -419,20 +431,19 @@ void AliEbyEPhiDistNew::CreateEffCont() {
         xBinEdge[iBin] = iBin - 0.5;
     }
     
-    fPtArray = new Double_t[fNptBins+1];
+    Double_t chPtBins[14] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.5};
+    Double_t PtArray[12] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
     
-    Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
-    Double_t pidPtBins[15] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05};
+    //fphiarray
     
-    if( fPidType == 0) fPtArray = chPtBins;
-    else fPtArray = pidPtBins;
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
     
     const Char_t *gstName[3] = {"Pt","Eta","Phi"};
     const Char_t *gstLat[3]  = {"p_{T}","#eta","#phi"};
     
     const Char_t *PidCut[4] = {
         "ChHad",
-        "TPC+TOF", // 0 only TPC
+        "TPC", // 0 only TPC
         "TPC+TOF",
         "TPC+ITS+TOF"
     };
@@ -459,28 +470,28 @@ void AliEbyEPhiDistNew::CreateEffCont() {
             
             if( j == 0){ //for pt only--(unequal bin width )
                 
-                fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                fHistERec[k][j] = new TH2F(Form("fHist%s%s%sRec",gstName[j],fgkHistCharge[k], fgkHistName[i]),Form(" Stg %s : Rec%s : %s ;#it{Bin};%s",PIDtype.Data(), gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                 fHistERec[k][j]->Sumw2();
                 fThnList->Add(fHistERec[k][j]);
                 
                 if(fIsMC){
-                    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                    fHistERecPri[k][j] = new TH2F(Form("fHist%s%s%sRecPri",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : Rec.Primary %s :  %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                     fHistERecPri[k][j]->Sumw2();
                     fThnList->Add(fHistERecPri[k][j]);
                     
-                    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                    fHistEGen[k][j] = new TH2F(Form("fHist%s%s%sGen",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Generated %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                     fHistEGen[k][j]->Sumw2();
                     fThnList->Add(fHistEGen[k][j]);
                     
-                    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                    fHistCSec[k][j] = new TH2F(Form("fHist%s%s%sContSec",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Secondary %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                     fHistCSec[k][j]->Sumw2();
                     fThnList->Add(fHistCSec[k][j]);
                     
-                    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                    fHistCMat[k][j] = new TH2F(Form("fHist%s%s%sContMat",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form("Stg- %s : %s : Material %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                     fHistCMat[k][j]->Sumw2();
                     fThnList->Add(fHistCMat[k][j]);
                     
-                    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, fPtArray);
+                    fHistCMisId[k][j] = new TH2F(Form("fHist%s%s%sContMisId",gstName[j], fgkHistCharge[k], fgkHistName[i]),Form(" Stg- %s : %s : Mis.Id %s ;#it{Bin};%s",PIDtype.Data(),gstLat[j],fgkHistLat[k][i], gstLat[j]), xNbins, xBinEdge, fNptBins, PtArray);
                     fHistCMisId[k][j]->Sumw2();
                     fThnList->Add(fHistCMisId[k][j]);
                     
@@ -523,29 +534,28 @@ void AliEbyEPhiDistNew::CreateEffCont() {
     
     
     if( fPidType == 0){//for charged hadron
-        const Int_t dim = 33; //1 centrality bin and (16 pt bins) * 2
-        
+        const Int_t dim = 37; //1 centrality bin +  19 phi bins) * 2
         Int_t bin[dim]    = { 100,
-            800, 800, 800, 800,
-            600, 600,
-            500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-            800, 800, 800, 800,
-            600, 600,
-            500, 500, 500, 500, 500, 500, 500, 500, 500, 500  };
+            500, 500, 500,
+            500, 500, 500, 500, 500, 500, 500, 500,
+            200, 200, 200, 200, 200, 200, 200, 200,
+            500, 500, 500,
+            500, 500, 500, 500, 500, 500, 500, 500,
+            200, 200, 200, 200, 200, 200};
         
         Double_t min[dim] = { -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5 };
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5};
         
         Double_t max[dim] = { 99.5,
-            799.5, 799.5, 799.5, 799.5,
-            599.5, 599.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            799.5, 799.5, 799.5, 799.5,
-            599.5, 599.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5 };
+            499.5, 499.5, 499.5,
+            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
+            199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
+            499.5, 499.5, 499.5,
+            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
+            199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
         
         fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
         fThnList->Add(fPtBinNplusNminusCh);
@@ -557,26 +567,24 @@ void AliEbyEPhiDistNew::CreateEffCont() {
         
     }
     else {//for PID
-        const Int_t dim = 29; //1 centrality bin + (14 pt bins) * 2
+        
+        const Int_t dim = 23; //1 centrality bin +  11 pt bins) * 2
         Int_t bin[dim]    = { 100,
             500, 500, 500,
             500, 500, 500, 500, 500, 500, 500, 500,
-            200, 200, 200, 200, 200, 200, 200, 200,
             500, 500, 500,
-            500, 500, 500, 500, 500, 500};
+            500, 500, 500, 500, 500, 500, 500, 500};
         
         Double_t min[dim] = { -0.5,
             -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
             -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5};
+            -0.5, -0.5, -0.5, -0.5};
         
         Double_t max[dim] = { 99.5,
             499.5, 499.5, 499.5,
             499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
             499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
+            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
         
         fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
         fThnList->Add(fPtBinNplusNminusCh);
@@ -624,25 +632,39 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     }
     
     fEventCounter->Fill(1);
-    AliVEvent *event = InputEvent();
-    if (!event) { LocalPost(); return; }
     
-    AliInputEventHandler* fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!fInputEventHandler) return;
+    if(!fInputHandler)
+        fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
-    //---Check pileup
-    if(!fanaUtils){
-        cout << "No pileup check ! " << endl;
+    if(!fInputHandler){
+        AliError("No InputHandler");
         return;
     }
-    fanaUtils->SetUseMVPlpSelection(kTRUE);
-    fanaUtils->SetUseOutOfBunchPileUp(kTRUE);
     
-    if(fanaUtils->IsPileUpMV(event)) return;
-    if(fanaUtils->IsOutOfBunchPileUp(event)) return;
-    if(fanaUtils->IsSPDClusterVsTrackletBG(event)) return;
+    fVevent = dynamic_cast<AliVEvent*>(fInputHandler->GetEvent());
+    if (!fVevent) {
+        printf("ERROR: fVEvent not available\n");
+        LocalPost();
+        return;
+    }
     
-    const AliVVertex *vertex = event->GetPrimaryVertex();
+    
+    //  AliVEvent *event = InputEvent();
+    //  if (!event) { LocalPost(); return; }
+    //
+    //  AliInputEventHandler* fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    //  if (!fInputEventHandler) return;
+    
+    //Pile up cout for Run2
+    if(!fIsMC){
+        
+        if(fRun == "LHC15o"){
+            if(!fEventCuts->AcceptEvent(fVevent)){
+                LocalPost(); return;
+            }
+        }
+    }
+    const AliVVertex *vertex = fVevent->GetPrimaryVertex();
     if(!vertex) { LocalPost(); return; }
     
     Bool_t vtest = kFALSE;
@@ -660,7 +682,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
     
     if( fRun == "LHC10h" || fRun == "LHC11h" ){
-        AliCentrality *centrality = event->GetCentrality();
+        AliCentrality *centrality = fVevent->GetCentrality();
         if(!centrality) return;
         if (centrality->GetQuality() != 0) { LocalPost(); return; }
         
@@ -668,7 +690,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     }
     
     else if (fRun == "LHC15o" ){
-        AliMultSelection *fMultSelection= (AliMultSelection *) event->FindListObject("MultSelection");
+        AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
         
         if(!fMultSelection ){
             cout << "AliMultSelection object not found!" << endl;
@@ -678,7 +700,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
         
     }
     
-    if( fCentrality < 0 || fCentrality >=80 ) return;
+    if( fCentrality < 0 || fCentrality >= 80 ) return;
     
     fHistCent->Fill(fCentrality);
     
@@ -690,12 +712,18 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
         fEventCounter->Fill(8);
         if(fIsAOD) {
             fArrayMC = NULL;
-            fArrayMC = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            fArrayMC = dynamic_cast<TClonesArray*>(fVevent->FindListObject(AliAODMCParticle::StdBranchName()));
             if (!fArrayMC)
                 AliFatal("No array of MC particles found !!!");
         }
         else {
-            fMCEvent = MCEvent();
+            fMCEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+            if(!fMCEventHandler){
+                AliError("No MC Event Handler available");
+                LocalPost(); return;
+            }
+            
+            fMCEvent = fMCEventHandler->MCEvent();
             if (!fMCEvent) {
                 Printf("ERROR: Could not retrieve MC event");
                 LocalPost(); return;
@@ -712,7 +740,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     //----------
     
     fEventCounter->Fill(3);
-    fNTracks  = event->GetNumberOfTracks();
+    fNTracks  = fVevent->GetNumberOfTracks();
     
     Int_t iTracks = 0;
     Double_t nRec[2] = {0., 0.};
@@ -729,7 +757,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     
     for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack) {
         
-        AliVTrack *track = static_cast<AliVTrack*>(event->GetTrack(idxTrack));
+        AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack));
         if(!AcceptTrackL(track)) continue;
         
         Int_t icharge = track->Charge() < 0 ? 0 : 1;
@@ -779,7 +807,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
         // - MC Loop for Physical Primary -
         //---------------------------------
         if (fIsMC) {
-            
             Int_t label  = TMath::Abs(track->GetLabel());
             
             Bool_t isPhysicalPrimary        = 0;
@@ -877,9 +904,6 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     
     fPtBinNplusNminusCh->Fill(ptContainer);
     
-    //cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
-    
-    //cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
     
     fEventCounter->Fill(7);
     //---- - -- - - - - -   -  -- - - - ---- - - - ---
@@ -975,7 +999,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
         //cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
         
         if(fIsQA){
-            Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
+            Double_t fContainerCh[3] = { (Double_t)fCentrality, nGen[1], nGen[0] };
             fTHnCentNplusNminusCh->Fill(fContainerCh);
         }
         
@@ -1012,10 +1036,11 @@ Bool_t AliEbyEPhiDistNew::AcceptTrackL(AliVTrack *track) const {
     }
     
     Double_t ptot = track->P();
-    //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-    if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
     
-    //cout << "Track --" << track->Pt() << endl;
+    if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
+    if (track->Phi() <fPhiMin || track->Phi() >fPhiMax) return kFALSE;
+    
+    
     
     Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
     Double_t pz = track->Pz();
@@ -1026,10 +1051,7 @@ Bool_t AliEbyEPhiDistNew::AcceptTrackL(AliVTrack *track) const {
     }
     else rap = -999.;
     
-    //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-    
     if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE;
-    if(track->Phi() < fPhiMin || track -> Phi() >fPhiMax ) return kFALSE ;/////////////////// need to do
     
     return kTRUE;
 }
@@ -1039,9 +1061,11 @@ Bool_t AliEbyEPhiDistNew::AcceptTrackL(AliVTrack *track) const {
 Bool_t AliEbyEPhiDistNew::AcceptTrackLMC(AliVParticle *particle) const {
     if(!particle) return kFALSE;
     if (particle->Charge() == 0.0) return kFALSE;
+    
     Double_t ptotMC = particle->P();
-    //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
+    
     if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
+    if (particle->Phi() < fPhiMin || particle->Phi() > fPhiMax) return kFALSE;
     
     //rapidity cut
     Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
@@ -1053,9 +1077,7 @@ Bool_t AliEbyEPhiDistNew::AcceptTrackLMC(AliVParticle *particle) const {
     }
     else rap = -999;
     
-    //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
     if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
-    if(particle->Phi() < fPhiMin || particle -> Phi() >fPhiMax ) return kFALSE ;
     
     return kTRUE;
 }
@@ -1065,7 +1087,7 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
     Int_t bin = -1;
     
     if( fPidType == 0){
-        Double_t chPtBins[17] = { 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.6, 2.0, 2.1 };
+        Double_t chPtBins[14] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.5};
         for(Int_t iBin = 0; iBin < fNptBins; iBin++){
             
             if( iBin == fNptBins-1){
@@ -1084,17 +1106,18 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
         }//for
     }
     else {
-        Double_t pidPtBins[15] = { 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05};
+        Double_t PtArray[12] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+        
         for(Int_t iBin = 0; iBin < fNptBins; iBin++){
             
             if( iBin == fNptBins-1){
-                if( pt >= pidPtBins[iBin] && pt <= pidPtBins[iBin+1]){
+                if( pt >= PtArray[iBin] && pt <= PtArray[iBin+1]){
                     bin = iBin;
                     break;
                 }
             }
             else{
-                if( pt >= pidPtBins[iBin] && pt < pidPtBins[iBin+1]){
+                if( pt >= PtArray[iBin] && pt < PtArray[iBin+1]){
                     bin = iBin;
                     break;
                     
@@ -1105,6 +1128,33 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
     return bin;
     
 }
+//-----------------------------------------GetPhiBin--------------------------------
+
+Int_t AliEbyEPhiDistNew::GetPhiBin(Double_t Phi){
+    
+    Int_t phibin = -1;
+    
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
+    
+    for (Int_t pBin = 0; pBin < fNphiBins; pBin++){
+        
+        if (pBin == fNphiBins - 1){
+            if (Phi >= pidPhiBins[pBin] && Phi <= pidPhiBins[pBin+1]){
+                phibin = pBin ;
+                break;
+            }
+        }
+        else {
+            if( Phi >= pidPhiBins[pBin] && Phi < pidPhiBins[pBin +1]){
+                phibin = pBin;
+                break;
+            }
+        }
+        
+    }
+    return phibin;
+}
+
 //___________________________________________________________
 void AliEbyEPhiDistNew::Terminate( Option_t * ){
     //
@@ -1180,10 +1230,51 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
     Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
     
+    //--------------------------------ITS PID--------------------------
+    if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
+        
+        // before calling the signal and mom
+        Float_t signalITS = track->GetITSsignal();
+        Float_t fITSPIDmom = track->GetTPCmomentum();
+        
+        fHistITS->Fill(fITSPIDmom,signalITS);
+        
+        
+        pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
+        
+        if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+        
+        // calling the signal..
+        if(isAcceptedITS==kTRUE){
+            fHistITSAf->Fill(fITSPIDmom,signalITS);
+        }
+        
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon));
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
+        
+        if (TMath::Abs(pid[0]) > nSigmaEl) isAcceptedITS = kFALSE;
+        
+        //if
+        
+        if( fPidStrategy == 2){
+            if( TMath::Abs(pid[0]) > nSigmaPion) isAcceptedITS = kFALSE;
+            if( TMath::Abs(pid[0]) > nSigmaKaon) isAcceptedITS = kFALSE;
+        }
+        
+    }
     
     //--------------------------TPC PID----------------
     if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+        
+        Float_t fTPCPIDmom = track->GetTPCmomentum();
+        Float_t sigTPC = track->GetTPCsignal();
+        //
+        fHistTPC->Fill(fTPCPIDmom,sigTPC);
+        //   cout << fTPCPIDmom << " tpc pid mom " << endl;
+        
         pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
+        
         
         if(fParticleSpecies == 3){//for kaon only
             if(fPidStrategy == 0){
@@ -1196,53 +1287,72 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
                         isAcceptedTPC = kTRUE;
                 }
             }
-            else
-                if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
-                    isAcceptedTPC = kTRUE;
-            
-        }//kaon
-        else{
-            
-            if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
+            else if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
                 isAcceptedTPC = kTRUE;
             
-            if (TMath::Abs(pid[1]) < fNSigmaMaxTPClow)  // Anywhere withing Mim Nsigma TPC
-                isAcceptedTPClow = kTRUE;                 // extra identifier
-            
-            if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
-                isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
-        }
-        Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
-        if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-    }
-    
-    //--------------------------------ITS PID--------------------------
-    if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk) {
-        pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
-        if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
-            isAcceptedITS = kTRUE;
+        }//kaon
         
-        Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-        if (TMath::Abs(pid[0]) > nSigma)
-            isAcceptedITS = kFALSE;
+        else{
+            
+            if (TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
+            
+            if(isAcceptedTPC == kTRUE){
+                fHistTPCAf->Fill(fTPCPIDmom,sigTPC);
+            }
+        }
+        
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon));
+        
+        if (TMath::Abs(pid[1]) > nSigmaEl) isAcceptedTPC = kFALSE;
+        
+        if( fPidStrategy == 2){
+            if( pt > 0.9 ){
+                if (TMath::Abs(pid[1]) > nSigmaPion) isAcceptedTPC = kFALSE;
+                if (TMath::Abs(pid[1]) > nSigmaKaon) isAcceptedTPC = kFALSE;
+            }
+        }
+        
+        
+        
     }
     
     
     //-------------------------------TOF--------------------------
     if ( fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
+        
+        Float_t fTOFPIDmom = track->GetTPCmomentum();
+        Float_t TOFbeta = TOFBetaCalc(track);
+        
+        fHistTOF->Fill(fTOFPIDmom,TOFbeta);
+        
         pid[2] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track, fParticleSpecies);
         hasPIDTOF = kTRUE;
-        if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
-            isAcceptedTOF = kTRUE;
+        if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) isAcceptedTOF = kTRUE;
         
-        Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
-        if (TMath::Abs(pid[2]) > nSigma)
-            isAcceptedTOF = kFALSE;
+        if(isAcceptedTOF==kTRUE){
+            fHistTOFAf->Fill(fTOFPIDmom,TOFbeta);
+        }
+        
+        Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
+        Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion));
+        Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon));
+        
+        if (TMath::Abs(pid[2]) > nSigmaEl) isAcceptedTOF = kFALSE;
+        
+        if( fPidStrategy == 2){
+            if( pt > 0.6 ){ //0.9
+                if (TMath::Abs(pid[2]) > nSigmaPion) isAcceptedTOF = kFALSE;
+                if (TMath::Abs(pid[2]) > nSigmaKaon) isAcceptedTOF = kFALSE;
+            }
+        }
+        
     }
     
     
     if (fIsMC && isAcceptedTOF) {
-        Int_t tofLabel[3];  
+        Int_t tofLabel[3];
         if (track->InheritsFrom("AliESDtrack")) {
             (dynamic_cast<AliESDtrack*>(track))->GetTOFLabel(tofLabel);
         } else if (track->InheritsFrom("AliAODTrack")) {
@@ -1255,50 +1365,24 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         }
         
         if(fIsAOD) {
-            // AliAODMCParticle  *matchedTrack = dynamic_cast<AliAODMCParticle*>(fArrayMC->At(TMath::Abs(tofLabel[0])));
-            // if (TMath::Abs(matchedTrack->GetMother()) == TMath::Abs(track->GetLabel())) 
-            //	hasMatchTOF = kTRUE;
-            // if (TMath::Abs(track->GetLabel()) ==  TMath::Abs(matchedTrack->GetMother()))
-            //	cout << mcMother->GetMother() << "  " << tofLabel[0]  << "  " << track->GetLabel() << endl;
+            //------
         } else {
             TParticle *matchedTrack = fMCStack->Particle(TMath::Abs(tofLabel[0]));
-            if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) 
+            if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel()))
                 hasMatchTOF = kTRUE;
         }
         isAcceptedTOF = hasMatchTOF;
     }
     
-    
-    Short_t c    = 0;
-    Double_t p   = 0;
-    Double_t tpc = 0;
-    Double_t tof = 0;
-    Double_t its = 0;
-    
-    if (fIsQA && (fCentrality == 0 || fCentrality == 1)) {
-        c   = track->Charge();
-        p   = track->P();
-        tpc = track->GetTPCsignal();
-        tof = TOFBetaCalc(track);    // => GetTOFsignal();
-        its = track->GetITSsignal();
-        
-        fHistTOF->Fill(p,c*tof);
-        fHistTPC->Fill(p,c*tpc);
-        fHistITS->Fill(p,c*its);
-        fHistTPCTOF->Fill(c*tpc,c*tof);
-        
-        fHistNsITS->Fill(p,pid[0]);
-        fHistNsTPC->Fill(p,pid[1]);
-        fHistNsTOF->Fill(p,pid[2]);
-    }
-    
-    
+    //--------Combined--PID------------
     if (fParticleSpecies == 2) {//for Pion: TPC+TOF
         if(fPidStrategy==0){
-            isAccepted = isAcceptedTPC && isAcceptedTOF;
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
         }
         else if(fPidStrategy == 1){
-            isAccepted = isAcceptedTPC;
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else isAccepted =  isAcceptedTPC;
         }
     }
     
@@ -1308,12 +1392,14 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
             else isAccepted =  isAcceptedTPC;
         }
+        
         else if (fPidStrategy == 1){
-            isAccepted = isAcceptedTPC;
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else isAccepted =  isAcceptedTPC;
         }
     }
     
-    if( fParticleSpecies == 4){//for proton
+    else if( fParticleSpecies == 4){//for proton
         
         if(fPidStrategy == 0){
             //ITS+TPC and TPC+TOF
@@ -1321,35 +1407,36 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
             else isAccepted = isAcceptedTPC && isAcceptedTOF;
         }
         else if( fPidStrategy == 1){
-            //ITS+TPC, TPC , TPC+TOF
-            if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-            else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-            else isAccepted =  isAcceptedTPC;
+            
+            if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) {
+                Double_t nsigCompITSTPC = TMath::Sqrt( pid[1]*pid[1] +  pid[0]*pid[0] );
+                if( nsigCompITSTPC < fNSigmaMaxTPC ) isAccepted = kTRUE;
+            }
+            else {
+                Double_t nsigCompTPCTOF = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+                if( nsigCompTPCTOF < fNSigmaMaxTPC ) isAccepted = kTRUE;
+            }
         }
         else if( fPidStrategy == 2){
-            //ITS+TPC
-            isAccepted = isAcceptedITS && isAcceptedTPC;
+            isAccepted = isAcceptedTOF && isAcceptedTPC;
+        }
+        else if( fPidStrategy == 3){
+            if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+            else if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
+            
+        }
+        else if( fPidStrategy == 4){
+            if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
         }
         
     }//for proton
     
     
-    if (fIsQA && isAccepted && (fCentrality == 0 || fCentrality == 1)) {
-        fHistTOFc->Fill(p,c*tof);
-        fHistTPCc->Fill(p,c*tpc);
-        fHistITSc->Fill(p,c*its);
-        
-        fHistTPCTOFc->Fill(c*tpc,c*tof);
-        
-        fHistNsITSc->Fill(p,pid[0]);
-        fHistNsTPCc->Fill(p,pid[1]);
-        fHistNsTOFc->Fill(p,pid[2]);
-    }
-    
     delete [] pid;
     return isAccepted;
     
-    PostData(1, fThnList);
     
 }//IsPidPassed
 

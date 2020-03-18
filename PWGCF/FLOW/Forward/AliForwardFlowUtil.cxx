@@ -341,6 +341,16 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
+  if ((centrality_estimator == "V0A") & this->pPb_Run(fSettings.runnumber)){
+    AliVVZERO* fvzero = this->fevent->GetVZEROData();
+    Float_t sum = 0., max = 0.;
+    for(Int_t i = 32; i < 64; ++i){
+      sum +=fvzero->GetMultiplicity(i);
+      if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
+    }
+    sum -= max;
+    return sum;
+  }
   AliMultSelection *MultSelection;
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
   return MultSelection->GetMultiplicityPercentile(centrality_estimator);

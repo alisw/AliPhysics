@@ -18,47 +18,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   TString fileName = AliAnalysisManager::GetCommonFileName();
 
   fileName = "AnalysisResults.root"; // create a subfolder in the file
-  // fileName = "AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full.root"; // create a subfolder in the file
-
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY
-  // AnalysisResults_TrackCuts_ImpactParXY_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParZ
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_TPCchi2Cl_NclsSITS__wo_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_NclsSITS__wo_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl__wo_NclsSITS
-
-  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl_NclsSITS__wo_ImpParZ_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl__wo_ImpParZ_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParXY_NclsSITS__wo_ImpParZ_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParXY__wo_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl_NclsSITS__wo_ImpParXY_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl__wo_ImpParXY_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsSITS__wo_ImpParXY_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParZ__wo_ImpParXY_NclsTPC_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ
-  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsSITS
-  // AnalysisResults_TrackCuts_NclsTPC_NclsSITS__wo_ImpParXY_ImpactParZ_TPCchi2Cl
-  // AnalysisResults_TrackCuts_NclsTPC__wo_ImpParXY_ImpactParZ_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC
-  // AnalysisResults_TrackCuts_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsTPC_NclsSITS
-
-  // AnalysisResults_TrackCuts_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC_TPCchi2Cl
-
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsTPC__wo_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_TPCchi2Cl__wo_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsSITS__wo_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ__wo_NclsTPC_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_TPCchi2Cl__wo_ImpactParZ_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_NclsSITS__wo_ImpactParZ_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC__wo_ImpactParZ_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl__wo_ImpParXY_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_NclsSITS__wo_ImpParXY_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC__wo_ImpParXY_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_NoTrackCuts
 
 
   // #########################################################
@@ -203,7 +162,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
   task->SetUsePreFilter(UsePreFilter);
-  task->SetULSandLS(DoULSLS);
 
   // #########################################################
   // #########################################################

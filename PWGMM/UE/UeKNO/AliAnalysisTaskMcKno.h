@@ -42,8 +42,12 @@ public:
 	void       GetBinByBinCorrections();
 	void       GetMultiplicityDistributions();
 	void       GetMultiplicityDistributionsData();
-	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
-	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
+	void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
+	void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
+	void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+	void       SetV0Mmin(Double_t V0Mmin)          {fV0Mmin = V0Mmin;}   // Set V0M min value
+	void       SetV0Mmax(Double_t V0Mmax)          {fV0Mmax = V0Mmax;}   // Set V0M max value
+	void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
 	void       SetIspPb(Bool_t pPb = kFALSE)    {fIspPb = pPb;}
 	bool       HasRecVertex();
@@ -67,9 +71,11 @@ private:
 	
 
 	Double_t fEtaCut;
-	Double_t fPtMin;
+	Double_t fPtMin;	
 	Double_t fLeadPtCutMin;
 	Double_t fLeadPtCutMax;
+	Double_t fV0Mmin;
+	Double_t fV0Mmax;
 	Double_t fGenLeadPhi; 
 	Double_t fGenLeadPt;
 	Int_t    fGenLeadIn;
@@ -128,7 +134,7 @@ private:
 
 	TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
 
-	TH3D * hV0MVsUEvsRef;//UE->NchTS
+	//TH3D * hV0MVsUEvsRef;//UE->NchTS
 
 	AliAnalysisTaskMcKno(const AliAnalysisTaskMcKno&);                  // not implemented
 	AliAnalysisTaskMcKno& operator=(const AliAnalysisTaskMcKno&);       // not implemented

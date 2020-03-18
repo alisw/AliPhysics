@@ -33,6 +33,7 @@ set(SRCS
   AliAnalysisNanoAODCuts.cxx
   AliAnalysisTaskNanoAODFilter.cxx
   AliAnalysisTaskNanoAODskimming.cxx
+  AliNanoAODTPCGeoLengthCutSetter.cxx
   AliNanoAODCustomSetter.cxx
   AliNanoAODReplicator.cxx
   AliNanoAODTrack.cxx

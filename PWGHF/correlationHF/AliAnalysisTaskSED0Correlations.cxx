@@ -148,7 +148,7 @@ AliAnalysisTaskSE(),
   fTrackArrayFilled(kFALSE)     
 {
   // Default constructor
-  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=0;
+  for(Int_t i=0; i<33; i++) fTrackletProfiles[i]=0;
 }
 
 //________________________________________________________________________
@@ -239,7 +239,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
     
   fCutsD0=cutsD0;
 
-  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=0;
+  for(Int_t i=0; i<33; i++) fTrackletProfiles[i]=0;
 
   // Output slot #1 writes into a TList container (mass with cuts)
   DefineOutput(1,TList::Class());  //My private output
@@ -344,7 +344,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fTrackArrayFilled(source.fTrackArrayFilled)   
 {
   // Copy constructor
-  for(Int_t i=0; i<32; i++) fTrackletProfiles[i]=source.fTrackletProfiles[i];
+  for(Int_t i=0; i<33; i++) fTrackletProfiles[i]=source.fTrackletProfiles[i];
 }
 
 //________________________________________________________________________
@@ -386,7 +386,7 @@ AliAnalysisTaskSED0Correlations::~AliAnalysisTaskSED0Correlations()
     delete fCounter;
     fCounter=0;
   }
-  for(Int_t i=0; i<32; i++) {
+  for(Int_t i=0; i<33; i++) {
     if (fTrackletProfiles[i]) delete fTrackletProfiles[i];
   }
 }  
@@ -477,7 +477,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fTrackArray = orig.fTrackArray;      
   fTrackArrayFilled = orig.fTrackArrayFilled;
   
-  for(Int_t i=0; i<32; i++) {
+  for(Int_t i=0; i<33; i++) {
     fTrackletProfiles[i] = orig.fTrackletProfiles[i];
   }
 
@@ -1209,6 +1209,14 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   }
   if(fFillTrees==kFillTrees && fAlreadyFilled) FillTreeTracks(aod);
   
+  ((TH1F*)fOutputStudy->FindObject("fHistNtrUnCorrEvSel"))->Fill(fMultEvOrig); //Fill multiplicity histo
+  if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fHistNtrCorrEvSel"))->Fill(fMultEv); //Fill multiplicity histo
+  if(fAlreadyFilled) { //there's a selected D candidate in the event
+    ((TH1F*)fOutputStudy->FindObject("fHistNtrUnCorrEvWithCand"))->Fill(fMultEvOrig); //Fill multiplicity histo
+    if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fHistNtrCorrEvWithCand"))->Fill(fMultEv); //Fill multiplicity histo
+  }
+
+
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
   delete vHF;
@@ -1990,7 +1998,22 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   TH1F *hMultEvTrkl1 = new TH1F("hMultEvTrkl1","Multiplicity of events (v2 pp analysis) in Tracklets <1; SPD tracklets in |eta|<1; # Events",200,0,200);
   hMultEvTrkl1->SetMinimum(0);
-  fOutputStudy->Add(hMultEvTrkl1);        
+  fOutputStudy->Add(hMultEvTrkl1);   
+
+  TH1F *fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
+  fHistNtrUnCorrEvSel->SetMinimum(0);
+  fHistNtrUnCorrEvSel->Sumw2();
+  fOutputStudy->Add(fHistNtrUnCorrEvSel); 
+
+  TH1F *fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand","Uncorrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
+  fHistNtrUnCorrEvWithCand->SetMinimum(0);
+  fHistNtrUnCorrEvWithCand->Sumw2();
+  fOutputStudy->Add(fHistNtrUnCorrEvWithCand); 
+
+  //TH1F *fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //
+  //fHistNtrUnCorrEvWithD->SetMinimum(0);
+  //fHistNtrUnCorrEvWithD->Sumw2();
+  //fOutputStudy->Add(fHistNtrUnCorrEvWithD); 
 
   if(fEqualizeTracklets) {
     TH1F *hMultEvTrkl1Equal = new TH1F("hMultEvTrkl1Equal","Multiplicity of events (v2 pp analysis) in Tracklets <1, EQUALIZED; SPD tracklets in |eta|<1; # Events",200,0,200);
@@ -2004,6 +2027,21 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     TH2F *hNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx","Ntracklets (corrected) vs VtxZ; VtxZ;N_{trkl};",300,-15,15,150,-0.5,149.5); //
     hNtrCorrVsZvtx->SetMinimum(0);
     fOutputStudy->Add(hNtrCorrVsZvtx); 
+
+    TH1F *fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
+    fHistNtrCorrEvSel->SetMinimum(0);
+    fHistNtrCorrEvSel->Sumw2();
+    fOutputStudy->Add(fHistNtrCorrEvSel); 
+
+    TH1F *fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand","Corrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
+    fHistNtrCorrEvWithCand->SetMinimum(0);
+    fHistNtrCorrEvWithCand->Sumw2();
+    fOutputStudy->Add(fHistNtrCorrEvWithCand); 
+
+    //TH1F *fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD","Corrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //   
+    //fHistNtrCorrEvWithD->SetMinimum(0);
+    //fHistNtrCorrEvWithD->Sumw2();
+    //fOutputStudy->Add(fHistNtrCorrEvWithD); 
   }
 
   if(fVsMultAnalysis) {
@@ -3288,18 +3326,19 @@ TProfile* AliAnalysisTaskSED0Correlations::GetEstimatorHistogram(const AliVEvent
     if(runNo>=280282 && runNo<=281961)period = 18;//17o
     if(runNo>=282504 && runNo<=282704)period = 19;//17r
   //2018
-    if(runNo>=285978 && runNo<=286350)period = 20;//18d
-    if(runNo>=286380 && runNo<=286937)period = 21;//18e
-    if(runNo>=287000 && runNo<=287977)period = 22;//18f
-    if(runNo>=288619 && runNo<=288750)period = 23;//18g
-    if(runNo>=288804 && runNo<=288806)period = 24;//18h
-    if(runNo>=288861 && runNo<=288909)period = 25;//18i
-    if(runNo>=289165 && runNo<=289201)period = 26;//18k
-    if(runNo>=289240 && runNo<=289971)period = 27;//18l
-    if(runNo>=290222 && runNo<=292839)period = 28;//18m
-    if(runNo>=293357 && runNo<=293359)period = 29;//18n
-    if(runNo>=293368 && runNo<=293898)period = 30;//18o
-    if(runNo>=294009 && runNo<=294925)period = 31;//18p  
+    if(runNo>=284706 && runNo<=285447)period = 20;//18b
+    if(runNo>=285978 && runNo<=286350)period = 21;//18d
+    if(runNo>=286380 && runNo<=286937)period = 22;//18e
+    if(runNo>=287000 && runNo<=287977)period = 23;//18f
+    if(runNo>=288619 && runNo<=288750)period = 24;//18g
+    if(runNo>=288804 && runNo<=288806)period = 25;//18h
+    if(runNo>=288861 && runNo<=288909)period = 26;//18i
+    if(runNo>=289165 && runNo<=289201)period = 27;//18k
+    if(runNo>=289240 && runNo<=289971)period = 28;//18l
+    if(runNo>=290222 && runNo<=292839)period = 29;//18m
+    if(runNo>=293357 && runNo<=293359)period = 30;//18n
+    if(runNo>=293368 && runNo<=293898)period = 31;//18o
+    if(runNo>=294009 && runNo<=294925)period = 32;//18p  
   
   if(period==-1) {
      printf("Error! No corresponding profile for tracklets for this run (%d)! Skipping the correction...\n",runNo);

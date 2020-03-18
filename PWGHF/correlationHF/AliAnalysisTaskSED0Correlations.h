@@ -229,7 +229,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
 
   Bool_t     fEqualizeTracklets;     //activates the tracklet correction using the TProfiles (data)
   Double_t   fRefMult;               //refrence multiplcity (max of maxes of profiles in dataset)
-  TProfile*  fTrackletProfiles[32];  //TProfile with mult vs. Z per period
+  TProfile*  fTrackletProfiles[33];  //TProfile with mult vs. Z per period
 
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;

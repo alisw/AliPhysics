@@ -1148,8 +1148,8 @@ void AliCaloTrackReader::InitParameters()
   fPHOSNCellsCut     = 0; // open, 2; // standard
   
   fEMCALNCellsCutEnDepEnMin    = 10000 ;  
-  fEMCALNCellsCutEnDepConstant = 4.5;    // for emin=40 GeV
-  fEMCALNCellsCutEnDepSlope    = 0.05;   // for emin=40 GeV
+  fEMCALNCellsCutEnDepConstant = 4.9;    // for emin=40 GeV
+  fEMCALNCellsCutEnDepSlope    = 0.04;   // for emin=40 GeV
   
   // For clusters with energy above fEMCALHighEnergyNdiffCut, count cells
   // with E > fEMCALMinCellEnNdiffCut in different T-Card than highest energy cell.

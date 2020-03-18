@@ -39,6 +39,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
 #include "AliPIDResponse.h"
+#include "AliMultSelectionTask.h"
 
 // for NanoAOD
 #include <AliNanoAODHeader.h>
@@ -115,6 +116,8 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
         fHistos->CreateTH1("QA_pion/hEtaPion", "", 40, -2, 2);
         fHistos->CreateTH1("QA_pion/hDCAPVPion", "", 300, 0, 3, "s");
         fHistos->CreateTH1("QA_pion/hDCArPVPion", "", 300, 0, 3, "s");
+        if(fCheckTPCGeo)
+            fHistos->CreateTH1("QA_pion/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     }
     if (checkV0s) {
         fHistos->CreateTH2("QA_V0/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
@@ -172,6 +175,8 @@ void AliAnalysisTaskNanoCheck::UserCreateOutputObjects() {
         fHistos->CreateTH1("QA_pionCut/hEtaPion", "", 40, -2, 2);
         fHistos->CreateTH1("QA_pionCut/hDCAPVPion", "", 300, 0, 3, "s");
         fHistos->CreateTH1("QA_pionCut/hDCArPVPion", "", 300, 0, 3, "s");
+        if(fCheckTPCGeo)
+            fHistos->CreateTH1("QA_pionCut/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     }
     if (checkV0s) {
         fHistos->CreateTH2("QA_V0Cut/hTPCPIDLambdaProton", "", 200, 0, 20, 2000, 0, 200);
@@ -280,7 +285,9 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
             IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
         }
         // Get default values from AliEventCuts
-        fCent = fEventCuts.GetCentrality(0);
+        fCent = AliMultSelectionTask::IsINELgtZERO(event) 
+                    ? fEventCuts.GetCentrality() 
+                    : -0.5;
         // PID response
         fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
         if (!fPIDResponse)
@@ -293,7 +300,7 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
         if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
-        if (nanoHeader->GetVar(inel_index) < 0.5)
+        if ((inel_index > 0) && (nanoHeader->GetVar(inel_index) < 0.5))
             fCent = -0.5;
     }
 
@@ -312,6 +319,8 @@ void AliAnalysisTaskNanoCheck::UserExec(Option_t*) {
     lPosPV[0] = pVtx->GetX();
     lPosPV[1] = pVtx->GetY();
     lPosPV[2] = pVtx->GetZ();
+
+    fMagField = fEvt->GetMagneticField();
 
     // Do the jobs
     bool checkPion{false}, checkV0{false}, checkCascade{false};
@@ -334,6 +343,7 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
     Float_t b[2];
     Float_t bCov[3];
     Double_t TPCNSigPion, pionZ, pionPt, pionSigmaDCAr, pionDCAr, pionEta;
+    Int_t isTPCGeo;
 
     for (UInt_t it = 0; it < nTracks; it++) {
         track = (AliVTrack*)fEvt->GetTrack(it);
@@ -347,14 +357,22 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         if (!IsAOD) {
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
                 continue;
+            if(fCheckTPCGeo)
+                isTPCGeo = IsSelectedTPCGeoCut(((AliESDtrack*)track)) ? 1 : 0;
         }  // ESD Case
         else {
             if (!IsNano) {
                 if (!((AliAODTrack*)track)->TestFilterBit(32))
                     continue;
+                if(fCheckTPCGeo)
+                    isTPCGeo = IsSelectedTPCGeoCut(((AliAODTrack*)track)) ? 1 : 0;
             } else {
                 if (!(static_cast<AliNanoAODTrack*>(track)->TestFilterBit(32)))
                     continue;
+                if(fCheckTPCGeo) {
+                    static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
+                    isTPCGeo = (static_cast<AliNanoAODTrack*>(track)->GetVar(tpcGeo_index) > 0.5) ? 1 : 0;
+                }
             }
         }
 
@@ -370,6 +388,8 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         fHistos->FillTH1("QA_pion/hEtaPion", pionEta);
         fHistos->FillTH2("QA_pion/hTPCPIDPion", track->GetTPCmomentum(),
                          track->GetTPCsignal());
+        if(fCheckTPCGeo)
+            fHistos->FillTH1("QA_pion/hTPCGeoCheck", isTPCGeo);
 
         if (TMath::Abs(TPCNSigPion) > fTPCNsigNanoCheckerPionCut)
             continue;
@@ -389,7 +409,9 @@ Bool_t AliAnalysisTaskNanoCheck::GoodTracksSelection() {
         fHistos->FillTH1("QA_pionCut/hEtaPion", pionEta);
         fHistos->FillTH2("QA_pionCut/hTPCPIDPion", track->GetTPCmomentum(),
                          track->GetTPCsignal());
-
+        if(fCheckTPCGeo)
+            fHistos->FillTH1("QA_pionCut/hTPCGeoCheck", isTPCGeo);
+        
         goodtrackindices.push_back(it);
     }
     return goodtrackindices.size();
@@ -416,6 +438,10 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0ESD = ((AliESDEvent*)fEvt)->GetV0(it);
+            
+            if (fOnlyUseOnTheFlyV0 && !v0ESD->GetOnFlyStatus()) 
+                continue;
+
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0ESD->GetPindex()) ==
                 TMath::Abs(v0ESD->GetNindex()))
@@ -564,6 +590,10 @@ Bool_t AliAnalysisTaskNanoCheck::GoodV0Selection() {
         for (UInt_t it = 0; it < nV0; it++) {
             AcceptedV0 = kTRUE;
             v0AOD = ((AliAODEvent*)fEvt)->GetV0(it);
+
+            if (fOnlyUseOnTheFlyV0 && !v0AOD->GetOnFlyStatus()) 
+                continue;
+
             fHistos->FillTH1("hNofV0s", 0.5);
             if (TMath::Abs(v0AOD->GetPosID()) == TMath::Abs(v0AOD->GetNegID()))
                 continue;
@@ -1231,4 +1261,41 @@ void AliAnalysisTaskNanoCheck::GetImpactParam(AliVTrack* track, Float_t p[2], Fl
         nanoT->GetImpactParameters(p[0], p[1]);
     else
         track->GetImpactParameters(p, cov);
+}
+Bool_t AliAnalysisTaskNanoCheck::IsSelectedTPCGeoCut(AliAODTrack *track) {
+  Bool_t checkResult = kTRUE;
+  
+  AliESDtrack esdTrack(track);
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+
+  auto nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+  auto lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(fMode,fDeltaY,fDeltaZ,fMagField);
+  auto cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
+  
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength) 
+    checkResult = false;
+  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) 
+    checkResult = false;
+  if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) 
+    checkResult = false;
+  
+  return checkResult;
+}
+Bool_t AliAnalysisTaskNanoCheck::IsSelectedTPCGeoCut(AliESDtrack *track) {
+  Bool_t checkResult = kTRUE;
+  
+  auto nCrossedRowsTPC = track->GetTPCCrossedRows();
+  auto lengthInActiveZoneTPC=track->GetLengthInActiveZone(fMode,fDeltaY,fDeltaZ,fMagField);
+  auto cutGeoNcrNclLength=fRequireCutGeoNcrNclLength-TMath::Power(TMath::Abs(track->GetSigned1Pt()),fRequireCutGeoNcrNclGeom1Pt);
+  
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength) 
+    checkResult = false;
+  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) 
+    checkResult = false;
+  if (track->GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) 
+    checkResult = false;
+  
+  return checkResult;
 }

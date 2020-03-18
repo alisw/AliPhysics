@@ -94,8 +94,8 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
 {
   // Apply all cuts by default
     fEventValidators.push_back(EventValidation::kNoEventCut);
-    fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+    fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kHasFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesFMD);
     fEventValidators.push_back(EventValidation::kHasValidFMD);
@@ -194,10 +194,10 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
-    case EventValidation::kTrigger:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;   
     case EventValidation::kPassesAliEventCuts:
       discardedEvtsAx->SetBinLabel(idx + 1, "AliEventCuts"); break;
+    case EventValidation::kTrigger:
+      discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;   
     case EventValidation::kHasFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
@@ -354,7 +354,8 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
         break;
       case EventValidation::kHasEntriesFMD:
-        this->fIsValidEvent = this->HasEntriesFMD(); break;
+        if (fSettings.use_primaries_fwd & fSettings.use_primaries_fwdref) continue;
+        else this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
         this->fIsValidEvent = this->HasValidFMD(); break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:

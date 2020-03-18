@@ -188,16 +188,16 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     std::vector<double> centaxisbin;
     if (!IsMC) {
         if (IsAA && !IsHighMult)
-            centaxisbin = {0,  10, 20, 30, 40, 50,
+            centaxisbin = {-1, 0,  10, 20, 30, 40, 50,
                            60, 70, 80, 90, 100};  // for AA study
         else if (!IsHighMult)
-            centaxisbin = {0,  1,  5,  10, 15, 20,
+            centaxisbin = {-1, 0,  1,  5,  10, 15, 20,
                            30, 40, 50, 70, 100};  // for kINT7 study
         else
             centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
         centaxisbin = {
-            0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
+            -1, 0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
             10, 15,   20,   30,   40,   50,  70, 100};  // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
@@ -274,10 +274,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                 fHistos->CreateTH1("EventQA/hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
                 fHistos->CreateTH1("EventQA/hMult_ProcessedDataQA", "", 100, 0, 0.1, "s");
             } else {
-                fHistos->CreateTH1("EventQA/hMult_QA", "", 1000, 0, 100, "s");
-                fHistos->CreateTH1("EventQA/hMult_QA_onlyMult", "", 1000, 0, 100, "s");
-                fHistos->CreateTH1("EventQA/hMult_SkippedDataQA", "", 100, 0, 100, "s");
-                fHistos->CreateTH1("EventQA/hMult_ProcessedDataQA", "", 100, 0, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_QA", "", 1010, -1, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_QA_onlyMult", "", 101, -1, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_SkippedDataQA", "", 101, -1, 100, "s");
+                fHistos->CreateTH1("EventQA/hMult_ProcessedDataQA", "", 101, -1, 100, "s");
             }
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
@@ -530,7 +530,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         }
 
         // fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
-        fCent = fEventCuts.GetCentrality(0);
+        fCent = AliMultSelectionTask::IsINELgtZERO(event) 
+                    ? fEventCuts.GetCentrality() 
+                    : -0.5;
 
         // PID response
         // ----------------------------------------------------------
@@ -647,8 +649,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     } else {
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
-        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstIsINELgt0");
-        if (nanoHeader->GetVar(inel_index) < 0.5)
+        if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
+        if ((inel_index > 0) && (nanoHeader->GetVar(inel_index) < 0.5))
             fCent = -0.5;
         static int v0mValueIndex =
             nanoHeader->GetVarIndex("MultSelection.V0M.Value");

@@ -1787,7 +1787,15 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d103","4117932050032230000","01631061000000d0"); // alpha meson variation 1   0<alpha<0.8
     cuts.AddCutCalo("8008d103","4117932050032230000","01631051000000d0"); // alpha meson variation 2  0<alpha<0.75
 
+  // PHOS pPb8TeV
+  } else if (trainConfig == 3000){ // settings Jens
+    cuts.AddCutCalo("80010103","24466190ua012300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("80062103","24466190ua012300000","0163103100000010"); // PHI7
 
+  } else if (trainConfig == 3010){ // settings Dmitri
+    cuts.AddCutCalo("80010103","24466640ya09dc00000","0163103100000010"); // INT7
+  } else if (trainConfig == 3011){ // settings Dmitri
+    cuts.AddCutCalo("80062103","24466640ya09dc00000","0163103100000010"); // PHI7
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

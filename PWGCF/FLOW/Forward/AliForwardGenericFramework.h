@@ -71,7 +71,6 @@ public:
    */
   void reset();
 
-  THnD* fQvector_per_detector;//!     // Accumulated reference particles
   TH1D* fAutoDiff;//!     // Accumulated reference particles
   TH1D* fAutoRef;//!     // Accumulated reference particles
   THnD* fQvector;//!     // Accumulated reference particles
@@ -81,9 +80,6 @@ public:
   TComplex Q(Int_t n, Int_t p, Int_t etaBin);
   TComplex p(Int_t n, Int_t p, Int_t etaBin);
   TComplex q(Int_t n, Int_t p, Int_t etaBin);
-
-  // TH1F fAutoRef;
-  // TH1F fAutoDiff;
 
   TComplex Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2);
   TComplex TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin);
@@ -110,8 +106,6 @@ public:
       cumu->Fill(values,value);
       return;
     }
-
-
   }
 
   Double_t applyNUAcentral(Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
@@ -129,18 +123,7 @@ public:
 
   Double_t applyNUAforward(TH2D*& dNdetadphi, Int_t etaBin, Int_t phiBin, Double_t eta, Double_t phi, Double_t zvertex, Double_t weight){
 
-    // holes in the FMD
-    // if (fSettings.nua_mode & fSettings.kFill){
-    //   if (etaBin >= 125 && etaBin <=137){
-    //     if (phiBin == 17 || phiBin == 18) weight = 1.;
-    //   }
-    //   if (etaBin >= 168 && etaBin <=185){
-    //     if (phiBin == 14) weight = 1.;
-    //   }
-    // }
-
     if (fSettings.nua_mode & fSettings.kInterpolate) {
-      //std::cout << "interpolating" << std::endl;
       weight = AliForwardNUATask::InterpolateWeight(*dNdetadphi,phiBin,etaBin,weight);
     }
     if (!fSettings.use_primaries_fwd) {
@@ -155,7 +138,7 @@ public:
   }
 
   Double_t applySecondaryCorr(Int_t n, Double_t eta,Double_t zvertex,Double_t cent, Double_t weight){
-    Int_t secn = n-1;//fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
+    Int_t secn = n-1;
 
     if (fSettings.seccorr_fwd){
       Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);

@@ -108,13 +108,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // No fITSshared cluster cut w.r.t to kCutSet1
-  else if(cutDefinition == "kCutSet2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kAccAllITSshared, LMEECutLib::kMVA1));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
   // Standard noSDD analysis cuts using MVA ePID(req. ITS PID)
   else if(cutDefinition == "kCutSet3"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kMVA1));
@@ -125,6 +118,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
   // Standard analysis cuts with hadron rejection ePID
   else if(cutDefinition == "kScheidCuts"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  // Standard analysis cuts with 7TeV diElec ePID scheme
+  else if(cutDefinition == "k7TeVpaper"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::k7TeVtrack, LMEECutLib::k7TeVPID));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -152,28 +152,17 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // Cut set to imitate pPb FAST+woSDD analysis
-  else if(cutDefinition == "kScheidCuts"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
   // Two cut settings to check PID efficiency using V0 electrons
   // (does not work for MC, checked 2019.05.08)
   else if(cutDefinition == "kV0_TTreeCutPID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kTTreeCuts));
   }
   else if(cutDefinition == "kV0_MVAePID"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
-  }
-  // Cut set to check V0 features in MC (for testing)
-  else if(cutDefinition == "kV0_allAcc"){
-    die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kV0_allAcc, LMEECutLib::kV0_allAcc) );
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kMVA1));
   }
   // ######## Different R factor bin mixing schemes #################
   else if(cutDefinition == "kMixScheme1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -181,7 +170,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme1);
   }
   else if(cutDefinition == "kMixScheme2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -189,7 +178,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme2);
   }
   else if(cutDefinition == "kMixScheme3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -197,7 +186,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme3);
   }
   else if(cutDefinition == "kMixScheme4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -205,7 +194,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme4);
   }
   else if(cutDefinition == "kMixScheme5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -251,18 +240,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
   }
   else if(cutDefinition == "kITSshared6"){ // Six shared hits in ITS
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kHadRej));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kITSmin"){ // Standard track cut/PID, with only 1 ITS hit required
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmin, LMEECutLib::kHadRej));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kITSmax"){ // Standard track cut/PID, with only max ITS hits required
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSmax, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }

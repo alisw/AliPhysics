@@ -138,7 +138,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKno) // classimp: necessary for root
 
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
-  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0),hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0),hV0MVsUEvsRef(0)
+  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0),hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0)
 
 {
 	 for(Int_t i=0;i<3;++i){
@@ -159,7 +159,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE(name),
-							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0),hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hV0MVsUEvsRef(0)
+							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0),hPtInPrim(0),hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0)
 {
 
 	for(Int_t i=0;i<3;++i){
@@ -276,7 +276,17 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 		hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",3000,-0.5,2999.5,3000,-0.5,2999.5);
 		fOutputList->Add(hNchResponse);
 
-		
+		hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1_1);
+		fOutputList->Add(hPtInPrim);
+
+		hPtOut = new TH1D("hPtOut","pT all rec; pT; Nch",ptNbins,ptbins1_1);
+		fOutputList->Add(hPtOut);
+
+		hPtOutPrim = new TH1D("hPtOutPrim","pT prim rec; pT; Nch",ptNbins,ptbins1_1);
+		fOutputList->Add(hPtOutPrim);
+
+		hPtOutSec = new TH1D("hPtOutSec","pT sec rec; pT; Nch",ptNbins,ptbins1_1);
+		fOutputList->Add(hPtOutSec);
 	}
 
 	hNchTSRec = new TH1D("hNchTSRec","",3000,-0.5,2999.5);
@@ -296,7 +306,7 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 	fOutputList->Add(hRefMult08);
 
 	hV0Mmult = 0;
-	hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",10,0,100);   
+	hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",100,0,100);   
 	fOutputList->Add(hV0Mmult);
 
 	hRefMultvsV0Mmult = 0;
@@ -304,7 +314,7 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 	fOutputList->Add(hRefMultvsV0Mmult);
 
 	hV0MmultvsUE = 0;
-	hV0MmultvsUE = new TH2D("hV0MmultvsUE","V0M percentile vs NchTS; v0M percentile;N_{ch}^{TS}",10,0,100,3000,-0.5,2999.5);
+	hV0MmultvsUE = new TH2D("hV0MmultvsUE","V0M percentile vs NchTS; v0M percentile;N_{ch}^{TS}",100,0,100,3000,-0.5,2999.5);
 	fOutputList->Add(hV0MmultvsUE);
 
 	hRefmultvsUE = 0;
@@ -354,7 +364,7 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 	  hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_1[i]),"data pT vs nch_transverse",3000,-0.5,2999.5,ptNbins,ptbins1_1);
 	  fOutputList->Add(hPtVsNchData[i]);
 
-	  hPtVsUEvsNchData_V0M[i] = new TH3D(Form("hPtVsUEvsNchData_V0M_%s",NameReg_1[i]),"data pT vs nch_transverse vs mult",nTSBins_1,TSBins_1,ptNbins,ptbins1_1,nchNbins_3,nchbins_3);
+	  hPtVsUEvsNchData_V0M[i] = new TH3D(Form("hPtVsUEvsNchData_V0M_%s",NameReg_1[i]),"data pT vs nch_transverse vs mult",nTSBins_1,TSBins_1,ptNbins,ptbins1_1,nchNbins,nchbins_2);
 	  fOutputList->Add(hPtVsUEvsNchData_V0M[i]);
 
 	}
@@ -365,12 +375,12 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 	 hDphiVsNchData = new TH2D("hDphiVsNchData","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
 	 fOutputList->Add(hDphiVsNchData);
 
-	 hDphiVsUEvsNchData_V0M = new TH3D("hDphiVsUEvsNchData_V0M","Delta phi vs nch_transverse vs mult",nTSBins_1,TSBins_1,nDeltabins,Deltabins,nchNbins_3,nchbins_3);
+	 hDphiVsUEvsNchData_V0M = new TH3D("hDphiVsUEvsNchData_V0M","Delta phi vs nch_transverse vs mult",nTSBins_1,TSBins_1,nDeltabins,Deltabins,nchNbins,nchbins_2);
 	 fOutputList->Add(hDphiVsUEvsNchData_V0M);
 
-	 hV0MVsUEvsRef = 0;
-	 hV0MVsUEvsRef = new TH3D("hV0MVsUEvsRef","nch_transverse vs ref multiplicity vs V0M",nTSBins_1,TSBins_1,nchNbins_3,nchbins_3,nchNbins_3,nchbins_3);
-	 fOutputList->Add(hV0MVsUEvsRef);
+	 //hV0MVsUEvsRef = 0;
+	 //hV0MVsUEvsRef = new TH3D("hV0MVsUEvsRef","nch_transverse vs ref multiplicity vs V0M",nTSBins_1,TSBins_1,nchNbins_3,nchbins_3,nchNbins_3,nchbins_3);
+	 //fOutputList->Add(hV0MVsUEvsRef);
 
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -469,6 +479,8 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 	hRefMultvsV0Mmult->Fill(ftrackmult08,fv0mpercentile);
 	
 	//analysis
+	if (fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
+	  {
 	if(fIsMCclosure){
 		Double_t randomUE = gRandom->Uniform(0.0,1.0);
 		if(randomUE<0.5){// corrections (50% stat.)
@@ -481,7 +493,10 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 		else{// for testing the method
 			// KNO scaling
 			if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+			  {
 				GetMultiplicityDistributions();
+				GetBinByBinCorrections();
+			  }
 		}
 	}
 	else{
@@ -489,7 +504,10 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 			if(isGoodVtxPosMC){
 				// KNO scaling
 				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+				  {
 					GetDetectorResponse();
+					GetBinByBinCorrections();
+				  }
 			}
 		}
 		else{
@@ -500,6 +518,7 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 
 		}
 	}
+	  }
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
 
@@ -624,7 +643,9 @@ void AliAnalysisTaskMcKno::GetDetectorResponse() {
 
 	Int_t multTSgen=0;
 	Int_t multTSrec=0;
-
+	
+	//if (fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
+	//{
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		if(i==fGenLeadIn)
@@ -693,109 +714,118 @@ void AliAnalysisTaskMcKno::GetDetectorResponse() {
 
 	hNchResponse->Fill(multTSrec,multTSgen);
 
+	// }
+
 
 }
 //______________________________________________________________
 void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
+  
+  Int_t multTSrec=0;
+  Int_t multrec=0;
 
-	Int_t multTSrec=0;
-	Int_t multrec=0;
+  //if(fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
+  //{	
+      Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+      for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
-	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
-	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+	if(i==fRecLeadIn)
+	  continue;
 
-		if(i==fRecLeadIn)
-			continue;
+	AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
 
-		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+	if(!track) continue;
 
-		if(!track) continue;
+	if(!fTrackFilter->IsSelected(track))
+	  continue;
 
-		if(!fTrackFilter->IsSelected(track))
-			continue;
+	if(TMath::Abs(track->Eta()) > fEtaCut)
+	  continue;
 
-		if(TMath::Abs(track->Eta()) > fEtaCut)
-			continue;
+	if( track->Pt() < fPtMin)continue;
 
-		if( track->Pt() < fPtMin)continue;
+	Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
-		Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-
-		// definition of the topological regions
-		if(TMath::Abs(DPhi)<pi/3.0){// near side
-			continue;
-		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-			continue;
-		}
-		else{// transverse side
-			multTSrec++;
-		}
-
-		multrec++;
-
+	// definition of the topological regions
+	if(TMath::Abs(DPhi)<pi/3.0){// near side
+	  continue;
 	}
-	hNchTSData->Fill(multTSrec);
-	hNchData->Fill(multrec);
-	hV0MmultvsUE->Fill(fv0mpercentile,multTSrec);
-	hRefmultvsUE->Fill(ftrackmult08,multTSrec);
-
-	// Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
-	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
-
-		if(i==fRecLeadIn)
-			continue;
-
-		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
-
-		if(!track) continue;
-
-		if(!fLeadingTrackFilter->IsSelected(track))
-			continue;
-
-		if(TMath::Abs(track->Eta()) > fEtaCut)
-			continue;
-
-		if( track->Pt() < fPtMin)continue;
-
-		Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-
-		// definition of the topological regions
-		if(TMath::Abs(DPhi)<pi/3.0){// near side
-			hPtVsUEData[0]->Fill(multTSrec,track->Pt());
-			hPtVsNchData[0]->Fill(multrec,track->Pt());
-			hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-			hPtVsUEData[1]->Fill(multTSrec,track->Pt());
-			hPtVsNchData[1]->Fill(multrec,track->Pt());
-			hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);			
-		}
-		else{// transverse side
-			hPtVsUEData[2]->Fill(multTSrec,track->Pt());
-			hPtVsNchData[2]->Fill(multrec,track->Pt());
-			hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,track->Pt(),fv0mpercentile);
-		}
-
-		hDphiVsUEData->Fill(multTSrec,DPhi);
-		hDphiVsNchData->Fill(multrec,DPhi);
-		hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
-		hV0MVsUEvsRef->Fill(multTSrec,ftrackmult08,fv0mpercentile);
+	else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+	  continue;
 	}
+	else{// transverse side
+	  multTSrec++;
+	}
+
+	multrec++;
+
+      }
+      hNchTSData->Fill(multTSrec);
+      hNchData->Fill(multrec);
+	
+      hV0MmultvsUE->Fill(fv0mpercentile,multTSrec);
+      hRefmultvsUE->Fill(ftrackmult08,multTSrec);
+	
+
+      // Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
+      for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+	if(i==fRecLeadIn)
+	  continue;
+
+	AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+	if(!track) continue;
+
+	if(!fLeadingTrackFilter->IsSelected(track))
+	  continue;
+
+	if(TMath::Abs(track->Eta()) > fEtaCut)
+	  continue;
+
+	if( track->Pt() < fPtMin)continue;
+
+	Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+	// definition of the topological regions
+	if(TMath::Abs(DPhi)<pi/3.0){// near side
+	  hPtVsUEData[0]->Fill(multTSrec,track->Pt());
+	  hPtVsNchData[0]->Fill(multrec,track->Pt());
+	  hPtVsUEvsNchData_V0M[0]->Fill(multTSrec,track->Pt(),fv0mpercentile);
+	}
+	else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+	  hPtVsUEData[1]->Fill(multTSrec,track->Pt());
+	  hPtVsNchData[1]->Fill(multrec,track->Pt());
+	  hPtVsUEvsNchData_V0M[1]->Fill(multTSrec,track->Pt(),fv0mpercentile);			
+	}
+	else{// transverse side
+	  hPtVsUEData[2]->Fill(multTSrec,track->Pt());
+	  hPtVsNchData[2]->Fill(multrec,track->Pt());
+	  hPtVsUEvsNchData_V0M[2]->Fill(multTSrec,track->Pt(),fv0mpercentile);
+	}
+
+	hDphiVsUEData->Fill(multTSrec,DPhi);
+	hDphiVsNchData->Fill(multrec,DPhi);
+	hDphiVsUEvsNchData_V0M->Fill(multTSrec,DPhi,fv0mpercentile);
+      
+      }
+      //}
 
 }
 //____________________________________________________________
 void AliAnalysisTaskMcKno::GetMultiplicityDistributions(){
 
+   
 	Int_t multTSgen=0;
 	Int_t multTSrec=0;
 
 	Int_t multgen = 0;
 	Int_t multrec = 0;
+	//if(fv0mpercentile>fV0Mmin && fv0mpercentile<=fV0Mmax)
+	//{
+	    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
-	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
-
-		if(i==fGenLeadIn)
+	      if(i==fGenLeadIn)
 			continue;
 
 		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
@@ -932,6 +962,7 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributions(){
 		hDphiVsUERecTest->Fill(multTSrec,DPhi);
 		hDphiVsNchRecTest->Fill(multrec,DPhi);
 	}
+	// }
 
 
 }

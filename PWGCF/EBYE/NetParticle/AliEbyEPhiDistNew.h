@@ -19,7 +19,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2020/02/27)                      //
+//                         (Last Modified 2020/03/17)                      //
 //                                                                         //
 //=========================================================================//
 
@@ -70,12 +70,15 @@ public:
     void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
         fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta;
     }
-    void SetPhi(Double_t Philow, Double_t PhiMax) // i added
-    {
-        fPhiMin = Philow ; fPhiMax = PhiMax ;
-    }
     
     void SetNumberOfPtBins(Int_t nPtBins){ fNptBins = nPtBins;}
+    
+    void SetPhi(Double_t phil, Double_t phih) // i added
+    {
+        fPhiMin = phil ; fPhiMax = phih ;
+    }
+    
+    void SetNumberOfPhiBins(Int_t nPhiBins){fNphiBins = nPhiBins;}
     
     void SetTPCTrackQualityCuts( Int_t NcrossRows, Double_t Chi2NDF){
         fNcrossRows = NcrossRows; fChi2NDF = Chi2NDF;
@@ -97,12 +100,14 @@ public:
     
 private:
     TList           *fThnList;       //!
-    Double_t        *fPtArray;       //pt array
-    TClonesArray    *fArrayMC;       // AOD MC stack
-    AliESDtrackCuts *fESDtrackCuts;  // ESD Track Cuts
-    AliMCEvent      *fMCEvent;       // Current MC Event
-    AliStack        *fMCStack;       // Stak tree
-    AliAnalysisUtils *fanaUtils;     //using for pileup check
+    AliVEventHandler    *fInputHandler;  //! for Event handler
+    AliMCEventHandler   *fMCEventHandler;         //! for MC event handler---
+    AliVEvent 	      *fVevent;        //! V event
+    TClonesArray    *fArrayMC;       //! AOD MC stack
+    AliESDtrackCuts *fESDtrackCuts;  //! ESD Track Cuts
+    AliMCEvent      *fMCEvent;       //! Current MC Event
+    AliStack        *fMCStack;       //! Stak tree
+    AliEventCuts        *fEventCuts;      //!using for pileup check
     TString          fRun;           //Run  production name
     TString          fCentralityEstimator;   // "V0M","TRK","CL1"
     
@@ -115,9 +120,10 @@ private:
     Double_t   fPtMax;                        // Pt Maximum
     Double_t   fEtaMin;                       // Eta Minimum
     Double_t   fEtaMax;                       // Eta Maximum
-    Double_t   fPhiMin;                       //Phi Min i added
-    Double_t   fPhiMax;                       //Phi MAx
     Int_t      fNptBins;                     //pt bin numbers
+    Double_t   fPhiMin;                       //phi minimum
+    Double_t   fPhiMax;                      //phi maximum
+    Int_t      fNphiBins;                    //phi bin numbers
     Double_t   fDcaXy;                        // DCA Xy
     Double_t   fDcaZ;                         // DCA Z
     Int_t      fNcrossRows;                   //TPC nCross rows
@@ -134,8 +140,8 @@ private:
     TH1D         *fEventCounter;  //!
     TH1F         *fHistCent;      //!
     
-    TH2F  *fHitCentRec[2];
-    TH2F  *fHitCentGen[2];
+    TH2F  *fHitCentRec[2];          //!
+    TH2F  *fHitCentGen[2];           //!
     
     TH2F  *fHistERec[2][3];         //! Reconstructed Plus
     TH2F  *fHistERecPri[2][3];      //! Reconstructed Primary Plus
@@ -146,7 +152,7 @@ private:
     TH2F  *fHistCMisId[2][3];       //!
     
     AliPIDResponse   *fPIDResponse;              //! Ptr to PID response Object
-    AliPIDCombined   *fPIDCombined;              //
+    AliPIDCombined   *fPIDCombined;              //!
     
     Int_t            fPidType;                  // 0=charge, 1=pion, 2=kaon, 3=proton
     Int_t            fMcPid;                    // MC PDG PID
@@ -168,8 +174,11 @@ private:
     
     
     TH2F *fHistTPC; //!
+    TH2F *fHistTPCAf; //!
     TH2F *fHistTOF; //!
+    TH2F *fHistTOFAf; //!
     TH2F *fHistITS; //!
+    TH2F *fHistITSAf; //!
     
     TH2F *fHistTPCc; //!
     TH2F *fHistTOFc; //!
@@ -187,9 +196,9 @@ private:
     TH2F *fHistNsTOFc; //!
     TH2F *fHistNsITSc; //!
     
-    THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChTruth;
-    THnSparse *fTHnCentNplusNminusCh;
+    THnSparse *fPtBinNplusNminusCh;         //!
+    THnSparse *fPtBinNplusNminusChTruth;    //!
+    THnSparse *fTHnCentNplusNminusCh;        //!
     
     enum EbyEPIDType_t { kNSigmaTPC = 0, kNSigmaTOF, kNSigmaTPCTOF, kBayes };
     enum EbyEDetectorType_t { kITS = 0, kTPC,  kTOF,  kNDetectors };
@@ -204,14 +213,14 @@ private:
     Bool_t   AcceptTrackLMC(AliVParticle *particle) const; //
     Bool_t   AcceptTrackL(AliVTrack *track) const; //
     Int_t    GetPtBin(Double_t pt); //to get the bin number of the pt
+    Int_t    GetPhiBin(Double_t Phi);
     void     LocalPost(); //
-    void     CreateEffCont();
+    void     CreatePhiHist();
     
     //________________________________
     AliEbyEPhiDistNew(const AliEbyEPhiDistNew&);
     AliEbyEPhiDistNew& operator = (const AliEbyEPhiDistNew&);
-    ClassDef(AliEbyEPhiDistNew, 1);
+    ClassDef(AliEbyEPhiDistNew, 2);
 };
 
 #endif
-
