@@ -25,7 +25,6 @@
 
 #include "AliForwardSettings.h"
 #include "AliForwardNUATask.h"
-
 #include <iostream>
 
 /**
@@ -148,11 +147,23 @@ public:
       else weight = 0.;
     }
     if (fSettings.seccorr_cent){
-      Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
-      Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
-      Double_t factor = fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
-      if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
-      else weight = 0.;      
+      if (fSettings.XeXe){
+        Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
+        Int_t seccent = 1;
+        if (cent < 10) seccent = 2;
+        if (cent > 10) seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent+10);
+
+        Double_t factor = fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+        if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
+        else weight = 0.; 
+      }
+      else{
+        Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
+        Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
+        Double_t factor = fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+        if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
+        else weight = 0.;      
+      }
     }
     return weight;
   }

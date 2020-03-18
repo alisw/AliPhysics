@@ -245,6 +245,7 @@ class AliForwardSettings : public TObject {
   TString nue_file;
   TString sec_file;
   TString sec_cent_file;
+  Bool_t XeXe;
 
 private:
   ClassDef(AliForwardSettings, 1);
