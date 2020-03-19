@@ -1149,10 +1149,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
 
     Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
-    if (fPdgMeson == 4122 && fLctoV0) passAllCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+    if (fPdgMeson == 4122 && fLctoV0) passAllCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if (fPdgMeson == 4122){
-      if(fLctoV0) passTopolCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+      if(fLctoV0) passTopolCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
       else  passTopolCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
     }
     if (fPdgMeson != 431 && passTopolCuts==0) continue;
