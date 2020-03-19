@@ -8430,7 +8430,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17i3b1") == 0 ||
             namePeriod.CompareTo("LHC17i3b2") == 0 ||
             namePeriod.CompareTo("LHC17i3c1") == 0 ||
-            namePeriod.CompareTo("LHC17i3c2") == 0 ) return kPP13T16P1JJTrigger;
+            namePeriod.CompareTo("LHC17i3c2") == 0 ||
+            namePeriod.CompareTo("LHC20b1b1") == 0 ||
+            namePeriod.CompareTo("LHC20b1b2") == 0 ||
+            namePeriod.CompareTo("LHC20b1c1") == 0 ||
+            namePeriod.CompareTo("LHC20b1c2") == 0 ) return kPP13T16P1JJTrigger;
   // pp 13 TeV 2016 HF prods
   else if ( namePeriod.CompareTo("LHC17h8a") == 0 )     return k17h8a;
   else if ( namePeriod.CompareTo("LHC17h8b") == 0 )     return k17h8b;
