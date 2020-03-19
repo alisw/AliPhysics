@@ -93,6 +93,8 @@ private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
+  
+  Int_t fEventCount = 0; //! event count
 
   // Output TTree
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
@@ -115,7 +117,7 @@ private:
     Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
     // Event data
     Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
-    ULong64_t fEventId = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
+    ULong64_t fGlobalBC = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
     // Primary vertex position
     Float_t  fX = -999.f;       /// Primary vertex x coordinate
     Float_t  fY = -999.f;       /// Primary vertex y coordinate
@@ -140,7 +142,7 @@ private:
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
   struct {
-    ULong64_t fEventId = 0u;     /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
+    ULong64_t fGlobalBC = 0u;     /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
     ULong64_t fTriggerMask = 0u; /// Trigger class mask
   } trigger; //! structure to keep trigger-related info
   
