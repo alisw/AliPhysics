@@ -166,6 +166,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TH2 *fFMDV0C_post; //!
   TH2 *fOutliers;    //!
 
+  TH1D* fCentrality_before;//!
   TH1D* fCentrality;//!
   TH1D* fVertex;//!
 

@@ -77,19 +77,19 @@ Bool_t AliForwardFlowUtil::PbPb_lowIR_Run(Int_t runnumber){
 Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
 
   if (fSettings.run_list == 0){
-    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
     for (Int_t i = 0; i < 17; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }
   }
   if (fSettings.run_list == 1){
-    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
     for (Int_t i = 0; i < 13; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }  
   }
   if (fSettings.run_list == 2){
-    Double_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
+    Int_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
     for (Int_t i = 0; i < 4; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }   
@@ -100,7 +100,7 @@ Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
 
 Bool_t AliForwardFlowUtil::pPb_Run(Int_t runnumber){
 
-  Double_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
+  Int_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
                              265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
                              265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
                              265385, 265420, 265424, 265427, 265501};
@@ -341,7 +341,7 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
-  if ((centrality_estimator == "V0A") & this->pPb_Run(fSettings.runnumber)){
+  if (((centrality_estimator == "V0A") & this->pPb_Run(fSettings.runnumber))& fSettings.mc){
     AliVVZERO* fvzero = this->fevent->GetVZEROData();
     Float_t sum = 0., max = 0.;
     for(Int_t i = 32; i < 64; ++i){
@@ -353,7 +353,12 @@ Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
   }
   AliMultSelection *MultSelection;
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
-  return MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Double_t centrality = MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Int_t qual = MultSelection->GetEvSelCode();
+  if (qual == 199)  centrality = -999;
+  if (centrality < 0. || centrality > 100. - 0.0000001)   return -1;
+
+  return centrality;
 }
 
 
