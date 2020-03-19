@@ -41,6 +41,8 @@ AliAnalysisTaskTrackingSysPropagation *AddTaskTrackingSysPropagation(Int_t syste
   else if(ch==AliAnalysisTaskTrackingSysPropagation::kD0toKpi) analysiscuts = (AliRDHFCuts*)filecuts->Get("D0toKpiCuts");
   else if(ch==AliAnalysisTaskTrackingSysPropagation::kLctopK0s) analysiscuts = (AliRDHFCuts*)filecuts->Get("LctoK0spCuts");
   else if(ch==AliAnalysisTaskTrackingSysPropagation::kLctopKpi) analysiscuts = (AliRDHFCuts*)filecuts->Get("LctopKpiAnalysisCuts");
+  else if(ch==AliAnalysisTaskTrackingSysPropagation::kLctopKpiFromSc) analysiscuts = (AliRDHFCuts*)filecuts->Get("XictopKpiProdCuts");
+   
   else analysiscuts = (AliRDHFCuts*)filecuts->Get("AnalysisCuts");
     
   TFile* fileMESys;
