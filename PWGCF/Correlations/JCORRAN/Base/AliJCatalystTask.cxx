@@ -291,10 +291,10 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if(fPcharge == 1)
 						continue;
 				}else
-				if(ch > 0){
-					if(fPcharge == -1)
-						continue;
-				}else continue;
+					if(ch > 0){
+						if(fPcharge == -1)
+							continue;
+					}else continue;
 
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel(track->GetLabel());
@@ -326,10 +326,10 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if(fPcharge == 1)
 						continue;
 				}else
-				if(ch > 0){
-					if(fPcharge == -1)
-						continue;
-				}else continue;
+					if(ch > 0){
+						if(fPcharge == -1)
+							continue;
+					}else continue;
 
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
@@ -341,7 +341,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 		}
 	} //read aod reco track done.
 	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
-    
+
 }
 //______________________________________________________________________________
 Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
@@ -464,7 +464,7 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event){
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
-			
+
 	}
 
 	return kTRUE;
@@ -514,23 +514,23 @@ Bool_t AliJCatalystTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 //______________________________________________________________________________
 void AliJCatalystTask::SetEffConfig( int effMode, int FilterBit)
 {
-        fEffMode = effMode;
-        switch(FilterBit){
-        case 128:
-                fEffFilterBit = 0;
-                break;
-        case 96:
-                fEffFilterBit = 4;
-                break;
-        case 768:
-                fEffFilterBit = 5;
-                break;
-        default:
-                fEffFilterBit = 0;
-                break;
-        }
-        cout << "setting to EffCorr Mode : " << effMode << endl;
-        cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
+	fEffMode = effMode;
+	switch(FilterBit){
+		case 128:
+			fEffFilterBit = 0;
+			break;
+		case 96:
+			fEffFilterBit = 4;
+			break;
+		case 768:
+			fEffFilterBit = 5;
+			break;
+		default:
+			fEffFilterBit = 0;
+			break;
+	}
+	cout << "setting to EffCorr Mode : " << effMode << endl;
+	cout << "setting to EffCorr Filter bit : " << FilterBit  << " = " << fEffFilterBit << endl;
 }
 //______________________________________________________________________________
 void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
@@ -567,10 +567,10 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 				if(fPcharge == 1)
 					continue;
 			}else
-			if(ch > 0){
-				if(fPcharge == -1)
-					continue;
-			}else continue;
+				if(ch > 0){
+					if(fPcharge == -1)
+						continue;
+				}else continue;
 			if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 			Int_t label = track->GetLabel();
@@ -596,33 +596,33 @@ void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList,
 	for (Int_t it = 0; it < nt; it++) {
 		TParticle* track = stack->Particle(it); if(!track) continue;
 		if (!AliPWG0Helper::IsPrimaryCharged(track, nt)) continue; 
-			double Pt = track->Pt();
-			if( Pt < fPt_min || Pt > fPt_max )
-				continue ; // pt cut
-			Int_t pdg = track->GetPdgCode();
-			Char_t ch = (Char_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
-			if(ch < 0){
-				if(fPcharge == 1)
-					continue;
-			}else
+		double Pt = track->Pt();
+		if( Pt < fPt_min || Pt > fPt_max )
+			continue ; // pt cut
+		Int_t pdg = track->GetPdgCode();
+		Char_t ch = (Char_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+		if(ch < 0){
+			if(fPcharge == 1)
+				continue;
+		}else
 			if(ch > 0){
 				if(fPcharge == -1)
 					continue;
 			}else continue;
-			if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
-			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
-			Int_t label = 100;//track->GetLabel();
-			itrack->SetLabel( label );
-			itrack->SetParticleType(pdg);
-			itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
-			itrack->SetCharge(ch) ;
-			if(TMath::Abs(track->Eta()) < 0.8) {
-				AliJBaseTrack *jtrack =  new ((*TrackListALICE)[TrackListALICE->GetEntriesFast()])AliJBaseTrack;
-				jtrack->SetLabel( label );
-				jtrack->SetParticleType(pdg);
-				jtrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
-				jtrack->SetCharge(ch) ;
-			}
+		if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
+		AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
+		Int_t label = 100;//track->GetLabel();
+		itrack->SetLabel( label );
+		itrack->SetParticleType(pdg);
+		itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
+		itrack->SetCharge(ch) ;
+		if(TMath::Abs(track->Eta()) < 0.8) {
+			AliJBaseTrack *jtrack =  new ((*TrackListALICE)[TrackListALICE->GetEntriesFast()])AliJBaseTrack;
+			jtrack->SetLabel( label );
+			jtrack->SetParticleType(pdg);
+			jtrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
+			jtrack->SetCharge(ch) ;
+		}
 	}
 }
 
@@ -640,8 +640,8 @@ double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {
 UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TString listName){
 	DefineInput(inputIndex,TList::Class());
 
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-		
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
 	TString containerName = Form("CorrectionMap-%u",fname.Hash());
 	cout<<"Container: "<<containerName<<endl;
 
@@ -652,10 +652,10 @@ UInt_t AliJCatalystTask::ConnectInputContainer(const TString fname, const TStrin
 		TFile *pfile = TFile::Open(fname);
 		TList *plist = (TList*)pfile->Get(listName);
 		pCorrMapCont = mgr->CreateContainer(containerName,
-			TList::Class(),AliAnalysisManager::kInputContainer);
+				TList::Class(),AliAnalysisManager::kInputContainer);
 		pCorrMapCont->SetData(plist);
 	}
-	
+
 	mgr->ConnectInput(this,inputIndex,pCorrMapCont);
 
 	return inputIndex++;
