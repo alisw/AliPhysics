@@ -848,6 +848,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       if(fReconMethod!=2 && fReconMethod!=5) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
       if(fDoPiZeroGammaAngleCut) fHistoMotherAngleCutRejectedInvMassPt[iCut]->Sumw2();
       if(fReconMethod<2) fHistoPhotonPairMatchedInvMassPt[iCut]->Sumw2();
+    }
+    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
+      fHistoMotherSwappingBackInvMassPt[iCut]->Sumw2();
+      fHistoMotherSwappingBackInvMassECalib[iCut]->Sumw2();
+    }
+    else {
       fHistoDiffPi0SameGammaBackInvMassPt[iCut]->Sumw2();
       fHistoSamePi0DiffGammaBackInvMassPt[iCut]->Sumw2();
     }
@@ -2123,9 +2129,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
 
         if(gamma2 && pi0){
           fHistoMCOmegaDecayChannels[fiCut]->Fill(1,fWeightJetJetMC);
-          fHistoMCAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((particle->E())*(particle->E())-(particle->P())*(particle->P())),particle->Pt(),fWeightJetJetMC);
+          fHistoMCAllOmegaInvMassPt[fiCut]->Fill(((particle->GetCalcMass()) ? particle->GetCalcMass() : particle->M()),particle->Pt(),fWeightJetJetMC);
           fHistoMCGammaFromAllOmegaPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
-          fHistoMCPi0FromAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((pi0->E())*(pi0->E())-(pi0->P())*(pi0->P())),pi0->Pt(),fWeightJetJetMC);
+          fHistoMCPi0FromAllOmegaInvMassPt[fiCut]->Fill( ((pi0->GetCalcMass()) ? pi0->GetCalcMass() : pi0->M()),pi0->Pt(),fWeightJetJetMC);
           if(fDoMesonQA>0){
             fHistoMCPi0FromAllOmegaEtaPhi[fiCut]->Fill(pi0->Phi(),pi0->Eta(),fWeightJetJetMC);
             fHistoMCAllOmegaPtPi0Pt[fiCut]->Fill(particle->Pt(),pi0->Pt(),fWeightJetJetMC);
@@ -4391,7 +4397,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
             for(auto kCurrentClusterCandidates  : *fPi0Candidates){
               if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentClusterCandidates) ){ continue;}
 
-              std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(currentEventGoodPhotonRotation.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentClusterCandidates), currentEventGoodPhotonRotation.get()));
 
               if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton.Phi(), fInputEvent)) && lvRotationPhoton.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
               {
