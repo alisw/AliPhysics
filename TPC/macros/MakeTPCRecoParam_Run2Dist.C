@@ -237,7 +237,30 @@ void MakeTPCRecoParam_Run2Dist(const char* storage="local://OCDB", AliRecoParam:
       defaultIsSet = kTRUE;
     }
   }
-  
+
+
+  // set lambda OCDB as used first time for the LHC18q and LHC18r
+  for(int i=0;i<4;i++){
+    AliTPCRecoParam *r = (AliTPCRecoParam *)recoParamArray->UncheckedAt(i);
+    if (!r) continue;
+         r->SetCrosstalkCorrection(.30000000000000000000);
+         r->SettUseClusterErrordEdxMultCorrection(1);
+         r->SettUseClusterErrordEdxCorrection(1);
+         r->SetMissingClusterdEdxFraction(.10000000000000000000);
+         r->SetIonTailCorrection(1.20000000000000000000);
+         r->SetIonTailCorrectionTimeScale(1.10000000000000000000);
+         r->SetUseIonTailCorrection(1.20000000000000000000>0);
+         r->SetClusterNSigma2Cut(1,0,9.61000000000000000000);
+         r->SetClusterNSigma2Cut(1,1,9.61000000000000000000);
+         r->SetClusterErrorMatrixElement(0,2,.05000000000000000000);
+         r->SetClusterErrorMatrixElement(1,2,.05000000000000000000);
+         r->SetClusterErrorMatrixElement(0,3,.23000000000000000000);
+         r->SetClusterErrorMatrixElement(1,3,.46000000000000000000);
+         r->SetClusterErrorMatrixElement(2,3,.00810000000000000000);
+         r->SetClusterErrorMatrixElement(3,3,.00810000000000000000);
+  }
+
+
   if (!defaultIsSet) {
     Error(macroname,"The default reconstruction parameters are not set! Exiting...");
     return;
@@ -246,7 +269,7 @@ void MakeTPCRecoParam_Run2Dist(const char* storage="local://OCDB", AliRecoParam:
   // save in CDB storage
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Marian Ivanov");
-  md->SetComment("Reconstruction parameters TPC, as used for Run2 data with distortions");
+  md->SetComment("Reconstruction parameters TPC, as used for Run2 data with distortions. Patched version with modification for LHC18q and LHC18r");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
   AliCDBId id("TPC/Calib/RecoParam",0,AliCDBRunRange::Infinity());
