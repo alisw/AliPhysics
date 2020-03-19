@@ -569,6 +569,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fListCounter->SetOwner(kTRUE);
   fListCounter->SetName("NormCounter");
   fCounter = new AliNormalizationCounter("norm_counter");
+  fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
   fListCounter->Add(fCounter);
   
@@ -1297,7 +1298,34 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     return;
   }
   
-  fCounter->StoreEvent(aod,fEvSelectionCuts,fReadMC);
+  // AOD primary vertex
+  AliAODVertex *vtx = (AliAODVertex*)aod->GetPrimaryVertex();
+  fNcontributors = vtx->GetNContributors();
+  fzVtxReco = vtx->GetZ();
+  fNtracks = aod->GetNumberOfTracks();
+  fRunNumber=aod->GetRunNumber();
+
+  //n tracklets
+  AliAODTracklets* tracklets=aod->GetTracklets();
+  Int_t nTr=tracklets->GetNumberOfTracklets();
+  Int_t countTreta1=0;
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    Double_t theta=tracklets->GetTheta(iTr);
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    if(eta>-1.0 && eta<1.0) countTreta1++;//count at central rapidity
+  }
+  fnTracklets=countTreta1;
+  fnTrackletsCorr = -1.;
+
+  TProfile *estimatorAvg = fMultEstimatorAvg[GetPeriod(aod)];
+  if (fCorrNtrVtx && estimatorAvg)
+    fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, countTreta1, vtx->GetZ(), fRefMult));
+  TProfile *estimatorAvgSHM = fMultEstimatorAvgSHM[GetPeriod(aod)];
+  if (fCorrNtrVtx && estimatorAvgSHM)
+    fnTrackletsCorrSHM = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
+
+  fCounter->StoreEvent(aod,fEvSelectionCuts,fReadMC,fnTrackletsCorr);
+
   Bool_t isEvSel=fEvSelectionCuts->IsEventSelected(aod);
       
   if(fEvSelectionCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
@@ -1344,11 +1372,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     return; //cut only centrality and physics selection if enabled, else tag only
   }
   if(isEvSel) fNentries->Fill(4);
-  // AOD primary vertex
-  AliAODVertex *vtx = (AliAODVertex*)aod->GetPrimaryVertex();
-  fNcontributors = vtx->GetNContributors();
-  fzVtxReco = vtx->GetZ();
-  fNtracks = aod->GetNumberOfTracks();
   fIsEvRej = fEvSelectionCuts->GetEventRejectionBitMap();
     
   auto trig_mask_cuts = fEvSelectionCuts->GetTriggerMask();
@@ -1366,26 +1389,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fIsEvRej_HighMultV0 = fEvSelectionCuts->GetEventRejectionBitMap();
     
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
-  
-  fRunNumber=aod->GetRunNumber();
-  //n tracklets
-  AliAODTracklets* tracklets=aod->GetTracklets();
-  Int_t nTr=tracklets->GetNumberOfTracklets();
-  Int_t countTreta1=0;
-  for(Int_t iTr=0; iTr<nTr; iTr++){
-    Double_t theta=tracklets->GetTheta(iTr);
-    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-    if(eta>-1.0 && eta<1.0) countTreta1++;//count at central rapidity
-  }
-  fnTracklets=countTreta1;
-  fnTrackletsCorr = -1.;
-  TProfile *estimatorAvg = fMultEstimatorAvg[GetPeriod(aod)];
-  if (fCorrNtrVtx && estimatorAvg)
-    fnTrackletsCorr = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, countTreta1, vtx->GetZ(), fRefMult));
-  TProfile *estimatorAvgSHM = fMultEstimatorAvgSHM[GetPeriod(aod)];
-  if (fCorrNtrVtx && estimatorAvgSHM)
-    fnTrackletsCorrSHM = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvgSHM, countTreta1, vtx->GetZ(), fRefMultSHM));
-  
+
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
   Double_t vzeroA = vzeroAOD ? vzeroAOD->GetMTotV0A() : 0.;
