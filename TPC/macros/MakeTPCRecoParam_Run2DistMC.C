@@ -237,7 +237,27 @@ void MakeTPCRecoParam_Run2DistMC(const char* storage="local://OCDB", AliRecoPara
       defaultIsSet = kTRUE;
     }
   }
-  
+  // set lambda OCDB as used first time for the LHC18q and LHC18r
+  for(int i=0;i<4;i++){
+    AliTPCRecoParam *r = (AliTPCRecoParam *)recoParamArray->UncheckedAt(i);
+    if (!r) continue;
+         r->SetCrosstalkCorrection(.30000000000000000000);
+         r->SettUseClusterErrordEdxMultCorrection(1);
+         r->SettUseClusterErrordEdxCorrection(1);
+         r->SetMissingClusterdEdxFraction(.10000000000000000000);
+         r->SetIonTailCorrection(1.20000000000000000000);
+         r->SetIonTailCorrectionTimeScale(1.10000000000000000000);
+         r->SetUseIonTailCorrection(1.20000000000000000000>0);
+         r->SetClusterNSigma2Cut(1,0,9.61000000000000000000);
+         r->SetClusterNSigma2Cut(1,1,9.61000000000000000000);
+         r->SetClusterErrorMatrixElement(0,2,.05000000000000000000);
+         r->SetClusterErrorMatrixElement(1,2,.05000000000000000000);
+         r->SetClusterErrorMatrixElement(0,3,.23000000000000000000);
+         r->SetClusterErrorMatrixElement(1,3,.46000000000000000000);
+         r->SetClusterErrorMatrixElement(2,3,.00810000000000000000);
+         r->SetClusterErrorMatrixElement(3,3,.00810000000000000000);
+  }
+
   if (!defaultIsSet) {
     Error(macroname,"The default reconstruction parameters are not set! Exiting...");
     return;
