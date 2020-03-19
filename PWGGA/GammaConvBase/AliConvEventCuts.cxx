@@ -3726,7 +3726,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            }
         } else if ( fPeriodEnum == kLHC20b1b2 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 22, 10000};
-          Double_t weightsBins[6]      = { 0.0448228, 0.0388829, 0.0366336, 0.0278004, 0.0175832, 0.0241481};
+          Double_t weightsBins[6]      = { 0.0318163, 0.0280099, 0.0271878, 0.0208271, 0.0130291, 0.0181411};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
@@ -3746,7 +3746,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC20b1c2 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-          Double_t weightsBins[8]      = { 0.000771445, 0.00170422, 0.00183904, 0.00185169, 0.0014099, 0.00103708, 0.000604256, 0.000494368};
+          Double_t weightsBins[8]      = { 0.000528778, 0.00121486, 0.00132257, 0.00132752, 0.00102868, 0.000741674, 0.000437791, 0.000350834};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 8) weight = weightsBins[bin];
@@ -3766,7 +3766,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
       } else if ( fPeriodEnum == kLHC18l6c2 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-         Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+         Double_t weightsBins[8]      = { 0.000583836, 0.00124525 ,0.00133701, 0.00132045 , 0.0010136  , 0.000738478  , 0.00043112 , 0.00035756 };
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 8) weight = weightsBins[bin];
@@ -3786,7 +3786,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
        } else if ( fPeriodEnum == kLHC18l6b2 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
-          Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+          Double_t weightsBins[6]      = { 0.0343221 , 0.0287842  ,0.0282014 , 0.0207503 , 0.0132192  , 0.0180455};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
@@ -3806,7 +3806,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC19i3b2 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
-          Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+          Double_t weightsBins[6]      = { 0.0343118 , 0.0287709  ,0.028205 , 0.0207509 , 0.0132104  , 0.0180347};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
@@ -3816,7 +3816,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC19i3c1 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-          Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+          Double_t weightsBins[8]      = { 0.000810919, 0.0017328 ,0.00185665, 0.00183507 , 0.00140593  , 0.00102492  , 0.000597323 , 0.000494353 };
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 8) weight = weightsBins[bin];
@@ -3826,7 +3826,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           }
         } else if ( fPeriodEnum == kLHC19i3c2 ){ // preliminary weights obtained from local running
           Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-          Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+          Double_t weightsBins[8]      = { 0.000583836, 0.00124525 ,0.00133701, 0.00132045 , 0.0010136  , 0.000738478  , 0.00043112 , 0.00035756 };
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 8) weight = weightsBins[bin];
@@ -4297,7 +4297,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
        }
       } else if ( fPeriodEnum == kLHC20b1b2 ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 22, 10000};
-        Double_t weightsBins[6]      = { 0.0448228, 0.0388829, 0.0366336, 0.0278004, 0.0175832, 0.0241481};
+        Double_t weightsBins[6]      = { 0.0318163, 0.0280099, 0.0271878, 0.0208271, 0.0130291, 0.0181411};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 6) weight = weightsBins[bin];
@@ -4317,7 +4317,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC20b1c2 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-         Double_t weightsBins[8]      = { 0.000771445, 0.00170422, 0.00183904, 0.00185169, 0.0014099, 0.00103708, 0.000604256, 0.000494368};
+         Double_t weightsBins[8]      = { 0.000528778, 0.00121486, 0.00132257, 0.00132752, 0.00102868, 0.000741674, 0.000437791, 0.000350834};
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 8) weight = weightsBins[bin];
@@ -4375,7 +4375,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC18l6c2 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-         Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+         Double_t weightsBins[8]      = { 0.000583836, 0.00124525 ,0.00133701, 0.00132045 , 0.0010136  , 0.000738478  , 0.00043112 , 0.00035756 };
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 8) weight = weightsBins[bin];
@@ -4395,7 +4395,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC18l6b2 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
-         Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+         Double_t weightsBins[6]      = { 0.0343221 , 0.0287842  ,0.0282014 , 0.0207503 , 0.0132192  , 0.0180455};
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 6) weight = weightsBins[bin];
@@ -4415,7 +4415,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC19i3b2 ){ // preliminary weights obtained from local running
          Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
-         Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+         Double_t weightsBins[6]      = { 0.0343118 , 0.0287709  ,0.028205 , 0.0207509 , 0.0132104  , 0.0180347};
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 6) weight = weightsBins[bin];
@@ -4425,7 +4425,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
          }
       } else if ( fPeriodEnum == kLHC19i3c1 ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-        Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+        Double_t weightsBins[8]      = { 0.000810919, 0.0017328 ,0.00185665, 0.00183507 , 0.00140593  , 0.00102492  , 0.000597323 , 0.000494353 };
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 8) weight = weightsBins[bin];
@@ -4435,7 +4435,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
       } else if ( fPeriodEnum == kLHC19i3c2 ){ // preliminary weights obtained from local running
         Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
-        Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+        Double_t weightsBins[8]      = { 0.000583836, 0.00124525 ,0.00133701, 0.00132045 , 0.0010136  , 0.000738478  , 0.00043112 , 0.00035756 };
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 8) weight = weightsBins[bin];
