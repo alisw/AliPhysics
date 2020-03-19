@@ -18,7 +18,7 @@ class TH2F;
 
 class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
  public:
-  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kLctopKpi,kLctopK0s};
+  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kLctopKpi,kLctopK0s,kLctopKpiFromSc};
 
   AliAnalysisTaskTrackingSysPropagation();
   AliAnalysisTaskTrackingSysPropagation(DecChannel ch, AliRDHFCuts* cuts, TH1F *HistMESys, TH1F *HistTrEffSys, TH1F *HistMESysPr=0x0);
