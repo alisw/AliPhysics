@@ -396,8 +396,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
 
-  OpenFile(1);
   if (fSaveTrees) {
+    OpenFile(1);
     fRTree = new TTree("RTree", "Reconstructed nuclei");
     fRTree->Branch("RLightNucleus", &fRecNucleus);
     PostData(2, fRTree);
