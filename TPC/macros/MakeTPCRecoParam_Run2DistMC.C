@@ -266,7 +266,7 @@ void MakeTPCRecoParam_Run2DistMC(const char* storage="local://OCDB", AliRecoPara
   // save in CDB storage
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Marian Ivanov");
-  md->SetComment("Reconstruction parameters TPC, as used for Run2 data with distortions");
+  md->SetComment("Reconstruction parameters TPC, as used for Run2 data with distortions.Patched version with modification for LHC18q and LHC18r");
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetBeamPeriod(0);
   AliCDBId id("TPC/Calib/RecoParam",227735,AliCDBRunRange::Infinity());
