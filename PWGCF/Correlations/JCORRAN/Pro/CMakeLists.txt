@@ -50,6 +50,7 @@ set(SRCS
 	AliJJetJtTask.cxx
 	AliJJetTask.cxx
 	AliAnalysisTaskRidge.cxx
+	AliJPtHardXection.cxx
 )
 
 if(FASTJET_FOUND)
