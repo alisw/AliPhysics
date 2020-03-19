@@ -263,6 +263,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17i3b2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in DCal/PHOS acc.
         kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in EMCal acc.
         kLHC17i3c2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in DCal/PHOS acc.
+        kLHC20b1b1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in EMCal acc. new prod.
+        kLHC20b1b2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in DCal/PHOS acc. new prod.
+        kLHC20b1c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in EMCal acc. new prod.
+        kLHC20b1c2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in DCal/PHOS acc. new prod.
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
