@@ -1923,7 +1923,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       if ( fPartInCone == kNeutralAndCharged )
       {
         fhConeSumPtUESubTrackCent  = new TH3F
-        ("hConePtSumUESubTrack",
+        ("hConePtSumUESubTrackCent",
          Form("Track #Sigma #it{p}_{T},#it{R}=%2.2f, UE correction",fConeSize),
          nptbins,ptmin,ptmax, nptsumbinsUESub,ptsumminUESub,ptsummaxUESub, fNCentBins,0,100);
         fhConeSumPtUESubTrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
