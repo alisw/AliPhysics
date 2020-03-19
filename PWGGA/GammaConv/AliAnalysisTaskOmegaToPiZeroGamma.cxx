@@ -4397,7 +4397,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
             for(auto kCurrentClusterCandidates  : *fPi0Candidates){
               if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentClusterCandidates) ){ continue;}
 
+<<<<<<< HEAD
               std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentClusterCandidates), currentEventGoodPhotonRotation.get()));
+=======
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(currentEventGoodPhotonRotation.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
+>>>>>>> 642c935213909e9dc1dc3958687696b5d0da5b6b
 
               if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton.Phi(), fInputEvent)) && lvRotationPhoton.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
               {
