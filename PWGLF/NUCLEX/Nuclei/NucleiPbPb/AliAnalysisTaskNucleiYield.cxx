@@ -396,11 +396,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   AliPDG::AddParticlesToPdgDataBase();
   PostData(1,fList);
 
+  OpenFile(1);
   if (fSaveTrees) {
     fRTree = new TTree("RTree", "Reconstructed nuclei");
     fRTree->Branch("RLightNucleus", &fRecNucleus);
-    if (fIsMC) fRTree->Branch("SLightNucleus", &fSimNucleus);
-
     PostData(2, fRTree);
 
     if (fIsMC) {
@@ -536,8 +535,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
-      SetSLightNucleus(part,fSimNucleus);
-      if (fSaveTrees) fSTree->Fill();
+      if (fSaveTrees) {
+        SetSLightNucleus(part,fSimNucleus);
+        fSTree->Fill();
+      }
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
