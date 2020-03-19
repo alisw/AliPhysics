@@ -241,16 +241,16 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
-  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger.
+  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger.
 
   TH2F *   fhConeSumPtUESub ;                          //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubCluster ;                   //!<! Clusters Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubTrack ;                     //!<! Tracks Sum Pt in the cone minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt Sum Pt in the cone  minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt Sum Pt in the cone  minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt in the cone  minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt in the cone  minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
 
   TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
   TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
@@ -310,7 +310,7 @@ class AliIsolationCut : public TObject {
   TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
   TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
-  TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta or phi band.
+  TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt in the cone, after subtraction in eta or phi band.
   
   TH2F *   fhBandClustervsTrack ;                      //!<! Accumulated pT in eta or phi band to estimate UE in cone, clusters vs tracks.
   TH2F *   fhBandNormClustervsTrack ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone, normalized to cone size, clusters vs tracks.
@@ -323,11 +323,15 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtCent ;                           //!<! Cluster and tracks Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtClusterCent ;                    //!<! Clusters Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtTrackCent ;                      //!<! Tracks Sum Pt in the cone vs centrality.
-  
-  TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
-  TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE and excess corrected vs centrality.
-  TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
-  
+  TH3F *   fhConeSumPtClustervsTrackCent ;             //!<! Cluster vs tracks Sum Pt in the cone vs centrality.
+  TH3F *   fhConeSumPtClusterTrackFracCent ;           //!<! Cluster / tracks Sum Pt in the cone vs centrality.
+
+  TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE  vs centrality.
+  TH3F *   fhConeSumPtUESubClustervsTrackCent ;        //!<! Cluster vs tracks Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubClusterTrackFracCent;       //!<! Cluster / tracks Sum Pt in the cone  minus UE vs centrality.
+
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   

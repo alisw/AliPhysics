@@ -16,6 +16,8 @@
 // --- ROOT system ---
 #include <TObjArray.h>
 #include <TH3F.h>
+#include <TCustomBinning.h>
+
 // --- AliRoot system ---
 #include "AliCaloTrackParticleCorrelation.h"
 #include "AliEMCALGeometry.h"
@@ -60,12 +62,12 @@ fhPtInCone(0),
 fhPtClusterInCone(0),                       fhPtTrackInCone(0),  
 fhConeSumPt(0),      
 fhConeSumPtCluster(0),                      fhConeSumPtTrack(0),
-fhConeSumPtClustervsTrack(0),               fhConeSumPtClusterTrackFrac(0), 
+fhConeSumPtClustervsTrack(0),               fhConeSumPtClusterTrackFrac(0),            
 fhConeSumPtTrigEtaPhi(0),
 fhConeSumPtUESub(0),      
 fhConeSumPtUESubCluster(0),                 fhConeSumPtUESubTrack(0),
-fhConeSumPtUESubClustervsTrack(0),          fhConeSumPtUESubClusterTrackFrac(0), 
-fhConeSumPtUESubTrigEtaPhi(0),
+fhConeSumPtUESubClustervsTrack(0),          
+fhConeSumPtUESubClusterTrackFrac(0),        fhConeSumPtUESubTrigEtaPhi(0),
 fhConePtLead(0),     
 fhConePtLeadCluster(0),                     fhConePtLeadTrack(0),
 fhConePtLeadClustervsTrack(0),              fhConePtLeadClusterTrackFrac(0),
@@ -94,8 +96,10 @@ fhBandClustervsTrack(0),                    fhBandNormClustervsTrack(0),
 fhConeSumPtTrackSubVsNoSub(0),              fhConeSumPtClusterSubVsNoSub(0),
 fhConeSumPtCent(0),                         
 fhConeSumPtClusterCent(0),                  fhConeSumPtTrackCent(0),
+fhConeSumPtClustervsTrackCent(0),           fhConeSumPtClusterTrackFracCent(0),
 fhConeSumPtUESubCent(0),
 fhConeSumPtUESubClusterCent (0),            fhConeSumPtUESubTrackCent(0),
+fhConeSumPtUESubClustervsTrackCent(0),      fhConeSumPtUESubClusterTrackFracCent(0),
 fhPerpConeSumPtCent (0),
 fhConeSumPtUEBandNormClusterCent(0),        fhConeSumPtUEBandNormTrackCent(0),
 fhConeSumPtEtaBandUEClusterCent(0),         fhConeSumPtPhiBandUEClusterCent(0), 
@@ -1262,18 +1266,105 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   Float_t ptinconemax   = fHistoRanges->GetHistoPtInConeMax();
   Float_t ptinconemin   = fHistoRanges->GetHistoPtInConeMin();
   
-  // For UE subtracted histograms, shift it down by 20 GeV
+  // For UE subtracted histograms, shift it down by 100 GeV
   // keep same histogram binning.
-  Float_t ptsumminUESub   = -50;
+  Float_t ptsumminUESub   =-100;
   Float_t ptsummaxUESub   = 100;
-  Int_t   nptsumbinsUESub = 300;
+  Int_t   nptsumbinsUESub = 400;
   
+  //
+  // For TH3 histograms, more coarse and not constant binning
+  //
+  TCustomBinning ptBinning;
+  ptBinning.SetMinimum(ptmin);
+  ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
+  //      ptBinning.SetMinimum(GetMinPt());
+  //      ptBinning.AddStep(15,0.5);                          // 30
+  //      if ( GetMaxPt() > 15 ) ptBinning.AddStep( 30, 1.0); // 15
+  //      if ( GetMaxPt() > 30 ) ptBinning.AddStep( 60, 2.5); // 12
+  //      if ( GetMaxPt() > 60 ) ptBinning.AddStep(100, 5.0); // 8 
+  //      if ( GetMaxPt() > 100) ptBinning.AddStep(200,10.0); // 10
+  //      if ( GetMaxPt() > 200) ptBinning.AddStep(300,20.0); // 5
+  TArrayD ptBinsArray;
+  ptBinning.CreateBinEdges(ptBinsArray);
+  
+  TCustomBinning ptFBinning;
+  ptFBinning.SetMinimum(ptmin);
+  ptFBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
+  ptFBinning.SetMinimum(0);
+  ptFBinning.AddStep( 2,0.2); // 10
+  ptFBinning.AddStep( 4,0.4); // 10
+  ptFBinning.AddStep( 8,0.8); // 10
+  ptFBinning.AddStep(16,1.6); // 10
+  ptFBinning.AddStep(32,3.2); // 10
+  TArrayD ptFBinsArray;
+  ptFBinning.CreateBinEdges(ptFBinsArray);
+  
+  TCustomBinning sumBinning;
+  sumBinning.SetMinimum(0.0);
+  sumBinning.AddStep(  4, 0.20); // 20
+  sumBinning.AddStep( 10, 0.50); // 12
+  sumBinning.AddStep( 25, 1.00); // 15
+  sumBinning.AddStep( 50, 2.50); // 10
+  sumBinning.AddStep(100, 5.00); // 10
+  sumBinning.AddStep(200,10.00); // 10
+  TArrayD sumBinsArray;
+  sumBinning.CreateBinEdges(sumBinsArray);
+  
+  TCustomBinning sueBinning;
+  sueBinning.SetMinimum(-100.0);
+  sueBinning.AddStep(-50,  5.0); // 10
+  sueBinning.AddStep(-25, 2.50); // 10
+  sueBinning.AddStep(-10, 1.00); // 15
+  sueBinning.AddStep(-4 , 0.50); // 12
+  sueBinning.AddStep(  4, 0.20); // 20
+  sueBinning.AddStep( 10, 0.50); // 12
+  sueBinning.AddStep( 25, 1.00); // 15
+  sueBinning.AddStep( 50, 2.50); // 10
+  sueBinning.AddStep(100, 5.00); // 10
+  sueBinning.AddStep(200,10.00); // 10
+  TArrayD sueBinsArray;
+  sueBinning.CreateBinEdges(sueBinsArray);
+  
+  TCustomBinning fraBinning;
+  fraBinning.SetMinimum(0.0);
+  fraBinning.AddStep(1, 0.05);// 20
+  fraBinning.AddStep(2, 0.10); // 10
+  fraBinning.AddStep(4, 0.20); // 10
+  fraBinning.AddStep(8, 0.40); // 10
+  TArrayD fraBinsArray;
+  fraBinning.CreateBinEdges(fraBinsArray);
+  
+  TCustomBinning fueBinning;
+  fueBinning.SetMinimum(-8);
+  fueBinning.AddStep(-4, 0.40); // 10
+  fueBinning.AddStep(-2, 0.20); // 10
+  fueBinning.AddStep(-1, 0.10); // 10
+  fueBinning.AddStep( 1, 0.05);// 20
+  fueBinning.AddStep( 2, 0.10); // 10
+  fueBinning.AddStep( 4, 0.20); // 10
+  fueBinning.AddStep( 8, 0.40); // 10
+  TArrayD fueBinsArray;
+  fueBinning.CreateBinEdges(fueBinsArray);
+  
+  TCustomBinning cenBinning;
+  cenBinning.SetMinimum(0.0);
+  cenBinning.AddStep(100, 100/fNCentBins); 
+  TArrayD cenBinsArray;
+  cenBinning.CreateBinEdges(cenBinsArray);
+  
+  //
+  // Titles strings
+  //
   TString sParticle = ", x^{ 0,#pm}";
   if      ( fPartInCone == kOnlyNeutral )  sParticle = ", x^{0}";
   else if ( fPartInCone == kOnlyCharged )  sParticle = ", x^{#pm}";
   
   TString parTitleR   = Form("#it{R} = %2.2f%s",fConeSize,sParticle.Data());
   
+  //
+  // Create histograms
+  //
   if ( fPartInCone == kNeutralAndCharged )
   {
     // Pt in cone
@@ -1882,7 +1973,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhConeSumPtCent  = new TH3F
     ("hConePtSumCent",
      Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f",fConeSize),
-     nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+      ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+     sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+     cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
     fhConeSumPtCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
     fhConeSumPtCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     fhConeSumPtCent->SetZTitle("Centrality (%)");
@@ -1893,7 +1986,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtTrackCent  = new TH3F
       ("hConePtSumTrackCent",
        Form("Track #Sigma #it{p}_{T}, #it{R}=%2.2f",fConeSize),
-       nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+       cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
       fhConeSumPtTrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtTrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       fhConeSumPtTrackCent->SetZTitle("Centrality (%)");
@@ -1902,11 +1997,38 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtClusterCent  = new TH3F
       ("hConePtSumClusterCent",
        Form("Cluster #Sigma #it{p}_{T}, #it{R}=%2.2f",fConeSize),
-       nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+       cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
       fhConeSumPtClusterCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtClusterCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       fhConeSumPtClusterCent->SetZTitle("Centrality (%)");
       outputContainer->Add(fhConeSumPtClusterCent) ;
+      
+      if ( fICMethod != kSumBkgSubIC )
+      {
+        fhConeSumPtClustervsTrackCent   = new TH3F
+        ("hConePtSumClustervsTrackCent",
+         Form("Track vs Cluster #Sigma #it{p}_{T}, #it{R}=%2.2f",fConeSize),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+        fhConeSumPtClustervsTrackCent->SetXTitle("#Sigma #it{p}_{T}^{cluster} (GeV/#it{c})");
+        fhConeSumPtClustervsTrackCent->SetYTitle("#Sigma #it{p}_{T}^{track} (GeV/#it{c})");
+        fhConeSumPtClustervsTrackCent->SetZTitle("Centrality (%)");
+        outputContainer->Add(fhConeSumPtClustervsTrackCent) ;
+        
+        fhConeSumPtClusterTrackFracCent   = new TH3F
+        ("hConePtSumClusterTrackFractionCent",
+         Form("#Sigma #it{p}_{T}^{cluster}/#Sigma #it{p}_{T}^{track}, #it{R}=%2.2f, UE correction",fConeSize),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         fraBinsArray.GetSize() - 1, fraBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+        fhConeSumPtClusterTrackFracCent->SetYTitle("#Sigma #it{p}^{cluster}_{T} /#Sigma #it{p}_{T}^{track}");
+        fhConeSumPtClusterTrackFracCent->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterTrackFracCent->SetZTitle("Centrality (%)");
+        outputContainer->Add(fhConeSumPtClusterTrackFracCent) ;
+      }
     }
     
     if ( fICMethod >= kSumBkgSubIC )
@@ -1914,7 +2036,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtUESubCent= new TH3F
       ("hConePtSumUESubCent",
        Form("Track and/or Cluster #Sigma #it{p}_{T} in #it{R} = %2.2f, after UE correction",fConeSize),
-       nptbins,ptmin,ptmax, nptsumbinsUESub,ptsumminUESub,ptsummaxUESub, fNCentBins,0,100);
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       sueBinsArray.GetSize() - 1, sueBinsArray.GetArray(),
+       cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
       fhConeSumPtUESubCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtUESubCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       fhConeSumPtUESubCent->SetZTitle("Centrality (%)");
@@ -1925,7 +2049,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtUESubTrackCent  = new TH3F
         ("hConePtSumUESubTrackCent",
          Form("Track #Sigma #it{p}_{T},#it{R}=%2.2f, UE correction",fConeSize),
-         nptbins,ptmin,ptmax, nptsumbinsUESub,ptsumminUESub,ptsummaxUESub, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtUESubTrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtUESubTrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtUESubTrackCent->SetZTitle("Centrality (%)");
@@ -1934,11 +2060,38 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtUESubClusterCent  = new TH3F
         ("hConePtSumUESubClusterCent",
          Form("Cluster #Sigma #it{p}_{T},#it{R}=%2.2f, UE correction",fConeSize),
-         nptbins,ptmin,ptmax, nptsumbinsUESub,ptsumminUESub,ptsummaxUESub, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtUESubClusterCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtUESubClusterCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtUESubClusterCent->SetZTitle("Centrality (%)");
         outputContainer->Add(fhConeSumPtUESubClusterCent) ;
+        
+        if ( fICMethod != kSumBkgSubIC )
+        {
+          fhConeSumPtUESubClustervsTrackCent   = new TH3F
+          ("hConePtSumUESubClustervsTrackCent",
+           Form("Track vs Cluster #Sigma #it{p}_{T}, #it{R}=%2.2f, UE correction",fConeSize),
+           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray(),
+           sueBinsArray.GetSize() - 1, sueBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+          fhConeSumPtUESubClustervsTrackCent->SetXTitle("#Sigma #it{p}_{T}^{cluster} (GeV/#it{c})");
+          fhConeSumPtUESubClustervsTrackCent->SetYTitle("#Sigma #it{p}_{T}^{track} (GeV/#it{c})");
+          fhConeSumPtUESubClustervsTrackCent->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtUESubClustervsTrackCent) ;
+          
+          fhConeSumPtUESubClusterTrackFracCent   = new TH3F
+          ("hConePtSumUESubClusterTrackFractionCent",
+           Form("#Sigma #it{p}_{T}^{cluster}/#Sigma #it{p}_{T}^{track}, #it{R}=%2.2f, UE correction",fConeSize),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           fueBinsArray.GetSize() - 1, fueBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+          fhConeSumPtUESubClusterTrackFracCent->SetYTitle("#Sigma #it{p}^{cluster}_{T} /#Sigma #it{p}_{T}^{track}");
+          fhConeSumPtUESubClusterTrackFracCent->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
+          fhConeSumPtUESubClusterTrackFracCent->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtUESubClusterTrackFracCent) ;
+        }
       }
       
       if ( fICMethod == kSumBkgSubIC )
@@ -1946,7 +2099,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeSumPtCent  = new TH3F
         ("hPerpConePtSumCent",
          Form("#Sigma #it{p}_{T} in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPerpConeSumPtCent->SetYTitle("#Sigma #it{p}_{T}^{in #perp cone} (GeV/#it{c})");
         fhPerpConeSumPtCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPerpConeSumPtCent->SetZTitle("Centrality (%)");
@@ -1960,7 +2115,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhConeSumPtUEBandNormClusterCent  = new TH3F
           ("hConeSumPtUEBandNormClusterCent",
            Form("Clusters #Sigma #it{p}_{T} in normalized #eta or #varphi band, #it{R} =  %2.2f",fConeSize),
-           nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhConeSumPtUEBandNormClusterCent->SetYTitle("#Sigma #it{p}_{T}^{band-norm} (GeV/#it{c})");
           fhConeSumPtUEBandNormClusterCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhConeSumPtUEBandNormClusterCent->SetZTitle("Centrality (%)");
@@ -1972,7 +2129,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhConeSumPtUEBandNormTrackCent  = new TH3F
           ("hConeSumPtUEBandNormTrackCent",
            Form("Clusters #Sigma #it{p}_{T} in normalized #eta or #varphi band, #it{R} =  %2.2f",fConeSize),
-           nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhConeSumPtUEBandNormTrackCent->SetYTitle("#Sigma #it{p}_{T}^{band-norm} (GeV/#it{c})");
           fhConeSumPtUEBandNormTrackCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhConeSumPtUEBandNormTrackCent->SetZTitle("Centrality (%)");
@@ -1985,7 +2144,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhEtaBandClusterPtCent  = new TH3F
         ("hEtaBandClusterPtCent",
          Form("Clusters in #eta band out of cone #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
         fhEtaBandClusterPtCent->SetZTitle("Centrality (%)");
@@ -1994,7 +2155,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandClusterPtCent  = new TH3F
         ("hPhiBandClusterPtCent",
          Form("Clusters in #varphi band out of cone #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandClusterPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandClusterPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
         fhPhiBandClusterPtCent->SetZTitle("Centrality (%)");
@@ -2006,7 +2169,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtEtaBandUEClusterCent  = new TH3F
         ("hConePtSumEtaBandUEClusterCent",
          "#Sigma cluster #it{p}_{T} in UE Eta Band",
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtEtaBandUEClusterCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtEtaBandUEClusterCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtEtaBandUEClusterCent->SetZTitle("Centrality (%)");
@@ -2015,7 +2180,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtPhiBandUEClusterCent  = new TH3F
         ("hConePtSumPhiBandUEClusterCent",
          "#Sigma cluster #it{p}_{T} UE Phi Band",
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtPhiBandUEClusterCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPhiBandUEClusterCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtPhiBandUEClusterCent->SetZTitle("Centrality (%)");
@@ -2027,7 +2194,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhEtaBandTrackPtCent  = new TH3F
         ("hEtaBandTrackPtCent",
          Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax, fNCentBins,0,100);
+         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhEtaBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhEtaBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
         fhEtaBandTrackPtCent->SetZTitle("Centrality (%)");
@@ -2036,7 +2205,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandTrackPtCent  = new TH3F
         ("hPhiBandTrackPtCent",
          Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
-         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptFBinsArray.GetSize() - 1, ptFBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhPhiBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
         fhPhiBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
         fhPhiBandTrackPtCent->SetZTitle("Centrality (%)");
@@ -2048,7 +2219,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtEtaBandUETrackCent  = new TH3F
         ("hConePtSumEtaBandUETrackCent",
          "#Sigma track #it{p}_{T} in UE Eta Band",
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtEtaBandUETrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtEtaBandUETrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtEtaBandUETrackCent->SetZTitle("Centrality (%)");
@@ -2057,7 +2230,9 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeSumPtPhiBandUETrackCent  = new TH3F
         ("hConePtSumPhiBandUETrackCent",
          "#Sigma track #it{p}_{T} UE Phi Band",
-         nptbins,ptmin,ptmax, nptsumbins,ptsummin,ptsummax, fNCentBins,0,100);
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtPhiBandUETrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPhiBandUETrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
         fhConeSumPtPhiBandUETrackCent->SetZTitle("Centrality (%)");
@@ -2562,7 +2737,17 @@ void  AliIsolationCut::MakeIsolationCut
   if ( fPartInCone == kNeutralAndCharged && fICMethod != kSumBkgSubIC ) // No need for perpendicular or charged/neutral only analysis
   {
     fhConeSumPtClustervsTrack ->Fill(coneptsumCluster, coneptsumTrack, histoWeight);
-    if(coneptsumTrack > 0) fhConeSumPtClusterTrackFrac ->Fill(ptC, coneptsumCluster /coneptsumTrack, histoWeight);
+    
+     if ( fFillHighMultHistograms )
+       fhConeSumPtClustervsTrackCent->Fill(coneptsumCluster, coneptsumTrack, centrality, histoWeight);
+
+    if ( coneptsumTrack > 0) 
+    {
+      fhConeSumPtClusterTrackFrac->Fill(ptC, coneptsumCluster /coneptsumTrack, histoWeight);
+      
+      if ( fFillHighMultHistograms )
+        fhConeSumPtClusterTrackFracCent->Fill(ptC, coneptsumCluster /coneptsumTrack, centrality, histoWeight);
+    }
   }
   
   // Here the sum in cone before subtraction, if done, to check the effect.
@@ -2590,8 +2775,16 @@ void  AliIsolationCut::MakeIsolationCut
       if( fICMethod != kSumBkgSubIC )
       {
         fhConeSumPtUESubClustervsTrack ->Fill(coneptsumUESubCluster, coneptsumUESubTrack, histoWeight);
+        
+        if ( fFillHighMultHistograms )
+             fhConeSumPtUESubClustervsTrackCent->Fill(coneptsumUESubCluster, coneptsumUESubTrack, centrality, histoWeight);
+
         if ( TMath::Abs(coneptsumUESubTrack) > 0 ) 
-          fhConeSumPtUESubClusterTrackFrac ->Fill(ptC, coneptsumUESubCluster /coneptsumUESubTrack, histoWeight);
+        {
+          fhConeSumPtUESubClusterTrackFrac->Fill(ptC, coneptsumUESubCluster / coneptsumUESubTrack, histoWeight);
+           if ( fFillHighMultHistograms ) 
+             fhConeSumPtUESubClusterTrackFracCent->Fill(ptC, coneptsumUESubCluster / coneptsumUESubTrack, centrality, histoWeight);
+        }
       }
     }
   }
