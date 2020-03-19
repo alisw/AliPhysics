@@ -110,7 +110,7 @@ TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
 {
   fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
   // if (fTreeStatus[t])
-  //   fTree[t]->Branch("fEventId", &vtx.fEventId, "fEventId/l"); // Branch common to all trees
+  //   fTree[t]->Branch("fGlobalBC", &vtx.fGlobalBC, "fGlobalBC/l"); // Branch common to all trees
   return fTree[t];
 }
 
@@ -157,7 +157,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fRunNumber", &vtx.fRunNumber, "fRunNumber/I");
     tEvents->Branch("fStart", vtx.fStart, sstart.Data());
     tEvents->Branch("fNentries", vtx.fNentries, sentries.Data());
-    tEvents->Branch("fEventId", &vtx.fEventId, "fEventId/l");
+    tEvents->Branch("fGlobalBC", &vtx.fGlobalBC, "fGlobalBC/l");
     tEvents->Branch("fX", &vtx.fX, "fX/F");
     tEvents->Branch("fY", &vtx.fY, "fY/F");
     tEvents->Branch("fZ", &vtx.fZ, "fZ/F");
@@ -179,7 +179,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tTrigger = CreateTree(kTrigger);
   tTrigger->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kTrigger]) {
-    tTrigger->Branch("fEventId", &trigger.fEventId, "fEventId/l");
+    tTrigger->Branch("fGlobalBC", &trigger.fGlobalBC, "fGlobalBC/l");
     tTrigger->Branch("fTriggerMask", &trigger.fTriggerMask, "fTriggerMask/l");
   }
   PostTree(kTrigger);
@@ -455,7 +455,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // Get access to the current event number
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  Int_t eventID = mgr->GetNcalls();
+  Int_t eventID = fEventCount++;
 
   // Configuration of the PID response
   AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
@@ -490,7 +490,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   vtx.fNentries[kEvents] = 1;  // one entry per vertex
   vtx.fRunNumber = fESD->GetRunNumber();
-  vtx.fEventId = GetEventIdAsLong(fESD->GetHeader());
+  vtx.fGlobalBC = GetEventIdAsLong(fESD->GetHeader());
   vtx.fX = pvtx->GetX();
   vtx.fY = pvtx->GetY();
   vtx.fZ = pvtx->GetZ();
@@ -544,7 +544,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   //---------------------------------------------------------------------------
   // Trigger data
   
-  trigger.fEventId = GetEventIdAsLong(fESD->GetHeader());
+  trigger.fGlobalBC = GetEventIdAsLong(fESD->GetHeader());
   trigger.fTriggerMask = fESD->GetTriggerMask();
   FillTree(kTrigger);
   
