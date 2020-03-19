@@ -808,12 +808,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       zdc.fZDCTDCCorrected[ii][jj] = esdzdc->GetZDCTDCCorrected(ii,jj);
   // ZDC flags
   zdc.fFired = 0x0;                  // Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  if (esdzdc->IsZNAhit()) zdc.fFired | (0x1);
-  if (esdzdc->IsZNChit()) zdc.fFired | (0x1 << 1);
-  if (esdzdc->IsZPAhit()) zdc.fFired | (0x1 << 2);
-  if (esdzdc->IsZPChit()) zdc.fFired | (0x1 << 3);
-  if (esdzdc->IsZEM1hit()) zdc.fFired | (0x1 << 4);
-  if (esdzdc->IsZEM2hit()) zdc.fFired | (0x1 << 5);
+  if (esdzdc->IsZNAhit()) zdc.fFired |= (0x1);
+  if (esdzdc->IsZNChit()) zdc.fFired |= (0x1 << 1);
+  if (esdzdc->IsZPAhit()) zdc.fFired |= (0x1 << 2);
+  if (esdzdc->IsZPChit()) zdc.fFired |= (0x1 << 3);
+  if (esdzdc->IsZEM1hit()) zdc.fFired |= (0x1 << 4);
+  if (esdzdc->IsZEM2hit()) zdc.fFired |= (0x1 << 5);
   FillTree(kZdc);
   if (fTreeStatus[kZdc]) vtx.fNentries[kZdc] = 1;
 
