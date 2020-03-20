@@ -71,7 +71,6 @@ public:
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTimeRangeReject(Bool_t reject=kTRUE) {fTimeRangeReject = reject;}
   // Cuts for selecting tracks included in the tree
-  void SetTrackFilter(AliAnalysisCuts * const filter);     // deprecated method, don't use
   void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE, Int_t minSel=-1, Int_t maxSel=-1);
   // Cuts for calorimeter clusters included in the tree
   void AddCaloClusterFilter(AliAnalysisCuts * const filter);
@@ -121,9 +120,6 @@ public:
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c); // calculates the sagitta value from the online tracks
-  void SetEventWritingRequirement(Int_t minSelectedTracks, Int_t minSelectedBaseTracks=0, Double_t scaleDown=0.0)   {
-     // deprecated method, do nothing
-  }
   void SetWriteUnbiasedEvents(Double_t scaleDown=1.0) {fScaleDownEvents=scaleDown;}
 
     
@@ -143,7 +139,6 @@ public:
   Bool_t    fWriteTree;                         // if kFALSE don't write the tree, use task only to produce on the fly reduced events
   Double_t  fScaleDownEvents;                      // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
-  Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used; deprecated
   std::vector<Bool_t> fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
   std::vector<Int_t>  fMinSelectedTracks;     // array of min required selected tracks for each track filter
   std::vector<Int_t>  fMaxSelectedTracks;     // array of max required selected tracks for each track filter
@@ -244,6 +239,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 17); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 18); //Analysis Task for creating a reduced event information tree
 };
 #endif

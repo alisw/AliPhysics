@@ -105,7 +105,6 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fWriteTree(kTRUE),
   fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
-  fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
   fMinSelectedTracks(),
   fMaxSelectedTracks(),
@@ -183,7 +182,6 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fWriteTree(kTRUE),
   fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
-  fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
   fMinSelectedTracks(),
   fMaxSelectedTracks(),
@@ -648,6 +646,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //Fill event wise information
   fReducedEvent->ClearEvent();  
   FillEventInfo();
+  if(fFillCaloClusterInfo) FillCaloClusters();
+  if(fFillFMDInfo) FillFMDInfo(isAOD);
 
   // reset track counters
   // TODO: indexing needs to be in a less error prone way (define an enum)
@@ -728,15 +728,6 @@ void AliAnalysisTaskReducedTreeMaker::FillStatisticsHistograms(Bool_t isSelected
   
    // count events as a function of centrality
    for(Int_t i=0; i<nEstimators; ++i) ((TH2I*)fCentEventsList->At(i))->Fill(xbin, percentiles[i]);
-}
-
-//_________________________________________________________________________________
-void AliAnalysisTaskReducedTreeMaker::SetTrackFilter(AliAnalysisCuts * const filter)
-{
-  //
-  // set track filter at first position in track filter list
-  //
-  printf("AliAnalysisTaskReducedTreeMaker::SetTrackFilter(filter) WARNING: Deprecated method! Please use the AddTrackFilter() to add track filters!");
 }
 
 //_________________________________________________________________________________
@@ -1220,12 +1211,6 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   multVZERO = 0.0;
   for(Int_t i=32;i<64;++i) multVZERO +=  vzero->GetMultiplicity(i);
   eventInfo->fVZEROTotalMult[0] = multVZERO;
-  
-  // EMCAL/PHOS clusters
-  if(fFillCaloClusterInfo) FillCaloClusters();
-  
-  // FMD information
-  if(fFillFMDInfo) FillFMDInfo(isAOD);
 }
 
 //_________________________________________________________________________________
