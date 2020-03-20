@@ -1739,7 +1739,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
   } else if (trainConfig == 748){ // settings
     cuts.AddCutCalo("00010113","24466640ya09dc00000","0163103100000010"); // INT7
-    
+
   // Variations for systematics
   } else if ( trainConfig == 750) { // NL variations (standard: 42 PHOS ML)
     cuts.AddCutCalo("000ap113","24466530g001cc00000","0163103100000010");
@@ -1776,7 +1776,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000ap113","24466530g001cc00300","0163103100000010"); // conv rec 0.03
     cuts.AddCutCalo("000ap113","24466530g001cc00200","0163103100000010"); // conv rec 0.025
     cuts.AddCutCalo("000ap113","24466530g001cc00400","0163103100000010"); // conv rec 0.035
-  } else if (trainConfig == 758){ // 
+  } else if (trainConfig == 758){ //
     cuts.AddCutCalo("000ap113","24466640ya09dc00000","0163103100000010"); // INT7
 
   // *********************************************************************************************************
@@ -2194,8 +2194,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n2510113","411792106f032230000","01631031000000d0"); // INT7, NL12, mult. dep 20.0% - 50.0%
     cuts.AddCutCalo("n5a10113","411792106f032230000","01631031000000d0"); // INT7, NL12, mult. dep 50.0% - 100.0%
 
-  } else if (trainConfig == 2042){  // high mult trigger
-    cuts.AddCutCalo("00076113","411792106f032230000","01631031000000d0"); // INT7, NL12, high mult V0M,
+  } else if (trainConfig == 2042){  // high mult trigger different estimators
+    cuts.AddCutCalo("r0010113","411792106f032230000","01631031000000d0"); // NL21, INT7 in V0M mult slices
+    cuts.AddCutCalo("r0074113","411792106f032230000","01631031000000d0"); // NL21, high mult V0M
+    cuts.AddCutCalo("s0075113","411792106f032230000","01631031000000d0"); // NL21, high mult SPD
+    cuts.AddCutCalo("r0076113","411792106f032230000","01631031000000d0"); // NL21, NL12, high mult V0M with pileup cond.
   } else if (trainConfig == 2043){ //EMCal + DCal EG1 mult. diff.
     cuts.AddCutCalo("q0176113","411792106f032230000","01631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.1%
     cuts.AddCutCalo("q1276113","411792106f032230000","01631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.1% - 0.2%
