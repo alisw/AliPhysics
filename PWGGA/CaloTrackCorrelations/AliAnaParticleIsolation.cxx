@@ -154,28 +154,19 @@ fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0),  fhTimePileUpMainVertexZDiamond(0),
 
-fhPtClusterInConePerRCut(0),         
-fhPtTrackInConePerRCut(0),           
-fhConeSumPtClusterPerRCut(0),        
-fhConeSumPtTrackPerRCut(0),         
-fhConeNClusterPerMinPtCut(0),        
-fhConeNTrackPerMinPtCut(0),          
-fhPerpConeNTrackPerMinPtCut(0),      
-fhConeSumPtClusterPerMinPtCut(0),   
-fhConeSumPtTrackPerMinPtCut(0),      
-fhPerpConeSumPtTrackPerMinPtCut(0),  
-fhConeSumPtClusterPerMaxPtCut(0),    
-fhConeSumPtTrackPerMaxPtCut(0),     
+fhPtClusterInConePerRCut(0),         fhPtTrackInConePerRCut(0),           
+fhConeSumPtClusterPerRCut(0),        fhConeSumPtTrackPerRCut(0),          
+fhConeNClusterPerMinPtCut(0),        fhConeNTrackPerMinPtCut(0),         fhPerpConeNTrackPerMinPtCut(0),      
+fhConeNClusterPerMinPtCutCent(0),    fhConeNTrackPerMinPtCutCent(0),     fhPerpConeNTrackPerMinPtCutCent(0),      
+fhConeSumPtClusterPerMinPtCut(0),    fhConeSumPtTrackPerMinPtCut(0),     fhPerpConeSumPtTrackPerMinPtCut(0),  
+fhConeSumPtClusterPerMinPtCutCent(0),fhConeSumPtTrackPerMinPtCutCent(0), fhPerpConeSumPtTrackPerMinPtCutCent(0),  
+fhConeSumPtClusterPerMaxPtCut(0),    fhConeSumPtTrackPerMaxPtCut(0),     
 fhConeSumPtTrackPerEtaCut(0),        
 
-fhPtClusterInConePerNCellCut(0),       
-fhPtTrackInConePerNCellCut(0),           
-fhConeSumPtClusterPerNCellCut(0),     
-fhConeSumPtTrackPerNCellCut(0),       
-fhPtClusterInConePerExoCut(0),       
-fhPtTrackInConePerExoCut(0),         
-fhConeSumPtClusterPerExoCut(0),      
-fhConeSumPtTrackPerExoCut(0),              
+fhPtClusterInConePerNCellCut(0),     fhPtTrackInConePerNCellCut(0),      
+fhConeSumPtClusterPerNCellCut(0),    fhConeSumPtTrackPerNCellCut(0),       
+fhPtClusterInConePerExoCut(0),       fhPtTrackInConePerExoCut(0),         
+fhConeSumPtClusterPerExoCut(0),      fhConeSumPtTrackPerExoCut(0),              
 
 fhConeSumPtTrackTOFBC0(0), fhConeSumPtTrackTOFBCN(0), fhConeSumPtTrackTOFNo(0),
 fhPtTrackInConeTOFBC0 (0), fhPtTrackInConeTOFBCN (0), fhPtTrackInConeTOFNo (0),
@@ -1301,6 +1292,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ;
   outputContainer->SetName("IsolatedParticleHistos") ;
   
+  //Float_t ptthre    = GetIsolationCut()->GetPtThreshold();
+  //Float_t ptsumthre = GetIsolationCut()->GetSumPtThreshold();
+  //Float_t ptfrac    = GetIsolationCut()->GetPtFraction();
+  Float_t r         = GetIsolationCut()->GetConeSize();
+  Int_t   method    = GetIsolationCut()->GetICMethod() ;
+  Int_t   particle  = GetIsolationCut()->GetParticleTypeInCone() ;
+  
+  // Histogram ranges and bins
+  //
   Int_t   nptbins  = GetHistogramRanges()->GetHistoPtBins();
   Int_t   nphibins = GetHistogramRanges()->GetHistoPhiBins();
   Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
@@ -1342,50 +1342,116 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
   Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
   
+  if ( IsHighMultiplicityAnalysisOn() )
+  {
+    multmin  = 0;
+    multmax  = 200;
+    nmultbin = multmax;
+  }
+  
   // n cell bins for TH3
   Int_t cellBins  = 15;
   Float_t cellMax = 15;
   Float_t cellMin = 0;
   
   // Define coarse binning for TH3 acceptance histogram pT axis
-   //
-   TCustomBinning ptBinningAcc;
-   ptBinningAcc.SetMinimum(GetMinPt());
-   ptBinningAcc.AddStep(25,5);                             // 2-4
-   if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
-   if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
-   if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
-
-   TArrayD ptBinsAccArray;
-   ptBinningAcc.CreateBinEdges(ptBinsAccArray);
-   //printf("pt: min %f max %f n %d\n",GetMinPt(),GetMaxPt(),ptBinsAccArray.GetSize() - 1);
-   //
-   TCustomBinning etaBinning;
-   etaBinning.SetMinimum(etamin);
-   etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
-   TArrayD etaBinsArray;
-   etaBinning.CreateBinEdges(etaBinsArray);
-   //printf("eta: min %f max %f n %d -%d\n",etamin,etamax,netabins,etaBinsArray.GetSize() - 1);
-   //
-   TCustomBinning phiBinning;
-   phiBinning.SetMinimum(phimin);
-   phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
-   TArrayD phiBinsArray;
-   phiBinning.CreateBinEdges(phiBinsArray);
-   //printf("phi: min %f max %f n %d-%d\n",phimin,phimax,nphibins,phiBinsArray.GetSize() - 1);
-   //
+  //
+  TCustomBinning ptBinningAcc;
+  ptBinningAcc.SetMinimum(GetMinPt());
+  ptBinningAcc.AddStep(25,5);                             // 2-4
+  if ( GetMaxPt() > 25 ) ptBinningAcc.AddStep(100, 25.0); // 3 
+  if ( GetMaxPt() > 100) ptBinningAcc.AddStep(200, 50.0); // 2
+  if ( GetMaxPt() > 200) ptBinningAcc.AddStep(300,100.0); // 1
+  
+  TArrayD ptBinsAccArray;
+  ptBinningAcc.CreateBinEdges(ptBinsAccArray);
+  //printf("pt: min %f max %f n %d\n",GetMinPt(),GetMaxPt(),ptBinsAccArray.GetSize() - 1);
+  //
+  TCustomBinning etaBinning;
+  etaBinning.SetMinimum(etamin);
+  etaBinning.AddStep(etamax, (etamax-etamin)/netabins); 
+  TArrayD etaBinsArray;
+  etaBinning.CreateBinEdges(etaBinsArray);
+  //printf("eta: min %f max %f n %d -%d\n",etamin,etamax,netabins,etaBinsArray.GetSize() - 1);
+  //
+  TCustomBinning phiBinning;
+  phiBinning.SetMinimum(phimin);
+  phiBinning.AddStep(phimax, (phimax-phimin)/nphibins); 
+  TArrayD phiBinsArray;
+  phiBinning.CreateBinEdges(phiBinsArray);
+  //printf("phi: min %f max %f n %d-%d\n",phimin,phimax,nphibins,phiBinsArray.GetSize() - 1);
+  //
+  
+  TCustomBinning ptBinning;
+  ptBinning.SetMinimum(ptmin);
+  ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
+  //      ptBinning.SetMinimum(GetMinPt());
+  //      ptBinning.AddStep(15,0.5);                          // 30
+  //      if ( GetMaxPt() > 15 ) ptBinning.AddStep( 30, 1.0); // 15
+  //      if ( GetMaxPt() > 30 ) ptBinning.AddStep( 60, 2.5); // 12
+  //      if ( GetMaxPt() > 60 ) ptBinning.AddStep(100, 5.0); // 8 
+  //      if ( GetMaxPt() > 100) ptBinning.AddStep(200,10.0); // 10
+  //      if ( GetMaxPt() > 200) ptBinning.AddStep(300,20.0); // 5
+  TArrayD ptBinsArray;
+  ptBinning.CreateBinEdges(ptBinsArray);
+  
+  TCustomBinning sum0Binning;
+  sum0Binning.SetMinimum(0.0);
+  sum0Binning.AddStep(  4, 0.20); // 20
+  sum0Binning.AddStep( 10, 0.50); // 12
+  sum0Binning.AddStep( 25, 1.00); // 15
+  sum0Binning.AddStep( 50, 2.50); // 10
+  sum0Binning.AddStep(100, 5.00); // 10
+  sum0Binning.AddStep(200,10.00); // 10
+  TArrayD sum0BinsArray;
+  sum0Binning.CreateBinEdges(sum0BinsArray);
+  
+  TCustomBinning sumBinning;
+  sumBinning.SetMinimum(0.0);
+  if ( method >= AliIsolationCut::kSumBkgSubIC )
+  {
+    sumBinning.SetMinimum(-100.0);
+    sumBinning.AddStep(-50,  5.0); // 10
+    sumBinning.AddStep(-25, 2.50); // 10
+    sumBinning.AddStep(-10, 1.00); // 15
+    sumBinning.AddStep(-4 , 0.50); // 12
+  }
+  sumBinning.AddStep(  4, 0.20); // 20
+  sumBinning.AddStep( 10, 0.50); // 12
+  sumBinning.AddStep( 25, 1.00); // 15
+  sumBinning.AddStep( 50, 2.50); // 10
+  sumBinning.AddStep(100, 5.00); // 10
+  sumBinning.AddStep(200,10.00); // 10
+  TArrayD sumBinsArray;
+  sumBinning.CreateBinEdges(sumBinsArray);
+  
+  TCustomBinning ssBinning;
+  ssBinning.SetMinimum(-0.01);
+  ssBinning.AddStep(0.50,0.01);  // 51 
+  ssBinning.AddStep(1.00,0.05);  // 10
+  ssBinning.AddStep(3.00,0.1);   // 20
+  ssBinning.AddStep(5.00,0.25);  // 20
+  TArrayD ssBinsArray;
+  ssBinning.CreateBinEdges(ssBinsArray);
+  
+  TCustomBinning cenBinning;
+  cenBinning.SetMinimum(0.0);
+  cenBinning.AddStep(100, 100/GetNCentrBin()); 
+  TArrayD cenBinsArray;
+  cenBinning.CreateBinEdges(cenBinsArray);
+  
+  TCustomBinning  minPtBinning;
+  minPtBinning.SetMinimum(-0.5);
+  minPtBinning.AddStep(fNPtCutsInCone, 1); 
+  TArrayD minPtBinsArray;
+  minPtBinning.CreateBinEdges(minPtBinsArray);
   
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
-  
-  //Float_t ptthre    = GetIsolationCut()->GetPtThreshold();
-  //Float_t ptsumthre = GetIsolationCut()->GetSumPtThreshold();
-  //Float_t ptfrac    = GetIsolationCut()->GetPtFraction();
-  Float_t r         = GetIsolationCut()->GetConeSize();
-  Int_t   method    = GetIsolationCut()->GetICMethod() ;
-  Int_t   particle  = GetIsolationCut()->GetParticleTypeInCone() ;
 
+  // Strings for histograms names, titles
+  //
   TString sThreshold[] = {"",""};
   TString ueType = "";
   if      ( method == AliIsolationCut::kSumPtIC ||  
@@ -1625,51 +1691,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         (method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC) )
     {
-      TCustomBinning ptBinning;
-      ptBinning.SetMinimum(ptmin);
-      ptBinning.AddStep(ptmax, (ptmax-ptmin)/nptbins); 
-//      ptBinning.SetMinimum(GetMinPt());
-//      ptBinning.AddStep(15,0.5);                          // 30
-//      if ( GetMaxPt() > 15 ) ptBinning.AddStep( 30, 1.0); // 15
-//      if ( GetMaxPt() > 30 ) ptBinning.AddStep( 60, 2.5); // 12
-//      if ( GetMaxPt() > 60 ) ptBinning.AddStep(100, 5.0); // 8 
-//      if ( GetMaxPt() > 100) ptBinning.AddStep(200,10.0); // 10
-//      if ( GetMaxPt() > 200) ptBinning.AddStep(300,20.0); // 5
-      TArrayD ptBinsArray;
-      ptBinning.CreateBinEdges(ptBinsArray);
-      
-      TCustomBinning sumBinning;
-      sumBinning.SetMinimum(0.0);
-      if ( method >= AliIsolationCut::kSumBkgSubIC )
-      {
-        sumBinning.SetMinimum(-100.0);
-        sumBinning.AddStep(-50,  5.0); // 10
-        sumBinning.AddStep(-25, 2.50); // 10
-        sumBinning.AddStep(-10, 1.00); // 15
-        sumBinning.AddStep(-4 , 0.50); // 12
-      }
-      else
-      {
-        sumBinning.SetMinimum(0.0);
-      }
-      sumBinning.AddStep(  4, 0.20); // 20
-      sumBinning.AddStep( 10, 0.50); // 12
-      sumBinning.AddStep( 25, 1.00); // 15
-      sumBinning.AddStep( 50, 2.50); // 10
-      sumBinning.AddStep(100, 5.00); // 10
-      sumBinning.AddStep(200,10.00); // 10
-      TArrayD sumBinsArray;
-      sumBinning.CreateBinEdges(sumBinsArray);
-      
-      TCustomBinning ssBinning;
-      ssBinning.SetMinimum(-0.01);
-      ssBinning.AddStep(0.50,0.01);  // 51 
-      ssBinning.AddStep(1.00,0.05);  // 10
-      ssBinning.AddStep(3.00,0.1);   // 20
-      ssBinning.AddStep(5.00,0.25);  // 20
-      TArrayD ssBinsArray;
-      ssBinning.CreateBinEdges(ssBinsArray);
-      
       fhPtM02SumPtCone = new TH3F
       ("hPtM02SumPtCone",Form("%s",parTitleR.Data()),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
@@ -1717,6 +1738,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         } // MC particle loop
       } // MC
       
+      //-----------------------
+      // Check removal of this below
+      //------------------------
       for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
       {
         fhConeSumPtM02Cut[ishsh] = new TH2F
@@ -1752,9 +1776,12 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhConeSumPtM02CutMC[imc][ishsh]) ;
           }
         } // MC
-      } // shower shape cut
-    } // Fill TH3 and pT iso shower shape cut
-    
+      } // Fill TH3 and pT iso shower shape cut
+      //-----------------------
+      // Check removal of this above
+      //------------------------
+    } 
+     
     for(Int_t iso = 0; iso < 2; iso++)
     {
       for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
@@ -2411,6 +2438,34 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhConeSumPtClusterPerMinPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtClusterPerMinPtCut) ;
 
+        if ( IsHighMultiplicityAnalysisOn() )
+        {
+          fhConeNClusterPerMinPtCutCent = new TH3F
+          ("hConeNClusterPerMinPtCutCent",
+           Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+           fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+          fhConeNClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
+          fhConeNClusterPerMinPtCutCent->SetYTitle("#it{N}^{cluster}");
+          fhConeNClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhConeNClusterPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhConeNClusterPerMinPtCutCent) ;
+          
+          fhConeSumPtClusterPerMinPtCutCent = new TH3F
+          ("hConePtSumClusterPerMinPtCutCent",
+           Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+           //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
+           minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+            sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+             cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          fhConeSumPtClusterPerMinPtCutCent->SetZTitle("Centrality (%)");
+          fhConeSumPtClusterPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtClusterPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhConeSumPtClusterPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhConeSumPtClusterPerMinPtCutCent) ;
+        }
+        
         fhConeSumPtClusterPerMaxPtCut = new TH2F
         ("hConePtSumClusterPerMaxPtCut",
          Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cut in cone for %s",parTitleR.Data()),
@@ -2635,7 +2690,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
         fhPerpConeNTrackPerMinPtCut = new TH2F
         ("hPerpConeNTrackPerMinPtCut",
-         Form("Different track #it{p}_{T} cuts in perpendicular cone for %s",parTitleR.Data()),
+         Form("Different track #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
         fhPerpConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
         fhPerpConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
@@ -2645,13 +2700,66 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         
         fhPerpConeSumPtTrackPerMinPtCut = new TH2F
         ("hPerpConePtSumTrackPerMinPtCut",
-         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in perpendicular cone for %s",parTitleR.Data()),
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
          fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
         fhPerpConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhPerpConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
         for(Int_t i = 1; i <= fNPtCutsInCone; i++)
           fhPerpConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCut) ;
+        
+        if ( IsHighMultiplicityAnalysisOn() )
+        {
+          fhConeNTrackPerMinPtCutCent = new TH3F
+          ("hConeNTrackPerMinPtCutCent",
+           Form("Tracks, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+           fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+          fhConeNTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
+          fhConeNTrackPerMinPtCutCent->SetYTitle("#it{N}^{track}");
+          fhConeNTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhConeNTrackPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhConeNTrackPerMinPtCutCent) ;
+          
+          fhConeSumPtTrackPerMinPtCutCent = new TH3F
+          ("hConePtSumTrackPerMinPtCutCent",
+           Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+           //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
+           minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+            sum0BinsArray.GetSize() - 1,  sum0BinsArray.GetArray(),
+             cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+          fhConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
+          fhConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+          for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+            fhConeSumPtTrackPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+          outputContainer->Add(fhConeSumPtTrackPerMinPtCutCent) ;
+          
+          fhPerpConeNTrackPerMinPtCutCent = new TH3F
+           ("hPerpConeNTrackPerMinPtCutCent",
+            Form("Tracks, different min #it{p}_{T} cut in #perp cone for %s",parTitleR.Data()),
+            fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nmultbin,multmin,multmax,GetNCentrBin(),0,100);
+           fhPerpConeNTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
+           fhPerpConeNTrackPerMinPtCutCent->SetYTitle("#it{N}^{track}");
+           fhPerpConeNTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+           for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+             fhPerpConeNTrackPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+           outputContainer->Add(fhPerpConeNTrackPerMinPtCutCent) ;
+           
+           fhPerpConeSumPtTrackPerMinPtCutCent = new TH3F
+           ("hPerpConePtSumTrackPerMinPtCutCent",
+            Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in #perp cone for %s",parTitleR.Data()),
+            //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
+            minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
+            sum0BinsArray.GetSize() - 1,   sum0BinsArray.GetArray(),
+              cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
+           fhPerpConeSumPtTrackPerMinPtCutCent->SetZTitle("Centrality (%)");
+           fhPerpConeSumPtTrackPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+           fhPerpConeSumPtTrackPerMinPtCutCent->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+           for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+             fhPerpConeSumPtTrackPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
+           outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCutCent) ;
+        }
         
         fhConeSumPtTrackPerMaxPtCut = new TH2F
         ("hConePtSumTrackPerMaxPtCut",
@@ -6424,6 +6532,12 @@ void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelatio
       fhConeNClusterPerMinPtCut    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
       fhConeSumPtClusterPerMinPtCut->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight()*weightTrig);
       fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight()*weightTrig);
+      
+      if ( IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeNClusterPerMinPtCutCent    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhConeSumPtClusterPerMinPtCutCent->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+      }
     }
   }
   
@@ -6855,6 +6969,12 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
       fhConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight()*weightTrig);
       fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight()*weightTrig);
       fhConeNTrackPerMinPtCut    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+      
+      if ( IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeNTrackPerMinPtCutCent    ->Fill(icut, coneNTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhConeSumPtTrackPerMinPtCutCent->Fill(icut, coneptsumTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+      }
     }
   }
   
@@ -7055,10 +7175,15 @@ void AliAnaParticleIsolation::StudyTracksInPerpCone(AliCaloTrackParticleCorrelat
     {
       fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
       fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+      if ( IsHighMultiplicityAnalysisOn() )
+      {
+        fhPerpConeNTrackPerMinPtCutCent    ->Fill(icut, coneNPerpTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhPerpConeSumPtTrackPerMinPtCutCent->Fill(icut, coneptsumPerpTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+      }
     }
   }
   
-  if(fStudyTracksInCone) 
+  if ( fStudyTracksInCone ) 
   {
     fhPerpConeSumPtTOFBC0         ->Fill(ptTrig, sumptPerpBC0   , GetEventWeight()*weightTrig);
     fhPerpConeSumPtITSRefitOnSPDOn->Fill(ptTrig, sumptPerpITSSPD, GetEventWeight()*weightTrig);
