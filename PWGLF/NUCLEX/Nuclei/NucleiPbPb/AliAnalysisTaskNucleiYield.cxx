@@ -429,6 +429,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   if (fParticle == AliPID::kUnknown) {
     ::Error("AliAnalysisTaskNucleiYield::UserExec", "No particle type set");
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
@@ -492,6 +498,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   if (!EventAccepted) {
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
@@ -511,6 +523,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   if (Flatten(fCentrality) && fEnableFlattening) {
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
