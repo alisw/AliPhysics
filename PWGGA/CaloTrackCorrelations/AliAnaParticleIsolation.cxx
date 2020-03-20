@@ -1385,16 +1385,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t r         = GetIsolationCut()->GetConeSize();
   Int_t   method    = GetIsolationCut()->GetICMethod() ;
   Int_t   particle  = GetIsolationCut()->GetParticleTypeInCone() ;
-  
-  // For UE subtracted histograms, shift it down by 20 GeV
-  // keep same histogram binning.
-  // Same as done in AliIsolationCut::GetCreateOutput()
-  if ( method >= AliIsolationCut::kSumBkgSubIC )
-  {
-    ptsummin   = -50;
-    ptsummax   = 100;
-    nptsumbins = 300;
-  }
 
   TString sThreshold[] = {"",""};
   TString ueType = "";
