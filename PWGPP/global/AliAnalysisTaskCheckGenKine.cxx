@@ -482,7 +482,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
 	Double_t mDiff=(mass-invMass)/mass;
 	fMassDiff[spId]->Fill(mDiff,dauOrig);
       }
-      if(primSec==0) fDecLen[spId]->Fill(mom,decLen);
+      fDecLen[spId]->Fill(mom,decLen);
     }
   }
 
