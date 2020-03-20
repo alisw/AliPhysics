@@ -9,7 +9,7 @@
      }
 
      //==== JCORRAN TASK
-     AliJPtHardXectionTask *FFtask = new AliJPtHardXectionTask(taskName.Data());
+     AliJPtHardXection *FFtask = new AliJPtHardXection(taskName.Data());
      mgr->AddTask((AliAnalysisTask*) FFtask);
 
      //==== Create containers for input/output
@@ -21,4 +21,4 @@
      mgr->ConnectOutput(FFtask, 1, FFhist);
 
      return FFtask;
- }
+}
