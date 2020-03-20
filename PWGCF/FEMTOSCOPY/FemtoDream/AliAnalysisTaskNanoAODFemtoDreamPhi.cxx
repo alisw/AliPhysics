@@ -11,6 +11,7 @@ ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
     : AliAnalysisTaskSE(),
       fIsMC(false),
       fUseDumpster(false),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fDumpster(nullptr),
@@ -40,6 +41,7 @@ AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
       fUseDumpster(false),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fDumpster(nullptr),
@@ -410,35 +412,38 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
 
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {
-      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
-          fPairCleaner->GetCleanParticles();
-      int size = Particles.size();
-      for (int i = 0; i < size; i++) {
-        int size2 = (Particles.at(i)).size();
-      }
-      if (size == 7) {
-        if ((Particles.at(2)).size() > 0) {
-          if (((Particles.at(0)).size() > 0) ||
-              ((Particles.at(1)).size() > 0)) {
-            fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
-                                fEvent->GetZVertex(), fEvent->GetRefMult08(),
-                                fEvent->GetV0MCentrality());
-          }
-        }
-
-        if (fIsMC) {
-          if ((Particles.at(5)).size() > 0 || ((Particles.at(6)).size() > 0)) {
-            if (((Particles.at(3)).size() > 0) ||
-                ((Particles.at(4)).size() > 0)) {
+      if (fUseOMixing) {
+        std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
+            fPairCleaner->GetCleanParticles();
+        int size = Particles.size();
+        if (size == 7) {
+          if ((Particles.at(2)).size() > 0) {
+            if (((Particles.at(0)).size() > 0) ||
+                ((Particles.at(1)).size() > 0)) {
               fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
                                   fEvent->GetZVertex(), fEvent->GetRefMult08(),
                                   fEvent->GetV0MCentrality());
             }
           }
+
+          if (fIsMC) {
+            if ((Particles.at(5)).size() > 0 ||
+                ((Particles.at(6)).size() > 0)) {
+              if (((Particles.at(3)).size() > 0) ||
+                  ((Particles.at(4)).size() > 0)) {
+                fPartColl->SetEvent(
+                    fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+              }
+            }
+          }
         }
+      } else {
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                            fEvent->GetZVertex(), fEvent->GetRefMult08(),
+                            fEvent->GetV0MCentrality());
       }
     }
-
     if (fConfig->GetUsePhiSpinning()) {
       fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
     }

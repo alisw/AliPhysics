@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
- // evtCuts->SetSphericityCuts(0.7, 1);
+  evtCuts->SetSphericityCuts(0.7, 1);
 
   // Proton cuts
   const float ProtonPtlow = 0.45;
@@ -88,9 +88,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-//    if (suffix != "0") {
-//      TrackCutsPhi->SetMinimalBooking(true);
-//    }
+  //    if (suffix != "0") {
+  //      TrackCutsPhi->SetMinimalBooking(true);
+  //    }
 
   if (suffix == "1") {
     TrackCutsPhi->SetCutWindow(0.987, 1.011);
@@ -99,7 +99,32 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
   if (suffix == "3") {
-    evtCuts->SetSphericityCuts(0.7, 1);
+    evtCuts->SetSphericityCuts(0.0, 1);
+  }
+  if (suffix == "4") {
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  }
+  if (suffix == "5") {
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+  }
+  if (suffix == "7") {
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  }
+  if (suffix == "8") {
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
+  }
+  if (suffix == "9") {
+    evtCuts->SetSphericityCuts(0.0, 1);
+  }
+  if (suffix == "10") {
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
+  }
+  if (suffix == "11") {
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
 
   // Now we define stuff we want for our Particle collection
@@ -115,11 +140,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   PDGParticles.push_back(2212);  // 4 antiprot truth
   PDGParticles.push_back(333);   // 5 phi truth
   PDGParticles.push_back(333);   // 6 phiall
-//  PDGParticles.push_back(2212);  // 7 proton common
-//  PDGParticles.push_back(2212);  // 8 aproton common
-//  PDGParticles.push_back(333);   // 9 phi common
-//  PDGParticles.push_back(2212);  // 10 proton no prim
-//  PDGParticles.push_back(2212);  // 11 antiprot no prim
+  //  PDGParticles.push_back(2212);  // 7 proton common
+  //  PDGParticles.push_back(2212);  // 8 aproton common
+  //  PDGParticles.push_back(333);   // 9 phi common
+  //  PDGParticles.push_back(2212);  // 10 proton no prim
+  //  PDGParticles.push_back(2212);  // 11 antiprot no prim
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -191,8 +216,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
- // for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12); i++) {
-
+  // for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12);
+  // i++) {
 
   for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
     NBins.push_back(750);
@@ -202,10 +227,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   }
 
   pairQA[0] = 10;   // pp
-  pairQA[1] = 10;    // pap
+  pairQA[1] = 10;   // pap
   pairQA[2] = 10;   // pphi
-  pairQA[7] = 10;  // apap
-  pairQA[8] = 10;  // apphi
+  pairQA[7] = 10;   // apap
+  pairQA[8] = 10;   // apphi
   pairQA[13] = 10;  // phiphi
 
   if (isMC) {
@@ -218,7 +243,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
     pairQA[21] = 10;  // phiALL pTRUE
     pairQA[24] = 10;
-
   }
 
   AliFemtoDreamCollConfig *config =
@@ -236,6 +260,24 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
 
+  if (suffix == "6") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "7") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "8") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "9") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "10") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "11") {
+    task->SetOEventMixing(true);
+  }
 
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
@@ -246,6 +288,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  config->SetUsePhiSpinning(true);
   //  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
   //  config->SetSpinningDepth(1);
+
+  if (isMC) {
+    config->SetAncestors(true);
+    config->GetDoAncestorsPlots();
+  }
 
   /*
   //This is just to show off what would be possible in case you are interested,
