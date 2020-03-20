@@ -77,7 +77,7 @@ Bool_t AliForwardFlowUtil::PbPb_lowIR_Run(Int_t runnumber){
 Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
 
   if (fSettings.run_list == 0){
-    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809, 246089, 246153, 246185, 246225};
     for (Int_t i = 0; i < 17; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }
