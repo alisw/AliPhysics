@@ -230,6 +230,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
+  if ( col=="PbPb" )  histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 400);
   
   //
   // MC histograms?
