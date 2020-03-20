@@ -480,6 +480,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (!pvtx) {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
   }
+  TString title=pvtx->GetTitle();
+  if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
+  if(pvtx->GetNContributors()<2) return;
 
   //---------------------------------------------------------------------------
   // Collision data
@@ -490,7 +493,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   vtx.fNentries[kEvents] = 1;  // one entry per vertex
   vtx.fRunNumber = fESD->GetRunNumber();
-  vtx.fGlobalBC = GetEventIdAsLong(fESD->GetHeader());
+  ULong64_t evtid = GetEventIdAsLong(fESD->GetHeader());
+  if(!evtid){
+    evtid = (ULong64_t(fESD->GetTimeStamp())<<32) + ULong64_t((fESD->GetNumberOfTPCClusters()<<5)|(fESD->GetNumberOfTPCTracks()));
+  }
+  vtx.fGlobalBC = evtid;
   vtx.fX = pvtx->GetX();
   vtx.fY = pvtx->GetY();
   vtx.fZ = pvtx->GetZ();
