@@ -432,7 +432,28 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
   }
   // if(fIsHeavyIon > 0){ // commented as mult. dep. analyses in pp started
+  if( fModCentralityClass == 20){ // high mult 0.1%
+    const Int_t centBins = 145;
+    Double_t arrCent[centBins + 1];
+    for(Int_t i = 0; i < centBins + 1; i++){
+      if(i < 50) arrCent[i] = i*0.1;
+      else if( i < centBins) arrCent[i] = 5 + (i-50);
+      else arrCent[i] = 100;
+    }
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);
+  } else if( fModCentralityClass == 21){// high mult 0.01%
+    const Int_t centBins = 245;
+    Double_t arrCent[centBins + 1];
+    for(Int_t i = 0; i < centBins + 1; i++){
+      if(i < 100) arrCent[i] = i*0.01;
+      else if(i < 150) arrCent[i] = 1 + 0.1*(i-100);
+      else if( i < centBins) arrCent[i] = 5 + (i-150);
+      else arrCent[i] = 100;
+    }
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);
+  } else {
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",210,0,105);
+  }
     fHistograms->Add(hCentrality);
   // }
 
@@ -1118,6 +1139,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     } else if ( fModCentralityClass == 20){
       printf("\t %f - %f \n", fCentralityMin*0.1, fCentralityMax*0.1);
+    } else if ( fModCentralityClass == 21){
+      printf("\t %f - %f \n", fCentralityMin*0.01, fCentralityMax*0.01);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
@@ -1342,6 +1365,16 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=0;
     fDetectorCentrality=0;
     fModCentralityClass=20;
+    break;
+  case 27: // r: pp -> Multiplicity V0M in 0.01% bins
+    fIsHeavyIon=0;
+    fDetectorCentrality=0;
+    fModCentralityClass=21;
+    break;
+  case 28: // s: pp -> Multiplicity CL1 in 0.01% bins
+    fIsHeavyIon=0;
+    fDetectorCentrality=3;
+    fModCentralityClass=21;
     break;
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
@@ -2751,7 +2784,6 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
       }
     }
   }
-
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
     if(GetUseNewMultiplicityFramework()){
@@ -2769,7 +2801,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           } else if ( fPeriodEnum == kLHC18qr ) {
             return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
           } else {
-            return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+            return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
           }
         }else if(fDetectorCentrality==1){
           return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
@@ -2779,14 +2811,13 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           else
             return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
         } else if(fDetectorCentrality==3){
-          return MultSelection->GetMultiplicityPercentile("SPDTracklets",kTRUE);
+          return MultSelection->GetMultiplicityPercentile("SPDTracklets",kFALSE);
         }
     }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
     }
   }
-
   return -1;
 }
 
@@ -2837,6 +2868,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   }
   else if (fModCentralityClass == 20){  // pp 13 TeV 0.1% mult classes
     centralityC= Int_t(centrality*10);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
+  else if (fModCentralityClass == 21){  // pp 13 TeV 0.01% mult classes
+    centralityC= Int_t(centrality*100);
     if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
       return kTRUE;
     } else return kFALSE;
