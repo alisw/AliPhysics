@@ -3509,153 +3509,33 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event)
 {
-
+  if(CellID < 0) return kTRUE;
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
-  if( fClusterType == 2 ) fGeomPHOS = AliPHOSGeometry::GetInstance();
+  if( fClusterType == 2 && !fGeomPHOS) fGeomPHOS = AliPHOSGeometry::GetInstance();
 
-  Int_t largestCellicol = -1, largestCellirow = -1;
-  Int_t rowdiff =  0, coldiff =  0;
+  Int_t iBadCell = -1;
+  Int_t iSupMod, iMod, iPhi, iEta;
+  if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) ){ // EMCal Case
+    if(!fEMCALBadChannelsMap1D) fEMCALBadChannelsMap1D  = fEMCALRecUtils->GetEMCALChannelStatusMap1D();
 
-  Int_t CelliMod = GetModuleNumberAndCellPosition(CellID, largestCellicol, largestCellirow);
-  if(CelliMod < 0) return kTRUE;
+    if(fEMCALBadChannelsMap1D){
+        iBadCell      = (Int_t) fEMCALBadChannelsMap1D->GetBinContent(CellID);
+    } else if(fEMCALBadChannelsMap){
+        fGeomEMCAL->GetCellIndex(CellID, iSupMod, iMod, iPhi, iEta);
+        if(iSupMod >= 0 && iSupMod < 20) iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(iSupMod))->GetBinContent(iPhi,iEta);
+    }
 
-  Int_t nMinRows = 0, nMaxRows = 0;
-  Int_t nMinCols = 0, nMaxCols = 0;
-
-  Bool_t checkNextSM = kFALSE;
-  Int_t distanceForLoop = 2;
-  Int_t fMinDistanceToBadChannelSwapping = 1;
-
-  Bool_t isDCal = kFALSE;
-  if(fClusterType == 4){
-    if (phiCluster < 0) phiCluster += 2*TMath::Pi();
-    if (phiCluster > fMinPhiCut && phiCluster < fMaxPhiCut)
-      isDCal = kFALSE;
-    else if (phiCluster > fMinPhiCutDMC && phiCluster < fMaxPhiCutDMC)
-      isDCal = kTRUE;
+  } else if( fClusterType == 2){ // PHOS case
+    Int_t relid[4];
+    fGeomPHOS->AbsToRelNumbering(CellID,relid);
+    if(relid[1]!=0) AliFatal("PHOS CPV in PHOS cell array (rotation background method)?");
+    if(relid[0]>=fGeomPHOS->GetNModules() || relid[0]<0 || !fPHOSBadChannelsMap[relid[0]]) return kTRUE;
+    iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[relid[0]])->GetBinContent(relid[2],relid[3]);
   }
 
-  if( fClusterType == 1 || (fClusterType == 4 && !isDCal)){
-    nMinRows = largestCellirow - distanceForLoop;
-    nMaxRows = largestCellirow + distanceForLoop;
-    if(nMinRows < 0) nMinRows = 0;
-    if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows;
 
-    nMinCols = largestCellicol - distanceForLoop;
-    nMaxCols = largestCellicol + distanceForLoop;
-
-    if(CelliMod%2){
-      if(nMinCols < 0){
-        nMinCols = 0;
-        checkNextSM = kTRUE;
-      }
-      if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols) nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
-    }else{
-      if(nMinCols < 0) nMinCols = 0;
-      if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols){
-        nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
-        checkNextSM = kTRUE;
-      }
-    }
-  }else if( fClusterType == 3 || (fClusterType == 4 && isDCal)){
-    nMinRows = largestCellirow - distanceForLoop;
-    nMaxRows = largestCellirow + distanceForLoop;
-    if(nMinRows < 0) nMinRows = 0;
-    if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows; //AliEMCALGeoParams::fgkDCALRows; <- doesnt exist yet (DCAl = EMCAL here)
-
-    nMinCols = largestCellicol - distanceForLoop;
-    nMaxCols = largestCellicol + distanceForLoop;
-    if(nMinCols < 0) nMinCols = 0;
-    if(nMaxCols > fgkDCALCols) nMaxCols = fgkDCALCols; // AliEMCALGeoParams::fgkDCALCols; <- doesnt exist yet
-
-  }else if( fClusterType == 2 ){
-    nMinRows = largestCellirow - distanceForLoop;
-    nMaxRows = largestCellirow + distanceForLoop;
-    if (nMinRows < 0) nMinRows = 0;
-    if (nMaxRows > fGeomPHOS->GetNPhi()) nMaxRows = fGeomPHOS->GetNPhi();
-
-    nMinCols = largestCellicol - distanceForLoop;
-    nMaxCols = largestCellicol + distanceForLoop;
-    if(nMinCols < 0) nMinCols = 0;
-    if(nMaxCols > fGeomPHOS->GetNZ()) nMaxCols = fGeomPHOS->GetNZ();
-  }
-
-//  cout << "Cluster: " << fClusterType << ",checkNextSM: " << checkNextSM << endl;
-//  cout << "largestCell: " << largestCellID << ",mod: " << CelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
-//  cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
-
-  //check bad cells within respective SM
-  for (Int_t irow = nMinRows;irow < nMaxRows;irow++)
-  {
-    for (Int_t icol = nMinCols;icol < nMaxCols;icol++)
-    {
-      if(irow == largestCellirow && icol == largestCellicol) continue;
-
-      Int_t iBadCell = 0;
-      if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && CelliMod<fEMCALBadChannelsMap->GetEntries()){
-        iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(CelliMod))->GetBinContent(icol,irow);
-      }else if( fClusterType == 2 && fPHOSBadChannelsMap[CelliMod+1]){
-        iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[CelliMod+1])->GetBinContent(icol,irow);
-      }
-      //cout << "CelliMod: " << CelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
-      if(iBadCell==0) continue;
-
-      rowdiff = TMath::Abs( largestCellirow - irow ) ;
-      coldiff = TMath::Abs( largestCellicol - icol ) ;
-      //cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
-      if ((coldiff + rowdiff <= fMinDistanceToBadChannelSwapping )) return kTRUE;
-
-      //cout << "not within distanceToBadChannel!" << endl;
-    }
-  }
-
-  //check bad cells in neighboring SM only if within chosen distanceToBadChannel from maxEnergyCell the next SM could be reached
-  if(checkNextSM) {
-    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
-    // C Side impair SM, nSupMod%2=1;A side pair SM nSupMod%2=0
-    if( fClusterType == 1 || fClusterType == 4){
-      if(CelliMod%2){
-        nMinCols = largestCellicol - distanceForLoop + AliEMCALGeoParams::fgkEMCALCols;
-        nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
-
-        CelliMod -= 1;
-        largestCellicol += AliEMCALGeoParams::fgkEMCALCols;
-      }else{
-        nMinCols = 0;
-        nMaxCols = largestCellicol + distanceForLoop - AliEMCALGeoParams::fgkEMCALCols;
-
-        CelliMod += 1;
-        largestCellicol -= AliEMCALGeoParams::fgkEMCALCols;
-      }
-    }else if( fClusterType == 2 ){
-     // nMaxRows = 64;
-     // nMaxCols = 56;
-    }
-    //cout << "largestCell: " << largestCellID << ",mod: " << CelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
-    //cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
-    for (Int_t irow = nMinRows;irow < nMaxRows;irow++)
-    {
-      for (Int_t icol = nMinCols;icol < nMaxCols;icol++)
-      {
-        Int_t iBadCell = 0;
-        if( (fClusterType == 1 || fClusterType == 4) && CelliMod<fEMCALBadChannelsMap->GetEntries()){
-          iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(CelliMod))->GetBinContent(icol,irow);
-        }else if( fClusterType == 2 && fPHOSBadChannelsMap[CelliMod+1]){
-          iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[CelliMod+1])->GetBinContent(icol,irow);
-        }
-        //cout << "CelliMod: " << CelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
-        if(iBadCell==0) continue;
-
-        rowdiff = TMath::Abs( largestCellirow - irow ) ;
-        coldiff = TMath::Abs( largestCellicol - icol ) ;
-        //cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
-        if ((coldiff + rowdiff <= fMinDistanceToBadChannelSwapping )) return kTRUE;
-        //cout << "not within distanceToBadChannel!" << endl;
-      }
-    }
-  }
-
+  if(iBadCell != 0) return kTRUE;
   return kFALSE;
 }
 
