@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE)
+AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="")
 {
     Bool_t writeXic0RecTree = kTRUE;
     Bool_t writeXic0MCGenTree = kFALSE;
@@ -54,6 +54,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":PWGHF_D2H_KFP_";      // create a subfolder in the file
+    fileName += cuttype.Data();
     // now we create an instance of your task
     AliAnalysisTaskSEXicZero2XiPifromKFP* task = new AliAnalysisTaskSEXicZero2XiPifromKFP("AliAnalysisTaskSEXicZero2XiPifromKFP", RDHFCutsKFP);
 
@@ -69,11 +70,11 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("CutsObj", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("Counter", AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer("tree_event_char", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer("tree_Xic0", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer("tree_Xic0_MCGen", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_%s", cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_event_char_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_Xic0_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_Xic0_MCGen_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
