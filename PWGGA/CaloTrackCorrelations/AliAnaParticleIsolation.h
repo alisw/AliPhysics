@@ -287,7 +287,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
-
+  Float_t  fConeNClusterPerMinCut    [20];            ///< Temporal container of n clusters per pT min cut
+  Float_t  fConeptsumClusterPerMinCut[20];            ///< Temporal container of sum pT clusters per pT min cut
+  Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n clusters per pT min cut
+  Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT clusters per pT min cut
+  
   Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
   Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.
   Float_t  fEtaCutInCone[10];                         ///<  List of track/cluster max eta cut to test in cone for sum pT calculation.
@@ -647,18 +651,22 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
   TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
   TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhConeNTrackSubPerpPerMinPtCut;               //!<! N Tracks in cone minus in the perpendicular cone for different min pT cuts, x axis.
 
   TH3F *   fhConeNClusterPerMinPtCutCent;                //!<! N Clusters in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhConeNTrackPerMinPtCutCent;                  //!<! N Tracks in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhPerpConeNTrackPerMinPtCutCent;              //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackSubPerpPerMinPtCutCent;           //!<! N Tracks in cone minux the perpendicular cone for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackSubPerpPerMinPtCut;           //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis.
 
   TH3F *   fhConeSumPtClusterPerMinPtCutCent;            //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhConeSumPtTrackPerMinPtCutCent;              //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhPerpConeSumPtTrackPerMinPtCutCent;          //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackSubPerpPerMinPtCutCent;       //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
