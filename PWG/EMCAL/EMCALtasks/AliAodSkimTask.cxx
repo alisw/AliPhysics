@@ -22,11 +22,12 @@ using namespace std;
 ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask(const char* name) :
-  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
+  AliAnalysisTaskSE(name), fClusMinE(-1), fTrackMinPt(-1), fTrackMaxPt(-1), fDoBothMinTrackAndClus(0), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0),
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0),
   fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyKinks(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(0), fDoVertMain(0), fDoCleanTracklets(0),
-  fDoCopyUserTree(0), fDoPhosFilt(0), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0), fHtrack(0)
+  fDoCopyUserTree(0), fDoPhosFilt(0), fDoRemoveMcParts(0), fCutMcIsPrimary(0), fCutMcIsPhysPrimary(0), fCutMcPt(-1), fCutMcY(1.0), fCutMcPhos(0), fCutMcEmcal(0),
+  fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0), fHtrack(0)
 {
   if (name) {
     DefineInput(0, TChain::Class());
@@ -237,17 +238,10 @@ void AliAodSkimTask::CopyMc()
       AliFatal(Form("%s: Previous mcparticles not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
-    if (fCutMC) {
-      for (Int_t i=0;i<out->GetEntriesFast();++i) {
-        AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(in->At(i));
-        if ((mc==0)&&(i==0)) {
-          AliError(Form("%s: No MC info, skipping this event!",GetName()));
-          oh->SetFillAOD(kFALSE);
-          return;
-        }
-        if ((mc==0)||(TMath::Abs(mc->Y())>fYCutMC))
-          new ((*out)[i]) AliAODMCParticle;
-      }
+    for (Int_t i=0;i<out->GetEntriesFast();++i) {
+      AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(out->At(i));
+      if (!KeepMcPart(mc))
+        new ((*out)[i]) AliAODMCParticle;
     }
   }
 }
@@ -453,13 +447,15 @@ void AliAodSkimTask::CopyVertices()
     }
     if (fDoVertMain) {
       TString tmp(v->GetName());
+      if (tmp.Length()==0)
+        continue;
       if (!tmp.Contains("PrimaryVertex")&&!tmp.Contains("SPDVertex")&&!tmp.Contains("TPCVertex"))
         continue;
       marked=i+1;
     }
   }
   if (marked>0) {
-    out->RemoveRange(marked,out->GetEntries());
+    out->RemoveRange(marked,out->GetEntries()-1);
     out->Compress();
   }
 }
@@ -488,6 +484,70 @@ void AliAodSkimTask::CopyZdc()
   AliAODZDC *out = eout->GetZDCData();
   AliAODZDC *in  = evin->GetZDCData();
   *out = *in;
+}
+
+Bool_t AliAodSkimTask::IsDcalAcc(Double_t phi, Double_t eta)
+{
+  const Double_t etamin=0.22*0.9;
+  const Double_t etamax=0.7*1.1;
+  const Double_t phimin=260./360*TMath::TwoPi()*0.9;
+  const Double_t phimax=327./360*TMath::TwoPi()*1.1;
+  const Double_t phiin=TVector2::Phi_0_2pi(phi);
+  if ((eta>etamin)&&(eta<etamax) && (phiin>phimin) && (phiin<phimax))
+    return kTRUE;
+  const Double_t phimin2=320./360*TMath::TwoPi()*0.9;
+  if ((TMath::Abs(eta)<etamax) && (phiin>phimin2) && (phiin<phimax))
+    return kTRUE;
+  return kFALSE;
+}
+
+Bool_t AliAodSkimTask::IsEmcalAcc(Double_t phi, Double_t eta)
+{
+  const Double_t etaabs=0.7*1.1;
+  const Double_t phimin=80./360*TMath::TwoPi()*0.9;
+  const Double_t phimax=187./360*TMath::TwoPi()*1.1;
+  const Double_t phiin=TVector2::Phi_0_2pi(phi);
+  if ((TMath::Abs(eta)<etaabs) && (phiin>phimin) && (phiin<phimax))
+    return kTRUE;
+  return kFALSE;
+}
+
+Bool_t AliAodSkimTask::IsPhosAcc(Double_t phi, Double_t eta)
+{
+  const Double_t etaabs=0.12*1.1;
+  const Double_t phimin=250./360*TMath::TwoPi()*0.9;
+  const Double_t phimax=320./360*TMath::TwoPi()*1.1;
+  const Double_t phiin=TVector2::Phi_0_2pi(phi);
+  if ((TMath::Abs(eta)<etaabs) && (phiin>phimin) && (phiin<phimax))
+    return kTRUE;
+  return kFALSE;
+}
+
+Bool_t AliAodSkimTask::KeepMcPart(AliAODMCParticle *p)
+{
+  if (!fDoRemoveMcParts)
+    return kTRUE;
+  if (fCutMcIsPrimary && !p->IsPrimary())
+    return kFALSE;
+  if (fCutMcIsPhysPrimary && !p->IsPhysicalPrimary())
+    return kFALSE;
+  Double_t pt  = p->Pt();
+  if (pt<fCutMcPt)
+    return kFALSE;
+  Double_t y   = p->Y();
+  if (TMath::Abs(y)>fCutMcY)
+    return kFALSE;
+  Double_t phi = p->Phi();
+  Double_t eta = p->Eta();
+  if (fCutMcPhos) {
+    if (!IsPhosAcc(phi,eta))
+      return kFALSE;
+  }
+  if (fCutMcEmcal) {
+    if (!IsEmcalAcc(phi,eta))
+      return kFALSE;
+  }
+  return kTRUE;
 }
 
 Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
@@ -593,6 +653,13 @@ Bool_t AliAodSkimTask::SelectEvent()
         continue;
       if (!fDoPhosFilt && !clus->IsEMCAL())
         continue;
+      if (clus->IsEMCAL() && fCutMcEmcal) {
+        Double_t vec[3]={0,0,0};
+        TLorentzVector p;
+        clus->GetMomentum(p,vec);
+        if (!IsEmcalAcc(p.Phi(),p.Eta()))
+          continue;
+      }
       Double_t e = clus->E();
       fHclus->Fill(e);
       if (e>fClusMinE) {
@@ -642,10 +709,7 @@ Bool_t AliAodSkimTask::SelectEvent()
 
 const char *AliAodSkimTask::Str() const
 {
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
-              fClusMinE,
-              fCutMC,
-              fYCutMC,
+  return Form("%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
               fDoCopyHeader,
               fDoCopyVZERO,
               fDoCopyTZERO,
@@ -692,6 +756,8 @@ void AliAodSkimTask::UserCreateOutputObjects()
     fout->SetCompressionLevel(2);
   }
 
+  cout << "AliAodSkimTask " << GetName() << " version " << GetVersion() << " running with " << Str() << endl;
+      
   fOutputList = new TList;
   fOutputList->SetOwner();
   fHevs = new TH1F("hEvs","",2,-0.5,1.5);
@@ -750,16 +816,15 @@ void AliAodSkimTask::UserExec(Option_t *)
   CopyKinks();
   CopyMc();
   CopyMcHeader();
+  CopyMore(); // Overload to do more in derived classes
 
-  CopyMore();
-  
   if (gDebug>10) {
     AliAODEvent *eout = dynamic_cast<AliAODEvent*>(oh->GetAOD());
     Int_t  run = eout->GetRunNumber();
     AliAODVertex *v=(AliAODVertex*)eout->GetVertices()->At(0);
     Int_t   vzn = v->GetNContributors();
     Double_t vz = v->GetZ();
-    cout << "debug run " << run << " " << vzn << " " << vz << endl;
+    cout << "AliAodSkimTask " << GetName() << " debug run " << run << " " << vzn << " " << vz << endl;
   }
 
   fTrials = 0;

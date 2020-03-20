@@ -8,7 +8,7 @@ AliConversionAodSkimTask *AddTask_AodSkim( const Double_t mine             = -1,
                                 const Double_t maxconvphi       =  999,
                                 const Bool_t doBothMinEandPt    = kFALSE,
                                 const Bool_t doBothConvPtandAcc = kFALSE,
-                                const Double_t ycutmc           = 0.7,
+                                const Double_t ycutmc           = 0.9,
                                 const char *gammabr             = 0,
                                 const UInt_t trigsel            = AliVEvent::kAny,
                                 const Bool_t doCopyTOF          = kTRUE,
@@ -87,10 +87,10 @@ AliConversionAodSkimTask *AddTask_AodSkim( const Double_t mine             = -1,
   task->SetCopyVertices(kTRUE);
   task->SetCopyZDC(kTRUE);
   if (ycutmc>0) {
-    task->SetCutMC(kTRUE);
-    task->SetYCutMC(ycutmc);
+    task->SetRemoveMcParts(kTRUE);
+    task->SetCutMcY(ycutmc);
   } else {
-    task->SetCutMC(kFALSE);
+    task->SetRemoveMcParts(kFALSE);
   }
   task->SetCopyTOF(doCopyTOF);
   task->SetCopyTracklets(doCopyTracklets);
