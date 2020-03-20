@@ -204,7 +204,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         if (!fSettings.etagap) twodiff += fAutoDiff->GetBinContent(etaBin);
         fill(cumu_dW2TwoB, n, ptn, sample, zvertex, eta, cent, twodiff);
       }
-      if (fSettings.decorr_analysis){
+      if (fSettings.normal_analysis){
         if (n==2){
           double dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
           fill(cumu_dW2A, -n, ptn, sample, zvertex, eta, cent, dn2diff);
