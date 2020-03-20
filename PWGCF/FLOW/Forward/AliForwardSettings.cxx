@@ -26,7 +26,7 @@ AliForwardSettings::AliForwardSettings() :
   doNUA(true),
   doNUE(true),
   gap(0.0),
-  minpt(0.0),
+  minpt(0.2),
   maxpt(5),
   mc(kFALSE),
   esd(kFALSE),
