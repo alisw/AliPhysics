@@ -135,9 +135,9 @@ private:
 
     // The calculation of event time certainly will be modified in Run3
     // The prototype below can be switched on request
-    Float_t fEventTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
-    Float_t fEventTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
-    UChar_t fEventTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
+    Float_t fCollisionTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
+    Float_t fCollisionTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
+    UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
@@ -393,7 +393,7 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 6);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 7);
 };
 
 #endif

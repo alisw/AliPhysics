@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collisions", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -169,9 +169,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fCovZZ", &vtx.fCovZZ, "fCovZZ/F");
     tEvents->Branch("fChi2", &vtx.fChi2, "fChi2/F");
     tEvents->Branch("fN", &vtx.fN, "fN/i");
-    tEvents->Branch("fEventTime", &vtx.fEventTime, "fEventTime/F");
-    tEvents->Branch("fEventTimeRes", &vtx.fEventTimeRes, "fEventTimeRes/F");
-    tEvents->Branch("fEventTimeMask", &vtx.fEventTimeMask, "fEventTimeMask/b");
+    tEvents->Branch("fCollisionTime", &vtx.fCollisionTime, "fCollisionTime/F");
+    tEvents->Branch("fCollisionTimeRes", &vtx.fCollisionTimeRes, "fCollisionTimeRes/F");
+    tEvents->Branch("fCollisionTimeMask", &vtx.fCollisionTimeMask, "fCollisionTimeMask/b");
   }
   PostTree(kEvents);
 
@@ -522,24 +522,24 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     //PH The part below is just a place holder
     if (TOFResponse.GetStartTimeMask(mom) & 0x1)
-      SETBIT(vtx.fEventTimeMask, 0);
+      SETBIT(vtx.fCollisionTimeMask, 0);
     else
-      CLRBIT(vtx.fEventTimeMask, 0);
+      CLRBIT(vtx.fCollisionTimeMask, 0);
     //
     if (TOFResponse.GetStartTimeMask(mom) & 0x2)
-      SETBIT(vtx.fEventTimeMask, 1);
+      SETBIT(vtx.fCollisionTimeMask, 1);
     else
-      CLRBIT(vtx.fEventTimeMask, 1);
+      CLRBIT(vtx.fCollisionTimeMask, 1);
     //
     if (TOFResponse.GetStartTimeMask(mom) & 0x3)
-      SETBIT(vtx.fEventTimeMask, 2);
+      SETBIT(vtx.fCollisionTimeMask, 2);
     else
-      CLRBIT(vtx.fEventTimeMask, 2);
+      CLRBIT(vtx.fCollisionTimeMask, 2);
   }
 
   // Recalculate unique event time and its resolution
-  vtx.fEventTime = TMath::Mean(10,eventTime,eventTimeWeight); // Weighted mean of times per momentum interval
-  vtx.fEventTimeRes = TMath::Sqrt(9./10.)*TMath::Mean(10,eventTimeRes); // PH bad approximation
+  vtx.fCollisionTime = TMath::Mean(10,eventTime,eventTimeWeight); // Weighted mean of times per momentum interval
+  vtx.fCollisionTimeRes = TMath::Sqrt(9./10.)*TMath::Mean(10,eventTimeRes); // PH bad approximation
 
   //---------------------------------------------------------------------------
   // Trigger data
