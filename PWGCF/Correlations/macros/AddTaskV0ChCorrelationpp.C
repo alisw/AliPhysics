@@ -40,7 +40,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetMixingTracks(5000);
   task->SetPoolSize(200); 
  //--------------------------------Variable--------------------------------
-  task->SetVtxCut(10.);
+  task->SetVtxCut(8.);
   task->SetVtxXMin(10e-5);
   task->SetVtxYMin(10e-5);
   task->SetVtxZMin(10e-5);
@@ -81,7 +81,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetPtArmV0AlphaV0(0.2);
   
   //-------------------------------------PID--------------------------------
-  task->SetV0PIDSigma(2);
+  task->SetV0PIDSigma(3);
   //-------------------------------------------------------------------------
   mgr->AddTask(task);
     
