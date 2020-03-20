@@ -106,10 +106,8 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s() :AliAnalysisT
   fHistEventV0(0), 
   fHistTrack(0), 
   fHistV0Radius(0),
-  fHistV0RadiusBis(0),
-  fHistLengthvsCrossedRowsBis(0),
+  fHistLengthvsCrossedRowsAfterSel(0),
   fHistLengthvsCrossedRows(0),
-  fHistLengthvsCrossedRowsDiff(0),
   fHistTriggerComposition(0), 
   fHistTriggerCompositionMCTruth(0), 
   fHistAssocComposition(0), 
@@ -248,7 +246,7 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s(const char* nam
 								 fCollidingSystem("pp"), 
 								 fAOD(0), 
 								 fPIDResponse(0),
-                                                                 fEventCuts(0),								 
+						                 fEventCuts(0),								 
 								 fOutputList(0), 
 								 fSignalTree(0), 
 								 fBkgTree(0), 
@@ -306,10 +304,8 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s(const char* nam
   fHistEventV0(0), 
   fHistTrack(0), 
   fHistV0Radius(0),
-  fHistV0RadiusBis(0),
-  fHistLengthvsCrossedRowsBis(0),
+  fHistLengthvsCrossedRowsAfterSel(0),
   fHistLengthvsCrossedRows(0),
-  fHistLengthvsCrossedRowsDiff(0),
   fHistTriggerComposition(0), 
   fHistTriggerCompositionMCTruth(0), 
   fHistAssocComposition(0), 
@@ -870,7 +866,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistEventV0->GetXaxis()->SetBinLabel(4,"Chis daughter tracks"); 
   fHistEventV0->GetXaxis()->SetBinLabel(5,"Length DTracks>90cm"); 
   fHistEventV0->GetXaxis()->SetBinLabel(6,"CrossedRows/Length>0.8"); 
-  fHistEventV0->GetXaxis()->SetBinLabel(7,"TOF hit for pileup"); 
+  fHistEventV0->GetXaxis()->SetBinLabel(7,"TOF or SPD hit for pileup"); 
   fHistEventV0->GetXaxis()->SetBinLabel(8,"PID daughters"); 
   fHistEventV0->GetXaxis()->SetBinLabel(9,"|eta daughters|<0.8"); 
   fHistEventV0->GetXaxis()->SetBinLabel(10,"TPC track quality"); 
@@ -931,13 +927,10 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistLengthvsCrossedRows = new TH2F("fHistLengthvsCrossedRows", "fHistLengthvsCrossedRows",  160, 0, 160, 160, 0, 160);
   fHistLengthvsCrossedRows->GetXaxis()->SetTitle("Number of Crossed rows");
   fHistLengthvsCrossedRows->GetYaxis()->SetTitle("Track length");
-  fHistLengthvsCrossedRowsDiff = new TH2F("fHistLengthvsCrossedRowsDiff", "fHistLengthvsCrossedRowsDiff",  160, 0, 160, 160, 0, 160);
-  fHistLengthvsCrossedRowsDiff->GetXaxis()->SetTitle("Number of Crossed rows");
-  fHistLengthvsCrossedRowsDiff->GetYaxis()->SetTitle("Track length");
 
-  fHistLengthvsCrossedRowsBis = new TH2F("fHistLengthvsCrossedRowsBis", "fHistLengthvsCrossedRowsBis",  160, 0, 160, 160, 0, 160);
-  fHistLengthvsCrossedRowsBis->GetXaxis()->SetTitle("Number of Crossed rows");
-  fHistLengthvsCrossedRowsBis->GetYaxis()->SetTitle("Track length");
+  fHistLengthvsCrossedRowsAfterSel = new TH2F("fHistLengthvsCrossedRowsAfterSel", "fHistLengthvsCrossedRowsAfterSel",  160, 0, 160, 160, 0, 160);
+  fHistLengthvsCrossedRowsAfterSel->GetXaxis()->SetTitle("Number of Crossed rows");
+  fHistLengthvsCrossedRowsAfterSel->GetYaxis()->SetTitle("Track length");
 
   fHistTriggerComposition=new TH2F("fHistTriggerComposition", "fHistTriggerComposition",10000 , -5000, 5000, 2, 0,2);
   fHistTriggerComposition->GetYaxis()->SetTitle("0=NotPrim, 1=Primary");
@@ -1049,8 +1042,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistMassPhoton=new TH1F("fHistMassPhoton", "Inv Mass of two V0 daughters as electrons, after V0 mass selection",  300, 0, 1.5);
   fHistMass2Photon=new TH1F("fHistMass2Photons", "Inv MassSquared of two daughters as electrons",  100, -3, 3);
   
-  fHistV0Radius=new TH1F("fHistV0Radius", "V0 Radius (as a check)",  500, 0, 100);
-  fHistV0RadiusBis=new TH1F("fHistV0RadiusBis", "V0 Radius (as a check)",  500, 0, 100);
+  fHistV0Radius=new TH1F("fHistV0Radius", "V0 Radius (as a check) before all topological selections and many other track sel",  500, 0, 100);
 
   fHistPtArmvsAlpha=new TH2F("fHistPtArmvsAlpha", "Distribution of V0 candidates before cuts on Arm/Lrej/mass",  80, -1, 1,80, 0, 0.3);
   fHistPtArmvsAlpha->GetXaxis()->SetTitle("Alpha");
@@ -1356,10 +1348,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fOutputList->Add(fHistEventV0);
   fOutputList->Add(fHistTrack); 
   fOutputList->Add(fHistV0Radius);
-  fOutputList->Add(fHistV0RadiusBis);
-  fOutputList->Add(fHistLengthvsCrossedRowsBis);
+  fOutputList->Add(fHistLengthvsCrossedRowsAfterSel);
   fOutputList->Add(fHistLengthvsCrossedRows);
-  fOutputList->Add(fHistLengthvsCrossedRowsDiff);
   fOutputList->Add(fHistTriggerComposition); 
   fOutputList->Add(fHistTriggerCompositionMCTruth); 
   fOutputList->Add(fHistAssocComposition); 
@@ -1542,6 +1532,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     return;
   }
   
+
   fHistEventMult->Fill(1);
   
   Int_t iTracks(fAOD->GetNumberOfTracks());         
@@ -1603,13 +1594,14 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 
   Float_t lPercentiles = 0;
  
+  
   //This will work for both ESDs and AODs
   AliMultSelection *MultSelection = (AliMultSelection*) fAOD -> FindListObject("MultSelection");
   
   if ( MultSelection ){
   //c cout << "mult sel ok" << endl;
   lPercentiles= MultSelection->GetMultiplicityPercentile("V0M");
-  cout << lPercentiles << endl;
+  //  cout << lPercentiles << endl;
   }else{
   AliInfo("Didn't find MultSelection!"); 
   }
@@ -1858,14 +1850,13 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     Float_t     CrossedRowsOverLength=(Float_t)nTPCCrossedRows/lTrackLength; //->both work in the same way
 
     fHistLengthvsCrossedRows ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength );
-    fHistLengthvsCrossedRowsDiff ->Fill(  (Float_t)nTPCCrossedRows, lTrackLengthBis);
 
     if (lTrackLength<90) continue;
     fHistTrack->Fill(7);  
 
     if (CrossedRowsOverLength< 0.8) continue;
     fHistTrack->Fill(8); 
-    fHistLengthvsCrossedRowsBis ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength);
+    fHistLengthvsCrossedRowsAfterSel ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength);
 
     //cluster selection (not applied)
     Int_t nClustersTPC = -1;
@@ -2534,10 +2525,9 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       fHistEventV0->Fill(4);
 
       Float_t       lV0Radius			= v0->RadiusV0();
-      Float_t       lV0RadiusBis			= TMath::Sqrt(pow(v0->DecayVertexV0X(),2) + pow(v0->DecayVertexV0Y(),2));
+      //      Float_t       lV0RadiusBis			= TMath::Sqrt(pow(v0->DecayVertexV0X(),2) + pow(v0->DecayVertexV0Y(),2)); //this works exactly as lV0Radius
 
       fHistV0Radius->Fill(lV0Radius);
-      fHistV0RadiusBis->Fill(lV0RadiusBis);
 
       //Tracklength selection
       Float_t lTrackLengthpos = -1;
@@ -2570,7 +2560,12 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	//	isTOFPIDok=kTRUE;
       }
 
-      if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) ) continue; //out of bunch pile up (a V0 daughter track is required to have at least a hit in the TOF 
+      Bool_t HasPointOnSPDPos=kFALSE;
+      Bool_t HasPointOnSPDNeg=kFALSE;
+      if (prongTrackPos->HasPointOnITSLayer(0) || prongTrackPos->HasPointOnITSLayer(1) ) HasPointOnSPDPos=kTRUE;
+      if (prongTrackNeg->HasPointOnITSLayer(0) || prongTrackNeg->HasPointOnITSLayer(1) ) HasPointOnSPDNeg=kTRUE;
+
+      if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) && !(HasPointOnSPDPos) && !(HasPointOnSPDNeg)) continue; //out of bunch pile up (a V0 daughter track is required to have at least a hit in the TOF or in one of the first two ITS layers (SPD))
       fHistEventV0->Fill(7);
 
       if(isTOFPIDok){
@@ -3072,8 +3067,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   DoPairsh1h2((Int_t)lPercentiles, fieldsign, lBestPrimaryVtxPos[2], ptTriggerMassimo);  
 
   PostData(1, fOutputList);     
-  PostData(2,fSignalTree);
-  PostData(3,fBkgTree);
+  PostData(2, fSignalTree);
+  PostData(3, fBkgTree);
   PostData(4, fOutputList2);  
   PostData(5, fOutputList3);     
   PostData(6, fOutputList4);     
