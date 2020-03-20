@@ -1742,9 +1742,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         } // MC particle loop
       } // MC
       
-      //-----------------------
-      // Check removal of this below
-      //------------------------
       for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
       {
         fhConeSumPtM02Cut[ishsh] = new TH2F
@@ -1780,11 +1777,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhConeSumPtM02CutMC[imc][ishsh]) ;
           }
         } // MC
-      } // Fill TH3 and pT iso shower shape cut
-      //-----------------------
-      // Check removal of this above
-      //------------------------
-    } 
+      } // Fill sum pt vs pT for shower shape cut
+    } // Fill TH3 and pT iso shower shape cut
      
     for(Int_t iso = 0; iso < 2; iso++)
     {
