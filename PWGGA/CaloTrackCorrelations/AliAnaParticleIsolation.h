@@ -287,7 +287,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
-
+  Float_t  fConeNClusterPerMinCut    [20];            ///< Temporal container of n clusters per pT min cut
+  Float_t  fConeptsumClusterPerMinCut[20];            ///< Temporal container of sum pT clusters per pT min cut
+  Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n clusters per pT min cut
+  Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT clusters per pT min cut
+  
   Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
   Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.
   Float_t  fEtaCutInCone[10];                         ///<  List of track/cluster max eta cut to test in cone for sum pT calculation.
@@ -640,44 +644,39 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
   TH2F *   fhPtClusterInConePerRCut;                     //!<! Clusters Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhPtClusterInConePerRCutLargePtTrig;          //!<! Clusters Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerRCut;                       //!<! Tracks Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhPtTrackInConePerRCutLargePtTrig;            //!<! Tracks Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtClusterPerRCut;                    //!<! Clusters Sum Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhConeSumPtClusterPerRCutLargePtTrig;         //!<! Clusters Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerRCut;                      //!<! Tracks Sum Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhConeSumPtTrackPerRCutLargePtTrig;           //!<! Tracks Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeNClusterPerMinPtCutLargePtTrig;         //!<! N Clusters in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeNTrackPerMinPtCutLargePtTrig;           //!<! N Tracks in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
-  TH2F *   fhPerpConeNTrackPerMinPtCutLargePtTrig;       //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeNTrackSubPerpPerMinPtCut;               //!<! N Tracks in cone minus in the perpendicular cone for different min pT cuts, x axis.
 
+  TH3F *   fhConeNClusterPerMinPtCutCent;                //!<! N Clusters in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackPerMinPtCutCent;                  //!<! N Tracks in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPerpConeNTrackPerMinPtCutCent;              //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackSubPerpPerMinPtCutCent;           //!<! N Tracks in cone minux the perpendicular cone for different min pT cuts, x axis vs centrality.
+  
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtClusterPerMinPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerMinPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
-  TH2F *   fhPerpConeSumPtTrackPerMinPtCutLargePtTrig;   //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackSubPerpPerMinPtCut;           //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis.
+
+  TH3F *   fhConeSumPtClusterPerMinPtCutCent;            //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackPerMinPtCutCent;              //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPerpConeSumPtTrackPerMinPtCutCent;          //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackSubPerpPerMinPtCutCent;       //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
-  TH2F *   fhConeSumPtClusterPerMaxPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerMaxPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerEtaCut;                    //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerEtaCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis. Trigger pT > 10 GeV fixed
   
   TH2F *   fhPtClusterInConePerNCellCut;                 //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhPtClusterInConePerNCellCutLargePtTrig;      //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerNCellCut;                   //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhPtTrackInConePerNCellCutLargePtTrig;        //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtClusterPerNCellCut;                //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhConeSumPtClusterPerNCellCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerNCellCut;                  //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhConeSumPtTrackPerNCellCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   
   TH3F *   fhPtClusterInConePerNCellPerSM [4];           //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis vs SM number, 8<E<12 GeV, 3 shower bins
   TH3F *   fhPtTrackInConePerNCellPerSM   [4];           //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis, vs SM number, 8<E<12 GeV, 3 shower bins
@@ -685,14 +684,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhConeSumPtTrackPerNCellPerSM  [4];           //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis, vs SM number, 8<E<12 GeV, 3 shower bins
 
   TH2F *   fhPtClusterInConePerExoCut;                   //!<! Clusters Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhPtClusterInConePerExoCutLargePtTrig;        //!<! Clusters Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerExoCut;                     //!<! Tracks Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhPtTrackInConePerExoCutLargePtTrig;          //!<! Tracks Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtClusterPerExoCut;                  //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhConeSumPtTrackPerExoCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
   TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
@@ -758,7 +753,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,45) ;
+  ClassDef(AliAnaParticleIsolation,46) ;
   /// \endcond
 
 } ;
