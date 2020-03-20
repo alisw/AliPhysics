@@ -25,24 +25,20 @@ class AliConversionAodSkimTask: public AliAodSkimTask
     void                  SetConvMaxPhi(Double_t phi)         {fConvMaxPhi=phi;}
     void                  SetDoBothConvPtAndAcc(Bool_t b)     {fDoBothConvPtAndAcc=b;}
     void                  SetDoQA(Bool_t b)                   {fDoQA=b;}
-    const char           *Str() const;
   protected:
     void                  UserCreateOutputObjects();
-    Bool_t                UserNotify();
-    void                  Terminate(Option_t* option);
     Bool_t                SelectEvent();
     Double_t              fConvMinPt;             //  minimum conversion photon pT to accept event
     Double_t              fConvMinEta;            //  minimum eta of photon to accept event
     Double_t              fConvMaxEta;            //  maximum eta of photon to accept event
     Double_t              fConvMinPhi;            //  minimum phi of photon to accept event
     Double_t              fConvMaxPhi;            //  maximum phi of photon to accept event
-    Bool_t                fDoBothConvPtAndAcc;    // switch to enable simultaneous filtering for minimum conv pt and conv acceptance cut
-    Bool_t                fDoQA;                  // do QA
-
-    TH1F                 *fHconvPtBeforeCuts;       //! conv photon distribution
-    TH1F                 *fHconvPtAfterCuts;        //! conv photon distribution
-    TH2F                 *fHconvAccBeforeCuts;       //! conv photon distribution
-    TH2F                 *fHconvAccAfterCuts;        //! conv photon distribution
+    Bool_t                fDoBothConvPtAndAcc;    //  switch to enable simultaneous filtering for minimum conv pt and conv acceptance cut
+    Bool_t                fDoQA;                  //  do QA
+    TH1F                 *fHconvPtBeforeCuts;     //! conv photon distribution
+    TH1F                 *fHconvPtAfterCuts;      //! conv photon distribution
+    TH2F                 *fHconvAccBeforeCuts;    //! conv photon distribution
+    TH2F                 *fHconvAccAfterCuts;     //! conv photon distribution
 
     AliConversionAodSkimTask(const AliConversionAodSkimTask&);             // not implemented
     AliConversionAodSkimTask& operator=(const AliConversionAodSkimTask&);  // not implemented

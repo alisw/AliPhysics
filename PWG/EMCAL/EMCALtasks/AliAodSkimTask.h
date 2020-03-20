@@ -47,7 +47,12 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyVertices(Bool_t b)           {fDoCopyVertices=b;}
     void                  SetCopyZDC(Bool_t b)                {fDoCopyZDC=b;}
     void                  SetCutFilterBit(UInt_t b)           {fCutFilterBit=b;}
-    void                  SetCutMC(Bool_t b)                  {fCutMC=b;}
+    void                  SetCutMcIsPrimary(Bool_t b)         {fCutMcIsPrimary=b;}
+    void                  SetCutMcIsPhysicalPrimary(Bool_t b) {fCutMcIsPhysPrimary=b;}
+    void                  SetCutMcPt(Double_t pt)             {fCutMcPt=pt;}
+    void                  SetCutMcY(Double_t y)               {fCutMcY=y;}
+    void                  SetCutMcPhos(Bool_t b)              {fCutMcPhos=b;}
+    void                  SetCutMcEmcal(Bool_t b)             {fCutMcEmcal=b;}
     void                  SetDoVertMain(Bool_t b)             {fDoVertMain=b;}
     void                  SetDoVertWoRefs(Bool_t b)           {fDoVertWoRefs=b;}
     void                  SetDoPhosFilter(Bool_t b)           {fDoPhosFilt=b;}
@@ -55,12 +60,16 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetMinCutPt(Double_t pt)            {fCutMinPt=pt;}
     void                  SetRemCovMat(Bool_t b)              {fDoRemCovMat=b;}
     void                  SetRemPid(Bool_t b)                 {fDoRemPid=b;}
+    void                  SetRemoveMcParts(Bool_t b)          {fDoRemoveMcParts=b;}
     void                  SetRemoveTracks(Bool_t b)           {fDoRemoveTracks=b;}
-    void                  SetYCutMC(Double_t v)               {fYCutMC=v;}
     const char           *Str() const;
   protected:
     virtual void          CleanTrack(AliAODTrack *t);
-    const char           *GetVersion() const { return "1.5"; }
+    const char           *GetVersion() const { return "1.6"; }
+    virtual Bool_t        KeepMcPart(AliAODMCParticle *p);
+    Bool_t                IsDcalAcc(Double_t phi, Double_t eta);
+    Bool_t                IsPhosAcc(Double_t phi, Double_t eta);
+    Bool_t                IsEmcalAcc(Double_t phi, Double_t eta);
     virtual Bool_t        KeepTrack(AliAODTrack *t);
     Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
     virtual Bool_t        SelectEvent();
@@ -97,8 +106,6 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Double_t              fTrackMinPt;            //  minimum track pt to accept event
     Double_t              fTrackMaxPt;            //  maximum track pt to accept event
     Bool_t                fDoBothMinTrackAndClus; // switch to enable simultaneous filtering for minimum track and cluster cuts
-    Bool_t                fCutMC;                 //  if true cut MC particles with |Y|>fYCutMC
-    Double_t              fYCutMC;                //  cut for MC particles (default = 0.7)
     Double_t              fCutMinPt;              //  minimum pT to keep track
     UInt_t                fCutFilterBit;          //  filter bit(s) to select
     TString               fGammaBr;               //  gamma branch name
@@ -132,6 +139,13 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCleanTracklets;      //  if true then clean tracklets
     Bool_t                fDoCopyUserTree;        //  if true copy input user tree
     Bool_t                fDoPhosFilt;            //  if true filter on phos (clusters and min energy cut)
+    Bool_t                fDoRemoveMcParts;       //  if true remove mc particles
+    Bool_t                fCutMcIsPrimary;        //  if true cut on primary mc particles
+    Bool_t                fCutMcIsPhysPrimary;    //  if true cut on physical primary mc particles
+    Bool_t                fCutMcPt;               //  if true cut on mc particles with pT<fCutMcPt
+    Bool_t                fCutMcY;                //  if true cut on mc particles with |y|<fCutMcY
+    Bool_t                fCutMcPhos;             //  if true cut particles not in PHOS
+    Bool_t                fCutMcEmcal;            //  if true cut particles not in Emcal
     UInt_t                fTrials;                //! events seen since last acceptance
     Float_t               fPyxsec;                //! pythia xsection
     Float_t               fPytrials;              //! pythia trials
@@ -145,6 +159,6 @@ class AliAodSkimTask: public AliAnalysisTaskSE
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 9); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 10); // AliAodSkimTask
 };
 #endif
