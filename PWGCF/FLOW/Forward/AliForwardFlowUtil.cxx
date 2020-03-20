@@ -124,10 +124,10 @@ Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
 Int_t AliForwardFlowUtil::GetNUARunNumber(Int_t runnumber){
   // HIR
   Double_t HIR_goodruns1[] = {245683,  245705,  245833,  245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
-  //Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
+  Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
 
   for (Int_t i = 0; i < 13; i++) if (runnumber == HIR_goodruns1[i]) return 0;
-  //for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
+  for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
 
   // lowIR
   if (runnumber >= 244918 && runnumber <= 245068) return 0;
