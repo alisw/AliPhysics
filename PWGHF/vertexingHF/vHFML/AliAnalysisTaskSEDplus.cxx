@@ -752,6 +752,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
 
   PostData(1, fOutput);
+  PostData(3, fCounter);
 
   //Create ML tree
   if (fCreateMLtree)
