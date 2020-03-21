@@ -91,6 +91,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
   
+  void         StudyClustersUEInCone(AliCaloTrackParticleCorrelation * aodParticle) ;
+  
   void         StudyTracksUEInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
   
   // Analysis Setters and Getters
@@ -287,8 +289,20 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
+  
   Float_t  fConeNClusterPerMinCut    [20];            ///< Temporal container of n clusters per pT min cut
   Float_t  fConeptsumClusterPerMinCut[20];            ///< Temporal container of sum pT clusters per pT min cut
+  
+  Float_t  fConeptsumEtaBandClusterPerMinCut   [20];  ///< Temporal container of n clusterss in eta band per pT min cut
+  Float_t  fConeNEtaBandClusterPerMinCut       [20];  ///< Temporal container of sum pT clusters in eta band per pT min cut
+  Float_t  fConeptsumClusterSubEtaBandPerMinCut[20];  ///< Temporal container of n clusters in cone minus  eta band per pT min cut
+  Float_t  fConeNClusterSubEtaBandPerMinCut    [20];  ///< Temporal container of sum pT clusters in cone minus eta band per pT min cut
+
+  Float_t  fConeptsumPhiBandClusterPerMinCut   [20];  ///< Temporal container of n clusters in phi band per pT min cut
+  Float_t  fConeNPhiBandClusterPerMinCut       [20];  ///< Temporal container of sum pT clusters in phi band per pT min cut
+  Float_t  fConeptsumClusterSubPhiBandPerMinCut[20];  ///< Temporal container of n clusters in cone minus  phi band per pT min cut
+  Float_t  fConeNClusterSubPhiBandPerMinCut    [20];  ///< Temporal container of sum pT clusters in cone minus phi band per pT min cut
+  
   Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n tracks per pT min cut
   Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT tracks per pT min cut
  
@@ -666,6 +680,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Variation of min pt in cone constituents
   //
   TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
+  TH2F *   fhEtaBandConeNClusterPerMinPtCut;             //!<! N Clusters in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterSubEtaBandPerMinPtCut;          //!<! N Clusters in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeNClusterPerMinPtCut;             //!<! N Clusters in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterSubPhiBandPerMinPtCut;          //!<! N Clusters in cone minus in the phi band for different min pT cuts, x axis.
+  
   TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
   TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
   TH2F *   fhConeNTrackSubPerpPerMinPtCut;               //!<! N Tracks in cone minus in the perpendicular cone for different min pT cuts, x axis.
@@ -675,15 +694,25 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeNTrackSubPhiBandPerMinPtCut;            //!<! N Tracks in cone minus in the phi band for different min pT cuts, x axis.
   
   TH3F *   fhConeNClusterPerMinPtCutCent;                //!<! N Clusters in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeNClusterPerMinPtCutCent;         //!<! N Clusters in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNClusterSubEtaBandPerMinPtCutCent;      //!<! N Clusters in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeNClusterPerMinPtCutCent;         //!<! N Clusters in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNClusterSubPhiBandPerMinPtCutCent;      //!<! N Clusters in cone minus in the phi band for different min pT cuts, x axis vs centrality.
+
   TH3F *   fhConeNTrackPerMinPtCutCent;                  //!<! N Tracks in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhPerpConeNTrackPerMinPtCutCent;              //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhConeNTrackSubPerpPerMinPtCutCent;           //!<! N Tracks in cone minux the perpendicular cone for different min pT cuts, x axis vs centrality.
-  TH3F *   fhEtaBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the eta band for different min pT cuts, x axisvs centrality..
-  TH3F *   fhConeNTrackSubEtaBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the eta band for different min pT cuts, x axisvs centrality..
-  TH3F *   fhPhiBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the phi band for different min pT cuts, x axisvs centrality..
-  TH3F *   fhConeNTrackSubPhiBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the phi band for different min pT cuts, x axisvs centrality..
+  TH3F *   fhEtaBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the eta band for different min pT cuts, x axisvs centrality.
+  TH3F *   fhConeNTrackSubEtaBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackSubPhiBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the phi band for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
+  TH2F *   fhEtaBandConeSumPtClusterPerMinPtCut;         //!<! Clusters Sum Pt in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterSubEtaBandPerMinPtCut;      //!<! Clusters Sum Pt in cone minus the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeSumPtClusterPerMinPtCut;         //!<! Clusters Sum Pt in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterSubPhiBandPerMinPtCut;      //!<! Clusters Sum Pt in cone minus the phi band for different min pT cuts, x axis.
+  
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackSubPerpPerMinPtCut;           //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis.
@@ -693,6 +722,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtTrackSubPhiBandPerMinPtCut;        //!<! Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis.
   
   TH3F *   fhConeSumPtClusterPerMinPtCutCent;            //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeSumPtClusterPerMinPtCutCent;     //!<! Clusters Sum Pt in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtClusterSubEtaBandPerMinPtCutCent;  //!<! Clusters Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeSumPtClusterPerMinPtCutCent;     //!<! Clusters Sum Pt in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtClusterSubPhiBandPerMinPtCutCent;  //!<! Clusters Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
+  
   TH3F *   fhConeSumPtTrackPerMinPtCutCent;              //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhPerpConeSumPtTrackPerMinPtCutCent;          //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis vs centrality.
   TH3F *   fhConeSumPtTrackSubPerpPerMinPtCutCent;       //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis vs centrality.
@@ -700,6 +734,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhConeSumPtTrackSubEtaBandPerMinPtCutCent;    //!<! Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
   TH3F *   fhPhiBandConeSumPtTrackPerMinPtCutCent;       //!<! Tracks Sum Pt in the phi band for different min pT cuts, x axis vs centrality.
   TH3F *   fhConeSumPtTrackSubPhiBandPerMinPtCutCent;    //!<! Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
+  
+  TH2F *   fhConeNSubEtaBandPerMinPtCut ;                //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeNSubPhiBandPerMinPtCut ;                //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtSubEtaBandPerMinPtCut;             //!<! Clusters+Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtSubPhiBandPerMinPtCut;             //!<! Clusters+Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis.
+
+  TH3F *   fhConeNSubEtaBandPerMinPtCutCent ;            //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNSubPhiBandPerMinPtCutCent ;            //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtSubEtaBandPerMinPtCutCent;         //!<! Clusters+Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtSubPhiBandPerMinPtCutCent;         //!<! Clusters+Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
