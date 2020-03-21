@@ -91,7 +91,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
   
-  void         StudyTracksInPerpCone(AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyTracksUEInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
   
   // Analysis Setters and Getters
   
@@ -289,8 +289,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
   Float_t  fConeNClusterPerMinCut    [20];            ///< Temporal container of n clusters per pT min cut
   Float_t  fConeptsumClusterPerMinCut[20];            ///< Temporal container of sum pT clusters per pT min cut
-  Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n clusters per pT min cut
-  Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT clusters per pT min cut
+  Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n tracks per pT min cut
+  Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT tracks per pT min cut
+  Float_t  fConeptsumPerpTrackPerMinCut[20];          ///< Temporal container of n tracks in perpendicular cone per pT min cut
+  Float_t  fConeNPerpTrackPerMinCut    [20];          ///< Temporal container of sum pT tracks in perpendicular cone per pT min cut
+  Float_t  fConeptsumTrackSubPerpPerMinCut[20];       ///< Temporal container of n tracks in cone minus  perpendicular cone per pT min cut
+  Float_t  fConeNTrackSubPerpPerMinCut    [20];       ///< Temporal container of sum pT tracks in cone minus perpendicular cone per pT min cut
   
   Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
   Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.

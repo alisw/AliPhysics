@@ -410,6 +410,16 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fhPtClusterInConePerTCardIndex [itc] = 0;
     fhPtTrackInConePerTCardIndex   [itc] = 0;
   }
+  
+  for(Int_t icut = 0; icut < 20; icut++) 
+  {
+    fConeptsumTrackPerMinCut       [icut] = 0;
+    fConeNTrackPerMinCut           [icut] = 0;
+    fConeptsumPerpTrackPerMinCut   [icut] = 0;
+    fConeNPerpTrackPerMinCut       [icut] = 0;
+    fConeptsumTrackSubPerpPerMinCut[icut] = 0;
+    fConeNTrackSubPerpPerMinCut    [icut] = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -5080,7 +5090,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //---------------------------------------------------------------
     
     if ( fStudyTracksInCone || fStudyPtCutInCone )
-      StudyTracksInPerpCone(aod);
+      StudyTracksUEInCone(aod);
 
     //---------------------------------------------------------------
     // Fill Shower shape  histograms
@@ -7055,10 +7065,10 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
 }
 
 //________________________________________________________________________________________________
-/// Get the track pT or sum of pT at 45 degrees from trigger.
+/// Get the track pT or sum of pT in a cone at 45 degrees from trigger or in eta-phi bands.
 /// Fill additional histograms not done in AliIsolationCut
 //________________________________________________________________________________________________
-void AliAnaParticleIsolation::StudyTracksInPerpCone(AliCaloTrackParticleCorrelation * pCandidate)
+void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelation * pCandidate)
 {
   if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyNeutral ) return ;
   
@@ -7069,15 +7079,14 @@ void AliAnaParticleIsolation::StudyTracksInPerpCone(AliCaloTrackParticleCorrelat
   Double_t sumptPerpITSSPD = 0. ;
   Double_t sumptPerpBC0ITSSPD = 0.;
   
-  Float_t coneptsumPerpTrackPerMinCut[20];
-  Float_t coneNPerpTrackPerMinCut    [20];
-  
   if ( fStudyPtCutInCone )
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      coneptsumPerpTrackPerMinCut[icut] = 0;
-      coneNPerpTrackPerMinCut    [icut] = 0;
+      fConeptsumPerpTrackPerMinCut   [icut] = 0;
+      fConeNPerpTrackPerMinCut       [icut] = 0;
+      fConeptsumTrackSubPerpPerMinCut[icut] = 0;
+      fConeNTrackSubPerpPerMinCut    [icut] = 0;
     }
   }
   
@@ -7141,8 +7150,8 @@ void AliAnaParticleIsolation::StudyTracksInPerpCone(AliCaloTrackParticleCorrelat
         {
           if ( track->Pt() > fMinPtCutInCone[icut] ) 
           {
-            coneptsumPerpTrackPerMinCut[icut]+=track->Pt();
-            coneNPerpTrackPerMinCut    [icut]++;
+            fConeptsumPerpTrackPerMinCut[icut]+=track->Pt();
+            fConeNPerpTrackPerMinCut    [icut]++;
           }          
         }
       }
@@ -7213,21 +7222,28 @@ void AliAnaParticleIsolation::StudyTracksInPerpCone(AliCaloTrackParticleCorrelat
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+      // Normalize to cone area
+      fConeptsumPerpTrackPerMinCut[icut]/=2.;
+      fConeNPerpTrackPerMinCut    [icut]/=2.;
       
-      fhConeSumPtTrackSubPerpPerMinPtCut->Fill(icut+1, fConeptsumTrackPerMinCut[icut]-coneptsumPerpTrackPerMinCut[icut]/2., GetEventWeight()*weightTrig);
-      fhConeNTrackSubPerpPerMinPtCut    ->Fill(icut+1, fConeNTrackPerMinCut    [icut]-coneNPerpTrackPerMinCut    [icut]/2., GetEventWeight()*weightTrig);
+      // Subtract to content in trigger cone (it must be filled before on another method StudyTracksInCone())
+      fConeptsumTrackSubPerpPerMinCut[icut] = fConeptsumTrackPerMinCut[icut] - fConeptsumPerpTrackPerMinCut[icut];
+      fConeNTrackSubPerpPerMinCut    [icut] = fConeNTrackPerMinCut    [icut] - fConeNPerpTrackPerMinCut    [icut];
+      
+      // Fill histograms
+      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+      
+      fhConeSumPtTrackSubPerpPerMinPtCut->Fill(icut+1, fConeptsumTrackSubPerpPerMinCut[icut], GetEventWeight()*weightTrig);
+      fhConeNTrackSubPerpPerMinPtCut    ->Fill(icut+1, fConeNTrackSubPerpPerMinCut    [icut], GetEventWeight()*weightTrig);
       
       if ( IsHighMultiplicityAnalysisOn() )
       {
-        fhPerpConeNTrackPerMinPtCutCent    ->Fill(icut, coneNPerpTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
-        fhPerpConeSumPtTrackPerMinPtCutCent->Fill(icut, coneptsumPerpTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhPerpConeNTrackPerMinPtCutCent    ->Fill(icut, fConeNPerpTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhPerpConeSumPtTrackPerMinPtCutCent->Fill(icut, fConeptsumPerpTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
         
-        fhConeSumPtTrackSubPerpPerMinPtCutCent->Fill(icut+1, fConeptsumTrackPerMinCut[icut]-coneptsumPerpTrackPerMinCut[icut]/2., 
-                                                     GetEventCentrality(), GetEventWeight()*weightTrig);
-        fhConeNTrackSubPerpPerMinPtCutCent    ->Fill(icut+1, fConeNTrackPerMinCut    [icut]-coneNPerpTrackPerMinCut    [icut]/2., 
-                                                     GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhConeSumPtTrackSubPerpPerMinPtCutCent->Fill(icut+1, fConeptsumTrackSubPerpPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
+        fhConeNTrackSubPerpPerMinPtCutCent    ->Fill(icut+1, fConeNTrackSubPerpPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
       }
     }
   }
