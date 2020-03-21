@@ -145,6 +145,7 @@ class AliIsolationCut : public TObject {
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
   Int_t      GetDebug()               const { return fDebug          ; }
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
+  Bool_t     IsTrackMatchedClusterRejectionInConeOn()  { return fIsTMClusterInConeRejected ; }
   Float_t    GetMinDistToTrigger()    const { return fDistMinToTrigger ; }
   Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
