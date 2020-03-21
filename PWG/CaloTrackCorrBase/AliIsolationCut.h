@@ -149,6 +149,11 @@ class AliIsolationCut : public TObject {
   Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
 
+  Float_t    GetTPCEtaSize()          const { return fTPCEtaSize     ; }
+  Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
+  Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
+  Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
+  
   void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
