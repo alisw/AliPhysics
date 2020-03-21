@@ -2402,8 +2402,8 @@ void  AliIsolationCut::MakeIsolationCut
 
   // Get detectors acceptance
   // Do it once, needed for Band UE estimation and excess area determination
-  if ( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
-    GetDetectorAngleLimits(reader,calorimeter); 
+  //if ( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )  // comment not needed in all cases, but it does not take much, in case UE study done in AliAnaParticleIsolation
+  GetDetectorAngleLimits(reader,calorimeter); 
 
   // Calculate how much of the cone got out the detectors acceptance
   //
