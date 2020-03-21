@@ -1439,6 +1439,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD sumBinsArray;
   sumBinning.CreateBinEdges(sumBinsArray);
   
+  TCustomBinning sueBinning;
+  sueBinning.SetMinimum(-100.0);
+  sueBinning.AddStep(-50,  5.0); // 10
+  sueBinning.AddStep(-25, 2.50); // 10
+  sueBinning.AddStep(-10, 1.00); // 15
+  sueBinning.AddStep(-4 , 0.50); // 12
+  sueBinning.AddStep(  4, 0.20); // 20
+  sueBinning.AddStep( 10, 0.50); // 12
+  sueBinning.AddStep( 25, 1.00); // 15
+  sueBinning.AddStep( 50, 2.50); // 10
+  sueBinning.AddStep(100, 5.00); // 10
+  sueBinning.AddStep(200,10.00); // 10
+  TArrayD sueBinsArray;
+  sueBinning.CreateBinEdges(sueBinsArray);
+  
   TCustomBinning ssBinning;
   ssBinning.SetMinimum(-0.01);
   ssBinning.AddStep(0.50,0.01);  // 51 
@@ -2804,7 +2819,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             Form("Track #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
             //fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax,GetNCentrBin(),0,100);
             minPtBinsArray.GetSize() - 1, minPtBinsArray.GetArray(),
-              sumBinsArray.GetSize() - 1,   sumBinsArray.GetArray(),
+              sueBinsArray.GetSize() - 1,   sueBinsArray.GetArray(),
               cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray()); 
            fhConeSumPtTrackSubPerpPerMinPtCutCent->SetZTitle("Centrality (%)");
            fhConeSumPtTrackSubPerpPerMinPtCutCent->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #perp} (GeV/#it{c})");
