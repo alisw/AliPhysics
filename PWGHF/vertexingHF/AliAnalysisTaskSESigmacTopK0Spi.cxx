@@ -175,6 +175,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
   fVarsTMVA(0),
   fNVarsSpectators(0),
   fVarsTMVASpectators(0),
+  fNamesTMVAVarSpectators(""),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
   fRefMult(9.26),
@@ -198,7 +199,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
   fhistMCSpectrumAccLcFromSc(0x0),
   fhistMCSpectrumAccSc(0x0),
   fhSparseAnalysisSigma(0x0),
-  fLcMassWindowForSigmaC(0.10),
+  fLcMassWindowForSigmaC(0.20),
   fSigmaCDeltaMassWindow(0.230),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
@@ -322,7 +323,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi(const Char_t* n
   fhistMCSpectrumAccLcFromSc(0x0),
   fhistMCSpectrumAccSc(0x0),
   fhSparseAnalysisSigma(0x0),
-  fLcMassWindowForSigmaC(0.10),
+  fLcMassWindowForSigmaC(0.20),
   fSigmaCDeltaMassWindow(0.230),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
@@ -893,9 +894,9 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
   Double_t upedgesAccLcFromSc[nbinsAccLcFromSc] = {50, 19.5, 5.5, 1, 50, 2};
   fhistMCSpectrumAccLcFromSc = new THnSparseF("fhistMCSpectrumAccLcFromSc", "fhistMCSpectrumAccLcFromSc; ptLc; codeLc; Qorigin; yLc; ptSc; ySc", nbinsAccLcFromSc, binsAccLcFromSc, lowedgesAccLcFromSc, upedgesAccLcFromSc); // 
   
-  Int_t nbinsSparseSigma[8] = {16, 400, 22, 20, 16, 2, 1, 200};
-  Double_t lowEdgesSigma[8] = {0, 0.130, 2.266, -1, 0, 3.5, 0.5, -1};
-  Double_t upEdgesSigma[8] = {16, 0.330, 2.306, 1, 16, 5.5, 1.5, 1};
+  Int_t nbinsSparseSigma[8] = {25, 400, 400, 20, 25, 2, 1, 200};
+  Double_t lowEdgesSigma[8] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1};
+  Double_t upEdgesSigma[8] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1};
   if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp",8,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
 
   fOutputSparse = new TList();
@@ -1272,14 +1273,14 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillMCHisto(TClonesArray *mcArray){
 
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSESigmacTopK0Spi::MakeAnalysisForLc2prK0S(AliAODEvent *aodEvent,
-								     TClonesArray *arrayLctopKos,
-								     TClonesArray *mcArray,
-								     Int_t &nSelectedAnal,
-								     AliRDHFCutsLctoV0 *cutsAnal,
-								     AliAODMCHeader* aodheader){
+							      TClonesArray *arrayLctopKos,
+							      TClonesArray *mcArray,
+							      Int_t &nSelectedAnal,
+							      AliRDHFCutsLctoV0 *cutsAnal,
+							      AliAODMCHeader* aodheader){
 
   /// Lc prong needed to MatchToMC method
-
+  
   Int_t pdgCand = 4122;
   Int_t pdgDgLctoV0bachelor[2] = {2212, 310};
   Int_t pdgDgV0toDaughters[2] = {211, 211};
@@ -1304,6 +1305,19 @@ void AliAnalysisTaskSESigmacTopK0Spi::MakeAnalysisForLc2prK0S(AliAODEvent *aodEv
     if (!(lcK0spr->CheckCascadeFlags())) {
       AliDebug(2, Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
       continue;
+    }
+
+    // use Preselect to filter out the tracks according to the pT
+    if (cutsAnal->GetUsePreselect()){
+      TObjArray arrTracks(2);
+      for(Int_t ipr = 0; ipr < 2; ipr++){
+	AliAODTrack *tr;
+	if (ipr == 0) tr = vHF->GetProng(aodEvent, lcK0spr, ipr);
+	else tr = (AliAODTrack*)(aodEvent->GetV0(lcK0spr->GetProngID(1)));
+	arrTracks.AddAt(tr, ipr);
+      }
+      Int_t preSelectLc = cutsAnal->PreSelect(arrTracks);
+      if (preSelectLc == 0) continue;
     }
 
     if(!vHF->FillRecoCasc(aodEvent, lcK0spr, kFALSE)){ //Fill the data members of the candidate only if they are empty.
@@ -1462,7 +1476,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::MakeAnalysisForLc2prK0S(AliAODEvent *aodEv
     }
 
     //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
-    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
+    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
+    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel, aodEvent);
   }
   
   delete vHF;
@@ -1472,10 +1487,10 @@ void AliAnalysisTaskSESigmacTopK0Spi::MakeAnalysisForLc2prK0S(AliAODEvent *aodEv
 }
 //________________________________________________________________________
 void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part,
-							     Int_t isLc,
-							     Int_t &nSelectedAnal,
-							     AliRDHFCutsLctoV0 *cutsAnal,
-							     TClonesArray *mcArray, Int_t iLctopK0s){
+							  Int_t isLc,
+							  Int_t &nSelectedAnal,
+							  AliRDHFCutsLctoV0 *cutsAnal,
+							  TClonesArray *mcArray, Int_t iLctopK0s, AliAODEvent *aod){
   //
   /// Fill histos for Lc -> K0S+proton
   //
@@ -1529,7 +1544,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     }
   }
 
-  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
+  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
 
   if (isInV0window == 0) {
     AliDebug(2, "No: The candidate has NOT passed the V0 window cuts!");
@@ -1538,7 +1553,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
   }
   else AliDebug(2, "Yes: The candidate has passed the mass cuts!");  
 
-  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
+  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
 
   if (!isInCascadeWindow) {
     AliDebug(2, "No: The candidate has NOT passed the cascade window cuts!");
@@ -1547,8 +1562,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
   }
   else AliDebug(2, "Yes: The candidate has passed the cascade window cuts!");
 
-  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
-  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
+  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
+  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
     if (isLc) AliDebug(2, "SIGNAL candidate rejected");
@@ -1564,7 +1579,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     return;
   }
 
-  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
+  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID, aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
   Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
 
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
@@ -1613,13 +1628,13 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     return;
   }
 
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
     nSelectedAnal++;
   }
 
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(), part->Y(4122))) ) return;
 
-  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
+  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
     if (isLc) AliDebug(2, "SIGNAL candidate rejected");
     AliDebug(2, "No: Analysis cuts kTracks level NOT passed");
     return;
@@ -2216,9 +2231,9 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 }
 //________________________________________________________________________
 AliAnalysisTaskSESigmacTopK0Spi::EBachelor AliAnalysisTaskSESigmacTopK0Spi::CheckBachelor( AliAODRecoCascadeHF *part,
-												 AliAODTrack* bachelor,
-												 TClonesArray *mcArray ){
-
+											   AliAODTrack* bachelor,
+											   TClonesArray *mcArray ){
+  
   //Printf("In CheckBachelor");
 
   /// function to check if the bachelor is a p, if it is a p but not from Lc
@@ -2271,10 +2286,10 @@ AliAnalysisTaskSESigmacTopK0Spi::EBachelor AliAnalysisTaskSESigmacTopK0Spi::Chec
 
 //________________________________________________________________________
 AliAnalysisTaskSESigmacTopK0Spi::EK0S AliAnalysisTaskSESigmacTopK0Spi::CheckK0S( AliAODRecoCascadeHF *part,
-										       AliAODv0* v0part,
-										       //AliAODTrack* v0part,
-										       TClonesArray *mcArray ){
-
+										 AliAODv0* v0part,
+										 //AliAODTrack* v0part,
+										 TClonesArray *mcArray ){
+  
   /// function to check if the K0Spart is a p, if it is a p but not from Lc
   /// to be filled for background candidates
 

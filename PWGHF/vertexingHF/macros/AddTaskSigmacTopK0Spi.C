@@ -60,13 +60,13 @@ AliAnalysisTaskSESigmacTopK0Spi* AddTaskSigmacTopK0Spi(Int_t nvars, TString libr
   TString namesTMVAvars, namesTMVAvarsSpectators;
   if (nvars == 11) {
     namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
-    nvarsSpectators = 15;
-    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+    nvarsSpectators = 14;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
   }
   else if (nvars == 8) {
     namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,combinedProtonProb";
-    nvarsSpectators = 15;
-    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+    nvarsSpectators = 14;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
   }
 
   //CREATE THE TASK
