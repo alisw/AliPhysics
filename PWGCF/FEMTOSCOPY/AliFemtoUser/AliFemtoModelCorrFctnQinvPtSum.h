@@ -43,9 +43,12 @@ public:
   /// other memebers are set - user **MUST** set pair type and PDG codes.
   ///
   AliFemtoModelCorrFctnQinvPtSum(const char *suffix,
-                            const Int_t aNbins,
-                            const Float_t aQinvLo,
-                            const Float_t aQinvHi);
+				 const int nbins,
+				 const float qinv_low_limit,
+				 const float qinv_high_limit,
+				 const int nBinsPtSum,
+				 const Double_t aLowPtSum,
+				 const Double_t aHighPtSum);
 
   /// Copy Constructor
   ///
@@ -108,7 +111,6 @@ public:
   static void GetTrackV0(const AliFemtoPair*,
                          AliFemtoTrack*&,
                          AliFemtoV0*&);
-
 protected:
 
   /// Adds pair information to appropriate histogram points
@@ -125,6 +127,13 @@ protected:
 
   /// Denominator with axis for non-expected particle PID
   TH2F *fDenPid;
+
+  TH2D *fNumeratorQinvPtSumTrue;
+  TH2D *fNumeratorQinvPtSumTrueIdeal;
+  TH2D *fNumeratorQinvPtSumFake;
+  TH2D *fNumeratorQinvPtSumFakeIdeal;
+  TH2D *fDenominatorQinvPtSum;
+  TH2D *fDenominatorQinvPtSumIdeal;
 };
 
 
