@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-// Updated Mar 12, collect rec
+//Mar22
 
 
 #include "AliAnalysisManager.h"
@@ -54,24 +54,27 @@ f2fHistGenCentVsPtAntiLambda(0x0),
 f2fHistXiPlus(0x0),
 f2fHistXiMinus(0x0),
 
+f2fHistGenCentVsPtLambda03(0x0),
+f2fHistGenCentVsPtAntiLambda03(0x0),
+f2fHistXiPlus03(0x0),
+f2fHistXiMinus03(0x0),
+
 
 f2fHistRecSecCentVsPtLambdaFourSigthree(0x0),
 f2fHistRecSecCentVsPtAntiLambdaFourSigthree(0x0),
-f2fHistRecMatCentVsPtLambdaFourSigthree(0x0),
-f2fHistRecMatCentVsPtAntiLambdaFourSigthree(0x0),
-
 
 f2fHistRecPrimariesCentVsPtLambdaFourSigthree(0x0),
 f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree(0x0),
+f2fHistRecPrimariesCentVsPtLambdaFourSigthree03(0x0),
+f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03(0x0),
 
 f3fHistLambdafromXiFourSigthree(0x0),
 f3fHistAntiLambdafromXiFourSigthree(0x0),
+f3fHistLambdafromXiFourSigthree03(0x0),
+f3fHistAntiLambdafromXiFourSigthree03(0x0),
 
 f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag(0x0),
-f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut(0x0),
 f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag(0x0),
-f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut(0x0),
-
 f3fHistCentInvMassVsPtLambdaRecFourSigthree(0x0),
 f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree(0x0),
 
@@ -159,7 +162,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         
         
-        //-------------------------------------------------------------------GEN-----------------------------------------------------------------------------------------------
+        //Gen
         
         f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambda);
@@ -173,7 +176,20 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         f2fHistXiMinus = new TH2F("f2fHistXiMinus","f2fHistXiMinus",CentbinNum, CentBins, xibinnumb, xibinlimits);
         fListHist->Add(f2fHistXiMinus);
         
-        //-------------------------------------------------------------------MC REC-----------------------------------------------------------------------------------------------
+        
+        f2fHistGenCentVsPtLambda03 = new TH2F( "f2fHistGenCentVsPtLambda03", "f2fHistGenCentVsPtLambda03",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistGenCentVsPtLambda03);
+        
+        f2fHistGenCentVsPtAntiLambda03 = new TH2F( "f2fHistGenCentVsPtAntiLambda03", "f2fHistGenCentVsPtAntiLambda03",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistGenCentVsPtAntiLambda03);
+        
+        f2fHistXiPlus03 = new TH2F("f2fHistXiPlus03","f2fHistXiPlus03",CentbinNum, CentBins, xibinnumb, xibinlimits);
+        fListHist->Add(f2fHistXiPlus03);
+        
+        f2fHistXiMinus03 = new TH2F("f2fHistXiMinus03","f2fHistXiMinus03",CentbinNum, CentBins, xibinnumb, xibinlimits);
+        fListHist->Add(f2fHistXiMinus03);
+        
+
         
         //Sec
         f2fHistRecSecCentVsPtLambdaFourSigthree = new TH2F("f2fHistRecSecCentVsPtLambdaFourSigthree","#Lambda SEC  ",CentbinNum, CentBins,fNptBins, LambdaPtBins);
@@ -181,32 +197,38 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         f2fHistRecSecCentVsPtAntiLambdaFourSigthree = new TH2F("f2fHistRecSecCentVsPtAntiLambdaFourSigthree","#bar{#Lambda}  SEC ",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecSecCentVsPtAntiLambdaFourSigthree);
-        
-        //Mat
-        f2fHistRecMatCentVsPtLambdaFourSigthree = new TH2F("f2fHistRecMatCentVsPtLambdaFourSigthree","#Lambda Mat  ",CentbinNum, CentBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f2fHistRecMatCentVsPtLambdaFourSigthree);
-        
-        f2fHistRecMatCentVsPtAntiLambdaFourSigthree = new TH2F("f2fHistRecMatCentVsPtAntiLambdaFourSigthree","#bar{#Lambda}  Mat ",CentbinNum, CentBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f2fHistRecMatCentVsPtAntiLambdaFourSigthree);
-        
+
         
         //REC PRI
         
         f2fHistRecPrimariesCentVsPtLambdaFourSigthree = new TH2F("f2fHistRecPrimariesCentVsPtLambdaFourSigthree","#Lambda primaries",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtLambdaFourSigthree);
         
-        //---
         f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree = new TH2F("f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree","#bar{#Lambda} primaries",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree);
+        
+        f2fHistRecPrimariesCentVsPtLambdaFourSigthree03 = new TH2F("f2fHistRecPrimariesCentVsPtLambdaFourSigthree03","f2fHistRecPrimariesCentVsPtLambdaFourSigthree03",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistRecPrimariesCentVsPtLambdaFourSigthree03);
+        
+        f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03 = new TH2F("f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03","f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03);
+
         
         //FD
         
         f3fHistLambdafromXiFourSigthree = new TH3F("f3fHistLambdafromXiFourSigthree","f3fHistLambdafromXiFourSigthree ", fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
         fListHist->Add(f3fHistLambdafromXiFourSigthree);
         
-        //-
         f3fHistAntiLambdafromXiFourSigthree = new TH3F("f3fHistAntiLambdafromXiFourSigthree","f3fHistAntiLambdafromXiFourSigthree ",fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
         fListHist->Add(f3fHistAntiLambdafromXiFourSigthree);
+        
+        f3fHistLambdafromXiFourSigthree03 = new TH3F("f3fHistLambdafromXiFourSigthree03","f3fHistLambdafromXiFourSigthree03 ", fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
+        fListHist->Add(f3fHistLambdafromXiFourSigthree03);
+        
+        f3fHistAntiLambdafromXiFourSigthree03 = new TH3F("f3fHistAntiLambdafromXiFourSigthree03","f3fHistAntiLambdafromXiFourSigthree03 ",fNptBins, LambdaPtBins,CentbinNum, CentBins, xibinnumb, xibinlimits);
+        fListHist->Add(f3fHistAntiLambdafromXiFourSigthree03);
+        
+        
         
         //REC
         
@@ -219,15 +241,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag);
         
-        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut);
-        
-        /////
         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag);
         
-        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut);
+
         
     }
     
@@ -316,7 +333,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             
             AliMCParticle* mctrack = (AliMCParticle*)fMCEvent->GetTrack(iGen);
             if(!mctrack) continue;
-//            if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
+            if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
             
             TParticle *part = mctrack->Particle();
             genpid = part->GetPdgCode();
@@ -327,19 +344,19 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             
             
             Int_t iptbinMC = GetPtBin(gpt);
+            if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
+
             
-            if(abseta < 0.5)
+            if(abseta < 0.8)
             {
                 if(genpid == 3122)
                 {
                     f2fHistGenCentVsPtLambda->Fill(fCentrality,gpt);
-                    ptChMC[iptbinMC] += 1;
                 }
                 
                 if(genpid == -3122)
                 {
                     f2fHistGenCentVsPtAntiLambda->Fill(fCentrality,gpt);
-                    ptChMC[iptbinMC+fNptBins] += 1;
                 }
                 
                 if(genpid == -3312)
@@ -350,6 +367,32 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(genpid == 3312)
                 {
                     f2fHistXiMinus->Fill(fCentrality,gpt);
+                }
+            }
+            
+            
+            if(abseta < 0.3)
+            {
+                if(genpid == 3122)
+                {
+                    f2fHistGenCentVsPtLambda03->Fill(fCentrality,gpt);
+                    ptChMC[iptbinMC] += 1;
+                }
+                
+                if(genpid == -3122)
+                {
+                    f2fHistGenCentVsPtAntiLambda03->Fill(fCentrality,gpt);
+                    ptChMC[iptbinMC+fNptBins] += 1;
+                }
+                
+                if(genpid == -3312)
+                {
+                    f2fHistXiPlus03->Fill(fCentrality,gpt);
+                }
+                
+                if(genpid == 3312)
+                {
+                    f2fHistXiMinus03->Fill(fCentrality,gpt);
                 }
             }
         } // end loop over generated particles
@@ -559,28 +602,21 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if( iptbinRecTag < 0 || iptbinRecTag > fNptBins-1 ) continue;
                 
                 
-                //L
-                if(TMath::Abs(eta) < 0.5)
+          
+                if(TMath::Abs(eta) < 0.8)
                 {
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                     {
-                        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
-                        if(invMassLambda > 1.11 && invMassLambda < 1.122)
-                        {
-                            ptChRec[iptbinRec] += 1;
-                            f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassLambda,mcpt);
-                        }
-                        
+    
                         if(fTreeVariablePID == 3122)
                         {
-                            f3fHistCentInvMassVsPtLambdaRecFourSigthree->Fill(fCentrality,invMassLambda,mcpt);
-//                            if(isPrim)
-//                            {
-//                            }
-                            f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;
+                            if(isPrim)
+                            {
+                                f2fHistRecPrimariesCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
+                            }
+                            
                             if(isSecFromWeakDecay)
                             {
-                                f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
                                 if(isPrimParent)
                                 {
                                     if ((fTreeVariablePIDParent == 3312) || (fTreeVariablePIDParent == 3322))
@@ -589,31 +625,20 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                                     }
                                 }
                             }
-                            else if(isSecFromMaterial) {f2fHistRecMatCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
-                            
                         }
                     }
                     
-                    //L-BAR
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
+                 
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
                     {
-                        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
-                        if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                        {
-                            ptChRec[iptbinRec+fNptBins] += 1;
-                            f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassAntiLambda,mcpt);
-                        }
-                        
                         if(fTreeVariablePID == -3122)
                         {
-                            f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-//                            if(isPrim)
-//                            {
-//                            }
-                            f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;
+                            if(isPrim)
+                            {
+                                f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
+                            }
                             if(isSecFromWeakDecay)
                             {
-                                f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
                                 if(isPrimParent)
                                 {
                                     if ((fTreeVariablePIDParent == -3312) || (fTreeVariablePIDParent == -3322))
@@ -623,10 +648,77 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                                     }
                                 }
                             }
-                            else if(isSecFromMaterial) {f2fHistRecMatCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
                         }
                     }
-                }// |eta| < 0.5
+                }
+                
+                
+       
+                
+                
+                if(TMath::Abs(eta) < 0.3)
+                {
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
+                    {
+                        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
+                        if(invMassLambda > 1.11 && invMassLambda < 1.122)
+                        {
+                            ptChRec[iptbinRec] += 1;
+                        }
+                        
+                        if(fTreeVariablePID == 3122)
+                        {
+                            f3fHistCentInvMassVsPtLambdaRecFourSigthree->Fill(fCentrality,invMassLambda,mcpt);
+                            if(isPrim)
+                            {
+                                f2fHistRecPrimariesCentVsPtLambdaFourSigthree03->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag] += 1;
+                            }
+                            
+                            if(isSecFromWeakDecay)
+                            {
+                                f2fHistRecSecCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);
+                                if(isPrimParent)
+                                {
+                                    if ((fTreeVariablePIDParent == 3312) || (fTreeVariablePIDParent == 3322))
+                                    {
+                                        f3fHistLambdafromXiFourSigthree03->Fill(mcpt,fCentrality,fTreeVariablePtParent);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                
+                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg)  <= 3 && TMath::Abs(pospion)  <= 3)
+                    {
+                        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
+                        if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+                        {
+                            ptChRec[iptbinRec+fNptBins] += 1;
+                        }
+                        
+                        if(fTreeVariablePID == -3122)
+                        {
+                            f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
+                            if(isPrim)
+                            {
+                                f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03->Fill(fCentrality,mcpt); ptChRecTag[iptbinRecTag+fNptBins] += 1;
+                            }
+                            if(isSecFromWeakDecay)
+                            {
+                                f2fHistRecSecCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);
+                                if(isPrimParent)
+                                {
+                                    if ((fTreeVariablePIDParent == -3312) || (fTreeVariablePIDParent == -3322))
+                                        
+                                    {
+                                        f3fHistAntiLambdafromXiFourSigthree03->Fill(mcpt,fCentrality,fTreeVariablePtParent);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 
             } //MC condition
         }// zero onfly V0
