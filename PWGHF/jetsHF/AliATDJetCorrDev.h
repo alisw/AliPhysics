@@ -33,7 +33,9 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
-#include "FJ_includes.h"
+//#include "FJ_includes.h"
+#include <fastjet/tools/Recluster.hh>
+#include <fastjet/ClusterSequence.hh>
 
 class TParticle;
 class TClonesArray;
@@ -78,6 +80,7 @@ public:
    // to recluster or not
    void SetUseRecluster(Bool_t dorclr) {fRecluster=dorclr;} //dorlr is do recluster-ing
    Bool_t GetUseRecluster() const {return fRecluster;} 
+
    // set MC usage
    void   SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
    Bool_t GetMC() const {return fUseMCInfo;}
@@ -193,8 +196,8 @@ private:
    THnSparse* fResponseMatrix;      //!
 
    // jet stuff: functions for reclustering/deculstering
-   //fastjet::ClusterSequence* Recluster(const AliEmcalJet* jet); // recluster with CA with own defined function
-   fastjet::PseudoJet ReclusteredJet(const AliEmcalJet* jet);//recluster with CA using fastjet::contirb::Recluster package
+   fastjet::ClusterSequence* Recluster(const AliEmcalJet* jet); // recluster with CA with own defined function
+   //fastjet::PseudoJet ReclusteredJet(const AliEmcalJet* jet);//recluster with CA using fastjet::contirb::Recluster package. importing contrib package doesn't work
    void DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet);//decluster the jet, access the soft subjet's properties to fill the Lund Plane
    void FillLundPlane(Double_t sj_deltaR, Double_t sj_energy);
    Double_t fJetRadius;             //jet radius for reclustering. Should be assigned in AddTask from its parameter.

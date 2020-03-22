@@ -544,25 +544,30 @@ void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* a
     }
     if(jet && fRecluster)
     {
-        // ClusterSequence runs the jet clustering. see https://github.com/alisw/fastjet/blob/master/fastjet/example/01-basic.cc line 71
-        //fastjet::ClusterSequence* cs = NULL;
-        //if(fRecluster) cs = Recluster(jet); // used to give warning:did you mean 'fastjet::contrib::Recluster'? (FixIt) 
-        //if (cs)
-        //{
-        //    //std::vector<fastjet::PseudoJet>
-        //    continue;
-        //}
-        
         // Pseudo code:
         //  1. Recluster the jet
         //  2. Start declustering
         //  2.1. Get two subjets of the jet
         //  2.2. Get and fill in a histogram, the theta and E of the soft subjet/radiator as, you follow the hard subjet
         //
-        fastjet::PseudoJet recl_jet = ReclusteredJet(jet);  // 1. getting the reclustered jet
-        // the AliEmcal jet is provided to compare the last hard jet of recl_jet with D meson from AliEmcal jet
-        DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
-        FillLundPlane(4.0, 5.2);
+        // ClusterSequence runs the jet clustering. see https://github.com/alisw/fastjet/blob/master/fastjet/example/01-basic.cc line 71
+        fastjet::ClusterSequence* cs = Recluster(jet); // used to give warning:did you mean 'fastjet::contrib::Recluster'? (FixIt) 
+        if (cs)
+        {
+            std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
+            if( recl_jets.size() > 0 )
+            {
+               DeclusterTheJet( recl_jets[0], jet);            // 2. Declustering the jet
+               FillLundPlane(4.0, 5.2);                        // 3. Fill the Lund Plane
+            }
+        }
+        delete cs;
+        
+        // The FastJet::contrib way
+        //fastjet::PseudoJet recl_jet = ReclusteredJet(jet);  // 1. getting the reclustered jet
+        //// the AliEmcal jet is provided to compare the last hard jet of recl_jet with D meson from AliEmcal jet
+        //DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
+        //FillLundPlane(4.0, 5.2);
     }
 
 }
@@ -1489,32 +1494,32 @@ Bool_t AliATDJetCorrDev::InEMCalAcceptance(AliVParticle *vpart){
 
 }
 
-//_______________________________________________________________________________
-fastjet::PseudoJet AliATDJetCorrDev::ReclusteredJet(const AliEmcalJet* jet){
-    fastjet::contrib::Recluster recluster_ca_inf(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R); // the function that reclusters with the given algorithm and jet-radius (max possible in this case)
-    fastjet::PseudoJet rec_jet_ca_inf = recluster_ca_inf(jet); // the given jet is reclustered now, and stored as a PseudoJet
-    return (rec_jet_ca_inf);
-}
-    
 ////_______________________________________________________________________________
-//fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet){
-//    // reclustering a fastjet jet with CA algorithm
-//    // ref(arxiv/1111/6097, pg. 13, section 3.3: fastjet::ClusterSequence)
-//    // ClusterSequence object is created to run the jet clustering
-//    // it needs:    1. const std::vector<L> & input_particles,
-//    //              2. const JetDefintion & jet_def
-//    // where input_particles is the vector of initial particles of any type ( PseudoJet, HepLorentzVector etc.) that can be used to initialize a PseudoJet
-//    // and jet_def contains the full specification of the clustering.
-//    
-//    std::vector<fastjet::PseudoJet> input_particles;
-//    UShort_t ntracks = jet->GetNumberOfTracks();
-//    for (Int_t j = 0; j < ntracks; j++)
-//    {
-//        input_particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E()) );
-//    }
-//    fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, fJetRadius, fastjet::E_scheme, fastjet::Best);
-//    return (new fastjet::ClusterSequence(input_particles, jet_def) );
+//fastjet::PseudoJet AliATDJetCorrDev::ReclusteredJet(const AliEmcalJet* jet){
+//    fastjet::Recluster recluster_ca_inf(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R); // the function that reclusters with the given algorithm and jet-radius (max possible in this case)
+//    fastjet::PseudoJet rec_jet_ca_inf;// = recluster_ca_inf(jet); // the given jet is reclustered now, and stored as a PseudoJet
+//    return (rec_jet_ca_inf);
 //}
+//    
+//_______________________________________________________________________________
+fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet){
+    // reclustering a fastjet jet with CA algorithm
+    // ref(arxiv/1111/6097, pg. 13, section 3.3: fastjet::ClusterSequence)
+    // ClusterSequence object is created to run the jet clustering
+    // it needs:    1. const std::vector<L> & input_particles,
+    //              2. const JetDefintion & jet_def
+    // where input_particles is the vector of initial particles of any type ( PseudoJet, HepLorentzVector etc.) that can be used to initialize a PseudoJet
+    // and jet_def contains the full specification of the clustering.
+    
+    std::vector<fastjet::PseudoJet> input_particles;
+    UShort_t ntracks = jet->GetNumberOfTracks();
+    for (Int_t j = 0; j < ntracks; j++)
+    {
+        input_particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E()) );
+    }
+    fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, fJetRadius, fastjet::E_scheme, fastjet::Best);
+    return (new fastjet::ClusterSequence(input_particles, jet_def) );
+}
 
 //_______________________________________________________________________________
 void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet)
