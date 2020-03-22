@@ -60,6 +60,7 @@ set(SRCS
   AliFemtoModelCorrFctnKStar.cxx
   AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctnQinv.cxx
+  AliFemtoModelCorrFctnQinvPtSum.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoModelCorrFctnTrueQ3D.cxx
   AliFemtoModelCorrFctnTrueQ3DByParent.cxx

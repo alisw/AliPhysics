@@ -14,8 +14,7 @@
 
      //==== Create containers for input/output
      AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-     AliAnalysisDataContainer *FFhist = mgr->CreateContainer(Form("%scontainer",FFtask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:%s",  AliAnalysisManager::GetCommonFileName(), FFtask->GetName()));
-
+     AliAnalysisDataContainer *FFhist = mgr->CreateContainer(Form("%scontainer",FFtask->GetName()),  TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:%s",  AliAnalysisManager::GetCommonFileName(), FFtask->GetName()));
      //==== Connect input/output
      mgr->ConnectInput(FFtask, 0, cinput);
      mgr->ConnectOutput(FFtask, 1, FFhist);
