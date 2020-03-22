@@ -260,24 +260,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
 
-  if (suffix == "6") {
-    task->SetOEventMixing(true);
-  }
-  if (suffix == "7") {
-    task->SetOEventMixing(true);
-  }
-  if (suffix == "8") {
-    task->SetOEventMixing(true);
-  }
-  if (suffix == "9") {
-    task->SetOEventMixing(true);
-  }
-  if (suffix == "10") {
-    task->SetOEventMixing(true);
-  }
-  if (suffix == "11") {
-    task->SetOEventMixing(true);
-  }
 
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
@@ -365,6 +347,26 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
   task->SetUseDumpster(false);
+
+  if (suffix == "6") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "7") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "8") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "9") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "10") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "11") {
+    task->SetOEventMixing(true);
+  }
+
 
   mgr->AddTask(task);
 
