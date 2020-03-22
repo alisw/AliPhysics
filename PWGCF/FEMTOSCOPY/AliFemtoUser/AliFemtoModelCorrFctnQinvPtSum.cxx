@@ -7,6 +7,7 @@
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelAllHiddenInfo.h"
 #include "AliFemtoPair.h"
+#include "AliFemtoModelManager.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -73,21 +74,50 @@ const std::vector<int> true_type_codes = {
 
 // use default values
 AliFemtoModelCorrFctnQinvPtSum::AliFemtoModelCorrFctnQinvPtSum():
-  AliFemtoModelCorrFctnQinvPtSum("qinv", 200, 0.0, 1.0)
+  AliFemtoModelCorrFctnQinvPtSum("qinv", 200, 0.0, 1.0,200,0,10)
 {
 }
 
 AliFemtoModelCorrFctnQinvPtSum::AliFemtoModelCorrFctnQinvPtSum(const char *suffix,
-                                                     const int nbins,
-                                                     const float qinv_low_limit,
-                                                     const float qinv_high_limit)
-  : AliFemtoModelCorrFctn(suffix, nbins, qinv_low_limit, qinv_high_limit)
-  , fPairType(AliFemtoAvgSepCorrFctn::kTracks)
-  , fExpectedTrack1Code(0)
-  , fExpectedTrack2Code(0)
-  , fNumPid(nullptr)
-  , fDenPid(nullptr)
+							       const int nbins,
+							       const float qinv_low_limit,
+							       const float qinv_high_limit,
+							       const int nBinsPtSum,
+							       const Double_t aLowPtSum,
+							       const Double_t aHighPtSum)
+: AliFemtoModelCorrFctn(suffix, nbins, qinv_low_limit, qinv_high_limit)
+, fPairType(AliFemtoAvgSepCorrFctn::kTracks)
+, fExpectedTrack1Code(0)
+, fExpectedTrack2Code(0)
+, fNumPid(nullptr)
+, fDenPid(nullptr)
+, fNumeratorQinvPtSumTrue(nullptr)
+, fNumeratorQinvPtSumTrueIdeal(nullptr)
+, fNumeratorQinvPtSumFake(nullptr)
+, fNumeratorQinvPtSumFakeIdeal(nullptr)
+, fDenominatorQinvPtSum(nullptr)
+, fDenominatorQinvPtSumIdeal(nullptr)
 {
+  
+  char *buf;
+  buf = Form("NumTrueQinvPtSum%s", suffix);
+  fNumeratorQinvPtSumTrue = new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);
+
+  buf = Form("NumTrueIdealQinvPtSum%s", suffix);
+  fNumeratorQinvPtSumTrueIdeal = new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);
+
+  buf = Form("NumFakeQinvPtSum%s", suffix);
+  fNumeratorQinvPtSumFake = new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);  
+
+  buf = Form("NumFakeIdealQinvPtSum%s", suffix);
+  fNumeratorQinvPtSumFakeIdeal = new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);  
+  
+  buf = Form("DenIdealQinvPtSum%s", suffix);
+  fDenominatorQinvPtSum= new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);
+
+  buf = Form("DenIdealQinvPtSum%s", suffix);
+  fDenominatorQinvPtSumIdeal= new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);  
+  
   fNumeratorTrue->SetTitle("Reconstructed Numerator; q_{inv} (Gev)");
   fNumeratorFake->SetTitle("Simulated Reconstructed Numerator; q_{inv} (Gev)");
   fDenominator->SetTitle("Reconstructed Denominator; q_{inv} (Gev)");
@@ -96,9 +126,24 @@ AliFemtoModelCorrFctnQinvPtSum::AliFemtoModelCorrFctnQinvPtSum(const char *suffi
   fNumeratorFakeIdeal->SetTitle("Simulated Generated Numerator; q_{inv} (Gev)");
   fDenominatorIdeal->SetTitle("Generated Denominator; q_{inv} (Gev)");
 
+
+  fNumeratorQinvPtSumTrue->SetTitle("Reconstructed Numerator; q_{inv} (GeV); pT_{sum} (GeV)");
+  fNumeratorQinvPtSumTrueIdeal->SetTitle("Generated Numerator; q_{inv} (GeV); pT_{sum} (GeV)");
+  fNumeratorQinvPtSumFake->SetTitle("Simulated Reconstructed Numerator; q_{inv} (GeV); pT_{sum} (GeV)");
+  fNumeratorQinvPtSumFakeIdeal->SetTitle("Simulated Generated Numerator; q_{inv} (GeV); pT_{sum} (GeV)");
+  fDenominatorQinvPtSum->SetTitle("Reconstructed Denominator; q_{inv} (Gev); pT_{sum} (GeV)");
+  fDenominatorQinvPtSumIdeal->SetTitle("Generated Denominator; q_{inv} (Gev); pT_{sum} (GeV)");
+  
   fDenominatorIdeal->Sumw2(false);
   fDenominator->Sumw2(false);
 
+  fNumeratorQinvPtSumTrue->Sumw2(false);
+  fNumeratorQinvPtSumTrueIdeal->Sumw2(false);
+  fNumeratorQinvPtSumFake->Sumw2(false);
+  fNumeratorQinvPtSumFakeIdeal->Sumw2(false);
+  fDenominatorQinvPtSum->Sumw2(false);
+  fDenominatorQinvPtSumIdeal->Sumw2(false);
+  
   fQgenQrec->SetTitle("Q_{inv,reconstructed} vs Q_{inv,generated};"
                       "q_{inv,gen} (GeV);"
                       "q_{inv,rec} (GeV);"
@@ -140,7 +185,19 @@ AliFemtoModelCorrFctnQinvPtSum::AliFemtoModelCorrFctnQinvPtSum(const AliFemtoMod
   , fExpectedTrack2Code(orig.fExpectedTrack2Code)
   , fNumPid(nullptr) // new TH2F(*orig.fNumPid))
   , fDenPid(nullptr) // new TH2F(*orig.fDenPid))
+  , fNumeratorQinvPtSumTrue(nullptr)
+  , fNumeratorQinvPtSumTrueIdeal(nullptr)
+  , fNumeratorQinvPtSumFake(nullptr)
+  , fNumeratorQinvPtSumFakeIdeal(nullptr)
+  , fDenominatorQinvPtSum(nullptr)
+  , fDenominatorQinvPtSumIdeal(nullptr)
 {
+  fNumeratorQinvPtSumTrue = new TH2D(*orig.fNumeratorQinvPtSumTrue);
+  fNumeratorQinvPtSumTrueIdeal = new TH2D(*orig.fNumeratorQinvPtSumTrueIdeal);
+  fNumeratorQinvPtSumFake = new TH2D(*orig.fNumeratorQinvPtSumFake);
+  fNumeratorQinvPtSumFakeIdeal = new TH2D(*orig.fNumeratorQinvPtSumFakeIdeal);
+  fDenominatorQinvPtSum = new TH2D(*orig.fDenominatorQinvPtSum);
+  fDenominatorQinvPtSumIdeal = new TH2D(*orig.fDenominatorQinvPtSumIdeal);
 }
 
 AliFemtoModelCorrFctn*
@@ -175,6 +232,13 @@ AliFemtoModelCorrFctnQinvPtSum::~AliFemtoModelCorrFctnQinvPtSum()
 {
   delete fNumPid;
   delete fDenPid;
+  
+  delete fNumeratorQinvPtSumTrue;
+  delete fNumeratorQinvPtSumTrueIdeal;
+  delete fNumeratorQinvPtSumFake;
+  delete fNumeratorQinvPtSumFakeIdeal;
+  delete  fDenominatorQinvPtSum;
+  delete  fDenominatorQinvPtSumIdeal;
 }
 
 AliFemtoString
@@ -196,6 +260,13 @@ TList* AliFemtoModelCorrFctnQinvPtSum::AppendOutputList(TList *output_list) cons
 {
   // output_list->Add(fNumPid);
   // output_list->Add(fDenPid);
+  output_list->Add(fNumeratorQinvPtSumTrue);
+  output_list->Add(fNumeratorQinvPtSumTrueIdeal);
+  output_list->Add(fNumeratorQinvPtSumFake);
+  output_list->Add(fNumeratorQinvPtSumFakeIdeal);
+  output_list->Add(fDenominatorQinvPtSum);
+  output_list->Add(fDenominatorQinvPtSumIdeal);
+  
   return output_list;
 }
 
@@ -273,10 +344,42 @@ void AliFemtoModelCorrFctnQinvPtSum::AddRealPair(AliFemtoPair* aPair)
 {
   AliFemtoModelCorrFctn::AddRealPair(aPair);
   // AddPair(*aPair, nullptr, fNumPid);
+
+  const double pt1 = aPair->Track1()->Track()->Pt(),
+    pt2 = aPair->Track2()->Track()->Pt();
+  
+  const double pt_sum = pt1 + pt2;
+
+  Double_t weight = fManager->GetWeight(aPair);
+  fNumeratorQinvPtSumTrue->Fill(aPair->QInv(),pt_sum,weight);
+  Double_t tQinvTrue = GetQinvTrue(aPair);
+  fNumeratorQinvPtSumTrueIdeal->Fill(tQinvTrue,pt_sum,weight);
+  
 }
 
 void AliFemtoModelCorrFctnQinvPtSum::AddMixedPair(AliFemtoPair* aPair)
 {
   AliFemtoModelCorrFctn::AddMixedPair(aPair);
   // AddPair(*aPair, nullptr, fDenPid);
-}
+  
+  
+  const double pt1 = aPair->Track1()->Track()->Pt(),
+    pt2 = aPair->Track2()->Track()->Pt();
+  
+  const double pt_sum = pt1 + pt2;
+
+  const Double_t
+    weight = fManager->GetWeight(aPair),
+    qinv = aPair->QInv(),
+    qinv_ideal = GetQinvTrue(aPair);
+  
+  fNumeratorQinvPtSumFake->Fill(qinv, weight);
+  fDenominatorQinvPtSum->Fill(qinv, 1.0);
+  
+  fNumeratorQinvPtSumFakeIdeal->Fill(qinv_ideal, weight);
+  fDenominatorQinvPtSumIdeal->Fill(qinv_ideal, 1.0);
+
+
+
+  
+ }
