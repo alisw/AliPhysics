@@ -41,10 +41,11 @@ protected:
     TH1D*  fHistCentrality;
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
-    
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
+
+    
+    TH3F*  f3fHistCentVsInvMassLambda0point3;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point3;
     
     Float_t fCentrality;
     Int_t fTreeVariableLeastNbrCrossedRows;
@@ -55,6 +56,7 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusCh03;
 
     Int_t    GetPtBin(Double_t pt);
     
