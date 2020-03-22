@@ -107,6 +107,7 @@ AliAnalysisTaskCheckGenKine::AliAnalysisTaskCheckGenKine() :
     fPrimSec[j]=0x0;
     fNumOfDau[j]=0x0;
     fDecLen[j]=0x0;
+    fCt[j]=0x0;
     fMassDiff[j]=0x0;
     fMomDiff[j]=0x0;
     fPrimSecb[j]=0x0;
@@ -241,7 +242,8 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
     fNumOfDau[j]->GetYaxis()->SetBinLabel(4,"From transport, decay transport");
     fNumOfDau[j]->GetYaxis()->SetBinLabel(5,"From transport, interaction transport");
     fNumOfDau[j]->GetYaxis()->SetBinLabel(6,"Ohter");
-    fDecLen[j] = new TH2F(TString::Format("hDecLen%s",pname.Data())," ; p (GeV/c) ; decay length (cm)",100,0.,20.,200,0.,20.);
+    fDecLen[j] = new TH2F(TString::Format("hDecLen%s",pname.Data())," ; p (GeV/c) ; decay length (cm)",100,0.,20.,500,0.,10.);
+    fCt[j] = new TH2F(TString::Format("hCt%s",pname.Data())," ; p (GeV/c) ; ct (cm)",100,0.,20.,500,0.,10.);
     fMassDiff[j] = new TH2F(TString::Format("hMassDiff%s",pname.Data())," ; (M_{mother} - M_{daughters})/ M_{mother}",101,-0.0505,0.0505,3,-0.5,2.5);
     fMomDiff[j] = new TH2F(TString::Format("hMomDiff%s",pname.Data())," ; (p_{mother} - p_{daughters})/ p_{mother}",101,-0.0505,0.0505,3,-0.5,2.5);
 
@@ -256,6 +258,7 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
     fOutput->Add(fPrimSec[j]);
     fOutput->Add(fNumOfDau[j]);
     fOutput->Add(fDecLen[j]);
+    fOutput->Add(fCt[j]);
     fOutput->Add(fMassDiff[j]);
     fOutput->Add(fMomDiff[j]);
     if(fIsAA){
@@ -483,6 +486,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
 	fMassDiff[spId]->Fill(mDiff,dauOrig);
       }
       fDecLen[spId]->Fill(mom,decLen);
+      fCt[spId]->Fill(mom,decLen*mass/mom);
     }
   }
 
