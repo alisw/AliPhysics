@@ -112,7 +112,7 @@ AliFemtoModelCorrFctnQinvPtSum::AliFemtoModelCorrFctnQinvPtSum(const char *suffi
   buf = Form("NumFakeIdealQinvPtSum%s", suffix);
   fNumeratorQinvPtSumFakeIdeal = new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);  
   
-  buf = Form("DenIdealQinvPtSum%s", suffix);
+  buf = Form("DenQinvPtSum%s", suffix);
   fDenominatorQinvPtSum= new TH2D(buf,buf,nbins,qinv_low_limit,qinv_high_limit,nBinsPtSum,aLowPtSum,aHighPtSum);
 
   buf = Form("DenIdealQinvPtSum%s", suffix);
@@ -376,8 +376,8 @@ void AliFemtoModelCorrFctnQinvPtSum::AddMixedPair(AliFemtoPair* aPair)
   fNumeratorQinvPtSumFake->Fill(qinv, weight);
   fDenominatorQinvPtSum->Fill(qinv, 1.0);
   
-  fNumeratorQinvPtSumFakeIdeal->Fill(qinv_ideal, weight);
-  fDenominatorQinvPtSumIdeal->Fill(qinv_ideal, 1.0);
+  fNumeratorQinvPtSumFakeIdeal->Fill(qinv_ideal, pt_sum, weight);
+  fDenominatorQinvPtSumIdeal->Fill(qinv_ideal, pt_sum, 1.0);
 
 
 
