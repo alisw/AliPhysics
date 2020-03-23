@@ -679,8 +679,8 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //  THnSparse to study the Sc peak in MC
   //
   Int_t bin_ScPeakMC[6]        = {16,  400,  400,   800,   3,  11};
-  Double_t lowEdge_ScPeakMC[6] = { 0,2.440,2.250,-0.200,-0.5,-0.5};
-  Double_t upEdge_ScPeakMC[6]  = {16,2.480,2.650, 0.200, 2.5,10.5};
+  Double_t lowEdge_ScPeakMC[6] = { 0,2.250,2.440,-0.200,-0.5,-0.5};
+  Double_t upEdge_ScPeakMC[6]  = {16,2.650,2.480, 0.200, 2.5,10.5};
   if(fStudyScPeakMC)  fhsparseMC_ScPeak = new THnSparseF("fhsparseMC_ScPeak","fhsparseMC_ScPeak;ptgen_Sc;recoMass_Sc;MCcalcMass_Sc;recoMinusMCcalc_mass_Sc;charge;PIDcase;",6,bin_ScPeakMC,lowEdge_ScPeakMC,upEdge_ScPeakMC);
 
 
