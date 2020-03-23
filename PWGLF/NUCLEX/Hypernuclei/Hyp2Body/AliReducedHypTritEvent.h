@@ -119,7 +119,17 @@ class AliReducedHypTritEvent : public TObject {
   UShort_t Trigger() const {return fTrigger;}
   TString TriggerClasses() const {return fTriggerClasses;}
   Int_t    RunNumber() const {return fRunNumber;}
-
+	Float_t	SPDFiredChips0() const {return fSPDFiredChips0;}
+	Float_t SPDFiredChips1() const {return fSPDFiredChips1;}
+	Float_t SPDTracklets() const {return fSPDTracklets;}
+	Float_t SPDCluster() const {return fSPDCluster;}
+	Float_t	V0Multiplicity() const {return fV0Multiplicity;}
+	Float_t MultV0M()	const {return fMultV0M;}	
+	Float_t MultOfV0M()	const {return fMultOfV0M;}		
+	Float_t MultSPDTracklet() const {return fMultSPDTracklet;}	
+	Float_t MultSPDCluster() const {return fMultSPDCluster;}
+	Float_t MultRef05()	const {return fMultRef05;}		
+	Float_t MultRef08()	const {return fMultRef08;}
   void ClearEvent();
 
 private:
@@ -129,7 +139,21 @@ private:
   Float_t       fCentrality;     //< centrality of event
   Int_t         fRunNumber;      //< number of run
   UShort_t      fTrigger;        //< array of Triggers
-  TString 	fTriggerClasses; //< fired trigger classes
+  TString 	    fTriggerClasses; //< fired trigger classes
+
+	Float_t					fSPDFiredChips0;	// multiplicity triggers
+	Float_t					fSPDFiredChips1;
+	Float_t 				fSPDTracklets;
+	Float_t 				fSPDCluster;
+	Float_t					fV0Multiplicity;
+
+	Float_t 				fMultV0M;			// multiplicity estimators
+	Float_t 				fMultOfV0M;			
+	Float_t 				fMultSPDTracklet;	
+	Float_t 				fMultSPDCluster;	
+	Float_t 				fMultRef05;			
+	Float_t 				fMultRef08;		
+		
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
   ClassDef(AliReducedHypTritEvent, 5);
