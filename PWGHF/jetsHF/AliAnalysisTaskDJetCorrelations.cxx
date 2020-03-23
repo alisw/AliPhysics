@@ -402,7 +402,7 @@ Bool_t AliAnalysisTaskDJetCorrelations::Run()
     
         if(fCorrelationMethod==kConstituent)
         {
-            if(fBuildRMEff==kTRUE) CreateMCResponseMatrix(MCjet, aodEvent);
+            CreateMCResponseMatrix(MCjet, aodEvent);
         }
         /* the other method not enabled for now
          * else if(fCorrelationMethod==kAngular)
