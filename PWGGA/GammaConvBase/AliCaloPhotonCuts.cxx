@@ -3535,7 +3535,7 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, 
   }
 
 
-  if(iBadCell != 0) return kTRUE;
+  if(iBadCell > 0) return kTRUE;
   return kFALSE;
 }
 
