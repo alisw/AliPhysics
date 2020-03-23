@@ -1217,19 +1217,19 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       if(TMath::Abs(mass[0]-mDsPDG)<0.02 || TMath::Abs(mass[1]-mDsPDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==4122){
       if(fLctoV0){
-      mass[0]=d->InvMass(2,pdgDgLctopK0S);
-      mass[1]=-1.;
-      if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
-     }else{
-      UInt_t pdgpKpi[3]={2212,321,211};
-      UInt_t pdgpiKp[3]={211,321,2212}; 
-      if(passTopolCuts==3 || passTopolCuts==1)mass[0]=d->InvMass(3,pdgpKpi);
-      if(passTopolCuts>=2) mass[1]=d->InvMass(3,pdgpiKp);
-      if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
-     }
+	mass[0]=d->InvMass(2,pdgDgLctopK0S);
+	mass[1]=-1.;
+	if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
+      }else{
+	UInt_t pdgpKpi[3]={2212,321,211};
+	UInt_t pdgpiKp[3]={211,321,2212}; 
+	if(passTopolCuts==3 || passTopolCuts==1) mass[0]=d->InvMass(3,pdgpKpi);
+	if(passTopolCuts>=2) mass[1]=d->InvMass(3,pdgpiKp);
+	if(TMath::Abs(mass[0]-mLcPDG)<0.02 || TMath::Abs(mass[1]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
+      }
     }
 
-     for(Int_t iHyp=0; iHyp<2; iHyp++){
+    for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+,D* and Lc2pK0S we have 1 mass hypothesis
       Double_t invMass=mass[iHyp];
       Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
