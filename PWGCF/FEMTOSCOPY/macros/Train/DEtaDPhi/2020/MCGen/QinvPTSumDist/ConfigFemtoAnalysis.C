@@ -148,9 +148,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
   double shqmax = 8.0; 
   int nbinssh = 2000;
 
-  int nbinsPtSum = 200;
+  int nbinsPtSum = 100;
   double pTsumMin = 0;
-  double pTsumMax = 20;
+  double pTsumMax = 5;
   
   // AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
   // Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kReferenceITSTPC);
