@@ -264,20 +264,19 @@ private:
     TH1F                *fEtaHijingPt;         //!
     TH2F                *fPi0HijingDCA;        //!
     TH1F                *fPi0HijingPt;         //!
+    
     TH2F                *fPhotonHijingDCA;     //!
     TH1F                *fPhotonHijingPt;      //!
     TH2F                *fEnhPhotonDCA;        //!
     TH1F                *fEnhPhotonWeightedPt; //!
     
+    TH2F                *fPhotonHijingTagDCA;     //!
+    TH2F                *fEnhPhotonTagDCA;        //!
+    
     TH1F                *fComboNumWeight;       //!
     TH1F                *fComboNumNoWeight;     //!
     TH1F                *fComboDenomWeight;     //!
     TH1F                *fComboDenomNoWeight;   //!
-    
-    TH2F                *fEmbEtaElecTagDCA;     //!
-    TH2F                *fEmbPi0ElecTagDCA;     //!
-    TH2F                *fEmbEtaElecTrueDCA;     //!
-    TH2F                *fEmbPi0ElecTrueDCA;     //!
     
     //TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
     TH1F                *fD0MesonPt;  //!
