@@ -75,7 +75,14 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi->GetNbinsY(); phiBin++) {
-
+      if (useFMD & fSettings.makeFakeHoles){
+        if ((etaBin > 124) & (etaBin < 138)){
+          if (phiBin == 18 || phiBin == 17) continue;
+        }
+        if ((etaBin > 167) & (etaBin < 186)){
+          if (phiBin == 14) continue;
+        }
+      }
       Double_t phi = dNdetadphi->GetYaxis()->GetBinCenter(phiBin);
       Double_t mult_weight = dNdetadphi->GetBinContent(etaBin, phiBin);
       Double_t weight = mult_weight;

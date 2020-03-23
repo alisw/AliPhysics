@@ -260,10 +260,8 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, 
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
      weight = ((up+low)/2+up)/2;
-    //std::cout << weight << std::endl;
   }
   if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
-
     if (!(weight == 0)) return weight;
     Double_t  up = forwarddNdedp.GetBinContent(etaBin, 15);
     Double_t  low = forwarddNdedp.GetBinContent(etaBin, 13);
