@@ -85,9 +85,12 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos);
   Bool_t TriggerSelection();
+  Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
+  void SetMultiplicity();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
   Bool_t McCuts(const AliReducedHypTritV0& v0, const AliReducedHypTritTrack& he, const AliReducedHypTritTrack& pi);
   Double_t GeoLength(const AliESDtrack& track);
+	void SetBetheBlochParams(Int_t runNumber);
   AliAnalysisTaskHypTritEventTree(const AliAnalysisTaskHypTritEventTree&);
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
 
