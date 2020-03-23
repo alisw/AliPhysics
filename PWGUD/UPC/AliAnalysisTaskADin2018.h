@@ -788,12 +788,20 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
                                  *
                                  * NEW: v3 uses a variable binning...
                                  */
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                     //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;         //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2;                   //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[3];        //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv3;                   //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;                              //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneH;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2;                            //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv3;                            //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[3];       //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[3];       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -810,12 +818,20 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
                                  *
                                  * NEW: v3 uses a variable binning...
                                  */
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                     //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;         //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2;                   //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[3];        //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv3;                   //!
-        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;                              //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneH;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2;                            //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv3;                            //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[3];       //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[3];       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -832,12 +848,20 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
                                  *
                                  * NEW: v3 uses a variable binning...
                                  */
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                     //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;         //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2;                   //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[3];        //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv3;                   //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;                              //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneH;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2;                            //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv3;                            //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[3];       //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[3];       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -854,12 +878,20 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
                                  *
                                  * NEW: v3 uses a variable binning...
                                  */
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                     //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;         //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2;                   //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2[3];        //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv3;                   //!
-        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv3[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;                              //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyShiftPlusOneH;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2;                            //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv3;                            //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv3[3];                 //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv3LowerSide;                   //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[3];        //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv2HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[3];       //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyHv3HigherSide;                  //!
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[3];       //!
 
                                 /**
                                  * This histogram records the pt-ditribution
@@ -1069,7 +1101,7 @@ class AliAnalysisTaskADin2018 : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskADin2018, 11);
+        ClassDef(AliAnalysisTaskADin2018, 12);
 };
 
 #endif

@@ -226,6 +226,44 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018()
       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3{0, 0, 0},
       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3{0, 0, 0},
       fDimuonPtDistributionZNCanyZNAanyRapidityHv3{0, 0, 0},
+      //_______________________________
+      /* -
+       * - SIDEBANDS
+       */
+      fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide{0, 0, 0},
+
+      fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide{0, 0, 0},
+      //_______________________________
       fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
       fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
       fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
@@ -485,6 +523,44 @@ AliAnalysisTaskADin2018::AliAnalysisTaskADin2018(const char* name)
       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3{0, 0, 0},
       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3{0, 0, 0},
       fDimuonPtDistributionZNCanyZNAanyRapidityHv3{0, 0, 0},
+      //_______________________________
+      /* -
+       * - SIDEBANDS
+       */
+      fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3LowerSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide{0, 0, 0},
+
+      fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv2HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide(0),
+      fDimuonPtDistributionZNCanyZNAanyHv3HigherSide(0),
+      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide{0, 0, 0},
+      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide{0, 0, 0},
+      //_______________________________
       fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
       fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
       fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
@@ -1393,9 +1469,15 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
   //                         0.800, 0.825, 0.850, 0.875, 0.900, 0.925, 0.950, 0.975,
   //                         1.000,
   //                       };
+  // Float_t PtBins[]    = { 0.000, 0.025, 0.050, 0.075, 0.100, 0.125, 0.150, 0.175,
+  //                         0.200, 0.225, 0.250, 0.275, 0.300, 0.325, 0.350, 0.375,
+  //                         0.400, 0.425, 0.450, 0.475, 0.500, 0.575, 0.650, 0.725,
+  //                         0.800, 0.875, 0.950, 1.100, 1.250, 1.400, 1.600, 1.800,
+  //                         2.000, 2.500, 3.000, 3.500, 4.000, 5.000
+  //                       };
   Float_t PtBins[]    = { 0.000, 0.025, 0.050, 0.075, 0.100, 0.125, 0.150, 0.175,
-                          0.200, 0.225, 0.250, 0.275, 0.300, 0.325, 0.350, 0.375,
-                          0.400, 0.425, 0.450, 0.475, 0.500, 0.575, 0.650, 0.725,
+                          0.200, 0.225, 0.250, 0.275, 0.350, 0.425, 0.500, 0.575,
+                          0.650, 0.725,
                           0.800, 0.875, 0.950, 1.100, 1.250, 1.400, 1.600, 1.800,
                           2.000, 2.500, 3.000, 3.500, 4.000, 5.000
                         };
@@ -1476,6 +1558,214 @@ void AliAnalysisTaskADin2018::UserCreateOutputObjects()
 
 
 
+
+
+  //_______________________________
+  /* -
+   * - SIDEBANDS
+   * -
+   */
+  //
+  // LOWER SIDE
+  //
+  fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide", "fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide", "fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide", "fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide);
+
+  fDimuonPtDistributionZNCanyZNAanyHv2LowerSide = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv2LowerSide", "fDimuonPtDistributionZNCanyZNAanyHv2LowerSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv2LowerSide);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[iRapidity]);
+  }
+
+  fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide", "fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide", "fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide", "fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide);
+
+  fDimuonPtDistributionZNCanyZNAanyHv3LowerSide = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv3LowerSide", "fDimuonPtDistributionZNCanyZNAanyHv3LowerSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv3LowerSide);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[iRapidity]);
+  }
+
+  //
+  // HIGHER SIDE
+  //
+  fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide", "fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide", "fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide", "fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide);
+
+  fDimuonPtDistributionZNCanyZNAanyHv2HigherSide = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv2HigherSide", "fDimuonPtDistributionZNCanyZNAanyHv2HigherSide", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv2HigherSide);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide_%d", iRapidity),
+              4000, 0, 20
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[iRapidity]);
+  }
+
+  fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide", "fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide);
+
+  fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide = new TH1F("fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide", "fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide);
+
+  fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide = new TH1F("fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide", "fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide);
+
+  fDimuonPtDistributionZNCanyZNAanyHv3HigherSide = new TH1F("fDimuonPtDistributionZNCanyZNAanyHv3HigherSide", "fDimuonPtDistributionZNCanyZNAanyHv3HigherSide", PtBinNumber, PtBins);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyHv3HigherSide);
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[iRapidity]);
+  }
+
+  for( Int_t iRapidity = 0; iRapidity < 3; iRapidity++ ){
+    fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[iRapidity] = new TH1F(
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide_%d", iRapidity),
+              Form("fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide_%d", iRapidity),
+              PtBinNumber, PtBins
+              );
+    fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[iRapidity]);
+  }
+  //
+  // END SIDEBANDS
+  //_______________________________
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -1528,10 +1818,10 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
    * - NB: CMUP11 = *VZEROA *ADA *ADC DIMUON_U
    * -
    */
-  if ( !( trigger.Contains("CMUP11-B-NOPF-MUFAST") )  )  {
-          PostData(1, fOutputList);
-          return;
-  }
+  // if ( !( trigger.Contains("CMUP11-B-NOPF-MUFAST") )  )  {
+  //         PostData(1, fOutputList);
+  //         return;
+  // }
   //_______________________________
   fCounterH->Fill(iSelectionCounter); // right trigger found
   iSelectionCounter++;
@@ -1712,6 +2002,30 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   is_VZEROC_set = IntBits( dataVZERO->GetTriggerBits() ).test(13);
 
 
+  Int_t VZEROAPastFutureBeamBeamFlags[32][21];
+  Int_t VZEROCPastFutureBeamBeamFlags[32][21];
+  for(   Int_t iChannel = 0; iChannel < 32; iChannel++ ){
+    for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+      VZEROAPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+      VZEROCPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+    }
+  }
+
+  for(   Int_t iChannel = 0; iChannel < 32; iChannel++ ){
+    for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+      VZEROAPastFutureBeamBeamFlags[iChannel][iClock] = dataVZERO->GetPFBBFlag(iChannel + 32, iClock);
+      VZEROCPastFutureBeamBeamFlags[iChannel][iClock] = dataVZERO->GetPFBBFlag(iChannel, iClock);
+    }
+  }
+
+  Int_t VZEROAPastFutureBoolean = 0;
+  Int_t VZEROCPastFutureBoolean = 0;
+  for(   Int_t iChannel = 0; iChannel < 32; iChannel++ ){
+    for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+      if( dataVZERO->GetPFBBFlag(iChannel + 32, iClock) != 0 ) VZEROAPastFutureBoolean = 1;
+      if( dataVZERO->GetPFBBFlag(iChannel, iClock)      != 0 ) VZEROCPastFutureBoolean = 1;
+    }
+  }
 
   Double_t VZEROmultiplicities[64]   = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
                                          -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
@@ -1868,6 +2182,14 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   Double_t ADmultiplicitiesTotal  = 0;
   Double_t ADAmultiplicitiesTotal = 0;
   Double_t ADCmultiplicitiesTotal = 0;
+
+  Int_t ADAPastFutureBeamBeamFlags[8][21];
+  Int_t ADCPastFutureBeamBeamFlags[8][21];
+
+
+  Int_t ADAPastFutureBoolean = 0;
+  Int_t ADCPastFutureBoolean = 0;
+
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
@@ -1892,8 +2214,34 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
             ADAmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
           }
         }
+
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+          }
+        }
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel + 8, iClock);
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel, iClock);
+          }
+        }
+
+        for(   Int_t iChannel = 0; iChannel < 8;  iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            if( dataAD->GetPFBBFlag(iChannel + 8, iClock) != 0 ) ADAPastFutureBoolean = 1;
+            if( dataAD->GetPFBBFlag(iChannel, iClock)     != 0 ) ADCPastFutureBoolean = 1;
+          }
+        }
+
+
   }
   fCounterH->Fill(22);
+
+  // if( ADAPastFutureBoolean == 0 ) cout << "ADAPastFutureBoolean" << endl;
 
   // END EVENT DATA EXTRACTION
   //_______________________________
@@ -1925,14 +2273,14 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   /**
    * Check with no AD veto at all...
    */
-  if(fADADecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
-  if(fADCDecision != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fADADecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+  // if(fADCDecision != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
 
   //
   // Int_t fADactivity = -9;
@@ -2415,13 +2763,13 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   }
   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
     fZNCEnergyBeforeTimingSelectionH               ->Fill(fZNCEnergy);
-    fADCmultiplicityTotalVsZNCenergyH              ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
-    fVZEROCmultiplicityTotalVsZNCenergyH           ->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
+    if ( ADCPastFutureBoolean    == 0 ) fADCmultiplicityTotalVsZNCenergyH   ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
+    if ( VZEROCPastFutureBoolean == 0 ) fVZEROCmultiplicityTotalVsZNCenergyH->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
     if ( is_ADC_set == 0 )    {
-      fADCmultiplicityTotalVsZNCenergyH_ADCno      ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
+      if ( ADCPastFutureBoolean == 0 ) fADCmultiplicityTotalVsZNCenergyH_ADCno      ->Fill(ADCmultiplicitiesTotal,    fZNCEnergy);
     }
     if ( is_VZEROC_set == 0 ) {
-      fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
+      if ( VZEROCPastFutureBoolean == 0 ) fVZEROCmultiplicityTotalVsZNCenergyH_VZEROCno->Fill(VZEROCmultiplicitiesTotal, fZNCEnergy);
     }
 
   }
@@ -2445,13 +2793,13 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   }
   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) && (possibleJPsi.Pt() < 0.25)){
     fZNAEnergyBeforeTimingSelectionH               ->Fill(fZNAEnergy);
-    fADAmultiplicityTotalVsZNAenergyH              ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
-    fVZEROAmultiplicityTotalVsZNAenergyH           ->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
+    if ( ADAPastFutureBoolean    == 0 ) fADAmultiplicityTotalVsZNAenergyH   ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
+    if ( VZEROAPastFutureBoolean == 0 ) fVZEROAmultiplicityTotalVsZNAenergyH->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
     if ( is_ADA_set == 0 )    {
-      fADAmultiplicityTotalVsZNAenergyH_ADAno      ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
+      if ( ADAPastFutureBoolean == 0 ) fADAmultiplicityTotalVsZNAenergyH_ADAno      ->Fill(ADAmultiplicitiesTotal,    fZNAEnergy);
     }
     if ( is_VZEROA_set == 0 ) {
-      fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
+      if ( VZEROAPastFutureBoolean == 0 ) fVZEROAmultiplicityTotalVsZNAenergyH_VZEROAno->Fill(VZEROAmultiplicitiesTotal, fZNAEnergy);
     }
   }
   fZNAEnergyBeforeTimingSelectionExtendedH->Fill(fZNAEnergy);
@@ -2479,6 +2827,9 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
   for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
     fADmultiplicityH[iChannel]->Fill(ADmultiplicities[iChannel]);
   }
+
+
+  if ( ADAPastFutureBoolean == 0 && ADCPastFutureBoolean == 0 && VZEROAPastFutureBoolean == 0 && VZEROCPastFutureBoolean == 0 ){
   fADmultiplicityTotalH ->Fill(ADmultiplicitiesTotal);
   fADAmultiplicityTotalH->Fill(ADAmultiplicitiesTotal);
   fADCmultiplicityTotalH->Fill(ADCmultiplicitiesTotal);
@@ -2502,19 +2853,210 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
       fADCmultiplicityVsVZEROCmultiplicityH_ADCno_VZEROCno->Fill(ADCmultiplicitiesTotal, VZEROCmultiplicitiesTotal);
     }
   }
+  }
+
 
   /* - Filling the v2 histogram only if the
    * - ZNC or the ZNA have detected any activity at all...
    */
   if( isZNCfired == 0 ) {
         if( isZNAfired == 0 ) {
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (LOWER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 2.4) && (possibleJPsi.Mag() < 2.8) ) {
+                  fDimuonPtDistributionZNCzeroZNAzeroHv2LowerSide             ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              //
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (HIGHER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 4.0) && (possibleJPsi.Mag() < 5.5) ) {
+                  fDimuonPtDistributionZNCzeroZNAzeroHv2HigherSide             ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAzeroRapidityHv2HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              //
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - NORMAL analysis
+               */
               if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
                   fDimuonPtDistributionZNCzeroZNAzeroHv2             ->Fill(ptOfTheDimuonPair);
                   /* -
                    * - Variable pt-binning.
                    * -
                    */
-                  if (        ptOfTheDimuonPair < 0.500 ) {
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
                     fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill(ptOfTheDimuonPair);
                   } else if ( ptOfTheDimuonPair < 0.950 ) {
                     fDimuonPtDistributionZNCzeroZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -2534,7 +3076,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2553,7 +3096,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2572,7 +3116,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2613,6 +3158,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     }
                   }
                   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    if ( ADAPastFutureBoolean == 0 && ADCPastFutureBoolean == 0 && VZEROAPastFutureBoolean == 0 && VZEROCPastFutureBoolean == 0 ){
                     for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
                       fADmultiplicity0N0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
                     }
@@ -2623,6 +3169,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fVZEROmultiplicity0N0NclassTotalH ->Fill(VZEROmultiplicitiesTotal);
                     fVZEROAmultiplicity0N0NclassTotalH->Fill(VZEROAmultiplicitiesTotal);
                     fVZEROCmultiplicity0N0NclassTotalH->Fill(VZEROCmultiplicitiesTotal);
+                    }
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2655,13 +3202,200 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
               //     fInvariantMassDistributionIncoherentZNCzeroZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
               // }
         } else {
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (LOWER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 2.4) && (possibleJPsi.Mag() < 2.8) ) {
+                  fDimuonPtDistributionZNCzeroZNAanyHv2LowerSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (HIGHER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 4.0) && (possibleJPsi.Mag() < 5.5) ) {
+                  fDimuonPtDistributionZNCzeroZNAanyHv2HigherSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCzeroZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCzeroZNAanyRapidityHv2HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCzeroZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - NORMAL analysis
+               */
               if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
                   fDimuonPtDistributionZNCzeroZNAanyHv2            ->Fill(ptOfTheDimuonPair);
                   /* -
                    * - Variable pt-binning.
                    * -
                    */
-                  if (        ptOfTheDimuonPair < 0.500 ) {
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
                     fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill(ptOfTheDimuonPair);
                   } else if ( ptOfTheDimuonPair < 0.950 ) {
                     fDimuonPtDistributionZNCzeroZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -2681,7 +3415,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2700,7 +3435,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2719,7 +3455,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCzeroZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2761,6 +3498,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     }
                   }
                   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    if ( ADAPastFutureBoolean == 0 && ADCPastFutureBoolean == 0 && VZEROAPastFutureBoolean == 0 && VZEROCPastFutureBoolean == 0 ){
                     for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
                       fADmultiplicity0NXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
                     }
@@ -2771,7 +3509,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fVZEROmultiplicity0NXNclassTotalH ->Fill(VZEROmultiplicitiesTotal);
                     fVZEROAmultiplicity0NXNclassTotalH->Fill(VZEROAmultiplicitiesTotal);
                     fVZEROCmultiplicity0NXNclassTotalH->Fill(VZEROCmultiplicitiesTotal);
-
+                    }
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCzeroZNAanyHv2->Fill(possibleJPsi.Mag());
@@ -2807,13 +3545,200 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
         }
   } else {
         if( isZNAfired == 0 ) {
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (LOWER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 2.4) && (possibleJPsi.Mag() < 2.8) ) {
+                  fDimuonPtDistributionZNCanyZNAzeroHv2LowerSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (HIGHER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 4.0) && (possibleJPsi.Mag() < 5.5) ) {
+                  fDimuonPtDistributionZNCanyZNAzeroHv2HigherSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAzeroShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAzeroRapidityHv2HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.16666666666);
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.125);
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.050);
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAzeroRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair, 0.025);
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - NORMAL analysis
+               */
               if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
                   fDimuonPtDistributionZNCanyZNAzeroHv2            ->Fill(ptOfTheDimuonPair);
                   /* -
                    * - Variable pt-binning.
                    * -
                    */
-                  if (        ptOfTheDimuonPair < 0.500 ) {
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
                     fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill(ptOfTheDimuonPair);
                   } else if ( ptOfTheDimuonPair < 0.950 ) {
                     fDimuonPtDistributionZNCanyZNAzeroHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -2833,7 +3758,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[0]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2852,7 +3778,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[1]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2871,7 +3798,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAzeroRapidityHv3[2]->Fill(ptOfTheDimuonPair, 0.33333333333);
@@ -2913,6 +3841,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     }
                   }
                   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    if ( ADAPastFutureBoolean == 0 && ADCPastFutureBoolean == 0 && VZEROAPastFutureBoolean == 0 && VZEROCPastFutureBoolean == 0 ){
                     for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
                       fADmultiplicityXN0NclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
                     }
@@ -2923,6 +3852,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fVZEROmultiplicityXN0NclassTotalH ->Fill(VZEROmultiplicitiesTotal);
                     fVZEROAmultiplicityXN0NclassTotalH->Fill(VZEROAmultiplicitiesTotal);
                     fVZEROCmultiplicityXN0NclassTotalH->Fill(VZEROCmultiplicitiesTotal);
+                    }
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAzeroHv2->Fill(possibleJPsi.Mag());
@@ -2956,13 +3886,199 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
               //     fInvariantMassDistributionIncoherentZNCanyZNAzeroShiftPlusTwoHv2->Fill(possibleJPsi.Mag());
               // }
         } else {
+              /* -
+               * - CREATING SIDEBANDS
+               * - (LOWER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 2.4) && (possibleJPsi.Mag() < 2.8) ) {
+                  fDimuonPtDistributionZNCanyZNAanyHv2LowerSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3LowerSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[0]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[1]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3LowerSide[2]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - CREATING SIDEBANDS
+               * - (HIGHER side)
+               * - for templates
+               * -
+               */
+              if ( (possibleJPsi.Mag() > 4.0) && (possibleJPsi.Mag() < 5.5) ) {
+                  fDimuonPtDistributionZNCanyZNAanyHv2HigherSide            ->Fill(ptOfTheDimuonPair);
+                  /* -
+                   * - Variable pt-binning.
+                   * -
+                   */
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill(ptOfTheDimuonPair);
+                  } else if ( ptOfTheDimuonPair < 0.950 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                  } else if ( ptOfTheDimuonPair < 1.400 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                  } else if ( ptOfTheDimuonPair < 2.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.125 );
+                  } else if ( ptOfTheDimuonPair < 4.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.050 );
+                  } else if ( ptOfTheDimuonPair < 5.000 ) {
+                    fDimuonPtDistributionZNCanyZNAanyHv3HigherSide           ->Fill( ptOfTheDimuonPair, 0.025 );
+                  }
+                  // fDimuonPtDistributionZNCanyZNAanyShiftPlusOneHv2->Fill(ptOfTheDimuonPair);
+                  if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[0]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[1]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+                    fDimuonPtDistributionZNCanyZNAanyRapidityHv2HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    /* -
+                     * - Variable pt-binning.
+                     * -
+                     */
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill(ptOfTheDimuonPair);
+                    } else if ( ptOfTheDimuonPair < 0.950 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill( ptOfTheDimuonPair, 0.33333333333 );
+                    } else if ( ptOfTheDimuonPair < 1.400 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill( ptOfTheDimuonPair, 0.16666666666 );
+                    } else if ( ptOfTheDimuonPair < 2.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill( ptOfTheDimuonPair, 0.125 );
+                    } else if ( ptOfTheDimuonPair < 4.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill( ptOfTheDimuonPair, 0.050 );
+                    } else if ( ptOfTheDimuonPair < 5.000 ) {
+                      fDimuonPtDistributionZNCanyZNAanyRapidityHv3HigherSide[2]->Fill( ptOfTheDimuonPair, 0.025 );
+                    }
+                  }
+              }
+              // END SIDEBANDS
+              //_______________________________
+              /* -
+               * - NORMAL analysis
+               */
               if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
                   fDimuonPtDistributionZNCanyZNAanyHv2            ->Fill(ptOfTheDimuonPair);
                   /* -
                    * - Variable pt-binning.
                    * -
                    */
-                  if (        ptOfTheDimuonPair < 0.500 ) {
+                  // if (        ptOfTheDimuonPair < 0.500 ) {
+                  if (        ptOfTheDimuonPair < 0.275 ) {
                     fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill(ptOfTheDimuonPair);
                   } else if ( ptOfTheDimuonPair < 0.950 ) {
                     fDimuonPtDistributionZNCanyZNAanyHv3           ->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -2982,7 +4098,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[0]->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -3001,7 +4118,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[1]->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -3020,7 +4138,8 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                      * - Variable pt-binning.
                      * -
                      */
-                    if (        ptOfTheDimuonPair < 0.500 ) {
+                    // if (        ptOfTheDimuonPair < 0.500 ) {
+                    if (        ptOfTheDimuonPair < 0.275 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill(ptOfTheDimuonPair);
                     } else if ( ptOfTheDimuonPair < 0.950 ) {
                       fDimuonPtDistributionZNCanyZNAanyRapidityHv3[2]->Fill( ptOfTheDimuonPair, 0.33333333333 );
@@ -3062,6 +4181,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     }
                   }
                   if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ){
+                    if ( ADAPastFutureBoolean == 0 && ADCPastFutureBoolean == 0 && VZEROAPastFutureBoolean == 0 && VZEROCPastFutureBoolean == 0 ){
                     for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
                       fADmultiplicityXNXNclassH[iChannel]->Fill(ADmultiplicities[iChannel]);
                     }
@@ -3072,6 +4192,7 @@ void AliAnalysisTaskADin2018::UserExec(Option_t *)
                     fVZEROmultiplicityXNXNclassTotalH ->Fill(VZEROmultiplicitiesTotal);
                     fVZEROAmultiplicityXNXNclassTotalH->Fill(VZEROAmultiplicitiesTotal);
                     fVZEROCmultiplicityXNXNclassTotalH->Fill(VZEROCmultiplicitiesTotal);
+                    }
                   }
               } else {
                   fInvariantMassDistributionIncoherentZNCanyZNAanyHv2->Fill(possibleJPsi.Mag());
