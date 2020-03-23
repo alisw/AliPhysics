@@ -7745,7 +7745,8 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   // LHC17pq anchored MCs
   } else if ( periodName.CompareTo("LHC17l3b") == 0 || periodName.CompareTo("LHC17l3b_fast") == 0 || periodName.CompareTo("LHC17l3b_cent") == 0 ||
-              periodName.CompareTo("LHC17l3b_cent_woSDD") == 0){
+              periodName.CompareTo("LHC17l3b_cent_woSDD") == 0 ||
+              periodName.Contains("LHC18d6c")  ){
     fPeriodEnum = kLHC17l3b;
     fEnergyEnum = k5TeV;
   } else if ( periodName.CompareTo("LHC18j2") == 0 || periodName.CompareTo("LHC18j2_fast") == 0 || periodName.CompareTo("LHC18j2_cent") == 0 ||
