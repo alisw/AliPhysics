@@ -274,6 +274,11 @@ private:
     TH1F                *fComboDenomWeight;     //!
     TH1F                *fComboDenomNoWeight;   //!
     
+    TH2F                *fEmbEtaElecTagDCA;     //!
+    TH2F                *fEmbPi0ElecTagDCA;     //!
+    TH2F                *fEmbEtaElecTrueDCA;     //!
+    TH2F                *fEmbPi0ElecTrueDCA;     //!
+    
     //TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
     TH1F                *fD0MesonPt;  //!
     TH1F                *fD0MesonFromDStarPt; //!

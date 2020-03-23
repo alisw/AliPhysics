@@ -183,6 +183,12 @@ fComboNumWeight(0),
 fComboNumNoWeight(0),
 fComboDenomWeight(0),
 fComboDenomNoWeight(0),
+
+fEmbEtaElecTagDCA(0),
+fEmbPi0ElecTagDCA(0),
+fEmbEtaElecTrueDCA(0),
+fEmbPi0ElecTrueDCA(0),
+
 //fDMesonPDG(0),
 fD0MesonPt(0),
 fD0MesonFromDStarPt(0),
@@ -427,6 +433,12 @@ fComboNumWeight(0),
 fComboNumNoWeight(0),
 fComboDenomWeight(0),
 fComboDenomNoWeight(0),
+
+fEmbEtaElecTagDCA(0),
+fEmbPi0ElecTagDCA(0),
+fEmbEtaElecTrueDCA(0),
+fEmbPi0ElecTrueDCA(0),
+
 //fDMesonPDG(0),
 fD0MesonPt(0),
 fD0MesonFromDStarPt(0),
@@ -1052,6 +1064,15 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fComboDenomNoWeight->Sumw2();
         fOutputList->Add(fComboDenomNoWeight);
     
+        fEmbEtaElecTagDCA = new TH2F("fEmbEtaElecTagDCA","e- from emb. eta, tagged; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fEmbEtaElecTagDCA);
+        fEmbPi0ElecTagDCA = new TH2F("fEmbPi0ElecTagDCA","e- from emb. pi0, tagged; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fEmbPi0ElecTagDCA);
+        fEmbEtaElecTrueDCA = new TH2F("fEmbEtaElecTrueDCA","e- from emb. eta, true; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fEmbEtaElecTrueDCA);
+        fEmbPi0ElecTrueDCA = new TH2F("fEmbPi0ElecTrueDCA","e- from emb. pi0, true; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fEmbPi0ElecTrueDCA);
+        
         //fDMesonPDG = new TH1F("fDMesonPDG","D Meson PDG values; abs(PDG); counts;", 51,399.5,450.5);
         //DMesonPDG->Sumw2();
         //fOutputList->Add(fDMesonPDG);
@@ -2327,7 +2348,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         //if mom is Pi0--------------------------------
                         if(fpidSort==3) {
                             //fPi0DCA->Fill(track->Pt(),DCA);
-                            if(!kEmbEta && !kEmbEta && kHijing) {
+                            if(!kEmbEta && !kEmbPi0 && kHijing) {
                                 fPi0HijingDCA->Fill(track->Pt(),DCA);
                                 fPi0HijingPt->Fill(track->Pt());
                                 //ComboDenomWeight->Fill(track->Pt());
@@ -2339,6 +2360,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fEnhPi0WeightedPt->Fill(track->Pt(),fWeight);
                                 fComboDenomWeight->Fill(track->Pt(),fWeight);
                                 fComboDenomNoWeight->Fill(track->Pt());
+                                fEmbPi0ElecTrueDCA->Fill(track->Pt(),DCA,fWeight);
                             }
                             if(kEmbEta) {
                                 fWeight = fEtaWeight->Eval(momPt);
@@ -2346,6 +2368,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fEnhEtaWeightedPt->Fill(track->Pt(),fWeight);
                                 fComboDenomWeight->Fill(track->Pt(),fWeight);
                                 fComboDenomNoWeight->Fill(track->Pt());
+                                fEmbEtaElecTrueDCA->Fill(track->Pt(),DCA,fWeight);
                             }
                         
                         }
@@ -2364,6 +2387,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fEnhEtaWeightedPt->Fill(track->Pt(),fWeight);
                                 fComboDenomWeight->Fill(track->Pt(),fWeight);
                                 fComboDenomNoWeight->Fill(track->Pt());
+                                fEmbEtaElecTrueDCA->Fill(track->Pt(),DCA,fWeight);
                             }
                         }
                         //if photon--------------------------------
@@ -2380,6 +2404,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fEnhPhotonWeightedPt->Fill(track->Pt(),fWeight);
                                 fComboDenomWeight->Fill(track->Pt(),fWeight);
                                 fComboDenomNoWeight->Fill(track->Pt());
+                                fEmbPi0ElecTrueDCA->Fill(track->Pt(),DCA,fWeight);
                             }
                             if(kEmbEta) {
                                 fWeight = fEtaWeight->Eval(momPt);
@@ -2387,6 +2412,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fEnhPhotonWeightedPt->Fill(track->Pt(),fWeight);
                                 fComboDenomWeight->Fill(track->Pt(),fWeight);
                                 fComboDenomNoWeight->Fill(track->Pt());
+                                fEmbEtaElecTrueDCA->Fill(track->Pt(),DCA,fWeight);
                             }
                         }
                     
@@ -2399,7 +2425,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             //if mom is Pi0--------------------------------
                             if(fpidSort==3) {
                                 //fPi0DCA->Fill(track->Pt(),DCA);
-                                if(!kEmbEta && !kEmbEta && kHijing) {
+                                if(!kEmbEta && !kEmbPi0 && kHijing) {
                                     fULSHijingPi0->Fill(track->Pt()); //pi0 mama
                                     //ComboNumWeight->Fill(track->Pt());
                                     //ComboNumNoWeight->Fill(track->Pt());
@@ -2409,12 +2435,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                     fULSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
+                                    fEmbPi0ElecTagDCA->Fill(track->Pt(),DCA,fWeight);
                                 }
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
                                     fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
+                                    fEmbEtaElecTagDCA->Fill(track->Pt(),DCA,fWeight);
                                 }
                             
                             }
@@ -2431,6 +2459,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                     fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
+                                    fEmbEtaElecTagDCA->Fill(track->Pt(),DCA,fWeight);
                                 }
                             }
                             //if photon--------------------------------
@@ -2445,12 +2474,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
+                                    fEmbPi0ElecTagDCA->Fill(track->Pt(),DCA,fWeight);
                                 }
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
+                                    fEmbEtaElecTagDCA->Fill(track->Pt(),DCA,fWeight);
                                 }
                             }
                         }
