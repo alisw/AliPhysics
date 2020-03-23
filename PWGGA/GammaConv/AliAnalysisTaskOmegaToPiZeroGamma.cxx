@@ -4441,23 +4441,19 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
           for(Int_t iCurrent3=0;iCurrent3<fClusterCandidates->GetEntries();iCurrent3++){
             AliAODConversionPhoton *gamma2 = dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iCurrent3));
             if(gamma2 == NULL || !(gamma2->GetIsCaloPhoton())) continue;
-            AliAODConversionMother *BGOmegacand = new AliAODConversionMother(&BGpi0cand,gamma2);
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(BGOmegacand, &BGpi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
-              fHistoDiffPi0SameGammaBackInvMassPt[fiCut]->Fill(BGOmegacand->M(),BGOmegacand->Pt(),fWeightJetJetMC);
+            AliAODConversionMother BGOmegacand = AliAODConversionMother(&BGpi0cand,gamma2);
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&BGOmegacand, &BGpi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
+              fHistoDiffPi0SameGammaBackInvMassPt[fiCut]->Fill(BGOmegacand.M(),BGOmegacand.Pt(),fWeightJetJetMC);
             }
-            delete BGOmegacand;
-            BGOmegacand = 0x0;
           }
         } else{ //PCM gamma
           for(Int_t iCurrent3=0;iCurrent3<fGammaCandidates->GetEntries();iCurrent3++){
             AliAODConversionPhoton *gamma2 = dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(iCurrent3));
             if(gamma2 == NULL) continue;
-            AliAODConversionMother *BGOmegacand = new AliAODConversionMother(&BGpi0cand,gamma2);
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(BGOmegacand, &BGpi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
-              fHistoDiffPi0SameGammaBackInvMassPt[fiCut]->Fill(BGOmegacand->M(),BGOmegacand->Pt(),fWeightJetJetMC);
+            AliAODConversionMother BGOmegacand = AliAODConversionMother(&BGpi0cand,gamma2);
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&BGOmegacand, &BGpi0cand, gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
+              fHistoDiffPi0SameGammaBackInvMassPt[fiCut]->Fill(BGOmegacand.M(),BGOmegacand.Pt(),fWeightJetJetMC);
             }
-            delete BGOmegacand;
-            BGOmegacand = 0x0;
           }
         }
       }
@@ -4498,12 +4494,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
             if(fMoveParticleAccordingToVertex == kTRUE && bgEvent1Vertex){
               MoveParticleAccordingToVertex(&gamma2,bgEvent1Vertex);
             }
-            AliAODConversionMother *BGOmegacand = new AliAODConversionMother(BGpi0cand,&gamma2);
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(BGOmegacand, BGpi0cand, &gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
-              fHistoSamePi0DiffGammaBackInvMassPt[fiCut]->Fill(BGOmegacand->M(),BGOmegacand->Pt(),fWeightJetJetMC);
+            AliAODConversionMother BGOmegacand = AliAODConversionMother(BGpi0cand,&gamma2);
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&BGOmegacand, BGpi0cand, &gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
+              fHistoSamePi0DiffGammaBackInvMassPt[fiCut]->Fill(BGOmegacand.M(),BGOmegacand.Pt(),fWeightJetJetMC);
             }
-            delete BGOmegacand;
-            BGOmegacand = 0x0;
           }
         }
       } else{ //PCM gamma
@@ -4517,12 +4511,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
             if(fMoveParticleAccordingToVertex == kTRUE && bgEvent1Vertex){
               MoveParticleAccordingToVertex(&gamma2,bgEvent1Vertex);
             }
-            AliAODConversionMother *BGOmegacand = new AliAODConversionMother(BGpi0cand,&gamma2);
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(BGOmegacand, BGpi0cand, &gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
-              fHistoSamePi0DiffGammaBackInvMassPt[fiCut]->Fill(BGOmegacand->M(),BGOmegacand->Pt(),fWeightJetJetMC);
+            AliAODConversionMother BGOmegacand = AliAODConversionMother(BGpi0cand,&gamma2);
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedPiZeroGammaAngle(&BGOmegacand, BGpi0cand, &gamma2, fDoPiZeroGammaAngleCut, fmaxfit, flowerFactor, fupperFactor)){
+              fHistoSamePi0DiffGammaBackInvMassPt[fiCut]->Fill(BGOmegacand.M(),BGOmegacand.Pt(),fWeightJetJetMC);
             }
-            delete BGOmegacand;
-            BGOmegacand = 0x0;
           }
         }
       }
