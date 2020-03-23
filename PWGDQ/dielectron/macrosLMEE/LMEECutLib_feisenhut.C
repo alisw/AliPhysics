@@ -65,6 +65,7 @@ public:
     kNoPID_Pt75,
     kNoPID_Pt200,
     kPID_Jeromian_01,
+    kPID_Jeromian_01_PreFilter,
     kPID_Jeromian_01_pt200,
     kPIDcut_1_pt75,
     kPIDcut_TEST,
@@ -78,6 +79,7 @@ public:
     kNoTrackCuts,
     kTRACKcut_1,
     kTRACKcut_2,
+    kTRACKcut_2_PreFilter,
     kTRACKcut_1_secondary,
     kDefaultNoTrackCuts,
     kV0
@@ -182,14 +184,14 @@ public:
     AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
     cgPIDCutsAna->AddCut(etaRange);
     cgPIDCutsAna->AddCut(ptRange);
-                                                                                Printf("%d DEBUG CutLib before PID " , __LINE__);
+                                                                                // Printf("%d DEBUG CutLib before PID " , __LINE__);
     cgPIDCutsAna->AddCut(PID);
-                                                                                Printf("%d DEBUG CutLib after PID " , __LINE__);
+                                                                                // Printf("%d DEBUG CutLib after PID " , __LINE__);
 
     cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
-                                                                                Printf("%d DEBUG CutLib after GetTrackSelectionAna " , __LINE__);
+                                                                                // Printf("%d DEBUG CutLib after GetTrackSelectionAna " , __LINE__);
     cgPIDCutsAna->AddCut(GetPairCutsAna(AnaCut));
-                                                                                Printf("%d DEBUG CutLib after GetPairCutsAna " , __LINE__);
+                                                                                // Printf("%d DEBUG CutLib after GetPairCutsAna " , __LINE__);
     return cgPIDCutsAna;
   }
 
@@ -780,6 +782,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   // eta range:
   AliDielectronVarCuts *etaRange080 = new AliDielectronVarCuts("etaRange080","etaRange080");
   etaRange080->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+  AliDielectronVarCuts *etaRange110 = new AliDielectronVarCuts("etaRange110","etaRange110");
+  etaRange110->AddCut(AliDielectronVarManager::kEta, -1.10, 1.10);
   AliDielectronVarCuts *etaRange120 = new AliDielectronVarCuts("etaRange120","etaRange120");
   etaRange120->AddCut(AliDielectronVarManager::kEta, -1.20, 1.20);
   AliDielectronVarCuts *etaRange150 = new AliDielectronVarCuts("etaRange150","etaRange150");
@@ -795,6 +799,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   ptRange100toINF->AddCut(AliDielectronVarManager::kPt, 0.1, 100.0);
   AliDielectronVarCuts *ptRange75to8000 = new AliDielectronVarCuts("ptRange75to8000","ptRange75to8000");
   ptRange75to8000->AddCut(AliDielectronVarManager::kPt, 0.075, 8.0);
+  AliDielectronVarCuts *ptRange50to8000 = new AliDielectronVarCuts("ptRange50to8000","ptRange50to8000");
+  ptRange50to8000->AddCut(AliDielectronVarManager::kPt, 0.050, 8.0);
   AliDielectronVarCuts *ptRange20to8000 = new AliDielectronVarCuts("ptRange20to8000","ptRange20to8000");
   ptRange20to8000->AddCut(AliDielectronVarManager::kPt, 0.02, 8.0);
   AliDielectronVarCuts *ptRange200to8000 = new AliDielectronVarCuts("ptRange200to8000","ptRange200to8000");
@@ -887,6 +893,12 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   Jeromian_01_sum->AddCut(Jeromian_01_hadron_cut);
   Jeromian_01_sum->AddCut(Jeromian_01_ele_incl);
 
+
+  AliDielectronPID *Jeromian_01_PreFilter_hadron_cut = new AliDielectronPID("Jeromian_01_hadron_cut","Jeromian_01_hadron_cut");
+  Jeromian_01_hadron_cut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. , 3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kP);
+
+  AliDielectronCutGroup* Jeromian_01_sum_PreFilter = new AliDielectronCutGroup("Jeromian_01_sum","Jeromian_01_sum",AliDielectronCutGroup::kCompOR);
+  Jeromian_01_sum_PreFilter->AddCut(Jeromian_01_PreFilter_hadron_cut);
 
 
   AliDielectronPID *PIDcut_1 = new AliDielectronPID("PIDcut_1","PIDcut_1");
@@ -1310,9 +1322,12 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     case kPID_Jeromian_01:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, Jeromian_01_sum, AnaCut);;
       break;
-      case kPID_Jeromian_01_pt200:
-        pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, Jeromian_01_sum, AnaCut);;
-        break;
+    case kPID_Jeromian_01_PreFilter:
+      pidCuts = LMEECutLib::SetKinematics(etaRange110, ptRange50to8000, Jeromian_01_sum_PreFilter, AnaCut);;
+      break;
+    case kPID_Jeromian_01_pt200:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, Jeromian_01_sum, AnaCut);;
+      break;
     case kPIDcut_1_pt75:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDcut_1, AnaCut);;
       break;
@@ -1431,6 +1446,49 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
          cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
          trackCuts = cgTrackCutsAnaSPDfirst;
          break;
+
+         case kTRACKcut_2_PreFilter:
+           AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+           trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+           trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+           trackCutsAOD->AddCut(AliDielectronVarManager::kKinkIndex0,          0. );
+           trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+           // trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+           trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
+           // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+           // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 161.0);
+           // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+           // AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
+           // double delta = 0.00001;
+           // AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
+           // trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
+           // AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
+           // trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
+           // AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
+           // trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
+           // AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
+           // trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
+           // AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
+           // trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
+           // AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
+           // trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster0);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster2);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster4);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster8);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster16);
+           // SharedClusterCut->AddCut(trackCutsSharedCluster32);
+           AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
+           // trackCutsDiel->SetAODFilterBit(1<<4);
+           trackCutsDiel->SetAODFilterBit(1<<0);
+           // trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+           trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+           cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
+           cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
+           cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
+           // cgTrackCutsAnaSPDfirst->AddCut(SharedClusterCut);
+           trackCuts = cgTrackCutsAnaSPDfirst;
+           break;
 
       case kTRACKcut_1_secondary:
         std::cout << "kTRACKcut_1_secondary" << std::endl;

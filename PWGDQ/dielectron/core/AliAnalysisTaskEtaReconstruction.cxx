@@ -399,9 +399,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
       fSingleElectronList->Add(fGeneratedSmearedSecondaryList);
 
       // Generated reconstructed lists for every cutsetting one list and every MCsignal 2 histograms with pos and neg charge
-      for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
+      for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
         fRecPrimaryList = new TList();
-        fRecPrimaryList->SetName(Form("%s_Primary",fTrackCuts_primary.at(list_i)->GetName()));
+        fRecPrimaryList->SetName(Form("%s_Primary",fTrackCuts_primary_standard.at(list_i)->GetName()));
         fRecPrimaryList->SetOwner();
 
         for (unsigned int i = 0; i < fSinglePrimaryLegMCSignal.size(); ++i){
@@ -526,9 +526,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fPairList->Add(fGeneratedSmearedSecondaryPairsList);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
-        for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
+        for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
           TList* list = new TList();
-          list->SetName(Form("%s_Primary",fTrackCuts_primary.at(list_i)->GetName()));
+          list->SetName(Form("%s_Primary",fTrackCuts_primary_standard.at(list_i)->GetName()));
           list->SetOwner();
 
           for (unsigned int i = 0; i < fPrimaryPairMCSignal.size(); ++i){
@@ -719,9 +719,9 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fFourPairList->Add(fGeneratedSmearedFourPairsList);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
-        for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
+        for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
           TList* list = new TList();
-          list->SetName(fTrackCuts_primary.at(list_i)->GetName());
+          list->SetName(fTrackCuts_primary_standard.at(list_i)->GetName());
           list->SetOwner();
 
           for (unsigned int i = 0; i < fFourPairMCSignal.size(); i+=2){
@@ -1080,16 +1080,16 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     // ##########################################################
                                                                                 // // changed in order to disable reconstructed cuts
-                                                                                // std::vector<bool> selected_primary(fTrackCuts_primary.size(), kTRUE); // vector which stores if track is accepted by [i]-th selection cut
+                                                                                // std::vector<bool> selected_primary(fTrackCuts_primary_PreFilter.size(), kTRUE); // vector which stores if track is accepted by [i]-th selection cut
                                                                                 // std::vector<bool> selected_secondary(fPairCuts_secondary_standard.size(), kTRUE); // vector which stores if track is accepted by [i]-th selection cut
     // Check if particle is passing primary selection cuts
-    std::vector<bool> selected_primary(fTrackCuts_primary.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-    for (UInt_t iCut=0; iCut<fTrackCuts_primary.size(); ++iCut){ // loop over all specified cutInstances
-      UInt_t selectedMask_primary=( 1 << fTrackCuts_primary.at(iCut)->GetCuts()->GetEntries())-1;
+    std::vector<bool> selected_primary(fTrackCuts_primary_PreFilter.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+    for (UInt_t iCut=0; iCut<fTrackCuts_primary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
+      UInt_t selectedMask_primary=( 1 << fTrackCuts_primary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
       // cutting logic taken from AliDielectron::FillTrackArrays()
       // apply track cuts
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Cout line" << std::endl;
-      UInt_t cutMask_primary = fTrackCuts_primary.at(iCut)->IsSelected(track);
+      UInt_t cutMask_primary = fTrackCuts_primary_PreFilter.at(iCut)->IsSelected(track);
       if (cutMask_primary == selectedMask_primary) {selected_primary[iCut] = kTRUE; /*std::cout << "prim_reconstructed TRUE" << std::endl;*/}
     }
 
@@ -1213,6 +1213,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
       // ##########################################################
       // Fill resolution histograms
       // ##########################################################
+      AliVParticle* mcPart1 = fMC->GetTrack(abslabel);
       double mcP     = mcPart1->P();
       double mcPt    = mcPart1->Pt();
       double mcEta   = mcPart1->Eta();
@@ -1260,11 +1261,11 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     }
   }
 
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_primary.size: " << fTrackCuts_primary.size() << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fTrackCuts_primary_PreFilter.size: " << fTrackCuts_primary_PreFilter.size() << std::endl;
                                                                                 // if(fdebug){
-                                                                                //   for (size_t i = 0; i < fTrackCuts_primary.size(); i++) {
-                                                                                //   std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_primary.at(i)->GetName() << std::endl;
-                                                                                //   const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_primary.at(i)->GetCuts()->At(0));
+                                                                                //   for (size_t i = 0; i < fTrackCuts_primary_PreFilter.size(); i++) {
+                                                                                //   std::cout << __LINE__ << " DEBUG_AnalysisTask: " << i+1 << "-th CutSetting: " << fTrackCuts_primary_PreFilter.at(i)->GetName() << std::endl;
+                                                                                //   const AliDielectronCutGroup* cgPIDCutsAna = dynamic_cast< const AliDielectronCutGroup*> (fTrackCuts_primary_PreFilter.at(i)->GetCuts()->At(0));
                                                                                 //   const AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = dynamic_cast< const AliDielectronCutGroup*> (cgPIDCutsAna->GetCut(3));
                                                                                 //   const AliDielectronVarCuts*  trackCutsAOD = dynamic_cast< const AliDielectronVarCuts*> (cgTrackCutsAnaSPDfirst->GetCut(1));
                                                                                 //
@@ -1381,6 +1382,8 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     Bool_t SmearedPair  = kTRUE;
     Bool_t ReconstructedPair = kTRUE;
     Bool_t PairPrimary = kTRUE;
+    Bool_t TrackCuts = kTRUE;
+
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
                                                                                 if (fdebug) std::cout << "Do generated four pairing" << std::endl;
                                                                                 DoFourPairing(fGenPairVec_primary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, centralityWeight);
@@ -1600,9 +1603,10 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
   fOutputListSupportHistos->SetName("Support");
   fOutputListSupportHistos->SetOwner();
 
-  for (unsigned int list_i = 0; list_i < fTrackCuts_primary.size(); ++list_i){
+
+  for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
     TList* list1 = new TList();
-    list1->SetName(Form("PrimaryTrackCuts: %s",fTrackCuts_primary.at(list_i)->GetName()));
+    list1->SetName(Form("PrimaryTrackCuts: %s",fTrackCuts_primary_standard.at(list_i)->GetName()));
     list1->SetOwner();
     for (unsigned int i = 0; i < fSinglePrimaryLegMCSignal.size(); ++i){
       TList* list_temp = new TList();
@@ -2107,236 +2111,235 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
   // If TrackCuts   = false:   Aplly standard PairCuts to either primary pairs or secondary pairs
   // If PairPrimary = true :   fPairVec is the reconstructed primary pair vector
   // If PairPrimary = false:   fPairVec is the reconstructed secondary pair vector
+
+  // ###############################
+  // primary part
+  // ###############################
   for (unsigned int iPair = 0; iPair < fPairVec->size(); iPair++){
-    if(PairPrimary == kTRUE){
-      AliVParticle* posTrack = fEvent->GetTrack(fPairVec->GetFirstDaughter());
-      AliVParticle* negTrack = fEvent->GetTrack(fPairVec->GetSecondDaughter());
+    if (PairPrimary == kTRUE) {
+      AliVParticle* negTrack = fEvent->GetTrack(fPairVec->at(iPair).GetFirstDaughter());
+      AliVParticle* posTrack = fEvent->GetTrack(fPairVec->at(iPair).GetSecondDaughter());
+
       int poslabel = posTrack->GetLabel();
       int neglabel = negTrack->GetLabel();
       int absposlabel = TMath::Abs(poslabel);
       int absneglabel = TMath::Abs(neglabel);
-    }
-    else if(PairPrimary == kFALSE){
-      // Get V0 from Event, selected trough V0ID stored in TwoPair and is set in reconstructed secondarie two pairing
-      Int_t fV0ID = fPairVec->at(iPair).GetV0ID();
-      AliAODv0* fV0 = ((AliAODEvent*)fEvent)->GetV0(fV0ID);
-      AliAODTrack *posTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(0));
-      AliAODTrack *negTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(1));
-    }
-
-    if(TrackCuts == kFALSE){
-      AliDielectronPair *pair = new AliDielectronPair;
-      pair->SetKFUsage(false);
-      if     (PairPrimary == kTRUE)  pair->SetTracks(static_cast<AliVTrack*>(negTrack), 11, static_cast<AliVTrack*>(posTrack), -11);
-      else if(PairPrimary == kFALSE) pair->SetTracks(static_cast<AliAODTrack*>(negTrack), 11, static_cast<AliAODTrack*>(posTrack), -11);
-
-      //  ---------- RECONSTRUCTED Pairs with PAIR  ---------- //
-      // Check if pair is passing cut selections
-      std::vector<bool> selected(fCutsetting.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
-      for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
-        UInt_t selectedMask=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
-        // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-        // apply pair cuts
-        UInt_t cutMask = fCutsetting.at(iCut)->IsSelected(pair);
-        if (cutMask == selectedMask) {selected[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
-      }
-      // ##########################################################
-      // check if at least one is selected by cuts otherwise remove this pair from vector
-      if (CheckIfOneIsTrue(selected) == kFALSE) {
-        fPairVec->erase(fPairVec->begin()+iPair);
-        iPair--;
-        continue;
-      }
-    }
-
-    else if (TrackCuts == kTRUE) {
-      //  ---------- RECONSTRUCTED Tracks  ---------- //
-      // Check if pos and neg Track are passing cut selections
-      std::vector<bool> selected_posTrack(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-      for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
-        UInt_t selectedMask_posTrack=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
-        // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-        // apply track cuts
-        UInt_t cutMask_posTrack = fCutsetting.at(iCut)->IsSelected(posTrack);
-        if (cutMask_posTrack == selectedMask_posTrack) {selected_posTrack[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
-      }
-      std::vector<bool> selected_negTrack(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-      for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
-        UInt_t selectedMask_negTrack=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
-        // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-        // apply track cuts
-        UInt_t cutMask_negTrack = fCutsetting.at(iCut)->IsSelected(posTrack);
-        if (cutMask_negTrack == selectedMask_negTrack) {selected_negTrack[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
-      }
-      // ##########################################################
-      // check if at least one is selected by cuts otherwise remove this pair from vector
-      if ((CheckIfOneIsTrue(selected_posTrack) == kFALSE) || (CheckIfOneIsTrue(selected_negTrack) == kFALSE)) {
-        fPairVec->erase(fPairVec->begin()+iPair);
-        iPair--;
-        continue;
-      }
-    }
-
-    if     (PairPrimary == kTRUE)  fPairVec->at(iPair).isReconstructed_primary = selected;
-    else if(PairPrimary == kFALSE) fPairVec->at(iPair).isReconstructed_secondary = selected;
 
 
-    // //  ---------- RECONSTRUCTED Pairs with TRACKS  ---------- //
-    // for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
-    //   UInt_t selectedMask_firstPar=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
-    //   UInt_t selectedMask_secPar=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
-    //   // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-    //   // apply track cuts
-    //   UInt_t cutMask_firstPar = fCutsetting.at(iCut)->IsSelected(posTrack);
-    //   UInt_t cutMask_secPar = fCutsetting.at(iCut)->IsSelected(negTrack);
-    //   if (cutMask_firstPar == selectedMask_firstPar) {selected_firstPar[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
-    //   if (cutMask_secPar == selectedMask_secPar) {selected_secPar[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
-    // }
-    // // ##########################################################
-    // // check if at least one is selected by cuts otherwise remove this pair from vector
-    // if (CheckIfOneIsTrue(selected_firstPar) == kFALSE && CheckIfOneIsTrue(selected_secPar) == kFALSE)  {
-    //   fPairVec->erase(fPairVec->begin()+iPair);
-    //   iPair--;
-    //   continue;
-    // }
+      // ###############################
+      // Track cuts on primary pair
+      // ###############################
+      if(TrackCuts == kTRUE){
 
-    // Fill reconstructed TRACK Histograms
-    if (TrackCuts == kTRUE) {
-      if(PairPrimary == kTRUE)  {
+        //  ---------- RECONSTRUCTED Tracks  ---------- //
+        // Check if pos and neg Track are passing cut selections
+        std::vector<bool> selected_posTrack(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask_posTrack=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply track cuts
+          UInt_t cutMask_posTrack = fCutsetting.at(iCut)->IsSelected(posTrack);
+          if (cutMask_posTrack == selectedMask_posTrack) {selected_posTrack[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        std::vector<bool> selected_negTrack(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask_negTrack=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply track cuts
+          UInt_t cutMask_negTrack = fCutsetting.at(iCut)->IsSelected(negTrack);
+          if (cutMask_negTrack == selectedMask_negTrack) {selected_negTrack[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        // ##########################################################
+        // check if at least one is selected by cuts otherwise remove this pair from vector
+        if ((CheckIfOneIsTrue(selected_posTrack) == kFALSE) || (CheckIfOneIsTrue(selected_negTrack) == kFALSE)) {
+          fPairVec->erase(fPairVec->begin()+iPair);
+          iPair--;
+          continue;
+        }
+
         std::vector<Bool_t> mcSignal_acc_posPart(fSinglePrimaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
         std::vector<Bool_t> mcSignal_acc_negPart(fSinglePrimaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
         CheckSinglePrimaryLegMCsignals(mcSignal_acc_posPart, absposlabel);
         CheckSinglePrimaryLegMCsignals(mcSignal_acc_negPart, absneglabel);
-      }
-      // else if(PairPrimary == kFALSE) {
-      //   std::vector<Bool_t> mcSignal_acc_posPart(fSingleSecondaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
-      //   std::vector<Bool_t> mcSignal_acc_negPart(fSingleSecondaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
-      //   CheckSingleSecondaryLegMCsignals(mcSignal_acc_posPart, absposlabel);
-      //   CheckSingleSecondaryLegMCsignals(mcSignal_acc_negPart, absneglabel);
-      // }
 
-      // ##########################################################
-      // Create summary particle from track info
-      Particle posPart  = CreateParticle(posTrack);
-      Particle negPart  = CreateParticle(negTrack);
-      if(PairPrimary == kTRUE)  {
+        Particle posPart  = CreateParticle(posTrack);
+        Particle negPart  = CreateParticle(negTrack);
         posPart.isMCSignal_primary   = mcSignal_acc_posPart;
         negPart.isMCSignal_primary   = mcSignal_acc_negPart;
         posPart.isReconstructed_primary = selected_posTrack;
         negPart.isReconstructed_primary = selected_negTrack;
 
-      }
-      // if(PairPrimary == kFALSE) {
-      //   posPart.isMCSignal_secondary = mcSignal_acc_posPart;
-      //   negPart.isMCSignal_secondary = mcSignal_acc_negPart;
-      //   posPart.isReconstructed_secondary = selected_posTrack;
-      //   negPart.isReconstructed_secondary = selected_negTrack;
-      // }
-
-
-      // ##########################################################
-      // Filling primary reconstructed particle histograms according to MCSignals
-      if(PairPrimary == kTRUE){
         // check if MCSignal and isReconstructed for positive primary track
-        for (unsigned int i = 0; i < posPart.isMCSignal_primary.size(); ++i){
-          for (unsigned int j = 0; j < posPart.isReconstructed_primary.size(); ++j){
-            if (posPart.isMCSignal_primary[i] == kTRUE) {
-              if (posPart.isReconstructed_primary[j] == kTRUE){
-                if (posPart.fCharge > 0) {
-                  dynamic_cast<TH3D*>(fHistRecPrimaryPosPart.at(j * posPart.isMCSignal_primary.size() + i))->Fill(posPart.fPt, posPart.fEta, posPart.fPhi, centralityWeight);
-                }
-              }// is selected by cutsetting
-            } // is selected by MC signal
-          } // end of loop over all cutsettings
-        } // end of loop over all MCsignals
+        if (posPart.fCharge > 0) {
+          for (unsigned int i = 0; i < posPart.isMCSignal_primary.size(); ++i){
+            for (unsigned int j = 0; j < posPart.isReconstructed_primary.size(); ++j){
+              if (posPart.isMCSignal_primary[i] == kTRUE) {
+                if (posPart.isReconstructed_primary[j] == kTRUE){
+                                  dynamic_cast<TH3D*>(fHistRecPrimaryPosPart.at(j * posPart.isMCSignal_primary.size() + i))->Fill(posPart.fPt, posPart.fEta, posPart.fPhi, centralityWeight);
+                }// is selected by cutsetting
+              } // is selected by MC signal
+            } // end of loop over all cutsettings
+          } // end of loop over all MCsignals
+        } // end if particle positive
 
         // check if MCSignal and isReconstructed for negative primaryTrack
-        for (unsigned int i = 0; i < negPart.isMCSignal_primary.size(); ++i){
-          for (unsigned int j = 0; j < negPart.isReconstructed_primary.size(); ++j){
-            if (negPart.isMCSignal_primary[i] == kTRUE) {
-              if (negPart.isReconstructed_primary[j] == kTRUE){
-                if (negPart.fCharge < 0) {
+        if (negPart.fCharge < 0) {
+          for (unsigned int i = 0; i < negPart.isMCSignal_primary.size(); ++i){
+            for (unsigned int j = 0; j < negPart.isReconstructed_primary.size(); ++j){
+              if (negPart.isMCSignal_primary[i] == kTRUE) {
+                if (negPart.isReconstructed_primary[j] == kTRUE){
                   dynamic_cast<TH3D*>(fHistRecPrimaryNegPart.at(j * negPart.isMCSignal_primary.size() + i))->Fill(negPart.fPt, negPart.fEta, negPart.fPhi, centralityWeight);
-                }
-              }// is selected by cutsetting
-            } // is selected by MC signal
-          } // end of loop over all cutsettings
-        } // end of loop over all MCsignals
-      } // end if PairPrimary
+                }// is selected by cutsetting
+              } // is selected by MC signal
+            } // end of loop over all cutsettings
+          } // end of loop over all MCsignals
+        } // end if particle negative
+      } // end if TrackCuts true
 
-      // ##########################################################
-      // Fill support histograms with first cutsetting and first mcsignal
-      // if(part.isMCSignal_primary[fSupportMCSignal] == true && part.isReconstructed_primary[fSupportCutsetting] == kTRUE){
-      AliVParticle* mcPosPart = fMC->GetTrack(absposlabel);
-      AliVParticle* mcNegPart = fMC->GetTrack(absneglabel);
-      for (unsigned int i = 0; i < posPart.isReconstructed_primary.size(); i++) {
-        if(posPart.isReconstructed_primary[i] == kTRUE){    // check if part is reconstructed in each primary cut setting
-          for (unsigned int j = 0; j < posPart.isMCSignal_primary.size(); j++) {
-            if (posPart.isMCSignal_primary[j] == kTRUE) {
-              FillTrackHistograms_Primary(posTrack, mcPosPart, i, j); // Fill primary support histograms with positive partilces
-            }
-          }
-        }
-      }
-      for (unsigned int i = 0; i < negPart.isReconstructed_primary.size(); i++) {
-        if(negPart.isReconstructed_primary[i] == kTRUE){    // check if part is reconstructed in each primary cut setting
-          for (unsigned int j = 0; j < negPart.isMCSignal_primary.size(); j++) {
-            if (negPart.isMCSignal_primary[j] == kTRUE) {
-              FillTrackHistograms_Primary(negTrack, mcNegPart, i, j); // Fill primary support histograms with negative particles
-            }
-          }
-        }
-      }
-    }
 
-    // Fill reconstructed PAIR histograms
-    else if(TrackCuts == kFALSE)
-      // Apply MC signals
-      if(PairPrimary == kTRUE)  {
+
+
+      // ###############################
+      // Pair cuts on primary pair
+      // ###############################
+      else if (TrackCuts == kFALSE) {
+
+        AliDielectronPair *pair = new AliDielectronPair;
+        pair->SetKFUsage(false);
+        pair->SetTracks(static_cast<AliVTrack*>(negTrack), 11, static_cast<AliVTrack*>(posTrack), -11);
+
+        //  ---------- RECONSTRUCTED Pairs with PAIR  ---------- //
+        // Check if pair is passing cut selections
+        std::vector<bool> selected(fCutsetting.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply pair cuts
+          UInt_t cutMask = fCutsetting.at(iCut)->IsSelected(pair);
+          if (cutMask == selectedMask) {selected[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        // ##########################################################
+        // check if at least one is selected by cuts otherwise remove this pair from vector
+        if (CheckIfOneIsTrue(selected) == kFALSE) {
+          fPairVec->erase(fPairVec->begin()+iPair);
+          iPair--;
+          continue;
+        }
+
+        fPairVec->at(iPair).isReconstructed_primary = selected;
+
+
         std::vector<Bool_t> mcTwoSignal_acc(fPrimaryPairMCSignal.size(), kFALSE); // vector which stores if pair is accepted by [i]-th mcsignal
         for (unsigned int i = 0; i < fPrimaryPairMCSignal.size(); ++i){
           mcTwoSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(pair, &(fPrimaryPairMCSignal[i]));
         }
-      }
-      else if(PairPrimary == kFALSE) {
+
+
+        // check if at least one mc signal is true
+        if (CheckIfOneIsTrue(mcTwoSignal_acc) == kFALSE) continue;
+
+        double weight  = 1.;
+        double mass    = fPairVec->at(iPair).fMass;
+        double pairpt  = fPairVec->at(iPair).fPt;
+
+
+        // track label, points back to MC track
+        Int_t posTrackLabel = TMath::Abs(posTrack->GetLabel());
+        Int_t negTrackLabel = TMath::Abs(negTrack->GetLabel());
+
+        // Fill secondary support histos
+        AliVParticle* mcPosPart = fMC->GetTrack(posTrackLabel);
+        AliVParticle* mcNegPart = fMC->GetTrack(negTrackLabel);
+
+        // Filling reconstructed primary particle histograms according to MCSignals
+        if (PairPrimary == kTRUE) {
+          for (unsigned int i = 0; i < fPairVec->at(iPair).isReconstructed_primary.size(); ++i){
+            if (fPairVec->at(iPair).isReconstructed_primary[i] == kTRUE){
+              for (unsigned int j = 0; j < mcTwoSignal_acc.size(); ++j){
+                if (mcTwoSignal_acc[j] == kTRUE){
+                  fHistRecPrimaryPair.at(  i *   mcTwoSignal_acc.size() + j)->Fill(mass, pairpt, weight * centralityWeight);
+                  // FillPairHistograms_Primary(pair, i, j);                 // Fill pair primary histograms
+                }// is selected by cutsetting
+              } // end of loop over all cutsettings
+            } // is selected by MCSignal
+          } // end of loop over all MCsignals
+        } // end of if PairPrimary
+        delete pair;
+      } // end if TrackCuts false
+    } // end if Pair primary
+
+
+
+
+    // ###############################
+    // secondary part
+    // ###############################
+    if (PairPrimary == kFALSE) {
+      // Get V0 from Event, selected trough V0ID stored in TwoPair and is set in reconstructed secondary two pairing
+      Int_t fV0ID = fPairVec->at(iPair).GetV0ID();
+      AliAODv0* fV0 = ((AliAODEvent*)fEvent)->GetV0(fV0ID);
+      AliAODTrack *posTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(0));
+      AliAODTrack *negTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(1));
+
+
+      if (TrackCuts == kTRUE) {
+        // ###############################
+        // Track cuts on secondary pair   *** not implemented yet ***
+        // ###############################
+      } // end if TrackCuts true
+
+
+      // ###############################
+      // Pair cuts on secondary pair
+      // ###############################
+      else if(TrackCuts == kFALSE) {
+
+        AliDielectronPair *pair = new AliDielectronPair;
+        pair->SetKFUsage(false);
+        pair->SetTracks(static_cast<AliAODTrack*>(negTrack), 11, static_cast<AliAODTrack*>(posTrack), -11);
+
+        //  ---------- RECONSTRUCTED Pairs with PAIR  ---------- //
+        // Check if pair is passing cut selections
+        std::vector<bool> selected(fCutsetting.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply pair cuts
+          UInt_t cutMask = fCutsetting.at(iCut)->IsSelected(pair);
+          if (cutMask == selectedMask) {selected[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        // ##########################################################
+        // check if at least one is selected by cuts otherwise remove this pair from vector
+        if (CheckIfOneIsTrue(selected) == kFALSE) {
+          fPairVec->erase(fPairVec->begin()+iPair);
+          iPair--;
+          continue;
+        }
+
+        fPairVec->at(iPair).isReconstructed_secondary = selected;
+
         std::vector<Bool_t> mcTwoSignal_acc(fSecondaryPairMCSignal.size(), kFALSE); // vector which stores if pair is accepted by [i]-th mcsignal
         for (unsigned int i = 0; i < fSecondaryPairMCSignal.size(); ++i){
           mcTwoSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(pair, &(fSecondaryPairMCSignal[i]));
         }
-      }
 
-      // check if at least one mc signal is true
-      if (CheckIfOneIsTrue(mcTwoSignal_acc) == kFALSE) continue;
+        // check if at least one mc signal is true
+        if (CheckIfOneIsTrue(mcTwoSignal_acc) == kFALSE) continue;
 
-      double weight  = 1.;
-      double mass    = fPairVec->at(iPair).fMass;
-      double pairpt  = fPairVec->at(iPair).fPt;
+        double weight  = 1.;
+        double mass    = fPairVec->at(iPair).fMass;
+        double pairpt  = fPairVec->at(iPair).fPt;
 
 
-      // track label, points back to MC track
-      Int_t posTrackLabel = TMath::Abs(posTrack->GetLabel());
-      Int_t negTrackLabel = TMath::Abs(negTrack->GetLabel());
+        // track label, points back to MC track
+        Int_t posTrackLabel = TMath::Abs(posTrack->GetLabel());
+        Int_t negTrackLabel = TMath::Abs(negTrack->GetLabel());
 
-      // Fill secondary support histos
-      AliVParticle* mcPosPart = fMC->GetTrack(posTrackLabel);
-      AliVParticle* mcNegPart = fMC->GetTrack(negTrackLabel);
+        // Fill secondary support histos
+        AliVParticle* mcPosPart = fMC->GetTrack(posTrackLabel);
+        AliVParticle* mcNegPart = fMC->GetTrack(negTrackLabel);
 
-      // Filling reconstructed secondary particle histograms according to MCSignals
-      if (PairPrimary == kTRUE) {
-        for (unsigned int i = 0; i < fPairVec->at(iPair).isReconstructed_primary.size(); ++i){
-          if (fPairVec->at(iPair).isReconstructed_primary[i] == kTRUE){
-            for (unsigned int j = 0; j < mcTwoSignal_acc.size(); ++j){
-              if (mcTwoSignal_acc[j] == kTRUE){
-                fHistRecPrimaryPair.at(  i *   mcTwoSignal_acc.size() + j)->Fill(mass, pairpt, weight * centralityWeight);
-                // FillPairHistograms_Primary(pair, i, j);                 // Fill pair primary histograms
-              }// is selected by cutsetting
-            } // end of loop over all cutsettings
-          } // is selected by MCSignal
-        } // end of loop over all MCsignals
-      } // end of if PairPrimary
 
-      // Filling reconstructed secondary particle histograms according to MCSignals
-      else if (PairPrimary == kFALSE) {
         for (unsigned int i = 0; i < fPairVec->at(iPair).isReconstructed_secondary.size(); ++i){
           if (fPairVec->at(iPair).isReconstructed_secondary[i] == kTRUE){
             for (unsigned int j = 0; j < mcTwoSignal_acc.size(); ++j){
@@ -2349,9 +2352,9 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
             } // end of loop over all cutsettings
           } // is selected by MCSignal
         } // end of loop over all MCsignals
-      } // end of if PairSecondary
-      delete pair;
-    }
+        delete pair;
+      } // end if TrackCuts false
+    } // end if Pair secondary
   } // End of iPair loop
 }
 
@@ -2795,25 +2798,26 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
 
       //  ---------- RECONSTRUCTED for PAIR  ---------- //
       // Check if particle is passing secondary selection cuts
-      std::vector<bool> selected_secondary(fPairCuts_secondary_loose.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-      for (UInt_t iCut=0; iCut<fPairCuts_secondary_loose.size(); ++iCut){ // loop over all specified cutInstances
-        UInt_t selectedMask_secondary=( 1 << fPairCuts_secondary_loose.at(iCut)->GetCuts()->GetEntries())-1;
+
+      std::vector<bool> selected_secondary(fPairCuts_secondary_PreFilter.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+      for (UInt_t iCut=0; iCut<fPairCuts_secondary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
+        UInt_t selectedMask_secondary=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
         // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
         // apply track cuts
-        UInt_t cutMask_secondary = fPairCuts_secondary_loose.at(iCut)->IsSelected(pair);
+        UInt_t cutMask_secondary = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(pair);
         if (cutMask_secondary == selectedMask_secondary) {selected_secondary[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
       }
 
 
 
       // //  ---------- RECONSTRUCTED for TRACKS  ---------- //
-      // for (UInt_t iCut=0; iCut<fPairCuts_secondary_loose.size(); ++iCut){ // loop over all specified cutInstances
-        //   UInt_t selectedMask_secondary_firstPar=( 1 << fPairCuts_secondary_loose.at(iCut)->GetCuts()->GetEntries())-1;
-        //   UInt_t selectedMask_secondary_secPar=( 1 << fPairCuts_secondary_loose.at(iCut)->GetCuts()->GetEntries())-1;
+      // for (UInt_t iCut=0; iCut<fPairCuts_secondary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
+        //   UInt_t selectedMask_secondary_firstPar=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
+        //   UInt_t selectedMask_secondary_secPar=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
         //   // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
         //   // apply track cuts
-        //   UInt_t cutMask_secondary_firstPar = fPairCuts_secondary_loose.at(iCut)->IsSelected(posAODTrack);
-        //   UInt_t cutMask_secondary_secPar = fPairCuts_secondary_loose.at(iCut)->IsSelected(negAODTrack);
+        //   UInt_t cutMask_secondary_firstPar = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(posAODTrack);
+        //   UInt_t cutMask_secondary_secPar = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(negAODTrack);
         //   if (cutMask_secondary_firstPar == selectedMask_secondary_firstPar) {selected_secondary_firstPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
         //   if (cutMask_secondary_secPar == selectedMask_secondary_secPar) {selected_secondary_secPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
         // }

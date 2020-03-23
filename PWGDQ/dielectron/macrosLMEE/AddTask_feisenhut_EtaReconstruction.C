@@ -8,7 +8,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t centrality = 4) {
 
 
-
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
   // #########################################################
@@ -161,6 +160,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
+  // task->SetULSandLS(DoULSLS);
   task->SetUsePreFilter(UsePreFilter);
 
   // #########################################################
@@ -188,8 +188,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // Adding standard primary electron track cutsettings
   TObjArray*  arrNames_prim=names_Prim_Track_standard_Cuts.Tokenize(";");
-  const Int_t nDie=arrNames_prim->GetEntriesFast();
 
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
@@ -207,7 +207,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
     task->AddTrackCuts_primary_PreFilter(filter);
     DoAdditionalWork(task);
   }
-
 
   // #########################################################
   // #                 set pair cutsettings                  #

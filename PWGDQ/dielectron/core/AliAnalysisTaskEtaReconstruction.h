@@ -269,7 +269,8 @@ private:
   void   DoRecTwoPairingV0(std::vector<AliDielectronSignalMC> fPairMCSignal);
   void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
   void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
-  void   ApplyStandardCutsAndFillHists(std::vector<TwoPair>* fPairVec, std::vector<AliAnalysisFilter*> fTrackCuts, Bool_t TrackCuts, Bool_t PairPrimary, double centralityWeight) {
+  void   ApplyStandardCutsAndFillHists(std::vector<TwoPair>* fPairVec, std::vector<AliAnalysisFilter*> fTrackCuts, Bool_t TrackCuts, Bool_t PairPrimary, double centralityWeight);
+
 
   void    FillTrackHistograms_Primary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
   void    FillTrackHistograms_Secondary(AliVParticle* track, AliVParticle* mcTrack, int iMCSignal, int iCutList);
@@ -465,6 +466,7 @@ private:
   Bool_t fUsePreFilter;
   Bool_t fDoMassCut;
   Bool_t fPhotonMass;
+  Bool_t fDoULSandLS;
 
   std::vector<Particle> fGenNegPart_primary;
   std::vector<Particle> fGenPosPart_primary;

@@ -1,16 +1,24 @@
 
 // +++++++++++++++++ Cuts for primary single electrons +++++++++++++++++
+TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
+// TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+
+
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
 TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
-TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 
 // +++++++++++++++++ Cuts for primary pairs  +++++++++++++++++
 TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
+// TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
+TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0_PreFilter");
+
+
 // TString names_Sec_Pair_standard_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
 // TString names_Sec_Pair_standard_Cuts=("JPID_sum_pt75_secondary");
 // TString names_Sec_Pair_standard_Cuts=("kV0");
@@ -25,9 +33,6 @@ TString names_Sec_Pair_standard_Cuts=("noPID;kV0");
                                                                                 // TString names_Sec_Pair_standard_Cuts=("cut1_pt75");
                                                                                 // TString names_Sec_Pair_standard_Cuts=("noPID;cut1_pt75_secondary");
 
-
-// TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
-TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0_PreFilter");
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // 400 MEV CUT !!!!!!!!!!!!!!!
@@ -56,6 +61,7 @@ bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool UsePreFilter   = false;
 bool DoMassCut      = false;
+// bool DoULSLS   = true;
 
 bool UseMCDataSig   = false;
 
@@ -325,10 +331,19 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //             primary single cut settings             //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "JPID_sum_pt75"){
+  else if (cutDefinition == "JPID_sum_pt75" || cutDefinition == "JPID_sum_pt75_PreFilter"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
+  else if (cutDefinition == "JPID_sum_pt75_PreFilter" || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_PreFilter);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2_PreFilter);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -351,7 +366,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
            cutDefinition == "JPID_sum6_pt75_sec_OnlyPsiPair"           || cutDefinition == "JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM"           ||
            cutDefinition == "JPID_sum7_pt75_sec_OnlyM"                 || cutDefinition == "JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt"      ||
            cutDefinition == "JPID_sum8_pt75_sec_OnlyArmPt"             || cutDefinition == "JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha" ||
-           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"
+           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"          || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"
           ){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
