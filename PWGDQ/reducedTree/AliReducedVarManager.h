@@ -555,9 +555,10 @@ class AliReducedVarManager : public TObject {
     kPairLegPtSum=kPairLegPt+2,                   // sum of the pt of the two legs
     kPairLegPtMC,                                // MC truth pair leg pt
     kPairLegPtMCSum=kPairLegPtMC+2,               // sum of the MC truth leg pt's
+    kPairLegEMCALmatchedEnergy,                   // pair leg EMCal cluster energy
 
     // Track-only variables -------------------------------------
-    kPtTPC,     
+    kPtTPC=kPairLegEMCALmatchedEnergy+2,
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
@@ -848,7 +849,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 16);
+  ClassDef(AliReducedVarManager, 17);
 };
 
 #endif

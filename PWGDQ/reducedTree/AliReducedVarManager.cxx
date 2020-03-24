@@ -1927,6 +1927,7 @@ void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedBaseTrack* p, F
       else                  mom = pinfo->P();
       values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -9999.);
     }
+    pinfo->SetMatchedEMCalClusterEnergy(values[kEMCALmatchedEnergy]);
   }
 }
 
@@ -2149,7 +2150,15 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
         values[kPseudoProperDecayTime] = pairKF.GetPseudoProperDecayTime(primVtx, fgkPairMass[type], &errPseudoProperTime2);
      if(fgUsedVars[kPairLxy]) values[kPairLxy] =  ( (pairKF.X() - primVtx.X())*p.Px() + (pairKF.Y() - primVtx.Y())*p.Py() )/p.Pt(); // = values[kPseudoProperDecayTime]*(p.Pt()/PAIR::fgkPairMass[type]);
   }
-  
+
+  if ((fgUsedVars[kPairLegEMCALmatchedEnergy] || fgUsedVars[kPairLegEMCALmatchedEnergy+1]) &&
+      (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+    TRACK* ti1=(TRACK*)t1;
+    TRACK* ti2=(TRACK*)t2;
+    values[kPairLegEMCALmatchedEnergy]    = ti1->MatchedEMCalClusterEnergy();
+    values[kPairLegEMCALmatchedEnergy+1]  = ti2->MatchedEMCalClusterEnergy();
+  }
+
   // fill MC information
   if(p.PairType()==1) {
      TRACK* pinfo1 = 0x0;
@@ -2408,6 +2417,14 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   if(fgUsedVars[kPhi])    values[kPhi]    = p.Phi();
   if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
   
+  if ((fgUsedVars[kPairLegEMCALmatchedEnergy] || fgUsedVars[kPairLegEMCALmatchedEnergy+1]) &&
+      (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+    TRACK* ti1=(TRACK*)t1;
+    TRACK* ti2=(TRACK*)t2;
+    values[kPairLegEMCALmatchedEnergy]    = ti1->MatchedEMCalClusterEnergy();
+    values[kPairLegEMCALmatchedEnergy+1]  = ti2->MatchedEMCalClusterEnergy();
+  }
+
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = 0;
     if (fgEffMapVarDependencyX!=kNothing) {
@@ -3317,6 +3334,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
      fgVariableNames[kPairLegPt+i] = Form("Leg%d p_{T}", i+1);
      fgVariableNames[kPairLegPtMC+i] = Form("Leg%d p^{MC}_{T}", i+1);
      fgVariableUnits[kPairLegPt+i] = "GeV/c"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c";
+     fgVariableNames[kPairLegEMCALmatchedEnergy+i] = Form("Leg%d E_{calo cluster}", i+1);
+     fgVariableUnits[kPairLegEMCALmatchedEnergy+i] = "GeV";
   }
   fgVariableNames[kPairLegPtSum] = "Pair leg p_{T,1} + p_{T,2}"; fgVariableUnits[kPairLegPtSum] = "GeV/c";
   fgVariableNames[kPairLegPtMCSum] = "Pair leg p^{MC}_{T,1} + p^{MC}_{T,2}"; fgVariableUnits[kPairLegPtMCSum] = "GeV/c";
