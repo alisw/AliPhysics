@@ -303,7 +303,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
     const TClonesArray *dmeson_candidates = dynamic_cast<TClonesArray *>(aod_event->GetList()->FindObject(
             fgkDMesonListName.at(fDmesonSpecies).c_str()));
 
-    auto d_mesons = FillDMesonInfo(dmeson_candidates, fDmesonSpecies, fDMesonRequirements);x
+    auto d_mesons = FillDMesonInfo(dmeson_candidates, fDmesonSpecies, fDMesonRequirements);
     //Select D mesons
     auto selected_d_mesons = FilterDmesons(d_mesons, fDMesonRequirements, aod_event, fgkDMesonPDG.at(fDmesonSpecies));
 
