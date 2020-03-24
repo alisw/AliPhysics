@@ -60,7 +60,7 @@ AliForwardSettings::AliForwardSettings() :
   run_list(0),
   second_analysis(kFALSE),
   SC_analysis(kFALSE),
-  decorr_analysis(kTRUE),
+  decorr_analysis(kFALSE),
   normal_analysis(kTRUE),
   runnumber(0),
   TPC_maxeta(0),

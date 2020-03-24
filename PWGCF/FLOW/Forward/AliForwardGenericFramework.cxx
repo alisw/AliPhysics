@@ -74,7 +74,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
 
-    for (Int_t phiBin = 1; phiBin <= dNdetadphi->GetNbinsY(); phiBin++) {
+    for (Int_t phiBin = 1; phiBin <= dNdetadphi->GetNbinsY(); phiBin++) {//
+      /*
       if (useFMD & fSettings.makeFakeHoles){
         if ((etaBin > 124) & (etaBin < 138)){
           if (phiBin == 18 || phiBin == 17) continue;
@@ -83,9 +84,9 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
           if (phiBin == 14) continue;
         }
       }
+      */
       Double_t phi = dNdetadphi->GetYaxis()->GetBinCenter(phiBin);
-      Double_t mult_weight = dNdetadphi->GetBinContent(etaBin, phiBin);
-      Double_t weight = mult_weight;
+      Double_t weight = dNdetadphi->GetBinContent(etaBin, phiBin);
 
       if (fSettings.doNUA){
         if (useFMD) weight = applyNUAforward(dNdetadphi, etaBin, phiBin, eta, phi, zvertex, weight);
@@ -94,14 +95,23 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
       
       if (!weight || weight == 0) continue;
       for (Int_t n = 0; n <= 4; n++) {
+        // careful not to overwrite weight when doing sec. corr.
+        Double_t weight_n = weight;
+        if ((useFMD && fSettings.sec_corr) && n >=2) weight_n = applySecondaryCorr(n-1, eta, zvertex, cent, weight_n);
 
-        if ((useFMD && fSettings.sec_corr) && n >=2) weight = applySecondaryCorr(n, eta, zvertex, cent, weight);
+        if (!weight_n || weight_n == 0) continue;
 
-      if (!weight || weight == 0) continue;
-
+        if ((fSettings.doNUA && (fSettings.nua_mode & fSettings.kInterpolate)) && (n > 1)){
+          if (useFMD){
+            if (((difEtaBin >= 24) && (difEtaBin < 27)) || (difEtaBin > 33) ){
+              weight_n = applyInterpolateCorr(n,cent,difEtaBin,weight_n);
+            }           
+          }
+        }
+        
         for (Int_t p = 1; p <= 4; p++) {
-          Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
-          Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
+          Double_t realPart = TMath::Power(weight_n, p)*TMath::Cos(n*phi);
+          Double_t imPart =   TMath::Power(weight_n, p)*TMath::Sin(n*phi);
 
           Double_t re[4] = {0.5, Double_t(n), Double_t(p), difEta};
           Double_t im[4] = {-0.5, Double_t(n), Double_t(p), difEta};
@@ -115,7 +125,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
                 (useFMD && (fSettings.ref_mode & fSettings.kFMDref))) {
               fqvector->Fill(re, realPart);
               fqvector->Fill(im, imPart);
-              if ((mult_weight > 1.0) & !fSettings.etagap) fAutoDiff->Fill(refEta,weight*(weight - 1));
+              if ((weight_n > 1.0) & !fSettings.etagap) fAutoDiff->Fill(refEta,weight*(weight - 1));
             }
           }
 
@@ -132,7 +142,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, double c
 
             Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
             Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
-            if ((mult_weight > 1.0) & !fSettings.etagap) fAutoRef->Fill(refEta,weight*(weight - 1));  
+            if ((weight_n > 1.0) & !fSettings.etagap) fAutoRef->Fill(refEta,weight*(weight - 1));  
             fQvector->Fill(req, realPart);
             fQvector->Fill(imq, imPart);
           }
@@ -219,8 +229,7 @@ void AliForwardGenericFramework::saveEvent(double cent, double zvertex,UInt_t r,
         // A side
         double twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
         fill(cumu_dW2TwoA, n, ptn, sample, zvertex, eta, cent, twodiff);
-      }
-      if (fSettings.normal_analysis){
+
         if (n==2){
           double dn4diff = FourDiff(0,0,0,0, refEtaBinA, refEtaBinB, etaBin,etaBin).Re();
           fill(cumu_dW4, -n, ptn, sample, zvertex, eta, cent, dn4diff);

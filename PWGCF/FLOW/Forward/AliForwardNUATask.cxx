@@ -279,7 +279,8 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D*& forwarddNdedp,Int_t phiBin,
 {
   if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
 
-    if (weight > 0 || forwarddNdedp->GetBinContent(etaBin, 18) > 0) return weight;     Double_t up = forwarddNdedp->GetBinContent(etaBin, 19);
+    if ((weight > 0) || (forwarddNdedp->GetBinContent(etaBin, 18) > 0)) return weight;     
+     Double_t up = forwarddNdedp->GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp->GetBinContent(etaBin, 16);
      weight = ((up+low)/2+low)/2;
      return weight;
