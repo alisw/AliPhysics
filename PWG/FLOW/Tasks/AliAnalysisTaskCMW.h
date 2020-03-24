@@ -80,6 +80,9 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
   void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
+  void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
+
   //------ End of user defined function -------
 
 
@@ -121,6 +124,8 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
+  Double_t              fEtaGapNeg;  //
+  Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
   Float_t              fMaxEtaCut;  //
   Float_t             fTrkChi2Min;  //

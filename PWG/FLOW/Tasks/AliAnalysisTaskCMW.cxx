@@ -101,6 +101,8 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW(const char *name): AliAnalysisTaskSE(name
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fEtaGapNeg(-0.1),
+  fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
   fTrkChi2Min(0.1),    
@@ -196,6 +198,8 @@ AliAnalysisTaskCMW::AliAnalysisTaskCMW():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fEtaGapNeg(-0.1),
+  fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
   fTrkChi2Min(0.1),    
@@ -692,8 +696,8 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   Float_t fWgtEvent = 1.0; //Event Weight if Any.
 
   /// TO be passed as Argument:
-  Double_t fEtaGapNeg = -0.100;
-  Double_t fEtaGapPos =  0.100;
+  //Double_t fEtaGapNeg = -0.100;
+  //Double_t fEtaGapPos =  0.100;
   Double_t gPsiN = gHarmonic;
 
   
@@ -722,7 +726,9 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+
+	if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
 	//dcaXY  = track->DCA();
 	//dcaZ   = track->ZAtDCA();
@@ -736,7 +742,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
 	//------> Get NUA weights for EP <----------
 
-	if(trkPt > 2.0) continue; ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
+	
 	
 	WgtNUA = 1.0;
 	ptWgtMC = 1.0;
@@ -774,13 +780,17 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
 	trkWgt = WgtNUA*ptWgtMC;
 
+	if(trkChrg > 0){	  
+	  fNumOfPos += trkWgt;
+	}
+	else{
+	  fNumOfNeg += trkWgt;
+	}
 	
-	//if(iTrack%10==0){
-	//std::cout<<" pT = "<<trkPt<<"\t MCWgt = "<<ptWgtMC<<"\t Eta = "<<trkEta<<"\t NUAwgt = "<<WgtNUA<<"\t TotalWgt = "<<trkWgt<<endl;
-	//}
        
-
-	
+	if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
+	  {
+	  
 	if(trkEta < fEtaGapNeg){
 	  if (trkChrg>0) //added by me for trivial term correction
 	  {
@@ -819,13 +829,8 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	  
 	}
 
-	if(trkChrg > 0){	  
-	  fNumOfPos += trkWgt;
-	}
-	else{
-	  fNumOfNeg += trkWgt;
-	}
 
+	  }
 
 	
 	
@@ -1179,7 +1184,7 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 
 	///---------- pT cut for v2 vs Ach -------------
 	
-	if(trkPt > 2.0) continue;
+	//if(trkPt > 2.0) continue;
 
 
 	
