@@ -20,6 +20,8 @@
 
 //  Migrated from PWGJE/FlavourJetTasks to PWGHF/jetsHF
 //
+//  Dev task. Copied from the PWGHF/jetsHF/AliAnalysisTaskDJetCorrelations
+//
 //-----------------------------------------------------------------------
 // Authors:
 // C. Bianchin (Utrecht University) chiara.bianchin@cern.ch
@@ -27,6 +29,7 @@
 // A. Grelli (Utrecht University) a.grelli@uu.nl
 // X. Zhang (LBNL)  XMZhang@lbl.gov
 // B. Trzeciak (Utrecht University) barbara.antonina.trzeciak@cern.ch
+// A. Mohanty (Utrecht University) auro.mohanty@cern.ch
 //-----------------------------------------------------------------------
 
 #include <TDatabasePDG.h>
@@ -37,7 +40,7 @@
 #include <TObjectTable.h>
 #include "AliMultSelection.h"
 
-#include "AliAnalysisTaskDJetCorrelations.h"
+#include "AliATDJetCorrDev.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliEmcalJet.h"
@@ -55,12 +58,12 @@
 
 #include "AliVertexingHFUtils.h"
 
-ClassImp(AliAnalysisTaskDJetCorrelations)
+ClassImp(AliATDJetCorrDev)
 
 
 //_______________________________________________________________________________
-AliAnalysisTaskDJetCorrelations::AliAnalysisTaskDJetCorrelations() :
-AliAnalysisTaskEmcalJet("AliAnalysisTaskDJetCorrelations",kTRUE),
+AliATDJetCorrDev::AliATDJetCorrDev() :
+AliAnalysisTaskEmcalJet("AliATDJetCorrDev",kTRUE),
 fUseMCInfo(kTRUE),
 fIsPPData(kTRUE),
 fIsPbPbData(kFALSE),
@@ -97,15 +100,24 @@ fhDiffSideBand(),
 fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
-fResponseMatrix()
-
+fResponseMatrix(),
+fJetRadius(0.4),
+fRecluster(kFALSE),
+fhLPThetaEnergy(),
+fMinLnOneByTheta(),
+fMaxLnOneByTheta(),
+fMinEnergy(),
+fMaxEnergy(),
+fhDmesonOrNot(),
+fMinDelMass(),
+fMaxDelMass()
 {
    //
    // Default ctor
 }
 
 //_______________________________________________________________________________
-AliAnalysisTaskDJetCorrelations::AliAnalysisTaskDJetCorrelations(const Char_t* name, AliRDHFCuts* cuts,ECandidateType candtype) :
+AliATDJetCorrDev::AliATDJetCorrDev(const Char_t* name, AliRDHFCuts* cuts, ECandidateType candtype) :
 AliAnalysisTaskEmcalJet(name,kTRUE),
 fUseMCInfo(kTRUE),
 fIsPPData(kTRUE),
@@ -143,13 +155,23 @@ fhDiffSideBand(),
 fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
-fResponseMatrix()
+fResponseMatrix(),
+fJetRadius(0.4),
+fRecluster(kFALSE),
+fhLPThetaEnergy(),
+fMinLnOneByTheta(),
+fMaxLnOneByTheta(),
+fMinEnergy(),
+fMaxEnergy(),
+fhDmesonOrNot(),
+fMinDelMass(),
+fMaxDelMass()
 {
    //
    // Constructor. Initialization of Inputs and Outputs
    //
 
-   Info("AliAnalysisTaskDJetCorrelations","Calling Constructor");
+   Info("AliATDJetCorrDev","Calling Constructor");
    fCuts=cuts;
    fCandidateType=candtype;
    const Int_t nptbins=fCuts->GetNPtBins();
@@ -196,19 +218,19 @@ fResponseMatrix()
 }
 
 //_______________________________________________________________________________
-AliAnalysisTaskDJetCorrelations::~AliAnalysisTaskDJetCorrelations() {
+AliATDJetCorrDev::~AliATDJetCorrDev() {
    //
    // destructor
    //
 
-   Info("~AliAnalysisTaskDJetCorrelations","Calling Destructor");
+   Info("~AliATDJetCorrDev","Calling Destructor");
 
    delete fCuts;
 
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::Init(){
+void AliATDJetCorrDev::Init(){
    //
    // Initialization
    //
@@ -240,7 +262,7 @@ void AliAnalysisTaskDJetCorrelations::Init(){
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::UserCreateOutputObjects() {
+void AliATDJetCorrDev::UserCreateOutputObjects() {
    // output
    Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
    AliAnalysisTaskEmcal::UserCreateOutputObjects();
@@ -254,7 +276,7 @@ void AliAnalysisTaskDJetCorrelations::UserCreateOutputObjects() {
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskDJetCorrelations::Run()
+Bool_t AliATDJetCorrDev::Run()
 {
     // user exec from AliAnalysisTaskEmcal is used
 
@@ -500,7 +522,7 @@ Bool_t AliAnalysisTaskDJetCorrelations::Run()
    return kTRUE;
 }
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent)
+void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent)
 {
 
     AliJetContainer* JetCont = nullptr;
@@ -520,10 +542,37 @@ void AliAnalysisTaskDJetCorrelations::ConstituentCorrelationMethod(Bool_t IsBkg,
         if(fLocalRho) rho = fLocalRho->GetLocalVal(jet->Phi(),JetCont->GetJetRadius(),JetCont->GetRhoVal());
         FillDJetHistograms(jet,rho,IsBkg,aodEvent);
     }
+    if(jet && fRecluster)
+    {
+        // Pseudo code:
+        //  1. Recluster the jet
+        //  2. Start declustering
+        //  2.1. Get two subjets of the jet
+        //  2.2. Get and fill in a histogram, the theta and E of the soft subjet/radiator as, you follow the hard subjet
+        //
+        // ClusterSequence runs the jet clustering. see https://github.com/alisw/fastjet/blob/master/fastjet/example/01-basic.cc line 71
+        fastjet::ClusterSequence* cs = Recluster(jet); // used to give warning:did you mean 'fastjet::contrib::Recluster'? (FixIt) 
+        if (cs)
+        {
+            std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
+            if( recl_jets.size() > 0 )
+            {
+               DeclusterTheJet( recl_jets[0], jet);            // 2. Declustering the jet
+               FillLundPlane(4.0, 5.2);                        // 3. Fill the Lund Plane
+            }
+        }
+        delete cs;
+        
+        // The FastJet::contrib way
+        //fastjet::PseudoJet recl_jet = ReclusteredJet(jet);  // 1. getting the reclustered jet
+        //// the AliEmcal jet is provided to compare the last hard jet of recl_jet with D meson from AliEmcal jet
+        //DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
+        //FillLundPlane(4.0, 5.2);
+    }
 
 }
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::AngularCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent)
+void AliATDJetCorrDev::AngularCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent)
 {
     AliJetContainer* JetCont = GetJetContainer(0);
 
@@ -566,7 +615,7 @@ void AliAnalysisTaskDJetCorrelations::AngularCorrelationMethod(Bool_t IsBkg, Ali
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::CreateResponseMatrix(AliEmcalJet* jet)
+void AliATDJetCorrDev::CreateResponseMatrix(AliEmcalJet* jet)
 {
     AliJetContainer* JetContRec = GetJetContainer(0);
 
@@ -618,7 +667,7 @@ void AliAnalysisTaskDJetCorrelations::CreateResponseMatrix(AliEmcalJet* jet)
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent)
+void AliATDJetCorrDev::CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent)
 {
     if(!MCjet) AliDebug(2, "No Generated Level Jet Found!");
 
@@ -712,9 +761,8 @@ void AliAnalysisTaskDJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* MCjet,
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent)
+void AliATDJetCorrDev::FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent)
 {
-
 
     AliVParticle *Dmeson = jet->GetFlavourTrack(0);
     Double_t JetPtCorr = jet->Pt() - rho*jet->Area();
@@ -744,7 +792,7 @@ void AliAnalysisTaskDJetCorrelations::FillDJetHistograms(AliEmcalJet* jet, Doubl
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg)
+void AliATDJetCorrDev::GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg)
 {
     AliJetContainer* JetCont = nullptr;
 
@@ -792,7 +840,7 @@ void AliAnalysisTaskDJetCorrelations::GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg)
 
 }
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::FindMCJet(AliEmcalJet*& mcjet)
+void AliATDJetCorrDev::FindMCJet(AliEmcalJet*& mcjet)
 {
     Bool_t HFMCjet = kFALSE;
 
@@ -828,7 +876,7 @@ void AliAnalysisTaskDJetCorrelations::FindMCJet(AliEmcalJet*& mcjet)
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::Terminate(Option_t*)
+void AliATDJetCorrDev::Terminate(Option_t*)
 {
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
@@ -845,7 +893,7 @@ void AliAnalysisTaskDJetCorrelations::Terminate(Option_t*)
 }
 
 //_______________________________________________________________________________
-void  AliAnalysisTaskDJetCorrelations::SetMassLimits(Double_t range, Int_t pdg){
+void  AliATDJetCorrDev::SetMassLimits(Double_t range, Int_t pdg){
    Float_t mass=0;
    Int_t abspdg=TMath::Abs(pdg);
 
@@ -869,7 +917,7 @@ void  AliAnalysisTaskDJetCorrelations::SetMassLimits(Double_t range, Int_t pdg){
 }
 
 //_______________________________________________________________________________
-void  AliAnalysisTaskDJetCorrelations::SetMassLimits(Double_t lowlimit, Double_t uplimit){
+void  AliATDJetCorrDev::SetMassLimits(Double_t lowlimit, Double_t uplimit){
    if(uplimit>lowlimit)
    {
       fMinMass = lowlimit;
@@ -883,7 +931,7 @@ void  AliAnalysisTaskDJetCorrelations::SetMassLimits(Double_t lowlimit, Double_t
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskDJetCorrelations::SetD0WidthForDStar(Int_t nptbins,Float_t *width){
+Bool_t AliATDJetCorrDev::SetD0WidthForDStar(Int_t nptbins,Float_t *width){
    if(nptbins>30) {
       AliInfo("Maximum number of bins allowed is 30!");
       return kFALSE;
@@ -894,7 +942,7 @@ Bool_t AliAnalysisTaskDJetCorrelations::SetD0WidthForDStar(Int_t nptbins,Float_t
 }
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet, Double_t rho) const{
+Double_t AliATDJetCorrDev::Z(AliVParticle* part,AliEmcalJet* jet, Double_t rho) const{
 
     Double_t p[3],pj[3];
     Bool_t okpp=part->PxPyPz(p);
@@ -917,7 +965,7 @@ Double_t AliAnalysisTaskDJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet,
 }
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet) const{
+Double_t AliATDJetCorrDev::Z(AliVParticle* part,AliEmcalJet* jet) const{
 
     Double_t p[3],pj[3];
     Bool_t okpp=part->PxPyPz(p);
@@ -932,7 +980,7 @@ Double_t AliAnalysisTaskDJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet)
     return Z(p,pj);
 }
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDJetCorrelations::Z(Double_t* p, Double_t *pj) const{
+Double_t AliATDJetCorrDev::Z(Double_t* p, Double_t *pj) const{
     //p is momentum array of D meson
     //pj is momentum array of jet
 
@@ -943,7 +991,7 @@ Double_t AliAnalysisTaskDJetCorrelations::Z(Double_t* p, Double_t *pj) const{
 
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDJetCorrelations::ZT(Double_t* p, Double_t *pj) const{
+Double_t AliATDJetCorrDev::ZT(Double_t* p, Double_t *pj) const{
 
     Double_t pjet2=pj[0]*pj[0]+pj[1]*pj[1];
     Double_t z=(p[0]*pj[0]+p[1]*pj[1])/(pjet2);
@@ -951,7 +999,7 @@ Double_t AliAnalysisTaskDJetCorrelations::ZT(Double_t* p, Double_t *pj) const{
 }
 
 //_______________________________________________________________________________
-Bool_t  AliAnalysisTaskDJetCorrelations::DefineHistoForAnalysis(){
+Bool_t  AliATDJetCorrDev::DefineHistoForAnalysis(){
 
     // Statistics
     Int_t nbins=8;
@@ -993,6 +1041,18 @@ Bool_t  AliAnalysisTaskDJetCorrelations::DefineHistoForAnalysis(){
     const Int_t nbinsSpsy=150;
     const Int_t nbinNtracks=50;
 
+    //binning for Lund Plane
+    const Int_t nbinstheta=300;
+    const Int_t nbinsenergy=300;
+    const Int_t nbinsdelmass=300;
+    //bin ranges for reclustering histograms
+    fMinDelMass = -2.0;
+    fMaxDelMass =  2.0;
+    fMinLnOneByTheta = 0;
+    fMaxLnOneByTheta = 100;
+    fMinEnergy = 0;
+    fMaxEnergy = 100;
+
     Int_t nbinsCent=100;
     if(fIsPPData || fUseMCInfo) nbinsCent = 1;
     Int_t nbinsMult = 500;
@@ -1023,6 +1083,19 @@ Bool_t  AliAnalysisTaskDJetCorrelations::DefineHistoForAnalysis(){
     fhEtaJet->Sumw2();
     fhPtJet     = new TH1F("hPtJet",  "Jet Pt distribution; p_{T} (GeV/c)",nbinsptjet,ptjetlims[0],ptjetlims[1]);
     fhPtJet->Sumw2();
+
+    // reclutering/Lund plane related histograms
+    fhLPThetaEnergy = new TH2F("hLPThetaEnergy","Lund Plane in theta, energy of the radiator",nbinstheta,fMinLnOneByTheta,fMaxLnOneByTheta,nbinsenergy,fMinEnergy,fMaxEnergy);
+    fhLPThetaEnergy->SetStats(kTRUE);
+    fhLPThetaEnergy->GetYaxis()->SetTitle("ln (1/#theta)");
+    fhLPThetaEnergy->GetXaxis()->SetTitle("E");
+    fhLPThetaEnergy->Sumw2();
+
+    fhDmesonOrNot   = new TH1F("fhDmesonOrNot","Inv mass (D meson - hard track)",  nbinsdelmass,fMinDelMass,fMaxDelMass);
+    fhDmesonOrNot->SetStats(kTRUE);
+
+    fOutput->Add(fhLPThetaEnergy);
+    fOutput->Add(fhDmesonOrNot);
 
     fOutput->Add(fhPhiJetTrks);
     fOutput->Add(fhEtaJetTrks);
@@ -1125,7 +1198,7 @@ Bool_t  AliAnalysisTaskDJetCorrelations::DefineHistoForAnalysis(){
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Double_t nJetTrack, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdgTrue){
+void AliATDJetCorrDev::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Double_t nJetTrack, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdgTrue){
 
 
     Float_t nTracklets = static_cast<Float_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
@@ -1241,7 +1314,7 @@ void AliAnalysisTaskDJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF*
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar,  Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc){
+void AliATDJetCorrDev::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar,  Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc){
 
     AliAODTrack *softpi = (AliAODTrack*)dstar->GetBachelor();
     Double_t deltamass= dstar->DeltaInvMass();
@@ -1287,7 +1360,7 @@ void AliAnalysisTaskDJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCasca
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc){
+void AliATDJetCorrDev::FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc){
 
     Double_t pdgmass=0;
     if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -1330,7 +1403,7 @@ void AliAnalysisTaskDJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t z,Dou
 }
 
 //_______________________________________________________________________________
-Float_t AliAnalysisTaskDJetCorrelations::DeltaR(AliEmcalJet *p1, AliVParticle *p2, Double_t rho) const {
+Float_t AliATDJetCorrDev::DeltaR(AliEmcalJet *p1, AliVParticle *p2, Double_t rho) const {
    //Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
    //It recalculates the eta-phi values if it was asked for background subtraction of the jets
    if(!p1 || !p2) return -1;
@@ -1368,7 +1441,7 @@ Float_t AliAnalysisTaskDJetCorrelations::DeltaR(AliEmcalJet *p1, AliVParticle *p
 
 }
 //_______________________________________________________________________________
-Float_t AliAnalysisTaskDJetCorrelations::CheckDeltaR(AliEmcalJet *p1, AliVParticle *p2) const {
+Float_t AliATDJetCorrDev::CheckDeltaR(AliEmcalJet *p1, AliVParticle *p2) const {
     //Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
     if(!p1 || !p2) return -1;
 
@@ -1387,7 +1460,7 @@ Float_t AliAnalysisTaskDJetCorrelations::CheckDeltaR(AliEmcalJet *p1, AliVPartic
 }
 
 //_______________________________________________________________________________
-Int_t AliAnalysisTaskDJetCorrelations::IsDzeroSideBand(AliAODRecoCascadeHF *candDstar){
+Int_t AliATDJetCorrDev::IsDzeroSideBand(AliAODRecoCascadeHF *candDstar){
 
    Double_t ptD=candDstar->Pt();
    Int_t bin = fCuts->PtBin(ptD);
@@ -1409,7 +1482,7 @@ Int_t AliAnalysisTaskDJetCorrelations::IsDzeroSideBand(AliAODRecoCascadeHF *cand
 }
 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskDJetCorrelations::InEMCalAcceptance(AliVParticle *vpart){
+Bool_t AliATDJetCorrDev::InEMCalAcceptance(AliVParticle *vpart){
    //check eta phi of a VParticle: return true if it is in the EMCal acceptance, false otherwise
 
    Double_t phiEMCal[2]={1.405,3.135},etaEMCal[2]={-0.7,0.7};
@@ -1419,5 +1492,75 @@ Bool_t AliAnalysisTaskDJetCorrelations::InEMCalAcceptance(AliVParticle *vpart){
    if(eta<etaEMCal[0] || eta>etaEMCal[1]) binEMCal=kFALSE;
    return binEMCal;
 
+}
+
+////_______________________________________________________________________________
+//fastjet::PseudoJet AliATDJetCorrDev::ReclusteredJet(const AliEmcalJet* jet){
+//    fastjet::Recluster recluster_ca_inf(fastjet::cambridge_algorithm, fastjet::JetDefinition::max_allowable_R); // the function that reclusters with the given algorithm and jet-radius (max possible in this case)
+//    fastjet::PseudoJet rec_jet_ca_inf;// = recluster_ca_inf(jet); // the given jet is reclustered now, and stored as a PseudoJet
+//    return (rec_jet_ca_inf);
+//}
+//    
+//_______________________________________________________________________________
+fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet){
+    // reclustering a fastjet jet with CA algorithm
+    // ref(arxiv/1111/6097, pg. 13, section 3.3: fastjet::ClusterSequence)
+    // ClusterSequence object is created to run the jet clustering
+    // it needs:    1. const std::vector<L> & input_particles,
+    //              2. const JetDefintion & jet_def
+    // where input_particles is the vector of initial particles of any type ( PseudoJet, HepLorentzVector etc.) that can be used to initialize a PseudoJet
+    // and jet_def contains the full specification of the clustering.
+    
+    std::vector<fastjet::PseudoJet> input_particles;
+    UShort_t ntracks = jet->GetNumberOfTracks();
+    for (Int_t j = 0; j < ntracks; j++)
+    {
+        input_particles.push_back( fastjet::PseudoJet( jet->Track(j)->Px(), jet->Track(j)->Py(), jet->Track(j)->Pz(), jet->Track(j)->E()) );
+    }
+    fastjet::JetDefinition jet_def(fastjet::cambridge_algorithm, fJetRadius, fastjet::E_scheme, fastjet::Best);
+    return (new fastjet::ClusterSequence(input_particles, jet_def) );
+}
+
+//_______________________________________________________________________________
+void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet)
+{
+    fastjet::PseudoJet jj = fj_jet;
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;
+
+    while(jj.has_parents(j1, j2))
+    {
+        if(j1.perp2() < j2.perp2()) std::swap(j1,j2); // j1 is assumed to be harder subjet
+                                                    // if j1 is not harder of the two, swap it with j2
+                                                    // so that j1 is now the harder subjet
+                                                    //
+        Double_t del_R = j1.delta_R(j2);            // find the angular distance between the two
+                                                    // subjets j1 and j2
+                                                    //
+        Double_t rad_E = j2.E();                    // the radiator energy
+        // Fill the 2D histogram with del_R and del_E
+        FillLundPlane(del_R, rad_E);
+        jj = j1;
+    }
+    // check stats here if the final jet `jj' is a D meson or not
+    // put the stats into a histogram
+    // // AliVParticle* hardTrack = ... maybe cast pseudojet to alivparticle and then get the flavour track of this jet. compare these two tracks
+    // // or compare their invariant masses, or their transverse momenta
+    // Doublt_t hardDMass = jj.perp() - Dmeson->Pt();
+    //AliVParticle *Dmeson = jet->GetFlavourTrack(0);
+    //
+    fastjet::PseudoJet hardTrk=jj;
+    AliVParticle* Dmeson = ali_jet->GetFlavourTrack(0);
+    Double_t deltaM = (Dmeson->M() - hardTrk.m());
+    fhDmesonOrNot->Fill(deltaM);
 
 }
+
+//_______________________________________________________________________________
+void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy)
+{
+    fhLPThetaEnergy->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);
+    
+}
+
+
