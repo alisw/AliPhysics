@@ -29,6 +29,7 @@ class AliAODTrack;
 class AliPicoTrack;
 class AliAODv0;
 class AliAODMCParticle;
+class AliEventPoolManager;
 
 class AliUniFlowCorrTask;
 
@@ -72,6 +73,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessK0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; }
       void                    SetProcessLambda(Bool_t use = kTRUE) { fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
+      void                    SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
+      void                    SetUseGeneralFormula(Bool_t use = kTRUE) { fUseGeneralFormula = use;}
       // flow related setters
       void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE);
       // void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
@@ -159,12 +162,18 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					  SetPhiInvMassMin(Double_t mass) { fCutPhiInvMassMin = mass; }
       void					  SetPhiInvMassMax(Double_t mass) { fCutPhiInvMassMax = mass; }
 
+      //correlations related setters
+      void            SetDEta(Int_t nBins, Double_t min, Double_t max) { fCorrDEtaBinNum = nBins; fCorrdEtaMin = min; fCorrdEtaMax = max; }
+      void            SetDPhi(Int_t nBins, Double_t min, Double_t max) { fCorrDPhiBinNum = nBins; fCorrdPhiMin = min; fCorrdPhiMax = max; }
+      Bool_t          FillCorrelations();
+      Double_t        RangePhi(Double_t dPhi);
+
       AliEventCuts            fEventCuts; //
 
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
-      static const Int_t      fFlowNumHarmonicsMax = 13; // maximum harmonics length of flow vector array
-      static const Int_t      fFlowNumWeightPowersMax = 9; // maximum weight power length of flow vector array
+      static const Int_t      fFlowNumHarmonicsMax = 24; // maximum harmonics length of flow vector array
+      static const Int_t      fFlowNumWeightPowersMax = 13; // maximum weight power length of flow vector array
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
@@ -297,6 +306,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                SixDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6) const; // Six particle reference correlation calculations (with eta gap)
       TComplex                EightDiffGapPos(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
       TComplex                EightDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6, Int_t n7, Int_t n8) const; // Eight particle reference correlation calculations (with eta gap)
+      TComplex                Correlator(Int_t n, Int_t* harmonic, Int_t mult = 1, Int_t skip = 0) const; // general formula
 
       // array lenghts & constants
       AliAODEvent*            fEventAOD; //! AOD event countainer
@@ -310,6 +320,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fNeedPIDCorrection; // does data need PID correction?
       Bool_t                  fIs2018data; // is 2018 data?
       Bool_t                  fInit; // initialization check
+      Bool_t                  fUseGeneralFormula; // using of new formula
       Int_t                   fIndexSampling; // sampling index (randomly generated)
       Int_t                   fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
       Int_t                   fEventCounter; // event counter (used for local test runmode purpose)
@@ -358,6 +369,20 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
       Bool_t                  fFlowWeightsApplyForReco; //[kFALSE] flag for applying weights for Reco particles
       TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
+      // cuts & selection: correlations related
+      AliEventPoolManager*    fEventPoolMgr; // event pool manager
+      Bool_t                  fCorrFill; // [kFALSE] fill correlations flag
+      Bool_t		              fFillMixed;		// [kTRUE] enable event mixing
+      Bool_t		              fUsePtBinnedEventPool;		// [kTRUE] enable filling mixed events based on pT dependence
+      Int_t                   fPoolSize; // [-1] maximum number of events, -1 means no limit
+      Int_t  		              fMixingTracks;	// [50000] size of track buffer for event mixing
+      Int_t  		              fMinEventsToMix;	// [5] min number of events for event mixing
+      Int_t                   fCorrDEtaBinNum; // [32] number of dEta bins for correlations
+      Int_t                   fCorrDPhiBinNum; // [72] number of dPhi bins for correlations
+      Double_t                fCorrdEtaMin; // [-1.6] min of dEta bins for correlations
+      Double_t                fCorrdEtaMax; // [1.6] max of dEta bins for correlations
+      Double_t                fCorrdPhiMin; // [-pi/2] min of dEta bins for correlations
+      Double_t                fCorrdPhiMax ; // [3/2 pi] max of dEta bins for correlations
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
@@ -464,6 +489,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>
       TH1D*                   fhChargedCounter; //! counter following charged track selection
+      THnSparseD*             fh4CorrelationsSE[kUnknown]; //! eta phi distributin of the same event
+      THnSparseD*             fh4CorrelationsME[kUnknown]; //! eta phi distributin for mixed events
       // PID
       TH1D*                   fhPIDCounter; //! counter for PID
       TH1D*                   fhPIDMult[3]; //! multiplicity distribution of selected pions
