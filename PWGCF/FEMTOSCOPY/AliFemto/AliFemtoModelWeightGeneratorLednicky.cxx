@@ -68,8 +68,9 @@ typedef int bool;
 
 // --- Prototype of the function used in the weight calculator
 //     (in FsiWeightLedinicky.F)
-#define fsiin F77_NAME(fsiin,FSIIN)
-extern "C" {void type_of_call F77_NAME(fsiin,FSIIN)(const int &itest,const int &ich, const int &iqs, const int &isi,const int &i3c);}
+//      SUBROUTINE FSIINI(I_ITEST,I_LL,I_NS,I_ICH,I_IQS,I_ISI,I_I3C)
+#define fsiini F77_NAME(fsiini,FSIINI)
+extern "C" {void type_of_call F77_NAME(fsiini,FSIINI)(const int &itest,const int &ill, const int &ins, const int &ich, const int &iqs, const int &isi,const int &i3c);}
 #define llini F77_NAME(llini,LLINI)
 extern "C" {void type_of_call F77_NAME(llini,LLINI)(const int &lll,const int &ns, const int &itest);}
 
@@ -124,6 +125,7 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky()
   , fNuclChargeSign(1)
   , fSwap(0)
   , fLLMax(30)
+  , fNS(4)
   , fLLName({"all-pairs",
              "neutron neutron",
              "proton proton",
@@ -190,6 +192,7 @@ AliFemtoModelWeightGeneratorLednicky
   , fNuclChargeSign(aWeight.fNuclChargeSign)
   , fSwap(aWeight.fSwap)
   , fLLMax(30)
+  , fNS(4)
   , fLLName(aWeight.fLLName.begin(), aWeight.fLLName.end())
   , fNumProcessPair(nullptr)
   , fNumbNonId(aWeight.fNumbNonId)
@@ -230,6 +233,7 @@ AliFemtoModelWeightGeneratorLednicky::operator=(const AliFemtoModelWeightGenerat
   fSphereApp = aWeight.fSphereApp;
   fT0App = aWeight.fT0App;
   fLL = aWeight.fLL;
+  fNS = aWeight.fNS;
   fNuclChargeSign = aWeight.fNuclChargeSign;
   fSwap = aWeight.fSwap;
   fNumbNonId = aWeight.fNumbNonId;
@@ -457,7 +461,7 @@ AliFemtoModelWeightGeneratorLednicky::Report()
   AliFemtoString returnThis = tStr.str();
   return returnThis;
 }
-
+/*
 void AliFemtoModelWeightGeneratorLednicky::FsiInit()
 {
   // Initialize weight generation module
@@ -468,7 +472,22 @@ void AliFemtoModelWeightGeneratorLednicky::FsiInit()
    cout <<"mIsi dans FsiInit() = " << fIsi << endl;
    cout <<"mI3c dans FsiInit() = " << fI3c << endl;
 
-  fsiin(fItest,fIch,fIqs,fIsi,fI3c);
+  fsiini(fItest,fIch,fIqs,fIsi,fI3c);
+}
+*/
+void AliFemtoModelWeightGeneratorLednicky::FsiInit()
+{
+  // Initialize weight generation module
+   cout << "*******************AliFemtoModelWeightGeneratorLednicky check FsiInit ************" << endl;
+   cout <<"mItest dans FsiInit() = " << fItest << endl; //ok
+   cout <<"mLL dans FsiInit() = " << fLL << endl; //ok
+   cout <<"mNS dans FsiInit() = " << fNS << endl; //ok
+   cout <<"mIch dans FsiInit() = " << fIch << endl; //ok
+   cout <<"mIqs dans FsiInit() = " << fIqs << endl; //ok
+   cout <<"mIsi dans FsiInit() = " << fIsi << endl;  //ok
+   cout <<"mI3c dans FsiInit() = " << fI3c << endl; //ok
+
+  fsiini(fItest,fLL,fNS,fIch,fIqs,fIsi,fI3c);
 }
 
 void AliFemtoModelWeightGeneratorLednicky::FsiSetKpKmModelType()
@@ -491,6 +510,7 @@ void AliFemtoModelWeightGeneratorLednicky::FsiNucl()
 
 void AliFemtoModelWeightGeneratorLednicky::FsiSetLL()
 {
+  
   // set internal pair type for the module
   int tNS;
   if (fSphereApp||(fLL>5)) {
@@ -723,6 +743,11 @@ void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOn()
   { fT0App = true; }
 void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOff()
   { fT0App = false; }
+
+void AliFemtoModelWeightGeneratorLednicky::SetNS(int mNS)
+{
+  fNS = mNS;
+}
 
 void AliFemtoModelWeightGeneratorLednicky::SetDefaultCalcPar()
 {
