@@ -61,11 +61,10 @@
 #include "AliRDHFCuts.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliEventCuts.h"
+#include "AliAODMCParticle.h"
 
 //Forward declarations
 class TClonesArray;
-
-class AliAODMCParticle;
 
 // STD includes
 #include <vector>
@@ -150,8 +149,46 @@ namespace AliDHFeCorr {
 
     } AliEvent;
 
-    typedef struct AliElectron {
+    class AliElectron {
     public:
+        AliElectron() = default;
+
+        AliElectron(AliAODTrack* track, Int_t run_number, Long_t event_number,
+                AliAODEvent *aod_event, AliPIDResponse *pid_response) {
+
+            fTrack = track;
+            fRunNumber = run_number;
+            fEventNumber = event_number;
+            fID = TMath::Abs(track->GetID());
+
+            fCharge = track->Charge();
+            fPt = track->Pt();
+            fP = track->P();
+            fEta = track->Eta();
+            fPhi = track->Phi();
+
+            fNCrossedRowsTPC = track->GetTPCNCrossedRows();
+            fNClsTPCDeDx = track->GetTPCsignalN();
+            fNITSCls = track->GetITSNcls();
+
+            fITSHitFirstLayer = track->HasPointOnITSLayer(0);
+            fITSHitSecondLayer = track->HasPointOnITSLayer(1);
+
+            Double_t d0z0[2] = {-999., -999.};
+            Double_t cov[3] = {-999., -999., -999.};
+            const AliVVertex *primaryVertex = aod_event->GetPrimaryVertex();
+
+            AliAODTrack copy_track = AliAODTrack(*track);
+
+            if (copy_track.PropagateToDCA(primaryVertex, aod_event->GetMagneticField(), 20., d0z0, cov)) {
+                fDCAxy = d0z0[0];
+                fDCAz = d0z0[1];
+            }
+
+            fTPCNSigma = pid_response->NumberOfSigmasTPC(track, AliPID::kElectron);
+            fTOFNSigma = pid_response->NumberOfSigmasTOF(track, AliPID::kElectron);
+        }
+
         AliAODTrack *fTrack{nullptr};
 
         UInt_t fRunNumber{0};
@@ -202,9 +239,35 @@ namespace AliDHFeCorr {
         Int_t fSecondMotherPDG{0};
         Float_t fSecondMotherPt{-999.};
 
-    } AliElectron;
+    };
 
-    typedef struct AliParticleMC {
+    class AliParticleMC {
+    public:
+        AliParticleMC() = default;
+
+        AliParticleMC(AliAODMCParticle *particle,
+                      UInt_t run_number = 0, UInt_t ev_number = 0, UInt_t label = 0, UShort_t origin = 0) {
+            fMCParticle = particle;
+            fRunNumber = run_number;
+            fEventNumber = ev_number;
+            fLabel = label;
+            fOrigin = origin;
+
+            fE = particle->E();
+            fPt = particle->Pt();
+            fEta = particle->Eta();
+            fPhi = particle->Phi();
+            fXv = particle->Xv();
+            fYv = particle->Yv();
+            fZv = particle->Zv();
+            fTv = particle->Tv();
+            fCharge = particle->Charge();
+            fPDGCode = particle->PdgCode();
+
+        }
+
+        ~AliParticleMC() = default;
+
         AliAODMCParticle *fMCParticle{nullptr};
         UInt_t fRunNumber{0};
         UInt_t fEventNumber{0};
@@ -225,7 +288,7 @@ namespace AliDHFeCorr {
         Int_t fPDGCode{-999};
         UShort_t fOrigin{99};
 
-    } AliParticleMC;
+    };
 
     typedef struct AliElectronSelection {
         //Track selection
@@ -461,7 +524,7 @@ private:
     std::unique_ptr<TTree> fElectronTreeMC; ///< Tree with the MC electron information
     std::unique_ptr<TTree> fDmesonTreeMC; ///< Tree with the MC D meson information
 
-    //Event Properties. Create a new struct?
+    //Event Properties.
     UInt_t fRunNumber{0}; ///< Run number
     UInt_t fEventNumber{0}; ///< Unique number for each event
 
@@ -590,9 +653,12 @@ private:
     void FindNonHFe(AliDHFeCorr::AliElectron &main_electron,
                     const std::vector<AliDHFeCorr::AliElectron> &partners) const;
 
-    std::vector<AliDHFeCorr::AliParticleMC> FindHFParticleInMC(int pdg);
+    std::vector<AliDHFeCorr::AliParticleMC> FindHFParticleInMC(int pdg,
+                                                               vector<AliDHFeCorr::AliParticleMC> &mc_particles);
 
     static bool IsHFe(AliAODMCParticle *particle, TClonesArray *mc_information);
+
+    std::vector<AliDHFeCorr::AliParticleMC> FillMCParticleInfo();
 
     std::vector<AliDHFeCorr::AliParticleMC> FilterHFeInMCParticles(std::vector<AliDHFeCorr::AliParticleMC> &electrons);
 
@@ -617,6 +683,7 @@ private:
 
 ClassDef(AliAnalysisTaskDHFeCorr, 4);
 
+    AliDHFeCorr::AliDMeson BuildReflection(const AliDHFeCorr::AliDMeson &cand) const;
 };
 
 template<class T>
