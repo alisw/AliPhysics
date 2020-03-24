@@ -2058,8 +2058,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	if (TMath::Abs(dz[0])>fIPCutxySec ) continue;  // 2.4 proton 1. pion 
 	if (TMath::Abs(dz[1])>fIPCutzSec ) continue;  // 3.2  proton 1. pion
       } else {
-	if (TMath::Abs(dzg[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
-	if (TMath::Abs(dzg[1])>fIPCutzSec ) continue; // 0.15 proton/pion
+	dz[0] = dzg[0];
+	dz[1] = dzg[1];
+	if (TMath::Abs(dz[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
+	if (TMath::Abs(dz[1])>fIPCutzSec ) continue;   // 0.15 proton/pion
+	// if (TMath::Abs(dzg[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
+	// if (TMath::Abs(dzg[1])>fIPCutzSec ) continue; // 0.15 proton/pion
       }
       
       if (track->Pt()>=fMinPtForSec && track->Pt()< fMomemtumLimitForTOFPIDsecond){	
