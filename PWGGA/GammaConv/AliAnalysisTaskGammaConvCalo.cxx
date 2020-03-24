@@ -1253,8 +1253,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
 
-    nBinsMinv = 400;
+    nBinsMinv = 200;
     maxMinv   = 0.8;
+
 
     nBinsPt                   = 310;
     minPt                     = 0;
@@ -1629,7 +1630,17 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
     }
 
-    if(fDoLightOutput==2) nBinsMinv/=2;
+    if(fDoLightOutput==2) {
+        nBinsMinv/=2;
+        if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 &&
+            ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
+                    ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB )){
+            nBinsPt                   = 310;
+        } else {
+            nBinsPt                   = 238;
+        }
+    }
+
 
     if(fDoMesonAnalysis){
       fHistoMotherInvMassPt[iCut]             = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
@@ -1909,10 +1920,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoMCPi0WOEvtWeightInAccPt               = new TH1F*[fnCuts];
         fHistoMCEtaWOEvtWeightInAccPt               = new TH1F*[fnCuts];
       }
+      fHistoMCSecPi0PtvsSource                      = new TH2F*[fnCuts];
+      fHistoMCSecPi0InAccPtvsSource                 = new TH2F*[fnCuts];
       if (fDoLightOutput!=2){
         fHistoMCPrimaryPtvsSource                     = new TH2F*[fnCuts];
-        fHistoMCSecPi0PtvsSource                      = new TH2F*[fnCuts];
-        fHistoMCSecPi0InAccPtvsSource                 = new TH2F*[fnCuts];
         fHistoMCSecPi0Source                          = new TH1F*[fnCuts];
         fHistoMCSecEtaPt                              = new TH1F*[fnCuts];
         fHistoMCSecEtaSource                          = new TH1F*[fnCuts];
@@ -2204,19 +2215,19 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
             fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
             fHistoMCSecEtaSource[iCut]    = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
             fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
-            fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
-            fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
-            fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
-            fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
             fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
             fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
+        }
+        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
+        fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
+        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
+        fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
 
-            if (fIsMC == 2){
-              fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
-              fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
-              fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
-              fHistoMCSecEtaPt[iCut]->Sumw2();
-            }
+        if (fIsMC == 2){
+          fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+          fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
+          fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
+          fHistoMCSecEtaPt[iCut]->Sumw2();
         }
 
         // book histograms for pure MC handling of PCM-Calo dir gamma reco
