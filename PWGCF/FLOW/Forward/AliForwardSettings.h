@@ -107,9 +107,9 @@ class AliForwardSettings : public TObject {
 
   // flags used for method of cumulant
   enum {
-    kNormal   = 0x0001, // Standard QC{2} and QC{4} calculations
-    kFill  = 0x0002, // QC{2} w/ an eta-gap
-    kInterpolate    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+    kNormal   = 0x0001,
+    kFill  = 0x0002, 
+    kInterpolate    = 0x0004, 
   };
 
   enum {

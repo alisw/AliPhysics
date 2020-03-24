@@ -725,11 +725,11 @@ void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
     if (p->Charge() == 0) continue;
 
     Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.7) {
-      if (p->Pt()>=this->minpt){// && p->Pt()<=this->maxpt){
+    //if (TMath::Abs(eta) < 1.7) {
+      if (p->Pt() < this->minpt || p->Pt() > this->maxpt) continue;
         cen->Fill(eta,p->Phi(),1);
-      }
-    }
+      
+    //}
   }
 }
 
