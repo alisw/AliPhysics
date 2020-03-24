@@ -71,10 +71,13 @@ public:
   virtual AliReducedCaloClusterTrackMatcher* GetClusterTrackMatcher() const {return fClusterTrackMatcher;}
   Int_t GetNClusterCuts() const {return fClusterCuts.GetEntries();}
   const Char_t* GetClusterCutName(Int_t i) const {return (i<fClusterCuts.GetEntries() ? fClusterCuts.At(i)->GetName() : "");}
+  AliReducedInfoCut* GetCaloClusterCut(Int_t i) const {return (i<fClusterCuts.GetEntries() ? (AliReducedInfoCut*)fClusterCuts.At(i) : NULL);}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");}
+  AliReducedInfoCut* GetTrackCut(Int_t i) const {return (i<fTrackCuts.GetEntries() ? (AliReducedInfoCut*)fTrackCuts.At(i) : NULL);}
   Int_t GetNPairCuts() const {return fPairCuts.GetEntries();}
   const Char_t* GetPairCutName(Int_t i) const {return (i<fPairCuts.GetEntries() ? fPairCuts.At(i)->GetName() : "");}
+  AliReducedInfoCut* GetPairCut(Int_t i) const {return (i<fPairCuts.GetEntries() ? (AliReducedInfoCut*)fPairCuts.At(i) : NULL);}
   Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
   Bool_t GetRunLikeSignPairing() const {return fOptionRunLikeSignPairing;}
   Bool_t GetRunEventMixing() const {return fOptionRunMixing;}
@@ -169,7 +172,7 @@ protected:
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,12);
+  ClassDef(AliReducedAnalysisJpsi2ee,13);
 };
 
 #endif
