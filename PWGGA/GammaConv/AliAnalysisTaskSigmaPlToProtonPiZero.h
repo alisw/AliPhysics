@@ -82,7 +82,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZero : public AliAnalysisTaskSE
     Double_t GetQT(TLorentzVector sigmaVektor, TLorentzVector rekombinatedPi0);
 
     Bool_t IsRealProtonKink(AliESDkink* kink, AliStack* MCstack);
-    Bool_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, AliMCEvent* fMCEvent);
+    Bool_t IsRealPhoton(AliAODConversionPhoton PhotonCandidate, AliMCEvent* fMCEvent);
 
     protected:
         AliVEvent *             fEvent;
@@ -141,7 +141,9 @@ class AliAnalysisTaskSigmaPlToProtonPiZero : public AliAnalysisTaskSE
         AliAnalysisTaskSigmaPlToProtonPiZero(const AliAnalysisTaskSigmaPlToProtonPiZero&); // not implemented
         AliAnalysisTaskSigmaPlToProtonPiZero& operator=(const AliAnalysisTaskSigmaPlToProtonPiZero&); // not implemented
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZero, 14);
+        void FillfHistNEvents(Int_t icut, Float_t in) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in); }
+
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZero, 15);
 };
 
 #endif
