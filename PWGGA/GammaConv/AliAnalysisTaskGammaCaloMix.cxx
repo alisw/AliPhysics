@@ -1516,26 +1516,29 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
               fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
               fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
             }
-            fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
-            fHistoMCSecPi0PtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
-            fHistoMCSecPi0PtvsSource[iCut]->SetYTitle("source");
-            fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
-            fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt,  16, -0.5, 15.5);
-            fHistoMCSecPi0InAccPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
-            fHistoMCSecPi0InAccPtvsSource[iCut]->SetYTitle("source");
-            fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
             if( !fDoPi0Only ){
-              fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-              fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-              fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
+                fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+                fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+                fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
             }
             if (fIsMC == 2) {
               fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
-              fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
-              fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
               if( !fDoPi0Only ) fHistoMCSecEtaPt[iCut]->Sumw2();
-            }
+          }
         }
+        fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
+        fHistoMCSecPi0PtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fHistoMCSecPi0PtvsSource[iCut]->SetYTitle("source");
+        fMCList[iCut]->Add(fHistoMCSecPi0PtvsSource[iCut]);
+        fHistoMCSecPi0InAccPtvsSource[iCut]  = new TH2F("MC_SecPi0InAcc_Pt_Source", "MC_SecPi0InAcc_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt,  16, -0.5, 15.5);
+        fHistoMCSecPi0InAccPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fHistoMCSecPi0InAccPtvsSource[iCut]->SetYTitle("source");
+        fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
+        if (fIsMC == 2) {
+          fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
+          fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
+        }
+
 
 
         if (fDoMesonQA > 0 && fDoMesonQA < 3){
