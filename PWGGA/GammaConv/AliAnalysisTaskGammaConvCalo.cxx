@@ -4465,7 +4465,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
         }
 
         if(fDoLightOutput!=2){
+<<<<<<< HEAD
           if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
+=======
+          if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+>>>>>>> 55205de45b67e33f80e8dbe790ca9c54a734bab1
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC);
             } else if ( particle->GetPdgCode() == -211 ){  // negative pions
