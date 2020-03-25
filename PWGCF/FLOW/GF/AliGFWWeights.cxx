@@ -158,8 +158,10 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
     	if(fAccInt->Integral()<1) continue;
     	h1 = (TH1D*)fAccInt->Project3D("x");
     	Double_t maxv = h1->GetMaximum();
-    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++)
-    	  fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++) {
+        fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+        fAccInt->SetBinError(phii,etai,vzi,fAccInt->GetBinError(phii,etai,vzi)/maxv);
+      };
     	delete h1;
       };
       fAccInt->GetZaxis()->SetRange(1,fAccInt->GetNbinsZ());
