@@ -37,9 +37,6 @@ Int_t AliGFWCuts::AcceptParticle(AliVParticle *l_Pa, Int_t BitShift, Double_t pt
   if(TMath::Abs(l_Pa->Eta())>fEta) return 0;
   if(ptLow>0) if(l_Pa->Pt()<ptLow) return 0;
   if(ptHigh>0) if(l_Pa->Pt()>ptHigh) return 0;
-  // if(l_Pa->Pt()<0.3) return 0;
-  // if(l_Pa->Pt()>20) return 0;
-  // if(!l_Pa->IsMCPrimary()) return 0; //Not sure if I need this one here?
   return 1<<BitShift;
 };
 Int_t AliGFWCuts::AcceptVertex(AliAODEvent *l_Ev, Int_t BitShift) {
