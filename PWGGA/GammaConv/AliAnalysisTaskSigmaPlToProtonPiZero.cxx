@@ -619,7 +619,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 						        }
 						      }
-							trueSigmaPhoton1 = IsRealPhoton(PhotonCandidate1, fMCEvent);
+							trueSigmaPhoton1 = IsRealPhoton(&PhotonCandidate1, fMCEvent);
 						}
 						for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
 							if( iPhoton2 > iPhoton1){
@@ -648,7 +648,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								        }
 								      }
-									trueSigmaPhoton2 = IsRealPhoton(PhotonCandidate2, fMCEvent);
+									trueSigmaPhoton2 = IsRealPhoton(&PhotonCandidate2, fMCEvent);
 								}
 							    AliAODConversionMother pi0cand = AliAODConversionMother(&PhotonCandidate1,&PhotonCandidate2);
 								pi0cand.SetLabels(iPhoton1,iPhoton2);
@@ -795,13 +795,13 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealProtonKink(AliESDkink* kink,A
 	}
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton PhotonCandidate, AliMCEvent* fMCEvent)
+Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, AliMCEvent* fMCEvent)
 { //checks if a reconstructed photon from sigma plus
 	TParticle *Photon = NULL;
-	if (PhotonCandidate.GetNCaloPhotonMCLabels() > 0){
-		// Photon = PhotonCandidate.GetMCParticle(fMCEvent);
-		if (PhotonCandidate.GetCaloPhotonMCLabel(0) < 0) return kFALSE;
-		Photon = fMCEvent->Particle(PhotonCandidate.GetCaloPhotonMCLabel(0));
+	if (PhotonCandidate->GetNCaloPhotonMCLabels() > 0){
+		// Photon = PhotonCandidate->GetMCParticle(fMCEvent);
+		if (PhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return kFALSE;
+		Photon = fMCEvent->Particle(PhotonCandidate->GetCaloPhotonMCLabel(0));
 		if (Photon) {
 			if(Photon->GetPdgCode() == 22){
 				if (Photon->GetMother(0) < 0) return kFALSE;
