@@ -977,6 +977,14 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0t62103500900000");    
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0u62103500900000");    
 
+  } else if (trainConfig == 415){ // rapdity variations
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152403500000000"); // excluding 55-72 cm, eta 0.8
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152a03500000000"); // excluding 55-72 cm, eta 0.8
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152b03500000000"); // excluding 55-72 cm, eta 0.8
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152e03500000000"); // excluding 55-72 cm, eta 0.8
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152f03500000000"); // excluding 55-72 cm, eta 0.8
+
   } else if (trainConfig == 422){   // AM changed from 441 to 422  // updated 190923 with better 2D cuts
     cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
     cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72

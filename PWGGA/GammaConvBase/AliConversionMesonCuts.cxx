@@ -104,7 +104,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fSelectionNSigmaHigh(999),
   fAlphaMinCutMeson(0),
   fAlphaCutMeson(1),
-  fRapidityCutMeson(1),
+  fRapidityCutMesonMin(-1),
+  fRapidityCutMesonMax(1),
   fMinV0Dist(200.),
   fMesonQualityMin(0),
   fPBremSmearing(0),
@@ -220,7 +221,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fSelectionNSigmaHigh(ref.fSelectionNSigmaHigh),
   fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
   fAlphaCutMeson(ref.fAlphaCutMeson),
-  fRapidityCutMeson(ref.fRapidityCutMeson),
+  fRapidityCutMesonMin(ref.fRapidityCutMesonMin),
+  fRapidityCutMesonMax(ref.fRapidityCutMesonMax),
   fMinV0Dist(ref.fMinV0Dist),
   fMesonQualityMin(ref.fMesonQualityMin),
   fPBremSmearing(ref.fPBremSmearing),
@@ -477,7 +479,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -519,7 +521,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (MCMother->Pt() < fMinPt)) return kFALSE;
@@ -557,7 +559,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMot
         }
 
         // Rapidity Cut
-        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+        if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -594,7 +596,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -653,7 +655,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -710,7 +712,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
     }
 
     // Rapidity Cut
-    if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -764,7 +766,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -823,7 +825,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCPart
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -881,7 +883,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -940,7 +942,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle 
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -998,7 +1000,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1058,7 +1060,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCPartic
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1113,7 +1115,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
   }
 
   // Rapidity Cut
-  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1161,7 +1163,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
   }
 
   // Rapidity Cut
-  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1225,7 +1227,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1302,7 +1304,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1377,7 +1379,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
         }
 
         // Rapidity Cut
-        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+        if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -1458,7 +1460,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else{
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
-    if(TMath::Abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+    if( (pi0->Rapidity()-fRapidityShift)<fRapidityCutMesonMin || (pi0->Rapidity()-fRapidityShift)>fRapidityCutMesonMax){
+
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -1802,7 +1805,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   printf("\n\n");
 
   printf("Meson cuts \n");
-  printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+  printf("\t %3.2f < y < %3.2f \n", fRapidityCutMesonMin, fRapidityCutMesonMax);
   if (fEnableOneCellDistCut)  printf("\t Only valid for GammaCalo: one cell distance cut enabled");
   if (fEnableMinOpeningAngleCut) printf("\t theta_{open} > %3.4f\n", fOpeningAngle);
   if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
@@ -3038,34 +3041,68 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
   // Set Cut
   switch(RapidityMesonCut){
   case 0:  // changed from 0.9 to 1.35
-    fRapidityCutMeson   = 1.35;
+    fRapidityCutMesonMax   = 1.35;
+    fRapidityCutMesonMin   = -1.35;
     break;
   case 1:  //
-    fRapidityCutMeson   = 0.8;
+    fRapidityCutMesonMax   = 0.8;
+    fRapidityCutMesonMin   = -0.8;
     break;
   case 2:  //
-    fRapidityCutMeson   = 0.7;
+    fRapidityCutMesonMax   = 0.7;
+    fRapidityCutMesonMin   = -0.7;
     break;
   case 3:  //
-    fRapidityCutMeson   = 0.6;
+    fRapidityCutMesonMax   = 0.6;
+    fRapidityCutMesonMin   = -0.6;
     break;
   case 4:  //
-    fRapidityCutMeson   = 0.5;
+    fRapidityCutMesonMax   = 0.5;
+    fRapidityCutMesonMin   = -0.5;
     break;
   case 5:  //
-    fRapidityCutMeson   = 0.85;
+    fRapidityCutMesonMax   = 0.85;
+    fRapidityCutMesonMin   = -0.85;
     break;
   case 6:  //
-    fRapidityCutMeson   = 0.75;
+    fRapidityCutMesonMax   = 0.75;
+    fRapidityCutMesonMin   = -0.75;
     break;
   case 7:  //
-    fRapidityCutMeson   = 0.3;
+    fRapidityCutMesonMax   = 0.3;
+    fRapidityCutMesonMin   = -0.3;
     break;
   case 8:  //changed, before 0.35
-    fRapidityCutMeson   = 0.25;
+    fRapidityCutMesonMax   = 0.25;
+    fRapidityCutMesonMin   = -0.25;
     break;
   case 9:  //
-    fRapidityCutMeson   = 0.4;
+    fRapidityCutMesonMax   = 0.4;
+    fRapidityCutMesonMin   = -0.4;
+    break;
+  case 10:  // a
+    fRapidityCutMesonMax   = 0.8;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 11:  // b
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -0.8;
+    break;
+  case 12:  // c
+    fRapidityCutMesonMax   = 0.6;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 13:  // d
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -0.6;
+    break;
+  case 14:  // e
+    fRapidityCutMesonMax   = 1.0;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 15:  // f
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -1.0;
     break;
   default:
     cout<<"Warning: RapidityMesonCut not defined "<<RapidityMesonCut<<endl;
