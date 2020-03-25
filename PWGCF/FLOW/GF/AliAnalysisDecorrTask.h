@@ -60,6 +60,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
         void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; } 
+        void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
         //void                    CalculateHigherOrderVn(Bool_t calc) { bHigherOrder = calc; }   //Calculate higher order particle correlation differential vn with jack-knife resampling
 
         /*
@@ -99,7 +100,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         bool                    IsWithinRP(const AliAODTrack* track) const;
         bool                    IsWithinPOI(const AliAODTrack* track) const;
         void                    FillRPvectors(double dEtaLimit);
-        void                    FillPOIvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
+        Int_t                   FillPOIvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
         void                    FillPtBvectors(const double dEtaLimit, const double dPtLow, const double dPtHigh); 
         void                    CalculateCorrelations(const AliDecorrFlowCorrTask* const task, double centrality, double dPtA, double dPtB, Bool_t bRef, Bool_t bDiff, Bool_t bPtA, Bool_t bPtRef, Bool_t bPtB);
 
@@ -226,6 +227,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fPOIsPtmin;
         Double_t                fRFPsPtMax;
         Double_t                fRFPsPtMin;
+        Bool_t                  fRequireTwoPart;
 
         ClassDef(AliAnalysisDecorrTask, 1);
 };

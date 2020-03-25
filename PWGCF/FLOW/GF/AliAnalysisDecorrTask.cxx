@@ -101,7 +101,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fPOIsPtmax(10.0),
     fPOIsPtmin(0.2),
     fRFPsPtMax(5.0),
-    fRFPsPtMin(0.2)
+    fRFPsPtMin(0.2),
+    fRequireTwoPart(kFALSE)
 {}
 //_____________________________________________________________________________
 AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTaskSE(name),
@@ -160,7 +161,8 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fPOIsPtmax(10.0),
     fPOIsPtmin(0.2),
     fRFPsPtMax(5.0),
-    fRFPsPtMin(0.2)
+    fRFPsPtMin(0.2),
+    fRequireTwoPart(kFALSE)
 {
     DefineInput(0, TChain::Class());
     DefineInput(1, TList::Class()); 
@@ -507,9 +509,21 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
                 double dPt = fPtAxis->GetBinCenter(iPtA);
                 double dPtLow = fPtAxis->GetBinLowEdge(iPtA);
                 double dPtHigh = fPtAxis->GetBinUpEdge(iPtA);
-
-                FillPOIvectors(dEtaGap, dPtLow, dPtHigh);       //Fill POI vectors
-                CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, bPtA, bPtRef, kFALSE);
+                Int_t TrackCounter = 0;
+                TrackCounter = FillPOIvectors(dEtaGap, dPtLow, dPtHigh);       //Fill POI vectors
+                if(fRequireTwoPart)
+                {
+                    if(TrackCounter > 1)
+                    {
+                        CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, kFALSE, kFALSE, kFALSE);
+                    }
+                    CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, kFALSE, bPtA, bPtRef, kFALSE);
+                }
+                else
+                {
+                    CalculateCorrelations(task, centrality, dPt, -1.0, kFALSE, bDiff, bPtA, bPtRef, kFALSE);
+                }
+                
                                 
                 if(bPtB && dPt < 5.0 && centrality < fCentMax)   //Save cpu by restricting double pt loops to central and semicentral centralities and low pt
                 {
@@ -530,7 +544,6 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     PostData(1, fFlowList);
     PostData(2, fFlowWeights);
     PostData(3, fQA);
-
 }
 
 void AliAnalysisDecorrTask::CalculateCorrelations(const AliDecorrFlowCorrTask* const task, double centrality, double dPtA, double dPtB, Bool_t bRef, Bool_t bDiff, Bool_t bPtA, Bool_t bPtRef, Bool_t bPtB)
@@ -801,7 +814,7 @@ void AliAnalysisDecorrTask::FillRPvectors(double dEtaGap)
 }
 
 //Method to fill POIs into pvectors
-void AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dPtLow, const double dPtHigh)
+Int_t AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dPtLow, const double dPtHigh)
 {
 
     ResetFlowVector(pvector);
@@ -811,10 +824,12 @@ void AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dP
 
 
     int iPart(fAOD->GetNumberOfTracks());
-    if(iPart < 1) { return; }
+    if(iPart < 1) { return 0; }
+    
+
     double dEtaLimit = 0.5*dEtaGap;
     double dVz = fAOD->GetPrimaryVertex()->GetZ();
-
+    Int_t TrackCounter = 0;
     for(int index(0); index < iPart; ++index)
     {   
         AliAODTrack* POItrack = static_cast<AliAODTrack*>(fAOD->GetTrack(index));
@@ -841,6 +856,7 @@ void AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dP
         //POI with no eta gap
         if(dPt > dPtLow && dPt <= dPtHigh)      //Added = to <= 
         {
+            TrackCounter++;
             for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
             {
                 for(Int_t iPower(0); iPower < fNumPowers; iPower++)
@@ -887,7 +903,7 @@ void AliAnalysisDecorrTask::FillPOIvectors(const double dEtaGap, const double dP
         } //end if dPtLow < dPt < dPtHigh
     } //end for track
 
-    return;
+    return TrackCounter;
 }
 
 //Method to fill POIs into pvectors
