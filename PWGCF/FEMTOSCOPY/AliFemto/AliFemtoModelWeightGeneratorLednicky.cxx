@@ -419,7 +419,8 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
     fsiposition(*x1,*x2);
   }
 
-  FsiSetLL();
+  //FsiSetLL();
+  FsiInit();
   ltran12();
   fsiw(1, fWeif, fWei, fWein);
 
