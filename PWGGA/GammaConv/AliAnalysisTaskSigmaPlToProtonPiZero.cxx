@@ -800,10 +800,13 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton
 	TParticle *Photon = NULL;
 	if (PhotonCandidate.GetNCaloPhotonMCLabels() > 0){
 		// Photon = PhotonCandidate.GetMCParticle(fMCEvent);
+		if (PhotonCandidate.GetCaloPhotonMCLabel(0) < 0) return kFALSE;
 		Photon = fMCEvent->Particle(PhotonCandidate.GetCaloPhotonMCLabel(0));
 		if (Photon) {
 			if(Photon->GetPdgCode() == 22){
+				if (Photon->GetMother(0) < 0) return kFALSE;
 				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
+				if (motherPart2->GetMother(0) < 0) return kFALSE;
 				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
 				if(motherPart2->GetPdgCode() == 111 && grandmotherPart2->GetPdgCode() == 3222){
 					return kTRUE;
@@ -811,8 +814,11 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton
 					return kFALSE;
 				}
 			} else if(Photon->GetPdgCode() == 11 || Photon->GetPdgCode() == -11){
+				if (Photon->GetMother(0) < 0) return kFALSE;
 				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
+				if (motherPart2->GetMother(0) < 0) return kFALSE;
 				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
+				if (grandmotherPart2->GetMother(0) < 0) return kFALSE;
 				TParticle* grandgrandmotherPart2 = (TParticle*)fMCEvent->Particle(grandmotherPart2->GetMother(0));
 				if(motherPart2->GetPdgCode() == 22 && grandmotherPart2->GetPdgCode() == 111  && grandgrandmotherPart2->GetPdgCode() == 3222){
 					return kTRUE;
