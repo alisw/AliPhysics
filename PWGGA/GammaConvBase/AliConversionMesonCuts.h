@@ -175,7 +175,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   SetUsePtDepSelectionWindow(Bool_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
     Bool_t GetUsePtDepSelectionWindow(Bool_t ptdep)                { return fUsePtDepSelectionWindow;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
-    Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
+    Double_t GetRapidityCutValueMin()                            { return fRapidityCutMesonMin; }
+    Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
 
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
@@ -257,7 +258,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fSelectionNSigmaHigh;           ///< N of sigma for ptdep selection window cut max
     Double_t    fAlphaMinCutMeson;              ///< min value for meson alpha cut
     Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
-    Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
+    Double_t    fRapidityCutMesonMin;           ///< min value for meson rapidity
+    Double_t    fRapidityCutMesonMax;           ///< max value for meson rapidity
     Double_t    fMinV0Dist;                     ///
     Double_t    fMesonQualityMin;               ///
     Double_t    fPBremSmearing;                 ///
@@ -339,7 +341,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,41)
+    ClassDef(AliConversionMesonCuts,42)
     /// \endcond
 };
 
