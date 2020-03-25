@@ -9,6 +9,7 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
@@ -30,6 +31,7 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
@@ -347,8 +349,43 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(PhiTRUE);
   fPairCleaner->StoreParticle(PhiALL);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+
+  if (fConfig->GetUseEventMixing()) {
+    if (fUseOMixing) {
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
+          fPairCleaner->GetCleanParticles();
+      int size = Particles.size();
+      if (size == 7) {
+        if ((Particles.at(2)).size() > 0) {
+          if (((Particles.at(0)).size() > 0) ||
+              ((Particles.at(1)).size() > 0)) {
+              fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                                  fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+          }
+        }
+
+        if (fIsMC) {
+          if ((Particles.at(5)).size() > 0 ||
+              ((Particles.at(6)).size() > 0)) {
+            if (((Particles.at(3)).size() > 0) ||
+                ((Particles.at(4)).size() > 0)) {
+                fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+            }
+          }
+        }
+      }
+    } else {
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                            fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+    }
+  }
+
+
 
   PostData(1, fOutput);
 }
