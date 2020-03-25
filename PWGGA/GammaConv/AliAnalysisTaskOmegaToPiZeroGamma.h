@@ -40,6 +40,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
+    // Function to set photon selection mode, called in the AddTask
+    void SetPhotonSelectionMode(Int_t mode) {fPhotonSelectionMode = mode;}
+
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
@@ -133,6 +136,10 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void FillQAPlots ( AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
       AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
       TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot );
+
+    void PhotonSelectionCalo(std::set<uint> dropOutGammas_CALO);
+    void PhotonSelectionPCM(std::set<uint> dropOutGammas_PCM);
+    void PhotonSelectionMixed(std::set<uint> dropOutGammas_CALO, std::set<uint> dropOutGammas_PCM);
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
@@ -342,12 +349,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
     TRandom3                fRandom;                                            // random
     TGenPhaseSpace          fGenPhaseSpace;                                     // For generation of decays into pi0n and photon
+    Int_t                   fPhotonSelectionMode;                               // mode for the photon selection: 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 15);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 16);
 };
 
 #endif

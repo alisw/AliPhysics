@@ -2910,25 +2910,20 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
     break;
   //cal-cal,cal
   case 2:
-      if(fClusterCandidates->GetEntries()>2){
-        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) {
-        for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
-          AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
-          if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
-          for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
-            AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
-            if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
-            AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
-            if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
-                 ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
-                && pi0cand.Pt() > fMinPi0Pt){
-              if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                dropOutGammas_CALO.insert(firstGammaIndex);
-                dropOutGammas_CALO.insert(secondGammaIndex);
-              }
-            }
-          }
-        }
+    if(fClusterCandidates->GetEntries()>2){
+      switch (fPhotonSelectionMode) {
+        case 1:                                                                 // normal photon selection means only cal-cal gamma combinations are checked
+          PhotonSelectionCalo(dropOutGammas_CALO);
+          break;
+
+        case 2:                                                                 // more strict photon selection, means all possible gamma comibnations are achecked
+          PhotonSelectionCalo(dropOutGammas_CALO);
+          PhotonSelectionMixed(dropOutGammas_CALO, dropOutGammas_PCM);
+          break;
+
+        default:                                                                // no photon selection
+          /* do nothing */
+          break;
       }
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
@@ -2999,29 +2994,22 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
     break;
   //cal-cal,PCM
   case 3:
-    if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) {
-      if(fGammaCandidates->GetEntries()>2){
-        for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
-          AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
-          if (gamma0==NULL) continue;
-          for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGammaCandidates->GetEntries();secondGammaIndex++){
-            AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(secondGammaIndex));
-            if (gamma1==NULL || (secondGammaIndex+1)>=(fGammaCandidates->GetEntries())) continue;
-            AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
-            if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
-                 ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
-                && pi0cand.Pt() > fMinPi0Pt){
-              fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand.M(),pi0cand.Pt(),fWeightJetJetMC);
-              if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-                dropOutGammas_PCM.insert(firstGammaIndex);
-                dropOutGammas_PCM.insert(secondGammaIndex);
-              }
-            }
-          }
-        }
-      }
-    }
+
     if(fClusterCandidates->GetEntries()>1 && fGammaCandidates->GetEntries()>0){
+      switch (fPhotonSelectionMode) {
+        case 1:                                                                 // normal photon selection means only cal-cal gamma combinations are checked
+          PhotonSelectionPCM(dropOutGammas_PCM);
+          break;
+
+        case 2:                                                                 // more strict photon selection, means all possible gamma comibnations are achecked
+          PhotonSelectionPCM(dropOutGammas_PCM);
+          PhotonSelectionMixed(dropOutGammas_CALO, dropOutGammas_PCM);
+          break;
+
+        default:                                                                // no photon selection
+          /* do nothing */
+          break;
+      }
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
         if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
@@ -4750,5 +4738,74 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlots(AliAODConversionMother *omeg
     fHistoMotherRestGammaCosAnglePt->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherRestPi0CosAnglePt->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherDalitzPlot->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+  return;
+}
+
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCalo(std::set<uint> dropOutGammas_CALO) {
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
+    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
+    if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
+    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+      AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+      if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
+      AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+           ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+          && pi0cand.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
+          dropOutGammas_CALO.insert(firstGammaIndex);
+          dropOutGammas_CALO.insert(secondGammaIndex);
+        }
+      }
+    }
+  }
+  return;
+}
+
+
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionPCM(std::set<uint> dropOutGammas_PCM) {
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
+    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+    if (gamma0==NULL) continue;
+    for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGammaCandidates->GetEntries();secondGammaIndex++){
+      AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(secondGammaIndex));
+      if (gamma1==NULL || (secondGammaIndex+1)>=(fGammaCandidates->GetEntries())) continue;
+      AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+           ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+          && pi0cand.Pt() > fMinPi0Pt){
+        if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
+          dropOutGammas_PCM.insert(firstGammaIndex);
+          dropOutGammas_PCM.insert(secondGammaIndex);
+        }
+      }
+    }
+  }
+  return;
+}
+
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionMixed(std::set<uint> dropOutGammas_CALO, std::set<uint> dropOutGammas_PCM) {
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
+    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+    if (gamma0==NULL) continue;
+    for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+      Bool_t matched = kFALSE;
+      AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+      if (gamma1==NULL || !(gamma1->GetIsCaloPhoton())) continue;
+      AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+      matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0, cluster, fInputEvent, fWeightJetJetMC);
+      AliAODConversionMother pi0cand = AliAODConversionMother(gamma0,gamma1);
+      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))
+           ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
+          && pi0cand.Pt() > fMinPi0Pt){
+        if (!matched){
+          if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
+            dropOutGammas_PCM.insert(firstGammaIndex);
+            dropOutGammas_CALO.insert(secondGammaIndex);
+          }
+        }
+      }
+    }
+  }
   return;
 }
