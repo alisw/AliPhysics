@@ -2321,11 +2321,11 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					}
 					//++ dEdx ++
 					if (fBetheSplines) {
-						fhe4DedxSigma = fPID->NumberOfSigmasTPC(track1, AliPID::kHe3);
+						fhe3DedxSigma = fPID->NumberOfSigmasTPC(track1, AliPID::kHe3);
 						fdDedxSigma = fPID->NumberOfSigmasTPC(track2, AliPID::kDeuteron);
 						fpiDedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
 					} else {
-						fhe4DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
+						fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
 						fdDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kDeuteron), 1, fBetheParamsT);
 						fpiDedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
 					}
@@ -2437,11 +2437,11 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					}
 					//++ dEdx ++
 					if (fBetheSplines) {
-						fhe4DedxSigma = fPID->NumberOfSigmasTPC(track1, AliPID::kHe3);
+						fhe3DedxSigma = fPID->NumberOfSigmasTPC(track1, AliPID::kHe3);
 						fdDedxSigma = fPID->NumberOfSigmasTPC(track2, AliPID::kDeuteron);
 						fpiDedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
 					} else {
-						fhe4DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
+						fhe3DedxSigma = Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe);
 						fdDedxSigma = Bethe(*track2, AliPID::ParticleMass(AliPID::kDeuteron), 1, fBetheParamsT);
 						fpiDedxSigma = fPID->NumberOfSigmasTPC(track3, AliPID::kPion);
 					}
