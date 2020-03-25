@@ -12,7 +12,7 @@ TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 
 // +++++++++++++++++ Cuts for primary pairs  +++++++++++++++++
-TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
 // TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
@@ -60,7 +60,7 @@ bool debug = false;
 bool DoPairing      = true;
 bool DoFourPairing  = true;
 bool UsePreFilter   = false;
-bool DoMassCut      = false;
+bool DoMassCut      = true;
 // bool DoULSLS   = true;
 
 bool UseMCDataSig   = false;
@@ -109,8 +109,11 @@ const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
 
-const double upperMassCutPrimaries = 0.547862;
-const double lowerMassCutPrimaries = 0.1349766;
+// const double upperMassCutPrimaries = 0.547862;
+// const double lowerMassCutPrimaries = 0.1349766;
+// const double upperMassCutPrimaries = 1.;
+const double upperMassCutPrimaries = 0.1349766;
+const double lowerMassCutPrimaries = 0;
 const double upperPreFilterMass = 0.25;
 const double lowerPreFilterMass = 0.03;
 const double massCutSecondaries = 0.01;
@@ -331,7 +334,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //             primary single cut settings             //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "JPID_sum_pt75" || cutDefinition == "JPID_sum_pt75_PreFilter"){
+  else if (cutDefinition == "JPID_sum_pt75"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
@@ -379,7 +382,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt75"){
+  else if (cutDefinition == "pairJPID_sum_pt20"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -387,7 +390,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "pairJPID_sum1_pt75_sec_kV0"){
+  else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);

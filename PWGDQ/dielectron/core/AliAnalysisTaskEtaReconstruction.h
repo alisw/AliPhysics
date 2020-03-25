@@ -384,8 +384,8 @@ private:
 
   Bool_t fSelectPhysics;
   Int_t  fTriggerMask;
-  std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_PreFilter;
+  std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
   std::vector<AliAnalysisFilter*> fPairCuts_primary;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;

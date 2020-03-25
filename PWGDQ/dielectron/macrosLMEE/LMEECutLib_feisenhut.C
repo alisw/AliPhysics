@@ -894,10 +894,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   Jeromian_01_sum->AddCut(Jeromian_01_ele_incl);
 
 
-  AliDielectronPID *Jeromian_01_PreFilter_hadron_cut = new AliDielectronPID("Jeromian_01_hadron_cut","Jeromian_01_hadron_cut");
-  Jeromian_01_hadron_cut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. , 3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kP);
+  AliDielectronPID *Jeromian_01_PreFilter_hadron_cut = new AliDielectronPID("Jeromian_01_PreFilter_hadron_cut","Jeromian_01_PreFilter_hadron_cut");
+  Jeromian_01_PreFilter_hadron_cut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. , 3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kP);
 
-  AliDielectronCutGroup* Jeromian_01_sum_PreFilter = new AliDielectronCutGroup("Jeromian_01_sum","Jeromian_01_sum",AliDielectronCutGroup::kCompOR);
+  AliDielectronCutGroup* Jeromian_01_sum_PreFilter = new AliDielectronCutGroup("Jeromian_01_sum_PreFilter","Jeromian_01_sum_PreFilter",AliDielectronCutGroup::kCompOR);
   Jeromian_01_sum_PreFilter->AddCut(Jeromian_01_PreFilter_hadron_cut);
 
 

@@ -1395,6 +1395,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
                                                                                 if(fUsePreFilter)DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
                                                                                 if(fdebug) std::cout << __LINE__ << " Apply Sec_StandardCuts for Pairing " << std::endl;
                                                                                 ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fTrackCuts_primary_standard ,  TrackCuts,  PairPrimary, centralityWeight);
+                                                                                ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fPairCuts_primary           , !TrackCuts,  PairPrimary, centralityWeight);
                                                                                 ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard, !TrackCuts, !PairPrimary, centralityWeight);
 
                                                                                 if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
@@ -2175,7 +2176,7 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
             for (unsigned int j = 0; j < posPart.isReconstructed_primary.size(); ++j){
               if (posPart.isMCSignal_primary[i] == kTRUE) {
                 if (posPart.isReconstructed_primary[j] == kTRUE){
-                                  dynamic_cast<TH3D*>(fHistRecPrimaryPosPart.at(j * posPart.isMCSignal_primary.size() + i))->Fill(posPart.fPt, posPart.fEta, posPart.fPhi, centralityWeight);
+                  dynamic_cast<TH3D*>(fHistRecPrimaryPosPart.at(j * posPart.isMCSignal_primary.size() + i))->Fill(posPart.fPt, posPart.fEta, posPart.fPhi, centralityWeight);
                 }// is selected by cutsetting
               } // is selected by MC signal
             } // end of loop over all cutsettings
@@ -2699,60 +2700,60 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
                                                                                 // ", Mass = " << MotherParticle.fMass <<
                                                                                 // ", charge = " << MotherParticle.fCharge << std::endl;}
 
-      // ##########################################################
-      float ptPos       = -999;
-      float etaPos      = -999;
-      float phiPos      = -999;
-      float ptNeg       = -999;
-      float etaNeg      = -999;
-      float phiNeg      = -999;
-      float op_angle    = -999;
-      for (unsigned int i = 0; i < mcTwoSignal_acc.size(); ++i){
-
-        // Filling reconstructed primary particle histograms according to MCSignals
-        if (mcTwoSignal_acc[i] == kTRUE && PartPrimary == kTRUE){
-          for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed_primary.size(); ++j){
-            if (fRecNegPart[neg_i].isReconstructed_primary[j] == kTRUE && fRecPosPart[pos_i].isReconstructed_primary[j] == kTRUE){
-              fHistRecPrimaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
-
-              if (fWriteLegsFromPair){
-                ptNeg  = fRecNegPart[neg_i].fPt;
-                etaNeg = fRecNegPart[neg_i].fEta;
-                phiNeg = fRecNegPart[neg_i].fPhi;
-                ptPos  = fRecPosPart[pos_i].fPt;
-                etaPos = fRecPosPart[pos_i].fEta;
-                phiPos = fRecPosPart[pos_i].fPhi;
-                op_angle = Lvec2.Angle(Lvec1.Vect());
-
-                const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
-                fTHnSparseRecLegsFromPrimaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(tuple);
-              }
-            }// is selected by cutsetting
-          } // end of loop over all cutsettings
-        } // is selected by MCSignal
-
-        // Filling reconstructed secondary particle histograms according to MCSignals
-        if (mcTwoSignal_acc[i] == kTRUE && PartPrimary == kFALSE){
-          for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed_secondary.size(); ++j){
-            if (fRecNegPart[neg_i].isReconstructed_secondary[j] == kTRUE && fRecPosPart[pos_i].isReconstructed_secondary[j] == kTRUE){
-              fHistRecSecondaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
-
-              if (fWriteLegsFromPair){
-                ptNeg  = fRecNegPart[neg_i].fPt;
-                etaNeg = fRecNegPart[neg_i].fEta;
-                phiNeg = fRecNegPart[neg_i].fPhi;
-                ptPos  = fRecPosPart[pos_i].fPt;
-                etaPos = fRecPosPart[pos_i].fEta;
-                phiPos = fRecPosPart[pos_i].fPhi;
-                op_angle = Lvec2.Angle(Lvec1.Vect());
-
-                const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
-                fTHnSparseRecLegsFromSecondaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(tuple);
-              }
-            }// is selected by cutsetting
-          } // end of loop over all cutsettings
-        } // is selected by MCSignal
-      } // end of loop over all MCsignals
+      // // ##########################################################
+      // float ptPos       = -999;
+      // float etaPos      = -999;
+      // float phiPos      = -999;
+      // float ptNeg       = -999;
+      // float etaNeg      = -999;
+      // float phiNeg      = -999;
+      // float op_angle    = -999;
+      // for (unsigned int i = 0; i < mcTwoSignal_acc.size(); ++i){
+      //
+      //   // Filling reconstructed primary particle histograms according to MCSignals
+      //   if (mcTwoSignal_acc[i] == kTRUE && PartPrimary == kTRUE){
+      //     for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed_primary.size(); ++j){
+      //       if (fRecNegPart[neg_i].isReconstructed_primary[j] == kTRUE && fRecPosPart[pos_i].isReconstructed_primary[j] == kTRUE){
+      //         fHistRecPrimaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
+      //
+      //         if (fWriteLegsFromPair){
+      //           ptNeg  = fRecNegPart[neg_i].fPt;
+      //           etaNeg = fRecNegPart[neg_i].fEta;
+      //           phiNeg = fRecNegPart[neg_i].fPhi;
+      //           ptPos  = fRecPosPart[pos_i].fPt;
+      //           etaPos = fRecPosPart[pos_i].fEta;
+      //           phiPos = fRecPosPart[pos_i].fPhi;
+      //           op_angle = Lvec2.Angle(Lvec1.Vect());
+      //
+      //           const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+      //           fTHnSparseRecLegsFromPrimaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(tuple);
+      //         }
+      //       }// is selected by cutsetting
+      //     } // end of loop over all cutsettings
+      //   } // is selected by MCSignal
+      //
+      //   // Filling reconstructed secondary particle histograms according to MCSignals
+      //   if (mcTwoSignal_acc[i] == kTRUE && PartPrimary == kFALSE){
+      //     for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed_secondary.size(); ++j){
+      //       if (fRecNegPart[neg_i].isReconstructed_secondary[j] == kTRUE && fRecPosPart[pos_i].isReconstructed_secondary[j] == kTRUE){
+      //         fHistRecSecondaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
+      //
+      //         if (fWriteLegsFromPair){
+      //           ptNeg  = fRecNegPart[neg_i].fPt;
+      //           etaNeg = fRecNegPart[neg_i].fEta;
+      //           phiNeg = fRecNegPart[neg_i].fPhi;
+      //           ptPos  = fRecPosPart[pos_i].fPt;
+      //           etaPos = fRecPosPart[pos_i].fEta;
+      //           phiPos = fRecPosPart[pos_i].fPhi;
+      //           op_angle = Lvec2.Angle(Lvec1.Vect());
+      //
+      //           const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+      //           fTHnSparseRecLegsFromSecondaryPair.at(j * mcTwoSignal_acc.size() + i)->Fill(tuple);
+      //         }
+      //       }// is selected by cutsetting
+      //     } // end of loop over all cutsettings
+      //   } // is selected by MCSignal
+      // } // end of loop over all MCsignals
       delete pair;
     }// end of positive particle loop
   } // end of negative particle loop
