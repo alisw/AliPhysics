@@ -30,7 +30,7 @@ class AliAnalysisTaskNanoAODFemtoDreamPion : public AliAnalysisTaskSE {
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts=evtCuts;};
   void SetTrackCutsPosPion(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPosPion=trkCuts;};
   void SetTrackCutsNegPion(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsNegPion=trkCuts;};
-  void SetTrackCutsProton(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsProton=trkCuts;};
+  //void SetTrackCutsProton(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsProton=trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;};
   void SetTrigger(UInt_t trigger) { fTrigger = trigger;};
  private:
@@ -46,7 +46,7 @@ class AliAnalysisTaskNanoAODFemtoDreamPion : public AliAnalysisTaskSE {
   AliFemtoDreamEventCuts *fEventCuts;       //
   AliFemtoDreamTrackCuts *fTrackCutsPosPion;  //
   AliFemtoDreamTrackCuts *fTrackCutsNegPion;  //
-  AliFemtoDreamTrackCuts *fTrackCutsProton;  //
+  //AliFemtoDreamTrackCuts *fTrackCutsProton;  //
   AliFemtoDreamCollConfig *fConfig;         //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
