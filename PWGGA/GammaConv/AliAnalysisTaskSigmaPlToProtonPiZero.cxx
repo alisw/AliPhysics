@@ -725,7 +725,7 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMothe
 			return kFALSE;
 		}
 		minPi0Mass = meanMass - 3*width;
-		maxPi0Mass = meanMass + 3*width;
+		maxPi0Mass = meanMass + 5*width;
 		if(pi0CandTmp->M() < maxPi0Mass && pi0CandTmp->M() > minPi0Mass){
 			return kTRUE;
 		}
@@ -755,7 +755,7 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0SelectedMC(AliAODConversionMot
 			return kFALSE;
 		}
 		minPi0Mass = meanMass - 3*width;
-		maxPi0Mass = meanMass + 3*width;
+		maxPi0Mass = meanMass + 5*width;
 		if(pi0CandTmp->M() < maxPi0Mass && pi0CandTmp->M() > minPi0Mass){
 			return kTRUE;
 		}
