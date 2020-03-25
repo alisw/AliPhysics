@@ -168,6 +168,7 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky()
     fNumProcessPair[i] = 0;
   }
 
+  SetPid(211,211);
   FsiInit();
   FsiNucl();
 }
