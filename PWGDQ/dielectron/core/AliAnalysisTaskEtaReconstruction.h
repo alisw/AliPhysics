@@ -384,8 +384,8 @@ private:
 
   Bool_t fSelectPhysics;
   Int_t  fTriggerMask;
-  std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_PreFilter;
+  std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
   std::vector<AliAnalysisFilter*> fPairCuts_primary;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;
@@ -435,12 +435,7 @@ private:
   std::vector<TH2D*> fHistGenFourPair;
   std::vector<TH2D*> fHistGenSmearedFourPair;
   std::vector<TH2D*> fHistRecFourPair;
-  std::vector<TH2D*> fHistGenPair_ULSandLS;
-  std::vector<TH2D*> fHistGenFourPair_ULSandLS;
-  std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
-  std::vector<TH2D*> fHistGenSmearedFourPair_ULSandLS;
-  std::vector<TH2D*> fHistRecPair_ULSandLS;
-  std::vector<TH2D*> fHistRecFourPair_ULSandLS;
+
 
   bool fWriteLegsFromPair;
   double fPtMinLegsFromPair;
