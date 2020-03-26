@@ -1002,7 +1002,7 @@ void AddTask_OmegaToPiZeroGamma_pp(
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
-    analysisClusterCuts[i]->SetFillCutHistograms("");
+    // analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
