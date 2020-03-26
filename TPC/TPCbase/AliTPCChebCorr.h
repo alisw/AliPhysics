@@ -186,6 +186,7 @@ inline void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float 
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
   const AliCheb2DStack* par = GetParam(sector,y2x,z);
   if (par) par->Eval(row, tz, corr);
+  if (corr[3]<0) corr[3] = 10e-4;
   //
 }
 
@@ -197,6 +198,7 @@ inline void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) 
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   const AliCheb2DStack* par = GetParam(sector,tz[0],tz[1]);
   if (par) par->Eval(row, tz, corr);
+  if (corr[3]<0) corr[3] = 10e-4;
   //
 }
 
@@ -208,7 +210,8 @@ inline Float_t AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, int
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
   const AliCheb2DStack* par = GetParam(sector,y2x,z);
-  return par ? par->Eval(row, dimOut, tz) : 0;
+  float res = par ? par->Eval(row, dimOut, tz) : 0;
+  return res<0. ? (dimOut==3 ? 10.e-4 : res) : res;
   //
 }
 
@@ -219,7 +222,8 @@ inline Float_t AliTPCChebCorr::Eval(int sector, int row, float tz[2], int dimOut
   // Sector is in 0-71 ROC convention, to check Zs outlying from the sector
   if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
   const AliCheb2DStack* par = GetParam(sector,tz[0],tz[1]);
-  return par ? par->Eval(row, dimOut, tz) : 0;
+  float res = par ? par->Eval(row, dimOut, tz) : 0;
+  return res<0. ? (dimOut==3 ? 10.e-4 : res) : res;
   //
 }
 
