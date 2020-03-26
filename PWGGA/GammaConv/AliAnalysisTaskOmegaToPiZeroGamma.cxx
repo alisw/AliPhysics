@@ -230,7 +230,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fDoPiZeroGammaAngleCut(kFALSE),
   fTrackMatcherRunningMode(0),
   fRandom(0),
-  fGenPhaseSpace()
+  fGenPhaseSpace(),
+  fPhotonSelectionMode(0)
 {
 
 }
@@ -402,7 +403,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fDoPiZeroGammaAngleCut(kFALSE),
   fTrackMatcherRunningMode(0),
   fRandom(0),
-  fGenPhaseSpace()
+  fGenPhaseSpace(),
+  fPhotonSelectionMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
