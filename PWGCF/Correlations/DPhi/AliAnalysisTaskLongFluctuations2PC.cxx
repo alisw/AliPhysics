@@ -182,13 +182,13 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
     if(!MultSelection) return;
     mCent = MultSelection->GetMultiplicityPercentile(fCentrality); //centrality
-    if(mCent < 0.01) return;
+    if(mCent < 0.000001) return;
     Int_t bCent(centaxis->FindBin(mCent)-1);
     Int_t bPVz(pvzaxis->FindBin(mPVz)-1);
     Int_t nTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     
-    Double_t nAcc = 0;
-    Double_t mpT = 0;
+    Double_t nAcc = 0.0;
+    Double_t mpT = 0.0;
     
     for(Int_t i(0); i < nTracks; i++) {                 // loop over all these tracks
         AliAODTrack* track1 = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
@@ -200,7 +200,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
         phi1 = track1->Phi();
         fHistBg[bCent][bPVz]->Fill(eta1);
         fHistBgGap[bCent][bPVz]->Fill(eta1, phi1);
-        nAcc++;
+        nAcc+=1.0;
         mpT+= track1->Pt();
         for(Int_t j(i+1); j < nTracks; j++) {
             AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
@@ -223,8 +223,8 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
     }
    
     if(mIsMC){
-        Double_t nAccMC = 0;
-        mpT = 0;
+        Double_t nAccMC = 0.0;
+        mpT = 0.0;
         TClonesArray *stack = 0;
         TList *lst = fAOD->GetList();
         stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
@@ -244,7 +244,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
                  phi1 = p1->Phi();
                  fHistBgMC[bCent]->Fill(eta1);
                  fHistBgGapMC[bCent]->Fill(eta1, phi1);
-                 nAccMC++;
+                 nAccMC+=1.0;
                  mpT+= p1->Pt();
                  for (Int_t j(i+1); j < nMCTracks; j++) {
                        AliAODMCParticle *p2=(AliAODMCParticle*)stack->UncheckedAt(j);
