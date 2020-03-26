@@ -50,7 +50,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi);
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dR);
-    
+
     // for cluster <-> V0-track matching
     Bool_t PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi);
     Bool_t IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t clusterID);
@@ -75,6 +75,8 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     //general methods
     Float_t SumTrackEtAroundCluster(AliVEvent* event, Int_t clusterID, Float_t dR);
 
+    void               SetLightOutput( Bool_t flag )                    { fDoLightOutput = flag                       ;}
+
   private:
     //typedefs
     typedef pair<Int_t, Int_t> pairInt;
@@ -92,6 +94,8 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     // debug methods
     void DebugMatching();
     void DebugV0Matching();
+    void FillfHistControlMatches(Double_t fill, Double_t weight){if(fHistControlMatches) fHistControlMatches->Fill(fill,weight);}
+    void FillfSecHistControlMatches(Double_t fill, Double_t weight){if(fSecHistControlMatches) fSecHistControlMatches->Fill(fill,weight);}
 
     // basic variables/objects
     Int_t                 fClusterType;            // EMCal(1), PHOS(2) or not running (0)
@@ -132,7 +136,9 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
     TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
 
-    ClassDef(AliCaloTrackMatcher,5)
+    Bool_t                fDoLightOutput;       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+
+    ClassDef(AliCaloTrackMatcher,7)
 };
 
 #endif
