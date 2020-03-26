@@ -216,10 +216,12 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
             }
         }
     }
-    mpT/=nAcc;
-    fMultD->Fill(nAcc);
-    fMultDpT->Fill(nAcc,mpT);
-    
+    if (nAcc > 0.001) {
+        mpT/=nAcc;
+        fMultD->Fill(nAcc);
+        fMultDpT->Fill(nAcc,mpT);
+    }
+   
     if(mIsMC){
         Double_t nAccMC = 0;
         mpT = 0;
@@ -264,10 +266,12 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
                  }
              }
         }
-        mpT/=nAccMC;
-        fMultDMC->Fill(nAccMC);
-        fMultDpTMC->Fill(nAccMC,mpT);
-        fMultDReMC->Fill(nAcc,nAccMC);
+        if (nAcc > 0.001 && nAccMC > 0.001) {
+            mpT/=nAccMC;
+            fMultDMC->Fill(nAccMC);
+            fMultDpTMC->Fill(nAccMC,mpT);
+            fMultDReMC->Fill(nAcc,nAccMC);
+        }
     }
 
     PostData(1, fOutputList);
