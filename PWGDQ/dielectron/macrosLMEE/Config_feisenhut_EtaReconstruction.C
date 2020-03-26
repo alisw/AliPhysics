@@ -55,7 +55,7 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = false;
+bool debug = true;
 
 bool DoPairing      = true;
 bool DoFourPairing  = true;
