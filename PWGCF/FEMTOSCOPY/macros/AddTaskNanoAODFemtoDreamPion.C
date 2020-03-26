@@ -87,7 +87,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 20 ) {//eta low
+  } else if ( suffix == "20" ) {//eta low
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -116,7 +116,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 21 ) {//eta high
+  } else if ( suffix == "21" ) {//eta high
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -145,7 +145,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 22 ) {//eta high conservative
+  } else if ( suffix == "22" ) {//eta high conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -174,7 +174,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 23 ) {//eta low conservative
+  } else if ( suffix == "23" ) {//eta low conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -203,7 +203,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 30 ) {//#TPC Cls low
+  } else if ( suffix == "30" ) {//#TPC Cls low
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -232,7 +232,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 31 ) {//#TPC Cls high conservative
+  } else if ( suffix == "31" ) {//#TPC Cls high conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -261,7 +261,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 32 ) {//#TPC Cls high
+  } else if ( suffix == "32" ) {//#TPC Cls high
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -290,7 +290,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 33 ) {//#TPC Cls low conservative
+  } else if ( suffix == "33" ) {//#TPC Cls low conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -319,7 +319,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 40 ) {//DCA XYZ low conservative
+  } else if ( suffix == "40" ) {//DCA XYZ low conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -348,7 +348,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 41 ) {//DCA XYZ high conservative
+  } else if ( suffix == "41" ) {//DCA XYZ high conservative
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -377,7 +377,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 42 ) {//DCA XYZ high
+  } else if ( suffix == "42" ) {//DCA XYZ high
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -406,7 +406,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 43 ) {//DCA XYZ low
+  } else if ( suffix == "43" ) {//DCA XYZ low
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -435,7 +435,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 50 ) {//Sphericity low
+  } else if ( suffix == "50" ) {//Sphericity low
   fSpherDown = 0.6;
   //Track Cuts are defined here
   //positive pions
@@ -465,7 +465,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 51 ) {//Sphericity high
+  } else if ( suffix == "51" ) {//Sphericity high
   fSpherDown = 0.8;
   //Track Cuts are defined here
   //positive pions
@@ -495,7 +495,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 60 ) {//PID low
+  } else if ( suffix == "60" ) {//PID low
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -524,7 +524,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.45);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 61 ) {//PID high
+  } else if ( suffix == "61" ) {//PID high
   //Track Cuts are defined here
   //positive pions
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
@@ -553,7 +553,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.55);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 70 ) {//CPR low
+  } else if ( suffix == "70" ) {//CPR low
   fdPhidEta=0.008;
   //Track Cuts are defined here
   //positive pions
@@ -583,7 +583,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else if ( suffix == 71 ) {//CPR high
+  } else if ( suffix == "71" ) {//CPR high
   fdPhidEta=0.012;
   //Track Cuts are defined here
   //positive pions
