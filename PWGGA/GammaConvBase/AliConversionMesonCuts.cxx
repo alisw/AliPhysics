@@ -104,7 +104,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fSelectionNSigmaHigh(999),
   fAlphaMinCutMeson(0),
   fAlphaCutMeson(1),
-  fRapidityCutMeson(1),
+  fRapidityCutMesonMin(-1),
+  fRapidityCutMesonMax(1),
   fMinV0Dist(200.),
   fMesonQualityMin(0),
   fPBremSmearing(0),
@@ -126,6 +127,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fUsePtDepSelectionWindow(kFALSE),
+  fUseGammaSelection(kFALSE),
   fSelectionWindowCut(-1),
   fNDegreeRotationPMForBG(0),
   fNumberOfBGEvents(0),
@@ -149,8 +151,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
+  fDoGammaSwappForBg(kFALSE),
+  fDoWeightingInSwappBg(kFALSE),
+  fGammaSwappMethodBg(0),
+  fNumberOfSwappsForBg(1),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
+  fAllowCombOnlyInSameRecMethod(kFALSE),
   fDoToCloseV0sCut(kFALSE),
   fDoSharedElecCut(kFALSE),
   fDoMesonQualitySelection(kFALSE),
@@ -214,7 +221,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fSelectionNSigmaHigh(ref.fSelectionNSigmaHigh),
   fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
   fAlphaCutMeson(ref.fAlphaCutMeson),
-  fRapidityCutMeson(ref.fRapidityCutMeson),
+  fRapidityCutMesonMin(ref.fRapidityCutMesonMin),
+  fRapidityCutMesonMax(ref.fRapidityCutMesonMax),
   fMinV0Dist(ref.fMinV0Dist),
   fMesonQualityMin(ref.fMesonQualityMin),
   fPBremSmearing(ref.fPBremSmearing),
@@ -236,6 +244,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fUsePtDepSelectionWindow(ref.fUsePtDepSelectionWindow),
+  fUseGammaSelection(ref.fUseGammaSelection),
   fSelectionWindowCut(ref.fSelectionWindowCut),
   fNDegreeRotationPMForBG(ref.fNDegreeRotationPMForBG),
   fNumberOfBGEvents(ref. fNumberOfBGEvents),
@@ -259,8 +268,13 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoJetPtMixing(ref.fDoJetPtMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
+  fDoGammaSwappForBg(ref.fDoGammaSwappForBg),
+  fDoWeightingInSwappBg(ref.fDoWeightingInSwappBg),
+  fGammaSwappMethodBg(ref.fGammaSwappMethodBg),
+  fNumberOfSwappsForBg(ref.fNumberOfSwappsForBg),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
+  fAllowCombOnlyInSameRecMethod(ref.fAllowCombOnlyInSameRecMethod),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
   fDoSharedElecCut(ref.fDoSharedElecCut),
   fDoMesonQualitySelection(ref.fDoMesonQualitySelection),
@@ -465,7 +479,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -507,7 +521,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (MCMother->Pt() < fMinPt)) return kFALSE;
@@ -545,7 +559,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMot
         }
 
         // Rapidity Cut
-        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+        if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -582,7 +596,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -641,7 +655,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -698,7 +712,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
     }
 
     // Rapidity Cut
-    if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -752,7 +766,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -811,7 +825,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCPart
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -869,7 +883,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -928,7 +942,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle 
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -986,7 +1000,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1046,7 +1060,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCPartic
   }
 
   // Rapidity Cut
-  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1101,7 +1115,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
   }
 
   // Rapidity Cut
-  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1149,7 +1163,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle 
   }
 
   // Rapidity Cut
-  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+  if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
   // min Pt Cut
   if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1213,7 +1227,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCE
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1290,7 +1304,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMot
     }
 
     // Rapidity Cut
-    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
     // min Pt Cut
     if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
@@ -1365,7 +1379,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
         }
 
         // Rapidity Cut
-        if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
+        if( rapidity<fRapidityCutMesonMin || rapidity>fRapidityCutMesonMax)return kFALSE;
 
         // min Pt Cut
         if(fDoMinPtCut && (fMCMother->PtG() < fMinPt)) return kFALSE;
@@ -1420,7 +1434,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
     return kFALSE;
 }
 //________________________________________________________________________
-Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2)
+Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal, Double_t fRapidityShift, Int_t leadingCellID1, Int_t leadingCellID2, Char_t recoMeth1, Char_t recoMeth2)
 {
 
   // Selection of reconstructed Meson candidates
@@ -1446,7 +1460,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else{
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
-    if(TMath::Abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+    if( (pi0->Rapidity()-fRapidityShift)<fRapidityCutMesonMin || (pi0->Rapidity()-fRapidityShift)>fRapidityCutMesonMax){
+
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -1476,6 +1491,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
   // Opening Angle Cut
   //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
+
+  if (fAllowCombOnlyInSameRecMethod) {
+    if (recoMeth1 != recoMeth2){
+      if(hist)hist->Fill(cutIndex, pi0->Pt());
+      return kFALSE;
+    }
+  }
+
   if( fEnableMinOpeningAngleCut && pi0->GetOpeningAngle() < fOpeningAngle){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
@@ -1496,6 +1519,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
+
   cutIndex++;
 
   // Alpha Max Cut
@@ -1781,7 +1805,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   printf("\n\n");
 
   printf("Meson cuts \n");
-  printf("\t |y| < %3.2f \n", fRapidityCutMeson);
+  printf("\t %3.2f < y < %3.2f \n", fRapidityCutMesonMin, fRapidityCutMesonMax);
   if (fEnableOneCellDistCut)  printf("\t Only valid for GammaCalo: one cell distance cut enabled");
   if (fEnableMinOpeningAngleCut) printf("\t theta_{open} > %3.4f\n", fOpeningAngle);
   if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
@@ -2148,6 +2172,13 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionNSigmaHigh = 2.;
       fMassParamFunction   = 4;
       break;
+    case 29: // t // EMC-EMC  gamma selection
+      fSelectionLow       = 0.1;
+      fSelectionHigh      = 0.145;
+      fAcceptMesonMass    = kTRUE;
+      fUseGammaSelection  = kTRUE;
+
+      break;
     default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -2212,6 +2243,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 1: // EMC-EMC - 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.;
       fSelectionNSigmaHigh = 2.;
       fMassParamFunction   = 0;
@@ -2247,6 +2279,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 6: // EMC-EMC - 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.;
       fSelectionNSigmaHigh = 2.;
       fMassParamFunction   = 5;
@@ -2274,6 +2307,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 10: // a PCM-PCM 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.;
       fSelectionNSigmaHigh = 2.;
       fMassParamFunction   = 9;
@@ -2281,6 +2315,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 11: // b EMC-EMC - 1 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 1.;
       fSelectionNSigmaHigh = 1.;
       fMassParamFunction   = 5;
@@ -2288,6 +2323,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 12: // c EMC-EMC - 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 5;
@@ -2295,6 +2331,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 13: // d EMC-EMC - 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 4.;
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 5;
@@ -2365,6 +2402,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 23: // n// PCM-PCM 1 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 1.;
       fSelectionNSigmaHigh = 1.;
       fMassParamFunction   = 9;
@@ -2372,6 +2410,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 24: // o // PCM-PCM 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 9;
@@ -2379,6 +2418,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
     case 25: // p // PCM-PCM 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 4.;
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 9;
@@ -2410,6 +2450,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 3;
+      break;
+    case 30: // u // EMC-EMC - 2 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 0;
       break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
@@ -2993,34 +3041,68 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
   // Set Cut
   switch(RapidityMesonCut){
   case 0:  // changed from 0.9 to 1.35
-    fRapidityCutMeson   = 1.35;
+    fRapidityCutMesonMax   = 1.35;
+    fRapidityCutMesonMin   = -1.35;
     break;
   case 1:  //
-    fRapidityCutMeson   = 0.8;
+    fRapidityCutMesonMax   = 0.8;
+    fRapidityCutMesonMin   = -0.8;
     break;
   case 2:  //
-    fRapidityCutMeson   = 0.7;
+    fRapidityCutMesonMax   = 0.7;
+    fRapidityCutMesonMin   = -0.7;
     break;
   case 3:  //
-    fRapidityCutMeson   = 0.6;
+    fRapidityCutMesonMax   = 0.6;
+    fRapidityCutMesonMin   = -0.6;
     break;
   case 4:  //
-    fRapidityCutMeson   = 0.5;
+    fRapidityCutMesonMax   = 0.5;
+    fRapidityCutMesonMin   = -0.5;
     break;
   case 5:  //
-    fRapidityCutMeson   = 0.85;
+    fRapidityCutMesonMax   = 0.85;
+    fRapidityCutMesonMin   = -0.85;
     break;
   case 6:  //
-    fRapidityCutMeson   = 0.75;
+    fRapidityCutMesonMax   = 0.75;
+    fRapidityCutMesonMin   = -0.75;
     break;
   case 7:  //
-    fRapidityCutMeson   = 0.3;
+    fRapidityCutMesonMax   = 0.3;
+    fRapidityCutMesonMin   = -0.3;
     break;
   case 8:  //changed, before 0.35
-    fRapidityCutMeson   = 0.25;
+    fRapidityCutMesonMax   = 0.25;
+    fRapidityCutMesonMin   = -0.25;
     break;
   case 9:  //
-    fRapidityCutMeson   = 0.4;
+    fRapidityCutMesonMax   = 0.4;
+    fRapidityCutMesonMin   = -0.4;
+    break;
+  case 10:  // a
+    fRapidityCutMesonMax   = 0.8;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 11:  // b
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -0.8;
+    break;
+  case 12:  // c
+    fRapidityCutMesonMax   = 0.6;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 13:  // d
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -0.6;
+    break;
+  case 14:  // e
+    fRapidityCutMesonMax   = 1.0;
+    fRapidityCutMesonMin   = 0.0;
+    break;
+  case 15:  // f
+    fRapidityCutMesonMax   = 0.0;
+    fRapidityCutMesonMin   = -1.0;
     break;
   default:
     cout<<"Warning: RapidityMesonCut not defined "<<RapidityMesonCut<<endl;
@@ -3220,6 +3302,47 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fBackgroundMode             = 3;
+    break;
+  case 27: // r cluster swapping method with 90 degree rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    break;
+  case 28: // s cluster swapping method with 90 degree rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    break;
+  case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 1;
+    fNumberOfSwappsForBg        = 1;
+  case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 1;
+    fNumberOfSwappsForBg        = 4;
+    break;
+  case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 10;
+    fNumberOfSwappsForBg        = 20;
+    break;
+  case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 10;
+    fNumberOfSwappsForBg        = 20;
+    break;
+  case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
+    fDoGammaSwappForBg          = kTRUE;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 11;
+    fNumberOfSwappsForBg        = 20;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
@@ -3853,6 +3976,13 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fFMinOpanCut->SetParameter(3,20);
       fMinOpanCutMeson  = 0;
       fMinOpanPtDepCut  = kTRUE;
+      break;
+    case 18:      //i
+      fMinOpanCutMeson  = 0.017;
+      fEnableMinOpeningAngleCut = kFALSE;
+      fMinOpanPtDepCut  = kFALSE;
+      fEnableOneCellDistCut = kTRUE;
+      fAllowCombOnlyInSameRecMethod = kTRUE;
       break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //

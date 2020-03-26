@@ -6,6 +6,7 @@
 //#include <TTree.h>
 #include <TNtuple.h>
 #include <TList.h>
+#include <TRandom.h>
 //#include <TLorentzVector.h>
 
 #include "AliVCluster.h"
@@ -35,6 +36,8 @@ AliAnalysisTaskSDKL::AliAnalysisTaskSDKL(const char *name) :
   fTracksCont(0),
   fbcoption(0),
   fCSOption(0),
+  fCSAlpha(0.0),
+  fCSDeltaRmax(0.25),
   fCSubtractor(0),
   fCSubtractorCS(0)
 {
@@ -55,6 +58,8 @@ AliAnalysisTaskSDKL::AliAnalysisTaskSDKL(const char *name, Int_t const backgropt
   fTracksCont(0),
   fbcoption(backgroption),
   fCSOption(0),
+  fCSAlpha(0.0),
+  fCSDeltaRmax(0.25),
   fCSubtractor(0),
   fCSubtractorCS(0)
 {
@@ -260,19 +265,9 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
   std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
 
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
-  for (auto jet : jets_backsub) {
-    auto jet_pt = jet.pt();
-    if (jet_pt < 10.) continue;
-    if ( jet.has_area() ) {
-      auto jarea = jet.area_4vector().perp();
-      auto area_nominal = TMath::Pi() * 0.4 * 0.4;
-      if (jarea < (0.6 * area_nominal)) continue;
-    }
-    jets_backsub_filtered.push_back(jet);
-  }
+  FilterJets(jets_backsub, jets_backsub_filtered, 10.0);
 
-  //analyze back sub jets
-  for (auto jet : jets_backsub_filtered) {
+  for (auto & jet : jets_backsub_filtered) {
     std::vector<split> splits = ReclusterFindHardSplits(jet);
     FillSparseFromSplits( fhAllBackSub, splits, jet.pt() );
   }
@@ -280,9 +275,6 @@ Bool_t AliAnalysisTaskSDKL::FillHistograms() {
   FillTree(jets_backsub_filtered, fTreeBackSub);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-
-  event_full.clear();
-  jets_backsub.clear();
 
   if (fCSubtractor)   delete fCSubtractor;
   if (fCSubtractorCS) delete fCSubtractorCS;
@@ -311,7 +303,7 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSDKL::GetBackSubJets(std::vector 
     else if (1 == fCSOption) { //jet-by-jet: cluster then subtract
       fCSubtractorCS = new fastjet::ClusterSequenceArea(event_full, jet_def, area_def);
       std::vector<fastjet::PseudoJet> jets_full = sel_jets( fCSubtractorCS->inclusive_jets() );
-      for (auto j : jets_full) {
+      for (auto & j : jets_full) {
         jets_backsub.push_back( fCSubtractor->result(j) );
       }
     }
@@ -460,10 +452,10 @@ int AliAnalysisTaskSDKL::InitializeSubtractor(std::vector <fastjet::PseudoJet> c
   //option 0 (pPb)
   //tag matched kt-antikt jets
   if (0 == opt) {
-    for (auto jet_akt : jets_akt) {
+    for (auto & jet_akt : jets_akt) {
       auto jet_akt_pt = jet_akt.perp();
       if (jet_akt_pt < 5.) continue;
-      for (auto jet_kt : jets_kt) {
+      for (auto & jet_kt : jets_kt) {
         auto dist = jet_akt.delta_R(jet_kt);
         if (dist < 0.4 * 0.6) {
           jet_kt.set_user_index(7); //tagging kt jets matched to anti-kt
@@ -487,7 +479,7 @@ int AliAnalysisTaskSDKL::InitializeSubtractor(std::vector <fastjet::PseudoJet> c
 
   std::vector <Double_t> vec_pt_area;
   Double_t area_sum = 0.0;
-  for (auto jet : jets_kt) {
+  for (auto & jet : jets_kt) {
 
     if ( 7==jet.user_index() ) continue;
 
@@ -525,8 +517,8 @@ int AliAnalysisTaskSDKL::InitializeSubtractor(std::vector <fastjet::PseudoJet> c
     else        rho_C = rho;        //AA
     Double_t const rho_m_C = 0.0; //massless tracks
     fCSubtractor = new fastjet::contrib::ConstituentSubtractor(rho_C, rho_m_C, 0.0, 0.25);
-    fCSubtractor->set_max_standardDeltaR(0.25);
-    fCSubtractor->set_alpha(0.0);
+    fCSubtractor->set_alpha(fCSAlpha);
+    fCSubtractor->set_max_standardDeltaR(fCSDeltaRmax);
     fCSubtractor->set_ghost_area(0.01);
     return 0;
   }
@@ -534,11 +526,16 @@ int AliAnalysisTaskSDKL::InitializeSubtractor(std::vector <fastjet::PseudoJet> c
 
 }
 
-void AliAnalysisTaskSDKL::AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event) {
+void AliAnalysisTaskSDKL::AddTracksToEvent(AliParticleContainer* cont, std::vector <fastjet::PseudoJet> & event, Double_t const efficiency, TRandom* fRandom) {
 
   if (cont) {
     cont->ResetCurrentID();
     for ( auto track : cont->accepted() ) {
+
+      if ( (efficiency < 1.0) && fRandom ) {
+        if (fRandom->Uniform() > efficiency) continue;
+      }
+
       Double_t track_p[3];
       track->PxPyPz(track_p);
       Double_t ptot = sqrt( track_p[0]*track_p[0] + track_p[1]*track_p[1] + track_p[2]*track_p[2] );
@@ -552,7 +549,7 @@ void AliAnalysisTaskSDKL::AddTracksToEvent(AliParticleContainer* cont, std::vect
 
 void AliAnalysisTaskSDKL::FillTree(std::vector<fastjet::PseudoJet> const & jets, TNtuple* tree) {
 
-  for (auto jet : jets) {
+  for (auto & jet : jets) {
 
     if ( jet.pt() < 30. ) continue; //hard-coded jet-pt cut
 
@@ -624,4 +621,16 @@ Bool_t AliAnalysisTaskSDKL::Run()
 void AliAnalysisTaskSDKL::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
+}
+
+void AliAnalysisTaskSDKL::FilterJets(std::vector<fastjet::PseudoJet> const & jets, std::vector<fastjet::PseudoJet> & jets_filtered, Float_t pt_cut) {
+  for (auto & jet : jets) {
+    if ( jet.pt() < pt_cut ) continue;
+    if ( fabs(jet.eta()) > 0.5 ) continue;
+    if ( jet.has_area() ) {
+      auto jarea = jet.area_4vector().perp();
+      if (jarea < 0.3016) continue;
+    }
+    jets_filtered.push_back(jet);
+  }
 }

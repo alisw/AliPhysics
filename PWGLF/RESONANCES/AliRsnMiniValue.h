@@ -37,6 +37,7 @@ public:
       kPtRatio,       // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
+      kCosThetaStarAbs,  // polarization angle
       kCosThetaJackson,  // polarization angle in Jackson frame
       kCosThetaTransversity, // polarization angle in transversity frame
       kCosThetaToEventPlane, // polarization angle with respect to Event Plane

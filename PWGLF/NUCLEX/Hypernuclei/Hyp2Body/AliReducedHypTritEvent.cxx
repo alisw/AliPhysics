@@ -55,8 +55,19 @@ AliReducedHypTritEvent::AliReducedHypTritEvent() :
   fNumberV0s(0),
   fCentrality(-1),
   fRunNumber(0),
-  fTrigger(),
-  fTriggerClasses() {
+  fTrigger(0),
+  fTriggerClasses(),
+  fSPDFiredChips0(0),
+	fSPDFiredChips1(0),
+	fSPDTracklets(0),
+	fSPDCluster(0),
+	fV0Multiplicity(0),
+	fMultV0M(0),		
+	fMultOfV0M(0),			
+	fMultSPDTracklet(0),	
+	fMultSPDCluster(0),	
+	fMultRef05(0),			
+	fMultRef08(0){
   if (!fV0s) fV0s = new TClonesArray("AliReducedHypTritV0", 100000);
 }
 

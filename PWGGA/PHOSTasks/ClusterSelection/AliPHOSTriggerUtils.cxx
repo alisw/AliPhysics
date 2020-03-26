@@ -22,7 +22,7 @@ fEvent(0x0),
 fGeom(0x0),
 fNtrg4x4(0)
 {
-    
+     
    for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
     
 }
@@ -238,15 +238,23 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
     }
     else{
-      if(fRun>=282008 && fRun<=282441){ //LHC17pq
+      if(fRun>=265015 && fRun<=267166){ //LHC16qrst
         Int_t ddl = WhichDDL(mod, ix) ;  
         Double_t rdm =gRandom->Uniform() ; 
-        if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
+        if(rdm<TriggerProbabilityLHC16qrst(clu->E(),ddl)) result=1 ; 
+        if(rdm<TriggerL1ProbabilityLHC16qrst(clu->E(),ddl)) result|=(1<<1) ; //L1 
       }
-      else{
-        for(Int_t bit=0; bit<4; bit++){
-          if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
-             result|=1<<bit ;
+      else{  
+        if(fRun>=282008 && fRun<=282441){ //LHC17pq
+          Int_t ddl = WhichDDL(mod, ix) ;  
+          Double_t rdm =gRandom->Uniform() ; 
+          if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
+        }
+        else{
+          for(Int_t bit=0; bit<4; bit++){
+            if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
+               result|=1<<bit ;
+          }
         }
       }
     }
@@ -353,6 +361,59 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t 
   
 }
 
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerL1ProbabilityLHC16qrst(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC16qrst L1 & !L0 trigger
+  // Note that it is done for DDLs, not modules
+
+  if(ddl<8 || ddl>19) return 0.;
+  
+  if(fRun>=265015 && fRun<=267166){ //LHC16qrst
+    switch(ddl){  
+        case 8 : return 9.882274e-01/(TMath::Exp((3.722347e+00-x)/3.297609e-01)+1.)+(1.-9.882274e-01)/(TMath::Exp((7.667186e+00-x)/3.297609e-01)+1.) ;
+        case 9 : return 9.775161e-01/(TMath::Exp((3.674492e+00-x)/3.955892e-01)+1.)+(1.-9.775161e-01)/(TMath::Exp((7.506361e+00-x)/3.955892e-01)+1.) ;
+        case 10 : return 9.805084e-01/(TMath::Exp((3.500669e+00-x)/2.965308e-01)+1.)+(1.-9.805084e-01)/(TMath::Exp((5.523980e+00-x)/2.965308e-01)+1.) ;
+        case 11 : return 9.661089e-01/(TMath::Exp((3.692008e+00-x)/3.036007e-01)+1.)+(1.-9.661089e-01)/(TMath::Exp((6.399218e+00-x)/3.036007e-01)+1.) ;
+        case 12 : return 1.173448e+01/(TMath::Exp((4.053006e+00-x)/4.741089e-01)+1.)+(1.-1.173448e+01)/(TMath::Exp((4.086296e+00-x)/4.741089e-01)+1.) ;
+        case 13 : return 1.459385e+01/(TMath::Exp((4.233308e+00-x)/5.358680e-01)+1.)+(1.-1.459385e+01)/(TMath::Exp((4.259328e+00-x)/5.358680e-01)+1.) ;
+        case 14 : return 8.433754e-01/(TMath::Exp((4.025425e+00-x)/4.795022e-01)+1.)+(1.-8.433754e-01)/(TMath::Exp((4.025742e+00-x)/4.795022e-01)+1.) ;
+        case 15 : return 9.875803e-01/(TMath::Exp((3.822699e+00-x)/5.114879e-01)+1.)+(1.-9.875803e-01)/(TMath::Exp((9.500000e+00-x)/5.114879e-01)+1.) ;
+        case 16 : return 9.971135e-01/(TMath::Exp((3.803769e+00-x)/4.032526e-01)+1.)+(1.-9.971135e-01)/(TMath::Exp((9.500000e+00-x)/4.032526e-01)+1.) ;
+        case 17 : return 9.978138e-01/(TMath::Exp((3.651092e+00-x)/4.440373e-01)+1.)+(1.-9.978138e-01)/(TMath::Exp((8.617820e+00-x)/4.440373e-01)+1.) ;
+        case 18 : return 2.769391e+01/(TMath::Exp((3.782720e+00-x)/7.196449e-01)+1.)+(1.-2.769391e+01)/(TMath::Exp((3.805366e+00-x)/7.196449e-01)+1.) ;
+        case 19 : return 1.613960e+01/(TMath::Exp((4.157584e+00-x)/6.370592e-01)+1.)+(1.-1.613960e+01)/(TMath::Exp((4.185454e+00-x)/6.370592e-01)+1.) ;
+        default : return 0;
+    }
+  }
+  return 0.;
+}
+
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC16qrst
+  // Note that it is done for DDLs, not modules
+
+  if(ddl<8 || ddl>19) return 0.;
+  
+  if(fRun>=265015 && fRun<=267166){ //LHC16qrst
+    switch(ddl){  
+    case 8 : return  9.573766e-01/(TMath::Exp((3.871535e+00-x)/2.876473e-01)+1.)+(1.-9.573766e-01)/(TMath::Exp((7.153766e+00-x)/2.876473e-01)+1.) ;
+    case 9 : return  9.228485e-01/(TMath::Exp((3.798753e+00-x)/2.889749e-01)+1.)+(1.-9.228485e-01)/(TMath::Exp((8.212820e+00-x)/2.889749e-01)+1.) ;
+    case 10 : return 9.737340e-01/(TMath::Exp((3.684112e+00-x)/2.749400e-01)+1.)+(1.-9.737340e-01)/(TMath::Exp((6.193852e+00-x)/2.749400e-01)+1.) ;
+    case 11 : return 9.141516e-01/(TMath::Exp((3.775433e+00-x)/2.522816e-01)+1.)+(1.-9.141516e-01)/(TMath::Exp((5.245370e+00-x)/2.522816e-01)+1.) ;
+    case 12 : return 8.921613e-01/(TMath::Exp((3.881223e+00-x)/2.823943e-01)+1.)+(1.-8.921613e-01)/(TMath::Exp((5.141498e+00-x)/2.823943e-01)+1.) ;
+    case 13 : return 8.513185e-01/(TMath::Exp((3.970404e+00-x)/2.723763e-01)+1.)+(1.-8.513185e-01)/(TMath::Exp((5.808491e+00-x)/2.723763e-01)+1.) ;
+    case 14 : return 9.620960e-01/(TMath::Exp((4.163946e+00-x)/3.106500e-01)+1.)+(1.-9.620960e-01)/(TMath::Exp((8.264108e+00-x)/3.106500e-01)+1.) ;
+    case 15 : return 8.836921e-01/(TMath::Exp((3.968618e+00-x)/2.916503e-01)+1.)+(1.-8.836921e-01)/(TMath::Exp((9.500000e+00-x)/2.916503e-01)+1.) ;
+    case 16 : return 7.232389e-01/(TMath::Exp((3.867679e+00-x)/2.633759e-01)+1.)+(1.-7.232389e-01)/(TMath::Exp((5.822319e+00-x)/2.633759e-01)+1.) ;
+    case 17 : return 8.811230e-01/(TMath::Exp((3.934961e+00-x)/2.731523e-01)+1.)+(1.-8.811230e-01)/(TMath::Exp((7.521001e+00-x)/2.731523e-01)+1.) ;
+    case 18 : return 8.920217e-01/(TMath::Exp((3.741835e+00-x)/2.869366e-01)+1.)+(1.-8.920217e-01)/(TMath::Exp((9.500000e+00-x)/2.869366e-01)+1.) ;
+    case 19 : return 7.797249e-01/(TMath::Exp((3.878770e+00-x)/2.757002e-01)+1.)+(1.-7.797249e-01)/(TMath::Exp((7.344906e+00-x)/2.757002e-01)+1.) ;
+    default : return 0;
+    }
+  }
+  return 0.;
+}
 
 //-----------------------------------------------------------------------  
 Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
@@ -360,6 +421,7 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
   // Note that it is done for DDLs, not modules
 
   if(ddl<8 || ddl>19) return 0.;
+    
   if(fRun>=282008 && fRun<=282343){ //LHC17p
     switch(ddl){  
     case 8 : return 7.944762e-01/(TMath::Exp((3.641718e+00-x)/2.650322e-01)+1.)+(1.-7.944762e-01)/(TMath::Exp((4.694861e+00-x)/2.650322e-01)+1.) ;

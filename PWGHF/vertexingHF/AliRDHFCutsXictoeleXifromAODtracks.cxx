@@ -83,6 +83,8 @@ AliRDHFCuts(name),
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdCascNTPCClustersMin(0.0),
+  fProdCascCutMinNCrossedRowsTPC(0.0),
+  fProdCascratioCrossedRowsOverFindableClusterTPC(0.0),
   fProdCascEtaMin(-9999.),
   fProdCascEtaMax(9999.),
   fProdCascRapMin(-9999.),
@@ -174,6 +176,8 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
+ fProdCascCutMinNCrossedRowsTPC(source.fProdCascCutMinNCrossedRowsTPC),
+  fProdCascratioCrossedRowsOverFindableClusterTPC(source.fProdCascratioCrossedRowsOverFindableClusterTPC),     	
   fProdCascEtaMin(source.fProdCascEtaMin),
   fProdCascEtaMax(source.fProdCascEtaMax),
   fProdCascRapMin(source.fProdCascRapMin),
@@ -246,6 +250,8 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
   fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
   fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
+  fProdCascCutMinNCrossedRowsTPC = source.fProdCascCutMinNCrossedRowsTPC;
+  fProdCascratioCrossedRowsOverFindableClusterTPC = source.fProdCascratioCrossedRowsOverFindableClusterTPC; 
   fProdCascEtaMin = source.fProdCascEtaMin;
   fProdCascEtaMax = source.fProdCascEtaMax;
   fProdCascRapMin = source.fProdCascRapMin;
@@ -721,6 +727,34 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
   if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
   if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
   if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+
+	//=============== add the CrossedRows and Ratio cut on the daughters =============
+
+	float nCrossedRowsTPCp = ptrack -> GetTPCCrossedRows();  
+    float nCrossedRowsTPCn = ntrack -> GetTPCCrossedRows();  
+    float nCrossedRowsTPCb = btrack -> GetTPCCrossedRows();
+    float ratioCrossedRowsOverFindableClusterTPCp = 1.0;
+    float ratioCrossedRowsOverFindableClusterTPCn = 1.0;
+    float ratioCrossedRowsOverFindableClusterTPCb = 1.0;
+    if (ptrack->GetTPCNclsF()>0){
+        ratioCrossedRowsOverFindableClusterTPCp = nCrossedRowsTPCp/ptrack->GetTPCNclsF();
+    }
+ 
+    if (ntrack->GetTPCNclsF()>0){
+        ratioCrossedRowsOverFindableClusterTPCn = nCrossedRowsTPCn/ntrack->GetTPCNclsF();
+    }
+ 
+    if (btrack->GetTPCNclsF()>0){
+        ratioCrossedRowsOverFindableClusterTPCb = nCrossedRowsTPCb/btrack->GetTPCNclsF();
+    }
+     
+    if(nCrossedRowsTPCp < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+    if(nCrossedRowsTPCn < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+    if(nCrossedRowsTPCb < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+   
+    if(ratioCrossedRowsOverFindableClusterTPCp < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
+    if(ratioCrossedRowsOverFindableClusterTPCn < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
+    if(ratioCrossedRowsOverFindableClusterTPCb < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
 
   Double_t pxxi = casc->MomXiX();
   Double_t pyxi = casc->MomXiY();

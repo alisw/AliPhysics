@@ -237,6 +237,11 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Centrality cuts:
   /// * Check for min and max centrality
   /// * Cross check correlation between two centrality estimators
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+    fCentPercentiles[0] = -0.5;
+    fCentPercentiles[1] = -0.5;
+  }
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
@@ -266,10 +271,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     }
   } else
     fFlag |= BIT(kMultiplicity);
-
-  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
-    fFlag |= BIT(kINELgt0);
-  }
 
   /// If the correlation plots are defined, we should fill them
   if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {

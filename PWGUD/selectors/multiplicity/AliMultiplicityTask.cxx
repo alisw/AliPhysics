@@ -1033,7 +1033,7 @@ void AliMultiplicityTask::Terminate(Option_t *)
     if (fEta[i])
     {
       fEta[i]->Sumw2();
-      Float_t events = fMultiplicity->GetMultiplicityESD(i)->Integral(1, fMultiplicity->GetMultiplicityESD(i)->GetNbinsX());
+      Float_t events = fMultiplicity->GetMultiplicityESD(i)->Integral(1, fMultiplicity->GetMultiplicityESD(i)->GetNbinsX(),1, fMultiplicity->GetMultiplicityESD(i)->GetNbinsY());
       if (events > 0)
         fEta[i]->Scale(1.0 / events);
       fEta[i]->Scale(1.0 / fEta[i]->GetXaxis()->GetBinWidth(1));

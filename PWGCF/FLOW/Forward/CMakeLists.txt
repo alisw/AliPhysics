@@ -46,10 +46,10 @@ set(SRCS
   AliForwardSettings.cxx
   AliForwardTaskValidation.cxx
   AliForwardFlowUtil.cxx
+  AliForwardWeights.cxx
   AliForwardNUATask.cxx
   AliForwardNUETask.cxx
   AliForwardGenericFramework.cxx
-  AliForwardQCumulantRun2.cxx
   AliForwardFlowRun2Task.cxx
   AliForwardSecondariesTask.cxx
   AliForwardFlowResultStorage.cxx
@@ -62,10 +62,10 @@ set(HDRS
   AliForwardSettings.h
   AliForwardTaskValidation.h
   AliForwardFlowUtil.h
+  AliForwardWeights.h
   AliForwardNUATask.h
   AliForwardNUETask.h
   AliForwardGenericFramework.h
-  AliForwardQCumulantRun2.h
   AliForwardFlowRun2Task.h
   AliForwardSecondariesTask.h
   AliForwardFlowResultStorage.h

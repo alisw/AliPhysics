@@ -32,7 +32,8 @@ ClassImp(AliVertexerHyperTriton2Body)
       fPrimaryVertexX{0.},
       fPrimaryVertexY{0.},
       fPrimaryVertexZ{0.},
-      fPID{nullptr}
+      fPID{nullptr},
+      fSpline{nullptr}
 
 //________________________________________________
 {
@@ -101,14 +102,14 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         SelectTracksMC(event, mcEvent, tracks);
     }
 
-    auto CreateV0 = [&](int nidx, AliESDtrack* ntrk, int pidx, AliESDtrack* ptrk) {
+    auto CreateV0 = [&](int nidx, AliESDtrack *ntrk, int pidx, AliESDtrack *ptrk) {
         Double_t lNegMassForTracking = ntrk->GetMassForTracking();
         Double_t lPosMassForTracking = ptrk->GetMassForTracking();
 
-        float ndcaxy,ndcaz;
-        ntrk->GetImpactParameters(ndcaxy,ndcaz);
-        float pdcaxy,pdcaz;
-        ptrk->GetImpactParameters(pdcaxy,pdcaz);
+        float ndcaxy, ndcaz;
+        ntrk->GetImpactParameters(ndcaxy, ndcaz);
+        float pdcaxy, pdcaz;
+        ptrk->GetImpactParameters(pdcaxy, pdcaz);
         if (std::abs(ndcaxy) < fV0VertexerSels[1] || std::abs(pdcaxy) < fV0VertexerSels[2])
             return;
 
@@ -178,8 +179,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
         Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
         Double_t posMom[3], negMom[3];
-        vertex.GetNPxPyPz(negMom[0],negMom[1],negMom[2]);
-        vertex.GetPPxPyPz(posMom[0],posMom[1],posMom[2]);
+        vertex.GetNPxPyPz(negMom[0], negMom[1], negMom[2]);
+        vertex.GetPPxPyPz(posMom[0], posMom[1], posMom[2]);
         Double_t momV0[3] = {posCharge * posMom[0] + negCharge * negMom[0], posCharge * posMom[1] + negCharge * negMom[1], posCharge * posMom[2] + negCharge * negMom[2]};
         Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
         Double_t SPos[3];
@@ -190,22 +191,32 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         deltaPos[2] = SPos[2] - fPrimaryVertexZ;
         Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
         Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
+        Double_t ct = 2.99131*TMath::Sqrt(deltaPos2/momV02);
 
         double cpa = (deltaPos[0] * momV0[0] +
-                       deltaPos[1] * momV0[1] +
-                       deltaPos[2] * momV0[2]) /
-                      TMath::Sqrt(momV02 * deltaPos2);
+                      deltaPos[1] * momV0[1] +
+                      deltaPos[2] * momV0[2]) /
+                     TMath::Sqrt(momV02 * deltaPos2);
         //   Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
 
         //Simple cosine cut (no pt dependence for now)
-        if (cpa < fV0VertexerSels[4])
-            return;
+        if (fSpline)
+        {
+            double cpaCut = fSpline->Eval(ct);
+            if (cpa < cpaCut)
+                return;
+        }
+        else
+        {
+            if (cpa < fV0VertexerSels[4])
+                return;
+        }
         vertex.SetDcaV0Daughters(dca);
         vertex.SetV0CosineOfPointingAngle(cpa);
         vertex.ChangeMassHypothesis(kK0Short);
 
         //pre-select on pT
-        double lTransvMom = std::hypot(momV0[0],momV0[1]);
+        double lTransvMom = std::hypot(momV0[0], momV0[1]);
         if (lTransvMom < fMinPtV0)
             return;
         if (lTransvMom > fMaxPtV0)
@@ -213,7 +224,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         v0s.push_back(vertex);
     };
 
-    if (!fLikeSign) {
+    if (!fLikeSign)
+    {
         for (int index{0}; index < 2; ++index)
         {
             for (auto &nidx : tracks[1][index])
@@ -221,37 +233,44 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 AliESDtrack *ntrk = event->GetTrack(nidx);
                 if (!ntrk)
                     continue;
-                if (fRotation && index == 1) {  
+                if (fRotation && index == 1)
+                {
                     double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
-                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(), params);
                 }
                 for (auto &pidx : tracks[0][index == 1 ? 0 : 1])
                 {
                     AliESDtrack *ptrk = event->GetTrack(pidx);
                     if (!ptrk)
                         continue;
-                    if (fRotation && index == 0) {
+                    if (fRotation && index == 0)
+                    {
                         double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
-                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(), params);
                     }
-                    
+
                     CreateV0(nidx, ntrk, pidx, ptrk);
-                    
-                    if (fRotation && index == 0) { /// Restore the params
+
+                    if (fRotation && index == 0)
+                    { /// Restore the params
                         double params[5]{ptrk->GetY(), ptrk->GetZ(), -ptrk->GetSnp(), ptrk->GetTgl(), ptrk->GetSigned1Pt()};
-                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(),params);
+                        ptrk->SetParamOnly(ptrk->GetX(), ptrk->GetAlpha(), params);
                     }
                 }
-                if (fRotation && index == 1) {  
+                if (fRotation && index == 1)
+                {
                     double params[5]{ntrk->GetY(), ntrk->GetZ(), -ntrk->GetSnp(), ntrk->GetTgl(), ntrk->GetSigned1Pt()};
-                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(),params);
+                    ntrk->SetParamOnly(ntrk->GetX(), ntrk->GetAlpha(), params);
                 }
             }
         }
-    } else {
+    }
+    else
+    {
         for (int index{0}; index < 2; ++index)
         {
-            for (int charge{0}; charge < 2; ++charge) {
+            for (int charge{0}; charge < 2; ++charge)
+            {
                 for (auto &nidx : tracks[charge][index])
                 {
                     AliESDtrack *ntrk = event->GetTrack(nidx);
@@ -857,8 +876,8 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
     {
         AliESDtrack *esdTrack = event->GetTrack(i);
 
-        float d,z;
-        esdTrack->GetImpactParameters(d,z);
+        float d, z;
+        esdTrack->GetImpactParameters(d, z);
         if (TMath::Abs(d) < fV0VertexerSels[2])
             continue;
         if (TMath::Abs(d) > fV0VertexerSels[6])
@@ -889,8 +908,8 @@ void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent 
 
         fMagneticField = event->GetMagneticField();
 
-        float d,z;
-        esdTrack->GetImpactParameters(d,z);
+        float d, z;
+        esdTrack->GetImpactParameters(d, z);
         if (TMath::Abs(d) < fV0VertexerSels[2])
             continue;
         if (TMath::Abs(d) > fV0VertexerSels[6])

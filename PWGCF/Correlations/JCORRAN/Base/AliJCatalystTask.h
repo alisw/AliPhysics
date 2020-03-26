@@ -25,6 +25,7 @@
 #include "AliESDpid.h"
 #include "AliAnalysisUtils.h"
 #include "AliVVertex.h"
+#include "AliStack.h"
 
 //==============================================================
 
@@ -35,6 +36,7 @@ class TH2D;
 class TList;
 class TTree;
 class AliMCEvent;
+class AliStack;
 class AliAODEvent;
 class AliAODTrack;
 class AliAnalysisFilter;
@@ -73,6 +75,7 @@ public:
 	// Read AOD or KineOnly files
 	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
 	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
+	void ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
 	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEffConfig( int effMode, int FilterBit );
@@ -97,6 +100,7 @@ public:
 		FLUC_MC = 0x1,
 		FLUC_EXCLUDEWDECAY = 0x2,
 		FLUC_KINEONLY = 0x4,
+		FLUC_KINEONLYEXT = 0x8,
 		FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
 		FLUC_ALICE_IPINFO = 0x400,

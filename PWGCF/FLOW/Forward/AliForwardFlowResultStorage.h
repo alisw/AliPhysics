@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 #ifndef AliForwardFlowResultStorage_H
 #define AliForwardFlowResultStorage_H
 

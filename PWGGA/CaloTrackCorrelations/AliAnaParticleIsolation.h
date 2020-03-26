@@ -63,12 +63,18 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
  
   // Analysis specific methods
   
-  void         FillPileUpHistograms(Float_t energy, Float_t time) ; //Int_t clusterID) ;
+  void         FillPileUpHistograms(AliCaloTrackParticleCorrelation* pCandidate) ; //Int_t clusterID) ;
   
   void         FillAcceptanceHistograms();
- 
-  void         FillTrackMatchingShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
-                                                            Int_t mcIndex) ;
+  
+  void         FillSignalBackgroundControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                     Int_t mcIndex, Int_t noverlaps) ;
+  
+  void         FillShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                Int_t mcIndex, Int_t noverlaps) ;
+  
+  void         FillTrackMatchingControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
+                                                  Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
@@ -85,7 +91,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
   
-  void         StudyTracksInPerpCone(AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyClustersUEInCone(AliCaloTrackParticleCorrelation * aodParticle) ;
+  
+  void         StudyTracksUEInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
   
   // Analysis Setters and Getters
   
@@ -149,7 +157,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
   void         SetDecayBits(Int_t i, UInt_t bit)     { if(i < AliNeutralMesonSelection::fgkMaxNDecayBits)
                                                        fDecayBits[i] = bit           ; }
-  void         SetM02CutForTaggedDecays(Float_t m02) { fDecayTagsM02Cut        = m02 ; }
   
   void         SwitchOnBackgroundBinHistoFill()      { fFillBackgroundBinHistograms = kTRUE ; }
   void         SwitchOffBackgroundBinHistoFill()     { fFillBackgroundBinHistograms = kFALSE; }
@@ -182,6 +189,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyNCellsCut()              { fStudyNCellsCut     = kTRUE  ; }
   void         SwitchOffStudyNCellsCut()             { fStudyNCellsCut     = kFALSE ; }
   
+  void         SwitchOnFillTrackOriginHistograms()   { fFillTrackOriginHistograms = kTRUE  ; }
+  void         SwitchOffFillTrackOriginHistograms()  { fFillTrackOriginHistograms = kFALSE ; }
+  
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -208,6 +218,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetNExoCutInCandidate(Int_t n)        { if(n < 19) fNExoCutInCandidate= n ; }
   void         SetExoCutInCandidateAt(Int_t i,Float_t l) { if(i <= fNExoCutInCandidate) fExoCutInCandidate[i] = l; }
   
+  void         SetM02CutForSignal    (Float_t min, Float_t max ) { fM02Narrow[0] = min ; fM02Narrow[1] = max; }
+  void         SetM02CutForBackground(Float_t min, Float_t max ) { fM02Wide  [0] = min ; fM02Wide  [1] = max; }
+
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -230,7 +243,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fReMakeIC ;                                ///<  Do isolation analysis.
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
-  Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots. Activate it only on photon analysis, enables filling of wide/narrow shape histograms.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
   Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
   Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
@@ -238,11 +251,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
   Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
+  Bool_t   fFillTrackOriginHistograms;                ///< Fill histograms checking the MC origin of the tracks in cone
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit
-  Float_t  fDecayTagsM02Cut ;                         ///<  Apply a m02 cut to clusters tagged as decay.
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
@@ -260,6 +273,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t  fMinCellsAngleOverlap;                     ///<  Number of cells that define the cluster overlap.
   
+  Float_t  fM02Narrow[2];                             ///<  Long axis signal region
+  Float_t  fM02Wide  [2];                             ///<  Long axis background region
+  
   //  Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                                  ///<  Number of cone sizes to test. Multiple cones and pt thresholds analysis.
   Int_t    fNPtThresFrac ;                            ///<  Number of ptThres and ptFrac to test. Multiple cones and pt thresholds analysis.
@@ -273,7 +289,38 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
+  
+  Float_t  fConeNClusterPerMinCut    [20];            ///< Temporal container of n clusters per pT min cut
+  Float_t  fConeptsumClusterPerMinCut[20];            ///< Temporal container of sum pT clusters per pT min cut
+  
+  Float_t  fConeptsumEtaBandClusterPerMinCut   [20];  ///< Temporal container of n clusterss in eta band per pT min cut
+  Float_t  fConeNEtaBandClusterPerMinCut       [20];  ///< Temporal container of sum pT clusters in eta band per pT min cut
+  Float_t  fConeptsumClusterSubEtaBandPerMinCut[20];  ///< Temporal container of n clusters in cone minus  eta band per pT min cut
+  Float_t  fConeNClusterSubEtaBandPerMinCut    [20];  ///< Temporal container of sum pT clusters in cone minus eta band per pT min cut
 
+  Float_t  fConeptsumPhiBandClusterPerMinCut   [20];  ///< Temporal container of n clusters in phi band per pT min cut
+  Float_t  fConeNPhiBandClusterPerMinCut       [20];  ///< Temporal container of sum pT clusters in phi band per pT min cut
+  Float_t  fConeptsumClusterSubPhiBandPerMinCut[20];  ///< Temporal container of n clusters in cone minus  phi band per pT min cut
+  Float_t  fConeNClusterSubPhiBandPerMinCut    [20];  ///< Temporal container of sum pT clusters in cone minus phi band per pT min cut
+  
+  Float_t  fConeNTrackPerMinCut      [20];            ///< Temporal container of n tracks per pT min cut
+  Float_t  fConeptsumTrackPerMinCut  [20];            ///< Temporal container of sum pT tracks per pT min cut
+ 
+  Float_t  fConeptsumPerpTrackPerMinCut   [20];       ///< Temporal container of n tracks in perpendicular cone per pT min cut
+  Float_t  fConeNPerpTrackPerMinCut       [20];       ///< Temporal container of sum pT tracks in perpendicular cone per pT min cut
+  Float_t  fConeptsumTrackSubPerpPerMinCut[20];       ///< Temporal container of n tracks in cone minus  perpendicular cone per pT min cut
+  Float_t  fConeNTrackSubPerpPerMinCut    [20];       ///< Temporal container of sum pT tracks in cone minus perpendicular cone per pT min cut
+  
+  Float_t  fConeptsumEtaBandTrackPerMinCut   [20];    ///< Temporal container of n tracks in eta band per pT min cut
+  Float_t  fConeNEtaBandTrackPerMinCut       [20];    ///< Temporal container of sum pT tracks in eta band per pT min cut
+  Float_t  fConeptsumTrackSubEtaBandPerMinCut[20];    ///< Temporal container of n tracks in cone minus  eta band per pT min cut
+  Float_t  fConeNTrackSubEtaBandPerMinCut    [20];    ///< Temporal container of sum pT tracks in cone minus eta band per pT min cut
+
+  Float_t  fConeptsumPhiBandTrackPerMinCut   [20];    ///< Temporal container of n tracks in phi band per pT min cut
+  Float_t  fConeNPhiBandTrackPerMinCut       [20];    ///< Temporal container of sum pT tracks in phi band per pT min cut
+  Float_t  fConeptsumTrackSubPhiBandPerMinCut[20];    ///< Temporal container of n tracks in cone minus  phi band per pT min cut
+  Float_t  fConeNTrackSubPhiBandPerMinCut    [20];    ///< Temporal container of sum pT tracks in cone minus phi band per pT min cut
+  
   Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
   Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.
   Float_t  fEtaCutInCone[10];                         ///<  List of track/cluster max eta cut to test in cone for sum pT calculation.
@@ -307,23 +354,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Histograms  
   
-  TH1F *   fhEIso ;                                    //!<! Number of isolated particles vs energy.
-  TH1F *   fhPtIso ;                                   //!<! Number of isolated particles vs pT.
-  TH2F *   fhPtCentralityIso ;                         //!<! Centrality vs pT.
-  TH2F *   fhPtEventPlaneIso ;                         //!<! Event plane angle vs pT.
-  TH2F *   fhPtNLocMaxIso ;                            //!<! Number of isolated particles vs NLM in cluster.
-  TH2F *   fhPhiIso ;                                  //!<! phi of isolated particles.
-  TH2F *   fhEtaIso ;                                  //!<! eta of isolated particles.
-  TH2F *   fhEtaPhiIso ;                               //!<! eta vs phi of isolated particles.
-  TH2F *   fhEtaPhiNoIso ;                             //!<! eta vs phi of not isolated leading particles.
-  TH1F *   fhENoIso ;                                  //!<! Number of not isolated leading particles vs Energy.
-  TH1F *   fhPtNoIso ;                                 //!<! Number of not isolated leading particles vs pT.
-  TH2F *   fhPtNLocMaxNoIso ;                          //!<! Number of not isolated particles vs NLM in cluster.
-  TH1F *   fhEIsoExoTrigger;                           //!<! Number of isolated exotic cluster vs E.
-  TH1F *   fhENoIsoExoTrigger;                         //!<! Number of not isolated exotic cluster vs E.
-  TH1F *   fhPtIsoExoTrigger;                          //!<! Number of isolated exotic cluster vs pT.
-  TH1F *   fhPtNoIsoExoTrigger;                        //!<! Number of not isolated exotic cluster vs pT.
-
+  TH1F *   fhPt[2][2] ;                                //!<! Number of non/isolated narrow/wide particles vs pT.
+  TH2F *   fhPtCentrality[2][2] ;                      //!<! Number of non/isolated narrow/wide particles centrality vs pT.
+  TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
+  TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
+  TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
+  TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
   TH1F *   fhPtDecay       [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Number of (non) isolated Pi0 decay particles (invariant mass tag).
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
@@ -334,7 +370,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeMCPrimaryGener  [4] ;        //!<! Track Pt in the cone for tracks originating from primary charged pions, kaons, protons and else, generated pT.
   TH2F *   fhPtTrackInConeMCSecondaryGener[4] ;        //!<! Track Pt in the cone for tracks originating from secondary charged pions, kaons, protons and else, generated pT.
 
-  
   TH2F *   fhPtInConeExoTrigger ;                      //!<! Cluster and tracks  Pt in the cone. Trigger is exotic
   TH2F *   fhPtClusterInConeExoTrigger ;               //!<! Clusters Pt in the cone. Trigger is exotic
   TH2F *   fhPtTrackInConeExoTrigger ;                 //!<! Tracks Pt in the cone. Trigger considered exotic
@@ -349,7 +384,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiInPerpConeTOFBC0 ;                  //!<! Eta vs. phi of tracks in perpendicular cone, with TOF BC=0.
   
   TH3F *   fhPtM02SumPtCone;                           //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone
+  TH3F *   fhPtM02SumPtConeMC[fgkNmcTypes];            //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle
   
+  /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
+  TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
+
+  TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
+  TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
+  TH3F *   fhConeSumPtCentM02Cut[2] ;                  //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters vs centrality
+
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
   TH2F *   fhConeSumPtTrackExoTrigger ;                //!<! Tracks Sum Pt  in the cone. Trigger considered exotic
@@ -358,7 +401,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhEtaPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Eta of generated photon.
   TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Phi of generated photon.
-  TH1F *   fhEPrimMC    [fgkNmcPrimTypes];             //!<! Number of generated photon vs E.
   TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];             //!<! Number of generated photon vs pT.
   TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];             //!<! Number of generated isolated photon vs pT.
   
@@ -381,7 +423,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCPi0Overlap;                       //!<! Pi0 with overlapped decay photons.
   TH1F *   fhPtPrimMCPi0IsoOverlap;                    //!<! Pi0 isolated with overlapped decay photons.
 
-  
   TH1F *   fhPtPrimMCEtaDecayPairOutOfCone;            //!<! Eta decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptance;      //!<! Eta decay photons, with decay pair out of detector acceptance.
   TH1F *   fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap;   //!<! Eta decay photons, with decay pair out of detector acceptance.
@@ -401,10 +442,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCEtaOverlap;                       //!<! Eta with overlapped decay photons.
   TH1F *   fhPtPrimMCEtaIsoOverlap;                    //!<! Eta isolated with overlapped decay photons.
 
-  TH1F *   fhPtNoIsoMC  [fgkNmcTypes];                 //!<! Number of not isolated mcTypes particle.
-  TH1F *   fhPtIsoMC    [fgkNmcTypes];                 //!<! Number of isolated mcTypes particle.
-  TH2F *   fhPhiIsoMC   [fgkNmcTypes];                 //!<! phi of isolated mcTypes particle.
-  TH2F *   fhEtaIsoMC   [fgkNmcTypes];                 //!<! eta of isolated mcTypes particle.
+  TH1F *   fhPtMC      [fgkNmcTypes][2][2];            //!<! Number of not/isolated narrow/wide mcTypes particle.
+  TH3F *   fhPtEtaPhiMC[fgkNmcTypes][2];               //!<! pT vs eta vs phi of not/isolated mcTypes particle.
   
   TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ; //!<! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle.
   
@@ -471,13 +510,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTrackMatchedMCParticle[2];                //!<! Trace origin of matched particle.
 
   // Shower Shape histograms
-  TH2F *   fhELambda0[2];                              //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
   TH2F *   fhPtLambda0[2];                             //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
-//TH2F *   fhELambda1[2];                              //!<! Shower shape of (non) isolated photons (do not apply SS cut previously).
-  TH2F *   fhELambda0TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
-//TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
-  
+  TH3F *   fhPtLambda0Cent[2];                         //!<! Shower shape of (non) isolated photons (do not apply SS cut previously) vs centrality.
+
   // Selection parameters per supermodule number
   TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
@@ -602,19 +638,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap  ;   //![fNPtTrigBin*fgkNmcTypes]
   
   // Local maxima
-  TH2F *   fhNLocMax[2];                               //!<! Number of maxima in selected clusters.
-  TH2F *   fhELambda0LocMax1[2] ;                      //!<! E vs lambda0 of selected cluster, 1 local maxima in cluster.
-  TH2F *   fhELambda1LocMax1[2] ;                      //!<! E vs lambda1 of selected cluster, 1 local maxima in cluster.
-  TH2F *   fhELambda0LocMax2[2] ;                      //!<! E vs lambda0 of selected cluster, 2 local maxima in cluster.
-  TH2F *   fhELambda1LocMax2[2] ;                      //!<! E vs lambda1 of selected cluster, 2 local maxima in cluster.
-  TH2F *   fhELambda0LocMaxN[2] ;                      //!<! E vs lambda0 of selected cluster, N>2 local maxima in cluster.
-  TH2F *   fhELambda1LocMaxN[2] ;                      //!<! E vs lambda1 of selected cluster, N>2 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMax1[2] ;                     //!<! Pt vs lambda0 of selected cluster, 1 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMax1[2] ;                     //!<! Pt vs lambda1 of selected cluster, 1 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMax2[2] ;                     //!<! Pt vs lambda0 of selected cluster, 2 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMax2[2] ;                     //!<! Pt vs lambda1 of selected cluster, 2 local maxima in cluster.
+  TH2F *   fhPtLambda0LocMaxN[2] ;                     //!<! Pt vs lambda0 of selected cluster, N>2 local maxima in cluster.
+  TH2F *   fhPtLambda1LocMaxN[2] ;                     //!<! Pt vs lambda1 of selected cluster, N>2 local maxima in cluster.
   
   // Pile-up
-  TH1F *   fhEIsoPileUp[7] ;                           //!<! Number of isolated particles.
-  TH1F *   fhPtIsoPileUp[7] ;                          //!<! Number of isolated particles.
-  TH1F *   fhENoIsoPileUp[7] ;                         //!<! Number of not isolated particles.
-  TH1F *   fhPtNoIsoPileUp[7] ;                        //!<! Number of not isolated particles.
+  TH1F *   fhPtPileUp[7][2] ;                          //!<! Number of isolated particles.
+  
   TH2F *   fhTimeENoCut;                               //!<! Time of cluster vs E, no cut.
   TH2F *   fhTimeESPD;                                 //!<! Time of cluster vs E, IsSPDPileUp.
   TH2F *   fhTimeESPDMulti;                            //!<! Time of cluster vs E, IsSPDPileUpMulti.
@@ -640,44 +673,87 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
   TH2F *   fhPtClusterInConePerRCut;                     //!<! Clusters Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhPtClusterInConePerRCutLargePtTrig;          //!<! Clusters Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerRCut;                       //!<! Tracks Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhPtTrackInConePerRCutLargePtTrig;            //!<! Tracks Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtClusterPerRCut;                    //!<! Clusters Sum Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhConeSumPtClusterPerRCutLargePtTrig;         //!<! Clusters Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerRCut;                      //!<! Tracks Sum Pt in the cone for different cone sizes, x axis.
-  TH2F *   fhConeSumPtTrackPerRCutLargePtTrig;           //!<! Tracks Sum Pt in the cone for different cone sizes, x axis. Trigger pT > 10 GeV fixed
 
+  // Variation of min pt in cone constituents
+  //
   TH2F *   fhConeNClusterPerMinPtCut;                    //!<! N Clusters in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeNClusterPerMinPtCutLargePtTrig;         //!<! N Clusters in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhEtaBandConeNClusterPerMinPtCut;             //!<! N Clusters in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterSubEtaBandPerMinPtCut;          //!<! N Clusters in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeNClusterPerMinPtCut;             //!<! N Clusters in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeNClusterSubPhiBandPerMinPtCut;          //!<! N Clusters in cone minus in the phi band for different min pT cuts, x axis.
+  
   TH2F *   fhConeNTrackPerMinPtCut;                      //!<! N Tracks in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeNTrackPerMinPtCutLargePtTrig;           //!<! N Tracks in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPerpConeNTrackPerMinPtCut;                  //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis.
-  TH2F *   fhPerpConeNTrackPerMinPtCutLargePtTrig;       //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeNTrackSubPerpPerMinPtCut;               //!<! N Tracks in cone minus in the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhEtaBandConeNTrackPerMinPtCut;               //!<! N Tracks in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeNTrackSubEtaBandPerMinPtCut;            //!<! N Tracks in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeNTrackPerMinPtCut;               //!<! N Tracks in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeNTrackSubPhiBandPerMinPtCut;            //!<! N Tracks in cone minus in the phi band for different min pT cuts, x axis.
+  
+  TH3F *   fhConeNClusterPerMinPtCutCent;                //!<! N Clusters in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeNClusterPerMinPtCutCent;         //!<! N Clusters in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNClusterSubEtaBandPerMinPtCutCent;      //!<! N Clusters in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeNClusterPerMinPtCutCent;         //!<! N Clusters in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNClusterSubPhiBandPerMinPtCutCent;      //!<! N Clusters in cone minus in the phi band for different min pT cuts, x axis vs centrality.
 
+  TH3F *   fhConeNTrackPerMinPtCutCent;                  //!<! N Tracks in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPerpConeNTrackPerMinPtCutCent;              //!<! N Tracks in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackSubPerpPerMinPtCutCent;           //!<! N Tracks in cone minux the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the eta band for different min pT cuts, x axisvs centrality.
+  TH3F *   fhConeNTrackSubEtaBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeNTrackPerMinPtCutCent;           //!<! N Tracks in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNTrackSubPhiBandPerMinPtCutCent;        //!<! N Tracks in cone minus in the phi band for different min pT cuts, x axis vs centrality.
+  
   TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtClusterPerMinPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhEtaBandConeSumPtClusterPerMinPtCut;         //!<! Clusters Sum Pt in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterSubEtaBandPerMinPtCut;      //!<! Clusters Sum Pt in cone minus the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeSumPtClusterPerMinPtCut;         //!<! Clusters Sum Pt in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterSubPhiBandPerMinPtCut;      //!<! Clusters Sum Pt in cone minus the phi band for different min pT cuts, x axis.
+  
   TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerMinPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPerpConeSumPtTrackPerMinPtCut;              //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis.
-  TH2F *   fhPerpConeSumPtTrackPerMinPtCutLargePtTrig;   //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackSubPerpPerMinPtCut;           //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis.
+  TH2F *   fhEtaBandConeSumPtTrackPerMinPtCut;           //!<! Tracks Sum Pt in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackSubEtaBandPerMinPtCut;        //!<! Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis.
+  TH2F *   fhPhiBandConeSumPtTrackPerMinPtCut;           //!<! Tracks Sum Pt in the phi band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackSubPhiBandPerMinPtCut;        //!<! Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis.
+  
+  TH3F *   fhConeSumPtClusterPerMinPtCutCent;            //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeSumPtClusterPerMinPtCutCent;     //!<! Clusters Sum Pt in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtClusterSubEtaBandPerMinPtCutCent;  //!<! Clusters Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeSumPtClusterPerMinPtCutCent;     //!<! Clusters Sum Pt in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtClusterSubPhiBandPerMinPtCutCent;  //!<! Clusters Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
+  
+  TH3F *   fhConeSumPtTrackPerMinPtCutCent;              //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPerpConeSumPtTrackPerMinPtCutCent;          //!<! Tracks Sum Pt in the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackSubPerpPerMinPtCutCent;       //!<! Tracks Sum Pt in cone minus the perpendicular cone for different min pT cuts, x axis vs centrality.
+  TH3F *   fhEtaBandConeSumPtTrackPerMinPtCutCent;       //!<! Tracks Sum Pt in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackSubEtaBandPerMinPtCutCent;    //!<! Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhPhiBandConeSumPtTrackPerMinPtCutCent;       //!<! Tracks Sum Pt in the phi band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtTrackSubPhiBandPerMinPtCutCent;    //!<! Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
+  
+  TH2F *   fhConeNSubEtaBandPerMinPtCut ;                //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeNSubPhiBandPerMinPtCut ;                //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtSubEtaBandPerMinPtCut;             //!<! Clusters+Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtSubPhiBandPerMinPtCut;             //!<! Clusters+Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis.
+
+  TH3F *   fhConeNSubEtaBandPerMinPtCutCent ;            //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeNSubPhiBandPerMinPtCutCent ;            //!<! N Clusters+Tracks in cone minus in the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtSubEtaBandPerMinPtCutCent;         //!<! Clusters+Tracks Sum Pt in cone minus the eta band for different min pT cuts, x axis vs centrality.
+  TH3F *   fhConeSumPtSubPhiBandPerMinPtCutCent;         //!<! Clusters+Tracks Sum Pt in cone minus the phi band for different min pT cuts, x axis vs centrality.
   
   TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
-  TH2F *   fhConeSumPtClusterPerMaxPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerMaxPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerEtaCut;                    //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerEtaCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis. Trigger pT > 10 GeV fixed
   
   TH2F *   fhPtClusterInConePerNCellCut;                 //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhPtClusterInConePerNCellCutLargePtTrig;      //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerNCellCut;                   //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhPtTrackInConePerNCellCutLargePtTrig;        //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtClusterPerNCellCut;                //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhConeSumPtClusterPerNCellCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerNCellCut;                  //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis.
-  TH2F *   fhConeSumPtTrackPerNCellCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis. Trigger pT > 10 GeV fixed
   
   TH3F *   fhPtClusterInConePerNCellPerSM [4];           //!<! Clusters Pt in the cone for different min cluster n cell cut, x axis vs SM number, 8<E<12 GeV, 3 shower bins
   TH3F *   fhPtTrackInConePerNCellPerSM   [4];           //!<! Tracks Pt in the cone for different min cluster n cell cut, x axis, vs SM number, 8<E<12 GeV, 3 shower bins
@@ -685,14 +761,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhConeSumPtTrackPerNCellPerSM  [4];           //!<! Tracks Sum Pt in the cone for different min cluster n cell cut, x axis, vs SM number, 8<E<12 GeV, 3 shower bins
 
   TH2F *   fhPtClusterInConePerExoCut;                   //!<! Clusters Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhPtClusterInConePerExoCutLargePtTrig;        //!<! Clusters Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhPtTrackInConePerExoCut;                     //!<! Tracks Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhPtTrackInConePerExoCutLargePtTrig;          //!<! Tracks Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtClusterPerExoCut;                  //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhConeSumPtClusterPerExoCutLargePtTrig;       //!<! Clusters Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerExoCut;                    //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis.
-  TH2F *   fhConeSumPtTrackPerExoCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different exoticity cut, x axis. Trigger pT > 10 GeV fixed
 
   TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
   TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
@@ -758,7 +830,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,44) ;
+  ClassDef(AliAnaParticleIsolation,46) ;
   /// \endcond
 
 } ;

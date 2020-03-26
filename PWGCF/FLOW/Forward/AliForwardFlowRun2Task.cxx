@@ -17,7 +17,6 @@
 #include "AliAODEvent.h"
 
 #include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
 
@@ -41,7 +40,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Default constructor
@@ -61,7 +60,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Constructor
@@ -72,7 +71,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
-
   DefineOutput(1, AliForwardFlowResultStorage::Class());
 }
 
@@ -82,7 +80,24 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   //
   //  Create output objects
   //
-  //bool saveAutoAdd = TH1::AddDirectoryStatus();
+  std::cout << "void AliForwardFlowRun2Task::UserCreateOutputObjects()"<< std::endl;
+
+  fWeights = AliForwardWeights();
+  fWeights.fSettings = this->fSettings;
+
+  if (fSettings.nua_file != "") fWeights.connectNUA(); 
+  if (fSettings.nue_file != "") fWeights.connectNUE(); 
+  if (fSettings.sec_file != "") fWeights.connectSec(); 
+  if (fSettings.sec_cent_file != "") fWeights.connectSecCent();
+  this->fSettings = fWeights.fSettings;
+
+
+  if (fSettings.etagap){
+    fCalculator = AliForwardGenericFramework(2);
+  }
+  else{
+    fCalculator = AliForwardGenericFramework(3);
+  }
 
   fOutputList = new TList();          // the final output list
   fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
@@ -128,9 +143,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Double_t non_max[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
 
 
-  Double_t sc_two_dmax[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
-  Int_t    sc_two_dbins[dimensions-1] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 14, fSettings.fCentBins};
-
   if ((fSettings.normal_analysis || fSettings.second_analysis) || fSettings.SC_analysis){
     fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions-1,non_rbins,non_min,non_max);
     fCalculator.cumu_rW2Two  = new THnD("cumu_rW2Two" , "cumu_rW2Two" , dimensions,rbins,dmin,dmax); 
@@ -151,6 +163,11 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   }
 
   if (fSettings.normal_analysis) {
+    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, non_dbins, non_min, non_max);
+    fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax);
+    TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
+    TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
+
     fCalculator.cumu_rW4     = new THnD("cumu_rW4"    , "cumu_rW4"    , dimensions-1,non_rbins,non_min,non_max);
     fCalculator.cumu_rW4Four = new THnD("cumu_rW4Four", "cumu_rW4Four", dimensions,rbins,dmin,dmax);
     TList* list_rW4     = new TList(); list_rW4    ->SetName("rW4"    ); list_rW4    ->Add(fCalculator.cumu_rW4);     fReferenceList->Add(list_rW4    );
@@ -162,17 +179,12 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   }
 
   if (fSettings.decorr_analysis){
-    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, non_dbins, non_min, non_max);
-    fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax);
-    TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
-    TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
 
 
     fCalculator.cumu_dW2TwoTwoD = new THnD("cumu_dW2TwoTwoD", "cumu_dW2TwoTwoD", dimensions, negonly_bins, dmin, negonly_max) ;
     TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
     fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions, negonly_bins, dmin, negonly_max) ;
     TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
-  
   }
 
   if (fSettings.SC_analysis){
@@ -215,6 +227,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
+  
+  fCalculator.fSettings = fSettings;
+  fUtil.fSettings = fSettings;
 
   PostData(1, fStorage);
 
@@ -230,8 +245,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-  fCalculator.fSettings = fSettings;
-  fUtil.fSettings = fSettings;
   
   if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
@@ -259,18 +272,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
 
 
-  /*
-  if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
-    fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,true,false);
+  if (!fSettings.etagap){
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
+    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
   else{
-  */
-  if (fSettings.ref_mode & fSettings.kFMDref) {
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
-  }
-  else {
-    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+    if (fSettings.ref_mode & fSettings.kFMDref) {
+      fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
+    }
+    else {
+      fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+    }
   }
   
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  

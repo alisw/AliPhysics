@@ -186,98 +186,100 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  fHistos->CreateTH2("hMB_V0M","",100,0,100,1000,0,3000,"s");
  fHistos->CreateTH2("hHMT_V0M","",1000,0,1,1000,0,3000,"s");
 
-
+ binCentForMC = AxisFix("CentMC",100,0,100);
 //*****************************
 
 //Distributions for correction in the event selection ****************
+
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("TrigEffMult","TrigEffMult",2,
-	{binCent,binTrig},"s");
+	{binCentForMC,binTrig},"s");
  CreateTHnSparse("TrigEffMult0","TrigEffMult0",2,
-        {binCent,binTrig},"s");
+        {binCentForMC,binTrig},"s");
 
  CreateTHnSparse("hRhoGenParticle","hRhoGenParticle",4,
-        {binZ,binCent,binPt,binMass},"s");
+        {binZ,binCentForMC,binPt,binMass},"s");
  CreateTHnSparse("hF0GenParticle","hF0GenParticle",4,
-        {binZ,binCent,binPt,binMass},"s");
+        {binZ,binCentForMC,binPt,binMass},"s");
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
-        {binZ,binCent,binPt,binMass},"s");
+        {binZ,binCentForMC,binPt,binMass},"s");
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
-	{binCent,binSwitch},"s");
+	{binCentForMC,binSwitch},"s");
  CreateTHnSparse("VtxSelection0","VtxSelection0",2,
-        {binCent,binSwitch},"s");
+        {binCentForMC,binSwitch},"s");
 
  CreateTHnSparse("SignalLoss","SignalLoss",3,
-	{binCent,binPt,binSwitch},"s");
+	{binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0","SignalLoss0",3,
-        {binCent,binPt,binSwitch},"s"); 
+        {binCentForMC,binPt,binSwitch},"s"); 
 
  CreateTHnSparse("SignalLossPion","SignalLossPion",4,
-        {binCent,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binPt,binSwitch,binCharge},"s");
  CreateTHnSparse("SignalLoss0Pion","SignalLoss0Pion",4,
-        {binCent,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binPt,binSwitch,binCharge},"s");
 
  CreateTHnSparse("SignalLossKaon","SignalLossKaon",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0Kaon","SignalLoss0Kaon",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossKaonpipi","SignalLossKaonpipi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0Kaonpipi","SignalLoss0Kaonpipi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPhi","SignalLossPhi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0Phi","SignalLoss0Phi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPionMt","SignalLossPionMt",4,
-        {binCent,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binPt,binSwitch,binCharge},"s");
  CreateTHnSparse("SignalLoss0PionMt","SignalLoss0PionMt",4,
-        {binCent,binPt,binSwitch,binCharge},"s");
+        {binCentForMC,binPt,binSwitch,binCharge},"s");
 
  CreateTHnSparse("SignalLossKaonMt","SignalLossKaonMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0KaonMt","SignalLoss0KaonMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossKaonpipiMt","SignalLossKaonpipiMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0KaonpipiMt","SignalLoss0KaonpipiMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossPhiMt","SignalLossPhiMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0PhiMt","SignalLoss0PhiMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
 
 
  CreateTHnSparse("SignalLossRho","SignalLossRho",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0Rho","SignalLoss0Rho",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossRhopipi","SignalLossRhopipi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0Rhopipi","SignalLoss0Rhopipi",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
 
  CreateTHnSparse("SignalLossRhoMt","SignalLossRhoMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhoMt","SignalLoss0RhoMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
         
  CreateTHnSparse("SignalLossRhopipiMt","SignalLossRhopipiMt",3,
-        {binCent,binPt,binSwitch},"s");
+        {binCentForMC,binPt,binSwitch},"s");
  CreateTHnSparse("SignalLoss0RhopipiMt","SignalLoss0RhopipiMt",3,
-        {binCent,binPt,binSwitch},"s");
-
+        {binCentForMC,binPt,binSwitch},"s");
 
 
  CreateTHnSparse("hF0GenParticleFromPion","hF0GenParticleFromPion",4,
-        {binZ,binCent,binPt,binMass},"s");
+        {binZ,binCentForMC,binPt,binMass},"s");
+ }
 //********************************************
 
 //Used Event Number**************
@@ -296,26 +298,28 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
 
 //Distribution for tracking efficiency correction
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("hRhoTrueParticle","hRhoTrueParticle",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF0TrueParticle","hF0TrueParticle",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF2TrueParticle","hF2TrueParticle",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
 
  CreateTHnSparse("hRhoTrueParticleADDPID","hRhoTrueParticleADDPID",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF0TrueParticleADDPID","hF0TrueParticleADDPID",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF2TrueParticleADDPID","hF2TrueParticleADDPID",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
 
  CreateTHnSparse("hRhoTrueParticleADDPIDTUNE","hRhoTrueParticleADDPIDTUNE",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF0TrueParticleADDPIDTUNE","hF0TrueParticleADDPIDTUNE",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hF2TrueParticleADDPIDTUNE","hF2TrueParticleADDPIDTUNE",5,
-        {binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+        {binZ,binCentForMC,binPt,binMass,binTrackCutBit},"s");
+ }
 //************************************
 
 
@@ -391,10 +395,14 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  if( fOption.Contains("2018") ){
 	fEventCuts.SetupPbPb2018();
  }
+ else if( fOption.Contains("PbPb") ){
+	fEventCuts.SetupRun2PbPb();
+ }
+
  if( fOption.Contains("PbPb") ){
-	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) ); 
 	fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
  }
+
 
  PostData(1, fHistos->GetListOfHistograms());
 
@@ -421,7 +429,6 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if(!fEvt) return;
 
  bool IsEventSelectedPbPb = kFALSE;
- if( fOption.Contains("PbPb") ) IsEventSelectedPbPb = fEventCuts.AcceptEvent( event );
 
  IsMC = kFALSE;
 // if( IsFirstEvent ){
@@ -453,6 +460,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( sel ){ fCent = sel->GetMultiplicityPercentile("V0M"); }
  if( fRunTable->IsPA() ) { fCent = sel->GetMultiplicityPercentile("V0A"); }
  if( fOption.Contains("UseZNA") ){ fCent = sel->GetMultiplicityPercentile("ZNA"); } 
+ 
+ fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) );
+ if( fOption.Contains("PbPb") && (
+	( fCent > 10  && fCent < 30 ) || ( fCent > 50 ) ) ){
+	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
+ }
+ if( fOption.Contains("PbPb") ) IsEventSelectedPbPb = fEventCuts.AcceptEvent( event );
 
  double v0amplitude=0;
  for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }

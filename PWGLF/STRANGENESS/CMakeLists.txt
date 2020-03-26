@@ -60,9 +60,11 @@ set(SRCS
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityEERun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2pPb.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb.cxx
   Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
@@ -84,6 +86,8 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
+  Correlationpp/AliAnalysisCorrelationEventCollection.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   )
 
 # Headers from sources
@@ -160,6 +164,7 @@ install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations
 install(DIRECTORY Lifetimes/macros DESTINATION PWGLF/STRANGENESS/Lifetimes)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
+install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
   install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
 endif()

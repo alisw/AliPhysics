@@ -659,6 +659,10 @@ public:
 		kNclsITS4, //number of clusters on ITS4(SDD1) in an event
 		kNclsITS5, //number of clusters on ITS5(SSD0) in an event
 		kNclsITS6, //number of clusters on ITS6(SSD1) in an event
+    kNSPDclsEvent,     // Number of SPD clusters in the event
+    kNSDDclsEvent,     // Number of SDD clusters in the event
+    kNSSDclsEvent,     // Number of SSD clusters in the event
+    kNSDDSSDclsEvent,  // Number of SDD+SSD clusters in the event
 
 		kTPCpileupZA, //center of gravity (median) of displaced track Z in pileup event, estimated in A side.
 		kTPCpileupZC, //center of gravity (median) of displaced track Z in pileup event, estimated in C side.
@@ -2705,6 +2709,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNclsITS5] = 0;
   values[AliDielectronVarManager::kNclsITS6] = 0;
 
+  values[AliDielectronVarManager::kNSPDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSDDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSSDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSDDSSDclsEvent] = 0;
+
   values[AliDielectronVarManager::kTPCpileupZA] = 0;
   values[AliDielectronVarManager::kTPCpileupZC] = 0;
   values[AliDielectronVarManager::kTPCpileupZ]  = 0;
@@ -2788,6 +2797,10 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNclsITS5] = event->GetMultiplicity()->GetNumberOfITSClusters(4);
   values[AliDielectronVarManager::kNclsITS6] = event->GetMultiplicity()->GetNumberOfITSClusters(5);
 
+  values[AliDielectronVarManager::kNSPDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(0) + event->GetMultiplicity()->GetNumberOfITSClusters(1);
+  values[AliDielectronVarManager::kNSDDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(2) + event->GetMultiplicity()->GetNumberOfITSClusters(3);
+  values[AliDielectronVarManager::kNSSDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(4) + event->GetMultiplicity()->GetNumberOfITSClusters(5);
+  values[AliDielectronVarManager::kNSDDSSDclsEvent] = values[AliDielectronVarManager::kNSDDclsEvent] + values[AliDielectronVarManager::kNSSDclsEvent];
 
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);

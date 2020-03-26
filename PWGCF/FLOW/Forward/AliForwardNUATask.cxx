@@ -18,7 +18,6 @@
 #include "AliCollisionGeometry.h"
 #include "AliLog.h"
 #include "AliForwardNUATask.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowRun2Task.h"
 #include "TObjectTable.h"
@@ -245,44 +244,28 @@ void AliForwardNUATask::UserExec(Option_t *)
 
 Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
 {
+
   if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
 
-    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
-
-    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
- //    if (detType == "forward") weight = 1.;
+    if (!(weight == 0 || forwarddNdedp.GetBinContent(etaBin, 18) == 0)) return weight;
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
      weight = ((up+low)/2+low)/2;
      return weight;
-    //std::cout << weight << std::endl;
 
    }
   if ((phiBin == 18) && (etaBin >= 125 && etaBin <= 137)){
-    if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 17) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
 
-    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+    if (!(weight == 0 || forwarddNdedp.GetBinContent(etaBin, 17) == 0 ) )return weight;
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
      weight = ((up+low)/2+up)/2;
-    //std::cout << weight << std::endl;
   }
   if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
-    if (weight > 0) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin + 3, phiBin) > 0 ) return weight;
-    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+    if (!(weight == 0)) return weight;
     Double_t  up = forwarddNdedp.GetBinContent(etaBin, 15);
     Double_t  low = forwarddNdedp.GetBinContent(etaBin, 13);
      weight = (up+low)/2;
-    //std::cout << weight << std::endl;
 
    }
    return weight;
@@ -296,13 +279,7 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D*& forwarddNdedp,Int_t phiBin,
 {
   if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
 
-    if (weight > 0 || forwarddNdedp->GetBinContent(etaBin, 18) > 0) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
-    //if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) return weight;
-
-    // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
- //    if (detType == "forward") weight = 1.;
+    if ((weight > 0) || (forwarddNdedp->GetBinContent(etaBin, 18) > 0)) return weight;     
      Double_t up = forwarddNdedp->GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp->GetBinContent(etaBin, 16);
      weight = ((up+low)/2+low)/2;

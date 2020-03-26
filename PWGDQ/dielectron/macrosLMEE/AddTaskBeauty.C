@@ -5,8 +5,10 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   task->SetSeed(rndmseed);
   task->SetPtCutHigh(ptmax);
   task->SetApplyEventw(applyeventw);
-  
-  TFile f(file_momentum_smear.Data());
+
+  // smearing
+  gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
+  TFile f("smearingfile.root");
   if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
     task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
   }

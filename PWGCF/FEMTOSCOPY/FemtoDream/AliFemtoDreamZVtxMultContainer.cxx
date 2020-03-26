@@ -59,7 +59,6 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -98,9 +97,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             continue;
           }
           RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
-                                                itPart1->GetMomentum(),
+                                                part1,
                                                 *itPDGPar1,
-                                                itPart2->GetMomentum(),
+                                                part2,
                                                 *itPDGPar2);
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
@@ -120,7 +119,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species
@@ -161,8 +159,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
               continue;
             }
             RelativeK = HigherMath->FillMixedEvent(
-                HistCounter, iMult, cent, itPart1->GetMomentum(), *itPDGPar1,
-                itPart2->GetMomentum(), *itPDGPar2,
+                HistCounter, iMult, cent, *itPart1, *itPDGPar1,
+                *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
 
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,

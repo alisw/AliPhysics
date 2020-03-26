@@ -52,12 +52,12 @@ struct RHypertriton3 {
   float fPosYPi;
   float fPosZPi;
 
-  Double32_t fDCAxyDeu;    // [0.0,5.12,9]
-  Double32_t fDCAzDeu;     // [0.0,5.12,9]
-  Double32_t fDCAxyP;      // [0.0,5.12,9]
-  Double32_t fDCAzP;       // [0.0,5.12,9]
-  Double32_t fDCAxyPi;     // [0.0,5.12,9]
-  Double32_t fDCAzPi;      // [0.0,5.12,9]
+  float fDCAxyDeu;
+  float fDCAzDeu;
+  float fDCAxyP;
+  float fDCAzP;
+  float fDCAxyPi;
+  float fDCAzPi;
 
   unsigned char fNClusterTPCDeu;
   unsigned char fNClusterTPCP;
@@ -135,10 +135,10 @@ public:
   virtual ~AliAnalysisTaskHypertriton3ML();
 
   virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t *);
+  virtual void UserExec(Option_t* option);
+  virtual void Terminate(Option_t*);
 
-  static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
+  static AliAnalysisTaskHypertriton3ML* AddTask(bool isMC = false, TString suffix = "");
 
   void SetDownscaling(bool down) { fDownscaling = down; }
 
@@ -153,58 +153,93 @@ public:
 
   void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
 
-  void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
-  void SetMaxCandidatePt(float lPtMax) { fMaxCanidatePtToSave = lPtMax; }
-
-  void SetMaxTPCsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
-    fMaxNSigmaTPCDeu = nSigmaDeu;
-    fMaxNSigmaTPCP   = nSigmaP;
-    fMaxNSigmaTPCPi  = nSigmaPi;
-  }
-
-  void SetMaxTOFsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
-    fMaxNSigmaTOFDeu = nSigmaDeu;
-    fMaxNSigmaTOFP   = nSigmaP;
-    fMaxNSigmaTOFPi  = nSigmaPi;
+  void SetMinTPCclusterAll(unsigned char minCls) { fMinTPCNclusterAll = minCls; }
+  void SetMinTPCcluster(unsigned char minClsDeu, unsigned char minClsP, unsigned char minClsPi) {
+    fMinTPCNclusterDeuteron = minClsDeu;
+    fMinTPCNclusterProton   = minClsP;
+    fMinTPCNclusterPion     = minClsPi;
   }
 
   void SetMinDCA2PrimaryVtx(float dcaDeu, float dcaP, float dcaPi) {
-    fMinDCA2PrimaryVtxDeu = dcaDeu;
-    fMinDCA2PrimaryVtxP   = dcaP;
-    fMinDCA2PrimaryVtxPi  = dcaPi;
+    fMinDCA2PrimaryVtxDeuteron = dcaDeu;
+    fMinDCA2PrimaryVtxProton   = dcaP;
+    fMinDCA2PrimaryVtxPion     = dcaPi;
   }
 
-  void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
+  void SetPtRangeDeuteron(float deuPtMin, float deuPtMax) {
+    fMinPtDeuteron = deuPtMin;
+    fMaxPtDeuteron = deuPtMax;
+  }
+  void SetPtRangeProton(float pPtMin, float pPtMax) {
+    fMinPtProton = pPtMin;
+    fMaxPtProton = pPtMax;
+  }
+  void SetPtRangePion(float piPtMin, float piPtMax) {
+    fMinPtPion = piPtMin;
+    fMaxPtPion = piPtMax;
+  }
 
-  void SetMaxPtDeu(float deuPtMax) { fMaxPtDeu = deuPtMax; }
-  void SetMaxPtP(float pPtMax) { fMaxPtP = pPtMax; }
-  void SetMaxPtPi(float piPtMax) { fMaxPtPi = piPtMax; }
+  void SetTPCNSigmaRangeDeuteron(float nSigmaMinDeu, float nSigmaMaxDeu) {
+    fMinNSigmaTPCDeuteron = nSigmaMinDeu;
+    fMaxNSigmaTPCDeuteron = nSigmaMaxDeu;
+  }
+
+  void SetTPCNSigmaRangeProton(float nSigmaMinP, float nSigmaMaxP) {
+    fMinNSigmaTPCProton = nSigmaMinP;
+    fMaxNSigmaTPCProton = nSigmaMaxP;
+  }
+
+  void SetTPCNSigmaRangePion(float nSigmaMinPi, float nSigmaMaxPi) {
+    fMinNSigmaTPCProton = nSigmaMinPi;
+    fMaxNSigmaTPCProton = nSigmaMaxPi;
+  }
+
+  void SetTOFRequired(bool deuTOF, bool pTOF, bool piTOF) {
+    fRequireDeuteronTOFpid = deuTOF;
+    fRequireProtonTOFpid   = pTOF;
+    fRequirePionTOFpid     = piTOF;
+  }
+
+  void SetMaxTOFsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
+    fMaxNSigmaTOFDeuteron = nSigmaDeu;
+    fMaxNSigmaTOFProton   = nSigmaP;
+    fMaxNSigmaTOFPion     = nSigmaPi;
+  }
 
   void SetVertexerToleranceGuessCompatibility(int nGuessCompatibility) {
     fVertexerToleranceGuessCompatibility = nGuessCompatibility;
   }
   void SetVertexerMaxDistanceInit(float vtxMaxDistanceInit) { fVertexerMaxDistanceInit = vtxMaxDistanceInit; }
 
+  void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
+  void SetMaxCandidatePt(float lPtMax) { fMaxCanidatePtToSave = lPtMax; }
+
+  void SetMinCandidateCt(float lCtMin) { fMinCanidateCtToSave = lCtMin; }
+  void SetMaxCandidateCt(float lCtMax) { fMaxCanidateCtToSave = lCtMax; }
+
   void SetMinCosPointingAngle(float minCosPA) { fMinCosPA = minCosPA; }
 
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliVertexerHyperTriton3Body fVertexer;    /// custom 3-body decay vertexer
-  AliMLResponse *fMLResponse;               /// object for the ML application
-  AliESDtrackCuts fTrackCuts;               /// Track cuts Object
+  AliMLResponse* fMLResponse;               /// object for the ML application
 
 private:
-  std::map<std::string, double> FeaturesMap(const RHypertriton3 &hypCand, const REvent &rEv);
+  bool AcceptDeuteronCandidate(const AliESDtrack* deuTrack, float dca, float nSigmaTPC);
+  bool AcceptProtonCandidate(const AliESDtrack* pTrack, float dca, float nSigmaTPC);
+  bool AcceptPionCandidate(const AliESDtrack* piTrack, float dca, float nSigmaTPC);
+
+  std::map<std::string, double> FeaturesMap(const RHypertriton3& hypCand, const REvent& rEv);
 
   int FindEventMixingCentBin(const float centrality);
   int FindEventMixingZBin(const float zVtx);
-  void FillEventMixingPool(const float centrality, const float xVtx, std::vector<AliESDtrack *> tracks);
-  std::vector<AliESDtrack *> GetEventMixingTracks(const float centrality, const float zvtx);
+  void FillEventMixingPool(const float centrality, const float xVtx, std::vector<AliESDtrack*> tracks);
+  std::vector<AliESDtrack*> GetEventMixingTracks(const float centrality, const float zvtx);
 
-  TList *fListHist;    //! List of Cascade histograms
-  TTree *fTreeHyp3;    //! Output Tree, V0s
+  TList* fListHist;    //! List of Cascade histograms
+  TTree* fTreeHyp3;    //! Output Tree, V0s
 
-  AliInputEventHandler *fInputHandler;    //!
-  AliPIDResponse *fPIDResponse;           //! PID response object
+  AliInputEventHandler* fInputHandler;    //!
+  AliPIDResponse* fPIDResponse;           //! PID response object
 
   bool fMC;
   bool fOnlyTrueCandidates;
@@ -212,40 +247,51 @@ private:
   bool fApplyML;
   bool fEnableEventMixing;
 
-  /// Control histograms to monitor the filtering
-  TH2D *fHistNSigmaDeu;    //! # sigma TPC for the deuteron
-  TH2D *fHistNSigmaP;      //! # sigma TPC proton for the positive prong
-  TH2D *fHistNSigmaPi;     //! # sigma TPC pion for the negative prong
-  TH2D *fHistInvMass;      //! # Invariant mass histogram
+  bool fRequireDeuteronTOFpid;
+  bool fRequireProtonTOFpid;
+  bool fRequirePionTOFpid;
 
   float fDownscalingFactorByEvent;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate;    // fraction of the candidates saved in the tree
 
-  float fMinCanidatePtToSave;    // min candidate pt to save
-  float fMaxCanidatePtToSave;    // max candidate pt to save
+  unsigned char fMinTPCNclusterAll;    // minimum number of TPC cluster for all daughters
 
-  unsigned char fMinTPCNcluster;
+  unsigned char fMinTPCNclusterDeuteron;    // minimum number of TPC cluster for Deuteron
+  unsigned char fMinTPCNclusterProton;      // minimum number of TPC cluster for Proton
+  unsigned char fMinTPCNclusterPion;        // minimum number of TPC cluster for Pion
 
-  float fMaxNSigmaTPCDeu;    // nSigma TPC limit for deuteron
-  float fMaxNSigmaTPCP;      // nSigma TPC limit for proton
-  float fMaxNSigmaTPCPi;     // nSigma TPC limit for pion
+  float fMinDCA2PrimaryVtxDeuteron;    // minimum DCA to the primary vertex for deuteron
+  float fMinDCA2PrimaryVtxProton;      // minimum DCA to the primary vertex for proton
+  float fMinDCA2PrimaryVtxPion;        // minimum DCA to the primary vertex for pion
 
-  float fMaxNSigmaTOFDeu;    // nSigma TOF limit for deuteron
-  float fMaxNSigmaTOFP;      // nSigma TOF limit for proton
-  float fMaxNSigmaTOFPi;     // nSigma TOF limit for pion
+  float fMinPtDeuteron;    // deuteron pT lower limit
+  float fMaxPtDeuteron;    // deuteron pT upper limit
+  float fMinPtProton;      // proton pT lower limit
+  float fMaxPtProton;      // proton pT upper limit
+  float fMinPtPion;        // pion pT lower limit
+  float fMaxPtPion;        // pion pT upper limit
+
+  float fMinNSigmaTPCDeuteron;    // nSigma TPC lower limit for deuteron
+  float fMaxNSigmaTPCDeuteron;    // nSigma TPC upper limit for deuteron
+  float fMinNSigmaTPCProton;      // nSigma TPC lower limit for proton
+  float fMaxNSigmaTPCProton;      // nSigma TPC upper limit for proton
+  float fMinNSigmaTPCPion;        // nSigma TPC lower limit for pion
+  float fMaxNSigmaTPCPion;        // nSigma TPC upper limit for pion
+
+  float fMaxNSigmaTOFDeuteron;    // nSigma TOF limit for deuteron
+  float fMaxNSigmaTOFProton;      // nSigma TOF limit for proton
+  float fMaxNSigmaTOFPion;        // nSigma TOF limit for pion
 
   int fVertexerToleranceGuessCompatibility;    // minimum number of compatible tracks with the guess of the decay vertex
   float fVertexerMaxDistanceInit;              // max distance from the guess vertex for the compatible tracks
 
+  float fMinCanidatePtToSave;    // min candidate pt to save
+  float fMaxCanidatePtToSave;    // max candidate pt to save
+
+  float fMinCanidateCtToSave;    // min candidate ct to save
+  float fMaxCanidateCtToSave;    // max candidate ct to save
+
   float fMinCosPA;    // minimum cos(poninting angle) accepted
-
-  float fMinDCA2PrimaryVtxDeu;
-  float fMinDCA2PrimaryVtxP;
-  float fMinDCA2PrimaryVtxPi;
-
-  float fMaxPtDeu;
-  float fMaxPtP;
-  float fMaxPtPi;
 
   std::vector<SHypertriton3> fSHypertriton;    //!
   std::vector<RHypertriton3> fRHypertriton;    //!
@@ -253,17 +299,17 @@ private:
 
   std::vector<MLSelected> fMLSelected;    //!
 
-  std::vector<AliESDtrack *> fDeuVector;
-  std::vector<AliESDtrack *> fPVector;
-  std::vector<AliESDtrack *> fPiVector;
+  std::vector<AliESDtrack*> fDeuteronVector;
+  std::vector<AliESDtrack*> fProtonVector;
+  std::vector<AliESDtrack*> fPionVector;
 
-  std::string fMLResponseConfigfilePath;    /// path for the ML config file
+  std::string fMLResponseConfigfilePath;    /// path for the remote ML config file
 
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
   int fEventMixingPoolDepth;                          /// max depth of the event mixing pool
 
-  AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);               // not implemented
-  AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &);    // not implemented
+  AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML&);               // not implemented
+  AliAnalysisTaskHypertriton3ML& operator=(const AliAnalysisTaskHypertriton3ML&);    // not implemented
 
   ClassDef(AliAnalysisTaskHypertriton3ML, 1);
 };

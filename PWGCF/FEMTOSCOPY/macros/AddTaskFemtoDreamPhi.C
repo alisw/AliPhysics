@@ -18,6 +18,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetSphericityCuts(0.7, 1);
 
+    if (suffix == "1") {
+        evtCuts->SetSphericityCuts(0.0, 1);
+    }
+
+
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   TrackCuts->SetCutCharge(1);
@@ -214,7 +219,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
     pairQA[21] = 11;  // ptphiall
     pairQA[24] = 11;  // aptphiall
-    pairQA[27] = 11;  // phiallphiall
   }
 
   AliFemtoDreamCollConfig *config =
@@ -230,6 +234,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetExtendedQAPairs(pairQA);
+  config->SetUseEventMixing(true);
+
   /*
   //This is just to show off what would be possible in case you are interested,
   don't be confused by this at the beginning
@@ -251,6 +257,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   } else {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
+  }
+
+
+  if (isMC){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
   }
 
   /*
@@ -302,6 +314,7 @@ fix it wont work! \n";
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
+  task->SetOEventMixing(false);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();

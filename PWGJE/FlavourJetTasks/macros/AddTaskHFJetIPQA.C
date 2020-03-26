@@ -29,6 +29,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
                                            int nTCThresh                      =1,
+                                           int iTagSetting              =0,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
                                            TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
@@ -147,7 +148,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
     }
 
-    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh);
+    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh, iTagSetting);
 
 
     // Setup input containers
@@ -227,22 +228,18 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname("");
-    contname += Form("BasicAnalysisHists%.1f",jetradius);
+    contname += Form("Hists_R%.1f_%s",jetradius,taskname);
     TString contnamecorr(combinedName);
     contnamecorr += Form("_correlations_R%.1f",jetradius);
     TString contname2(combinedName);
     contname2 += Form("_histos_R%.1f",jetradius);
 
+
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               AliEmcalList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
-    /*AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
-                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));*/
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
-   // mgr->ConnectOutput (jetTask, 2, coutput2 );
-    
 
     
 

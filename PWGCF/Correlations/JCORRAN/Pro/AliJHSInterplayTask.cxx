@@ -234,7 +234,7 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
-	fFFlucAna->SetDebugLevel(1);
+	//fFFlucAna->SetDebugLevel(1);
 	//fFFlucAna->SetIsPhiModule( kFALSE );
 	//fFFlucAna->SetIsSCptdep( kTRUE );
 	//fFFlucAna->SetSCwithQC( kTRUE );

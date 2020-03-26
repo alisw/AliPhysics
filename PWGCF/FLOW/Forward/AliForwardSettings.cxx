@@ -24,7 +24,7 @@ AliForwardSettings::AliForwardSettings() :
   seccorr_cent(),
   nuehist(),
   doNUA(true),
-  doNUE(false),
+  doNUE(true),
   gap(0.0),
   minpt(0.2),
   maxpt(5),
@@ -49,7 +49,6 @@ AliForwardSettings::AliForwardSettings() :
   doPt(kFALSE),
   stdQC(kFALSE),
   sec_corr(kTRUE),
-  a5(kFALSE),
   fileName(""),
   fMaxConsequtiveStrips(2),
   standard_only(kTRUE),
@@ -61,7 +60,14 @@ AliForwardSettings::AliForwardSettings() :
   run_list(0),
   second_analysis(kFALSE),
   SC_analysis(kFALSE),
-  decorr_analysis(kTRUE),
-  normal_analysis(kTRUE)
+  decorr_analysis(kFALSE),
+  normal_analysis(kTRUE),
+  runnumber(0),
+  TPC_maxeta(0),
+  nua_file(""),
+  nue_file(""),
+  sec_file(""),
+  sec_cent_file(""),
+  XeXe(kFALSE)
 {
 }

@@ -52,38 +52,70 @@ fStored(0)
 }
 
 
+Bool_t AliForwardFlowUtil::XeXe_Run(Int_t runnumber){
+    // Xe-Xe
+    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
+    return kFALSE;
+}
 
-Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
-  
+Bool_t AliForwardFlowUtil::PbPb_lowIR_Run(Int_t runnumber){
+
   if (fSettings.run_list == 0){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
     if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
-
-    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246089, 246153, 246185, 246225, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
-    for (Int_t i = 0; i < 17; i++){
-      if (runnumber == HIR_goodruns[i]) return kTRUE;
-    }
-
-    // Xe-Xe
-    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
-    
   }
   if (fSettings.run_list == 1){
     if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
-
-    Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
-    for (Int_t i = 0; i < 13; i++){
-      if (runnumber == HIR_goodruns[i]) return kTRUE;
-    }   
   }
   if (fSettings.run_list == 2){
     if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  }
+  return kFALSE;
+}
 
-    Double_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
+
+Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
+
+  if (fSettings.run_list == 0){
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809, 246089, 246153, 246185, 246225};
+    for (Int_t i = 0; i < 17; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }
+  }
+  if (fSettings.run_list == 1){
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    for (Int_t i = 0; i < 13; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }  
+  }
+  if (fSettings.run_list == 2){
+    Int_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
     for (Int_t i = 0; i < 4; i++){
       if (runnumber == HIR_goodruns[i]) return kTRUE;
     }   
   }
+  return kFALSE;
+}
+
+
+Bool_t AliForwardFlowUtil::pPb_Run(Int_t runnumber){
+
+  Int_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
+                             265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
+                             265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
+                             265385, 265420, 265424, 265427, 265501};
+  for (Int_t i = 0; i < 29; i++){
+    if (runnumber == pPb_goodruns[i]) return kTRUE;
+  }
+
+  return kFALSE;
+}
+
+Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
+  if (XeXe_Run(runnumber))        return kTRUE;
+  if (PbPb_lowIR_Run(runnumber))  return kTRUE;
+  if (PbPb_highIR_Run(runnumber)) return kTRUE;
+  if (pPb_Run(runnumber))         return kTRUE;
 
   return kFALSE;
 }
@@ -309,9 +341,24 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
+  if (((centrality_estimator == "V0A") & this->pPb_Run(fSettings.runnumber))& fSettings.mc){
+    AliVVZERO* fvzero = this->fevent->GetVZEROData();
+    Float_t sum = 0., max = 0.;
+    for(Int_t i = 32; i < 64; ++i){
+      sum +=fvzero->GetMultiplicity(i);
+      if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
+    }
+    sum -= max;
+    return sum;
+  }
   AliMultSelection *MultSelection;
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
-  return MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Double_t centrality = MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Int_t qual = MultSelection->GetEvSelCode();
+  if (qual == 199)  centrality = -999;
+  if (centrality < 0. || centrality > 100. - 0.0000001)   return -1;
+
+  return centrality;
 }
 
 
@@ -678,11 +725,11 @@ void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
     if (p->Charge() == 0) continue;
 
     Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.7) {
-      if (p->Pt()>=this->minpt){// && p->Pt()<=this->maxpt){
+    //if (TMath::Abs(eta) < 1.7) {
+      if (p->Pt() < this->minpt || p->Pt() > this->maxpt) continue;
         cen->Fill(eta,p->Phi(),1);
-      }
-    }
+      
+    //}
   }
 }
 
@@ -920,7 +967,7 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
       Double_t weight = 1;
 
-      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) weight = 0;
+      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
 
@@ -934,12 +981,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
-        if(weight > 0. && (fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) weight = 0;
-        if(weight > 0. && (fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) weight = 0.;
+        if((fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) continue;
+        if((fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) continue;
         
       }
 
-      if (fSettings.doNUE & weight > 0){
+      if (fSettings.doNUE){
           Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
           Double_t vtz = 0;
 

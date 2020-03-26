@@ -173,6 +173,8 @@ class AliHFQnVectorHandler : public TObject
     TH1D* fQx2sV0C[14];                                        /// sigma Qxn V0C
     TH1D* fQy2sV0C[14];                                        /// sigma Qyn V0C
 
+    bool fV0CalibZvtxDiff;                                     /// flag to properly manage Zvtx differential V0 calibrations
+
     TH1D* fWeightsTPCPosEta[9];                                /// Weights for TPC tracks with eta > 0
     TH1D* fWeightsTPCNegEta[9];                                /// Weights for TPC tracks with eta < 0
     bool fEnablePhiDistrHistos;                                /// Enable phi distribution histos
@@ -183,7 +185,7 @@ class AliHFQnVectorHandler : public TObject
     AliQnCorrectionsManager *fQnVectorMgr;                     /// Qn-framework manager
 
   /// \cond CLASSIMP
-  ClassDef(AliHFQnVectorHandler,3); /// 
+  ClassDef(AliHFQnVectorHandler, 4); /// 
   /// \endcond
 };
 

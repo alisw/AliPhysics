@@ -85,6 +85,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
       fHistTomography(nullptr),
+      fHistTomographyRZ(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -191,6 +192,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
       fHistTomography(nullptr),
+      fHistTomographyRZ(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -343,9 +345,27 @@ void AliSigma0PhotonCuts::PhotonCuts(
             photon.SetID(mcPartPos->GetMother());
 
             if (mcParticle) {
+              if (mcParticle->IsSecondaryFromMaterial()) continue;
+
               photon.SetMCParticle(mcParticle, mcEvent);
               photon.SetMCPDGCode(mcParticle->GetPdgCode());
               photon.SetMotherID(mcParticle->GetMother());  // otherwise the Sigma0 is not set properly as the mother of the photon
+
+              //check for secondary and set origin and mother
+              if (mcParticle->IsPhysicalPrimary() &&
+                  !mcParticle->IsSecondaryFromWeakDecay()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+              } else if (mcParticle->IsSecondaryFromWeakDecay() &&
+                         !mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+                photon.SetPDGMotherWeak(
+                    ((AliAODMCParticle *)mcarray->At(mcParticle->GetMother()))
+                        ->PdgCode());
+              } else if (mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+              } else {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+              }
 
               if (mcParticle->PdgCode() == 22) {
                 fHistMCV0Pt->Fill(photon.GetPt());
@@ -682,6 +702,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
     fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
     fHistTomography->Fill(conv[0], conv[1]);
+    fHistTomographyRZ->Fill(conv[2], std::sqrt(conv[0]*conv[0] + conv[1]*conv[1]));
   }
   return true;
 }
@@ -1187,6 +1208,10 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistTomography = new TH2F("fHistTomography", "; #it{x} (cm); #it{y} (cm)",
                                2400, -120, 120, 2400, -120, 120);
     fHistogramsAfter->Add(fHistTomography);
+
+    fHistTomographyRZ = new TH2F("fHistTomographyRZ", "; #it{z} (cm); #it{r} (cm)",
+                               2500, -250, 250, 2500, 0, 250);
+    fHistogramsAfter->Add(fHistTomographyRZ);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);

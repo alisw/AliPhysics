@@ -264,10 +264,14 @@ private:
     TH1F                *fEtaHijingPt;         //!
     TH2F                *fPi0HijingDCA;        //!
     TH1F                *fPi0HijingPt;         //!
+    
     TH2F                *fPhotonHijingDCA;     //!
     TH1F                *fPhotonHijingPt;      //!
     TH2F                *fEnhPhotonDCA;        //!
     TH1F                *fEnhPhotonWeightedPt; //!
+    
+    TH2F                *fPhotonHijingTagDCA;     //!
+    TH2F                *fEnhPhotonTagDCA;        //!
     
     TH1F                *fComboNumWeight;       //!
     TH1F                *fComboNumNoWeight;     //!

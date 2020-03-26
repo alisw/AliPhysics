@@ -2452,20 +2452,20 @@ Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, UInt_t lChecked
 }
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsINELgtZERO(AliVEvent *event)
+Bool_t AliMultSelectionTask::IsINELgtZERO(const AliVEvent *event)
 // Function to check for INEL > 0 condition
 // Makes use of tracklets and requires at least and SPD vertex
 {
     Bool_t lReturnValue = kFALSE;
     //Use Ref.Mult. code...
     if (event->InheritsFrom("AliESDEvent")) {
-        AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
+        const AliESDEvent *esdevent = dynamic_cast<const AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
         if ( AliESDtrackCuts::GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) lReturnValue = kTRUE;
     }
     //Redo equivalent test
     else if (event->InheritsFrom("AliAODEvent")) {
-        AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
+        const AliAODEvent *aodevent = dynamic_cast<const AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
         
         //FIXME --- Actually, here we can come up with a workaround.

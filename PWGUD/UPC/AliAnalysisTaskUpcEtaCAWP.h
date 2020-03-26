@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
-
+//Full code, Alec's Local copy
 #ifndef ALIANALYSISTASKUPCETACAWP_H 
 #define ALIANALYSISTASKUPCETACAWP_H
 
@@ -215,6 +215,7 @@ private:
 	TH1D *fEtaCLowPtCandidatesPerChannel;
 	TH2D *fAllPtVsMinvEtaC;
 	TH1D *fAllMinvEtaCLowPt;
+	TH2D *fChannelVsMinvEtaC;
 	TH1D *fHistNTracks;
 	TH1D *fHistFourTracksNpion;
 	TH1D *fHistSixTracksNpion;

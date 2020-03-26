@@ -12,16 +12,14 @@
 AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 									 bool isMC = false,				                        //2
 									 int fFilterBit = 128,			                      //3
-									 int phiSpinning =0,			                        //4
-                   int nSpins = 1,				                          //5
-									 double corrRange = 0.1,		                      //6
-									 TString triggerData = "kInt7",	                  //7
-                   bool DodPhidEtaPlots = false,                    //8
-                   bool Systematic = false,		                      //9
-									 const char *sTcut = "8",		                      //10
-									 bool DoSpherocity = false,		                    //11
-									 const char *s0cut = "08",		                    //12
-                   const char *cutVariation = "0") {                //13
+									 TString triggerData = "kInt7",	                  //4
+                   bool DodPhidEtaPlots = false,                    //5
+                   bool Systematic = false,		                      //6
+									 const char *sTcut = "8",		                      //7
+									 bool DoSpherocity = false,		                    //8
+									 const char *s0cut = "08",		                    //9
+                   bool DoAncestors = false,                        //10
+                   const char *cutVariation = "0") {                //11
 
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
@@ -169,16 +167,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(211);
 
-  if (!fullBlastQA) {
-    evtCuts->SetMinimalBooking(true);
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
-    v0Cuts->SetMinimalBooking(true);
-    Antiv0Cuts->SetMinimalBooking(true);
-    CascadeCuts->SetMinimalBooking(true);
-    AntiCascadeCuts->SetMinimalBooking(true);
-  }
-    if (Systematic) {
+  if (!fullBlastQA || Systematic) {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -203,30 +192,30 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   std::vector<float> kMin;
   std::vector<float> kMax;
   std::vector<int> pairQA;
+  std::vector<int> pairQASyst;
   std::vector<bool> closeRejection;
   //pairs:
   //pp                0
   //p bar p           1
   //p La              2
   //p bar La          3
-  //bar p bar p       4
-  //bar p La          5
-  //bar p bar La      6
-  //p Xi              7
-  //p bar Xi          8
+  //p  Xi             4
+  //p  bar Xi         5
+  //bar p bar p       6
+  //bar p La          7
+  //bar p bar La      8
   //bar p Xi          9
   //bar p bar Xi      10
   //La La             11
   //La bar La         12
-  //bar La bar La     13
-  //La Xi             14
-  //bar La Xi         15
+  //La Xi             13
+  //La bar Xi         14
+  //bar La bar La     15
   //La bar Xi         16
   //bar La bar Xi     17
   //Xi Xi             18
   //Xi bar Xi         19
   //Xi bar Xi bar     20
-
 
   const int nPairs = 21;
   for (int i = 0; i < nPairs; ++i) {
@@ -236,33 +225,46 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
     kMin.push_back(0.);
     kMax.push_back(6.);
   }
+  if (Systematic){
   pairQA[0] = 11;
   pairQA[1] = 11;
   pairQA[2] = 12;
   pairQA[3] = 12;
-  pairQA[4] = 11;
-  pairQA[5] = 12;
-  pairQA[6] = 12;
-  pairQA[7] = 13;
-  pairQA[8] = 13;
+  pairQA[6] = 11;
+  pairQA[7] = 12;
+  pairQA[8] = 12;
+  pairQA[11] = 22;
+  pairQA[12] = 22;
+  pairQA[15] = 22;
+  closeRejection[0] = true;  // pp
+  closeRejection[6] = true;  // barp barp
+  } else {
+  pairQA[0] = 11;
+  pairQA[1] = 11;
+  pairQA[2] = 12;
+  pairQA[3] = 12;
+  pairQA[4] = 13;
+  pairQA[5] = 13;
+  pairQA[6] = 11;
+  pairQA[7] = 12;
+  pairQA[8] = 12;
   pairQA[9] = 13;
   pairQA[10] = 13;
   pairQA[11] = 22;
   pairQA[12] = 22;
-  pairQA[13] = 22;
+  pairQA[13] = 23;
   pairQA[14] = 23;
-  pairQA[15] = 23;
+  pairQA[15] = 22;
   pairQA[16] = 23;
   pairQA[17] = 23;
   pairQA[18] = 33;
   pairQA[19] = 33;
   pairQA[20] = 33;
-
   closeRejection[0] = true;  // pp
-  closeRejection[4] = true;  // barp barp
-
+  closeRejection[6] = true;  // barp barp
   closeRejection[18] = true;  // Xi Xi
   closeRejection[20] = true;  // barXi barXi
+  }
 
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -273,26 +275,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
 
-  if (phiSpinning == 0) {
-    config->SetMixingDepth(10);
-    config->SetUseEventMixing(true);
-  } else if (phiSpinning == 1) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
-    config->SetCorrelationRange(corrRange);
-    config->SetSpinningDepth(nSpins);
-  } else if (phiSpinning == 2) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kStravinsky);
-    config->SetSpinningDepth(1);
-  } else if (phiSpinning == 3) {
-    config->SetUseEventMixing(false);
-    config->SetUsePhiSpinning(true);
-    config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
-    config->SetSpinningDepth(nSpins);
-  }
+  config->SetMixingDepth(10);
+  config->SetUseEventMixing(true);
+
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   std::vector<int> MultBins;
@@ -340,22 +325,24 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
 
   config->SetZBins(ZVtxBins);
 
-  config->SetMultBinning(true);
-  config->SetmTBinning(true);
-
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(DodPhidEtaPlots);
   config->SetPhiEtaBinnign(false);
 
   if (fullBlastQA) {
-    config->SetkTBinning(true);
-    config->SetPtQA(true);
+  config->SetkTBinning(true);
+  config->SetPtQA(true);
+  config->SetMultBinning(true);
+  config->SetmTBinning(true);
   }
 
-  if (!fullBlastQA) {
+  if (!fullBlastQA || Systematic) {
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
+    config->SetMultBinning(true);
+    config->SetmTBinning(true);
   }
+
 
   if (isMC) {
     config->SetMomentumResolution(true);//kstar true vs. kstar reco
@@ -364,6 +351,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 
+  //Common/Non Common Ancestors
+  if (isMC && DoAncestors){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
+  }
 
   if (Systematic) {
     if (suffix == "1") {
@@ -1321,6 +1313,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCorrelationConfig(config);
+  task->SetUseDumpster(false);
   mgr->AddTask(task);
 
   TString addon = "";
@@ -1441,6 +1434,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
       Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
   mgr->ConnectOutput(task, 12, coutputResultsSampleQA);
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 13, coutputDumpster);
+
+
    if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -1450,7 +1454,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -1460,7 +1464,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
@@ -1470,7 +1474,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
@@ -1480,7 +1484,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 17, coutputAntiv0CutsMC);
 
     AliAnalysisDataContainer *coutputXiCutsMC;
     TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
@@ -1490,7 +1494,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
+    mgr->ConnectOutput(task, 18, coutputXiCutsMC);
 
     AliAnalysisDataContainer *coutputAntiXiCutsMC;
     TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
@@ -1500,7 +1504,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoGrandma(bool fullBlastQA = false,//1
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
+    mgr->ConnectOutput(task, 19, coutputAntiXiCutsMC);
 
    }
 

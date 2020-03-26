@@ -62,6 +62,7 @@ fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
 fDoCharmFractions(kFALSE),
 fUsePartonDef(kTRUE),
+fUseIPs(kFALSE),
 fDoJetMass(kFALSE),
 fDoSVEnergyFraction(kFALSE),
 fDoPtRelAnalysis(0),
@@ -558,6 +559,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fDoJetProbabilityAnalysis(kFALSE),
 		fDoCharmFractions(kFALSE),
 		fUsePartonDef(kTRUE),
+		fUseIPs(kFALSE),
 		fDoJetMass(kFALSE),
 		fDoSVEnergyFraction(kFALSE),
 		fDoPtRelAnalysis(0),
@@ -2164,19 +2166,26 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			std::sort(sImpParXY.begin(),sImpParXY.end(), std::greater<double>());
 			std::sort(sImpParXYZ.begin(),sImpParXYZ.end(), std::greater<double>());
 			std::sort(sImpParXYSig.begin(),sImpParXYSig.end(), std::greater<double>());
-			std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(), std::greater<double>());
+			std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(), std::greater<double>());	
+
+			std::vector<double> DefaultDiscriminator;
+
+			if(fUseIPs)
+				DefaultDiscriminator = sImpParXYSig;
+			else
+				DefaultDiscriminator = sImpParXY;
 
 			//Ordered n=1,2,3 sip
-			if (sImpParXY.size()>0){
+			if (DefaultDiscriminator.size()>0){
 				fh2dJetSignedImpParXYFirst->Fill(fJetPt,sImpParXY.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZFirst->Fill(fJetPt,sImpParXYZ.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceFirst->Fill(fJetPt,sImpParXYSig.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceFirst->Fill(fJetPt,sImpParXYZSig.at(0),fPythiaEventWeight);
 
-				if(sImpParXY.at(0) > fThresholdIP)
+				if(DefaultDiscriminator.at(0) > fThresholdIP)
 					TaggedFirst = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(0) > fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(0) > fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedFirst->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -2202,7 +2211,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(0) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(0) >= fThresholdIP){
 					   fhistJetProbabilityLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2238,7 +2247,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
-				if(fDoJetMass && sImpParXY.at(0) >= fThresholdIP){
+				if(fDoJetMass && DefaultDiscriminator.at(0) >= fThresholdIP){
 					   fhistJetMassFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2256,7 +2265,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
-				if(fDoSVEnergyFraction && sImpParXY.at(0) >= fThresholdIP && EnergyFraction>0){
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(0) >= fThresholdIP && EnergyFraction>0){
 
 				      	fhistSVEnergyFractionFirst->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
 				    		
@@ -2313,7 +2322,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}//N=1
 
 			//Second largest
-			if (sImpParXY.size()>1)
+			if (DefaultDiscriminator.size()>1)
 			{
 
 				fh2dJetSignedImpParXYSecond->Fill(fJetPt,sImpParXY.at(1),fPythiaEventWeight);
@@ -2321,10 +2330,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYSignificanceSecond->Fill(fJetPt,sImpParXYSig.at(1),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceSecond->Fill(fJetPt,sImpParXYZSig.at(1),fPythiaEventWeight);
 
-				if(sImpParXY.at(1) > fThresholdIP)
+				if(DefaultDiscriminator.at(1) > fThresholdIP)
 					TaggedSecond = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(1) >= fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(1) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedSecond->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -2350,7 +2359,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(1) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(1) >= fThresholdIP){
 					   fhistJetProbabilityLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2387,7 +2396,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 
 
-				if(fDoJetMass && sImpParXY.at(1) >= fThresholdIP){
+				if(fDoJetMass && DefaultDiscriminator.at(1) >= fThresholdIP){
 					   fhistJetMassSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2405,7 +2414,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
-				if(fDoSVEnergyFraction && sImpParXY.at(1) >= fThresholdIP && EnergyFraction>0){
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(1) >= fThresholdIP && EnergyFraction>0){
 
 				      	fhistSVEnergyFractionSecond->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
 				    		
@@ -2461,17 +2470,17 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}//N=2
 			//Third largest
 
-			if (sImpParXY.size()>2)
+			if (DefaultDiscriminator.size()>2)
 			{
 				fh2dJetSignedImpParXYThird->Fill(fJetPt,sImpParXY.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZThird->Fill(fJetPt,sImpParXYZ.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceThird->Fill(fJetPt,sImpParXYSig.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceThird->Fill(fJetPt,sImpParXYZSig.at(2),fPythiaEventWeight);
 
-				if(sImpParXY.at(2) > fThresholdIP)
+				if(DefaultDiscriminator.at(2) > fThresholdIP)
 					TaggedThird = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(2) >= fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(2) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedThird->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -2497,7 +2506,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(2) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(2) >= fThresholdIP){
 					   fhistJetProbabilityLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2533,7 +2542,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
-				if(fDoJetMass && sImpParXY.at(2) >= fThresholdIP){
+				if(fDoJetMass && DefaultDiscriminator.at(2) >= fThresholdIP){
 					   fhistJetMassThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -2551,7 +2560,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
-				if(fDoSVEnergyFraction && sImpParXY.at(2) >= fThresholdIP && EnergyFraction>0){
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(2) >= fThresholdIP && EnergyFraction>0){
 
 				      	fhistSVEnergyFractionThird->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
 				    		
@@ -2608,7 +2617,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 			//Forth largest
 
-			if (sImpParXY.size()>3 && fDoForthIP)
+			if (DefaultDiscriminator.size()>3 && fDoForthIP)
 			{
 				fh2dJetSignedImpParXYForth->Fill(fJetPt,sImpParXY.at(3),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceForth->Fill(fJetPt,sImpParXYSig.at(3),fPythiaEventWeight);
@@ -2638,16 +2647,16 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						genpt = genpt - fJetContainerMC->GetRhoVal() * jetrec->MatchedJet()->Area();
 					  }
 
-					if (sImpParXY.size()>0){
-					  if(sImpParXY.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>0){
+					  if(DefaultDiscriminator.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 
-					if (sImpParXY.size()>1){
-					  if(sImpParXY.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>1){
+					  if(DefaultDiscriminator.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 
-					if (sImpParXY.size()>2){
-					  if(sImpParXY.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>2){
+					  if(DefaultDiscriminator.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 				}
 			}
@@ -2656,6 +2665,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			sImpParXYZ.clear();
 			sImpParXYSig.clear();
 			sImpParXYZSig.clear();
+			DefaultDiscriminator.clear();
 		}//end track counting
 
 		// Secondary Vertex Tagger, for testing the DATA driven approach
@@ -3490,7 +3500,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
           fV0CandidateArray->Delete();//Reset the TClonesArray
   }
 
-	const Int_t nBins2dSignificance =250;
+	const Int_t nBins2dSignificance =400;
 	const Int_t nBins3dSignificance =250;
 	const Int_t nBins2d=500;
 	const Int_t nBins3d =250;

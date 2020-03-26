@@ -71,11 +71,6 @@ bool AliVertexerHyperTriton3Body::FindDecayVertex(AliExternalTrackParam *deutero
 
   AliExternalTrackParam *tracks[3]{deuteronTrack, protonTrack, pionTrack};
 
-  TObjArray trArray(3);
-  trArray.Add(deuteronTrack);
-  trArray.Add(protonTrack);
-  trArray.Add(pionTrack);
-
   for (int iTrack = 0; iTrack < 3; ++iTrack) {
     Find2ProngClosestPoint(tracks[iTrack], tracks[(iTrack + 1) % 3], b, initialGuesses[iTrack]);
   }
@@ -103,6 +98,14 @@ bool AliVertexerHyperTriton3Body::FindDecayVertex(AliExternalTrackParam *deutero
   mVertexerTracks.SetFieldkG(b);
   mVertexerTracks.SetVtxStart(guess[0], guess[1], guess[2]);
   if (mCurrentVertex) delete mCurrentVertex;
-  mCurrentVertex = mVertexerTracks.VertexForSelectedESDTracks(&trArray);
+
+  TObjArray trArray(3);
+  trArray.Add(deuteronTrack);
+  trArray.Add(protonTrack);
+  trArray.Add(pionTrack);
+
+  unsigned short ids[3]{UShort_t(deuteronTrack->GetID()), UShort_t(protonTrack->GetID()), UShort_t(pionTrack->GetID())};
+
+  mCurrentVertex = mVertexerTracks.VertexForSelectedTracks(&trArray, ids);
   return mCurrentVertex ? true : false;
 }

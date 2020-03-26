@@ -49,6 +49,7 @@ public:
 	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}   // use to analyse MC data
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
+	void       SetParametrizationEfficiency(Bool_t ispy = kTRUE)  {fIsPythia = ispy;}
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
@@ -58,11 +59,12 @@ protected:
 
 private:
 	AliESDEvent*            fESD;                                        //! input ESD event
+	Bool_t       fIsPythia; 
 	AliEventCuts        fEventCuts;
 	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
 	Bool_t       fUseMC;                // analyze MC events
-	Bool_t       fIsMCclosure;          
+	Bool_t       fIsMCclosure;         
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
@@ -85,7 +87,7 @@ private:
 	TH1D * hPhiRec[3];
 	TH1D * hNchTSRec;
 	TH1D * hNchTSRecTest;
-        TH1D * hNchTSData;
+	TH1D * hNchTSData;
 	TH2D * hNchResponse;
 
 	// UE 

@@ -163,6 +163,31 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   AliESDEvent *ev=dynamic_cast<AliESDEvent*>(event);
   if (!ev) return kFALSE;
 
+	//Fill values
+	Double_t values[AliDielectronVarManager::kNMaxValues];
+	if(fUsedVars->CountBits()) {
+		AliDielectronVarManager::SetFillMap(fUsedVars);
+		AliDielectronVarManager::Fill(ev,values);
+
+		// correlation cuts
+		for(Int_t i=0; i<5; i++) {
+			if(fCorrCutMin[i]) {
+				Double_t varx = values[fCorrCutMin[i]->GetXaxis()->GetUniqueID()];
+				Double_t vary = values[fCorrCutMin[i]->GetYaxis()->GetUniqueID()];
+				Double_t min  = ((TF1*)fCorrCutMin[i]->GetListOfFunctions()->At(0))->Eval(varx);
+				//      printf("coor cut %d: varx %f -> eval %f > %f \n",i,varx,min,vary);
+				if(vary<min) return kFALSE;
+			}
+			if(fCorrCutMax[i]) {
+				Double_t varx = values[fCorrCutMax[i]->GetXaxis()->GetUniqueID()];
+				Double_t vary = values[fCorrCutMax[i]->GetYaxis()->GetUniqueID()];
+				Double_t max  = ((TF1*)fCorrCutMax[i]->GetListOfFunctions()->At(0))->Eval(varx);
+				if(vary>max) return kFALSE;
+			}
+		}
+	}
+
+
   if (fCentMin<fCentMax){
 
     if(fRun2==kFALSE){

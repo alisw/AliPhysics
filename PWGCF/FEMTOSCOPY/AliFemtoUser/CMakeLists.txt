@@ -48,6 +48,7 @@ set(SRCS
   AliFemtoModelBPLCMSCorrFctnKK.cxx
   AliFemtoModelGausRinvFreezeOutGenerator.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
+  AliFemtoModelCorrFctn3DKKGR.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDEtaDPhiStar.cxx
@@ -59,6 +60,7 @@ set(SRCS
   AliFemtoModelCorrFctnKStar.cxx
   AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctnQinv.cxx
+  AliFemtoModelCorrFctnQinvPtSum.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoModelCorrFctnTrueQ3D.cxx
   AliFemtoModelCorrFctnTrueQ3DByParent.cxx

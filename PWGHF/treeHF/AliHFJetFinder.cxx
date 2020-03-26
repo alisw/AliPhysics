@@ -404,8 +404,14 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
 void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents) {
 
   Bool_t softdropped=kFALSE;
-  Float_t zg=0;
-  Float_t rg=0;
+  Float_t zg=0.0;
+  Float_t rg=0.0;
+  Float_t Nsd=0.0;
+  Float_t Pt_mother=0.0;
+  Float_t k0=0.0, k0_temp=0.0;
+  Float_t k1=0.0, k1_temp=0.0;
+  Float_t k2=0.0, k2_temp=0.0;
+  Float_t kT=0.0, kT_temp=0.0;
 
   if (fSubJetRadius==0.0) fSubJetRadius=fJetRadius*2.5;
 
@@ -420,19 +426,40 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
          
     fastjet::PseudoJet daughter_jet = reclustered_jet[0];
     fastjet::PseudoJet parent_subjet_1; 
-    fastjet::PseudoJet parent_subjet_2;  
-	  
+    fastjet::PseudoJet parent_subjet_2;
+
     while(daughter_jet.has_parents(parent_subjet_1,parent_subjet_2)){
       if(parent_subjet_1.perp() < parent_subjet_2.perp()) std::swap(parent_subjet_1,parent_subjet_2);
       zg=parent_subjet_2.perp()/(parent_subjet_1.perp()+parent_subjet_2.perp());
       rg=parent_subjet_1.delta_R(parent_subjet_2);
+      Pt_mother=daughter_jet.perp();
 
-      if (zg >= fSoftDropZCut*TMath::Power(rg/fJetRadius,fSoftDropBeta) &&  !softdropped){ 
-	hfjet.fZg = zg;
-	hfjet.fRg = rg;
-	softdropped=kTRUE;
+      if (zg >= fSoftDropZCut*TMath::Power(rg/fJetRadius,fSoftDropBeta)){
+	if(!softdropped){
+	  hfjet.fZg = zg;
+	  hfjet.fRg = rg;
+	  hfjet.fPt_mother = Pt_mother;
+	  softdropped=kTRUE;
+	}
+	Nsd++;
       }
+      k0_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,0.1);
+      k1_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,1);
+      k2_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,2);
+      kT_temp=zg*Pt_mother*TMath::Sin(rg);
+      if (k0_temp > k0) k0=k0_temp;
+      if (k1_temp > k1) k1=k1_temp;
+      if (k2_temp > k2) k2=k2_temp;
+      if (kT_temp > kT) kT=kT_temp;
+      
       daughter_jet=parent_subjet_1;
+    }
+    if (constituents.size() > 1){
+      hfjet.fNsd = Nsd;
+      hfjet.fk0=k0;
+      hfjet.fk1=k1;
+      hfjet.fk2=k2;
+      hfjet.fkT=kT;
     }
 
          

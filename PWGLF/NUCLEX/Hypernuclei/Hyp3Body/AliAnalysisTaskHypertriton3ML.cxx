@@ -40,7 +40,7 @@ constexpr float kDeuMass{1.87561};
 constexpr float kPMass{0.938272};
 constexpr float kPiMass{0.13957};
 
-bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
+bool IsHyperTriton3(const AliVParticle* vPart, AliMCEvent* mcEvent) {
   int nDaughters = 0;
 
   int vPartPDG   = vPart->PdgCode();
@@ -49,7 +49,7 @@ bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
   if (!mcEvent->IsPhysicalPrimary(vPartLabel) || (std::abs(vPartPDG) != 1010010030)) return false;
 
   for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
-    AliVParticle *dPart = mcEvent->GetTrack(iD);
+    AliVParticle* dPart = mcEvent->GetTrack(iD);
 
     int dPartPDG = dPart->PdgCode();
     if (std::abs(dPartPDG) != 11) nDaughters++;
@@ -58,7 +58,7 @@ bool IsHyperTriton3(const AliVParticle *vPart, AliMCEvent *mcEvent) {
   return false;
 }
 
-int IsTrueHyperTriton3Candidate(AliESDtrack *t1, AliESDtrack *t2, AliESDtrack *t3, AliMCEvent *mcEvent) {
+int IsTrueHyperTriton3Candidate(AliESDtrack* t1, AliESDtrack* t2, AliESDtrack* t3, AliMCEvent* mcEvent) {
   if (!mcEvent) return 0;
 
   int lab1 = std::abs(t1->GetLabel());
@@ -69,9 +69,9 @@ int IsTrueHyperTriton3Candidate(AliESDtrack *t1, AliESDtrack *t2, AliESDtrack *t
   if (mcEvent->IsPhysicalPrimary(lab2)) return -1;
   if (mcEvent->IsPhysicalPrimary(lab3)) return -1;
 
-  AliVParticle *part1 = mcEvent->GetTrack(lab1);
-  AliVParticle *part2 = mcEvent->GetTrack(lab2);
-  AliVParticle *part3 = mcEvent->GetTrack(lab3);
+  AliVParticle* part1 = mcEvent->GetTrack(lab1);
+  AliVParticle* part2 = mcEvent->GetTrack(lab2);
+  AliVParticle* part3 = mcEvent->GetTrack(lab3);
 
   if (!part1) return -1;
   if (!part2) return -1;
@@ -83,17 +83,17 @@ int IsTrueHyperTriton3Candidate(AliESDtrack *t1, AliESDtrack *t2, AliESDtrack *t
 
   if (mom1 != mom2 || mom1 != mom3 || mom2 != mom3) return -1;
 
-  AliVParticle *mom = mcEvent->GetTrack(mom1);
+  AliVParticle* mom = mcEvent->GetTrack(mom1);
   if (!mom) return -1;
 
   return (IsHyperTriton3(mom, mcEvent)) ? mom1 : -1;
 }
 
-bool HasTOF(AliVTrack *track) {
+bool HasTOF(AliVTrack* track) {
   const bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
-  const float len       = track->GetIntegratedLength();
-  return hasTOFout && hasTOFtime && (len > 350.);
+  // const float len       = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime;
 }
 
 /// get nClsITS from cluster map
@@ -118,17 +118,19 @@ template <typename F> double Hypot4(F a, F b, F c, F d) { return std::sqrt(a * a
 
 //_______________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
-    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fTrackCuts{*AliESDtrackCuts::GetStandardV0DaughterCuts()}, fListHist{nullptr}, fTreeHyp3{nullptr},
-      fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false},
-      fDownscaling{false}, fApplyML{false}, fEnableEventMixing{false}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr},
-      fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
-      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinTPCNcluster{70},
-      fMaxNSigmaTPCDeu{5.}, fMaxNSigmaTPCP{5.}, fMaxNSigmaTPCPi{5.}, fMaxNSigmaTOFDeu{5.}, fMaxNSigmaTOFP{5.},
-      fMaxNSigmaTOFPi{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.}, fMinCosPA{0.993},
-      fMinDCA2PrimaryVtxDeu{0.025}, fMinDCA2PrimaryVtxP{0.025}, fMinDCA2PrimaryVtxPi{0.05}, fMaxPtDeu{10.},
-      fMaxPtP{10.}, fMaxPtPi{1.}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{},
-      fDeuVector{}, fPVector{}, fPiVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
-  fTrackCuts.SetMinNClustersTPC(0);
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fMLResponse{}, fListHist{nullptr}, fTreeHyp3{nullptr},
+      fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fRequireDeuteronTOFpid{false},
+      fRequireProtonTOFpid{false}, fRequirePionTOFpid{false}, fDownscaling{false}, fApplyML{false},
+      fEnableEventMixing{false}, fDownscalingFactorByEvent{1.}, fDownscalingFactorByCandidate{1.},
+      fMinTPCNclusterAll{70}, fMinTPCNclusterDeuteron{70}, fMinTPCNclusterProton{70}, fMinTPCNclusterPion{70},
+      fMinDCA2PrimaryVtxDeuteron{0.}, fMinDCA2PrimaryVtxProton{0.}, fMinDCA2PrimaryVtxPion{0.}, fMinPtDeuteron{0.},
+      fMaxPtDeuteron{10.}, fMinPtProton{0.}, fMaxPtProton{10.}, fMinPtPion{0.}, fMaxPtPion{10.},
+      fMinNSigmaTPCDeuteron{-5.}, fMaxNSigmaTPCDeuteron{5.}, fMinNSigmaTPCProton{-5.}, fMaxNSigmaTPCProton{5.},
+      fMinNSigmaTPCPion{-5.}, fMaxNSigmaTPCPion{5.}, fMaxNSigmaTOFDeuteron{5.}, fMaxNSigmaTOFProton{5.},
+      fMaxNSigmaTOFPion{5.}, fVertexerToleranceGuessCompatibility{0}, fVertexerMaxDistanceInit{100.},
+      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinCanidateCtToSave{0.}, fMaxCanidateCtToSave{100.},
+      fMinCosPA{0.993}, fSHypertriton{}, fRHypertriton{}, fREvent{}, fMLSelected{}, fDeuteronVector{}, fProtonVector{},
+      fPionVector{}, fMLResponseConfigfilePath{}, fEventMixingPool{}, fEventMixingPoolDepth{0} {
   /// Settings for the custom vertexer
   fVertexer.SetToleranceGuessCompatibility(fVertexerToleranceGuessCompatibility);
   fVertexer.SetMaxDinstanceInit(fVertexerMaxDistanceInit);
@@ -150,12 +152,17 @@ AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
     delete fTreeHyp3;
     fTreeHyp3 = nullptr;
   }
+
+  if (fMLResponse) {
+    delete fMLResponse;
+    fMLResponse = nullptr;
+  }
 }
 
 //_______________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  fInputHandler           = (AliInputEventHandler *)(man->GetInputEventHandler());
+  AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
+  fInputHandler           = (AliInputEventHandler*)(man->GetInputEventHandler());
   fPIDResponse            = fInputHandler->GetPIDResponse();
 
   fInputHandler->SetNeedField();
@@ -173,24 +180,8 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) fTreeHyp3->Branch("SHypertriton", &fSHypertriton);
 
   fListHist = new TList();
-  fListHist->SetOwner();
+  fListHist->SetOwner(true);
   fEventCuts.AddQAplotsToList(fListHist);
-
-  fHistNSigmaDeu = new TH2D("fHistNSigmaDeu", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Deuteron; Counts", 100, 0., 10.,
-                            80, -5.0, 5.0);
-  fHistNSigmaP =
-      new TH2D("fHistNSigmaP", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Proton; Counts", 100, 0., 10., 80, -5.0, 5.0);
-  fHistNSigmaPi =
-      new TH2D("fHistNSigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0., 10., 80, -5.0, 5.0);
-
-  fHistInvMass =
-      new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96, 3.05, 100, 0, 10);
-
-  fListHist->Add(fHistNSigmaDeu);
-  fListHist->Add(fHistNSigmaP);
-  fListHist->Add(fHistNSigmaPi);
-
-  fListHist->Add(fHistInvMass);
 
   PostData(1, fListHist);
   PostData(2, fTreeHyp3);
@@ -200,14 +191,14 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
 }    /// end UserCreateOutputObjects
 
 //_______________________________________________________________________________
-void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
-  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
+void AliAnalysisTaskHypertriton3ML::UserExec(Option_t*) {
+  AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esdEvent) {
     ::Fatal("AliAnalysisTaskHypertriton3ML::UserExec", "AliESDEvent not found.");
     return;
   }
 
-  AliMCEvent *mcEvent = MCEvent();
+  AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent && fMC) {
     ::Fatal("AliAnalysisTaskHypertriton3ML::UserExec", "Could not retrieve MC event");
     return;
@@ -245,7 +236,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     fSHypertriton.clear();
 
     for (int iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
-      AliVParticle *part = mcEvent->GetTrack(iTrack);
+      AliVParticle* part = mcEvent->GetTrack(iTrack);
 
       if (!part) {
         ::Warning("AliAnalysisTaskHypertriton3ML::UserExec",
@@ -261,7 +252,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
       AliVParticle *deu{nullptr}, *p{nullptr}, *pi{nullptr};
 
       for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD) {
-        AliVParticle *daughter = mcEvent->GetTrack(iD);
+        AliVParticle* daughter = mcEvent->GetTrack(iD);
 
         if (mcEvent->IsSecondaryFromWeakDecay(iD) && daughter) {
           decayVtx[0] = daughter->Xv();
@@ -303,15 +294,16 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
   fRHypertriton.clear();
   fMLSelected.clear();
 
-  fDeuVector.clear();
-  fPVector.clear();
-  fPiVector.clear();
+  fDeuteronVector.clear();
+  fProtonVector.clear();
+  fPionVector.clear();
 
   for (int iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack *track = esdEvent->GetTrack(iTrack);
+    AliESDtrack* track = esdEvent->GetTrack(iTrack);
     if (!track) continue;
 
-    if (!fTrackCuts.AcceptTrack(track) || track->GetTPCsignalN() < fMinTPCNcluster)
+    if (!(track->GetStatus() & AliVTrack::kTPCrefit) || (std::abs(track->Eta()) > 0.8) ||
+        (track->GetKinkIndex(0) > 0) || (track->GetTPCsignalN() < fMinTPCNclusterAll))
       continue;
 
     float dca[2];
@@ -321,74 +313,83 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     if (fMC && fOnlyTrueCandidates) {
       int lab = std::abs(track->GetLabel());
       if (!mcEvent->IsSecondaryFromWeakDecay(lab)) continue;
-      AliVParticle *part = mcEvent->GetTrack(lab);
-      AliVParticle *moth = mcEvent->GetTrack(part->GetMother());
+      AliVParticle* part = mcEvent->GetTrack(lab);
+      AliVParticle* moth = mcEvent->GetTrack(part->GetMother());
       if (std::abs(moth->PdgCode()) != 1010010030) continue;
     }
 
-    float nSigmaTPCDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-    if (std::abs(nSigmaTPCDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu && track->Pt() < fMaxPtDeu) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu)
-          fDeuVector.push_back(track);
+    float nSigmaTPCDeuteron = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+    if (AcceptDeuteronCandidate(track, dcaNorm, nSigmaTPCDeuteron)) {
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeuteron;
+      if (fRequireDeuteronTOFpid) {
+        if (TOFpid) fDeuteronVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid) fDeuteronVector.push_back(track);
       } else {
-        fDeuVector.push_back(track);
+        fDeuteronVector.push_back(track);
       }
     }
 
-    float nSigmaTPCP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-    if (std::abs(nSigmaTPCP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP && track->Pt() < fMaxPtP) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP)
-          fPVector.push_back(track);
+    float nSigmaTPCProton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    if (AcceptProtonCandidate(track, dcaNorm, nSigmaTPCProton)) {
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFProton;
+      if (fRequireProtonTOFpid) {
+        if (TOFpid) fProtonVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid) fProtonVector.push_back(track);
       } else {
-        fPVector.push_back(track);
+        fProtonVector.push_back(track);
       }
     }
 
     float nSigmaTPCPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-    if (std::abs(nSigmaTPCPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi && track->Pt() < fMaxPtPi) {
-      if (HasTOF(track)) {
-        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi)
-          fPiVector.push_back(track);
+    if (AcceptPionCandidate(track, dcaNorm, nSigmaTPCPi)) {
+      bool TOFpid = std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPion;
+      if (fRequirePionTOFpid) {
+        if (TOFpid) fPionVector.push_back(track);
+      } else if (HasTOF(track)) {
+        if (TOFpid) fPionVector.push_back(track);
       } else {
-        fPiVector.push_back(track);
+        fPionVector.push_back(track);
       }
     }
   }
 
   /// downscaling the output tree saving only a fDownscalingFactorByEvent fraction of the events
-  if (!fMC && fDownscaling && ((int)fDeuVector.size() > 0)) {
+  if (!fMC && fDownscaling && ((int)fDeuteronVector.size() > 0)) {
     if (gRandom->Rndm() > fDownscalingFactorByEvent) return;
   }
 
   /// if event mixing is enabled takes deuteron from the event mixing pool
   if (fEnableEventMixing && fApplyML) {
-    fDeuVector = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
+    fDeuteronVector = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
   }
 
-  for (const auto &deu : fDeuVector) {
+  for (const auto& deu : fDeuteronVector) {
     float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(deu, AliPID::kDeuteron);
 
-    for (const auto &p : fPVector) {
+    for (const auto& p : fProtonVector) {
       if (deu == p) continue;
       if (p->Charge() * deu->Charge() < 0) continue;
 
       float nSigmaP = fPIDResponse->NumberOfSigmasTPC(p, AliPID::kProton);
 
-      for (const auto &pi : fPiVector) {
+      for (const auto& pi : fPionVector) {
         if (p == pi || deu == pi) continue;
         if (pi->Charge() * p->Charge() > 0) continue;
 
         float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(pi, AliPID::kPion);
 
-        int momLab = IsTrueHyperTriton3Candidate(deu, p, pi, mcEvent);
-        if ((momLab == -1) && fOnlyTrueCandidates) continue;
+        int momLab = 0;
+        if (fMC) {
+          momLab = IsTrueHyperTriton3Candidate(deu, p, pi, mcEvent);
+          if ((momLab == -1) && fOnlyTrueCandidates) continue;
+        }
 
         bool recoVertex = fVertexer.FindDecayVertex(deu, p, pi, b);
         if (!recoVertex) continue;
 
-        AliESDVertex *decayVtx = static_cast<AliESDVertex *>(fVertexer.GetCurrentVertex());
+        AliESDVertex* decayVtx = static_cast<AliESDVertex*>(fVertexer.GetCurrentVertex());
 
         double decayLenght[3] = {0., 0., 0.};
         decayVtx->GetXYZ(decayLenght);
@@ -419,6 +420,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
         double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
                                      decayLenght[2] * decayLenght[2]);
+
+        float ct = kHyperTritonMass * dTotHyper / hyp4Vector.P();
+        if (ct < fMinCanidateCtToSave || ct > fMaxCanidateCtToSave) continue;
 
         double cosPA =
             hyp4Vector.Px() * decayLenght[0] + hyp4Vector.Py() * decayLenght[1] + hyp4Vector.Pz() * decayLenght[2];
@@ -468,9 +472,9 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         hyp3r.fDCAxyPi  = std::abs(dcaDecayPi[0]);
         hyp3r.fDCAzPi   = std::abs(dcaDecayPi[1]);
 
-        hyp3r.fNClusterTPCDeu = deu->GetTPCNcls();
-        hyp3r.fNClusterTPCP   = p->GetTPCNcls();
-        hyp3r.fNClusterTPCPi  = pi->GetTPCNcls();
+        hyp3r.fNClusterTPCDeu = deu->GetTPCsignalN();
+        hyp3r.fNClusterTPCP   = p->GetTPCsignalN();
+        hyp3r.fNClusterTPCPi  = pi->GetTPCsignalN();
 
         hyp3r.fITSClusterMapDeu = deu->GetITSClusterMap();
         hyp3r.fITSClusterMapP   = p->GetITSClusterMap();
@@ -501,30 +505,23 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
           float ct      = fMap["ct"];
           float invmass = fMap["InvMass"];
           float hyppt   = fMap["HypCandPt"];
+          float score{0.f};
 
-          if (ct > 1. && ct < 35. && fREvent.fCent < 90.) {
-            float score{0.f};
-            if (fMLResponse->IsSelected(ct, fMap, score)) {
-              fMLSelected.emplace_back(MLSelected{score, invmass, ct, fREvent.fCent, hyppt});
-            }
+          if (fMLResponse->IsSelected(ct, fMap, score)) {
+            fMLSelected.emplace_back(MLSelected{score, invmass, ct, fREvent.fCent, hyppt});
           }
+
           continue;
         }
 
         fRHypertriton.push_back(hyp3r);
-
-        fHistNSigmaDeu->Fill(deu->Pt(), nSigmaDeu);
-        fHistNSigmaP->Fill(p->Pt(), nSigmaP);
-        fHistNSigmaPi->Fill(pi->Pt(), nSigmaPi);
-
-        fHistInvMass->Fill(hypM, hypPt);
       }
     }
   }
 
   /// if event mixing is enabled fill the event mixing pool with deuterons
   if (fEnableEventMixing && fApplyML) {
-    FillEventMixingPool(fREvent.fCent, fREvent.fZ, fDeuVector);
+    FillEventMixingPool(fREvent.fCent, fREvent.fZ, fDeuteronVector);
   }
 
   if (fMC) {
@@ -542,11 +539,44 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
+void AliAnalysisTaskHypertriton3ML::Terminate(Option_t*) {}
 
 //_______________________________________________________________________________
-std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3 &hypCand,
-                                                                         const REvent &rEv) {
+bool AliAnalysisTaskHypertriton3ML::AcceptDeuteronCandidate(const AliESDtrack* deuTrack, float dca, float nSigmaTPC) {
+  if (nSigmaTPC > fMinNSigmaTPCDeuteron && nSigmaTPC < fMaxNSigmaTPCDeuteron &&
+      deuTrack->GetTPCsignalN() > fMinTPCNclusterDeuteron && dca > fMinDCA2PrimaryVtxDeuteron &&
+      deuTrack->Pt() > fMinPtDeuteron && deuTrack->Pt() < fMaxPtDeuteron) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+//_______________________________________________________________________________
+bool AliAnalysisTaskHypertriton3ML::AcceptProtonCandidate(const AliESDtrack* pTrack, float dca, float nSigmaTPC) {
+  if (nSigmaTPC > fMinNSigmaTPCProton && nSigmaTPC < fMaxNSigmaTPCProton &&
+      pTrack->GetTPCsignalN() > fMinTPCNclusterProton && dca > fMinDCA2PrimaryVtxProton &&
+      pTrack->Pt() > fMinPtProton && pTrack->Pt() < fMaxPtProton) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+//_______________________________________________________________________________
+bool AliAnalysisTaskHypertriton3ML::AcceptPionCandidate(const AliESDtrack* piTrack, float dca, float nSigmaTPC) {
+  if (nSigmaTPC > fMinNSigmaTPCPion && nSigmaTPC < fMaxNSigmaTPCPion &&
+      piTrack->GetTPCsignalN() > fMinTPCNclusterPion && dca > fMinDCA2PrimaryVtxPion && piTrack->Pt() > fMinPtPion &&
+      piTrack->Pt() < fMaxPtPion) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+//_______________________________________________________________________________
+std::map<std::string, double> AliAnalysisTaskHypertriton3ML::FeaturesMap(const RHypertriton3& hypCand,
+                                                                         const REvent& rEv) {
   std::map<std::string, double> fMap;
 
   /// position of the primary vertex
@@ -656,13 +686,13 @@ int AliAnalysisTaskHypertriton3ML::FindEventMixingZBin(const float zvtx) {
 
 //_______________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::FillEventMixingPool(const float centrality, const float zvtx,
-                                                        std::vector<AliESDtrack *> tracks) {
+                                                        std::vector<AliESDtrack*> tracks) {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin    = FindEventMixingZBin(zvtx);
 
-  auto &trackVector = fEventMixingPool[centBin][zBin];
+  auto& trackVector = fEventMixingPool[centBin][zBin];
 
-  for (auto &t : tracks) {
+  for (auto& t : tracks) {
     trackVector.emplace_back(AliESDtrack{*t});
   }
 
@@ -672,14 +702,14 @@ void AliAnalysisTaskHypertriton3ML::FillEventMixingPool(const float centrality, 
 }
 
 //_______________________________________________________________________________
-std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3ML::GetEventMixingTracks(const float centrality,
-                                                                               const float zvtx) {
+std::vector<AliESDtrack*> AliAnalysisTaskHypertriton3ML::GetEventMixingTracks(const float centrality,
+                                                                              const float zvtx) {
   int centBin = FindEventMixingCentBin(centrality);
   int zBin    = FindEventMixingZBin(zvtx);
 
-  std::vector<AliESDtrack *> tmpVector;
+  std::vector<AliESDtrack*> tmpVector;
 
-  for (auto &v : fEventMixingPool[centBin][zBin]) {
+  for (auto& v : fEventMixingPool[centBin][zBin]) {
     tmpVector.emplace_back(&v);
   }
 
@@ -687,9 +717,9 @@ std::vector<AliESDtrack *> AliAnalysisTaskHypertriton3ML::GetEventMixingTracks(c
 }
 
 //_______________________________________________________________________________
-AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC, TString suffix) {
+AliAnalysisTaskHypertriton3ML* AliAnalysisTaskHypertriton3ML::AddTask(bool isMC, TString suffix) {
   // Get the current analysis manager
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskHyperTriton2BodyML", "No analysis manager found.");
     return nullptr;
@@ -705,12 +735,12 @@ AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC,
 
   TString tskname = "AliAnalysisTaskHypertriton3ML";
   tskname.Append(suffix.Data());
-  AliAnalysisTaskHypertriton3ML *task = new AliAnalysisTaskHypertriton3ML(isMC, tskname.Data());
+  AliAnalysisTaskHypertriton3ML* task = new AliAnalysisTaskHypertriton3ML(isMC, tskname.Data());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(
       Form("%s_summary", tskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
 
-  AliAnalysisDataContainer *coutput2 =
+  AliAnalysisDataContainer* coutput2 =
       mgr->CreateContainer(Form("HyperTritonTree%s", suffix.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, Form("HyperTritonTree.root:%s", suffix.Data()));
   coutput2->SetSpecialOutput();

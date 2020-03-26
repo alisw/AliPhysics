@@ -21,6 +21,7 @@
 #pragma link C++ class AliAnalysisTaskBJetTC+;
 #pragma link C++ class AliDJetRawYieldUncertainty+;
 #pragma link C++ class AliAnalysisTaskDJetCorrelations+;
+#pragma link C++ class AliATDJetCorrDev+;
 #pragma link C++ class AliAnalysisTaskDJetCorrelationsQA+;
 #pragma link C++ class AliAnalysisTaskDmesonsFilterCJ+;
 #pragma link C++ class AliEmbeddingEventForHFTask+;

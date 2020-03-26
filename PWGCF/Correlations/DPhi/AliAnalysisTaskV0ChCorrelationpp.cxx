@@ -920,7 +920,7 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
    Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
-   
+   /*
    // pt bins of trigger particles for the analysis
    const Int_t nPtBinsV0Xi = 5;
    const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 6.0,8.0,13.0,15.0}; 
@@ -928,7 +928,21 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 5;
    const Double_t PtBins[6] =  {1.0,2.0,3.0,4.0,6.0,8.0}; 
-  
+  */
+
+
+// pt bins of trigger particles for the analysis
+   const Int_t nPtBinsV0Xi = 14;
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
+   
+   // pt bins of associate particles for the analysis
+   const Int_t nPtBins = 7;
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
+
+
+
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1090,13 +1104,13 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
 
    
   // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 5;
-   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 6.0,8.0,13.0,15.0}; 
+   const Int_t nPtBinsV0Xi = 14;
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 5;
-   const Double_t PtBins[6] =  {1.0,2.0,3.0,4.0,6.0,8.0}; 
-  
+   const Int_t nPtBins = 7;
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1282,13 +1296,13 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
 
    
   // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 5;
-   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 6.0,8.0,13.0,15.0}; 
+   const Int_t nPtBinsV0Xi = 14;
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 5;
-   const Double_t PtBins[6] =  {1.0,2.0,3.0,4.0,6.0,8.0}; 
-  
+   const Int_t nPtBins = 7;
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -2636,6 +2650,7 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
 
   //768-hybrid tracks
   if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
+  //if (!t->TestFilterBit(1)) return kFALSE; 
   /*
   // Minimum number of clusters
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);

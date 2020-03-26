@@ -13,7 +13,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
                                                                Bool_t DoCocktailWeighting   = kFALSE,
                                                                Bool_t GetCocktailFromAlien  = kFALSE,
                                                                std::string CocktailFilename = "",
-                                                               Bool_t useRun1binning        = kFALSE,
                                                                Bool_t cutlibPreloaded       = kFALSE,
                                                                Bool_t getFromAlien          = kFALSE)
 {

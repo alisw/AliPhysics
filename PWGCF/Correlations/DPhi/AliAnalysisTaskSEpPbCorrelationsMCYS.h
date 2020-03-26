@@ -67,6 +67,7 @@ public:
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void Setmcprim(Bool_t mode){fprim=mode;}
   
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
@@ -158,6 +159,7 @@ private:
   Bool_t fPID;
 
   TString fCentType;
+  Bool_t ffillcorrelation;
   Bool_t fprim;
   Int_t fNEntries;
   
@@ -259,6 +261,7 @@ private:
 
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
+  TH2D* fNTrackCorrMC;
   TH2D*fhmcprimvzeta;
 
   TH1F*frefvz;

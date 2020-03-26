@@ -16,6 +16,8 @@
 #pragma link C++ class AliAnalysisNanoAODEventCuts+;
 #pragma link C++ class AliAnalysisNanoAODMCParticleCuts+;
 #pragma link C++ class AliNanoAODSimpleSetter+;
+#pragma link C++ class AliNanoAODINELgt0setter+;
+#pragma link C++ class AliNanoAODTPCGeoLengthCutSetter+;
 #pragma link C++ class AliAnalysisNanoAODTrackCutsCRCZDC+;
 #pragma link C++ class AliAnalysisNanoAODEventCutsCRCZDC+;
 #pragma link C++ class AliNanoAODSimpleSetterCRCZDC+;

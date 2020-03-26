@@ -43,7 +43,10 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliRDHFCutsLctoV0& operator=(const AliRDHFCutsLctoV0& source);
 
   using AliRDHFCuts::GetCutVarsForOpt;
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+    return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+  }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel)

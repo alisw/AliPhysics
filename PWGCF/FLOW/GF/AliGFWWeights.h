@@ -26,7 +26,9 @@ class AliGFWWeights: public TNamed
   TObjArray *GetDataArray(){ return fW_data; };
   void CreateNUA(Bool_t IntegrateOverCentAndPt=kTRUE);
   void CreateNUE(Bool_t IntegrateOverCentrality=kTRUE);
-  TH3D *GetIntegratedEfficiency() { return fEffInt; };
+  TH1D *GetIntegratedEfficiencyHist();
+  Bool_t CalculateIntegratedEff();
+  Double_t GetIntegratedEfficiency(Double_t pt);
   void SetDataFilled(Bool_t newval) { fDataFilled=newval; };
   void SetMCFilled(Bool_t newval) { fMCFilled = newval; };
   void ReadAndMerge(const char *filelinks);
@@ -41,6 +43,7 @@ class AliGFWWeights: public TNamed
   TObjArray *fW_mcrec;
   TObjArray *fW_mcgen;
   TH3D *fEffInt; //!
+  TH1D *fIntEff; //!
   TH3D *fAccInt; //!
   Int_t fNbinsPt; //! do not store
   Double_t *fbinsPt; //! do not store

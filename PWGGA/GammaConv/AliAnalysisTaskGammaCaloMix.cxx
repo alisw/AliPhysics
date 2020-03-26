@@ -63,14 +63,14 @@
 ClassImp(AliAnalysisTaskGammaCaloMix)
 
 //________________________________________________________________________
-AliAnalysisTaskGammaCaloMix::AliAnalysisTaskGammaCaloMix(): AliAnalysisTaskSE(), fV0Reader(NULL), fV0ReaderName("V0ReaderV1"), fCorrTaskSetting(""), fBGHandler(NULL), fInputEvent(NULL), fMCEvent(NULL), fCutFolder(NULL), fESDList(NULL), fBackList(NULL), fMotherList(NULL), fTrueList(NULL), fMCList(NULL), fTreeList(NULL), fClusterTreeList(NULL), fOutputContainer(NULL), fReaderGammas(NULL), fGammaCandidates(NULL), fClusterCandidates(NULL), fClusterCandidates2(NULL), fEventCutArray(NULL), fEventCuts(NULL), fClusterCutArray(NULL), fClusterCutArray2(NULL), fCaloPhotonCuts(NULL), fMesonCutArray(NULL), fMesonCuts(NULL), fConvJetReader(NULL), fConversionCuts(NULL), fDoJetAnalysis(kFALSE), fDoJetQA(kFALSE), fDoTrueSphericity(kFALSE), fJetHistograms(NULL), fTrueJetHistograms(NULL), fJetSector(0), fMaxPtNearEMCalPlace(0), fJetNearEMCal(kFALSE), fHistoMotherInvMassPt(NULL), fSparseMotherInvMassPtZM(NULL), fHistoMotherBackInvMassPt(NULL), fSparseMotherBackInvMassPtZM(NULL), fHistoMotherPi0PtY(NULL), fHistoMotherEtaPtY(NULL), fHistoMotherPi0PtAlpha(NULL), fHistoMotherEtaPtAlpha(NULL), fHistoMotherPi0PtOpenAngle(NULL), fHistoMotherEtaPtOpenAngle(NULL), fHistoMotherPtOpenAngle(NULL), fHistoMotherPtOpenAngleBck(NULL), fHistoMotherPi0NGoodESDTracksPt(NULL), fHistoMotherEtaNGoodESDTracksPt(NULL), fHistoMotherInvMassECalib(NULL), fHistoMotherBackInvMassECalib(NULL), fHistoClusGammaPt(NULL), fHistoClusGammaE(NULL), fHistoClusOverlapHeadersGammaPt(NULL), fHistoClusAllHeadersGammaPt(NULL), fHistoClusRejectedHeadersGammaPt(NULL), fHistoClusGammaPtM02(NULL), fHistoMCHeaders(NULL), fHistoMCAllGammaPt(NULL), fHistoMCAllSecondaryGammaPt(NULL), fHistoMCDecayGammaPi0Pt(NULL), fHistoMCDecayGammaRhoPt(NULL), fHistoMCDecayGammaEtaPt(NULL), fHistoMCDecayGammaOmegaPt(NULL), fHistoMCDecayGammaEtapPt(NULL), fHistoMCDecayGammaPhiPt(NULL), fHistoMCDecayGammaSigmaPt(NULL), fHistoMCPi0Pt(NULL), fHistoMCPi0WOWeightPt(NULL), fHistoMCPi0WOEvtWeightPt(NULL), fHistoMCEtaPt(NULL), fHistoMCEtaWOWeightPt(NULL), fHistoMCEtaWOEvtWeightPt(NULL), fHistoMCPi0InAccPt(NULL), fHistoMCEtaInAccPt(NULL), fHistoMCPi0WOEvtWeightInAccPt(NULL), fHistoMCEtaWOEvtWeightInAccPt(NULL), fHistoMCPi0PtY(NULL), fHistoMCEtaPtY(NULL), fHistoMCPi0PtAlpha(NULL), fHistoMCEtaPtAlpha(NULL), fHistoMCPrimaryPtvsSource(NULL), fHistoMCSecPi0PtvsSource(NULL), fHistoMCSecPi0Source(NULL), fHistoMCSecPi0InAccPtvsSource(NULL), fHistoMCSecEtaPt(NULL), fHistoMCSecEtaSource(NULL), fHistoMCPi0PtJetPt(NULL), fHistoMCEtaPtJetPt(NULL), fHistoTruePi0InvMassPt(NULL), fHistoTrueEtaInvMassPt(NULL), fHistoTruePi0CaloPhotonInvMassPt(NULL), fHistoTrueEtaCaloPhotonInvMassPt(NULL), fHistoTruePi0CaloConvertedPhotonInvMassPt(NULL), fHistoTrueEtaCaloConvertedPhotonInvMassPt(NULL), fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTruePi0CaloElectronInvMassPt(NULL), fHistoTrueEtaCaloElectronInvMassPt(NULL), fHistoTruePi0CaloMergedClusterInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterInvMassPt(NULL), fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL), fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL), fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL), fHistoTruePi0Category1(NULL), fHistoTrueEtaCategory1(NULL), fHistoTruePi0Category2(NULL), fHistoTrueEtaCategory2(NULL), fHistoTruePi0Category3(NULL), fHistoTrueEtaCategory3(NULL), fHistoTruePi0Category4_6(NULL), fHistoTrueEtaCategory4_6(NULL), fHistoTruePi0Category5(NULL), fHistoTrueEtaCategory5(NULL), fHistoTruePi0Category7(NULL), fHistoTrueEtaCategory7(NULL), fHistoTruePi0Category8(NULL), fHistoTrueEtaCategory8(NULL), fHistoTruePrimaryPi0InvMassPt(NULL), fHistoTruePrimaryEtaInvMassPt(NULL), fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL), fHistoTruePrimaryEtaW0WeightingInvMassPt(NULL), fProfileTruePrimaryPi0WeightsInvMassPt(NULL), fProfileTruePrimaryEtaWeightsInvMassPt(NULL), fHistoTruePrimaryPi0MCPtResolPt(NULL), fHistoTruePrimaryEtaMCPtResolPt(NULL), fHistoTrueSecondaryPi0InvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL), fHistoTrueK0sWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL), fHistoTrueK0lWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromEtaInvMassPt(NULL), fHistoTrueEtaWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL), fHistoTrueLambdaWithPi0DaughterMCPt(NULL), fHistoTrueBckGGInvMassPt(NULL), fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL), fHistoTrueBckAsymEClustersInvMassPt(NULL), fHistoTrueBckContInvMassPt(NULL), fHistoTruePi0PtY(NULL), fHistoTrueEtaPtY(NULL), fHistoTruePi0PtAlpha(NULL), fHistoTrueEtaPtAlpha(NULL), fHistoTruePi0PtOpenAngle(NULL), fHistoTrueEtaPtOpenAngle(NULL), fHistoClusPhotonBGPt(NULL), fHistoClusPhotonPlusConvBGPt(NULL), fHistoClustPhotonElectronBGPtM02(NULL), fHistoClustPhotonPionBGPtM02(NULL), fHistoClustPhotonKaonBGPtM02(NULL), fHistoClustPhotonK0lBGPtM02(NULL), fHistoClustPhotonNeutronBGPtM02(NULL), fHistoClustPhotonRestBGPtM02(NULL), fHistoClustPhotonPlusConvElectronBGPtM02(NULL), fHistoClustPhotonPlusConvPionBGPtM02(NULL), fHistoClustPhotonPlusConvKaonBGPtM02(NULL), fHistoClustPhotonPlusConvK0lBGPtM02(NULL), fHistoClustPhotonPlusConvNeutronBGPtM02(NULL), fHistoClustPhotonPlusConvRestBGPtM02(NULL), fHistoTrueClusGammaPt(NULL), fHistoTrueClusUnConvGammaPt(NULL), fHistoTrueClusUnConvGammaMCPt(NULL), fHistoTrueClusGammaPtM02(NULL), fHistoTrueClusUnConvGammaPtM02(NULL), fHistoTrueClusElectronPt(NULL), fHistoTrueClusConvGammaPt(NULL), fHistoTrueClusConvGammaMCPt(NULL), fHistoTrueClusConvGammaFullyPt(NULL), fHistoTrueClusMergedGammaPt(NULL), fHistoTrueClusMergedPartConvGammaPt(NULL), fHistoTrueClusDalitzPt(NULL), fHistoTrueClusDalitzMergedPt(NULL), fHistoTrueClusPhotonFromElecMotherPt(NULL), fHistoTrueClusShowerPt(NULL), fHistoTrueClusSubLeadingPt(NULL), fHistoTrueClusNParticles(NULL), fHistoTrueClusEMNonLeadingPt(NULL), fHistoTrueNLabelsInClus(NULL), fHistoTruePrimaryClusGammaPt(NULL), fHistoTruePrimaryClusGammaESDPtMCPt(NULL), fHistoTruePrimaryClusConvGammaPt(NULL), fHistoTruePrimaryClusConvGammaESDPtMCPt(NULL), fHistoTrueSecondaryClusGammaPt(NULL), fHistoTrueSecondaryClusConvGammaPt(NULL), fHistoTrueSecondaryClusGammaMCPt(NULL), fHistoTrueSecondaryClusConvGammaMCPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromLambdaMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromLambdaMCPtESDPt(NULL), fHistoDoubleCountTruePi0InvMassPt(NULL), fHistoDoubleCountTrueEtaInvMassPt(NULL), fHistoDoubleCountTrueClusterGammaPt(NULL), fVectorDoubleCountTruePi0s(0), fVectorDoubleCountTrueEtas(0), fVectorDoubleCountTrueClusterGammas(0), fHistoMultipleCountTrueClusterGamma(NULL), fMapMultipleCountTrueClusterGammas(), fHistoTruePi0InvMassPtAlpha(NULL), fHistoTruePi0PureGammaInvMassPtAlpha(NULL), fHistCellIDvsClusterEnergy(NULL), fHistCellIDvsClusterEnergy2(NULL), fHistCellIDvsClusterEnergyMax(NULL), fHistCellIDvsClusterEnergyMax2(NULL), fHistoNEvents(NULL), fHistoNEventsWOWeight(NULL), fHistoNGoodESDTracks(NULL), fHistoVertexZ(NULL), fHistoNGammaCandidates(NULL), fHistoNGammaCandidates2(NULL), fHistoNGammaCandidatesBasic(NULL), fHistoNGoodESDTracksVsNGammaCandidates(NULL), fHistoSPDClusterTrackletBackground(NULL), fHistoNV0Tracks(NULL), fProfileEtaShift(NULL), fProfileJetJetXSection(NULL), fHistoJetJetNTrials(NULL), fHistoEventSphericity(NULL), fHistoEventSphericityAxis(NULL), fHistoEventSphericityvsNtracks(NULL), fHistoEventSphericityvsNJets(NULL), fHistoEventMultiplicityvsNJets(NULL), fHistoTrueSphericityvsRecSphericity(NULL), fHistoTrueMultiplicityvsRecMultiplicity(NULL), fHistoEventSphericityvsHighpt(NULL), fHistoEventSphericityvsTotalpt(NULL), fHistoEventSphericityvsMeanpt(NULL), fHistoPionSpectrum(NULL), fHistoProtonSpectrum(NULL), fHistoKaonSpectrum(NULL), fHistoNPionSpectrum(NULL), fHistoEtaSpectrum(NULL), fHistoDMesonSpectrum(NULL), tTreeSphericity(NULL), fRecSph(0), fTrueSph(0), fPi0Pt(0), fPi0InvMass(0), fHistoPtJet(NULL), fHistoJetEta(NULL), fHistoJetPhi(NULL), fHistoJetArea(NULL), fHistoNJets(NULL), fHistoEventwJets(NULL), fHistoJetPi0PtRatio(NULL), fHistoDoubleCounting(NULL), fHistoJetMotherInvMassPt(NULL), fHistoPi0InJetMotherInvMassPt(NULL), fHistoMotherBackJetInvMassPt(NULL), fHistoRJetPi0Cand(NULL), fHistoEtaPhiJetPi0Cand(NULL), fHistoEtaPhiJetWithPi0Cand(NULL), fHistoJetFragmFunc(NULL), fHistoJetFragmFuncZInvMass(NULL), fHistoTruevsRecJetPt(NULL), fHistoTruePi0JetMotherInvMassPt(NULL), fHistoTruePi0InJetMotherInvMassPt(NULL), fHistoTruePrimaryPi0JetInvMassPt(NULL), fHistoTruePrimaryPi0inJetInvMassPt(NULL), fHistoTruePrimaryPi0InJetInvMassTruePt(NULL), fHistoTrueDoubleCountingPi0Jet(NULL), fHistoTrueEtaJetMotherInvMassPt(NULL), fHistoTrueEtaInJetMotherInvMassPt(NULL), fHistoTruePrimaryEtaJetInvMassPt(NULL), fHistoTruePrimaryEtainJetInvMassPt(NULL), fHistoTrueDoubleCountingEtaJet(NULL), fHistoTruePi0JetFragmFunc(NULL), fHistoTruePi0JetFragmFuncZInvMass(NULL), fHistoTrueEtaJetFragmFunc(NULL), fHistoTrueEtaJetFragmFuncZInvMass(NULL), fHistoMCPi0JetInAccPt(NULL), fHistoMCPi0inJetInAccPt(NULL), fHistoMCEtaJetInAccPt(NULL), fHistoMCEtainJetInAccPt(NULL), fHistoMCPi0JetEventGenerated(NULL), fHistoMCPi0inJetGenerated(NULL), fHistoMCEtaJetEventGenerated(NULL), fHistoMCEtainJetGenerated(NULL), fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdainJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0lJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0linJetInvMassPt(NULL), fHistoTrueSecondaryPi0InvJetMassPt(NULL), fHistoTrueSecondaryPi0InvinJetMassPt(NULL), fHistoMotherPi0inJetPtY(NULL), fHistoMotherEtainJetPtY(NULL), fHistoMotherPi0inJetPtPhi(NULL), fHistoMotherEtainJetPtPhi(NULL), fNumberOfClusters(NULL), fNumberOfClustersinJets(NULL), fEnergyRatio(NULL), fEnergyRatioinJets(NULL), fEnergyRatioGamma1(NULL), fEnergyRatioGamma1inJets(NULL), fEnergyRatioGammaAnywhere(NULL), fEnergyRatioGammaAnywhereinJets(NULL), fEnergyDeposit(NULL), fEnergyDepositinJets(NULL), fEnergyDepGamma1(NULL), fEnergyDepGamma1inJets(NULL), fEnergyDepGammaAnywhere(NULL), fEnergyDepGammaAnywhereinJets(NULL), fEnergyRatioGamma1Helped(NULL), fEnergyRatioGamma1HelpedinJets(NULL), fClusterEtaPhiJets(NULL), fHistoUnfoldingAsData(NULL), fHistoUnfoldingMissed(NULL), fHistoUnfoldingReject(NULL), fHistoUnfoldingAsDataInvMassZ(NULL), fHistoUnfoldingMissedInvMassZ(NULL), fHistoUnfoldingRejectInvMassZ(NULL), fVectorJetPt(0), fVectorJetPx(0), fVectorJetPy(0), fVectorJetPz(0), fVectorJetEta(0), fVectorJetPhi(0), fVectorJetArea(0), fTrueVectorJetPt(0), fTrueVectorJetPx(0), fTrueVectorJetPy(0), fTrueVectorJetPz(0), fTrueVectorJetEta(0), fTrueVectorJetPhi(0), tTrueInvMassROpenABPtFlag(NULL), fInvMass(-1), fRconv(-1), fOpenRPrim(-1), fInvMassRTOF(-1), fPt(-1), iFlag(3), tSigInvMassPtAlphaTheta(NULL), tBckInvMassPtAlphaTheta(NULL), fInvMassTreeInvMass(0), fInvMassTreePt(0), fInvMassTreeAlpha(0), fInvMassTreeTheta(0), fInvMassTreeMixPool(0), fInvMassTreeZVertex(0), fInvMassTreeEta(0), tClusterEOverP(NULL), fClusterE(0), fClusterM02(0), fClusterM20(0), fClusterEP(0), fClusterLeadCellID(0), fClusterClassification(0), fDeltaEta(0), fDeltaPhi(0), fTrackPt(0), fTrackPID_e(0), fTrackPID_Pi(0), fTrackPID_K(0), fTrackPID_P(0), fClusterIsoSumClusterEt(0), fClusterIsoSumTrackEt(0), tClusterTimingEff(NULL), fClusterTimeTag(0), fClusterTimeProbe(0), fClusterETag(0), fClusterEProbe(0), fEventPlaneAngle(-100), fRandom(0), fnCuts(0), fiCut(0), fIsHeavyIon(0), fDoLightOutput(kFALSE), fDoMesonAnalysis(kTRUE), fDoMesonQA(0), fDoClusterQA(0), fIsFromDesiredHeader(kTRUE), fIsOverlappingWithOtherHeader(kFALSE), fIsMC(0), fDoTHnSparse(kTRUE), fSetPlotHistsExtQA(kFALSE), fDoSoftAnalysis(kFALSE), fWeightJetJetMC(1), fDoInOutTimingCluster(kFALSE), fMinTimingCluster(0), fMaxTimingCluster(0), fEnableSortForClusMC(kFALSE), fProduceCellIDPlots(kFALSE), fProduceTreeEOverP(kFALSE), tBrokenFiles(NULL), fFileNameBroken(NULL), tClusterQATree(NULL), fCloseHighPtClusters(NULL), fLocalDebugFlag(0), fAllowOverlapHeaders(kTRUE), fNCurrentClusterBasic(0), fTrackMatcherRunningMode(0), fDoPi0Only(kFALSE)
+AliAnalysisTaskGammaCaloMix::AliAnalysisTaskGammaCaloMix(): AliAnalysisTaskSE(), fV0Reader(NULL), fV0ReaderName("V0ReaderV1"), fCorrTaskSetting(""), fBGHandler(NULL), fInputEvent(NULL), fMCEvent(NULL), fCutFolder(NULL), fESDList(NULL), fBackList(NULL), fMotherList(NULL), fTrueList(NULL), fMCList(NULL), fTreeList(NULL), fClusterTreeList(NULL), fOutputContainer(NULL), fReaderGammas(NULL), fGammaCandidates(NULL), fClusterCandidates(NULL), fClusterCandidates2(NULL), fEventCutArray(NULL), fEventCuts(NULL), fClusterCutArray(NULL), fClusterCutArray2(NULL), fCaloPhotonCuts(NULL), fMesonCutArray(NULL), fMesonCuts(NULL), fConvJetReader(NULL), fConversionCuts(NULL), fOutlierJetReader(NULL), fDoJetAnalysis(kFALSE), fDoJetQA(kFALSE), fDoTrueSphericity(kFALSE), fJetHistograms(NULL), fTrueJetHistograms(NULL), fJetSector(0), fMaxPtNearEMCalPlace(0), fJetNearEMCal(kFALSE), fHistoMotherInvMassPt(NULL), fSparseMotherInvMassPtZM(NULL), fHistoMotherBackInvMassPt(NULL), fSparseMotherBackInvMassPtZM(NULL), fHistoMotherPi0PtY(NULL), fHistoMotherEtaPtY(NULL), fHistoMotherPi0PtAlpha(NULL), fHistoMotherEtaPtAlpha(NULL), fHistoMotherPi0PtOpenAngle(NULL), fHistoMotherEtaPtOpenAngle(NULL), fHistoMotherPtOpenAngle(NULL), fHistoMotherPtOpenAngleBck(NULL), fHistoMotherPi0NGoodESDTracksPt(NULL), fHistoMotherEtaNGoodESDTracksPt(NULL), fHistoMotherInvMassECalib(NULL), fHistoMotherBackInvMassECalib(NULL), fHistoClusGammaPt(NULL), fHistoClusGammaE(NULL), fHistoClusOverlapHeadersGammaPt(NULL), fHistoClusAllHeadersGammaPt(NULL), fHistoClusRejectedHeadersGammaPt(NULL), fHistoClusGammaPtM02(NULL), fHistoMCHeaders(NULL), fHistoMCAllGammaPt(NULL), fHistoMCAllSecondaryGammaPt(NULL), fHistoMCDecayGammaPi0Pt(NULL), fHistoMCDecayGammaRhoPt(NULL), fHistoMCDecayGammaEtaPt(NULL), fHistoMCDecayGammaOmegaPt(NULL), fHistoMCDecayGammaEtapPt(NULL), fHistoMCDecayGammaPhiPt(NULL), fHistoMCDecayGammaSigmaPt(NULL), fHistoMCPi0Pt(NULL), fHistoMCPi0WOWeightPt(NULL), fHistoMCPi0WOEvtWeightPt(NULL), fHistoMCEtaPt(NULL), fHistoMCEtaWOWeightPt(NULL), fHistoMCEtaWOEvtWeightPt(NULL), fHistoMCPi0InAccPt(NULL), fHistoMCEtaInAccPt(NULL), fHistoMCPi0WOEvtWeightInAccPt(NULL), fHistoMCEtaWOEvtWeightInAccPt(NULL), fHistoMCPi0PtY(NULL), fHistoMCEtaPtY(NULL), fHistoMCPi0PtAlpha(NULL), fHistoMCEtaPtAlpha(NULL), fHistoMCPrimaryPtvsSource(NULL), fHistoMCSecPi0PtvsSource(NULL), fHistoMCSecPi0Source(NULL), fHistoMCSecPi0InAccPtvsSource(NULL), fHistoMCSecEtaPt(NULL), fHistoMCSecEtaSource(NULL), fHistoMCPi0PtJetPt(NULL), fHistoMCEtaPtJetPt(NULL), fHistoTruePi0InvMassPt(NULL), fHistoTrueEtaInvMassPt(NULL), fHistoTruePi0CaloPhotonInvMassPt(NULL), fHistoTrueEtaCaloPhotonInvMassPt(NULL), fHistoTruePi0CaloConvertedPhotonInvMassPt(NULL), fHistoTrueEtaCaloConvertedPhotonInvMassPt(NULL), fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTruePi0CaloElectronInvMassPt(NULL), fHistoTrueEtaCaloElectronInvMassPt(NULL), fHistoTruePi0CaloMergedClusterInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterInvMassPt(NULL), fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL), fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL), fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL), fHistoTruePi0Category1(NULL), fHistoTrueEtaCategory1(NULL), fHistoTruePi0Category2(NULL), fHistoTrueEtaCategory2(NULL), fHistoTruePi0Category3(NULL), fHistoTrueEtaCategory3(NULL), fHistoTruePi0Category4_6(NULL), fHistoTrueEtaCategory4_6(NULL), fHistoTruePi0Category5(NULL), fHistoTrueEtaCategory5(NULL), fHistoTruePi0Category7(NULL), fHistoTrueEtaCategory7(NULL), fHistoTruePi0Category8(NULL), fHistoTrueEtaCategory8(NULL), fHistoTruePrimaryPi0InvMassPt(NULL), fHistoTruePrimaryEtaInvMassPt(NULL), fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL), fHistoTruePrimaryEtaW0WeightingInvMassPt(NULL), fProfileTruePrimaryPi0WeightsInvMassPt(NULL), fProfileTruePrimaryEtaWeightsInvMassPt(NULL), fHistoTruePrimaryPi0MCPtResolPt(NULL), fHistoTruePrimaryEtaMCPtResolPt(NULL), fHistoTrueSecondaryPi0InvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL), fHistoTrueK0sWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL), fHistoTrueK0lWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromEtaInvMassPt(NULL), fHistoTrueEtaWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL), fHistoTrueLambdaWithPi0DaughterMCPt(NULL), fHistoTrueBckGGInvMassPt(NULL), fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL), fHistoTrueBckAsymEClustersInvMassPt(NULL), fHistoTrueBckContInvMassPt(NULL), fHistoTruePi0PtY(NULL), fHistoTrueEtaPtY(NULL), fHistoTruePi0PtAlpha(NULL), fHistoTrueEtaPtAlpha(NULL), fHistoTruePi0PtOpenAngle(NULL), fHistoTrueEtaPtOpenAngle(NULL), fHistoClusPhotonBGPt(NULL), fHistoClusPhotonPlusConvBGPt(NULL), fHistoClustPhotonElectronBGPtM02(NULL), fHistoClustPhotonPionBGPtM02(NULL), fHistoClustPhotonKaonBGPtM02(NULL), fHistoClustPhotonK0lBGPtM02(NULL), fHistoClustPhotonNeutronBGPtM02(NULL), fHistoClustPhotonRestBGPtM02(NULL), fHistoClustPhotonPlusConvElectronBGPtM02(NULL), fHistoClustPhotonPlusConvPionBGPtM02(NULL), fHistoClustPhotonPlusConvKaonBGPtM02(NULL), fHistoClustPhotonPlusConvK0lBGPtM02(NULL), fHistoClustPhotonPlusConvNeutronBGPtM02(NULL), fHistoClustPhotonPlusConvRestBGPtM02(NULL), fHistoTrueClusGammaPt(NULL), fHistoTrueClusUnConvGammaPt(NULL), fHistoTrueClusUnConvGammaMCPt(NULL), fHistoTrueClusGammaPtM02(NULL), fHistoTrueClusUnConvGammaPtM02(NULL), fHistoTrueClusElectronPt(NULL), fHistoTrueClusConvGammaPt(NULL), fHistoTrueClusConvGammaMCPt(NULL), fHistoTrueClusConvGammaFullyPt(NULL), fHistoTrueClusMergedGammaPt(NULL), fHistoTrueClusMergedPartConvGammaPt(NULL), fHistoTrueClusDalitzPt(NULL), fHistoTrueClusDalitzMergedPt(NULL), fHistoTrueClusPhotonFromElecMotherPt(NULL), fHistoTrueClusShowerPt(NULL), fHistoTrueClusSubLeadingPt(NULL), fHistoTrueClusNParticles(NULL), fHistoTrueClusEMNonLeadingPt(NULL), fHistoTrueNLabelsInClus(NULL), fHistoTruePrimaryClusGammaPt(NULL), fHistoTruePrimaryClusGammaESDPtMCPt(NULL), fHistoTruePrimaryClusConvGammaPt(NULL), fHistoTruePrimaryClusConvGammaESDPtMCPt(NULL), fHistoTrueSecondaryClusGammaPt(NULL), fHistoTrueSecondaryClusConvGammaPt(NULL), fHistoTrueSecondaryClusGammaMCPt(NULL), fHistoTrueSecondaryClusConvGammaMCPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromLambdaMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromLambdaMCPtESDPt(NULL), fHistoDoubleCountTruePi0InvMassPt(NULL), fHistoDoubleCountTrueEtaInvMassPt(NULL), fHistoDoubleCountTrueClusterGammaPt(NULL), fVectorDoubleCountTruePi0s(0), fVectorDoubleCountTrueEtas(0), fVectorDoubleCountTrueClusterGammas(0), fHistoMultipleCountTrueClusterGamma(NULL), fMapMultipleCountTrueClusterGammas(), fHistoTruePi0InvMassPtAlpha(NULL), fHistoTruePi0PureGammaInvMassPtAlpha(NULL), fHistCellIDvsClusterEnergy(NULL), fHistCellIDvsClusterEnergy2(NULL), fHistCellIDvsClusterEnergyMax(NULL), fHistCellIDvsClusterEnergyMax2(NULL), fHistoNEvents(NULL), fHistoNEventsWOWeight(NULL), fHistoNGoodESDTracks(NULL), fHistoVertexZ(NULL), fHistoNGammaCandidates(NULL), fHistoNGammaCandidates2(NULL), fHistoNGammaCandidatesBasic(NULL), fHistoNGoodESDTracksVsNGammaCandidates(NULL), fHistoSPDClusterTrackletBackground(NULL), fHistoNV0Tracks(NULL), fProfileEtaShift(NULL), fProfileJetJetXSection(NULL), fHistoJetJetNTrials(NULL), fHistoEventSphericity(NULL), fHistoEventSphericityAxis(NULL), fHistoEventSphericityvsNtracks(NULL), fHistoEventSphericityvsNJets(NULL), fHistoEventMultiplicityvsNJets(NULL), fHistoTrueSphericityvsRecSphericity(NULL), fHistoTrueMultiplicityvsRecMultiplicity(NULL), fHistoEventSphericityvsHighpt(NULL), fHistoEventSphericityvsTotalpt(NULL), fHistoEventSphericityvsMeanpt(NULL), fHistoPionSpectrum(NULL), fHistoProtonSpectrum(NULL), fHistoKaonSpectrum(NULL), fHistoNPionSpectrum(NULL), fHistoEtaSpectrum(NULL), fHistoDMesonSpectrum(NULL), tTreeSphericity(NULL), fRecSph(0), fTrueSph(0), fPi0Pt(0), fPi0InvMass(0), fHistoPtJet(NULL), fHistoJetEta(NULL), fHistoJetPhi(NULL), fHistoJetArea(NULL), fHistoNJets(NULL), fHistoEventwJets(NULL), fHistoJetPi0PtRatio(NULL), fHistoDoubleCounting(NULL), fHistoJetMotherInvMassPt(NULL), fHistoPi0InJetMotherInvMassPt(NULL), fHistoMotherBackJetInvMassPt(NULL), fHistoRJetPi0Cand(NULL), fHistoEtaPhiJetPi0Cand(NULL), fHistoEtaPhiJetWithPi0Cand(NULL), fHistoJetFragmFunc(NULL), fHistoJetFragmFuncZInvMass(NULL), fHistoTruevsRecJetPt(NULL), fHistoTruePi0JetMotherInvMassPt(NULL), fHistoTruePi0InJetMotherInvMassPt(NULL), fHistoTruePrimaryPi0JetInvMassPt(NULL), fHistoTruePrimaryPi0inJetInvMassPt(NULL), fHistoTruePrimaryPi0InJetInvMassTruePt(NULL), fHistoTrueDoubleCountingPi0Jet(NULL), fHistoTrueEtaJetMotherInvMassPt(NULL), fHistoTrueEtaInJetMotherInvMassPt(NULL), fHistoTruePrimaryEtaJetInvMassPt(NULL), fHistoTruePrimaryEtainJetInvMassPt(NULL), fHistoTrueDoubleCountingEtaJet(NULL), fHistoTruePi0JetFragmFunc(NULL), fHistoTruePi0JetFragmFuncZInvMass(NULL), fHistoTrueEtaJetFragmFunc(NULL), fHistoTrueEtaJetFragmFuncZInvMass(NULL), fHistoMCPi0JetInAccPt(NULL), fHistoMCPi0inJetInAccPt(NULL), fHistoMCEtaJetInAccPt(NULL), fHistoMCEtainJetInAccPt(NULL), fHistoMCPi0JetEventGenerated(NULL), fHistoMCPi0inJetGenerated(NULL), fHistoMCEtaJetEventGenerated(NULL), fHistoMCEtainJetGenerated(NULL), fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdainJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0lJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0linJetInvMassPt(NULL), fHistoTrueSecondaryPi0InvJetMassPt(NULL), fHistoTrueSecondaryPi0InvinJetMassPt(NULL), fHistoMotherPi0inJetPtY(NULL), fHistoMotherEtainJetPtY(NULL), fHistoMotherPi0inJetPtPhi(NULL), fHistoMotherEtainJetPtPhi(NULL), fNumberOfClusters(NULL), fNumberOfClustersinJets(NULL), fEnergyRatio(NULL), fEnergyRatioinJets(NULL), fEnergyRatioGamma1(NULL), fEnergyRatioGamma1inJets(NULL), fEnergyRatioGammaAnywhere(NULL), fEnergyRatioGammaAnywhereinJets(NULL), fEnergyDeposit(NULL), fEnergyDepositinJets(NULL), fEnergyDepGamma1(NULL), fEnergyDepGamma1inJets(NULL), fEnergyDepGammaAnywhere(NULL), fEnergyDepGammaAnywhereinJets(NULL), fEnergyRatioGamma1Helped(NULL), fEnergyRatioGamma1HelpedinJets(NULL), fClusterEtaPhiJets(NULL), fHistoUnfoldingAsData(NULL), fHistoUnfoldingMissed(NULL), fHistoUnfoldingReject(NULL), fHistoUnfoldingAsDataInvMassZ(NULL), fHistoUnfoldingMissedInvMassZ(NULL), fHistoUnfoldingRejectInvMassZ(NULL), fVectorJetPt(0), fVectorJetPx(0), fVectorJetPy(0), fVectorJetPz(0), fVectorJetEta(0), fVectorJetPhi(0), fVectorJetArea(0), fTrueVectorJetPt(0), fTrueVectorJetPx(0), fTrueVectorJetPy(0), fTrueVectorJetPz(0), fTrueVectorJetEta(0), fTrueVectorJetPhi(0), tTrueInvMassROpenABPtFlag(NULL), fInvMass(-1), fRconv(-1), fOpenRPrim(-1), fInvMassRTOF(-1), fPt(-1), iFlag(3), tSigInvMassPtAlphaTheta(NULL), tBckInvMassPtAlphaTheta(NULL), fInvMassTreeInvMass(0), fInvMassTreePt(0), fInvMassTreeAlpha(0), fInvMassTreeTheta(0), fInvMassTreeMixPool(0), fInvMassTreeZVertex(0), fInvMassTreeEta(0), tClusterEOverP(NULL), fClusterE(0), fClusterM02(0), fClusterM20(0), fClusterEP(0), fClusterLeadCellID(0), fClusterClassification(0), fDeltaEta(0), fDeltaPhi(0), fTrackPt(0), fTrackPID_e(0), fTrackPID_Pi(0), fTrackPID_K(0), fTrackPID_P(0), fClusterIsoSumClusterEt(0), fClusterIsoSumTrackEt(0), tClusterTimingEff(NULL), fClusterTimeTag(0), fClusterTimeProbe(0), fClusterETag(0), fClusterEProbe(0), fEventPlaneAngle(-100), fRandom(0), fnCuts(0), fiCut(0), fIsHeavyIon(0), fDoLightOutput(kFALSE), fDoMesonAnalysis(kTRUE), fDoMesonQA(0), fDoClusterQA(0), fIsFromDesiredHeader(kTRUE), fIsOverlappingWithOtherHeader(kFALSE), fIsMC(0), fDoTHnSparse(kTRUE), fSetPlotHistsExtQA(kFALSE), fDoSoftAnalysis(kFALSE), fWeightJetJetMC(1), fDoInOutTimingCluster(kFALSE), fMinTimingCluster(0), fMaxTimingCluster(0), fEnableSortForClusMC(kFALSE), fProduceCellIDPlots(kFALSE), fProduceTreeEOverP(kFALSE), tBrokenFiles(NULL), fFileNameBroken(NULL), tClusterQATree(NULL), fCloseHighPtClusters(NULL), fLocalDebugFlag(0), fAllowOverlapHeaders(kTRUE), fNCurrentClusterBasic(0), fTrackMatcherRunningMode(0), fDoPi0Only(kFALSE)
 {
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskGammaCaloMix::AliAnalysisTaskGammaCaloMix(const char *name):
-AliAnalysisTaskSE(name), fV0Reader(NULL), fV0ReaderName("V0ReaderV1"), fCorrTaskSetting(""), fBGHandler(NULL), fInputEvent(NULL), fMCEvent(NULL), fCutFolder(NULL), fESDList(NULL), fBackList(NULL), fMotherList(NULL), fTrueList(NULL), fMCList(NULL), fTreeList(NULL), fClusterTreeList(NULL), fOutputContainer(NULL), fReaderGammas(NULL), fGammaCandidates(NULL), fClusterCandidates(NULL), fClusterCandidates2(NULL), fEventCutArray(NULL), fEventCuts(NULL), fClusterCutArray(NULL), fClusterCutArray2(NULL), fCaloPhotonCuts(NULL), fMesonCutArray(NULL), fMesonCuts(NULL), fConvJetReader(NULL), fConversionCuts(NULL), fDoJetAnalysis(kFALSE), fDoJetQA(kFALSE), fDoTrueSphericity(kFALSE), fJetHistograms(NULL), fTrueJetHistograms(NULL), fJetSector(0), fMaxPtNearEMCalPlace(0), fJetNearEMCal(kFALSE), fHistoMotherInvMassPt(NULL), fSparseMotherInvMassPtZM(NULL), fHistoMotherBackInvMassPt(NULL), fSparseMotherBackInvMassPtZM(NULL), fHistoMotherPi0PtY(NULL), fHistoMotherEtaPtY(NULL), fHistoMotherPi0PtAlpha(NULL), fHistoMotherEtaPtAlpha(NULL), fHistoMotherPi0PtOpenAngle(NULL), fHistoMotherEtaPtOpenAngle(NULL), fHistoMotherPtOpenAngle(NULL), fHistoMotherPtOpenAngleBck(NULL), fHistoMotherPi0NGoodESDTracksPt(NULL), fHistoMotherEtaNGoodESDTracksPt(NULL), fHistoMotherInvMassECalib(NULL), fHistoMotherBackInvMassECalib(NULL), fHistoClusGammaPt(NULL), fHistoClusGammaE(NULL), fHistoClusOverlapHeadersGammaPt(NULL), fHistoClusAllHeadersGammaPt(NULL), fHistoClusRejectedHeadersGammaPt(NULL), fHistoClusGammaPtM02(NULL), fHistoMCHeaders(NULL), fHistoMCAllGammaPt(NULL), fHistoMCAllSecondaryGammaPt(NULL), fHistoMCDecayGammaPi0Pt(NULL), fHistoMCDecayGammaRhoPt(NULL), fHistoMCDecayGammaEtaPt(NULL), fHistoMCDecayGammaOmegaPt(NULL), fHistoMCDecayGammaEtapPt(NULL), fHistoMCDecayGammaPhiPt(NULL), fHistoMCDecayGammaSigmaPt(NULL), fHistoMCPi0Pt(NULL), fHistoMCPi0WOWeightPt(NULL), fHistoMCPi0WOEvtWeightPt(NULL), fHistoMCEtaPt(NULL), fHistoMCEtaWOWeightPt(NULL), fHistoMCEtaWOEvtWeightPt(NULL), fHistoMCPi0InAccPt(NULL), fHistoMCEtaInAccPt(NULL), fHistoMCPi0WOEvtWeightInAccPt(NULL), fHistoMCEtaWOEvtWeightInAccPt(NULL), fHistoMCPi0PtY(NULL), fHistoMCEtaPtY(NULL), fHistoMCPi0PtAlpha(NULL), fHistoMCEtaPtAlpha(NULL), fHistoMCPrimaryPtvsSource(NULL), fHistoMCSecPi0PtvsSource(NULL), fHistoMCSecPi0Source(NULL), fHistoMCSecPi0InAccPtvsSource(NULL), fHistoMCSecEtaPt(NULL), fHistoMCSecEtaSource(NULL), fHistoMCPi0PtJetPt(NULL), fHistoMCEtaPtJetPt(NULL), fHistoTruePi0InvMassPt(NULL), fHistoTrueEtaInvMassPt(NULL), fHistoTruePi0CaloPhotonInvMassPt(NULL), fHistoTrueEtaCaloPhotonInvMassPt(NULL), fHistoTruePi0CaloConvertedPhotonInvMassPt(NULL), fHistoTrueEtaCaloConvertedPhotonInvMassPt(NULL), fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTruePi0CaloElectronInvMassPt(NULL), fHistoTrueEtaCaloElectronInvMassPt(NULL), fHistoTruePi0CaloMergedClusterInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterInvMassPt(NULL), fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL), fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL), fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL), fHistoTruePi0Category1(NULL), fHistoTrueEtaCategory1(NULL), fHistoTruePi0Category2(NULL), fHistoTrueEtaCategory2(NULL), fHistoTruePi0Category3(NULL), fHistoTrueEtaCategory3(NULL), fHistoTruePi0Category4_6(NULL), fHistoTrueEtaCategory4_6(NULL), fHistoTruePi0Category5(NULL), fHistoTrueEtaCategory5(NULL), fHistoTruePi0Category7(NULL), fHistoTrueEtaCategory7(NULL), fHistoTruePi0Category8(NULL), fHistoTrueEtaCategory8(NULL), fHistoTruePrimaryPi0InvMassPt(NULL), fHistoTruePrimaryEtaInvMassPt(NULL), fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL), fHistoTruePrimaryEtaW0WeightingInvMassPt(NULL), fProfileTruePrimaryPi0WeightsInvMassPt(NULL), fProfileTruePrimaryEtaWeightsInvMassPt(NULL), fHistoTruePrimaryPi0MCPtResolPt(NULL), fHistoTruePrimaryEtaMCPtResolPt(NULL), fHistoTrueSecondaryPi0InvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL), fHistoTrueK0sWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL), fHistoTrueK0lWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromEtaInvMassPt(NULL), fHistoTrueEtaWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL), fHistoTrueLambdaWithPi0DaughterMCPt(NULL), fHistoTrueBckGGInvMassPt(NULL), fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL), fHistoTrueBckAsymEClustersInvMassPt(NULL), fHistoTrueBckContInvMassPt(NULL), fHistoTruePi0PtY(NULL), fHistoTrueEtaPtY(NULL), fHistoTruePi0PtAlpha(NULL), fHistoTrueEtaPtAlpha(NULL), fHistoTruePi0PtOpenAngle(NULL), fHistoTrueEtaPtOpenAngle(NULL), fHistoClusPhotonBGPt(NULL), fHistoClusPhotonPlusConvBGPt(NULL), fHistoClustPhotonElectronBGPtM02(NULL), fHistoClustPhotonPionBGPtM02(NULL), fHistoClustPhotonKaonBGPtM02(NULL), fHistoClustPhotonK0lBGPtM02(NULL), fHistoClustPhotonNeutronBGPtM02(NULL), fHistoClustPhotonRestBGPtM02(NULL), fHistoClustPhotonPlusConvElectronBGPtM02(NULL), fHistoClustPhotonPlusConvPionBGPtM02(NULL), fHistoClustPhotonPlusConvKaonBGPtM02(NULL), fHistoClustPhotonPlusConvK0lBGPtM02(NULL), fHistoClustPhotonPlusConvNeutronBGPtM02(NULL), fHistoClustPhotonPlusConvRestBGPtM02(NULL), fHistoTrueClusGammaPt(NULL), fHistoTrueClusUnConvGammaPt(NULL), fHistoTrueClusUnConvGammaMCPt(NULL), fHistoTrueClusGammaPtM02(NULL), fHistoTrueClusUnConvGammaPtM02(NULL), fHistoTrueClusElectronPt(NULL), fHistoTrueClusConvGammaPt(NULL), fHistoTrueClusConvGammaMCPt(NULL), fHistoTrueClusConvGammaFullyPt(NULL), fHistoTrueClusMergedGammaPt(NULL), fHistoTrueClusMergedPartConvGammaPt(NULL), fHistoTrueClusDalitzPt(NULL), fHistoTrueClusDalitzMergedPt(NULL), fHistoTrueClusPhotonFromElecMotherPt(NULL), fHistoTrueClusShowerPt(NULL), fHistoTrueClusSubLeadingPt(NULL), fHistoTrueClusNParticles(NULL), fHistoTrueClusEMNonLeadingPt(NULL), fHistoTrueNLabelsInClus(NULL), fHistoTruePrimaryClusGammaPt(NULL), fHistoTruePrimaryClusGammaESDPtMCPt(NULL), fHistoTruePrimaryClusConvGammaPt(NULL), fHistoTruePrimaryClusConvGammaESDPtMCPt(NULL), fHistoTrueSecondaryClusGammaPt(NULL), fHistoTrueSecondaryClusConvGammaPt(NULL), fHistoTrueSecondaryClusGammaMCPt(NULL), fHistoTrueSecondaryClusConvGammaMCPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromLambdaMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromLambdaMCPtESDPt(NULL), fHistoDoubleCountTruePi0InvMassPt(NULL), fHistoDoubleCountTrueEtaInvMassPt(NULL), fHistoDoubleCountTrueClusterGammaPt(NULL), fVectorDoubleCountTruePi0s(0), fVectorDoubleCountTrueEtas(0), fVectorDoubleCountTrueClusterGammas(0), fHistoMultipleCountTrueClusterGamma(NULL), fMapMultipleCountTrueClusterGammas(), fHistoTruePi0InvMassPtAlpha(NULL), fHistoTruePi0PureGammaInvMassPtAlpha(NULL), fHistCellIDvsClusterEnergy(NULL), fHistCellIDvsClusterEnergy2(NULL), fHistCellIDvsClusterEnergyMax(NULL), fHistCellIDvsClusterEnergyMax2(NULL), fHistoNEvents(NULL), fHistoNEventsWOWeight(NULL), fHistoNGoodESDTracks(NULL), fHistoVertexZ(NULL), fHistoNGammaCandidates(NULL), fHistoNGammaCandidates2(NULL), fHistoNGammaCandidatesBasic(NULL), fHistoNGoodESDTracksVsNGammaCandidates(NULL), fHistoSPDClusterTrackletBackground(NULL), fHistoNV0Tracks(NULL), fProfileEtaShift(NULL), fProfileJetJetXSection(NULL), fHistoJetJetNTrials(NULL), fHistoEventSphericity(NULL), fHistoEventSphericityAxis(NULL), fHistoEventSphericityvsNtracks(NULL), fHistoEventSphericityvsNJets(NULL), fHistoEventMultiplicityvsNJets(NULL), fHistoTrueSphericityvsRecSphericity(NULL), fHistoTrueMultiplicityvsRecMultiplicity(NULL), fHistoEventSphericityvsHighpt(NULL), fHistoEventSphericityvsTotalpt(NULL), fHistoEventSphericityvsMeanpt(NULL), fHistoPionSpectrum(NULL), fHistoProtonSpectrum(NULL), fHistoKaonSpectrum(NULL), fHistoNPionSpectrum(NULL), fHistoEtaSpectrum(NULL), fHistoDMesonSpectrum(NULL), tTreeSphericity(NULL), fRecSph(0), fTrueSph(0), fPi0Pt(0), fPi0InvMass(0), fHistoPtJet(NULL), fHistoJetEta(NULL), fHistoJetPhi(NULL), fHistoJetArea(NULL), fHistoNJets(NULL), fHistoEventwJets(NULL), fHistoJetPi0PtRatio(NULL), fHistoDoubleCounting(NULL), fHistoJetMotherInvMassPt(NULL), fHistoPi0InJetMotherInvMassPt(NULL), fHistoMotherBackJetInvMassPt(NULL), fHistoRJetPi0Cand(NULL), fHistoEtaPhiJetPi0Cand(NULL), fHistoEtaPhiJetWithPi0Cand(NULL), fHistoJetFragmFunc(NULL), fHistoJetFragmFuncZInvMass(NULL), fHistoTruevsRecJetPt(NULL), fHistoTruePi0JetMotherInvMassPt(NULL), fHistoTruePi0InJetMotherInvMassPt(NULL), fHistoTruePrimaryPi0JetInvMassPt(NULL), fHistoTruePrimaryPi0inJetInvMassPt(NULL), fHistoTruePrimaryPi0InJetInvMassTruePt(NULL), fHistoTrueDoubleCountingPi0Jet(NULL), fHistoTrueEtaJetMotherInvMassPt(NULL), fHistoTrueEtaInJetMotherInvMassPt(NULL), fHistoTruePrimaryEtaJetInvMassPt(NULL), fHistoTruePrimaryEtainJetInvMassPt(NULL), fHistoTrueDoubleCountingEtaJet(NULL), fHistoTruePi0JetFragmFunc(NULL), fHistoTruePi0JetFragmFuncZInvMass(NULL), fHistoTrueEtaJetFragmFunc(NULL), fHistoTrueEtaJetFragmFuncZInvMass(NULL), fHistoMCPi0JetInAccPt(NULL), fHistoMCPi0inJetInAccPt(NULL), fHistoMCEtaJetInAccPt(NULL), fHistoMCEtainJetInAccPt(NULL), fHistoMCPi0JetEventGenerated(NULL), fHistoMCPi0inJetGenerated(NULL), fHistoMCEtaJetEventGenerated(NULL), fHistoMCEtainJetGenerated(NULL), fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdainJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0lJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0linJetInvMassPt(NULL), fHistoTrueSecondaryPi0InvJetMassPt(NULL), fHistoTrueSecondaryPi0InvinJetMassPt(NULL), fHistoMotherPi0inJetPtY(NULL), fHistoMotherEtainJetPtY(NULL), fHistoMotherPi0inJetPtPhi(NULL), fHistoMotherEtainJetPtPhi(NULL), fNumberOfClusters(NULL), fNumberOfClustersinJets(NULL), fEnergyRatio(NULL), fEnergyRatioinJets(NULL), fEnergyRatioGamma1(NULL), fEnergyRatioGamma1inJets(NULL), fEnergyRatioGammaAnywhere(NULL), fEnergyRatioGammaAnywhereinJets(NULL), fEnergyDeposit(NULL), fEnergyDepositinJets(NULL), fEnergyDepGamma1(NULL), fEnergyDepGamma1inJets(NULL), fEnergyDepGammaAnywhere(NULL), fEnergyDepGammaAnywhereinJets(NULL), fEnergyRatioGamma1Helped(NULL), fEnergyRatioGamma1HelpedinJets(NULL), fClusterEtaPhiJets(NULL), fHistoUnfoldingAsData(NULL), fHistoUnfoldingMissed(NULL), fHistoUnfoldingReject(NULL), fHistoUnfoldingAsDataInvMassZ(NULL), fHistoUnfoldingMissedInvMassZ(NULL), fHistoUnfoldingRejectInvMassZ(NULL), fVectorJetPt(0), fVectorJetPx(0), fVectorJetPy(0), fVectorJetPz(0), fVectorJetEta(0), fVectorJetPhi(0), fVectorJetArea(0), fTrueVectorJetPt(0), fTrueVectorJetPx(0), fTrueVectorJetPy(0), fTrueVectorJetPz(0), fTrueVectorJetEta(0), fTrueVectorJetPhi(0), tTrueInvMassROpenABPtFlag(NULL), fInvMass(-1), fRconv(-1), fOpenRPrim(-1), fInvMassRTOF(-1), fPt(-1), iFlag(3), tSigInvMassPtAlphaTheta(NULL), tBckInvMassPtAlphaTheta(NULL), fInvMassTreeInvMass(0), fInvMassTreePt(0), fInvMassTreeAlpha(0), fInvMassTreeTheta(0), fInvMassTreeMixPool(0), fInvMassTreeZVertex(0), fInvMassTreeEta(0), tClusterEOverP(NULL), fClusterE(0), fClusterM02(0), fClusterM20(0), fClusterEP(0), fClusterLeadCellID(0), fClusterClassification(0), fDeltaEta(0), fDeltaPhi(0), fTrackPt(0), fTrackPID_e(0), fTrackPID_Pi(0), fTrackPID_K(0), fTrackPID_P(0), fClusterIsoSumClusterEt(0), fClusterIsoSumTrackEt(0), tClusterTimingEff(NULL), fClusterTimeTag(0), fClusterTimeProbe(0), fClusterETag(0), fClusterEProbe(0), fEventPlaneAngle(-100), fRandom(0), fnCuts(0), fiCut(0), fIsHeavyIon(0), fDoLightOutput(kFALSE), fDoMesonAnalysis(kTRUE), fDoMesonQA(0), fDoClusterQA(0), fIsFromDesiredHeader(kTRUE), fIsOverlappingWithOtherHeader(kFALSE), fIsMC(0), fDoTHnSparse(kTRUE), fSetPlotHistsExtQA(kFALSE), fDoSoftAnalysis(kFALSE), fWeightJetJetMC(1), fDoInOutTimingCluster(kFALSE), fMinTimingCluster(0), fMaxTimingCluster(0), fEnableSortForClusMC(kFALSE), fProduceCellIDPlots(kFALSE), fProduceTreeEOverP(kFALSE), tBrokenFiles(NULL), fFileNameBroken(NULL), tClusterQATree(NULL), fCloseHighPtClusters(NULL), fLocalDebugFlag(0), fAllowOverlapHeaders(kTRUE), fNCurrentClusterBasic(0), fTrackMatcherRunningMode(0), fDoPi0Only(kFALSE)
+AliAnalysisTaskSE(name), fV0Reader(NULL), fV0ReaderName("V0ReaderV1"), fCorrTaskSetting(""), fBGHandler(NULL), fInputEvent(NULL), fMCEvent(NULL), fCutFolder(NULL), fESDList(NULL), fBackList(NULL), fMotherList(NULL), fTrueList(NULL), fMCList(NULL), fTreeList(NULL), fClusterTreeList(NULL), fOutputContainer(NULL), fReaderGammas(NULL), fGammaCandidates(NULL), fClusterCandidates(NULL), fClusterCandidates2(NULL), fEventCutArray(NULL), fEventCuts(NULL), fClusterCutArray(NULL), fClusterCutArray2(NULL), fCaloPhotonCuts(NULL), fMesonCutArray(NULL), fMesonCuts(NULL), fConvJetReader(NULL), fConversionCuts(NULL), fOutlierJetReader(NULL), fDoJetAnalysis(kFALSE), fDoJetQA(kFALSE), fDoTrueSphericity(kFALSE), fJetHistograms(NULL), fTrueJetHistograms(NULL), fJetSector(0), fMaxPtNearEMCalPlace(0), fJetNearEMCal(kFALSE), fHistoMotherInvMassPt(NULL), fSparseMotherInvMassPtZM(NULL), fHistoMotherBackInvMassPt(NULL), fSparseMotherBackInvMassPtZM(NULL), fHistoMotherPi0PtY(NULL), fHistoMotherEtaPtY(NULL), fHistoMotherPi0PtAlpha(NULL), fHistoMotherEtaPtAlpha(NULL), fHistoMotherPi0PtOpenAngle(NULL), fHistoMotherEtaPtOpenAngle(NULL), fHistoMotherPtOpenAngle(NULL), fHistoMotherPtOpenAngleBck(NULL), fHistoMotherPi0NGoodESDTracksPt(NULL), fHistoMotherEtaNGoodESDTracksPt(NULL), fHistoMotherInvMassECalib(NULL), fHistoMotherBackInvMassECalib(NULL), fHistoClusGammaPt(NULL), fHistoClusGammaE(NULL), fHistoClusOverlapHeadersGammaPt(NULL), fHistoClusAllHeadersGammaPt(NULL), fHistoClusRejectedHeadersGammaPt(NULL), fHistoClusGammaPtM02(NULL), fHistoMCHeaders(NULL), fHistoMCAllGammaPt(NULL), fHistoMCAllSecondaryGammaPt(NULL), fHistoMCDecayGammaPi0Pt(NULL), fHistoMCDecayGammaRhoPt(NULL), fHistoMCDecayGammaEtaPt(NULL), fHistoMCDecayGammaOmegaPt(NULL), fHistoMCDecayGammaEtapPt(NULL), fHistoMCDecayGammaPhiPt(NULL), fHistoMCDecayGammaSigmaPt(NULL), fHistoMCPi0Pt(NULL), fHistoMCPi0WOWeightPt(NULL), fHistoMCPi0WOEvtWeightPt(NULL), fHistoMCEtaPt(NULL), fHistoMCEtaWOWeightPt(NULL), fHistoMCEtaWOEvtWeightPt(NULL), fHistoMCPi0InAccPt(NULL), fHistoMCEtaInAccPt(NULL), fHistoMCPi0WOEvtWeightInAccPt(NULL), fHistoMCEtaWOEvtWeightInAccPt(NULL), fHistoMCPi0PtY(NULL), fHistoMCEtaPtY(NULL), fHistoMCPi0PtAlpha(NULL), fHistoMCEtaPtAlpha(NULL), fHistoMCPrimaryPtvsSource(NULL), fHistoMCSecPi0PtvsSource(NULL), fHistoMCSecPi0Source(NULL), fHistoMCSecPi0InAccPtvsSource(NULL), fHistoMCSecEtaPt(NULL), fHistoMCSecEtaSource(NULL), fHistoMCPi0PtJetPt(NULL), fHistoMCEtaPtJetPt(NULL), fHistoTruePi0InvMassPt(NULL), fHistoTrueEtaInvMassPt(NULL), fHistoTruePi0CaloPhotonInvMassPt(NULL), fHistoTrueEtaCaloPhotonInvMassPt(NULL), fHistoTruePi0CaloConvertedPhotonInvMassPt(NULL), fHistoTrueEtaCaloConvertedPhotonInvMassPt(NULL), fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt(NULL), fHistoTruePi0CaloElectronInvMassPt(NULL), fHistoTrueEtaCaloElectronInvMassPt(NULL), fHistoTruePi0CaloMergedClusterInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterInvMassPt(NULL), fHistoTruePi0CaloMergedClusterPartConvInvMassPt(NULL), fHistoTrueEtaCaloMergedClusterPartConvInvMassPt(NULL), fHistoTruePi0NonMergedElectronPhotonInvMassPt(NULL), fHistoTruePi0NonMergedElectronMergedPhotonInvMassPt(NULL), fHistoTruePi0Category1(NULL), fHistoTrueEtaCategory1(NULL), fHistoTruePi0Category2(NULL), fHistoTrueEtaCategory2(NULL), fHistoTruePi0Category3(NULL), fHistoTrueEtaCategory3(NULL), fHistoTruePi0Category4_6(NULL), fHistoTrueEtaCategory4_6(NULL), fHistoTruePi0Category5(NULL), fHistoTrueEtaCategory5(NULL), fHistoTruePi0Category7(NULL), fHistoTrueEtaCategory7(NULL), fHistoTruePi0Category8(NULL), fHistoTrueEtaCategory8(NULL), fHistoTruePrimaryPi0InvMassPt(NULL), fHistoTruePrimaryEtaInvMassPt(NULL), fHistoTruePrimaryPi0W0WeightingInvMassPt(NULL), fHistoTruePrimaryEtaW0WeightingInvMassPt(NULL), fProfileTruePrimaryPi0WeightsInvMassPt(NULL), fProfileTruePrimaryEtaWeightsInvMassPt(NULL), fHistoTruePrimaryPi0MCPtResolPt(NULL), fHistoTruePrimaryEtaMCPtResolPt(NULL), fHistoTrueSecondaryPi0InvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL), fHistoTrueK0sWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL), fHistoTrueK0lWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromEtaInvMassPt(NULL), fHistoTrueEtaWithPi0DaughterMCPt(NULL), fHistoTrueSecondaryPi0FromLambdaInvMassPt(NULL), fHistoTrueLambdaWithPi0DaughterMCPt(NULL), fHistoTrueBckGGInvMassPt(NULL), fHistoTrueBckFullMesonContainedInOneClusterInvMassPt(NULL), fHistoTrueBckAsymEClustersInvMassPt(NULL), fHistoTrueBckContInvMassPt(NULL), fHistoTruePi0PtY(NULL), fHistoTrueEtaPtY(NULL), fHistoTruePi0PtAlpha(NULL), fHistoTrueEtaPtAlpha(NULL), fHistoTruePi0PtOpenAngle(NULL), fHistoTrueEtaPtOpenAngle(NULL), fHistoClusPhotonBGPt(NULL), fHistoClusPhotonPlusConvBGPt(NULL), fHistoClustPhotonElectronBGPtM02(NULL), fHistoClustPhotonPionBGPtM02(NULL), fHistoClustPhotonKaonBGPtM02(NULL), fHistoClustPhotonK0lBGPtM02(NULL), fHistoClustPhotonNeutronBGPtM02(NULL), fHistoClustPhotonRestBGPtM02(NULL), fHistoClustPhotonPlusConvElectronBGPtM02(NULL), fHistoClustPhotonPlusConvPionBGPtM02(NULL), fHistoClustPhotonPlusConvKaonBGPtM02(NULL), fHistoClustPhotonPlusConvK0lBGPtM02(NULL), fHistoClustPhotonPlusConvNeutronBGPtM02(NULL), fHistoClustPhotonPlusConvRestBGPtM02(NULL), fHistoTrueClusGammaPt(NULL), fHistoTrueClusUnConvGammaPt(NULL), fHistoTrueClusUnConvGammaMCPt(NULL), fHistoTrueClusGammaPtM02(NULL), fHistoTrueClusUnConvGammaPtM02(NULL), fHistoTrueClusElectronPt(NULL), fHistoTrueClusConvGammaPt(NULL), fHistoTrueClusConvGammaMCPt(NULL), fHistoTrueClusConvGammaFullyPt(NULL), fHistoTrueClusMergedGammaPt(NULL), fHistoTrueClusMergedPartConvGammaPt(NULL), fHistoTrueClusDalitzPt(NULL), fHistoTrueClusDalitzMergedPt(NULL), fHistoTrueClusPhotonFromElecMotherPt(NULL), fHistoTrueClusShowerPt(NULL), fHistoTrueClusSubLeadingPt(NULL), fHistoTrueClusNParticles(NULL), fHistoTrueClusEMNonLeadingPt(NULL), fHistoTrueNLabelsInClus(NULL), fHistoTruePrimaryClusGammaPt(NULL), fHistoTruePrimaryClusGammaESDPtMCPt(NULL), fHistoTruePrimaryClusConvGammaPt(NULL), fHistoTruePrimaryClusConvGammaESDPtMCPt(NULL), fHistoTrueSecondaryClusGammaPt(NULL), fHistoTrueSecondaryClusConvGammaPt(NULL), fHistoTrueSecondaryClusGammaMCPt(NULL), fHistoTrueSecondaryClusConvGammaMCPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0sMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromK0lMCPtESDPt(NULL), fHistoTrueSecondaryClusGammaFromXFromLambdaMCPtESDPt(NULL), fHistoTrueSecondaryClusConvGammaFromXFromLambdaMCPtESDPt(NULL), fHistoDoubleCountTruePi0InvMassPt(NULL), fHistoDoubleCountTrueEtaInvMassPt(NULL), fHistoDoubleCountTrueClusterGammaPt(NULL), fVectorDoubleCountTruePi0s(0), fVectorDoubleCountTrueEtas(0), fVectorDoubleCountTrueClusterGammas(0), fHistoMultipleCountTrueClusterGamma(NULL), fMapMultipleCountTrueClusterGammas(), fHistoTruePi0InvMassPtAlpha(NULL), fHistoTruePi0PureGammaInvMassPtAlpha(NULL), fHistCellIDvsClusterEnergy(NULL), fHistCellIDvsClusterEnergy2(NULL), fHistCellIDvsClusterEnergyMax(NULL), fHistCellIDvsClusterEnergyMax2(NULL), fHistoNEvents(NULL), fHistoNEventsWOWeight(NULL), fHistoNGoodESDTracks(NULL), fHistoVertexZ(NULL), fHistoNGammaCandidates(NULL), fHistoNGammaCandidates2(NULL), fHistoNGammaCandidatesBasic(NULL), fHistoNGoodESDTracksVsNGammaCandidates(NULL), fHistoSPDClusterTrackletBackground(NULL), fHistoNV0Tracks(NULL), fProfileEtaShift(NULL), fProfileJetJetXSection(NULL), fHistoJetJetNTrials(NULL), fHistoEventSphericity(NULL), fHistoEventSphericityAxis(NULL), fHistoEventSphericityvsNtracks(NULL), fHistoEventSphericityvsNJets(NULL), fHistoEventMultiplicityvsNJets(NULL), fHistoTrueSphericityvsRecSphericity(NULL), fHistoTrueMultiplicityvsRecMultiplicity(NULL), fHistoEventSphericityvsHighpt(NULL), fHistoEventSphericityvsTotalpt(NULL), fHistoEventSphericityvsMeanpt(NULL), fHistoPionSpectrum(NULL), fHistoProtonSpectrum(NULL), fHistoKaonSpectrum(NULL), fHistoNPionSpectrum(NULL), fHistoEtaSpectrum(NULL), fHistoDMesonSpectrum(NULL), tTreeSphericity(NULL), fRecSph(0), fTrueSph(0), fPi0Pt(0), fPi0InvMass(0), fHistoPtJet(NULL), fHistoJetEta(NULL), fHistoJetPhi(NULL), fHistoJetArea(NULL), fHistoNJets(NULL), fHistoEventwJets(NULL), fHistoJetPi0PtRatio(NULL), fHistoDoubleCounting(NULL), fHistoJetMotherInvMassPt(NULL), fHistoPi0InJetMotherInvMassPt(NULL), fHistoMotherBackJetInvMassPt(NULL), fHistoRJetPi0Cand(NULL), fHistoEtaPhiJetPi0Cand(NULL), fHistoEtaPhiJetWithPi0Cand(NULL), fHistoJetFragmFunc(NULL), fHistoJetFragmFuncZInvMass(NULL), fHistoTruevsRecJetPt(NULL), fHistoTruePi0JetMotherInvMassPt(NULL), fHistoTruePi0InJetMotherInvMassPt(NULL), fHistoTruePrimaryPi0JetInvMassPt(NULL), fHistoTruePrimaryPi0inJetInvMassPt(NULL), fHistoTruePrimaryPi0InJetInvMassTruePt(NULL), fHistoTrueDoubleCountingPi0Jet(NULL), fHistoTrueEtaJetMotherInvMassPt(NULL), fHistoTrueEtaInJetMotherInvMassPt(NULL), fHistoTruePrimaryEtaJetInvMassPt(NULL), fHistoTruePrimaryEtainJetInvMassPt(NULL), fHistoTrueDoubleCountingEtaJet(NULL), fHistoTruePi0JetFragmFunc(NULL), fHistoTruePi0JetFragmFuncZInvMass(NULL), fHistoTrueEtaJetFragmFunc(NULL), fHistoTrueEtaJetFragmFuncZInvMass(NULL), fHistoMCPi0JetInAccPt(NULL), fHistoMCPi0inJetInAccPt(NULL), fHistoMCEtaJetInAccPt(NULL), fHistoMCEtainJetInAccPt(NULL), fHistoMCPi0JetEventGenerated(NULL), fHistoMCPi0inJetGenerated(NULL), fHistoMCEtaJetEventGenerated(NULL), fHistoMCEtainJetGenerated(NULL), fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromLambdainJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0lJetInvMassPt(NULL), fHistoTrueSecondaryPi0FromK0linJetInvMassPt(NULL), fHistoTrueSecondaryPi0InvJetMassPt(NULL), fHistoTrueSecondaryPi0InvinJetMassPt(NULL), fHistoMotherPi0inJetPtY(NULL), fHistoMotherEtainJetPtY(NULL), fHistoMotherPi0inJetPtPhi(NULL), fHistoMotherEtainJetPtPhi(NULL), fNumberOfClusters(NULL), fNumberOfClustersinJets(NULL), fEnergyRatio(NULL), fEnergyRatioinJets(NULL), fEnergyRatioGamma1(NULL), fEnergyRatioGamma1inJets(NULL), fEnergyRatioGammaAnywhere(NULL), fEnergyRatioGammaAnywhereinJets(NULL), fEnergyDeposit(NULL), fEnergyDepositinJets(NULL), fEnergyDepGamma1(NULL), fEnergyDepGamma1inJets(NULL), fEnergyDepGammaAnywhere(NULL), fEnergyDepGammaAnywhereinJets(NULL), fEnergyRatioGamma1Helped(NULL), fEnergyRatioGamma1HelpedinJets(NULL), fClusterEtaPhiJets(NULL), fHistoUnfoldingAsData(NULL), fHistoUnfoldingMissed(NULL), fHistoUnfoldingReject(NULL), fHistoUnfoldingAsDataInvMassZ(NULL), fHistoUnfoldingMissedInvMassZ(NULL), fHistoUnfoldingRejectInvMassZ(NULL), fVectorJetPt(0), fVectorJetPx(0), fVectorJetPy(0), fVectorJetPz(0), fVectorJetEta(0), fVectorJetPhi(0), fVectorJetArea(0), fTrueVectorJetPt(0), fTrueVectorJetPx(0), fTrueVectorJetPy(0), fTrueVectorJetPz(0), fTrueVectorJetEta(0), fTrueVectorJetPhi(0), tTrueInvMassROpenABPtFlag(NULL), fInvMass(-1), fRconv(-1), fOpenRPrim(-1), fInvMassRTOF(-1), fPt(-1), iFlag(3), tSigInvMassPtAlphaTheta(NULL), tBckInvMassPtAlphaTheta(NULL), fInvMassTreeInvMass(0), fInvMassTreePt(0), fInvMassTreeAlpha(0), fInvMassTreeTheta(0), fInvMassTreeMixPool(0), fInvMassTreeZVertex(0), fInvMassTreeEta(0), tClusterEOverP(NULL), fClusterE(0), fClusterM02(0), fClusterM20(0), fClusterEP(0), fClusterLeadCellID(0), fClusterClassification(0), fDeltaEta(0), fDeltaPhi(0), fTrackPt(0), fTrackPID_e(0), fTrackPID_Pi(0), fTrackPID_K(0), fTrackPID_P(0), fClusterIsoSumClusterEt(0), fClusterIsoSumTrackEt(0), tClusterTimingEff(NULL), fClusterTimeTag(0), fClusterTimeProbe(0), fClusterETag(0), fClusterEProbe(0), fEventPlaneAngle(-100), fRandom(0), fnCuts(0), fiCut(0), fIsHeavyIon(0), fDoLightOutput(kFALSE), fDoMesonAnalysis(kTRUE), fDoMesonQA(0), fDoClusterQA(0), fIsFromDesiredHeader(kTRUE), fIsOverlappingWithOtherHeader(kFALSE), fIsMC(0), fDoTHnSparse(kTRUE), fSetPlotHistsExtQA(kFALSE), fDoSoftAnalysis(kFALSE), fWeightJetJetMC(1), fDoInOutTimingCluster(kFALSE), fMinTimingCluster(0), fMaxTimingCluster(0), fEnableSortForClusMC(kFALSE), fProduceCellIDPlots(kFALSE), fProduceTreeEOverP(kFALSE), tBrokenFiles(NULL), fFileNameBroken(NULL), tClusterQATree(NULL), fCloseHighPtClusters(NULL), fLocalDebugFlag(0), fAllowOverlapHeaders(kTRUE), fNCurrentClusterBasic(0), fTrackMatcherRunningMode(0), fDoPi0Only(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -185,6 +185,11 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
   if(fDoJetAnalysis){
     fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
     if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+  }
+  if(((AliConvEventCuts*)fEventCutArray->At(0))->GetUseJetFinderForOutliers()){
+    fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
+    if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // Get jet outlier task
+    else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
   }
   if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching() || ((AliCaloPhotonCuts*)fClusterCutArray2->At(fiCut))->GetDoSecondaryTrackMatching()){
     fConversionCuts = new AliConversionPhotonCuts();
@@ -569,7 +574,7 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
 
-    fHistoNEvents[iCut]     = new TH1F("NEvents", "NEvents", 15, -0.5, 13.5);
+    fHistoNEvents[iCut]     = new TH1F("NEvents", "NEvents", 15, -0.5, 14.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
@@ -626,15 +631,16 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoJetJetNTrials[iCut]);
     }
 
-    if(fIsHeavyIon == 1)
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 4000, 0, 4000);
-    else if(fIsHeavyIon == 2)
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 400, 0, 400);
-    else
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 200, 0, 200);
-    fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
-    fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
-
+    if(fDoLightOutput!=2){
+        if(fIsHeavyIon == 1)
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 4000, 0, 4000);
+        else if(fIsHeavyIon == 2)
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 400, 0, 400);
+        else
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 200, 0, 200);
+        fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
+        fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
+    }
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
       fHistoEventSphericity[iCut]     = new TH1F("EventSphericity", "EventSphericity", 100, 0, 1);
       fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
@@ -712,34 +718,34 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fHistoEventSphericityvsMeanpt[iCut]->GetYaxis()->SetTitle("Mean p_{T}");
       fESDList[iCut]->Add(fHistoEventSphericityvsMeanpt[iCut]);
     }
+    if(fDoLightOutput!=2){
+        fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
+        fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
+        fESDList[iCut]->Add(fHistoVertexZ[iCut]);
 
-    fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
-    fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
-    fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+        if(fIsHeavyIon == 1)
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 600, 0, 600);
+        else if(fIsHeavyIon == 2)
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 400, 0, 400);
+        else
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 100, 0, 100);
+        fHistoNGammaCandidatesBasic[iCut]->GetXaxis()->SetTitle("#cluster candidates basic");
+        fESDList[iCut]->Add(fHistoNGammaCandidatesBasic[iCut]);
 
-    if(fIsHeavyIon == 1)
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 600, 0, 600);
-    else if(fIsHeavyIon == 2)
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 400, 0, 400);
-    else
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 100, 0, 100);
-    fHistoNGammaCandidatesBasic[iCut]->GetXaxis()->SetTitle("#cluster candidates basic");
-    fESDList[iCut]->Add(fHistoNGammaCandidatesBasic[iCut]);
-
-
-    if(fIsHeavyIon == 1) {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 200, 0, 200);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 200, 0, 200);
-    } else if(fIsHeavyIon == 2) {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 100, 0, 100);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 100, 0, 100);
-    } else {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 50, 0, 50);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 50, 0, 50);
+        if(fIsHeavyIon == 1) {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 200, 0, 200);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 200, 0, 200);
+        } else if(fIsHeavyIon == 2) {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 100, 0, 100);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 100, 0, 100);
+        } else {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 50, 0, 50);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 50, 0, 50);
+        }
+        fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
+        fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
+        fESDList[iCut]->Add(fHistoNGammaCandidates2[iCut]);
     }
-    fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
-    fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
-    fESDList[iCut]->Add(fHistoNGammaCandidates2[iCut]);
 
     if(!fDoLightOutput){
       if(fIsHeavyIon == 1)
@@ -773,7 +779,7 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
 
     if (fIsMC > 1){
       fHistoNEvents[iCut]->Sumw2();
-      fHistoNGoodESDTracks[iCut]->Sumw2();
+      if(fDoLightOutput!=2) fHistoNGoodESDTracks[iCut]->Sumw2();
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         fHistoEventSphericity[iCut]->Sumw2();
         fHistoEventSphericityAxis[iCut]->Sumw2();
@@ -794,10 +800,12 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoEtaSpectrum[iCut]->Sumw2();
         fHistoDMesonSpectrum[iCut]->Sumw2();
       }
-      fHistoVertexZ[iCut]->Sumw2();
-      fHistoNGammaCandidates[iCut]->Sumw2();
-      fHistoNGammaCandidates2[iCut]->Sumw2();
-      fHistoNGammaCandidatesBasic[iCut]->Sumw2();
+      if(fDoLightOutput!=2){
+          fHistoVertexZ[iCut]->Sumw2();
+          fHistoNGammaCandidates[iCut]->Sumw2();
+          fHistoNGammaCandidates2[iCut]->Sumw2();
+          fHistoNGammaCandidatesBasic[iCut]->Sumw2();
+      }
       if(!fDoLightOutput){
         fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
         fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
@@ -836,6 +844,8 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
       if(!fDoLightOutput && fDoClusterQA > 0)fHistoClusGammaPtM02[iCut]->Sumw2();
     }
+
+    if(fDoLightOutput==2) nBinsMinv/=2;
 
     if(fDoMesonAnalysis){
       fHistoMotherInvMassPt[iCut]           = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
@@ -1284,10 +1294,12 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoTruePi0InvMassPtAlpha               = new TH2F*[fnCuts];
         fHistoTruePi0PureGammaInvMassPtAlpha      = new TH2F*[fnCuts];
       }
-      fHistoMCPrimaryPtvsSource                   = new TH2F*[fnCuts];
-      fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
-      fHistoMCSecPi0InAccPtvsSource               = new TH2F*[fnCuts];
-      fHistoMCSecPi0Source                        = new TH1F*[fnCuts];
+      if(fDoLightOutput!=2){
+          fHistoMCPrimaryPtvsSource                   = new TH2F*[fnCuts];
+          fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
+          fHistoMCSecPi0InAccPtvsSource               = new TH2F*[fnCuts];
+          fHistoMCSecPi0Source                        = new TH1F*[fnCuts];
+      }
 
       if (fDoMesonQA > 0 && fDoMesonQA < 3 ){
         fHistoMCPi0PtY                            = new TH2F*[fnCuts];
@@ -1483,25 +1495,36 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
             }
           }
         }
-        fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 7, -0.5, 6.5);
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
-        fHistoMCPrimaryPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fHistoMCPrimaryPtvsSource[iCut]->SetYTitle("particle");
-        fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
+        if(fDoLightOutput!=2){
+            fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 7, -0.5, 6.5);
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
+            fHistoMCPrimaryPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
+            fHistoMCPrimaryPtvsSource[iCut]->SetYTitle("particle");
+            fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
 
-        fHistoMCSecPi0Source[iCut]      = new TH1F("MC_SecPi0_Source", "MC_SecPi0_Source", 5000, 0., 5000);
-        fHistoMCSecPi0Source[iCut]->SetYTitle("source PDG");
-        fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
-        if( !fDoPi0Only ){
-          fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
-          fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
-          fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
+            fHistoMCSecPi0Source[iCut]      = new TH1F("MC_SecPi0_Source", "MC_SecPi0_Source", 5000, 0., 5000);
+            fHistoMCSecPi0Source[iCut]->SetYTitle("source PDG");
+            fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
+            if( !fDoPi0Only ){
+              fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
+              fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
+              fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
+            }
+            if( !fDoPi0Only ){
+                fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+                fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+                fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
+            }
+            if (fIsMC == 2) {
+              fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+              if( !fDoPi0Only ) fHistoMCSecEtaPt[iCut]->Sumw2();
+          }
         }
         fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
         fHistoMCSecPi0PtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
@@ -1511,17 +1534,11 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetYTitle("source");
         fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
-        if( !fDoPi0Only ){
-          fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-          fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
-        }
         if (fIsMC == 2) {
-          fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
-          if( !fDoPi0Only ) fHistoMCSecEtaPt[iCut]->Sumw2();
         }
+
 
 
         if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -2489,7 +2506,13 @@ void AliAnalysisTaskGammaCaloMix::UserExec(Option_t *)
     fiCut = iCut;
     fNCurrentClusterBasic       = 0;
     Bool_t isRunningEMCALrelAna = kFALSE;
-    if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1 || ((AliCaloPhotonCuts*)fClusterCutArray2->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
+    if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1
+     || ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3
+     || ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4
+     || ((AliCaloPhotonCuts*)fClusterCutArray2->At(fiCut))->GetClusterType() == 1
+     || ((AliCaloPhotonCuts*)fClusterCutArray2->At(fiCut))->GetClusterType() == 3
+     || ((AliCaloPhotonCuts*)fClusterCutArray2->At(fiCut))->GetClusterType() == 4
+    ) isRunningEMCALrelAna = kTRUE;
 
     Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon, isRunningEMCALrelAna);
 
@@ -2502,16 +2525,18 @@ void AliAnalysisTaskGammaCaloMix::UserExec(Option_t *)
       fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}", ntrials);
     }
 
-    if (fIsMC > 0){
+    if (fIsMC > 1){
       fWeightJetJetMC       = 1;
-      // Float_t maxjetpt      = -1.;
-      // Float_t pthard = -1;
-      // if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
-      Bool_t isMCJet        = kFALSE; //((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      Float_t maxjetpt      = -1.;
+      Float_t pthard = -1;
+      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      // if(isMCJet && (fIsMC==2))           fHistoPtHardJJWeight[iCut]->Fill(pthard,fWeightJetJetMC);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
       }
+      // if(fIsMC==1) fWeightJetJetMC = 1;
       if (!isMCJet){
         fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
         if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(10);
@@ -2777,7 +2802,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessClusters()
     }
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef(i);
     PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArraytmp->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
     // get MC label
@@ -3252,7 +3277,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessTrueClusterCandidates(AliAODConversionP
 
   Double_t tempPhotonWeight       = fWeightJetJetMC;
   TParticle *Photon = NULL;
-  if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+  if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (!fDoLightOutput && fDoClusterQA > 0) fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(), tempPhotonWeight);
 
   if (TruePhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return;
@@ -3423,7 +3448,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessTrueClusterCandidatesAOD(AliAODConversi
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!fDoLightOutput && fDoClusterQA > 0) fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(), tempPhotonWeight);
   if (AODMCTrackArray){
-    if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
+    if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
     if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0) Photon = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
       else return;
   } else {
@@ -3654,7 +3679,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessAODMCParticles()
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+        if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
           if ( particle->GetPdgCode() == 211 ){  // positve pions
             fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight);
           } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -3958,7 +3983,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessMCParticles()
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+        if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
           if ( particle->GetPdgCode() == 211 ){  // positve pions
             fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight);
           } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -4233,7 +4258,7 @@ void AliAnalysisTaskGammaCaloMix::CalculatePi0Candidates(){
           arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
           AliVCluster* Cluster0 = NULL;
           AliVCluster* Cluster1 = NULL;
-          if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
+          if (gamma0->GetIsCaloPhoton() > 0 && gamma1->GetIsCaloPhoton() > 0){
             if(fInputEvent->IsA()==AliESDEvent::Class()){
               if(arrClustersProcess){
                 Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
@@ -4268,7 +4293,7 @@ void AliAnalysisTaskGammaCaloMix::CalculatePi0Candidates(){
           }
           if(ClusterMatched) continue;
         }
-        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),gamma0->GetLeadingCellID(),gamma1->GetLeadingCellID()))){
+        if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(), gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton()))){
           if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
           if(fIsMC && fDoTrueSphericity){
@@ -4439,7 +4464,7 @@ void AliAnalysisTaskGammaCaloMix::CalculatePi0Candidates(){
             arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
             AliVCluster* Cluster0 = NULL;
             AliVCluster* Cluster1 = NULL;
-            if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
+            if (gamma0->GetIsCaloPhoton() > 0 && gamma1->GetIsCaloPhoton() > 0){
               if(fInputEvent->IsA()==AliESDEvent::Class()){
                 if(arrClustersProcess){
                   Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
@@ -4526,7 +4551,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessTrueMesonCandidates(AliAODConversionMot
       }
     }
   }
-  if (!TrueGammaCandidate1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+  if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
 
   Int_t gamma1MCLabel = TrueGammaCandidate1->GetCaloPhotonMCLabel(0);   // get most probable MC label
   Int_t gamma1MotherLabel = -1;
@@ -5785,7 +5810,7 @@ void AliAnalysisTaskGammaCaloMix::CalculateBackground(){
           }
 
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-            ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID())){
+            ->MesonIsSelected(backgroundCandidate, kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID(), currentEventGoodV0.GetIsCaloPhoton(), previousGoodV0.GetIsCaloPhoton() )){
             fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -5883,7 +5908,7 @@ void AliAnalysisTaskGammaCaloMix::CalculateBackground(){
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
-                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
+                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID(), currentEventGoodV0.GetIsCaloPhoton(), previousGoodV0.GetIsCaloPhoton()))){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                   }
@@ -5910,7 +5935,7 @@ void AliAnalysisTaskGammaCaloMix::CalculateBackground(){
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID(), currentEventGoodV0.GetIsCaloPhoton(), previousGoodV0.GetIsCaloPhoton()))){
               // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
               if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
                 if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(previousGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&

@@ -91,6 +91,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
   UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
 
+  Float_t   MatchedEMCalClusterEnergy() const {return fMatchedEMCalClusterEnergy;}
   Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
   Int_t     CaloClusterId() const {return fCaloClusterId;}
   
@@ -113,8 +114,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
+  // setters
+  void SetMatchedEMCalClusterEnergy(Float_t energy) {fMatchedEMCalClusterEnergy=energy;}
 
-     
  protected:
   ULong_t fStatus;              // tracking status
   Float_t fTPCPhi;              // inner param phi
@@ -177,6 +179,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  fTRDGTUPID;          // TRD online track pid
 
   // EMCAL/PHOS
+  Float_t fMatchedEMCalClusterEnergy; // EMCal cluster energy for matched cluster
   Float_t fEMCALnSigEle;        // EMCal n-sigma deviation from expected electron signal
   Int_t   fCaloClusterId;       // ID for the calorimeter cluster (if any)
   

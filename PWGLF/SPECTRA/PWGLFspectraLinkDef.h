@@ -1,7 +1,6 @@
 #ifdef __CINT__
 
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
-#pragma link C++ class AliMeanPtAnalysisTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AliAnalysisTaskCutTest+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
@@ -23,7 +22,6 @@
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
-#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskBaseWeights+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
@@ -33,8 +31,11 @@
 #pragma link C++ class AliAnalysisTaskEffContStudy+;
 #pragma link C++ class AliAnalysisTaskUEStudy+;
 #pragma link C++ class AliAnalysisTaskSpectra+;
+#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
 #pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
+#pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;
@@ -48,6 +49,7 @@
 #pragma link C++ class AliAnalysisTaskSpherocity+;
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
+#pragma link C++ class AliAnalysisTaskSpectraRT+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -90,9 +92,13 @@
 #pragma link C++ class AliMultiplictyLoaderTask+;
 
 #pragma link C++ class AliAnalysisPIDEvent+;
+#pragma link C++ class AliAnalysisPIDCascadeEvent+;
 #pragma link C++ class AliAnalysisPIDParticle+;
+#pragma link C++ class AliAnalysisPIDCascadeParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
+#pragma link C++ class AliAnalysisPIDCascadeTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascadeV0+;
 #pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
 #pragma link C++ class AliAnalysisTaskTPCTOFCascade+;

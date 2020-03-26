@@ -16,6 +16,7 @@
 #pragma link C++ class AliAnalysisTaskBSEmbedding+;
 #pragma link C++ class AliBSDiJetTask+;
 #pragma link C++ class AliAnalysisTaskRidge+;
+#pragma link C++ class AliJPtHardXection+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliJCDijetTask+;

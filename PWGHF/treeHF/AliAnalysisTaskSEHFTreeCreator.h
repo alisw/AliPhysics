@@ -153,6 +153,8 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetSoftDropZCut(Double_t d) {fSoftDropZCut = d; }
+    void SetSoftDropBeta(Double_t d) {fSoftDropBeta = d; }
     void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
@@ -228,7 +230,7 @@ public:
     void FillJetTree();
   
     
-    unsigned int GetEvID();
+    unsigned long GetEvID();
     
 private:
     
@@ -351,9 +353,17 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
+    Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
+    Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
-    UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+    UShort_t                fBC;                                   /// bunch crossing number
+    Int_t                   fOrbit;                                /// orbit
+    Int_t                   fPeriod;                               /// period
+    Int_t                   fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
+    Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
+    Long64_t                fEventIDLong;                          /// single unique event id (long64)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
@@ -403,6 +413,8 @@ private:
     Int_t                   fJetAlgorithm;                         /// Setting the jet finding algorithm
     Int_t                   fSubJetAlgorithm;                      /// Setting the jet finding algorithm
     Double_t                fMinJetPt;                             /// Setting the jet finding min pT
+    Double_t                fSoftDropZCut;                         /// setting the soft drop z parameter
+    Double_t                fSoftDropBeta;                         /// setting the soft drop beta parameter
     Double_t                fTrackingEfficiency;                   /// Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
@@ -488,7 +500,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,27);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,28);
     /// \endcond
 };
 

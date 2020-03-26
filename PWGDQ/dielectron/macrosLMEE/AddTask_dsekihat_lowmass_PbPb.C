@@ -11,7 +11,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     const Float_t PtMax = 10,
     const Float_t EtaMin = -0.8,
     const Float_t EtaMax = +0.8,
-		const TString outname = "LMEE.root"
+		const TString outname = "LMEE.root",
+		const Bool_t isMC = kFALSE
     )
 {
   //get the current analysis manager
@@ -84,12 +85,9 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   for (Int_t itc=0; itc<nTC; ++itc){
     for (Int_t ipid=0; ipid<nPID; ++ipid){
       for (Int_t ipf=0; ipf<nPF; ++ipf){
-        AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%f,%f,%f,%f)",itc,ipid,ipf,PtMin,PtMax,EtaMin,EtaMax)));
+        AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%f,%f,%f,%f,%d)",itc,ipid,ipf,PtMin,PtMax,EtaMin,EtaMax,isMC)));
         if(!diel) continue;
-
-        //AliDielectronVarCuts*  centCuts = new AliDielectronVarCuts("centCuts",Form("kPbPb%02d%02d",CenMin,CenMax));
-        //centCuts->AddCut(AliDielectronVarManager::kCentralityNew, (Float_t)CenMin, (Float_t)CenMax);
-        //diel->GetEventFilter().AddCuts(centCuts);
+        TString name = diel->GetName();
 
 				//if(calibFileName!=""){
 				if(rootfile && rootfile->IsOpen()){
@@ -106,7 +104,6 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
 				}
 
-        TString name = diel->GetName();
         if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
           printf("No event mixing handler for post PID calibration/noPID\n");
         }
@@ -118,7 +115,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
           mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
           mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
           mix->SetDepth(Nmix);
-          diel->SetMixingHandler(mix);
+          if(!isMC) diel->SetMixingHandler(mix);
         }
         task->AddDielectron(diel);
       }//pre-filter loop

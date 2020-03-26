@@ -432,8 +432,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       fResoFile = TFile::Open(fResoFilename.c_str());
     }
 
-    if (!fResoFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fResoFilename.c_str()));
+    if (!fResoFile) {
+      AliFatal(Form("Could not open file %s", fResoFilename.c_str()));
     }
     fArrResoPt = (TObjArray *)fResoFile->Get("RelPtResArrCocktail");
     fArrResoEta = (TObjArray *)fResoFile->Get("EtaResArrVsPt");
@@ -453,6 +453,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       gSystem->Exec(Form("alien_cp alien://%s .", fCocktailFilenameFromAlien.c_str()));
       std::cout << "Copy cocktail weighting from Alien" << std::endl;
       fCocktailFile = TFile::Open(fCocktailFilename.c_str());
+    }
+    if (!fCocktailFile) {
+      AliFatal(Form("Could not open file %s", fCocktailFilename.c_str()));
     }
 
     if (fCocktailFile){

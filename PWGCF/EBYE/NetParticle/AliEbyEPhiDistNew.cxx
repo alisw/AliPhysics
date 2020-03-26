@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/11/21)                      //
+//                         (Last Modified 2020/03/21)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -145,8 +145,8 @@ fHistNsTPCc(NULL),
 fHistNsTOFc(NULL),
 fHistNsITSc(NULL),
 
-fPhiBinNplusNminusCh(NULL),
-fPhiBinNplusNminusChTruth(NULL),
+fPtBinNplusNminusCh(NULL),
+fPtBinNplusNminusChTruth(NULL),
 fTHnCentNplusNminusCh(NULL)
 
 {
@@ -252,8 +252,8 @@ fHistNsTPCc(NULL),
 fHistNsTOFc(NULL),
 fHistNsITSc(NULL),
 
-fPhiBinNplusNminusCh(NULL),
-fPhiBinNplusNminusChTruth(NULL),
+fPtBinNplusNminusCh(NULL),
+fPtBinNplusNminusChTruth(NULL),
 fTHnCentNplusNminusCh(NULL)
 {
     for (Int_t i = 0; i < 2; i++) {
@@ -422,8 +422,8 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     };
     const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
     
-    Int_t ybins[3] = {26, 32, 18};
-    Double_t yaxis[2][3] = {{0.5,-0.8,0.0}, {1.55,0.8,6.28}};
+    Int_t ybins[3] = {11, 32, 18};
+    Double_t yaxis[2][3] = {{0.4,-0.8,0.0}, {1.5,0.8,6.28}};
     
     const Int_t xNbins = 100;
     Double_t xBinEdge[xNbins+1];
@@ -432,7 +432,7 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     }
     
     Double_t chPtBins[14] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 1.0, 1.3, 1.5};
-    Double_t PtArray[22] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+    Double_t PtArray[12] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
     
     //fphiarray
     
@@ -557,46 +557,41 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
             499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
             199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
         
-        fPhiBinNplusNminusCh = new THnSparseI("fPhiBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
-        fThnList->Add(fPhiBinNplusNminusCh);
+        fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
+        fThnList->Add(fPtBinNplusNminusCh);
         
         if( fIsMC ){
-            fPhiBinNplusNminusChTruth = new THnSparseI("fPhiBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
-            fThnList->Add(fPhiBinNplusNminusChTruth);
+            fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
+            fThnList->Add(fPtBinNplusNminusChTruth);
         }
         
     }
     else {//for PID
         
-        const Int_t dim = 37; //1 centrality bin +  19 phi bins) * 2
+        const Int_t dim = 23; //1 centrality bin +  11 pt bins) * 2
         Int_t bin[dim]    = { 100,
             500, 500, 500,
             500, 500, 500, 500, 500, 500, 500, 500,
-            200, 200, 200, 200, 200, 200, 200, 200,
             500, 500, 500,
-            500, 500, 500, 500, 500, 500, 500, 500,
-            200, 200, 200, 200, 200, 200};
+            500, 500, 500, 500, 500, 500, 500, 500};
         
         Double_t min[dim] = { -0.5,
             -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
             -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5};
+            -0.5, -0.5, -0.5, -0.5};
         
         Double_t max[dim] = { 99.5,
             499.5, 499.5, 499.5,
             499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
             499.5, 499.5, 499.5,
-            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
-            199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
+            499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5};
         
-        fPhiBinNplusNminusCh = new THnSparseI("fPhiBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
-        fThnList->Add(fPhiBinNplusNminusCh);
+        fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","cent-nplus-nminus", dim, bin, min, max);
+        fThnList->Add(fPtBinNplusNminusCh);
         
         if( fIsMC ){
-            fPhiBinNplusNminusChTruth = new THnSparseI("fPhiBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
-            fThnList->Add(fPhiBinNplusNminusChTruth);
+            fPtBinNplusNminusChTruth = new THnSparseI("fPtBinNplusNminusChTruth","cent-nplus-nminus", dim, bin, min, max);
+            fThnList->Add(fPtBinNplusNminusChTruth);
         }
         
         
@@ -628,12 +623,12 @@ void AliEbyEPhiDistNew::LocalPost() {
 //----------------------------------------------------------------------------------
 void AliEbyEPhiDistNew::UserExec( Option_t * ){
     
-    const Int_t dim = fNphiBins*2;
-    Int_t phiCh[dim];
-    Int_t phiChMC[dim];
+    const Int_t dim = fNptBins*2;
+    Int_t ptCh[dim];
+    Int_t ptChMC[dim];
     for(Int_t idx = 0; idx < dim; idx++){
-        phiCh[idx] = 0.;
-        phiChMC[idx] = 0;
+        ptCh[idx] = 0.;
+        ptChMC[idx] = 0;
     }
     
     fEventCounter->Fill(1);
@@ -660,7 +655,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     //  AliInputEventHandler* fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     //  if (!fInputEventHandler) return;
     
-    //Plie up cout for Run2
+    //Pile up cout for Run2
     if(!fIsMC){
         
         if(fRun == "LHC15o"){
@@ -770,8 +765,8 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
         Float_t lEta = (Float_t)track->Eta();
         Float_t lPhi = (Float_t)track->Phi();
         
-        Int_t iphibin = GetPhiBin(lPhi);
-        if( iphibin < 0 || iphibin > fNphiBins-1 ) continue;
+        Int_t iptbin = GetPtBin(lPt);
+        if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
         Bool_t isPid = kFALSE;
         
         if (fPidType == 0 ) {
@@ -781,10 +776,10 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
             nRec[icharge] += 1.;
             
             if(icharge == 1){
-                phiCh[iphibin] += 1;
+                ptCh[iptbin] += 1;
             }
             if(icharge == 0){
-                phiCh[iphibin+fNphiBins] += 1;
+                ptCh[iptbin+fNptBins] += 1;
             }
             
         }//fPidType == 0
@@ -799,10 +794,10 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
                 nRec[icharge] += 1.;
                 
                 if(icharge == 1){
-                    phiCh[iphibin] += 1;
+                    ptCh[iptbin] += 1;
                 }
                 if(icharge == 0){
-                    phiCh[iphibin+fNphiBins] += 1;
+                    ptCh[iptbin+fNptBins] += 1;
                 }
             }
             
@@ -901,13 +896,13 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     //cout << " Rec positve " << nRec[1] <<" and -ve particle " << nRec[0] << endl;
     
     
-    Double_t phiContainer[dim+1];
-    phiContainer[0] = (Double_t)fCentrality;
+    Double_t ptContainer[dim+1];
+    ptContainer[0] = (Double_t)fCentrality;
     for(Int_t i = 1; i <= dim; i++){
-        phiContainer[i] = phiCh[i-1];
+        ptContainer[i] = ptCh[i-1];
     }
     
-    fPhiBinNplusNminusCh->Fill(phiContainer);
+    fPtBinNplusNminusCh->Fill(ptContainer);
     
     
     fEventCounter->Fill(7);
@@ -941,14 +936,14 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
                 fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen);
                 nGen[icharge] += 1.;
                 
-                Int_t iphibinMC = GetPhiBin(fPhiGen);
-                if( iphibinMC < 0 || iphibinMC > fNphiBins-1 ) continue;
+                Int_t iptbinMC = GetPtBin(fpTGen);
+                if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
                 
                 if(icharge == 1){
-                    phiChMC[iphibinMC] += 1;
+                    ptChMC[iptbinMC] += 1;
                 }
                 if(icharge == 0){
-                    phiChMC[iphibinMC+fNphiBins] += 1;
+                    ptChMC[iptbinMC+fNptBins] += 1;
                 }
                 
             } //AOD track
@@ -981,14 +976,14 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
                 fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen);
                 nGen[icharge] += 1.;
                 
-                Int_t iphibinMC = GetPhiBin(fPhiGen);
-                if( iphibinMC < 0 || iphibinMC > fNphiBins-1 ) continue;
+                Int_t iptbinMC = GetPtBin(fpTGen);
+                if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
                 
                 if(icharge == 1){
-                    phiChMC[iphibinMC] += 1;
+                    ptChMC[iptbinMC] += 1;
                 }
                 if(icharge == 0){
-                    phiChMC[iphibinMC+fNphiBins] += 1;
+                    ptChMC[iptbinMC+fNptBins] += 1;
                 }
             }
             
@@ -1008,13 +1003,13 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
             fTHnCentNplusNminusCh->Fill(fContainerCh);
         }
         
-        Double_t phiContainerMC[dim+1];
-        phiContainerMC[0] = (Double_t) fCentrality;
+        Double_t ptContainerMC[dim+1];
+        ptContainerMC[0] = (Double_t) fCentrality;
         for(Int_t i = 1; i <= dim; i++){
-            phiContainerMC[i] = phiChMC[i-1];
+            ptContainerMC[i] = ptChMC[i-1];
         }
         
-        fPhiBinNplusNminusChTruth->Fill(phiContainerMC);
+        fPtBinNplusNminusChTruth->Fill(ptContainerMC);
         
     }
     
@@ -1111,17 +1106,18 @@ Int_t AliEbyEPhiDistNew::GetPtBin(Double_t pt){
         }//for
     }
     else {
-        Double_t pidPtBins[22] = {0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+        Double_t PtArray[12] = {0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+        
         for(Int_t iBin = 0; iBin < fNptBins; iBin++){
             
             if( iBin == fNptBins-1){
-                if( pt >= pidPtBins[iBin] && pt <= pidPtBins[iBin+1]){
+                if( pt >= PtArray[iBin] && pt <= PtArray[iBin+1]){
                     bin = iBin;
                     break;
                 }
             }
             else{
-                if( pt >= pidPtBins[iBin] && pt < pidPtBins[iBin+1]){
+                if( pt >= PtArray[iBin] && pt < PtArray[iBin+1]){
                     bin = iBin;
                     break;
                     
@@ -1223,15 +1219,15 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
     //ITS--------------
     Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-    Double_t ptHighITS[5]      = { 0., 0., 0.7,  0.6,  1.1  };
+    Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
     //TPC---------------
-    Double_t ptLowTPC[5]       = { 0., 0., 0.25,  0.325, 0.2  };
-    Double_t ptHighTPC[5]      = { 0., 0., 0.70,  1.5,   2.0  };
+    Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325, 0.3  };
+    Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,   2.0  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 0.6,  0.625,  0.2  };
-    Double_t ptHighTOF[5]      = { 0., 0., 1.5,  1.5,    2.0  };
+    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  1.1  };
+    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.65  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
     Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
     
     //--------------------------------ITS PID--------------------------
@@ -1280,19 +1276,23 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
         
         
-        if(fParticleSpecies == 3){////kaon------
-            if( track->Pt() > 0.525 && track->Pt() < 0.6){
-                if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
+        if(fParticleSpecies == 3){//for kaon only
+            if(fPidStrategy == 0){
+                if( track->Pt() > 0.525 && track->Pt() < 0.6){
+                    if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
+                        isAcceptedTPC = kTRUE;
+                }
+                else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
+                    if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
+                        isAcceptedTPC = kTRUE;
+                }
+                else if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
                     isAcceptedTPC = kTRUE;
             }
-            else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
-                if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
-                    isAcceptedTPC = kTRUE;
+            if(fPidStrategy == 1){
+                if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  //
+                isAcceptedTPC = kTRUE;
             }
-            else
-                if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)
-                    isAcceptedTPC = kTRUE;
-            
         }//kaon
         
         else{
@@ -1345,7 +1345,7 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         if (TMath::Abs(pid[2]) > nSigmaEl) isAcceptedTOF = kFALSE;
         
         if( fPidStrategy == 2){
-            if( pt > 0.9 ){
+            if( pt > 0.6 ){ //0.9
                 if (TMath::Abs(pid[2]) > nSigmaPion) isAcceptedTOF = kFALSE;
                 if (TMath::Abs(pid[2]) > nSigmaKaon) isAcceptedTOF = kFALSE;
             }
@@ -1378,16 +1378,28 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     }
     
     //--------Combined--PID------------
-    if (fParticleSpecies == 2) {//for Pion: 
-        if ( pt > ptLowITS[fParticleSpecies] && pt < ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS;
-        if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-        if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+    if (fParticleSpecies == 2) {//for Pion: TPC+TOF
+        if(fPidStrategy==0){
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
+        }
+        else if(fPidStrategy == 1){
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else isAccepted =  isAcceptedTPC;
+        }
     }
     
     if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
-        if ( pt > ptLowITS[fParticleSpecies] && pt < ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS;
-        if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-        if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+        if(fPidStrategy == 0){
+            
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
+            else isAccepted =  isAcceptedTPC;
+        }
+        
+        else if (fPidStrategy == 1){
+            if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else isAccepted =  isAcceptedTPC;
+        }
     }
     
     else if( fParticleSpecies == 4){//for proton

@@ -372,6 +372,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
                                  * Shift +1 => 20 Mev/c shift
                                  *
                                  * Restricted rapidity: -3.6 < y < -2.6
+                                 * if v3 means variable binning too.
                                  */
         TH1F*                   fDimuonPtDistributionH;                              //!
         TH1F*                   fDimuonPtDistributionShiftPlusOneH;                  //!
@@ -379,6 +380,10 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0NH;        //!
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N36to31H;  //!
         TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N31to26H;  //!
+
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0NHv3;      //!
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N36to31Hv3;//!
+        TH1F*                   fDimuonPtDistributionRestrictedRapidity0N0N31to26Hv3;//!
 
 
         //_______________________________
@@ -470,7 +475,7 @@ class AliAnalysisTaskUPCforwardpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardpPb, 7);
+        ClassDef(AliAnalysisTaskUPCforwardpPb, 8);
 };
 
 #endif

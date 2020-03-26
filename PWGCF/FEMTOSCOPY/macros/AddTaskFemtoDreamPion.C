@@ -30,7 +30,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   } else {
         evtCuts->SetSphericityCuts(fSpherDown, 1.0);
   }
-
+  if (suffix == "99") {
+    std::cout<<"Entered the Loop\n";
+    fTrackCutsPosPion->SetPtRange(0., 10.0);
+  }
   //Track Cuts are defined here
   //positive pions
   //Track Cuts tuned according to:
@@ -62,7 +65,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
-  fTrackCutsPosPion->SetPlotDCADist(true);
+  fTrackCutsPosPion->SetPlotDCADist(false);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -75,6 +78,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
+  if (suffix == "99") {
+    std::cout<<"Entered the Loop\n";
+    fTrackCutsNegPion->SetPtRange(0., 10.0);
+  }
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
@@ -100,7 +107,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   if ( isMC && MCtemplatefit ) {
     //fTrackCutsNegPion->SetPlotContrib(true);
     fTrackCutsNegPion->CheckParticleMothers(true);
-    fTrackCutsNegPion->SetPlotDCADist(true);
+    fTrackCutsNegPion->SetPlotDCADist(false);
     //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
     fTrackCutsNegPion->SetFillQALater(true);
   }

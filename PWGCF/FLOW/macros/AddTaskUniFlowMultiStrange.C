@@ -1,12 +1,17 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// AddTaskUniFlowMultiStrange                                                     //
+// AddUniFlow                                                     //
+// Author: Ya Zhu (ya.zhu@cern.ch),CCNU & NBI, 2016       //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
-
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "name")
+class TList;
+class AliAnalysisTaskUniFlowMultiStrange;
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(Bool_t IsGrid, TString name = "UniFlow")
 {
+  if (IsGrid){
+  gGrid->Connect("alien://");
+  }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
@@ -21,22 +26,22 @@ AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "n
 
   // Creating containers
   AliAnalysisDataContainer* cInput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer* cOutput1 = mgr->CreateContainer(Form("Flow_Refs_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput2 = mgr->CreateContainer(Form("Flow_Charged_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput3 = mgr->CreateContainer(Form("Flow_Pion_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput4 = mgr->CreateContainer(Form("Flow_Kaon_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput5 = mgr->CreateContainer(Form("Flow_Proton_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput6 = mgr->CreateContainer(Form("Flow_K0s_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput7 = mgr->CreateContainer(Form("Flow_Lambda_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput8 = mgr->CreateContainer(Form("Flow_Phi_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data())); 
-  AliAnalysisDataContainer* cOutput9 = mgr->CreateContainer(Form("Flow_Xi_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput10 = mgr->CreateContainer(Form("Flow_Omega_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput11 = mgr->CreateContainer(Form("QA_Events_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput12 = mgr->CreateContainer(Form("QA_Charged_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput13 = mgr->CreateContainer(Form("QA_PID_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput14 = mgr->CreateContainer(Form("QA_V0s_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput15 = mgr->CreateContainer(Form("QA_Phi_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  AliAnalysisDataContainer* cOutput16 = mgr->CreateContainer(Form("Flow_Weights_%s",name.Data()), AliDirList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput1 = mgr->CreateContainer(Form("Flow_Refs_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput2 = mgr->CreateContainer(Form("Flow_Charged_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput3 = mgr->CreateContainer(Form("Flow_Pion_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput4 = mgr->CreateContainer(Form("Flow_Kaon_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput5 = mgr->CreateContainer(Form("Flow_Proton_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput6 = mgr->CreateContainer(Form("Flow_K0s_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput7 = mgr->CreateContainer(Form("Flow_Lambda_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput8 = mgr->CreateContainer(Form("Flow_Phi_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data())); 
+  AliAnalysisDataContainer* cOutput9 = mgr->CreateContainer(Form("Flow_Xi_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput10 = mgr->CreateContainer(Form("Flow_Omega_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput11 = mgr->CreateContainer(Form("QA_Events_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput12 = mgr->CreateContainer(Form("QA_Charged_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput13 = mgr->CreateContainer(Form("QA_PID_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput14 = mgr->CreateContainer(Form("QA_V0s_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput15 = mgr->CreateContainer(Form("QA_Phi_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
+  AliAnalysisDataContainer* cOutput16 = mgr->CreateContainer(Form("Flow_Weights_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
 
   // Connecting containers to task
   mgr->ConnectInput(task,0,cInput0); // your task needs input: here we connect the manager to your task

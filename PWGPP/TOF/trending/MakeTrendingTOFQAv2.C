@@ -80,7 +80,7 @@ TH2F* GetTH2F(TList* l, TString name);
 
 ///
 /// Function to get a Profile from a TH2F
-TProfile* MakeProfileX(TH2F* h, TString name, Float_t minY, Float_t maxY, Int_t color = 1, Int_t width = 3);
+TProfile* MakeProfile(TH2F* h, TString name, Float_t minY, Float_t maxY, Bool_t xaxis = kTRUE);
 
 ///
 ///Function to setup the histogram style
@@ -652,35 +652,35 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TList* ListOfOutput_T0 = new TList(); ///List of output for all plots related to T0
 
   TH2F* hT0TOFvsNtracks = GetTH2F(timeZeroList, "hT0TOFvsNtrk");
-  TProfile* hT0TOFProfile = MakeProfileX(hT0TOFvsNtracks, "hT0TOFProfile", -50., 50.);
+  TProfile* hT0TOFProfile = MakeProfile(hT0TOFvsNtracks, "hT0TOFProfile", -50., 50.);
   if (hT0TOFvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0TOFvsNtracks);
     ListOfOutput_T0->Add(hT0TOFProfile);
   }
 
   TH2F* hT0ACvsNtracks = GetTH2F(timeZeroList, "hT0ACvsNtrk");
-  TProfile* hT0ACProfile = MakeProfileX(hT0ACvsNtracks, "hT0ACProfile", -50., 50.);
+  TProfile* hT0ACProfile = MakeProfile(hT0ACvsNtracks, "hT0ACProfile", -50., 50.);
   if (hT0ACvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0ACvsNtracks);
     ListOfOutput_T0->Add(hT0ACProfile);
   }
 
   TH2F* hT0AvsNtracks = GetTH2F(timeZeroList, "hT0AvsNtrk");
-  TProfile* hT0AProfile = MakeProfileX(hT0AvsNtracks, "hT0AProfile", -50., 50.);
+  TProfile* hT0AProfile = MakeProfile(hT0AvsNtracks, "hT0AProfile", -50., 50.);
   if (hT0AvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0AvsNtracks);
     ListOfOutput_T0->Add(hT0AProfile);
   }
 
   TH2F* hT0CvsNtracks = GetTH2F(timeZeroList, "hT0CvsNtrk");
-  TProfile* hT0CProfile = MakeProfileX(hT0CvsNtracks, "hT0CProfile", -50., 50.);
+  TProfile* hT0CProfile = MakeProfile(hT0CvsNtracks, "hT0CProfile", -50., 50.);
   if (hT0CvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0CvsNtracks);
     ListOfOutput_T0->Add(hT0CProfile);
   }
 
   TH2F* hStartTime = GetTH2F(timeZeroList, "hStartTime");
-  TProfile* hStartTimeProfile = MakeProfileX(hStartTime, "hStartTimeProfile", -600., 600.);
+  TProfile* hStartTimeProfile = MakeProfile(hStartTime, "hStartTimeProfile", -600., 600., kFALSE);
   if (hStartTime) { //Add result to output list
     ListOfOutput_T0->Add(hStartTime);
     ListOfOutput_T0->Add(hStartTimeProfile);
@@ -703,7 +703,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   TH2F* hStartTimeRes = GetTH2F(timeZeroList, "hStartTimeRes");
-  TProfile* hStartTimeResProfile = MakeProfileX(hStartTime, "hStartTimeResProfile", -600., 600.);
+  TProfile* hStartTimeResProfile = MakeProfile(hStartTimeRes, "hStartTimeResProfile", 0, 299., kFALSE);
   if (hStartTimeRes) { //Add result to output list
     ListOfOutput_T0->Add(hStartTimeRes);
     ListOfOutput_T0->Add(hStartTimeResProfile);
@@ -979,7 +979,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TCanvas* cProfile = new TCanvas("cProfile", "cProfile", 50, 50, 750, 550);
   gPad->SetLogz();
   hTOFmatchedDzVsStrip->Draw("colz");
-  TProfile* hDzProfile = MakeProfileX(hTOFmatchedDzVsStrip, "hDzProfile", -3, 3);
+  TProfile* hDzProfile = MakeProfile(hTOFmatchedDzVsStrip, "hDzProfile", -3, 3);
   hDzProfile->Draw("same");
 
   TCanvas* cMatchingPerformance = new TCanvas("cMatchingPerformance", "summary of matching performance", 1200, 500);
@@ -1215,13 +1215,35 @@ TH2F* GetTH2F(TList* l, TString name)
 }
 
 //----------------------------------------------------------
-TProfile* MakeProfileX(TH2F* h, TString name, Float_t minY, Float_t maxY, Int_t color, Int_t width)
+TProfile* MakeProfile(TH2F* h, TString name, Float_t min, Float_t max, Bool_t xaxis)
 {
   if (!h)
     return nullptr;
-  TProfile* p = h->ProfileX(name, h->GetYaxis()->FindBin(minY), h->GetYaxis()->FindBin(maxY));
-  p->SetLineWidth(width);
-  p->SetLineColor(color);
+  TAxis* axis = xaxis ? h->GetYaxis() : h->GetXaxis();
+  TAxis* axislabel = xaxis ? h->GetXaxis() : h->GetYaxis();
+  //
+  const Int_t minbin = axis->FindBin(min);
+  const Int_t maxbin = axis->FindBin(max);
+  if (minbin < 1 || minbin > axis->GetNbins())
+    ::Error("MakeTrendingTOFQAv2::MakeProfile", "Asking a profile larger than the histogram range: Min: %f outside [%f, %f]", min, axis->GetBinLowEdge(1), axis->GetBinLowEdge(axis->GetNbins()));
+  if (maxbin < 1 || maxbin > axis->GetNbins())
+    ::Error("MakeTrendingTOFQAv2::MakeProfile", "Asking a profile larger than the histogram range: Max: %f outside [%f, %f]", max, axis->GetBinLowEdge(1), axis->GetBinLowEdge(axis->GetNbins()));
+
+  TProfile* p = nullptr;
+  if (xaxis)
+    p = h->ProfileX(name, minbin, maxbin);
+  else
+    p = h->ProfileY(name, minbin, maxbin);
+  //
+  p->GetYaxis()->SetTitle(axis->GetTitle());
+  TString label = axislabel->GetBinLabel(1);
+  if (!label.IsNull()) {
+    for (Int_t i = 1; i <= axislabel->GetNbins(); i++) {
+      p->GetXaxis()->SetBinLabel(i, axislabel->GetBinLabel(i));
+    }
+  }
+  p->SetLineWidth(3);
+  p->SetLineColor(1);
   p->SetFillStyle(0);
   return p;
 }

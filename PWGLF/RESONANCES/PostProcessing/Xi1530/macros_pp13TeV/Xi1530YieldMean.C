@@ -15,6 +15,7 @@ vector<double> GetPidNdetawithError(double multi_start, double multi_end);
 TString finalfile;
 TString multistring;
 bool isINEL = false;
+bool skipcustomfit = false;
 //TString finalfile = "AnalysisResults_Xi1530_systematic0-100_0-10_10-30_30-50_50-70_70-100_0.00-0.01_0.01-0.05_0.05-0.10_bins.root";
 TString workdirectory = "/Users/blim/alidock/Postprocessing/data/";
 enum {kFitExpPt=1, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
@@ -22,23 +23,24 @@ vector<TString> functions = {"", "kFitExpPt", "kFitLevi", "fFitExpMt", "kFitBolt
 
 vector<vector<vector<double>>> // { {first pT bin variation}, {last pTbin variation} } // for each function
             functionFitRangeVar = { { {}, {} },            // null
-                                    { {0.8}, {1.6, 2.0, 2.4} }, // ExpPt, only front part.
-                                    { {0.8}, {2.4,3.2,4.0,4.8,5.6,8.8} }, // Levy, all region.
-                                    { {0.8}, {1.6, 2.0, 2.4} }, // ExpMt, only front part.
-                                    { {0.8}, {1.6, 2.0, 2.4} }, // Boltzmann, only front part.
-                                    { {0.8}, {2.4, 3.2,4.0,4.8,5.6,8.8} }, // BGBW, all region.
-                                    { {0.8}, {1.6, 2.0} }, // BoseEinstein, only front part.
-                                    { {0.8}, {1.6, 2.0, 2.4} } // FermiDirac, only front part.
+                                    { {0.8}, {2.0, 2.4, 3.2} }, // ExpPt, only front part.
+                                    { {0.8}, {2.4, 3.2, 4.0, 4.8, 5.6, 8.8} }, // Levy, all region.
+                                    { {0.8}, {2.0, 2.4, 3.2} }, // ExpMt, only front part.
+                                    { {0.8}, {2.0, 2.4, 3.2} }, // Boltzmann, only front part.
+                                    { {0.8}, {2.4, 3.2, 4.0, 4.8, 5.6, 8.8} }, // BGBW, all region.
+                                    { {0.8}, {2.0, 2.4, 3.2} }, // BoseEinstein, only front part.
+                                    { {0.8}, {2.0, 2.4, 3.2} } // FermiDirac, only front part.
                                     };
 vector<vector<double>> centralvalue = {
-    {0.8, 3.2}, // 0: INEL
-    {0.8, 3.2}, // 1: 0-10
-    {0.8, 4.0}, // 2: 10-30
-    {0.8, 4.0}, // 3: 30-50
-    {0.8, 2.4}, // 4: 50-70
-    {0.8, 3.2}, // 5: 70-100
-    {0.8, 3.2}, // 6: 0-0.01 (HM)
-    {0.8, 3.2}  // 7: 0.01-0.1 (HM)
+    {0.8, 3.2},  // 0: INEL
+    {0.8, 3.2},  // 1: 0-10
+    {0.8, 4.0},  // 2: 10-30
+    {0.8, 5.6},  // 3: 30-50
+    {0.8, 2.4},  // 4: 50-70
+    {0.8, 4.0},  // 5: 70-100
+    {0.8, 4.8},  // 6: 0-0.01 (HM)
+    {0.8, 3.2},   // 7: 0.01-0.05 (HM)
+    {0.8, 3.2}   // 8: 0.05-0.1 (HM)
 };
 Int_t maxtrial = 10000;
 double mass = 1.5318;
@@ -67,9 +69,11 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
     }
     double binsum = multis + multie;
     if (binsum < 0.011) // 0-0.01
-        centralvaluebin = 7;
-    else if (binsum < 0.111) // 0-0.01
         centralvaluebin = 6;
+    else if (binsum < 0.061) // 0.01-0.05
+        centralvaluebin = 7;
+    else if (binsum < 0.151)  // 0.05-0.1
+        centralvaluebin = 8;
     else if (binsum < 11) // 0-10
         centralvaluebin = 1;
     else if (binsum < 41) // 10-30
@@ -85,6 +89,125 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
     else
         centralvaluebin = 0;
     finalfile = Form("./AnalysisResults_Xi1530_systematic%s.root", bininfo.Data());
+
+    // Multibin Customizing
+    vector<vector<double>> functionFitCustom = {
+        {0},         // null
+        {0},         // ExpPt, only front part.
+        {0},         // Levy, all region.
+        {0},         // ExpMt, only front part.
+        {0},         // Boltzmann, only front part.
+        {0},         // BGBW, all region.
+        {0},         // BoseEinstein, only front part.
+        {0}          // FermiDirac, only front part.
+    };
+    if (skipcustomfit)
+        cout << "skip custom" << endl;
+    else if (binsum < 0.011)  // 0-0.01
+        cout << "skip custom" << endl;
+    else if (binsum < 0.061)  // 0.01-0.05
+        functionFitCustom = {
+            {0},    // null
+            {0},    // ExpPt, only front part.
+            {2.4},  // Levy, all region.
+            {0},    // ExpMt, only front part.
+            {0},    // Boltzmann, only front part.
+            {0},    // BGBW, all region.
+            {0},    // BoseEinstein, only front part.
+            {0}     // FermiDirac, only front part.
+        };
+    else if (binsum < 0.151)  // 0.05-0.1
+        functionFitCustom = {
+            {0},         // null
+            {0},  // ExpPt, only front part.
+            {2.4},  // Levy, all region.
+            {0},         // ExpMt, only front part.
+            {0},         // Boltzmann, only front part.
+            {0},         // BGBW, all region.
+            {0},         // BoseEinstein, only front part.
+            {0}          // FermiDirac, only front part.
+        };
+    else if (binsum < 11)  // 0-10
+        functionFitCustom = {
+            {0},         // null
+            {2.4, 3.2},       // ExpPt, only front part.
+            {2.4, 5.6},  // Levy, all region.
+            {0},         // ExpMt, only front part.
+            {0},         // Boltzmann, only front part.
+            {0},         // BGBW, all region.
+            {0},         // BoseEinstein, only front part.
+            {0}          // FermiDirac, only front part.
+        };
+    else if (binsum < 41)  // 10-30
+        functionFitCustom = {
+            {0},         // null
+            {2.0, 2.4, 3.2},  // ExpPt, only front part.
+            {0},         // Levy, all region.
+            {0},         // ExpMt, only front part.
+            {0},         // Boltzmann, only front part.
+            {0},         // BGBW, all region.
+            {0},         // BoseEinstein, only front part.
+            {0}          // FermiDirac, only front part.
+        };
+    else if (binsum < 81)  // 30-50
+        functionFitCustom = {
+            {0},              // null
+            {2.0, 2.4, 3.2},  // ExpPt, only front part.
+            {0},              // Levy, all region.
+            {0},              // ExpMt, only front part.
+            {0},              // Boltzmann, only front part.
+            {0},              // BGBW, all region.
+            {0},              // BoseEinstein, only front part.
+            {0}               // FermiDirac, only front part.
+        };
+    else if (binsum < 101)  // 0-100
+        functionFitCustom = {
+            {0},              // null
+            {2.0, 2.4, 3.2},  // ExpPt, only front part.
+            {0},              // Levy, all region.
+            {0},              // ExpMt, only front part.
+            {0},              // Boltzmann, only front part.
+            {0},              // BGBW, all region.
+            {0},              // BoseEinstein, only front part.
+            {0}               // FermiDirac, only front part.
+        };
+    else if (binsum < 121)  // 50-70
+        functionFitCustom = {
+            {0},              // null
+            {2.0, 2.4, 3.2},  // ExpPt, only front part.
+            {0},              // Levy, all region.
+            {0},              // ExpMt, only front part.
+            {0},              // Boltzmann, only front part.
+            {0},              // BGBW, all region.
+            {0},              // BoseEinstein, only front part.
+            {0}               // FermiDirac, only front part.
+        };
+    else if (binsum < 171)  // 70-100
+        functionFitCustom = {
+            {0},              // null
+            {2.0, 2.4, 3.2},  // ExpPt, only front part.
+            {0},              // Levy, all region.
+            {0},              // ExpMt, only front part.
+            {0},              // Boltzmann, only front part.
+            {0},              // BGBW, all region.
+            {0},              // BoseEinstein, only front part.
+            {0}               // FermiDirac, only front part.
+        };
+    else
+        cout << "skip custom" << endl;
+
+    for (int fitvar = 1; fitvar < functions.size(); fitvar++) {
+        for (int binvar = 0; binvar < functionFitCustom[fitvar].size();
+             binvar++) {
+            functionFitRangeVar[fitvar][1].erase(
+                std::remove(functionFitRangeVar[fitvar][1].begin(),
+                            functionFitRangeVar[fitvar][1].end(),
+                            functionFitCustom[fitvar][binvar]),
+                functionFitRangeVar[fitvar][1].end());
+            cout << "Fit function(" << functions[fitvar] << " bin "
+                 << functionFitCustom[fitvar][binvar] << "removed!" << endl;
+        }
+    }
 
     // Reweighting efficiency
     TFile* fReweighting =
@@ -230,6 +353,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
     fm->SetVarType(AliPWGFunc::VarType_t(AliPWGFunc::kdNdpt));
     TF1* func = 0;
     int slopePar=0;
+    double fitchi2, fitNDF;
     vector<vector<TF1*>> funcs(multibin.size());
     vector<TString> fitnames;
     //vector<double> fitrange = {0.8,8.8};
@@ -297,6 +421,11 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
                         functions[fitvar].Data(),
                         fitstart,fitend
                         ));
+                    fitchi2 = func->GetChisquare();
+                    fitNDF = func->GetNDF();
+                    cout << "Fit Result!!: " << fitchi2 / fitNDF
+                         << ", fitchi2: " << fitchi2 << ", fitNDF: " << fitNDF
+                         << endl;
                     funcs[imultibin].push_back(func);
                     flinestyle++;
                 }
@@ -309,7 +438,7 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
     TLatex* tm = new TLatex();
     tm->SetNDC();
     tm->SetTextSize(0.03);
-    auto legendhead = new TLegend(.65, .65, .95, .9);
+    auto legendhead = new TLegend(.4, .65, .95, .9);
     legendhead->SetNColumns(2);
     legendhead->SetBorderSize(0);
     legendhead->SetFillStyle(0);
@@ -335,11 +464,11 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
         auto mmin = min_element(std::begin(meanpt[imultibin]), std::end(meanpt[imultibin]));
 
         TH1* systematicyields =
-            new TH1D("systematic_yields", "", 100, *ymin*0.75 , *ymax*1.25);
+            new TH1D("systematic_yields", "", 100, *ymin*0.75 , *ymax*1.4);
         systematicyields->GetXaxis()->SetTitle("<d#it{N}/d#it{y}>");
         systematicyields->GetYaxis()->SetTitle("Counts");
         TH1* systematicmeanpTs =
-            new TH1D("systematic_meanpTs", "", 100, *mmin*0.75 , *mmax*1.25);
+            new TH1D("systematic_meanpTs", "", 100, *mmin*0.75 , *mmax*1.4);
         systematicmeanpTs->GetXaxis()->SetTitle("<#it{p}_{T}>");
         systematicmeanpTs->GetYaxis()->SetTitle("Counts");
 
@@ -351,7 +480,10 @@ void Xi1530YieldMean(double multis = 0, double multie = 100){
             cout << "fit funcion: " << functions[fitvar].Data() << endl;
             for (auto const& fitstart : functionFitRangeVar[fitvar][0]) { // fit bin start
                 for (auto const& fitend : functionFitRangeVar[fitvar][1]) { // fit bin end
-
+                    fitnames[loopcheck] = Form(
+                        "%s(dydn %.2f, mpt: %.2f)", fitnames[loopcheck].Data(),
+                        1e2 * yield[imultibin][loopcheck],
+                        meanpt[imultibin][loopcheck]);
                     funcs[imultibin][loopcheck]->SetLineColor(sysColorPallet + functions.size() - fitvar);
                     funcs[imultibin][loopcheck]->Draw("same");
                     legendhead->AddEntry(funcs[imultibin][loopcheck], fitnames[loopcheck], "L");

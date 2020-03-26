@@ -44,6 +44,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
+  void SetFillNSparseMCAccWoQuark(Bool_t fill=kTRUE){fFillSparseAccWoQuark=fill;}
   void SetFillNSparseImpPar(Bool_t fill=kTRUE){fFillImpParSparse=fill;}
   void SetFillNSparseAcceptanceLevel(Bool_t fill=kTRUE){fFillAcceptanceLevel=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
@@ -173,7 +174,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fUseSelectionBit = kFALSE;            /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse = kTRUE;                  /// flag for usage of THnSparse
   Bool_t  fFillSparseDplus = kFALSE;            /// flag for usage of THnSparse
-  Bool_t  fFillImpParSparse = kFALSE;           /// flag for usage of sparse for imp. parameter
+  Bool_t  fFillImpParSparse = kFALSE;           /// flag for usage of THnSparse for imp. parameter
+  Bool_t  fFillSparseAccWoQuark = kFALSE;       /// flag for usage of THnSparse for generated Ds w/o quark
   Bool_t  fFillAcceptanceLevel = kTRUE;         /// flag for filling true reconstructed Ds at acceptance level (see FillMCGenAccHistos)
   Bool_t  fDoRotBkg = kFALSE;                   /// flag to create rotational bkg (rotating pi track)
   Bool_t  fDoBkgPhiSB = kFALSE;                 /// flag to create bkg from phi sidebands
@@ -192,12 +194,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fAnalysisCuts = nullptr; /// Cuts for Analysis
   /// variables for Sparse
   THnSparseF *fnSparse = nullptr;               //!<! THnSparse for candidates on data
-  THnSparseF *fnSparseMC[5] = {};               //!<! THnSparse for MC
+  THnSparseF *fnSparseMC[7] = {};               //!<! THnSparse for MC
                                                 ///[0]: Acc step prompt Ds
                                                 ///[1]: Acc step FD Ds
                                                 ///[2]: Selected prompt Ds
                                                 ///[3]: Selected FD Ds
                                                 ///[4]: Selected bkg candidates
+                                                ///[5]: Acc step prompt Ds w/o quark
+                                                ///[6]: Acc step FD Ds w/o quark
   THnSparseF *fnSparseMCDplus[4] = {};          //!<! THnSparse for MC for D+->kkpi
   THnSparseF *fImpParSparse = nullptr;          //!<! THnSparse for imp. par. on data
   THnSparseF *fImpParSparseMC[4] = {};          //!<! THnSparse for imp. par. on MC
@@ -228,7 +232,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;              /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,38);       /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 39);       /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

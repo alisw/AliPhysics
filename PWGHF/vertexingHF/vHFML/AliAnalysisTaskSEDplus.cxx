@@ -752,6 +752,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
 
   PostData(1, fOutput);
+  PostData(3, fCounter);
 
   //Create ML tree
   if (fCreateMLtree)
@@ -1360,8 +1361,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
             fMLhandler->SetVariables(d, aod->GetMagneticField(), 0, Pid_HF);
-            fMLhandler->FillTree();
-
+            if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD))
+              fMLhandler->FillTree();
+    
             PostData(4, fMLtree);
           }
         }

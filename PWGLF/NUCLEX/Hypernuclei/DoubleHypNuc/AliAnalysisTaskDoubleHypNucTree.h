@@ -57,10 +57,8 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
   void SetParamsT(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsT[i] = params[i];};
   void SetMethod(Int_t methodnum = 0) {
-    if(methodnum == 0) fV0Analysis = kTRUE;
     if(methodnum == 1) ftrackAnalysis = kTRUE;
-    if(methodnum == 2) fV0Combination = kTRUE;
-    if(methodnum == 3) fLi4Analysis = kTRUE;
+    
   }
  private:
   AliESDInputHandler    *fInputHandler;        //!<! Input handler
@@ -68,14 +66,12 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   AliESDEvent           *fESDevent;            //!<! ESD event
   AliStack              *fStack;               //!<! MC stack
   AliESDv0              *fV0;                  //!<! ESD v0 - He4 + pi
-  AliESDv0              *fV01;                  //!<! ESD v0 - H3 + pi
-  AliESDv0              *fV02;                  //!<! ESD v0 - p + pi
   TH2F                  *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
   TH2F                  *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
   TH1F                  *fHistNumEvents;       //<   Histogram of number of events
   TH1F			            *fHistTrigger;	 	//<   Histogram of trigger for all events 
   TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
-  TTree                 *fTree;                //<   Tree containing reduced events
+  TTree                 *aTree, *bTree, *cTree, *dTree, *eTree, *fTree, *gTree;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
   Double_t              fMagneticField;       //!<! Magnetic field
@@ -83,45 +79,36 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   Bool_t                fPIDCheckOnly;        //< Flag to reduce the task only to PID check for Hypertriton daughters
   Bool_t                fMCtrue;              //< Flag for activating MC analysis (set automatically)
   Bool_t                ftrackAnalysis;        // ..> Bool for different Analysis type --> 1 = on; 0 = 0ff
-  Bool_t                fV0Analysis;           // ..> Bool for different Analysis type --> 1 = on; 0 = 0ff
-  Bool_t                fV0Combination;        // ..> Bool for different Analysis type --> 1 = on; 0 = 0ff
-  Bool_t                fLi4Analysis;        // ..> Bool for different Analysis type --> 1 = on; 0 = 0ff
   AliEventCuts          fEventCuts;           //< 2015 event cuts as advised by PDG (AliEventCuts)
   UInt_t		            fTriggerMask;		//< Triggermask for event cuts
   Int_t		              fPeriod;              //< Data period for centrality selector
   Bool_t                fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
   Double_t              fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Double_t              fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
-  Float_t               fmHHe4Pi, fmDaughterSum1, fmDaughterSum2, fmLi4, fm4LH; 
-  Float_t               fpHHe4Pi, fctHHe4Pi, fptHHe4Pi, fp4LH, fpt4LH; 
-  Float_t               fpSum1, fctSum1, fptSum1, fct4LH; 
-  Float_t               fpSum2, fctSum2, fptSum2; 
-  Float_t               fpLi4, fptLi4;
-  Float_t               fdcaHe4Pi, fdcaHe3Pi, fdcaPPi; 
-  Float_t               fDcaHe3P, fDcaHe3Pi2, fDcaPPi1;
-  Float_t               fcosHe4Pi, fcosHe3Pi, fcosPPi; 
-  Float_t               fPA4LHe, fPA4LHe1, fPAHe3He4, fPAPHe4;
-  Float_t               fyHHe4pi, fySum1, fySum2; 
-  Float_t               fpiDca, fpi1Dca, fpi2Dca, fpiDcaSec, fpi1DcaTert, fpi2DcaTert; 
-  Float_t               fhe4Dca, fhe3Dca, fpDca, fhe4DcaSec, fhe3DcaTert, fpDcaTert; 
-  Float_t               fhe4Ncls, fpiNcls, fhe3Ncls, fpi1Ncls, fpNcls, fpi2Ncls, fhe4NclsITS, fpiNclsITS, fhe3NclsITS, fpi1NclsITS, fpNclsITS, fpi2NclsITS;
-  Float_t               fhe4DedxSigma, fpiDedxSigma, fhe3DedxSigma; 
-  Float_t               fpi1DedxSigma, fpDedxSigma, fpi2DedxSigma, ftDedxSigma; 
-  Float_t               fhe4P, fpiP, fhe3P, fpi1P, fpP, fpi2P; 
-  Float_t               fhe4Dedx, fpiDedx, fhe3Dedx, fpi1Dedx, fpDedx, fpi2Dedx; 
-  Float_t               farmalpha, farmpt, farmalpha1, farmpt1, farmalpha2, farmpt2; 
-  Float_t               ftrig, fVertDiff;
+  Float_t               fmDaughterSum, fmLi4, fm4LH, fm4LHe, fm5LHe; 
+  Float_t               fp4LH, fpt4LH, fct4LH, fy4LH, fz4LH; 
+  Float_t               fp4LHe, fpt4LHe, fct4LHe, fy4LHe, fz4LHe;
+  Float_t               fp5LHe, fpt5LHe, fct5LHe, fy5LHe, fz5LHe;
+  Float_t               fpSum, fctSum, fptSum, fySum, fz4LLH; 
+  Float_t               fpLi4, fptLi4, fyLi4, fzLi4; 
+  Float_t               fDCAHe3P, fDCAHe3Pi, fDCAPPi, fDCAHe4Pi, fDCAHe4P, fDCAHe3d, fDCAdPi, fDCATPi, fDCATP, fDCAHe3Pi1;
+  Float_t               fPA4LHe, fPA4LH, fPA5LHe, fPA4LLH, fAngle4LLH; 
+  Float_t               fpiDca, fpi1Dca, fpiDcaSec, fpi1DcaSec; 
+  Float_t               fhe4Dca, fhe3Dca, fpDca, fhe4DcaSec, fhe3DcaSec, fpDcaSec, fdDca, ftDca, fdDcaSec, ftDcaSec; 
+  Float_t               fhe4Ncls, fpiNcls, fhe3Ncls, fpi1Ncls, fpNcls, fdNcls, ftNcls, fhe4NclsITS, fpiNclsITS, fhe3NclsITS, fpi1NclsITS, fpNclsITS, fdNclsITS, ftNclsITS;
+  Float_t               fhe4DedxSigma, fpiDedxSigma, fhe3DedxSigma, fdDedxSigma, ftDedxSigma; 
+  Float_t               fpi1DedxSigma, fpDedxSigma; 
+  Float_t               fhe4P, fpiP, fhe3P, fpi1P, fpP, fdP, ftP; 
+  Float_t               fhe4Dedx, fpiDedx, fhe3Dedx, fpi1Dedx, fpDedx, fdDedx, ftDedx; 
+  Float_t               farmalpha, farmpt; 
+  Float_t               ftrig;
   Float_t               fthetaP, fthetaN;
-  Float_t               fEtaHe4, fEtaHe3, fEtaP, fEtaPi, fEtaPi1, fEtaPi2;
-  Float_t               fPhiHe4, fPhiHe3, fPhiP, fPhiPi, fPhiPi1, fPhiPi2;
-  Float_t               fGeoLengthHe4, fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPi1, fGeoLengthPi2;
-  Float_t               fTOFSignalHe4, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPi1, fTOFSignalPi2;
-  Int_t                 fz, fmc, frunnumber, fBR;
-  Int_t                 fCharge;           //< anti or particle
-  Int_t                 fParticleSpecies;  //< particle species
+  Float_t               fEtaHe4, fEtaHe3, fEtaP, fEtaPi, fEtaPi1, fEtaD, fEtaT;
+  Float_t               fPhiHe4, fPhiHe3, fPhiP, fPhiPi, fPhiPi1, fPhiD, fPhiT;
+  Float_t               fGeoLengthHe4, fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPi1, fGeoLengthD, fGeoLengthT;
+  Float_t               fTOFSignalHe4, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPi1, fTOFSignalD, fTOFSignalT;
+  Int_t                 fmc, frunnumber;
   Int_t                 fonTheFly;
-  Int_t                 fonTheFly1;
-  Int_t                 fonTheFly2;
   TVector3              fVertexPosition; //< position of primary vertex
   UShort_t              fNumberV0s;      //< number of v0s in event
   Int_t                 fCentrality;     //< centrality of event
@@ -132,15 +119,12 @@ class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
   Double_t GeoLength(const AliESDtrack& track);
   void dEdxCheck();
-  void V0Analysis(AliESDtrackCuts trackCutsV0, Double_t xthiss, Double_t xpp, Bool_t ITSClusterCut, Int_t SecClusters, Int_t TertClusters);
-  void TrackAnalysis(AliESDtrackCuts trackCutsSec, AliESDtrackCuts trackCutsTert, AliESDtrackCuts trackCutsPi, AliVertexerTracks *vertexer, AliVertexerTracks *vertexer1, Double_t *dn, Double_t *dd, Double_t xthiss, Double_t xpp, Bool_t ITSClusterCut, Int_t SecClusters, Int_t TertClusters);
-  void CombinedAnalysis(AliESDtrackCuts trackCutsV0, AliESDtrackCuts trackCutsTert, AliESDtrackCuts trackCutsPi, AliVertexerTracks *vertexer, AliVertexerTracks *vertexer1, Double_t *dn, Double_t *dd, Double_t xthiss, Double_t xpp, Bool_t ITSClusterCut, Int_t SecClusters, Int_t TertClusters);
-  void Li4Analysis(AliESDtrackCuts trackCutsSec);
+  void TrackAnalysis(AliESDtrackCuts trackCutsNuc, AliESDtrackCuts trackCutsP, AliESDtrackCuts trackCutsPi, AliVertexerTracks *vertexer, Double_t *dn, Double_t *dd, Double_t xthiss, Double_t xpp);
   AliAnalysisTaskDoubleHypNucTree(const AliAnalysisTaskDoubleHypNucTree&);
   AliAnalysisTaskDoubleHypNucTree &operator=(const AliAnalysisTaskDoubleHypNucTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDoubleHypNucTree, 1);
+  ClassDef(AliAnalysisTaskDoubleHypNucTree, 2);
   /// \endcond
 };
 

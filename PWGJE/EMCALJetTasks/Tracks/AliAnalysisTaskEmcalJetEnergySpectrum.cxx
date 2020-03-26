@@ -407,7 +407,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   if(isMC){
     // Create also particle and particle level jet container for outlier rejection
-    TString partcontname = namepartcont;
+    TString partcontname = namepartcont.data();
     if(partcontname == "usedefault") partcontname = "mcparticles";
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);

@@ -29,15 +29,19 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	virtual void Terminate(Option_t *){};
 
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
+	void SetDebugMode(Bool_t _debugMode){ debugMode = _debugMode; }
 	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
  	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
+ 	void SetTPCNcls(Int_t _fTPCNcls) {fTPCNcls = _fTPCNcls;}
 
   private:
   	Bool_t Is0STPfired(Int_t *, Int_t *);
   	Bool_t IsTriggered(AliESDEvent *);
 
   	Bool_t isMC;
+  	Bool_t debugMode;
   	TString fTriggerName;
+  	Int_t fTPCNcls; // number of TPC clusters
 
   	// tree
   	TTree *fRhoTree;
@@ -102,10 +106,22 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH1I *fFOcount;
 	TH1F *TPCclustersP;
 	TH1F *TPCclustersN;
+	TH1F *fDeltaPhiRho;
+	TH1F *fDeltaPhiEe;
 	TH2F *dEdx;
 	TH2F *EtaPhiP;
 	TH2F *EtaPhiN;
-	TH2F *fHistdEdxVsP[9];
+
+	// dEdx histograms
+	TH2F *fHistdEdxVsP1;
+	TH2F *fHistdEdxVsP2;
+	TH2F *fHistdEdxVsP3;
+	TH2F *fHistdEdxVsP4;
+	TH2F *fHistdEdxVsP5;
+	TH2F *fHistdEdxVsP6;
+	TH2F *fHistdEdxVsP7;
+	TH2F *fHistdEdxVsP8;
+	TH2F *fHistdEdxVsP9;
 
 	TH2F *fFOcorr;
 	TH1F *fGoodTracks;

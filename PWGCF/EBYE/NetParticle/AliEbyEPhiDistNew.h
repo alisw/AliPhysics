@@ -19,7 +19,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/11/21)                      //
+//                         (Last Modified 2020/03/17)                      //
 //                                                                         //
 //=========================================================================//
 
@@ -196,8 +196,8 @@ private:
     TH2F *fHistNsTOFc; //!
     TH2F *fHistNsITSc; //!
     
-    THnSparse *fPhiBinNplusNminusCh;         //!
-    THnSparse *fPhiBinNplusNminusChTruth;    //!
+    THnSparse *fPtBinNplusNminusCh;         //!
+    THnSparse *fPtBinNplusNminusChTruth;    //!
     THnSparse *fTHnCentNplusNminusCh;        //!
     
     enum EbyEPIDType_t { kNSigmaTPC = 0, kNSigmaTOF, kNSigmaTPCTOF, kBayes };
@@ -224,5 +224,3 @@ private:
 };
 
 #endif
-
-

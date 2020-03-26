@@ -1,7 +1,8 @@
 
 void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
 		Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
-		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3, Int_t vnHarmonic=2,
+		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
+		Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,
 		TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
 		TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",
 		const char *suffix = "")
@@ -57,7 +58,8 @@ void AddTaskCVE(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.
   task_CVE->SetPtRangeMin(fPtMin);
   task_CVE->SetPtRangeMax(fPtMax);
   /// HardCoded at the moment. Can also be passed as AddTask Argument.
-  task_CVE->SetNSigmaCutTPC(2.0);               // For PID only; Does not apply to Inclusive Charged Tracks
+  task_CVE->SetNSigmaCutTPC(nSigTPC);               // For PID only; Does not apply to Inclusive Charged Tracks
+  task_CVE->SetNSigmaCutTPC(nSigTOF);       
   task_CVE->SetTrackCutChi2Min(0.1);     
   task_CVE->SetTrackCutdEdxMin(10.0);           
   task_CVE->SetFlagUseKinkTracks(kFALSE);

@@ -97,7 +97,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   //Deafult constructor
   //no memory allocations
@@ -156,7 +157,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   // Constructor.
 
@@ -210,7 +212,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fNonlinC(1.),
   fNPID(4),
   fMCType(kFullMC),
-  fCutType(kDefCut)
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)  
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -677,9 +680,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       fUtils = new AliAnalysisUtils();
   
   if((!fIsFastMC) && (!fIsMC)){
-
+    TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
     if(fUseCaloFastTr){
-      TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
       if(fIsMB){  //Select only INT7 events
         if( !trigClasses.Contains("CINT7-B-NOPF-") ){
           PostData(1, fOutputContainer);
@@ -693,8 +695,25 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         }
       }  
     } else{
+        
       Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
       Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+      
+      switch(fPHOSTrigger){
+      case kPHOSL0: isPHI7 = (trigClasses.Contains("CPHI7-B-NOPF-")) ;
+                    break ;
+      case kPHOSL1low : isPHI7 =( trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
+                                 !trigClasses.Contains("CPHI7-B-NOPF-") ) ;
+                        break ;
+      case kPHOSL1med: isPHI7 =( trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHL-B-NOPF-")) ;
+                       break ;
+      case kPHOSL1high: isPHI7=( trigClasses.Contains("CPHI7PHH-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHM-B-NOPF-")) ;
+                        break ;
+      case kPHOSAny: ; //do nothing
+      default: ;
+      }
         
       if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
         PostData(1, fOutputContainer);
@@ -718,7 +737,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   vtx5[2] = event->GetPrimaryVertex()->GetZ();
 
   FillHistogram("hNvertexTracks",event->GetPrimaryVertex()->GetNContributors());
-  FillHistogram("hZvertex"      ,vtx5[2]);
   if(fIsFastMC){ //vertex from header
     AliAODMCHeader *cHeaderAOD = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
     if(!cHeaderAOD){
@@ -727,6 +745,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     }
     cHeaderAOD->GetVertex(vtx5);
   }
+  FillHistogram("hZvertex"      ,vtx5[2]);
   if (TMath::Abs(vtx5[2]) > 10. ){
     PostData(1, fOutputContainer);
     return ;
@@ -893,12 +912,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     //Mark photons fired trigger
     if(!fIsMB){   
       if(fIsMC){
-        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)) ;    
+        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<fPHOSTrigger)) ;    
       }
       else
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
     }
-    
     if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,cluE);
@@ -1007,8 +1025,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   for(Int_t i=0;i<nPrim;i++){
     AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(i) ;
     Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
-    if(r2>rcut*rcut)
-      continue ;
+    if(r2>rcut*rcut){
+      continue ;      
+    }
 
     Int_t pdg=prim->GetPdgCode() ;    
     char partName[30] ;
@@ -1394,7 +1413,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
     Double_t ptP1 = p1->Pt() ;
     Double_t w1=fCentWeight*p1->GetWeight() ;
     Double_t w1TOF = 1.; 
-    if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+    if(fIsMC){ //simulate TOF cut efficiency
       w1TOF=TOFCutEff(ptP1) ; 
     }
     for(Int_t j = i+1 ; j < n ; j++) {
@@ -1413,7 +1432,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-      if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+      if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
       }
@@ -1672,7 +1691,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         Double_t w2=fCentWeight*p2->GetWeight() ;
         Double_t w1TOF = 1.; 
         Double_t w2TOF = 1.; 
-        if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+        if(fIsMC ){ //simulate TOF cut efficiency
           w1TOF=TOFCutEff(ptP1) ; 
           w2TOF=TOFCutEff(ptP2) ; 
           w*=w1TOF*w2TOF ;
@@ -1777,9 +1796,18 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 //   //Parameterization 13.10.2018
 //   Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
   
-  //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0mean =1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
-  
+  Double_t mpi0mean = 0; 
+  Double_t mpi0sigma=1.;
+  if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst
+     mpi0mean = -8.62422e-01+(2.63467e-02+7.57835e-02*pt+1.78852e-01*pt*pt+ 2.94777e-01*pt*pt*pt+pt*pt*pt*pt)/(2.63711e-02+7.56551e-02*pt+1.79822e-01*pt*pt+2.94594e-01*pt*pt*pt+pt*pt*pt*pt) ;
+     mpi0sigma =-1.25637e-04/pt/pt+1.33167e-03/pt+4.91759e-03-7.48837e-04*sqrt(pt)+2.18500e-04*pt ;
+  }
+  else{
+     //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
+     mpi0mean = 1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
+     //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
+     mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
+  }   
   
   //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
   //Parameterization of data 30.08.2014
@@ -1787,9 +1815,6 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 
 //   //Parameterization 13.10.2018
 //   Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
-  
-  //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
   
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }

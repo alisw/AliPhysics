@@ -13,6 +13,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                                    bool CombSigma = false,//4
                                    bool ContributionSplitting = false,
                                    bool Systematic = false,
+                                   bool DumpPdApAd = true,
+                                   bool DumpRest = false,
                                    const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -73,7 +75,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
       CombSigma, ContributionSplitting);
   TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
-  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
+  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999., 3.);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
@@ -88,6 +90,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   PDGParticles.push_back(1000010020);
 
   std::vector<bool> closeRejection;
+  std::vector<int> pairQA;
   //pairs:
   // pp             0
   // p bar p        1
@@ -101,8 +104,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   // bar d bar d    9
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
-
     closeRejection.push_back(false);
+    pairQA.push_back(0);
   }
 
   closeRejection[0] = true;  // pp
@@ -111,6 +114,12 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   closeRejection[6] = true;  // barp bard
   closeRejection[7] = true;  // dd
   closeRejection[9] = true;  // bard bard
+  pairQA[0] = 11;    // pp
+  pairQA[2] = 11;    // pd
+  pairQA[4] = 11;    // barp barp
+  pairQA[6] = 11;    // barp bard
+  pairQA[7] = 11;    // dd
+  pairQA[9] = 11;    // bard bard
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -195,6 +204,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
+  config->SetPtQA(true);
+  config->SetExtendedQAPairs(pairQA);
   config->SetDeltaEtaMax(0.012); // and here you set the actual values
   config->SetDeltaPhiMax(0.012); // and here you set the actual values
   //Here we set the mixing depth.
@@ -227,6 +238,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   task->SetDeuteronCutsNoTOF(TrackCutsDeuteronNoTOF);
   task->SetAntiDeuteronCutsNoTOF(AntiTrackCutsDeuteronNoTOF);
   task->SetCollectionConfig(config);
+  task->SetUseDumpster(DumpPdApAd);
+  task->SetUseDumpsterRestPairs(DumpRest);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -305,7 +318,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
 
 
   AliAnalysisDataContainer *coutputResults;
-
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(
                      //@suppress("Invalid arguments") it works ffs
@@ -315,7 +327,6 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   mgr->ConnectOutput(task, 10, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
-
   TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
   coutputResultsQA = mgr->CreateContainer(
                        //@suppress("Invalid arguments") it works ffs
@@ -325,6 +336,16 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 11, coutputResultsQA);
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+                      //@suppress("Invalid arguments") it works ffs
+                      DumpsterName.Data(),
+                      TList::Class(),
+                      AliAnalysisManager::kOutputContainer,
+                      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 12, coutputDumpster);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%sProtonMC%s", addon.Data(), suffix.Data());
@@ -333,7 +354,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 13, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiProtonMC%s", addon.Data(),
@@ -344,7 +365,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sDeuteronMC%s", addon.Data(), suffix.Data());
@@ -354,7 +375,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
                         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 15, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiDeuteronMC%s", addon.Data(),
@@ -365,7 +386,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
                             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
   }
 

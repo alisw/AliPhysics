@@ -32,6 +32,19 @@ public:
     virtual void   Terminate(Option_t *);
     
     void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
+    
+    Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
+    Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
+    void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
+    void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    Bool_t GetEMCalTriggerDG1() { return fDCalDG1; };
+    Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
+    void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
+    void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
+    
+    void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
+    void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
+    void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
 
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
@@ -120,6 +133,15 @@ private:
     
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
+    
+    Bool_t    fEMCEG1;//EMcal Threshold EG1
+    Bool_t    fEMCEG2;//EMcal Threshold EG2
+    Bool_t    fDCalDG1;//DCal Threshold DG1
+    Bool_t    fDCalDG2;//DCal Threshold DG2
+    
+    TClonesArray *fTriggersInfo;//TClonesArray to access container from EMCalTriggerMaker
+    Int_t fThresholdEG2;// Threshold for EG2 trigger in ADC for trigger patches
+    Int_t fThresholdEG1;// Threshold for EG1 trigger in ADC for trigger patches
     
     AliAODMCParticle  *fMCparticle;//! MC particle
     TClonesArray  *fMCArray;//! MC array
@@ -339,6 +361,8 @@ private:
     TH1F                *fDHadpT;//!
     TH1F                *fDMesonpT;//!
     TH1F                *fD0pT;//!
+    TH1F                *fDPluspT;//!
+    TH1F                *fDspT;//!
     TH1F                *fLambdaCpT;//!
     
     TH2F                *fDElecDCA;//!

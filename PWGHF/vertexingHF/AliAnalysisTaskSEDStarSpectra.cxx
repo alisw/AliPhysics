@@ -609,6 +609,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
   PostData(1,fOutput);
   PostData(2,fOutputAll);
   PostData(3,fOutputPID);
+  PostData(5,fCounter);
 
   return;
 }

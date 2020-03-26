@@ -53,6 +53,8 @@
 #pragma link C++ class AliAnalysisTaskSED0MassNonPromptFraction+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelor+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity+;
+#pragma link C++ class AliAnalysisTaskSEDvsRT+;
+#pragma link C++ class AliAnalysisTaskSEDvsMultiplicity_BDT+;
 #pragma link C++ class AliAnalysisTaskCheckHFMCProd+;
 #pragma link C++ class AliAnalysisTaskCheckEvSel;
 #pragma link C++ class AliAnalysisTaskDmesonMCPerform+;
@@ -139,5 +141,8 @@
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
+#pragma link C++ class AliRDHFCutsKFP+;
+#pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromKFP+;
+#pragma link C++ class AliAnalysisTaskSESigmacTopK0Spi+;
 
 #endif

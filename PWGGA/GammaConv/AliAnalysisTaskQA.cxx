@@ -668,7 +668,7 @@ void AliAnalysisTaskQA::UserExec(Option_t *){
   if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
   AliMultSelection* fMultSelection;
-  Double_t cent;
+  Double_t cent = -1.;
   if(fIsHeavyIon>0){
     fMultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
     cent=fMultSelection->GetMultiplicityPercentile("V0A");

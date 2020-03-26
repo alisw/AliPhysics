@@ -49,6 +49,7 @@
 #include "AliGenPythiaEventHeader.h"//FK//
 #include "AliMCEvent.h" //FK// 
 #include "AliExternalTrackParam.h" //AID//
+#include "AliFJWrapper.h"  //EMB_clus
 
 //--AliHFJetsClass--
 #include "AliHFJetsTaggingVertex.h"
@@ -71,6 +72,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fDoDetRespMtx(kFALSE),
   fDoOnlyMtxAna(kFALSE),
   fUseTriggerData(kFALSE),
+  fEmbeddPerpendicular(kFALSE), //EMB_clus
   fRecJetsBranch(),
   fGenJetsBranch(),
   fPtHardName("pthard"),
@@ -149,7 +151,14 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fStartBin(0),
   fMaxFacPtHard(0),  //FK
   fPtCut(0.15),     //AID//
-  fEtaCut(0.9)      //AID//
+  fEtaCut(0.9),      //AID//
+  fDoEmbedding(kFALSE),     //EMB
+  fHybridJetContName(""),   //EMB
+  fHybridJetCont(0x0),      //EMB
+  fhDeltaPtEmbedd(0x0),      //EMB
+  fhDeltaPtEmbeddCorrelation(0x0),  //EMB
+  fFastJetWrapper(NULL), //EMB_clus
+  fTrackGenerator(NULL) //EMB_clus
 {
   // default constructor
 }
@@ -165,6 +174,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fDoDetRespMtx(kFALSE),
   fDoOnlyMtxAna(kFALSE),
   fUseTriggerData(kFALSE),
+  fEmbeddPerpendicular(kFALSE), //EMB_clus
   fRecJetsBranch(),
   fGenJetsBranch(),
   fPtHardName("pthard"),
@@ -243,7 +253,16 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fStartBin(0),
   fMaxFacPtHard(0), //FK
   fPtCut(0.15),     //AID//
-  fEtaCut(0.9)      //AID//
+  fEtaCut(0.9),      //AID//
+  fDoEmbedding(kFALSE),     //EMB
+  fHybridJetContName(""),   //EMB
+  fHybridJetCont(0x0),      //EMB
+  fhDeltaPtEmbedd(0x0),      //EMB
+  fhDeltaPtEmbeddCorrelation(0x0),  //EMB
+  fhDeltaPtEmbeddPerpendicular(0x0),      //EMB_clus
+  fhDeltaPtEmbeddCorrelationPerpendicular(0x0),  //EMB_clus
+  fFastJetWrapper(NULL), //EMB_clus
+  fTrackGenerator(NULL) //EMB_clus
 {
   // standard constructor
   AliInfo(MSGINFO("+++ Executing Constructor +++"));
@@ -266,7 +285,10 @@ AliAnalysisTaskEmcalJetBtagSV::~AliAnalysisTaskEmcalJetBtagSV()
   
   if (fTagger)     delete fTagger;
   if (fCutsHFjets) delete fCutsHFjets;
-
+  if (fEmbeddPerpendicular) { 		 //EMB_clus
+		delete fFastJetWrapper;  //EMB_clus
+		delete fTrackGenerator;
+  }
   if (fRandom) delete fRandom;
 }
 
@@ -462,7 +484,30 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
     fOutputList->Add(fhDeltaPtLxy7);  //newDeltaPt//  
   }
 
-  
+if(fDoEmbedding)
+{   //EMB
+     fhDeltaPtEmbedd  = new TH1F("fhDeltaPtEmbedd", "DeltaPt distribution based on track embedding", 500, -125, +125);
+     fhDeltaPtEmbedd-> Sumw2();
+     fOutputList->Add(fhDeltaPtEmbedd);
+
+     fhDeltaPtEmbeddCorrelation = new TH2F("fhDeltaPtEmbeddCorrelation", "DeltaPt distribution based on track embedding vs pT of Embedded Track", 200, 0, 200, 500, -125, +125);
+     fhDeltaPtEmbeddCorrelation->Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddCorrelation);
+  }
+if(fEmbeddPerpendicular)
+{   //EMB_clus
+     fhDeltaPtEmbeddPerpendicular  = new TH1F("fhDeltaPtEmbeddPerpendicular", "DeltaPt distribution based on Perpendicular track embedding", 500, -125, +125);
+     fhDeltaPtEmbeddPerpendicular-> Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddPerpendicular);
+
+     fhDeltaPtEmbeddCorrelationPerpendicular = new TH2F("fhDeltaPtEmbeddCorrelationPerpendicular", "DeltaPt distribution based on Perpendicular track embedding vs pT of Embedded Track", 200, 0, 200, 500, -125, +125);
+     fhDeltaPtEmbeddCorrelationPerpendicular->Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddCorrelationPerpendicular);
+  }
+
+
+ 
+ 
   fhXsec = new TProfile("hXsec", "xsec from pyxsec.root", 1, 0.5, 1.5);
   fhXsec->GetXaxis()->SetBinLabel(1, Form("SelEvent_%s", fPtHardName.Data()));
   fhXsec->GetXaxis()->SetTitle("p_{T} hard bin");
@@ -485,6 +530,16 @@ void AliAnalysisTaskEmcalJetBtagSV::ExecOnce()
   AliInfo(MSGINFO("+++ Executing ExecOnce +++"));
   if (fGlLogLevel) {
     AliLog::SetGlobalLogLevel((AliLog::EType_t)fGlLogLevel);
+  }
+
+  if (fEmbeddPerpendicular){
+	   fFastJetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper"); //EMB_clus
+	   fFastJetWrapper->SetAreaType(fastjet::active_area);		//EMB_clus
+	   fFastJetWrapper->SetGhostArea(0.005);
+	   fFastJetWrapper->SetR(0.4);					//EMB_clus
+	   fFastJetWrapper->SetAlgorithm(fastjet::antikt_algorithm);	//EMB_clus
+	   fFastJetWrapper->SetRecombScheme(fastjet::pt_scheme);	//EMB_clus
+	   fTrackGenerator = new TRandom(0);
   }
 
   if ((fGlLogLevel > AliLog::kInfo) && (fLcDebLevel)) {
@@ -763,6 +818,7 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
 //_____________________________________________________________________________________
 void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
 {
+
   // Convert to AliESDVertex // mettere in metodo separato nel task, mi servira' anche dopo TODO
   AliAODVertex* pVtx = (AliAODVertex*)fEvent->GetPrimaryVertex();
 
@@ -811,6 +867,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
 
   AliEmcalJet* jet;
   Int_t fillDelPtMask = 0; //newDelPt// 
+  Int_t fSVreconstucted=0;
   for(Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
      jet = (AliEmcalJet*) fRecJetArray->UncheckedAt(jetcand);
      
@@ -831,20 +888,20 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
                                        fV0gTrkMap,
                                        aVtxDisp,
                                        nDauRejCount);
-    fhHFjetQa->Fill(12, nDauRejCount);
-    if(nVtx < 0){
+     fhHFjetQa->Fill(12, nDauRejCount);
+     if(nVtx < 0){
        fhHFjetQa->Fill(-1 * nVtx);
        continue;
-    }
-    //------------------------newDeltaPt-------------------------
-   if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
-      //if(deltapt<9999){ 
-         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);      
-      //} 
-   }  
- //-------------------------------------------------
+     }
+     //------------------------newDeltaPt-------------------------
+     if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
+     
+        fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);     
+        if(((fillDelPtMask & 4) >> 2) == 1) fSVreconstucted=1; 
+     }  
+     //-------------------------------------------------
     
-    fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
+     fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
                                      nVtx,
                                      fZNApercentile,
                                      ptJet_wBkgRej,
@@ -854,9 +911,40 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
                                      jet,
                                      fMCWeight);
 
-    fHFvertexing->Clear();
-    aVtxDisp.clear();
+     fHFvertexing->Clear();
+     aVtxDisp.clear();
   }
+
+ 
+
+
+  if(fSVreconstucted == 1 && fDoEmbedding){
+     AliVParticle*  hytrk  = NULL;  //track hybrid event jet
+     AliEmcalJet*   hyjet  = NULL; //hybrid event jet
+     Double_t sumTrkEmbeddedPt=0;
+     
+
+     //EMB loop over jets in hybrid event
+     for(Int_t i = 0; i < fHybridJetCont->GetEntries(); i++) {
+        hyjet = static_cast<AliEmcalJet*>(fHybridJetCont->UncheckedAt(i));
+        if(!hyjet)  continue;
+        if(!fCutsHFjets->IsJetSelected(hyjet)) continue;
+
+        sumTrkEmbeddedPt=0;
+        for(Int_t iq=0; iq < hyjet->GetNumberOfTracks(); iq++) {
+           hytrk = static_cast<AliVParticle*> (hyjet->Track(iq));
+           if(!hytrk) continue;
+           //cout<<"HYTRACK "<<hytrk->Pt()<<"   "<< hytrk->Eta()<<"   "<< hytrk->Phi()<<"  " <<hytrk->Charge()<<endl;
+           if(hytrk->Charge()==3) sumTrkEmbeddedPt += hytrk->Pt();
+        }
+
+        if(sumTrkEmbeddedPt>0){ 
+           Double_t deltaPtEmb = hyjet->Pt() - hyjet->Area() * rho - sumTrkEmbeddedPt;
+           fhDeltaPtEmbedd->Fill(deltaPtEmb);
+           fhDeltaPtEmbeddCorrelation->Fill(sumTrkEmbeddedPt, deltaPtEmb);
+        }
+     }
+  }//EMB
 
   delete esdVtx;
 }
@@ -992,10 +1080,8 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
 
       //------------------------newDeltaPt-------------------------
 
-      if (fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
-          //if(deltapt<9999){ 
-            fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
-          //} 
+      if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
+         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
       }  
       //-------------------------------------------------
       // Fill jet-with-vertex container
@@ -1337,6 +1423,17 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays()
     }
   }
 
+  //EMB
+  if(fDoEmbedding){
+
+      fHybridJetCont   = static_cast<TClonesArray*> (fEvent->FindListObject(fHybridJetContName.Data())); 
+      if(!fHybridJetCont){
+          AliError( MSGERROR("HYBRID JET CONTAINER not found!"));
+          return kFALSE;
+      } 
+  }//EMB
+
+
   CheckTrackQAinJets();
 
   return kTRUE;
@@ -1557,6 +1654,64 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
       if(lxy > 7 && ((fillMask & 4) >> 2) == 0 ){
          fillMask = fillMask | 4; 
          fhDeltaPtLxy7->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
+//---------------------------------------------------EMB_clus
+
+	if (fEmbeddPerpendicular){
+		fFastJetWrapper->Clear();
+
+		
+		//----------------Generating NEW perpendicular track
+		
+		Double_t gen_pt = fTrackGenerator->Uniform(0,100);
+		cout<<"!!!!!!!!!!!!!!!!!! gen_pt = "<<gen_pt<<endl;
+           	TLorentzVector lVec;
+                lVec.SetPtEtaPhiM(gen_pt,signalEta,signalPhi + TMath::Pi()/2,0);
+		fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999);
+		//-----Filling old container
+
+		
+		 for(Int_t i = 0; i < fRecTrkArray->GetEntries(); i++) {
+		    AliAODTrack* trk = static_cast<AliAODTrack*>(fRecTrkArray->ConstructedAt(i));
+		    UInt_t trkFilterMap = trk->GetFilterMap();  
+		    if (!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
+		    if ( (fabs(trk->Eta()) < fEtaCut))
+			    fFastJetWrapper->AddInputVector(trk->Px(), trk->Py(), trk->Pz(), trk->P(), 1); 
+
+		}  		 
+	       
+
+
+		fFastJetWrapper->Run();
+		
+		//--------------- DelPt analysis of the new container
+		std::vector<fastjet::PseudoJet> jets_incl = fFastJetWrapper->GetInclusiveJets();
+		AliVParticle*  hytrk  = NULL;  //track hybrid event jet
+		Double_t deltaPtEmb;
+		Double_t sumTrkEmbeddedPt=0;
+		for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
+			std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));	
+
+			sumTrkEmbeddedPt=0;
+			for (UInt_t ic = 0; ic < constituents.size(); ++ic){ 
+	      			if (constituents[ic].user_index() == -99999)  {
+					sumTrkEmbeddedPt += constituents[ic].pt();
+					break;
+				}
+	       		}
+			
+			if(sumTrkEmbeddedPt>0){ 
+		   		deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * rho - sumTrkEmbeddedPt;
+		   		fhDeltaPtEmbeddPerpendicular->Fill(deltaPtEmb);
+		   		fhDeltaPtEmbeddCorrelationPerpendicular->Fill(sumTrkEmbeddedPt, deltaPtEmb);
+				break;
+			}
+
+		 }
+		cout<<" All is done, default delPt: " << GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi) << " Updated One : " << deltaPtEmb<<endl;
+	}
+
+//----------------------------------------------------------
+
       }       
    }                  
 

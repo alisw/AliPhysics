@@ -111,37 +111,41 @@ class AliDielectronSignalMC : public TNamed {
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
   void SetCheckMotherGrandmotherRelation(Bool_t CheckMotherIsGrandmother=kTRUE, Bool_t MotherIsGrandmother=kFALSE)
     {fCheckMotherGrandmother = CheckMotherIsGrandmother; fMotherIsGrandmother = MotherIsGrandmother;}
+  void SetCheckMotherGrandmotherDiffPairRelation(Bool_t CheckMotherIsGrandmother=kTRUE, Bool_t MotherIsGrandmother=kFALSE)    // is assuming that particles from pair one have same mother and particles from pair two have same mother (SetMothersRelation(AliDielectronSignalMC::kSame))
+    {fCheckMotherGrandmotherDiffPair = CheckMotherIsGrandmother; fMotherIsGrandmotherDiffPair = MotherIsGrandmother;}
   void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                {fCheckStackForPDG = checkStack;}
   void SetPDGforStack(Int_t stackPDG)                              {fStackPDG = stackPDG;}
   void SetCheckUnlikeSign(Bool_t checkULS)                         {fCheckUnlikeSign = checkULS;}
   void SetCheckCorrelatedHF(Bool_t checkHFcorr)                    {fCheckCorrelatedHF = checkHFcorr;}
   void SetCheckLikeSign(Bool_t checkLSpp,Bool_t checkLSmm)         {fCheckLikeSignPP = checkLSpp; fCheckLikeSignMM = checkLSmm;}
 
-  Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
-  Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
-  Int_t GetGrandMotherPDG(Int_t branch)                const {return (branch==1 ? fGrandMother1 : fGrandMother2);}
-  Bool_t GetLegPDGexclude(Int_t branch)                const {return (branch==1 ? fLeg1Exclude : fLeg2Exclude);}
-  Bool_t GetMotherPDGexclude(Int_t branch)             const {return (branch==1 ? fMother1Exclude : fMother2Exclude);}
-  Bool_t GetGrandMotherPDGexclude(Int_t branch)        const {return (branch==1 ? fGrandMother1Exclude : fGrandMother2Exclude);}
-  ESource GetLegSource(Int_t branch)                   const {return (branch==1 ? fLeg1Source : fLeg2Source);}
-  ESource GetMotherSource(Int_t branch)                const {return (branch==1 ? fMother1Source : fMother2Source);}
-  ESource GetGrandMotherSource(Int_t branch)           const {return (branch==1 ? fGrandMother1Source : fGrandMother2Source);}
-  Bool_t GetCheckBothChargesLegs(Int_t branch)         const {return (branch==1 ? fCheckBothChargesLeg1 : fCheckBothChargesLeg2);}
-  Bool_t GetCheckBothChargesMothers(Int_t branch)      const {return (branch==1 ? fCheckBothChargesMother1 : fCheckBothChargesMother2);}
-  Bool_t GetCheckBothChargesGrandMothers(Int_t branch) const {return (branch==1 ? fCheckBothChargesGrandMother1 : fCheckBothChargesGrandMother2);}
-  EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
-  EBranchRelation GetGrandMothersRelation()            const {return fGrandMothersRelation;}
-  TMCProcess GetGEANTProcess()                         const {return fGEANTProcess;}
-  Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
-  Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
-  Bool_t GetCheckMotherGrandmotherRelation()           const {return fCheckMotherGrandmother;}
-  Bool_t GetMotherIsGrandmother()                      const {return fMotherIsGrandmother;}
-  Bool_t GetCheckStackForPDG()                         const {return fCheckStackForPDG;}
-  Int_t GetStackPDG()                                  const {return fStackPDG;}
-  Bool_t GetCheckUnlikeSign()                          const {return fCheckUnlikeSign;}
-  Bool_t GetCheckLikeSignPP()                          const {return fCheckLikeSignPP;}
-  Bool_t GetCheckLikeSignMM()                          const {return fCheckLikeSignMM;}
-  Bool_t GetCheckCorrelatedHF()                        const {return fCheckCorrelatedHF;}
+  Int_t GetLegPDG(Int_t branch)                                const {return (branch==1 ? fLeg1 : fLeg2);}
+  Int_t GetMotherPDG(Int_t branch)                             const {return (branch==1 ? fMother1 : fMother2);}
+  Int_t GetGrandMotherPDG(Int_t branch)                        const {return (branch==1 ? fGrandMother1 : fGrandMother2);}
+  Bool_t GetLegPDGexclude(Int_t branch)                        const {return (branch==1 ? fLeg1Exclude : fLeg2Exclude);}
+  Bool_t GetMotherPDGexclude(Int_t branch)                     const {return (branch==1 ? fMother1Exclude : fMother2Exclude);}
+  Bool_t GetGrandMotherPDGexclude(Int_t branch)                const {return (branch==1 ? fGrandMother1Exclude : fGrandMother2Exclude);}
+  ESource GetLegSource(Int_t branch)                           const {return (branch==1 ? fLeg1Source : fLeg2Source);}
+  ESource GetMotherSource(Int_t branch)                        const {return (branch==1 ? fMother1Source : fMother2Source);}
+  ESource GetGrandMotherSource(Int_t branch)                   const {return (branch==1 ? fGrandMother1Source : fGrandMother2Source);}
+  Bool_t GetCheckBothChargesLegs(Int_t branch)                 const {return (branch==1 ? fCheckBothChargesLeg1 : fCheckBothChargesLeg2);}
+  Bool_t GetCheckBothChargesMothers(Int_t branch)              const {return (branch==1 ? fCheckBothChargesMother1 : fCheckBothChargesMother2);}
+  Bool_t GetCheckBothChargesGrandMothers(Int_t branch)         const {return (branch==1 ? fCheckBothChargesGrandMother1 : fCheckBothChargesGrandMother2);}
+  EBranchRelation GetMothersRelation()                         const {return fMothersRelation;}
+  EBranchRelation GetGrandMothersRelation()                    const {return fGrandMothersRelation;}
+  TMCProcess GetGEANTProcess()                                 const {return fGEANTProcess;}
+  Bool_t GetCheckGEANTProcess()                                const {return fCheckGEANTProcess;}
+  Bool_t GetFillPureMCStep()                                   const {return fFillPureMCStep;}
+  Bool_t GetCheckMotherGrandmotherRelation()                   const {return fCheckMotherGrandmother;}
+  Bool_t GetCheckMotherGrandmotherDiffPairRelation()           const {return fCheckMotherGrandmotherDiffPair;}
+  Bool_t GetMotherIsGrandmother()                              const {return fMotherIsGrandmother;}
+  Bool_t GetMotherIsGrandmotherDiffPair()                      const {return fMotherIsGrandmotherDiffPair;}
+  Bool_t GetCheckStackForPDG()                                 const {return fCheckStackForPDG;}
+  Int_t GetStackPDG()                                          const {return fStackPDG;}
+  Bool_t GetCheckUnlikeSign()                                  const {return fCheckUnlikeSign;}
+  Bool_t GetCheckLikeSignPP()                                  const {return fCheckLikeSignPP;}
+  Bool_t GetCheckLikeSignMM()                                  const {return fCheckLikeSignMM;}
+  Bool_t GetCheckCorrelatedHF()                                const {return fCheckCorrelatedHF;}
 
   static AliDielectronSignalMC* GetJpsiMCsignalDef(EJpsiSignals kSignal);
   static const char* GetJpsiMCsignalDefName(EJpsiSignals kSignal) {return fgkJpsiSignals[kSignal];}
@@ -191,8 +195,10 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
   Bool_t fCheckGEANTProcess;            //              GEANT process
 
-  Bool_t fCheckMotherGrandmother;       // check if a mother is also a grandmother to select B -> e D X -> ee X
-  Bool_t fMotherIsGrandmother;          // check if a mother is also a grandmother to select B -> e D X -> ee X
+  Bool_t fCheckMotherGrandmother;               // check if a mother is also a grandmother to select B -> e D X -> ee X
+  Bool_t fMotherIsGrandmother;                  // check if a mother is also a grandmother to select B -> e D X -> ee X
+  Bool_t fCheckMotherGrandmotherDiffPair;       // check if a mother is also a grandmother to select Dalitz pairs
+  Bool_t fMotherIsGrandmotherDiffPair;          // check if a mother is also a grandmother to select Dalitz pairs
 
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
   EBranchRelation fGrandMothersRelation;   // mother 1&2 relation (same, different or whatever)

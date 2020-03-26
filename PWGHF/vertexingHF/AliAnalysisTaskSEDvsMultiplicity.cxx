@@ -269,9 +269,9 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
     SetNMassBins(nInvMassBins); 
   }else if(fPdgMeson == 4122) {
     Double_t massLc  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
-    Int_t nInvMassBins = 1000;
-    Double_t minMass = massLc-0.250;
-    Double_t maxMass = massLc+0.250;
+    Int_t nInvMassBins = 500;
+    Double_t minMass = massLc-0.180;
+    Double_t maxMass = massLc+0.180;
     SetMassLimits(minMass,maxMass);
     SetNMassBins(nInvMassBins);
   }
@@ -479,7 +479,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
   Float_t lastMultBin = 199.5;
   Int_t nMultBinsNtrk = nMultBins;
   Float_t lastMultBinNtrk = lastMultBin;
-  Int_t nMultBinsV0 = 400;
+  Int_t nMultBinsV0 = 200;
   Float_t lastMultBinV0 = 799.5;
   const char *estimatorName="tracklets";
   if(fisPPbData) {
@@ -718,7 +718,6 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
   }
 
-  
   TClonesArray *arrayCand = 0;
   TString arrayName="";
   UInt_t pdgDau[3];
@@ -1150,10 +1149,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
 
     Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
-    if (fPdgMeson == 4122 && fLctoV0) passAllCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+    if (fPdgMeson == 4122 && fLctoV0) passAllCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if (fPdgMeson == 4122){
-      if(fLctoV0) passTopolCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+      if(fLctoV0) passTopolCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
       else  passTopolCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
     }
     if (fPdgMeson != 431 && passTopolCuts==0) continue;
@@ -1218,19 +1217,19 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       if(TMath::Abs(mass[0]-mDsPDG)<0.02 || TMath::Abs(mass[1]-mDsPDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }else if(fPdgMeson==4122){
       if(fLctoV0){
-      mass[0]=d->InvMass(2,pdgDgLctopK0S);
-      mass[1]=-1.;
-      if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
-     }else{
-      UInt_t pdgpKpi[3]={2212,321,211};
-      UInt_t pdgpiKp[3]={211,321,2212}; 
-      if(passTopolCuts==3 || passTopolCuts==1)mass[0]=d->InvMass(3,pdgpKpi);
-      if(passTopolCuts>=2) mass[1]=d->InvMass(3,pdgpiKp);
-      if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
-     }
+	mass[0]=d->InvMass(2,pdgDgLctopK0S);
+	mass[1]=-1.;
+	if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
+      }else{
+	UInt_t pdgpKpi[3]={2212,321,211};
+	UInt_t pdgpiKp[3]={211,321,2212}; 
+	if(passTopolCuts==3 || passTopolCuts==1) mass[0]=d->InvMass(3,pdgpKpi);
+	if(passTopolCuts>=2) mass[1]=d->InvMass(3,pdgpiKp);
+	if(TMath::Abs(mass[0]-mLcPDG)<0.02 || TMath::Abs(mass[1]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
+      }
     }
 
-     for(Int_t iHyp=0; iHyp<2; iHyp++){
+    for(Int_t iHyp=0; iHyp<2; iHyp++){
       if(mass[iHyp]<0.) continue; // for D+,D* and Lc2pK0S we have 1 mass hypothesis
       Double_t invMass=mass[iHyp];
       Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
@@ -1421,7 +1420,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
   return;
 }
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
+Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {
   //
   /// checking whether the mother of the particles come from a charm or a bottom quark
   //

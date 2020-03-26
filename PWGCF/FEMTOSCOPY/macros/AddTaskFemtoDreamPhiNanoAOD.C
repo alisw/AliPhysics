@@ -18,26 +18,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetSphericityCuts(0.7, 1);
 
-  //    if (suffix == "1") {
-  //        evtCuts->SetSpherocityCuts(0.5,1);
-  //    }
-
-  //    if (suffix == "2") {
-  //        evtCuts->SetSpherocityCuts(0.6,1);
-  //    }
-
-  //    if (suffix == "3") {
-  //        evtCuts->SetSpherocityCuts(0.7,1);
-  //    }
-
-  //    if (suffix == "4") {
-  //        evtCuts->SetSpherocityCuts(0.8,1);
-  //    }
-
-  //    if (suffix == "5") {
-  //        evtCuts->SetSpherocityCuts(0.9,1);
-  //    }
-
   // Proton cuts
   const float ProtonPtlow = 0.45;
   const float ProtonPtup = 0.55;
@@ -60,132 +40,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
   }
-  //  if (suffix == "1") {
-  //    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //  } else if (suffix == "2") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "3") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    TrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
-  //  } else if (suffix == "4") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //  } else if (suffix == "5") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  } else if (suffix == "6") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //  } else if (suffix == "7") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  } else if (suffix == "8") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "9") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
-  //  } else if (suffix == "10") {
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  } else if (suffix == "11") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "12") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
-  //  } else if (suffix == "13") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //  } else if (suffix == "14") {
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //  } else if (suffix == "15") {
-  //    TrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //  } else if (suffix == "16") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "17") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  } else if (suffix == "18") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //  } else if (suffix == "19") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "20") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "21") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  } else if (suffix == "22") {
-  //    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-  //  } else if (suffix == "23") {
-  //    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
-  //    TrackCuts->SetNClsTPC(ProtonNClsUp);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
-  //  } else if (suffix == "24") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-  //    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-  //  } else if (suffix == "25") {
-  //    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
-  //    TrackCuts->SetNClsTPC(ProtonNClsLow);
-  //    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
-  //  }
 
   // Kaon cuts
   const float KaonPtlow = 0.1;
@@ -218,132 +72,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackPosKaonCuts->SetMinimalBooking(true);
     TrackNegKaonCuts->SetMinimalBooking(true);
   }
-  //  if (suffix == "1") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //  } else if (suffix == "2") {
-  //    evtCuts->SetSphericityCuts(SpheriLow,1);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "3") {
-  //    evtCuts->SetSphericityCuts(SpheriUp,1);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //  } else if (suffix == "4") {
-  //    evtCuts->SetSphericityCuts(SpheriLow,1);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //     TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //  } else if (suffix == "5") {
-  //    evtCuts->SetSphericityCuts(SpheriUp,1);
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //  } else if (suffix == "6") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //     TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //  } else if (suffix == "7") {
-  //    evtCuts->SetSphericityCuts(SpheriLow,1);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //  } else if (suffix == "8") {
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
-  //  } else if (suffix == "9") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //  } else if (suffix == "10") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //  } else if (suffix == "11") {
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //  } else if (suffix == "12") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //  } else if (suffix == "13") {
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "14") {
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaLow);
-  //  } else if (suffix == "15") {
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "16") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //  } else if (suffix == "17") {
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //  } else if (suffix == "18") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "19") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
-  //  } else if (suffix == "20") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //  } else if (suffix == "21") {
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "22") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtlow, 999);
-  //    TrackPosKaonCuts->SetNClsTPC(KaonNClsLow);
-  //    TrackNegKaonCuts->SetNClsTPC(KaonNClsLow);
-  //  } else if (suffix == "23") {
-  //    evtCuts->SetSphericityCuts(SpheriUp,1);
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //  } else if (suffix == "24") {
-  //    TrackPosKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackNegKaonCuts->SetPtRange(KaonPtup, 999);
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaLow, KaonEtaLow);
-  //  } else if (suffix == "25") {
-  //    TrackPosKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //    TrackNegKaonCuts->SetEtaRange(-KaonEtaUp, KaonEtaUp);
-  //    TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //    TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, KaonNsigmaUp);
-  //  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -360,9 +88,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodev0(333);
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-  if (suffix != "0") {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
+  //    if (suffix != "0") {
+  //      TrackCutsPhi->SetMinimalBooking(true);
+  //    }
+
   if (suffix == "1") {
     TrackCutsPhi->SetCutWindow(0.987, 1.011);
   }
@@ -370,79 +99,33 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
   if (suffix == "3") {
-    TrackCutsPhi->SetCutWindow(1.1, 1.2);
+    evtCuts->SetSphericityCuts(0.0, 1);
   }
   if (suffix == "4") {
-    TrackCutsPhi->SetCutWindow(1.2, 1.3);
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
   }
   if (suffix == "5") {
-    TrackCutsPhi->SetCutWindow(1.3, 1.4);
-  }
-  if (suffix == "6") {
-    TrackCutsPhi->SetCutWindow(1.4, 1.5);
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
   if (suffix == "7") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.6);
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
   }
   if (suffix == "8") {
-    TrackCutsPhi->SetCutWindow(1.6, 1.7);
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
   if (suffix == "9") {
-    TrackCutsPhi->SetCutWindow(1.7, 1.8);
+    evtCuts->SetSphericityCuts(0.0, 1);
   }
   if (suffix == "10") {
-    TrackCutsPhi->SetCutWindow(1.8, 1.9);
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(0.987, 1.011);
   }
   if (suffix == "11") {
-    TrackCutsPhi->SetCutWindow(1.9, 2);
+    evtCuts->SetSphericityCuts(0.0, 1);
+    TrackCutsPhi->SetCutWindow(1.027, 1.1);
   }
-  if (suffix == "12") {
-    evtCuts->SetSphericityCuts(0, 1);
-  }
-  //  if (suffix == "13") {
-  //    TrackCutsPhi->SetCutWindow(0.987, 1.011);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "14") {
-  //    TrackCutsPhi->SetCutWindow(1.027, 1.1);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "15") {
-  //    TrackCutsPhi->SetCutWindow(1.1, 1.2);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "16") {
-  //    TrackCutsPhi->SetCutWindow(1.2, 1.3);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "17") {
-  //    TrackCutsPhi->SetCutWindow(1.3, 1.4);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "18") {
-  //    TrackCutsPhi->SetCutWindow(1.4, 1.5);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "19") {
-  //    TrackCutsPhi->SetCutWindow(1.5, 1.6);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "20") {
-  //    TrackCutsPhi->SetCutWindow(1.6, 1.7);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "21") {
-  //    TrackCutsPhi->SetCutWindow(1.7, 1.8);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "22") {
-  //    TrackCutsPhi->SetCutWindow(1.8, 1.9);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
-  //  if (suffix == "23") {
-  //    TrackCutsPhi->SetCutWindow(1.9, 2);
-  //    evtCuts->SetSphericityCuts(0, 1);
-  //  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -450,18 +133,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);  // 0
-  PDGParticles.push_back(2212);  // 1
-  PDGParticles.push_back(333);   // 2
-  PDGParticles.push_back(2212);  // 3
-  PDGParticles.push_back(2212);  // 4
-  PDGParticles.push_back(333);   // 5
-  PDGParticles.push_back(333);   // 6
-  PDGParticles.push_back(2212);  // 7
-  PDGParticles.push_back(2212);  // 8
-  PDGParticles.push_back(333);   // 9
-  PDGParticles.push_back(2212);  // 10
-  PDGParticles.push_back(2212);  // 11
+  PDGParticles.push_back(2212);  // 0 protons
+  PDGParticles.push_back(2212);  // 1 antiprot
+  PDGParticles.push_back(333);   // 2 v0 particle
+  PDGParticles.push_back(2212);  // 3 proton truth
+  PDGParticles.push_back(2212);  // 4 antiprot truth
+  PDGParticles.push_back(333);   // 5 phi truth
+  PDGParticles.push_back(333);   // 6 phiall
+  //  PDGParticles.push_back(2212);  // 7 proton common
+  //  PDGParticles.push_back(2212);  // 8 aproton common
+  //  PDGParticles.push_back(333);   // 9 phi common
+  //  PDGParticles.push_back(2212);  // 10 proton no prim
+  //  PDGParticles.push_back(2212);  // 11 antiprot no prim
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -533,40 +216,33 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12); i++) {
+  // for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11 + 12);
+  // i++) {
+
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 11;   // pp
-  pairQA[1] = 0;    // pap
-  pairQA[2] = 12;   // pphi
-  pairQA[12] = 11;  // apap
-  pairQA[13] = 12;  // apphi
-  pairQA[23] = 22;  // phiphi
+  pairQA[0] = 10;   // pp
+  pairQA[1] = 10;   // pap
+  pairQA[2] = 10;   // pphi
+  pairQA[7] = 10;   // apap
+  pairQA[8] = 10;   // apphi
+  pairQA[13] = 10;  // phiphi
 
   if (isMC) {
-    pairQA[33] = 11;  // TRUE
-    pairQA[34] = 11;
-    pairQA[35] = 11;
-    pairQA[42] = 11;
-    pairQA[43] = 11;
-    pairQA[50] = 11;
+    pairQA[18] = 10;  // TRUE
+    pairQA[19] = 10;
+    pairQA[20] = 10;
+    pairQA[22] = 10;
+    pairQA[23] = 10;
+    pairQA[25] = 10;
 
-    pairQA[33] = 11;  // COMMON
-    pairQA[34] = 11;
-    pairQA[35] = 11;
-    pairQA[42] = 11;
-    pairQA[43] = 11;
-    pairQA[50] = 11;
-
-    pairQA[36] = 11;  // phiPRIM pTRUE
-    pairQA[44] = 11;
-
-    pairQA[55] = 11;  // phiTURE pNOprim
-    pairQA[56] = 11;
+    pairQA[21] = 10;  // phiALL pTRUE
+    pairQA[24] = 10;
   }
 
   AliFemtoDreamCollConfig *config =
@@ -581,7 +257,25 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetUseEventMixing(true);
+  config->SetMixingDepth(50);
+
+
+  //-------MIXED EVENTS---------------------------
+  // config->SetUseEventMixing(true);
+  // config->SetMixingDepth(10);
+
+  //-------ROTATED SAMPLE-------------------------
+  //  config->SetUseEventMixing(false);
+  //  config->SetUsePhiSpinning(true);
+  //  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
+  //  config->SetSpinningDepth(1);
+
+  if (isMC) {
+    config->SetAncestors(true);
+    config->GetDoAncestorsPlots();
+  }
+
   /*
   //This is just to show off what would be possible in case you are interested,
   don't be confused by this at the beginning
@@ -652,6 +346,28 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
+  task->SetUseDumpster(false);
+
+  if (suffix == "6") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "7") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "8") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "9") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "10") {
+    task->SetOEventMixing(true);
+  }
+  if (suffix == "11") {
+    task->SetOEventMixing(true);
+  }
+
+
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -672,6 +388,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
                                    AliAnalysisManager::kOutputContainer,
                                    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
+
+  AliAnalysisDataContainer *coutputDumpsterQA;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpsterQA = mgr->CreateContainer(
+      DumpsterName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+  mgr->ConnectOutput(task, 2, coutputDumpsterQA);
 
   return task;
 }
