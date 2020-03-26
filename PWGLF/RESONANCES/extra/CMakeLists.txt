@@ -23,7 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		                ${AliPhysics_SOURCE_DIR}/OADB
+		     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
@@ -46,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLambdaStar.cxx
   AliAnalysisTaskSEF01710fromAODtracks.cxx
   AliRsnf0f2Task.cxx
+  AliAnalysisTaskPPVsMultMCRSN.cxx
   )
 
 # Headers from sources
@@ -87,4 +88,5 @@ install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
 
