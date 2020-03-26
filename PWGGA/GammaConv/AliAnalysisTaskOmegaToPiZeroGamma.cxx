@@ -2733,8 +2733,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
 {
-  std::set<uint> dropOutGammas_CALO;
-  std::set<uint> dropOutGammas_PCM;
+  std::set<UInt_t> dropOutGammas_CALO;
+  std::set<UInt_t> dropOutGammas_PCM;
   switch(fReconMethod){
   //PCM-cal,cal
   case 0:
@@ -4742,7 +4742,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlots(AliAODConversionMother *omeg
   return;
 }
 
-void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCalo(std::set<uint> dropOutGammas_CALO) {
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCalo(std::set<UInt_t> dropOutGammas_CALO) {
   for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
     AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
     if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
@@ -4764,7 +4764,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCalo(std::set<uint> dropO
 }
 
 
-void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionPCM(std::set<uint> dropOutGammas_PCM) {
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionPCM(std::set<UInt_t> dropOutGammas_PCM) {
   for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
     AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
     if (gamma0==NULL) continue;
@@ -4785,7 +4785,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionPCM(std::set<uint> dropOu
   return;
 }
 
-void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionMixed(std::set<uint> dropOutGammas_CALO, std::set<uint> dropOutGammas_PCM) {
+void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionMixed(std::set<UInt_t> dropOutGammas_CALO, std::set<UInt_t> dropOutGammas_PCM) {
   for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
     AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
     if (gamma0==NULL) continue;
