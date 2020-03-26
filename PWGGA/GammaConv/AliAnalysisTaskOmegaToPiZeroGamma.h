@@ -19,6 +19,7 @@
 #include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
+#include <set>
 
 class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
   public:
