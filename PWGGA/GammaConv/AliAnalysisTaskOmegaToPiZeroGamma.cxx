@@ -60,7 +60,6 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <set>
 
 ClassImp(AliAnalysisTaskOmegaToPiZeroGamma)
 
