@@ -21,6 +21,7 @@ using std::flush;
 
 #include "AliReducedVarManager.h"
 #include "AliReducedBaseTrack.h"
+#include "AliReducedTrackInfo.h"
 
 ClassImp(AliMixingHandler);
 
@@ -233,13 +234,32 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   TList *list1 = new(leg1Pool[leg1Pool.GetEntries()]) TList();
   TList *list2 = new(leg2Pool[leg2Pool.GetEntries()]) TList();
   list1->SetOwner(kTRUE); list2->SetOwner(kTRUE);
+  AliReducedTrackInfo* track = 0x0;
   if (leg1List) {
-    for(Int_t it=0; it<entries1; ++it)
-      list1->Add(leg1List->At(it)->Clone());
+    for(Int_t it=0; it<entries1; ++it) {
+      // HACK: to transmit the VZERO and TPC event plane Q vector to event mixing
+      track = (AliReducedTrackInfo*)leg1List->At(it)->Clone();  
+      track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
+      track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
+      track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
+      track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
+      track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
+      track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
+      list1->Add(track);
+    }
   }
   if (leg2List) {
-    for(Int_t it=0; it<entries2; ++it)
-     list2->Add(leg2List->At(it)->Clone());
+    for(Int_t it=0; it<entries2; ++it) {
+      // HACK: to transmit the VZERO and TPC event plane Q vector to event mixing
+      track = (AliReducedTrackInfo*)leg2List->At(it)->Clone();  
+      track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
+      track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
+      track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
+      track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
+      track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
+      track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
+      list2->Add(track);  
+    }
   }
     
   // increment the size of the pools in this category
@@ -468,6 +488,7 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
           if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
           for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) { 
+              //AliReducedVarManager::FillPairMEflow(ev1Leg1, ev2Leg2, values, ibit);
               if(fMixingSetup==kMixResonanceLegs) {
                 if (fNParallelPairCuts>1) {
                   for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
@@ -508,61 +529,63 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	  
 	  // fill like-pairs (leg1 - leg1) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg1, type, values);
-    ULong_t pairCutMask = IsPairSelected(values, 0);
-    if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
+      ULong_t pairCutMask = IsPairSelected(values, 0);
+      if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
-      if((testFlags2)&(ULong_t(1)<<ibit)) {
-        if (fNParallelPairCuts>1) {
-          for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
-            if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
-            fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+0)->GetName(), values);
-          }
-        } else {
-          fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
+        if((testFlags2)&(ULong_t(1)<<ibit)) {
+            //AliReducedVarManager::FillPairMEflow(ev1Leg1, ev2Leg1, values, ibit);
+            if (fNParallelPairCuts>1) {
+                for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+                    if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
+                    fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+0)->GetName(), values);
+                }
+            } else {
+                fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
+            }
         }
       }
-    }
 	}  // end loop over the ev2-leg1 list
-      }  // end loop over the ev1-leg1 list
+  }  // end loop over the ev1-leg1 list
       
-      if(fMixingSetup==kMixCorrelation) continue;
-      if(!fMixLikeSign) continue;
-      //loop over the ev1-leg2 list
-      TIter iterLeg2(ev1Leg2List);
-      AliReducedBaseTrack* ev1Leg2=0x0;
-      while((ev1Leg2=(AliReducedBaseTrack*)iterLeg2())) {
+  if(fMixingSetup==kMixCorrelation) continue;
+    if(!fMixLikeSign) continue;
+    //loop over the ev1-leg2 list
+    TIter iterLeg2(ev1Leg2List);
+    AliReducedBaseTrack* ev1Leg2=0x0;
+    while((ev1Leg2=(AliReducedBaseTrack*)iterLeg2())) {
 	// check that this track has at least one common bit with the mixing mask
-	testFlags1 = mixingMask & ev1Leg2->GetFlags();
+	    testFlags1 = mixingMask & ev1Leg2->GetFlags();
         if(!testFlags1) continue;
 	
-	//loop over the ev2-leg2 list 
-	TIter iterLeg2LS(ev2Leg2List);
-	AliReducedBaseTrack* ev2Leg2=0x0;
-	while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2LS())) {
-	  // check that this track has at least one common bit with the mixing mask and with ev1-leg1
-	  testFlags2 = testFlags1 & ev2Leg2->GetFlags();
-          if(!testFlags2) continue;
+	    //loop over the ev2-leg2 list 
+        TIter iterLeg2LS(ev2Leg2List);
+        AliReducedBaseTrack* ev2Leg2=0x0;
+        while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2LS())) {
+            // check that this track has at least one common bit with the mixing mask and with ev1-leg1
+            testFlags2 = testFlags1 & ev2Leg2->GetFlags();
+            if(!testFlags2) continue;
 	  
-	  // fill like-pairs (leg2 - leg2) for the enabled bits
-	  AliReducedVarManager::FillPairInfoME(ev1Leg2, ev2Leg2, type, values);
-    ULong_t pairCutMask = IsPairSelected(values, 2);
-    if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
-	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
-      if((testFlags2)&(ULong_t(1)<<ibit)) {
-        if (fNParallelPairCuts>1) {
-          for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
-            if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
-            fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+2)->GetName(), values);
-          }
-        } else {
-          fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
-        }
-      }
-    }
-	}  // end loop over the ev2-leg2 list
-      }  // end loop over the ev1-leg2 list
-    }  // end second event loop
-  }  // end first event loop
+            // fill like-pairs (leg2 - leg2) for the enabled bits
+            AliReducedVarManager::FillPairInfoME(ev1Leg2, ev2Leg2, type, values);
+            ULong_t pairCutMask = IsPairSelected(values, 2);
+            if(!pairCutMask) continue;   // fill histograms only if pair cuts are fulfilled
+            for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
+                //AliReducedVarManager::FillPairMEflow(ev1Leg2, ev2Leg2, values, ibit);
+                if((testFlags2)&(ULong_t(1)<<ibit)) {
+                    if (fNParallelPairCuts>1) {
+                        for (Int_t jbit=0; jbit<fNParallelPairCuts; jbit++) {
+                            if (!((pairCutMask)&(ULong_t(1)<<jbit))) continue;
+                            fHistos->FillHistClass(histClassArr->At(ibit*3+jbit*3*fNParallelCuts+2)->GetName(), values);
+                        }
+                    } else {
+                        fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
+                    }
+                }
+            }
+        }  // end loop over the ev2-leg2 list
+     }  // end loop over the ev1-leg2 list
+   }  // end second event loop
+ }  // end first event loop
   
   // unset the mixing flags --------------------------------------
   iterEv1Leg1Pool.Reset(); 

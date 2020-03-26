@@ -297,20 +297,22 @@ void AliReducedVarManager::SetVariableDependencies() {
     }
     for(Int_t iVZEROside=0; iVZEROside<3; ++iVZEROside) {
       if(fgUsedVars[kVZEROFlowVn+iVZEROside*6+ih] || fgUsedVars[kVZEROFlowSine+iVZEROside*6+ih] ||
-	 fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih]) {
-	fgUsedVars[kPhi] = kTRUE; fgUsedVars[kVZERORP+iVZEROside*6+ih] = kTRUE;
-	if(iVZEROside<2 && (fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih])) {
-	  fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
-          fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
-	}
-        if(iVZEROside==2) {
-	  fgUsedVars[kVZEROQvecX+2*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+2*6+ih] = kTRUE;
+         fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih] ||
+         fgUsedVars[kVZERODeltaPhiPsiN+iVZEROside*6+ih]) {
+        fgUsedVars[kPhi] = kTRUE; fgUsedVars[kVZERORP+iVZEROside*6+ih] = kTRUE;
+        if(iVZEROside<2 && (fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih])) {
           fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
           fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
-	}
+        }
+        if(iVZEROside==2) {
+          fgUsedVars[kVZEROQvecX+2*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+2*6+ih] = kTRUE;
+          fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
+          fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
+        }
       }
     }
-    if(fgUsedVars[kTPCFlowVn+ih] || fgUsedVars[kTPCFlowSine+ih] || fgUsedVars[kTPCuQ+ih] || fgUsedVars[kTPCuQsine+ih]) {
+    if(fgUsedVars[kTPCFlowVn+ih] || fgUsedVars[kTPCFlowSine+ih] || fgUsedVars[kTPCuQ+ih] || fgUsedVars[kTPCuQsine+ih] ||
+       fgUsedVars[kTPCDeltaPhiPsiN+ih]) {
       fgUsedVars[kPhi] = kTRUE;
       fgUsedVars[kTPCQvecXtotal+ih] = kTRUE;
       fgUsedVars[kTPCQvecYtotal+ih] = kTRUE;
@@ -1611,6 +1613,16 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
            values[kVZEROFlowVn+iVZEROside*6+ih] = TMath::Cos((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
         if(fgUsedVars[kVZEROFlowSine+iVZEROside*6+ih])
            values[kVZEROFlowSine+iVZEROside*6+ih] = TMath::Sin((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
+        if(fgUsedVars[kVZERODeltaPhiPsiN+iVZEROside*6+ih]) {
+           // compute delta phi = phi - Psi
+           values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] = values[kPhi] - values[kVZERORP+iVZEROside*6+ih];
+           // transform to the interval [0; 2*pi/n]
+           values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] -= 
+                 2.0*TMath::Pi()/Double_t(ih+1) * TMath::Floor(Double_t(ih+1)/2.0/TMath::Pi()*values[kVZERODeltaPhiPsiN+iVZEROside*6+ih]);
+           // transform to [0; pi/n]
+           if(values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] > TMath::Pi()/Double_t(ih+1))
+             values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] = 2.0*TMath::Pi()/Double_t(ih+1) - values[kVZERODeltaPhiPsiN+iVZEROside*6+ih];
+        }
         if(iVZEROside<2) {
            if(fgUsedVars[kVZEROuQ+iVZEROside*6+ih]) {
               values[kVZEROuQ+iVZEROside*6+ih] = TMath::Cos((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
@@ -1634,6 +1646,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kTPCFlowSine+ih]) {tpcEPUsed = kTRUE; break;}
      if(fgUsedVars[kTPCuQ+ih]) {tpcEPUsed = kTRUE; break;}
      if(fgUsedVars[kTPCuQsine+ih]) {tpcEPUsed = kTRUE; break;}
+     if(fgUsedVars[kTPCDeltaPhiPsiN+ih]) {tpcEPUsed = kTRUE; break;}
   }
 
   if(tpcEPUsed) {
@@ -1679,6 +1692,18 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
         // vn using Psi_n
         if(fgUsedVars[kTPCFlowVn+ih])
            values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
+        if(fgUsedVars[kTPCDeltaPhiPsiN+ih]) {
+           // compute delta phi = phi - Psi
+           values[kTPCDeltaPhiPsiN+ih] = values[kPhi] - values[kTPCRPtree+ih];
+           // transform to the interval [0; 2*pi/n]
+           values[kTPCDeltaPhiPsiN+ih] -= 
+                 2.0*TMath::Pi()/Double_t(ih+1) * TMath::Floor(Double_t(ih+1)/2.0/TMath::Pi()*values[kTPCDeltaPhiPsiN+ih]);
+           // transform to [0; pi/n]
+           if(values[kTPCDeltaPhiPsiN+ih] > TMath::Pi()/Double_t(ih+1))
+             values[kTPCDeltaPhiPsiN+ih] = 2.0*TMath::Pi()/Double_t(ih+1) - values[kTPCDeltaPhiPsiN+ih];
+        }
+            
+           //values[kTPCDeltaPhiPsiN+ih] = (values[kPhi]>TMath::Pi() ? values[kPhi]-2.0*TMath::Pi() : values[kPhi])/Double_t(ih+1)-values[kTPCRPtree+ih];  
         if(fgUsedVars[kTPCFlowSine+ih]) 
            values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
         if(fgUsedVars[kTPCuQ+ih]) {
@@ -2457,8 +2482,50 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
+  
+  FillPairMEflow(t1, t2, values);
 }
 
+//____________________________________________________________________________________
+void AliReducedVarManager::FillPairMEflow(BASETRACK* t1, BASETRACK* t2, Float_t* values/*, Int_t idx /*=0*/) {
+    //
+    // make flow calculations for mixed event pairs
+    // NOTE: this function assumes that the function FillPairInfoME() was run just in front of this one
+    // NOTE: this function is called by the mixing handler so must be lightweight !
+    // NOTE: this implementation is implemented with jpsi->ee in mind, so leg1 refers to positive legs and 
+    //         leg2 refers to negative legs
+    //    idx: parameter that identifies the leg cut for which the leg v2 is required
+
+    // full method
+    TRACK* track1 = (TRACK*)t1;
+    TRACK* track2 = (TRACK*)t2;
+    if(fgUsedVars[kPairVZEROFlowSPNom+0*6+1] || fgUsedVars[kPairVZEROFlowSPDenom+0*6+1]) {
+        values[kPairVZEROFlowSPNom+0*6+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(0)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(1));
+        values[kPairVZEROFlowSPNom+0*6+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(0)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(1));
+        values[kPairVZEROFlowSPDenom+0*6+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(0) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(1)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(0) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(1)) *
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+    
+    if(fgUsedVars[kPairVZEROFlowSPNom+1*6+1] || fgUsedVars[kPairVZEROFlowSPDenom+1*6+1]) {
+        values[kPairVZEROFlowSPNom+1*6+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(2)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(3));
+        values[kPairVZEROFlowSPNom+1*6+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(2)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(3));
+        values[kPairVZEROFlowSPDenom+1*6+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(2) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(3)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(2) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(3)) * 
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+    
+    if(fgUsedVars[kPairTPCFlowSPNom+1] || fgUsedVars[kPairTPCFlowSPDenom+1]) {
+        values[kPairTPCFlowSPNom+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(4)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(5));
+        values[kPairTPCFlowSPNom+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(4)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(5));
+        values[kPairTPCFlowSPDenom+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(4) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(5)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(4) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(5)) * 
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+}
 
 //_________________________________________________________________
 void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Float_t* values) {
@@ -2504,6 +2571,114 @@ void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Flo
   FillTrackInfo(&p, values);
 }
 
+
+//__________________________________________________________________
+void AliReducedVarManager::FillPsiPrimeInfo(BASETRACK* trig, BASETRACK* pion1, BASETRACK* pion2, Float_t* values) {
+  //
+  // Fill psi prime information
+  // NOTE: decay channel used here is psi' -> jpsi + pi + pi
+  // note pion1 is positive (see calling FillPsiPrimeInfo in AliReducedAnalysisPsiPrime)  if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
+  
+  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
+  if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
+  
+  if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = pion1->Pt();
+  if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = pion1->Eta();
+  if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = pion1->Phi();
+
+  if(fgUsedVars[kPPosPi]) values[kPPosPi] = pion1->P();
+  if(fgUsedVars[kPtPosPi]) values[kPtPosPi] = pion1->Pt();//same as kAssociatedPt
+
+  if(fgUsedVars[kAssociated2Pt]) values[kAssociated2Pt] = pion2->Pt();
+  if(fgUsedVars[kAssociated2Eta]) values[kAssociated2Eta] = pion2->Eta();
+  if(fgUsedVars[kAssociated2Phi]) values[kAssociated2Phi] = pion2->Phi();
+  
+  if(fgUsedVars[kPNegPi]) values[kPNegPi] = pion2->P();
+  if(fgUsedVars[kPtNegPi]) values[kPtNegPi] = pion2->Pt();
+  
+  if(fgUsedVars[kPJPsi]) values[kPJPsi] = trig->P();
+  if(fgUsedVars[kPtJPsi]) values[kPtJPsi] = trig->Pt();
+  
+  if (trig->IsA()==PAIR::Class() ) {    
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    // fill TLorentzVector for pion1 track
+    TLorentzVector pion1Vec;
+    pion1Vec.SetPtEtaPhiM(pion1->Pt(), pion1->Eta(), pion1->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    // fill TLorentzVector for pion2 track
+    TLorentzVector pion2Vec;
+    pion2Vec.SetPtEtaPhiM(pion2->Pt(), pion2->Eta(), pion2->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    //calculate psiprime mass
+    TLorentzVector DiPiVec = pion1Vec + pion2Vec;
+    values[kMassPionPair]=DiPiVec.M();
+    values[kP_PionPair]=DiPiVec.P();
+    values[kPt_PionPair]=DiPiVec.Pt();
+    values[kPhi_PionPair]=DiPiVec.Phi();
+    values[kEta_PionPair]=DiPiVec.Eta();
+
+    TLorentzVector psiprimeVec = DiPiVec + trigVec;
+    values[kMassPsiPrime]=psiprimeVec.M();
+    values[kPt_PsiPrime]=psiprimeVec.Pt();
+    values[kPhi_PsiPrime]=psiprimeVec.Phi();
+    values[kEta_PsiPrime]=psiprimeVec.Eta();
+    
+    //////////////////////////////////
+    // op angle mother daughters
+    values[kOpAngleMotherPosPion]=pion1Vec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherNegPion]=pion2Vec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherJPsi]=trigVec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherDiPion]=DiPiVec.Angle(psiprimeVec.Vect());
+    //other oang
+    values[kJPsiPosPionOpeningAngle]=trigVec.Angle(pion1Vec.Vect());
+    values[kJPsiNegPionOpeningAngle]=trigVec.Angle(pion2Vec.Vect()); 
+    values[kPionsOpeningAngle]=pion1Vec.Angle(pion2Vec.Vect());
+    values[kJPsiDiPionOpeningAngle]=trigVec.Angle(DiPiVec.Vect());
+
+    //////////////////////////////////
+    // Delta R
+    // double SqrDeltaPhi_PosPi=(v1.Phi()-v2.Phi()) * (v1.Phi()-v2.Phi());
+    // double SqrDeltaEta_NegPi=(v1.Eta()-v2.Eta()) * (v1.Eta()-v2.Eta());
+    // double DeltaR_PosPi=TMath::Sqrt(SqrDeltaPhi_PosPi + SqrDeltaEta_PosPi);   
+  
+    values[kDeltaRPosPi]=TMath::Sqrt( ( psiprimeVec.Phi()-pion1Vec.Phi() ) *  ( psiprimeVec.Phi()-pion1Vec.Phi() ) +
+				      ( psiprimeVec.Eta()-pion1Vec.Eta() ) *  ( psiprimeVec.Eta()-pion1Vec.Eta() ) );
+
+    values[kDeltaRNegPi]=TMath::Sqrt( ( psiprimeVec.Phi()-pion2Vec.Phi() ) *  ( psiprimeVec.Phi()-pion2Vec.Phi() ) + 
+				      ( psiprimeVec.Eta()-pion2Vec.Eta() ) * ( psiprimeVec.Eta()-pion2Vec.Eta() ) );
+
+    values[kDeltaRJPsi]=TMath::Sqrt( ( psiprimeVec.Phi()-trigVec.Phi() ) *  ( psiprimeVec.Phi()-trigVec.Phi() ) + 
+				     ( psiprimeVec.Eta()-trigVec.Eta() ) *  ( psiprimeVec.Eta()-trigVec.Eta() ) );
+
+    values[kDeltaRDiPion]=TMath::Sqrt( ( psiprimeVec.Phi()-DiPiVec.Phi() ) * ( psiprimeVec.Phi()-DiPiVec.Phi() ) + 
+				       ( psiprimeVec.Eta()-DiPiVec.Eta() ) * ( psiprimeVec.Eta()-DiPiVec.Eta() ) );
+
+    //values[kQValue]=psiprimeVec.M()-trigVec.M()-DiPiVec.M();
+    values[kQValue]=psiprimeVec.M()-fgkPairMass[AliReducedPairInfo::kJpsiToEE]-DiPiVec.M(); // NOTE: jpsi mass from PDG
+    ////////////////////////////////////////////////
+    /// combine di-elec with pos pi then with neg pi
+    TLorentzVector JPsiPosPiVec = pion1Vec + trigVec;
+    values[kMassElecPairPosPion]=JPsiPosPiVec.M();
+    values[kPt_ElecPairPosPion]=JPsiPosPiVec.Pt();
+    values[kPhi_ElecPairPosPion]=JPsiPosPiVec.Phi();
+    values[kEta_ElecPairPosPion]=JPsiPosPiVec.Eta();
+
+    //To be removed
+    TLorentzVector psiprimeVecII = JPsiPosPiVec + pion2Vec;
+    values[kMassPsiPrime_II]=psiprimeVecII.M();
+    values[kPt_PsiPrime_II]=psiprimeVecII.Pt();
+    values[kEta_PsiPrime_II]=psiprimeVecII.Eta();
+    values[kJPsiPosPion_NegPionOpeningAngle]=JPsiPosPiVec.Angle(pion2Vec.Vect());
+
+
+    // //JPsi DeltaR
+    Double_t SqrDeltaPhi1JPsi=(pion1->Phi()-trigVec.Phi()) * (pion1->Phi()-trigVec.Phi());
+    Double_t SqrDeltaEta1JPsi=(pion1->Eta()-trigVec.Eta()) * (pion1->Eta()-trigVec.Eta());
+    values[kDeltaRPosPiJPsi]=TMath::Sqrt(SqrDeltaPhi1JPsi + SqrDeltaEta1JPsi);
+    Double_t SqrDeltaPhi2JPsi=(pion2->Phi()-trigVec.Phi()) * (pion2->Phi()-trigVec.Phi());
+    Double_t SqrDeltaEta2JPsi=(pion2->Eta()-trigVec.Eta()) * (pion2->Eta()-trigVec.Eta());
+    values[kDeltaRNegPiJPsi]=TMath::Sqrt(SqrDeltaPhi2JPsi + SqrDeltaEta1JPsi);
+  }
+}
 
 //__________________________________________________________________
 void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
@@ -3121,6 +3296,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
       fgVariableUnits[kVZERORP+iSide*6+iHarmonic]       = "rad.";
       fgVariableNames[kVZEROFlowVn+iSide*6+iHarmonic]   = Form("v_{%d}{EP,VZERO-%s}",iHarmonic+1,vzeroSideNames[iSide].Data());
       fgVariableUnits[kVZEROFlowVn+iSide*6+iHarmonic]   = "";
+      fgVariableNames[kVZERODeltaPhiPsiN+iSide*6+iHarmonic]   = Form("#phi-#Psi_{%d}{VZERO-%s}",iHarmonic+1,vzeroSideNames[iSide].Data());
+      fgVariableUnits[kVZERODeltaPhiPsiN+iSide*6+iHarmonic]   = "rad.";
       fgVariableNames[kVZEROFlowSine+iSide*6+iHarmonic] = Form("sin(%d(#varphi-#Psi_{%d}^{VZERO-%s}))",
 								   iHarmonic+1,iHarmonic+1,vzeroSideNames[iSide].Data());
       fgVariableUnits[kVZEROFlowSine+iSide*6+iHarmonic] = "";
@@ -3217,9 +3394,11 @@ void AliReducedVarManager::SetDefaultVarNames() {
 						      iHarmonic+1, iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kTPCsubResCos+iHarmonic] = "";
     fgVariableNames[kTPCFlowVn+iHarmonic] = Form("v_{%d}{EP,TPC}", iHarmonic+1); 
-    fgVariableUnits[kTPCFlowVn] = "";
+    fgVariableUnits[kTPCFlowVn+iHarmonic] = "";
+    fgVariableNames[kTPCDeltaPhiPsiN+iHarmonic] = Form("#phi - #Psi_{%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCDeltaPhiPsiN+iHarmonic] = "rad.";
     fgVariableNames[kTPCFlowSine+iHarmonic] = Form("sin(%d(#varphi-#Psi_{%d}^{TPC}))", iHarmonic+1, iHarmonic+1); 
-    fgVariableUnits[kTPCFlowSine] = "";
+    fgVariableUnits[kTPCFlowSine+iHarmonic] = "";
     fgVariableNames[kTPCuQ+iHarmonic] = Form("cos(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kTPCuQ+iHarmonic] = "";
     fgVariableNames[kTPCuQsine+iHarmonic] = Form("sin(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
@@ -3482,6 +3661,45 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kOneOverAssocHadronEff]                 = "1/#epsilon_{assoc}";                           fgVariableUnits[kOneOverAssocHadronEff]                 = "";
   fgVariableNames[kTriggerEffTimesAssocHadronEff]         = "#epsilon_{trigger} #times #epsilon_{assoc}";   fgVariableUnits[kTriggerEffTimesAssocHadronEff]         = "";
   fgVariableNames[kOneOverTriggerEffTimesAssocHadronEff]  = "1/#epsilon_{trigger} #times #epsilon_{assoc}"; fgVariableUnits[kOneOverTriggerEffTimesAssocHadronEff]  = "";
+
+////////////////////////////////////////////////
+  // PsiPrime related variables:
+  fgVariableNames[kDeltaRPosPiJPsi]  = "#Delta R";                  fgVariableUnits[kDeltaRPosPiJPsi]  = "";
+  fgVariableNames[kDeltaRNegPiJPsi]  = "#Delta R";                  fgVariableUnits[kDeltaRNegPiJPsi]  = "";
+
+  fgVariableNames[kAssociated2Pt]          = "p_{T} associated particle";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kAssociated2Eta]         = "#eta associated particle";   fgVariableUnits[kAssociated2Eta]         = "";
+  fgVariableNames[kAssociated2Phi]         = "#varphi associated particle";fgVariableUnits[kAssociated2Phi]         = "rad.";
+
+  fgVariableNames[kPPosPi]          = "p #pi^{+}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPtPosPi]          = "p_{T} #pi^{+}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPNegPi]          = "p #pi^{-}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPtNegPi]          = "p_{T} #pi^{-}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+
+  fgVariableNames[kMassPionPair]         = "m";  fgVariableUnits[kMassPionPair] = "GeV/c^{2}";
+  fgVariableNames[kP_PionPair]          = "p";  fgVariableUnits[kPt_PionPair]          = "GeV/c";
+  fgVariableNames[kPt_PionPair]          = "p_{T}";  fgVariableUnits[kPt_PionPair]          = "GeV/c";
+  fgVariableNames[kPhi_PionPair]         = "#varphi";fgVariableUnits[kPhi_PionPair]         = "rad.";
+  fgVariableNames[kEta_PionPair]         = "#eta";   fgVariableUnits[kEta_PionPair]         = "";
+
+  fgVariableNames[kMassPsiPrime]         = "m"; fgVariableUnits[kMassPsiPrime] = "GeV/c^{2}";
+  fgVariableNames[kPt_PsiPrime]          = "p_{T} #psi(2S)";  fgVariableUnits[kPt_PsiPrime]          = "GeV/c";
+  fgVariableNames[kPhi_PsiPrime]         = "#varphi #psi(2S)";fgVariableUnits[kPhi_PsiPrime]         = "rad.";
+  fgVariableNames[kEta_PsiPrime]         = "#eta #psi(2S)";   fgVariableUnits[kEta_PsiPrime]         = "";
+
+  fgVariableNames[kJPsiPosPionOpeningAngle]= "OpAngle J#psi-#pi^{+}";fgVariableUnits[kJPsiPosPionOpeningAngle]         = "rad.";
+  fgVariableNames[kJPsiNegPionOpeningAngle]= "OpAngle J#psi-#pi^{-}";fgVariableUnits[kJPsiNegPionOpeningAngle]         = "rad.";
+  fgVariableNames[kPionsOpeningAngle]     = "OpAngle #pi^{+}-#pi^{+}";fgVariableUnits[kPionsOpeningAngle]         = "rad.";
+  fgVariableNames[kJPsiDiPionOpeningAngle] = "OpAngle J#psi-#pi^{+}#pi^{-}";fgVariableUnits[kJPsiDiPionOpeningAngle]         = "rad.";
+
+  fgVariableNames[kJPsiPosPion_NegPionOpeningAngle]= "OpAngle J#psi#pi^{+}-#pi^{-}";fgVariableUnits[kJPsiPosPion_NegPionOpeningAngle]         = "rad.";
+
+  fgVariableNames[kDeltaRPosPi]  = "#Delta R"; fgVariableUnits[kDeltaRPosPi]  = "";
+  fgVariableNames[kDeltaRNegPi]  = "#Delta R"; fgVariableUnits[kDeltaRNegPi]  = "";
+  fgVariableNames[kDeltaRJPsi]  = "#Delta R"; fgVariableUnits[kDeltaRJPsi]  = "";
+  fgVariableNames[kDeltaRDiPion]  = "#Delta R"; fgVariableUnits[kDeltaRDiPion]  = "";
+
+  fgVariableNames[kQValue]  = "Q"; fgVariableUnits[kQValue]  = "";
 }
 
 

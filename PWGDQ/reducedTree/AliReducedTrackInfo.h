@@ -95,10 +95,12 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
   Int_t     CaloClusterId() const {return fCaloClusterId;}
   
-  Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
-  Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  Float_t TrackParam(Int_t iPar = 0) const {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
+  Float_t CovMatrix(Int_t iCov = 0) const {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  void    SetCovMatrix(Int_t iCov, Float_t val) {if(iCov>=0 && iCov<21) fCovMatrix[iCov] = val;}
   
-  Float_t MCmom(Int_t dim);  
+  Float_t MCmom(Int_t dim); 
+  void    SetMCmom(Int_t dim, Float_t val) {if(dim>=0 && dim<3) fMCMom[dim] = val; return;}
   Float_t PtMC() {return (fIsMCTruth ? Pt() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]));}
   Float_t PMC()   const {return (fIsMCTruth ? P() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]));}
   Float_t PhiMC() const;
