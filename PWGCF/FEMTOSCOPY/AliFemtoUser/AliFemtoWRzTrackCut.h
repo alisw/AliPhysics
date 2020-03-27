@@ -19,16 +19,12 @@ public:
    AliFemtoWRzTrackCut& operator =(const AliFemtoWRzTrackCut &aCut);
    virtual bool Pass(const AliFemtoTrack* aTrack);
 
-   void SetDCAcutPtDependence(const float &DCAxy,const float &DCAz,const float& Pt_min, const float& Pt_max);
+   void SetDCAcutPtDependence(const float &DCAxy1,const float &DCAxy2,const float &DCAxy3,const float &DCAxy4, const float &DCAz1, const float &DCAz2, const float &DCAz3, const float &DCAz4);
    
 private:
-   float fPt_dca[2]; //bounds for transverse momentum to DCA settings
-   float fDCA_ptdependence[2]; //DCA values (cm) in XY and Z plane for given ranges of pt 
+   float fDCA_ptdependence[8]; //DCA values (cm) in XY and Z plane for given ranges of pt 
 };
 
-inline void AliFemtoWRzTrackCut::SetDCAcutPtDependence(const float &DCAxy, const float &DCAz, const float& Pt_min,const float& Pt_max){ 
-fPt_dca[0]=Pt_min, fPt_dca[1]=Pt_max,fDCA_ptdependence[0]=DCAxy,fDCA_ptdependence[1]=DCAz;
-}
 
 
 #endif
