@@ -89,7 +89,6 @@ class AliAODv0;
 #include "AliAnalysisTaskPPVsMultMCRSN.h"
 ////
 #include "AliMultSelection.h"
-#include "AliMultSelectionBase.h"
 #include "AliMultEstimator.h"
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
