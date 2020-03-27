@@ -86,10 +86,11 @@ using namespace std;
 
 
 static const int nPid              = 4;
+static const int nRegion           = 4;
 static const int nHists            = 4;
 static const int nRt               = 5;
 ///static const double C_Value = TMath::C()*(1.e2/1.e12); // cm/ps
-const char* Region[3] = {"Toward","Away","Transverse"};
+const char* Region[4] = {"Toward","Away","Transverse","FullAzimuth"};
 const char* Pid[nPid] = {"Charged","Pion","Kaon","Proton"};
 const char* Charge[2] = {"Pos","Neg"};
 
@@ -147,6 +148,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hNchTSContamination(0x0),
 		hNchTSRecAll(0x0),
 		hNchResponse(0x0),
+		hNchRMvsPt(0x0),
 		hNchTSGenTest(0x0),
 		hNchTSRecTest(0x0),
 		hNchTSData(0x0),
@@ -174,12 +176,13 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hPtResponsePID[pid] = 0;
 	}
 
-	for(int r = 0; r < 3; r++){
+	for(int r = 0; r < nRegion; r++){
 
 		hPhiGen[r] = 0;
 		hPhiRec[r] = 0;
 		hPhiData[r] = 0;
-		///hPtVsUEData[r] = 0;
+		hNchGenGTZVsPtGen[r] = 0;
+		hNchGenGTZVsPtRec[r] = 0;
 
 		for(int pid = 0; pid < nPid; ++pid){
 
@@ -257,6 +260,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hNchTSContamination(0x0),
 	hNchTSRecAll(0x0),
 	hNchResponse(0x0),
+	hNchRMvsPt(0x0),
 	hNchTSGenTest(0x0),
 	hNchTSRecTest(0x0),
 	hNchTSData(0x0),
@@ -284,11 +288,13 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 		hPtResponsePID[pid] = 0;
 	}
 
-	for(int r = 0; r < 3; r++){
+	for(int r = 0; r < nRegion; r++){
 
 		hPhiGen[r] = 0;
 		hPhiRec[r] = 0;
 		hPhiData[r] = 0;
+		hNchGenGTZVsPtGen[r] = 0;
+		hNchGenGTZVsPtRec[r] = 0;
 
 		for(int pid = 0; pid < 4; ++pid){
 
@@ -375,7 +381,6 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 
 	for(int i = 0; i <= nBinsNsigma; ++i){
 		binsNsigma[i] = -10.0+i*0.5;
-		printf("Nsigma Edges : %f\n",binsNsigma[i]);
 
 	}
 
@@ -439,7 +444,7 @@ p: fMeanChT = 7.216
 	hPtLVsRT->Sumw2();
 	fListOfObjects->Add(hPtLVsRT);
 
-	for(int r = 0; r < 3; ++r){
+	for(int r = 0; r < nRegion; ++r){
 
 		hPhiData[r] = new TH1D(Form("hPhiData_%s",Region[r]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 		hPhiData[r]->Sumw2();
@@ -473,7 +478,6 @@ p: fMeanChT = 7.216
 		}
 
 		fListOfObjects->Add(hPhiData[r]);
-		///		fListOfObjects->Add(hPtVsUEData[r]);
 
 	}
 
@@ -531,7 +535,7 @@ p: fMeanChT = 7.216
 		hNchTSRecTest->Sumw2();
 		fListOfObjects->Add(hNchTSRecTest);
 
-		for( int i = 0; i < 3; ++i ){
+		for( int i = 0; i < nRegion; ++i ){
 
 			hPhiGen[i]= new TH1D(Form("hPhiGen_%s",Region[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 			hPhiGen[i]->Sumw2();
@@ -541,6 +545,13 @@ p: fMeanChT = 7.216
 			hPhiRec[i]->Sumw2();
 			fListOfObjects->Add(hPhiRec[i]);
 
+			hNchGenGTZVsPtGen[i] = new TH2D(Form("hNchGenGTZVsPtGen_%s_Charged",Region[i]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenGTZVsPtGen[i]->Sumw2();
+			fListOfObjects->Add(hNchGenGTZVsPtGen[i]);
+
+			hNchGenGTZVsPtRec[i] = new TH2D(Form("hNchGenGTZVsPtRec_%s_Charged",Region[i]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
+			hNchGenGTZVsPtRec[i]->Sumw2();
+			fListOfObjects->Add(hNchGenGTZVsPtRec[i]);
 
 			for(int pid = 0; pid < nPid; ++pid){
 				hNchGenVsPtGenPID[i][pid] = new TH2D(Form("hNchGenVsPtGen_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
@@ -550,6 +561,7 @@ p: fMeanChT = 7.216
 				hNchGenVsPtRec[i][pid] = new TH2D(Form("hNchGenVsPtRec_%s_%s",Region[i],Pid[pid]),";#it{R}_{T};#it{p}_{T}^{gen};",nBinsRT,binsRT,nPtBins,ptBins);
 				hNchGenVsPtRec[i][pid]->Sumw2();
 				fListOfObjects->Add(hNchGenVsPtRec[i][pid]);
+
 			}
 		}
 
@@ -604,6 +616,10 @@ p: fMeanChT = 7.216
 		hNchResponse = new TH2D("hNchResponse","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}",nBinsRT,binsRT,nBinsRT,binsRT);
 		hNchResponse->Sumw2();
 		fListOfObjects->Add(hNchResponse);
+
+		hNchRMvsPt = new TH3D("hNchRMvsPt","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}",nBinsRT,binsRT,nBinsRT,binsRT,nPtBins,ptBins);
+		hNchRMvsPt->Sumw2();
+		fListOfObjects->Add(hNchRMvsPt);
 
 		hNchRecVsPtRecOut = new TH2D("hNchRecVsPtRecOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
 		hNchRecVsPtRecOut->Sumw2();
@@ -701,7 +717,6 @@ void AliAnalysisTaskSpectraRT::UserExec(Option_t *)
 
 		// Before trigger selection
 		GetLeadingObject(kTRUE);// leading particle at gen level
-		///printf("============  fGenLeadPt   =  %f\n",fGenLeadPt);
 	}
 
 
@@ -739,8 +754,7 @@ void AliAnalysisTaskSpectraRT::UserExec(Option_t *)
 
 	GetLeadingObject(kFALSE);
 
-
-	printf("--------------------- fRecLeadPt = %f\n",fRecLeadPt);
+	printf("---- fGenLeadPt   =  %f     fRecLeadPt  =  %f\n",fGenLeadPt,fRecLeadPt);
 
 	if(fIsMCclosure){
 		double randomUE = gRandom->Uniform(0.0,1.0);
@@ -860,7 +874,6 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 
 		double DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
-		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){
 			continue;
 		}
@@ -869,71 +882,6 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 		}
 		else{
 			multTSgen++;
-		}
-	}
-
-	double RTgen = (double)multTSgen/fMeanMultTSMCGen;
-
-	hMultTSGen->Fill(multTSgen);
-	hNchTSGenTest->Fill(RTgen);
-	fPtLVsNchGen->Fill(fGenLeadPt,RTgen);
-
-	// Filling pT vs UE activity
-	for (int i = 0; i < fMC->GetNumberOfTracks(); i++) {
-
-		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-		if (!particle) continue;
-		if (i==fGenLeadIn) continue;
-		if (!fMC->IsPhysicalPrimary(i)) continue;
-		if (particle->Charge() == 0) continue;
-		if (TMath::Abs(particle->Eta()) > fEtaCut) continue;
-		if (particle->Pt() < fPtMin) continue;
-
-		int pdgCode = particle->PdgCode();
-		short pidCodeMC = 0;
-		pidCodeMC = GetPidCode(pdgCode);
-
-		double DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
-
-		// definition of the topological regions
-		if(TMath::Abs(DPhi)<pi/3.0){
-
-			hNchGenVsPtGenPID[0][0]->Fill(RTgen,particle->Pt());
-
-			if(pidCodeMC==1)
-				hNchGenVsPtGenPID[0][1]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==2)
-				hNchGenVsPtGenPID[0][2]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==3)
-				hNchGenVsPtGenPID[0][3]->Fill(RTgen,particle->Pt());
-			else
-				continue;
-		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){
-
-			hNchGenVsPtGenPID[1][0]->Fill(RTgen,particle->Pt());
-
-			if(pidCodeMC==1)
-				hNchGenVsPtGenPID[1][1]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==2)
-				hNchGenVsPtGenPID[1][2]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==3)
-				hNchGenVsPtGenPID[1][3]->Fill(RTgen,particle->Pt());
-			else
-				continue;
-		}
-		else{
-
-			hNchGenVsPtGenPID[2][0]->Fill(RTgen,particle->Pt());
-
-			if(pidCodeMC==1)
-				hNchGenVsPtGenPID[2][1]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==2)
-				hNchGenVsPtGenPID[2][2]->Fill(RTgen,particle->Pt());
-			else if(pidCodeMC==3)
-				hNchGenVsPtGenPID[2][3]->Fill(RTgen,particle->Pt());
-			else
-				continue;
 		}
 	}
 
@@ -950,7 +898,6 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 
 		double DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
-		// definition of the topological regions
 		if(TMath::Abs(DPhi)<pi/3.0){
 			continue;
 		}
@@ -959,6 +906,84 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 		}
 		else{
 			multTSrec++;
+		}
+
+	}
+
+	double RTgen = (double)multTSgen/fMeanMultTSMCGen;
+
+	hMultTSGen->Fill(multTSgen);
+	hNchTSGenTest->Fill(RTgen);
+	fPtLVsNchGen->Fill(fGenLeadPt,RTgen);
+
+	//	Filling Nch vs pT True
+	for (int i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+		if (i==fGenLeadIn) continue;
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if (TMath::Abs(particle->Eta()) > fEtaCut) continue;
+		if (particle->Pt() < fPtMin) continue;
+
+		int pdgCode = particle->PdgCode();
+		short pidCodeMC = 0;
+		pidCodeMC = GetPidCode(pdgCode);
+
+		double DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
+
+		hNchGenVsPtGenPID[3][0]->Fill(RTgen,particle->Pt());
+		if(multTSrec > 0)hNchGenGTZVsPtGen[3]->Fill(RTgen,particle->Pt());
+
+		if(pidCodeMC==1)
+			hNchGenVsPtGenPID[3][1]->Fill(RTgen,particle->Pt());
+		if(pidCodeMC==2)
+			hNchGenVsPtGenPID[3][2]->Fill(RTgen,particle->Pt());
+		if(pidCodeMC==3)
+			hNchGenVsPtGenPID[3][3]->Fill(RTgen,particle->Pt());
+
+		if(TMath::Abs(DPhi)<pi/3.0){
+
+			hNchGenVsPtGenPID[0][0]->Fill(RTgen,particle->Pt());
+			if(multTSrec > 0)hNchGenGTZVsPtGen[0]->Fill(RTgen,particle->Pt());
+
+			if(pidCodeMC==1)
+				hNchGenVsPtGenPID[0][1]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==2)
+				hNchGenVsPtGenPID[0][2]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==3)
+				hNchGenVsPtGenPID[0][3]->Fill(RTgen,particle->Pt());
+			else
+				continue;
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){
+
+			hNchGenVsPtGenPID[1][0]->Fill(RTgen,particle->Pt());
+			if(multTSrec > 0)hNchGenGTZVsPtGen[1]->Fill(RTgen,particle->Pt());
+
+			if(pidCodeMC==1)
+				hNchGenVsPtGenPID[1][1]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==2)
+				hNchGenVsPtGenPID[1][2]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==3)
+				hNchGenVsPtGenPID[1][3]->Fill(RTgen,particle->Pt());
+			else
+				continue;
+		}
+		else{
+
+			hNchGenVsPtGenPID[2][0]->Fill(RTgen,particle->Pt());
+			if(multTSrec > 0)hNchGenGTZVsPtGen[2]->Fill(RTgen,particle->Pt());
+
+			if(pidCodeMC==1)
+				hNchGenVsPtGenPID[2][1]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==2)
+				hNchGenVsPtGenPID[2][2]->Fill(RTgen,particle->Pt());
+			else if(pidCodeMC==3)
+				hNchGenVsPtGenPID[2][3]->Fill(RTgen,particle->Pt());
+			else
+				continue;
 		}
 
 	}
@@ -996,11 +1021,33 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 
 		double DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
+		hNchGenVsPtRec[3][0]->Fill(RTgen,track->Pt());
+		if(multTSrec > 0)hNchGenGTZVsPtRec[3]->Fill(RTgen,track->Pt());
+		hNchVsPtDataTPC[3][0]->Fill(RTrec,track->Pt(),0.25);
+		if(IsTOFout)hNchVsPtDataTOF[3][0]->Fill(RTrec,track->Pt(),0.25);
+
+		if(pidCodeMC==1){
+			hNchGenVsPtRec[3][1]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[3][1]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+			if(IsTOFout)hNchVsPtDataTOF[3][1]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion));
+		}
+		if(pidCodeMC==2){
+			hNchGenVsPtRec[3][2]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[3][2]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+			if(IsTOFout)hNchVsPtDataTOF[3][2]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon));
+		}
+		if(pidCodeMC==3){
+			hNchGenVsPtRec[3][3]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[3][3]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+			if(IsTOFout)hNchVsPtDataTOF[3][3]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton));
+		}
+
 		if(TMath::Abs(DPhi)<pi/3.0){
 
 			hNchGenVsPtRec[0][0]->Fill(RTgen,track->Pt());
-			hNchVsPtDataTPC[0][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
-			if(IsTOFout)hNchVsPtDataTOF[0][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion));
+			if(multTSrec > 0)hNchGenGTZVsPtRec[0]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[0][0]->Fill(RTrec,track->Pt(),0.25);
+			if(IsTOFout)hNchVsPtDataTOF[0][0]->Fill(RTrec,track->Pt(),0.25);
 
 			if(pidCodeMC==1){
 				hNchGenVsPtRec[0][1]->Fill(RTgen,track->Pt());
@@ -1020,11 +1067,13 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 			else 
 				continue;
 		}
+
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 
 			hNchGenVsPtRec[1][0]->Fill(RTgen,track->Pt());
-			hNchVsPtDataTPC[1][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
-			if(IsTOFout)hNchVsPtDataTOF[1][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion));
+			if(multTSrec > 0)hNchGenGTZVsPtRec[1]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[1][0]->Fill(RTrec,track->Pt(),0.25);
+			if(IsTOFout)hNchVsPtDataTOF[1][0]->Fill(RTrec,track->Pt(),0.25);
 
 			if(pidCodeMC==1){
 				hNchGenVsPtRec[1][1]->Fill(RTgen,track->Pt());
@@ -1044,10 +1093,12 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 			else 
 				continue;
 		}
+
 		else{
 			hNchGenVsPtRec[2][0]->Fill(RTgen,track->Pt());
-			hNchVsPtDataTPC[2][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
-			if(IsTOFout)hNchVsPtDataTOF[2][0]->Fill(RTrec,track->Pt(),fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion));
+			if(multTSrec > 0)hNchGenGTZVsPtRec[2]->Fill(RTgen,track->Pt());
+			hNchVsPtDataTPC[2][0]->Fill(RTrec,track->Pt(),0.25);
+			if(IsTOFout)hNchVsPtDataTOF[2][0]->Fill(RTrec,track->Pt(),0.25);
 
 			if(pidCodeMC==1){
 				hNchGenVsPtRec[2][1]->Fill(RTgen,track->Pt());
@@ -1098,6 +1149,8 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 			multTSgen++;
 			hPhiGen[2]->Fill(DPhi);
 		}
+
+		hPhiGen[3]->Fill(DPhi);
 	}
 
 	int iTracks(fESD->GetNumberOfTracks());          
@@ -1123,6 +1176,8 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 			multTSrec++;
 			hPhiRec[2]->Fill(DPhi);
 		}
+
+		hPhiRec[3]->Fill(DPhi);
 	}
 
 	double RTgen = (double)multTSgen/fMeanMultTSMCGen;
@@ -1160,6 +1215,25 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 
 		else
 			continue;
+
+	}
+
+	for(int i = 0; i < iTracks; i++){              
+
+		if(i==fRecLeadIn) continue;
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
+		if(!track) continue;
+		printf(" 0  ---------------------- pT = %f\n",track->Pt());
+		if(!fTrackFilterGolden->IsSelected(track)) continue;
+		printf(" 1  ---------------------- pT = %f\n",track->Pt());
+		if (track->Charge() == 0 ) continue;
+		printf(" 2  ---------------------- pT = %f\n",track->Pt());
+		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+		printf(" 3  ---------------------- pT = %f\n",track->Pt());
+		if( track->Pt() < fPtMin) continue;
+		printf(" 4 ---------------------- pT = %f\n",track->Pt());
+
+		hNchRMvsPt->Fill(RTrec,RTgen,track->Pt());
 
 	}
 
@@ -1498,6 +1572,8 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 			hPhiData[2]->Fill(DPhi);
 			multTSdata++;
 		}
+
+		hPhiData[3]->Fill(DPhi);
 	}
 
 	hNchTSData->Fill(multTSdata);
@@ -1520,20 +1596,20 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 
-			hNchVsPtDataTPC[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+			hNchVsPtDataTPC[0][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTPC[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
 			hNchVsPtDataTPC[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTPC[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTPC[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTPC[0][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTPC[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTPC[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTPC[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTPC[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTPC[0][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTPC[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTPC[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTPC[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));	
@@ -1541,44 +1617,63 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 
-			hNchVsPtDataTPC[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+			hNchVsPtDataTPC[1][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTPC[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
 			hNchVsPtDataTPC[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTPC[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTPC[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTPC[1][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTPC[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTPC[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTPC[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTPC[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTPC[1][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTPC[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTPC[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTPC[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));	
 			}
 		}
 		else{
-			hNchVsPtDataTPC[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+			hNchVsPtDataTPC[2][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTPC[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
 			hNchVsPtDataTPC[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTPC[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTPC[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTPC[2][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTPC[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTPC[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTPC[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTPC[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTPC[2][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTPC[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTPC[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTPC[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));	
 			}
+		}
+
+		hNchVsPtDataTPC[3][0]->Fill(RT,esdTrack->Pt(),0.25);
+		hNchVsPtDataTPC[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+		hNchVsPtDataTPC[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+		hNchVsPtDataTPC[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+
+		if(esdTrack->Charge() > 0){
+			hNchVsPtDataPosTPC[3][0]->Fill(RT,esdTrack->Pt(),0.25);	
+			hNchVsPtDataPosTPC[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+			hNchVsPtDataPosTPC[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
+			hNchVsPtDataPosTPC[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+		}
+
+		if(esdTrack->Charge() < 0){
+			hNchVsPtDataNegTPC[3][0]->Fill(RT,esdTrack->Pt(),0.25);	
+			hNchVsPtDataNegTPC[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));	
+			hNchVsPtDataNegTPC[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));	
+			hNchVsPtDataNegTPC[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));	
 		}
 
 		//_______________________________ TOF PID
@@ -1589,20 +1684,20 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		if(TMath::Abs(DPhi)<pi/3.0){
 
-			hNchVsPtDataTOF[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
+			hNchVsPtDataTOF[0][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTOF[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
 			hNchVsPtDataTOF[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTOF[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTOF[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTOF[0][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTOF[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTOF[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTOF[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTOF[0][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTOF[0][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTOF[0][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTOF[0][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTOF[0][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));	
@@ -1610,44 +1705,63 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		}
 		else if(TMath::Abs(DPhi-pi)<pi/3.0){
 
-			hNchVsPtDataTOF[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
+			hNchVsPtDataTOF[1][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTOF[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
 			hNchVsPtDataTOF[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTOF[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTOF[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTOF[1][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTOF[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTOF[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTOF[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTOF[1][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTOF[1][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTOF[1][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTOF[1][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTOF[1][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));	
 			}
 		}
 		else{
-			hNchVsPtDataTOF[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
+			hNchVsPtDataTOF[2][0]->Fill(RT,esdTrack->Pt(),0.25);
 			hNchVsPtDataTOF[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
 			hNchVsPtDataTOF[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));
 			hNchVsPtDataTOF[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 
 			if(esdTrack->Charge() > 0){
-				hNchVsPtDataPosTOF[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataPosTOF[2][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataPosTOF[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataPosTOF[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataPosTOF[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
 			}
 
 			if(esdTrack->Charge() < 0){
-				hNchVsPtDataNegTOF[2][0]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+				hNchVsPtDataNegTOF[2][0]->Fill(RT,esdTrack->Pt(),0.25);	
 				hNchVsPtDataNegTOF[2][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
 				hNchVsPtDataNegTOF[2][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
 				hNchVsPtDataNegTOF[2][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));	
 			}
+		}
+
+		hNchVsPtDataTOF[3][0]->Fill(RT,esdTrack->Pt(),0.25);
+		hNchVsPtDataTOF[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));
+		hNchVsPtDataTOF[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));
+		hNchVsPtDataTOF[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
+
+		if(esdTrack->Charge() > 0){
+			hNchVsPtDataPosTOF[3][0]->Fill(RT,esdTrack->Pt(),0.25);	
+			hNchVsPtDataPosTOF[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+			hNchVsPtDataPosTOF[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
+			hNchVsPtDataPosTOF[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));
+		}
+
+		if(esdTrack->Charge() < 0){
+			hNchVsPtDataNegTOF[3][0]->Fill(RT,esdTrack->Pt(),0.25);	
+			hNchVsPtDataNegTOF[3][1]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion));	
+			hNchVsPtDataNegTOF[3][2]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon));	
+			hNchVsPtDataNegTOF[3][3]->Fill(RT,esdTrack->Pt(),fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton));	
 		}
 
 	}//end of track loop
