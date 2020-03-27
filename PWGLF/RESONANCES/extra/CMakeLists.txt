@@ -46,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLambdaStar.cxx
   AliAnalysisTaskSEF01710fromAODtracks.cxx
   AliRsnf0f2Task.cxx
+  AliAnalysisTaskPPVsMultMCRSN.cxx
   )
 
 # Headers from sources
@@ -87,4 +88,5 @@ install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
 
