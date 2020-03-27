@@ -261,6 +261,8 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhDeltaPtEmbeddCorrelation(0x0),  //EMB
   fhDeltaPtEmbeddPerpendicular(0x0),      //EMB_clus
   fhDeltaPtEmbeddCorrelationPerpendicular(0x0),  //EMB_clus
+  fhDeltaPtEmbeddPerpendicular10pT(0x0),      //EMB_clus_10
+  fhDeltaPtEmbeddCorrelationPerpendicular10pT(0x0),  //EMB_clus_10
   fFastJetWrapper(NULL), //EMB_clus
   fTrackGenerator(NULL) //EMB_clus
 {
@@ -503,6 +505,16 @@ if(fEmbeddPerpendicular)
      fhDeltaPtEmbeddCorrelationPerpendicular = new TH2F("fhDeltaPtEmbeddCorrelationPerpendicular", "DeltaPt distribution based on Perpendicular track embedding vs pT of Embedded Track", 200, 0, 200, 500, -125, +125);
      fhDeltaPtEmbeddCorrelationPerpendicular->Sumw2();
      fOutputList->Add(fhDeltaPtEmbeddCorrelationPerpendicular);
+
+     fhDeltaPtEmbeddPerpendicular10pT  = new TH1F("fhDeltaPtEmbeddPerpendicular10pT", "DeltaPt distribution based on Perpendicular track embedding for jets with 10 GeV pT track ", 500, -125, +125);
+     fhDeltaPtEmbeddPerpendicular10pT-> Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddPerpendicular10pT);  //EMB_clus_10
+
+     fhDeltaPtEmbeddCorrelationPerpendicular10pT = new TH2F("fhDeltaPtEmbeddCorrelationPerpendicular10pT", "DeltaPt distribution based on Perpendicular track embedding for jets with 10 GeV pT track vs pT of Embedded Track", 200, 0, 200, 500, -125, +125);
+     fhDeltaPtEmbeddCorrelationPerpendicular10pT->Sumw2();
+     fOutputList->Add(fhDeltaPtEmbeddCorrelationPerpendicular10pT); //EMB_clus_10
+
+
   }
 
 
@@ -896,7 +908,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
      //------------------------newDeltaPt-------------------------
      if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
      
-        fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);     
+        fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(),jet->Pt(), fillDelPtMask); //EMB_clus_10     
         if(((fillDelPtMask & 4) >> 2) == 1) fSVreconstucted=1; 
      }  
      //-------------------------------------------------
@@ -1081,7 +1093,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
       //------------------------newDeltaPt-------------------------
 
       if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
-         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
+         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(),jet->Pt(), fillDelPtMask);  //EMB_clus_10                
       }  
       //-------------------------------------------------
       // Fill jet-with-vertex container
@@ -1617,7 +1629,8 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
                                                  AliAODVertex* pVtx, 
                                                  vctr_pair_dbl_int aVtxDisp, 
                                                  Double_t signalEta, 
-                                                 Double_t signalPhi,  
+                                                 Double_t signalPhi, 
+						 Double_t signalPt, 
                                                  Int_t fillMask){
    // fills delta pt for events with SV
    Int_t *idxLxy = new Int_t[nVtx];
@@ -1651,14 +1664,16 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
          fhDeltaPtLxy6->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
          fillMask = fillMask | 2;
       }       
-      if(lxy > 7 && ((fillMask & 4) >> 2) == 0 ){
+      if(lxy > 1 && ((fillMask & 4) >> 2) == 0 ){
          fillMask = fillMask | 4; 
          fhDeltaPtLxy7->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
 //---------------------------------------------------EMB_clus
 
 	if (fEmbeddPerpendicular){
 		fFastJetWrapper->Clear();
-
+		Int_t highPtJetWasFound=0; //EMB_clus_10
+		if (signalPt>10) highPtJetWasFound=1; //EMB_clus_10
+		
 		
 		//----------------Generating NEW perpendicular track
 		
@@ -1688,21 +1703,28 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
 		AliVParticle*  hytrk  = NULL;  //track hybrid event jet
 		Double_t deltaPtEmb;
 		Double_t sumTrkEmbeddedPt=0;
+		 
 		for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
 			std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));	
-
 			sumTrkEmbeddedPt=0;
 			for (UInt_t ic = 0; ic < constituents.size(); ++ic){ 
 	      			if (constituents[ic].user_index() == -99999)  {
 					sumTrkEmbeddedPt += constituents[ic].pt();
-					break;
+					break; 
 				}
+			
 	       		}
 			
 			if(sumTrkEmbeddedPt>0){ 
 		   		deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * rho - sumTrkEmbeddedPt;
 		   		fhDeltaPtEmbeddPerpendicular->Fill(deltaPtEmb);
 		   		fhDeltaPtEmbeddCorrelationPerpendicular->Fill(sumTrkEmbeddedPt, deltaPtEmb);
+				
+				if (highPtJetWasFound==1){  //EMB_clus_10
+					fhDeltaPtEmbeddPerpendicular10pT->Fill(deltaPtEmb); //EMB_clus_10
+		   			fhDeltaPtEmbeddCorrelationPerpendicular10pT->Fill(sumTrkEmbeddedPt, deltaPtEmb);//EMB_clus_10
+				}
+			
 				break;
 			}
 
@@ -1766,6 +1788,3 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetDeltaPtRandomConeWithoutSignalPt (Dou
   return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
     
 }   
-
-
-    
