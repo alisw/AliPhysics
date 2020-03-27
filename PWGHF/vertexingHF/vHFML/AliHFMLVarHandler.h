@@ -59,13 +59,15 @@ class AliHFMLVarHandler : public TObject
         virtual bool SetVariables(AliAODRecoDecayHF* /*cand*/, float /*bfield*/, int /*masshypo*/, AliAODPidHF* /*pidrespo*/) {return false;} //to be called for each candidate
         //to be called for each candidate
         void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
-        void SetlsSignalWoQuark(bool isSignalWoQuark);
+        void SetIsSignalWoQuark(bool isSignalWoQuark);
+        void SetBeautyMotherPt(double ptB) {fPtBMother = ptB;}
         void FillTree();
         
         //common methods
         void SetOptPID(int PIDopt) {fPidOpt = PIDopt;}
         void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
+        void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
 
     protected:  
         //constant variables
@@ -108,9 +110,11 @@ class AliHFMLVarHandler : public TObject
         float fStartTimeResProng[knMaxProngs] = {-999., -999., -999., -999.};           /// prong track start time resolutions (for TOF)
         float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid];             /// PID nsigma variables
         float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                                 /// raw PID variables
+        bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
+        float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
         
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 1); ///
+    ClassDef(AliHFMLVarHandler, 2); ///
     /// \endcond
 };
 #endif

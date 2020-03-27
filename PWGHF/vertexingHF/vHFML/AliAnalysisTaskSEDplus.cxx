@@ -759,8 +759,11 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     OpenFile(4);
     fMLhandler = new AliHFMLVarHandlerDplustoKpipi(fPIDopt);
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
-    if (fReadMC && fFillOnlySignal)
-      fMLhandler->SetFillOnlySignal();
+    if(fReadMC) {
+      if(fFillOnlySignal)
+        fMLhandler->SetFillOnlySignal();
+      fMLhandler->SetFillBeautyMotherPt();
+    }
     fMLtree = fMLhandler->BuildTree("treeMLDplus", "treeMLDplus");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
@@ -1098,7 +1101,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
         {
           AliAODMCParticle *partDp = (AliAODMCParticle *)arrayMC->At(labDp);
           orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partDp, fUseQuarkTagInKine); //Prompt = 4, FeedDown = 5
-          if (orig == 4)
+         if (orig == 4)
           {
             isPrimary = kTRUE;
             isFeeddown = kFALSE;
@@ -1356,6 +1359,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
                 if (!isCandInjected)
                   isbkg = kTRUE;
               }
+              fMLhandler->SetBeautyMotherPt(ptB);
             }
 
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
