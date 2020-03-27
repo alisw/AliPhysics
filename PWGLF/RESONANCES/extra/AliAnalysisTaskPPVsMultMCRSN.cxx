@@ -121,7 +121,7 @@ fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidR
 fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE )
 {
     //Empty constructor (not to be used, always pass name...)
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         fHistPt_Generated[ih] = 0x0;
         fHistPt_DataSelection[ih] = 0x0;
         fHistPt_MCSelection[ih] = 0x0;
@@ -177,7 +177,7 @@ fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidR
 ////
 fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE )
 {
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         fHistPt_Generated[ih] = 0x0;
         fHistPt_DataSelection[ih] = 0x0;
         fHistPt_MCSelection[ih] = 0x0;
@@ -283,9 +283,9 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     }
     
     //Identified Particles
-    Int_t lPDGCodes[14] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 9010221, 3224, 3114, 3124, 3324};
-    TString lPartNames[14] = {
-        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "f0", "SigmaStarP", "SigmaStarM", "LambdaStar", "XiStar"
+    Int_t lPDGCodes[15] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 323, 9010221, 3224, 3114, 3124, 3324};
+    TString lPartNames[15] = {
+        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "ChargedKStar", "f0", "SigmaStarP", "SigmaStarM", "LambdaStar", "XiStar"
     };
     
     //Settings for transverse momentum
@@ -482,19 +482,19 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     }
  
     //Main Output: Histograms
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPt_Generated[ih] ) {
             fHistPt_Generated[ih] = new TH1F(Form("fHistPt_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt_Generated[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPt_DataSelection[ih] ) {
             fHistPt_DataSelection[ih] = new TH1F(Form("fHistPt_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt_DataSelection[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPt_MCSelection[ih] ) {
             fHistPt_MCSelection[ih] = new TH1F(Form("fHistPt_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt_MCSelection[ih]);
@@ -502,19 +502,19 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     }
     
     //2-Dimensional Histograms
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0M_Generated[ih] ) {
             fHistPtVsV0M_Generated[ih] = new TH2F(Form("fHistPtVsV0M_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
             fListHist->Add(fHistPtVsV0M_Generated[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0M_DataSelection[ih] ) {
             fHistPtVsV0M_DataSelection[ih] = new TH2F(Form("fHistPtVsV0M_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
             fListHist->Add(fHistPtVsV0M_DataSelection[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0M_MCSelection[ih] ) {
             fHistPtVsV0M_MCSelection[ih] = new TH2F(Form("fHistPtVsV0M_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
             fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
@@ -523,19 +523,19 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
    
  
     //2-Dimensional Histograms with V0M Amplitudes
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MAmplitude_Generated[ih] ) {
             fHistPtVsV0MAmplitude_Generated[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
             fListHist->Add(fHistPtVsV0MAmplitude_Generated[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MAmplitude_DataSelection[ih] ) {
             fHistPtVsV0MAmplitude_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
             fListHist->Add(fHistPtVsV0MAmplitude_DataSelection[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MAmplitude_MCSelection[ih] ) {
             fHistPtVsV0MAmplitude_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
             fListHist->Add(fHistPtVsV0MAmplitude_MCSelection[ih]);
@@ -543,19 +543,19 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     }
     
     //2-Dimensional Histograms with True V0M Multiplicity
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MTrue_Generated[ih] ) {
             fHistPtVsV0MTrue_Generated[ih] = new TH2F(Form("fHistPtVsV0MTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_Generated[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MTrue_DataSelection[ih] ) {
             fHistPtVsV0MTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_DataSelection[ih]);
         }
     }
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsV0MTrue_MCSelection[ih] ) {
             fHistPtVsV0MTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_MCSelection[ih]);
@@ -564,7 +564,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     
     //// Ntrackl08
     //2-Dimensional Histograms
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsTracklets08Cent_Generated[ih] ) {
             fHistPtVsTracklets08Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
             fListHist->Add(fHistPtVsTracklets08Cent_Generated[ih]);
@@ -604,7 +604,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserCreateOutputObjects()
     }
      //// Ntrackl0815
     //2-Dimensional Histograms
-    for(Int_t ih=0; ih<14; ih++){
+    for(Int_t ih=0; ih<15; ih++){
         if(! fHistPtVsTracklets0815Cent_Generated[ih] ) {
             fHistPtVsTracklets0815Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
             fListHist->Add(fHistPtVsTracklets0815Cent_Generated[ih]);
@@ -949,11 +949,11 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
     
     //~All relevant PWG-LF Identified Particle Information (for looping)
     // Keep stable particle to calculate the prediction of yield ratios (.e.g. f0/pi)
-    Int_t lPDGCodes[14] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 9010221, 3224, 3114, 3124, 3324};
-    TString lPartNames[14] = {
-        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "f0", "SigmaStarP", "SigmaStarM", "LambdaStar", "XiStar"
+    Int_t lPDGCodes[15] = {211, 321, 2212, 310, 3122, 3312, 3334, 333, 313, 323, 9010221, 3224, 3114, 3124, 3324};
+    TString lPartNames[15] = {
+        "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "ChargedKStar", "f0", "SigmaStarP", "SigmaStarM", "LambdaStar", "XiStar"
     };
-    Bool_t lCheckIsPhysicalPrimary[14] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE };
+    Bool_t lCheckIsPhysicalPrimary[15] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE };
     
     Int_t lThisPDG  = 0;
     Double_t lThisRap  = 0;
@@ -975,7 +975,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
         
         //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
         Bool_t lContinue = kTRUE;
-        for(Int_t ih=0; ih<14; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
+        for(Int_t ih=0; ih<15; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
         if ( lContinue ) continue;
         
         lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
@@ -985,7 +985,7 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
         //if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
         lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(ilab);
         
-        for(Int_t ih=0; ih<14; ih++){
+        for(Int_t ih=0; ih<15; ih++){
             if( TMath::Abs(lThisPDG) == lPDGCodes[ih] && TMath::Abs(lThisRap) < 0.5 ) {
                 //Check if primary (if needed) and if not don't use this particle
                 if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;

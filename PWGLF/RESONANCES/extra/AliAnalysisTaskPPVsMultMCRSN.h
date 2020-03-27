@@ -43,6 +43,7 @@ class AliCFContainer;
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
+#include "AliPPVsMultUtils.h"
 
 class AliAnalysisTaskPPVsMultMCRSN : public AliAnalysisTaskSE {
 public:
@@ -153,55 +154,55 @@ private:
     //Desired Spectra: pi/K/p/K0/Lambda/Xi/Omega/Phi/K*
     //Data Selection Spectra
     //1-dimensional with transverse momentum (integrated in multiplicity)
-    TH1F *fHistPt_Generated[14];     //! for keeping track of base spectra
-    TH1F *fHistPt_DataSelection[14]; //!
-    TH1F *fHistPt_MCSelection[14];   //!
+    TH1F *fHistPt_Generated[15];     //! for keeping track of base spectra
+    TH1F *fHistPt_DataSelection[15]; //!
+    TH1F *fHistPt_MCSelection[15];   //!
     
     //2-dimensional with unchecked V0M percentile...
-    TH2F *fHistPtVsV0M_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsV0M_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsV0M_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsV0M_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsV0M_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsV0M_MCSelection[15];   //! 15 spectra
     
     //2-dimensional with V0M Amplitudes
-    TH2F *fHistPtVsV0MAmplitude_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsV0MAmplitude_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsV0MAmplitude_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsV0MAmplitude_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsV0MAmplitude_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsV0MAmplitude_MCSelection[15];   //! 15 spectra
     
     //2-dimensional with true generated counts in V0M acceptance
-    TH2F *fHistPtVsV0MTrue_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsV0MTrue_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsV0MTrue_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsV0MTrue_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsV0MTrue_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsV0MTrue_MCSelection[15];   //! 15 spectra
     
     ////
     //2-dimensional with unchecked Tracklets08 percentile...
-    TH2F *fHistPtVsTracklets08Cent_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08Cent_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08Cent_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets08Cent_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08Cent_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08Cent_MCSelection[15];   //! 15 spectra
 
     //2-dimensional with Tracklets08 Amplitudes
-    TH2F *fHistPtVsTracklets08_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets08_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08_MCSelection[15];   //! 15 spectra
 
     //2-dimensional with true generated counts in Tracklets08 acceptance
-    TH2F *fHistPtVsTracklets08True_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08True_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets08True_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets08True_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08True_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets08True_MCSelection[15];   //! 15 spectra
     ///
      //2-dimensional with unchecked Tracklets08 percentile...
-    TH2F *fHistPtVsTracklets0815Cent_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815Cent_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815Cent_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets0815Cent_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815Cent_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815Cent_MCSelection[15];   //! 15 spectra
 
     //2-dimensional with Tracklets0815 Amplitudes
-    TH2F *fHistPtVsTracklets0815_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets0815_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815_MCSelection[15];   //! 15 spectra
 
     //2-dimensional with true generated counts in Tracklets0815 acceptance
-    TH2F *fHistPtVsTracklets0815True_Generated[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815True_DataSelection[14]; //! 9 spectra
-    TH2F *fHistPtVsTracklets0815True_MCSelection[14];   //! 9 spectra
+    TH2F *fHistPtVsTracklets0815True_Generated[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815True_DataSelection[15]; //! 15 spectra
+    TH2F *fHistPtVsTracklets0815True_MCSelection[15];   //! 15 spectra
 
     
     AliAnalysisTaskPPVsMultMCRSN(const AliAnalysisTaskPPVsMultMCRSN&);            // not implemented
