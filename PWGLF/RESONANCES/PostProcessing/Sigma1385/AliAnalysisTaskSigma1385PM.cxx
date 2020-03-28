@@ -451,6 +451,13 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
   } else {
     if (!fIsNano)
       fIsNano = kTRUE;
+    if (fIsMC) {
+      if (fIsAOD)
+        fMCArray =
+            (TClonesArray*)fEvt->FindListObject("mcparticles");  // AOD Case
+      fMCEvent = MCEvent();
+      IsINEL0True = true;
+    }
     IsEvtSelected = true;
     fCent = nanoHeader->GetCentr("V0M");
     static int inel_index = -1;

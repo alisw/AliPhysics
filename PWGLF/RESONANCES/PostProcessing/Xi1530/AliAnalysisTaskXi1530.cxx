@@ -647,6 +647,15 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
         // ----------------------------------------------------------------------
     } else {
+        // Preparation for MC
+        // ---------------------------------------------------
+        if (IsMC) {
+            if (IsAOD)
+                fMCArray = (TClonesArray*)fEvt->FindListObject(
+                    "mcparticles");  // AOD Case
+            fMCEvent = MCEvent();
+            IsINEL0True = true;
+        }
         fCent = nanoHeader->GetCentr("V0M");
         static int inel_index = -1;
         if (inel_index < 0) inel_index = nanoHeader->GetVarIndex("cstINELgt0");
