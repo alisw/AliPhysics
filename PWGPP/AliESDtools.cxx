@@ -844,6 +844,8 @@ Int_t AliESDtools::DumpEventVariables() {
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
   Int_t tpcTrackBeforeClean=fEvent->GetNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+  TBits onlineMultMap = multObj->GetFastOrFiredChips();
+  TBits offlineMultMap = multObj->GetFiredChipMap();
 
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
@@ -956,6 +958,9 @@ Int_t AliESDtools::DumpEventVariables() {
                      "tpcTrackBeforeClean=" << tpcTrackBeforeClean <<   // tpc track before cleaning
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
                      "centrality.="          <<&centrality<<                // vector of centrality estimators
+                     //
+                     "onlineMultMap.="       <<&onlineMultMap          <<  // online multiplicity bitmask
+                     "offlineMultMap.="       <<&offlineMultMap        <<  // offline multiplicity bitmask
                      //
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity
