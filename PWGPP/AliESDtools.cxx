@@ -76,6 +76,7 @@
 #include "AliMathBase.h"
 #include "AliESDTOFHit.h"
 #include "AliTOFGeometry.h"
+#include "AliESDZDC.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -875,6 +876,24 @@ Int_t AliESDtools::DumpEventVariables() {
   const AliESDTZERO *esdTzero = fEvent->GetESDTZERO();
   const Double32_t *t0Amp=esdTzero->GetT0amplitude();
   const Double32_t *t0Time=esdTzero->GetT0time();
+  //  ZDC amplitude  and timers
+  AliESDZDC* esdZDC = fEvent->GetESDZDC();
+  TMatrixF zdcTime(32,4);
+  TMatrixF zdcEnergy(8,5);
+  for (int i0=0; i0<32; i0++)
+    for (int i1=0; i1<5; i1++){
+      zdcTime(i0,i1)=esdZDC->GetZDCTDCData(i0,i1);
+    }
+  for (int i=0; i<5; i++){
+    zdcEnergy(0,i)=esdZDC->GetZN1TowerEnergy()[i];
+    zdcEnergy(1,i)=esdZDC->GetZN2TowerEnergy()[i];
+    zdcEnergy(2,i)=esdZDC->GetZP1TowerEnergy()[i];
+    zdcEnergy(3,i)=esdZDC->GetZP2TowerEnergy()[i];
+    zdcEnergy(4,i)=esdZDC->GetZN1TowerEnergyLR()[i];
+    zdcEnergy(5,i)=esdZDC->GetZN2TowerEnergyLR()[i];
+    zdcEnergy(6,i)=esdZDC->GetZP1TowerEnergyLR()[i];
+    zdcEnergy(7,i)=esdZDC->GetZP2TowerEnergyLR()[i];
+  }
   //
 
   for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0Amp[i]; }
@@ -968,6 +987,9 @@ Int_t AliESDtools::DumpEventVariables() {
                      "onlineMultMap.="       <<&onlineMultMap          <<  // online multiplicity bitmask
                      "offlineMultMap.="       <<&offlineMultMap        <<  // offline multiplicity bitmask
                      //
+                     "zdcTime.="            <<&zdcTime                 <<  //zdc time matrix
+                     "zdcEnergy.="            <<&zdcEnergy             <<  //zdc energy matrix
+                     //
                      "tZeroTime.="           << &tZeroTime             <<  // T0 time
                      "vZeroTime.="           << &vZeroTime             <<  // V0 time
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
@@ -992,7 +1014,7 @@ Int_t AliESDtools::DumpEventVariables() {
                      "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
                      "nTOFhits="<<nTOFhits<<
                      "nTOFmatches="<<nTOFmatches<<
-                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter mutltiplicity estimators
+                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter multiplicity estimators
                      "\n";
 
   return 0;
