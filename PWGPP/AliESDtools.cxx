@@ -857,6 +857,9 @@ Int_t AliESDtools::DumpEventVariables() {
   TVectorF phiCountCITSOnly(36);
   TVectorF tZeroMult(24);  for (Int_t i=1;i<24;i++) tZeroMult[i] = 0.f;
   TVectorF vZeroMult(64);  for (Int_t i=1;i<64;i++) vZeroMult[i] = 0.f;
+  TVectorF tZeroTime(24);  for (Int_t i=1;i<24;i++) tZeroTime[i] = 0.f;
+  TVectorF vZeroTime(64);  for (Int_t i=1;i<64;i++) vZeroTime[i] = 0.f;
+
   TVectorF itsClustersPerLayer(6); for (Int_t i=1;i<6;i++) itsClustersPerLayer[i] = 0.f;
   //
   for (Int_t i=1;i<37;i++){
@@ -870,11 +873,14 @@ Int_t AliESDtools::DumpEventVariables() {
   //
   // Additional counters for ITS TPC V0 and T0
   const AliESDTZERO *esdTzero = fEvent->GetESDTZERO();
-  const Double32_t *t0amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Time=esdTzero->GetT0time();
   //
 
-  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0Amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroTime[i] = (Float_t) t0Time[i]; }
   for (Int_t i=0;i<64;i++) { vZeroMult[i] = fEvent->GetVZEROData()-> GetMultiplicity(i); }
+  for (Int_t i=0;i<64;i++) { vZeroTime[i] = fEvent->GetVZEROData()-> GetTime(i); }
   for (Int_t i=0;i<6;i++)  { itsClustersPerLayer[i] = multObj->GetNumberOfITSClusters(i); }
   Int_t runNumber=fEvent->GetRunNumber();
   Double_t timeStampS=fEvent->GetTimeStamp();
@@ -949,7 +955,7 @@ Int_t AliESDtools::DumpEventVariables() {
                      "vz="                   << fVz                    <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
-                     "tpcMult="              << TPCMult               <<  //  TPC multiplicity
+                     "tpcMult="              << TPCMult               <<  //  TPC multiplicityf
                      "eventMult="            << eventMult             <<  //  event multiplicity
                      "eventMultESD="         << eventMultESD           <<  //  event multiplicity ESD
                      "nTracksStored="        << nTracksStored          <<  // number of sored tracks
@@ -962,6 +968,8 @@ Int_t AliESDtools::DumpEventVariables() {
                      "onlineMultMap.="       <<&onlineMultMap          <<  // online multiplicity bitmask
                      "offlineMultMap.="       <<&offlineMultMap        <<  // offline multiplicity bitmask
                      //
+                     "tZeroTime.="           << &tZeroTime             <<  // T0 time
+                     "vZeroTime.="           << &vZeroTime             <<  // V0 time
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity
                      "itsClustersPerLayer.=" << &itsClustersPerLayer   <<  // its clusters per layer
