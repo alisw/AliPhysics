@@ -89,7 +89,6 @@ static const int nPid              = 4;
 static const int nRegion           = 4;
 static const int nHists            = 4;
 static const int nRt               = 5;
-///static const double C_Value = TMath::C()*(1.e2/1.e12); // cm/ps
 const char* Region[4] = {"Toward","Away","Transverse","FullAzimuth"};
 const char* Pid[nPid] = {"Charged","Pion","Kaon","Proton"};
 const char* Charge[2] = {"Pos","Neg"};
@@ -129,7 +128,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		fRecLeadPhi(0.0),
 		fRecLeadPt(0.0),
 		fRecLeadIn(0.0),
-		fPtMin(0.15),
+		fPtMin(0.3),
 		fListOfObjects(0),
 		fEvents(0x0),
 		hNchRecVsPtRecOut(0x0),
@@ -241,7 +240,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	fRecLeadPhi(0.0),
 	fRecLeadPt(0.0),
 	fRecLeadIn(0.0),
-	fPtMin(0.15),
+	fPtMin(0.3),
 	fListOfObjects(0),
 	fEvents(0x0),
 	hNchRecVsPtRecOut(0x0),
@@ -345,6 +344,8 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fTrackFilter = new AliAnalysisFilter("trackFilter");
 		SetTrackCuts(fTrackFilter);
 	}
+	
+	printf("The min cut in Pt is: %f\n",fPtMin);
 
 
 	//OpenFile(1);
@@ -617,7 +618,7 @@ p: fMeanChT = 7.216
 		hNchResponse->Sumw2();
 		fListOfObjects->Add(hNchResponse);
 
-		hNchRMvsPt = new TH3D("hNchRMvsPt","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}",nBinsRT,binsRT,nBinsRT,binsRT,nPtBins,ptBins);
+		hNchRMvsPt = new TH3D("hNchRMvsPt","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nBinsRT,binsRT,nPtBins,ptBins);
 		hNchRMvsPt->Sumw2();
 		fListOfObjects->Add(hNchRMvsPt);
 
@@ -885,7 +886,9 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 		}
 	}
 
-	int iTracks(fESD->GetNumberOfTracks());           
+	int iTracks = 0;           
+	iTracks = fESD->GetNumberOfTracks();           
+
 	for(int i = 0; i < iTracks; i++) {                 
 
 		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  
@@ -996,7 +999,6 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 
 	if(multTSrec > 0)
 		hNchTSGen_1->Fill(RTgen);
-
 
 	// Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
 	for(int i=0; i < iTracks; i++){  
@@ -1153,7 +1155,9 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 		hPhiGen[3]->Fill(DPhi);
 	}
 
-	int iTracks(fESD->GetNumberOfTracks());          
+	int iTracks = 0;          
+	iTracks = fESD->GetNumberOfTracks();          
+
 	for(int i = 0; i < iTracks; i++){              
 
 		if(i==fRecLeadIn) continue;
@@ -1218,20 +1222,17 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 
 	}
 
+		printf(" iTracks = %d\n",iTracks);
+
 	for(int i = 0; i < iTracks; i++){              
 
 		if(i==fRecLeadIn) continue;
 		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
 		if(!track) continue;
-		printf(" 0  ---------------------- pT = %f\n",track->Pt());
-		if(!fTrackFilterGolden->IsSelected(track)) continue;
-		printf(" 1  ---------------------- pT = %f\n",track->Pt());
+		if(!fTrackFilter->IsSelected(track)) continue;
 		if (track->Charge() == 0 ) continue;
-		printf(" 2  ---------------------- pT = %f\n",track->Pt());
 		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
-		printf(" 3  ---------------------- pT = %f\n",track->Pt());
 		if( track->Pt() < fPtMin) continue;
-		printf(" 4 ---------------------- pT = %f\n",track->Pt());
 
 		hNchRMvsPt->Fill(RTrec,RTgen,track->Pt());
 

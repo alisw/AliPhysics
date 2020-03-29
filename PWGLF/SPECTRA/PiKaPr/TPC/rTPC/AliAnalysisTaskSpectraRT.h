@@ -66,6 +66,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		virtual void  SetMeanMultTSdata(const double MeanCh) { fMeanChT = MeanCh; }
 		virtual void  SetMeanMultTSMCGen(const double MeanMultTSMCGen) { fMeanMultTSMCGen = MeanMultTSMCGen; }
 		virtual void  SetMeanMultTSMCRec(const double MeanMultTSMCRec) { fMeanMultTSMCRec = MeanMultTSMCRec; }
+		virtual void  SetMinPt(const double MinPt) { fPtMin = MinPt; }
 		virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
 
 	private:
