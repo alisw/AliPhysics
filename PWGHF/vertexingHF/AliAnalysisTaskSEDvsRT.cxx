@@ -350,7 +350,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     
     
     fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
-    esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+    if (iTc != 0) esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
     
     // TPC
     if (iTc != 0) { //variations using ITS-TPC
