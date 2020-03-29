@@ -94,6 +94,8 @@
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliPDG.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -195,6 +197,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fVxMax{3.},
   fVyMax{3.},
   fVzMax{10.},
+  fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -268,6 +271,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
   fh2MeanMultRFP{nullptr},
+  fh2MCip{nullptr},
   fhRefsMult{nullptr},
   fhRefsPt{nullptr},
   fhRefsEta{nullptr},
@@ -474,6 +478,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fVxMax{3.},
   fVyMax{3.},
   fVzMax{10.},
+  fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -547,6 +552,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
   fh2MeanMultRFP{nullptr},
+  fh2MCip{nullptr},
   fhRefsMult{nullptr},
   fhRefsPt{nullptr},
   fhRefsEta{nullptr},
@@ -1335,6 +1341,23 @@ Bool_t AliAnalysisTaskUniFlow::IsMCEventSelected()
 
   fhEventCounter->Fill("EventCuts OK",1);
 
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else
+    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      fImpactParameterMC = headerH->ImpactParameter();
+  }
 
   return kTRUE;
 }
@@ -1536,6 +1559,7 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
   {
     fpRefsMult->Fill(fIndexCentrality,fVector[kRefs]->size(),1.0);
     fhEventSampling->Fill(fIndexCentrality,fIndexSampling);
+    if(fAnalType == kMC) fh2MCip->Fill(fImpactParameterMC, fIndexCentrality);
   }
 
   const AliVVertex* aodVtx = fEvent->GetPrimaryVertex();
@@ -6249,8 +6273,11 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
 
-
-    if(fAnalType != kMC){
+    if(fAnalType == kMC){
+      fh2MCip = new TH2D("fh2MCip", "RFPs: impact parameter vs. multiplicity; b; multiplicity", 200,0,20,fCentBinNum,fCentMin,fCentMax);
+      fQAEvents->Add(fh2MCip);
+    }
+    else{
       fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
       fQAEvents->Add(fhEventCentrality);
 
