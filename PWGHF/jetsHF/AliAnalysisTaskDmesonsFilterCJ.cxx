@@ -89,7 +89,7 @@ AliAnalysisTaskDmesonsFilterCJ::AliAnalysisTaskDmesonsFilterCJ() :
   fMCHeader(0),
   fCounter(0),
   fRan(0),
-  fArrayDmesontoDaughters(0),
+  fArrayDStartoD0pi(0),
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
@@ -169,7 +169,7 @@ AliAnalysisTaskDmesonsFilterCJ::AliAnalysisTaskDmesonsFilterCJ(const char *name,
   fMCHeader(0),
   fCounter(0),
   fRan(0),
-  fArrayDmesontoDaughters(0),
+  fArrayDStartoD0pi(0),
   fMCarray(0),
   fCandidateArray(0),
   fSideBandArray(0),
@@ -428,7 +428,7 @@ void AliAnalysisTaskDmesonsFilterCJ::ExecOnce()
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
   if (fAodEvent) {
-    fArrayDmesontoDaughters = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(fBranchName.Data()));
+    fArrayDStartoD0pi = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(fBranchName.Data()));
   }
   else {
     if (AODEvent() && IsStandardAOD()) {
@@ -443,7 +443,7 @@ void AliAnalysisTaskDmesonsFilterCJ::ExecOnce()
       if(aodHandler->GetExtensions()) {
         AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
         AliAODEvent *aodFromExt = ext->GetAOD();
-        fArrayDmesontoDaughters = (TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
+        fArrayDStartoD0pi = (TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
       }
       else {
         AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
@@ -453,14 +453,14 @@ void AliAnalysisTaskDmesonsFilterCJ::ExecOnce()
     }
   }
 
-  if (fArrayDmesontoDaughters) {
-    TString objname(fArrayDmesontoDaughters->GetClass()->GetName());
+  if (fArrayDStartoD0pi) {
+    TString objname(fArrayDStartoD0pi->GetClass()->GetName());
     TClass cls(objname);
     if (!cls.InheritsFrom("AliAODRecoDecayHF2Prong")) {
       AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!",
-                    GetName(), cls.GetName(), fArrayDmesontoDaughters->GetName()));
+                    GetName(), cls.GetName(), fArrayDStartoD0pi->GetName()));
       fInhibitTask = kTRUE;
-      fArrayDmesontoDaughters = 0;
+      fArrayDStartoD0pi = 0;
       return;
     }
   }
@@ -534,7 +534,7 @@ Bool_t AliAnalysisTaskDmesonsFilterCJ::Run()
 
     AliDebug(2, "Event selected");
 
-    const Int_t nD = fArrayDmesontoDaughters->GetEntriesFast();
+    const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
     AliDebug(2, Form("Found %d vertices", nD));
     if (!fUseMCInfo) fHistStat->Fill(2, nD);
  
@@ -585,7 +585,7 @@ Bool_t AliAnalysisTaskDmesonsFilterCJ::Run()
                 // loop over reco D candidates to find a match to MC
                 Int_t isRecoD = kFALSE;
                 for (Int_t icharm = 0; icharm < nD; icharm++) {  
-                    charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDmesontoDaughters->At(icharm)); // D candidates
+                    charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
                     if (!charmCand) continue;
                     if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
                     
@@ -672,7 +672,7 @@ Bool_t AliAnalysisTaskDmesonsFilterCJ::Run()
         for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
             Int_t isSelected = 0;
     
-            AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDmesontoDaughters->At(icharm)); // D candidates
+            AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
             if (!charmCand) continue;
             if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
     
