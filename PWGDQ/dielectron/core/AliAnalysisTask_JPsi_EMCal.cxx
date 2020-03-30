@@ -1361,12 +1361,14 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		IsEventEMCALL1=kTRUE;
 	}
 	
-		//if the flag is for a given threshold and it was not fired, return.
-		//EMCal trigger word
+    //if the flag is for a given threshold and it was not fired, return.
+    //EMCal trigger word
 	if(fEMCEG1){
 		if(!firedTrigger.Contains(TriggerEG1))return;
 		if(firedTrigger.Contains(TriggerEG2)){
 			fNevent->Fill(2);
+            //EG2 has to be removed from EG1, because all EG2 events are used.
+            return;
 			
 		}
 		
@@ -1404,6 +1406,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     if(fEMCEG1DG1){
         fNevent2->Fill(3);
         if(!firedTrigger.Contains(TriggerDG1) && !firedTrigger.Contains(TriggerEG1)) return;
+        
+        //to remove double count from EG2 on EG1 (only for EG1 case... for EG2 we should take all events). We remove EG2 from EG1, since it is already used on EG2.
+        if(firedTrigger.Contains(TriggerDG2) || firedTrigger.Contains(TriggerEG2)) return;
+        
         fNevent2->Fill(4);
         if(firedTrigger.Contains(TriggerDG1)){
             fNevent2->Fill(5);//if passed, how much is DCal trigger
@@ -1412,11 +1418,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             fNevent2->Fill(6);//if passed, how much is EMCal trigger
         }
         
+        
+        
     }
     
     if(fEMCEG2DG2){
         fNevent2->Fill(7);
         if(!firedTrigger.Contains(TriggerDG2) && !firedTrigger.Contains(TriggerEG2)) return;
+        
+        //(all EG2 events are used... )
         fNevent2->Fill(8);
         if(firedTrigger.Contains(TriggerDG2)){
             fNevent2->Fill(9);//if passed, how much is DCal trigger
