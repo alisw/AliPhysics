@@ -75,7 +75,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(finAnObjname);
     Name="Ds";
-  }else if(pdgMeson==4122){
+  }else if(pdgMeson==4122 && isLcV0){
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsLctoV0();
       if (system == 0) analysiscuts->SetStandardCutsPP2010();
@@ -84,7 +84,24 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
     Name="Lc2pK0S";
   }
-    
+  }else if(pdgMeson==4122 && isLcV0){
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsLctoV0();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
+    }
+    else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
+    Name="Lc2pK0S";
+  }else if(pdgMeson==4122 && !isLcV0){
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsLctopKpi();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2011();
+    }
+    else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(finAnObjname);
+    Name="Lc2pKpi";
+  }
+
   AliAnalysisTaskSEDvsMultiplicity *dMultTask = new AliAnalysisTaskSEDvsMultiplicity("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
   dMultTask->SetReadMC(readMC);
   dMultTask->SetDebugLevel(0);
