@@ -1,23 +1,22 @@
-﻿AliAnalysisTask *AddTask_jditzel_S3ParticleYields() {
-    // get the manager via the static access member. since it's static, you don't need
-    // to create an instance of the class here to call the function
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        return 0x0;
-    }
-    if (!mgr->GetInputEventHandler()) {
-        return 0x0;
-    }
+AliAnalysisTask *AddTask_jditzel_S3ParticleYields() {
+  // get the manager via the static access member. since it's static, you don't need
+  // to create an instance of the class here to call the function
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    return 0x0;
+  }
+  if (!mgr->GetInputEventHandler()) {
+    return 0x0;
+  }
 
-    TString fileName = AliAnalysisManager::GetCommonFileName();
+  TString fileName = AliAnalysisManager::GetCommonFileName();
 
-    AliAnalysisTaskS3ParticleYields* task = new AliAnalysisTaskS3ParticleYields("jditzelTaskS3ParticleYields");   
-    if(!task) return 0x0;
+  AliAnalysisTaskS3ParticleYields* task = new AliAnalysisTaskS3ParticleYields("jditzelTaskS3ParticleYields");   
+  if(!task) return 0x0;
 
-    //task->SelectPIDcheckOnly(kFALSE);
-    //task->SetTriggerMask(AliVEvent::kAny);
+  //task->SelectPIDcheckOnly(kFALSE);
+  //task->SetTriggerMask(AliVEvent::kAny);
 
- 
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
 	AliAnalysisDataContainer *coutput1 =
