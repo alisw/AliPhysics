@@ -422,7 +422,7 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
 
   fEventCuts.AddQAplotsToList(fHistogramList);
   //TREE for only V0 and combined track V0 analysis
-  fTree = new TTree("tree","fTree");
+  fTree = new TTree("treeheLp","fTree");
   fTree->Branch("fTrigger", &fTrigger, "fTrigger/I");
   fTree->Branch("fMultV0M",&fMultV0M,"fMultV0M/I");
   fTree->Branch("fMultOfV0M",&fMultOfV0M,"fMultOfV0M/I");
@@ -527,7 +527,7 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fTree->Branch("fz", &fz, "fz/I");
   fTree->Branch("fmc", &fmc, "fmc/I");
 
-  fTreeGen = new TTree("treeGen","fTreeGen");
+  fTreeGen = new TTree("treeGenheLp","fTreeGen");
   fTreeGen->Branch("fTrigger", &fTrigger, "fTrigger/I");
   fTreeGen->Branch("fpHe3Gen", &fpHe3Gen, "fpHe3Gen/F"); 
   fTreeGen->Branch("fyHe3Gen", &fyHe3Gen, "fyHe3Gen/F"); 
@@ -1307,4 +1307,3 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
   }
 }
 //_____________________________________________________________________________
-
