@@ -20,7 +20,7 @@ AliAnalysisTaskHe3* AddHighMultHe3Task(TString name = "name", ULong64_t triggerM
     if(!task) return 0x0;
 	//Add task settings here
 	task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-	task->SetFilterBit(128);
+	task->SetFilterBit(016);
 	task->SetLowPCut(0.1);
 	task->SetHighPCut(1e30);
 	task->SetEtaCut(0.8);
