@@ -21,6 +21,7 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 		const double MeanMultTSdata = 7.266,
 		const double MeanMultTSMCgen = 7.266,
 		const double MeanMultTSMCrec = 7.266,
+		const double MinPt = 7.266,
 		bool IsTPCOnlyTrkCuts = kTRUE,
 		const char* Container = "TPCOnly"		
 		)   
@@ -59,6 +60,7 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 	task->SetMeanMultTSdata(MeanMultTSdata);
 	task->SetMeanMultTSMCGen(MeanMultTSMCgen);
 	task->SetMeanMultTSMCRec(MeanMultTSMCrec);
+	task->SetMinPt(MinPt);
  	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
 
 	task->SetNcl(70);

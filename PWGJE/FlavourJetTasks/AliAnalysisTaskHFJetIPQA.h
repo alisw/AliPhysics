@@ -297,6 +297,7 @@ public:
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     void SetDefaultAnalysisCuts();
     void SetDefaultV0Cuts();
+    void DefaultInitTreeVars();
     Bool_t IsPhysicalPrimary(AliVParticle *part);
     void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
     void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
@@ -384,6 +385,7 @@ public:
     void SetTagSettings(int iTagSetting);
     void SetfUnfoldPseudoDataFrac(int frac){fUnfoldPseudeDataFrac=frac;}
     void setfResponseMode(bool value){fResponseMode=value;}
+    void setTaskName(const char* name){sTaskName=Form("%s",name);}
 
     //_____________________________
     //Lund Plane
@@ -434,6 +436,27 @@ private:
     AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
     AliEmcalJet *  GetPerpendicularPseudoJet (AliEmcalJet*jet_in  , bool rev );
+
+    TTree* tJetTree;      //! tree containing jet properties
+    Float_t fJetRecPt;
+    Float_t fJetArea;
+    Float_t fMatchedJetPt;
+    Float_t fJetProb;
+    Int_t fJetFlavour;
+    Int_t nTracks;
+    Int_t fNEvent;
+    bool bMatched;
+    Float_t fTrackIPs[100];
+    Float_t fTrackIPSigs[100];
+    Float_t fTrackProb[100];
+    Bool_t bTrackIsV0[100];
+    Bool_t bFull[30];
+    Bool_t bSingle1st[30];
+    Bool_t bSingle2nd[30];
+    Bool_t bSingle3rd[30];
+    Bool_t bDouble[30];
+    Bool_t bTriple[30];
+
     void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
     void FillParticleCompositionEvent();
@@ -512,8 +535,8 @@ private:
     Int_t fNThresholds;//
     Int_t fNTrackTypes;//
     vector<TString> sTemplateFlavour;
-    Int_t fNEvent;
     Int_t fUnfoldPseudeDataFrac;//
+    TString sTaskName;//
 
     //______________________
     //Cuts
@@ -689,7 +712,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 56)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 57)
 };
 
 #endif

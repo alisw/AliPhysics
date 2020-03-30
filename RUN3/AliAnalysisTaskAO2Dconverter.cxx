@@ -321,6 +321,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
     tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
     tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
+    tVzero->Branch("fBBFlag", &vzero.fBBFlag, "fBBFlag/l");
+    tVzero->Branch("fBGFlag", &vzero.fBGFlag, "fBGFlag/l");
   }
   PostTree(kVzero);
 
@@ -453,10 +455,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     return;
   }
 
-  // Get access to the current event number
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  Int_t eventID = fEventCount++;
-
   // Configuration of the PID response
   AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
@@ -475,7 +473,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       AliFatal("Could not retrieve MC event");
     PIDResponse->SetCurrentMCEvent(MCEvt); //Set The PID response on the current MC event
   }
-  // const AliVVertex *pvtx = fEventCuts.GetPrimaryVertex();
+
+  // Selection of events with at least two contributors (GMI)
+  // Can this be done using the physics selection? (PH)
+
   const AliESDVertex * pvtx = fESD->GetPrimaryVertex();
   if (!pvtx) {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
@@ -483,6 +484,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   TString title=pvtx->GetTitle();
   if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
   if(pvtx->GetNContributors()<2) return;
+
+  // Get access to the current event number
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  Int_t eventID = fEventCount++;
 
   //---------------------------------------------------------------------------
   // Collision data
@@ -832,6 +837,15 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     vzero.fAdc[ich] = vz->GetAdc(ich);
     vzero.fTime[ich] = vz->GetTime(ich);
     vzero.fWidth[ich] = vz->GetWidth(ich);
+    vzero.fBBFlag = 0u;
+    vzero.fBGFlag = 0u;
+    ULong64_t mask = 1u;
+    for (Int_t i=0; i<64; ++i) {
+      if (vz->GetBBFlag(i))
+	vzero.fBBFlag |= (mask << i);
+      if (vz->GetBGFlag(i))
+	vzero.fBGFlag |= (mask << i);
+    }
   }
   FillTree(kVzero);
   if (fTreeStatus[kVzero]) vtx.fNentries[kVzero] = 1;

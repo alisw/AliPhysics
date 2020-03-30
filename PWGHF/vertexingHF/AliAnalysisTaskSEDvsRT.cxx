@@ -265,8 +265,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    Double_t ptmin = 0.; Double_t ptmax = 24.;
    Int_t nPTbins = 48;
 
-   Double_t firstRTbin = 0.; Double_t lastRTbin = 11.;
-   Int_t nRTbins = 11;
+   Double_t firstRTbin = 0.; Double_t lastRTbin = 10.;
+   Int_t nRTbins = 20;
 
    fPtvsMassvsRTToward = new TH3D("hPtvsMassvsRTToward", "D candidates in toward region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTbins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,nPTbins, ptmin, ptmax);
    fPtvsMassvsRTAway = new TH3D("hPtvsMassvsRTAway", "D candidates in away region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTbins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,nPTbins, ptmin, ptmax);
@@ -278,7 +278,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fOutput->Add(fPtvsMassvsRTTrans);
    
    
-   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
+   fHistNEvents = new TH1F("fHistNEvents", "number of events ",12,-0.5,11.5);
    fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents total");
    fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with Z vertex");
    fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents selected");
@@ -289,7 +289,9 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
    fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
    fHistNEvents->GetXaxis()->SetBinLabel(10,"D after cuts (No PID)");
-   fHistNEvents->GetXaxis()->SetBinLabel(11,"D after cuts + PID)"); 
+   fHistNEvents->GetXaxis()->SetBinLabel(11,"D after cuts + PID)");
+   fHistNEvents->GetXaxis()->SetBinLabel(12,"nEvents with RT calc");
+   
    fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
    fHistNEvents->Sumw2();
    fHistNEvents->SetMinimum(0);
@@ -308,7 +310,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    
    
    if(fUseNsparse) { // define NSparse object if set to use
-   fOutNsparse = new THnSparseD("hNsparse", ";pT (GeV/c);Mass (MeV/c^2);RT; #phi(cand)", sparsendim, sparsenbins,  sparsemin, sparsemax);
+   fOutNsparse = new THnSparseD("hNsparse", ";pT (GeV/c);Mass (MeV/c^2);RT; #Delta#phi(cand)", sparsendim, sparsenbins,  sparsemin, sparsemax);
    fOutput->Add(fOutNsparse);
    }
    
@@ -348,17 +350,16 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     
     
     fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
-    esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+    if (iTc != 0) esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
     
     // TPC
-    
+    if (iTc != 0) { //variations using ITS-TPC
     esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
     esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
     esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover); 
     esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
     esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared); 
     //esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut   
-
     // ITS
     esdTrackCutsRun2[iTc]->SetRequireITSRefit(kTRUE);
     if ( iTc != 13 )
@@ -380,18 +381,24 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
     	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
     else
       esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
-    
+    }
+    else { //Default: TPC-only track filter
+      esdTrackCutsRun2[iTc] = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    }
+       
+  
+  
     fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);
   }
-
+   
    
    fListQAhists = new TList();
    fListQAhists->SetOwner();
    fListQAhists->SetName("QAhists");
    
-   fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",10,0,10);
+   fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
-   fRTvsZvtxvsMult = new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",10,0,10,200,-10,10,200,0,200);
+   fRTvsZvtxvsMult = new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",100,0,10,200,-10,10,200,0,200);
    
    
    fListQAhists->Add(fGlobalRT);
@@ -502,6 +509,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
       return;
     }
   }
+  fHistNEvents->Fill(0); // count event
 
 
   // fix for temporary bug in ESDfilter 
@@ -525,7 +533,7 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   Double_t rtval = CalculateRTVal(aod);
   if (rtval < 0.) return;  // event rejected during RT calculation
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC,rtval);
-  fHistNEvents->Fill(0);
+  fHistNEvents->Fill(12);
   fGlobalRT->Fill(rtval);
   
   AliAODTracklets* tracklets = aod->GetTracklets();

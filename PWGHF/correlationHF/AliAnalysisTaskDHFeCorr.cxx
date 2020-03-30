@@ -173,7 +173,7 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
     tracks.reserve(static_cast<unsigned long>(aod_event->GetNumberOfTracks()));
 
     for (int i(0); i < aod_event->GetNumberOfTracks(); i++) {
-        tracks.emplace_back(dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i)), fRunNumber,
+        tracks.emplace_back(dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i)), fRunNumber, fDirNumber,
                             fEventNumber, aod_event, fInputHandler->GetPIDResponse());
     }
 
@@ -229,7 +229,7 @@ std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FillMCParticleI
 
         auto origin = AliVertexingHFUtils::CheckOrigin(mc_information, particle, false);
 
-        mc_particles.emplace_back(particle, fRunNumber, fEventNumber, i, origin);
+        mc_particles.emplace_back(particle, fRunNumber, fDirNumber,fEventNumber, i, origin);
     }
 
     return mc_particles;
@@ -511,24 +511,19 @@ AliAnalysisTaskDHFeCorr::FilterTrueDMesons(const std::vector<AliDHFeCorr::AliDMe
 }
 
 void AliAnalysisTaskDHFeCorr::SetRunAndEventNumber() {
-    //Based on AliAnalysisTaskSEHFTreeCreator::GetEvID
-
     fRunNumber = static_cast<UInt_t >(InputEvent()->GetRunNumber());
 
-    std::string current_file_name = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+    TString current_file_name = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
 
     if (fCurrentFile != current_file_name) {
-        fEventNumber = 0;
-        TObjArray *path = TString(current_file_name).Tokenize("/");
-        TString s = (dynamic_cast<TObjString *>(path->At(((path->GetLast()) - 1))))->GetString();
-        fDirNum = (unsigned int) s.Atoi();
-        delete path;
+        auto tokens = (current_file_name.Tokenize("/"));
+        auto folder = dynamic_cast<TObjString *>(tokens->At(tokens->GetLast()-1))->GetString();        
+        fDirNumber = static_cast<UInt_t >(folder.Atoi());
+        delete tokens;
     }
 
-    //Long64_t ev_number = Entry();
-    Long64_t ev_number = fInputHandler->GetReadEntry();
+    fEventNumber = static_cast<UInt_t >(fInputHandler->GetReadEntry());
 
-    fEventNumber = (unsigned int) ev_number + (unsigned int) (fDirNum << 17);
 }
 
 
@@ -774,6 +769,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
         //For D0, the Charge() should return 0, but the candidates will be saved twice (to handle reflections)
         cand.fIsParticleCandidate = reco_candidate->Charge() >= 0;
         cand.fRunNumber = fRunNumber;
+        cand.fDirNumber = fDirNumber;
         cand.fEventNumber = fEventNumber;
 
         const auto reco_cand = cand.fRecoObj;
@@ -1341,6 +1337,7 @@ float AliAnalysisTaskDHFeCorr::GetMaxd0MeasMinusExp(AliAODRecoDecayHF *candidate
 
 void AliAnalysisTaskDHFeCorr::AddEventVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("RunNumber", &fEventInfo.fRunNumber);
+    tree->Branch("DirNumber", &fEventInfo.fDirNumber);
     tree->Branch("EventNumber", &fEventInfo.fEventNumber);
     tree->Branch("VtxZ", &fEventInfo.fVtxZ);
     tree->Branch("MultV0M", &fEventInfo.fMultV0M);
@@ -1354,6 +1351,7 @@ void AliAnalysisTaskDHFeCorr::AddEventVariables(std::unique_ptr<TTree> &tree) {
 
 void AliAnalysisTaskDHFeCorr::AddElectronVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("RunNumber", &fElectron.fRunNumber);
+    tree->Branch("DirNumber", &fElectron.fDirNumber);
     tree->Branch("EventNumber", &fElectron.fEventNumber);
 
     tree->Branch("Pt", &fElectron.fPt);
@@ -1386,6 +1384,7 @@ void AliAnalysisTaskDHFeCorr::AddDMesonVariables(std::unique_ptr<TTree> &tree,
                                                  AliAnalysisTaskDHFeCorr::DMeson_t meson_species) {
     //Event information
     tree->Branch("RunNumber", &fDmeson.fRunNumber);
+    tree->Branch("DirNumber", &fDmeson.fDirNumber);
     tree->Branch("EventNumber", &fDmeson.fEventNumber);
     tree->Branch("ID", &fDmeson.fID);
     tree->Branch("IsParticleCandidate", &fDmeson.fIsParticleCandidate);
@@ -1459,6 +1458,7 @@ void AliAnalysisTaskDHFeCorr::AddElectronMCVariables(std::unique_ptr<TTree> &tre
 
 void AliAnalysisTaskDHFeCorr::AddMCTreeVariables(std::unique_ptr<TTree> &tree) {
     tree->Branch("RunNumber", &fMCParticle.fRunNumber);
+    tree->Branch("DirNumber", &fMCParticle.fDirNumber);
     tree->Branch("EventNumber", &fMCParticle.fEventNumber);
     tree->Branch("Label", &fMCParticle.fLabel);
     tree->Branch("E", &fMCParticle.fE);

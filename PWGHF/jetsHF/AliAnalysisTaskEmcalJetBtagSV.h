@@ -172,7 +172,7 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
-  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t ,  Int_t ); 	
+  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t , Double_t, Int_t ); 	 //EMB_clus_10
   //Int_t  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t, Int_t);      //newDeltaPt//
   Double_t GetDeltaPtRandomConeWithoutSignalPt (Double_t, Double_t, Double_t, Double_t);	 
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
@@ -307,11 +307,13 @@ private:
 
   TH1F*                       fhDeltaPtEmbeddPerpendicular;      //!<! EMB_clus 
   TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular;  //!<! EMB
+  TH1F*                       fhDeltaPtEmbeddPerpendicular10pT;      //!<! EMB_clus_10 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular10pT;  //!<! EMB_clus_10
   AliFJWrapper*		      fFastJetWrapper;  	///< EMB_clus wrapper for fast jet finding
   TRandom*		      fTrackGenerator; 		///< EMB_clus generator for track perpendicular to signal jet
 
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 12);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 13);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------

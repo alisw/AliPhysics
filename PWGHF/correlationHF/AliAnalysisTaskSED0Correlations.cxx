@@ -1209,11 +1209,11 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   }
   if(fFillTrees==kFillTrees && fAlreadyFilled) FillTreeTracks(aod);
   
-  ((TH1F*)fOutputStudy->FindObject("fNtrUnCorrEvSel"))->Fill(fMultEvOrig); //Fill multiplicity histo
-  if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fNtrCorrEvSel"))->Fill(fMultEv); //Fill multiplicity histo
+  ((TH1F*)fOutputStudy->FindObject("hNtrUnCorrEvSel"))->Fill(fMultEvOrig); //Fill multiplicity histo
+  if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("hNtrCorrEvSel"))->Fill(fMultEv); //Fill multiplicity histo
   if(fAlreadyFilled) { //there's a selected D candidate in the event
-    ((TH1F*)fOutputStudy->FindObject("fNtrUnCorrEvWithCand"))->Fill(fMultEvOrig); //Fill multiplicity histo
-    if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fNtrCorrEvWithCand"))->Fill(fMultEv); //Fill multiplicity histo
+    ((TH1F*)fOutputStudy->FindObject("hNtrUnCorrEvWithCand"))->Fill(fMultEvOrig); //Fill multiplicity histo
+    if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("hNtrCorrEvWithCand"))->Fill(fMultEv); //Fill multiplicity histo
   }
 
 

@@ -398,6 +398,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Double_t                fVxMax; // vx max - MC
       Double_t                fVyMax; // vy max - MC
       Double_t                fVzMax; // vz max - MC
+      Double_t                fImpactParameterMC; // impact parameter MC
       Bool_t                  fEventRejectAddPileUp; // additional pile-up rejection for Pb-Pb collisions in Run2 (17n, 15o)
       //cuts & selection: tracks
       UInt_t                  fCutChargedTrackFilterBit; // (-) tracks filter bit
@@ -482,6 +483,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
       TH2D*                   fh2MeanMultRFP[10]; //! counter following RFP multiplicity (pT vs. mult.)
+      TH2D*                   fh2MCip; //! impact parameter vs. Nch (for on-the-fly)
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
@@ -613,7 +615,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 15);
+      ClassDef(AliAnalysisTaskUniFlow, 16);
 };
 
 #endif
