@@ -10,6 +10,7 @@ ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
     AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fIsMCTruth(false),
       fUseDumpster(false),
       fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
@@ -40,6 +41,7 @@ AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
     const char *name, bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fIsMCTruth(false),
       fUseDumpster(false),
       fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
@@ -186,7 +188,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserCreateOutputObjects() {
     fAntiProtonPhiDump = new AliFemtoDreamDump("apPhi");
     fDumpster->Add(fAntiProtonPhiDump->GetOutput());
 
-    if (fIsMC) {
+    if (fIsMC&&fIsMCTruth) {
       fProtonPhiTRUTHDump = new AliFemtoDreamDump("pPhiTRUTH");
       fDumpster->Add(fProtonPhiTRUTHDump->GetOutput());
 
@@ -239,8 +241,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   ProtonTRUE.clear();
   static std::vector<AliFemtoDreamBasePart> AProtonTRUE;
   AProtonTRUE.clear();
-  static std::vector<AliFemtoDreamBasePart> PhiALL;
-  PhiALL.clear();
 
   static float massKaon =
       TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
@@ -302,7 +302,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
     }
   }
 
-  if (fIsMC) {
+  if (fIsMC&&fIsMCTruth) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
@@ -337,11 +337,6 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
             }
           }
         }
-      }
-
-      if (mcpdg == 333) {
-        part.SetMCParticleRePart(mcPart);
-        PhiALL.push_back(part);
       }
 
       if (mcpdg == 2212) {
@@ -397,13 +392,12 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(ProtonTRUE);
   fPairCleaner->StoreParticle(AProtonTRUE);
   fPairCleaner->StoreParticle(PhiTRUE);
-  fPairCleaner->StoreParticle(PhiALL);
 
   if (fUseDumpster) {
     fProtonPhiDump->SetEvent(Protons, V0Particles, fEvent, 2212, 333);
     fAntiProtonPhiDump->SetEvent(AntiProtons, V0Particles, fEvent, -2212, 333);
 
-    if (fIsMC) {
+    if (fIsMC&&fIsMCTruth) {
       fProtonPhiTRUTHDump->SetEvent(ProtonTRUE, PhiTRUE, fEvent, 2212, 333);
       fAntiProtonPhiTRUTHDump->SetEvent(AProtonTRUE, PhiTRUE, fEvent, -2212,
                                         333);
@@ -416,7 +410,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
             fPairCleaner->GetCleanParticles();
         int size = Particles.size();
-        if (size == 7) {
+        if (size == 6) {
           if ((Particles.at(2)).size() > 0) {
             if (((Particles.at(0)).size() > 0) ||
                 ((Particles.at(1)).size() > 0)) {
@@ -426,9 +420,8 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
             }
           }
 
-          if (fIsMC) {
-            if ((Particles.at(5)).size() > 0 ||
-                ((Particles.at(6)).size() > 0)) {
+          if (fIsMC&&fIsMCTruth) {
+            if ((Particles.at(5)).size() > 0) {
               if (((Particles.at(3)).size() > 0) ||
                   ((Particles.at(4)).size() > 0)) {
                 fPartColl->SetEvent(
