@@ -97,7 +97,7 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
   TH1F                  *fHistEvents;
   TTree                 *fTree;                //<   Tree containing reduced events
-  TTree                 *fTreeGen;                //<   Tree containing reduced events
+ TTree                 *fTreeGen;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
   Double_t              fMagneticField;       //!<! Magnetic field
@@ -114,17 +114,17 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Int_t                 frunnumber;
   Float_t fmLambda, fpLambda, fptLambda, fctLambda, fdcaLambda, fcosLambda, fyLambda;
   Float_t fpy, fhe3y, fpLy, fpiP, fhe3P, fpP, fpLP, fpiy;
-  Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec;
-  Float_t fpiNcls, fhe3Ncls, fpNcls, fpLNcls, fpiNclsITS, fhe3NclsITS, fpNclsITS, fpLNclsITS;
-  Float_t fpiDedxSigma, fhe3DedxSigma, fpDedxSigma, fpLDedxSigma, fpiDedx, fhe3Dedx, fpDedx, fpLDedx;
-  Float_t farmalpha, farmpt;
-  Int_t ftrig, fz, fmc;
-  Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
-  Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;
-  Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL;
-  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen;
-  Int_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3;
-  Int_t fHe3Charge, fPCharge, fLambdaCharge;
+Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec;
+Float_t fpiNcls, fhe3Ncls, fpNcls, fpLNcls, fpiNclsITS, fhe3NclsITS, fpNclsITS, fpLNclsITS;
+Float_t fpiDedxSigma, fhe3DedxSigma, fpDedxSigma, fpLDedxSigma, fpiDedx, fhe3Dedx, fpDedx, fpLDedx;
+Float_t farmalpha, farmpt;
+Int_t ftrig, fz, fmc;
+Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
+Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;
+Bool_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL;
+Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen;
+Bool_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3;
+Int_t fHe3Charge, fPCharge, fLambdaCharge;
 
   TVector3              fVertexPosition; //< position of primary vertex
   UShort_t              fNumberV0s;      //< number of v0s in event
@@ -132,7 +132,7 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   UShort_t              fTrigger;        //< array of Triggers
   TString               fTriggerClasses; //< fired trigger classes
 
-  Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;
+Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;
 
   Bool_t TriggerSelection();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
@@ -141,10 +141,10 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   void dEdxCheck();
   void V0Analysis(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent);
   void He3PYields(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent);
-  void MCGenerated(AliMCEvent* mcEvent);
-  void SetMultiplicity();
-  void SetBetheBlochParams(Int_t runnumber);
-  Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
+void MCGenerated(AliMCEvent* mcEvent);
+void SetMultiplicity();
+void SetBetheBlochParams(Int_t runnumber);
+Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
   AliAnalysisTaskS3ParticleYields(const AliAnalysisTaskS3ParticleYields&);
   AliAnalysisTaskS3ParticleYields &operator=(const AliAnalysisTaskS3ParticleYields&);
 
