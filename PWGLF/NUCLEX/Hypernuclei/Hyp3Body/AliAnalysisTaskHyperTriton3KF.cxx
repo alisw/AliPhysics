@@ -338,7 +338,12 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     oneCandidate.AddDaughter(deu.particle);
 
     for (const auto &p : helpers[kProton]) {
-      if (deu.track == p.track || p.particle.GetQ() * deu.particle.GetQ() < 0)
+      if (deu.track == p.track)
+        continue;
+      const bool rightSign{p.particle.GetQ() * deu.particle.GetQ() > 0};
+      if (!rightSign && !fSwapSign)
+        continue;
+      else if (rightSign && fSwapSign)
         continue;
       KFParticle twoCandidate{oneCandidate};
       twoCandidate.AddDaughter(p.particle);
@@ -346,7 +351,6 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       recHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
       if (recHyp.chi2_deuprot > fMaxKFchi2[0])
         continue;
-
       for (const auto &pi : helpers[kPion]) {
         if (p.track == pi.track || deu.track == pi.track || pi.particle.GetQ() * p.particle.GetQ() > 0) 
           continue;
@@ -355,19 +359,21 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.chi2_3prongs = hyperTriton.GetChi2() / hyperTriton.GetNDF();
         if (recHyp.chi2_3prongs > fMaxKFchi2[1])
           continue;
+        double mass = hyperTriton.GetMass();
+        if (mass < fMassWindow[0] || mass > fMassWindow[1])
+          continue;
         ROOT::Math::XYZVectorF decayVtx{hyperTriton.X() - prodVertex.X(), hyperTriton.Y() - prodVertex.Y(), hyperTriton.Z() - prodVertex.Z()};
         ROOT::Math::XYZVectorF mom{hyperTriton.Px(), hyperTriton.Py(), hyperTriton.Pz()};
         recHyp.cosPA = mom.Dot(decayVtx) / std::sqrt(decayVtx.Mag2() * mom.Mag2());
-        double mass = hyperTriton.GetMass();
         hyperTriton.SetProductionVertex(prodVertex);
         recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
         if (recHyp.chi2_topology > fMaxKFchi2[2])
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.px = hyperTriton.GetPx();
-        recHyp.py = hyperTriton.GetPy();
-        recHyp.pz = hyperTriton.GetPz();
+        recHyp.px = mom.x();
+        recHyp.py = mom.y();
+        recHyp.pz = mom.z();
         recHyp.m = mass;
 
         float dca[2], bCov[3];

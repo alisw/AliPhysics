@@ -100,8 +100,10 @@ public:
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
 
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
+  bool  fSwapSign = false;
+  float fMassWindow[2] = {2.9f, 3.15f};
   bool  fRequireTOFpid[3] = {false,false,false};
-  int   fMinTPCpidClusters[3] = {100, 100, 70};
+  int   fMinTPCpidClusters[3] = {70, 70, 70};
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
   float fTOFsigmas[3] = {5.f, 5.f, 5.f};
@@ -109,7 +111,7 @@ public:
   float fCandidatePtRange[2] = {0.f, 10.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
   float fMinCosPA = 0.99;
-  float fMaxKFchi2[3] = {400.,400.,400.};
+  float fMaxKFchi2[3] = {40000.,40000.,40000.};
   bool  fOnlyTrueCandidates = false;
 
 
