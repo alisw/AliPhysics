@@ -195,7 +195,6 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
 
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
-    //std::cout<<"Tracknr: "<<iTrack<<std::endl;
     if (!track) continue;
     fTrack->SetTrack(track);
     // find mothers of MC Kaons (if phi->stop loop, else loop until arriving to
@@ -210,15 +209,12 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
         AliAODMCParticle *mcPart =
             (AliAODMCParticle *)mcarray->At(fTrack->GetID());
         if (!(mcPart)) {
-           // cout<<"no mc part at trackID!"<<endl;
           break;
         }
         int motherID = mcPart->GetMother();
         int lastMother = motherID;
         AliAODMCParticle *mcMother = nullptr;
-        int a=0;
         while (motherID != -1) {
-           a++;
           lastMother = motherID;
           mcMother = (AliAODMCParticle *)mcarray->At(motherID);
           motherID = mcMother->GetMother();
@@ -248,12 +244,9 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     }
     if (fTrackCutsPartProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
-      //cout<< "Proton mother"<< Protons.GetMotherID()<<endl;
     }
     if (fTrackCutsPartAntiProton->isSelected(fTrack)) {
       AntiProtons.push_back(*fTrack);
-      //cout<< "AProton mother"<< AntiProtons.GetMotherID()<<endl;
-
     }
   }
 
