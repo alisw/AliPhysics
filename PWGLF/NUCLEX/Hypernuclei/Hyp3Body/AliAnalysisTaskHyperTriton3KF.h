@@ -18,6 +18,8 @@ class TH1D;
 class TH2D;
 class TList;
 class TTree;
+class TFile;
+class TSpline3;
 
 class AliPIDResponse;
 class AliESDtrack;
@@ -110,9 +112,12 @@ public:
   float fCandidateCtRange[2] = {0.f, 40.f};
   float fCandidatePtRange[2] = {0.f, 10.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
-  float fMinCosPA = 0.99;
+  float fMinCosPA = 0.9;
+  bool  fUseAbsCosPAcut = true;
+  float fCtRange[2] = {0.,45.};
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   bool  fOnlyTrueCandidates = false;
+  std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
 
 
 private:
@@ -127,6 +132,9 @@ private:
 
   TList *fListHist = nullptr;    //! List of Cascade histograms
   TTree *fTreeHyp3 = nullptr;    //! Output Tree, V0s
+
+  TFile *fCosPAsplineFile = nullptr;  //! Pointer to the spline file
+  TSpline3 *fCosPAspline = nullptr;   //! Pointer to the cosPA cut spline
 
   bool fMC = false;
   bool fDownscaling = false;
