@@ -52,7 +52,6 @@ fPtThreshold(0.),    fPtThresholdMax(10000.),
 fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fSumPtThresholdGap(0.),
 fPtFraction(0.),     fICMethod(0),                  fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
-fNeutralOverChargedRatio(0),
 fDebug(0),           fMomentum(),                   fTrackVector(),
 fEMCEtaSize(-1),     fEMCPhiMin(-1),                fEMCPhiMax(-1),
 fTPCEtaSize(-1),     fTPCPhiSize(-1),
@@ -2279,6 +2278,10 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fMakeConeExcessCorr=%d;",fMakeConeExcessCorr) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"fNeutralOverChargedRatio={%1.2e,%1.2e,%1.2e,%1.2e};",
+           fNeutralOverChargedRatio[0],fNeutralOverChargedRatio[1],fNeutralOverChargedRatio[2],fNeutralOverChargedRatio[3]) ;
+  parList+=onePar ;
+  
   return parList;
 }
 
@@ -2305,8 +2308,20 @@ void AliIsolationCut::InitParameters()
   fICMethod             = kSumPtIC; // 0 pt threshol method, 1 cone pt sum method
   fFracIsThresh         = 1;
   fDistMinToTrigger     = -1.; // no effect
-  fNeutralOverChargedRatio = 0.363; // Based on pPb analysis, to be confirmed on other systems. 
-                                    // Use eta band for charged and neutrals for estimation.
+  
+  // Ratio charged to neutral
+  // Based on pPb analysis, Erwann Masson Thesis 
+  // Use eta band for charged and neutrals for estimation.
+  fNeutralOverChargedRatio[0] = 0.363; 
+  fNeutralOverChargedRatio[1] = 0.0;
+  fNeutralOverChargedRatio[2] = 0.0;
+  fNeutralOverChargedRatio[3] = 0.0;
+  
+  // Pb-Pb vs centrality (eta band, random trigger cone, LHC18qr)
+//  fNeutralOverChargedRatio[0] = 1.49e-1; // 1.29e-1 phi band, 1.26e-1 trigger cone
+//  fNeutralOverChargedRatio[1] =-2.54e-3; //-2.47e-3 phi band,-2.27E-3 trigger cone
+//  fNeutralOverChargedRatio[2] = 0.0;
+//  fNeutralOverChargedRatio[3] = 7.32e-7; // 7.38e-7 phi band, 6.91e-7 trigger cone
 }
 
 //________________________________________________________________________________
@@ -2536,8 +2551,8 @@ void  AliIsolationCut::MakeIsolationCut
     if ( fICMethod == kSumBkgSubIC )
     {
       coneptsumBkgTrk = perpPtSumTrack;
-      coneptsumBkgCls = perpPtSumTrack*fNeutralOverChargedRatio; 
-      //coneptsumBkg    = perpPtSumTrack*(1+fNeutralOverChargedRatio);
+      coneptsumBkgCls = perpPtSumTrack*GetNeutralOverChargedRatio(centrality); 
+      //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
       
       // Add to candidate object
       pCandidate->SetChargedPtSumInPerpCone(perpPtSumTrack*excessAreaTrkEta);
@@ -2658,7 +2673,7 @@ void  AliIsolationCut::MakeIsolationCut
       //
       if ( fPartInCone == kNeutralAndCharged && !checkClustersBand )
       {
-        coneptsumBkgCls     = coneptsumBkgTrk*fNeutralOverChargedRatio; 
+        coneptsumBkgCls     = coneptsumBkgTrk*GetNeutralOverChargedRatio(centrality); 
         coneptsumClusterSub = coneptsumCluster - coneptsumBkgCls;
       }
       
@@ -2828,6 +2843,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
   printf("minimum distance to candidate, R>%1.2f\n",fDistMinToTrigger);
   printf("correct cone excess = %d \n",fMakeConeExcessCorr);
+  printf("NeutralOverChargedRatio param={%1.2e,%1.2e,%1.2e,%1.2e} \n",
+  fNeutralOverChargedRatio[0],fNeutralOverChargedRatio[1],fNeutralOverChargedRatio[2],fNeutralOverChargedRatio[3]) ;
   printf("    \n") ;
 }
 
