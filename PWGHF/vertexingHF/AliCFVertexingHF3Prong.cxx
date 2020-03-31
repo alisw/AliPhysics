@@ -393,6 +393,13 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     vectorMC[4] = localmult;   // local multiplicity (Ntracks in R<0.4)
     vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
+  case AliCFTaskVertexingHF::kRT:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorMC[3] = fRT;   // RT val calculated from TPC tracks
+    vectorMC[4] = fDeltaPhiLeading; // delta-phi of candidate wrt leading track
+    break;
 	}
 	delete decay;	
 	bGenValues = kTRUE;
@@ -522,6 +529,13 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
     vectorReco[4] = localmult;   // local multiplicity (Ntracks in R<0.4)
     vectorReco[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
+  case AliCFTaskVertexingHF::kRT:
+    vectorReco[0] = pt;
+    vectorReco[1] = rapidity;
+    vectorReco[2] = fMultiplicity; // reconstructed multiplicity
+    vectorReco[3] = fRT;           // RT value calculated from TPC tracks
+    vectorReco[4] = fDeltaPhiLeading; // delta-phi of candidate wrt leading track
+    break; 
 	}
 
 	bFillRecoValues = kTRUE;

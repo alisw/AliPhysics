@@ -117,6 +117,10 @@ class AliCFVertexingHF : public TObject {
 
 	void SetMultiplicity(Double_t multiplicity) {fMultiplicity = multiplicity;}
   void Setq2Value(Double_t q2) {fq2 = q2;}
+  
+  void SetRTValue(Double_t rt) {fRT = rt;}
+  
+  
   void SetTrackArray(TClonesArray* trkarray) {
     fTrackArray = trkarray;
     fTrackArray->SetOwner();
@@ -151,11 +155,12 @@ class AliCFVertexingHF : public TObject {
 	Bool_t fRejectIfNoQuark;  /// flag to remove events not geenrated with PYTHIA
   Double_t fMultiplicity;    /// multiplicity of the event
   Double_t fq2; /// magnitude of the reduced flow vector (computed using TPC tracks)
+  Double_t fRT; /// value of RT calculated from TPC tracks
   TClonesArray      *fTrackArray;               /// array of tracks
   Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
     /// \cond CLASSIMP    
-	ClassDef(AliCFVertexingHF, 9);
+	ClassDef(AliCFVertexingHF, 10);
     /// \endcond
 };
 

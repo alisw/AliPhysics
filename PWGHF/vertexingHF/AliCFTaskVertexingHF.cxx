@@ -139,7 +139,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMinLeadPtRT(6.0)
 {
   //
   //Default ctor
@@ -207,7 +208,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMinLeadPtRT(6.0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -307,7 +309,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
-  fAODProtection(c.fAODProtection)
+  fAODProtection(c.fAODProtection),
+  fMinLeadPtRT(c.fMinLeadPtRT)
 
 {
   //
@@ -370,6 +373,9 @@ void AliCFTaskVertexingHF::Init()
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
       break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
+      break;
     }
     fPartName="D0";
     fDauNames="K+pi";
@@ -390,6 +396,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
+      break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
       break;
     }
     fPartName="Dstar";
@@ -429,6 +438,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
+      break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
       break;
     }
     fPartName="Dplus";
@@ -525,7 +537,8 @@ void AliCFTaskVertexingHF::Init()
       fListProfiles->Add(hprof);
     }
   }
-
+  ///!TODO track filter cuts for RT
+  
   // Save also the weight functions or histograms
   if(fFuncWeight) fListProfiles->Add(fFuncWeight);
   if(fHistoPtWeight) fListProfiles->Add(fHistoPtWeight);
@@ -877,6 +890,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
     //set track array in case of kESE configuration
     cfVtxHF->SetTrackArray(aodEvent->GetTracks());
+  }
+  
+  Double_t rtval=-1.;
+  if (fConfiguration==kRT) {
+     //do RT determination if RT analysis
+     rtval = CalculateRTValue(aodEvent,mcHeader);
+     cfVtxHF->SetRTValue(rtval);
   }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -1416,6 +1436,20 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       h[2][iC] =   *(cont->ShowProjection(iC,4));
     }
   }
+  else if(fConfiguration == kRT) {
+     nvarToPlot = 4;
+     for (Int_t ih = 0; ih < 3; ih++) {
+        h[ih] = new TH1D[nvarToPlot];
+     }
+     for (Int_t iC=0;iC<nvarToPlot;iC++){
+        //MC-level
+        h[0][iC] = *(cont->ShowProjection(iC,0));
+        //MC-Acceptance level
+        h[1][iC] = *(cont->ShowProjection(iC,1));
+        //Reco-level
+        h[2][iC] = *(cont->ShowProjection(iC,4));
+     }
+  }
   TString* titles;
   //Int_t nvarToPlot = 0;
   if (fConfiguration == kSnail){
@@ -1521,6 +1555,16 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     titles[4]="N_{tracks} (R<0.4)";
     titles[5]="q_{2}";
   }
+  else if(fConfiguration == kRT) {
+     //nvarToPlot =  4;
+     titles = new TString[nvarToPlot];
+     titles[0]="pT_candidate (GeV/c)";
+     titles[1]="rapidity";
+     titles[2]="multiplicity";
+     titles[3]="RT";
+     titles[4]="deltaPhi";
+  }
+  
 
   Int_t markers[16]={20,24,21,25,27,28,
                      20,24,21,25,27,28,
@@ -2310,4 +2354,179 @@ Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mc
 
   return q2;
 }
+Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHeader *mcHeader)
+{
+   ///! TODO: check MM RT task for MC header version of calc
+   
+   /// Calculate RT value for input event (method ported from AliAnalysisTaskUeSpectraRT)
+   /// also sets phi of leading particle (fPhiLeading)
+   Int_t runNumber = esdEvent->GetRunNumber();
+   Int_t eventId = 0;
+   Double_t trackRTval = -1;
+   if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
+   
+   const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
+   TObjArray *fCTSTracks = new TObjArray();
+   Double_t nRecTracks = 0;
+   AliVParticle* part = 0x0;
+   Double_t eta, pt, LeadingPt = -1; 
+   for (Int_t iT = 0; iT < nESDTracks; iT++) 
+   {
+      part = esdEvent->GetTrack(iT);
+      eta = part->Eta();
+      pt  = part->Pt();
+      if (TMath::Abs(eta) > fEtaCut) continue;
+      if (!(TMath::Abs(pt) > 0.15)) continue;
+      
+      // Default track filter (to be checked)
+      for ( Int_t i = 0; i < 1; i++)
+      {
+         UInt_t selectDebug = 0;
+         if (fTrackFilter[i])
+         {
+            selectDebug = fTrackFilter[i]->IsSelected(part);
+            if (!selectDebug)
+            {
+               continue;
+            }
+            /// fill tracks array
+            fCTSTracks->Add(part);
+            if (!part) continue;
+         }
+      }           
+   }      
+   
+   //find leading object
+   TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
+   if (LeadingTrackReco) {
+      AliVParticle* LeadingReco = 0;
+      LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
+      LeadingPt = LeadingReco->Pt();
+      fPhiLeading = LeadingReco->Phi();
+      if (LeadingPt > fLeadMin && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
+         //Sorting
+         TObjArray *regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
+         // Transverse regions
+         TObjArray *regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
+         TList *listMax = (TList*)regionsMinMaxReco->At(0);
+         TList *listMin = (TList*)regionsMinMaxReco->At(1);
+         
+         trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
+         fHistPtLead->Fill(LeadingPt);
+      }
+      
+   }
+   
+ 
+  return trackRTval; 
+}
+
+
+ULong64_t AliCFTaskVertexingHF::GetEventIdAsLong(AliVHeader* header)
+{
+//	unique ID for each event
+   return ((ULong64_t)header->GetBunchCrossNumber() +
+           (ULong64_t)header->GetOrbitNumber()*3564 +
+           (ULong64_t)header->GetPeriodNumber()*16777215*3564);
+
+}
+
+
+TObjArray *AliAnalysisTaskSEDvsRT::SortRegionsRT(const AliVParticle* leading, TObjArray *array)
+{
+   if (!array) return 0;
+   static const Double_t k60rad = 60.*TMath::Pi()/180.;
+   static const Double_t k120rad = 120.*TMath::Pi()/180.;
+   
+   // define output lists of particles
+   TList *toward = new TList();
+   TList *away = new TList();
+   TList *transverse1 = new TList();
+   TList *transverse2 = new TList();
+   TObjArray *regionParticles = new TObjArray;
+   regionParticles->SetOwner();
+   
+   regionParticles->AddLast(toward);
+   regionParticles->AddLast(away);
+   regionParticles->AddLast(transverse1);
+   regionParticles->AddLast(transverse2);
+   if (!leading) return regionParticles;
+   
+   TVector3 leadVect(leading->Px(),leading->Py(),leading->Pz());
+   Int_t nTracks = array->GetEntriesFast();
+   if (!nTracks) return 0;
+
+   //loop over tracks
+   for (Int_t ipart = 0; ipart < nTracks; ipart++) {
+      AliVParticle* part = (AliVParticle*)(array->At(ipart));
+      if(!part) continue;
+      //vector notation for particles
+      TVector3 partVect(part->Px(), part->Py(), part->Pz());
+      Int_t region = 0;
+      Float_t deltaPhi = leadVect.DeltaPhi(partVect);
+      if (deltaPhi <= -TMath::PiOver2()) deltaPhi+= TMath::TwoPi();
+      if (deltaPhi > 3*TMath::PiOver2()) deltaPhi-= TMath::TwoPi();
+      Double_t fUeDeltaPhiMinCut = TMath::DegToRad()*60.;
+      Double_t fUeDeltaPhiMaxCut = TMath::DegToRad()*120.;
+
+      //transverse regions
+
+      if((deltaPhi<-fUeDeltaPhiMinCut) || (deltaPhi >2*fUeDeltaPhiMaxCut))region = -1; //left
+      if((deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi <fUeDeltaPhiMaxCut)) region = 1;   //right
+   
+      if(deltaPhi > -fUeDeltaPhiMinCut && deltaPhi < fUeDeltaPhiMinCut) region = 2;    //forward
+      if(deltaPhi > fUeDeltaPhiMaxCut && deltaPhi < 2*fUeDeltaPhiMaxCut) region = -2;  //backward
+   
+      // skip leading particle   
+      if(leading == part) continue;
+      if(part->Pt() >= leading->Pt()) continue;
+      if(!region)continue;
+   
+      if(region == 1) transverse1->Add(part);
+      if(region == -1) transverse2->Add(part);
+      if(region == 2) toward->Add(part);
+      if(region == -2) away->Add(part);
+   }//end loop on tracks
+
+   return regionParticles;   
+}
+
+
+TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegionRT(TList *transv1, TList *transv2)
+{
+// Returns two lists of particles, one for MIN and one for MAX region
+  Double_t sumpT1 = 0.;
+  Double_t sumpT2 = 0.;
+
+  Int_t particles1 = transv1->GetEntries();
+  Int_t particles2 = transv2->GetEntries();
+
+// Loop on transverse region 1
+  for(Int_t i=0; i<particles1; i++){
+   AliVParticle *part = (AliVParticle*)transv1->At(i);
+   sumpT1 +=  part->Pt();
+   }
+
+// Loop on transverse region 2
+  for(Int_t i=0; i<particles2; i++){
+   AliVParticle *part = (AliVParticle*)transv2->At(i);
+   sumpT2 +=  part->Pt();
+   }
+
+  TObjArray *regionParticles = new TObjArray;
+  if(sumpT2 >= sumpT1){
+   regionParticles->AddLast(transv1); // MIN
+   regionParticles->AddLast(transv2); // MAX 
+   }
+  else{
+   regionParticles->AddLast(transv2); // MIN
+   regionParticles->AddLast(transv1); // MAX
+   }
+
+  return regionParticles;
+}
+
+
+
+
 

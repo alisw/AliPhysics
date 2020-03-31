@@ -67,7 +67,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     kSnail = 0,    /// slow configuration, all variables
     kCheetah = 1,   /// fast configuration, only a subset of variables
     kFalcon = 2,   /// super fast configuration, only (pt,y,centrality)
-    kESE = 3   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
+    kESE = 3,   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
+    kRT = 4       /// configuration with variables for RT analysis (pt,y,mult,rt)
   };
 
   enum {
@@ -279,6 +280,10 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
  
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  
+  Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
+  void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}
+  
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
@@ -345,8 +350,11 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
+  Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
+  
+
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,27); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,28); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
