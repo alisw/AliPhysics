@@ -69,7 +69,7 @@ fFillMatchingHisto(0),                 fFillSameDiffFracHisto(0),
 fFillExoEnMinCut(0),                   fFillAllCellSameTCardHisto(0),
 fFillPerSMHisto(0),                    fFillClusterColRowHisto(0),
 fFillOpenTimeHisto(1),                 fFillExo50ns(0),
-fFillClusterHistoAfterEventCut(1),
+fFillClusterHistoAfterEventCut(1),     fFillTrackHistoAfterEventCut(0),
 
 // Histograms
 fhNClusterPerEventNCellHigh20(0),      fhNClusterPerEventNCellHigh12(0),        
@@ -359,6 +359,11 @@ fhNStripsPerEventSuspicious(0),         fhNStripsPerEventSuspiciousPerSM(0)
     fhEventCutClusterEnergyECellMax[icase] = 0;
     fhEventCutClusterEtaPhiGrid    [icase] = 0; 
     fhEventCutBunchCrossing        [icase] = 0;
+    fhEventCutVertexX              [icase] = 0;
+    fhEventCutVertexY              [icase] = 0;
+    fhEventCutVertexZ              [icase] = 0;
+    fhEventCutTrackPt              [icase] = 0;
+    fhEventCutTrackEtaPhi          [icase] = 0;
   }
 }
 
@@ -1667,16 +1672,32 @@ void AliAnaCaloExotics::ClusterHistogramsAfterEventCut
   //if ( bc < 0 || bc > 3563 ) printf("Unexpected BC: %d\n", bc);
   
   fhEventCutBunchCrossing[0]->Fill(bc, GetEventWeight());
+  fhEventCutVertexX      [0]->Fill(GetVertex(0)[0], GetEventWeight());
+  fhEventCutVertexY      [0]->Fill(GetVertex(0)[1], GetEventWeight());
+  fhEventCutVertexZ      [0]->Fill(GetVertex(0)[2], GetEventWeight());
   
   if ( fAcceptEvent )
-  fhEventCutBunchCrossing[1]->Fill(bc, GetEventWeight());
+  {
+    fhEventCutBunchCrossing[1]->Fill(bc, GetEventWeight());
+    fhEventCutVertexX      [1]->Fill(GetVertex(0)[0], GetEventWeight());
+    fhEventCutVertexY      [1]->Fill(GetVertex(0)[1], GetEventWeight());
+    fhEventCutVertexZ      [1]->Fill(GetVertex(0)[2], GetEventWeight());
+  }
   
   if ( fEventNStripActive <= fEventMaxNumberOfStrips )
   {
     fhEventCutBunchCrossing[2]->Fill(bc, GetEventWeight());
+    fhEventCutVertexX      [2]->Fill(GetVertex(0)[0], GetEventWeight());
+    fhEventCutVertexY      [2]->Fill(GetVertex(0)[1], GetEventWeight());
+    fhEventCutVertexZ      [2]->Fill(GetVertex(0)[2], GetEventWeight());
     
     if ( fAcceptEvent )
-    fhEventCutBunchCrossing[3]->Fill(bc, GetEventWeight());
+    {
+      fhEventCutBunchCrossing[3]->Fill(bc, GetEventWeight());
+      fhEventCutVertexX      [3]->Fill(GetVertex(0)[0], GetEventWeight());
+      fhEventCutVertexY      [3]->Fill(GetVertex(0)[1], GetEventWeight());
+      fhEventCutVertexZ      [3]->Fill(GetVertex(0)[2], GetEventWeight());
+    }
   }
   
   // Loop over CaloClusters
@@ -1780,6 +1801,60 @@ void AliAnaCaloExotics::ClusterHistogramsAfterEventCut
   
 }
 
+
+//____________________________________________________________________________
+/// Fill basic track related histograms 
+/// for different Event activity selections
+/// \param caloClusters: full list of clusters
+/// \param cells: full list of cells
+//____________________________________________________________________________
+void AliAnaCaloExotics::TrackHistogramsAfterEventCut()
+{
+  Int_t  nTracks =  GetCTSTracks()->GetEntriesFast() ;  
+  
+  AliDebug(1,Form("There are %d clusters",  nTracks));
+  
+  // Loop over tracks
+  for(Int_t itra = 0; itra < nTracks; itra++)
+  {
+    AliDebug(1,Form("Track: %d/%d",itra+1,nTracks));
+    
+    AliVTrack* track =  (AliVTrack*) GetCTSTracks()->At(itra);
+    
+    Float_t pt  = track->Pt();
+    Float_t eta = track->Eta();
+    Float_t phi = track->Phi ();
+    
+    fhEventCutTrackPt[0]->Fill(pt, GetEventWeight());
+    
+    if ( fAcceptEvent )
+      fhEventCutTrackPt[1]->Fill(pt, GetEventWeight());
+    
+    if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+      fhEventCutTrackPt[2]->Fill(pt, GetEventWeight());
+    
+    if ( fEventNStripActive <= fEventMaxNumberOfStrips  && fAcceptEvent )
+      fhEventCutTrackPt[3]->Fill(pt, GetEventWeight());
+    
+    if ( pt > 0.5 )
+    {
+      fhEventCutTrackEtaPhi[0]->Fill(eta, phi, GetEventWeight());
+      
+      if ( fAcceptEvent )
+        fhEventCutTrackEtaPhi[1]->Fill(eta, phi, GetEventWeight());
+      
+      if ( fEventNStripActive <= fEventMaxNumberOfStrips )
+        fhEventCutTrackEtaPhi[2]->Fill(eta, phi, GetEventWeight());
+      
+      if ( fEventNStripActive <= fEventMaxNumberOfStrips  && fAcceptEvent )
+        fhEventCutTrackEtaPhi[3]->Fill(eta, phi, GetEventWeight());
+    }
+    
+  } // track loop
+  
+}
+
+
 //_________________________________________________
 /// Save parameters used for analysis in a string.
 //_________________________________________________
@@ -1844,7 +1919,8 @@ TObjString * AliAnaCaloExotics::GetAnalysisCuts()
   snprintf(onePar,buffersize,"fill cluster exoticity 50ns histo: %d;",fFillExo50ns) ;
   parList+=onePar ;
  
-  snprintf(onePar,buffersize,"fill cluster histo after event cuts: %d;",fFillClusterHistoAfterEventCut) ;
+  snprintf(onePar,buffersize,"fill histo after event cuts: clusters %d; tracks %d",
+           fFillClusterHistoAfterEventCut, fFillTrackHistoAfterEventCut) ;
   parList+=onePar ;
   
   //Get parameters set in base class.
@@ -4720,9 +4796,9 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
     }
   }
   
+  TString evtSelName[] = {"Open","PassLEDSM","PassLEDStrip","PassLEDBoth"};
   if ( fFillClusterHistoAfterEventCut )
   {
-    TString evtSelName[] = {"Open","PassLEDSM","PassLEDStrip","PassLEDBoth"};
     for (Int_t icase = 0; icase < 4; icase++)
     {
       fhEventCutClusterEnergyTime[icase]  = new TH2F 
@@ -4766,9 +4842,52 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
        3564, -0.5, 3563.5) ;
       fhEventCutBunchCrossing[icase]->SetXTitle("Bunch Crossing");
       outputContainer->Add(fhEventCutBunchCrossing[icase]);
+      
+      fhEventCutVertexX[icase] = new TH1F 
+      (Form("hEventCutVertexX_%s"   ,evtSelName[icase].Data()),
+       Form("Selected event vx, %s",evtSelName[icase].Data()),
+       200,-1,1) ;
+      fhEventCutVertexX[icase]->SetXTitle("#it{v_{x}} (cm)");
+      outputContainer->Add(fhEventCutVertexX[icase]);
+      
+      fhEventCutVertexY[icase] = new TH1F 
+      (Form("hEventCutVertexY_%s"   ,evtSelName[icase].Data()),
+       Form("Selected event vy, %s",evtSelName[icase].Data()),
+       200,-1,1) ;
+      fhEventCutVertexY[icase]->SetXTitle("#it{v_{y}} (cm)");
+      outputContainer->Add(fhEventCutVertexY[icase]);
+      
+      fhEventCutVertexZ[icase] = new TH1F 
+      (Form("hEventCutVertexZ_%s"   ,evtSelName[icase].Data()),
+       Form("Selected event vz, %s",evtSelName[icase].Data()),
+       200,-50,50) ;
+      fhEventCutVertexZ[icase]->SetXTitle("#it{v_{z}} (cm)");
+      outputContainer->Add(fhEventCutVertexZ[icase]);
     }
   }
   
+  if ( fFillTrackHistoAfterEventCut )
+   {
+ 
+     
+     for (Int_t icase = 0; icase < 4; icase++)
+     {
+       fhEventCutTrackPt[icase]  = new TH1F 
+       (Form("hEventCutTrackPt_%s",evtSelName[icase].Data()),
+        Form("Track #it{p}_{T}, %s",evtSelName[icase].Data()),
+        200,0,20); 
+       fhEventCutTrackPt[icase]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+       outputContainer->Add(fhEventCutTrackPt[icase]);
+       
+       fhEventCutTrackEtaPhi[icase]  = new TH2F 
+       (Form("hEventCutTrackEtaPhi_%s",evtSelName[icase].Data()),
+        Form("Track #it{p}_{T} > 0.5,  #eta vs #varphi, %s",evtSelName[icase].Data()),
+        90,-0.9,0.9,90,0,TMath::TwoPi()); 
+       fhEventCutTrackEtaPhi[icase]->SetYTitle("#eta");
+       fhEventCutTrackEtaPhi[icase]->SetZTitle("#varphi");
+       outputContainer->Add(fhEventCutTrackEtaPhi[icase]);
+     }
+   }
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
@@ -4824,7 +4943,8 @@ void AliAnaCaloExotics::Print(const Option_t * opt) const
   printf("Fill 1 cell cluster histo: %d\n", fFill1CellHisto) ;
   printf("Fill Matching histo: %d\n"      , fFillMatchingHisto) ;
   printf("Fill Exoticity 50ns cut: %d\n"  , fFillExo50ns) ;
-  printf("Fill cluster histo after event cut: %d\n"  , fFillClusterHistoAfterEventCut) ;
+  printf("Fill histo after event cut: cluster %d - track %d\n", 
+         fFillClusterHistoAfterEventCut, fFillTrackHistoAfterEventCut) ;
 }
 
 
@@ -4871,6 +4991,9 @@ void  AliAnaCaloExotics::MakeAnalysisFillHistograms()
   
   if ( fFillClusterHistoAfterEventCut )
     ClusterHistogramsAfterEventCut(caloClusters,cells);
+  
+  if ( fFillTrackHistoAfterEventCut )
+    TrackHistogramsAfterEventCut();
   
   AliDebug(1,"End");
 }
