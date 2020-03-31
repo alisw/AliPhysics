@@ -677,8 +677,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDV0s();
   }
-  if(fInputEvent->IsA()==AliAODEvent::Class()){
-    GetAODConversionGammas();
+  if(fInputEvent->IsA()==AliAODEvent::Class() && !GetAODConversionGammas()){
+    fEventCuts->SetEventQuality(2);
+    return kFALSE;
   }
 
   return kTRUE;
@@ -1262,13 +1263,19 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
     if(!fInputGammas){AliError("No Gamma Satellites found");return kFALSE;}
     // Apply Selection Cuts to Gammas and create local working copy
     if(fInputGammas){
+      Bool_t relabelingWorkedForAll = kTRUE;
       for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
         gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
         if(gamma){
-        if(fRelabelAODs)RelabelAODPhotonCandidates(gamma);
-        if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
-          new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
+          if(fRelabelAODs) {
+            relabelingWorkedForAll &= RelabelAODPhotonCandidates(gamma);}
+          if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
+            new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
         }
+      }
+      if (!relabelingWorkedForAll){
+        AliError("For one ore more photon candidate the AOD daughters could not be found. The labels of those were set to -999999 and the event will get rejected.");
+        return kFALSE;
       }
     }
   }
@@ -1295,9 +1302,9 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 }
 
 //________________________________________________________________________
-void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
+Bool_t AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
 
-  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
   else if(fPreviousV0ReaderPerformsAODRelabeling == 0){
     printf("Running AODs! Determine if V0Reader '%s' should perform relabeling\n",this->GetName());
     TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
@@ -1316,7 +1323,7 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
     }
     if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers before '%s', but none of them is relabeling!",this->GetName()));
 
-    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
     else{
       printf("This V0Reader '%s' is first to be processed: do relabel AODs by current reader!\n",this->GetName());
       fPreviousV0ReaderPerformsAODRelabeling = 1;
@@ -1348,21 +1355,20 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
       }
     }
     if(AODLabelNeg && AODLabelPos){
-      return;
-    }
-  }
-  if(!AODLabelPos || !AODLabelNeg){
-    AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i, setting all labels to -999999",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
-    if(!AODLabelNeg){
-      PhotonCandidate->SetMCLabelNegative(-999999);
-      PhotonCandidate->SetLabelNegative(-999999);
-    }
-    if(!AODLabelPos){
-      PhotonCandidate->SetMCLabelPositive(-999999);
-      PhotonCandidate->SetLabelPositive(-999999);
+      return kTRUE;
     }
   }
 
+  // if we get here at least one daughter could not be found
+  if(!AODLabelNeg){
+    PhotonCandidate->SetMCLabelNegative(-999999);
+    PhotonCandidate->SetLabelNegative(-999999);
+  }
+  if(!AODLabelPos){
+    PhotonCandidate->SetMCLabelPositive(-999999);
+    PhotonCandidate->SetLabelPositive(-999999);
+  }
+  return kFALSE;
 }
 
 //************************************************************************

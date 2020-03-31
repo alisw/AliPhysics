@@ -123,7 +123,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               RelabelAODs(Bool_t relabel=kTRUE)                {fRelabelAODs=relabel; return;}
     Bool_t             AreAODsRelabeled()                               {return fRelabelAODs;}
     Int_t              IsReaderPerformingRelabeling()                   {return fPreviousV0ReaderPerformsAODRelabeling;}
-    void               RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
+    Bool_t             RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
     void               SetPeriodName(TString name)                      {fPeriodName = name;
                                                                          AliInfo(Form("Set PeriodName to: %s",fPeriodName.Data()));
                                                                          return;}
