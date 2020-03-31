@@ -445,30 +445,31 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 	}
 	Nsd++;
       }
-      
-      k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,0.1);
-      k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,1);
-      k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,2);
-      kT_temp=z*Pt_mother*TMath::Sin(r);
-      if (k0_temp > k0){
-	k0=k0_temp;
-	Zk0 = z;
-	Rk0 = r;
-      }
-      if (k1_temp > k1){
-	k1=k1_temp;
-	Zk1 = z;
-	Rk1 = r;
-      }
-      if (k2_temp > k2){
-	k2=k2_temp;
-	Zk2 = z;
-	Rk2 = r;
-      }
-      if (kT_temp > kT){
-	kT=kT_temp;
-	ZkT = z;
-	RkT = r;
+      if (Pt_jet > 0.0){
+	k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,0.1);
+	k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,1);
+	k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,2);
+	kT_temp=z*Pt_mother*TMath::Sin(r);
+	if (k0_temp > k0){
+	  k0=k0_temp;
+	  Zk0 = z;
+	  Rk0 = r;
+	}
+	if (k1_temp > k1){
+	  k1=k1_temp;
+	  Zk1 = z;
+	  Rk1 = r;
+	}
+	if (k2_temp > k2){
+	  k2=k2_temp;
+	  Zk2 = z;
+	  Rk2 = r;
+	}
+	if (kT_temp > kT){
+	  kT=kT_temp;
+	  ZkT = z;
+	  RkT = r;
+	}
       }
       
       daughter_jet=parent_subjet_1;
