@@ -77,6 +77,7 @@
 #include "AliESDTOFHit.h"
 #include "AliTOFGeometry.h"
 #include "AliESDZDC.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -111,6 +112,8 @@ AliESDtools::AliESDtools():
   fStreamer(nullptr)
 {
   fgInstance=this;
+  fTriggerAnalysis=new AliTriggerAnalysis;
+
 }
 
 /// Initialize tool - set ESD address and book histogram counters
@@ -847,6 +850,12 @@ Int_t AliESDtools::DumpEventVariables() {
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
   TBits onlineMultMap = multObj->GetFastOrFiredChips();
   TBits offlineMultMap = multObj->GetFiredChipMap();
+  AliESDZDC* esdZDC = fEvent->GetESDZDC();
+  bool isLaserEvent =  fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+  bool isHVdip =  fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+  bool isIncomplete = fTriggerAnalysis->IsIncompleteEvent(fEvent);
+  bool isZnaHit = esdZDC->IsZNAhit();
+  bool isZncHit = esdZDC->IsZNChit();
 
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
@@ -877,7 +886,6 @@ Int_t AliESDtools::DumpEventVariables() {
   const Double32_t *t0Amp=esdTzero->GetT0amplitude();
   const Double32_t *t0Time=esdTzero->GetT0time();
   //  ZDC amplitude  and timers
-  AliESDZDC* esdZDC = fEvent->GetESDZDC();
   TMatrixF zdcTime(32,4);
   TMatrixF zdcEnergy(8,5);
   for (int i0=0; i0<32; i0++)
@@ -971,7 +979,14 @@ Int_t AliESDtools::DumpEventVariables() {
                      "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
                      "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
                      "triggerMask="          << triggerMask           <<  //trigger mask
-                     "vz="                   << fVz                    <<  // vertex Z
+                     //
+                     "isLaserEvent="        <<isLaserEvent           <<  // fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+                     "isHVdip="             <<isHVdip                <<  // fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+                     "isIncomplete="        <<isIncomplete           <<  // fTriggerAnalysis->IsIncompleteEvent(fEvent);
+                     "isZnaHit="            <<isZnaHit               <<  //esdZDC->IsZNAhit();
+                     "isZncHit="            << isZncHit              <<  // esdZDC->IsZNChit();
+                     //
+                     "vz="                   << fVz                   <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
                      "tpcMult="              << TPCMult               <<  //  TPC multiplicityf
