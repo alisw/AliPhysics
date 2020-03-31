@@ -122,6 +122,7 @@ public:
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetDoFourPairing(Bool_t doFourPairing) {fDoFourPairing = doFourPairing;}
    void   SetUsePreFilter(Bool_t usePreFilter) {fUsePreFilter = usePreFilter;}
+   void   SetUseSecPreFilter(Bool_t usePreFilter) {fUseSecPreFilter = usePreFilter;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
 
    // Single leg from Pair related setter
@@ -218,7 +219,7 @@ public:
 
     void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
     void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
-    void SetDautherTrackID(int label1, int label2) {fDaughterTrackID_1 = label1; fDaughterTrackID_2 = label2;}
+    void SetDautherTrackID(int label1, int label2) {fDaughterTrackID_1 = label1; fDaughterTrackID_2 = label2;}  // first: neg track, second: pos track
     void SetV0ID(int iV0) {fV0ID=iV0;}
     void SetDauthersAreReconstructed(std::vector<Bool_t> vec1, std::vector<Bool_t> vec2) {fFirstPartIsReconstructed = vec1, fSecondPartIsReconstructed = vec2;}
 
@@ -459,9 +460,10 @@ private:
   Bool_t fDoPairing;
   Bool_t fDoFourPairing;
   Bool_t fUsePreFilter;
+  Bool_t fUseSecPreFilter;
   Bool_t fDoMassCut;
   Bool_t fPhotonMass;
-  Bool_t fDoULSandLS;
+  // Bool_t fDoULSandLS;
 
   std::vector<Particle> fGenNegPart_primary;
   std::vector<Particle> fGenPosPart_primary;

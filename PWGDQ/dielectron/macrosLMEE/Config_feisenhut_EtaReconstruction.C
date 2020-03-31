@@ -55,12 +55,13 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = true;
+bool debug = false;
 
-bool DoPairing      = true;
-bool DoFourPairing  = true;
-bool UsePreFilter   = false;
-bool DoMassCut      = true;
+bool DoPairing         = true;
+bool DoFourPairing     = true;
+bool UsePreFilter      = true;
+bool UseSecPreFilter   = false;
+bool DoMassCut         = true;
 // bool DoULSLS   = true;
 
 bool UseMCDataSig   = false;
@@ -974,9 +975,9 @@ void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
     // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }
