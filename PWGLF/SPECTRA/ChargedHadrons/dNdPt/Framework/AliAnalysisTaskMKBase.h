@@ -276,6 +276,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fSigned1Pt;                 //!<! signed 1/pT                                                       --InitTrack()
         Double_t                        f1Pt;                       //!<! 1/pT                                                              --InitTrack()
         Short_t                         fChargeSign;                //!<! Sign of the track charge                                          --InitTrack()
+        UShort_t                        fTPCSignalN;                //!<! Number of clusters for PID                            --InitTrack()
         
         AliMCParticle*                  fMCParticle;                //!<! mc particle                                                       --
         Int_t                           fMCLabel;                   //!<! mc label                                                          --
