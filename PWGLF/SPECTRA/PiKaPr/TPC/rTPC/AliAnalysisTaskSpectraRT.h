@@ -10,6 +10,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TAxis.h>
 
 
 #include <TProfile.h>
@@ -177,6 +178,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH1D* hNchTSRecAll;
 		TH2D* hNchResponse;
 		TH3D* hNchRMvsPt;
+		TH1D* hPtTS;
 		TH2D* hPtResponsePID[4];
 		TH2D* hNchGenVsPtGenPID[4][4];
 		TH2D* hNchGenVsPtRec[4][4];
