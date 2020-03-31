@@ -19,6 +19,7 @@
 #include "TObjArray.h"
 #include "TMCParticle.h"
 #include "TStyle.h"
+#include "TTree.h"
 #include "TRandom3.h"
 #endif
 
@@ -29,7 +30,8 @@ TH1D* ReadFONLL(TString filename, Int_t option=0);
 void ComputeBtoDdecay(Int_t nGener=10000000,
 		      Int_t pythiaver=8,
 		      TString fileNameFONLL="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
-		      Int_t opt4ff=0){
+		      Int_t opt4ff=0,
+		      Bool_t writeTree=kFALSE){
 
   Int_t pdgD0=421;
   Int_t pdgDp=411;
@@ -80,26 +82,26 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   printf("B hadron production cross section = %f pb\n",xsecb);
   hBptDistr->Scale(1.e-6); // convert to ub
 
-  TH1F* hD0Origin=new TH1F("hD0Origin","",4,-0.5,3.5);
+  TH1F* hD0Origin=new TH1F("hD0Origin","D0 mother ; ; Entries",4,-0.5,3.5);
   hD0Origin->GetXaxis()->SetBinLabel(1,"B+");
   hD0Origin->GetXaxis()->SetBinLabel(2,"B0");
   hD0Origin->GetXaxis()->SetBinLabel(3,"B_s");
-  hD0Origin->GetXaxis()->SetBinLabel(4,"B-baryon");
-  TH1F* hDpOrigin=new TH1F("hDpOrigin","",4,-0.5,3.5);
+  hD0Origin->GetXaxis()->SetBinLabel(4,"Lb");
+  TH1F* hDpOrigin=new TH1F("hDpOrigin","D+ mother ; ; Entries",4,-0.5,3.5);
   hDpOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hDpOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hDpOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hDpOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
-  TH1F* hDsOrigin=new TH1F("hDsOrigin","",4,-0.5,3.5);
+  hDpOrigin->GetXaxis()->SetBinLabel(4,"Lb");
+  TH1F* hDsOrigin=new TH1F("hDsOrigin","D_{s} mother ; ; Entries",4,-0.5,3.5);
   hDsOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hDsOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hDsOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hDsOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
-  TH1F* hLcOrigin=new TH1F("hLcOrigin","",4,-0.5,3.5);
+  hDsOrigin->GetXaxis()->SetBinLabel(4,"Lb");
+  TH1F* hLcOrigin=new TH1F("hLcOrigin","#Lambda_{c} mother ; ; Entries",4,-0.5,3.5);
   hLcOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hLcOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hLcOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hLcOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
+  hLcOrigin->GetXaxis()->SetBinLabel(4,"Lb");
 
   TH1F* hB0dau=new TH1F("hB0dau","",5,-1.5,3.5);
   hB0dau->GetXaxis()->SetBinLabel(1,"All B0");
@@ -135,22 +137,64 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hD0PtByOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hD0PtByOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hD0PtByOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hD0PtByOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
+  hD0PtByOrigin->GetXaxis()->SetBinLabel(4,"Lb");
   TH2D* hDpPtByOrigin=new TH2D("hDplusPtByOrigin","",4,-0.5,3.5,1001,0.,50.05);
   hDpPtByOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hDpPtByOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hDpPtByOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hDpPtByOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
+  hDpPtByOrigin->GetXaxis()->SetBinLabel(4,"Lb");
   TH2D* hDsPtByOrigin=new TH2D("hDsPtByOrigin","",4,-0.5,3.5,1001,0.,50.05);
   hDsPtByOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hDsPtByOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hDsPtByOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hDsPtByOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
+  hDsPtByOrigin->GetXaxis()->SetBinLabel(4,"Lb");
   TH2D* hLcPtByOrigin=new TH2D("hLcPtByOrigin","",4,-0.5,3.5,1001,0.,50.05);
   hLcPtByOrigin->GetXaxis()->SetBinLabel(1,"B+");
   hLcPtByOrigin->GetXaxis()->SetBinLabel(2,"B0");
   hLcPtByOrigin->GetXaxis()->SetBinLabel(3,"B_s");
-  hLcPtByOrigin->GetXaxis()->SetBinLabel(4,"B-baryon");
+  hLcPtByOrigin->GetXaxis()->SetBinLabel(4,"Lb");
+
+  TH2F* hD0PtVsB0pt=new TH2F("hD0PtVsB0pt"," ; p_{T}(B0) ; p_{T}(D0)",100,0.,50.,100.,0.,50.);
+  TH2F* hD0PtVsBppt=new TH2F("hD0PtVsBpluspt"," ; p_{T}(B+) ; p_{T}(D0)",100,0.,50.,100.,0.,50.);
+  TH2F* hD0PtVsBspt=new TH2F("hD0PtVsBspt"," ; p_{T}(Bs) ; p_{T}(D0)",100,0.,50.,100.,0.,50.);
+  TH2F* hD0PtVsLbpt=new TH2F("hD0PtVsLbpt"," ; p_{T}(Lb) ; p_{T}(D0)",100,0.,50.,100.,0.,50.);
+  TH2F* hDpPtVsB0pt=new TH2F("hDplusPtVsB0pt"," ; p_{T}(B0) ; p_{T}(D+)",100,0.,50.,100.,0.,50.);
+  TH2F* hDpPtVsBppt=new TH2F("hDplusPtVsBpluspt"," ; p_{T}(B+) ; p_{T}(D+)",100,0.,50.,100.,0.,50.);
+  TH2F* hDpPtVsBspt=new TH2F("hDplusPtVsBspt"," ; p_{T}(Bs) ; p_{T}(D+)",100,0.,50.,100.,0.,50.);
+  TH2F* hDpPtVsLbpt=new TH2F("hDplusPtVsLbpt"," ; p_{T}(Lb) ; p_{T}(D+)",100,0.,50.,100.,0.,50.);
+  TH2F* hDsPtVsB0pt=new TH2F("hDsPtVsB0pt"," ; p_{T}(B0) ; p_{T}(Ds)",100,0.,50.,100.,0.,50.);
+  TH2F* hDsPtVsBppt=new TH2F("hDsPtVsBpluspt"," ; p_{T}(B+) ; p_{T}(Ds)",100,0.,50.,100.,0.,50.);
+  TH2F* hDsPtVsBspt=new TH2F("hDsPtVsBspt"," ; p_{T}(Bs) ; p_{T}(Ds)",100,0.,50.,100.,0.,50.);
+  TH2F* hDsPtVsLbpt=new TH2F("hDsPtVsLbpt"," ; p_{T}(Lb) ; p_{T}(Ds)",100,0.,50.,100.,0.,50.);
+  TH2F* hLcPtVsB0pt=new TH2F("hLcPtVsB0pt"," ; p_{T}(B0) ; p_{T}(Lc)",100,0.,50.,100.,0.,50.);
+  TH2F* hLcPtVsBppt=new TH2F("hLcPtVsBpluspt"," ; p_{T}(B+) ; p_{T}(Lc)",100,0.,50.,100.,0.,50.);
+  TH2F* hLcPtVsBspt=new TH2F("hLcPtVsBspt"," ; p_{T}(Bs) ; p_{T}(Lc)",100,0.,50.,100.,0.,50.);
+  TH2F* hLcPtVsLbpt=new TH2F("hLcPtVsLbpt"," ; p_{T}(Lb) ; p_{T}(Lc)",100,0.,50.,100.,0.,50.);
+
+
+  TTree* fTreeDecays = 0x0;
+  Int_t pdgB = -9999;
+  Double_t ptB = -1.;
+  Double_t pB = -1.;
+  Double_t yB = -1.;
+  vector<float> arrptD;
+  vector<float> arrpD;
+  vector<float> arryD;
+  vector<int> arrpdgD;
+  Double_t norm = xsecb;
+
+  if(writeTree){
+    fTreeDecays = new TTree("fTreeDecays", "fTreeDecays");
+    fTreeDecays->Branch("pdgB", &pdgB);
+    fTreeDecays->Branch("ptB", &ptB);
+    fTreeDecays->Branch("pB", &pB);
+    fTreeDecays->Branch("yB", &yB);
+    fTreeDecays->Branch("ptD", &arrptD);
+    fTreeDecays->Branch("pD", &arrpD);
+    fTreeDecays->Branch("yD", &arryD);
+    fTreeDecays->Branch("pdgD", &arrpdgD);
+    fTreeDecays->Branch("norm", &norm);
+  }
   
   TRandom3* gener=new TRandom3(0);
   TClonesArray *array = new TClonesArray("TParticle",100);
@@ -160,38 +204,58 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   for(Int_t itry=0; itry<nGener; itry++){
     if(itry%10000==0) printf("Particle %d\n",itry);
 
-    Int_t pdgB=511;
     Int_t iBin=1;
     Double_t value=gener->Rndm();
     TH1F* hdautofill=0x0;
+    TH2F* hptD0tofill=0x0;
+    TH2F* hptDptofill=0x0;
+    TH2F* hptDstofill=0x0;
+    TH2F* hptLctofill=0x0;
     if(value<fracB[0]){ 
       pdgB=511;
       iBin=1;
       hdautofill=hBpdau;
-    }else if(value<(fracB[0]+fracB[1])){ 
+      hptD0tofill=hD0PtVsBppt;
+      hptDptofill=hDpPtVsBppt;
+      hptDstofill=hDsPtVsBppt;
+      hptLctofill=hLcPtVsBppt;
+   }else if(value<(fracB[0]+fracB[1])){ 
       pdgB=521;
       iBin=2;
       hdautofill=hB0dau;
+      hptD0tofill=hD0PtVsB0pt;
+      hptDptofill=hDpPtVsB0pt;
+      hptDstofill=hDsPtVsB0pt;
+      hptLctofill=hLcPtVsB0pt;
     }else if(value<(fracB[0]+fracB[1]+fracB[2])){ 
       pdgB=531;
       iBin=3;
       hdautofill=hBsdau;
+      hptD0tofill=hD0PtVsBspt;
+      hptDptofill=hDpPtVsBspt;
+      hptDstofill=hDsPtVsBspt;
+      hptLctofill=hLcPtVsBspt;
     }else{
       pdgB=5122;
       iBin=4;
       hdautofill=hLbdau;
+      hptD0tofill=hD0PtVsLbpt;
+      hptDptofill=hDpPtVsLbpt;
+      hptDstofill=hDsPtVsLbpt;
+      hptLctofill=hLcPtVsLbpt;
     }
     hdautofill->Fill(-1.);
     
     Double_t mass=db->GetParticle(pdgB)->Mass();
-    Double_t ptB=hBptDistr->GetRandom();
+    ptB=hBptDistr->GetRandom();
     Double_t phiB=gener->Rndm()*2*TMath::Pi();
-    Double_t yB=gener->Rndm()*2.-1.; // flat in -1<y<1
+    yB=gener->Rndm()*2.-1.; // flat in -1<y<1
     Double_t px=ptB*TMath::Cos(phiB);
     Double_t py=ptB*TMath::Sin(phiB);
     Double_t mt=TMath::Sqrt(mass*mass+ptB*ptB);
     Double_t pz=mt*TMath::SinH(yB);
-    Double_t E=TMath::Sqrt(mass*mass+px*px+py*py+pz*pz);
+    pB=TMath::Sqrt(ptB*ptB+pz*pz);
+    Double_t E=TMath::Sqrt(mass*mass+pB*pB);
     vec->SetPxPyPzE(px,py,pz,E);
     pdec->Decay(pdgB,vec);
     
@@ -201,28 +265,53 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     for(int j=0; j<nentries; j++){
       TParticle * part = (TParticle*)array->At(j);
       Int_t pdgdau=TMath::Abs(part->GetPdgCode());
-      if(pdgdau==pdgD0){
-	hD0Origin->Fill(iBin-1);
-	hD0pt->Fill(part->Pt());
-	hdautofill->Fill(0.);
-	hD0PtByOrigin->Fill(iBin-1,part->Pt());
-      }else if(pdgdau==pdgDp){
-	hDpOrigin->Fill(iBin-1);
- 	hDppt->Fill(part->Pt());
-	hdautofill->Fill(1.);
-	hDpPtByOrigin->Fill(iBin-1,part->Pt());
-     }else if(pdgdau==pdgDs){
-	hDsOrigin->Fill(iBin-1);
-	hDspt->Fill(part->Pt());
-	hdautofill->Fill(2.);
-	hDsPtByOrigin->Fill(iBin-1,part->Pt());
-      }else if(pdgdau==pdgLc){
-	hLcOrigin->Fill(iBin-1);
- 	hLcpt->Fill(part->Pt());
-	hdautofill->Fill(3.);
-	hLcPtByOrigin->Fill(iBin-1,part->Pt());
+      Double_t ptD=-999;
+      Double_t yD=-999;
+      if(pdgdau==pdgD0 || pdgdau==pdgDp || pdgdau==pdgDs || pdgdau==pdgLc){
+	ptD=part->Pt();
+	yD=part->Y();
+	arrptD.push_back(ptD);
+	arrpD.push_back(part->P());
+	arryD.push_back(yD);
+	arrpdgD.push_back(pdgdau);
+	if(pdgdau==pdgD0){
+	  hD0Origin->Fill(iBin-1);
+	  hD0pt->Fill(ptD);
+	  hdautofill->Fill(0.);
+	  hD0PtByOrigin->Fill(iBin-1,ptD);
+	  hptD0tofill->Fill(ptB,ptD);
+	}else if(pdgdau==pdgDp){
+	  hDpOrigin->Fill(iBin-1);
+	  hDppt->Fill(ptD);
+	  hdautofill->Fill(1.);
+	  hDpPtByOrigin->Fill(iBin-1,ptD);
+	  hptDptofill->Fill(ptB,ptD);
+	}else if(pdgdau==pdgDs){
+	  hDsOrigin->Fill(iBin-1);
+	  hDspt->Fill(ptD);
+	  hdautofill->Fill(2.);
+	  hDsPtByOrigin->Fill(iBin-1,ptD);
+	  hptDstofill->Fill(ptB,ptD);
+	}else if(pdgdau==pdgLc){
+	  hLcOrigin->Fill(iBin-1);
+	  hLcpt->Fill(ptD);
+	  hdautofill->Fill(3.);
+	  hLcPtByOrigin->Fill(iBin-1,ptD);
+	  hptLctofill->Fill(ptB,ptD);
+	}
       }
     }
+    if(arrptD.size() == 0){
+      arrptD.push_back(-1);
+      arrpD.push_back(-1);
+      arryD.push_back(-999);
+      arrpdgD.push_back(-1);
+    }
+    if(fTreeDecays) fTreeDecays->Fill();
+    arrptD.clear();
+    arrpD.clear();
+    arryD.clear();
+    arrpdgD.clear();
     array->Clear();
   }
   
@@ -274,7 +363,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hDsKKpipt->Scale(0.0227);
   hDsKKpipt->GetYaxis()->SetTitle("d#sigma/dp_{T}xBR (#mub/GeV)");
     
-  TCanvas* c1=new TCanvas("c1");
+  TCanvas* c1=new TCanvas("c1","B mother",1500,900);
   c1->Divide(2,2);
   c1->cd(1);
   hD0Origin->Draw();
@@ -286,22 +375,59 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hLcOrigin->Draw();
 
   
-  TCanvas* c2=new TCanvas("c2");
-  c2->Divide(2,2);
+  TCanvas* c2=new TCanvas("c2","PtD vs PtB",1500,1000);
+  c2->Divide(4,4);
   c2->cd(1);
-  gPad->SetLogy();
-  hD0pt->Draw();
+  gPad->SetLogz();
+  hD0PtVsB0pt->Draw("colz");
   c2->cd(2);
-  gPad->SetLogy();
-  hDppt->Draw();
+  gPad->SetLogz();
+  hD0PtVsBppt->Draw("colz");
   c2->cd(3);
-  gPad->SetLogy();
-  hDspt->Draw();
+  gPad->SetLogz();
+  hD0PtVsBspt->Draw("colz");
   c2->cd(4);
-  gPad->SetLogy();
-  hLcpt->Draw();
-
-  TCanvas* c3=new TCanvas("c3","",900,800);
+  gPad->SetLogz();
+  hD0PtVsLbpt->Draw("colz");
+  c2->cd(5);
+  gPad->SetLogz();
+  hDpPtVsB0pt->Draw("colz");
+  c2->cd(6);
+  gPad->SetLogz();
+  hDpPtVsBppt->Draw("colz");
+  c2->cd(7);
+  gPad->SetLogz();
+  hDpPtVsBspt->Draw("colz");
+  c2->cd(8);
+  gPad->SetLogz();
+  hDpPtVsLbpt->Draw("colz");
+  c2->cd(9);
+  gPad->SetLogz();
+  hDsPtVsB0pt->Draw("colz");
+  c2->cd(10);
+  gPad->SetLogz();
+  hDsPtVsBppt->Draw("colz");
+  c2->cd(11);
+  gPad->SetLogz();
+  hDsPtVsBspt->Draw("colz");
+  c2->cd(12);
+  gPad->SetLogz();
+  hDsPtVsLbpt->Draw("colz");
+  c2->cd(13);
+  gPad->SetLogz();
+  hLcPtVsB0pt->Draw("colz");
+  c2->cd(14);
+  gPad->SetLogz();
+  hLcPtVsBppt->Draw("colz");
+  c2->cd(15);
+  gPad->SetLogz();
+  hLcPtVsBspt->Draw("colz");
+  c2->cd(16);
+  gPad->SetLogz();
+  hLcPtVsLbpt->Draw("colz");
+  c2->SaveAs(Form("DecayKine_Pythia%d.png",pythiaver));
+  
+  TCanvas* c3=new TCanvas("c3","pt-diff xsec",900,800);
   gPad->SetLogy();
   hBptDistr->Draw();
   hD0pt->SetLineColor(2);
@@ -319,7 +445,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   leg->AddEntry(hDspt,Form("D_{s}^{+} #leftarrowB (FONLL+PYTHIA%d)",pythiaver),"L")->SetTextColor(hDspt->GetLineColor());
   leg->AddEntry(hLcpt,Form("#Lambda_{c}^{+} #leftarrowB (FONLL+PYTHIA%d)",pythiaver),"L")->SetTextColor(hLcpt->GetLineColor());
   leg->Draw();
-  //  c3->SaveAs("xsecsBandDfromB.png");
+  c3->SaveAs(Form("XsecBandDfromB_FONLLPythia%d.png",pythiaver));
 
   TString outfilnam=Form("DfromB_FONLLPythia%d",pythiaver);
   if(opt4ff==0) outfilnam.Append("_FFppbar");
@@ -341,6 +467,23 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hDpPtByOrigin->Write();
   hDsPtByOrigin->Write();
   hLcPtByOrigin->Write();
+  hD0PtVsB0pt->Write();
+  hD0PtVsBppt->Write();
+  hD0PtVsBspt->Write();
+  hD0PtVsLbpt->Write();
+  hDpPtVsB0pt->Write();
+  hDpPtVsBppt->Write();
+  hDpPtVsBspt->Write();
+  hDpPtVsLbpt->Write();
+  hDsPtVsB0pt->Write();
+  hDsPtVsBppt->Write();
+  hDsPtVsBspt->Write();
+  hDsPtVsLbpt->Write();
+  hLcPtVsB0pt->Write();
+  hLcPtVsBppt->Write();
+  hLcPtVsBspt->Write();
+  hLcPtVsLbpt->Write();
+  if(fTreeDecays) fTreeDecays->Write();
   outfil->Close();
 }
 
