@@ -59,6 +59,8 @@ public:
 
   void         ClusterHistogramsAfterEventCut(const TObjArray * clusters, AliVCaloCells * cells);
   
+  void         TrackHistogramsAfterEventCut();
+  
   // Setters and getters
   
   Float_t      GetCellAmpMin()      const   { return fCellAmpMin          ; } 
@@ -145,9 +147,12 @@ public:
  
   void         SwitchOnFillExoticity50nsHisto()     { fFillExo50ns               = kTRUE  ; }
   void         SwitchOffFillExoticity50nsHisto()    { fFillExo50ns               = kFALSE ; }
- //
-  void         SwitchOnFillClusterEventCutHisto()   { fFillClusterHistoAfterEventCut = kTRUE  ; }
-  void         SwitchOffFillClusterEventCutHisto()  { fFillClusterHistoAfterEventCut = kFALSE ; }
+  //
+  void         SwitchOnFillClusterAfterEventCutHisto() { fFillClusterHistoAfterEventCut = kTRUE  ; }
+  void         SwitchOffFillClusterAfterEventCutHisto(){ fFillClusterHistoAfterEventCut = kFALSE ; }
+
+  void         SwitchOnFillTrackAfterEventCutHisto()   { fFillTrackHistoAfterEventCut   = kTRUE  ; }
+  void         SwitchOffFillTrackAfterEventCutHisto()  { fFillTrackHistoAfterEventCut   = kFALSE ; }
   
   void         SetConstantTimeShift(Float_t shift)  { fConstantTimeShift = shift  ; }
   
@@ -232,7 +237,9 @@ public:
   
   Bool_t   fFillExo50ns;                        ///<  Fill histograms  with exoticity with 50 ns cut on difference in time with max
   
-  Bool_t   fFillClusterHistoAfterEventCut;      ///<  Full histograms for clusters after event cuts
+  Bool_t   fFillClusterHistoAfterEventCut;      ///<  Fill histograms for clusters after event cuts
+  
+  Bool_t   fFillTrackHistoAfterEventCut;        ///<  Fill histograms for tracks after event cuts
   
   // Histograms
   //
@@ -587,6 +594,13 @@ public:
   TH2F *   fhEventCutClusterEnergyECellMax[4];                //!<! Cluster energy vs max cell energy, for event selection criteria, non exotic, within time cut range
   TH2F *   fhEventCutClusterEtaPhiGrid[4];                    //!<! Highest energy cell location in column-row map, for event selection criteria, non exotic, within time cut range, above fEMinForExo
   
+  TH1F *   fhEventCutTrackPt[4];                              //!<! Track pT , for event selection criteria
+  TH2F *   fhEventCutTrackEtaPhi[4];                          //!<! Track eta vs phi, pt > 0.5, for event selection criteria
+  
+  TH1F *   fhEventCutVertexX[4];                              //!<! vertex x  for event selection criteria
+  TH1F *   fhEventCutVertexY[4];                              //!<! vertex y  for event selection criteria
+  TH1F *   fhEventCutVertexZ[4];                              //!<! vertex z  for event selection criteria
+
   TH1I *   fhEventCutBunchCrossing[4];                        //!<! Bunch crossing of events for different event selection criteria
 
   
@@ -597,7 +611,7 @@ public:
   AliAnaCaloExotics(              const AliAnaCaloExotics & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloExotics,10) ;
+  ClassDef(AliAnaCaloExotics,11) ;
   /// \endcond
 
 } ;
