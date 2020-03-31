@@ -404,6 +404,7 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
 void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents) {
 
   Bool_t softdropped=kFALSE;
+  Float_t Pt_jet=0.0;
   Float_t z=0.0;
   Float_t r=0.0;
   Float_t Nsd=0.0;
@@ -427,6 +428,7 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
     fastjet::PseudoJet daughter_jet = reclustered_jet[0];
     fastjet::PseudoJet parent_subjet_1; 
     fastjet::PseudoJet parent_subjet_2;
+    Pt_jet=daughter_jet.perp();
 
     while(daughter_jet.has_parents(parent_subjet_1,parent_subjet_2)){
       if(parent_subjet_1.perp() < parent_subjet_2.perp()) std::swap(parent_subjet_1,parent_subjet_2);
@@ -444,9 +446,9 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 	Nsd++;
       }
       
-      k0_temp=z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,0.1);
-      k1_temp=z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,1);
-      k2_temp=z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,2);
+      k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,0.1);
+      k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,1);
+      k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,2);
       kT_temp=z*Pt_mother*TMath::Sin(r);
       if (k0_temp > k0){
 	k0=k0_temp;
