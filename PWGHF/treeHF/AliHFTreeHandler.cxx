@@ -97,12 +97,28 @@ AliHFTreeHandler::AliHFTreeHandler():
   fPt_motherGenJet(-99.),
   fk0Jet(-99.),
   fk0GenJet(-99.),
+  fZk0Jet(-99.),
+  fZk0GenJet(-99.),
+  fRk0Jet(-99.),
+  fRk0GenJet(-99.),
   fk1Jet(-99.),
   fk1GenJet(-99.),
+  fZk1Jet(-99.),
+  fZk1GenJet(-99.),
+  fRk1Jet(-99.),
+  fRk1GenJet(-99.),
   fk2Jet(-99.),
   fk2GenJet(-99.),
+  fZk2Jet(-99.),
+  fZk2GenJet(-99.),
+  fRk2Jet(-99.),
+  fRk2GenJet(-99.),
   fkTJet(-99.),
   fkTGenJet(-99.),
+  fZkTJet(-99.),
+  fZkTGenJet(-99.),
+  fRkTJet(-99.),
+  fRkTGenJet(-99.),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -215,12 +231,28 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fPt_motherGenJet(-99.),
   fk0Jet(-99.),
   fk0GenJet(-99.),
+  fZk0Jet(-99.),
+  fZk0GenJet(-99.),
+  fRk0Jet(-99.),
+  fRk0GenJet(-99.),
   fk1Jet(-99.),
   fk1GenJet(-99.),
+  fZk1Jet(-99.),
+  fZk1GenJet(-99.),
+  fRk1Jet(-99.),
+  fRk1GenJet(-99.),
   fk2Jet(-99.),
   fk2GenJet(-99.),
+  fZk2Jet(-99.),
+  fZk2GenJet(-99.),
+  fRk2Jet(-99.),
+  fRk2GenJet(-99.),
   fkTJet(-99.),
   fkTGenJet(-99.),
+  fZkTJet(-99.),
+  fZkTGenJet(-99.),
+  fRkTJet(-99.),
+  fRkTGenJet(-99.),
   fFillJets(false),
   fDoJetSubstructure(false), 
   fJetRadius(0.4),
@@ -421,12 +453,28 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
   fTreeVar->Branch("Pt_mother_gen_jet",&fPt_motherGenJet);
   fTreeVar->Branch("k0_jet",&fk0Jet);
   fTreeVar->Branch("k0_gen_jet",&fk0GenJet);
+  fTreeVar->Branch("zk0_jet",&fZk0Jet);
+  fTreeVar->Branch("zk0_gen_jet",&fZk0GenJet);
+  fTreeVar->Branch("rk0_jet",&fRk0Jet);
+  fTreeVar->Branch("rk0_gen_jet",&fRk0GenJet);
   fTreeVar->Branch("k1_jet",&fk1Jet);
   fTreeVar->Branch("k1_gen_jet",&fk1GenJet);
+  fTreeVar->Branch("zk1_jet",&fZk1Jet);
+  fTreeVar->Branch("zk1_gen_jet",&fZk1GenJet);
+  fTreeVar->Branch("rk1_jet",&fRk1Jet);
+  fTreeVar->Branch("rk1_gen_jet",&fRk1GenJet);
   fTreeVar->Branch("k2_jet",&fk2Jet);
   fTreeVar->Branch("k2_gen_jet",&fk2GenJet);
+  fTreeVar->Branch("zk2_jet",&fZk2Jet);
+  fTreeVar->Branch("zk2_gen_jet",&fZk2GenJet);
+  fTreeVar->Branch("rk2_jet",&fRk2Jet);
+  fTreeVar->Branch("rk2_gen_jet",&fRk2GenJet);
   fTreeVar->Branch("kT_jet",&fkTJet);
   fTreeVar->Branch("kT_gen_jet",&fkTGenJet);
+  fTreeVar->Branch("zkT_jet",&fZkTJet);
+  fTreeVar->Branch("zkT_gen_jet",&fZkTGenJet);
+  fTreeVar->Branch("rkT_jet",&fRkTJet);
+  fTreeVar->Branch("rkT_gen_jet",&fRkTGenJet);
   
 
     
@@ -447,9 +495,17 @@ void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
   fTreeVar->Branch("nsd_jet",&fNsdGenJet);
   fTreeVar->Branch("Pt_mother_jet",&fPt_motherGenJet);
   fTreeVar->Branch("k0_jet",&fk0GenJet);
+  fTreeVar->Branch("zk0_jet",&fZk0GenJet);
+  fTreeVar->Branch("rk0_jet",&fRk0GenJet);
   fTreeVar->Branch("k1_jet",&fk1GenJet);
+  fTreeVar->Branch("zk1_jet",&fZk1GenJet);
+  fTreeVar->Branch("rk1_jet",&fRk1GenJet);
   fTreeVar->Branch("k2_jet",&fk2GenJet);
+  fTreeVar->Branch("zk2_jet",&fZk2GenJet);
+  fTreeVar->Branch("rk2_jet",&fRk2GenJet);
   fTreeVar->Branch("kT_jet",&fkTGenJet);
+  fTreeVar->Branch("zkT_jet",&fZkTGenJet);
+  fTreeVar->Branch("rkT_jet",&fRkTGenJet);
 
     
 }
@@ -616,9 +672,17 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
     fNsdJet=hfjet.GetNsd();
     fPt_motherJet=hfjet.GetPt_mother();
     fk0Jet=hfjet.Getk0();
+    fZk0Jet=hfjet.GetZk0();
+    fRk0Jet=hfjet.GetRk0();
     fk1Jet=hfjet.Getk1();
+    fZk1Jet=hfjet.GetZk1();
+    fRk1Jet=hfjet.GetRk1();
     fk2Jet=hfjet.Getk2();
+    fZk2Jet=hfjet.GetZk2();
+    fRk2Jet=hfjet.GetRk2();
     fkTJet=hfjet.GetkT();
+    fZkTJet=hfjet.GetZkT();
+    fRkTJet=hfjet.GetRkT();
   }
 
 }
@@ -639,9 +703,17 @@ void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
     fNsdGenJet=hfjet.GetNsd();
     fPt_motherGenJet=hfjet.GetPt_mother();
     fk0GenJet=hfjet.Getk0();
+    fZk0GenJet=hfjet.GetZk0();
+    fRk0GenJet=hfjet.GetRk0();
     fk1GenJet=hfjet.Getk1();
+    fZk1GenJet=hfjet.GetZk1();
+    fRk1GenJet=hfjet.GetRk1();
     fk2GenJet=hfjet.Getk2();
+    fZk2GenJet=hfjet.GetZk2();
+    fRk2GenJet=hfjet.GetRk2();
     fkTGenJet=hfjet.GetkT();
+    fZkTGenJet=hfjet.GetZkT();
+    fRkTGenJet=hfjet.GetRkT();
   }
 
 }

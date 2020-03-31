@@ -39,9 +39,17 @@ class AliHFJet : public TObject
   Float_t GetNsd() {return fNsd;}
   Float_t GetPt_mother() {return fPt_mother;}
   Float_t Getk0() {return fk0;}
+  Float_t GetZk0() {return fZk0;}
+  Float_t GetRk0() {return fRk0;}
   Float_t Getk1() {return fk1;}
+  Float_t GetZk1() {return fZk1;}
+  Float_t GetRk1() {return fRk1;}
   Float_t Getk2() {return fk2;}
+  Float_t GetZk2() {return fZk2;}
+  Float_t GetRk2() {return fRk2;}
   Float_t GetkT() {return fkT;}
+  Float_t GetZkT() {return fZkT;}
+  Float_t GetRkT() {return fRkT;}
 
     
 
@@ -59,9 +67,17 @@ class AliHFJet : public TObject
   Float_t fNsd;       //number of splittings passing soft drop
   Float_t fPt_mother; //total pT going into soft drop splitting
   Float_t fk0;         //dynamical grooming kappa with alpha=0
+  Float_t fZk0;        //dynamical grooming with alpha=0 splitting momentum fraction
+  Float_t fRk0;        //dynamical grooming with alpha=0 splitting angle
   Float_t fk1;         //dynamical grooming kappa with alpha=1
+  Float_t fZk1;        //dynamical grooming with alpha=1 splitting momentum fraction
+  Float_t fRk1;        //dynamical grooming with alpha=1 splitting angle
   Float_t fk2;         //dynamical grooming kappa with alpha=2
+  Float_t fZk2;        //dynamical grooming with alpha=2 splitting momentum fraction
+  Float_t fRk2;        //dynamical grooming with alpha=2 splitting angle
   Float_t fkT;         //Splitting witht the largest kT (following hardest branch)
+  Float_t fZkT;        //Splitting witht the largest kT (following hardest branch) splitting momentum fraction
+  Float_t fRkT;        //Splitting witht the largest kT (following hardest branch) splitting angle
 
 
   /// \cond CLASSIMP
