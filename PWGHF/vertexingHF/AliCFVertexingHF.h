@@ -119,8 +119,9 @@ class AliCFVertexingHF : public TObject {
   void Setq2Value(Double_t q2) {fq2 = q2;}
   
   void SetRTValue(Double_t rt) {fRT = rt;}
-  
-  
+  void SetPhiLeading(Double_t phi) {fPhiLeading = phi;}
+  void SetAveMultiInTrans(Double_t mult) {fAveMultiInTrans = mult;} 
+  Double_t GetAveMultiInTrans() const {return fAveMultiInTrans;}  
   void SetTrackArray(TClonesArray* trkarray) {
     fTrackArray = trkarray;
     fTrackArray->SetOwner();
@@ -156,6 +157,8 @@ class AliCFVertexingHF : public TObject {
   Double_t fMultiplicity;    /// multiplicity of the event
   Double_t fq2; /// magnitude of the reduced flow vector (computed using TPC tracks)
   Double_t fRT; /// value of RT calculated from TPC tracks
+  Double_t fPhiLeading; /// delta-phi of candidate wrt leading track (for RT analysis)
+  Double_t fAveMultiInTrans; /// average transverse multiplicity used for RT 
   TClonesArray      *fTrackArray;               /// array of tracks
   Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 

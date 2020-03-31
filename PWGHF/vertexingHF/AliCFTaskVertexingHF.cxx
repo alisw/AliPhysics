@@ -895,7 +895,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Double_t rtval=-1.;
   if (fConfiguration==kRT) {
      //do RT determination if RT analysis
-     rtval = CalculateRTValue(aodEvent,mcHeader);
+     rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
      cfVtxHF->SetRTValue(rtval);
   }
 
@@ -2354,7 +2354,7 @@ Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mc
 
   return q2;
 }
-Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHeader *mcHeader)
+Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCHeader *mcHeader, AliCFVertexingHF* cf) 
 {
    ///! TODO: check MM RT task for MC header version of calc
    
@@ -2364,7 +2364,11 @@ Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHea
    Int_t eventId = 0;
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
-   
+   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+   AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   trackFilter->AddCuts(esdCutsTPC);
+
+      
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
    TObjArray *fCTSTracks = new TObjArray();
    Double_t nRecTracks = 0;
@@ -2375,16 +2379,16 @@ Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHea
       part = esdEvent->GetTrack(iT);
       eta = part->Eta();
       pt  = part->Pt();
-      if (TMath::Abs(eta) > fEtaCut) continue;
+      if (TMath::Abs(eta) > 1.5) continue; //temporary, hardcoded eta cut to default value
       if (!(TMath::Abs(pt) > 0.15)) continue;
       
       // Default track filter (to be checked)
       for ( Int_t i = 0; i < 1; i++)
       {
          UInt_t selectDebug = 0;
-         if (fTrackFilter[i])
+         if (trackFilter)
          {
-            selectDebug = fTrackFilter[i]->IsSelected(part);
+            selectDebug = trackFilter->IsSelected(part);
             if (!selectDebug)
             {
                continue;
@@ -2402,8 +2406,8 @@ Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHea
       AliVParticle* LeadingReco = 0;
       LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
       LeadingPt = LeadingReco->Pt();
-      fPhiLeading = LeadingReco->Phi();
-      if (LeadingPt > fLeadMin && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
+      cf->SetPhiLeading(LeadingReco->Phi());
+      if (LeadingPt > fMinLeadPtRT && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
          //Sorting
          TObjArray *regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
          // Transverse regions
@@ -2411,8 +2415,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHea
          TList *listMax = (TList*)regionsMinMaxReco->At(0);
          TList *listMin = (TList*)regionsMinMaxReco->At(1);
          
-         trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / fAveMultiInTrans; //sum of transverse regions / average
-         fHistPtLead->Fill(LeadingPt);
+         trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
       }
       
    }
@@ -2422,7 +2425,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTVal(AliAODEvent* esdEvent, AliAODMCHea
 }
 
 
-ULong64_t AliCFTaskVertexingHF::GetEventIdAsLong(AliVHeader* header)
+ULong64_t AliCFTaskVertexingHF::GetEventIdAsLong(AliVHeader* header) 
 {
 //	unique ID for each event
    return ((ULong64_t)header->GetBunchCrossNumber() +
@@ -2430,9 +2433,66 @@ ULong64_t AliCFTaskVertexingHF::GetEventIdAsLong(AliVHeader* header)
            (ULong64_t)header->GetPeriodNumber()*16777215*3564);
 
 }
+TObjArray *AliCFTaskVertexingHF::FindLeading(TObjArray *array) 
+{
+   if (!array) return 0;
+   Int_t nTracks = array->GetEntriesFast();
+   if (!nTracks) return 0;
+   
+   TObjArray *tracks = new TObjArray(nTracks);
+   for (Int_t ipart = 0; ipart < nTracks; ipart++) {
+      AliVParticle *part = (AliVParticle*)(array->At(ipart));
+      if(!part) continue;
+      tracks->AddLast(part);
+   }
+   QSortTracks(*tracks, 0, tracks->GetEntriesFast());
+   nTracks = tracks->GetEntriesFast();
+   if (!nTracks) return 0;
+   return tracks;
+}
+
+void AliCFTaskVertexingHF::QSortTracks(TObjArray &a, Int_t first, Int_t last)
+{
+   //Sort array by pT
+  static TObject *tmp;
+  static int i;           // "static" to save stack space
+  int j;
+
+  while (last - first > 1) {
+    i = first;
+    j = last;
+    for (;;) {
+      while (++i < last && ((AliVParticle*)a[i])->Pt() > ((AliVParticle*)a[first])->Pt() )
+        ;
+      while (--j > first && ((AliVParticle*)a[j])->Pt() < ((AliVParticle*)a[first])->Pt() )
+        ;
+      if (i >= j)
+        break;
+
+      tmp  = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    if (j == first) {
+      ++first;
+      continue;
+    }
+    tmp = a[first];
+    a[first] = a[j];
+    a[j] = tmp;
+    if (j - first < last - (j + 1)) {
+      QSortTracks(a, first, j);
+      first = j + 1;   
+    } else {
+      QSortTracks(a, j + 1, last);
+      last = j;      
+    }
+  }
+}
 
 
-TObjArray *AliAnalysisTaskSEDvsRT::SortRegionsRT(const AliVParticle* leading, TObjArray *array)
+
+TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObjArray *array)
 {
    if (!array) return 0;
    static const Double_t k60rad = 60.*TMath::Pi()/180.;
@@ -2492,7 +2552,7 @@ TObjArray *AliAnalysisTaskSEDvsRT::SortRegionsRT(const AliVParticle* leading, TO
 }
 
 
-TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegionRT(TList *transv1, TList *transv2)
+TObjArray* AliCFTaskVertexingHF::GetMinMaxRegionRT(TList *transv1, TList *transv2)
 {
 // Returns two lists of particles, one for MIN and one for MAX region
   Double_t sumpT1 = 0.;

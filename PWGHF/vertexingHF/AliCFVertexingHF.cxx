@@ -63,6 +63,8 @@ AliCFVertexingHF::AliCFVertexingHF() :
   fMultiplicity(0.),
   fq2(0.),
    fRT(-1.),
+   fPhiLeading(0.),
+   fAveMultiInTrans(4.939),
   fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
@@ -101,6 +103,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fMultiplicity(0.),
   fq2(0.),
    fRT(-1.),
+   fPhiLeading(0.),
+   fAveMultiInTrans(4.939),
   fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
@@ -182,7 +186,8 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
     fMultiplicity=c.fMultiplicity;
     fq2=c.fq2;
     fRT=c.fRT;
-
+    fPhiLeading=c.fPhiLeading;
+    fAveMultiInTrans=c.fAveMultiInTrans;
     delete fTrackArray;
     fTrackArray = new TClonesArray(*(c.fTrackArray));
 		fConfiguration=c.fConfiguration;
@@ -217,7 +222,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fRejectIfNoQuark(c.fRejectIfNoQuark),	
   fMultiplicity(c.fMultiplicity),
   fq2(c.fq2),
-  fRT(-1.),
+  fRT(c.fRT),
+  fPhiLeading(c.fPhiLeading),
+  fAveMultiInTrans(c.fAveMultiInTrans),
   fTrackArray(0),
 	fConfiguration(c.fConfiguration)
 {  

@@ -278,6 +278,15 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
   Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
+
+  Double_t CalculateRTValue(AliAODEvent* esdEvent, AliAODMCHeader* mcHeader, AliCFVertexingHF* cf);
+  ULong64_t  GetEventIdAsLong(AliVHeader* header);
+  TObjArray* FindLeading(TObjArray* array);
+  void QSortTracks(TObjArray& a, Int_t first, Int_t last);
+  TObjArray* SortRegionsRT(const AliVParticle* leading, TObjArray *array);
+  TObjArray* GetMinMaxRegionRT(TList *transv1, TList *transv2);
+  
+  
  
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   

@@ -398,7 +398,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     vectorMC[1] = fmcPartCandidate->Y() ;
     vectorMC[2] = fMultiplicity;   // multiplicity (diff estimators can be used)
     vectorMC[3] = fRT;   // RT val calculated from TPC tracks
-    vectorMC[4] = fDeltaPhiLeading; // delta-phi of candidate wrt leading track
+    vectorMC[4] = fPhiLeading; // delta-phi of candidate wrt leading track
     break;
 	}
 	delete decay;	
@@ -534,7 +534,7 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
     vectorReco[1] = rapidity;
     vectorReco[2] = fMultiplicity; // reconstructed multiplicity
     vectorReco[3] = fRT;           // RT value calculated from TPC tracks
-    vectorReco[4] = fDeltaPhiLeading; // delta-phi of candidate wrt leading track
+    vectorReco[4] = fPhiLeading; // delta-phi of candidate wrt leading track
     break; 
 	}
 
