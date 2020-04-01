@@ -142,6 +142,7 @@ AliDHFeCorr::AliEvent AliAnalysisTaskDHFeCorr::EventInfo() {
     AliDHFeCorr::AliEvent event;
 
     event.fRunNumber = fRunNumber;
+    event.fDirNumber = fDirNumber;
     event.fEventNumber = fEventNumber;
 
     event.fVtxZ = fEventCuts.GetPrimaryVertex()->GetZ();

@@ -136,7 +136,7 @@ namespace AliDHFeCorr {
 
     typedef struct AliEvent {
         UInt_t fRunNumber{0};
-        UInt_t fDirNumber{0};
+        UInt_t fDirNumber{99999999};
         UInt_t fEventNumber{0};
 
         Float_t fVtxZ{-999.};
