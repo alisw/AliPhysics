@@ -424,6 +424,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.dca_de_pi = deu.particle.GetDistanceFromParticle(pi.particle);
         recHyp.dca_pr_pi = p.particle.GetDistanceFromParticle(pi.particle);
 
+        recHyp.tpcClus_de = deu.track->GetTPCsignalN();
+        recHyp.tpcClus_pr = p.track->GetTPCsignalN();
+        recHyp.tpcClus_pi = pi.track->GetTPCsignalN();
+
         bool record{!fMC || !fOnlyTrueCandidates};
         if (fMC) {
           int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
