@@ -99,10 +99,12 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoPileUpCuts{false},
   fMultSelectionEvCuts{false},  
   fUseTimeRangeCut{false},
+  fUseEMCALLEDEventsCut{false},
   fSelectInelGt0{false},
   fOverrideInelGt0{false},
   fOverrideCentralityFramework{false},
   fTimeRangeCut{},
+  fEMCALLEDEventsCut{},
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
   fCutStatsAfterMultSelection{nullptr},
@@ -306,6 +308,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kTimeRangeCut);
   }
 
+  //
+  /// Check if the EMCal event is bad due to LED system flashes
+  //
+  if ( fUseEMCALLEDEventsCut )
+  {
+    if ( !fEMCALLEDEventsCut.IsEMCALLEDEvent(ev,fCurrentRun) ) 
+      fFlag |= BIT(kEMCALEDCut); // accept event
+  }
+  else 
+    fFlag |= BIT(kEMCALEDCut); // accept event
+  //
+  
   /// Ignore SPD/tracks vertex position and reconstruction individual flags
   bool allcuts = CheckNormalisationMask(kPassesAllCuts);
   if (allcuts) {
@@ -360,6 +374,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 }
 
 void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
+  
   if (!qaList) {
     if (fSavePlots)
       qaList = static_cast<TList*>(this);
@@ -386,6 +401,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "INEL > 0",
     "Correlations",
     "TimeRangeCut",
+    "EMCALLEDEventCut",
     "All cuts"
   };
 
@@ -440,6 +456,18 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     }
   }
 
+  if ( fUseEMCALLEDEventsCut ) 
+  {
+    fEMCALLEDEventsCut.FillControlHistograms(true) ;
+    fEMCALLEDEventsCut.InitControlHistograms() ;
+    
+    TList * emcHistos = fEMCALLEDEventsCut.GetControlHistograms() ;
+    if ( emcHistos )
+    {
+      for(Int_t iemc = 0; iemc < emcHistos->GetEntries(); iemc++) 
+        qaList->Add(emcHistos->At(iemc)) ;
+    }
+  }
 }
 
 void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
