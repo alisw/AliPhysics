@@ -23,13 +23,36 @@
 #include "TRandom3.h"
 #endif
 
-TH1D* ReadFONLL(TString filename, Int_t option=0);
+
+/// Macro to compute the pt-differential cross section of D mesons from B decays
+///   using FONLL cross sections for B hadrons and Pythia decayer
+///
+/// Parameters:
+///   nGener = number of B mesons to generate (in |y|<1)
+///   pythiaver = decayer used
+///                  6 --> TPythia6Decayer
+///                  8 --> AliDecayerPythia8
+///   fileNameFONLL = file from FONLL with B dsigma/dpt
+///                   (as taken from http://www.lpthe.jussieu.fr/~cacciari/fonll/fonllform.html)
+///   fonllCase = FONLL prediction to be used
+///                  0 --> central value
+///                  1 --> max
+///                  -1 --> min
+///   opt4ff = set of fragmentation fractions f(b->B) to be used
+///                  0 --> ppbar fractions from PDG
+///                  1 --> Z decay fractions from PDG
+///   optForNorm = treatment of rapidity cut and normalization of xsec
+///                  0 --> no cut on y(D) and normalisation ot xsec of B in |y|<0.5
+///                  1 --> generate B in |yB|<1, cut on |yD|<0.5, count B in |yB|<0.5 for normalisation to xsec
+///   writeTree = flag to control writing of Tree of decay kinematics
 
 
+TH1D* ReadFONLL(TString filename, Int_t fonllCase=0);
 
 void ComputeBtoDdecay(Int_t nGener=10000000,
 		      Int_t pythiaver=8,
 		      TString fileNameFONLL="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
+		      Int_t fonllCase=0,
 		      Int_t opt4ff=0,
 		      Int_t optForNorm=0,
 		      Bool_t writeTree=kFALSE){
@@ -75,7 +98,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TDatabasePDG* db=TDatabasePDG::Instance();
   pdec->Init();
 
-  TH1D * hBptDistr = ReadFONLL(fileNameFONLL.Data(),0);
+  TH1D * hBptDistr = ReadFONLL(fileNameFONLL.Data(),fonllCase);
   Double_t xsecb=0;
   for(Int_t i=1; i<=hBptDistr->GetNbinsX(); i++){
     xsecb+=(hBptDistr->GetBinContent(i)*hBptDistr->GetBinWidth(i));
@@ -456,7 +479,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   leg->Draw();
   c3->SaveAs(Form("XsecBandDfromB_FONLLPythia%d.png",pythiaver));
 
-  TString outfilnam=Form("DfromBtest_FONLLPythia%d",pythiaver);
+  TString outfilnam="DfromB_FONLL";
+  if(fonllCase==1) outfilnam.Append("max");
+  else if(fonllCase==-1) outfilnam.Append("min");
+  else outfilnam.Append("cent");
+  outfilnam.Append(Form("Pythia%d.png",pythiaver));
   if(opt4ff==0) outfilnam.Append("_FFppbar");
   else if(opt4ff==1) outfilnam.Append("_FFee");
   else outfilnam.Append("_FFold");
@@ -499,7 +526,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 
 
 //----------------------------------------------
-TH1D* ReadFONLL(TString filename, Int_t option){
+TH1D* ReadFONLL(TString filename, Int_t fonllCase){
   FILE* infil=fopen(filename.Data(),"r");
   Char_t line[200];
   Char_t* rc;
@@ -520,8 +547,8 @@ TH1D* ReadFONLL(TString filename, Int_t option){
     if(pt<ptmin) ptmin=pt;
     if(pt>ptmax) ptmax=pt;
     x[iPt]=pt;
-    if(option==1) y[iPt]=csmin;
-    else if(option==2) y[iPt]=csmax;
+    if(fonllCase==-1) y[iPt]=csmin;
+    else if(fonllCase==1) y[iPt]=csmax;
     else  y[iPt]=csc;
     iPt++;
   }
