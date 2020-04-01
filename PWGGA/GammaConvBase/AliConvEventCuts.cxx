@@ -3940,6 +3940,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           weight = 1;
         }
 
+        if(isnan(weight)) weight = -1;
         if (weight == -1) return kFALSE;
         else return eventAccepted;
 
@@ -4549,6 +4550,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
       weight = 1;
     }
 
+    if(isnan(weight)) weight = -1;
     if (weight == -1) return kFALSE;
     else return eventAccepted;
 
