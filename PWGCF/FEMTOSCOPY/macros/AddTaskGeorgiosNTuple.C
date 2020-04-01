@@ -41,6 +41,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
   v0Cuts->SetPDGCodeNegDaug(-211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
+  v0Cuts->SetCutInvMass(0.03);
 //Anti v0 Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true, false);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(false, true, false);
@@ -52,7 +53,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
   Antiv0Cuts->SetPDGCodeNegDaug(-2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
-
+  Antiv0Cuts->SetCutInvMass(0.03);
 
 
   //Cascade Cuts
@@ -91,8 +92,9 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
   AntiCascadeXiBGRCuts->SetPDGCodev0(-3122);
   AntiCascadeXiBGRCuts->SetPDGCodePosDaug(211);
   AntiCascadeXiBGRCuts->SetPDGCodeNegDaug(-2212);
-  AntiCascadeXiBGRCuts->SetPDGCodeBach(211);
+  AntiCascadeXiBGRCuts->SetPDGCodeBach(211); 
 
+  //Cascade Cuts (bkg)
   AliFemtoDreamCascadeCuts* CascadeXiCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
   CascadeXiCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
@@ -109,6 +111,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
   CascadeXiCuts->SetPDGCodePosDaug(2212);
   CascadeXiCuts->SetPDGCodeNegDaug(-211);
   CascadeXiCuts->SetPDGCodeBach(-211);
+  CascadeXiCuts->SetXiMassRange(1.322, 0.06);
   //AntiCascade cuts (bkg)
   AliFemtoDreamCascadeCuts* AntiCascadeXiCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
   AntiCascadeXiCuts->SetXiCharge(1);
@@ -129,6 +132,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
   AntiCascadeXiCuts->SetPDGCodePosDaug(211);
   AntiCascadeXiCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeXiCuts->SetPDGCodeBach(211);
+  AntiCascadeXiCuts->SetXiMassRange(1.322, 0.06);
 
 
   if (suffix != "0" && suffix != "999") {
