@@ -322,7 +322,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       track->GetCovarianceXYZPxPyPz(cov);
       for (int iT{0}; iT < 3; ++iT) {
         if (candidate[iT]) {
-          helper.particle.Create(posmom,cov,track->Charge(),kMasses[iT]);
+          short chargeSwap = (fSwapSign && iT == 0) ? -1 : 1;
+          helper.particle.Create(posmom,cov,track->Charge() * chargeSwap, kMasses[iT]);
           helper.particle.Chi2() = track->GetTPCchi2();
           helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           helper.nSigmaTPC = nSigmasTPC[iT];
@@ -350,13 +351,9 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     oneCandidate.AddDaughter(deu.particle);
 
     for (const auto &p : helpers[kProton]) {
-      if (deu.track == p.track)
+      if (deu.track == p.track || p.particle.GetQ() * deu.particle.GetQ() < 0)
         continue;
-      const bool rightSign{p.particle.GetQ() * deu.particle.GetQ() > 0};
-      if (!rightSign && !fSwapSign)
-        continue;
-      else if (rightSign && fSwapSign)
-        continue;
+
       KFParticle twoCandidate{oneCandidate};
       twoCandidate.AddDaughter(p.particle);
 
