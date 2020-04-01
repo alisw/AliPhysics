@@ -211,8 +211,9 @@ private:
 	TH1D *fHistZDCCImpactParameter;
 
 	//Diagnostic histos to understand what kind of events are being analyzed.
-	TH1D *fEtaCCandidatesPerChannel;
-	TH1D *fEtaCLowPtCandidatesPerChannel;
+	TH2D *fAllPtVsMinvEtaCtight;
+	TH1D *fAllMinvEtaCLowPttight;
+	TH2D *fChannelVsMinvEtaCtight;
 	TH2D *fAllPtVsMinvEtaC;
 	TH1D *fAllMinvEtaCLowPt;
 	TH2D *fChannelVsMinvEtaC;
@@ -264,7 +265,6 @@ private:
 	TH2D *fDedxVsPBoth;
 
 	TH1D *fHistNeventsEtaC; //Count potential EtaC events at each step
-
 							//2 Kstar case
 	TH1D *fHistNeventsEtaCKstarChannel;
 	TH1D *fKstarEventCandidates;
