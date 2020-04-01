@@ -87,6 +87,9 @@ bMatched(kFALSE),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
+fTrackChi2OverNDF{0},
+fTrackPt{0},
+iTrackITSHits{0},
 bTrackIsV0{0},
 bFull{0},
 bSingle1st{0},
@@ -122,6 +125,7 @@ fNThresholds(1),
 fNTrackTypes(3),
 sTemplateFlavour(0),
 fUnfoldPseudeDataFrac(50),
+sTaskName(""),
 fJetRadius(0.4),
 fDaughtersRadius(1),
 fNoJetConstituents(0),
@@ -242,6 +246,9 @@ bMatched(kFALSE),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
+fTrackChi2OverNDF{0},
+fTrackPt{0},
+iTrackITSHits{0},
 bTrackIsV0{0},
 bFull{0},
 bSingle1st{0},
@@ -277,6 +284,7 @@ fNThresholds(1),
 fNTrackTypes(3),
 sTemplateFlavour(0),
 fUnfoldPseudeDataFrac(50),
+sTaskName(""),
 fJetRadius(0.4),
 fDaughtersRadius(1),
 fNoJetConstituents(0),
@@ -706,7 +714,7 @@ void AliAnalysisTaskHFJetIPQA::FillGenHistograms(int jetflavour, AliEmcalJet* je
         }
     }
 }*/
-
+/*
 void AliAnalysisTaskHFJetIPQA::FillTrackIPvsPt(int isV0, double pt, double IP, int jetflavour){
   if(jetflavour==CV0||jetflavour==UDSGV0){
     FillHist("fh1dTracksIPvsPt_V0JetTracks", pt, IP,1);
@@ -724,7 +732,7 @@ void AliAnalysisTaskHFJetIPQA::FillTrackIPvsPt(int isV0, double pt, double IP, i
       //printf("Filling fh1dTracksIPvsPt_V0inBJet: isV0=%i, pt=%f, IP=%f, jetflavour=%i",isV0, pt, IP, jetflavour);
     }
   }
-}
+}*/
 
 
 void AliAnalysisTaskHFJetIPQA::FillTrackTypeResHists(){
@@ -1693,6 +1701,9 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
   std::fill( std::begin( fTrackIPs ), std::end( fTrackIPs ), -99 );
   std::fill( std::begin( fTrackIPSigs ), std::end( fTrackIPSigs ), -99 );
   std::fill( std::begin( fTrackProb ), std::end( fTrackProb ), -99 );
+  std::fill( std::begin( fTrackPt ), std::end( fTrackPt ), -99 );
+  std::fill( std::begin( fTrackChi2OverNDF ), std::end( fTrackChi2OverNDF ), -99 );
+  std::fill( std::begin( iTrackITSHits ), std::end( iTrackITSHits ), -99 );
   std::fill( std::begin( bTrackIsV0 ), std::end( bTrackIsV0 ), -99 );
   std::fill( std::begin( bFull ), std::end( bFull ), kFALSE );
   std::fill( std::begin( bSingle1st ), std::end( bSingle1st ), kFALSE );
@@ -1907,9 +1918,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
               FillHist(Form("fh2dJetSignedImpParXY%s",sTemplateFlavour[fJetFlavour].Data()),fJetRecPt,cursImParXY,TrackWeight);     //*this->fXsectionWeightingFactor );
               FillHist(Form("fh2dJetSignedImpParXYSignificance%s",sTemplateFlavour[fJetFlavour].Data()),fJetRecPt,cursImParXYSig,TrackWeight);     //*this->fXsectionWeightingFactor );
             }*/
-            double fTrackPt=trackV->Pt();
-            double fIPValue=fV0Cuts[fAV0Cut]*TMath::Exp(fV0Cuts[fBV0Cut]*fTrackPt)+fV0Cuts[fCV0Cut];
-            //printf("trackpt=%f, IPValue=%f, TrueIP=%f, a=%f, b=%f, c=%f\n", fTrackPt, fIPValue,cursImParXYSig, fV0Cuts[fAV0Cut], fV0Cuts[fBV0Cut], fV0Cuts[fCV0Cut]);
+            fTrackPt[NJetParticles]=trackV->Pt();
+            double fIPValue=fV0Cuts[fAV0Cut]*TMath::Exp(fV0Cuts[fBV0Cut]*fTrackPt[NJetParticles])+fV0Cuts[fCV0Cut];
+            //printf("trackpt=%f, IPValue=%f, TrueIP=%f, a=%f, b=%f, c=%f\n", fTrackPt[NJetParticles], fIPValue,cursImParXYSig, fV0Cuts[fAV0Cut], fV0Cuts[fBV0Cut], fV0Cuts[fCV0Cut]);
             if(cursImParXYSig>fIPValue){
               //printf("Going into switch!\n");
               switch (isV0){
@@ -1930,7 +1941,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
             fTrackIPs[NJetParticles]=cursImParXY;
             fTrackIPSigs[NJetParticles]=cursImParXYSig;
+            fTrackChi2OverNDF[NJetParticles]=((AliAODTrack*)vtrack)->Chi2perNDF();
             bTrackIsV0[NJetParticles]=isV0;
+            iTrackITSHits[NJetParticles]=(int) vtrack->HasPointOnITSLayer(0) + (int) vtrack->HasPointOnITSLayer(1)+(int) vtrack->HasPointOnITSLayer(2) + (int) vtrack->HasPointOnITSLayer(3) + (int) vtrack->HasPointOnITSLayer(4) + (int) vtrack->HasPointOnITSLayer(5);
+
             ++NJetParticles;
 
             SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
@@ -2003,9 +2017,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
                 if(fIsPythia){
                   if(hasIPs[0])FillV0EfficiencyHists(sImpParXYSig[0].is_V0, fJetFlavour, fJetRecPt, isV0Jet);
-                  for(long unsigned iTrack=0;iTrack<sImpParXYSig.size();iTrack++){
+                  /*for(long unsigned iTrack=0;iTrack<sImpParXYSig.size();iTrack++){
                     FillTrackIPvsPt(sImpParXYSig[iTrack].is_V0,sImpParXYSig[iTrack].trackpt,sImpParXYSig[iTrack].first,fJetFlavour);
-                  }
+                  }*/
 
                   //_______________________________
                   //IP Template Generation
@@ -2467,13 +2481,6 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dTracksImpParXYSignificance","radial imp. parameter ;impact parameter xy significance;a.u.",200,-30,30,"s");
     //fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");
 
-    fHistManager.CreateTH2("fh1dTracksIPvsPt_B","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
-    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0JetTracks","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
-    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0inV0Jet","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
-    fHistManager.CreateTH2("fh1dTracksIPvsPt_V0inBJet","Track IP vs Track Pt; p_{T,Track} (GeV/c); d_{0}",500,0,250,300,0,30);
-
-
-
     //****************************************
     //Pt Distributions for N1,N2,N3 Tracks
 
@@ -2560,6 +2567,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fTrackIPs",&fTrackIPs,"fTracksIPs[nTracks]/F");
     tJetTree->Branch("fTrackIPSigs",&fTrackIPSigs,"fTrackIPSigs[nTracks]/F");
     tJetTree->Branch("fTrackProb",&fTrackProb,"fTrackProb[nTracks]/F");
+    tJetTree->Branch("fTrackChi2OverNDF",&fTrackChi2OverNDF,"fTrackChi2OverNDF[nTracks]/F");
+    tJetTree->Branch("fTrackPt",&fTrackPt,"fTrackP[nTracks]/F");
+    tJetTree->Branch("iTrackITSHits",&iTrackITSHits,"iTrackITSHits[nTracks]/I");
     tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/F");
     tJetTree->Branch("bFull",&bFull,"bFull[fNThresholds]/b");
     tJetTree->Branch("bSingle1st",&bSingle1st,"bSingle1st[fNThresholds]/b");
