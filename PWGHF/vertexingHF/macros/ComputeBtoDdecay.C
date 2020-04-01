@@ -31,6 +31,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 		      Int_t pythiaver=8,
 		      TString fileNameFONLL="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
 		      Int_t opt4ff=0,
+		      Int_t optForNorm=0,
 		      Bool_t writeTree=kFALSE){
 
   Int_t pdgD0=421;
@@ -200,6 +201,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TClonesArray *array = new TClonesArray("TParticle",100);
   TLorentzVector* vec=new TLorentzVector();
 
+  Double_t countB=0;
   
   for(Int_t itry=0; itry<nGener; itry++){
     if(itry%10000==0) printf("Particle %d\n",itry);
@@ -258,7 +260,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     Double_t E=TMath::Sqrt(mass*mass+pB*pB);
     vec->SetPxPyPzE(px,py,pz,E);
     pdec->Decay(pdgB,vec);
-    
+    if(optForNorm==0) countB+=1.;
+    else if(optForNorm==1 && TMath::Abs(yB)<0.5) countB+=1.;
     Int_t nentries = pdec->ImportParticles(array);
     //    TParticle* bmes=(TParticle*)array->At(0);
 
@@ -274,30 +277,32 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 	arrpD.push_back(part->P());
 	arryD.push_back(yD);
 	arrpdgD.push_back(pdgdau);
-	if(pdgdau==pdgD0){
-	  hD0Origin->Fill(iBin-1);
-	  hD0pt->Fill(ptD);
-	  hdautofill->Fill(0.);
-	  hD0PtByOrigin->Fill(iBin-1,ptD);
-	  hptD0tofill->Fill(ptB,ptD);
-	}else if(pdgdau==pdgDp){
-	  hDpOrigin->Fill(iBin-1);
-	  hDppt->Fill(ptD);
-	  hdautofill->Fill(1.);
-	  hDpPtByOrigin->Fill(iBin-1,ptD);
-	  hptDptofill->Fill(ptB,ptD);
-	}else if(pdgdau==pdgDs){
-	  hDsOrigin->Fill(iBin-1);
-	  hDspt->Fill(ptD);
-	  hdautofill->Fill(2.);
-	  hDsPtByOrigin->Fill(iBin-1,ptD);
-	  hptDstofill->Fill(ptB,ptD);
-	}else if(pdgdau==pdgLc){
-	  hLcOrigin->Fill(iBin-1);
-	  hLcpt->Fill(ptD);
-	  hdautofill->Fill(3.);
-	  hLcPtByOrigin->Fill(iBin-1,ptD);
-	  hptLctofill->Fill(ptB,ptD);
+	if(optForNorm==0 || (optForNorm==1 && TMath::Abs(yD)<0.5)){
+	  if(pdgdau==pdgD0){
+	    hD0Origin->Fill(iBin-1);
+	    hD0pt->Fill(ptD);
+	    hdautofill->Fill(0.);
+	    hD0PtByOrigin->Fill(iBin-1,ptD);
+	    hptD0tofill->Fill(ptB,ptD);
+	  }else if(pdgdau==pdgDp){
+	    hDpOrigin->Fill(iBin-1);
+	    hDppt->Fill(ptD);
+	    hdautofill->Fill(1.);
+	    hDpPtByOrigin->Fill(iBin-1,ptD);
+	    hptDptofill->Fill(ptB,ptD);
+	  }else if(pdgdau==pdgDs){
+	    hDsOrigin->Fill(iBin-1);
+	    hDspt->Fill(ptD);
+	    hdautofill->Fill(2.);
+	    hDsPtByOrigin->Fill(iBin-1,ptD);
+	    hptDstofill->Fill(ptB,ptD);
+	  }else if(pdgdau==pdgLc){
+	    hLcOrigin->Fill(iBin-1);
+	    hLcpt->Fill(ptD);
+	    hdautofill->Fill(3.);
+	    hLcPtByOrigin->Fill(iBin-1,ptD);
+	    hptLctofill->Fill(ptB,ptD);
+	  }
 	}
       }
     }
@@ -319,11 +324,15 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   delete array;
   delete gener;
   
-  hD0pt->Scale(xsecb/1e6/(Double_t)nGener/hD0pt->GetBinWidth(1));
-  hDppt->Scale(xsecb/1e6/(Double_t)nGener/hDppt->GetBinWidth(1));
-  hDspt->Scale(xsecb/1e6/(Double_t)nGener/hDspt->GetBinWidth(1));
-  hLcpt->Scale(xsecb/1e6/(Double_t)nGener/hLcpt->GetBinWidth(1));
-  hDsPtByOrigin->Scale(xsecb/1e6/(Double_t)nGener/hDsPtByOrigin->GetYaxis()->GetBinWidth(1));
+  hD0pt->Scale(xsecb/1e6/countB/hD0pt->GetBinWidth(1));
+  hDppt->Scale(xsecb/1e6/countB/hDppt->GetBinWidth(1));
+  hDspt->Scale(xsecb/1e6/countB/hDspt->GetBinWidth(1));
+  hLcpt->Scale(xsecb/1e6/countB/hLcpt->GetBinWidth(1));
+  hD0PtByOrigin->Scale(xsecb/1e6/countB/hD0PtByOrigin->GetYaxis()->GetBinWidth(1));
+  hDpPtByOrigin->Scale(xsecb/1e6/countB/hDpPtByOrigin->GetYaxis()->GetBinWidth(1));
+  hDsPtByOrigin->Scale(xsecb/1e6/countB/hDsPtByOrigin->GetYaxis()->GetBinWidth(1));
+  hLcPtByOrigin->Scale(xsecb/1e6/countB/hLcPtByOrigin->GetYaxis()->GetBinWidth(1));
+
   printf("Cross sections for B = %f ub \n",xsecb/1e6);
   Double_t xsecD0=0;
   for(Int_t i=1; i<=hD0pt->GetNbinsX(); i++){
@@ -447,10 +456,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   leg->Draw();
   c3->SaveAs(Form("XsecBandDfromB_FONLLPythia%d.png",pythiaver));
 
-  TString outfilnam=Form("DfromB_FONLLPythia%d",pythiaver);
+  TString outfilnam=Form("DfromBtest_FONLLPythia%d",pythiaver);
   if(opt4ff==0) outfilnam.Append("_FFppbar");
   else if(opt4ff==1) outfilnam.Append("_FFee");
   else outfilnam.Append("_FFold");
+  if(optForNorm==1) outfilnam.Append("_yDcut");
   outfilnam.Append(".root");
   TFile* outfil=new TFile(outfilnam.Data(),"recreate");
   hBptDistr->Write();
