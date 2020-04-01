@@ -57,6 +57,8 @@ public:
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
 
+  void SetHasResponseMatrixSparse(Bool_t doUse) { fHasResponseMatrixSparse = doUse; }
+  void SetHasResponseMatrixRooUnfold(Bool_t doUse) { fHasResponseMatrixRooUnfold = doUse; }
   void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPartLevelPtBinning(TBinning *binning) { fPartLevelPtBinning = binning; }
   void SetCustomDetLevelPtBinning(TBinning *binning) { fDetLevelPtBinning = binning; }
@@ -86,7 +88,8 @@ protected:
   TBinning *GetZgBinning() const;
   TBinning *GetRgBinning(double R) const;
 
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+  std::vector<double> GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
 
@@ -98,6 +101,8 @@ private:
   Double32_t                    fSampleFraction;            ///< Fraction of statistics used for the analysis
   Float_t                       fMinFractionShared;         ///< only fill histos for jets if shared fraction larger than X  
 
+  Bool_t                        fHasResponseMatrixSparse;   ///< Fill also THnSparse representation of response matrix  
+  Bool_t                        fHasResponseMatrixRooUnfold; /// < Fill RooUnfold response objects
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
   TString                       fNameMCParticles;           ///< Name of the MC particle container
@@ -115,12 +120,14 @@ private:
   std::vector<RooUnfoldResponse*> fRgResponseClosure;       //!<! RooUnfold response for r_g for the closure test
   std::vector<RooUnfoldResponse*> fNsdResponse;             //!<! RooUnfold response for n_sd
   std::vector<RooUnfoldResponse*> fNsdResponseClosure;      //!<! RooUnfold response for n_sd for the closure test
+  std::vector<RooUnfoldResponse*> fThetagResponse;          //!<! RooUnfold response for theta_g
+  std::vector<RooUnfoldResponse*> fThetagResponseClosure;   //!<! RooUnfold response for n_sd for the closure test
   THistManager                  fHistManager;               //!< Histogram manager                                       
 
   AliAnalysisTaskEmcalSoftDropResponse(const AliAnalysisTaskEmcalSoftDropResponse &);
   AliAnalysisTaskEmcalSoftDropResponse &operator=(const AliAnalysisTaskEmcalSoftDropResponse &);
   
-  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 2);
+  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 3);
 
 };
 

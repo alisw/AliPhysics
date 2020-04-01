@@ -122,6 +122,7 @@ class AliAODv0;
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityAODRun2.h"
+#include "AliNanoAODHeader.h"
 
 using std::cout;
 using std::endl;
@@ -1474,21 +1475,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     Float_t lPercentile = 500;
     Int_t lEvSelCode = 100;
+    fMVPileupFlag = kFALSE;
     AliMultSelection *MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
+        AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+        lPercentile = nanoHeader->GetCentralityV0M();
+        lEvSelCode = 999;
+        fMVPileupFlag = kFALSE;
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
+        fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     }
     
     //just ask AliMultSelection. It will know.
-    fMVPileupFlag = kFALSE;
-    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
-    
+
     fCentrality = lPercentile;
     
     //===================================================================

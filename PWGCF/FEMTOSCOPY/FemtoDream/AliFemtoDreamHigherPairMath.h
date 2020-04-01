@@ -16,7 +16,8 @@
 #include <vector>
 class AliFemtoDreamHigherPairMath {
  public:
-  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking = true);
+  AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking =
+                                  true);
   virtual ~AliFemtoDreamHigherPairMath();
   AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
   AliFemtoDreamHigherPairMath& operator=(
@@ -30,11 +31,13 @@ class AliFemtoDreamHigherPairMath {
     return 4;
   }
   ;
-  bool PassesPairSelection(AliFemtoDreamBasePart& part1,
-                           AliFemtoDreamBasePart& part2, bool Recalculate);
+  bool PassesPairSelection(int iHC, AliFemtoDreamBasePart& part1,
+                           AliFemtoDreamBasePart& part2, float RelativeK,
+                           bool SEorME, bool Recalculate);
+  bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
-  float FillSameEvent(int iHC, int Mult, float cent, TVector3 Part1Momentum,
-                      int PDGPart1, TVector3 Part2Momentum, int PDGPart2);
+  float FillSameEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
+                      int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2);
   void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
               AliFemtoDreamBasePart &part2);
   void SEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
@@ -47,8 +50,8 @@ class AliFemtoDreamHigherPairMath {
                          unsigned int sizePartTwo) {
     fHists->FillPartnersSE(iHC, sizePartOne, sizePartTwo);
   }
-  float FillMixedEvent(int iHC, int Mult, float cent, TVector3 Part1Momentum,
-                       int PDGPart1, TVector3 Part2Momentum, int PDGPart2,
+  float FillMixedEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
+                       int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2,
                        AliFemtoDreamCollConfig::UncorrelatedMode mode);
   void MEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
                             AliFemtoDreamBasePart* part2, int PDGPart2,
@@ -74,9 +77,12 @@ class AliFemtoDreamHigherPairMath {
   }
   ;
 
-  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne, const int pdg1,
-                                    AliFemtoDreamBasePart *PartTwo, const int pdg2);
-  static float RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne,
+                                    const int pdg1,
+                                    AliFemtoDreamBasePart *PartTwo,
+                                    const int pdg2);
+  static float RelativePairMomentum(TLorentzVector &PartOne,
+                                    TLorentzVector &PartTwo);
   static float RelativePairkT(AliFemtoDreamBasePart *PartOne, const int pdg1,
                               AliFemtoDreamBasePart *PartTwo, const int pdg2);
   static float RelativePairkT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
@@ -85,12 +91,15 @@ class AliFemtoDreamHigherPairMath {
   static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
 
  private:
-  void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
-                        AliFemtoDreamBasePart &part2, bool SEorME, float relk,
-                        bool recalculate);
+  bool DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2, bool SEorME, float relk);
   AliFemtoDreamCorrHists *fHists;
   std::vector<unsigned int> fWhichPairs;
   float fBField;
+  std::vector<bool> fRejPairs;
+  bool fDoDeltaEtaDeltaPhiCut;
+  float fDeltaPhiSqMax; // used for a elliptic cut
+  float fDeltaEtaSqMax; // used for a elliptic cut
   float fDeltaPhiEtaMax;
   TRandom3 fRandom;
   double fPi;

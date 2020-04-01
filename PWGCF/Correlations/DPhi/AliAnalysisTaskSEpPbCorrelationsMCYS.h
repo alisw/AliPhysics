@@ -58,9 +58,17 @@ public:
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
+  virtual void SetExtractSec(Bool_t mode){fextractsec=mode;}
+  virtual void SetPtMax(Float_t mode){fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
+  
+  
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void SetMCclosure(Bool_t mode) { fMCclosure = mode; }
+  virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void Setmcprim(Bool_t mode){fprim=mode;}
   
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
@@ -141,8 +149,11 @@ private:
   Bool_t fcentcalib;
   Bool_t frun2;
   Bool_t fQA;
+  Bool_t fMCclosure;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
+  Bool_t fptdiff;
+  Bool_t fextractsec;
   Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
@@ -150,6 +161,7 @@ private:
   Bool_t fPID;
 
   TString fCentType;
+  Bool_t ffillcorrelation;
   Bool_t fprim;
   Int_t fNEntries;
   
@@ -162,9 +174,11 @@ private:
   TList *fOutputList2; // Output list
 
   AliPIDResponse *fPIDResponse; // PID Response
+  TH3D* fhcorreffi[10];
 
   Int_t ffilterbit;
   Double_t fPtMin;
+  Double_t fPtMax;
   Double_t fEtaMax;
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
@@ -250,6 +264,7 @@ private:
 
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
+  TH2D* fNTrackCorrMC;
   TH2D*fhmcprimvzeta;
 
   TH1F*frefvz;

@@ -60,6 +60,8 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
     const char *taskname           = "AliAnalysisTaskSDKLResponse"
   );
 
+  void SetCustomMCEfficiency(Double_t mc_eff) { fMCTrackEfficiency = mc_eff; }
+
  protected:
 
   void                        ExecOnce();
@@ -90,6 +92,10 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
   TH2F                       *fhPtDeltaPtAreaBackSub;          //!<!
   TH2F                       *fhPtDeltaPtAreaBackSubSparse;    //!<!
 
+  TH2F                       *fhEshareDistPlDl; //!<!
+  TH2F                       *fhEshareDistDlDluebs; //!<!
+  TH2F                       *fhPtProbePtResp; //!<!
+
   TNtuple                    *fTreeDL;                      //!<!
   TNtuple                    *fTreeDLUEBS;                  //!<!
   TNtuple                    *fTreePL;                      //!<!
@@ -114,6 +120,8 @@ class AliAnalysisTaskSDKLResponse : public AliAnalysisTaskSDKL {
   void FillMjetContainer(std::vector <fastjet::PseudoJet> & jet_container, std::vector <mjet> & mjet_container);
 
   void FillRespTree(std::vector<AliEmcalJet*> const & probe_jets, std::vector<fastjet::PseudoJet> const & resp_jets, TNtuple* tree);
+
+  Double_t                   fMCTrackEfficiency;
 
   Double_t                   fFractionEventsDumpedToTree;
   TRandom                    *fRandom; //!<!

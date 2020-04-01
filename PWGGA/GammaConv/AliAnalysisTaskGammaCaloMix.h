@@ -12,7 +12,7 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
-// #include "AliAnalysisTaskJetOutlierRemoval.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -56,7 +56,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     void ProcessAODSphericityParticles();
 
     // switches for additional analysis streams or outputs
-    void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
+    void SetLightOutput(Int_t flag){fDoLightOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
@@ -163,6 +163,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
@@ -529,7 +530,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     Int_t                 fnCuts;                                               // number of cuts to be analysed in parallel
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
-    Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -560,7 +561,7 @@ class AliAnalysisTaskGammaCaloMix : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMix(const AliAnalysisTaskGammaCaloMix&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloMix &operator=(const AliAnalysisTaskGammaCaloMix&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMix, 3);
+    ClassDef(AliAnalysisTaskGammaCaloMix, 5);
 };
 
 #endif

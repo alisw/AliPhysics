@@ -99,13 +99,16 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // Double_t mult_comb0408 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
 
+  vec_hNoEvts[0] = 0.;
+  // hNoEvts->Fill(vec_hNoEvts);
+  
+  Double_t directivity = fEvInfo->GetEventShape()->GetSphericity();
+  // printf("\n\n\n Sphericity = %f\n\n\n", directivity);
+
+/*
   // event shape for data (from ESD)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
   Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
-
-  vec_hNoEvts[0] = 0.;
-  // hNoEvts->Fill(vec_hNoEvts);
-
 
   Double_t directivity = -2;
 
@@ -128,6 +131,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
           directivity =  (directivity_plus + directivity_minus) / 2.0;
       }
   }
+*/  
 /*
   // select events with both dirs close
   if(TMath::Abs(directivity_plus - directivity_minus) < 0.2){
@@ -139,14 +143,16 @@ void AliMESpidTask::UserExec(Option_t *opt)
 */
 
   // event shape for MC (from MC event)
-  Double_t MC_directivity_plus = 0;
-  Double_t MC_directivity_minus = 0;
+  // Double_t MC_directivity_plus = 0;
+  // Double_t MC_directivity_minus = 0;
   Double_t MC_directivity = 0;
   if( HasMCdata() ){ // run only on MC
-      MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
-      MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-      MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
-      MC_directivity = MC_directivity_plus;
+      // MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
+      // MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
+      // MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
+      // MC_directivity = MC_directivity_plus;
+      
+      MC_directivity = fMCevInfo->GetEventShape()->GetSphericity();
   }
 
 /*

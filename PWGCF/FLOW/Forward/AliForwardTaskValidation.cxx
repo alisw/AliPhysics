@@ -50,6 +50,9 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality(0),      
+    fCentrality_before(0),      
+    fVertex(0),       
     centralDist(),
     refDist(),
     forwardDist(),
@@ -83,44 +86,34 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality_before(0),      
+    fCentrality(0),      
+    fVertex(0),   
     centralDist(),
     refDist(),
     forwardDist(),
     fUtil()
 {
   // Apply all cuts by default
-  //if (!fSettings.esd) {
     fEventValidators.push_back(EventValidation::kNoEventCut);
-    fEventValidators.push_back(EventValidation::kIsAODEvent);
-    fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kPassesAliEventCuts);
+    fEventValidators.push_back(EventValidation::kTrigger);
     fEventValidators.push_back(EventValidation::kHasFMD);
     fEventValidators.push_back(EventValidation::kHasEntriesFMD);
     fEventValidators.push_back(EventValidation::kHasValidFMD);
-    fEventValidators.push_back(EventValidation::kHasEntriesV0);
-    fEventValidators.push_back(EventValidation::kHasValidVertex);
-    fEventValidators.push_back(EventValidation::kHasMultSelection);
-    // This one kills another 60% of the events in LHC15o HIR :/
-    // fEventValidators.push_back(EventValidation::kNotOutOfBunchPU);
-    fEventValidators.push_back(EventValidation::kNotMultiVertexPU);
-    fEventValidators.push_back(EventValidation::kNotSPDPU);
-    fEventValidators.push_back(EventValidation::kNotSPDClusterVsTrackletBG);
     fEventValidators.push_back(EventValidation::kPassesFMD_V0CorrelatioCut);
-  //}
 
     fEventValidatorsMC.push_back(EventValidationMC::kNoEventCutMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasEntriesFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasValidFMDMC);
     fEventValidatorsMC.push_back(EventValidationMC::kHasPrimariesMC);
 
-  //}
   // Default track cuts
-  //if (!fSettings.esd){
   fTrackValidators.push_back(TrackValidation::kNoTrackCut);
   fTrackValidators.push_back(TrackValidation::kTPCOnly);
   fTrackValidators.push_back(TrackValidation::kEtaCut);
   fTrackValidators.push_back(TrackValidation::kPtCut);
-//}
+
   // Define output slot
   DefineOutput(1, TList::Class());
   DefineOutput(2, this->Class());
@@ -130,7 +123,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   // Enable mulivertex pileup cuts
   // fEventCuts.SetCentralityEstimators("V0A","CL0");
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
-  fEventCuts.fPileUpCutMV = true;
+  //fEventCuts.fPileUpCutMV = true;
 }
 
 Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
@@ -203,8 +196,8 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     switch (this->fEventValidators[idx]) {
     case EventValidation::kNoEventCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "No cuts"); break;
-    case EventValidation::kIsAODEvent:
-      discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
+    case EventValidation::kPassesAliEventCuts:
+      discardedEvtsAx->SetBinLabel(idx + 1, "AliEventCuts"); break;
     case EventValidation::kTrigger:
       discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;   
     case EventValidation::kHasFMD:
@@ -213,24 +206,8 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
       discardedEvtsAx->SetBinLabel(idx + 1, "Has entries FMD"); break;
     case EventValidation::kHasValidFMD:
         discardedEvtsAx->SetBinLabel(idx + 1, "Has valid FMD"); break;
-    case EventValidation::kHasEntriesV0:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Has entries V0"); break;
-    case EventValidation::kPassesAliEventCuts:
-      discardedEvtsAx->SetBinLabel(idx + 1, "AliEventCuts"); break;
     case EventValidation::kPassesFMD_V0CorrelatioCut:
       discardedEvtsAx->SetBinLabel(idx + 1, "FMD V0 correlation"); break;
-    case EventValidation::kHasValidVertex:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Valid vertex"); break;
-    case EventValidation::kHasMultSelection:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Has MultSelection"); break;
-    case EventValidation::kNotOutOfBunchPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not out-of-bunch PU"); break;
-    case EventValidation::kNotMultiVertexPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not multi-vertex PU"); break;
-    case EventValidation::kNotSPDPU:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Not SPD PU"); break;
-    case EventValidation::kNotSPDClusterVsTrackletBG:
-      discardedEvtsAx->SetBinLabel(idx + 1, "SPD clstrs vs BG cut"); break;
     }
   }
 }
@@ -281,7 +258,7 @@ outlist->Add(this->fQA_event_discard_flow_MC);
 }
 
 void AliForwardTaskValidation::UserCreateOutputObjects() {
-  fEventCuts.SetCentralityEstimators((std::string)this->fSettings.centrality_estimator,"CL0");
+  //fEventCuts.SetCentralityEstimators((std::string)this->fSettings.centrality_estimator,"CL0");
 
 
   // Stop right here if there are no Validators to work with
@@ -302,7 +279,6 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   this->CreateQAHistograms(this->fOutputList);
 
   // FMD V0 QA histograms
-  //if (!fSettings.esd){
     this->fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",
   			  2000, 0, 2000, 2000, 0, 2000);
     this->fOutputList->Add(this->fFMDV0);
@@ -324,7 +300,13 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
     this->fFMDV0C_post = new TH2F("FMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",
   				1000, 0, 1000, 1000, 0, 1000);
     this->fOutputList->Add(this->fFMDV0C_post);
-  //}
+
+  fCentrality_before = new TH1D("centrality_before","centrality_before",100,0,100);;
+  fCentrality = new TH1D("centrality","centrality",100,0,100);;
+  fVertex = new TH1D("vertex","vertex",100,-20,20);
+  this->fOutputList->Add(this->fCentrality);
+  this->fOutputList->Add(this->fCentrality_before);
+  this->fOutputList->Add(this->fVertex);
 
   // Slot 0 is reserved; 1 needs to be called here to get at least empty histograms
   PostData(1, fOutputList);
@@ -345,7 +327,7 @@ void AliForwardTaskValidation::UserExec(Option_t *)
   fUtil.fSettings = this->fSettings;
   if (fSettings.mc) fUtil.fMCevent = this->MCEvent();
   if (!fSettings.esd) fUtil.fAODevent = dynamic_cast<AliAODEvent*>(this->InputEvent());
-
+  fSettings.runnumber = fInputEvent->GetRunNumber();
   Bool_t isgoodrun = kTRUE;
   if (!fSettings.mc){
     isgoodrun = fUtil.IsGoodRun(fInputEvent->GetRunNumber());
@@ -366,38 +348,25 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       switch (this->fEventValidators[idx]) {
       case EventValidation::kNoEventCut:
         this->fIsValidEvent = this->NoCut(); break;
-      case EventValidation::kIsAODEvent:
-        if (!fSettings.esd) this->IsAODEvent(); 
+      case EventValidation::kPassesAliEventCuts:
+        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
         break;
       case EventValidation::kTrigger:
         if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); 
         break;
       case EventValidation::kHasFMD:
-        if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
+        if (!fSettings.esd) {
+          this->fIsValidEvent = this->HasFMD(); 
+          fCentrality_before->Fill(fUtil.GetCentrality(fSettings.centrality_estimator));
+        }
         break;
       case EventValidation::kHasEntriesFMD:
-        this->fIsValidEvent = this->HasEntriesFMD(); break;
+        if (fSettings.use_primaries_fwd & fSettings.use_primaries_fwdref) continue;
+        else this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
-        this->fIsValidEvent = this->HasValidFMD(); break;
-      case EventValidation::kHasEntriesV0:
-        this->fIsValidEvent = this->HasEntriesV0(); break;
-      case EventValidation::kPassesAliEventCuts:
-        if (!fSettings.esd) this->fIsValidEvent = this->PassesAliEventCuts(); 
-        break;
+        this->fIsValidEvent = kTRUE;//this->HasValidFMD(); break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:
         this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
-      case EventValidation::kHasValidVertex:
-        this->fIsValidEvent = this->HasValidVertex(); break;
-      case EventValidation::kHasMultSelection:
-        this->fIsValidEvent = this->HasMultSelection(); break;
-      case EventValidation::kNotOutOfBunchPU:
-        this->fIsValidEvent = this->NotOutOfBunchPU(); break;
-      case EventValidation::kNotMultiVertexPU:
-        this->fIsValidEvent = this->NotMultiVertexPU(); break;
-      case EventValidation::kNotSPDPU:
-        this->fIsValidEvent = this->NotSPDPU(); break;
-      case EventValidation::kNotSPDClusterVsTrackletBG:
-        this->fIsValidEvent = this->NotSPDClusterVsTrackletBG(); break;
       }
       if (this->fIsValidEvent) {
         this->fQA_event_discard_flow->Fill(idx);
@@ -406,7 +375,18 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         break;
       }
     }
+    if(this->fIsValidEvent){
+      if (fUtil.pPb_Run(fSettings.runnumber)){
+        if (fUtil.GetCentrality(fSettings.centrality_estimator) > 0.) fCentrality->Fill(fUtil.GetCentrality(fSettings.centrality_estimator));
+        else this->fIsValidEvent=kFALSE;
+      }
+      else{
+        fCentrality->Fill(fUtil.GetCentrality("V0M"));       
+      }
+      fVertex->Fill(fUtil.GetZ());
+    }
   }
+
 if (this->fIsValidEvent){
 
   if (fSettings.mc){
@@ -468,14 +448,19 @@ Bool_t AliForwardTaskValidation::HasTracklets() {
 }
 
 Bool_t AliForwardTaskValidation::HasEntriesFMD() {
-  Double_t fmdsum = 0;
-  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-      fmdsum += forwardDist->GetXaxis()->GetBinCenter(etaBin),forwardDist->GetBinContent(etaBin, phiBin);
+  Double_t fmdsum1 = 0;
+  Double_t fmdsum2 = 0;
+  for (Int_t etaBin = 1; etaBin < forwardDist->GetNbinsX()/2; etaBin++) {
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+      fmdsum1 += forwardDist->GetBinContent(etaBin, phiBin);
     }
   }
-
-  if (fmdsum > 0) return true;
+  for (Int_t etaBin = forwardDist->GetNbinsX()/2; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsY(); phiBin++) {
+      fmdsum2 += forwardDist->GetBinContent(etaBin, phiBin);
+    }
+  }
+  if ((fmdsum1 > 0) & (fmdsum2 > 0)) return true;
   else return false;
 }
 
@@ -494,42 +479,73 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   // Overlap regions between the two detectors
   // Float_t fmd_v0a_overlap[2] = {2.8, 5.03};
   // Float_t fmd_v0c_overlap[2] = {-3.4, -2.01};
+
   Tracks v0hits = this->GetV0hits();
   Tracks fmdhits = this->GetFMDhits();
 
   // Calculate hits on each detector in overlap region
-  Float_t nV0A_hits =
-    std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
-		    });
-  Float_t nFMD_fwd_hits =
-    std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
-		    });
-  Float_t nV0C_hits =
-    std::accumulate(v0hits.begin(), v0hits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
-		    });
-  Float_t nFMD_bwd_hits =
-    std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
-		    [](Float_t a, AliForwardTaskValidation::Track t) {
-		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
-		    });
-  if (fill_qa) {
+  if (fUtil.pPb_Run(fSettings.runnumber)){
+    Float_t nV0A_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+          });
+    Float_t nFMD_fwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+          });
+    Float_t nV0C_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((-3.68 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
+          });
+    Float_t nFMD_bwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+          [](Float_t a, AliForwardTaskValidation::Track t) {
+            return a + ((-3.68 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
+          });
     this->fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
+
+    if (nV0A_hits < 2.3*(nFMD_fwd_hits)-150) return false;
+    if (nV0C_hits < 2.73*(nFMD_bwd_hits)-200) return false;
+
+    this->fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+    this->fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
+    this->fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);    
   }
 
-  // Cut on V0 - FMD outliers outliers
-  //  if (nV0A_hits + nV0C_hits < (nFMD_fwd_hits + nFMD_bwd_hits - 40)) {
-  if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
-    return false;
-  }
-  if (fill_qa) {
+  if (fUtil.PbPb_lowIR_Run(fSettings.runnumber) || fUtil.PbPb_highIR_Run(fSettings.runnumber)){
+    Float_t nV0A_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+  		    });
+    Float_t nFMD_fwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
+  		    });
+    Float_t nV0C_hits =
+      std::accumulate(v0hits.begin(), v0hits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
+  		    });
+    Float_t nFMD_bwd_hits =
+      std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
+  		    [](Float_t a, AliForwardTaskValidation::Track t) {
+  		      return a + ((-3.4 < t.eta && t.eta < 2.01) ? t.weight : 0.0f);
+  		    });
+
+    this->fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+    this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
+    this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
+
+    // Cut on V0 - FMD outliers outliers
+    if (nV0A_hits + nV0C_hits < 1.75*(nFMD_fwd_hits + nFMD_bwd_hits)-290) return false;
+
     this->fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
@@ -538,20 +554,6 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
   return true;
 }
 
-Bool_t AliForwardTaskValidation::HasMultSelection() {
-  return
-    dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection")) ?
-    true : false;
-}
-
-Bool_t AliForwardTaskValidation::HasValidVertex() {
-  if (!this->InputEvent()->GetPrimaryVertex()
-      || !this->InputEvent()->GetPrimaryVertex()->GetZ()) {
-    return false;
-  } else {
-    return true;
-  }
-}
 
 AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetFMDhits() const {
 
@@ -677,42 +679,6 @@ AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetTracklets() const 
   return ret_vector;
 }
 
-AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetSPDclusters() const {
-  // Relies on the event being vaild (no extra checks if object exists done here)
-  AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>
-    (fInputEvent->FindListObject("CentralClusters")); // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
-  const TH2D& d2Ndetadphi = aodcmult->GetHistogram();
-  const Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
-  const Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
-  const Double_t pt = 0;
-  AliForwardTaskValidation::Tracks ret_vector;
-
-  for (Int_t iEta = 1; iEta <= nEta; iEta++) {
-    Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
-    if (!valid) {
-      // No data expected for this eta
-      continue;
-    }
-    Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
-    // FIXME: For now, drop everything outside of -1.7 < eta 1.7
-    if (eta < -1.7 || eta > 1.7) {
-      continue;
-    }
-    for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {
-      // Bin content is most likely number of particles!
-      Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
-      if (mostProbableN > 0) {
-	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-	ret_vector.push_back(AliForwardTaskValidation::Track(eta, phi, pt, mostProbableN));
-      }
-    }
-  }
-  // See the reasoning for the following suffle in the code that gets the hits on the FMD
-  std::random_device rd;
-  std::default_random_engine engine{rd()};
-  std::shuffle(std::begin(ret_vector), std::end(ret_vector), engine);
-  return ret_vector;
-}
 
 TClonesArray* AliForwardTaskValidation::GetAllCentralBarrelTracks() {
   // If we are dealing with an ESD event, we have to have an AOD handler as well!
@@ -720,60 +686,9 @@ TClonesArray* AliForwardTaskValidation::GetAllCentralBarrelTracks() {
   return fUtil.fAODevent->GetTracks();
 }
 
-TClonesArray* AliForwardTaskValidation::GetAllMCTruthTracksAsTClonesArray() {
-  // If we are dealing with an ESD event, we have to have an AOD handler as well!
-  // We get all the particles/tracks from this AOD handler.
-  if (!fUtil.fAODevent) {
-    AliFatal("No AOD event found");
-  }
-  auto tr_arr = dynamic_cast<TClonesArray*>
-    (fUtil.fAODevent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-  if(!tr_arr){
-    AliFatal("No MC array found in AOD");
-  }
-  return tr_arr;
-}
-
-AliForwardTaskValidation::Tracks AliForwardTaskValidation::GetMCTruthTracks() {
-  AliForwardTaskValidation::Tracks ret_vector;
-  if (this->IsAODEvent()) {
-    auto mc_tracks = this->GetAllMCTruthTracksAsTClonesArray();
-    // Avoid reallocation of the vector in the loop
-    ret_vector.reserve(mc_tracks->GetEntriesFast());
-    TIter next_tr(mc_tracks);
-    AliAODMCParticle* mc_tr = 0;
-    auto weight = 1;
-    while ((mc_tr = static_cast<AliAODMCParticle*>(next_tr()))) {
-      if (!mc_tr->IsPrimary()) continue;
-      if (mc_tr->Charge() == 0) continue;
-      auto tr = AliForwardTaskValidation::Track(mc_tr->Eta(), mc_tr->Phi(), mc_tr->Pt(), weight);
-      ret_vector.push_back(tr);
-    }
-  } else { // ESD event
-    auto mcEvent = this->MCEvent();
-    if (!mcEvent) {
-      AliFatal("This is not a Monte Carlo event.");
-    }
-    Int_t ntracks = mcEvent->GetNumberOfTracks();
-    std::cout << "ntracks " << ntracks << std::endl;
-    auto valid = 0;
-    for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
-      auto mc_p = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
-      if (!mcEvent->Stack()->IsPhysicalPrimary(mc_p->GetLabel())) continue;
-      if (mc_p->Charge() == 0) continue;
-      auto weight = 1;
-      auto tr = AliForwardTaskValidation::Track(mc_p->Eta(), mc_p->Phi(), mc_p->Pt(), weight);
-      ret_vector.push_back(tr);
-      valid++;
-    }
-    std::cout << "processed " << valid << std::endl;
-  }
-  return ret_vector;
-}
-
 
 Bool_t AliForwardTaskValidation::HasValidFMD(){
-  return kTRUE;
+  // return kTRUE;
   AliMultSelection *MultSelection = dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
 
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
@@ -830,73 +745,7 @@ Bool_t AliForwardTaskValidation::HasValidFMD(){
      //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
     }
   } // End of eta bin
-  if (totalFMDpar < 10) return kFALSE;
+  // if (totalFMDpar < 10) return kFALSE;
   return kTRUE;
 }
-/*
-Bool_t AliForwardTaskValidation::UserNotify() {
-  // If this is MC we have to read all the branches
-  // Also, we should check for other tasks here!
-  if (!this->MCEvent()) {
-    // Turn off all branches
-    this->fInputHandler->GetTree()->SetBranchStatus("*", false, 0);
-    // Turn back on all branches which got dumped into the top-level.
-    // These are ~250 branches - hurray!
-    this->fInputHandler->GetTree()->SetBranchStatus("f*", true);
-    // Multiplicity framework; very expensive to read!
-    // this->fInputHandler->GetTree()->SetBranchStatus("MultSelection", true);
-    // Turn on headers;
-    this->fInputHandler->GetTree()->SetBranchStatus("header", true);
-    // Somehow vertices have to be turned on as glob...
-    this->fInputHandler->GetTree()->SetBranchStatus("vertices.*", true);
-    // ... but tracks individually for sub branches
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fUniqueID", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentum[3]", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPosition[3]", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMomentumAtDCA[3]", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPositionAtDCA[2]", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fRAtAbsorberEnd", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2perNDF", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fChi2MatchTrigger", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSchi2", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFlags", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fLabel", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTOFLabel[3]", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackLength", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fITSMuonClusterMap", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrg", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMUONtrigHitsMapTrk", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fFilterMap", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fUniqueID", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fNbytes", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCFitMap.fAllBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fUniqueID", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fNbytes", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCClusterMap.fAllBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fUniqueID", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fNbytes", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCSharedMap.fAllBits", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCnclsF", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTPCNCrossedRows", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fID", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCharge", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fType", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fPIDForTracking", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fCaloIndex", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fProdVertex", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPhiOnEMCal", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackEtaOnEMCal", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fTrackPtOnEMCal", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fIsMuonGlobalTrack", true);
-    this->fInputHandler->GetTree()->SetBranchStatus("tracks.fMFTClusterPattern", true);
-  }
-  return true;
-}*/
+

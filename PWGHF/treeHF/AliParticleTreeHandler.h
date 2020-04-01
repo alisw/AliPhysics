@@ -51,7 +51,7 @@ class AliParticleTreeHandler : public TObject
 
     // Core methods
     TTree* BuildTree(TString name, TString title);
-    void FillTree(int runNumber, unsigned int eventID);
+    void FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long);
   
     // Setters
     void SetParticleContainer(AliParticleContainer* partCont) { fParticleContainer = partCont; }
@@ -76,7 +76,9 @@ class AliParticleTreeHandler : public TObject
   
     // Event quantities
     int                          fRunNumber;               //!<! run number
-    unsigned int                 fEventID;                 //!<! event ID (unique identifier when run number is fixed)
+    int                          fEventID;                 //!<! event ID (unique identifier when run number is fixed), first 32 bits of fEventIDLong
+    int                          fEventIDExt;                 //!<! event ID (unique identifier when run number is fixed), second 32 bits of fEventIDLong
+    Long64_t                     fEventIDLong;                 //!<! event ID (unique identifier when run number is fixed), full 64 bits of fEventIDLong
 
   /// \cond CLASSIMP
   ClassDef(AliParticleTreeHandler,1); ///

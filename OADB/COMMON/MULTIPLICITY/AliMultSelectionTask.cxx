@@ -2452,20 +2452,20 @@ Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, UInt_t lChecked
 }
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsINELgtZERO(AliVEvent *event)
+Bool_t AliMultSelectionTask::IsINELgtZERO(const AliVEvent *event)
 // Function to check for INEL > 0 condition
 // Makes use of tracklets and requires at least and SPD vertex
 {
     Bool_t lReturnValue = kFALSE;
     //Use Ref.Mult. code...
     if (event->InheritsFrom("AliESDEvent")) {
-        AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
+        const AliESDEvent *esdevent = dynamic_cast<const AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
         if ( AliESDtrackCuts::GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets, 1.0) >= 1 ) lReturnValue = kTRUE;
     }
     //Redo equivalent test
     else if (event->InheritsFrom("AliAODEvent")) {
-        AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
+        const AliAODEvent *aodevent = dynamic_cast<const AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
         
         //FIXME --- Actually, here we can come up with a workaround.
@@ -2806,6 +2806,8 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
     if ( runNumber >= 118903 && runNumber <= 120829 ) lProductionName = "LHC10c";
     if ( runNumber >= 122374 && runNumber <= 126437 ) lProductionName = "LHC10d";
     if ( runNumber >= 127712 && runNumber <= 130840 ) lProductionName = "LHC10e";
+    if ( runNumber >= 146746 && runNumber <= 146860 ) lProductionName = "LHC11a";
+    
     
     //Registered Productions : Run 1 Pb-Pb
     if ( runNumber >= 136851 && runNumber <= 139517 ) lProductionName = "LHC10h";
@@ -2923,6 +2925,7 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 118903 && runNumber <= 120829 ) lSystemType = "pp";
     if ( runNumber >= 122374 && runNumber <= 126437 ) lSystemType = "pp";
     if ( runNumber >= 127712 && runNumber <= 130840 ) lSystemType = "pp";
+    if ( runNumber >= 146746 && runNumber <= 146860 ) lSystemType = "pp";
     
     //Registered Productions : Run 1 Pb-Pb
     if ( runNumber >= 136851 && runNumber <= 139517 ) lSystemType = "Pb-Pb";

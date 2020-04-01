@@ -505,11 +505,10 @@ void AliPHOSTenderSupply::ProcessEvent()
             clu->AddTracksMatched(arrayTrackMatched);
 	}
       }  
-      
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data      
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -648,11 +647,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
         }
       }  
 
-
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -910,6 +908,48 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
 
     return ecorr ;    
   }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcellHighPtFix"){ 
+    //Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    //improved agreement at hight pT>6-10 GeV/c using pPb8 TeV sample (LHC16rs)
+    // modification of parameters xMax and beta wrt. Run2TuneMCNoNcell parameterization
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=4.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= 1.4*(b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax)) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  
+  
 
   return en ;
 }

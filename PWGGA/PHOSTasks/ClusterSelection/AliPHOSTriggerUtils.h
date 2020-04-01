@@ -52,6 +52,8 @@ protected:
   void InitForRun(Int_t run) ; //read trigger bad map for this run from OADB. Should be called once per run
   Int_t FindBranch(Int_t nX, Int_t nZ) ; //Calculate number of PHOS branch
   Double_t TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t module) ; //Parameterization of turn-on curve in LHC13bcdef
+  Double_t TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl);
+  Double_t TriggerL1ProbabilityLHC16qrst(Double_t x, Int_t ddl);
   Double_t TriggerProbabilityLHC17pq(Double_t x, Int_t ddl);
   Double_t TriggerProbability(Double_t eClu, Int_t module, Int_t triggerBit) ; //Parameterization of turn-on curves
   

@@ -30,6 +30,9 @@
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAODEvent.h>
+#include <AliPWG0Helper.h>
+#include <TParticle.h>
+#include <TDatabasePDG.h>
 //#include <AliInputEventHandler.h>
 #include <AliMultSelection.h>
 #include "AliJCatalystTask.h"
@@ -192,7 +195,11 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			}
 		}
 		if(fnoCentBin) fcent = 1.0; // forcing no centrality selection
-		ReadKineTracks( mcEvent, fInputList, fInputListALICE, fcent ) ; // read tracklist
+		if(flags & FLUC_KINEONLYEXT) {
+			ReadKineTracks( mcEvent->Stack(), fInputList, fInputListALICE, fcent ) ; // read tracklist
+		} else {
+			ReadKineTracks( mcEvent, fInputList, fInputListALICE, fcent ) ; // read tracklist
+		}
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
 		if(!header)
 			return;
@@ -579,6 +586,43 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 				jtrack->SetCharge(ch) ;
 			}
 		}
+	}
+}
+// To read the track generated from a external alievent generators
+void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
+{
+	Int_t nt = stack->GetNprimary();
+	Int_t ntrack = 0;
+	for (Int_t it = 0; it < nt; it++) {
+		TParticle* track = stack->Particle(it); if(!track) continue;
+		if (!AliPWG0Helper::IsPrimaryCharged(track, nt)) continue; 
+			double Pt = track->Pt();
+			if( Pt < fPt_min || Pt > fPt_max )
+				continue ; // pt cut
+			Int_t pdg = track->GetPdgCode();
+			Char_t ch = (Char_t) TDatabasePDG::Instance()->GetParticle(pdg)->Charge();
+			if(ch < 0){
+				if(fPcharge == 1)
+					continue;
+			}else
+			if(ch > 0){
+				if(fPcharge == -1)
+					continue;
+			}else continue;
+			if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
+			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
+			Int_t label = 100;//track->GetLabel();
+			itrack->SetLabel( label );
+			itrack->SetParticleType(pdg);
+			itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
+			itrack->SetCharge(ch) ;
+			if(TMath::Abs(track->Eta()) < 0.8) {
+				AliJBaseTrack *jtrack =  new ((*TrackListALICE)[TrackListALICE->GetEntriesFast()])AliJBaseTrack;
+				jtrack->SetLabel( label );
+				jtrack->SetParticleType(pdg);
+				jtrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->Energy() );
+				jtrack->SetCharge(ch) ;
+			}
 	}
 }
 

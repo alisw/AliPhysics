@@ -173,8 +173,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.012);
-  config->SetDeltaPhiMax(0.012);
+  config->SetDeltaEtaMax(0.02);
+  config->SetDeltaPhiMax(0.020);
   config->SetExtendedQAPairs(pairQA);
 
   config->SetMixingDepth(iDepth);
@@ -231,9 +231,9 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMultBinning(true);
   config->SetmTBinning(true);
 
-  config->SetdPhidEtaPlotsSmallK(false);
-  config->SetdPhidEtaPlots(false);
-  config->SetPhiEtaBinnign(false);
+  config->SetdPhidEtaPlotsSmallK(true);
+  config->SetdPhidEtaPlots(true);
+  config->SetPhiEtaBinnign(true);
 
   if (fullBlastQA) {
     config->SetkTBinning(true);
@@ -299,8 +299,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -390,8 +390,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
@@ -474,8 +474,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
       AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
@@ -507,8 +507,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -665,8 +665,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -751,8 +751,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
       AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
@@ -827,8 +827,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -852,8 +852,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -924,8 +924,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
       AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
@@ -960,8 +960,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
@@ -998,8 +998,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
@@ -1039,8 +1039,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1119,8 +1119,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       //XI
       CascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1155,8 +1155,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.83, 0.83);
       AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
@@ -1197,8 +1197,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1312,8 +1312,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1359,8 +1359,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.85, 0.85);
       AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1413,8 +1413,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1480,8 +1480,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiCPA(0.985);
       AntiCascadeCuts->SetCutXiCPA(0.985);
@@ -1515,8 +1515,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1553,8 +1553,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1584,8 +1584,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
@@ -1629,8 +1629,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
@@ -1661,8 +1661,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1699,8 +1699,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
       AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
@@ -1775,8 +1775,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1848,8 +1848,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.3);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
@@ -1878,8 +1878,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
-      config->SetDeltaEtaMax(0.012);
-      config->SetDeltaPhiMax(0.012);
+      config->SetDeltaEtaMax(0.022);
+      config->SetDeltaPhiMax(0.022);
 
       CascadeCuts->SetCutXiDaughterDCA(1.9);
       AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1962,6 +1962,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
 
+  AliAnalysisDataContainer *coutputDumpster;
+  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
+  coutputDumpster = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      DumpsterName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), DumpsterName.Data()));
+
   AliAnalysisDataContainer *coutputTrkCutsMC;
   AliAnalysisDataContainer *coutputAntiTrkCutsMC;
   AliAnalysisDataContainer *coutputCascCutsMC;
@@ -2031,11 +2040,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     mgr->ConnectOutput(taskNano, 5, coutputAntiCascadeCuts);
     mgr->ConnectOutput(taskNano, 6, coutputResults);
     mgr->ConnectOutput(taskNano, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskNano, 8, coutputDumpster);
     if (isMC) {
-      mgr->ConnectOutput(taskNano, 8, coutputTrkCutsMC);
-      mgr->ConnectOutput(taskNano, 9, coutputAntiTrkCutsMC);
-      mgr->ConnectOutput(taskNano, 10, coutputCascCutsMC);
-      mgr->ConnectOutput(taskNano, 11, coutputAntiCascCutsMC);
+      mgr->ConnectOutput(taskNano, 9, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 10, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 11, coutputCascCutsMC);
+      mgr->ConnectOutput(taskNano, 12, coutputAntiCascCutsMC);
     }
   } else {
     taskAOD = new AliAnalysisTaskAODXioton("femtoAODXoton", isMC);

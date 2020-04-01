@@ -151,7 +151,7 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
       for (Int_t iHist = 0; iHist < 4; iHist++)
         delete fImpParSparseMC[iHist];
     }
-    for (Int_t iHist = 0; iHist < 5; iHist++)
+    for (Int_t iHist = 0; iHist < 7; iHist++)
     {
       delete fnSparseMC[iHist];
     }
@@ -489,8 +489,11 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     OpenFile(4);
     fMLhandler = new AliHFMLVarHandlerDstoKKpi(fPIDopt, AliHFMLVarHandlerDstoKKpi::kDeltaMassKKPhi);
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
-    if(fReadMC && fFillOnlySignal)
-      fMLhandler->SetFillOnlySignal();
+    if(fReadMC) {
+      if(fFillOnlySignal)
+        fMLhandler->SetFillOnlySignal();
+      fMLhandler->SetFillBeautyMotherPt();
+    }
     fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
@@ -586,15 +589,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     fHistNEvents->Fill(9);
   if (fAnalysisCuts->IsEventRejectedDueToCentrality())
   {
-    if(fSystem != kUpgr) // no physics selection can be applied for upgrade studies
-        fHistNEvents->Fill(10);
-    else
-        isEvSel = kTRUE;
-
+    fHistNEvents->Fill(10);
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks, evCentr);
   }
-
+  
+  // no physics selection can be applied for upgrade studies
+  if(fSystem == kUpgr && fAnalysisCuts->IsEventRejectedDuePhysicsSelection())
+   isEvSel = kTRUE;
+  
   Int_t runNumber = aod->GetRunNumber();
 
   TClonesArray *arrayMC = 0;
@@ -833,8 +836,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
     AliAODMCParticle *partDs = nullptr;
     Int_t orig = 0;
+    Int_t origWoQuark = 0;
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
+    Float_t ptB = -999.;
 
     if (fReadMC)
     {
@@ -896,7 +901,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           pdgCode0 = TMath::Abs(p->GetPdgCode());
         }
       }
-      if(partDs) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+      if(partDs){
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
+        origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
+        if(orig == 5 || origWoQuark==5)
+           ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
+      }
+       
     }
 
     if (isKKpi)
@@ -1171,31 +1182,42 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isprompt = kFALSE;
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
+        bool isSignalWoQuark = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4)
+            if(pdgCode0 == 211)
+              isrefl = kTRUE;
+            if(orig == 4 || origWoQuark==4)
               isprompt = kTRUE;
-            else if(orig == 5)
+            else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
 
-            if(orig == 4 || orig == 5) {
-              if(pdgCode0 == 321)
-                issignal = kTRUE;
-              else if(pdgCode0 == 211)
-                isrefl = kTRUE;
-            }
-          } else {
+            if(orig >= 4)
+              issignal = kTRUE;
+            else if(orig < 4 && origWoQuark >=4)
+              isSignalWoQuark = kTRUE;
+          }
+          else {
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
+            {
               fMLhandler->SetIsDplustoKKpi(kTRUE);
-          }
+              if(orig == 4)
+                isprompt = kTRUE;
+              else if(orig == 5)
+                isFD = kTRUE;
+            }
+          }          
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
-        fMLhandler->FillTree();
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+          fMLhandler->FillTree();
       }
 
       if (isPhipiKK)
@@ -1205,31 +1227,42 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         bool isprompt = kFALSE;
         bool isFD = kFALSE;
         bool isrefl = kFALSE;
+        bool isSignalWoQuark = kFALSE;
 
         if(fReadMC) {
           if(labDs >= 0) {
-            if(orig == 4)
+            if(pdgCode0 == 321)
+              isrefl = kTRUE;
+            if(orig == 4 || origWoQuark==4)
               isprompt = kTRUE;
-            else if(orig == 5)
+            else if(orig == 5 || origWoQuark==5)
               isFD = kTRUE;
-
-            if(orig == 4 || orig == 5) {
-              if(pdgCode0 == 211)
-                issignal = kTRUE;
-              else if(pdgCode0 == 321)
-                isrefl = kTRUE;
-            }
-          } else {
+            
+            if(orig >= 4)
+              issignal = kTRUE;
+            else if(orig < 4 && origWoQuark >= 4)
+              isSignalWoQuark = kTRUE;
+          } 
+          else {
             if(!isCandInjected)
               isbkg = kTRUE;
             if(labDplus >= 0)
+            {
               fMLhandler->SetIsDplustoKKpi(kTRUE);
+              if(orig == 4)
+                isprompt = kTRUE;
+              else if(orig == 5)
+                isFD = kTRUE;
+            }
           }
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
-        fMLhandler->FillTree();
+        if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
+          fMLhandler->FillTree();
       }
     }
 
@@ -1437,6 +1470,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       if (TMath::Abs(mcPart->GetPdgCode()) == 431)
       {
         Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
 
         Int_t deca = 0;
         Bool_t isGoodDecay = kFALSE;
@@ -1463,8 +1497,17 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
             if (orig == 4)
               fnSparseMC[0]->Fill(var4nSparseAcc);
-            if (orig == 5)
+            else if (orig == 5)
               fnSparseMC[1]->Fill(var4nSparseAcc);
+            else { //no quark found
+              if(fFillSparseAccWoQuark)
+              {
+                if (origWoQuark == 4)
+                  fnSparseMC[5]->Fill(var4nSparseAcc);
+                else if (origWoQuark == 5)
+                  fnSparseMC[6]->Fill(var4nSparseAcc);
+              }
+            }
           }
         }
       }
@@ -1684,6 +1727,17 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
           fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
         }
         fOutput->Add(fnSparseMCDplus[iHist]);
+      }
+    }
+    if(fFillSparseAccWoQuark)
+    {
+      for (Int_t iHist = 5; iHist < 7; iHist++)
+      {
+        TString titleSparse = Form("MC nSparse w/o quark (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist - 5].Data());
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+        fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        fOutput->Add(fnSparseMC[iHist]);
       }
     }
   } //end MC

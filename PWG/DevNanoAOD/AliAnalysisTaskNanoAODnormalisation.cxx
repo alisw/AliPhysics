@@ -7,6 +7,7 @@
 #include <AliVEvent.h>
 
 #include <TChain.h>
+#include <TFile.h>
 #include <TObject.h>
 
 #include <algorithm>
@@ -67,14 +68,15 @@ void AliAnalysisTaskNanoAODnormalisation::FillHistograms(TH2D* candidate[2], TH2
     ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing input handler");
     return;
   }
-  TList* userInfo = handler->GetUserInfo();
-  if (!userInfo) {
-    ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing User Info");
+  TTree* tree = handler->GetTree();
+  if (!tree) {
+    ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing Tree");
     return;
   }
 
+  TFile* inputFile = tree->GetCurrentFile();
   for (int iF{0}; iF < 2; ++iF) {
-    AliNanoFilterNormalisation* normalisation = (AliNanoFilterNormalisation*)userInfo->FindObject(Form("NanoAOD%s_scaler",kNames[iF]));
+    AliNanoFilterNormalisation* normalisation = (AliNanoFilterNormalisation*)inputFile->Get(Form("NanoAODFilter/NanoAOD%s_scaler",kNames[iF]));
     if (!normalisation) {
       if (!iF)
         ::Fatal("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing filtering scalers!");

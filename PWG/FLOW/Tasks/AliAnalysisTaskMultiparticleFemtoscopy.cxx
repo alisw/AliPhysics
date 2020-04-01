@@ -3406,7 +3406,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  //  c4) V0s.
 
  // a) Book the profile holding all the flags for control histograms: TBI stil incomplete
- fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",2,0,2);
+ fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",1,0,1);
  fControlHistogramsFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsFlagsPro->SetMarkerStyle(25);
  fControlHistogramsFlagsPro->SetLabelSize(0.04);
@@ -3415,7 +3415,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsFlagsPro->SetFillColor(kGray);
  fControlHistogramsFlagsPro->SetLineColor(kBlack);
  fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistograms"); fControlHistogramsFlagsPro->Fill(0.5,fFillControlHistograms);
- fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(2,"fFillControlHistogramsEvent"); fControlHistogramsFlagsPro->Fill(1.5,fFillControlHistogramsEvent);
  fControlHistogramsList->Add(fControlHistogramsFlagsPro);
 
  if(!fFillControlHistograms){return;}

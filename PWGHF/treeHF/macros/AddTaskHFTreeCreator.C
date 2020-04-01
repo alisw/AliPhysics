@@ -19,7 +19,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
                                                      Bool_t fillParticleTree = kFALSE,
                                                      Bool_t fillTrackletTree = kFALSE,
                                                      Int_t fillNJetTrees = 0,
-                                                     Bool_t fillJetConstituentTrees = kFALSE)
+                                                     Bool_t fillJetConstituentTrees = kFALSE,
+                                                     Bool_t isITSUpgradeProd = kFALSE)
 {
     //
     //
@@ -133,8 +134,10 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     task->SetPIDoptLc2V0bachelorTree(pidOpt);
     task->SetPIDoptLbTree(pidOpt);
     task->SetTreeSingleTrackVarsOpt(singletrackvarsopt);
-    if(fillTreeBs || fillTreeLb || fillTreeBplus){
-      task->SetITSUpgradeStudy(kTRUE);
+    if(fillTreeBs || fillTreeLb || fillTreeBplus || isITSUpgradeProd){
+      task->SetITSUpgradeProduction(kTRUE);
+      task->SetITSUpgradePreSelect(kTRUE);
+      task->SetStoreOnlyHIJINGBackground(kTRUE);
       task->SetGoodTrackFilterBit(4);
       task->SetGoodTrackEtaRange(0.8);
       task->SetGoodTrackMinPt(0.3);
@@ -208,7 +211,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     TString outputfile = AliAnalysisManager::GetCommonFileName();
     outputfile += ":PWGHF_TreeCreator";
-    if(fillTreeLb || fillTreeBs || fillTreeBplus){
+    if(fillTreeLb || fillTreeBs || fillTreeBplus || isITSUpgradeProd){
       //Needed to run ITS2 production together with ITS2+ITS3 improver
       outputfile += finDirname;
     }

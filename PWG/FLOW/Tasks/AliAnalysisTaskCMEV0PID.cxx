@@ -2116,7 +2116,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
   Int_t    ptBin,gCharge1,gCharge2;
 
-  //Double_t dcaXY, dcaZ ;
+  Double_t dcaXY, dcaZ ;
 
 
   //----------- Set the desired Harmonic ------------
@@ -2310,8 +2310,16 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     
     multPOI1st++;
 
+    dcaXY = track->DCA();
+    dcaZ = track->ZAtDCA();
+
+    /// Use strict DCA cut for sytematic check: ///
+    if(fabs(dcaXY)>1.0) continue;
 
 
+
+
+    
     //--------------------- PID signals 1st track-------------------------
     //Vector/Array both works same way:
     /*
@@ -2342,25 +2350,26 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     nSigTOFproton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
       
     //----- Pion
-    if(dPt1<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
+    if(dPt1<=0.5 && TMath::Abs(nSigTPCpion)<=2.0){
       isPion1 = kTRUE;
     }/// Pion and Kaon max pT = 2.0 GeV
-    else if(dPt1>0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=2.0 ){
-     isPion1 = kTRUE;
-    }
+    //else if(dPt1>0.5 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=2.0 ){
+    //isPion1 = kTRUE;
+    //}
     //----- Kaon
-    if(dPt1<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
+    if(dPt1<=0.45 && TMath::Abs(nSigTPCkaon)<=2.5){
       isKaon1 = kTRUE;
     }/// Pion and Kaon max pT = 2.0 GeV
-    else if(dPt1>0.45 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.0){
+    //else if(dPt1>0.45 && dPt1<=1.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.0){
+    else if(dPt1>0.45 && dPt1<=1.0 && TMath::Abs(nSigTOFkaon)<=2.5){
       isKaon1 = kTRUE;
     }
     //----- Proton 
     if(dPt1<=0.8 && TMath::Abs(nSigTPCproton)<=3.0){
       isProton1 = kTRUE;
-      if(dPt1<0.4) isProton1 = kFALSE;      //Proton below 0.4 GeV is garbage
-    }/// Proton max pT = 4.0 GeV
-    else if(dPt1>0.8 && dPt1<=4.0 && TMath::Abs(nSigTPCproton)<=3.0 && TMath::Abs(nSigTOFproton)<=3.0){  
+      if(gCharge1 > 0 && dPt1 < 0.4) isProton1 = kFALSE;   //only Protons below 0.4 GeV is garbage
+    }
+    else if(dPt1>0.8 && dPt1<=2.0 && TMath::Abs(nSigTOFproton)<=3.0){  
       isProton1 = kTRUE;
     }
 
@@ -2515,7 +2524,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-    //Alexandru Corrections: 
+    //Alexandru Corrections:
+    /*
     if (gCharge1 > 0){
         
       fpX1X3PosT1->Fill(EvtCent, TMath::Cos(dPhi1)*TMath::Cos(gPsiN*PsiNTPCC),ptw1*w1NUA);
@@ -2549,7 +2559,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
     }
 
-
+    */
 
 
 

@@ -17,7 +17,6 @@
 #include "AliAODEvent.h"
 
 #include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
 
@@ -41,7 +40,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Default constructor
@@ -61,7 +60,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   fStorage(nullptr),
   fSettings(),
   fUtil(),
-  fCalculator()
+  fCalculator(2)
   {
   //
   //  Constructor
@@ -72,7 +71,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
-
   DefineOutput(1, AliForwardFlowResultStorage::Class());
 }
 
@@ -82,7 +80,24 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   //
   //  Create output objects
   //
-  //bool saveAutoAdd = TH1::AddDirectoryStatus();
+  std::cout << "void AliForwardFlowRun2Task::UserCreateOutputObjects()"<< std::endl;
+
+  fWeights = AliForwardWeights();
+  fWeights.fSettings = this->fSettings;
+
+  if (fSettings.nua_file != "") fWeights.connectNUA(); 
+  if (fSettings.nue_file != "") fWeights.connectNUE(); 
+  if (fSettings.sec_file != "") fWeights.connectSec(); 
+  if (fSettings.sec_cent_file != "") fWeights.connectSecCent();
+  this->fSettings = fWeights.fSettings;
+
+
+  if (fSettings.etagap){
+    fCalculator = AliForwardGenericFramework(2);
+  }
+  else{
+    fCalculator = AliForwardGenericFramework(3);
+  }
 
   fOutputList = new TList();          // the final output list
   fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
@@ -114,43 +129,46 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   Int_t ptnmax =  (fSettings.doPt ? 5 : 0);
 
   // create a THn for each harmonic
-  Int_t rbins[dimensions] =     {3,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
+  Int_t rbins[dimensions]        = {3,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
+  Int_t dbins[dimensions]        = {3,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins} ;
+  Int_t negonly_bins[dimensions] = {3,fSettings.fnoSamples, fSettings.fNZvtxBins, 14, fSettings.fCentBins};
+  Int_t non_rbins[dimensions-1]  = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
+  Int_t non_dbins[dimensions-1]  = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
+  
+  Double_t non_min[dimensions-1] = {0, fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0};
+  Double_t dmin[dimensions]      = {0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0};
 
-  Double_t dmin[dimensions]     = {0, 0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0};
-  Double_t dmax[dimensions]     = {3,double(fSettings.fnoSamples), fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
-  Int_t    dbins[dimensions]    = {3,fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins} ;
+  Double_t dmax[dimensions]      = {3,double(fSettings.fnoSamples), fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
+  Double_t negonly_max[dimensions]={3,double(fSettings.fnoSamples), fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
+  Double_t non_max[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
 
-  Double_t w_min[dimensions-1]     = {0, fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0};
-  Double_t w_max[dimensions-1]     = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, double(fSettings.fCentUpEdge)};
-  Int_t w_rbins[dimensions-1] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
-  Int_t w_dbins[dimensions-1] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins} ; // n, pt, s, zvtx,eta,cent
-
-  Double_t decorr_max[dimensions] = {3,double(fSettings.fnoSamples), fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
-  Int_t decorr_bins[dimensions]   = {3,fSettings.fnoSamples, fSettings.fNZvtxBins, 14, fSettings.fCentBins};
-
-  Double_t sc_two_dmax[dimensions-1]  = {double(fSettings.fnoSamples),fSettings.fZVtxAcceptanceUpEdge, 0, double(fSettings.fCentUpEdge)};
-  Int_t    sc_two_dbins[dimensions-1] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 14, fSettings.fCentBins};
 
   if ((fSettings.normal_analysis || fSettings.second_analysis) || fSettings.SC_analysis){
-    fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions-1,w_rbins,w_min,w_max);
+    fCalculator.cumu_rW2     = new THnD("cumu_rW2",     "cumu_rW2",     dimensions-1,non_rbins,non_min,non_max);
     fCalculator.cumu_rW2Two  = new THnD("cumu_rW2Two" , "cumu_rW2Two" , dimensions,rbins,dmin,dmax); 
     TList* list_rW2     = new TList(); list_rW2    ->SetName("rW2"    ); list_rW2    ->Add(fCalculator.cumu_rW2);     fReferenceList->Add(list_rW2    );
     TList* list_rW2Two  = new TList(); list_rW2Two ->SetName("rW2Two" ); list_rW2Two ->Add(fCalculator.cumu_rW2Two);  fReferenceList->Add(list_rW2Two );  
-
-    if ((fSettings.normal_analysis || fSettings.second_analysis)){
-      fCalculator.cumu_dW2B    = new THnD("cumu_dW2B"   , "cumu_dW2B"   , dimensions-1, w_dbins, w_min, w_max);
-      fCalculator.cumu_dW2TwoB = new THnD("cumu_dW2TwoB", "cumu_dW2TwoB", dimensions, dbins, dmin, dmax);
-      TList* list_dW2B    = new TList(); list_dW2B   ->SetName("dW2B"   ); list_dW2B   ->Add(fCalculator.cumu_dW2B   ); fStandardList->Add(list_dW2B   );
-      TList* list_dW2TwoB = new TList(); list_dW2TwoB->SetName("dW2TwoB"); list_dW2TwoB->Add(fCalculator.cumu_dW2TwoB); fStandardList->Add(list_dW2TwoB);
-    }
   }
+
+  if ((fSettings.normal_analysis || fSettings.second_analysis) || fSettings.decorr_analysis){
+    fCalculator.cumu_dW2B    = new THnD("cumu_dW2B"   , "cumu_dW2B"   , dimensions-1, non_dbins, non_min, non_max);
+    fCalculator.cumu_dW2TwoB = new THnD("cumu_dW2TwoB", "cumu_dW2TwoB", dimensions, dbins, dmin, dmax);
+    TList* list_dW2B    = new TList(); list_dW2B   ->SetName("dW2B"   ); list_dW2B   ->Add(fCalculator.cumu_dW2B   ); fStandardList->Add(list_dW2B   );
+    TList* list_dW2TwoB = new TList(); list_dW2TwoB->SetName("dW2TwoB"); list_dW2TwoB->Add(fCalculator.cumu_dW2TwoB); fStandardList->Add(list_dW2TwoB);
+  }
+
   if (fSettings.SC_analysis || fSettings.normal_analysis){
-    fCalculator.cumu_dW4     = new THnD("cumu_dW4"    , "cumu_dW4"    , dimensions-1, w_dbins, w_min, w_max);
+    fCalculator.cumu_dW4     = new THnD("cumu_dW4"    , "cumu_dW4"    , dimensions-1, non_dbins, non_min, non_max);
     TList* list_dW4     = new TList(); list_dW4    ->SetName("dW4"    ); list_dW4    ->Add(fCalculator.cumu_dW4    ); fStandardList->Add(list_dW4    );
   }
 
   if (fSettings.normal_analysis) {
-    fCalculator.cumu_rW4     = new THnD("cumu_rW4"    , "cumu_rW4"    , dimensions-1,w_rbins,w_min,w_max);
+    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, non_dbins, non_min, non_max);
+    fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax);
+    TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
+    TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
+
+    fCalculator.cumu_rW4     = new THnD("cumu_rW4"    , "cumu_rW4"    , dimensions-1,non_rbins,non_min,non_max);
     fCalculator.cumu_rW4Four = new THnD("cumu_rW4Four", "cumu_rW4Four", dimensions,rbins,dmin,dmax);
     TList* list_rW4     = new TList(); list_rW4    ->SetName("rW4"    ); list_rW4    ->Add(fCalculator.cumu_rW4);     fReferenceList->Add(list_rW4    );
     TList* list_rW4Four = new TList(); list_rW4Four->SetName("rW4Four"); list_rW4Four->Add(fCalculator.cumu_rW4Four); fReferenceList->Add(list_rW4Four);
@@ -161,27 +179,28 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   }
 
   if (fSettings.decorr_analysis){
-    fCalculator.cumu_dW2A    = new THnD("cumu_dW2A"   , "cumu_dW2A"   , dimensions-1, w_dbins, dmin, dmax);
-    fCalculator.cumu_dW2TwoA = new THnD("cumu_dW2TwoA", "cumu_dW2TwoA", dimensions, dbins, dmin, dmax);
-    TList* list_dW2A    = new TList(); list_dW2A   ->SetName("dW2A"   ); list_dW2A   ->Add(fCalculator.cumu_dW2A   ); fStandardList->Add(list_dW2A   );
-    TList* list_dW2TwoA = new TList(); list_dW2TwoA->SetName("dW2TwoA"); list_dW2TwoA->Add(fCalculator.cumu_dW2TwoA); fStandardList->Add(list_dW2TwoA);
 
-    fCalculator.cumu_dW22TwoTwoN   = new THnD("cumu_dW22TwoTwoN"  , "cumu_d22WTwoTwoN"  , dimensions, decorr_bins, dmin, decorr_max) ;
-    fCalculator.cumu_dW22TwoTwoD   = new THnD("cumu_dW22TwoTwoD"  , "cumu_d22WTwoTwoD"  , dimensions, decorr_bins, dmin, decorr_max) ;
-    TList* list_dW22TwoTwoN   = new TList(); list_dW22TwoTwoN  ->SetName("dW22TwoTwoN"  ); list_dW22TwoTwoN  ->Add(fCalculator.cumu_dW22TwoTwoN  ); fMixedList->Add(list_dW22TwoTwoN  );
-    TList* list_dW22TwoTwoD   = new TList(); list_dW22TwoTwoD  ->SetName("dW22TwoTwoD"  ); list_dW22TwoTwoD  ->Add(fCalculator.cumu_dW22TwoTwoD  ); fMixedList->Add(list_dW22TwoTwoD  );
+
+    fCalculator.cumu_dW2TwoTwoD = new THnD("cumu_dW2TwoTwoD", "cumu_dW2TwoTwoD", dimensions, negonly_bins, dmin, negonly_max) ;
+    TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
+    fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions, negonly_bins, dmin, negonly_max) ;
+    TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
   }
 
   if (fSettings.SC_analysis){
-    fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions-1, w_dbins, w_min, w_max) ;
-    fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions-1, w_dbins, w_min, w_max) ;
+    fCalculator.cumu_dW4FourTwo  = new THnD("cumu_dW4FourTwo" , "cumu_dW4FourTwo" , dimensions-1, non_dbins, non_min, non_max) ;
+    fCalculator.cumu_dW4ThreeTwo = new THnD("cumu_dW4ThreeTwo", "cumu_dW4ThreeTwo", dimensions-1, non_dbins, non_min, non_max) ;
     TList* list_dW4FourTwo  = new TList(); list_dW4FourTwo ->SetName("dW4FourTwo" ); list_dW4FourTwo ->Add(fCalculator.cumu_dW4FourTwo ); fMixedList->Add(list_dW4FourTwo );
     TList* list_dW4ThreeTwo = new TList(); list_dW4ThreeTwo->SetName("dW4ThreeTwo"); list_dW4ThreeTwo->Add(fCalculator.cumu_dW4ThreeTwo); fMixedList->Add(list_dW4ThreeTwo);
 
-    fCalculator.cumu_dW2TwoTwoD = new THnD("cumu_dW2TwoTwoD", "cumu_dW2TwoTwoD", dimensions-1, sc_two_dbins, w_min, sc_two_dmax) ;
-    TList* list_dW2TwoTwoD = new TList(); list_dW2TwoTwoD->SetName("dW2TwoTwoD"); list_dW2TwoTwoD->Add(fCalculator.cumu_dW2TwoTwoD); fMixedList->Add(list_dW2TwoTwoD);
-    fCalculator.cumu_dW2TwoTwoN = new THnD("cumu_dW2TwoTwoN", "cumu_dW2TwoTwoN", dimensions-1, sc_two_dbins, w_min, sc_two_dmax) ;
-    TList* list_dW2TwoTwoN = new TList(); list_dW2TwoTwoN->SetName("dW2TwoTwoN"); list_dW2TwoTwoN->Add(fCalculator.cumu_dW2TwoTwoN); fMixedList->Add(list_dW2TwoTwoN);
+    fCalculator.cumu_wSC = new THnD("cumu_wSC", "cumu_wSC", dimensions-1, non_dbins, non_min, non_max) ;
+    TList* list_wSC = new TList(); list_wSC->SetName("wSC"); list_wSC->Add(fCalculator.cumu_wSC); fMixedList->Add(list_wSC);
+
+
+    fCalculator.cumu_dW22TwoTwoN   = new THnD("cumu_dW22TwoTwoN"  , "cumu_d22WTwoTwoN"  , dimensions-1, non_dbins, non_min, non_max) ;
+    fCalculator.cumu_dW22TwoTwoD   = new THnD("cumu_dW22TwoTwoD"  , "cumu_d22WTwoTwoD"  , dimensions-1, non_dbins, non_min, non_max) ;
+    TList* list_dW22TwoTwoN   = new TList(); list_dW22TwoTwoN  ->SetName("dW22TwoTwoN"  ); list_dW22TwoTwoN  ->Add(fCalculator.cumu_dW22TwoTwoN  ); fMixedList->Add(list_dW22TwoTwoN  );
+    TList* list_dW22TwoTwoD   = new TList(); list_dW22TwoTwoD  ->SetName("dW22TwoTwoD"  ); list_dW22TwoTwoD  ->Add(fCalculator.cumu_dW22TwoTwoD  ); fMixedList->Add(list_dW22TwoTwoD  );
   }
 
   // Make centralDist
@@ -208,6 +227,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
+  
+  fCalculator.fSettings = fSettings;
+  fUtil.fSettings = fSettings;
 
   PostData(1, fStorage);
 
@@ -223,8 +245,6 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-  fCalculator.fSettings = fSettings;
-  fUtil.fSettings = fSettings;
   
   if (fSettings.doNUA) fSettings.nua_runnumber = fUtil.GetNUARunNumber(fInputEvent->GetRunNumber());
 
@@ -252,18 +272,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   Double_t zvertex = fUtil.GetZ();
 
 
-  /*
-  if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE, true,false);
-    fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,true,false);
+  if (!fSettings.etagap){
+    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
+    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
   }
   else{
-  */
-  if (fSettings.ref_mode & fSettings.kFMDref) {
-    fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,true);
-  }
-  else {
-    fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+    if (fSettings.ref_mode & fSettings.kFMDref) {
+      fCalculator.CumulantsAccumulate(forwardDist, cent, zvertex,kTRUE,true,false);
+    }
+    else {
+      fCalculator.CumulantsAccumulate(refDist, cent, zvertex,kFALSE,true,false);
+    }
   }
   
   fCalculator.CumulantsAccumulate(centralDist, cent, zvertex,kFALSE,false,true);  

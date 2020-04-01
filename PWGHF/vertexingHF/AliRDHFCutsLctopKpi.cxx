@@ -176,6 +176,18 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
 
   AliAODRecoDecayHF3Prong *dd = (AliAODRecoDecayHF3Prong*)d;
 
+  //recalculate vertex w/o daughters
+  Bool_t cleanvtx=kFALSE;
+  AliAODVertex *origownvtx=0x0;
+  if(fRemoveDaughtersFromPrimary && aod) {
+    if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+    cleanvtx=kTRUE;
+    if(!RecalcOwnPrimaryVtx(dd,aod)) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      cleanvtx=kFALSE;
+    }
+  }
+
   Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
@@ -254,6 +266,7 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
     }
   }
 
+  if(cleanvtx) CleanOwnPrimaryVtx(dd,aod,origownvtx);
   return;
 }
 //---------------------------------------------------------------------------
@@ -338,6 +351,19 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
 
+    //recalculate vertex w/o daughters
+    Bool_t cleanvtx=kFALSE;
+    AliAODVertex *origownvtx=0x0;
+    if(fRemoveDaughtersFromPrimary && aod) {
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      cleanvtx=kTRUE;
+      if(!RecalcOwnPrimaryVtx(d,aod)) {
+        CleanOwnPrimaryVtx(d,aod,origownvtx);
+        cleanvtx=kFALSE;
+        return 0;
+      }
+    }
+
     Double_t pt=d->Pt();
     
     Int_t ptbin=PtBin(pt);
@@ -349,35 +375,35 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   switch (fCutsStrategy) {
 
     case kStandard:
-    if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
+    if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     //DCA
-    for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
-    if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;//Kaon
-    if(d->Pt()>=3. && d->PProng(1)<0.55) return 0;
+    for(Int_t i=0;i<3;i++){ if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; } }
+    if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }//Kaon
+    if(d->Pt()>=3. && d->PProng(1)<0.55){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     if(fUseSpecialCut) {
       if(TMath::Abs(d->PtProng(0)) < TMath::Abs(d->PtProng(2)) )okLcpKpi=0;
       if(TMath::Abs(d->PtProng(2)) < TMath::Abs(d->PtProng(0)) )okLcpiKp=0;
     }
     if((TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(12,ptbin)])) okLcpKpi=0;
     if((TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(12,ptbin)]))okLcpiKp=0;
-    if(!okLcpKpi && !okLcpiKp) return 0;
+    if(!okLcpKpi && !okLcpiKp){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     //2track cuts
-    if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
-    if(d->GetDist12toPrim()>fMaxDistanceSecPrimVertex) return 0;
-    if(d->GetDist23toPrim()>fMaxDistanceSecPrimVertex) return 0;
+    if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
+    if(d->GetDist12toPrim()>fMaxDistanceSecPrimVertex){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
+    if(d->GetDist23toPrim()>fMaxDistanceSecPrimVertex){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     if(fUseImpParProdCorrCut){
-      if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
+      if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     }
     //sec vert
-    if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
-    if(d->DecayLength()>fMaxDistanceSecPrimVertex) return 0;
+    if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
+    if(d->DecayLength()>fMaxDistanceSecPrimVertex){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
 
   //  Double_t sumd0s=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-  //  if(sumd0s<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
-    if((d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
+  //  if(sumd0s<fCutsRD[GetGlobalIndex(10,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
+    if((d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(10,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     
-    if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
+    if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
     
 
     break;
@@ -400,7 +426,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
 
       pdgs[0]=211;pdgs[2]=2212;
       AliKFParticle *lc2=ReconstructKF(d,pdgs,field,constraint);
-      if(!lc2){ 
+      if(!lc2){
 	okLcpiKp=0;
       }else{
 	if(lc2->GetChi2()/lc2->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)])okLcpiKp=0; 
@@ -417,12 +443,13 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
 
     if(TMath::Abs(mLcpKpi-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpKpi = 0;
     if(TMath::Abs(mLcpiKp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpiKp = 0;
-    if(!okLcpKpi && !okLcpiKp) return 0;
+    if(!okLcpKpi && !okLcpiKp){ if(cleanvtx){ CleanOwnPrimaryVtx(d,aod,origownvtx); } return 0; }
 
     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
    
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
 
@@ -1488,6 +1515,8 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
     AliFatal("Cut matrix not inizialized. Exit...");
     return 0;
   }
+    
+    
   Bool_t recoLc=true;
   Bool_t v=false;
   Int_t chargeLc=0;
@@ -1503,9 +1532,14 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
      px += tracks[iDaught]->Px();
      py += tracks[iDaught]->Py();
      chargeLc+=tracks[iDaught]->Charge();
+     
      }
   }
-  Double_t ptLc=TMath::Sqrt(px*px+py*py);
+
+   Double_t ptLc=TMath::Sqrt(px*px+py*py);
+    if (ptLc < 2.0) {recoLc=false;
+        return recoLc;}
+    
   Int_t ptbin=PtBin(ptLc);
   Double_t diff=fCutsRD[GetGlobalIndex(0,ptbin)];
   for(Int_t iDaught=0; iDaught<3; iDaught++) {
@@ -1527,6 +1561,10 @@ Bool_t AliRDHFCutsLctopKpi::PreSelectMass(TObjArray aodTracks){
       }
     }
   }
+ 
+  
+
+    
   return recoLc;
 }
 

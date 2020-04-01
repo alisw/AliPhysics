@@ -66,6 +66,11 @@ AliAnalysisTaskSE(),
     fHistPercqnVsqnVsCentr(nullptr),
     fHistNtrklVsqnVsCentr(nullptr),
     fHistMassPtPhiqnCentr(nullptr),
+    fHistMassPtPhiqnCentr_1(nullptr),
+    fHistMassPtPhiqnCentr_2(nullptr),
+    fHistMassPtPhiqnCentr_3(nullptr),
+    fHistMassPtPhiqnCentr_4(nullptr),
+    fHistMassPtPhiqnCentr_5(nullptr),
     fRDCuts(nullptr),
     fTenderTaskName("HFTenderQnVectors"),
     fMinCentr(0.),
@@ -121,6 +126,11 @@ AliAnalysisTaskSECharmHadronvnTMVA::AliAnalysisTaskSECharmHadronvnTMVA(const cha
     fHistPercqnVsqnVsCentr(nullptr),
     fHistNtrklVsqnVsCentr(nullptr),
     fHistMassPtPhiqnCentr(nullptr),
+    fHistMassPtPhiqnCentr_1(nullptr),
+    fHistMassPtPhiqnCentr_2(nullptr),
+    fHistMassPtPhiqnCentr_3(nullptr),
+    fHistMassPtPhiqnCentr_4(nullptr),
+    fHistMassPtPhiqnCentr_5(nullptr),
     fRDCuts(rdCuts),
     fTenderTaskName("HFTenderQnVectors"),
     fMinCentr(0.),
@@ -213,6 +223,11 @@ AliAnalysisTaskSECharmHadronvnTMVA::~AliAnalysisTaskSECharmHadronvnTMVA()
         delete fHistPercqnVsqnVsCentr;
         delete fHistNtrklVsqnVsCentr;
         delete fHistMassPtPhiqnCentr;
+        delete fHistMassPtPhiqnCentr_1;
+        delete fHistMassPtPhiqnCentr_2;
+        delete fHistMassPtPhiqnCentr_3;
+        delete fHistMassPtPhiqnCentr_4;
+        delete fHistMassPtPhiqnCentr_5;
 
         for(int iHisto=0; iHisto<3; iHisto++){
             delete fHistCentrality[iHisto];
@@ -471,11 +486,27 @@ void AliAnalysisTaskSECharmHadronvnTMVA::UserCreateOutputObjects()
     TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
-
-    for(int iAx=0; iAx<naxes; iAx++)
+    fHistMassPtPhiqnCentr_1 = new THnSparseF("fHistMassPtPhiqnCentr_1",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
+    fHistMassPtPhiqnCentr_2 = new THnSparseF("fHistMassPtPhiqnCentr_2",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
+    fHistMassPtPhiqnCentr_3 = new THnSparseF("fHistMassPtPhiqnCentr_3",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
+    fHistMassPtPhiqnCentr_4 = new THnSparseF("fHistMassPtPhiqnCentr_4",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
+    fHistMassPtPhiqnCentr_5 = new THnSparseF("fHistMassPtPhiqnCentr_5",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
+    
+    for(int iAx=0; iAx<naxes; iAx++){
         fHistMassPtPhiqnCentr->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
-
+        fHistMassPtPhiqnCentr_1->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
+        fHistMassPtPhiqnCentr_2->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
+        fHistMassPtPhiqnCentr_3->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
+        fHistMassPtPhiqnCentr_4->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
+        fHistMassPtPhiqnCentr_5->GetAxis(iAx)->SetTitle(axTit[iAx].Data());
+    }
+    
     fOutput->Add(fHistMassPtPhiqnCentr);
+    fOutput->Add(fHistMassPtPhiqnCentr_1);
+    fOutput->Add(fHistMassPtPhiqnCentr_2);
+    fOutput->Add(fHistMassPtPhiqnCentr_3);
+    fOutput->Add(fHistMassPtPhiqnCentr_4);
+    fOutput->Add(fHistMassPtPhiqnCentr_5);
 
  //   fListBDTNtuple = new TList();fListBDTNtuple->SetOwner(); fListBDTNtuple->SetName("NtupleList");
  //   fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
@@ -937,11 +968,24 @@ void AliAnalysisTaskSECharmHadronvnTMVA::UserExec(Option_t */*option*/)
             {
                 if(isSelected==1 || isSelected==3) {
                     double sparsearray[9] = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                    // cout<< isBDT;
+                    if (((isBDT/1000000)%10)==1)fHistMassPtPhiqnCentr->Fill(sparsearray);
+                    if (((isBDT/100000)%10)==1)fHistMassPtPhiqnCentr_1->Fill(sparsearray);
+                    if (((isBDT/10000)%10)==1)fHistMassPtPhiqnCentr_2->Fill(sparsearray);
+                    if (((isBDT/1000)%10)==1)fHistMassPtPhiqnCentr_3->Fill(sparsearray);
+                    if (((isBDT/100)%10)==1)fHistMassPtPhiqnCentr_4->Fill(sparsearray);
+                    if (((isBDT/10)%10)==1)fHistMassPtPhiqnCentr_5->Fill(sparsearray);
+                    
                 }
                 if(isSelected==2 || isSelected==3) {
+                    // cout<< isBDT;
                     double sparsearray[9] = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
-                    fHistMassPtPhiqnCentr->Fill(sparsearray);
+                    if (((isBDT/1000000)%10)==1)fHistMassPtPhiqnCentr->Fill(sparsearray);
+                    if (((isBDT/100000)%10)==1)fHistMassPtPhiqnCentr_1->Fill(sparsearray);
+                    if (((isBDT/10000)%10)==1)fHistMassPtPhiqnCentr_2->Fill(sparsearray);
+                    if (((isBDT/1000)%10)==1)fHistMassPtPhiqnCentr_3->Fill(sparsearray);
+                    if (((isBDT/100)%10)==1)fHistMassPtPhiqnCentr_4->Fill(sparsearray);
+                    if (((isBDT/10)%10)==1)fHistMassPtPhiqnCentr_5->Fill(sparsearray);
                 }
                 break;
             }
@@ -1385,8 +1429,7 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
     Double_t cosPointingAngle;
     Double_t cosThetaStarD0 = 99;
     Double_t cosThetaStarD0bar = 99;
-    
-    Double_t diffIP[2], errdiffIP[2];
+     Double_t diffIP[2], errdiffIP[2];
     dD0->Getd0MeasMinusExpProng(0,fAOD->GetMagneticField(),diffIP[0],errdiffIP[0]);
     dD0->Getd0MeasMinusExpProng(1,fAOD->GetMagneticField(),diffIP[1],errdiffIP[1]);
    if(!diffIP[0]||!errdiffIP[0])return 0;
@@ -1457,12 +1500,90 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
    //     {0.03,0.05},/* 16<pt<24 */
    //     {0.01,0.04},/* 24<pt<36 */
    //     {0.01,0.04}};/* 36<pt<50 */
+    Double_t BDTmatrix_1[13][2]={{-0.01,0.095},/* 1<pt<2*/
+        {-0.01,0.16},/* 2<pt<3*/
+        {-0.01,0.155},/* 3<pt<4 */
+        {-0.01,0.165},/* 4<pt<5 */
+        {-0.01,0.145},/* 5<pt<6 */
+        {-0.01,0.14},/* 6<pt<7 */
+        {-0.01,0.105},/* 7<pt<8 */
+        {-0.01,0.11},/* 8<pt<10 */
+        {0,0.065},/* 10<pt<12 */
+        {-0.01,0.08},/* 12<pt<16 */
+        {-0.01,0.095},/* 16<pt<24 */
+        {-0.01,0.1},/* 24<pt<36 */
+        {-0.01,0.1}};/* 36<pt<50 */
     
+    Double_t BDTmatrix_2[13][2]={{0.01,0.095},/* 1<pt<2*/
+        {0.01,0.16},/* 2<pt<3*/
+        {0.01,0.16},/* 3<pt<4 */
+        {0.01,0.16},/* 4<pt<5 */
+        {0.01,0.15},/* 5<pt<6 */
+        {0.01,0.14},/* 6<pt<7 */
+        {0.01,0.11},/* 7<pt<8 */
+        {0.01,0.115},/* 8<pt<10 */
+        {0.01,0.065},/* 10<pt<12 */
+        {0,0.08},/* 12<pt<16 */
+        {0,0.095},/* 16<pt<24 */
+        {0,0.1},/* 24<pt<36 */
+        {0,0.1}};/* 36<pt<50 */
+    Double_t BDTmatrix_3[13][2]={{0.03,0.135},/* 1<pt<2*/
+        {0.03,0.16},/* 2<pt<3*/
+        {0.02,0.16},/* 3<pt<4 */
+        {0.02,0.145},/* 4<pt<5 */
+        {0.02,0.145},/* 5<pt<6 */
+        {0.03,0.12},/* 6<pt<7 */
+        {0.02,0.095},/* 7<pt<8 */
+        {0.02,0.09},/* 8<pt<10 */
+        {0.02,0.05},/* 10<pt<12 */
+        {0.015,0.095},/* 12<pt<16 */
+        {0.015,0.09},/* 16<pt<24 */
+        {0.005,0.08},/* 24<pt<36 */
+        {0.005,0.08}};/* 36<pt<50 */
+    Double_t BDTmatrix_4[13][2]={{0.05,0.1},/* 1<pt<2*/
+        {0.05,0.16},/* 2<pt<3*/
+        {0.04,0.16},/* 3<pt<4 */
+        {0.04,0.145},/* 4<pt<5 */
+        {0.04,0.145},/* 5<pt<6 */
+        {0.05,0.115},/* 6<pt<7 */
+        {0.04,0.1},/* 7<pt<8 */
+        {0.04,0.09},/* 8<pt<10 */
+        {0.04,0.065},/* 10<pt<12 */
+        {0.025,0.095},/* 12<pt<16 */
+        {0.025,0.09},/* 16<pt<24 */
+        {0.015,0.1},/* 24<pt<36 */
+        {0.015,0.1}};/* 36<pt<50 */
+    Double_t BDTmatrix_5[13][2]={{0.07,0.14},/* 1<pt<2*/
+        {0.07,0.135},/* 2<pt<3*/
+        {0.06,0.16},/* 3<pt<4 */
+        {0.06,0.155},/* 4<pt<5 */
+        {0.05,0.16},/* 5<pt<6 */
+        {0.06,0.12},/* 6<pt<7 */
+        {0.05,0.11},/* 7<pt<8 */
+        {0.05,0.08},/* 8<pt<10 */
+        {0.055,0.055},/* 10<pt<12 */
+        {0.035,0.095},/* 12<pt<16 */
+        {0.03,0.095},/* 16<pt<24 */
+        {0.02,0.1},/* 24<pt<36 */
+        {0.02,0.1}};/* 36<pt<50 */
+    Double_t BDTmatrix_6[13][2]={{0.085,0.135},/* 1<pt<2*/
+        {0.08,0.135},/* 2<pt<3*/
+        {0.08,0.16},/* 3<pt<4 */
+        {0.08,0.155},/* 4<pt<5 */
+        {0.07,0.15},/* 5<pt<6 */
+        {0.07,0.12},/* 6<pt<7 */
+        {0.07,0.13},/* 7<pt<8 */
+        {0.07,0.075},/* 8<pt<10 */
+        {0.065,0.055},/* 10<pt<12 */
+        {0.045,0.095},/* 12<pt<16 */
+        {0.035,0.1},/* 16<pt<24 */
+        {0.03,0.1},/* 24<pt<36 */
+        {0.03,0.1}};/* 36<pt<50 */
 
 
 
     
-        if(!isSelected) return 0;
+       // if(!isSelected) return 0;
   //  printf("isSelected =  %d\n",isSelected);
         int isBDTSelected = 0;
         std::vector<Double_t> BDTClsVar;// BDT cls input
@@ -1473,8 +1594,8 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
         Float_t *ptbin = fRDCuts->GetPtBinLimits();
         TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
   //  printf("ptstring = _%.0f_%.0f\n",ptbin[thisptbin],ptbin[thisptbin+1]);
-        Double_t bdt1resp1 = -3; Double_t bdt2resp1 = -3;
-        Double_t bdt1resp = -3; Double_t bdt2resp = -3;
+    Double_t bdt1resp1 = -3; Double_t bdt2resp1_0 = -3; Double_t bdt2resp1_1 = -3; Double_t bdt2resp1_2 = -3;
+    Double_t bdt1resp = -3; Double_t bdt2resp_0 = -3; Double_t bdt2resp_1 = -3; Double_t bdt2resp_2 = -3;
         if(isSelected==1 || isSelected==3){
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
             if(tmp[8]>2.12||tmp[8]<1.65) return 0;
@@ -1484,12 +1605,16 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
             BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
             
             
-                AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
+            AliRDHFBDT *thisbdt1   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
             AliRDHFBDT *thisbdt2ll = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_0",ptstring.Data()));
+            AliRDHFBDT *thisbdt2mm = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_1",ptstring.Data()));
+            AliRDHFBDT *thisbdt2hh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_2",ptstring.Data()));
 
               //  Float_t bdt1resp1; Float_t bdt2resp1;
-         bdt1resp1 = thisbdt1->GetResponse(BDTClsVar);
-          bdt2resp1 = thisbdt2ll->GetResponse(BDTClsVar);
+            bdt1resp1 = thisbdt1->GetResponse(BDTClsVar);
+            bdt2resp1_0 = thisbdt2ll->GetResponse(BDTClsVar);
+            bdt2resp1_1 = thisbdt2mm->GetResponse(BDTClsVar);
+            bdt2resp1_2 = thisbdt2hh->GetResponse(BDTClsVar);
      //       cout<< bdt1resp1;
       //      cout<< bdt2resp1;
           //     printf("bdt1resp1 =  %lf\n",thisbdt1);
@@ -1508,13 +1633,17 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
             BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];
 
         // Data application
-                AliRDHFBDT *thisbdt1 = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
-                AliRDHFBDT *thisbdt2ll = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_0",ptstring.Data()));
+            AliRDHFBDT *thisbdt1 = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT1%s",ptstring.Data()));
+            AliRDHFBDT *thisbdt2ll = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_0",ptstring.Data()));
+            AliRDHFBDT *thisbdt2mm = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_1",ptstring.Data()));
+            AliRDHFBDT *thisbdt2hh = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("_BDT2%s_2",ptstring.Data()));
             
           //  thisbdt2ll->Print();
             //   Float_t bdt1resp; Float_t bdt2resp;
             bdt1resp = thisbdt1->GetResponse(BDTClsVar);
-            bdt2resp = thisbdt2ll->GetResponse(BDTClsVar);
+            bdt2resp_0 = thisbdt2ll->GetResponse(BDTClsVar);
+            bdt2resp_1 = thisbdt2mm->GetResponse(BDTClsVar);
+            bdt2resp_2 = thisbdt2hh->GetResponse(BDTClsVar);
          //  cout<< bdt1resp;
          //   cout<< bdt2resp;
           //  printf("bdt1resp1 =  %lf\n",thisbdt1);
@@ -1527,9 +1656,14 @@ int AliAnalysisTaskSECharmHadronvnTMVA::ProcessBDT(AliAODEvent *fAOD, AliAODReco
   //  printf("thisptbin =  %d\n",thisptbin);
   //  printf("BDTmatrix1 =  %f\n",fBDT1Cut[thisptbin]);
    // printf("BDTmatrix2 =  %f\n",fBDT2Cut[thisptbin]);
-   if((bdt1resp1>fBDT1Cut[thisptbin] && bdt2resp1>fBDT2Cut[thisptbin])||(bdt1resp>fBDT1Cut[thisptbin]&& bdt2resp>fBDT2Cut[thisptbin])) isBDTSelected = 1;
-    else return 0;
-    
+    int rep1 = 0; int rep2 = 0; int rep3 = 0; int rep4 = 0; int rep5 = 0; int rep6 = 0;
+    if((bdt1resp1>BDTmatrix_1[thisptbin][0] && bdt2resp1_0>BDTmatrix_1[thisptbin][1])||(bdt1resp>BDTmatrix_1[thisptbin][0]&& bdt2resp_0>BDTmatrix_1[thisptbin][1])) rep1 = 1;
+    if((bdt1resp1>BDTmatrix_2[thisptbin][0] && bdt2resp1_0>BDTmatrix_2[thisptbin][1])||(bdt1resp>BDTmatrix_2[thisptbin][0]&& bdt2resp_0>BDTmatrix_2[thisptbin][1])) rep2 = 1;
+    if((bdt1resp1>BDTmatrix_3[thisptbin][0] && bdt2resp1_1>BDTmatrix_3[thisptbin][1])||(bdt1resp>BDTmatrix_3[thisptbin][0]&& bdt2resp_1>BDTmatrix_3[thisptbin][1])) rep3 = 1;
+    if((bdt1resp1>BDTmatrix_4[thisptbin][0] && bdt2resp1_1>BDTmatrix_4[thisptbin][1])||(bdt1resp>BDTmatrix_4[thisptbin][0]&& bdt2resp_1>BDTmatrix_4[thisptbin][1])) rep4 = 1;
+    if((bdt1resp1>BDTmatrix_5[thisptbin][0] && bdt2resp1_2>BDTmatrix_5[thisptbin][1])||(bdt1resp>BDTmatrix_5[thisptbin][0]&& bdt2resp_2>BDTmatrix_5[thisptbin][1])) rep5 = 1;
+    if((bdt1resp1>BDTmatrix_6[thisptbin][0] && bdt2resp1_2>BDTmatrix_6[thisptbin][1])||(bdt1resp>BDTmatrix_6[thisptbin][0]&& bdt2resp_2>BDTmatrix_6[thisptbin][1])) rep6 = 1;
+    isBDTSelected = 10*rep6+100*rep5+1000*rep4+10000*rep3+100000*rep2+1000000*rep1;
     return isBDTSelected;
     
     

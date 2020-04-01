@@ -263,6 +263,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17i3b2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in DCal/PHOS acc.
         kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in EMCal acc.
         kLHC17i3c2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in DCal/PHOS acc.
+        kLHC20b1b1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in EMCal acc. new prod.
+        kLHC20b1b2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 3.5 GeV in DCal/PHOS acc. new prod.
+        kLHC20b1c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in EMCal acc. new prod.
+        kLHC20b1c2,         //!< anchored LHC16i,j,k,l,o,p JetJet - 7 GeV in DCal/PHOS acc. new prod.
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
@@ -566,7 +570,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    PrintCutsWithValues();
       void    InitCutHistograms(  TString name="",
                                   Bool_t preCut = kTRUE);
-      void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+      void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
       void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
 
       ///Cut functions
@@ -629,7 +633,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TList*                      fHistograms;                            ///<
       TList*                      fHeaderList;                            ///<
 
-      Bool_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+      Int_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       //cuts

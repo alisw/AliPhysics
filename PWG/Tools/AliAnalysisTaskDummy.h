@@ -11,8 +11,9 @@
  */
 class AliAnalysisTaskDummy : public AliAnalysisTaskSE {
 public:
-  AliAnalysisTaskDummy();
-  virtual ~AliAnalysisTaskDummy();
+  AliAnalysisTaskDummy() {}
+  AliAnalysisTaskDummy(const char *name, Int_t wait_time) : AliAnalysisTaskSE(name) { fWaitTime = wait_time; }
+  virtual ~AliAnalysisTaskDummy() {}
 
   virtual void UserCreateOutputObjects() {}
   virtual void UserExec(Option_t *);
@@ -21,9 +22,10 @@ public:
   void SetDebugLevel(Int_t level) { fDebugLevel = level; }
 
 private:
-  Int_t         fDebugLevel;          ///< Debug level
+  Int_t         fDebugLevel = 0;       ///< Debug level
+  Int_t         fWaitTime = 0;         ///< Wait time in milliseconds
 
-  ClassDef(AliAnalysisTaskDummy, 1);
+  ClassDef(AliAnalysisTaskDummy, 2);
 };
 
 #endif /* ALIANALYSISTASKDUMMY_H */

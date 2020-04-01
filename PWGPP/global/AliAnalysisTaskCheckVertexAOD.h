@@ -99,12 +99,18 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistYtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistContrTpcVsCent;          //!<!  histo of vtx contrib
+  TH2F* fHistXtrkResidVsMult;         //!<!  histos for resolution (MC)
+  TH2F* fHistYtrkResidVsMult;         //!<!  histos for resolution (MC)
+  TH2F* fHistZtrkResidVsMult;         //!<!  histos for resolution (MC)
+  TH2F* fHistXtrkResidVsCent;         //!<!  histos for resolution (MC)
+  TH2F* fHistYtrkResidVsCent;         //!<!  histos for resolution (MC)
+  TH2F* fHistZtrkResidVsCent;         //!<!  histos for resolution (MC)
   TH2F* fHistNtracklVsZtrue;          //!<!  histo of vtx coord.
   TH1F* fHistoNOfPileupVertSPD;       //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertSPD;    //!<! histo of SPD pileup
   TH1F* fHistoNOfPileupVertMV;        //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertMV;     //!<! histo of SPD pileup
-  TH2F* fHistoV0MultVsNclsTPC;        //!<! contro histo for TPC pileup
+  TH2F* fHistoV0MultVsNclsTPC;        //!<! control histo for TPC pileup
   Bool_t  fUsePhysSel;                // flag use/not use phys sel
   Int_t   fTriggerMask;               // mask used in physics selection
   Double_t fMaxMult;                  // upper limit of multiplicity plots
@@ -118,7 +124,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,9);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,10);
 };
 
 

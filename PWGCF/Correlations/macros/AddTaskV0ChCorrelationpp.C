@@ -47,7 +47,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetCentMin(0);
   task->SetCentMax(100.);
   //-----------------------------Track-------------------------------------
- // task->SetTrackMCPtMin(1);
+
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(8.);
   task->SetTrackEta(0.8);
@@ -59,19 +59,19 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetV0PtMax(15.);
   task->SetV0Eta(0.8);
   task->SetK0sLifeTimeMin(0);
-  task->SetK0sLifeTimeMax(20);//6*2.68
+  task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
-  task->SetLambdaLifeTimeMax(25);//6*7.89
-  task->SetDCANegtoPrimVertex(0.06);
-  task->SetDCAPostoPrimVertex(0.06);
+  task->SetLambdaLifeTimeMax(25);
+  task->SetDCANegtoPrimVertex(0.05);//
+  task->SetDCAPostoPrimVertex(0.05);//
   
   
-  task->SetDCAV0DaughtersMax(0.8);
-  task->Setk0sCPA(0.98);
-  task->SetLambdaCPA(0.998);
+  task->SetDCAV0DaughtersMax(1);//
+  task->Setk0sCPA(0.975);//
+  task->SetLambdaCPA(0.995);//
   task->SetCosPointingAngleMin(0.975);
-  task->Set2DFiducialMin(0.5);//0.5*0.5
-  //task->Set2DFiducialMax(100);//100*100
+  task->Set2DFiducialMin(0.5);
+
   task->SetV0DaughterTrackTPCCluster(70.);
 
   task->SetNCrossedRowsTPCfindable(0.8);

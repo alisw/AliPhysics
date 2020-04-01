@@ -20,6 +20,8 @@
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamControlSample.h"
+#include "AliFemtoDreamBaseDump.h"
+
 
 class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
  public:
@@ -35,6 +37,9 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   }
   void SetEventCuts(AliFemtoDreamEventCuts* evtCuts) {
     fEventCuts = evtCuts;
+  }
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
   }
   void SetProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {
     fProton = trkCuts;
@@ -62,6 +67,7 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   AliAnalysisTaskNanoBBar &operator=(const AliAnalysisTaskNanoBBar &task);
   bool fisLightWeight;//
   bool fIsMC;        //
+  bool fUseDumpster;  //
   TList *fQA;        //!
   AliFemtoDreamEvent* fEvent;//!
   AliFemtoDreamEventCuts* fEventCuts;//
@@ -95,9 +101,19 @@ class AliAnalysisTaskNanoBBar : public AliAnalysisTaskSE {
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!
   TList *fResultsSampleQA;//!
+  AliFemtoDreamDump *fProtonAntiProtonDump; //!
+  AliFemtoDreamDump *fProtonAntiLambdaDump; //!
+  AliFemtoDreamDump *fAntiProtonLambdaDump; //!
+  AliFemtoDreamDump *fLambdaAntiLambdaDump; //!
+  AliFemtoDreamDump *fProtonAntiXiDump; //!
+  AliFemtoDreamDump *fAntiProtonXiDump; //!
+  AliFemtoDreamDump *fLambdaAntiXiDump; //!
+  AliFemtoDreamDump *fAntiLambdaXiDump; //!
+  AliFemtoDreamDump *fXiAntiXiDump; //!
+  TList* fDumpster; //!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskNanoBBar,3)
+  ClassDef(AliAnalysisTaskNanoBBar,4)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOBBAR_H_ */

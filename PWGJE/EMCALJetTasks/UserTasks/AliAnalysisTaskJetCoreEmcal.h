@@ -123,8 +123,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	//
 	TRandom3 *fRandom; ///<
 	Float_t fTreeVarsInclusive[9]; ///<
-	Float_t fTreeVarsInclusiveMoreVars[11]; ///<
-	Float_t fTreeVarsRecoil[10]; ///<
+	Float_t fTreeVarsInclusiveMoreVars[13]; ///<
+	Float_t fTreeVarsRecoil[8]; ///<
+	Float_t fTreeVarsRecoilMoreVars[14]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
@@ -133,7 +134,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
+	TH2F *fhRhoCentSig; //!<!
+	TH2F *fhRhoCentRef; //!<!
+	TH2F *fhDphiPtSigPi; //!<!
 	TH2F *fhDphiPtSig; //!<!
+	TH2F *fhDphiPtRefPi; //!<!
 	TH2F *fhDphiPtRef; //!<!
 	// embedding histograms
 	// inclusive jets
@@ -178,7 +183,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 10);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 12);
   /// \endcond
 };
 #endif

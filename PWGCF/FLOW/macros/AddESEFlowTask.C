@@ -54,9 +54,37 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("%s:FlowESEV0C",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("%s:DiffFlowESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,11,mgr->CreateContainer(Form("%s:FlowESEV0A",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,12,mgr->CreateContainer(Form("%s:fQAEvents",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,12,mgr->CreateContainer(Form("%s:SP_Flow",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,13,mgr->CreateContainer(Form("%s:SP_FlowESE",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,14,mgr->CreateContainer(Form("%s:fQAEvents",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
+
+
+    task->SetFilterBit(96);
+    task->SetVtxZCut(10.0);
+    task->SetPhiBins(120);
+    task->SetEtaBins(32);
+    const int nPtBins = 28;
+    Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
+    task->SetPtBins(nPtBins,PtEdges);
+    const Int_t nCentBins = 10;
+    Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+    task->SetCentBin(nCentBins,CentEdges);
+    task->SetReadMC(kFALSE); //activate monte carlo analysis
+    task->SetAbsEta(0.8);
+    task->SetRejectAddPileUp(kTRUE);
+    task->SetFlowRFPsPt(0.2,5.0);
+    task->SetFlowPOIsPt(0.0,10.0);
+    task->SetRedFlowPt(0.2,20.0);
+    task->SetTPCEse(kTRUE);
+    task->SetV0CEse(kTRUE);
+    task->SetV0AEse(kTRUE);
+    task->SetSampling(kFALSE,1); //(kFALSE,1) for no sampling and only 1 sample size
+    task->SetHasEtaGap(kTRUE);
+    task->SetEtaGap(1.0);
+    task->SetTPCEseqnBins(100,0.0,8.0);
+    task->SetV0EseqnBins(100,0.0,15.0);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){
       task->SetCentralityEst("V0M"); // V0M

@@ -14,7 +14,7 @@
 
 ClassImp(AliFemtoDreamCascade)
 AliFemtoDreamCascade::AliFemtoDreamCascade()
-    : AliFemtoDreamBasePart(),
+    : AliFemtoDreamBasePart(4),
       fPosDaug(new AliFemtoDreamTrack()),
       fNegDaug(new AliFemtoDreamTrack()),
       fBach(new AliFemtoDreamTrack()),
@@ -63,8 +63,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fIsReset = false;
   fIsSet = true;
   this->SetCharge(casc->ChargeXi());
-  this->SetMomentum(casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
+  this->SetPt(GetMomentum().Pt());
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc
       ->DecayVertexXiZ() };
@@ -79,8 +79,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fRapXi = casc->RapXi();
   fRapOmega = casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(fP.Theta());
-  this->SetPhi(fP.Phi());
+  this->SetTheta(GetMomentum().Theta());
+  this->SetPhi(GetMomentum().Phi());
   fAlphaXi = casc->AlphaXi();
   fPtArmXi = casc->PtArmXi();
   fDCAXiPrimVtx = casc->DcaXiToPrimVertex(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
@@ -104,9 +104,12 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fNegDaug->SetTrack(nTrackXi);
   fPosDaug->SetTrack(pTrackXi);
   fBach->SetTrack(bachTrackXi);
-  fNegDaug->SetMomentum(casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
-  fPosDaug->SetMomentum(casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
-  fBach->SetMomentum(casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  this->SetMomentum(1, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  this->SetMomentum(2, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  this->SetMomentum(3, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
 
   double posMom[3] = { 0. };
   double negMom[3] = { 0. };
@@ -199,8 +202,8 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fIsReset = false;
   fIsSet = true;
   this->SetCharge(casc->ChargeXi());
-  this->SetMomentum(casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
+  this->SetPt(GetMomentum().Pt());
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc
       ->DecayVertexXiZ() };
@@ -215,8 +218,8 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fRapXi = casc->RapXi();
   fRapOmega = casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(fP.Theta());
-  this->SetPhi(fP.Phi());
+  this->SetTheta(GetMomentum().Theta());
+  this->SetPhi(GetMomentum().Phi());
   fAlphaXi = casc->AlphaXi();
   fPtArmXi = casc->PtArmXi();
   fDCAXiPrimVtx = casc->DcaXiToPrimVertex(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
@@ -240,9 +243,12 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fNegDaug->SetTrack(nTrackXi,evt,0);
   fPosDaug->SetTrack(pTrackXi,evt,0);
   fBach->SetTrack(bachTrackXi,evt,0);
-  fNegDaug->SetMomentum(casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
-  fPosDaug->SetMomentum(casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
-  fBach->SetMomentum(casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  this->SetMomentum(1, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  this->SetMomentum(2, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  this->SetMomentum(3, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
 
   double posMom[3] = { 0. };
   double negMom[3] = { 0. };
@@ -371,18 +377,22 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   //the momenta of the daughters have to be taken at the v0 vertex,
   //the bachelor momenta at the cascade vertex
   currentV0->GetPPxPyPz(posMom[0], posMom[1], posMom[2]);
-  fPosDaug->SetMomentum(posMom[0], posMom[1], posMom[2]);
+  fPosDaug->SetMomentum(0, posMom[0], posMom[1], posMom[2]);
   currentV0->GetNPxPyPz(negMom[0], negMom[1], negMom[2]);
-  fNegDaug->SetMomentum(negMom[0], negMom[1], negMom[2]);
+  fNegDaug->SetMomentum(0, negMom[0], negMom[1], negMom[2]);
   casc->GetBPxPyPz(bachMom[0], bachMom[1], bachMom[2]);
-  fBach->SetMomentum(bachMom[0], bachMom[1], bachMom[2]);
+  fBach->SetMomentum(0, bachMom[0], bachMom[1], bachMom[2]);
+
+  this->SetMomentum(1, negMom[0], negMom[1], negMom[2]);
+  this->SetMomentum(2, posMom[0], posMom[1], posMom[2]);
+  this->SetMomentum(3, bachMom[0], bachMom[1], bachMom[2]);
 
   TVector3 xiMom = fPosDaug->GetMomentum();
   xiMom += fNegDaug->GetMomentum();
   xiMom += fBach->GetMomentum();
 
-  this->SetMomentum(xiMom.X(), xiMom.Y(), xiMom.Z());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, xiMom.X(), xiMom.Y(), xiMom.Z());
+  this->SetPt(GetMomentum().Pt());
 
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { 0. };
@@ -529,7 +539,10 @@ void AliFemtoDreamCascade::Reset() {
     fv0ToXiPointAngle = 0;
     fv0Length = 0;
     fDCAv0Xi = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
+    GetMomentum(1).SetXYZ(0, 0, 0);
+    GetMomentum(2).SetXYZ(0, 0, 0);
+    GetMomentum(3).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;

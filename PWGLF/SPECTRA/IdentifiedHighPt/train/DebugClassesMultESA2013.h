@@ -1,3 +1,4 @@
+
 #ifndef DEBUGCLASSESMULTESA2013_H
 #define DEBUGCLASSESMULTESA2013_H
 
@@ -62,16 +63,15 @@ class DeDxV0 : public TObject
   Float_t   ptarm;
   Float_t   decayr;
   Float_t   decayl;
-  // new
   Float_t   chi2;
   Float_t   cospt;
   Float_t   dcav0;
   Float_t   dcadaughters;
   Int_t     pdg;
   Int_t     pdgmother;
+  Short_t   oobPileupFlag;
   Short_t   primary;  
-  Short_t   status;  
-  // old
+  Short_t   status;
   DeDxTrack ptrack;
   DeDxTrack ntrack;
    Float_t   y;

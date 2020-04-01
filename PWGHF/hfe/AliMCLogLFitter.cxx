@@ -195,10 +195,10 @@ void AliMCLogLFitter::ReturnNegLog(Int_t &npar, Double_t *gin, Double_t &f, Doub
       fi+=par[p]*w(p,i)*fFitDiagsMCExpected[p]->GetBinContent(i);
     if(fi<0.00001)fi=0.00001;
     
-    LogLikelihood+=fFitDiagData->GetBinContent(i)*TMath::Log(fi)-fi;
+    LogLikelihood+=fFitDiagData->GetBinContent(i)*TMath::Log(fi)-fi - (fFitDiagData->GetBinContent(i)*TMath::Log(fFitDiagData->GetBinContent(i)+0.0001)-fFitDiagData->GetBinContent(i)); // second part added to keep total likelihood small (numerics), it is just a constant
     //add+=fFitDiagData->GetBinContent(i)*TMath::Log(fi)-fi;
     for(int p=0;p</*npar*/fNPar;p++)
-      LogLikelihood+=fFitDiagsMC[p]->GetBinContent(i)*TMath::Log(fFitDiagsMCExpected[p]->GetBinContent(i)+0.0001)-(fFitDiagsMCExpected[p]->GetBinContent(i));
+      LogLikelihood+=fFitDiagsMC[p]->GetBinContent(i)*TMath::Log(fFitDiagsMCExpected[p]->GetBinContent(i)+0.0001)-(fFitDiagsMCExpected[p]->GetBinContent(i)) - (fFitDiagsMC[p]->GetBinContent(i)*TMath::Log(fFitDiagsMC[p]->GetBinContent(i)+0.0001)-(fFitDiagsMC[p]->GetBinContent(i)));
   }
   f=-LogLikelihood;
   
@@ -441,7 +441,7 @@ void AliMCLogLFitter::Fit(void)
   minimizingObject->SetFCN(SomewhereElseInAliMCLogLFitter::OutsourcedReturnNegLog);
   fBestLikelyhood=1;
   //std::cout << "Par Min Max" << std::endl;
-  for(int fitIter=0;fitIter<5;fitIter++)
+  for(int fitIter=0;fitIter<1;fitIter++)
   {
     for(int i=0;i<fNPar;i++)
     {
@@ -468,7 +468,7 @@ void AliMCLogLFitter::Fit(void)
     //Fit happens here!
     for(int nseek=0;nseek<fitIter;nseek++)minimizingObject->mnseek();
     minimizingObject->Migrad();
-    //minimizingObject->mnimpr();
+    minimizingObject->mnimpr();
     // end of Fit - make more involved later on
     for(int i=0;i<fNPar-fNCoupledFunctions;i++)  minimizingObject->GetParameter(i, fParameter[i], temp);
     for(int i=fNPar-fNCoupledFunctions;i<fNPar;i++)  fParameter[i]=fCouplingParameter[i]*fParameter[fCouplings[i]];
@@ -481,6 +481,7 @@ void AliMCLogLFitter::Fit(void)
       for(int i=0;i<fNPar;i++)  fBestParameters[i]=fParameter[i];
     }
   }
+  //std::cout << "Likelihood: " << fBestLikelyhood << endl;
   //std::cout << "Likelihood: " << fBestLikelyhood+543516. << endl;
   
   //std::cout << "fParameters: " ;

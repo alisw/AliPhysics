@@ -13,7 +13,7 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
                                                                        Double_t lV0minCosAngle = 0.6,
                                                                        Double_t lV0minRadius = 0.4,
                                                                        Double_t lV0maxRadius = 200.,
-                                                                                     
+                                                                       
                                                                        Double_t lCascaderMaxChi2 = 33.,
                                                                        Double_t lCascaderV0MinImpactParam = 0.05, //0.050 per def
                                                                        Double_t lCascaderV0MassWindow = 0.008, //0.010 per def
@@ -49,18 +49,18 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
     // Create and configure the task
     AliAnalysisTaskStrangeCascadesDiscrete *taskAuxiliary =
     new AliAnalysisTaskStrangeCascadesDiscrete(lRunV0Vertexers,
-                                                      lRunVertexers, lUseLightVertexer,
+                                               lRunVertexers, lUseLightVertexer,
                                                lUseOnTheFlyV0Cascading,
                                                lguard_CheckTrackQuality,
                                                lguard_CheckCascadeQuality,
                                                lguard_CheckTPCPID,
-                                                      lV0MaxChi2,
-                                                      lV0minDCAfirst,
-                                                      lV0minDCAsecond,
-                                                      lV0maxDCAdaughters,
-                                                      lV0minCosAngle,
-                                                      lV0minRadius,
-                                                      lV0maxRadius,
+                                               lV0MaxChi2,
+                                               lV0minDCAfirst,
+                                               lV0minDCAsecond,
+                                               lV0maxDCAdaughters,
+                                               lV0minCosAngle,
+                                               lV0minRadius,
+                                               lV0maxRadius,
                                                lCascaderMaxChi2,
                                                lCascaderV0MinImpactParam,
                                                lCascaderV0MassWindow,
@@ -85,6 +85,5 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete(
     return taskAuxiliary;
     
 }
-
 
 

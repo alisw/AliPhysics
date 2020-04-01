@@ -117,6 +117,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fFill_ESparse(kFALSE)
 ,fFill_MSparse(kFALSE)
 
+//to select events with high energy cluster (to mimic the trigger)
+,fSelect_trigger_events1(kFALSE)
+,fSelect_trigger_events2(kFALSE)
+
 //new Tender organization, using global variables
 ,fTenderClusterName("caloClusters")
 ,fTenderTrackName("tracks")
@@ -199,7 +203,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,gRandom(new TRandom3(1607260721))
 //,gRandom(new TRandom3(0))
 
-,fRefMult_V0(103.5)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(1607260721))
 //,gRandom_V0(new TRandom3(0))
 
@@ -311,7 +315,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 //with weight
 //KF
-/*
+
 ,fHist_InvMass_pt_ULS_KF_weight(0)
 
 
@@ -328,7 +332,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fHist_InvMass_pt_ULS_KF_V0multi_4_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5_weight(0)
 
-*/
+
 
 //generators
 //BB
@@ -415,6 +419,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fFill_ESparse(kFALSE)
 ,fFill_MSparse(kFALSE)
 
+//to select events with high energy cluster (to mimic the trigger)
+,fSelect_trigger_events1(kFALSE)
+,fSelect_trigger_events2(kFALSE)
+
 //new Tender organization, uisng global variables
 ,fTenderClusterName("caloClusters")
 ,fTenderTrackName("tracks")
@@ -497,7 +505,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,gRandom(new TRandom3(1607260721))
 //,gRandom(new TRandom3(0))
 
-,fRefMult_V0(103.5)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(1607260721))
 //,gRandom_V0(new TRandom3(0))
 
@@ -607,7 +615,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fHist_InvMass_pt_ULS_KF_V0multi_4(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5(0)
 
-/*
+
 //with weight
 //KF
 ,fHist_InvMass_pt_ULS_KF_weight(0)
@@ -625,7 +633,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fHist_InvMass_pt_ULS_KF_V0multi_3_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_4_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5_weight(0)
-*/
+
 
 //generators
 //BB
@@ -948,7 +956,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fOutputList->Add(fHist_InvMass_pt_ULS);
 	fHist_InvMass_pt_LS = new TH2F("fHist_InvMass_pt_LS","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",300,0,30,500,0,5);
 	fOutputList->Add(fHist_InvMass_pt_LS);
-     */
+    */
     
 	
 		//KFParticle
@@ -988,7 +996,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //multiplicity histos
     
     //KFParticle
-    /*
+    
     fHist_InvMass_pt_ULS_KF_weight = new TH2F("fHist_InvMass_pt_ULS_KF_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_weight);
     
@@ -1017,7 +1025,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4_weight);
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5_weight);
 
-    */
+    
     
 	
 	//=================================================================================================================================================================
@@ -1120,15 +1128,15 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
-	Int_t bins[9]={30,60,20,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
-	Double_t xmin[9]={0,-15,0,0,0,0,0,0,0};
-	Double_t xmax[9]={30,15,2,2,2,40,6, 450, 90};
+	Int_t bins[9]={58,40,40,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
+	Double_t xmin[9]={2,-15,0,0,0,0,0,0,0};
+	Double_t xmax[9]={60,5,2,2,2,40,6, 450, 90};
 	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
 	fOutputList->Add(fSparseElectron);
     
     
     //multi Sparse
-    Int_t binsm[6]    =          {20,50,20,50,20,100};
+    Int_t binsm[6]    =       {20,50,20,50,20,100};
     Double_t xminm[6]    =    {-10,0,0,0,0,0};
     Double_t xmaxm[6]    =    { 10,500,200,500,200,1000};
     fSparseMulti         = new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M;SPDTracklets;Corrected_V0M;Corrected_SPDTracklets;ncharge;",6,binsm,xminm,xmaxm);
@@ -1188,7 +1196,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	fNevent->Fill(10);
 	if(fIsAOD)
 	{
-		const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
+		    const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
 		    Float_t zvtx = trkVtx->GetZ();
 			fZvtx = zvtx;
 			const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
@@ -1218,7 +1226,6 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //Look for kink mother for AOD
 	if(fIsAOD)
 	{
-
         //fNumberOfVertices = 0;
         //fNumberOfMotherkink = 0;
         
@@ -1241,7 +1248,6 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 	
     fNevent->Fill(7);
-    
     
 //----------V0M Multiplicity------------------
     AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
@@ -1355,12 +1361,14 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		IsEventEMCALL1=kTRUE;
 	}
 	
-		//if the flag is for a given threshold and it was not fired, return.
-		//EMCal trigger word
+    //if the flag is for a given threshold and it was not fired, return.
+    //EMCal trigger word
 	if(fEMCEG1){
 		if(!firedTrigger.Contains(TriggerEG1))return;
 		if(firedTrigger.Contains(TriggerEG2)){
 			fNevent->Fill(2);
+            //EG2 has to be removed from EG1, because all EG2 events are used.
+            return;
 			
 		}
 		
@@ -1398,6 +1406,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     if(fEMCEG1DG1){
         fNevent2->Fill(3);
         if(!firedTrigger.Contains(TriggerDG1) && !firedTrigger.Contains(TriggerEG1)) return;
+        
+        //to remove double count from EG2 on EG1 (only for EG1 case... for EG2 we should take all events). We remove EG2 from EG1, since it is already used on EG2.
+        if(firedTrigger.Contains(TriggerDG2) || firedTrigger.Contains(TriggerEG2)) return;
+        
         fNevent2->Fill(4);
         if(firedTrigger.Contains(TriggerDG1)){
             fNevent2->Fill(5);//if passed, how much is DCal trigger
@@ -1406,11 +1418,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             fNevent2->Fill(6);//if passed, how much is EMCal trigger
         }
         
+        
+        
     }
     
     if(fEMCEG2DG2){
         fNevent2->Fill(7);
         if(!firedTrigger.Contains(TriggerDG2) && !firedTrigger.Contains(TriggerEG2)) return;
+        
+        //(all EG2 events are used... )
         fNevent2->Fill(8);
         if(firedTrigger.Contains(TriggerDG2)){
             fNevent2->Fill(9);//if passed, how much is DCal trigger
@@ -1687,7 +1703,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
    
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
- 
+    Bool_t hasCls_aboveEG1=kFALSE;
+    Bool_t hasCls_aboveEG2=kFALSE;
 	
 	AliVCluster *clust = 0x0;
 	
@@ -1699,6 +1716,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				if(clust && clust->IsEMCAL())
 				{
 					fECluster_pure->Fill(clust->E());
+                    
+                    if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
+                       
+                    if((clust->E())>=10.0) hasCls_aboveEG1=kTRUE;
 					
 					/////////////// for Eta Phi distribution
 					Float_t pos[3]={0,0,0};
@@ -1778,6 +1799,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			if(clust && clust->IsEMCAL())
 			{
 				fECluster_pure->Fill(clust->E());
+                
+                
+                if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
+                   
+                if((clust->E())>=10.0) hasCls_aboveEG1=kTRUE;
+                      
 				
 				/////////////// for Eta Phi distribution
 				Float_t pos[3]={0,0,0};
@@ -1822,6 +1849,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			
 		}
 	}
+    
+    
+    if(fSelect_trigger_events1 && hasCls_aboveEG1==kFALSE){
+       // printf("Events rejected since hasCls_aboveEG1 is false \n");
+        return;
+    }
+    if(fSelect_trigger_events2 && hasCls_aboveEG2==kFALSE){
+        //printf("Events rejected since hasCls_aboveEG2 is false \n");
+        return;
+    }
 	
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -1840,7 +1877,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 		if (!Vtrack) 
 		{
-			printf("ERROR: Could not receive track %d\n", iTracks);
+			//printf("ERROR: Could not receive track %d\n", iTracks);
 			continue;
 		}
      
@@ -2191,7 +2228,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		
 		//fVtxZ[1]->Fill(fZvtx);
 		
-
+        if(fSelect_trigger_events1 || fSelect_trigger_events2){
+            //printf("Only Electron sparse is filled... rest of analysis is stopped here \n");
+            //for J/psi analysis, set both as kFALSE
+            return;
+            
+        }
 			
 //=======================================================================
 // Here the PID cut defined in the file "ConfigEMCalHFEpA.C" is applied
@@ -2226,7 +2268,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				
 				
 				if (!Vtrack2) {
-					printf("ERROR: Could not receive track %d\n", lTracks);
+					//printf("ERROR: Could not receive track %d\n", lTracks);
 					continue;
 				}
 			
@@ -2375,11 +2417,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     Double_t weight = 1./(a+(b/(1.0+exp(-(pt_kf-c)/d))));  //   weight = 1/eff
                     */
                     
-                    //if use pT of J/psi
-                    Double_t a = 7.21;
-                    Double_t b = 9.1;
-                    Double_t c = 0.0335;
+                    //if use pT of J/psi (correction for EG1 pT > 10 GeV/c)
+                   // Double_t a = 11.11;
+                    //Double_t b = 10.4;
+                    //Double_t c = 0.0333;
+                    //if use pT of J/psi (correction for EG1 pT > 5 GeV/c)
+                    Double_t a = 5.20;
+                    Double_t b = 8.6;
+                    Double_t c = 0.0342;
                     Double_t weight = 1./(TMath::Erf((pt_kf-a)/b)*c);  //   weight = 1/eff
+                    Double_t weight2 = 1./(TMath::Erf((25.0-a)/b)*c);  //   weight2 to normalize correction and keep right counts and right errors.
                     
                    // printf("weight is %f \n", weight);
                     
@@ -2491,10 +2538,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 //  printf("weigh=% f \n", weight);
                                  // printf("passed first histo \n");
-                                 // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
                                   //printf("passed second histo \n");
                               }
-							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
+							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                               
                             //multiplicity bins histos (only ULS for SPDmulti and V0multi)
                               if(charge1*charge2 <0){
@@ -2511,20 +2558,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
                                   if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                   if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
-                                  /*
-                                  //with weight
-                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                   
-                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
-                                   */
+                                  //with weight
+                                  if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                  
+                                  if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                  
                                   
                                   
                                 }
@@ -2669,7 +2716,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                                  fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -2687,20 +2734,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                  if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                  if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
-                                 /*
-                                 //with weight
-                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                  
-                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
-                                 */
+                                 //with weight
+                                 if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                 
+                                 if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                 
                                  
                                  
                              }
@@ -2841,7 +2888,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                               // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
@@ -2860,20 +2907,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                 if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                 
-                                /*
-                                //with weight
-                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight);
-                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight);
                                 
-                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
-                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
-                                 */
+                                //with weight
+                                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fHist_InvMass_pt_ULS_KF_SPDmulti_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fHist_InvMass_pt_ULS_KF_SPDmulti_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fHist_InvMass_pt_ULS_KF_SPDmulti_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                
+                                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)     fHist_InvMass_pt_ULS_KF_V0multi_1_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)  fHist_InvMass_pt_ULS_KF_V0multi_2_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight/weight2);
+                                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight/weight2);
+                                
                                 
                                 
                             }

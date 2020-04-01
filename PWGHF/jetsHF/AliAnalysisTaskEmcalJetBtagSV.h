@@ -18,15 +18,19 @@
 class TH1F;
 class TList;
 class TRandom3;
+class TRandom;
 class THn;
 class THnSparse;
 class TProfile;
 class AliAODMCHeader;
 class AliMultSelection;
+class AliFJWrapper; //EMB_clus
 
 //--AliRoot--
-#include "AliLog.h"
+
+#include "AliLog.h"  
 #include "AliAnalysisTaskEmcalJet.h"
+//#include "AliFJWrapper.h"  //EMB_clus
 
 class AliAnalysisUtils;
 class AliParticleContainer;
@@ -64,6 +68,10 @@ public:
   void SetDoDetRespMtx(Bool_t domtx) {fDoDetRespMtx = domtx;};
 
   void SetDoOnlyMtxAna(Bool_t onlyMtx) {fDoOnlyMtxAna = onlyMtx;};
+
+  void SetEmbeddPerpendicular(Bool_t EmbeddPerpendicular) {fEmbeddPerpendicular = EmbeddPerpendicular;};  //EMB_clus
+
+  
 
   void SetRecJetsBranch(const char* branch) {fRecJetsBranch = branch;}
 
@@ -120,6 +128,13 @@ public:
 
   void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
 
+
+  void SetEmbedding(TString inhybrjets){  //EMB
+      fDoEmbedding         = kTRUE;                            //EMB
+      fHybridJetContName   = inhybrjets;                       //EMB
+  }
+
+
 protected:
   // Implementation of interface methods
   virtual void    UserCreateOutputObjects();
@@ -157,13 +172,17 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
-  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t ,  Int_t ); 	
+  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t , Double_t, Int_t ); 	 //EMB_clus_10
   //Int_t  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t, Int_t);      //newDeltaPt//
   Double_t GetDeltaPtRandomConeWithoutSignalPt (Double_t, Double_t, Double_t, Double_t);	 
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
 
+
+
 private:
 
+
+ 
   Bool_t      fCorrMode;             // enable correction or data modes
   Bool_t      fDoBkgRej;             // enable background rejection
   Bool_t      fDoRndmCone;           // enable random cone method
@@ -172,6 +191,8 @@ private:
   Bool_t      fDoDetRespMtx;        // enable detector repsonse matrix output
   Bool_t      fDoOnlyMtxAna;        // enable only det. matrix analysis
   Bool_t      fUseTriggerData;       // use emacal trigger
+  Bool_t      fEmbeddPerpendicular;  // EMB_clus use perpendicular track embedding
+
 
   const char* fRecJetsBranch;        // name of the AOD REC-jets branch
   const char* fGenJetsBranch;        // name of the AOD GEN-jets branch
@@ -277,7 +298,22 @@ private:
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 10);  // analysis task for MC study //AID//
+  Bool_t                      fDoEmbedding;         ///< EMB flag to do embedding from file
+  TString                     fHybridJetContName;   ///< EMB Name of the hybrid jet container created from tracks and embedded tracks 
+  TClonesArray*               fHybridJetCont;       ///< EMB hybrid jet container
+  TH1F*                       fhDeltaPtEmbedd;      //!<! EMB delta pt distribution, based on embedding of tracks to event//  //AID_emb
+  TH2F*                       fhDeltaPtEmbeddCorrelation;  //!<! EMB
+
+
+  TH1F*                       fhDeltaPtEmbeddPerpendicular;      //!<! EMB_clus 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular;  //!<! EMB
+  TH1F*                       fhDeltaPtEmbeddPerpendicular10pT;      //!<! EMB_clus_10 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular10pT;  //!<! EMB_clus_10
+  AliFJWrapper*		      fFastJetWrapper;  	///< EMB_clus wrapper for fast jet finding
+  TRandom*		      fTrackGenerator; 		///< EMB_clus generator for track perpendicular to signal jet
+
+
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 13);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------

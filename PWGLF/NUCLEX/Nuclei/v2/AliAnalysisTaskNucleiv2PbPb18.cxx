@@ -804,7 +804,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   ULong_t  status=0;
     
   Double_t pmax  = 10.;
-  Double_t ptmax = 6.2;
+  //Double_t ptmax = 6.2;
+  Double_t ptmax = 8.2;
       
   Double_t ptcExp  = -999;
   Double_t pullTPC = -999;

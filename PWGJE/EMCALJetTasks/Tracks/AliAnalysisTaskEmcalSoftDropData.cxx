@@ -57,7 +57,6 @@ using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() : 
   AliAnalysisTaskEmcalJet(),
-  fBinningMode(kSDModeINT7),
   fTriggerBits(AliVEvent::kAny),
   fTriggerString(""),
   fUseDownscaleWeight(false),
@@ -66,8 +65,6 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
-  fJetPtMin(0),
-  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -76,7 +73,6 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
 
 AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name) : 
   AliAnalysisTaskEmcalJet(name.data(), kTRUE),
-  fBinningMode(kSDModeINT7),
   fTriggerBits(AliVEvent::kAny),
   fTriggerString(""),
   fUseDownscaleWeight(false),
@@ -85,8 +81,6 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGV
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
-  fJetPtMin(0),
-  fJetPtMax(1000),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -102,27 +96,30 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   double R = GetJetContainer("datajets")->GetJetRadius();
-  if(!fPtBinning) fPtBinning = GetDefaultPtBinning(); 
+  if(!fPtBinning) fPtBinning = new TLinearBinning(300, 0., 300.);  // Use fine binning for data, rebin offline
   std::unique_ptr<TBinning> zgBinning(GetZgBinning()),
                             rgBinning(GetRgBinning(R)),
-                            nsdBinning(new TLinearBinning(21, -0.5, 20.5));
+                            nsdBinning(new TLinearBinning(22, -1.5, 20.5)),     // Negative bins for untagged jets
+                            thetagBinning(new TLinearBinning(11, -0.1, 1.)); 
   TArrayD edgesPt;
   fPtBinning->CreateBinEdges(edgesPt);
-  fJetPtMin = edgesPt[0];
-  fJetPtMax = edgesPt[edgesPt.GetSize()-1];
 
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
   fHistos->CreateTH1("hJetPtRaw", "raw jet pt", 300, 0., 300.);
-  fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning);
-  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning);
-  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning);
+  fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning, "s");
+  fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning, "s");
+  fHistos->CreateTH2("hNsdVsPt", "nsd vs pt", *nsdBinning, *fPtBinning, "s");
+  fHistos->CreateTH2("hThetagVsPt", "thetag vs pt", *thetagBinning,  *fPtBinning, "s");
+  fHistos->CreateTH1("hSkippedJets", "Number of skipped jets", *fPtBinning);
   if(fUseDownscaleWeight){
-    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning);
-    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning);
-    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning);
+    fHistos->CreateTH2("hZgVsPtWeighted", "zg vs pt (weighted)", *zgBinning, *fPtBinning, "s");
+    fHistos->CreateTH2("hRgVsPtWeighted", "rg vs pt (weighted)", *rgBinning,  *fPtBinning, "s");
+    fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning, "s");
+    fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning, "s");
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
-    fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300.);
+    fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
+    fHistos->CreateTH1("hSkippedJetsWeighted", "Number of skipped jets (weighted)", *fPtBinning);
   }
 
   // A bit of QA stuff
@@ -131,6 +128,8 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hSDUsedChargedPtjvPtc", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistos->CreateTH2("hSDUsedNeutralPtjvPtc", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -165,26 +164,35 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     return false;
   }
 
-  Double_t weight = fUseDownscaleWeight ? GetDownscaleWeight() : 1.;
-  fHistos->FillTH1("hEventCounter", 1., weight);
+  Double_t weight = fUseDownscaleWeight ? 1./GetDownscaleWeight() : 1.;
+  Double_t Rjet = jets->GetJetRadius();
+  fHistos->FillTH1("hEventCounter", 1.);
   if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
-  AliDebugStream(1) << fTriggerString << ": Using pt ranges " << fJetPtMin << " to " << fJetPtMax << std::endl;
 
   for(auto jet : jets->accepted()){
     AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
     fHistos->FillTH1("hJetPtRaw", jet->Pt());
     if(fUseDownscaleWeight) fHistos->FillTH1("hJetPtRawWeighted", jet->Pt(), weight);
-    if(jet->Pt() < fJetPtMin || jet->Pt() > fJetPtMax) continue;
-    auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
-    AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
-    fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
-    fHistos->FillTH2("hRgVsPt", zgparams[2], jet->Pt());
-    fHistos->FillTH2("hNsdVsPt", zgparams[5], jet->Pt());
-    if(fUseDownscaleWeight) {
-      fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
-      fHistos->FillTH2("hRgVsPtWeighted", zgparams[2], jet->Pt(), weight);
-      fHistos->FillTH2("hNsdVsPtWeighted", zgparams[5], jet->Pt(), weight);
-    } 
+    try {
+      auto zgparams = MakeSoftdrop(*jet, jets->GetJetRadius(), tracks, clusters);
+      bool untagged = zgparams[0] < fZcut;
+      AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << zgparams[0] << std::endl;
+      fHistos->FillTH2("hZgVsPt", zgparams[0], jet->Pt());
+      fHistos->FillTH2("hRgVsPt", untagged ? -0.01 : zgparams[2], jet->Pt());
+      fHistos->FillTH2("hNsdVsPt", untagged ? -1. : zgparams[5], jet->Pt());
+      fHistos->FillTH2("hThetagVsPt", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt());
+      if(fUseDownscaleWeight) {
+        fHistos->FillTH2("hZgVsPtWeighted", zgparams[0], jet->Pt(), weight);
+        fHistos->FillTH2("hRgVsPtWeighted", untagged ? -0.01 : zgparams[2], jet->Pt(), weight);
+        fHistos->FillTH2("hNsdVsPtWeighted", untagged ? -1. : zgparams[5], jet->Pt(), weight);
+        fHistos->FillTH2("hThetagVsPtWeighted", untagged ? -0.05 : zgparams[2]/Rjet, jet->Pt(), weight);
+      } 
+    } catch (int e) {
+      if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Softdrop error " << e << ": Having 0 constituents for reclustering" << std::endl;
+      fHistos->FillTH1("hSkippedJets", jet->Pt());
+      if(fUseDownscaleWeight) 
+        fHistos->FillTH1("hSkippedJetsWeighted", jet->Pt(), weight);
+    }
 
     // Fill QA plots - trigger cluster independent
     // Those plots have been in before (as part of the Tree) but were 
@@ -192,13 +200,15 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     fHistos->FillTH2("hQANEFPt", jet->Pt(), jet->NEF(), weight);
     if(clusters){
       auto leadcluster = jet->GetLeadingCluster(clusters->GetArray());
-      TLorentzVector ptvec;
-      leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+      if(leadcluster){
+        TLorentzVector ptvec;
+        leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        fHistos->FillTH2("hQAZnePt", jet->Pt(), jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+      }
     }
     if(tracks){
       auto leadingtrack = jet->GetLeadingTrack(tracks->GetArray());
-      fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+      if(leadingtrack) fHistos->FillTH2("hQAZchPt", jet->Pt(), jet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
     }
     fHistos->FillTH2("hQANChPt", jet->Pt(), jet->GetNumberOfTracks(), weight);
     fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
@@ -211,38 +221,9 @@ Double_t AliAnalysisTaskEmcalSoftDropData::GetDownscaleWeight() const {
   TString triggerclass;
   if(fTriggerString == "INT7") triggerclass = "CINT7-B-NOPF-CENT";
   else if(fTriggerString == "EJ1") triggerclass = "CEMC7EJ1-B-NOPF-CENTNOTRD";
-  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ1-B-NOPF-CENT";
+  else if(fTriggerString == "EJ2") triggerclass = "CEMC7EJ2-B-NOPF-CENT";
   if(triggerclass.Length()) weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerclass);
   return weight;
-}
-
-TBinning *AliAnalysisTaskEmcalSoftDropData::GetDefaultPtBinning() const {
-  auto binning = new TCustomBinning;
-  switch(fBinningMode) {
-    case kSDModeINT7: {
-      binning->SetMinimum(20);
-      binning->AddStep(40., 5.);
-      binning->AddStep(60., 10.);
-      binning->AddStep(80., 20.);
-      binning->AddStep(120., 40.);
-      break;
-    }
-    case kSDModeEJ1: {
-      binning->SetMinimum(80.);
-      binning->AddStep(120., 5.);
-      binning->AddStep(160., 10.);
-      binning->AddStep(200., 20.);
-      break;
-    }
-    case kSDModeEJ2: {
-      binning->SetMinimum(70.);
-      binning->AddStep(100., 5.);
-      binning->AddStep(120., 10.);
-      binning->AddStep(140., 20.);
-      break;
-    }
-  };
-  return binning;
 }
 
 TBinning *AliAnalysisTaskEmcalSoftDropData::GetZgBinning() const {
@@ -255,12 +236,12 @@ TBinning *AliAnalysisTaskEmcalSoftDropData::GetZgBinning() const {
 
 TBinning *AliAnalysisTaskEmcalSoftDropData::GetRgBinning(double R) const {
   auto binning = new TCustomBinning;
-  binning->SetMinimum(0.);
+  binning->SetMinimum(-0.05); // Negative bin for untagged jets
   binning->AddStep(R, 0.05);
   return binning;
 }
 
-std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const {
+std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
@@ -274,6 +255,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
+      fHistos->FillTH2("hSDUsedChargedPtjvPtc", jet.Pt(), constituentTrack.pt());
     }
   }
 
@@ -286,16 +268,17 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       fastjet::PseudoJet constituentCluster(clustervec.Px(), clustervec.Py(), clustervec.Pz(), cluster->GetHadCorrEnergy());
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
+      fHistos->FillTH2("hSDUsedNeutralPtjvPtc", jet.Pt(), constituentCluster.pt());
     }
   }
 
   AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
   if(!constituents.size()){
-    AliErrorStream() << "Jet has 0 constituents." << std::endl;
+    if(fUseChargedConstituents && fUseNeutralConstituents) AliErrorStream() << "Jet has 0 constituents." << std::endl;
     throw 1;
   }
   // Redo jet finding on constituents with a
-  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 );
+  fastjet::JetDefinition jetdef(fastjet::antikt_algorithm, jetradius*2, fastjet::E_scheme, fastjet::BestFJ30 );
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
@@ -382,21 +365,17 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
     default: jettypestring = "Undef";
   };
 
-  EBinningMode_t binmode(kSDModeINT7);
   ULong_t triggerbits(AliVEvent::kINT7);
   std::string triggerstring(trigger);
   std::cout << "Found trigger " << triggerstring << std::endl;
   if(triggerstring == "EJ1") {
     std::cout << "Setting binning mode for EJ1" << std::endl;
-    binmode = kSDModeEJ1;
     triggerbits = AliVEvent::kEMCEJE;
   } else if(triggerstring == "EJ2") {
     std::cout << "Setting binning mode for EJ2" << std::endl;
-    binmode = kSDModeEJ2;
     triggerbits = AliVEvent::kEMCEJE;
   }
   datamaker->SetSelectTrigger(triggerbits, trigger.data());
-  datamaker->SetBinningMode(binmode);
 
   // Connecting containers
   std::stringstream outputfile, histname;

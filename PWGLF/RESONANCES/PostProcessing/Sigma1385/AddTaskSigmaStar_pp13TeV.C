@@ -278,15 +278,15 @@ Bool_t Config_Lambdapi(
     
   Float_t lambda_piPIDCut=3.;
   Float_t lambda_pPIDCut=3.;
-  Float_t lambdaDaughDCA=1.5;//0.5;
+  Float_t lambdaDaughDCA=1.6;//0.5;
   Float_t lambdaDCA=0.3;
   Float_t lambda_pLife=30.;
-  Float_t lambda_radiuslow=0.5;
-  Float_t lambda_radiushigh=200.;//100
-  Float_t lambda_massTol=0.006;
+  Float_t lambda_radiuslow=1.4;
+  Float_t lambda_radiushigh=100.;//100
+  Float_t lambda_massTol=0.010;
   Float_t lambda_massTolVeto=0.004;
   Bool_t  lambdaSwitch=kFALSE;
-  Float_t lambdaCosPoinAn=0.97;//0.99
+  Float_t lambdaCosPoinAn=0.99;//0.99
 
   if(V0Cuts==1) lambdaDCA=1.e10;
   else if(V0Cuts==2) lambdaDaughDCA=0.5;
@@ -302,10 +302,10 @@ Bool_t Config_Lambdapi(
   cutLambda->SetfLowRadius(lambda_radiuslow);
   cutLambda->SetfHighRadius(lambda_radiushigh);
   cutLambda->SetTolerance(lambda_massTol);
-  cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  // cutLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
   cutLambda->SetSwitch(lambdaSwitch);
   cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutLambda->SetMaxRapidity(0.5);
+  cutLambda->SetMaxRapidity(0.8);
   cutLambda->SetMinTPCcluster(-1);
     
   AliRsnCutSet* cutSetLambda=new AliRsnCutSet("setLambda",AliRsnTarget::kDaughter);
@@ -324,10 +324,10 @@ Bool_t Config_Lambdapi(
   cutAntiLambda->SetfLowRadius(lambda_radiuslow);
   cutAntiLambda->SetfHighRadius(lambda_radiushigh);
   cutAntiLambda->SetTolerance(lambda_massTol);
-  cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
+  // cutAntiLambda->SetToleranceVeto(lambda_massTolVeto);//Rejection range for Competing V0 Rejection
   cutAntiLambda->SetSwitch(lambdaSwitch);
   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-  cutAntiLambda->SetMaxRapidity(0.5);
+  cutAntiLambda->SetMaxRapidity(0.8);
   cutAntiLambda->SetMinTPCcluster(-1);
     
   AliRsnCutSet* cutSetAntiLambda=new AliRsnCutSet("setAntiLambda",AliRsnTarget::kDaughter);
@@ -345,22 +345,22 @@ Bool_t Config_Lambdapi(
 #endif
     AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
+    // AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());
     
 
-    AddMonitorOutput_P(pname,cutSetLambda->GetMonitorOutput());
-    AddMonitorOutput_Pt(pname,cutSetLambda->GetMonitorOutput());
-    AddMonitorOutput_V0NPt(pname,cutSetLambda->GetMonitorOutput());
-    AddMonitorOutput_V0PPt(pname,cutSetLambda->GetMonitorOutput());
+    // AddMonitorOutput_P(pname,cutSetLambda->GetMonitorOutput());
+    // AddMonitorOutput_Pt(pname,cutSetLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0NPt(pname,cutSetLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0PPt(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0Mass(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0DCA(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0Radius(pname,cutSetLambda->GetMonitorOutput());
-    AddMonitorOutput_V0Lifetime(pname,cutSetLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0Lifetime(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0DaughterDCA(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0CPA(pname,cutSetLambda->GetMonitorOutput());
     AddMonitorOutput_V0DCA2TPV(pname,cutSetLambda->GetMonitorOutput());
@@ -368,14 +368,14 @@ Bool_t Config_Lambdapi(
     AddMonitorOutput_LambdaProtonPID(cutSetLambda->GetMonitorOutput());
 
     pname.Form("lambdaa");
-    AddMonitorOutput_P(pname,cutSetAntiLambda->GetMonitorOutput());
-    AddMonitorOutput_Pt(pname,cutSetAntiLambda->GetMonitorOutput());
-    AddMonitorOutput_V0NPt(pname,cutSetAntiLambda->GetMonitorOutput());
-    AddMonitorOutput_V0PPt(pname,cutSetAntiLambda->GetMonitorOutput());
+    // AddMonitorOutput_P(pname,cutSetAntiLambda->GetMonitorOutput());
+    // AddMonitorOutput_Pt(pname,cutSetAntiLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0NPt(pname,cutSetAntiLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0PPt(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0Mass(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0DCA(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0Radius(pname,cutSetAntiLambda->GetMonitorOutput());
-    AddMonitorOutput_V0Lifetime(pname,cutSetAntiLambda->GetMonitorOutput());
+    // AddMonitorOutput_V0Lifetime(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0DaughterDCA(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0CPA(pname,cutSetAntiLambda->GetMonitorOutput());
     AddMonitorOutput_V0DCA2TPV(pname,cutSetAntiLambda->GetMonitorOutput());

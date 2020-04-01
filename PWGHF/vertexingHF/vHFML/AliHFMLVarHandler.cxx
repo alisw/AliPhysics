@@ -96,6 +96,14 @@ void AliHFMLVarHandler::SetCandidateType(bool issignal, bool isbkg, bool ispromp
 }
 
 //________________________________________________________________
+void AliHFMLVarHandler::SetIsSignalWoQuark(bool isSignalWoQuark) {  
+    if(isSignalWoQuark) 
+        fCandType |= kSignalWoQuark;
+    else 
+        fCandType &= ~kSignalWoQuark;
+}
+
+//________________________________________________________________
 void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("cand_type", &fCandType);
     fTreeVar->Branch("inv_mass", &fInvMass);
@@ -107,6 +115,8 @@ void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("cos_p_xy", &fCosPXY);
     fTreeVar->Branch("imp_par_xy", &fImpParXY);
     fTreeVar->Branch("dca", &fDCA);
+    if(fEnableBMotherPt)
+        fTreeVar->Branch("pt_B", &fPtBMother);
 } 
 
 //________________________________________________________________

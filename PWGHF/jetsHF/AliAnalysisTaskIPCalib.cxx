@@ -167,7 +167,7 @@ void AliAnalysisTaskIPCalib::AllocateTrackHistograms()
         binedges[j] = pow(10, log10(from) + (log10(to) - log10(from)) / double(bins) * double(j));
       }
 
-      TLinearBinning* xbinning = new TLinearBinning(300, -15, 15);
+      TLinearBinning* xbinning = new TLinearBinning(400, -40, 40);
       TVariableBinning* ybinning = new TVariableBinning(binedges);
       TLinearBinning nbinning(100, 0, 100);
       const TBinning* histsmbinning[3] = {xbinning, ybinning, &nbinning};
@@ -280,10 +280,11 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
       Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
       track->GetImpactParameters(dca, cov);
 
-      TBits filterMap;
-      UInt_t fm = track->GetFilterMap();
-      filterMap.Set(16, &fm);
-      Int_t fb = (filterMap.TestBitNumber(4)) ? 4 : 9;
+      //TBits filterMap;
+      //UInt_t fm = track->GetFilterMap();
+      //filterMap.Set(16, &fm);
+      //Int_t fb = (filterMap.TestBitNumber(4)) ? 4 : 9;
+      Int_t fb = track->TestFilterBit(4) ? 4 : 9;
 
       histname = TString::Format("%s/histTrackNTPCcls_%d", groupname.Data(), fb);
       fHistManager.FillTH1(histname, track->GetTPCNcls());

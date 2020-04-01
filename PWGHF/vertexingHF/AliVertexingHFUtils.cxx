@@ -595,12 +595,17 @@ Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODM
 Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
   /// works also with not-refilled candidates of reduced AODs
+  /// For refilled candidates other IsCandidateInjected method recommended
 
   Int_t nprongs=cand->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     Int_t idDau=cand->GetProngID(i);
-    AliAODTrack *daugh=(AliAODTrack*)aod->GetTrack(idDau);
-    if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+    for(Int_t i=0; i<aod->GetNumberOfTracks(); i++) {
+      AliAODTrack *daugh=(AliAODTrack*)aod->GetTrack(i);
+      if(daugh && (Int_t)daugh->GetID()==idDau){
+        if(AliVertexingHFUtils::IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+      }
+    }
   }
   return kFALSE;
 }

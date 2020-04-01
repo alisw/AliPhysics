@@ -109,7 +109,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TString GetCutNumber();
 
     // Cut Selection
-    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0., Int_t leadingCellID1 = 0, Int_t leadingCellID2 = 0);
+    Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0., Int_t leadingCellID1 = 0, Int_t leadingCellID2 = 0, Char_t recoMeth1 = 0, Char_t  recoMeth2 = 0);
     Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Double_t fRapidityShift=0.) const;
@@ -132,7 +132,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   PrintCuts();
     void   PrintCutsWithValues();
 
-    void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
     void    SetRunningMode(Int_t mode){fMode = mode; return;}
     void    InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
     void    SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
@@ -175,7 +175,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   SetUsePtDepSelectionWindow(Bool_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
     Bool_t GetUsePtDepSelectionWindow(Bool_t ptdep)                { return fUsePtDepSelectionWindow;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
-    Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
+    Double_t GetRapidityCutValueMin()                            { return fRapidityCutMesonMin; }
+    Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
 
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
@@ -195,6 +196,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
     Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
+    Bool_t   DoGammaSwappForBg(){return fDoGammaSwappForBg;}
+    Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
+    Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
+    Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
     Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
@@ -220,6 +225,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
+    Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -252,7 +258,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fSelectionNSigmaHigh;           ///< N of sigma for ptdep selection window cut max
     Double_t    fAlphaMinCutMeson;              ///< min value for meson alpha cut
     Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
-    Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
+    Double_t    fRapidityCutMesonMin;           ///< min value for meson rapidity
+    Double_t    fRapidityCutMesonMax;           ///< max value for meson rapidity
     Double_t    fMinV0Dist;                     ///
     Double_t    fMesonQualityMin;               ///
     Double_t    fPBremSmearing;                 ///
@@ -276,6 +283,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
     Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
+    Int_t       fUseGammaSelection;             ///< flag for usage of gamma candidate selection e.g. gamma pairs which are in Pi0 mass region are not used as direct gammas for omega reco
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<
     Int_t       fNumberOfBGEvents;              ///<
@@ -284,7 +292,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundHandler;             ///<
     Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
 
-    Bool_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
@@ -300,11 +308,16 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
+    Bool_t      fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
+    Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
+    Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
+    Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
+    Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
-    Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality. 
+    Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
     Bool_t      fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
@@ -328,7 +341,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,38)
+    ClassDef(AliConversionMesonCuts,42)
     /// \endcond
 };
 

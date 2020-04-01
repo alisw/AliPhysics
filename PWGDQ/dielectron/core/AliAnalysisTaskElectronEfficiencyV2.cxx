@@ -432,8 +432,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       fResoFile = TFile::Open(fResoFilename.c_str());
     }
 
-    if (!fResoFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fResoFilename.c_str()));
+    if (!fResoFile) {
+      AliFatal(Form("Could not open file %s", fResoFilename.c_str()));
     }
     fArrResoPt = (TObjArray *)fResoFile->Get("RelPtResArrCocktail");
     fArrResoEta = (TObjArray *)fResoFile->Get("EtaResArrVsPt");
@@ -453,6 +453,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       gSystem->Exec(Form("alien_cp alien://%s .", fCocktailFilenameFromAlien.c_str()));
       std::cout << "Copy cocktail weighting from Alien" << std::endl;
       fCocktailFile = TFile::Open(fCocktailFilename.c_str());
+    }
+    if (!fCocktailFile) {
+      AliFatal(Form("Could not open file %s", fCocktailFilename.c_str()));
     }
 
     if (fCocktailFile){
@@ -1859,6 +1862,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
   else if (var == "theta_reso")  fResolutionThetaBins.clear();
   else if (var == "mass")   fMassBins.clear();
   else if (var == "pairpt") fPairPtBins.clear();
+  else if (var == "phiv") fPhiVBins.clear();
 
   const double stepSize = (max - min) / steps;
   for (unsigned int i = 0; i < steps+1; ++i){
@@ -1873,6 +1877,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
     else if (var == "theta_reso")  fResolutionThetaBins.push_back(i * stepSize + min);
     else if (var == "mass")   fMassBins.push_back(i * stepSize + min);
     else if (var == "pairpt") fPairPtBins.push_back(i * stepSize + min);
+    else if (var == "phiv") fPhiVBins.push_back(i * stepSize + min);
   }
 }
 
@@ -1897,15 +1902,15 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
 
 
   // Track variables
-  TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
+  TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",200,0.,10.);//,AliDielectronVarManager::kPt);
   fOutputListSupportHistos->AddAt(hPt,     0);
 
   // PID
-  TH2D* hITSnSigmaEle_P = new TH2D("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
+  TH2D* hITSnSigmaEle_P = new TH2D("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P, 1);
-  TH2D* hTPCnSigmaEle_P = new TH2D("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
+  TH2D* hTPCnSigmaEle_P = new TH2D("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEle_P, 2);
-  TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
+  TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hTOFnSigmaEle_P, 3);
 
   // Track kinematic
@@ -1944,7 +1949,7 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
   TH2D* hTPCcrossedRows_TPCnCls = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters;TPC number clusters;TPC crossed rows",
                                            160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
   TH2D* hTPCcrossedRows_Pt = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt;Pt [GeV];TPC crossed rows",
-                                      160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+                                      200,0.,10.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_TPCnCls, 19);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_Pt, 20);
 

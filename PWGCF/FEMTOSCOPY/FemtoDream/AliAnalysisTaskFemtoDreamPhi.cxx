@@ -9,6 +9,8 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fIsMCTruth(false),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
@@ -30,6 +32,8 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fIsMCTruth(false),
+      fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
@@ -57,7 +61,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetOwner();
 
   fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
- // fEvent->SetCalcSpherocity(true);
+  // fEvent->SetCalcSpherocity(true);
 
   fOutput->Add(fEvent->GetEvtCutList());
 
@@ -139,7 +143,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   }
 
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(6, 2, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(3, 1, fConfig->GetMinimalBookingME());
   fOutput->Add(fPairCleaner->GetHistList());
 
   fPartColl =
@@ -185,53 +189,55 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   static std::vector<AliFemtoDreamBasePart> AProtonTRUE;
   AProtonTRUE.clear();
 
+
   static float massKaon =
       TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
 
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
-
     if (!track) continue;
     fTrack->SetTrack(track);
-    //find mothers of MC Kaons (if phi->stop loop, else loop until arriving to g,q,p) and set MotherPDG
+    // find mothers of MC Kaons (if phi->stop loop, else loop until arriving to
+    // g,q,p) and set MotherPDG
     if (fIsMC) {
-        TClonesArray *mcarray = dynamic_cast<TClonesArray*> (Event->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (!mcarray) {
-          AliError("SPTrack: MC Array not found");
+      TClonesArray *mcarray = dynamic_cast<TClonesArray *>(
+          Event->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!mcarray) {
+        AliError("SPTrack: MC Array not found");
+      }
+      if (fTrack->GetID() >= 0) {
+        AliAODMCParticle *mcPart =
+            (AliAODMCParticle *)mcarray->At(fTrack->GetID());
+        if (!(mcPart)) {
+          break;
         }
-        if (fTrack->GetID() >= 0) {
-          AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(fTrack->GetID());
-          if (!(mcPart)) {
+        int motherID = mcPart->GetMother();
+        int lastMother = motherID;
+        AliAODMCParticle *mcMother = nullptr;
+        while (motherID != -1) {
+          lastMother = motherID;
+          mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+          motherID = mcMother->GetMother();
+          if (mcMother->GetPdgCode() == 333) {
             break;
           }
-          int motherID = mcPart->GetMother();
-          int lastMother = motherID;
-          AliAODMCParticle *mcMother = nullptr;
-          while (motherID != -1) {
-            lastMother = motherID;
-            mcMother = (AliAODMCParticle *) mcarray->At(motherID);
-            motherID = mcMother->GetMother();
-            if (mcMother->GetPdgCode()==333) {
-              break;
-            }
-          }
-          if (lastMother != -1) {
-            mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
-          }
-          if (mcMother) {
-            fTrack->SetMotherPDG(mcMother->GetPdgCode());
-//          std::cout<<"Track Mother: "<<fTrack->GetMotherPDG()<<endl;
-            fTrack->SetMotherID(lastMother);
-         }
         }
-        else {
-          break;  //if we don't have MC Information, don't use that track
+        if (lastMother != -1) {
+          mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
         }
+        if (mcMother) {
+          fTrack->SetMotherPDG(mcMother->GetPdgCode());
+          //          std::cout<<"Track Mother: "<<fTrack->GetMotherPDG()<<endl;
+          fTrack->SetMotherID(lastMother);
+        }
+      } else {
+        break;  // if we don't have MC Information, don't use that track
+      }
     }
-
     fTrack->SetInvMass(massKaon);
     if (fPosKaonCuts->isSelected(fTrack)) {
       Particles.push_back(*fTrack);
+
     }
     if (fNegKaonCuts->isSelected(fTrack)) {
       AntiParticles.push_back(*fTrack);
@@ -244,61 +250,64 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     }
   }
 
-  if(fIsMC)
-  {
-      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray*> (Event->FindListObject(AliAODMCParticle::StdBranchName()));
-      int noPart = fArrayMCAOD->GetEntriesFast();
-      AliFemtoDreamBasePart part;
-      for(int iPart = 1; iPart<noPart; iPart++) {
-        AliAODMCParticle *mcPart = (AliAODMCParticle*) fArrayMCAOD->At(iPart);
-        if (!(mcPart)){
-            std::cout<<"NO MC particle"<<std::endl;
-            continue;
-        }
-        part.SetMCParticleRePart(mcPart);
 
-        if (mcPart->GetPdgCode()==333){
-            int firstdaughter= mcPart->GetDaughterFirst();
-            AliAODMCParticle *mcDaughter = (AliAODMCParticle *) fArrayMCAOD->At(firstdaughter);
-            if (mcDaughter)
-            {
-                int dpdg = mcDaughter->GetPdgCode();
-                double dpt=mcDaughter->Pt();
-                double deta=mcDaughter->Eta();
-                if (std::abs(dpdg)==321)
-                {
-                    if ((dpt<999 && dpt>0.15) && (deta>-0.8 && deta<0.8))
-                    {
-                        PhiTRUE.push_back(part);
-                        continue;
-                    }
-                }
-            }
-        }
-
-        if (mcPart->GetPdgCode()==2212){
-            double pt=part.GetPt();
-            double eta=mcPart->Eta();
-
-            if ((pt<4.05 && pt>0.5) && (eta>-0.8 && eta<0.8))
-            {
-                ProtonTRUE.push_back(part);
-                continue;
-            }
-
-        }
-
-        if (mcPart->GetPdgCode()==-2212){
-            double pt=part.GetPt();
-            double eta=mcPart->Eta();
-            if ((pt<4.05 && pt>0.5) && (eta>-0.8 && eta<0.8))
-            {
-                AProtonTRUE.push_back(part);
-                continue;
-            }
-        }
-
+  if (fIsMC && fIsMCTruth) {
+    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+        Event->FindListObject(AliAODMCParticle::StdBranchName()));
+    int noPart = fArrayMCAOD->GetEntriesFast();
+    int mcpdg;
+    AliFemtoDreamBasePart part;
+    AliFemtoDreamBasePart part2;
+    for (int iPart = 1; iPart < noPart; iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
+      if (!(mcPart)) {
+        std::cout << "NO MC particle" << std::endl;
+        continue;
       }
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
+      mcpdg = mcPart->GetPdgCode();
+      if (mcpdg == 333) {
+        int firstdaughter = mcPart->GetDaughterFirst();
+        if (firstdaughter <= noPart) {
+          AliAODMCParticle *mcDaughter =
+              (AliAODMCParticle *)fArrayMCAOD->At(firstdaughter);
+
+          if (mcDaughter) {
+            int dpdg = mcDaughter->GetPdgCode();
+            double dpt = mcDaughter->Pt();
+            double deta = mcDaughter->Eta();
+            if (std::abs(dpdg) == 321) {
+              if ((dpt < 999 && dpt > 0.15) && (deta > -0.8 && deta < 0.8)) {
+                part.SetMCParticleRePart(mcPart);
+                PhiTRUE.push_back(part);
+              }
+            }
+          }
+        }
+      }
+
+      if (mcpdg == 2212) {
+        double pt = mcPart->Pt();
+        double eta = mcPart->Eta();
+
+        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
+          ProtonTRUE.push_back(part);
+        }
+      }
+
+      if (mcpdg == -2212) {
+        double pt = mcPart->Pt();
+        double eta = mcPart->Eta();
+        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+          part.SetMCParticleRePart(mcPart);
+          AProtonTRUE.push_back(part);
+        }
+      }
+
+    }
   }
 
   fPhiParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
@@ -306,15 +315,17 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     for (const auto &negK : AntiParticles) {
       fPhiParticle->Setv0(posK, negK, Event, false, false, true);
       fPhiParticle->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
-//      std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
-//      std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;
-//      std::cout<<"PDG kp: "<<posK.GetMCPDGCode()<<endl;
-//      std::cout<<"PDG km: "<<negK.GetMCPDGCode()<<endl;
-//      std::cout<<"PDG phi: "<<fPhiParticle->GetMCPDGCode()<<endl;
+//            std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
+//            std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;
+//            std::cout<<"PDG kp: "<<posK.GetMCPDGCode()<<endl;
+//            std::cout<<"PDG km: "<<negK.GetMCPDGCode()<<endl;
+//            std::cout<<"PDG phi: "<<fPhiParticle->GetMCPDGCode()<<endl;
+
       if (fPhiCuts->isSelected(fPhiParticle)) {
-        fPhiParticle->SetCPA(gRandom->Uniform()); //cpacode needed for CleanDecay v0;
+        fPhiParticle->SetCPA(
+            gRandom->Uniform());  // cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
-//      std::cout<<"PDG phi cut: "<<fPhiParticle->GetMCPDGCode()<<endl;
+        //      std::cout<<"PDG phi cut: "<<fPhiParticle->GetMCPDGCode()<<endl;
       }
     }
   }
@@ -332,8 +343,42 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(AProtonTRUE);
   fPairCleaner->StoreParticle(PhiTRUE);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+
+  if (fConfig->GetUseEventMixing()) {
+    if (fUseOMixing) {
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
+          fPairCleaner->GetCleanParticles();
+      int size = Particles.size();
+      if (size == 6) {
+        if ((Particles.at(2)).size() > 0) {
+          if (((Particles.at(0)).size() > 0) ||
+              ((Particles.at(1)).size() > 0)) {
+              fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                                  fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+          }
+        }
+
+        if (fIsMC&&fIsMCTruth) {
+          if ((Particles.at(5)).size() > 0) {
+            if (((Particles.at(3)).size() > 0) ||
+                ((Particles.at(4)).size() > 0)) {
+                fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                                    fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+            }
+          }
+        }
+      }
+    } else {
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                            fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+
+    }
+  }
+
+
 
   PostData(1, fOutput);
 }

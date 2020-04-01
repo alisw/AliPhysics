@@ -68,6 +68,7 @@
 #pragma link C++ class AliFemtoModelCorrFctn+;
 #pragma link C++ class AliFemtoModelWeightGeneratorLednicky+;
 #pragma link C++ class AliFemtoCutMonitorParticleYPt+;
+#pragma link C++ class AliFemtoCutMonitorParticleYPt_proton+;
 #pragma link C++ class AliFemtoCutMonitorParticleVertPos+;
 #pragma link C++ class AliFemtoCutMonitorParticlePID+;
 #pragma link C++ class AliFemtoCutMonitorParticlePIDBeta+;
@@ -112,6 +113,7 @@
 #pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
 #pragma link C++ class AliFemtoEventReaderNanoAOD+;
 #pragma link C++ class AliFemtoEventReaderNanoAODChain+;
+#pragma link C++ class AliFemtoEventReaderAODKinematicsMultSelection+;
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;

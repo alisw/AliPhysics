@@ -1202,13 +1202,11 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
     return kFALSE;
   }
 
-  fProcessCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data());
-  fProcessTrueCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessPairAnalysis.ConfigureBinning(sztmp.Data());
-  fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data());
-
-  return kTRUE;
+  return (fProcessCorrelations.ConfigureBinning(sztmp.Data()) &&
+          fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data()) &&
+          fProcessTrueCorrelations.ConfigureBinning(sztmp.Data()) &&
+          fProcessPairAnalysis.ConfigureBinning(sztmp.Data()) &&
+          fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data()));
 }
 
 

@@ -124,7 +124,7 @@ public:
 
     enum TCTagType{
         TCNo,
-        TCIPSig,
+        TCIPSigPtDep,
         TCIPFixedPt
     };
 
@@ -139,6 +139,12 @@ public:
         V0Rec,
         V0MC,
         V0TrueRec
+    };
+
+    enum V0RejType{
+        V0RejNo,
+        V0Rej,
+        V0JetRej
     };
 
     enum TemplateFlavour{
@@ -291,6 +297,7 @@ public:
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     void SetDefaultAnalysisCuts();
     void SetDefaultV0Cuts();
+    void DefaultInitTreeVars();
     Bool_t IsPhysicalPrimary(AliVParticle *part);
     void ChangeDefaultCutTo(AliAnalysisTaskHFJetIPQA::bCuts cutname, Double_t newcutvalue);
     void GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut);
@@ -337,8 +344,9 @@ public:
     //_______________________________
     //Filling Histograms
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
-    void FillRecHistograms(int jetflavour, double jetpt, double eta, double phi);
-    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen);
+    void FillRecHistograms(int jetflavour, double recjetpt, AliEmcalJet *jetgen,double eta, double phi, int fUnfoldFracCalc);
+    void FillGenHistograms(int jetflavour, AliEmcalJet* jetgen, int fUnfoldFracCalc);
+    Bool_t PerformGenLevAcceptanceCuts(AliEmcalJet* jetgen);
     void FillIPTypePtHists(int jetflavour, double jetpt, bool* nTracks);
     void FillIPTemplateHists(double jetpt, int iN,int jetflavour,double* params);
     void FillTaggedJetPtDistribution(bool** kTagDec, double jetpt);
@@ -350,7 +358,7 @@ public:
     void setFRunSmearing(Bool_t value){fRunSmearing = value;}
     void setFDoMCCorrection(Bool_t value){fDoMCCorrection=value;}
     void setFDoUnderlyingEventSub(Bool_t value){fDoUnderlyingEventSub=value;}
-    void setFApplyV0Rec(Bool_t value){fApplyV0Rej=value;}
+    void setFApplyV0Rec(int value){fApplyV0Rej=value;}
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setV0Cut(int iCut,double value){fV0Cuts[iCut]=value;}
 
@@ -365,15 +373,19 @@ public:
     void setGlobalVertex(Bool_t value){fGlobalVertex = value;}
     void setDoNotCheckIsPhysicalPrimary(Bool_t value){fDoNotCheckIsPhysicalPrimary = value;}
     void setDoJetProb(Bool_t value){fDoJetProb = value;}
-    void setDoTCTagging(Bool_t value) {fDoTCTagging=value;}
+    void setDoTCTagging(Int_t value) {fDoTCTagging=value;}
     void setDoProbTagging(Int_t value) {fDoProbTagging=value;}
     void setDoMCEffs(Bool_t value){fDoMCEffs=value;}
 
     void setTrackIPvsPtValues(double fav0cut, double fbv0cut, double fcv0cut){fV0Cuts[fAV0Cut]=fav0cut;fV0Cuts[fBV0Cut]=fbv0cut;fV0Cuts[fCV0Cut]=fcv0cut;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
-    void setfNThresholds(Int_t value){fNThresholds=value;}
+    void setfNThresholds(Int_t value){fNThresholds=value; printf("Setting threshold value=%i\n",fNThresholds);}
     void setfUserSignificance(Bool_t value){fUseSignificance=value;}
+    void SetTagSettings(int iTagSetting);
+    void SetfUnfoldPseudoDataFrac(int frac){fUnfoldPseudeDataFrac=frac;}
+    void setfResponseMode(bool value){fResponseMode=value;}
+    void setTaskName(const char* name){sTaskName=Form("%s",name);}
 
     //_____________________________
     //Lund Plane
@@ -396,7 +408,7 @@ public:
     void SetTCThresholds(TObjArray** &threshs);
     void SetProbThresholds(TObjArray** &threshs);
     void ReadProbvsIPLookup(TObjArray *&oLookup);
-    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh);
+    void ReadThresholdHists(TString PathToThresholds, TString taskname, int nTCThresh, int iTagSetting);
     void setTagLevel(int taglevel){kTagLevel=taglevel;}
     void setTCThresholdPtFixed(double value){fTCThresholdPtFixed=value;};
 
@@ -404,6 +416,7 @@ public:
     //Probability Tagging
     double GetTrackProbability(double jetpt, bool* hasIPs, double* ipval);
     void FillProbabilityHists(double jetpt,double probval,int jetflavour,bool **kTagDec);
+    void FillProbThreshHists(double proval, double* ipval, double jetpt, int jetflavour,bool* hasIPs, bool** kTagDec);
     void setDoLundPlane(Bool_t dolundplane){fDoLundPlane=dolundplane;}
     double IntegrateIP(int iJetPtBin, int iIPBin, int iN);
 
@@ -423,6 +436,30 @@ private:
     AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
     AliEmcalJet *  GetPerpendicularPseudoJet (AliEmcalJet*jet_in  , bool rev );
+
+    TTree* tJetTree;      //! tree containing jet properties
+    Float_t fJetRecPt;
+    Float_t fJetArea;
+    Float_t fMatchedJetPt;
+    Float_t fJetProb;
+    Int_t fJetFlavour;
+    Int_t nTracks;
+    Int_t fNEvent;
+    bool bMatched;
+    Float_t fTrackIPs[100];
+    Float_t fTrackIPSigs[100];
+    Float_t fTrackProb[100];
+    Float_t fTrackChi2OverNDF[100];
+    Float_t fTrackPt[100];
+    Int_t iTrackITSHits[100];
+    Bool_t bTrackIsV0[100];
+    Bool_t bFull[30];
+    Bool_t bSingle1st[30];
+    Bool_t bSingle2nd[30];
+    Bool_t bSingle3rd[30];
+    Bool_t bDouble[30];
+    Bool_t bTriple[30];
+
     void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
     void FillParticleCompositionEvent();
@@ -476,20 +513,21 @@ private:
     Bool_t   fUsePIDJetProb;//
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
-    Bool_t   fApplyV0Rej;//
+    int   fApplyV0Rej;//
 
     Bool_t   fDoFlavourMatching;//
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fGlobalVertex;//
     Bool_t fDoNotCheckIsPhysicalPrimary;//
-    Bool_t fDoJetProb;
+    Bool_t fDoJetProb; //
     Bool_t   fFillCorrelations;//
     Bool_t fDoLundPlane;//
     Int_t fDoTCTagging;//  //0: no TC tagging, 1: IP Significance tagging, 2: IP tagging, fixed threshold
     Int_t fDoProbTagging;//  //0: no probability tagging, 1: use JP for tagging, 2: use lnJP for tagging
-    Bool_t fDoMCEffs;
+    Bool_t fDoMCEffs;//
     Bool_t fUseSignificance;//
+    Bool_t fResponseMode;//
 
     //_____________________
     //variables
@@ -498,14 +536,17 @@ private:
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
     Int_t fNThresholds;//
+    Int_t fNTrackTypes;//
     vector<TString> sTemplateFlavour;
+    Int_t fUnfoldPseudeDataFrac;//
+    TString sTaskName;//
 
     //______________________
     //Cuts
     Double_t fJetRadius;//
     Double_t fDaughtersRadius;//
     Int_t fNoJetConstituents;//
-    Double_t fTCThresholdPtFixed;
+    Double_t fTCThresholdPtFixed; //
     //_____________________
     //TGraphs
     TGraph * fGraphMean;//!
@@ -674,7 +715,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 50)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 58)
 };
 
 #endif

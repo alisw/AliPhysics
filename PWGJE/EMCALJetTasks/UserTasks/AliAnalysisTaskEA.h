@@ -146,6 +146,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
   void        SetV0MeanForMCWithDeltaElectronBug() { kOldV0MC = kTRUE;}  
 
+  void        SetUseMultiplicity() { fMultFramework = kTRUE;}  
+
 
   Bool_t      PassedGATrigger();
   Bool_t      PassedMinBiasTrigger();
@@ -216,7 +218,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
                                                       
   //Float_t fCentralityV0A;                             //! Centrality from V0A
   //Float_t fCentralityV0C;                             //! Centrality from V0C
-  //Float_t fCentralityV0M;                             //! Centrality from V0M
+  Float_t fCentralityV0M;                             //! Centrality from V0M
                                                       
   Double_t fxVertex;                                  //!  X vertex from ITS
   Double_t fyVertex;                                  //!  Y vertex from ITS
@@ -280,7 +282,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH1D* fhVertex[fkVtx];                             //! vertex distribution 
                                                       
-   //TH2D* fhCentrality[kTG][fkCE];                      //! estimated centrality based on  mult V0, mult VC, V0M 
+   TH2D* fhCentrality[kTG];                      //! estimated centrality based on  mult V0, mult VC, V0M 
    //TH2D* fhCentralityTTH[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with hadron TT 
    //TH2D* fhCentralityTTJ[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with ch jet TT 
    //TH2D* fhCentralityTTC[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with cluster TT
@@ -403,6 +405,22 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhV0MRunByRunMB;                               //! run by run V0M
    TH2D* fhV0MnormRunByRunMB;                           //! run by run V0M norm
 
+   TH2D* fhJetPtAsymmetryCB[kTG][fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   TH2D* fhTrackPtAsymmetryCB[kTG][fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   THnSparse* fhNumberOfHighPtJetsCB[kTG][fkTTbins];     //! number of jets with pT larger than X in central barrel 
+   THnSparse* fhNumberOfHighPtJetsRecoil[kTG][fkTTbins]; //! number of jets with pT larger than X in recoil region 
+   TH1D* fhJetPtEvtByEvent;                              //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEvent[fkTTbins];              //! event by event pt spectrum of jets 
+
+   TH2D* fhJetPtAsymmetryCBPartLevel[fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   TH2D* fhTrackPtAsymmetryCBPartLevel[fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   THnSparse* fhNumberOfHighPtJetsCBPartLevel[fkTTbins];     //! number of jets with pT larger than X in central barrel 
+   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region 
+   TH1D* fhJetPtEvtByEventPartLevel;                              //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];              //! event by event pt spectrum of jets 
+
+
+
    //EMBEDDING
    TH2D* fhTrackEtaInclEMB;                              //!  Eta dist inclusive embedded tracks vs pT 
    TH3D* fhRecoilJetPhiTTH_EMB_V0Mnorm1[kTG][fkTTbins];  //!  filled with any detector level pythia recoil jet 
@@ -418,6 +436,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero_EMB[kTG];           //! response matrix jet pT not corrected on rho
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
+
+  
 
    Double_t fMinFractionShared;     // cut on shared fraction
 
@@ -487,10 +507,12 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    Bool_t kOldV0MC;                                // set old MC settings for V0 which had a bug in delta electrons 
 
+   Bool_t fMultFramework;                        // use mean V0M values from the centrality framework 
+  
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 27); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 28); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

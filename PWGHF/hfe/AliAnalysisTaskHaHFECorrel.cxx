@@ -3200,7 +3200,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
     fRecElecPtEtaPhiVtxWRecEff=new THnSparseF("fRecElePtEtaPhiWRecEff", "Rec electrons w. rec.Eff; rec #it{p}_{T}; rec #eta; rec #varphi; rec zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
     fRecElecPtEtaPhiVtxWRecEff->GetAxis(3)->Set(NVertexBins, XVertexBins);
-    fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
+    fRecElecPtEtaPhiVtxWRecEff->GetAxis(0)->Set(NBinsElectronRecEff, XBinsElectronRecEff);
     fOutputListMain->Add(fRecElecPtEtaPhiVtxWRecEff);
     
     fMCElecPtEtaPhiVtx=new THnSparseF("fMCElePtEtaPhiVtx", "MC truth gen. electrons;  MC #it{p}_{T}; MC #eta; MC #varphi; MC zVtx;", 4, EffEBins, EffEXmin, EffEXmax);
@@ -3725,7 +3725,14 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 
 	if (PDGCode ==11) {
 	  AliAODMCParticle* mcPartMother=(AliAODMCParticle*)fMC->GetTrack(MCParticle->GetMother());
-	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
+	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode());
+
+	  if (mcMotherPDG==11 || mcMotherPDG==15) { // to includ HF->e->e HF->tau->e
+	    AliAODMCParticle* mcPartGMother=(AliAODMCParticle*)fMC->GetTrack(mcPartMother->GetMother());
+	    mcMotherPDG = abs(mcPartGMother->GetPdgCode());
+	  }
+
+	  
 	  Int_t MIsHeavy  = Int_t (mcMotherPDG / TMath::Power(10, Int_t(TMath::Log10(mcMotherPDG))));
 	  fRecElecMCSecondaryCont->Fill(pt, MCParticle->IsPhysicalPrimary(), EventWeight);
 
@@ -5631,6 +5638,15 @@ void AliAnalysisTaskHaHFECorrel::MCEfficiencyCorrections(const AliVVertex * RecV
 	if (mcMotherID>0) {
 	  AliAODMCParticle* mcPartMother=(AliAODMCParticle*)fMC->GetTrack(mcMotherID);
 	  Int_t mcMotherPDG = abs(mcPartMother->GetPdgCode()); 
+
+	  if (mcMotherPDG==11 || mcMotherPDG==15) { // to includ HF->e->e HF->tau->e
+	    AliAODMCParticle* mcPartGMother=(AliAODMCParticle*)fMC->GetTrack(mcPartMother->GetMother());
+	    mcMotherPDG = abs(mcPartGMother->GetPdgCode());
+	  }
+
+
+
+
 	  Int_t MIsHeavy  = Int_t (mcMotherPDG / TMath::Power(10, Int_t(TMath::Log10(mcMotherPDG))));
 	  if (MIsHeavy>3 && MIsHeavy<6 && mcEta> fMinElectronEta && mcEta < fMaxElectronEta) {
 	    fillSparse[2]=mcPhi;
@@ -5665,6 +5681,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     Double_t PtMother=0; 
     Double_t PtGrandMother=0;
 
+
+    //  cout << MClabel << "\t" << AODtrack->Pt() << "\t" << recEffE << endl;
+    
     // get ancestors (eta-pi0-e, eta-gamma-e, pi0-gamma-e, eta-e, pi0-e, ...) - remember pt of pi0/Eta for correction
     if (MCParticle->GetMother()>=0) {
       AliAODMCParticle* MCParticleMother = (AliAODMCParticle*) fMC->GetTrack(MCParticle->GetMother());
@@ -5793,7 +5812,7 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     }
 	
 
-    if (fOneTimeCheck) { // same as above but without pt mother weights for MC closure     
+    if (kTRUE) { // same as above but without pt mother weights for MC closure     
       if (PDGCode==11 && IsPrimary) {     
 	if (PDGCodeMother==111 || PDGCodeMother==221) {
 	  fTagEffInclMultWoW->Fill(pt, mult, EventWeight);
@@ -6420,7 +6439,6 @@ Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Int_t run, Double_t pt, D
 
   //  return 1.;
 
-  
   if (pt<0.5) return -1;
   Int_t Bin = fEleRecEff.FindBin(1.*run,zVtx, pt);
   //  cout << "EleBin " << Bin << endl;

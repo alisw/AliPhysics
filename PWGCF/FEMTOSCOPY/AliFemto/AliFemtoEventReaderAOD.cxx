@@ -635,6 +635,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       case kReference:
         norm_mult = fAODheader->GetRefMultiplicity();
         break;
+      case kRefComb08:
+        norm_mult = fAODheader->GetRefMultiplicityComb08();
+        break;
       case kTPCOnlyRef:
         norm_mult = fAODheader->GetTPConlyRefMultiplicity();
         break;

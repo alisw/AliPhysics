@@ -36,225 +36,197 @@
 #include "AliAODMCParticle.h"
 #include "TMath.h"
 #include <vector>
+#include <TExMap.h>
+#include "TDirectoryFile.h"
+#include "TSystem.h"
 
 using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskTwoMultiCorrelations)
 
-/* ========================================================================== /
-/ Mandatory methods needed for AliAnalysisTaskSE.                             /
-/ ========================================================================== */
+/* ========================================================================================== /
+/ Mandatory methods needed for AliAnalysisTaskSE.                                             /
+/ ========================================================================================== */
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   AliAnalysisTaskSE(),
-// General parameters for the analysis.
+// 1. General parameters for the configuration of the analysis.
   fMainList(NULL),
-  fHighestHarmonic(8),
-  fLargestCorrelators(8),
-  fComputeEtaGaps(kFALSE),
+  fHighestHarmonic(8), fLargestCorrelators(8),
+  fDoKineAnalysis(kFALSE),
   fDoCorrelationsHisto(kFALSE),
+  fComputeEtaGaps(kFALSE),
+  fRecoEvent(NULL), fKineEvent(NULL),
+// 2. Parameters related to the centrality.
+  fMultiplicityList(NULL),
+  fCentralityMin(0.), fCentralityMax(100.),
+  fCentralityFromSPD(kFALSE), fCentralityFromVZero(kFALSE),
+  fCentrality(-1.),
+  fHistoEvents(NULL),
+// 3. Parameters related to the multiplicity.
+  fInitialMultiplicity(0),
+// 4. Parameters related to the physics event selection.
+  fEventSelectionList(NULL),
+  fCutOnPVx(kFALSE), fPVxMin(-44.), fPVxMax(44.),
+  fCutOnPVy(kFALSE), fPVyMin(-44.), fPVyMax(44.),
+  fCutOnPVz(kFALSE), fPVzMin(-10.), fPVzMax(-10.),
+// 5. Parameters related to the HMOs selection.
+  fMultiplicityMin(6),
+  fMainFilter(128), fGlobalFilter(256),
+  fCutOnHMOs(kFALSE),
+  fMultiplicityMinA(0.), fMultiplicityMinB(0.),
+  fMultiplicityMaxA(0.), fMultiplicityMaxB(0.),
+// 6. Parameters related to the track selection.
+  fTrackSelectionList(NULL),
+  fCutOnPt(kFALSE), fPtMin(0.2), fPtMax(5.),
+  fCutOnEta(kFALSE), fEtaMin(-0.8), fEtaMax(0.8),
+  fCutOnNTPC(kFALSE), fNTPCMin(70),
+  fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
+  fCutOnNITS(kFALSE), fNITSMin(2),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
+  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
+  fCutOnCharge(kFALSE), fKeepPositiveCharges(kFALSE),
+  fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(1000),
+// 7. Parameters related to the efficiency and acceptance weights.
+  fUseKineRecoTable(kFALSE),
   fUseNonUnitParticleWeights(kFALSE),
+  fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
+  fUseLocalFiles(kFALSE),
+  fPathToWeights(""), fPeriodUsedForWeight(""),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
-// Type of files used in the analysis.
-  fAnalyseOnlyAOD(kFALSE),
-  fAnalyseOnlyMC(kFALSE),
-  fAnalyseBothMCandAOD(kFALSE),
-  fAODevent(NULL),
-  fMCevent(NULL),
-// Parameters and histograms related to the centrality.
-  fMultiplicityList(NULL),
-  fCentralityFromVZero(kFALSE),
-  fCentralityFromSPD(kFALSE), 
-  fCentralityMin(0.),
-  fCentralityMax(100.),
-  fMultSelection(NULL),
-// Parameters and histograms related to the number of tracks.
-  fInitialMultiplicity(0),
-// Parameters and histograms related to the event selection.
-  fEventSelectionList(NULL),
-  fCutOnPVx(kFALSE),
-  fPVxMin(-44.),
-  fPVxMax(44.),
-  fCutOnPVy(kFALSE),
-  fPVyMin(-44.),
-  fPVyMax(44.),
-  fCutOnPVz(kFALSE),
-  fPVzMin(-10.),
-  fPVzMax(-10.),
-  fMultiplicityMin(6),
-  fMainFilter(128),
-  fGlobalFilter(256),
-  fCutOnHMOs(kFALSE),
-  fMultiplicityMinA(0.),
-  fMultiplicityMinB(0.),
-  fMultiplicityMaxA(0.),
-  fMultiplicityMaxB(0.),
-// Parameters and histograms related to the track selection.
-  fTrackSelectionList(NULL),
+  fUseJEfficiency(kFALSE),
   fFilterbitIndex(0),
-  fCutOnPt(kFALSE),
-  fPtMin(0.2),
-  fPtMax(5.),
-  fHistoEfficiency(NULL),
-  fHistoEffInverse(NULL),
-  fCutOnEta(kFALSE),
-  fEtaMin(-0.8),
-  fEtaMax(0.8),
-  fCutOnNTPC(kFALSE),
-  fNTPCMin(70),
-  fCutOnChi(kFALSE),
-  fChiMin(0.1),
-  fChiMax(4.),
-  fCutOnNITS(kFALSE),
-  fNITSMin(2),
-  fCutOnDCAxy(kFALSE),
-  fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE),
-  fDCAzMax(2.4),
-  fCutOnCharge(kFALSE),
-  fKeepPositiveCharges(kFALSE),
-// Parameters related to the multi-particle correlations.
+  fHistoEfficiency(NULL), fHistoEffInverse(NULL),
+// 8. Parameters related to the multi-particle correlations.
   fMPCList(NULL),
   fReducedQPower(0),
-  fProfileTwoPartCorrel(NULL),
-  fProfileFourPartCorrel(NULL),
-  fProfileFourPartCorrelCheck(NULL),
-  fProfileSixPartCorrel(NULL),
-// Parameters related to the 2-particle correlations with eta gaps.
+  fProfileTwoPartCorrel(NULL), fProfileFourPartCorrel(NULL),
+  fProfileFourPartCorrelCheck(NULL), fProfileSixPartCorrel(NULL),
+// 9. Parameters related to the 2-particle correlations with eta gaps.
   fTPCEtaList(NULL)
 {
-/* Dummy constructor of the class. */
+/* Dummy constructor of the class.                                                            /
+/ 1. Initialise the arrays of data members.                                                  */
   AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations()");
 
-// Initialise all elements in the arrays.
+// 1. Initialise the arrays of data members.
   InitialiseArraysOfQvectors();
   InitialiseArraysOfHistos();
   InitialiseArraysOfTProfiles();
 
-}   // End of the dummy constructor.
+} // End: AliAnalysisTaskTwoMultiCorrelations().
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights) :
   AliAnalysisTaskSE(name),
-// General parameters for the analysis.
+// 1. General parameters for the configuration of the analysis.
   fMainList(NULL),
-  fHighestHarmonic(8),
-  fLargestCorrelators(8),
-  fComputeEtaGaps(kFALSE),
+  fHighestHarmonic(8), fLargestCorrelators(8),
+  fDoKineAnalysis(kFALSE),
   fDoCorrelationsHisto(kFALSE),
+  fComputeEtaGaps(kFALSE),
+  fRecoEvent(NULL), fKineEvent(NULL),
+// 2. Parameters related to the centrality.
+  fMultiplicityList(NULL),
+  fCentralityMin(0.), fCentralityMax(100.),
+  fCentralityFromSPD(kFALSE), fCentralityFromVZero(kFALSE),
+  fCentrality(-1.),
+  fHistoEvents(NULL),
+// 3. Parameters related to the multiplicity.
+  fInitialMultiplicity(0),
+// 4. Parameters related to the physics event selection.
+  fEventSelectionList(NULL),
+  fCutOnPVx(kFALSE), fPVxMin(-44.), fPVxMax(44.),
+  fCutOnPVy(kFALSE), fPVyMin(-44.), fPVyMax(44.),
+  fCutOnPVz(kFALSE), fPVzMin(-10.), fPVzMax(-10.),
+// 5. Parameters related to the HMOs selection.
+  fMultiplicityMin(6),
+  fMainFilter(128), fGlobalFilter(256),
+  fCutOnHMOs(kFALSE),
+  fMultiplicityMinA(0.), fMultiplicityMinB(0.),
+  fMultiplicityMaxA(0.), fMultiplicityMaxB(0.),
+// 6. Parameters related to the track selection.
+  fTrackSelectionList(NULL),
+  fCutOnPt(kFALSE), fPtMin(0.2), fPtMax(5.),
+  fCutOnEta(kFALSE), fEtaMin(-0.8), fEtaMax(0.8),
+  fCutOnNTPC(kFALSE), fNTPCMin(70),
+  fCutOnChi(kFALSE), fChiMin(0.1), fChiMax(4.),
+  fCutOnNITS(kFALSE), fNITSMin(2),
+  fCutOnDCAxy(kFALSE), fDCAxyMax(3.2),
+  fCutOnDCAz(kFALSE), fDCAzMax(2.4),
+  fCutOnCharge(kFALSE), fKeepPositiveCharges(kFALSE),
+  fNumberBinsPt(1000), fNumberBinsEta(1000), fNumberBinsPhi(720),
+// 7. Parameters related to the efficiency and acceptance weights.
+  fUseKineRecoTable(kFALSE),
   fUseNonUnitParticleWeights(kFALSE),
+  fUsePtWeights(kFALSE), fUsePhiWeights(kFALSE), fUseEtaWeights(kFALSE),
+  fUseLocalFiles(kFALSE),
+  fPathToWeights(""), fPeriodUsedForWeight(""),
   fEfficiency(NULL),
   fFirstEvent(kTRUE),
-// Type of files used in the analysis.
-  fAnalyseOnlyAOD(kFALSE),
-  fAnalyseOnlyMC(kFALSE),
-  fAnalyseBothMCandAOD(kFALSE),
-  fAODevent(NULL),
-  fMCevent(NULL),
-// Parameters and histograms related to the centrality.
-  fMultiplicityList(NULL),
-  fCentralityFromVZero(kFALSE),
-  fCentralityFromSPD(kFALSE), 
-  fCentralityMin(0.),
-  fCentralityMax(100.),
-  fMultSelection(NULL),
-// Parameters and histograms related to the number of tracks.
-  fInitialMultiplicity(0),
-// Parameters and histograms related to the event selection.
-  fEventSelectionList(NULL),
-  fCutOnPVx(kFALSE),
-  fPVxMin(-44.),
-  fPVxMax(44.),
-  fCutOnPVy(kFALSE),
-  fPVyMin(-44.),
-  fPVyMax(44.),
-  fCutOnPVz(kFALSE),
-  fPVzMin(-10.),
-  fPVzMax(-10.),
-  fMultiplicityMin(6),
-  fMainFilter(128),
-  fGlobalFilter(256),
-  fCutOnHMOs(kFALSE),
-  fMultiplicityMinA(0.),
-  fMultiplicityMinB(0.),
-  fMultiplicityMaxA(0.),
-  fMultiplicityMaxB(0.),
-// Parameters and histograms related to the track selection.
-  fTrackSelectionList(NULL),
+  fUseJEfficiency(kFALSE),
   fFilterbitIndex(0),
-  fCutOnPt(kFALSE),
-  fPtMin(0.2),
-  fPtMax(5.),
-  fHistoEfficiency(NULL),
-  fHistoEffInverse(NULL),
-  fCutOnEta(kFALSE),
-  fEtaMin(-0.8),
-  fEtaMax(0.8),
-  fCutOnNTPC(kFALSE),
-  fNTPCMin(70),
-  fCutOnChi(kFALSE),
-  fChiMin(0.1),
-  fChiMax(4.),
-  fCutOnNITS(kFALSE),
-  fNITSMin(2),
-  fCutOnDCAxy(kFALSE),
-  fDCAxyMax(3.2),
-  fCutOnDCAz(kFALSE),
-  fDCAzMax(2.4),
-  fCutOnCharge(kFALSE),
-  fKeepPositiveCharges(kFALSE),
-// Parameters related to the multi-particle correlations.
+  fHistoEfficiency(NULL), fHistoEffInverse(NULL),
+// 8. Parameters related to the multi-particle correlations.
   fMPCList(NULL),
   fReducedQPower(0),
-  fProfileTwoPartCorrel(NULL),
-  fProfileFourPartCorrel(NULL),
-  fProfileFourPartCorrelCheck(NULL),
-  fProfileSixPartCorrel(NULL),
-// Parameters related to the 2-particle correlations with eta gaps.
+  fProfileTwoPartCorrel(NULL), fProfileFourPartCorrel(NULL),
+  fProfileFourPartCorrelCheck(NULL), fProfileSixPartCorrel(NULL),
+// 9. Parameters related to the 2-particle correlations with eta gaps.
   fTPCEtaList(NULL)
 {
-/* Constructor of the class. */
+/* Constructor of the class.                                                                  /
+/ 1. Create the mother list. (The rights on everything it holds are given to the list.)       /
+/ 2. Define the input and output slots.                                                       /
+/ 3. Initialise the arrays of data members.                                                  */
   AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
 
-// Create the mother list with the rights on everything contained inside it.
+// 1. Create the mother list.
   fMainList = new TList();
   fMainList->SetName("outputAnalysis");
   fMainList->SetOwner(kTRUE);
 
-// Define the input and output slots.
+// 2. Define the input and output slots.
   DefineOutput(1, TList::Class());
 
-// Initialise all elements in the arrays.
+// 3. Initialise the arrays of data members.
   InitialiseArraysOfQvectors();
   InitialiseArraysOfHistos();
   InitialiseArraysOfTProfiles();
 
-}   // End of the constructor.
+} // End: AliAnalysisTaskTwoMultiCorrelations(const char *, Bool_t)
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
-/* Destructor of the class. */
-  if (fMainList) {delete fMainList;}
-}   // End of the destructor.
+/* Destructor of the class.                                                                  */
+  if (fMainList) { delete fMainList; }
+} // End: ~AliAnalysisTaskTwoMultiCorrelations()
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 {
-/* Define the outputs of the task at the beginning of the analysis. */
+/* Define the outputs of the task at the beginning of the analysis.                           /
+/ 1. Avoid name clashes. (Part 1.)                                                            /
+/ 2. JEfficiency for NUA correction : DongJo (If chosen).                                     /
+/ 3. Book the lists and their content.                                                        /
+/ 4. Avoid name clashes. (Part 2.)                                                           */
   TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()";
 
-// Avoid name clashes.
+// 1. Avoid name clashes.
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-// JEfficiency for NUA correction : DongJo
-  fEfficiency = new AliJEfficiency();
-  fEfficiency->SetMode(1); // 1: priod should work for you
-  fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
+// 2. JEfficiency for NUA correction : DongJo
+  if (fUseJEfficiency)
+  {
+    fEfficiency = new AliJEfficiency();
+    fEfficiency->SetMode(1);  // 1: priod should work for you
+    fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data");
+  }
 
-// Book the lists, histograms and profiles.
+// 3. Book the lists and their content.
   this->BookAllLists();
   this->BookMultiplicityList();
   this->BookEventSelectionList();
@@ -262,64 +234,74 @@ void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
   this->BookMPCList();
   this->BookTPCEtaList();
 
-// Continue to avoid name clashes.
+// 4. Avoid name clashes.
   TH1::AddDirectory(oldHistAddStatus);
   PostData(1, fMainList);
   fFirstEvent = kTRUE;
-}   // End of "void UserCreateOutputObjects()".
 
-/* ------------------------------------------------------------------------- */
+} // End: void UserCreateOutputObjects().
+
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 {
-/* Execute the analysis for each event. */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)";
-  fAODevent = dynamic_cast<AliAODEvent*>(InputEvent());   // Pointer to an AOD event.
-  fMCevent = MCEvent();                                   // Pointer to a MC event.
+/* Execute the chosen analysis for each event of the input dataset.                           /
+/ 1. Get the pointers for the current event at reco and kine levels. (The kine level exists   /
+/   only for MC-Generator AOD files.)                                                         /
+/ 2. Select the correct analysis according to the AddTask configuration.                      /
+/ 3. PostData.                                                                               */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)";
 
-// Select the correct method according to the given type of files.
-  if ((Int_t)fAnalyseOnlyAOD + (Int_t)fAnalyseOnlyMC + (Int_t)fAnalyseBothMCandAOD != 1)
-  {Fatal(sMethodName.Data(), "ERROR: only one 'fProcess' must be set to kTRUE.");}
-  else if (fAnalyseOnlyAOD) {AnalyseAODevent();}
-  else if (fAnalyseOnlyMC) {AnalyseMCevent();}
-  else if (fAnalyseBothMCandAOD) {Fatal(sMethodName.Data(),"TBA: analysis with both AOD and MC files.");}
+// 1. Get the pointers for the current event at reco and kine levels.
+  fRecoEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  fKineEvent = MCEvent();
 
-// PostData.
+// 2. Select the correct analysis according to the AddTask configuration.
+  if (fDoKineAnalysis) { GetRatioDistributions(); }
+  else { AnalyseRecoEvent(); }
+
+// 3. PostData.
   PostData(1, fMainList);
-}   // End of "void UserExec()".
 
-/* ------------------------------------------------------------------------- */
+} // End: void UserExec(Option_t *).
+
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 {
-/* Save the outputs at the end of the execution of the script. */
-// Access the mother list.
+/* Save the outputs at the end of the execution of the script.                                /
+/ 1. Access the mother list.                                                                  /
+/ 2. Create the output file and save inside the mother list.                                 */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)";
+// 1. Access the mother list.
   fMainList = (TList*)GetOutputData(1);
-  if (!fMainList) {exit(1);}
+  if (!fMainList) { Fatal(sMethod.Data(), "ERROR: fMainList not found."); }
 
-// Create the output file and save the mother list inside.
+// 2. Create the output file and save inside the mother list.
   TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
-  fMainList->Write(fMainList->GetName(),TObject::kSingleKey);
+  fMainList->Write(fMainList->GetName(), TObject::kSingleKey);
   delete outputFile;
-}   // End of "void Terminate()".
 
-/* ========================================================================== /
-/ Methods called in the constructors.                                         /
-/ ========================================================================== */
+} // End: void Terminate(Option_t *).
+
+/* ========================================================================================== /
+/ Methods called in the constructors.                                                         /
+/ ========================================================================================== */
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfQvectors()
 {
-/* Initialise to zero all the elements of "fQvectors". */
+/* Initialise to zero all the elements of "fQvectors".                                       */
   for (Int_t iHarmo = 0; iHarmo < 65; iHarmo++)
   {
     for (Int_t iPower = 0; iPower < 9; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0., 0.);
-    }
-  }
-}   // End of "void InitialiseArraysOfQvectors()".
+    } // End: iPower.
+  } // End: iHarmo.
 
-/* ------------------------------------------------------------------------- */
+} // End: void InitialiseArraysOfQvectors().
+
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfHistos()
 {
-/* Initialise to NULL all the histograms inside arrays. */
+/* Initialise to NULL all the histograms inside arrays.                                      */
   for (Int_t i = 0; i < 2; i++)
   {
     fHistoCentrality[i] = NULL;
@@ -341,441 +323,583 @@ void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfHistos()
     fHistoCharge[i] = NULL;
   }
 
-  for (Int_t j = 0; j < 8; j++) {fHistoReducedQvectors[j] = NULL;}
+  for (Int_t i = 0; i < 3; i++) { fHistoWeights[i] = NULL; }
 
-}   // End of "void InitialiseArraysOfHistos()".
+  for (Int_t i = 0; i < 8; i++) { fHistoReducedQvectors[i] = NULL; }
 
-/* ------------------------------------------------------------------------- */
+} // End: void InitialiseArraysOfHistos().
+
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfTProfiles()
 {
 /* Initialise to NULL all the profiles inside arrays. */
   for (Int_t i = 0; i < 11; i++) {fProfileTPCEta[i] = NULL;}
-}   // End of "void InitialiseArraysOfTProfiles()".
+} // End: void InitialiseArraysOfTProfiles().
 
-/* ========================================================================== /
-/ Methods called in "UserExec".                                               /
-/ ========================================================================== */
-void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent()
+/* ========================================================================================== /
+/ Methods called in "UserExec".                                                               /
+/ ========================================================================================== */
+void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()
 {
-/* Execute the analysis for a given AOD event. */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent()";
+/* Do the analysis at reco level to get the multiparticle correlations.                       /
+/ 1. Check the presence of the pointer to an AOD track.                                       /
+/ 2. Check if the event belongs to the current centrality bin.                                /
+/ 3. Apply the event selection with the HMOs criteria.                                        /
+/ 4. If chosen: get the run number and load the correct NUE correction.                       /
+/ 5. Identify which tracks pass the selection.                                                /
+/ 6. Keep the events with enough tracks to have a meaningful event weight.                    /
+/ 7. Get the arrays needed to compute the multiparticle correlations.                         /
+/ 8. Get the particle weights if chosen.                                                      /
+/ 9. Compute all the possible multi-particle correlations.                                    /
+/ 10. Reset the variables for the next event*/
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseRecoEvent()";
 
-// Check the presence of an AOD event.
-  if (!fAODevent) {Fatal(sMethodName.Data(), "ERROR: no AOD event found.");}
+// 1. Check the presence of the pointer to an AOD track.
+  if (!fRecoEvent) { Fatal(sMethod.Data(), "ERROR: no AOD event found."); }
 
-// Set the detector for the centrality estimation as set in the task.
-  TString centralityEstimator = "centralityEstimator";
-  if ( (Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1 )
+// 2. Check if the event belongs to the current centrality bin.
+//    Save the number of events in this centrality bin.
+  if (!ApplyCentralitySelection()) {return;}
+  fHistoEvents->Fill(0.5);
+
+// 3. Apply the event selection with the HMOs criteria.
+//    Save the number of events after the event selection.
+  if(!ApplyEventSelection(kTRUE)) {return;}
+  fHistoEvents->Fill(1.5);
+
+// 4. If chosen: get the run number and load the correct NUE correction.
+  if (fUseJEfficiency && fFirstEvent)
   {
-    Fatal(sMethodName.Data(), "ERROR: only one detector must be set to kTRUE.");
-  }
-  else if (fCentralityFromVZero) {centralityEstimator = "V0M";}
-  else if (fCentralityFromSPD) {centralityEstimator = "CL1";}
-
-// Select only the events belonging to the current centrality range.
-  fMultSelection = (AliMultSelection*)fAODevent->FindListObject("MultSelection");
-  if (!fMultSelection) {return;}
-
-  Float_t centrality = fMultSelection->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));
-  if ( (centrality < fCentralityMin) || (centrality >= fCentralityMax) ) {return;}
-
-  fHistoCentrality[0]->Fill(centrality);
-
-// Look at the initial observables.
-  fInitialMultiplicity = fAODevent->GetNumberOfTracks();
-  AliAODVertex *primaryVertex = (AliAODVertex*)fAODevent->GetPrimaryVertex();   // 3D position of the PV.
-
-  fHistoMultiplicity[0]->Fill(fInitialMultiplicity);
-  fHistoPVx[0]->Fill(primaryVertex->GetX());
-  fHistoPVy[0]->Fill(primaryVertex->GetY());
-  fHistoPVz[0]->Fill(primaryVertex->GetZ());
-
-// Apply the event selection.
-  if(!ApplyPhysicsEventSelection()) {return;}
-  if (!RemoveHMOs()) {return;}
-
-  fHistoCentrality[1]->Fill(centrality);
-  fHistoPVx[1]->Fill(primaryVertex->GetX());
-  fHistoPVy[1]->Fill(primaryVertex->GetY());
-  fHistoPVz[1]->Fill(primaryVertex->GetZ());
-
-// Get the run number and load the correct NUE correction (from DongJo).
-  if (fFirstEvent)
-  {
-    fEfficiency->SetRunNumber(fAODevent->GetRunNumber());
+    fEfficiency->SetRunNumber(fRecoEvent->GetRunNumber());
     fEfficiency->Load();
     fFirstEvent = kFALSE;
   }
 
-// Apply the track selection to classify the tracks.
-  long long multiplicity = fAODevent->GetNumberOfTracks();    // Current number of tracks.
-  long long finalMultiplicity = 0;                            // Number of tracks selected for the analysis.
-  Bool_t *isTrackSelected = new Bool_t[multiplicity]();       // kTRUE: the track passed the selection, kFALSE: the track is rejected.
+// 5. Identify which tracks pass the selection.
+  long long multiplicity = 0;         // Current number of tracks in the event.
+  long long finalMultiplicity = 0;    // Multiplicity after the track selection.
 
-  for (Int_t iTrack = 0; iTrack < multiplicity; iTrack++)
+// 5.1 Get the current number of events.
+  multiplicity = fRecoEvent->GetNumberOfTracks();
+  Bool_t *isTrackSelected = new Bool_t[multiplicity](); // Flag if the track passed or not.
+    // kTRUE: the track passed the selection, kFALSE: the track is rejected.
+
+// 5.2
+  for (long long iTrack = 0; iTrack < multiplicity; iTrack++)
   {
-  // Get the current track belonging to the main filter.
-    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(iTrack));
-    if (!aTrack) {continue;}    // No track found.
-    if (!aTrack->TestFilterBit(fMainFilter)) {continue;}    // The track does not belong to the filter.
+  // 5.2.1 Get the pointer to the current track.
+    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
+    if (!aTrack) { continue; }
+    if (!aTrack->TestFilterBit(fMainFilter)) { continue; }
 
-  // Apply the track selection (histograms are filled inside).
-    if (!ApplyTrackSelectionAOD(aTrack)) {isTrackSelected[iTrack] = kFALSE;}
-    else {isTrackSelected[iTrack] = kTRUE; finalMultiplicity++;}
-  }   // End of the first loop over the tracks.
+  // 5.2.2 Apply the track selection at reco level.
+    if (ApplyTrackSelection(aTrack))  // The track passed the selection.
+    { finalMultiplicity++; isTrackSelected[iTrack] = kTRUE; }
+    else { isTrackSelected[iTrack] = kFALSE; }  // The track failed the selection.
+  } // End of the loop over the tracks.
 
-// Select only the events with enough tracks for the event weight.
-  if (finalMultiplicity < fMultiplicityMin) {return;}
+// 5.3 Save the number of events after the track selection.
+  fHistoEvents->Fill(2.5);
+
+// 6. Keep the events with enough tracks to have a meaningful event weight.
+//    Save the final number of tracks and final number of events.
+  if (finalMultiplicity < fMultiplicityMin) { return; }
   fHistoMultiplicity[1]->Fill(finalMultiplicity);
+  fHistoEvents->Fill(3.5);
 
-// Prepare the variables needed for the rest of the analysis.
-  Float_t   iPt = 0.;                                               // Transverse momentum.
-  Float_t   *iEta = new Float_t[finalMultiplicity]();               // Pseudorapidity for the eta gaps.
-  Float_t   *iPhi = new Float_t[finalMultiplicity]();               // Azimuthal angles.
-  Float_t   *iParticleWeights = new Float_t[finalMultiplicity]();   // Particle weights.
-  Int_t     iIndex = 0;                                             // Index of the selected track in the final arrays.
-  Float_t   iEffCorr = 0.;                                          // Efficiency correction.
-  Float_t   iEffInverse = 0.;                                       // Inverse of the efficiency correction.
+// 7. Get the arrays needed to compute the multiparticle correlations.
+  Int_t iIndex = 0;           // Index of the selected track in the final arrays.
+  Float_t iEffCorr = 1.;      // Efficiency correction.
+  Float_t iEffInverse = 1.;   // Inverse of the efficiency correction.
+  Float_t *iPt  = new Float_t[finalMultiplicity](); // Transverse momentum.
+  Float_t *iEta = new Float_t[finalMultiplicity](); // Pseudorapidity for the eta gaps.
+  Float_t *iPhi = new Float_t[finalMultiplicity](); // Azimuthal angles.
+  Float_t *iParticleWeights = new Float_t[finalMultiplicity](); // Particle weights.
 
   for (Int_t iiTrack = 0; iiTrack < multiplicity; iiTrack++)
   {
-  // Check if iiTrack corresponds to a selected track or not.
-    if (!isTrackSelected[iiTrack]) {continue;}
+  // 7.1 Check if iiTrack corresponds to a selected track or not.
+    if (!isTrackSelected[iiTrack]) { continue; }
 
-    AliAODTrack *aaTrack = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(iiTrack));
-    if (!aaTrack) {continue;}
-    if (!aaTrack->TestFilterBit(fMainFilter)) {continue;}
+  // 7.2 Get a pointer to the selected track.
+    AliAODTrack *aaTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iiTrack));
+    if (!aaTrack) { continue; }
+    if (!aaTrack->TestFilterBit(fMainFilter)) { continue; }
 
-    iPt           = aaTrack->Pt();
-    iEta[iIndex]  = aaTrack->Eta();
-    iPhi[iIndex]  = aaTrack->Phi();
-    iEffCorr      = fEfficiency->GetCorrection(iPt, fFilterbitIndex, centrality);
-    iEffInverse   = 1.0/iEffCorr;
-    iParticleWeights[iIndex] = 1.;    // Unit particle weights are used by default.
-    if (fUseNonUnitParticleWeights) {iParticleWeights[iIndex] = iEffInverse;}
+  // 7.3 Get all the needed variables.
+    iPt[iIndex] = aaTrack->Pt();
+    iEta[iIndex] = aaTrack->Eta();
+    iPhi[iIndex] = aaTrack->Phi();
+    iParticleWeights[iIndex] = 1.;
+    if (fUseJEfficiency)
+    {
+      iEffCorr = fEfficiency->GetCorrection(iPt[iIndex], fFilterbitIndex, fCentrality);
+      iEffInverse = 1.0/iEffCorr;
+      iParticleWeights[iIndex] = iEffInverse;
+      fHistoEfficiency->Fill(iEffCorr);
+      fHistoEffInverse->Fill(iEffInverse);
+    }
 
-    fHistoEfficiency->Fill(iEffCorr);
-    fHistoEffInverse->Fill(iEffInverse);
-
+  // 7.4 Increase the index in the observables' arrays.
     iIndex++;
   }   // End of the second loop over the tracks.
 
-// Compute the multiparticle correlations for the current event.
+// 8. Get the particle weights if chosen.
+  if (fUseNonUnitParticleWeights)
+  {
+    Int_t eventRunNumber = fRecoEvent->GetRunNumber();
+    //printf("Run number: %d \n", eventRunNumber);
+    CalculateWeight(eventRunNumber, finalMultiplicity, iParticleWeights, iPhi, iPt, iEta);
+  }
+
+// 9. Compute all the possible multi-particle correlations.
   CalculateQvectors(finalMultiplicity, iPhi, iParticleWeights);
   ComputeReducedQvectors(finalMultiplicity);
   ComputeAllCorrelators(finalMultiplicity, iPhi, iParticleWeights);
-  if (fComputeEtaGaps) {ComputeTPCWithEtaGaps(finalMultiplicity, iPhi, iParticleWeights, iEta);}
+  if (fComputeEtaGaps)
+  { ComputeTPCWithEtaGaps(finalMultiplicity, iPhi, iParticleWeights, iEta); }
 
-// Reset the EbE variables.
-  centrality              = 0.;
-  fInitialMultiplicity    = 0;
-  multiplicity            = 0;
-  finalMultiplicity       = 0;
+// 10. Reset the variables for the next event.
+  fInitialMultiplicity = 0;
+  multiplicity = 0;
+  finalMultiplicity = 0;
   delete [] isTrackSelected;
-  iPt                     = 0.;
+  iIndex = 0;
+  iEffCorr = 0.;
+  iEffInverse = 0.;
+  delete [] iPt;
   delete [] iEta;
   delete [] iPhi;
   delete [] iParticleWeights;
-  iIndex                  = 0;
-  iEffCorr                = 0.;
-  iEffInverse             = 0.;
-}   // End of "void AnalyseAODevent()".
 
-/* ------------------------------------------------------------------------- */
-void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent()
+} // End: void AnalyseRecoEvent().
+
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
 {
-/* Execute the analysis for a given MC event. */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent()";
+/* Do the event/track selection at kine level to get the distributions.                       /
+/ 1. Check the presence of the pointer to the reco and kine events.                           /
+/ 2. Keep only the reco events belonging to the current centrality bin (The                   /
+/   centrality estimators are based on detectors' informations, so it does not                /
+/   work for kine events).                                                                    /
+/ 3. Apply the event selection at kine level.                                                 /
+/ 4. Get the mapping table between reco and kine levels.                                      /
+/ 5. Keep the events with enough tracks to have a meaningful event weight.                    /
+/ 6. Get the distributions at kine level.                                                     /
+/ 7. Reset the variables for the next event.                                                 */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()";
 
-// Check the presence of an AOD event.
-  if (!fMCevent) {Fatal(sMethodName.Data(), "ERROR: no MC event found.");}
+// 1. Check the presence of the pointer to the reco and kine events.
+  if (!fRecoEvent) { Fatal(sMethod.Data(), "ERROR: no AOD event found."); }
+  if (!fKineEvent) { Fatal(sMethod.Data(), "ERROR: no MC event found."); }
 
-// Set the detector for the centrality estimation as set in the task.
-  TString centralityEstimator = "centralityEstimator";
+// 2. Keep only the reco events belonging to the current centrality bin.
+//    Save the number of events in this centrality bin.
+  if (!ApplyCentralitySelection()) {return;}
+  fHistoEvents->Fill(0.5);
+
+// 3.1 Apply the event selection at reco level.
+  if(!ApplyEventSelection(kTRUE)) {return;}
+
+// 3.2 Apply the event selection at kine level.
+//    Save the number of events after the event selection.
+  if(!ApplyEventSelection(kFALSE)) {return;}
+  fHistoEvents->Fill(1.5);
+
+// 4. Get the mapping table between reco and kine levels.
+  long long multiplicity = 0;           // Current number of reco tracks.
+  long long finalMultiplicity = 0;      // Multiplicity after the track selection.
+  TExMap *kineRecoMap = new TExMap();   // Mapping table between kine and reco tracks.
+    // Key: label of the kine track ; value: selection status of the reco track.
+
+// 4.1 Get the number of reco tracks.
+  multiplicity = fRecoEvent->GetNumberOfTracks();
+
+// 4.2
+  for (long long iTrack = 0; iTrack < multiplicity; iTrack++)
+  {
+  // 4.2.1 Get the pointer to the current track.
+    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
+    if (!aTrack) { continue; }
+    if (!aTrack->TestFilterBit(fMainFilter)) { continue; }
+
+  // 4.2.2 Apply the track selection at reco level.
+    if (ApplyTrackSelection(aTrack))  // The track passed the selection: MC-key tagged with "1".
+    {
+      if (aTrack->GetLabel() >= 0)
+      {
+        if ( kineRecoMap->GetValue(aTrack->GetLabel()) == 0 ) {kineRecoMap->Add(aTrack->GetLabel(), 1);}
+      }
+      finalMultiplicity++;
+    }
+    else
+    {
+      if (aTrack->GetLabel() >= 0)
+      {
+        if ( kineRecoMap->GetValue(aTrack->GetLabel()) == 0 ) {kineRecoMap->Add(aTrack->GetLabel(), -1);}
+      }
+    }
+      // The track failed the selection: MC-key tagged with "-1".
+  } // End of the loop over the tracks.
+
+// 5. Keep the events with enough tracks to have a meaningful event weight.
+//    Save the final number of tracks and final number of events.
+  if (finalMultiplicity < fMultiplicityMin) { return; }
+  fHistoMultiplicity[1]->Fill(finalMultiplicity);
+  fHistoEvents->Fill(3.5);
+
+// 6. Get the distributions at kine level.
+  multiplicity = 0;
+  multiplicity = fKineEvent->GetNumberOfTracks();
+
+  for (long long iTrack = 0; iTrack < multiplicity; iTrack++)
+  {
+  // 6.1 Get the pointer to the current track.
+    AliAODMCParticle *aMCtrack = dynamic_cast<AliAODMCParticle*>(fKineEvent->GetTrack(iTrack));
+    if (!aMCtrack) { continue; }
+
+	  Float_t phi = aMCtrack->Phi();  // Azimuthal angle.
+    Float_t eta = aMCtrack->Eta();  // Pseudorapidity.
+    Float_t pt = aMCtrack->Pt();    // Tranverse momentum.
+    Int_t   charge = aMCtrack->Charge();    // Charge.
+
+  // 4.2.2 Apply the track selection at kine level.
+    if (!ApplyTrackSelection(aMCtrack)) { continue; }
+    if (fUseKineRecoTable)
+	  {
+		  if (kineRecoMap->GetValue(iTrack)==-1) {continue;}
+        // GetValue = -1: the corresponding reco track has not been selected by its track selection.
+		  else
+		  {
+      // GetValue = 0: the kine track has been lost in ALICE --> Included in the pT distribution.
+      // GetValue = 1: the reco track has been selected.
+        fHistoPt[1]->Fill(pt);
+        fHistoEta[1]->Fill(eta);
+        fHistoPhi[1]->Fill(phi);
+        fHistoCharge[1]->Fill(charge);
+		  }
+	  }
+	  else
+	  {
+        fHistoPt[1]->Fill(pt);
+        fHistoEta[1]->Fill(eta);
+        fHistoPhi[1]->Fill(phi);
+        fHistoCharge[1]->Fill(charge);
+	  }
+  } // End of the loop over the tracks.
+
+// 7. Reset the variables for the next event.
+  fInitialMultiplicity = 0;
+  multiplicity = 0;
+  finalMultiplicity = 0;
+  kineRecoMap->Delete();  // Empty the mapping table.
+  delete kineRecoMap; // Delete the pointer to the mapping table.
+
+} // End: void GetRatioDistributions().
+
+/* ----------------------------------------------------------------------------------------- */
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyCentralitySelection()
+{
+/* Check if the reconstructed event belongs to the current centrality bin.                    /
+/ 1. Set the centrality estimator according to user's settings.                               /
+/ 2. Fill the initial centrality distribution.                                                /
+/ 3. Apply the centrality selection.                                                          /
+/ 4. Fill the final centrality distribution.                                                 */
+  TString sMethod = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyCentralitySelection()";
+
+// 1. Set the centrality estimator according to user's settings.
+  TString centrEstimator = "centralityEstimator";
   if ( (Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1 )
+  { Fatal(sMethod.Data(), "ERROR: only one estimator must be set to kTRUE."); }
+  else if (fCentralityFromSPD) {centrEstimator = "CL1";}
+  else if (fCentralityFromVZero) {centrEstimator = "V0M";}
+
+// 2. Fill the initial centrality distribution.
+  AliMultSelection *multSelection = (AliMultSelection*)fRecoEvent->FindListObject("MultSelection");
+  if (!multSelection) {Fatal(sMethod.Data(), "ERROR: no multSelection found.");}
+  fCentrality = multSelection->GetMultiplicityPercentile(Form("%s", centrEstimator.Data()));
+  fHistoCentrality[0]->Fill(fCentrality);
+
+// 3. Apply the centrality selection.
+  if ( (fCentrality < fCentralityMin) || (fCentrality >= fCentralityMax) )
+  { return kFALSE; }
+
+// 4. Fill the final centrality distribution.
+  fHistoCentrality[1]->Fill(fCentrality);
+
+  return kTRUE;
+} // End: Bool_t ApplyCentralitySelection().
+
+/* ----------------------------------------------------------------------------------------- */
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t isRecoEvent)
+{
+/* Apply the event selection to the current event.                                            /
+/ 1. Get the right variables depending on the type of event.                                  /
+/ 2. Fill the initial QA histograms.                                                          /
+/ 3. Apply the physics event selection.                                                       /
+/ 4. Apply the HMOs selection (for reco only).                                                /
+/ 5. Fill the final QA histograms.                                                            /
+/ 6. Reset the variables for the next event.                                                 */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::ApplyEventSelection(Bool_t)";
+  Float_t PVx = 0.;   // x-position of the Primary Vertex.
+  Float_t PVy = 0.;   // y-position of the Primary Vertex.
+  Float_t PVz = 0.;   // z-position of the Primary Vertex.
+
+// 1. Get the right variables depending on the type of event.
+  if (isRecoEvent)  // The event selection is done at reco level.
   {
-    Fatal(sMethodName.Data(), "ERROR: only one detector must be set to kTRUE.");
+    fInitialMultiplicity = fRecoEvent->GetNumberOfTracks();
+    AliAODVertex *primaryVertex = (AliAODVertex*)fRecoEvent->GetPrimaryVertex();
+    PVx = primaryVertex->GetX();
+    PVy = primaryVertex->GetY();
+    PVz = primaryVertex->GetZ();
   }
-  else if (fCentralityFromVZero) {centralityEstimator = "V0M";}
-  else if (fCentralityFromSPD) {centralityEstimator = "CL1";}
-
-// Select only the events belonging to the current centrality range.
-  Float_t centrality = 0.;
-  if (!fAnalyseOnlyMC)    // Centrality has no sense for Kine events.
+  else  // The event selection is done at kine level.
   {
-    fMultSelection = (AliMultSelection*)fMCevent->FindListObject("MultSelection");
-    if (!fMultSelection) {return;}
-
-    Double_t centrality = fMultSelection->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));
-    if ( (centrality < fCentralityMin) || (centrality >= fCentralityMax) ) {return;}
+    fInitialMultiplicity = fKineEvent->GetNumberOfTracks();
+    AliMCVertex *primaryVertex = (AliMCVertex*)fKineEvent->GetPrimaryVertex();
+    PVx = primaryVertex->GetX();
+    PVy = primaryVertex->GetY();
+    PVz = primaryVertex->GetZ();
   }
-  fHistoCentrality[0]->Fill(centrality);
 
-// Look at the initial observables.
-  fInitialMultiplicity = fMCevent->GetNumberOfTracks();
-  AliMCVertex *primaryVertex = (AliMCVertex*)fMCevent->GetPrimaryVertex();
+// 2. Fill the initial QA histograms.
+//    Reset the histograms if the filling needs to be done at kine level.
+  if (!isRecoEvent)
+  {
+    fHistoMultiplicity[0]->Reset();
+    fHistoPVx[0]->Reset();
+    fHistoPVy[0]->Reset();
+    fHistoPVz[0]->Reset();
+  }
 
   fHistoMultiplicity[0]->Fill(fInitialMultiplicity);
-  fHistoPVx[0]->Fill(primaryVertex->GetX());
-  fHistoPVy[0]->Fill(primaryVertex->GetY());
-  fHistoPVz[0]->Fill(primaryVertex->GetZ());
+  fHistoPVx[0]->Fill(PVx);
+  fHistoPVy[0]->Fill(PVy);
+  fHistoPVz[0]->Fill(PVz);
 
-// Apply the physics event selection. (No need to remove HMOs in MC events.)
-  if(!ApplyPhysicsEventSelection()) {return;}
-
-  fHistoCentrality[1]->Fill(centrality);
-  fHistoPVx[1]->Fill(primaryVertex->GetX());
-  fHistoPVy[1]->Fill(primaryVertex->GetY());
-  fHistoPVz[1]->Fill(primaryVertex->GetZ());
-
-// Apply the track selection to classify the tracks.
-  long long multiplicity = fMCevent->GetNumberOfTracks();   // Current number of tracks.
-  long long finalMultiplicity = 0;                          // Number of tracks selected for the analysis.
-  Bool_t *isTrackSelected = new Bool_t[multiplicity]();     // kTRUE: the track passed the selection, kFALSE: the track is rejected.
-
-  for (Int_t iTrack = 0; iTrack < multiplicity; iTrack++)
-  {
-  // Get the current track belonging to the main filter.
-    AliAODMCParticle *aTrack = dynamic_cast<AliAODMCParticle*>(fMCevent->GetTrack(iTrack));
-    if (!aTrack) {continue;}    // No track found.
-
-  // Apply the track selection (histograms are filled inside).
-    if (!ApplyTrackSelectionMC(aTrack)) {isTrackSelected[iTrack] = kFALSE;}
-    else {isTrackSelected[iTrack] = kTRUE; finalMultiplicity++;}
-  }   // End of the first loop over the tracks.
-
-// Select only the events with enough tracks for the event weight.
-  if (finalMultiplicity < fMultiplicityMin) {return;}
-  fHistoMultiplicity[1]->Fill(finalMultiplicity);
-
-// Prepare the variables needed for the rest of the analysis.
-  Float_t   iPt = 0.;                                               // Transverse momentum.
-  Float_t   *iEta = new Float_t[finalMultiplicity]();               // Pseudorapidity for the eta gaps.
-  Float_t   *iPhi = new Float_t[finalMultiplicity]();               // Azimuthal angles.
-  Float_t   *iParticleWeights = new Float_t[finalMultiplicity]();   // Particle weights.
-  Int_t     iIndex = 0;                                             // Index of the selected track in the final arrays.
-
-  for (Int_t iiTrack = 0; iiTrack < multiplicity; iiTrack++)
-  {
-  // Check if iiTrack corresponds to a selected track or not.
-    if (!isTrackSelected[iiTrack]) {continue;}
-
-    AliAODMCParticle *aaTrack = dynamic_cast<AliAODMCParticle*>(fMCevent->GetTrack(iiTrack));
-    if (!aaTrack) {continue;}
-
-    iPt           = aaTrack->Pt();
-    iEta[iIndex]  = aaTrack->Eta();
-    iPhi[iIndex]  = aaTrack->Phi();
-    iParticleWeights[iIndex] = 1.;    // Unit particle weights are used by default.
-    if (fUseNonUnitParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA use of non-unit particle weights.");}
-
-    iIndex++;
-  }   // End of the second loop over the tracks.
-
-// Compute the multiparticle correlations for the current event.
-  CalculateQvectors(finalMultiplicity, iPhi, iParticleWeights);
-  ComputeReducedQvectors(finalMultiplicity);
-  ComputeAllCorrelators(finalMultiplicity, iPhi, iParticleWeights);
-  if (fComputeEtaGaps) {ComputeTPCWithEtaGaps(finalMultiplicity, iPhi, iParticleWeights, iEta);}
-
-// Do a dummy expression for iPt.
-  iPt++;
-
-// Reset the EbE variables.
-  centrality              = 0.;
-  fInitialMultiplicity    = 0;
-  multiplicity            = 0;
-  finalMultiplicity       = 0;
-  delete [] isTrackSelected;
-  iPt                     = 0.;
-  delete [] iEta;
-  delete [] iPhi;
-  delete [] iParticleWeights;
-  iIndex                  = 0;
-}   // End of "void AnalyseMCevent()".
-
-/* ------------------------------------------------------------------------- */
-Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyPhysicsEventSelection()
-{
-/* Apply the part of the event selection related to the physics. */
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::ApplyPhysicsEventSelection()";
-
-// Select the right method according to the types of files.
-  Float_t PVx = 0.;
-  Float_t PVy = 0.;
-  Float_t PVz = 0.;
-
-  if (fAnalyseOnlyAOD)
-  {
-    AliAODVertex *primaryVertex = (AliAODVertex*)fAODevent->GetPrimaryVertex();
-    PVx = primaryVertex->GetX();
-    PVy = primaryVertex->GetY();
-    PVz = primaryVertex->GetZ();
-  }
-  else if (fAnalyseOnlyMC)
-  {
-    AliMCVertex *primaryVertex = (AliMCVertex*)fMCevent->GetPrimaryVertex();
-    PVx = primaryVertex->GetX();
-    PVy = primaryVertex->GetY();
-    PVz = primaryVertex->GetZ();
-  }
-
-// Apply the selection.
+// 3. Apply the physics criteria of the event selection.
   if (fCutOnPVx)
-  {if ( (PVx < fPVxMin) || (PVx > fPVxMax) ) {return kFALSE;}}
+  { if ( (PVx < fPVxMin) || (PVx > fPVxMax) ) {return kFALSE;} }
   if (fCutOnPVy)
-  {if ( (PVy < fPVyMin) || (PVy > fPVyMax) ) {return kFALSE;}}
+  { if ( (PVy < fPVyMin) || (PVy > fPVyMax) ) {return kFALSE;} }
   if (fCutOnPVz)
-  {if ( (PVz < fPVzMin) || (PVz > fPVzMax) ) {return kFALSE;}}
+  { if ( (PVz < fPVzMin) || (PVz > fPVzMax) ) {return kFALSE;} }
 
-// Reset the variables.
+// 4. Apply the HMOs selection (for reco only).
+  if (isRecoEvent)
+  { if (fCutOnHMOs) { if (!RemoveHMOs()) {return kFALSE;} } }
+
+// 5. Fill the final QA histograms.
+//    Reset the histogram for the filling at kine level.
+  if (!isRecoEvent)
+  {
+    fHistoPVx[1]->Reset();
+    fHistoPVy[1]->Reset();
+    fHistoPVz[1]->Reset();
+  }
+  fHistoPVx[1]->Fill(PVx);
+  fHistoPVy[1]->Fill(PVy);
+  fHistoPVz[1]->Fill(PVz);
+
+// 6. Reset the variables for the next event.
   PVx = 0.;
   PVy = 0.;
   PVz = 0.;
 
   return kTRUE;
-}   // End of "Bool_t ApplyPhysicsEventSelection()".
+} // End: Bool_t ApplyEventSelection(Bool_t).
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 Bool_t AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()
 {
-/* Get and apply the criteria to remove the HMOs in AOD events. */
-  long long multiplicity = fAODevent->GetNumberOfTracks();    // Number of tracks after the physics event selection.
-  long long globalMultiplicity = 0;                           // Number of tracks in the global filter.
-  long long mainMultiplicity = 0;                             // Number of tracks in the main filter.
+/* Get and apply the criteria to remove the HMOs in AOD events.                               /
+/ 1. Get the number of tracks after the physics event selection.                              /
+/ 2.1 Get a pointer to a reconstructed track.                                                 /
+/ 2.2 Get the number of tracks in the main and global filters.                                /
+/ 3. Fill the initial QA histograms.                                                          /
+/ 4. Apply the HMOs cuts.                                                                     /
+/ 5. Fill the final QA histograms.                                                            /
+/ 6. Reset the variables for the next event.                                                 */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::RemoveHMOs()";
+  long long multiplicity = 0;         // Number of tracks after the selection.
+  long long globalMultiplicity = 0;   // Number of tracks in the global filter.
+  long long mainMultiplicity = 0;     // Number of tracks in the main filter.
 
-  for (Int_t iTrack = 0; iTrack < multiplicity; iTrack++)
+// 1. Get the number of tracks after the physics event selection.
+  multiplicity = fRecoEvent->GetNumberOfTracks();
+
+// 2.
+  for (long long iTrack = 0; iTrack < multiplicity; iTrack++)
   {
-    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fAODevent->GetTrack(iTrack));
-    if (!aTrack) {continue;}
-    if (aTrack->TestFilterBit(fGlobalFilter)) {globalMultiplicity++;}
-    if (aTrack->TestFilterBit(fMainFilter)) {mainMultiplicity++;}
-  }
+  // 2.1 Get a pointer to a reconstructed track.
+    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(fRecoEvent->GetTrack(iTrack));
+    if (!aTrack) { continue; }
 
+  // 2.2 Get the number of tracks in the main and global filters.
+    if (aTrack->TestFilterBit(fGlobalFilter)) { globalMultiplicity++; }
+    if (aTrack->TestFilterBit(fMainFilter)) { mainMultiplicity++; }
+  } // End: iTrack.
+
+// 3. Fill the initial QA histograms.
   fHistoMultiplicityGlobal[0]->Fill(globalMultiplicity);
   fHistoMultiplicityMain[0]->Fill(mainMultiplicity);
-  if (fDoCorrelationsHisto) {fHistoCorrelatedFilters[0]->Fill(globalMultiplicity, mainMultiplicity);}
+  if (fDoCorrelationsHisto)
+  { fHistoCorrelatedFilters[0]->Fill(globalMultiplicity, mainMultiplicity); }
 
-// Apply the HMOs cuts.
+// 4. Apply the HMOs cuts.
   if (fCutOnHMOs)
   {
-    if ( (Float_t)mainMultiplicity < (fMultiplicityMinA*(Float_t)globalMultiplicity + fMultiplicityMinB) ) {return kFALSE;} // The number of tracks in the main filter is under the accepted band.
-    if ( (Float_t)mainMultiplicity > (fMultiplicityMaxA*(Float_t)globalMultiplicity + fMultiplicityMaxB) ) {return kFALSE;} // The number of tracks in the main filter is above the accepted band.
-  }
+  // Minimum and maximum lines which delimite the accepted band.
+    Float_t lineMin = fMultiplicityMinA*(Float_t)globalMultiplicity + fMultiplicityMinB;
+    Float_t lineMax = fMultiplicityMaxA*(Float_t)globalMultiplicity + fMultiplicityMaxB;
 
+  // The number of tracks in the main filter is under the accepted band.
+    if ( (Float_t)mainMultiplicity < lineMin ) { return kFALSE; }
+  // The number of tracks in the main filter is above the accepted band.
+    if ( (Float_t)mainMultiplicity > lineMax ) { return kFALSE; }
+  } // End: if (fCutOnHMOs).
+
+// 5. Fill the final QA histograms.
   fHistoMultiplicityGlobal[1]->Fill(globalMultiplicity);
   fHistoMultiplicityMain[1]->Fill(mainMultiplicity);
-  if (fDoCorrelationsHisto) {fHistoCorrelatedFilters[1]->Fill(globalMultiplicity, mainMultiplicity);}
+  if (fDoCorrelationsHisto)
+  { fHistoCorrelatedFilters[1]->Fill(globalMultiplicity, mainMultiplicity); }
 
-// Reset the variables.
-  multiplicity        = 0;
-  globalMultiplicity  = 0;
-  mainMultiplicity    = 0;
+// 6. Reset the variables for the next event.
+  multiplicity = 0;
+  globalMultiplicity = 0;
+  mainMultiplicity = 0;
 
   return kTRUE;
-}   // End of "Bool_t RemoveHMOs()".
+} // End: Bool_t RemoveHMOs().
 
-/* ------------------------------------------------------------------------- */
-Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelectionAOD(AliAODTrack *aAODtrack)
+/* ----------------------------------------------------------------------------------------- */
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)
 {
-/* Apply the track selection criteria and return if the track passed it or not. */
-  TString sMethodName = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)";
+/* Apply the track selection criteria.                                                        /
+/ 1. Declare all the observables for the reco track.                                          /
+/ 2. Fill the initial QA histograms.                                                          /
+/ 3. Apply the track selection.                                                               /
+/ 4. Fill the final QA histograms.                                                            /
+/ 5. Reset the variables for the next track.                                                 */
+  TString sMethod = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODTrack *aAODtrack)";
 
-// Get all the observables for the given AOD track.
-  Float_t   pT          = aAODtrack->Pt();                            // Transverse momentum.
-  Float_t   eta         = aAODtrack->Eta();                           // Pseudorapidity.
-  Float_t   phi         = aAODtrack->Phi();                           // Azimuthal angle.
-  Int_t     NTPC        = aAODtrack->GetTPCNcls();                    // Number of TPC clusters.
-  Float_t   chiSquare   = (aAODtrack->GetTPCchi2())/(aAODtrack->GetNcls(1));    // Chi square of p in the TPC.
-  Int_t     NITS        = aAODtrack->GetITSNcls();                    // Number of ITS clusters.
-  Float_t   DCAx        = aAODtrack->XAtDCA();                        // DCA along x.
-  Float_t   DCAy        = aAODtrack->YAtDCA();                        // DCA along y.
-  Float_t   DCAz        = aAODtrack->ZAtDCA();                        // DCA along z.
-  Int_t     charge      = aAODtrack->Charge();                        // Electric charge.
-  Float_t   DCAxy       = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) );   // DCA in the xy-plane.
+// 1. Declare all the observables for the reco track.
+  Float_t pT = aAODtrack->Pt();           // Transverse momentum.
+  Float_t eta = aAODtrack->Eta();         // Pseudorapidity.
+  Float_t phi = aAODtrack->Phi();         // Azimuthal angle.
+  Int_t NTPC = aAODtrack->GetTPCNcls();   // Number of TPC clusters.
+  Float_t chiSquare = (aAODtrack->GetTPCchi2())/(aAODtrack->GetNcls(1));  // Chi square of p in the TPC.
+  Int_t NITS = aAODtrack->GetITSNcls();   // Number of ITS clusters.
+  Float_t DCAx = aAODtrack->XAtDCA();     // DCA along x.
+  Float_t DCAy = aAODtrack->YAtDCA();     // DCA along y.
+  Float_t DCAz = aAODtrack->ZAtDCA();     // DCA along z.
+  Int_t charge = aAODtrack->Charge();     // Electric charge.
+  Float_t DCAxy = TMath::Sqrt( (DCAx*DCAx) + (DCAy*DCAy) ); // DCA in the xy-plane.
 
-// Draw the initial distributions.
-  fHistoPt[0]->Fill(pT);
-  fHistoEta[0]->Fill(eta);
-  fHistoPhi[0]->Fill(phi);
-  fHistoNTPC[0]->Fill(NTPC);
-  fHistoChiSquare[0]->Fill(chiSquare);
-  fHistoNITS[0]->Fill(NITS);
-  fHistoDCAxy[0]->Fill(DCAxy);
-  fHistoDCAz[0]->Fill(DCAz);
-  fHistoCharge[0]->Fill(charge);
+// 2. Fill the initial QA histograms.
+//    Don't fill them if it is for computing the weights.
+  if (!fDoKineAnalysis)
+  {
+    fHistoPt[0]->Fill(pT);
+    fHistoEta[0]->Fill(eta);
+    fHistoPhi[0]->Fill(phi);
+    fHistoNTPC[0]->Fill(NTPC);
+    fHistoChiSquare[0]->Fill(chiSquare);
+    fHistoNITS[0]->Fill(NITS);
+    fHistoDCAxy[0]->Fill(DCAxy);
+    fHistoDCAz[0]->Fill(DCAz);
+    fHistoCharge[0]->Fill(charge);
+  }
 
-// Apply the selection.
+// 3. Apply the track selection.
   if (fCutOnPt)
-  {if ( (pT < fPtMin) || (pT > fPtMax) ) {return kFALSE;}}
+  { if ( (pT < fPtMin) || (pT > fPtMax) ) {return kFALSE;} }
   if (fCutOnEta)
-  {if ( (eta < fEtaMin) || (eta > fEtaMax) ) {return kFALSE;}}
+  { if ( (eta < fEtaMin) || (eta > fEtaMax) ) {return kFALSE;} }
   if (fCutOnNTPC)
-  {if (NTPC < fNTPCMin) {return kFALSE;}}
+  { if (NTPC < fNTPCMin) {return kFALSE;} }
   if (fCutOnChi)
-  {if ( (chiSquare < fChiMin) || (chiSquare > fChiMax) ) {return kFALSE;}}
+  { if ( (chiSquare < fChiMin) || (chiSquare > fChiMax) ) {return kFALSE;} }
   if (fCutOnNITS)
   {
-    if (fMainFilter == 128) {Fatal(sMethodName.Data(), "ERROR: TPConly tracks do not have ITS information.");}
+    if (fMainFilter == 128) {Fatal(sMethod.Data(), "ERROR: TPConly tracks do not have ITS information.");}
     else if (NITS < fNITSMin) {return kFALSE;}
   }
   if (fCutOnDCAxy)
-  {if (DCAxy > fDCAxyMax) {return kFALSE;}}
+  { if (DCAxy > fDCAxyMax) {return kFALSE;} }
   if (fCutOnDCAz)
-  {if (DCAz > fDCAzMax) {return kFALSE;}}
+  { if (DCAz > fDCAzMax) {return kFALSE;} }
   if (fCutOnCharge)
   {
-    if (fKeepPositiveCharges) {if (charge < 0) {return kFALSE;}}          // Keep only the positive tracks.
-    else if (!fKeepPositiveCharges) {if (charge > 0) {return kFALSE;}}    // Keep only the negative tracks.
-    else {Fatal(sMethodName.Data(), "ERROR: Select the sign of the charges to keep.");}
+  // Keep only the positive tracks.
+    if (fKeepPositiveCharges) { if (charge < 0) {return kFALSE;} }
+  // Keep only the negative tracks.
+    else if (!fKeepPositiveCharges) { if (charge > 0) {return kFALSE;} }
+    else { Fatal(sMethod.Data(), "ERROR: Select the sign of the charges to keep."); }
   }
 
-// Draw the final distributions.
-  fHistoPt[1]->Fill(pT);
-  fHistoEta[1]->Fill(eta);
-  fHistoPhi[1]->Fill(phi);
-  fHistoNTPC[1]->Fill(NTPC);
-  fHistoChiSquare[1]->Fill(chiSquare);
-  fHistoNITS[1]->Fill(NITS);
-  fHistoDCAxy[1]->Fill(DCAxy);
-  fHistoDCAz[1]->Fill(DCAz);
-  fHistoCharge[1]->Fill(charge);
+// 4. Fill the final QA histograms.
+//    Don't fill them if it is for computing the weights.
+  if (!fDoKineAnalysis)
+  {
+    fHistoPt[1]->Fill(pT);
+    fHistoEta[1]->Fill(eta);
+    fHistoPhi[1]->Fill(phi);
+    fHistoNTPC[1]->Fill(NTPC);
+    fHistoChiSquare[1]->Fill(chiSquare);
+    fHistoNITS[1]->Fill(NITS);
+    fHistoDCAxy[1]->Fill(DCAxy);
+    fHistoDCAz[1]->Fill(DCAz);
+    fHistoCharge[1]->Fill(charge);
+  } // End: if (!fDoKineAnalysis).
 
-// Reset the variables.
-  pT        = 0.;
-  eta       = 0.;
-  phi       = 0.;
-  NTPC      = 0;
+// 5. Reset the variables for the next track.
+  pT = 0.;
+  eta = 0.;
+  phi = 0.;
+  NTPC = 0;
   chiSquare = 0.;
-  NITS      = 0;
-  DCAx      = 0.;
-  DCAy      = 0.;
-  DCAz      = 0.;
-  charge    = 0;
-  DCAxy     = 0.;
+  NITS = 0;
+  DCAx = 0.;
+  DCAy = 0.;
+  DCAz = 0.;
+  charge = 0;
+  DCAxy = 0.;
 
   return kTRUE;
-}   // End of "Bool_t ApplyTrackSelectionAOD()".
+} // End: Bool_t ApplyTrackSelection().
 
-/* ------------------------------------------------------------------------- */
-Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelectionMC(AliAODMCParticle *aMCtrack)
+/* ----------------------------------------------------------------------------------------- */
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle *aMCtrack)
 {
-/* Apply the track selection criteria to the given MC track and return if it passed or not. */
-  TString sMethodName = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelectionMC(AliAODMCParticle *aMCtrack)";
+/* Apply the track selection criteria to the MC particle.                                     /
+/ 1. Declare all the observables for the kine track.                                          /
+/ 2. Fill the initial QA histograms.                                                          /
+/ 3. Apply the track selection.                                                               /
+/ 4. Reset the variables for the next track.                                                 */
+  TString sMethodName = "Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(AliAODMCParticle *aMCtrack)";
 
-// Get all the observables for the given MC track.
-  Float_t   pT          = aMCtrack->Pt();       // Transverse momentum.
-  Float_t   eta         = aMCtrack->Eta();      // Pseudorapidity.
-  Float_t   phi         = aMCtrack->Phi();      // Azimuthal angle.
-  Int_t     charge      = aMCtrack->Charge();   // Electric charge.
+// 1. Declare all the observables for the kine track.
+  Float_t pT = aMCtrack->Pt();        // Transverse momentum.
+  Float_t eta = aMCtrack->Eta();      // Pseudorapidity.
+  Float_t phi = aMCtrack->Phi();      // Azimuthal angle.
+  Int_t charge = aMCtrack->Charge();  // Electric charge.
+  Bool_t isPrimary = aMCtrack->IsPhysicalPrimary();
+    // kTRUE: the particle is a primary particle.
+	Bool_t isWeakSecondary = aMCtrack->IsSecondaryFromWeakDecay();
+  //Bool_t isMaterialSecondary = aMCtrack->IsSecondaryFromMaterial();
 
-// Draw the initial distributions.
+// 2. Fill the initial QA histograms.
   fHistoPt[0]->Fill(pT);
   fHistoEta[0]->Fill(eta);
   fHistoPhi[0]->Fill(phi);
   fHistoCharge[0]->Fill(charge);
 
-// Apply the track selection.
+// 3. Apply the track selection.
+  if (charge == 0) {return kFALSE;}
+  if (!isPrimary && !isWeakSecondary) {return kFALSE;}
   if (fCutOnPt)
   {if ( (pT < fPtMin) || (pT > fPtMax) ) {return kFALSE;}}
   if (fCutOnEta)
@@ -787,22 +911,98 @@ Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelectionMC(AliAODMCPartic
     else {Fatal(sMethodName.Data(), "ERROR: Select the sign of the charges to keep.");}
   }
 
-// Draw the final distributions.
-  fHistoPt[1]->Fill(pT);
-  fHistoEta[1]->Fill(eta);
-  fHistoPhi[1]->Fill(phi);
-  fHistoCharge[1]->Fill(charge);
-
-// Reset the variables.
+// 4. Reset the variables for the next track.
   pT        = 0.;
   eta       = 0.;
   phi       = 0.;
   charge    = 0;
 
   return kTRUE;
-}   // End of "Bool_t ApplyTrackSelectionMC()".
+} // End: Bool_t ApplyTrackSelection(AliAODMCParticle *).
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
+void AliAnalysisTaskTwoMultiCorrelations::CalculateWeight(Int_t RunNumber, long long numberOfParticles, Float_t* pWeights, Float_t* angles, Float_t* pt, Float_t* eta)
+{
+/* Get the particle weights for all the tracks in the current event.                          /
+/ 1. Get the correct histograms.                                                              /
+/ 2. Get the phi, pT and eta weights.                                                         /
+/ 3. Fill "pWeights".                                                                        */
+
+// 1. Get the correct histograms.
+  if (fUsePhiWeights) { fHistoWeights[0] = GetHistogramWithWeights(RunNumber, "phi"); }
+  if (fUsePtWeights) { fHistoWeights[1] = GetHistogramWithWeights(RunNumber, "pt"); }
+  if (fUseEtaWeights) { fHistoWeights[2] = GetHistogramWithWeights(RunNumber, "eta"); }
+
+//
+  for (long long i = 0; i < numberOfParticles; i++)
+  {
+    Int_t   iBin = 0;         // Current bin.
+    Float_t weight_phi = 1.;  // phi weight, unit by default.
+    Float_t weight_pt = 1.;   // pT weight, unit by default.
+    Float_t weight_eta = 1.;  // eta weight, unit by default.
+
+  // 2. Get the phi, pT and eta weight.
+    if (fUsePhiWeights)
+    {
+      iBin = fHistoWeights[0]->FindBin(angles[i]);
+      weight_phi = fHistoWeights[0]->GetBinContent(iBin);
+    }
+    if (fUsePtWeights)
+    {
+      iBin = fHistoWeights[1]->FindBin(pt[i]);
+      weight_pt = fHistoWeights[1]->GetBinContent(iBin);
+    }
+    if (fUseEtaWeights)
+    {
+      iBin = fHistoWeights[2]->FindBin(eta[i]);
+      weight_eta = fHistoWeights[2]->GetBinContent(eta[i]);
+    }
+
+  // 3. Fill "pWeights".
+    pWeights[i] = weight_phi*weight_pt*weight_eta;
+  } //
+
+} // End of "void CalculateWeight(Int_t, long long, Float_t*, Float_t*, Float_t*, Float_t*)".
+
+/* ----------------------------------------------------------------------------------------- */
+TH1F* AliAnalysisTaskTwoMultiCorrelations::GetHistogramWithWeights(Int_t RunNumber, const char *variable)
+{
+/* Access the external ROOT file with the needed weights.                                     /
+/ 1. Insanity check for the arguments.                                                        /
+/ 2. Access the external ROOT file to fetch the desired histogram with weights.               /
+/ 3. Close the external ROOT file.                                                           */
+  TString sMethod = "void AliAnalysisTaskTwoMultiCorrelations::GetHistogramWithWeights()";
+  TH1F* hist = NULL;
+
+// 1. Insanity check for the arguments.
+  if ( !(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")) )
+  { Fatal(sMethod.Data(), "ERROR: not the correct variable."); }
+
+// 2. Access the external ROOT file to fetch the desired histogram with weights.
+  TFile *weightsFile =  NULL;
+  if (fUseLocalFiles) { weightsFile = TFile::Open(Form("%s/%s/%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
+  else { weightsFile = TFile::Open(Form("%s/%s/000%d/Weights.root", fPathToWeights.Data(), fPeriodUsedForWeight.Data(), RunNumber), "READ"); }
+
+  if (!weightsFile) { Fatal(sMethod.Data(), "ERROR 404: File not found"); } 
+ 
+  TDirectoryFile *weightsDirectoryFile = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%s_Weights", variable)));
+  if (!weightsDirectoryFile) { Fatal(sMethod.Data(), "ERROR: Directory not found"); }
+
+  TList *weightsList = dynamic_cast<TList*>(weightsDirectoryFile->Get(Form("%s_Weight=>%.1f-%.1f", variable, fCentralityMin, fCentralityMax))); 
+  if (!weightsList) { Fatal(sMethod.Data(), "ERROR: List not found"); } 
+
+  hist = dynamic_cast<TH1F*>(weightsList->FindObject(Form("%s_Weight_Hist", variable)));
+  if (!hist) { Fatal(sMethod.Data(), "ERROR: Hist not found"); }
+  else { hist->SetDirectory(0); } // Kill the default ownership.
+
+// 3. Close the external ROOT file.
+  weightsFile->Close();
+  delete weightsFile;
+
+  return hist;
+} // End: void GetHistogramWithWeights(Int_t, const char*).
+
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
 {
 /* Calculate all the Q-vectors for the given arrays of azimuthal angles and particle weights. */
@@ -840,7 +1040,7 @@ void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfPa
   iWeightToPowerP   = 0.;
 }   // End of "void CalculateQvectors()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_t p)
 {
 /* Simplify the use of the Q-vectors in the next methods. */
@@ -848,7 +1048,7 @@ TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_t p)
   return TComplex::Conjugate(fQvectors[-n][p]);   // Use that Q*(n,p) = Q(-n,p).
 }   // End of "TComplex Q()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::ComputeReducedQvectors(long long numberOfParticles)
 {
 /* Compute the modulus of reduced Q-vector for the current event and save it in the correct histogram. */
@@ -868,7 +1068,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeReducedQvectors(long long numbe
   iHarmo    = 0;
 }   // End of "void ComputeReducedQvectors()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult, Int_t skip)
 {
 /* Calculate the multi-particle correlators by using the recursion method.                  /
@@ -905,7 +1105,7 @@ TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursion(Int_t n, Int_t 
   return c-Double_t(mult)*c2;
 }   // End of "TComplex CalculateRecursion()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long numberOfParticles, Float_t angles[], Float_t pWeights[])
 {
 /* Compute and save all the multiparticle correlators for the current event. */
@@ -1045,7 +1245,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeAllCorrelators(long long number
 
 }   // End of "void ComputeAllCorrelators()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long numberOfParticles, Float_t angles[], Float_t pWeights[], Float_t pseudorapidity[])
 {
 /* Compute the 2-particle correlators using eta gaps for the current event. */
@@ -1123,13 +1323,13 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeTPCWithEtaGaps(long long number
 
 }   // End of "void ComputeTPCWithEtaGaps()".
 
-/* ========================================================================== /
+/* ========================================================================================== /
 / Methods called in "Terminate".                                              /
-/ ========================================================================== */
+/ ========================================================================================== */
 
-/* ========================================================================== /
+/* ========================================================================================== /
 / Methods called in "UserCreateOutputObjects".                                /
-/ ========================================================================== */
+/ ========================================================================================== */
 void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()
 {
 /* Book all the lists in fMainList. */
@@ -1169,10 +1369,22 @@ void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()
   fMainList->Add(fTPCEtaList);
 }   // End of "void BookAllLists()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
 {
 /* Book the histograms related to the multiplicity distributions. */
+// Number of events at each selection step.
+  fHistoEvents = new TH1I("", "", 4, 0., 4.);
+  fHistoEvents->SetName("fHistoEvents");
+  fHistoEvents->SetTitle("Number of events at each step");
+  fHistoEvents->SetStats(kTRUE);
+  fHistoEvents->GetXaxis()->SetBinLabel(1, "After centrality selection");
+  fHistoEvents->GetXaxis()->SetBinLabel(2, "After event selection");
+  fHistoEvents->GetXaxis()->SetBinLabel(3, "After track selection");
+  fHistoEvents->GetXaxis()->SetBinLabel(4, "Final number of events");
+  fHistoEvents->GetYaxis()->SetTitle("Number of events");
+  fMultiplicityList->Add(fHistoEvents);
+
   for (Int_t i = 0; i < 2; i++)
   {
     TString iState = "Final";
@@ -1197,8 +1409,6 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
     fMultiplicityList->Add(fHistoMultiplicity[i]);
 
   // Multiplicity distributions meaningful only for AOD files.
-    if (fAnalyseOnlyAOD)
-    {
     // Main filter bit.
       fHistoMultiplicityMain[i] = new TH1I("", "", 30000, 0., 30000.);
       fHistoMultiplicityMain[i]->SetName(Form("fHistoMultiplicityMain%s", iState.Data()));
@@ -1216,7 +1426,6 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
       fHistoMultiplicityGlobal[i]->GetXaxis()->SetTitle("Number of tracks");
       fHistoMultiplicityGlobal[i]->GetYaxis()->SetTitle("Number of events");
       fMultiplicityList->Add(fHistoMultiplicityGlobal[i]);
-    }
 
   // Correlations between filters.
     if (fDoCorrelationsHisto)   // Manually enabled only to decide the cuts, as it is memory-greedy.
@@ -1235,7 +1444,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
   }   // End of the loop over the states (initial, final).
 }   // End of "void BookMultiplicityList()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookEventSelectionList()
 {
 /* Book the control histograms for the event selection criteria. */
@@ -1273,7 +1482,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookEventSelectionList()
   }   // End of the loop over the states (initial, final).
 }   // End of "void BookEventSelectionList()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
 {
 /* Book the control histograms for the track selection criteria. */
@@ -1283,7 +1492,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
     if (i == 0) {iState = "Initial";}
 
   // Transverse momentum.
-    fHistoPt[i] = new TH1F("", "", 1000, 0., 20.);
+    fHistoPt[i] = new TH1F("", "", fNumberBinsPt, 0., 20.);
     fHistoPt[i]->SetName(Form("fHistoPt%s", iState.Data()));
     fHistoPt[i]->SetTitle(Form("%s distribution of p_{T}", iState.Data()));
     fHistoPt[i]->SetStats(kTRUE);
@@ -1292,7 +1501,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
     fTrackSelectionList->Add(fHistoPt[i]);
 
   // Pseudorapidity.
-    fHistoEta[i] = new TH1F("", "", 1000, -1., 1.);
+    fHistoEta[i] = new TH1F("", "", fNumberBinsEta, -1., 1.);
     fHistoEta[i]->SetName(Form("fHistoEta%s", iState.Data()));
     fHistoEta[i]->SetTitle(Form("%s distribution of #eta", iState.Data()));
     fHistoEta[i]->SetStats(kTRUE);
@@ -1301,12 +1510,12 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
     fTrackSelectionList->Add(fHistoEta[i]);
 
   // Azimuthal angles.
-    fHistoPhi[i] = new TH1F("", "", 1000, 0., 6.3);
+    fHistoPhi[i] = new TH1F("", "", fNumberBinsPhi, 0., 6.3);
     fHistoPhi[i]->SetName(Form("fHistoPhi%s", iState.Data()));
-    fHistoPhi[i]->SetTitle(Form("%s distribution of #phi", iState.Data()));
+    fHistoPhi[i]->SetTitle(Form("%s distribution of #varphi", iState.Data()));
     fHistoPhi[i]->SetStats(kTRUE);
-    fHistoPhi[i]->GetXaxis()->SetTitle("#phi");
-    fHistoPhi[i]->GetYaxis()->SetTitle("dN/d#phi");
+    fHistoPhi[i]->GetXaxis()->SetTitle("#varphi");
+    fHistoPhi[i]->GetYaxis()->SetTitle("dN/d#varphi");
     fTrackSelectionList->Add(fHistoPhi[i]);
 
   // Number of TPC clusters.
@@ -1379,7 +1588,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
   fTrackSelectionList->Add(fHistoEffInverse);
 
 }   // End of "void BookTrackSelectionList()".
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookMPCList()
 {
 /* Book the histograms and profiles for the MPC. */
@@ -1427,7 +1636,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMPCList()
   fMPCList->Add(fProfileSixPartCorrel);
 }   // End of "void BookMPCList()".
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------------------- */
 void AliAnalysisTaskTwoMultiCorrelations::BookTPCEtaList()
 {
 /* Book the profiles for the 2-particle correlators with eta gaps. */

@@ -63,13 +63,13 @@ void AliFemtoDreamEventDump::SetEventProperties(float mult, float zvertex) {
 ClassImp(AliFemtoDreamDump)
 
 AliFemtoDreamDump::AliFemtoDreamDump()
-    : fkstarThreshold(0.2),
+    : fkstarThreshold(0.4),
       fOutputTree(nullptr),
       fEventDump(nullptr) {
 }
 
 AliFemtoDreamDump::AliFemtoDreamDump(const char *name)
-    : fkstarThreshold(0.2),
+    : fkstarThreshold(0.4),
       fOutputTree(nullptr),
       fEventDump(nullptr) {
   fOutputTree = new TTree(name, name);

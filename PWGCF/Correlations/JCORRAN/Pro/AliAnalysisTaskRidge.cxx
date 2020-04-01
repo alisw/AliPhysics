@@ -276,6 +276,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
         fHistos->CreateTH1("hJetEta","",100,-1.0,1.0);
         fHistos->CreateTH1("hJetPhi","",100,-4,4);
 
+        fHistos->CreateTH1("hLJetPt","",240,0,120);
+        fHistos->CreateTH1("hLJetEta","",100,-1.0,1.0);
+        fHistos->CreateTH1("hLJetPhi","",100,-4,4);
+
+	fHistos->CreateTH1("hLHPt","",240,0,120);
+
+	fHistos->CreateTH2("hLHPt_JetpT","",240,0,120,240,0,120);
+
 	fHistos->CreateTH1("hHMT","",1000,0,1,"s");
 	fHistos->CreateTH1("hMB","",100,0,100,"s");
 
@@ -327,6 +335,9 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
 		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
 	}
+
+
+	V0M_mean = 120;
 }
 //___________________________________________________________________
 void AliAnalysisTaskRidge::Exec(Option_t* )
@@ -364,37 +375,36 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		else if( runnumber >= 255539 && runnumber <= 255618 ) Period = "LHC16i";
 		else if( runnumber >= 256219 && runnumber <= 256418 ) Period = "LHC16j";
 		else if( runnumber >= 256941 && runnumber <= 256219 ) Period = "LHC16k";
-		else if( runnumber >= 258962 && runnumber <= 259888 ) Period = "LHC16l";
-		else if( runnumber >= 262424 && runnumber <= 264035 ) Period = "LHC16o";
-		else if( runnumber >= 264076 && runnumber <= 264347 ) Period = "LHC16p";
+		else if( runnumber >= 258962 && runnumber <= 259888 ) { Period = "LHC16l"; V0M_mean=89.9003; }
+		else if( runnumber >= 262424 && runnumber <= 264035 ) { Period = "LHC16o"; V0M_mean=86.3912; }
+		else if( runnumber >= 264076 && runnumber <= 264347 ) { Period = "LHC16p"; V0M_mean=138.814; }
 
 		else if( runnumber >= 270581 && runnumber <= 270667 ) Period = "LHC17c";
 		else if( runnumber >= 270822 && runnumber <= 270830 ) Period = "LHC17e";
 		else if( runnumber >= 270854 && runnumber <= 270865 ) Period = "LHC17f";
 		else if( runnumber >= 270882 && runnumber <= 271777 ) Period = "LHC17g";
-		else if( runnumber >= 271870 && runnumber <= 273103 ) Period = "LHC17h";
-		else if( runnumber >= 273591 && runnumber <= 274442 ) Period = "LHC17i";
+		else if( runnumber >= 271870 && runnumber <= 273103 ) { Period = "LHC17h"; V0M_mean=127.895; }
+		else if( runnumber >= 273591 && runnumber <= 274442 ) { Period = "LHC17i"; V0M_mean=124.276; }
 		else if( runnumber >= 274593 && runnumber <= 274671 ) Period = "LHC17j";
-		else if( runnumber >= 274690 && runnumber <= 276508 ) Period = "LHC17k";
-		else if( runnumber >= 276551 && runnumber <= 278216 ) Period = "LHC17l";
-		else if( runnumber >= 278914 && runnumber <= 280140 ) Period = "LHC17m";
-		else if( runnumber >= 280282 && runnumber <= 281961 ) Period = "LHC17o";
-		else if( runnumber >= 282528 && runnumber <= 282704 ) Period = "LHC17r";
+		else if( runnumber >= 274690 && runnumber <= 276508 ) { Period = "LHC17k"; V0M_mean=121.31; }
+		else if( runnumber >= 276551 && runnumber <= 278216 ) { Period = "LHC17l"; V0M_mean=119.144; }
+		else if( runnumber >= 278914 && runnumber <= 280140 ) { Period = "LHC17m"; V0M_mean=117.165; }
+		else if( runnumber >= 280282 && runnumber <= 281961 ) { Period = "LHC17o"; V0M_mean=113.45; }
+		else if( runnumber >= 282528 && runnumber <= 282704 ) { Period = "LHC17r"; V0M_mean=111.462; }
 
 		else if( runnumber >= 285009 && runnumber <= 285396 ) Period = "LHC18b";
-//		else if( runnumber >= 282528 && runnumber <= 282704 ) Period = "LHC18c";
-		else if( runnumber >= 285978 && runnumber <= 286350 ) Period = "LHC18d";
-		else if( runnumber >= 286380 && runnumber <= 286937 ) Period = "LHC18e";
-		else if( runnumber >= 287000 && runnumber <= 287658 ) Period = "LHC18f";
+		else if( runnumber >= 285978 && runnumber <= 286350 ) { Period = "LHC18d"; V0M_mean=131.868; }
+		else if( runnumber >= 286380 && runnumber <= 286937 ) { Period = "LHC18e"; V0M_mean=131.397; }
+		else if( runnumber >= 287000 && runnumber <= 287658 ) { Period = "LHC18f"; V0M_mean=130.591; }
 		else if( runnumber >= 288750 && runnumber <= 288619 ) Period = "LHC18g";
-		else if( runnumber >= 288806 && runnumber <= 288804 ) Period = "LHC18h";
+		else if( runnumber >= 288806 && runnumber <= 288804 ) { Period = "LHC18h"; V0M_mean=130.86; }
 		else if( runnumber >= 288909 && runnumber <= 288861 ) Period = "LHC18i";
-		else if( runnumber >= 288943 && runnumber <= 288943 ) Period = "LHC18j";
-		else if( runnumber >= 289240 && runnumber <= 289971 ) Period = "LHC18l";
-		else if( runnumber >= 290323 && runnumber <= 292839 ) Period = "LHC18m";
+		else if( runnumber >= 288943 && runnumber <= 288943 ) { Period = "LHC18j"; V0M_mean=131.17; }
+		else if( runnumber >= 289240 && runnumber <= 289971 ) { Period = "LHC18l"; V0M_mean=131.59; }
+		else if( runnumber >= 290323 && runnumber <= 292839 ) { Period = "LHC18m"; V0M_mean=130.467; }
 		else if( runnumber >= 293359 && runnumber <= 293357 ) Period = "LHC18n";
-		else if( runnumber >= 289201 && runnumber <= 289165 ) Period = "LHC18k";
-		else if( runnumber >= 293475 && runnumber <= 293898 ) Period = "LHC18o";
+		else if( runnumber >= 289201 && runnumber <= 289165 ) { Period = "LHC18k"; V0M_mean=127.642; }
+		else if( runnumber >= 293475 && runnumber <= 293898 ) { Period = "LHC18o"; V0M_mean=124.973; }
 		else if( runnumber >= 294009 && runnumber <= 294925 ) Period = "LHC18p";
 
 
@@ -480,8 +490,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		IsFirstEvent = kFALSE;
         }
 
-
-	
 	fCent = 200;
 	fZ = 0.0;
 
@@ -496,7 +504,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 //	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
 	if( !fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
-
 
 	sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
 	if( sel ){ 
@@ -521,15 +528,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	AliJJet* Cjet;
 	for(int i=0;i<fjets->GetEntries();i++){
 		Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+		if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
 		if( ( fJetPt <  Cjet->Pt() ) ){
 			fJetPt = Cjet->Pt();
 			JetEta = Cjet->Eta();
 			JetPhi = Cjet->Phi();
-		}
-		if( fabs( JetEta ) > 0.4 ){
-			fJetPt = 0.0;
-			JetEta = -10.0;
-			JetPhi = -10.0;
 		}
 	}
 
@@ -633,6 +636,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 //IsMultiplicityInsideBin Flag Configuration********
 	centbin = binCent.FindBin(fCent) -1;
 	if( centbin >= 0 && centbin < binCent.GetNbins() ) IsMultiplicityInsideBin = kTRUE;
+	if( fOption.Contains("HighMult") && fOption.Contains("CUTwithV0M") ){
+		if( v0amplitude < 5.0 * V0M_mean || v0amplitude > 9.0 * V0M_mean ){
+			IsMultiplicityInsideBin = kFALSE;
+		}
+	}
 //******************************************
 	
 	if( IsTriggered ) fHistos->FillTH1("hEventNumbers","IsTriggered",1);
@@ -643,11 +651,26 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 
-		if( Ljet ){
-			fHistos->FillTH1("hJetPt",fJetPt,1.0);
-			fHistos->FillTH1("hJetEta",JetEta,1.0);
-			fHistos->FillTH1("hJetPhi",JetPhi,1.0);
+		if( fJetPt>0.1 ){
+			fHistos->FillTH1("hLJetPt",fJetPt,1.0);
+			fHistos->FillTH1("hLJetEta",JetEta,1.0);
+			fHistos->FillTH1("hLJetPhi",JetPhi,1.0);
 		}
+
+        	for(int i=0;i<fjets->GetEntries();i++){
+        	        Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+        	        if( fabs( Cjet->Eta() ) > 0.4 ){ continue; }
+/*
+        	        if( ( fJetPt <  Cjet->Pt() ) ){
+        	                fJetPt = Cjet->Pt();
+        	                JetEta = Cjet->Eta();
+        	                JetPhi = Cjet->Phi();
+        	        }
+*/
+                        fHistos->FillTH1("hJetPt",Cjet->Pt(),1.0);
+                        fHistos->FillTH1("hJetEta",Cjet->Eta(),1.0);
+                        fHistos->FillTH1("hJetPhi",Cjet->Phi(),1.0);
+        	}
 
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
@@ -662,6 +685,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( fabs( JetEta ) > 0.4 ){
 		fJetPt = 0.0;
+	}
+
+	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && fOption.Contains("EvtSelStudy") && fOption.Contains("jtptstudy") ){
+		fsetmixing = kFALSE; this -> GoodTracksSelection( 2 );
 	}
 
 //	if( !fOption.Contains("EvtSelStudy") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
@@ -786,6 +813,7 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 	}
 
 	fNTracks = 0;
+	double LHPt = 0;
 	for (UInt_t it = 0; it<ntracks; it++){
 		if (fEvt->IsA()==AliESDEvent::Class()){
 			track = (AliESDtrack*) fEvt ->GetTrack(it);
@@ -811,6 +839,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			if( !fOption.Contains("ITS") && fabs(track->Eta())>fetacut ) continue;
 			else if( fOption.Contains("ITS") && fabs(track->Eta())>1.3 ) continue;			
 			FillTHnSparse("hTrackData",{track->Pt(),track->Phi(),track->Eta(),fZ,(double)trk,fCent},1.0);
+
+			if( LHPt < track->Pt() ){ LHPt = track->Pt(); }
 
 			fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta(),1.0);
 			if( !fOption.Contains("ITS") ){
@@ -871,7 +901,10 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 		if (fsetmixing){
 			etl->push_back( (AliVTrack*) track -> Clone() );
 		}
-	}
+	}//track
+
+	fHistos->FillTH1("hLHPt",LHPt,1.0);
+	fHistos->FillTH2("hLHPt_JetpT",LHPt,fJetPt,1.0);
 	if (fsetmixing){
 		if (!goodtrackindices.size()) ep->pop_back();
 		if ( ep->size() > bookingsize ){

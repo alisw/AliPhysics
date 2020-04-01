@@ -84,8 +84,6 @@ private:
   AliPIDResponse *fPIDResponse;
   TList   *fOutput; //! list send on output slot 3
   TH1F    *fHistNEvents; //!hist. for No. of events
-  TH1F    *fHistNEventsCuts; //!hist. for No. of events cuts
-  TH1F    *fHistNEventsCutsLb; //!hist. for No. of events Lb
   AliRDHFCutsLctopKpi *fRDCutsAnalysisLc; //Cuts for Analysis
   AliRDHFCutsLctopKpi *fRDCutsProductionLb; //Production Cuts
   TList *fListCuts; //list of cuts
@@ -93,14 +91,6 @@ private:
   Double_t fBzkG;                // z component of magnetic field
   AliAODVertex *fvtx1;           // primary vertex
   TList    *fOutputList;         //! output slot 8
-  TH1F     *fInvMassLbSign0;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1F     *fInvMassLbSign1;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1F     *fInvMassLbSign2;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1F     *fInvMassLbSign3;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1F     *fInvMassLbSign4;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1F     *fInvMassLbSign5;     //!histogram with invariant mass of Lb signal its upgrade
-  TH1I      *fSelMC;
-  TH1I      *fCountLc;
   TNtuple *fNtupleLambdabUPG; //! output ntuple
 
   Bool_t fFillNtupleSignal; /// flag to fill ntuple with signal candidates
@@ -118,7 +108,7 @@ private:
   Bool_t fApplyFixesITS3AnalysiskAll;
   Bool_t fApplyFixesITS3AnalysisHijing;
 
-  ClassDef(AliAnalysisTaskSELbtoLcpi4,7);
+  ClassDef(AliAnalysisTaskSELbtoLcpi4,8);
 };
 
 #endif

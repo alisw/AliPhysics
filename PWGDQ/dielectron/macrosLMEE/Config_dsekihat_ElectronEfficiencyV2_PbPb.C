@@ -1,30 +1,64 @@
-TString names[] = {
-"ResolutionTrackCuts"
-//,"cutTPC3sigma",
-//,"cutITS3sigma"
+#include <AliAnalysisManager.h>
+#include <AliAODInputHandler.h>
+
+TString TrackCutnames[] = {
+ "ResolutionTrackCuts"
+ //,"DefaultTrackCut_Nsc0"
+ ,"DefaultTrackCut_Nsc01"
+//,"LooseTrackCut"
+//,"TightTrackCut"
+//,"PIDCalibTrackCut"
 };
-const Int_t nCut = sizeof(names)/sizeof(names[0]);
-Int_t GetN(){return nCut;}
+const Int_t nTC = sizeof(TrackCutnames)/sizeof(TrackCutnames[0]);
+Int_t GetNTC(){return nTC;}
+
+TString PIDnames[] = {
+ "noPID"
+ ,"DefaultPID"
+ ,"ITSTPChadrejORTOFrec"
+// ,"ITSTPChadrej"
+// ,"ITSTOFrecover"
+ ,"TPChadrejORTOFrec"
+// ,"TPChadrej"
+// ,"TOFrecover"
+};
+const Int_t nPID = sizeof(PIDnames)/sizeof(PIDnames[0]);
+Int_t GetNPID(){return nPID;}
+
+TString PFnames[] = {
+  "woPF"
+// ,"wPF"
+};
+const Int_t nPF = sizeof(PFnames)/sizeof(PFnames[0]);
+Int_t GetNPF(){return nPF;}
+
+const Int_t nDie = nTC * nPID * nPF;
+Int_t GetN(){return nDie;}
 
 void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
 void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
 
 AliAnalysisFilter *Config_dsekihat_ElectronEfficiencyV2_PbPb(
-    const Int_t cutID,
+		const Int_t cutDefinitionTC,
+		const Int_t cutDefinitionPID,
+		const Int_t cutDefinitionPF,
     const Float_t PtMin ,
     const Float_t PtMax ,
     const Float_t EtaMin,
     const Float_t EtaMax
     )
 {
+
+  TString name = Form("%s_%s_%s",TrackCutnames[cutDefinitionTC].Data(),PIDnames[cutDefinitionPID].Data(),PFnames[cutDefinitionPF].Data());
+
   Bool_t isAOD = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
   printf("isAOD = %d\n",isAOD);
 
-  AliAnalysisFilter *anaFilter = new AliAnalysisFilter(Form("anaFilter_%s",names[cutID].Data()),Form("anaFilter_%d",cutID)); // named constructor seems mandatory!
-  LMEECutLib *lib = new LMEECutLib(names[cutID]); 
+  AliAnalysisFilter *anaFilter = new AliAnalysisFilter(Form("anaFilter_%s",name.Data()),Form("anaFilter_%d_%d_%d",cutDefinitionTC,cutDefinitionPID,cutDefinitionPF)); // named constructor seems mandatory!
+  LMEECutLib *lib = new LMEECutLib(name); 
   anaFilter->AddCuts(lib->SetupTrackCuts(PtMin,PtMax,EtaMin,EtaMax));
 
-  if(names[cutID].Contains("Resolution",TString::kIgnoreCase) || names[cutID].Contains("noPID",TString::kIgnoreCase)){
+  if(name.Contains("Resolution",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
     printf("Do not add PID cut for ResolutionTrackCuts/noPID\n");
   }
   else anaFilter->AddCuts(lib->SetupPIDCuts());
@@ -116,12 +150,12 @@ void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
   task->AddSingleLegMCSignal(eleFinalStateFromB);
 
-//  AliDielectronSignalMC eleFinalStateFromGamma("eleFinalStateFromGamma","eleFinalStateFromGamma");
-//  eleFinalStateFromGamma.SetLegPDGs(11,-11);
-//  eleFinalStateFromGamma.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  eleFinalStateFromGamma.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary); // for e from gamma: kFinalState is empty.
-//  eleFinalStateFromGamma.SetMotherPDGs(22,22,kFALSE,kFALSE);
-//  task->AddSingleLegMCSignal(eleFinalStateFromGamma);
+  AliDielectronSignalMC eleFinalStateFromGamma("eleFinalStateFromGamma","eleFinalStateFromGamma");
+  eleFinalStateFromGamma.SetLegPDGs(11,-11);
+  eleFinalStateFromGamma.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromGamma.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary); // for e from gamma: kFinalState is empty.
+  eleFinalStateFromGamma.SetMotherPDGs(22,22,kFALSE,kFALSE);
+  task->AddSingleLegMCSignal(eleFinalStateFromGamma);
 
 //  // This is used to get electrons not from same mother for pair efficiency.
 //  // Needed to look at D and B meson electrons as functionality to pair those is
@@ -236,14 +270,14 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
   eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
   task->AddPairMCSignal(eleFinalStateFromB);
 
-//  AliDielectronSignalMC eleFinalStateFromGamma("eleFinalStateFromGamma_pair","eleFinalStateFromGamma_pair");
-//  eleFinalStateFromGamma.SetLegPDGs(11,-11);
-//  eleFinalStateFromGamma.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  eleFinalStateFromGamma.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
-//  //mother
-//  eleFinalStateFromGamma.SetMothersRelation(AliDielectronSignalMC::kSame);
-//  eleFinalStateFromGamma.SetMotherPDGs(22, 22); //
-//  task->AddPairMCSignal(eleFinalStateFromGamma);
+  AliDielectronSignalMC eleFinalStateFromGamma("eleFinalStateFromGamma_pair","eleFinalStateFromGamma_pair");
+  eleFinalStateFromGamma.SetLegPDGs(11,-11);
+  eleFinalStateFromGamma.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromGamma.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+  //mother
+  eleFinalStateFromGamma.SetMothersRelation(AliDielectronSignalMC::kSame);
+  eleFinalStateFromGamma.SetMotherPDGs(22, 22); //
+  task->AddPairMCSignal(eleFinalStateFromGamma);
 
 }
 //___________________________________________________________________

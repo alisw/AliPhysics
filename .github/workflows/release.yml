@@ -24,8 +24,8 @@ jobs:
         git clone -b $ALIROOT_TAG https://github.com/alisw/AliRoot || { echo "Unable to clone AliRoot with specified tag"; exit 1; }
         git clone -b AliPhysics-$ALIPHYSICS_TAG https://github.com/alisw/alidist || { echo "Unable to clone alidist with specified tag"; exit 1; }
         echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
-        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded' \
-          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-$ALIPHYSICS_TAG"
+        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
+          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-$ALIPHYSICS_TAG&OVERRIDE_TAGS=AliRoot=$ALIROOT_TAG%20AliPhysics=$ALIPHYSICS_TAG"
         klist
         kdestroy
 

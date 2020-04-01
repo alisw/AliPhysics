@@ -8,7 +8,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "THnSparse.h"
-
 class TString;
 class TComplex;
 class TFile;
@@ -29,7 +28,6 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
-
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
@@ -77,6 +75,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // analysis setters
       void                    SetRunMode(RunMode mode = kFull) { fRunMode = mode; }
       void                    Set2018Data(Bool_t use = kTRUE){Is2018Data = use;}
+       void                   SetAdditional2018DataEventCut(){IsAdditional2018DataEventCut = kTRUE;}
+      void                    SetPIDCorrection(const char* file){IsPIDorrection = kTRUE; fPIDCorrectionPath = file;}
       void                    SetNumEventsAnalyse(Int_t num) { fNumEventsAnalyse = num; }
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
@@ -88,18 +88,30 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
 
 
-      void       SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
+      void                    SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
+      void                    SetPosAndNegRF(Bool_t use = kTRUE){IsPosAndNegRF = use;} 
+      void                    SetPIDRFFlow(Bool_t use = kTRUE){IsPIDRFFlow= use;}
+      void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddTwoN1.push_back(n1); fAddTwoN2.push_back(n2); fAddTwoIsRefs.push_back(refs);
+                              fAddTwoIsPOIs.push_back(pois);}
+      void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddTwoGapN1.push_back(n1); fAddTwoGapN2.push_back(n2);fAddTwoGapGap.push_back(gap); 
+                              fAddTwoGapIsRefs.push_back(refs); fAddTwoGapIsPOIs.push_back(pois);}
 
-
-
-
-      // flow related setters
-      void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2})); }
-      void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2}, {gap})); }
-      void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3})); }
-      void                    AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3} ,{gap})); }
-      void                    AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4})); }
-      void                    AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { fVecCorrTask.push_back(new CorrTask(refs, pois, {n1,n2,n3,n4}, {gap})); }
+      void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddThreeN1.push_back(n1); fAddThreeN2.push_back(n2); fAddThreeN3.push_back(n3);
+                              fAddThreeIsRefs.push_back(refs);fAddThreeIsPOIs.push_back(pois);}
+      void                    AddThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddThreeGapN1.push_back(n1); fAddThreeGapN2.push_back(n2); fAddThreeGapN3.push_back(n3);
+                              fAddThreeGapGap.push_back(gap); fAddThreeGapIsRefs.push_back(refs);fAddThreeGapIsPOIs.push_back(pois);}
+           
+      void                    AddFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddFourN1.push_back(n1); fAddFourN2.push_back(n2); fAddFourN3.push_back(n3);
+                              fAddFourN4.push_back(n4); fAddFourIsRefs.push_back(refs);fAddFourIsPOIs.push_back(pois);}
+      void                    AddFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
+                              fAddFourGapN1.push_back(n1); fAddFourGapN2.push_back(n2); fAddFourGapN3.push_back(n3);
+                              fAddFourGapN4.push_back(n4); fAddFourGapGap.push_back(gap);
+                              fAddFourGapIsRefs.push_back(refs);fAddFourGapIsPOIs.push_back(pois);}
 
       void                    SetFlowRFPsPt(Double_t min, Double_t max) { fFlowRFPsPtMin = min; fFlowRFPsPtMax = max; }
       void                    SetFlowPOIsPt(Double_t min, Double_t max, Int_t bins = 0) { fFlowPOIsPtMin = min; fFlowPOIsPtMax = max; fFlowPOIsPtBinNum = bins; }
@@ -190,47 +202,45 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void  SetXiEtaMin(Double_t value){fXiPseMin = value;}
       void  SetXiEtaMax(Double_t value){fXiPseMax = value;}
       void  SetV0RadiusXiMin(Double_t value){fV0RadiusXiMin = value;}
-      void  SetV0RadiusXiMax(Double_t value){fV0RadiusXiMax = value;}
       void  SetXiRadiusMin(Double_t value){fXiRadiusMin = value;}
-      void  SetXiRadiusMax(Double_t value){fXiRadiusMax = value;}
       void  SetDCAXiDaughtersMax(Double_t value){fdcaXiDaughtersMax = value;}
       void  SetXiCosOfPointingAngleMin(Double_t value){fXiCosOfPointingAngleMin = value;}
       void  SetDCAV0ToPrimaryVtxXiMin(Double_t value){fdcaV0ToPrimaryVtxXiMin = value;}
       void  SetDCABachToPrimaryVtxXiMin(Double_t value){fdcaBachToPrimaryVtxXiMin = value;}
+      void  SetDCABachToPrimaryVtxXiMinLowPt(Double_t value){fdcaBachToPrimaryVtxXiMinLowPt = value;}
       void  SetLambdaMassWindow(Double_t value){fLambdaMassWind = value;}
       void  SetDCAV0DaughtersXi(Double_t value){fdcaV0DaughtersXi = value;}
       void  SetV0CosOfPointingAngleXiMin(Double_t value){fV0CosOfPointingAngleXiMin = value;}
       void  SetDCAPosToPrimaryVtxXiMin(Double_t value){fdcaPosToPrimaryVtxXiMin = value;}
       void  SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
+      void  SetDCAPosToPrimaryVtxXiMinLowPt(Double_t value){fdcaPosToPrimaryVtxXiMinLowPt = value;}
+      void  SetDCANegToPrimaryVtxXiMinLowPt(Double_t value){fdcaNegToPrimaryVtxXiMinLowPt = value;}
+
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
       void  SetXiMasswindow(Double_t value){fXiMasswindow = value;}
-
-
-
-
       void  SetRPTrackFromTPC(Bool_t value){fRPFromTPC = value;}
       void  SetTrackEta(Double_t value){fTrackEta = value;}
       void  SetTrackPtMin(Double_t value){fTrackPtMin = value;}
       void  SetTPCNcls(Double_t ncls = 70){fTPCNcls = ncls;}
 
- 
-
-
-
-
-
-
       AliEventCuts            fEventCuts; //
 
     private:
+
+      void                    AddFlowTaskTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskThreeGap(Int_t n1, Int_t n2, Int_t n3, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskFour(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+      void                    AddFlowTaskFourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE);
+
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      static const Int_t      fCascadesNumBinsMass = 120;
-
+      static const Int_t      fCascadesNumBinsMass = 60;
       static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
 
       const char*             GetSpeciesName(PartSpecies species) const;
@@ -286,7 +296,8 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    FillQAPhi(Int_t iQAindex, const AliPicoTrack* part = 0x0) const; // filling QA plots for V0s candidates
 
       // Flow related methods
-      void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
+      void                    FillRefsVectors(Double_t dGap, PartSpecies species); // fill flow vector Q with RFPs for reference flow
+      Int_t                    FillPIDRefsVectors(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh);
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
@@ -306,21 +317,26 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Double_t                PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const;
 
        Bool_t  Is2018Data;//
+       Bool_t  IsPIDorrection;//
+       Bool_t  IsAdditional2018DataEventCut;//
+       Bool_t  IsPosAndNegRF;//
+       Bool_t  IsPIDRFFlow;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
-       Double_t fV0RadiusXiMax;//
        Double_t fXiRadiusMin;//
-       Double_t fXiRadiusMax;//
        Double_t fdcaXiDaughtersMax;//
        Double_t fXiCosOfPointingAngleMin;//
        Double_t fdcaV0ToPrimaryVtxXiMin;//
        Double_t fdcaBachToPrimaryVtxXiMin;//
+       Double_t fdcaBachToPrimaryVtxXiMinLowPt;//
        Double_t fLambdaMassWind;//
        Double_t fdcaV0DaughtersXi;//
        Double_t fV0CosOfPointingAngleXiMin;//
        Double_t fdcaPosToPrimaryVtxXiMin;//
        Double_t fdcaNegToPrimaryVtxXiMin;//
+       Double_t fdcaPosToPrimaryVtxXiMinLowPt;//
+       Double_t fdcaNegToPrimaryVtxXiMinLowPt;//
        Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
        Double_t fXiPIDsigma;//
        Double_t fXiMasswindow;//
@@ -344,6 +360,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
+       TComplex               TwoPos(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the positive eta)
+      TComplex                TwoNeg(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the negative eta)
+
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
       TComplex                Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
       TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
@@ -372,6 +391,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TFile*                  fFlowWeightsFile; //! source file containing weights
+      TFile*                  fPIDCorrectionFile; //! source file containing weights
       TClonesArray*           fArrayMC; //! input list of MC particles
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
@@ -391,6 +411,47 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       std::vector<CorrTask*>  fVecCorrTask; //
       std::vector<AliVTrack*>* fVector[kUnknown]; //! container for selected Refs charged particles
+//two
+      std::vector<Int_t>  fAddTwoN1; //
+      std::vector<Int_t>  fAddTwoN2; //
+      std::vector<Bool_t>  fAddTwoIsRefs; // 
+      std::vector<Bool_t>  fAddTwoIsPOIs; // 
+//twogap
+      std::vector<Int_t>  fAddTwoGapN1; //
+      std::vector<Int_t>  fAddTwoGapN2; //
+      std::vector<Double_t>  fAddTwoGapGap; //
+      std::vector<Bool_t>  fAddTwoGapIsRefs; // 
+      std::vector<Bool_t>  fAddTwoGapIsPOIs; //       
+//three
+      std::vector<Int_t>  fAddThreeN1; //
+      std::vector<Int_t>  fAddThreeN2; //
+      std::vector<Int_t>  fAddThreeN3; //
+      std::vector<Bool_t>  fAddThreeIsRefs; // 
+      std::vector<Bool_t>  fAddThreeIsPOIs; //
+//threegap
+      std::vector<Int_t>  fAddThreeGapN1; //
+      std::vector<Int_t>  fAddThreeGapN2; //
+      std::vector<Int_t>  fAddThreeGapN3; //
+      std::vector<Double_t>  fAddThreeGapGap; //
+      std::vector<Bool_t>  fAddThreeGapIsRefs; // 
+      std::vector<Bool_t>  fAddThreeGapIsPOIs; //
+//four
+      std::vector<Int_t>  fAddFourN1; //
+      std::vector<Int_t>  fAddFourN2; //
+      std::vector<Int_t>  fAddFourN3; //
+      std::vector<Int_t>  fAddFourN4; //
+      std::vector<Bool_t>  fAddFourIsRefs; // 
+      std::vector<Bool_t>  fAddFourIsPOIs; //
+//fourgap
+      std::vector<Int_t>  fAddFourGapN1; //
+      std::vector<Int_t>  fAddFourGapN2; //
+      std::vector<Int_t>  fAddFourGapN3; //
+      std::vector<Int_t>  fAddFourGapN4; //
+      std::vector<Double_t>  fAddFourGapGap; //
+      std::vector<Bool_t>  fAddFourGapIsRefs; // 
+      std::vector<Bool_t>  fAddFourGapIsPOIs; //
+
+    
 
       //cuts & selection: analysis
       RunMode                 fRunMode; // running mode (not grid related)
@@ -414,7 +475,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
       TString                 fFlowWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
-
+      TString                 fPIDCorrectionPath;//
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
       AliVEvent::EOfflineTriggerTypes    fTrigger; // physics selection trigger
@@ -488,14 +549,13 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       // output lists
       TList*                  fQAEvents; //! events list
+      TList*                  fQAEventCut; //! events list
       TList*                  fQACharged; //! charged tracks list
       TList*                  fQAPID; //! pi,K,p list
       TList*                  fQAV0s; //! V0s candidates list
       TList*                  fQAPhi; //! Phi candidates list
       TList*                  fFlowWeights; //! list for flow weights
       TList*                  fListFlow[kUnknown]; //! flow lists
-
-
       // histograms & profiles
 
       // Flow
@@ -518,6 +578,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH1D*                   fhEventCentrality; //! distribution of event centrality
       TH2D*                   fh2EventCentralityNumRefs; //! distribution of event centrality vs number of selected charged tracks
       TH1D*                   fhEventCounter; //! counter following event selection
+      TH1D* fhEvent;//!
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
@@ -583,7 +644,19 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*                   fhV0sInvMassLambda; //! 2D inv. mass distiburion (K0s mass vs. Lambda/AntiLambda mass)
       TH2D*                   fhV0sCompetingInvMassK0s; //! dist of InvMass of rejected K0s candidates in (Anti-)Lambda peak
       TH2D*                   fhV0sCompetingInvMassLambda; //! dist of InvMass of rejected (Anti-)Lambda candidates in K0s peak
-
+      // PID correction
+      TH3D*                   histMeanPionq;//!
+      TH3D*                   histMeanKaonq;//!
+      TH3D*                   histMeanProtonq;//!
+      TH3D*                   histSigmaPionq;//!
+      TH3D*                   histSigmaKaonq;//!
+      TH3D*                   histSigmaProtonq;//!
+      TH3D*                   histMeanPionr;//!
+      TH3D*                   histMeanKaonr;//!
+      TH3D*                   histMeanProtonr;//!
+      TH3D*                   histSigmaPionr;//!
+      TH3D*                   histSigmaKaonr;//!
+      TH3D*                   histSigmaProtonr;//!
 
       // QA: events
       TH1D*                   fhQAEventsPVz[fiNumIndexQA]; //!
@@ -659,3 +732,4 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
 #endif
+

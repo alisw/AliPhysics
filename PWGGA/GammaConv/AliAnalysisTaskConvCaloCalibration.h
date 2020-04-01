@@ -13,6 +13,7 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
+#include "AliDalitzElectronSelector.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
@@ -46,6 +47,7 @@ public:
   void ProcessPhotonCandidates();
   void CalculateMesonCandidates();
   void SetPhotonVeto();
+  void GetV0Electrons();
 
   // MC functions
   void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
@@ -66,6 +68,7 @@ public:
   void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { fDoConvGammaShowerShapeTree = flag          ;}
   void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
   void SetAllowOverlapHeaders         ( Bool_t allowOverlapHeader )                       { fAllowOverlapHeaders = allowOverlapHeader   ;}
+  void SetElectronMatchingCalibration ( Int_t flag )                                      { fUseEletronMatchingCalibration = flag       ;}
 
   // Setting the cut lists for the conversion photons
   void SetEventCutList                ( Int_t nCuts,
@@ -132,7 +135,6 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
 
   void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
-
 protected:
   TRandom3                            fRandom;                                // random number
   AliV0ReaderV1*                      fV0Reader;                              // basic photon Selection Task
@@ -147,6 +149,7 @@ protected:
   AliCaloPhotonCuts*                  fCaloPhotonCuts;                        // CaloPhotonCutObject
   AliConversionMesonCuts*             fMesonCuts;                             // MesonCutObject
   AliEMCALGeometry*                   fGeomEMCAL;                             // pointer to EMCAL geometry
+  AliDalitzElectronSelector*          fElecSelector;					      // basic electron Selection
 
   TList**                             fCutFolder;                             // Array of lists for containers belonging to cut
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties
@@ -160,6 +163,9 @@ protected:
   TList*                              fClusterCutArray;                       // List with Cluster Cuts
   TList*                              fMesonCutArray;                         // List with Meson Cuts
   TClonesArray*                       fReaderGammas;                          // Array with conversion photons selected by V0Reader Cut
+  std::vector<Int_t>                  fSelectorElectronIndex;                 // Vector with electrons selected with std. cut
+  std::vector<Int_t>                  fSelectorPositronIndex;                 // Vector with positrons selected with std. cut
+  std::vector<Int_t>                  fV0Electrons;                           // Vector with electrons from V0s
 
   TString                             fV0ReaderName;                          // V0Reader name to be found in input
   TString                             fCorrTaskSetting;                       // Correction Task Special Name
@@ -252,6 +258,7 @@ protected:
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
   Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
   Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+  Int_t                   fUseEletronMatchingCalibration;                     // switch for calibration using electron tracks (1) or electrons from V0s (2) to cluster matching
 
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction

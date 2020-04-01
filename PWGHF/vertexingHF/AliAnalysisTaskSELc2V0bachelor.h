@@ -55,7 +55,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   /// histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
-			   TClonesArray *mcArray, Int_t originLc);
+			   TClonesArray *mcArray, Int_t originLc, AliAODEvent *aod);
 
   void MakeAnalysisForLc2prK0S(AliAODEvent* aodEvent,TClonesArray *arrayLctopK0S,
 			       TClonesArray *mcArray,
@@ -125,7 +125,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   
   void CheckEventSelection(AliAODEvent *aodEvent);
   void CheckEventSelectionWithCandidates(AliAODEvent *aodEvent);
-  void CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part,AliRDHFCutsLctoV0* cutsAnal);
+  void CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part,AliRDHFCutsLctoV0* cutsAnal, AliAODEvent *aod);
   void FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc, Int_t originLc);
   void DefineTreeVariables();
 
@@ -138,8 +138,8 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void DefineGeneralHistograms();
   void DefineK0SHistos();
   void DefineSignalHistosSeparatedPerOrigin();
-  void FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis);
-  void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis);
+  void FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis, AliAODEvent *aod);
+  void TrackRotation(AliRDHFCutsLctoV0 *cutsAnal, AliAODRecoCascadeHF *part, TString appendthis, AliAODEvent *aod);
 
   AliAnalysisTaskSELc2V0bachelor(const AliAnalysisTaskSELc2V0bachelor &source);
   AliAnalysisTaskSELc2V0bachelor& operator=(const AliAnalysisTaskSELc2V0bachelor& source); 

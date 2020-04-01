@@ -3,7 +3,9 @@
 
 #include <THnSparse.h>
 #include <TNtupleD.h>
+
 #include <deque>
+
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 class THistManager;
@@ -11,184 +13,196 @@ class AliPIDResponse;
 class AliESDtrackCuts;
 
 class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
-   public:
-    AliAnalysisTaskSigma1385PM();
-    AliAnalysisTaskSigma1385PM(const char* name, Bool_t MCcase);
-    virtual ~AliAnalysisTaskSigma1385PM();
+ public:
+  AliAnalysisTaskSigma1385PM();
+  AliAnalysisTaskSigma1385PM(const char* name, Bool_t MCcase);
+  virtual ~AliAnalysisTaskSigma1385PM();
 
-    virtual void UserCreateOutputObjects();
-    virtual void UserExec(Option_t* option);
-    virtual void Terminate(Option_t* option);
-    void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
-    void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
-    void SetnMix(Int_t nMix) { fnMix = nMix; }
-    void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
-    void SetINEL(Bool_t input) { fIsINEL = input; }
-    void SetHighMult(Bool_t input) { fIsHM = input; }
-    void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t* option);
+  virtual void Terminate(Option_t* option);
+  void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
+  void SetMixing(Bool_t setmixing) { fSetMixing = setmixing; }
+  void SetnMix(Int_t nMix) { fnMix = nMix; }
+  void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
+  void SetINEL(Bool_t input) { fIsINEL = input; }
+  void SetHighMult(Bool_t input) { fIsHM = input; }
+  void SetAsymmCut(Bool_t input) { fUseAsymmCut = input; }
+  void SetOnlyUseOnTheFlyV0(Bool_t input) { fOnlyUseOnTheFlyV0 = input; }
+  void SetFillnTuple(Bool_t fillntuple) { fFillnTuple = fillntuple; }
 
-    // Setter for cut variables
-    void SetFilterbitSigmaStarPion(Double_t lParameter) {
-        fFilterBit = lParameter;
-    }
-    void SetMaxNsigSigmaStarPion(Double_t lParameter) {
-        fTPCNsigSigmaStarPionCut = lParameter;
-    }
-    void SetMaxEtaSigmaStarPion(Double_t lParameter) {
-        fSigmaStarPionEtaCut = lParameter;
-    }
-    void SetMaxVertexZSigmaStarPion(Double_t lParameter) {
-        fSigmaStarPionZVertexCut = lParameter;
-    }
-    void SetMaxVertexXYsigSigmaStarPion(Double_t lParameter) {
-        fSigmaStarPionXYVertexSigmaCut = lParameter;
-    }
+  // Setter for cut variables
+  void SetFilterbitSigmaStarPion(Double_t lParameter) {
+    fFilterBit = lParameter;
+  }
+  void SetMaxNsigSigmaStarPion(Double_t lParameter) {
+    fTPCNsigSigmaStarPionCut = lParameter;
+  }
+  void SetMaxEtaSigmaStarPion(Double_t lParameter) {
+    fSigmaStarPionEtaCut = lParameter;
+  }
+  void SetMaxVertexZSigmaStarPion(Double_t lParameter) {
+    fSigmaStarPionZVertexCut = lParameter;
+  }
+  void SetMaxVertexXYsigSigmaStarPion(Double_t lParameter) {
+    fSigmaStarPionXYVertexSigmaCut = lParameter;
+  }
 
-    void SetMaxNsigV0Proton(Double_t lParameter) {
-        fTPCNsigLambdaProtonCut = lParameter;
-    }
-    void SetMaxNsigV0Pion(Double_t lParameter) {
-        fTPCNsigLambdaPionCut = lParameter;
-    }
-    void SetMaxDCAV0daughters(Double_t lParameter) {
-        fDCADistLambdaDaughtersCut = lParameter;
-    }
-    void SetMaxDCAPVV0(Double_t lParameter) {
-        fDCArDistLambdaPVCut = lParameter;
-    }
-    void SetMaxDCAPVV0PosDaughter(Double_t lParameter) {
-        fDCAPositiveTrack = lParameter;
-    }
-    void SetMaxDCAPVV0NegDaughter(Double_t lParameter) {
-        fDCANegativeTrack = lParameter;
-    }
-    void SetMinCPAV0(Double_t lParameter) {
-        fV0CosineOfPointingAngleCut = lParameter;
-    }
-    void SetMaxRapidityV0(Double_t lParameter) {
-        fMaxLambdaRapidity = lParameter;
-    }
-    void SetLowRadiusV0(Double_t lParameter) {
-        fLambdaLowRadius = lParameter;
-    }
-    void SetHighRadiusV0(Double_t lParameter) {
-        fLambdaHighRadius = lParameter;
-    }
-    void SetLifetimeV0(Double_t lParameter) {
-        fLambdaLifetime = lParameter;
-    }
-    void SetMaxMassWindowV0(Double_t lParameter) {
-        fV0MassWindowCut = lParameter;
-    }
+  void SetMaxNsigV0Proton(Double_t lParameter) {
+    fTPCNsigLambdaProtonCut = lParameter;
+  }
+  void SetMaxNsigV0Pion(Double_t lParameter) {
+    fTPCNsigLambdaPionCut = lParameter;
+  }
+  void SetMaxDCAV0daughters(Double_t lParameter) {
+    fDCADistLambdaDaughtersCut = lParameter;
+  }
+  void SetMaxDCAPVV0(Double_t lParameter) { fDCArDistLambdaPVCut = lParameter; }
+  void SetMaxDCAPVV0PosDaughter(Double_t lParameter) {
+    fDCAPositiveTrack = lParameter;
+  }
+  void SetMaxDCAPVV0NegDaughter(Double_t lParameter) {
+    fDCANegativeTrack = lParameter;
+  }
+  void SetMinCPAV0(Double_t lParameter) {
+    fV0CosineOfPointingAngleCut = lParameter;
+  }
+  void SetMaxRapidityV0(Double_t lParameter) {
+    fMaxLambdaRapidity = lParameter;
+  }
+  void SetLowRadiusV0(Double_t lParameter) { fLambdaLowRadius = lParameter; }
+  void SetHighRadiusV0(Double_t lParameter) { fLambdaHighRadius = lParameter; }
+  void SetLifetimeV0(Double_t lParameter) { fLambdaLifetime = lParameter; }
+  void SetMaxMassWindowV0(Double_t lParameter) {
+    fV0MassWindowCut = lParameter;
+  }
 
-    void SetSigmaStarRapidityCutHigh(Double_t lParameter) {
-        fSigmaStarYCutHigh = lParameter;
-    }
-    void SetSigmaStarRapidityCutLow(Double_t lParameter) {
-        fSigmaStarYCutLow = lParameter;
-    }
+  void SetSigmaStarRapidityCutHigh(Double_t lParameter) {
+    fSigmaStarYCutHigh = lParameter;
+  }
+  void SetSigmaStarRapidityCutLow(Double_t lParameter) {
+    fSigmaStarYCutLow = lParameter;
+  }
+  void SetSigmaStarAsymmCutHigh(Double_t lParameter) {
+    fSigmaStarAsymmCutHigh = lParameter;
+  }
+  void SetSigmaStarAsymmCutLow(Double_t lParameter) {
+    fSigmaStarAsymmCutLow = lParameter;
+  }
 
-    Bool_t GoodTracksSelection();
-    Bool_t GoodV0Selection();
-    void FillTracks();
-    void FillNtuples();
-    void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
-    void FillTrackToEventPool();
-    Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
-    double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
-    void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
-    void SetCutOpen();
+  Bool_t GoodTracksSelection();
+  Bool_t GoodV0Selection();
+  void FillTracks();
+  void FillNtuples();
+  void FillMCinput(AliMCEvent* fMCEvent, int Fillbin = 0);
+  void FillTrackToEventPool();
+  Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
+  double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
+  void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
+  void SetCutOpen();
 
-    // helper
-    THnSparse* CreateTHnSparse(TString name,
-                               TString title,
-                               Int_t ndim,
-                               std::vector<TAxis> bins,
-                               Option_t* opt = "");
-    THnSparse* CreateTHnSparse(TString name,
-                               TString title,
-                               TString templ,
-                               Option_t* opt = "");
-    Long64_t FillTHnSparse(TString name,
-                           std::vector<Double_t> x,
-                           Double_t w = 1.);
-    Long64_t FillTHnSparse(THnSparse* h,
-                           std::vector<Double_t> x,
-                           Double_t w = 1.);
-    TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
-    TAxis AxisVar(TString name, std::vector<Double_t> bin);
-    TAxis AxisStr(TString name, std::vector<TString> bin);
+  // helper
+  THnSparse* CreateTHnSparse(TString name,
+                             TString title,
+                             Int_t ndim,
+                             std::vector<TAxis> bins,
+                             Option_t* opt = "");
+  THnSparse* CreateTHnSparse(TString name,
+                             TString title,
+                             TString templ,
+                             Option_t* opt = "");
+  Long64_t FillTHnSparse(TString name,
+                         std::vector<Double_t> x,
+                         Double_t w = 1.);
+  Long64_t FillTHnSparse(THnSparse* h,
+                         std::vector<Double_t> x,
+                         Double_t w = 1.);
+  TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
+  TAxis AxisVar(TString name, std::vector<Double_t> bin);
+  TAxis AxisStr(TString name, std::vector<TString> bin);
 
-    AliEventCuts fEventCuts;  // Event cuts
+  AliEventCuts fEventCuts;  // Event cuts
 
-   private:
-    typedef std::vector<AliVTrack*> tracklist;
-    typedef std::deque<tracklist> eventpool;
-    typedef std::vector<std::vector<eventpool>> mixingpool;
+ private:
+  typedef std::vector<AliVTrack*> tracklist;
+  typedef std::deque<tracklist> eventpool;
+  typedef std::vector<std::vector<eventpool>> mixingpool;
 
-    AliESDtrackCuts* fTrackCuts = nullptr;   //!
-    AliPIDResponse* fPIDResponse = nullptr;  //!
+  AliESDtrackCuts* fTrackCuts;   //!
+  AliPIDResponse* fPIDResponse;  //!
 
-    AliVEvent* fEvt = nullptr;        //!
-    AliMCEvent* fMCEvent = nullptr;   //!
-    THistManager* fHistos = nullptr;  //!
-    AliAODVertex* vertex = nullptr;   //!
-    Bool_t fsetmixing = kFALSE;
-    Bool_t fFillQAPlot = kTRUE;
-    Bool_t fIsMC = kFALSE;
-    Bool_t IsPrimaryMC = kFALSE;
-    Bool_t fFillnTuple = kFALSE;
-    Bool_t fIsNano = kFALSE;
-    Bool_t fIsINEL = kFALSE;
-    Bool_t fIsHM = kFALSE;
-    TNtupleD* fNtupleSigma1385;        //! Ntuple for the analysis
-    TClonesArray* fMCArray = nullptr;  //!
-    mixingpool fEMpool;                //!
-    TAxis binCent;                     //!
-    TAxis binZ;                        //!
-    Double_t lPosPV[3];
+  AliVEvent* fEvt;             //!
+  AliMCEvent* fMCEvent;        //!
+  THistManager* fHistos;       //!
+  AliAODVertex* fVertex;       //!
+  TNtupleD* fNtupleSigma1385;  //!
+  TClonesArray* fMCArray;      //!
 
-    Double_t fCent = -1;
-    Int_t fnMix = 10;
-    Int_t centbin = -1;
-    Int_t zbin = -1;
+  Bool_t fIsAOD;              //!
+  Bool_t fIsNano;             //!
+  Bool_t fSetMixing;          //
+  Bool_t fFillQAPlot;         //
+  Bool_t fIsMC;               //
+  Bool_t fIsPrimaryMC;        //
+  Bool_t fFillnTuple;         //
+  Bool_t fIsINEL;             //
+  Bool_t fIsHM;               //
+  Bool_t fUseAsymmCut;        //
+  Bool_t fOnlyUseOnTheFlyV0;  //
 
-    // Pion cuts
-    UInt_t fFilterBit = 32.0;
-    Double_t fTPCNsigSigmaStarPionCut = 3.0;
-    Double_t fSigmaStarPionEtaCut = 0.8;
-    Double_t fSigmaStarPionZVertexCut = 2.0;  // 2.0
-    Double_t fSigmaStarPionXYVertexSigmaCut = 7.0;
+  mixingpool fEMpool;  //!
+  TAxis fBinCent;      //!
+  TAxis fBinZ;         //!
+  Double_t fPosPV[3];  //!
 
-    // Lambda cuts
-    Double_t fTPCNsigLambdaProtonCut = 3.0;
-    Double_t fTPCNsigLambdaPionCut = 3.0;
-    Double_t fDCADistLambdaDaughtersCut = 1.6;
-    Double_t fDCArDistLambdaPVCut = 0.3;
-    Double_t fDCAPositiveTrack = 0.05;
-    Double_t fDCANegativeTrack = 0.05;
-    Double_t fV0CosineOfPointingAngleCut = 0.99;
-    Double_t fMaxLambdaRapidity = 0.5;
-    Double_t fLambdaLowRadius = 1.4;
-    Double_t fLambdaHighRadius = 100.0;
-    Double_t fLambdaLifetime = 30.0;
-    Double_t fV0MassWindowCut = 0.01;
+  Double_t fCent;  //!
+  Int_t fnMix;     //!
+  Int_t fCentBin;  //!
+  Int_t fZbin;     //!
 
-    // Sigma Star cut
-    Double_t fSigmaStarYCutHigh = 0.5;
-    Double_t fSigmaStarYCutLow = -0.5;
+  // Pion cuts
+  UInt_t fFilterBit;                        //
+  Double_t fTPCNsigSigmaStarPionCut;        //
+  Double_t fSigmaStarPionEtaCut;            //
+  Double_t fSigmaStarPionZVertexCut;        //
+  Double_t fSigmaStarPionXYVertexSigmaCut;  //
 
-    std::vector<UInt_t> goodtrackindices;  //!
-    std::vector<std::vector<UInt_t>> goodv0indices;  //!
+  // Lambda cuts
+  Double_t fTPCNsigLambdaProtonCut;      //
+  Double_t fTPCNsigLambdaPionCut;        //
+  Double_t fDCADistLambdaDaughtersCut;   //
+  Double_t fDCArDistLambdaPVCut;         //
+  Double_t fDCAPositiveTrack;            //
+  Double_t fDCANegativeTrack;            //
+  Double_t fV0CosineOfPointingAngleCut;  //
+  Double_t fMaxLambdaRapidity;           //
+  Double_t fLambdaLowRadius;             //
+  Double_t fLambdaHighRadius;            //
+  Double_t fLambdaLifetime;              //
+  Double_t fV0MassWindowCut;             //
 
-    ClassDef(AliAnalysisTaskSigma1385PM, 8);
-    // Add rapidity/radius/Lifetime/Y cut of lambda
-    // Add NanoOption
-    // 4: Add GetImpactParm function for nano
-    // 5: Seprate MC Sparse, INEL study capability
-    // 6: Update some of deafult vaules
-    // 7: Add skipping option for QA histos
-    // 8: Rebuild MC part
+  // Sigma Star cut
+  Double_t fSigmaStarYCutHigh;      //
+  Double_t fSigmaStarYCutLow;       //
+  Double_t fSigmaStarAsymmCutHigh;  //
+  Double_t fSigmaStarAsymmCutLow;   //
+
+  // Good track/v0 vector array
+  std::vector<UInt_t> fGoodTrackArray;
+  std::vector<std::vector<UInt_t>> fGoodV0Array;
+
+  ClassDef(AliAnalysisTaskSigma1385PM, 12);
+  // Add rapidity/radius/Lifetime/Y cut of lambda
+  // Add NanoOption
+  // 4: Add GetImpactParm function for nano
+  // 5: Seprate MC Sparse, INEL study capability
+  // 6: Update some of deafult vaules
+  // 7: Add skipping option for QA histos
+  // 8: Rebuild MC part
+  // 9: Update class format
+  // 10: Fix streamer issue
+  // 11: Add Asymm cut option
+  // 12: Add OnTheFlyV0 option
 };
 
 #endif

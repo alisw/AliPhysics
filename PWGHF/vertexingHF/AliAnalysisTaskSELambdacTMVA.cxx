@@ -1097,11 +1097,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		FillEffHists(kReco3Prong);
 		fNentries->Fill(6);
 
-		Bool_t unsetvtx=kFALSE;
-		if(!d->GetOwnPrimaryVtx()){
-			d->SetOwnPrimaryVtx(vtx1);
-			unsetvtx=kTRUE;
-		}
 
 
 
@@ -1166,7 +1161,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
 		if(fIsLc>=1 && fIsLc <= 2) fNentries->Fill(16);
-		if(unsetvtx) d->UnsetOwnPrimaryVtx();
 	}
 	fCounter->StoreCandidates(aod,nSelectedloose[0],kTRUE);
 	fCounter->StoreCandidates(aod,nSelectedtight[0],kFALSE);
@@ -1516,15 +1510,15 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp);
 			}
 			else if(selection==3){
-				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp,0.5);
-				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi,0.5);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi);
 				if(fIsLc==1) {
-					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp,0.5);
-					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi,0.5);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi);
 				}
 				else if(fIsLc==2) {
-					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp,0.5);
-					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi,0.5);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi);
 				}
 			}
 			//max prob PID
@@ -1574,8 +1568,8 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp);
 		}
 		else if(selection==3){
-			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp,0.5);
-			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi,0.5);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi);
 		}
 		//max prob PID
 		if(selectionProb==1) fhProbmassLcPt->Fill(d->Pt(),invMassLcpKpi);

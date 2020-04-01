@@ -39,6 +39,7 @@ set(SRCS
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
+  AliDecorrFlowCorrTask.cxx
   AliGFW.cxx
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
@@ -48,6 +49,7 @@ set(SRCS
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
+  AliAnalysisTaskFlowSquareBracket.cxx
   )
 
 # Headers from sources

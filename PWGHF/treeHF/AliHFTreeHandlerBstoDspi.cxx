@@ -162,16 +162,18 @@ TTree* AliHFTreeHandlerBstoDspi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Ds*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Ds*/, AliPIDResponse* pidrespo)
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   fIsMCGenTree=false;
 
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
     if(!(fCandType&kSignal || fCandType&kRefl)) return true;
   }
-  fRunNumber=runnumber;
-  fEvID=eventID;
   fPtGen=ptgen;
   
   AliAODRecoDecayHF3Prong* candDs = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Ds

@@ -57,21 +57,11 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4()
   fPIDResponse(0),
   fOutput(0),
   fHistNEvents(0),
-  fHistNEventsCuts(0),
-  fHistNEventsCutsLb(0),
   fRDCutsAnalysisLc(0),
   fRDCutsProductionLb(0),
   fListCuts(0),
   fBzkG(0.),
   fvtx1(0x0),
-  fInvMassLbSign0(0),
-  fInvMassLbSign1(0),
-  fInvMassLbSign2(0),
-  fInvMassLbSign3(0),
-  fInvMassLbSign4(0),
-  fInvMassLbSign5(0),
-  fSelMC(0),
-  fCountLc(0),
   fNtupleLambdabUPG(0),
   fFillNtupleSignal(kFALSE),
   fFillNtupleBackgroundRotated(kFALSE),
@@ -101,21 +91,11 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   fPIDResponse(0),
   fOutput(0),
   fHistNEvents(0),
-  fHistNEventsCuts(0),
-  fHistNEventsCutsLb(0),
   fRDCutsAnalysisLc(lccutsana),
   fRDCutsProductionLb(lccutsprod),
   fListCuts(0),
   fBzkG(0.),
   fvtx1(0x0),
-  fInvMassLbSign0(0),
-  fInvMassLbSign1(0),
-  fInvMassLbSign2(0),
-  fInvMassLbSign3(0),
-  fInvMassLbSign4(0),
-  fInvMassLbSign5(0),
-  fSelMC(0),
-  fCountLc(0),
   fNtupleLambdabUPG(0),
   fFillNtupleSignal(kFALSE),
   fFillNtupleBackgroundRotated(kFALSE),
@@ -151,8 +131,6 @@ AliAnalysisTaskSELbtoLcpi4::~AliAnalysisTaskSELbtoLcpi4() {
   delete fPIDResponse;
   delete fOutput;
   delete fHistNEvents;
-  delete fHistNEventsCuts;
-  delete fHistNEventsCutsLb;
   delete fRDCutsAnalysisLc;
   delete fRDCutsProductionLb;
   delete fListCuts;
@@ -228,12 +206,6 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     if(fApplyFixesITS3AnalysisBit){
       if(!(d->HasSelectionBit(AliRDHFCuts::kLcCuts))) continue;
     }
-
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()){
-      d->SetOwnPrimaryVtx(fvtx1);
-      unsetvtx=kTRUE;
-    }
       
     if(fPreSelectLctopKpi){
        TObjArray arrTracks(3);
@@ -244,6 +216,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
        Bool_t recoLc=kTRUE;
        recoLc=fRDCutsAnalysisLc->PreSelectMass(arrTracks);
        if (!recoLc) continue;
+    }
+
+    Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()){
+      d->SetOwnPrimaryVtx(fvtx1);
+      unsetvtx=kTRUE;
     }
 
     if((vHF->FillRecoCand(aod,d))) {
@@ -336,16 +314,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     AliExternalTrackParam *chargedHPi = new AliExternalTrackParam;
     chargedHPi->CopyFromVTrack(HPiAODtrk);
 
-    Double_t dAtDCALc = d->GetDCA();
-    //keep this since we know we have bg above this number
-    if(dAtDCALc>0.05){
-      HPiAODtrk=0;
-      delete chargedHPi;
-      continue;
-    }
-
-    //out for the large pt cuts
-    ((TH1F*)fOutput->FindObject("fDCALcBg"))->Fill(dAtDCALc);
     //further cuts on candidate charged track
 
     const Double_t max = 1;
@@ -430,9 +398,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
     Int_t labPi2=CheckMCpartPIONaf(HPiAODtrk,arrayMC);
     if(labPi2==labLb){//signal
       lb=1;
-      Float_t DCALc=d->GetDCA();
-      ((TH1F*)fOutput->FindObject("fDCALc"))->Fill(DCALc);
-      fSelMC->Fill(8);
       lc=1;
     }
 
@@ -448,12 +413,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
 
-    Double_t pionPt=lbcandProng->PtProng(0);
-    Double_t pionP=lbcandProng->PProng(0);
-    Double_t LcPt=lbcandProng->PtProng(1);
-    ((TH1F*)fOutput->FindObject("fpionPt"))->Fill(pionPt);
-    ((TH1F*)fOutput->FindObject("fLcPt"))->Fill(LcPt);
-    ((TH1F*)fOutput->FindObject("fpionP"))->Fill(pionP);
     //fill not rotated
 
     Int_t selectionlb=IsSelectedLbMY(lbcandProng,AliRDHFCuts::kCandidate,lb,0,isHijing);
@@ -467,16 +426,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev, fIsPromptLc);
     }
     lbcandProng->UnsetOwnPrimaryVtx();
-
-    UInt_t pdgLb[2]={0,0};
-    pdgLb[1] = 4122;
-    pdgLb[0] = 211;
-    Double_t massTrueLB = 5.641;
-    UInt_t pdgLb2[2]={0,0};
-    pdgLb2[1] = 4122;
-    pdgLb2[0] = 211;
-    Double_t    massLb = lbcandProng->InvMass(2,pdgLb);
-    if(TMath::Abs(massLb - massTrueLB)<1.) ((TH1F*)fOutput->FindObject("fMassLbbkg"))->Fill(massLb);
 
     //Add possibility to skip this heavy operation for checks
     if(fNRotations>0) DoRotations(ev,lbcandProng,d,HPiAODtrk,fNRotations,isHijing,lb,arrayMC,mcHeader);
@@ -528,206 +477,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("Histos");
 
-  fInvMassLbSign0 = new TH1F("fMassLbSign0", "Lb signal invariant mass 0 ; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fInvMassLbSign1 = new TH1F("fMassLbSign1", "Lb signal invariant mass 1; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fInvMassLbSign2 = new TH1F("fMassLbSign2", "Lb signal invariant mass 2; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fInvMassLbSign3 = new TH1F("fMassLbSign3", "Lb signal invariant mass 3; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fInvMassLbSign4 = new TH1F("fMassLbSign4", "Lb signal invariant mass 4; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fInvMassLbSign5 = new TH1F("fMassLbSign5", "Lb signal invariant mass 5; M [GeV]; Entries",20000,5.641-1.,5.641+1.);
-  fOutput->Add(fInvMassLbSign0);
-  fOutput->Add(fInvMassLbSign1);
-  fOutput->Add(fInvMassLbSign2);
-  fOutput->Add(fInvMassLbSign3);
-  fOutput->Add(fInvMassLbSign4);
-  fOutput->Add(fInvMassLbSign5);
-
+  OpenFile(2);
   fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc:promptLc");
+  fNtupleLambdabUPG->SetMaxVirtualSize(1.e+8);
   PostData(2,fNtupleLambdabUPG);
 
-  fSelMC = new TH1I("trackSelMC", "SelMC",9,-0.5,8.5);
-  fSelMC->GetXaxis()->SetBinLabel(1,"is lc from MTMC");
-  fSelMC->GetXaxis()->SetBinLabel(2,"sel lab is negative ") ;
-  fSelMC->GetXaxis()->SetBinLabel(3,"sel on daugh exis");
-  fSelMC->GetXaxis()->SetBinLabel(4,"remaining lc");
-  fSelMC->GetXaxis()->SetBinLabel(5,"is secondary Lc ");
-  fSelMC->GetXaxis()->SetBinLabel(6,"mother is lb");
-  fSelMC->GetXaxis()->SetBinLabel(7,"lb in 2 daughters");
-  fSelMC->GetXaxis()->SetBinLabel(8,"lb in lc e pions");
-  fSelMC->GetXaxis()->SetBinLabel(9," lc e pions same label");
-  fOutput->Add(fSelMC);
-
-  fCountLc = new TH1I("countLc for background","count Lc for background",500,0,499);
-  fOutput->Add(fCountLc);
-
-  TH1F *fMassUpg_pt0=new TH1F("fMassUpg_pt0","fMassUpg_pt0",100,2.086,2.486);
-  TH1F *fMassUpg_pt1=new TH1F("fMassUpg_pt1","fMassUpg_pt1",100,2.086,2.486);
-  TH1F *fMassUpg_pt2=new TH1F("fMassUpg_pt2","fMassUpg_pt2",100,2.086,2.486);
-  TH1F *fMassUpg_pt3=new TH1F("fMassUpg_pt3","fMassUpg_pt3",100,2.086,2.486);
-  TH1F *fMassUpg_pt4=new TH1F("fMassUpg_pt4","fMassUpg_pt4",100,2.086,2.486);
-  TH1F *fMassUpg_pt5=new TH1F("fMassUpg_pt5","fMassUpg_pt5",100,2.086,2.486);
-
-  fOutput->Add(fMassUpg_pt0);
-  fOutput->Add(fMassUpg_pt1);
-  fOutput->Add(fMassUpg_pt2);
-  fOutput->Add(fMassUpg_pt3);
-  fOutput->Add(fMassUpg_pt4);
-  fOutput->Add(fMassUpg_pt5);
-
-  TH1F *fMassUpg_pt0lcb=new TH1F("fMassUpg_pt0lbNR","fMassUpg_pt0lbNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt1lcb=new TH1F("fMassUpg_pt1lbNR","fMassUpg_pt1lbNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt2lcb=new TH1F("fMassUpg_pt2lbNR","fMassUpg_pt2lbNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt3lcb=new TH1F("fMassUpg_pt3lbNR","fMassUpg_pt3lbNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt4lcb=new TH1F("fMassUpg_pt4lbNR","fMassUpg_pt4lbNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt5lcb=new TH1F("fMassUpg_pt5lbNR","fMassUpg_pt5lbNR",20000,5.641-1.,5.641+1.);
-
-  fOutput->Add(fMassUpg_pt0lcb);
-  fOutput->Add(fMassUpg_pt1lcb);
-  fOutput->Add(fMassUpg_pt2lcb);
-  fOutput->Add(fMassUpg_pt3lcb);
-  fOutput->Add(fMassUpg_pt4lcb);
-  fOutput->Add(fMassUpg_pt5lcb);
-
-  TH1F *fMassUpg_pt0lb=new TH1F("fMassUpg_pt0lb","fMassUpg_pt0lb",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt1lb=new TH1F("fMassUpg_pt1lb","fMassUpg_pt1lb",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt2lb=new TH1F("fMassUpg_pt2lb","fMassUpg_pt2lb",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt3lb=new TH1F("fMassUpg_pt3lb","fMassUpg_pt3lb",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt4lb=new TH1F("fMassUpg_pt4lb","fMassUpg_pt4lb",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt5lb=new TH1F("fMassUpg_pt5lb","fMassUpg_pt5lb",20000,5.641-1.,5.641+1.);
-  fOutput->Add(fMassUpg_pt0lb);
-  fOutput->Add(fMassUpg_pt1lb);
-  fOutput->Add(fMassUpg_pt2lb);
-  fOutput->Add(fMassUpg_pt3lb);
-  fOutput->Add(fMassUpg_pt4lb);
-  fOutput->Add(fMassUpg_pt5lb);
-
-  TH1F *fMassUpg_pt0lbbgOnly=new TH1F("fMassUpg_pt0lbbgOnly","fMassUpg_pt0lbbgOnly",20000,4.641,6.641);
-  TH1F *fMassUpg_pt1lbbgOnly=new TH1F("fMassUpg_pt1lbbgOnly","fMassUpg_pt1lbbgOnly",20000,4.641,6.641);
-  TH1F *fMassUpg_pt2lbbgOnly=new TH1F("fMassUpg_pt2lbbgOnly","fMassUpg_pt2lbbgOnly",20000,4.641,6.641);
-  TH1F *fMassUpg_pt3lbbgOnly=new TH1F("fMassUpg_pt3lbbgOnly","fMassUpg_pt3lbbgOnly",20000,4.641,6.641);
-  TH1F *fMassUpg_pt4lbbgOnly=new TH1F("fMassUpg_pt4lbbgOnly","fMassUpg_pt4lbbgOnly",20000,4.641,6.641);
-  TH1F *fMassUpg_pt5lbbgOnly=new TH1F("fMassUpg_pt5lbbgOnly","fMassUpg_pt5lbbgOnly",20000,4.641,6.641);
-
-  fOutput->Add(fMassUpg_pt0lbbgOnly);
-  fOutput->Add(fMassUpg_pt1lbbgOnly);
-  fOutput->Add(fMassUpg_pt2lbbgOnly);
-  fOutput->Add(fMassUpg_pt3lbbgOnly);
-  fOutput->Add(fMassUpg_pt4lbbgOnly);
-  fOutput->Add(fMassUpg_pt5lbbgOnly);
-
-  TH1F *fMassUpg_pt0lbbg=new TH1F("fMassUpg_pt0lbbgNR","fMassUpg_pt0lbbgNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt1lbbg=new TH1F("fMassUpg_pt1lbbgNR","fMassUpg_pt1lbbgNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt2lbbg=new TH1F("fMassUpg_pt2lbbgNR","fMassUpg_pt2lbbgNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt3lbbg=new TH1F("fMassUpg_pt3lbbgNR","fMassUpg_pt3lbbgNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt4lbbg=new TH1F("fMassUpg_pt4lbbgNR","fMassUpg_pt4lbbgNR",20000,5.641-1.,5.641+1.);
-  TH1F *fMassUpg_pt5lbbg=new TH1F("fMassUpg_pt5lbbgNR","fMassUpg_pt5lbbgNR",20000,5.641-1.,5.641+1.);
-
-  fOutput->Add(fMassUpg_pt0lbbg);
-  fOutput->Add(fMassUpg_pt1lbbg);
-  fOutput->Add(fMassUpg_pt2lbbg);
-  fOutput->Add(fMassUpg_pt3lbbg);
-  fOutput->Add(fMassUpg_pt4lbbg);
-  fOutput->Add(fMassUpg_pt5lbbg);
-
-  //
-  // JJJ histograms for signal and background
-  //
-  TH1F *fMassBkg_pt0lb_NoCuts=new TH1F("fMassBkg_pt0lb_NoCuts","fMassBkg_pt0lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkg_pt1lb_NoCuts=new TH1F("fMassBkg_pt1lb_NoCuts","fMassBkg_pt1lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkg_pt2lb_NoCuts=new TH1F("fMassBkg_pt2lb_NoCuts","fMassBkg_pt2lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkg_pt3lb_NoCuts=new TH1F("fMassBkg_pt3lb_NoCuts","fMassBkg_pt3lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkg_pt4lb_NoCuts=new TH1F("fMassBkg_pt4lb_NoCuts","fMassBkg_pt4lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkg_pt5lb_NoCuts=new TH1F("fMassBkg_pt5lb_NoCuts","fMassBkg_pt5lb_NoCuts",2000,5.641-1.,5.641+1.);
-  fOutput->Add(fMassBkg_pt0lb_NoCuts);
-  fOutput->Add(fMassBkg_pt1lb_NoCuts);
-  fOutput->Add(fMassBkg_pt2lb_NoCuts);
-  fOutput->Add(fMassBkg_pt3lb_NoCuts);
-  fOutput->Add(fMassBkg_pt4lb_NoCuts);
-  fOutput->Add(fMassBkg_pt5lb_NoCuts);
-  TH1F *fMassBkgRot_pt0lb_NoCuts=new TH1F("fMassBkgRot_pt0lb_NoCuts","fMassBkgRot_pt0lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkgRot_pt1lb_NoCuts=new TH1F("fMassBkgRot_pt1lb_NoCuts","fMassBkgRot_pt1lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkgRot_pt2lb_NoCuts=new TH1F("fMassBkgRot_pt2lb_NoCuts","fMassBkgRot_pt2lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkgRot_pt3lb_NoCuts=new TH1F("fMassBkgRot_pt3lb_NoCuts","fMassBkgRot_pt3lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkgRot_pt4lb_NoCuts=new TH1F("fMassBkgRot_pt4lb_NoCuts","fMassBkgRot_pt4lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassBkgRot_pt5lb_NoCuts=new TH1F("fMassBkgRot_pt5lb_NoCuts","fMassBkgRot_pt5lb_NoCuts",2000,5.641-1.,5.641+1.);
-  fOutput->Add(fMassBkgRot_pt0lb_NoCuts);
-  fOutput->Add(fMassBkgRot_pt1lb_NoCuts);
-  fOutput->Add(fMassBkgRot_pt2lb_NoCuts);
-  fOutput->Add(fMassBkgRot_pt3lb_NoCuts);
-  fOutput->Add(fMassBkgRot_pt4lb_NoCuts);
-  fOutput->Add(fMassBkgRot_pt5lb_NoCuts);
-  TH1F *fMassSig_pt0lb_NoCuts=new TH1F("fMassSig_pt0lb_NoCuts","fMassSig_pt0lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassSig_pt1lb_NoCuts=new TH1F("fMassSig_pt1lb_NoCuts","fMassSig_pt1lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassSig_pt2lb_NoCuts=new TH1F("fMassSig_pt2lb_NoCuts","fMassSig_pt2lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassSig_pt3lb_NoCuts=new TH1F("fMassSig_pt3lb_NoCuts","fMassSig_pt3lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassSig_pt4lb_NoCuts=new TH1F("fMassSig_pt4lb_NoCuts","fMassSig_pt4lb_NoCuts",2000,5.641-1.,5.641+1.);
-  TH1F *fMassSig_pt5lb_NoCuts=new TH1F("fMassSig_pt5lb_NoCuts","fMassSig_pt5lb_NoCuts",2000,5.641-1.,5.641+1.);
-  fOutput->Add(fMassSig_pt0lb_NoCuts);
-  fOutput->Add(fMassSig_pt1lb_NoCuts);
-  fOutput->Add(fMassSig_pt2lb_NoCuts);
-  fOutput->Add(fMassSig_pt3lb_NoCuts);
-  fOutput->Add(fMassSig_pt4lb_NoCuts);
-  fOutput->Add(fMassSig_pt5lb_NoCuts);
-
-  TH1F *fPtBkg = new TH1F("fPtBkg","fPtBkg",100,0.,100.);
-  TH1F *fPtBkg_TC = new TH1F("fPtBkg_TC","fPtBkg_TC",100,0.,100.);
-  TH1F *fPtBkgRot = new TH1F("fPtBkgRot","fPtBkgRot",100,0.,100.);
-  TH1F *fPtBkgRot_TC = new TH1F("fPtBkgRot_TC","fPtBkgRot_TC",100,0.,100.);
-  TH1F *fPtSig = new TH1F("fPtSig","fPtSig",100,0.,100.);
-  TH1F *fPtSig_TC = new TH1F("fPtSig_TC","fPtSigTC",100,0.,100.);
-  fOutput->Add(fPtBkg);
-  fOutput->Add(fPtBkg_TC);
-  fOutput->Add(fPtBkgRot);
-  fOutput->Add(fPtBkgRot_TC);
-  fOutput->Add(fPtSig);
-  fOutput->Add(fPtSig_TC);
-
-  TH1F *fMassLbbkg=new TH1F("fMassLbbkg","fMassLbbkg",500,5.641-1.,5.641+1.);
-  fOutput->Add(fMassLbbkg);
-  TH1F *fMassLb2bkg=new TH1F("fMassLb2bkg","fMassLb2bkg",500,5.641-1.,5.641+1.);
-  fOutput->Add(fMassLb2bkg);
-  TH1F *fpionPt=new TH1F("fpionPt","fpionPt",100,0.,25.);
-  fOutput->Add(fpionPt);
-  TH1F *fLcPt=new TH1F("fLcPt","fLcPt",100,0.,25.);
-  fOutput->Add(fLcPt);
-  TH1F *fpionP=new TH1F("fpionP","fpionP",100,0.,25.);
-  fOutput->Add(fpionP);
-  TH1F *fpionPt2=new TH1F("fpionPt2","fpionPt2",100,0.,25.);
-  fOutput->Add(fpionPt2);
-  TH1F *fLcPt2=new TH1F("fLcPt2","fLcPt2",100,0.,25.);
-  fOutput->Add(fLcPt2);
-  TH1F *fpionP2=new TH1F("fpionP2","fpionP2",100,0.,25.);
-  fOutput->Add(fpionP2);
-
-  TH1F *fd0Pion=new TH1F("fd0Pion","fd0Pion",100,-1.,1.);
-  TH1F *fd0Lc=new TH1F("fd0Lc","fd0Lc",100,-1.,1.);
-  TH1F *fDCApion=new TH1F("fDCApion","fDCApion",100,-1.,1.);
-  TH1F *fDCApionBg=new TH1F("fDCApionBg","fDCApionBg",100,-1.,1.);
-  TH1F *fDCALc=new TH1F("fDCALc","fDCALc",100,-0.09,0.09);
-  TH1F *fDCALcBg=new TH1F("fDCALcBg","fDCALcBg",100,-0.09,0.09);
-  TH1F *fd0Lcprong0=new TH1F("fd0Lcprong0","fd0Lcprong0",100,-0.09,0.09);
-  TH1F *fd0Lcprong1=new TH1F("fd0Lcprong1","fd0Lcprong1",100,-0.09,0.09);
-  TH1F *fd0Lcprong0Bg=new TH1F("fd0Lcprong0Bg","fd0Lcprong0Bg",100,-0.09,0.09);
-  TH1F *fd0Lcprong1Bg=new TH1F("fd0Lcprong1Bg","fd0Lcprong1Bg",100,-0.09,0.09);
-  TH1F *fd0Lcprong0nr=new TH1F("fd0Lcprong0nr","fd0Lcprong0nr",100,-0.09,0.09);
-  TH1F *fd0Lcprong1nr=new TH1F("fd0Lcprong1nr","fd0Lcprong1nr",100,-0.09,0.09);
-  TH1F *fd0Lcprong0Bgnr=new TH1F("fd0Lcprong0Bgnr","fd0Lcprong0Bgnr",100,-0.09,0.09);
-  TH1F *fd0Lcprong1Bgnr=new TH1F("fd0Lcprong1Bgnr","fd0Lcprong1Bgnr",100,-0.09,0.09);
-
-  fOutput->Add(fd0Pion);
-  fOutput->Add(fd0Lc);
-  fOutput->Add(fDCApion);
-  fOutput->Add(fDCApionBg);
-  fOutput->Add(fDCALc);
-  fOutput->Add(fDCALcBg);
-  fOutput->Add(fd0Lcprong0);
-  fOutput->Add(fd0Lcprong1);
-  fOutput->Add(fd0Lcprong0Bg);
-  fOutput->Add(fd0Lcprong1Bg);
-  fOutput->Add(fd0Lcprong0nr);
-  fOutput->Add(fd0Lcprong1nr);
-  fOutput->Add(fd0Lcprong0Bgnr);
-  fOutput->Add(fd0Lcprong1Bgnr);
-
+ 
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",6,-0.5,5.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n lc");
@@ -740,45 +495,6 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistNEventsCuts = new TH1F("fHistNEventsCuts", "pass cuts ",14,-0.5,13.5);
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(1,"pt inf prong 0");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(2,"pt inf prong 1");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(3,"pt sup prong 0");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(4,"pt sup prong 1");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(5,"|d0|>value prong 0");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(6,"|d0|>value prong 1");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(7,"cosStar ");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(8,"ct lb ");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(9,"Prodd0d0");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(10,"cosp<0");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(11,"cospXY");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(12,"dca");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(13,"ImpPar");
-  fHistNEventsCuts->GetXaxis()->SetBinLabel(14,"normDecL");
-  fHistNEventsCuts->GetXaxis()->SetNdivisions(1,kFALSE);
-  fHistNEventsCuts->Sumw2();
-  fHistNEventsCuts->SetMinimum(0);
-  fOutput->Add(fHistNEventsCuts);
-
-  fHistNEventsCutsLb= new TH1F("fHistNEventsCutsLb", "pass cuts Lb ",14,-0.5,13.5);
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(1,"pt inf prong 0");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(2,"pt inf prong 1");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(3,"pt sup prong 0");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(4,"pt sup prong 1");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(5,"|d0|>value prong 0");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(6,"|d0|>value prong 1");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(7,"cosStar ");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(8,"ct lb ");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(9,"Prodd0d0");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(10,"cosp");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(11,"cospXY");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(12,"dca");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(13,"ImpPar ");
-  fHistNEventsCutsLb->GetXaxis()->SetBinLabel(14,"normDecL ");
-  fHistNEventsCutsLb->GetXaxis()->SetNdivisions(1,kFALSE);
-  fHistNEventsCutsLb->Sumw2();
-  fHistNEventsCutsLb->SetMinimum(0);
-  fOutput->Add(fHistNEventsCutsLb);
   PostData(1,fOutput);
 
   return;
@@ -790,8 +506,6 @@ void AliAnalysisTaskSELbtoLcpi4::Terminate(Option_t */*option*/)
   // Terminate analysis
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
-  fHistNEventsCuts = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEventsCuts"));
-  fHistNEventsCutsLb = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEventsCutsLb"));
   fNtupleLambdabUPG = dynamic_cast<TNtuple*>(GetOutputData(2));
   if (!fOutput) {
     printf("ERROR: fOutput not available\n");
@@ -813,15 +527,8 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   Double_t massCandLb = part->InvMass(2,pdgLb);
   if(TMath::Abs(massCandLb - massTrueLB)>1.) return;
 
-  Int_t iPtBinlb = -1;
   Double_t ptCandlb = part->Pt();
-  if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
-  if(ptCandlb>=2. && ptCandlb<4.) iPtBinlb=1;
-  if(ptCandlb>=4. && ptCandlb<7.) iPtBinlb=2;
-  if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
-  if(ptCandlb>10. && ptCandlb<14.) iPtBinlb=4;
-  if(ptCandlb>=14.) iPtBinlb=5;
-
+  
   //fill ntuple
   Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
@@ -855,26 +562,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   lbVarC[28] = lc;
   lbVarC[29] = promptLc;
 
-  if(lb==1){ //
-    if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lb"))->Fill(massCandLb);
-    if(iPtBinlb==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1lb"))->Fill(massCandLb);
-    if(iPtBinlb==2)((TH1F*)fOutput->FindObject("fMassUpg_pt2lb"))->Fill(massCandLb);
-    if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lb"))->Fill(massCandLb);
-    if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lb"))->Fill(massCandLb);
-    if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lb"))->Fill(massCandLb);
-
-    // note - don't fill rotated signal (not needed)
-  }
+  
   if(lb!=1){
     if(gen){
-      cout << " gen " << gen << endl;
-      if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==2)((TH1F*)fOutput->FindObject("fMassUpg_pt2lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgOnly"))->Fill(massCandLb);
-
       if(fFillNtupleBackgroundRotated) {
         fNtupleLambdabUPG->Fill(lbVarC);
         PostData(2,fNtupleLambdabUPG);
@@ -997,46 +687,25 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
   for(Int_t i=0;i<3;i++){
     AliAODTrack *daughl=(AliAODTrack*)d->GetDaughter(i);
     Int_t labl=daughl->GetLabel();
-    if(labl<0){
-      continue;
-    }
+    if(labl<0) continue;
     AliAODMCParticle *partl= (AliAODMCParticle*)arrayMC->At(labl);
-    if(!partl){
-      fSelMC->Fill(2);// from MC if label particle is positive
-      continue;
-    }
+    if(!partl) continue;
     pdgsl[i]=TMath::Abs(partl->GetPdgCode());
   }
-  Double_t massl=0.;
-  Int_t iPtBinl = -1;
-  if(pdgsl[0]==211 && pdgsl[1]==321 && pdgsl[2]==2212) massl=d->InvMassLcpiKp();
-  if(pdgsl[0]==2212 && pdgsl[1]==321 && pdgsl[2]==211) massl=d->InvMassLcpKpi();
-
-  Double_t ptCandl = d->Pt();
-
-  if(ptCandl<2.) iPtBinl=0;
-  if(ptCandl>=2. && ptCandl<4.) iPtBinl=1;
-  if(ptCandl>=4. && ptCandl<6.) iPtBinl=2;
-  if(ptCandl>6. && ptCandl<14.) iPtBinl=3;
-  if(ptCandl>6. && ptCandl<14.) iPtBinl=3;
-  if(ptCandl>14.)iPtBinl=4;
-
-  fSelMC->Fill(0);// from MC if label particle is positive
+  
   //in match to mc lc return 0 is not  lambdac
-  if(labDpL<0){
-    fSelMC->Fill(1);// from MC if label particle is positive
+  if(labDpL<0){// from MC if label particle is positive
     return 999;
   }
   AliAODMCParticle *partLc= (AliAODMCParticle*)arrayMC->At(labDpL);
   if(!partLc)return 999;
   Int_t labMLc = partLc->GetMother();//mother Lc
   if(labMLc<0) {fIsPromptLc=kTRUE; return 999;}
-  fSelMC->Fill(4);
   AliAODMCParticle *partMLc= (AliAODMCParticle*)arrayMC->At(labMLc);//MC mother Lc
   if(!partMLc) return 999;
   Int_t pdgsLb=partMLc->GetPdgCode();
   if(TMath::Abs(pdgsLb)==5122){
-    fSelMC->Fill(5);//is mother Lc and is Lb
+    //is mother Lc and is Lb
     //check if the lb decays in lc and pion
     if(partMLc->GetNDaughters()==2){
       AliAODMCParticle *part0dLb=(AliAODMCParticle*)arrayMC->At(partMLc->GetDaughterLabel(0));
@@ -1044,18 +713,12 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
       if(part0dLb && part1dLb){
         Int_t pdgcode0=TMath::Abs(part0dLb->GetPdgCode());
         Int_t pdgcode1=TMath::Abs(part1dLb->GetPdgCode());
-        fSelMC->Fill(6);//if lb has 2 daught
+        //if lb has 2 daught
         if((pdgcode0==4122 && pdgcode1==211) || (pdgcode1==4122 && pdgcode0==211)){
           if(labDpL<0){
-            fSelMC->Fill(1);// from MC if label particle is positive
+            // from MC if label particle is positive
             return 999;//
           }else{
-            fSelMC->Fill(7);
-            if(iPtBinl==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0"))->Fill(massl);
-            if(iPtBinl==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1"))->Fill(massl);
-            if(iPtBinl==2)((TH1F*)fOutput->FindObject("fMassUpg_pt2"))->Fill(massl);
-            if(iPtBinl==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3"))->Fill(massl);
-            if(iPtBinl==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4"))->Fill(massl);
             return labMLc;
           }
         }
@@ -1066,11 +729,8 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
 }
 //----------------------------------------------------------------
 Bool_t AliAnalysisTaskSELbtoLcpi4::CheckGenerator(AliAODTrack *p, AliAODRecoDecayHF3Prong *d, AliAODMCHeader *mcHeader,TClonesArray* arrayMC){
-  Bool_t LcNotHijing;
-  Bool_t pionNotHijing;
-  LcNotHijing=IsCandidateInjected(d, mcHeader,arrayMC);
-  pionNotHijing=IsTrackInjected(p,mcHeader,arrayMC);
-  //cout << " LcNotHijing "<< LcNotHijing << " pionNotHijing " << pionNotHijing << endl;
+  Bool_t LcNotHijing=IsCandidateInjected(d, mcHeader,arrayMC);
+  Bool_t pionNotHijing=IsTrackInjected(p,mcHeader,arrayMC);
   if(!LcNotHijing && !pionNotHijing) return kTRUE;
   else return kFALSE;
 }
@@ -1085,15 +745,14 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
     return 0;
   }
-  Int_t cut=1;
-  //cut value pt dependent
+
   Double_t massTrueLB = 5.641;
   Double_t massCandLb = 0;
   UInt_t pdgLb[2]={0,0};
   pdgLb[0] = 211;//lambdac
   pdgLb[1] = 4122;//pion
 
-  //
+
   Int_t iPtBinlb = -1;
   Float_t lbVar[14];
   Float_t lbVarbg[14];
@@ -1123,120 +782,22 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
     {1.,0. ,  0.,  999., 999., 999.,-999.,999.,-999.,        -10,   10.,  0.005, 999.,   0.,    -999, 0.96,    0.96,        999., 0.5, 0.008,  0., 50.}};//>14
 
   massCandLb = dd->InvMass(2,pdgLb);
-  if(TMath::Abs(massCandLb - massTrueLB)>cutV[iPtBinlb][0]){
-    cut=0;
-  }
-  if(dd->PtProng(0) < cutV[iPtBinlb][1]){
-    fHistNEventsCuts->Fill(0);
-    if(lb==1)fHistNEventsCutsLb->Fill(0);
-    cut = 0;
-  }
-  if(dd->PtProng(1) < cutV[iPtBinlb][2]) {
-    fHistNEventsCuts->Fill(1);
-    if(lb==1)fHistNEventsCutsLb->Fill(1);
-    cut = 0;
-  }
-  if(dd->PtProng(0) > cutV[iPtBinlb][3]) {
-    fHistNEventsCuts->Fill(2);
-    if(lb==1)fHistNEventsCutsLb->Fill(2);
-    cut = 0;
-  }
-  if(dd->PtProng(1) > cutV[iPtBinlb][4]) {
-    fHistNEventsCuts->Fill(3);
-    if(lb==1)fHistNEventsCutsLb->Fill(3);
-    cut = 0;
-  }
-  if(TMath::Abs(dd->Getd0Prong(1)) > cutV[iPtBinlb][5] || TMath::Abs(dd->Getd0Prong(1)) < cutV[iPtBinlb][6]){
-    fHistNEventsCuts->Fill(5);
-    if(lb==1)fHistNEventsCutsLb->Fill(5);
-    cut = 0;
-  }
-  if(TMath::Abs(dd->Getd0Prong(0)) > cutV[iPtBinlb][7] || TMath::Abs(dd->Getd0Prong(0)) < cutV[iPtBinlb][8]){
-    fHistNEventsCuts->Fill(4);
-    if(lb==1)fHistNEventsCutsLb->Fill(4);
-    cut = 0;
-  }
-  if(dd->CosThetaStar(0,5122,4122,211)<cutV[iPtBinlb][9] || dd->CosThetaStar(0,5122,4122,211)>cutV[iPtBinlb][10]){//era -0.6
-    fHistNEventsCuts->Fill(6);
-    if(lb==1)fHistNEventsCutsLb->Fill(6);
-    //    cut = 0;
-  }
-
-  if(dd->Ct(5122)<cutV[iPtBinlb][11] || dd->Ct(5122)>cutV[iPtBinlb][12]) {//
-    fHistNEventsCuts->Fill(7);
-    if(lb==1)fHistNEventsCutsLb->Fill(7);
-    cut = 0;
-  }
-  if((dd->Prodd0d0()) >cutV[iPtBinlb][13] || dd->Prodd0d0() <cutV[iPtBinlb][14]){
-    fHistNEventsCuts->Fill(8);
-    if(lb==1)fHistNEventsCutsLb->Fill(8);
-    cut = 0;
-  }
-  if(dd->CosPointingAngle() <cutV[iPtBinlb][15]) {
-    fHistNEventsCuts->Fill(9);
-    if(lb==1)fHistNEventsCutsLb->Fill(9);
-    cut = 0;
-  }
-  if(dd->CosPointingAngleXY() < cutV[iPtBinlb][16]) {
-    fHistNEventsCuts->Fill(10);
-    if(lb==1)fHistNEventsCutsLb->Fill(10);
-    cut = 0;
-  }
-  if(dd->NormalizedDecayLengthXY()>cutV[iPtBinlb][17] || dd->NormalizedDecayLengthXY()<cutV[iPtBinlb][18]){
-    fHistNEventsCuts->Fill(13);
-    if(lb==1)fHistNEventsCuts->Fill(13);
-    cut =0;//era 30
-  }
-  if(dd->GetDCA() > cutV[iPtBinlb][19] || dd->GetDCA() <cutV[iPtBinlb][20]) {//era 0.01 puo' essere 0.005  0.004
-    fHistNEventsCuts->Fill(11);
-    if(lb==1)fHistNEventsCutsLb->Fill(11);
-    cut= 0;
-  }
-  if(TMath::Abs(dd->ImpParXY())*10000.>cutV[iPtBinlb][21]) {//era 60
-    fHistNEventsCuts->Fill(12);
-    if(lb==1)fHistNEventsCutsLb->Fill(12);
-    cut = 0;
-  }
-
-  // fill histograms
-  if(lb==0 && isHijing){
-    if(isRot==0) { //not rotated bkg
-      ((TH1F*)fOutput->FindObject("fPtBkg"))->Fill(ptCandlb);
-      if(cut==1)((TH1F*)fOutput->FindObject("fPtBkg_TC"))->Fill(ptCandlb);
-      // these histograms are for the background with no cut
-      if(iPtBinlb==0) ((TH1F*)fOutput->FindObject("fMassBkg_pt0lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==1) ((TH1F*)fOutput->FindObject("fMassBkg_pt1lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==2) ((TH1F*)fOutput->FindObject("fMassBkg_pt2lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==3) ((TH1F*)fOutput->FindObject("fMassBkg_pt3lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==4) ((TH1F*)fOutput->FindObject("fMassBkg_pt4lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==5) ((TH1F*)fOutput->FindObject("fMassBkg_pt5lb_NoCuts"))->Fill(massCandLb);
-    }
-    else if(isRot==1) { //rotated bkg
-      ((TH1F*)fOutput->FindObject("fPtBkgRot"))->Fill(ptCandlb);
-      if(cut==1)((TH1F*)fOutput->FindObject("fPtBkgRot_TC"))->Fill(ptCandlb);
-      // these histograms are for the rotated background with no cut
-      if(iPtBinlb==0) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt0lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==1) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt1lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==2) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt2lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==3) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt3lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==4) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt4lb_NoCuts"))->Fill(massCandLb);
-      else if(iPtBinlb==5) ((TH1F*)fOutput->FindObject("fMassBkgRot_pt5lb_NoCuts"))->Fill(massCandLb);
-    }
-  }
-  else if(lb==1 && isRot==0){
-    ((TH1F*)fOutput->FindObject("fPtSig"))->Fill(ptCandlb);
-    if(cut==1)((TH1F*)fOutput->FindObject("fPtSig_TC"))->Fill(ptCandlb);
-    // these histograms are for the signal with no cut
-    if(iPtBinlb==0) ((TH1F*)fOutput->FindObject("fMassSig_pt0lb_NoCuts"))->Fill(massCandLb);
-    else if(iPtBinlb==1) ((TH1F*)fOutput->FindObject("fMassSig_pt1lb_NoCuts"))->Fill(massCandLb);
-    else if(iPtBinlb==2) ((TH1F*)fOutput->FindObject("fMassSig_pt2lb_NoCuts"))->Fill(massCandLb);
-    else if(iPtBinlb==3) ((TH1F*)fOutput->FindObject("fMassSig_pt3lb_NoCuts"))->Fill(massCandLb);
-    else if(iPtBinlb==4) ((TH1F*)fOutput->FindObject("fMassSig_pt4lb_NoCuts"))->Fill(massCandLb);
-    else if(iPtBinlb==5) ((TH1F*)fOutput->FindObject("fMassSig_pt5lb_NoCuts"))->Fill(massCandLb);
-  }
-
-  if(cut==0)return 0;
-  else return 1;//returnvalue;
+  if(TMath::Abs(massCandLb - massTrueLB)>cutV[iPtBinlb][0]) return 0;
+  else if(dd->PtProng(0) < cutV[iPtBinlb][1]) return 0;
+  else if(dd->PtProng(1) < cutV[iPtBinlb][2]) return 0;
+  else if(dd->PtProng(0) > cutV[iPtBinlb][3]) return 0;
+  else if(dd->PtProng(1) > cutV[iPtBinlb][4]) return 0;
+  else if(TMath::Abs(dd->Getd0Prong(1)) > cutV[iPtBinlb][5] || TMath::Abs(dd->Getd0Prong(1)) < cutV[iPtBinlb][6]) return 0;
+  else if(TMath::Abs(dd->Getd0Prong(0)) > cutV[iPtBinlb][7] || TMath::Abs(dd->Getd0Prong(0)) < cutV[iPtBinlb][8]) return 0;
+  //NOT checked for the moment if(dd->CosThetaStar(0,5122,4122,211)<cutV[iPtBinlb][9] || dd->CosThetaStar(0,5122,4122,211)>cutV[iPtBinlb][10])
+  else if(dd->Ct(5122)<cutV[iPtBinlb][11] || dd->Ct(5122)>cutV[iPtBinlb][12]) return 0;
+  else if((dd->Prodd0d0()) >cutV[iPtBinlb][13] || dd->Prodd0d0() <cutV[iPtBinlb][14]) return 0;
+  else if(dd->CosPointingAngle() <cutV[iPtBinlb][15]) return 0;
+  else if(dd->CosPointingAngleXY() < cutV[iPtBinlb][16]) return 0;
+  else if(dd->NormalizedDecayLengthXY()>cutV[iPtBinlb][17] || dd->NormalizedDecayLengthXY()<cutV[iPtBinlb][18]) return 0;
+  else if(dd->GetDCA() > cutV[iPtBinlb][19] || dd->GetDCA() <cutV[iPtBinlb][20]) return 0;
+  else if(TMath::Abs(dd->ImpParXY())*10000.>cutV[iPtBinlb][21]) return 0;
+  else return 1;
 }
 
 //__________________________________________________________________________________
@@ -1367,20 +928,7 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     /*Update 20/09/19: From here on copied from FillHistos, instead of using array that has big memory leak*/
 
     the2Prong->SetOwnPrimaryVtx(primaryVertexAOD);
-    Double_t pionPt2=the2Prong->PtProng(0);
-    Double_t pionP2=the2Prong->PProng(0);
-    Double_t LcPt2=the2Prong->PtProng(1);
-
-    ((TH1F*)fOutput->FindObject("fpionPt2"))->Fill(pionPt2);
-    ((TH1F*)fOutput->FindObject("fLcPt2"))->Fill(LcPt2);
-    ((TH1F*)fOutput->FindObject("fpionP2"))->Fill(pionP2);
-
-    UInt_t pdgLb2[2]={211,4122};
-    Double_t massTrueLB = 5.641;
-
-    Double_t massLb2 = the2Prong->InvMass(2,pdgLb2);
-    if(TMath::Abs(massLb2 - massTrueLB)<1.)((TH1F*)fOutput->FindObject("fMassLb2bkg"))->Fill(massLb2);
-
+   
     Int_t selectionlbR=IsSelectedLbMY(the2Prong,AliRDHFCuts::kCandidate,lb,1,isHijing);//analysis cut Lb --> to be improved
     if(selectionlbR==0){
       et1->Reset(); delete et1; et1=0x0;
@@ -1399,9 +947,9 @@ void AliAnalysisTaskSELbtoLcpi4::DoRotations(AliAODEvent* ev, AliAODRecoDecayHF2
     delete the2Prong;
     delete vtxt;
   }
-
   et2->Reset(); delete et2; et2=0x0;
 }
+
 //_____________________________________________________________
 AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *primary,TObjArray *tracks,Double_t bField) {
   //
@@ -1461,18 +1009,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   Double_t massCandLb = part->InvMass(2,pdgLb);
   if(TMath::Abs(massCandLb - massTrueLB)>1.) return;
 
-  Int_t iPtBinlb = -1;
   Float_t lbVar[14];
   Float_t lbVarbg[14];
   Double_t ptCandlb = part->Pt();
-  if(ptCandlb>0. && ptCandlb<2.) iPtBinlb=0;
-  if(ptCandlb>=2. && ptCandlb<4.) iPtBinlb=1;
-  if(ptCandlb>=4. && ptCandlb<7.) iPtBinlb=2;
-  if(ptCandlb>=7. && ptCandlb<10.) iPtBinlb=3;
-  if(ptCandlb>=10. && ptCandlb<14.) iPtBinlb=4;
-  if(ptCandlb>=14.) iPtBinlb=5;
-  if(ptCandlb<2. || ptCandlb>999.) return;
-
+ 
   //fill ntuple
   Float_t lbVarC[30] = {0};
   lbVarC[0] = massCandLb;
@@ -1507,19 +1047,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   lbVarC[29] = promptLc;
 
   if(lb==1){
-    if(iPtBinlb==0)fInvMassLbSign0->Fill(massCandLb);
-    if(iPtBinlb==1)fInvMassLbSign1->Fill(massCandLb);
-    if(iPtBinlb==2)fInvMassLbSign2->Fill(massCandLb);
-    if(iPtBinlb==3)fInvMassLbSign3->Fill(massCandLb);
-    if(iPtBinlb==4)fInvMassLbSign4->Fill(massCandLb);
-    if(iPtBinlb==5)fInvMassLbSign5->Fill(massCandLb);
-    if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lbNR"))->Fill(massCandLb);
-    if(iPtBinlb==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1lbNR"))->Fill(massCandLb);
-    if(iPtBinlb==2)((TH1F*)fOutput->FindObject("fMassUpg_pt2lbNR"))->Fill(massCandLb);
-    if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbNR"))->Fill(massCandLb);
-    if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbNR"))->Fill(massCandLb);
-    if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbNR"))->Fill(massCandLb);
-
     if(fFillNtupleSignal) {
       fNtupleLambdabUPG->Fill(lbVarC);
       PostData(2,fNtupleLambdabUPG);
@@ -1527,14 +1054,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   }
   if(lb!=1){
     if(gen){
-      //      cout << " gen " << gen << endl;
-      if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lbbgNR"))->Fill(massCandLb);
-      if(iPtBinlb==1)((TH1F*)fOutput->FindObject("fMassUpg_pt1lbbgNR"))->Fill(massCandLb);
-      if(iPtBinlb==2)((TH1F*)fOutput->FindObject("fMassUpg_pt2lbbgNR"))->Fill(massCandLb);
-      if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgNR"))->Fill(massCandLb);
-      if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgNR"))->Fill(massCandLb);
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgNR"))->Fill(massCandLb);
-
       if(fFillNtupleBackgroundNonRotated) {
         fNtupleLambdabUPG->Fill(lbVarC);
         PostData(2,fNtupleLambdabUPG);
@@ -1548,7 +1067,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsTrackInjected(AliAODTrack *part,AliAODMCHead
 
   AliVertexingHFUtils* ggg=new  AliVertexingHFUtils();
 
-  Int_t lab;
+  Int_t lab=-999.;
   if(fApplyFixesITS3AnalysisHijing)lab=TMath::Abs(part->GetLabel());
   else                             lab=part->GetLabel();
   if(lab<0) {delete ggg;return 1;} //
@@ -1579,13 +1098,14 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsTrackInjected(AliAODTrack *part,AliAODMCHead
   delete ggg;
   return 1;
 }
+
 //_____________________________________________________________
 Bool_t AliAnalysisTaskSELbtoLcpi4::IsCandidateInjected(AliAODRecoDecayHF *part, AliAODMCHeader *header,TClonesArray *arrayMC){
 
   Int_t nprongs=part->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     AliAODTrack *daugh=(AliAODTrack*)part->GetDaughter(i);
-    Int_t lab;
+    Int_t lab=-999.;
     if(fApplyFixesITS3AnalysisHijing)lab=TMath::Abs(daugh->GetLabel());
     else                             lab=daugh->GetLabel();
     if(lab<0) return 0;
@@ -1593,3 +1113,4 @@ Bool_t AliAnalysisTaskSELbtoLcpi4::IsCandidateInjected(AliAODRecoDecayHF *part, 
   }
   return kFALSE;
 }
+        

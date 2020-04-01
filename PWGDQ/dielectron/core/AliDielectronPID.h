@@ -101,33 +101,51 @@ public:
   static Double_t GetEtaCorr(const AliVTrack *track);
 
 	static Double_t GetCntrdCorr(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); 
-		else                return (fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype]) : 0.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); 
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype]) : 0.0);
 	}
 
 	static Double_t GetWdthCorr(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunWdthCorr ? GetPIDCorr(track,fgFunWdthCorr) : 1.0); 
-		else                return (fgFunWdthCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTPC][partype]) : 1.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorr ? GetPIDCorr(track,fgFunWdthCorr) : 1.0); 
+			else return 1.0;
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTPC][partype]) : 1.0);
 	}
 
 	static Double_t GetCntrdCorrITS(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); 
-		else                return (fgFunCntrdCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kITS][partype]) : 0.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); 
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kITS][partype]) : 0.0);
 	}
 
 	static Double_t GetWdthCorrITS(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS) : 1.0); 
-		else                return (fgFunWdthCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kITS][partype]) : 1.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS) : 1.0); 
+			else return 1.0;	
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kITS][partype]) : 1.0);
 	}
 
 	static Double_t GetCntrdCorrTOF(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunCntrdCorrTOF ? GetPIDCorr(track,fgFunCntrdCorrTOF) : 0.0);
-		else                return (fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype]) : 0.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorrTOF ? GetPIDCorr(track,fgFunCntrdCorrTOF) : 0.0);
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype]) : 0.0);
 	}
 
 	static Double_t GetWdthCorrTOF(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
-		if(!fgPIDCalibinPU) return (fgFunWdthCorrTOF  ? GetPIDCorr(track,fgFunWdthCorrTOF) : 1.0);
-		else                return (fgFunWdthCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTOF][partype]) : 1.0);
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorrTOF  ? GetPIDCorr(track,fgFunWdthCorrTOF) : 1.0);
+			else return 1.0;
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTOF][partype]) : 1.0);
 	}
 
 private:
@@ -184,7 +202,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,9)         // Dielectron PID
+  ClassDef(AliDielectronPID,10)         // Dielectron PID
 };
 
 #endif

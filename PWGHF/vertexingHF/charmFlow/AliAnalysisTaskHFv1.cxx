@@ -485,7 +485,11 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
             Double_t xmin[6] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.,0.};
             Double_t xmax[6] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.,2.};
             
-            
+            if(fDecChannel==kDstartoKpipi) {
+              nBins[1] = 400;
+              xmin[1] = 0.14;
+              xmax[1] = 0.16;
+            }
             if(fDecChannel==kDplustoKpipi) {
               nBins[4] = 1;
               nBins[5] = 3;

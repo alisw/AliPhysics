@@ -39,7 +39,7 @@ public:
                   kCentralityZNA = 6, kCentralityCL1 = 7, kCentralityCND = 9,
                   kCentralityV0A = 10, kCentralityV0C = 11, kCentralityZNC = 12,
                   kCentralityCL0 = 13, kCentralityFMD = 14, kCentralityTKL = 15,
-                  kCentralityNPA = 16
+                  kCentralityNPA = 16, kRefComb08 = 17
                  };
   typedef enum EventMult EstEventMult;
 

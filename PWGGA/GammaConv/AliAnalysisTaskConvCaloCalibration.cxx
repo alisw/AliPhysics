@@ -76,6 +76,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fCaloPhotonCuts(NULL),
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
+  fElecSelector(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -88,6 +89,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fClusterCutArray(NULL),
   fMesonCutArray(NULL),
   fReaderGammas(NULL),
+  fSelectorElectronIndex(),
+  fSelectorPositronIndex(),
+  fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fFileNameBroken(NULL),
@@ -163,7 +167,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fUseEletronMatchingCalibration(kFALSE)
 {
 
 }
@@ -184,6 +189,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fCaloPhotonCuts(NULL),
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
+  fElecSelector(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -196,6 +202,9 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fClusterCutArray(NULL),
   fMesonCutArray(NULL),
   fReaderGammas(NULL),
+  fSelectorElectronIndex(),
+  fSelectorPositronIndex(),
+  fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fFileNameBroken(NULL),
@@ -271,7 +280,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fDoInvMassShowerShapeTree(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fUseEletronMatchingCalibration(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -903,6 +913,18 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
+  // for electron selection
+  if(fUseEletronMatchingCalibration == 1){
+    fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
+    if(!fElecSelector){AliFatal("Error: No ElectronSelector");}
+
+    if( fElecSelector ){
+      if ( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() ){
+        fOutputContainer->Add( ((AliDalitzElectronCuts*)fElecSelector->GetDalitzElectronCuts())->GetCutHistograms() );
+      }
+    }
+  }
+
 
     //********************************************************************************************************//
     //*****************************  NOT NEEDED FOR CALIBRATION???    ****************************************//
@@ -995,6 +1017,13 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
 //     }
     fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+    if(fUseEletronMatchingCalibration == 1){
+      fSelectorElectronIndex = fElecSelector->GetReconstructedElectronsIndex(); // Electrons from default Cut
+      fSelectorPositronIndex = fElecSelector->GetReconstructedPositronsIndex(); // Positrons from default Cut
+    } else if(fUseEletronMatchingCalibration == 2){
+      GetV0Electrons();
+    }
+
     // ------------------- BeginEvent ----------------------------
     AliEventplane *EventPlane = fInputEvent->GetEventplane();
     if(fIsHeavyIon ==1)fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
@@ -1007,7 +1036,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
       }
-
 
       if (fIsMC > 0){
         fWeightJetJetMC       = 1;
@@ -1061,6 +1089,7 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
         }
       }
 
+
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
       if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();
@@ -1085,7 +1114,6 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
           fBGClusHandlerRP[iCut]->AddEvent(fClusterCandidates,fInputEvent); // Store Event for mixed Events
         }
       }
-
       fGammaCandidates->Clear(); // delete this cuts good gammas
       fClusterCandidates->Clear(); // delete cluster candidates
     }
@@ -1094,7 +1122,9 @@ void AliAnalysisTaskConvCaloCalibration::UserExec(Option_t *){
     //   RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
     //   fV0Reader->RelabelAODs(kFALSE);
     // }
-
+    fSelectorElectronIndex.clear();
+    fSelectorPositronIndex.clear();
+    fV0Electrons.clear();
     PostData(1, fOutputContainer);
 }
 
@@ -1112,14 +1142,18 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   }
 
     // cout << nclus << endl;
-
+  vector<AliAODConversionPhoton*>         vectorCurrentClusters;
+  vector<Int_t>                           vectorRejectCluster;
+  vector<Int_t>                           vectorClusterSM;
+  vector<Double_t>                        vectorPhotonWeight;
+    
   if(nclus == 0)  return;
 
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
+  if(fDoPrimaryTrackMatching && fUseEletronMatchingCalibration == 0) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
   // vertex
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -1144,6 +1178,14 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       delete clus;
       continue;
     }
+    if(fUseEletronMatchingCalibration == 1){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
+    } else if(fUseEletronMatchingCalibration == 2){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fV0Electrons, fWeightJetJetMC);
+    }
+
+
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -1156,7 +1198,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
     PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
 
@@ -1164,23 +1206,46 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     fIsFromDesiredHeader            = kTRUE;
     fIsOverlappingWithOtherHeader   = kFALSE;
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
-      fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-      fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
-      if(PhotonCandidate->GetIsCaloPhoton()){
+      
+      vectorCurrentClusters.push_back(PhotonCandidate);
+      vectorPhotonWeight.push_back(fWeightJetJetMC);
+      
+      if(PhotonCandidate->GetIsCaloPhoton() == 1 || PhotonCandidate->GetIsCaloPhoton() == 3 ){
         fGeomEMCAL = AliEMCALGeometry::GetInstance();
-        Int_t SMNumber = fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID());
-        if(SMNumber >= 0 && SMNumber < 20){
-          fHistoClusGammaPtSM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-          fHistoClusGammaESM[fiCut][fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID())]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
-        }
+        vectorClusterSM.push_back(fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID()));
+      }else {
+        vectorClusterSM.push_back(0);
       }
-      fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
     }else{
       delete PhotonCandidate;
     }
+    
     delete clus;
     delete tmpvec;
   }
+  //Bool_t rejected = kFALSE;
+  // run conversion recovery in addition
+  if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
+    /*rejected = */((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
+  }
+  
+  for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
+    
+    if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckVectorForIndexAndAdd(vectorRejectCluster, iter,kFALSE)){
+      fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
+      fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
+      
+      if(vectorClusterSM.at(iter) >= 0 && vectorClusterSM.at(iter) < 20){
+        fHistoClusGammaPtSM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
+        fHistoClusGammaESM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
+      }
+      
+      fClusterCandidates->Add(vectorCurrentClusters.at(iter));
+    }
+  }  
+  vectorRejectCluster.clear();    
+  vectorClusterSM.clear();
+  vectorPhotonWeight.clear();
 }
 
 //________________________________________________________________________
@@ -1258,6 +1323,42 @@ void AliAnalysisTaskConvCaloCalibration::ProcessPhotonCandidates(){
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskConvCaloCalibration::GetV0Electrons(){
+
+  for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
+    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+    if(!PhotonCandidate) continue;
+
+    //apply cuts to maximize electron purity
+    if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent))continue;
+
+    for (Int_t iElec = 0;iElec < 2;iElec++){
+      Int_t tracklabel = PhotonCandidate->GetLabel(iElec);
+      AliVTrack *inTrack = 0x0;
+      if( fInputEvent->IsA()==AliESDEvent::Class() ) {
+        if( tracklabel > fInputEvent->GetNumberOfTracks() ) continue;
+        inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(tracklabel));
+      } else {
+        if( ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled() ){
+          inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(tracklabel));
+        } else {
+          for( Int_t ii=0;ii<fInputEvent->GetNumberOfTracks();ii++ ) {
+            inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(ii));
+            if(inTrack){
+              if(inTrack->GetID() == tracklabel) {
+                break;
+              }
+            }
+          }
+        }
+      }
+      fV0Electrons.push_back(tracklabel);
+    }
+
+  }
+
+}
 
 //________________________________________________________________________
 // function to reject photons in specific invariant mass window
@@ -1308,7 +1409,7 @@ void AliAnalysisTaskConvCaloCalibration::SetPhotonVeto(){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
           if (gamma1==NULL) continue;
 
-          if (gamma1->GetIsCaloPhoton()){
+          if (gamma1->GetIsCaloPhoton() > 0){
             AliVCluster* cluster = NULL;
             if(fInputEvent->IsA()==AliESDEvent::Class()){
               if(arrClustersMesonCand)
@@ -1355,7 +1456,7 @@ void AliAnalysisTaskConvCaloCalibration::SetPhotonVeto(){
           AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
           mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
 
-          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID()))){
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(), gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton()))){
             if (!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(mesonCand, 0))){
               gamma0->SetUseForMesonPair(kFALSE);
               gamma1->SetUseForMesonPair(kFALSE);
@@ -1369,7 +1470,6 @@ void AliAnalysisTaskConvCaloCalibration::SetPhotonVeto(){
     }
   }
 }
-
 
 //________________________________________________________________________
 void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
@@ -1396,7 +1496,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
           AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
           if (gamma1==NULL) continue;
 
-          if (gamma1->GetIsCaloPhoton()){
+          if (gamma1->GetIsCaloPhoton() > 0){
 
             if(fInputEvent->IsA()==AliESDEvent::Class()){
               if(arrClustersMesonCand)
@@ -1488,7 +1588,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
           AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
           mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
 
-          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID()))){
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(),gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton() ))){
             if (!gamma0->GetUseForMesonPair() || !gamma1->GetUseForMesonPair()){
               fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
               delete mesonCand;
@@ -1620,7 +1720,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackground(){
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate, kFALSE,
-            ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
+            ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID(), currentEventGoodV0.GetIsCaloPhoton(), previousGoodV0.GetIsCaloPhoton())){
             if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
             // Double_t tempBGCandidateWeight = 1;
 
@@ -1661,10 +1761,10 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackground(){
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
             if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,
-                ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
+                ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID(), currentEventGoodV0.GetIsCaloPhoton(), previousGoodV0.GetIsCaloPhoton())){
               if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
 
-              if( currentEventGoodV0.GetIsCaloPhoton() && previousGoodV0.GetIsCaloPhoton() ){
+              if( currentEventGoodV0.GetIsCaloPhoton() > 0 && previousGoodV0.GetIsCaloPhoton() > 0 ){
                 if( TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
                   fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
                   if(fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID()) == fGeomEMCAL->GetSuperModuleNumber(previousGoodV0.GetLeadingCellID())){
@@ -1673,12 +1773,12 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackground(){
                   }
                 }
                } else{
-                  if( currentEventGoodV0.GetIsCaloPhoton() ){
+                  if( currentEventGoodV0.GetIsCaloPhoton() > 0 ){
                     nMod = fGeomEMCAL->GetSuperModuleNumber(currentEventGoodV0.GetLeadingCellID());
                     fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
                     fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
                   }
-                  else if(previousGoodV0.GetIsCaloPhoton()){
+                  else if(previousGoodV0.GetIsCaloPhoton() > 0){
                     nMod = fGeomEMCAL->GetSuperModuleNumber(previousGoodV0.GetLeadingCellID());
                     fHistoMotherBackInvMassECalibSM[fiCut][nMod]->Fill(backgroundCandidate->M(),previousGoodV0.E(),fWeightJetJetMC);
                     fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),previousGoodV0.E(),fWeightJetJetMC);
@@ -1744,8 +1844,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundRP(){
           RotateParticle(gamma1);
           AliAODConversionMother backgroundCandidate(gamma0,gamma1);
           backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate, kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-
+          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate, kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(), gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton())){
             if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -1777,7 +1876,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundRP(){
             AliAODConversionMother backgroundCandidate(gamma0,gamma1);
             backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
             if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-                ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+                ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(), gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton())){
               if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
               if(fDoTHnSparse){
                   Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -1821,7 +1920,7 @@ void AliAnalysisTaskConvCaloCalibration::MoveParticleAccordingToVertex(AliAODCon
 //________________________________________________________________________
 void AliAnalysisTaskConvCaloCalibration::UpdateEventByEventData(){
   //see header file for documentation
-  if(fGammaCandidates->GetEntries() >0 && fMesonRecoMode == 0 ){
+  if(fGammaCandidates->GetEntries() >1 && fMesonRecoMode == 0 ){
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(), fInputEvent->GetPrimaryVertex()->GetY(), fInputEvent->GetPrimaryVertex()->GetZ(),
                                   fV0Reader->GetNumberOfPrimaryTracks(), fEventPlaneAngle);
@@ -1841,7 +1940,7 @@ void AliAnalysisTaskConvCaloCalibration::UpdateEventByEventData(){
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates, fInputEvent->GetPrimaryVertex()->GetX(), fInputEvent->GetPrimaryVertex()->GetY(), fInputEvent->GetPrimaryVertex()->GetZ(),
                                       fGammaCandidates->GetEntries(), fEventPlaneAngle);
     }
-  } else if(fClusterCandidates->GetEntries() >0 && fMesonRecoMode == 2 ){
+  } else if(fClusterCandidates->GetEntries() >1 && fMesonRecoMode == 2 ){
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(), fInputEvent->GetPrimaryVertex()->GetY(), fInputEvent->GetPrimaryVertex()->GetZ(),
                                       fV0Reader->GetNumberOfPrimaryTracks(), fEventPlaneAngle);

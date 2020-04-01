@@ -46,10 +46,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetDCAVtxZ(1.0);
   DeuteronCuts->SetDCAVtxXY(1.0);
   DeuteronCuts->SetCutSharedCls(true);
-  DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  DeuteronCuts->SetCutTPCCrossedRows(false, 70, 0.83);
   DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
+
+  if (suffix == "1") {
+    DeuteronCuts->SetDCAVtxZ(0.2);
+    DeuteronCuts->SetDCAVtxXY(0.1);
+  }
 
   // Track Cuts for Anti-Deuterons
   AliFemtoDreamTrackCuts *AntiDeuteronCuts = new AliFemtoDreamTrackCuts();
@@ -68,10 +73,15 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetDCAVtxZ(1.0);
   AntiDeuteronCuts->SetDCAVtxXY(1.0);
   AntiDeuteronCuts->SetCutSharedCls(true);
-  AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  AntiDeuteronCuts->SetCutTPCCrossedRows(false, 70, 0.83);
   AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
+
+  if (suffix == "1") {
+    AntiDeuteronCuts->SetDCAVtxZ(0.2);
+    AntiDeuteronCuts->SetDCAVtxXY(0.1);
+  }
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true,

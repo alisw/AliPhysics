@@ -43,9 +43,13 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
+      fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
+      fHistPiZeroMass(nullptr),
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistK0Mass(nullptr),
@@ -72,6 +76,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistDCArAfter(nullptr),
       fHistDCAzBefore(nullptr),
       fHistDCAzAfterOthersBefore(nullptr),
+      fHistDCAzAfterOthersBeforeQuality(),
       fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
@@ -79,6 +84,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistArmenterosAfter(nullptr),
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
+      fHistTomography(nullptr),
+      fHistTomographyRZ(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -87,6 +94,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistMCTruthPhotonSigmaP(nullptr),
       fHistMCPhotonP(nullptr),
       fHistMCPhotonSigmaP(nullptr),
+      fHistMCPhotonSource(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -142,9 +150,13 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fTransvRadRejectionUp(0.),
       fDoPhotonQualityCut(false),
       fPhotonQuality(-1),
+      fDoPhotonPileupCut(false),
+      fPhotonPileupCut(false),
+      fDoExtraPiZeroRejection(false),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
+      fHistPiZeroMass(nullptr),
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistK0Mass(nullptr),
@@ -171,6 +183,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistDCArAfter(nullptr),
       fHistDCAzBefore(nullptr),
       fHistDCAzAfterOthersBefore(nullptr),
+      fHistDCAzAfterOthersBeforeQuality(),
       fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
@@ -178,6 +191,8 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistArmenterosAfter(nullptr),
       fHistQualityBefore(nullptr),
       fHistQualityAfter(nullptr),
+      fHistTomography(nullptr),
+      fHistTomographyRZ(nullptr),
       fHistMCTruthPhotonPt(nullptr),
       fHistMCTruthPhotonSigmaPt(nullptr),
       fHistMCPhotonPt(nullptr),
@@ -186,6 +201,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistMCTruthPhotonSigmaP(nullptr),
       fHistMCPhotonP(nullptr),
       fHistMCPhotonSigmaP(nullptr),
+      fHistMCPhotonSource(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -268,6 +284,8 @@ void AliSigma0PhotonCuts::PhotonCuts(
         fHistMCTruthPhotonP->Fill(mcPart->P());
         const int pdgMother = ((AliAODMCParticle*) (AliAODMCParticle*) mcEvent
             ->GetTrack(mcPart->GetMother()))->GetPdgCode();
+        fHistMCPhotonSource->Fill(mcPart->P(), TMath::Abs(pdgMother));
+
         if (TMath::Abs(pdgMother) == 3212) {
           fHistMCTruthPhotonSigmaPt->Fill(mcPart->Pt());
           fHistMCTruthPhotonSigmaP->Fill(mcPart->P());
@@ -298,6 +316,12 @@ void AliSigma0PhotonCuts::PhotonCuts(
     auto nanoPos = dynamic_cast<AliNanoAODTrack *>(pos);
     if(nanoPos) v0 = nullptr; // for NanoAODs we dont have a v0 matching!
 
+    if (fDoExtraPiZeroRejection) {
+      if (!PiZeroRejection(PhotonCandidate, photons, iGamma)) {
+        continue;
+      }
+    }
+
     if (ProcessPhoton(event, mcEvent, PhotonCandidate, v0, pos, neg)) {
       AliFemtoDreamBasePart photon(PhotonCandidate, pos, neg, inputEvent);
       if (fIsMC) {
@@ -321,9 +345,27 @@ void AliSigma0PhotonCuts::PhotonCuts(
             photon.SetID(mcPartPos->GetMother());
 
             if (mcParticle) {
+              if (mcParticle->IsSecondaryFromMaterial()) continue;
+
               photon.SetMCParticle(mcParticle, mcEvent);
               photon.SetMCPDGCode(mcParticle->GetPdgCode());
               photon.SetMotherID(mcParticle->GetMother());  // otherwise the Sigma0 is not set properly as the mother of the photon
+
+              //check for secondary and set origin and mother
+              if (mcParticle->IsPhysicalPrimary() &&
+                  !mcParticle->IsSecondaryFromWeakDecay()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+              } else if (mcParticle->IsSecondaryFromWeakDecay() &&
+                         !mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+                photon.SetPDGMotherWeak(
+                    ((AliAODMCParticle *)mcarray->At(mcParticle->GetMother()))
+                        ->PdgCode());
+              } else if (mcParticle->IsSecondaryFromMaterial()) {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+              } else {
+                photon.SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+              }
 
               if (mcParticle->PdgCode() == 22) {
                 fHistMCV0Pt->Fill(photon.GetPt());
@@ -458,6 +500,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   } else {
     photonQuality = 1;
   }
+  bool pileUpPhoton = (photonQuality == 1) ? true : false;
 
   // BEFORE THE CUTS
   if (!fIsLightweight) {
@@ -570,9 +613,13 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
   if (fDoPhotonQualityCut && photonQuality != fPhotonQuality) {
     return false;
   }
+  if (fDoPhotonPileupCut && pileUpPhoton != fPhotonPileupCut) {
+    return false;
+  }
   fHistCuts->Fill(15.f);
 
   fHistDCAzAfterOthersBefore->Fill(pt, DCAz);
+  fHistDCAzAfterOthersBeforeQuality[photonQuality]->Fill(pt, DCAz);
 
   if (TMath::Abs(DCAz) > fDCAzMax) {
     return false;
@@ -654,6 +701,35 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent,
     fHistSingleParticleNcrossedTPCAfter[1]->Fill(negPt, nCrossedRowsNeg);
     fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
     fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
+    fHistTomography->Fill(conv[0], conv[1]);
+    fHistTomographyRZ->Fill(conv[2], std::sqrt(conv[0]*conv[0] + conv[1]*conv[1]));
+  }
+  return true;
+}
+
+
+bool AliSigma0PhotonCuts::PiZeroRejection(AliAODConversionPhoton* photon,
+                                          const TClonesArray *photons,
+                                          int iPhoton) {
+  TLorentzVector track1, track2;
+  track1.SetXYZM(photon->Px(), photon->Py(), photon->Pz(),
+                 photon->GetPhotonMass());
+
+  for (int iGamma = 0; iGamma < photons->GetEntriesFast(); ++iGamma) {
+    if (iGamma == iPhoton) {
+      continue;
+    }
+    auto *PhotonCandidate = dynamic_cast<AliAODConversionPhoton *>(photons->At(
+        iGamma));
+    track2.SetXYZM(PhotonCandidate->Px(), PhotonCandidate->Py(),
+                   PhotonCandidate->Pz(), PhotonCandidate->GetPhotonMass());
+    TLorentzVector trackSum = track1 + track2;
+    const double mass = trackSum.M();
+    fHistPiZeroMass->Fill(mass);
+
+    if (mass > 0.125 && mass < 0.15) {
+      return false;
+    }
   }
   return true;
 }
@@ -888,6 +964,11 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
                            2 * pi);
     fHistograms->Add(fHistEtaPhi);
 
+    if(fDoExtraPiZeroRejection) {
+      fHistPiZeroMass = new TH1F("fHistPiZeroMass", "; #it{M}_{#gamma#gamma} (GeV/#it{c}; Entries", 1000, 0, 0.25);
+      fHistograms->Add(fHistPiZeroMass);
+    }
+
     if (fIsMC) {
       fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                              "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
@@ -898,16 +979,16 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistV0Mother);
 
       fHistMCTruthPhotonPt = new TH1F("fHistMCTruthPhotonPt",
-                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistMCTruthPhotonSigmaPt = new TH1F("fHistMCTruthPhotonSigmaPt",
                                            "; #it{p}_{T} (GeV/#it{c}); Entries",
-                                           250, 0, 10);
+                                           200, 0, 10);
       fHistMCPhotonPt = new TH1F("fHistMCPhotonPt",
-                                 "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0,
+                                 "; #it{p}_{T} (GeV/#it{c}); Entries", 200, 0,
                                  10);
       fHistMCPhotonSigmaPt = new TH1F("fHistMCPhotonSigmaPt",
-                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p}_{T} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistograms->Add(fHistMCTruthPhotonPt);
       fHistograms->Add(fHistMCTruthPhotonSigmaPt);
@@ -915,21 +996,26 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistMCPhotonSigmaPt);
 
       fHistMCTruthPhotonP = new TH1F("fHistMCTruthPhotonP",
-                                      "; #it{p} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistMCTruthPhotonSigmaP = new TH1F("fHistMCTruthPhotonSigmaP",
                                            "; #it{p} (GeV/#it{c}); Entries",
-                                           250, 0, 10);
+                                           200, 0, 10);
       fHistMCPhotonP = new TH1F("fHistMCPhotonP",
-                                 "; #it{p} (GeV/#it{c}); Entries", 250, 0,
+                                 "; #it{p} (GeV/#it{c}); Entries", 200, 0,
                                  10);
       fHistMCPhotonSigmaP = new TH1F("fHistMCPhotonSigmaP",
-                                      "; #it{p} (GeV/#it{c}); Entries", 250,
+                                      "; #it{p} (GeV/#it{c}); Entries", 200,
                                       0, 10);
       fHistograms->Add(fHistMCTruthPhotonP);
       fHistograms->Add(fHistMCTruthPhotonSigmaP);
       fHistograms->Add(fHistMCPhotonP);
       fHistograms->Add(fHistMCPhotonSigmaP);
+
+      fHistMCPhotonSource = new TH2F(
+          "fHistMCPhotonSource", "; #it{p} (GeV/#it{c}); PDG code mother", 200, 0,
+          10, 4000, 0, 4000);
+      fHistograms->Add(fHistMCPhotonSource);
     }
 
     fHistSingleParticleCuts[0] = new TH1F("fHistSingleParticleCuts_pos",
@@ -1068,6 +1154,13 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
         10, 200, -5, 5);
     fHistogramsAfter->Add(fHistDCAzAfterOthersBefore);
 
+    for (int i = 0; i < 4; ++i) {
+      fHistDCAzAfterOthersBeforeQuality[i] = new TH2F(
+          Form("fHistDCAzAfterOthersBefore_%i", i),
+          "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0, 10, 200, -5, 5);
+      fHistogramsAfter->Add(fHistDCAzAfterOthersBeforeQuality[i]);
+    }
+
     fHistDCAzAfter = new TH2F(
         "fHistDCAzAfter",
         "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
@@ -1111,6 +1204,14 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
                                  "; #it{p}_{T} (GeV/#it{c}); Photon quality",
                                  50, 0, 10, 4, 0, 4);
     fHistogramsAfter->Add(fHistQualityAfter);
+
+    fHistTomography = new TH2F("fHistTomography", "; #it{x} (cm); #it{y} (cm)",
+                               2400, -120, 120, 2400, -120, 120);
+    fHistogramsAfter->Add(fHistTomography);
+
+    fHistTomographyRZ = new TH2F("fHistTomographyRZ", "; #it{z} (cm); #it{r} (cm)",
+                               2500, -250, 250, 2500, 0, 250);
+    fHistogramsAfter->Add(fHistTomographyRZ);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);

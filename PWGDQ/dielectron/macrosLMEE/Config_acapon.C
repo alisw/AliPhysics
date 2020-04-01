@@ -101,269 +101,30 @@ AliDielectron* Config_acapon(TString cutDefinition,
   else if(cutDefinition == "kMCpdgSel"){
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kMCsel, LMEECutLib::kPdgSel) );
   }
-
-  // ########## "STANDARD" ANALYSIS CUT  #####################
+  // Standard analysis withSDD analysis cuts and MVA ePID
   else if(cutDefinition == "kCutSet1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // No fITSshared cluster cut w.r.t to kCutSet1
-  else if(cutDefinition == "kCutSet2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet2, LMEECutLib::kCutSet1));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  // kCutSet1 with low pt cut at 10 GeV
+  // Standard noSDD analysis cuts using MVA ePID(req. ITS PID)
   else if(cutDefinition == "kCutSet3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet3, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-
-  // ######## PID Cut variation settings #################
-  // These variations use the kCutSet1 track cuts and only vary PID
-  else if(cutDefinition == "kPIDcut1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut1));
+  // Standard analysis cuts with hadron rejection ePID
+  else if(cutDefinition == "kScheidCuts"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kPIDcut2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut2));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut3));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut4));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut5));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut6"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut6));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut7"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut7));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut8"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut8));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut9"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut9));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut10"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut10));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut11"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut11));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut12"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut12));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut13"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut13));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut14"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut14));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut15"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut15));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut16"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut16));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut17"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut17));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut18"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut18));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut19"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut19));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut20"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut20));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  // ######## Track+ePID Cut variation settings #################
-  // These variations all use the same PhiV cut
-  else if(cutDefinition == "kCutVar1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar6"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar7"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar8"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar9"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar10"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar11"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar12"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar13"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar14"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar15"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar16"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar17"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar18"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar19"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar20"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
+  // Standard analysis cuts with 7TeV diElec ePID scheme
+  else if(cutDefinition == "k7TeVpaper"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::k7TeVtrack, LMEECutLib::k7TeVPID));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -391,28 +152,17 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // Cut set to imitate pPb FAST+woSDD analysis
-  else if(cutDefinition == "kScheidCuts"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
   // Two cut settings to check PID efficiency using V0 electrons
   // (does not work for MC, checked 2019.05.08)
   else if(cutDefinition == "kV0_TTreeCutPID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kTTreeCuts));
   }
   else if(cutDefinition == "kV0_MVAePID"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
-  }
-  // Cut set to check V0 features in MC (for testing)
-  else if(cutDefinition == "kV0_allAcc"){
-    die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kV0_allAcc, LMEECutLib::kV0_allAcc) );
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kMVA1));
   }
   // ######## Different R factor bin mixing schemes #################
   else if(cutDefinition == "kMixScheme1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -420,7 +170,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme1);
   }
   else if(cutDefinition == "kMixScheme2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -428,7 +178,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme2);
   }
   else if(cutDefinition == "kMixScheme3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -436,7 +186,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme3);
   }
   else if(cutDefinition == "kMixScheme4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -444,7 +194,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme4);
   }
   else if(cutDefinition == "kMixScheme5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -457,15 +207,39 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTheoPID));
     LMcutlib->SetSignalsMC(die);
   }
-  // Cut designed to only use "good" eta/phi regions
-  else if(cutDefinition == "kGoodEtaPhiRegions"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kGoodEtaPhi, LMEECutLib::kTheoPID));
+  // Cut sets to to vary fITSshared cut
+  else if(cutDefinition == "kITSshared1"){ // One shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared1, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kBadEtaPhiRegions"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kBadEtaPhi, LMEECutLib::kTheoPID));
+  else if(cutDefinition == "kITSshared2"){ // Two shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared2, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared3"){ // Three shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared3, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared4"){ // Four shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared4, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared5"){ // Five shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared5, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared6"){ // Six shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }

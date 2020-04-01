@@ -30,7 +30,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   } else {
         evtCuts->SetSphericityCuts(fSpherDown, 1.0);
   }
-
+  if (suffix == "99") {
+    std::cout<<"Entered the Loop\n";
+    fTrackCutsPosPion->SetPtRange(0., 10.0);
+  }
   //Track Cuts are defined here
   //positive pions
   //Track Cuts tuned according to:
@@ -40,14 +43,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
-  fTrackCutsPosPion->SetFilterBit(96); // Indico Filterbit 7
   fTrackCutsPosPion->SetPtRange(0.14, 4.0);
   fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsPosPion->SetNClsTPC(80);
   // Not mention in AN oder Indico
   fTrackCutsPosPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  fTrackCutsPosPion->SetDCAVtxZ(0.3);
-  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  if ( !MCtemplatefit ) {
+    fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
+    fTrackCutsPosPion->SetDCAVtxZ(0.3);
+    fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
+  }
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
   if ( doSharedCut ) { fTrackCutsPosPion->SetCutSharedCls(true);}
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
@@ -58,7 +65,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
-  fTrackCutsPosPion->SetPlotDCADist(true);
+  fTrackCutsPosPion->SetPlotDCADist(false);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -71,15 +78,23 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
+  if (suffix == "99") {
+    std::cout<<"Entered the Loop\n";
+    fTrackCutsNegPion->SetPtRange(0., 10.0);
+  }
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  fTrackCutsNegPion->SetFilterBit(96);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
-  fTrackCutsNegPion->SetDCAVtxZ(0.3);
-  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  if ( !MCtemplatefit ) {
+    fTrackCutsNegPion->SetFilterBit(96);
+    fTrackCutsNegPion->SetDCAVtxZ(0.3);
+    fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsNegPion->SetFilterBit(128);
+  }
   if ( doSharedCut ) { fTrackCutsNegPion->SetCutSharedCls(true);}
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
@@ -92,7 +107,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   if ( isMC && MCtemplatefit ) {
     //fTrackCutsNegPion->SetPlotContrib(true);
     fTrackCutsNegPion->CheckParticleMothers(true);
-    fTrackCutsNegPion->SetPlotDCADist(true);
+    fTrackCutsNegPion->SetPlotDCADist(false);
     //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
     fTrackCutsNegPion->SetFillQALater(true);
   }
@@ -123,10 +138,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(13);
-  MultBins.push_back(21);
+  MultBins.push_back(18);
   MultBins.push_back(30);
-  MultBins.push_back(54);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
@@ -162,23 +175,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     closeRejection.push_back(false); // pi+ pi+
     closeRejection.push_back(false); // pi+ pi-
     closeRejection.push_back(false); // pi- pi-
-  }
-
-  //Variations for fdPhidEta
-  if (suffix == "1") {
-    fdPhidEta=0.035;
-  }
-
-  if (suffix == "2") {
-    fdPhidEta=0.03;
-  }
-
-  if (suffix == "3") {
-    fdPhidEta=0.025;
-  }
-
-  if (suffix == "4") {
-    fdPhidEta=0.02;
   }
 
   //QA plots for tracks

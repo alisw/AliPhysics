@@ -123,7 +123,7 @@ fIsEmcalTrig(0),
 fIsHighMultTrig(0),
 //fCentralityV0A(-1),
 //fCentralityV0C(-1),
-//fCentralityV0M(-1),
+fCentralityV0M(-1),
 fxVertex(-1),
 fyVertex(-1),
 fzVertex(-1),
@@ -176,6 +176,8 @@ fhV0ARunByRunMB(0x0),
 fhV0CRunByRunMB(0x0),
 fhV0MRunByRunMB(0x0),
 fhV0MnormRunByRunMB(0x0),
+fhJetPtEvtByEvent(0x0),
+fhJetPtEvtByEventPartLevel(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -193,7 +195,8 @@ fRandom(0),
 fJetR(0.4),
 fJetAcut(0.),
 fRhoType(0),
-kOldV0MC(kFALSE)                            
+kOldV0MC(kFALSE),
+fMultFramework(kFALSE)                            
 {
    //default constructor
    
@@ -361,9 +364,10 @@ kOldV0MC(kFALSE)
       fhVertex[iv]=0x0;
    }
 
-   for(Int_t itg=kMB; itg<=kGA; itg++){ 
+   for(Int_t itg=kMB; itg<=kGA; itg++){          
+      fhCentrality[itg]= 0x0;
       for(Int_t ic=0; ic<fkCE;ic++){
-         //fhCentrality[itg][ic] = 0x0;
+
          fhSignal[itg][ic] = 0x0; 
       
          for(Int_t i=0; i<fkTTbins;i++){
@@ -422,6 +426,27 @@ kOldV0MC(kFALSE)
       frhovec[i] = 0.;
    }
 
+   
+
+   //JET AND TRACK PT ASYMMETRY
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+      for(Int_t itg=kMB; itg<=kHM; itg++){
+         fhJetPtAsymmetryCB[itg][itt]   = NULL;
+         fhTrackPtAsymmetryCB[itg][itt] = NULL;
+ 
+         fhNumberOfHighPtJetsCB[itg][itt]     = NULL;
+         fhNumberOfHighPtJetsRecoil[itg][itt] = NULL;
+      }
+      fhRecoilJetPtEvtByEvent[itt] = NULL;
+
+      fhJetPtAsymmetryCBPartLevel[itt] = NULL;
+      fhTrackPtAsymmetryCBPartLevel[itt] = NULL;
+      fhNumberOfHighPtJetsCBPartLevel[itt] = NULL;
+      fhNumberOfHighPtJetsRecoilPartLevel[itt] = NULL;
+      fhRecoilJetPtEvtByEventPartLevel[itt] = NULL;
+   } 
+
+
    fHelperEA = new PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA();
    fMeanV0M_PartLevel = fHelperEA->GetV0MPartLevel(); 
 }
@@ -457,7 +482,7 @@ fIsEmcalTrig(0),
 fIsHighMultTrig(0),
 //fCentralityV0A(-1),
 //fCentralityV0C(-1),
-//fCentralityV0M(-1),
+fCentralityV0M(-1),
 fxVertex(-1),
 fyVertex(-1),
 fzVertex(-1),
@@ -510,6 +535,8 @@ fhV0ARunByRunMB(0x0),
 fhV0CRunByRunMB(0x0),
 fhV0MRunByRunMB(0x0),
 fhV0MnormRunByRunMB(0x0),
+fhJetPtEvtByEvent(0x0),
+fhJetPtEvtByEventPartLevel(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -527,7 +554,8 @@ fRandom(0),
 fJetR(0.4),
 fJetAcut(0.),
 fRhoType(0),                           
-kOldV0MC(kFALSE)                            
+kOldV0MC(kFALSE),
+fMultFramework(kFALSE) 
 {
    //Constructor
    
@@ -694,8 +722,9 @@ kOldV0MC(kFALSE)
    }
 
    for(Int_t itg=kMB; itg<=kGA; itg++){ 
+      fhCentrality[itg] = 0x0;
       for(Int_t ic=0; ic<fkCE;ic++){
-         //fhCentrality[itg][ic] = 0x0;
+         
          fhSignal[itg][ic] = 0x0; 
       
          for(Int_t i=0; i<fkTTbins;i++){
@@ -754,6 +783,27 @@ kOldV0MC(kFALSE)
    for(Int_t i=0; i<999; i++){
       frhovec[i] = 0.;
    }
+
+   //JET AND TRACK PT ASYMMETRY
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+      for(Int_t itg=kMB; itg<=kHM; itg++){
+         fhJetPtAsymmetryCB[itg][itt]   = NULL;
+         fhTrackPtAsymmetryCB[itg][itt] = NULL;
+ 
+         fhNumberOfHighPtJetsCB[itg][itt] = NULL;
+         fhNumberOfHighPtJetsRecoil[itg][itt] = NULL;
+      }
+
+      fhRecoilJetPtEvtByEvent[itt] = NULL;
+
+      fhJetPtAsymmetryCBPartLevel[itt] = NULL;
+      fhTrackPtAsymmetryCBPartLevel[itt] = NULL;
+      fhNumberOfHighPtJetsCBPartLevel[itt] = NULL;
+      fhNumberOfHighPtJetsRecoilPartLevel[itt] = NULL;
+      fhRecoilJetPtEvtByEventPartLevel[itt] = NULL;
+
+   } 
+
 
    fHelperEA = new PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA();
    fMeanV0M_PartLevel = fHelperEA->GetV0MPartLevel(); 
@@ -1331,8 +1381,22 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    Double_t ptSJ=-1, etaSJ=999, phiSJ=0; //subleading jet
    Double_t ptLJmc=-1, etaLJmc=999, phiLJmc=0; //leading jet
    Double_t ptSJmc=-1, etaSJmc=999, phiSJmc=0; //subleading jet
+   Int_t b1,b2;
 
    Int_t runnumber = 0; 
+
+   fhJetPtEvtByEvent->Reset();
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
+      fhRecoilJetPtEvtByEvent[itt]->Reset(); 
+   }
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == kKine){
+      fhJetPtEvtByEventPartLevel->Reset();
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
+         fhRecoilJetPtEvtByEventPartLevel[itt]->Reset(); 
+      }
+   } 
+
    //_________________________________________________________________
    //                    JET+TRACK CONTAINERS
   
@@ -1357,20 +1421,28 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
   
    //_________________________________________________________________
    //                EVENT PROPERTIES   
-    
+   Double_t normV0A = -1; 
+   Double_t normV0C = -1;
+ 
    if(fMode != AliAnalysisTaskEA::kKine){  
    
-//      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-//      if(fMultSelection){
+      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+      if(fMultSelection){
 //      
 //         fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
 //         fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
-//         fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-//      }else{
+           fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+
+           if(fMultFramework){
+              normV0A = fMultSelection->GetZ("V0A"); 
+              normV0C = fMultSelection->GetZ("V0C");
+              fMultV0Mnorm =  fMultSelection->GetZ("V0M");
+           }
+      }else{
 //         fCentralityV0A = -1; 
 //         fCentralityV0C = -1;
-//         fCentralityV0M = -1;
-//      }
+         fCentralityV0M = -1;
+      }
       
       const AliVVertex *vertex = InputEvent()->GetPrimaryVertexSPD();
       if(vertex){ 
@@ -1410,18 +1482,21 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             meanV0C  = fHelperEA->GetV0CDetLevel();
          }      
       
-         //V0 estimators of event activity normalized per minimum bias activity 
-         fMultV0Mnorm = fMultV0M/fMeanV0M;
-      
          fAsymV0M = 999;
+         //V0 estimators of event activity normalized per minimum bias activity 
+         if(!fMultFramework){
+            fMultV0Mnorm = fMultV0M/fMeanV0M;  //either from mult framework of from my analysis
       
-         if(meanV0A>0 && meanV0C>0){
-            Double_t normV0A = fMultV0A/meanV0A;
-            Double_t normV0C = fMultV0C/meanV0C;
-            if((normV0A + normV0C) > 0){
-               fAsymV0M = (normV0A - normV0C)/(normV0A + normV0C);
-            } 
-         }
+            if(meanV0A>0 && meanV0C>0){
+                normV0A = fMultV0A/meanV0A;
+                normV0C = fMultV0C/meanV0C;
+             }
+          }
+
+          if((normV0A + normV0C) > 0){
+             fAsymV0M = (normV0A - normV0C)/(normV0A + normV0C);
+          } 
+         
       }else{
          fMultV0A = -1; 
          fMultV0C = -1; 
@@ -1565,7 +1640,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    Int_t    trackMult  = 0;
    Double_t sumTrackPt = 0.;
-   
+ 
+   //pt asymmetry 
+   Double_t sumJetPtTT       = 0.; 
+   Double_t sumJetPtRecoil   = 0.; 
+   Double_t sumTrackPtTT     = 0.; 
+   Double_t sumTrackPtRecoil = 0.; 
+ 
    if((fIsEmcalTrig || fIsMinBiasTrig || fIsHighMultTrig) && (fMode != AliAnalysisTaskEA::kKine)){  //real data + mc det level + embedding
      
       //___________________________________________
@@ -1580,7 +1661,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 //          fhCentrality[itg][fkV0A]->Fill(fCentralityV0A, fMultV0A); 
 //          fhCentrality[itg][fkV0C]->Fill(fCentralityV0C, fMultV0C); 
 //          fhCentrality[itg][fkV0M]->Fill(fCentralityV0M, fMultV0M); 
-//          fhCentrality[itg][fkV0Mnorm1]->Fill(fCentralityV0M, fMultV0Mnorm); 
+          fhCentrality[itg]->Fill(fCentralityV0M, fMultV0Mnorm); 
    
           fhSignal[itg][fkV0A]->Fill(fMultV0A);
           fhSignal[itg][fkV0C]->Fill(fMultV0C);
@@ -2058,7 +2139,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                fhRhoTTH[itg][itt]->Fill(rho);
             }
          }
-      
+  
+         for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+            jet = jetIterator.second;  
+            if(!jet)  continue;
+            fhJetPtEvtByEvent->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum 
+         } 
+    
       
          for(Int_t itt=0; itt<fnHadronTTBins; itt++){
             if(!fHadronTT[itt]) continue; //analyze events with hadron TT only 
@@ -2077,6 +2164,16 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                fhSignalTTH[itg][fkV0Mnorm1][itt]->Fill(fMultV0Mnorm);
    
                fhV0MAssymVsV0MnormTTH[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M);
+
+               //count number of jets with pT larger than something   
+               tmparr3[2] = fMultV0Mnorm;
+               for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetNbins(); ii++){
+                  tmparr3[0] = fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
+                  b1 = fhJetPtEvtByEvent->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+                  b2 = fhJetPtEvtByEvent->GetXaxis()->GetNbins()+1;  //include overflow bin
+                  tmparr3[1] = fhJetPtEvtByEvent->Integral(b1,b2);
+                  fhNumberOfHighPtJetsCB[itg][itt]->Fill(tmparr3);
+               }
             }
       
             if(fIsMinBiasTrig){
@@ -2086,7 +2183,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             //pick up TTH hadron accoding to the index
             idx = fIndexTTH[itt];
             if(idx>-1){
-   
+               sumJetPtTT       = 0.; 
+               sumJetPtRecoil   = 0.; 
+               sumTrackPtTT     = 0.; 
+               sumTrackPtRecoil = 0.; 
+ 
                for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
                   if(!trigflag[itg]) continue; //check which trigger fired
       
@@ -2130,6 +2231,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                      tmparr[2] = jet->Phi();
                      tmparr[3] = fMultV0Mnorm;
                      fhJetPtEtaPhiV0normTTH[itg][itt]->Fill(tmparr); 
+                  }
+ 
+                  if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                     fhRecoilJetPtEvtByEvent[itt]->Fill(jet->Pt());
+                     sumJetPtRecoil += jet->Pt(); 
+                  }else{
+                     sumJetPtTT     += jet->Pt(); //sum jet pT in 
                   } 
                   
                   if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){     //select recoil jet
@@ -2151,6 +2259,49 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                         }
                      }
                   } 
+               }
+
+               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+                  if(!trigflag[itg]) continue; //check which trigger fired
+
+                  //count number of jets with pT larger than something in recoil region
+                  tmparr3[2] = fMultV0Mnorm;
+                  for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetNbins(); ii++){
+                     tmparr3[0] = fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
+                     b1 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+                     b2 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
+                     tmparr3[1] = fhRecoilJetPtEvtByEvent[itt]->Integral(b1,b2);
+                     fhNumberOfHighPtJetsRecoil[itg][itt]->Fill(tmparr3);
+                  }
+                  
+                  //Fill jet pt asymmetry
+                  if(sumJetPtRecoil + sumJetPtTT > 0){
+                     fhJetPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumJetPtRecoil - sumJetPtTT) / (sumJetPtRecoil + sumJetPtTT));
+                  }
+               }
+
+               //Fill track pt asymmetry
+               for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+                  track = trackIterator.second;  // Get the full track
+                  if(!track) continue;
+              
+                  if(IsTrackInAcceptance(track, kDetLevel)){  
+                     dphi = TVector2::Phi_mpi_pi(track->Phi() - fTTH[itt][idx].Phi()); 
+                     if(TMath::Abs(dphi) > TMath::Pi()/2){ //select recoil hemisphere and count tracks 
+                        sumTrackPtRecoil += track->Pt(); 
+                     }else{
+                        sumTrackPtTT     += track->Pt(); //sum jet pT in 
+                     } 
+                  }
+               }
+ 
+               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+                  if(!trigflag[itg]) continue; //check which trigger fired
+
+                  if(sumTrackPtRecoil + sumTrackPtTT > 0){
+                     fhTrackPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumTrackPtRecoil - sumTrackPtTT) / (sumTrackPtRecoil + sumTrackPtTT));
+                  }
                }
             }
          }
@@ -2488,12 +2639,30 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }
          
             fhV0MAssymVsV0Mnorm_PartLevel->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel);
-         
+
+            for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+               jet = jetIterator.second;  
+               if(!jet)  continue;
+               fhJetPtEvtByEventPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum 
+            } 
+ 
             //chose trigger hadron TT   particle level
             for(Int_t itt=0; itt<fnHadronTTBins; itt++){
                if(fHadronTT_PartLevel[itt]>0){
                   fIndexTTH_PartLevel[itt] = fRandom->Integer(fHadronTT_PartLevel[itt]); 
                   idx = fIndexTTH_PartLevel[itt]; 
+
+  
+                  //count number of jets with pT larger than something   
+                  tmparr3[2] = fMultV0Mnorm;
+                  for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCBPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
+                     tmparr3[0] = fhNumberOfHighPtJetsCBPartLevel[itt]->GetAxis(0)->GetBinLowEdge(ii);
+                     b1 = fhJetPtEvtByEventPartLevel->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+                     b2 = fhJetPtEvtByEventPartLevel->GetXaxis()->GetNbins()+1;  //include overflow bin
+                     tmparr3[1] = fhJetPtEvtByEventPartLevel->Integral(b1,b2);
+                     fhNumberOfHighPtJetsCBPartLevel[itt]->Fill(tmparr3);
+                  }
+      
                  
                   fdeltapT_PartLevel[itt] = GetDeltaPt(fTTH_PartLevel[itt][idx].Phi(), fTTH_PartLevel[itt][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, rhoMC, kPartLevel);
                   //signal in events with hadron TT   particle level
@@ -2509,6 +2678,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                  
                   if(idx>-1){ 
         
+                     sumJetPtTT       = 0.; 
+                     sumJetPtRecoil   = 0.; 
+                     sumTrackPtTT     = 0.; 
+                     sumTrackPtRecoil = 0.;
+ 
                      fhRhoTTHinMBpart[itt]->Fill(rhoMC);
                      fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[itt]);
          
@@ -2517,6 +2691,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          
                      fhTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
                      fhTTH_3D_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel, fTTH_PartLevel[itt][idx].Pt());
+
                    
                      //recoil jets  PARTICLE LEVEL
                      for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
@@ -2535,6 +2710,14 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                         tmparr[2] = jetPtCorrDet;
                         tmparr[3] = TMath::Abs(dphi);
                         fhRecoilJetTTH_V0Mnorm1_PartLevel[itt]->Fill(tmparr); 
+
+ 
+                        if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                           fhRecoilJetPtEvtByEventPartLevel[itt]->Fill(jet->Pt());
+                           sumJetPtRecoil += jet->Pt(); 
+                        }else{
+                           sumJetPtTT     += jet->Pt(); //sum jet pT in 
+                        } 
                         
                         
                         if(TMath::Abs(dphi) > fPhiCut){     
@@ -2547,7 +2730,42 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                            tmparr3[2] = fMultV0Mnorm_PartLevel;
                            fhJetPtAreaV0normTTH_PartLevel[itt]->Fill(tmparr3);
                         }
-                     } 
+                     }
+
+                     //count number of jets with pT larger than something in recoil region
+                     tmparr3[2] = fMultV0Mnorm_PartLevel;
+                     for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
+                        tmparr3[0] = fhNumberOfHighPtJetsRecoilPartLevel[itt]->GetAxis(0)->GetBinLowEdge(ii);
+                        b1 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+                        b2 = fhRecoilJetPtEvtByEventPartLevel[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
+                        tmparr3[1] = fhRecoilJetPtEvtByEventPartLevel[itt]->Integral(b1,b2);
+                        fhNumberOfHighPtJetsRecoilPartLevel[itt]->Fill(tmparr3);
+                     }
+
+                     //Fill jet pt asymmetry particle level
+                     if(sumJetPtRecoil + sumJetPtTT > 0){
+                        fhJetPtAsymmetryCBPartLevel[itt]->Fill( fMultV0Mnorm_PartLevel, (sumJetPtRecoil - sumJetPtTT) / (sumJetPtRecoil + sumJetPtTT));
+                     }
+
+                     //Fill track pt asymmetry
+                    for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+                       mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
+                       if(!mcParticle)  continue; 
+                    
+                       if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+ 
+                           dphi = TVector2::Phi_mpi_pi(mcParticle->Phi() - fTTH_PartLevel[itt][idx].Phi()); 
+                           if(TMath::Abs(dphi) > TMath::Pi()/2){ //select recoil hemisphere and count tracks 
+                              sumTrackPtRecoil += mcParticle->Pt(); 
+                           }else{
+                              sumTrackPtTT     += mcParticle->Pt(); //sum jet pT in 
+                           } 
+                        }
+                     }
+                     
+                     if(sumTrackPtRecoil + sumTrackPtTT > 0){
+                        fhTrackPtAsymmetryCBPartLevel[itt]->Fill( fMultV0Mnorm_PartLevel, (sumTrackPtRecoil - sumTrackPtTT) / (sumTrackPtRecoil + sumTrackPtTT));
+                     }
                   }
                }
             }
@@ -3075,44 +3293,38 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
 
 
-//   Double_t arrcent[] = {
-//     0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
-//     0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
-//     0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,
-//     0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39,
-//     0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49,
-//     0.5,0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,  
-//     1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
-//     2.,2.5,  
-//     3.,3.5,  
-//     4.,4.5,  
-//     5.,5.5,  
-//     6.,6.5,  
-//     7.,7.5,  
-//     8.,8.5,  
-//     9.,9.5,  
-//     10,11,12,13,14,15,16,17,18,19,20,
-//     25,30,35,40,45,50,55,60,65,70,75,80,85,90,100};
-//
-//   Int_t narrcent = sizeof(arrcent)/sizeof(Double_t)-1;
-//
-//
-//   //CENTRALITY
-//   for(Int_t itg=kMB; itg<=kGA;itg++){
-//      for(Int_t ic=0; ic<fkCE;ic++){
-//         if(fMode == AliAnalysisTaskEA::kKine) continue;
-//         if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue;
-//         if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue;
-//
-//         name = Form("hCentrality_%s_%s", trig[itg].Data(), cest[ic].Data());
-//         if(ic!=fkV0Mnorm1){
-//            fhCentrality[itg][ic] = new TH2D(name.Data(), name.Data(), narrcent, arrcent, narrV0, arrV0);
-//         }else{
-//            fhCentrality[itg][ic] = new TH2D(name.Data(), name.Data(), narrcent, arrcent, 400,0,20);
-//         }
-//         fOutput->Add((TH2D*) fhCentrality[itg][ic]); 
-//      }
-//   }
+   Double_t arrcent[] = {
+     0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
+     0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
+     0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,
+     0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39,
+     0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49,
+     0.5,0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,  
+     1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
+     2.,2.5,  
+     3.,3.5,  
+     4.,4.5,  
+     5.,5.5,  
+     6.,6.5,  
+     7.,7.5,  
+     8.,8.5,  
+     9.,9.5,  
+     10,11,12,13,14,15,16,17,18,19,20,
+     25,30,35,40,45,50,55,60,65,70,75,80,85,90,100};
+
+   Int_t narrcent = sizeof(arrcent)/sizeof(Double_t)-1;
+
+
+   //CENTRALITY
+   for(Int_t itg=kMB; itg<=kGA;itg++){
+      if(fMode == AliAnalysisTaskEA::kKine) continue;
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue;
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kGA) continue;
+
+      name = Form("hCentrality_%s_V0M", trig[itg].Data());
+      fhCentrality[itg] = new TH2D(name.Data(), name.Data(), narrcent, arrcent, 400,0,20);
+      fOutput->Add((TH2D*) fhCentrality[itg]); 
+   }
  
  
 //   //CENTRALITY TTH 
@@ -3748,6 +3960,117 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt]); //ReMx for detector level TTH
       }
    }
+
+   //JET PT ASYMMETRY
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhJetPtAsymmetryCB_%s_TTH%d_%d", trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtAsymmetryCB[itg][itt] = new TH2D(name.Data(),name.Data(),10,0,10, 21,-1,1.1);  
+         fOutput->Add((TH2D*) fhJetPtAsymmetryCB[itg][itt]); //ReMx for detector level TTH
+      }
+   }
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhJetPtAsymmetryCB_MB_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhJetPtAsymmetryCBPartLevel[itt] = new TH2D(name.Data(),name.Data(),10,0,10, 21,-1,1.1);  
+         fOutput->Add((TH2D*) fhJetPtAsymmetryCBPartLevel[itt]); //ReMx for detector level TTH
+      }
+   }
+
+   //TRACK PT ASYMMETRY
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue;
+ 
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhTrackPtAsymmetryCB_%s_TTH%d_%d", trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhTrackPtAsymmetryCB[itg][itt] = new TH2D(name.Data(),name.Data(),10,0,10, 21,-1,1.1);  
+         fOutput->Add((TH2D*) fhTrackPtAsymmetryCB[itg][itt]); //ReMx for detector level TTH
+      }
+   }
+
+ 
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhTrackPtAsymmetryCB_MB_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhTrackPtAsymmetryCBPartLevel[itt] = new TH2D(name.Data(),name.Data(),10,0,10, 21,-1,1.1);  
+         fOutput->Add((TH2D*) fhTrackPtAsymmetryCBPartLevel[itt]); //ReMx for detector level TTH
+      }
+   }
+
+
+   //Auxiliary jet pT spectra filled event by event which will not go to output
+   fhJetPtEvtByEvent       = new TH1D("fhJetPtEvtByEvent","fhJetPtEvtByEvent", 100,0,100);  
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      fhJetPtEvtByEventPartLevel = new TH1D("fhJetPtEvtByEventPartLevel","fhJetPtEvtByEventPartLevel", 100,0,100);  
+   }
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+      name = Form("fhRecoilJetPtEvtByEvent_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+      fhRecoilJetPtEvtByEvent[itt] = new TH1D(name.Data(),name.Data(),100,0,100); 
+   }
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+      name = Form("fhRecoilJetPtEvtByEvent_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+      fhRecoilJetPtEvtByEventPartLevel[itt] = new TH1D(name.Data(),name.Data(),100,0,100); 
+   }
+
+   //Count multiplicity of high-pT jets per event
+   const Int_t khighptjetdim = 3;
+   Int_t    highptjetbins[khighptjetdim] = {20, 50, 10};
+   Double_t highptjetxmin[khighptjetdim] = { 0.,  0,  0.};  
+   Double_t highptjetxmax[khighptjetdim] = {100., 50, 10.};  
+
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if(fMode == AliAnalysisTaskEA::kKine) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+
+         name = Form("fhNumberOfHighPtJetsCB_%s_TTH%d_%d",trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         
+         fhNumberOfHighPtJetsCB[itg][itt] = new  THnSparseF(name.Data(),"Number of jets with pt above X", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+         fOutput->Add((THnSparse*) fhNumberOfHighPtJetsCB[itg][itt]);
+      } 
+   } 
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+
+         name = Form("fhNumberOfHighPtJetsCB_MB_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         
+         fhNumberOfHighPtJetsCBPartLevel[itt] = new  THnSparseF(name.Data(),"Number of jets with pt above X particle level", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+         fOutput->Add((THnSparse*) fhNumberOfHighPtJetsCBPartLevel[itt]);
+      } 
+   }
+
+
+   //Count multiplicity of recoil high-pT jets per event
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if(fMode == AliAnalysisTaskEA::kKine) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhNumberOfHighPtJetsRecoil_%s_TTH%d_%d",trig[itg].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         
+         fhNumberOfHighPtJetsRecoil[itg][itt] = new  THnSparseF(name.Data(),"Number of recoil jets with pt above X", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+         fOutput->Add((THnSparse*) fhNumberOfHighPtJetsRecoil[itg][itt]);
+      } 
+   } 
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhNumberOfHighPtJetsRecoil_MB_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         
+         fhNumberOfHighPtJetsRecoilPartLevel[itt] = new  THnSparseF(name.Data(),"Number of recoil jets with pt above X particle level", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+         fOutput->Add((THnSparse*) fhNumberOfHighPtJetsRecoilPartLevel[itt]);
+      } 
+   } 
+
+
 
    //+++++++++++++++++++++++++++ EMBEDDING +++++++++++++++++++++++
    if(fMode == AliAnalysisTaskEA::kEmbedding){

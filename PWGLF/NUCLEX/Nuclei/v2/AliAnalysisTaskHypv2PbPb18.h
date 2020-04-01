@@ -112,6 +112,14 @@ class AliAnalysisTaskHypv2PbPb18 : public AliAnalysisTaskSE {
   TH2F *hQxVzCvsCentrality;
   TH2F *hQyVzCvsCentrality;
   
+  // for EP
+  TH2F *hCos2DeltaTPCVzAvsCentrality;
+  TH2F *hCos2DeltaTPCVzCvsCentrality;
+  TH2F *hCos2DeltaVzAVzCvsCentrality;
+  TH2F *hCos2DeltaVzATPCvsCentrality;
+  TH2F *hCos2DeltaVzCTPCvsCentrality;
+  TH2F *hCos2DeltaVzCVzAvsCentrality;
+
   Int_t eventtype;
   
   // TTree

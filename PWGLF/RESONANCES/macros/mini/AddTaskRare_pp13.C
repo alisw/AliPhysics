@@ -103,6 +103,9 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
         if(0) cutVertex->SetCheckGeneratedVertexZ();
     }
     
+    bool CheckAcceptedMultSelection=true;
+    if((EventCuts%100000)/10000==1) CheckAcceptedMultSelection=false;
+    
     // other event selection cuts
     AliRsnCutEventUtils* cutEventUtils=0;
     if(1){
@@ -112,7 +115,7 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
             cutEventUtils->SetCheckSPDClusterVsTrackletBG();
         }else{
             cutEventUtils->SetRemovePileUppA2013(kFALSE);
-            cutEventUtils->SetCheckAcceptedMultSelection();
+            if(CheckAcceptedMultSelection) cutEventUtils->SetCheckAcceptedMultSelection();
         }
     }
     
@@ -2738,7 +2741,7 @@ Bool_t Config_LambdaLambda(
     Int_t iCutQ=task->AddTrackCuts(cutSetQ);
     
     Bool_t CheckOOBP=true;
-    if(!TrackCuts2) CheckOOBP=false;
+    if(TrackCuts2==1) CheckOOBP=false;
     
     // selections for V0 daughters
     Int_t v0d_xrows=70;
@@ -3347,7 +3350,7 @@ Bool_t Config_Xikx(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass= 0.493677+1.32171;
+    Double_t mass= 0.493677+1672.43;//1.32171;
     
     // set cuts for primary kaon
     if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
@@ -3381,7 +3384,7 @@ Bool_t Config_Xikx(
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     
-    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
+    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kOmegaMinus);//kXiMinus);
     cutXi->SetPIDCutV0Proton(XiPIDcut);
     cutXi->SetPIDCutV0Pion(XiPIDcut);
     cutXi->SetPIDCutBachelor(XiPIDcut);
@@ -3404,7 +3407,7 @@ Bool_t Config_Xikx(
     cutXi->SetMaxPseudorapidity(0.8);
     cutXi->SetMinTPCcluster(-1);
     
-    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar);
+    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kOmegaPlusBar);//kXiPlusBar);
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
@@ -3447,13 +3450,13 @@ Bool_t Config_Xikx(
         AddMonitorOutput(isMC,cutSetK->GetMonitorOutput());
         AddMonitorOutputV0(isMC, cutSetXi->GetMonitorOutput(), "Lambda", "nokine");
         AddMonitorOutputV0(isMC, cutSetXibar->GetMonitorOutput(), "AntiLambda", "nokine");
-        AddMonitorOutputCascade(isMC, cutSetXi->GetMonitorOutput(), "Xi");
-        AddMonitorOutputCascade(isMC, cutSetXibar->GetMonitorOutput(), "AntiXi");
+        AddMonitorOutputCascade(isMC, cutSetXi->GetMonitorOutput(), "Omega");//"Xi");
+        AddMonitorOutputCascade(isMC, cutSetXibar->GetMonitorOutput(), "AntiOmega");//"AntiXi");
     }
     
     // pair cuts
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-    if(system!=1) cutY->SetRangeD(-0.5,0.5);
+    if(system!=1) cutY->SetRangeD(-0.8,0.8);
     else cutY->SetRangeD(-0.465,0.035);
     
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
@@ -3570,7 +3573,7 @@ Bool_t Config_Xikx(
         ipdg=(i==0)?3324:-3324;
         
         out=task->CreateOutput(Form("Xikx_%s%s",name.Data(),suffix),"HIST",comp.Data());
-        out->SetDaughter(0,AliRsnDaughter::kXi);
+        out->SetDaughter(0,AliRsnDaughter::kOmega);//kXi);
         out->SetCutID(0,cut1);
         out->SetCharge(0,charge1);
         
@@ -3666,8 +3669,8 @@ Bool_t Config_Xik0(
     
     Double_t mass= 0.497611+1.32171;
     
-    Bool_t CheckOOBP=true;
-    if(!TrackCutsXi) CheckOOBP=false;
+    Bool_t CheckOOBP=false;//true;
+    //if(TrackCutsXi==1) CheckOOBP=false;
     
     // selections for V0 daughters
     
@@ -3696,7 +3699,7 @@ Bool_t Config_Xik0(
     Int_t   k0s_massTolID=0;
     Float_t k0s_massTol=0.03;
     Float_t k0s_massTolVeto=0.004;
-    Bool_t  k0sSwitch=kFALSE;
+    Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
     
     if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
@@ -3728,7 +3731,7 @@ Bool_t Config_Xik0(
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.6;
     Float_t XiMinDCA=0.07;
-    Float_t Xi_massTol=0.007;
+    Float_t Xi_massTol=0.015;
     Float_t Xi_massTolVeto=0.007;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
@@ -3805,7 +3808,7 @@ Bool_t Config_Xik0(
     
     // pair cuts
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-    if(system!=1) cutY->SetRangeD(-0.5,0.5);
+    if(system!=1) cutY->SetRangeD(-0.8,0.8);
     else cutY->SetRangeD(-0.465,0.035);
     
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
@@ -3938,7 +3941,7 @@ Bool_t Config_Xik0(
         
         if(j<=6){
             //if(xID==imID) out->AddAxis(imID,240,1.8,3);// axis X: invmass
-            if(xID==imID || xID==mmID) out->AddAxis(xID,300,1.8,2.1);// axis X: invmass
+            if(xID==imID || xID==mmID) out->AddAxis(xID,400,1.8,2.2);// axis X: invmass
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
             out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -4331,7 +4334,7 @@ Bool_t Config_XiLambda(
     Double_t mass=1.115683+1.32171;
     
     Bool_t CheckOOBP=true;
-    if(!TrackCutsXi) CheckOOBP=false;
+    if(TrackCutsXi==1) CheckOOBP=false;
     
     // selections for V0 daughters
     Int_t v0d_xrows=70;

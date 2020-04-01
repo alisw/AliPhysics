@@ -29,6 +29,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <TH1.h>
+#include "AliEmcalTriggerAlias.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
@@ -234,7 +235,7 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012MCPP(const char *dataset) con
 }
 
 Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2013MCPPB(const char *dataset) const {
-  std::vector<TString> supportedProductions = {"lhc18j5", "lhc19a4"};
+  std::vector<TString> supportedProductions = {"lhc17g6a", "lhc16c3a", "lhc16c3b", "lhc18j5", "lhc19a4"};
   return IsSupportedMCSample(dataset, supportedProductions);
 }
 
@@ -321,7 +322,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
   eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg1cuts->SetUseSimpleOfflinePatches(true);
   eg1cuts->SetThreshold(10.);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts, new AliEmcalTriggerAlias("EGA;EG1")));
 
   AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
   ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
@@ -329,7 +330,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
   ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej1cuts->SetUseSimpleOfflinePatches(true);
   ej1cuts->SetThreshold(15.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts, new AliEmcalTriggerAlias("EJE;EJ1")));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
@@ -389,7 +390,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
   eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg1cuts->SetUseSimpleOfflinePatches(true);
-  eg1cuts->SetThreshold(11.);
+  eg1cuts->SetThreshold(10.5);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG1", eg1cuts));
 
   AliEmcalTriggerSelectionCuts *eg2cuts = new AliEmcalTriggerSelectionCuts;
@@ -397,7 +398,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB5TeV2013() {
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg2cuts->SetUseSimpleOfflinePatches(true);
-  eg2cuts->SetThreshold(7.0);
+  eg2cuts->SetThreshold(6.7);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
   AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
@@ -798,7 +799,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
   eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg1cuts->SetUseSimpleOfflinePatches(true);
-  eg1cuts->SetThreshold(8.);
+  eg1cuts->SetThreshold(7.8);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG1", eg1cuts));
 
   AliEmcalTriggerSelectionCuts *eg2cuts = new AliEmcalTriggerSelectionCuts;
@@ -806,7 +807,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   eg2cuts->SetUseSimpleOfflinePatches(true);
-  eg2cuts->SetThreshold(5.5);
+  eg2cuts->SetThreshold(5.2);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
   AliEmcalTriggerSelectionCuts *dg1cuts = new AliEmcalTriggerSelectionCuts;
@@ -814,7 +815,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   dg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
   dg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dg1cuts->SetUseSimpleOfflinePatches(true);
-  dg1cuts->SetThreshold(8.);
+  dg1cuts->SetThreshold(7.8);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DG1", dg1cuts));
 
   AliEmcalTriggerSelectionCuts *dg2cuts = new AliEmcalTriggerSelectionCuts;
@@ -822,7 +823,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   dg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   dg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dg2cuts->SetUseSimpleOfflinePatches(true);
-  dg2cuts->SetThreshold(5.5);
+  dg2cuts->SetThreshold(5.2);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DG2", dg2cuts));
 
   AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;

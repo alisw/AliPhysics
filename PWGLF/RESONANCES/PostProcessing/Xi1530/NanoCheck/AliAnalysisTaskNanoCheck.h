@@ -24,10 +24,13 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     void DisableTrackCheck(Bool_t param = kFALSE){ checkTracks = param;  };
     void DisableV0Check(Bool_t param = kFALSE){ checkV0s = param;  };
     void DisableCascadeCheck(Bool_t param = kFALSE){ checkCascades = param;  };
+    void SetOnlyUseOnTheFlyV0(Bool_t input) { fOnlyUseOnTheFlyV0 = input; }
 
     Bool_t GoodTracksSelection();
     Bool_t GoodV0Selection();
     Bool_t GoodCascadeSelection();
+    Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
+    Bool_t IsSelectedTPCGeoCut(AliESDtrack *track);
 
     double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
     void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
@@ -54,6 +57,17 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
 
     AliEventCuts fEventCuts;  // Event cuts
 
+    // TPC GeoCut
+    Bool_t fCheckTPCGeo = kFALSE;
+    int fMode = 0;
+    Double_t fDeltaY = 3.0;
+    Double_t fDeltaZ = 220.0;
+    Double_t fMagField;
+    Double_t fRequireCutGeoNcrNclLength = 130;
+    Double_t fRequireCutGeoNcrNclGeom1Pt = 1.5;
+    Double_t fCutGeoNcrNclFractionNcr = 0.85;
+    Double_t fCutGeoNcrNclFractionNcl = 0.7;
+
    private:
     AliESDtrackCuts* fTrackCuts = nullptr;   //!
     AliPIDResponse* fPIDResponse = nullptr;  //!
@@ -68,6 +82,7 @@ class AliAnalysisTaskNanoCheck : public AliAnalysisTaskSE {
     Bool_t checkTracks = kTRUE;
     Bool_t checkV0s = kTRUE;
     Bool_t checkCascades = kTRUE;
+    Bool_t fOnlyUseOnTheFlyV0 = kFALSE;
     TClonesArray* fMCArray = nullptr;  //!
     TAxis binCent;                     //!
     TAxis binZ;                        //!

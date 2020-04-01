@@ -101,7 +101,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
+  fDoPlotTrackPID(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
   fMinR(0),
@@ -226,6 +227,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -279,6 +281,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistograms(NULL),
   fPIDResponse(NULL),
   fDoLightOutput(ref.fDoLightOutput),
+  fDoPlotTrackPID(ref.fDoPlotTrackPID),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(ref.fMaxR),
   fMinR(ref.fMinR),
@@ -403,6 +406,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -495,10 +499,17 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
   TH1::AddDirectory(kFALSE);
 
+
   if(fHistograms != NULL){
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     fHistograms->SetOwner(kTRUE);
@@ -593,6 +604,26 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
     fHistograms->Add(fHistoAsymmetryafter);
       //    }
+  }
+
+  if (fDoPlotTrackPID) {
+      fHistoTrackPID=new TH2F(Form("TrackPID %s",GetCutNumber().Data()),"TrackPID",15,-0.5,14.5,250,0,25);
+      fHistoTrackPID->GetXaxis()->SetBinLabel(1,"Electron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(2,"Muon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(3,"Pion");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(4,"Kaon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(5,"Proton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(6,"Deuteron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(7,"Triton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(8,"He3");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(9,"Alpha");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(10,"Photon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(11,"Pi0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(12,"Neutron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(13,"Kaon0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(14,"EleCon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(15,"Unknown");
+      fHistograms->Add(fHistoTrackPID);
   }
 
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",12,-0.5,11.5,250,0,50);
@@ -756,7 +787,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
    }else{
     fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
     fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
-   } 
+   }
   }
 
   if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
@@ -984,6 +1015,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
   }
   return kFALSE;
 }
+
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma){
   // MonteCarlo Photon Selection
@@ -1425,6 +1457,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   if(!PhotonCuts(photon,event)){
     FillPhotonCutIndex(kPhotonCuts);
     return kFALSE;
+  }
+
+  if(fDoPlotTrackPID && fHistoTrackPID){
+    Int_t negpidForTracking = (Int_t)negTrack->GetPIDForTracking();
+    Int_t pospidForTracking = (Int_t)posTrack->GetPIDForTracking();
+    // cout << "PID:  " <<  negpidForTracking << ",     "<< pospidForTracking << endl;
+    fHistoTrackPID->Fill((Float_t)negpidForTracking,negTrack->Pt());
+    fHistoTrackPID->Fill((Float_t)pospidForTracking,posTrack->Pt());
   }
 
   // Photon passed cuts
@@ -2685,25 +2725,25 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 10: // 0.2-0.9
+  case 10: // a - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 11: // 0.2-0.9
+  case 11: // b - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
     break;
-  case 12: // 0.85
+  case 12: // c - 0.85
     fEtaCut     = 0.85;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 13: // 0.8
+  case 13: // d - 0.8
     fEtaCut     = 0.8;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
@@ -3373,6 +3413,9 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 10: //a
     fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=-14;
+  case 11: //b
+    fPIDnSigmaAbovePionLine=3;
+    fPIDnSigmaAbovePionLineHighPt=2;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
@@ -3441,6 +3484,9 @@ Bool_t AliConversionPhotonCuts::SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut)
     break;
   case 6:  // 2. GeV
     fPIDMaxPnSigmaAbovePionLine=2.;
+    break;
+  case 7:  // 8. GeV
+    fPIDMaxPnSigmaAbovePionLine=8.;
     break;
   default:
     AliError(Form("piMaxMomdedxSigmaCut not defined %d",piMaxMomdedxSigmaCut));

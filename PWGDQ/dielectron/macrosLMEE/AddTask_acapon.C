@@ -14,7 +14,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 // Option to use AliEventCuts class for additional event cuts
                                 Int_t whichAliEvtCuts  = 0,      // 0=None, 1=Use, 2=Also use correlation cuts
                                 Bool_t plots3D         = kFALSE,
-                                Bool_t v0plots         = kTRUE,  // Plots for PID calibration
+                                Bool_t v0plots         = kFALSE,  // Plots for PID calibration
                                 Bool_t getFromAlien    = kFALSE) // Pull config+CutLib from alien directory
 {
 
@@ -64,6 +64,19 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     TString configLMEECutLib("LMEECutLib_acapon.C");
     TString configFile = "Config_acapon.C";
 
+    // Determine if ESDs or AODs are being analysed
+    // CutLibrary version only works/tested for AODs
+    // noCutLib version is mixed depending on cut setting
+    if(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()){
+      ::Info("AddTask_acapon", "AOD configuration");
+    }
+    else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
+      ::Info("AddTask_acapon","ESD configuration");
+      configLMEECutLib = "LMEECutLib_acapon_ESD.C";
+    }
+    ::Info("AddTask_acapon",Form("Use LMeeCutLib: %s",configLMEECutLib.Data()));
+
+
     // Load updated macros from private ALIEN path
     TString myConfig = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
     TString myCutLib = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C .";
@@ -83,15 +96,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
       gROOT->LoadMacro(configFilePath.Data());
     }
 
-    // Determine if ESDs or AODs are being analysed
-    // CutLibrary version only works/tested for AODs
-    // noCutLib version is mixed depending on cut setting
-    if(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()){
-      ::Info("AddTask_acapon", "AOD configuration");
-    }
-    else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
-      ::Info("AddTask_acapon","ESD configuration");
-    }
 
     // Create task and add it to the manager
     AliAnalysisTaskMultiDielectron* task = new AliAnalysisTaskMultiDielectron(::Form("DielectronTask%d", wagonNum));

@@ -6,6 +6,8 @@
 #define AliAnalysisTaskDeuteronAbsorption_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPID.h"
 #include <string>
 
@@ -29,12 +31,13 @@ public:
   virtual void Terminate(Option_t *option) {}
 
   double GetMindEdx() const { return fMindEdx; }
-  void SetMindEdx(double dedx = 100.) { fMindEdx = dedx; }
+  void SetMindEdx(double opt) { fMindEdx = opt; }
+  void SetTreeFlag(Bool_t tmode) {fTreemode = tmode;};
 
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
 
-  void SetESDtrackCuts(AliESDtrackCuts * cuts) { fESDtrackCuts = cuts; }
+  void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
 
   static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
   static const std::string fgkParticleNames[kNabsSpecies];
@@ -43,15 +46,34 @@ public:
 
   bool fUseTRDboundariesCut;
   float fNtpcSigmas;
+  AliEventCuts fEventCuts;
 
 private:
-  double fMindEdx; /// Cut on the minimum dE/dx in TPC
-  int    fMinTPCsignalN; /// Minimum number of PID clusters in the TPC
+  double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
+  int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
+  Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
 
   AliPIDResponse *fPIDResponse;   //! pid response
-  AliESDtrackCuts *fESDtrackCuts; //-> input track cuts
+  AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
   TList *fOutputList;             //! output list
+
+  TTree *fTreeTrack;  //! tree for some track parameters
+  
+  // Variables for the tree
+  //Double_t tP;
+  Double_t tPt;
+  Double_t tEta;
+  Double_t tPhi;
+  Double_t tnsigTPC[kNabsSpecies];
+  Double_t tnsigTOF[kNabsSpecies];
+  Double_t tmass2;
+  Int_t tnPIDclsTPC;
+  Double_t tTOFsigDx;
+  Double_t tTOFsigDz;
+  Int_t tTOFclsN;
+  Int_t tID;
+  
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
   TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species

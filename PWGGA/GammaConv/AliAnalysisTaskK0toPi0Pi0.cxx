@@ -434,7 +434,7 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeCaloPhotonCan
     AliAODConversionPhoton photonCandidate(&clusterVector);
 
     // Flag Photon as CaloPhoton
-    photonCandidate.SetIsCaloPhoton();
+    photonCandidate.SetIsCaloPhoton(cuts.GetClusterType());
     photonCandidate.SetCaloClusterRef(clusterindex);
 
     // get MC label

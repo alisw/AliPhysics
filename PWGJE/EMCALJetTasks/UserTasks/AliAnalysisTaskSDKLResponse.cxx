@@ -50,6 +50,9 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse() :
 //  fhRhoSparse(0),
   fhPtDeltaPtAreaBackSub(0),
   fhPtDeltaPtAreaBackSubSparse(0),
+  fhEshareDistPlDl(0),
+  fhEshareDistDlDluebs(0),
+  fhPtProbePtResp(0),
   fTreeDL(0),
   fTreeDLUEBS(0),
   fTreePL(0),
@@ -57,6 +60,7 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse() :
   fJetsCont2(0),
   fTracksCont1(0),
   fTracksCont2(0),
+  fMCTrackEfficiency(2.0),
   fFractionEventsDumpedToTree(0),
   fRandom(0)
 {
@@ -86,6 +90,9 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse(const char *name, Int_t
 //  fhRhoSparse(0),
   fhPtDeltaPtAreaBackSub(0),
   fhPtDeltaPtAreaBackSubSparse(0),
+  fhEshareDistPlDl(0),
+  fhEshareDistDlDluebs(0),
+  fhPtProbePtResp(0),
   fTreeDL(0),
   fTreeDLUEBS(0),
   fTreePL(0),
@@ -93,6 +100,7 @@ AliAnalysisTaskSDKLResponse::AliAnalysisTaskSDKLResponse(const char *name, Int_t
   fJetsCont2(0),
   fTracksCont1(0),
   fTracksCont2(0),
+  fMCTrackEfficiency(2.0),
   fFractionEventsDumpedToTree(fractioneventsfortree),
   fRandom(0)
 {
@@ -363,6 +371,15 @@ void AliAnalysisTaskSDKLResponse::UserCreateOutputObjects() {
   fhPtDeltaPtAreaBackSubSparse = new TH2F("fhPtDeltaPtAreaBackSubSparse","fhPtDeltaPtAreaBackSubSparse",20,0.,200.,200,-20.,20.);
   fOutput->Add(fhPtDeltaPtAreaBackSubSparse);
 
+  fhEshareDistPlDl = new TH2F("fhEshareDistPlDl", "fhEshareDistPlDl", 40, 0, 1.2, 40, 0, 1);
+  fOutput->Add(fhEshareDistPlDl);
+
+  fhEshareDistDlDluebs = new TH2F("fhEshareDistDlDluebs", "fhEshareDistDlDluebs", 40, 0, 1.2, 40, 0, 1);
+  fOutput->Add(fhEshareDistDlDluebs);
+
+  fhPtProbePtResp = new TH2F("fhPtProbePtResp", "fhPtProbePtResp", 200, 0, 200, 200, 0, 200);
+  fOutput->Add(fhPtProbePtResp);
+
   fTreeDL = new TNtuple("JetTrackTreeDL", "jet-track tree dl", "pt:eta:phi:jetm");
   PostData(2, fTreeDL);
 
@@ -380,24 +397,14 @@ void AliAnalysisTaskSDKLResponse::UserCreateOutputObjects() {
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
 
-  auto const area_nominal = TMath::Pi() * 0.4 * 0.4;
   bool isDumpEventToTree = fRandom->Uniform() < fFractionEventsDumpedToTree;
 
   fastjet::JetDefinition jet_def(fastjet::antikt_algorithm, 0.4, fastjet::E_scheme);
   fastjet::AreaDefinition area_def(fastjet::active_area_explicit_ghosts, fastjet::GhostedAreaSpec(0.9, 1));
   fastjet::Selector sel_jets = fastjet::SelectorAbsEtaMax(0.9 - 0.4); //max_eta_jet
 
-  // Fill histograms.
-
   std::vector<mjet> mjet_cont_pl; //probe PL
-  std::vector<mjet> mjet_cont_dlue; //response DL+UE
   FillMjetContainer(fJetsCont1, mjet_cont_pl);
-  FillMjetContainer(fJetsCont2, mjet_cont_dlue);
-
-//  if (fJetsCont1) {
-//    for (auto jet : fJetsCont1->accepted()) {
-//    }
-//  }
 
   //dump pl jets
   if (isDumpEventToTree) {
@@ -411,56 +418,48 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   std::vector<fastjet::PseudoJet> jets_dl = sorted_by_pt(sel_jets(cs_dl.inclusive_jets()));
 
   std::vector<fastjet::PseudoJet> jets_dl_filtered;
-  for (auto jet : jets_dl) {
-    if ( jet.pt() < 1. ) continue;
-    if ( jet.has_area() ) {
-      auto jarea = jet.area_4vector().perp();
-      if (jarea < (0.6 * area_nominal)) continue;
-    }
-    jets_dl_filtered.push_back(jet);
-  }
+  FilterJets(jets_dl, jets_dl_filtered, 5.0);
 
   std::vector<mjet> mjet_cont_dl;
   FillMjetContainer(jets_dl_filtered, mjet_cont_dl);
 
   //PL-DL, no UE
-  std::vector<AliEmcalJet*> jets_pl_matched;
-  std::vector<fastjet::PseudoJet> jets_dl_matched;
+  std::vector<AliEmcalJet*> jets_pl_matched_to_dl;
+  std::vector<fastjet::PseudoJet> jets_dl_matched_to_pl;
   for (int i = 0; i < mjet_cont_pl.size(); i++) {
     for (int j = 0; j < mjet_cont_dl.size(); j++) {
-      auto mjet1 = mjet_cont_pl[i];
-      auto mjet2 = mjet_cont_dl[j];
-      auto dist = CalcDist(mjet1, mjet2);
-      if (dist > 0.8) continue; //loose cut
-      auto eshare = CalcEnergyShare(mjet1, mjet2);
-      if (eshare < 0.1) continue; //loose cut
+      auto & mjet1 = mjet_cont_pl[i];
+      auto & mjet2 = mjet_cont_dl[j];
 
-      //delayed calculation of the splits
-      //deep declustering is performed
-      //only for the (roughly) matched jets
-      if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
-      if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
+      auto dist = CalcDist(mjet1, mjet2);
+      auto eshare = CalcEnergyShare(mjet1, mjet2);
+      fhEshareDistPlDl->Fill(eshare, dist);
+
+      if (dist > 0.4) continue;
+      if (eshare < 0.5) continue;
 
       auto iscl = IsClosestPair(i,j,mjet_cont_pl,mjet_cont_dl);
-      FillResponseFromMjets(mjet1, mjet2, fhResponseDet, dist, eshare, iscl);
-      if ( (dist < 0.4) && (eshare > 0.5) && iscl ) { //strict cuts
+      if ( iscl ) {
+        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
+        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
+        FillResponseFromMjets(mjet1, mjet2, fhResponseDet, dist, eshare, iscl);
         FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtDet, fhPtDeltaZgDet, fhPtDeltaRgDet, fhPtDeltaMgDet);
-        if (mjet1.pointerAJet) jets_pl_matched.push_back(mjet1.pointerAJet);
-        if (mjet2.pointerPJet) jets_dl_matched.push_back( *(mjet2.pointerPJet) );
+        if (mjet1.pointerAJet) jets_pl_matched_to_dl.push_back(mjet1.pointerAJet);
+        if (mjet2.pointerPJet) jets_dl_matched_to_pl.push_back( *(mjet2.pointerPJet) );
       }
     }
   }
 
   //dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, jets_dl_matched, fTreeDL);
+    FillRespTree(jets_pl_matched_to_dl, jets_dl_matched_to_pl, fTreeDL);
     PostData(2, fTreeDL);
   }
 
   //FULL EVENT
   std::vector<fastjet::PseudoJet> event_full;
   AddTracksToEvent(fTracksCont1, event_full);
-  AddTracksToEvent(fTracksCont2, event_full);
+  AddTracksToEvent(fTracksCont2, event_full, fMCTrackEfficiency, fRandom);
 
   //get backgr-subtracted jets
   Double_t rho;
@@ -470,54 +469,61 @@ Bool_t AliAnalysisTaskSDKLResponse::FillHistograms() {
   fhRhoSparse->Fill(rho_sparse);
 
   std::vector<fastjet::PseudoJet> jets_backsub = GetBackSubJets(event_full);
-
   std::vector<fastjet::PseudoJet> jets_backsub_filtered;
-  for (auto jet : jets_backsub) {
-    if ( jet.pt() < 1. ) continue;
-    if ( jet.has_area() ) {
-      auto jarea = jet.area_4vector().perp();
-      if (jarea < (0.6 * area_nominal)) continue;
+  FilterJets(jets_backsub, jets_backsub_filtered, 5.0);
+
+  std::vector<mjet> mjet_container_dluebs;
+  FillMjetContainer(jets_backsub_filtered, mjet_container_dluebs);
+
+  //DL-DLUEBS
+  //background-subtracted jets
+  std::vector<fastjet::PseudoJet> jets_dl_matched_to_dluebs;
+  std::vector<fastjet::PseudoJet> jets_dluebs_matched_to_dl;
+  for (int i = 0; i < mjet_cont_dl.size(); i++) {
+    for (int j = 0; j < mjet_container_dluebs.size(); j++) {
+      auto & mjet1 = mjet_cont_dl[i];
+      auto & mjet2 = mjet_container_dluebs[j];
+
+      auto dist = CalcDist(mjet1, mjet2);
+      auto eshare = CalcEnergyShare(mjet1, mjet2);
+
+      fhEshareDistDlDluebs->Fill(eshare, dist);
+
+      if (dist > 0.4) continue;
+      if (eshare < 0.5) continue;
+
+      auto iscl = IsClosestPair(i,j,mjet_cont_dl,mjet_container_dluebs);
+      if ( iscl ) { //strict cuts
+        if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
+        if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
+        FillResponseFromMjets(mjet1, mjet2, fhResponseBackSub, dist, eshare, iscl);
+        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtBackSub, fhPtDeltaZgBackSub, fhPtDeltaRgBackSub, fhPtDeltaMgBackSub);
+        if (mjet1.pointerPJet) jets_dl_matched_to_dluebs.push_back( *(mjet1.pointerPJet) );
+        if (mjet2.pointerPJet) jets_dluebs_matched_to_dl.push_back( *(mjet2.pointerPJet) );
+      }
     }
-    jets_backsub_filtered.push_back(jet);
   }
 
-  std::vector<mjet> mjet_container_backsub;
-  FillMjetContainer(jets_backsub_filtered, mjet_container_backsub);
-
-  //background-subtracted jets
-  jets_pl_matched.clear();
-  std::vector<fastjet::PseudoJet> jets_backsub_filtered_matched;
-  for (int i = 0; i < mjet_cont_pl.size(); i++) {
-    for (int j = 0; j < mjet_container_backsub.size(); j++) {
-      auto mjet1 = mjet_cont_pl[i];
-      auto mjet2 = mjet_container_backsub[j];
-      auto dist = CalcDist(mjet1, mjet2);
-      if (dist > 0.8) continue;   //loose cut
-      auto eshare = CalcEnergyShare(mjet1, mjet2);
-      if (eshare < 0.1) continue; //loose cut
-
-      //delayed calculation
-      if (mjet1.pointerAJet) mjet1.splits = ReclusterFindHardSplits( mjet1.pointerAJet );
-      if (mjet2.pointerPJet) mjet2.splits = ReclusterFindHardSplits( *(mjet2.pointerPJet) );
-
-      auto iscl = IsClosestPair(i,j,mjet_cont_pl,mjet_container_backsub);
-      FillResponseFromMjets(mjet1, mjet2, fhResponseBackSub, dist, eshare, iscl);
-      if ( (dist < 0.4) && (eshare > 0.5) && iscl ) { //strict cuts
-        FillDeltasFromMjets(mjet1, mjet2, fhPtDeltaPtBackSub, fhPtDeltaZgBackSub, fhPtDeltaRgBackSub, fhPtDeltaMgBackSub);
-        if (mjet1.pointerAJet) jets_pl_matched.push_back(mjet1.pointerAJet);
-        if (mjet2.pointerPJet) jets_backsub_filtered_matched.push_back( *(mjet2.pointerPJet) );
+  //PL-DLUEBS via DL
+  std::vector<AliEmcalJet*> jets_pl_matched_to_dluebs;
+  std::vector<fastjet::PseudoJet> jets_dluebs_matched_to_pl;
+  for (int i = 0; i < jets_pl_matched_to_dl.size(); i++) {
+    for (int j = 0; j < jets_dluebs_matched_to_dl.size(); j++) {
+      if ( jets_dl_matched_to_pl[i] == jets_dl_matched_to_dluebs[j] ) {
+        jets_pl_matched_to_dluebs.push_back( jets_pl_matched_to_dl[i] );
+        jets_dluebs_matched_to_pl.push_back( jets_dluebs_matched_to_dl[j] );
+        fhPtProbePtResp->Fill( jets_pl_matched_to_dl[i]->Pt(), jets_dluebs_matched_to_dl[j].pt() );
       }
     }
   }
 
   //and now dump only matched jets
   if (isDumpEventToTree) {
-    FillRespTree(jets_pl_matched, jets_backsub_filtered_matched, fTreeDLUEBS);
+    FillRespTree(jets_pl_matched_to_dluebs, jets_dluebs_matched_to_pl, fTreeDLUEBS);
     PostData(3, fTreeDLUEBS);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-
 
   if (fCSubtractor)   delete fCSubtractor;
   if (fCSubtractorCS) delete fCSubtractorCS;
@@ -809,12 +815,12 @@ void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const &
     for (int j = 0; j < ntracks; j++) {
       auto jtrack = pjet->Track(j);
       if (jtrack->Pt() > 1.e-5) {
-        tree->Fill(jtrack->Pt(), jtrack->Eta(), jtrack->Phi(), -108);
+        tree->Fill(jtrack->Pt(), jtrack->Eta(), jtrack->Phi(), 10000 + jtrack->GetLabel());
       }
     }
 
     //response
-    auto rjet = resp_jets[i];
+    auto & rjet = resp_jets[i];
     int nconst = 0;
     for (auto c : rjet.constituents() ) {
       if ( c.pt() > 1.e-5 ) nconst++;
@@ -822,7 +828,7 @@ void AliAnalysisTaskSDKLResponse::FillRespTree(std::vector<AliEmcalJet*> const &
     tree->Fill(rjet.pt(), rjet.eta(), rjet.phi(), nconst);
     for ( auto c : rjet.constituents() ) {
       if ( c.pt() > 1.e-5 ) {
-        tree->Fill(c.pt(), c.eta(), c.phi(), -7);
+        tree->Fill(c.pt(), c.eta(), c.phi(), 10000 + c.user_index());
       }
     }
 

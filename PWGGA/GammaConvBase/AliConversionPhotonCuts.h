@@ -170,7 +170,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void PrintCuts();
     void PrintCutsWithValues();
 
-    void SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
+    void SetPlotTrackPID( Bool_t flag ){fDoPlotTrackPID = flag; return;}
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
@@ -270,7 +271,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
     //cuts
@@ -398,6 +400,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoITSSigafter;                    ///< ITS Sigma after cuts
     TH2F*             fHistoPsiPairDeltaPhiafter;           ///< TOF Sigma after cuts
     TH1F*             fHistoTrackCuts;                      ///< bookkeeping for track cuts
+    TH2F*             fHistoTrackPID;                      ///< bookkeeping for track pid
     TH2F*             fHistoPhotonCuts;                     ///< bookkeeping for photon specific cuts
     TH1F*             fHistoInvMassbefore;                  ///< e+e- inv mass distribution before cuts
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
@@ -432,7 +435,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,32)
+    ClassDef(AliConversionPhotonCuts,33)
     /// \endcond
 };
 

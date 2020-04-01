@@ -36,7 +36,6 @@
 
 #include "AliLog.h"
 #include "AliForwardSecondariesTask.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 
 #include "AliAODForwardMult.h"
@@ -79,7 +78,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fUtil(),
   fStored(0),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(0),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fStorage(nullptr),
@@ -104,7 +103,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fUtil(),
   fStored(0),
   fState(),
-  fMaxConsequtiveStrips(3),
+  fMaxConsequtiveStrips(0),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fStorage(nullptr),
@@ -268,13 +267,15 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-
+    //AliTrackReference* tr = fUtil.IsHitFMD(p);
       for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
-        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        //AliTrackReference* tr = p->GetTrackReference(iTrRef);
          // Ignore things that do not make a signal in the FMD
-        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+        //if (!tr) continue;    
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
 
-       //if (tr && p->Charge() == 0) continue;
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+        if (tr && p->Charge() == 0) continue;
 
          AliMCParticle* mother = GetMother(p);
          if (!mother) mother = p;

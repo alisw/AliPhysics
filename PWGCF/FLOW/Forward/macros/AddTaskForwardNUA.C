@@ -98,6 +98,7 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     if (mc) resName += (prim_fwd ? "_primfwd" : "_trfwd");
 
   task->fSettings.mc = mc;
+  task->fSettings.doNUE = kFALSE;
   task->fSettings.esd = esd;
   std::cout << "Using tracktype = " << tracktype << std::endl;
   if (tracktype == 0){

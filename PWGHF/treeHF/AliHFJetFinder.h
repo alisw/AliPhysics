@@ -88,8 +88,7 @@ class AliHFJetFinder : public TObject
   void SetSubJetRadius(Float_t f)          {fSubJetRadius = f;}
   void SetSubJetAlgorithm(Int_t i)         {fSubJetAlgorithm=i;}
   void SetSubJetRecombScheme(Int_t i)      {fSubJetRecombScheme = i;}
-  void SetSoftDropZCut(Float_t f)          {fSoftDropZCut = f;}
-  void SetSoftDropBeta(Float_t f)          {fSoftDropBeta = f;}
+  void SetSoftDropParams(Float_t f1, Float_t f2) {fSoftDropZCut = f1; fSoftDropBeta = f2;}
   void SetMinTrackPt(Float_t f)            {fMinTrackPt = f;}
   void SetMaxTrackPt(Float_t f)            {fMaxTrackPt = f;}
   void SetMaxTrackEta(Float_t f)           {fMaxTrackEta = f;}

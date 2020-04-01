@@ -2,6 +2,7 @@
  //            Modified by Kishora Nayak - 14/06/2016
  //            Modified by Enrico Fragiacomo - 15/01/2014
  //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
+ //            Modified by Giuseppe MAndaglio - 16/01/2020 (gmandagl@cern.ch)-Adding OOB check
  //            Based on AddAnalysisTaskRsnMini
  //            pPb specific settings from AddTaskKStarPPB.C
  //
@@ -84,7 +85,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     crossedRows = 70,
  Float_t     rowsbycluster = 0.8,
  Float_t 	 v0rapidity= 0.8,
- Int_t       Sys= 0
+ Int_t       Sys= 0,
+ Bool_t      OOBCheck = kFALSE
  )
 {
     //-------------------------------------------
@@ -259,7 +261,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
     } else
         Printf("========================== DATA analysis - PID cuts used");
     
-    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys, OOBCheck)) return 0x0;
     
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
