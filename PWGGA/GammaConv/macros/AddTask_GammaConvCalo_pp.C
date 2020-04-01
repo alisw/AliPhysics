@@ -2156,8 +2156,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100b00010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01d200000","0163103100b00010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01dc00000","0163103100b00010"); // INT7
-  } else if ( trainConfig == 906){ // StdCut
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100b00010"); // QA
+  } else if ( trainConfig == 906){ // StdCut // reconstructed conversion
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00300","0163103100b00010"); //no Trigger
   } else if ( trainConfig == 907){ // NonLinStudies
     //cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466000sa01cc00000","0163103100b00010"); // QA
     //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466000sa01cc00000","0163103100b00010"); // QA
@@ -2176,9 +2176,8 @@ void AddTask_GammaConvCalo_pp(
     //-
     //cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466210sa01cc00000","0163103100b00010"); // QA //case 21=> unctionNL_DPOW MB
     //cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466210sa01cc00000","0163103100b00010"); // QA //case 21=> unctionNL_DPOW Triggerd
-  } else if ( trainConfig == 908){  //PHOS MB and PHI7, 100MeV
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa09cc00000","0163103100b00010"); //no Trigger
-    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa09cc00000","0163103100b00010"); //PHI7
+  } else if ( trainConfig == 908){  //PHOS PHI7 // reconstructed conversion
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00300","0163103100b00010"); //PHI7
   } else if ( trainConfig == 909){  //PHOS Smearing Check
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100400010"); //4
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100500010"); //5

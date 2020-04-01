@@ -1846,8 +1846,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","24466190sa01d200000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","24466190sa01dc00000","0163103100000010"); // INT7
-  } else if (trainConfig == 806){//Comparing CellQA Config from GammaConv
-    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); // INT7
+  } else if (trainConfig == 806){//PHOS MB  reconstructed conversion
+    cuts.AddCutCalo("00010113","24466190sa01cc00300","0163103100000010"); // INT7
   } else if (trainConfig == 807){//Non Lin Studies
     //cuts.AddCutCalo("00010113","24466000sa01cc00000","0163103100000010"); // No Nonlin MB
     //cuts.AddCutCalo("00062113","24466000sa01cc00000","0163103100000010"); // No Nonlin Triggered
@@ -1866,9 +1866,8 @@ void AddTask_GammaCalo_pp(
     //-
     //cuts.AddCutCalo("00010113","24466210sa01cc00000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW MB
     //cuts.AddCutCalo("00062113","24466210sa01cc00000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW Triggered
-  } else if (trainConfig == 808){//PHOS MB and PHI7, 100MeV
-    cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010"); //no Trigger
-    cuts.AddCutCalo("00062113","24466190sa09cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 808){//PHOS PHI7 reconstructed conversion
+    cuts.AddCutCalo("00062113","24466190sa01cc00300","0163103100000010"); //PHI7
   } else if (trainConfig == 810){//PHOS Sphericity Check
     cuts.AddCutCalo("h0510113","24466190sa01cc00000","0163103100000010"); //  0.    - 0.5
     cuts.AddCutCalo("h5a10113","24466190sa01cc00000","0163103100000010"); //  0.5    - 1.
