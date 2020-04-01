@@ -978,7 +978,13 @@ void AliAnalysisTaskPPVsMultMCRSN::UserExec(Option_t *)
         for(Int_t ih=0; ih<15; ih++) if( TMath::Abs(lThisPDG) == lPDGCodes[ih] ) lContinue = kFALSE;
         if ( lContinue ) continue;
         
-        lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
+        Double_t lEnergy = 0;
+        Double_t lPz = 0;
+        
+        lEnergy = lPart->Energy();
+        lPz = lPart->Pz();
+        
+        lThisRap   = MyRapidity(lEnergy,lPz);
         lThisPt    = lPart->Pt();
         
         //Use Physical Primaries only for filling These Histos
