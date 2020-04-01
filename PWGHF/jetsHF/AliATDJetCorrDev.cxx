@@ -290,9 +290,9 @@ Bool_t AliATDJetCorrDev::Run()
         return kFALSE;
     }
 
-    TClonesArray *arrayDmesontoDaughters=nullptr;
+    TClonesArray *arrayDStartoD0pi=nullptr; // arrayDStartoD0pi matters. arrayDmesontoDaughters doesn't run the cxx
 
-    // 1. using AOD: Finding the above TClonesArray* arrayDmesontoDaughters
+    // 1. using AOD: Finding the above TClonesArray* arrayDStartoD0pi (arrayDmesontoDaughters)
     if (!aodEvent && AODEvent() && IsStandardAOD()) {
 
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -306,19 +306,19 @@ Bool_t AliATDJetCorrDev::Run()
         if(aodHandler->GetExtensions()) {
             AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
             AliAODEvent *aodFromExt = ext->GetAOD();
-            arrayDmesontoDaughters=(TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
+            arrayDStartoD0pi=(TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
         }
     }
     else if(aodEvent){
-        arrayDmesontoDaughters=(TClonesArray*)aodEvent->GetList()->FindObject(fBranchName.Data());
+        arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject(fBranchName.Data());
     }
 
     // check #2: if the TClonesArray not found.
-    if (!arrayDmesontoDaughters) {
+    if (!arrayDStartoD0pi) {
         AliInfo(Form("Could not find array %s, skipping the event",fBranchName.Data()));
         //  return;
     }
-    else AliDebug(2, Form("Found %d vertices",arrayDmesontoDaughters->GetEntriesFast()));
+    else AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast()));
 
     // 2. array for MC
     TClonesArray* mcArray = nullptr;
@@ -542,6 +542,8 @@ void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* a
         if(fLocalRho) rho = fLocalRho->GetLocalVal(jet->Phi(),JetCont->GetJetRadius(),JetCont->GetRhoVal());
         FillDJetHistograms(jet,rho,IsBkg,aodEvent);
     }
+
+    // calling the reclustering function, and declustering the jet
     if(jet && fRecluster)
     {
         // Pseudo code:
@@ -558,7 +560,7 @@ void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* a
             if( recl_jets.size() > 0 )
             {
                DeclusterTheJet( recl_jets[0], jet);            // 2. Declustering the jet
-               FillLundPlane(4.0, 5.2);                        // 3. Fill the Lund Plane
+               // 3. Fill the Lund Plane. This is done within the DeclusterTheJet function
             }
         }
         delete cs;
