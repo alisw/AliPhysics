@@ -40,7 +40,7 @@ AliHFJet::AliHFJet():
   fZg(-1.),
   fRg(-1.),
   fNsd(-1.),
-  fPt_mother(-1.),
+  fPt_splitting(-1.),
   fk0(-1.),
   fZk0(-1.),
   fRk0(-1.),
@@ -72,7 +72,7 @@ AliHFJet::AliHFJet(const AliHFJet &source):
   fZg(source.fZg),
   fRg(source.fRg),
   fNsd(source.fNsd),
-  fPt_mother(source.fPt_mother),
+  fPt_splitting(source.fPt_splitting),
   fk0(source.fk0),
   fZk0(source.fZk0),
   fRk0(source.fRk0),
@@ -112,7 +112,7 @@ void AliHFJet::Reset()
   fZg=-1.;
   fRg=-1.;
   fNsd=-1.;
-  fPt_mother=-1.;
+  fPt_splitting=-1.;
   fk0=-1.;
   fZk0=-1.;
   fRk0=-1.;

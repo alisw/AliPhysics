@@ -37,7 +37,7 @@ class AliHFJet : public TObject
   Float_t GetZg() {return fZg;}
   Float_t GetRg() {return fRg;}
   Float_t GetNsd() {return fNsd;}
-  Float_t GetPt_mother() {return fPt_mother;}
+  Float_t GetPt_splitting() {return fPt_splitting;}
   Float_t Getk0() {return fk0;}
   Float_t GetZk0() {return fZk0;}
   Float_t GetRk0() {return fRk0;}
@@ -65,7 +65,7 @@ class AliHFJet : public TObject
   Float_t fZg;        //soft dropped splitting momentum fraction
   Float_t fRg;        //soft dropped splitting angle
   Float_t fNsd;       //number of splittings passing soft drop
-  Float_t fPt_mother; //total pT going into soft drop splitting
+  Float_t fPt_splitting; //total pT going into soft drop splitting
   Float_t fk0;         //dynamical grooming kappa with alpha=0
   Float_t fZk0;        //dynamical grooming with alpha=0 splitting momentum fraction
   Float_t fRk0;        //dynamical grooming with alpha=0 splitting angle

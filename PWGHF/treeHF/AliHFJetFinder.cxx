@@ -408,7 +408,7 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
   Float_t z=0.0;
   Float_t r=0.0;
   Float_t Nsd=0.0;
-  Float_t Pt_mother=0.0;
+  Float_t Pt_splitting=0.0;
   Float_t k0=0.0, k0_temp=0.0, Zk0=0.0, Rk0=0.0;
   Float_t k1=0.0, k1_temp=0.0, Zk1=0.0, Rk1=0.0;
   Float_t k2=0.0, k2_temp=0.0, Zk2=0.0, Rk2=0.0;
@@ -432,24 +432,24 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
 
     while(daughter_jet.has_parents(parent_subjet_1,parent_subjet_2)){
       if(parent_subjet_1.perp() < parent_subjet_2.perp()) std::swap(parent_subjet_1,parent_subjet_2);
-      z=parent_subjet_2.perp()/(parent_subjet_1.perp()+parent_subjet_2.perp());
+      Pt_splitting=parent_subjet_1.perp()+parent_subjet_2.perp();
+      z=parent_subjet_2.perp()/(Pt_splitting);
       r=parent_subjet_1.delta_R(parent_subjet_2);
-      Pt_mother=daughter_jet.perp();
 
       if (z >= fSoftDropZCut*TMath::Power(r/fJetRadius,fSoftDropBeta)){
 	if(!softdropped){
 	  hfjet.fZg = z;
 	  hfjet.fRg = r;
-	  hfjet.fPt_mother = Pt_mother;
+	  hfjet.fPt_splitting = Pt_splitting;
 	  softdropped=kTRUE;
 	}
 	Nsd++;
       }
       if (Pt_jet > 0.0){
-	k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,0.1);
-	k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,1);
-	k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_mother*TMath::Power(r/fJetRadius,2);
-	kT_temp=z*Pt_mother*TMath::Sin(r);
+	k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,0.1);
+	k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,1);
+	k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,2);
+	kT_temp=z*Pt_splitting*TMath::Sin(r);
 	if (k0_temp > k0){
 	  k0=k0_temp;
 	  Zk0 = z;

@@ -276,8 +276,8 @@ class AliHFTreeHandler : public TObject
     float fRgGenJet; //gen Rg
     float fNsdJet; //Nsd
     float fNsdGenJet; //gen Nsd
-    float fPt_motherJet; //Pt_mother
-    float fPt_motherGenJet; //gen Pt_mother
+    float fPt_splittingJet; //Pt_splitting
+    float fPt_splittingGenJet; //gen Pt_splitting
     float fk0Jet; //k0
     float fk0GenJet; //gen k0
     float fZk0Jet; //Zk0
