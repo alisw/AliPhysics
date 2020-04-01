@@ -65,8 +65,8 @@ private:
   Double_t tPt;
   Double_t tEta;
   Double_t tPhi;
-  Double_t tnsigTPC[kNabsSpecies];
-  Double_t tnsigTOF[kNabsSpecies];
+  Double_t tnsigTPC;
+  Double_t tnsigTOF;
   Double_t tmass2;
   Int_t tnPIDclsTPC;
   Double_t tTOFsigDx;
