@@ -555,10 +555,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","1111100047032230000","30a330708","0103503l00000000","0153503000000000"); // pi+pi- mass cut of 0.85
 
   } else if ( trainConfig == 205 ) {
-    cuts.AddCutHeavyMesonCalo("00010113","411790106f032220000","32c510700","0103603l00000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("0008e113","411790106f032220000","32c510700","0103603l00000000","0153503000000000"); // EMC7
-    cuts.AddCutHeavyMesonCalo("0008d113","411790106f032220000","32c510700","0103603l00000000","0153503000000000"); // EMC7
-    cuts.AddCutHeavyMesonCalo("0009b113","411790106f032220000","32c510700","0103603l00000000","0153503000000000"); // EMC7
+    cuts.AddCutHeavyMesonCalo("00010113","411791106f032220000","32c510700","0103603l000000d0","01535030000000d0"); // INT7
+    cuts.AddCutHeavyMesonCalo("0008e113","411791106f032220000","32c510700","0103603l000000d0","01535030000000d0"); // EMC7
+    cuts.AddCutHeavyMesonCalo("0008d113","411791106f032220000","32c510700","0103603l000000d0","01535030000000d0"); // EMC7
+    cuts.AddCutHeavyMesonCalo("0009b113","411791106f032220000","32c510700","0103603l000000d0","01535030000000d0"); // EMC7
   } else if ( trainConfig == 206 ) { // no event mixing
     cuts.AddCutHeavyMesonCalo("00010113","411790106f032220000","32c510700","0103603l00000000","0453503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("0008e113","411790106f032220000","32c510700","0103603l00000000","0453503000000000"); // EMC7
@@ -570,8 +570,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
-    cuts.AddCutHeavyMesonCalo("00010113","24466000ga012200000","32c510700","0103603l00000000","0453503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("00062113","24466000ga012200000","32c510700","0103603l00000000","0453503000000000"); // PHI7
+    cuts.AddCutHeavyMesonCalo("00010113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // INT7
+    cuts.AddCutHeavyMesonCalo("00062113","24466190wa01cc00000","32c510700","0103603l00000010","0453503000000010"); // PHI7
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //                                          D0 MESON
