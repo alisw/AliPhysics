@@ -2338,6 +2338,7 @@ void AliAnalysisTaskSEXicTopKpi::FillDist12and23(AliAODRecoDecayHF3Prong *pr,Dou
   Double_t dist23=TMath::Sqrt((vertexESD->GetX()-pos[0])*(vertexESD->GetX()-pos[0])+(vertexESD->GetY()-pos[1])*(vertexESD->GetY()-pos[1])+(vertexESD->GetZ()-pos[2])*(vertexESD->GetZ()-pos[2]));
   pr->SetDist23toPrim(dist23);
   delete vertexESD; vertexESD=NULL;
+  delete twoTrackArray;
 
   for(Int_t j=0;j<3;j++){
     delete esdTrack[j];

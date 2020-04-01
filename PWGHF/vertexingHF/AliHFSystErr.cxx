@@ -10500,14 +10500,14 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
   fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
   fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
   fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.20);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.20);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.20);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.20);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
@@ -10586,16 +10586,16 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   // Cut variation
   fCutsEff = new TH1F("fCutsEff","fCutsEff",nbins,1,upedge_pt);
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fCutsEff->SetBinContent( 2,0.30);  //   2-3 GeV/c
-  fCutsEff->SetBinContent( 3,0.30);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
-  fCutsEff->SetBinContent( 6,0.15);  //   6-7 GeV/c
-  fCutsEff->SetBinContent( 7,0.15);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.15);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.15);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.15);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.15);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
+  fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
+  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
+  fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
+  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
