@@ -107,8 +107,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepplowB13(Bool_t useMC, Bool_t isAOD, TString app
       	// For eta < 0.8
        TF1 *hBackground;   // 0 = Landau + 2 Gaus, 1 =  Error + 2 Gaus
         // First hadron contamination fit for 13TeV  by Andrea
-        // relative to the case of a TPC+TOF PID cut at -1 sigma
-        if(HadronContFunc == 0){
+        // relative to the case of a TPC+TOF PID cut at -1 sigma // flipped on Dec 10 2019 by Sudhir
+        if(HadronContFunc == 2){
         hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2]) + [3]*TMath::Gaus(x, [4], [5]) + [6]*TMath::Gaus(x, [7], [8])", 0. ,60.);
     	hBackground->SetParameter(0, 3.98051e+00);
    	hBackground->SetParameter(1, 1.07724e+01);
@@ -121,7 +121,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepplowB13(Bool_t useMC, Bool_t isAOD, TString app
         hBackground->SetParameter(8, 2.54008e-02);
 
         }
-        if(HadronContFunc == 1){
+        if(HadronContFunc == 3){
         hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3]) + [4]*TMath::Gaus(x, [5], [6]) + [7]*TMath::Gaus(x, [8], [9])", 0. ,60.);
         hBackground->SetParameter(0, 2.20105e-01);
         hBackground->SetParameter(1, 2.20105e-01);
@@ -135,7 +135,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepplowB13(Bool_t useMC, Bool_t isAOD, TString app
         hBackground->SetParameter(9, 2.54008e-02);
         }
         // For eta < 0.5
-        if(HadronContFunc == 2){
+        if(HadronContFunc == 0){
         hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2]) + [3]*TMath::Gaus(x, [4], [5]) + [6]*TMath::Gaus(x, [7], [8])", 0. ,60.);
     	hBackground->SetParameter(0, 7.48482e+00);
    	hBackground->SetParameter(1, 1.00735e+01);
@@ -148,7 +148,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepplowB13(Bool_t useMC, Bool_t isAOD, TString app
         hBackground->SetParameter(8, 8.54008e-02);
 
         }
-        if(HadronContFunc == 3){
+        if(HadronContFunc == 1){
         hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3]) + [4]*TMath::Gaus(x, [5], [6]) + [7]*TMath::Gaus(x, [8], [9])", 0. ,60.);
         hBackground->SetParameter(0, 2.20091e-01);
         hBackground->SetParameter(1, 2.20119e-01);

@@ -14,6 +14,7 @@
 #include "AliConvEventCuts.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TArrayI.h"
 #include <vector>
@@ -167,6 +168,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliConvEventCuts*                 fEventCuts;                                         //!<! current event cuts
     AliConversionPhotonCuts*          fConversionCuts;                                    //!<! current conversion cuts
     AliCaloPhotonCuts*                fClusterCuts;                                       //!<! current cluster cuts
+    AliAnalysisTaskJetOutlierRemoval* fOutlierJetReader;                                  // JetReader
 
     // TTrees
     /** Tree containing info about the mother of two pions who have the same mother, if ID isn't covered by current implementations */
@@ -355,7 +357,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     vector<Int_t>                   fVectorDoubleCountTrueHNMs;                           //!<! vector containing labels of validated eta
     vector<Int_t>                   fVectorDoubleCountTrueConvGammas;                     //!<! vector containing labels of validated photons
     // Event properties
-    TH1I**                          fHistoNEvents;                                        //!<! histo for event counting
+    TH1F**                          fHistoNEvents;                                        //!<! histo for event counting
+    TH1F**                          fHistoNEventsWOWeight;                                //!<! histo for event counting without weight
     TProfile**                      fProfileJetJetXSection;                               //!<! histo for cross section for jet-jet Monte-Carlo
     TH1F**                          fHistoJetJetNTrials;                                  //!<! histo for number of trials for jet-jet Monte-Carlo
     TH1I**                          fHistoNGoodESDTracks;                                 //!<! histo number of reconstructed primary tracks
@@ -409,7 +412,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 13);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 15);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

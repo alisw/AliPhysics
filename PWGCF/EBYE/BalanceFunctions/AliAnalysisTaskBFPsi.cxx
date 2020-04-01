@@ -188,6 +188,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPIDCombined(0x0),
   fPidDetectorConfig(kTPCTOF),
   fUsePID(kFALSE),
+  fUsePIDKaons(kFALSE),
   fUsePIDMC(kFALSE),
   fUsePIDnSigma(kFALSE),
   fUsePIDPropabilities(kFALSE),
@@ -273,6 +274,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
+  fMinTPCCrossedRows(-1),
+  fMinTPCRowsOverFindableCls(-1),
   fTPCsharedCut(-1),
   fSphericityMin(-999.),
   fSphericityMax(999.),
@@ -441,7 +444,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   }
 
   //PID QA lists
-  if(fUsePID || fUsePIDMC || fElectronRejection) {
+  if(fUsePID || fUsePIDKaons || fUsePIDMC || fElectronRejection ) {
     fHistListPIDQA = new TList();
     fHistListPIDQA->SetName("listQAPID");
     fHistListPIDQA->SetOwner();  
@@ -877,7 +880,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
   //====================PID========================//
-  if(fUsePID || fUsePIDMC) {
+  if(fUsePID || fUsePIDKaons || fUsePIDMC) {
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
 
@@ -1012,9 +1015,9 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
   if(fRunMixing) PostData(4, fListBFM);
-  if(!fUsePIDMC && fUsePID || fElectronRejection)
+  if(!fUsePIDMC && fUsePID || fUsePIDKaons || fElectronRejection)
   PostData(5, fHistListPIDQA);//PID
-  if(fUsePID || fUsePIDMC && fCrossCorr)
+  if(fUsePID || fUsePIDKaons || fUsePIDMC && fCrossCorr)
   PostData(6, fListCrossCorr);//PID Cross Correlations
   AliInfo("Finished setting up the Output");
 
@@ -1452,11 +1455,9 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
 	    else{
 		if (statusPID==kTRUE){
 		    fHistNSigmaTOFvsPtafterPID->Fill(track->Pt(),nSigmaTOF);
-		    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
 		    fHistNSigmaTPCTOFvsPtafterPID->Fill(track->Pt(),nSigmaTPCTOF);
 		    fHistNSigmaTPCTOFPafterPID->Fill(nSigmaTPC,nSigmaTOF,track->P());
 		    fHistBetavsPTOFafterPID->Fill(track->P()*track->Charge(),beta);
-		    fHistdEdxVsPTPCafterPID->Fill(track->P()*track->Charge(),track->GetTPCsignal());
 		    fHistBetaVsdEdXafterPID->Fill(track->GetTPCsignal(),beta);
 		}
     	    }
@@ -1466,6 +1467,173 @@ Bool_t AliAnalysisTaskBFPsi::SetSelectPID(AliAODTrack* track, Int_t poi){
     else
         return kFALSE;
   
+    if (statusPID==kTRUE){
+    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
+    fHistdEdxVsPTPCafterPID->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
+    }
+
+    return statusPID;
+    
+}
+
+
+Bool_t AliAnalysisTaskBFPsi::SetSelectPIDKaons(AliAODTrack* track, Int_t poi){
+    
+    Double_t probTPC[AliPID::kSPECIES]={0.};
+    Double_t probTOF[AliPID::kSPECIES]={0.};
+    Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+    
+    AliAODPid* pidObj = track->GetDetPid();
+    
+    Double_t tofTime = -999., length = 999., tof = -999.;
+    Double_t c = TMath::C()*1.E-9;// m/ns
+    Double_t beta = -999.;
+    
+    Double_t nSigmaTPC, nSigmaTPCPions, nSigmaTPCKaons, nSigmaTPCProtons = 0;
+    Double_t nSigmaTOF, nSigmaTOFPions, nSigmaTOFKaons, nSigmaTOFProtons = 0;
+    Double_t nSigmaTPCTOF, nSigmaTPCTOFPions, nSigmaTPCTOFKaons, nSigmaTPCTOFProtons = 0;
+    
+    Double_t track_pt = track->Pt();
+    
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC); //firts check only TPC
+    UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+    Bool_t statusPID = kFALSE;
+    
+    if (poi == kBoth)
+        poi = kTrig;
+    
+    if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask()){
+        
+        nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest[poi]);
+        
+        fHistdEdxVsPTPCbeforePID -> Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
+        fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),probTPC[fParticleOfInterest[poi]]);
+        fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPC);
+        
+        fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+        detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+        
+        if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+            
+            if(!pidObj || pidObj->GetTOFsignal() > 99999) {
+                
+                // Printf("WARNING: !pidObj || pidObj->GetTOFsignal() > 99999 \n");
+                return kFALSE;
+            }
+            
+            nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,fParticleOfInterest[poi]);
+            nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+
+            if ((track->IsOn(AliAODTrack::kITSin)) && (track->IsOn(AliAODTrack::kTOFout)) ) {
+                tofTime = track->GetTOFsignal();//in ps
+                length = track->GetIntegratedLength();
+                tof = tofTime*1E-3; // ns
+                if (tof <= 0) {
+                    // Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+                    return kFALSE;
+                }
+                if (length <= 0){
+                    // in old productions integrated track length is not stored in AODs -> need workaround
+                    Double_t exptime[10];
+                    track->GetIntegratedTimes(exptime);
+                    length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+                    if (length <= 0){
+                        // Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+                        return kFALSE;
+                    }
+                }
+                length = length*0.01; // in meters
+                tof = tof*c;
+                beta = length/tof;
+                
+                fHistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
+                fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),probTOF[fParticleOfInterest[poi]]);
+                fHistNSigmaTOFvsPtbeforePID ->Fill(track->Pt(),nSigmaTOF);
+                
+                
+                fHistProbTPCTOFvsPtbeforePID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest[poi]]);
+                fHistBetaVsdEdXbeforePID->Fill(track->GetTPCsignal(),beta);
+                fHistNSigmaTPCTOFvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCTOF);
+                fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,track->P());
+            }
+            
+        
+            if (track_pt < 0.3){
+                if ((TMath::Abs(nSigmaTPC)<6) && (TMath::Abs(nSigmaTOF)<3))
+                    statusPID = kTRUE;
+            }
+            else if (track_pt >= 0.3 && track_pt < 0.4){
+                if ((TMath::Abs(nSigmaTPC)<4) && (TMath::Abs(nSigmaTOF)<3))
+                    statusPID = kTRUE;
+            }
+            else if (track_pt >= 0.4){
+                if ((TMath::Abs(nSigmaTPC)<2) && (TMath::Abs(nSigmaTOF)<3))
+                    statusPID = kTRUE;
+            }
+            
+            if (fCrossCorr){
+                if (statusPID==kTRUE){
+                    if (poi==kTrig){
+                        fHistdEdxVsPTPCafterPIDTrig->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                        fHistBetavsPTOFafterPIDTrig->Fill(track->P()*track->Charge(),beta);
+                    }
+                    else if (poi==kAssoc){
+                        fHistdEdxVsPTPCafterPIDAssoc->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                        fHistBetavsPTOFafterPIDAssoc->Fill(track->P()*track->Charge(),beta);
+                    }
+                }
+            }
+            else{
+                if (statusPID==kTRUE){
+                    fHistNSigmaTOFvsPtafterPID->Fill(track->Pt(),nSigmaTOF);
+                    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
+                    fHistNSigmaTPCTOFvsPtafterPID->Fill(track->Pt(),nSigmaTPCTOF);
+                    fHistNSigmaTPCTOFPafterPID->Fill(nSigmaTPC,nSigmaTOF,track->P());
+                    fHistBetavsPTOFafterPID->Fill(track->P()*track->Charge(),beta);
+                    fHistdEdxVsPTPCafterPID->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                    fHistBetaVsdEdXafterPID->Fill(track->GetTPCsignal(),beta);
+                }
+            }
+        }
+        
+        else {
+            if (track_pt < 0.3){
+                if (TMath::Abs(nSigmaTPC)<6)
+                    statusPID = kTRUE;
+            }
+            else if (track_pt >= 0.3 && track_pt < 0.4){
+                if (TMath::Abs(nSigmaTPC)<4)
+                    statusPID = kTRUE;
+            }
+            else if (track_pt >= 0.4){
+                if (TMath::Abs(nSigmaTPC)<2)
+                    statusPID = kTRUE;
+            }
+            
+            
+            if (fCrossCorr){
+                if (statusPID==kTRUE){
+                    if (poi==kTrig){
+                        fHistdEdxVsPTPCafterPIDTrig->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                    }
+                    else if (poi==kAssoc){
+                        fHistdEdxVsPTPCafterPIDAssoc->Fill(track->P()*track->Charge(),track->GetTPCsignal());
+                    }
+                }
+            }
+            else{
+                if (statusPID==kTRUE){
+                    fHistNSigmaTPCvsPtafterPID->Fill(track->Pt(),nSigmaTPC);
+                    fHistdEdxVsPTPCafterPID->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
+                }
+            }
+            
+        }
+    }
+    // if no detector flag remove track
+    else
+        return kFALSE;
+    
     return statusPID;
     
 }
@@ -1499,7 +1667,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
 
   // PID Response task active?
-  if(fUsePID || fElectronRejection) {
+  if(fUsePID || fUsePIDKaons || fElectronRejection) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
     if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
   }
@@ -2538,7 +2706,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vPx      = aodTrack->Px();
       vPy      = aodTrack->Py();
 
-      if(fUsePID){
+      if(fUsePID || fUsePIDKaons){
           for (Int_t i = 0; i<2; i++){
           vYPID[i] = log( ( sqrt(fMassParticleOfInterest[i]*fMassParticleOfInterest[i] + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest[i]*fMassParticleOfInterest[i] + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI
           }
@@ -2626,6 +2794,39 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
             }
         }
         
+        if (fUsePIDKaons) {
+            Bool_t isPartIDselected = kFALSE;
+            if (fCrossCorr){
+            if (fParticleOfInterest[0]==fParticleOfInterest[1]){
+                AliError("Cross correlations enabled but the same particle type is provided");
+                continue;
+            }
+                isPartIDselected = SetSelectPIDKaons(aodTrack,kTrig);
+                if (isPartIDselected == kTRUE){
+                    isTrigOrAssoc = kTrig;
+                }
+                else
+                {
+                    isPartIDselected = SetSelectPIDKaons(aodTrack,kAssoc);
+                    if (isPartIDselected == kTRUE){
+                        isTrigOrAssoc = kAssoc;
+                    }
+                    else continue;
+                }
+            }
+            else{
+                if (fParticleOfInterest[0]!=fParticleOfInterest[1]){
+                    AliError("Cross correlations disabled but the different particle type is provided");
+                    continue;
+                }
+                isPartIDselected = SetSelectPIDKaons(aodTrack,kBoth);
+                if (isPartIDselected == kTRUE)
+                    isTrigOrAssoc = kBoth;
+                else continue;
+            }
+        }
+            
+        
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
         
@@ -2706,6 +2907,19 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
+      if(fMinTPCCrossedRows != -1){
+	if ((Float_t)aodTrack->GetTPCNCrossedRows() < (120 - (5/(Float_t)aodTrack->Pt())) ){
+	  continue;
+	}
+      }
+      
+      if (fMinTPCRowsOverFindableCls != -1){
+	Float_t nTPCCrossedRowsOverFindCls = (((Float_t)aodTrack->GetTPCNCrossedRows())/((Float_t)aodTrack->GetTPCNclsF()));
+	if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+	  continue;
+	}
+      }
+      
       // Extra cut on shared clusters
       if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
 	continue;
@@ -3420,7 +3634,20 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	continue;
       }
 
-     // Extra cut on shared clusters
+      if(fMinTPCCrossedRows != -1){
+	if ((Float_t)aodTrack->GetTPCNCrossedRows() < (120 - (5/(Float_t)aodTrack->Pt())) ){
+	  continue;
+	}
+      }
+      
+      if (fMinTPCRowsOverFindableCls != -1){
+	Float_t nTPCCrossedRowsOverFindCls = (((Float_t)aodTrack->GetTPCNCrossedRows())/((Float_t)aodTrack->GetTPCNclsF()));
+	if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+	  continue;
+	}
+      }
+      
+      // Extra cut on shared clusters
       if( fTPCsharedCut != -1 && aodTrack->GetTPCnclsS() > fTPCsharedCut){
 	continue;
       }

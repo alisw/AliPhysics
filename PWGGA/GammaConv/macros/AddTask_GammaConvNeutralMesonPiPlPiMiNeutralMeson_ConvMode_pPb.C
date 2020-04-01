@@ -29,7 +29,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
-    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
@@ -89,7 +89,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
 
   //================================================
   //========= Add Pion Selector ====================
-  TString PionCuts          = "000000200";        
+  TString PionCuts          = "000000200";
 
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
     AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector("PionSelector");
@@ -126,8 +126,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   // ******************************************************************************************************
   // ++++++++++++++++++++++++++++++   N A M I N G  C O N V E N T I O N   ++++++++++++++++++++++++++++++++++
   //
-  //  config = meson * 1000  + method * 100 + variation 
-  //  
+  //  config = meson * 1000  + method * 100 + variation
+  //
   //  meson:  eta = 0; omega = 1; etaPrime = 2
   //  method: EMC = 0; PHOS = 5;
   //
@@ -140,7 +140,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   //                                          ETA MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   
+
    //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
   // no event mixing background
   if (trainConfig == 1){ // INT7 run1 & run2
@@ -172,7 +172,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
 
   // no event mixing background
   }else if (trainConfig == 1001){ // EMC  INT7 run1 & run2
-    cuts.AddCutHeavyMesonPCM("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100% 
+    cuts.AddCutHeavyMesonPCM("80010113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%
   } else if (trainConfig == 1002){ // EMC EMC triggers
     cuts.AddCutHeavyMesonPCM("80052113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EMC7
   } else if (trainConfig == 1003){ // EMC EMC triggers
@@ -187,15 +187,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  PHI7 run1
-    cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100% 
+    cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%
 
- 
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
 
   // no event mixing background
@@ -213,7 +213,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("8008d113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG1
   } else if (trainConfig == 2006){ // EMC EMC triggers
     cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
-  
+
   //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 2501){ // PHOS  PHI7 run1
     cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
@@ -243,6 +243,19 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   TObjString *Header3 = new TObjString("eta_2");
   HeaderList->Add(Header3);
 
+  if (periodNameV0Reader.Contains("LHC17g6a2") || periodNameV0Reader.Contains("LHC17g6a3") ){
+    TObjString *HeaderPMB = new TObjString("Dpmjet_0");
+    TObjString *HeaderP8J = new TObjString("Pythia8JetsGammaTrg_1");
+    if (doWeightingPart==4) { // all headers
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else if (doWeightingPart==5) { // only MB header
+      HeaderList->Add(HeaderPMB);
+    } else { // only JJ header
+      HeaderList->Add(HeaderP8J);
+    }
+  }
+  
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -320,7 +333,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   task->SetPionCutList(PionCutList);
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
-  
+
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask);

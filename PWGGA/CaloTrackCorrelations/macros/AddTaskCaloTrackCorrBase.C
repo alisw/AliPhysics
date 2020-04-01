@@ -121,6 +121,12 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     //reader->GetMCAnalysisUtils()->SetMCGenerator("");
   }
   
+  // Reject LED events in Physics events
+  reader->SwitchOffLEDEventsRemoval();
+  if (  cutsString.Contains("RemoveLEDEvents1")  ) reader->SwitchOnLEDEventsRemoval(1); // LHC11a
+  if (  cutsString.Contains("RemoveLEDEvents2")  ) reader->SwitchOnLEDEventsRemoval(2); // Run2 pp 13 TeV
+  if (  cutsString.Contains("RemoveLEDEvents") && cutsString.Contains("Strip") ) 
+    reader->SwitchOnLEDStripEventsRemoval();
   //
   // Calorimeter Trigger Selection
   //
@@ -175,6 +181,16 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
 {
   reader->SetEMCALEMin(0.3);
   reader->SetEMCALEMax(1000);
+  
+  reader->SetEMCALNCellsCut(1);
+  
+  if ( cutsString.Contains("NCellCutEnDep") )
+  {
+    // from 40 GeV, ncell > 4.9 + 0.04 * En
+    reader->SetEMCALEnDepNCellsCut(40,4.9,0.04);
+  }
+  
+  reader->SetEMCALBadChannelMinDist(2);
   
   if      ( calorimeter == "EMCAL" )
   {
@@ -269,7 +285,11 @@ void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader,
 {
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
-  
+
+  reader->SetPHOSNCellsCut(2);
+
+  reader->SetPHOSBadChannelMinDist(2);
+
   if ( year > 2014 ) reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
   else               reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ; 
   
@@ -588,6 +608,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
 ///    * FullCalo: Use EMCal+DCal acceptances
+///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
+///       * Strip: Consider also removing LED flashing single strips
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (

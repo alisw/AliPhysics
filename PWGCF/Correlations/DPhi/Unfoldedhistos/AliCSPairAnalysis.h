@@ -31,7 +31,7 @@ public:
                               AliCSPairAnalysis(const char *name);
   virtual                    ~AliCSPairAnalysis();
 
-  void                        ConfigureBinning(const char *configstring);
+  Bool_t                      ConfigureBinning(const char *configstring);
   TString                     GetBinningConfigurationString() const;
 
   void                        Initialize();

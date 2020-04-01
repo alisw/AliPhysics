@@ -12,11 +12,11 @@
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
 
-#include <algorithm> 
+#include <algorithm>
 
 
 /// \class AliFemtoTrack
-/// \brief Main class holding track information (before identification)  
+/// \brief Main class holding track information (before identification)
 ///
 /// AliFemtoTrack holds all the necessary information about a track that is
 /// required during femtoscopic analysis. This class is filled with information

@@ -237,6 +237,11 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Centrality cuts:
   /// * Check for min and max centrality
   /// * Cross check correlation between two centrality estimators
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+    fCentPercentiles[0] = -0.5;
+    fCentPercentiles[1] = -0.5;
+  }
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
@@ -266,10 +271,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     }
   } else
     fFlag |= BIT(kMultiplicity);
-
-  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
-    fFlag |= BIT(kINELgt0);
-  }
 
   /// If the correlation plots are defined, we should fill them
   if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {
@@ -511,8 +512,9 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
   
   /// Run 1 pp
-  if ( (fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // LHC11a 
-       (fCurrentRun >= 121692 && fCurrentRun <= 126437)) {  // LHC10d
+  if ((fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // pp 2.76 TeV (LHC11a)
+      (fCurrentRun >= 121692 && fCurrentRun <= 126437) ||  // pp 7 TeV (LHC10d)
+      (fCurrentRun >= 172439 && fCurrentRun <= 193766)) {  // pp 8 TeV (LHC12a-i)
     SetupRun1pp();
     return;
   }
@@ -769,6 +771,8 @@ void AliEventCuts::SetupPbPb2018() {
   if (!fOverrideAutoTriggerMask) {
     fTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
+
+  fUseTimeRangeCut = true;
 
 }
 

@@ -34,6 +34,8 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
+#include "TMath.h"
 #include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
@@ -218,19 +220,25 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     }
 
     //DCAcut
+    Double_t DCAptDependance=fMaxDCAVertexxy;
+    Double_t x=0.0;
     if(fDCAVertexPt.CompareTo("no")){
-        fDCAVertexPt.ReplaceAll("pt","x");
-         TFormula* DCAPtCutsForm= new TFormula("Conversion",fDCAVertexPt.Data());
-         fMaxDCAVertexxy=DCAPtCutsForm->Eval(aliaodtrack->GetPtG());
-         delete DCAPtCutsForm;
+            //fDCAVertexPt.ReplaceAll("pt","x");
+            //TF1* DCAPtCutsForm= new TF1("0",fDCAVertexPt.Data(),0.0,10.0);
+            //Test=DCAPtCutsForm->Eval(aliaodtrack->GetPtG());
+            x=aliaodtrack->GetPtG();
+            DCAptDependance=(0.0105+(0.0350)/(TMath::Power(x,1.1)));
+            //delete DCAPtCutsForm;
     }
-    if (TMath::Abs(aliaodtrack->GetDCAxy())>fMaxDCAVertexxy){
+    if (TMath::Abs(aliaodtrack->GetDCAxy())>DCAptDependance){
+        //cout<<fMaxDCAVertexxy<<endl;
      return kFALSE;
     }
     if (TMath::Abs(aliaodtrack->GetDCAz())>fMaxDCAVertexz){
-        cout<<fMaxDCAVertexz<<endl;
+        //cout<<fMaxDCAVertexz<<endl;
      return kFALSE;
     }
+    //cout<<" Paso Electron Cuts "<<endl;
     return kTRUE;
 }
 //________________________________________________________________________
@@ -1504,6 +1512,10 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
       fPtMinCut = 0.9;
       fPtMaxCut = 9999;
       break;
+    case 8:
+      fPtMinCut = 1.1;
+      fPtMaxCut = 9999;
+      break;
     default:
       cout<<"Warning: PtCut not defined "<<ptCut<<endl;
       return kFALSE;
@@ -1532,7 +1544,7 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
     case 1:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=2.;
-        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+        fDCAVertexPt="(0.0182+(0.0350)/(TMath::Power(x,1.01)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2010
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
@@ -1546,42 +1558,43 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
     case 3:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=2.;
-        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+        //fDCAVertexPt="(0.0105+(0.0350)/(x^1.1))";
+        fDCAVertexPt="(0.0105+(0.0350)/(TMath::Power(x,1.1)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 4:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=2.;
-        fDCAVertexPt="0.0525+0.175/pt^1.1";
+        fDCAVertexPt="(0.0525+(0.175)/(TMath::Power(x,1.1)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 5:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=1.;
-        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+        fDCAVertexPt="(0.0182+(0.0350)/(TMath::Power(x,1.01)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 6:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=5.;
-        fDCAVertexPt="0.0182+0.0350/pt^1.01";
+        fDCAVertexPt="(0.0182+(0.0350)/(TMath::Power(x,1.01)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data());
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 7:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=1.;
-        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+        fDCAVertexPt="(0.0105+(0.0350)/(TMath::Power(x,1.1)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
     case 8:
         fMaxDCAVertexxy=1000.;
         fMaxDCAVertexz=5.;
-        fDCAVertexPt="0.0105+0.0350/pt^1.1";
+        fDCAVertexPt="(0.0105+(0.0350)/(TMath::Power(x,1.1)))";
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;

@@ -9,11 +9,11 @@
 #include "AliJEfficiency.h"
 #pragma GCC diagnostic warning "-Wall"
 
-ClassImp(AliJFFlucAnalysis)
+//ClassImp(AliJFFlucAnalysis)
 
 		//________________________________________________________________________
-AliJFFlucAnalysis::AliJFFlucAnalysis()
-	: AliAnalysisTaskSE(),
+AliJFFlucAnalysis::AliJFFlucAnalysis() :
+	//: AliAnalysisTaskSE(),
 	fInputList(0),
 	fEfficiency(0), // pointer to tracking efficiency
 	fVertex(0),
@@ -47,6 +47,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_cn_cn_2c_eta10()*/
 {
 	subeventMask = SUBEVENT_A|SUBEVENT_B;
+	binning = BINNING_CENT_PbPb;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -57,8 +58,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 }
 
 //________________________________________________________________________
-AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
-	: AliAnalysisTaskSE(name),
+AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) :
+	//: AliAnalysisTaskSE(name),
 	fInputList(0),
 	fEfficiency(0),
 	fVertex(0),
@@ -94,6 +95,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	cout << "analysis task created " << endl;
 
 	subeventMask = SUBEVENT_A|SUBEVENT_B;
+	binning = BINNING_CENT_PbPb;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -104,15 +106,26 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 }
 
 //Double_t AliJFFlucAnalysis::CentBin[8] = {0, 5, 10, 20, 30, 40, 50, 60};
-Double_t AliJFFlucAnalysis::CentBin[CENTN_NAT+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
-UInt_t AliJFFlucAnalysis::NCentBin = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
-UInt_t AliJFFlucAnalysis::CentralityTranslationMap[CENTN_NAT] = {0,0,0,1,2,3,4,5,6};
+//Double_t AliJFFlucAnalysis::CentBin[CENTN_NAT+1] = {0, 1, 2, 5, 10, 20, 30, 40, 50, 60};
+//UInt_t AliJFFlucAnalysis::NCentBin = sizeof(AliJFFlucAnalysis::CentBin)/sizeof(AliJFFlucAnalysis::CentBin[0])-1;
+//Double_t AliJFFlucAnalysis::MultBin[MULTN+1] = {30.651,31.125,42.627,43.263,54.598,55.399,66.613,67.581,78.665,79.802,90.789,92.098,102.805,104.286,114.903,116.569};
+//! Max bins 96
+Double_t AliJFFlucAnalysis::CentBin_PbPb_default[][2] = {{0,1},{1,2},{2,5},{5,10},{10,20},{20,30},{30,40},{40,50},{50,60}};
+Double_t AliJFFlucAnalysis::MultBin_PbPb_1[][2] = {{25.245,25.611},{31.555,31.982},{37.898,38.387},{44.251,44.803},{50.584,51.198},{56.942,57.62},{66.341,67.113},{79.03,79.93},{91.764,92.792},{104.431,105.587},{117.103,118.387},{136.063,137.541},{161.3,163.033},{186.707,188.698},{212.126,214.374},{281.085,284.042},{344.727,348.332},{408.197,412.447},{471.798,476.696},{535.041,540.583},{598.475,604.663},{662.018,668.854},{725.484,732.967},{788.636,796.763},{852.345,861.121},{915.632,925.054},{979.134,989.204},{1042.376,1053.091},{1105.751,1117.114},{1169.205,1181.215},{1232.423,1245.079},{1295.89,1309.194},{1359.578,1373.533},{1422.675,1437.274},{1485.99,1501.236},{1549.608,1565.503},{1612.809,1629.351},{1676.158,1693.347},{1739.647,1757.486},{1802.865,1821.351},{1866.328,1885.462},{1929.777,1949.561},{1993.119,2013.553},{2056.422,2077.504},{2119.716,2141.448},{2182.935,2205.317},{2246.261,2269.296},{2309.523,2333.209},{2373.038,2397.381},{2436.146,2461.145},{2499.398,2525.057},{2563.07,2589.39},{2626.482,2653.462},{2689.435,2717.075},{2753.073,2781.382},{2815.911,2844.889},{2879.821,2909.486},{2943.2,2973.535},{3006.237,3037.292},{3068.718,3100.47},{3132.669,3165.259}};
+Double_t AliJFFlucAnalysis::MultBin_pPb_1[][2] = {{30.651,31.125},{42.627,43.263},{54.598,55.399},{66.613,67.581},{78.665,79.802},{90.789,92.098},{102.805,104.286},{114.903,116.569}};
+Double_t (*AliJFFlucAnalysis::pBin[3])[2] = {&CentBin_PbPb_default[0],&MultBin_PbPb_1[0],&MultBin_pPb_1[0]};
+UInt_t AliJFFlucAnalysis::NBin[3] = {
+	sizeof(AliJFFlucAnalysis::CentBin_PbPb_default)/sizeof(AliJFFlucAnalysis::CentBin_PbPb_default[0]),
+	sizeof(AliJFFlucAnalysis::MultBin_PbPb_1)/sizeof(AliJFFlucAnalysis::MultBin_PbPb_1[0]),
+	sizeof(AliJFFlucAnalysis::MultBin_pPb_1)/sizeof(AliJFFlucAnalysis::MultBin_pPb_1[0])
+};
+//UInt_t AliJFFlucAnalysis::CentralityTranslationMap[CENTN_NAT] = {0,0,0,1,2,3,4,5,6};
 Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
 
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
-	AliAnalysisTaskSE(a.GetName()),
+	//AliAnalysisTaskSE(a.GetName()),
 	fInputList(a.fInputList),
 	fEfficiency(a.fEfficiency),
 	fVertex(a.fVertex),
@@ -177,7 +190,11 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fBin_hh .Set("NHH","NHH","NHH:%d", AliJBin::kSingle).SetBin(kcNH);
 	fBin_kk .Set("KK","KK","KK:%d", AliJBin::kSingle).SetBin(nKL);
 
-	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NCentBin);
+	//TODO: index with binning the array of pointers
+	if(binning != BINNING_CENT_PbPb)
+		fHistCentBin.Set("MultBin","MultBin","Cent:%d",AliJBin::kSingle).SetBin(NBin[binning]);
+	else fHistCentBin.Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(NBin[binning]);
+
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
 	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(28);
 
@@ -368,10 +385,14 @@ inline TComplex SixGap33(const TComplex (*pQq)[AliJFFlucAnalysis::kNH][AliJFFluc
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// find Centrality
-	fCBin = GetCentralityClass(fCent);
+	int trk_number = fInputList->GetEntriesFast();
+	fCBin = (binning != BINNING_CENT_PbPb)?
+		GetBin((double)trk_number,binning):
+		GetBin(fCent,binning); //--- similarly in Task
+
 	if(fCBin == -1)
 		return;
-	int trk_number = fInputList->GetEntriesFast();
+	
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	fh_cent->Fill(fCent) ;
 	fh_ImpactParameter->Fill( fImpactParameter);
@@ -913,10 +934,27 @@ TComplex AliJFFlucAnalysis::Four( int n1, int n2, int n3, int n4){
 	h_phi_module[cent][sub] = hModuledPhi;
 }*/
 
-int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
+/*int AliJFFlucAnalysis::GetCentralityClass(Double_t fCent){
 	for(UInt_t iCbin = 0; iCbin < NCentBin; iCbin++){
 		if(fCent > CentBin[iCbin] && fCent < CentBin[iCbin+1])
 			return iCbin;
+	}
+	return -1;
+}
+
+int AliJFFlucAnalysis::GetMultiplicityBin(Double_t fMult, BINNING _binning){
+	for(UInt_t iMbin = 0; iMbin < NMultBin[_binning]; iMbin++){
+		//if(fMult > MultBin[iMbin] && fMult < MultBin[iMbin+1])
+		if(fMult > pMultBin[_binning][iMbin][0] && fMult < pMultBin[_binning][iMbin][1])
+			return iMbin;
+	}
+	return -1;
+}*/
+
+int AliJFFlucAnalysis::GetBin(Double_t fq, BINNING _binning){
+	for(UInt_t iMbin = 0; iMbin < NBin[_binning]; iMbin++){
+		if(fq > pBin[_binning][iMbin][0] && fq < pBin[_binning][iMbin][1])
+			return iMbin;
 	}
 	return -1;
 }

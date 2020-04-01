@@ -1,7 +1,7 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-#include <AliAnalysisTaskSE.h>
+//#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
@@ -9,7 +9,7 @@
 class TClonesArray;
 class AliJEfficiency;
 
-class AliJFFlucAnalysis : public AliAnalysisTaskSE {
+class AliJFFlucAnalysis{// : public AliAnalysisTaskSE {
 public:
 	AliJFFlucAnalysis();
 	AliJFFlucAnalysis(const char *name);
@@ -71,8 +71,16 @@ public:
 		SUBEVENT_A = 0x1,
 		SUBEVENT_B = 0x2
 	};
-	void SelectSubevents(UInt_t nsubeventMask){
-		subeventMask = nsubeventMask;
+	void SelectSubevents(UInt_t _subeventMask){
+		subeventMask = _subeventMask;
+	}
+	enum BINNING{
+		BINNING_CENT_PbPb,
+		BINNING_MULT_PbPb_1,
+		BINNING_MULT_pPb_1
+	};
+	void SetBinning(BINNING _binning){
+		binning = _binning;
 	}
 	enum{
 		FLUC_PHI_CORRECTION = 0x2,
@@ -83,15 +91,19 @@ public:
 		flags |= nflags;
 	}
 
-#define CENTN_NAT 9
-#define CENTN 7
-	static Double_t CentBin[CENTN_NAT+1]; //8
+	static Double_t CentBin_PbPb_default[][2];
+	static Double_t MultBin_PbPb_1[][2];
+	static Double_t MultBin_pPb_1[][2];
+	static Double_t (*pBin[3])[2];
 	static Double_t pttJacek[74];
-	static UInt_t CentralityTranslationMap[CENTN_NAT];
-	static UInt_t NCentBin;
+	//static UInt_t CentralityTranslationMap[CENTN_NAT];
+	//static UInt_t NCentBin;
+	static UInt_t NBin[3];
 	static UInt_t NpttJacek;
 
-	static int GetCentralityClass(Double_t);
+	//static int GetCentralityClass(Double_t);
+	//static int GetMultiplicityBin(Double_t, BINNING);
+	static int GetBin(Double_t, BINNING);
 
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
@@ -112,6 +124,7 @@ private:
 	float fFB32trks;
 	float fFB32TOFtrks;
 	UInt_t subeventMask;
+	BINNING binning;
 	UInt_t flags;
 	Double_t fSingleVn[kNH][3]; // 3 methods
 
@@ -125,8 +138,6 @@ private:
 
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[2][kNH][nKL]; // ksub
-
-	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 
 	AliJHistManager * fHMG;//!
 
@@ -178,7 +189,7 @@ private:
 	//AliJTH1D fh_QvectorQCphi;//!
 	AliJTH1D fh_evt_SP_QC_ratio_2p;//! // check SP QC evt by evt ratio
 	AliJTH1D fh_evt_SP_QC_ratio_4p;//! // check SP QC evt by evt ratio
-	ClassDef(AliJFFlucAnalysis, 1); // example of analysis
+	//ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };
 
 #endif

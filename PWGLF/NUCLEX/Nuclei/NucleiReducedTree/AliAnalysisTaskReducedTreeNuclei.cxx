@@ -30,6 +30,7 @@ ClassImp(AliAnalysisTaskReducedTreeNuclei)
 AliAnalysisTaskReducedTreeNuclei::AliAnalysisTaskReducedTreeNuclei():
 AliAnalysisTaskSE(),
 fAODevent(NULL),
+fAODVZERO(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
@@ -40,6 +41,8 @@ fQAList(NULL),
 fOutputList(NULL),
 histoEventSelection(NULL),
 histoEventMultiplicity(NULL),
+histoEventMultV0M_MB(NULL),
+histoEventMultV0M_HM(NULL),
 reducedTree_Helium(NULL),
 reducedTree_Triton(NULL),
 reducedTree_HyperTriton(NULL),
@@ -253,11 +256,14 @@ DecayLength(0),
 massV0(0),
 alphaV0(0),
 qtV0(0)
-{}
+{
+      fUtils = new AliAnalysisUtils();
+}
 //_______________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskReducedTreeNuclei::AliAnalysisTaskReducedTreeNuclei(const char *name):
 AliAnalysisTaskSE(name),
 fAODevent(NULL),
+fAODVZERO(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
@@ -268,6 +274,8 @@ fOutputList(NULL),
 // TreeEventSelection(NULL),
 histoEventSelection(NULL),
 histoEventMultiplicity(NULL),
+histoEventMultV0M_MB(NULL),
+histoEventMultV0M_HM(NULL),
 reducedTree_Helium(NULL),
 reducedTree_Triton(NULL),
 reducedTree_HyperTriton(NULL),
@@ -529,7 +537,7 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 //   TreeEventSelection -> Branch("Ntrk_SPDTracklets",&Ntrk_SPDTracklets,"Ntrk_SPDTracklets/I");
 
   
-  histoEventSelection = new TH2D("histoEventSelection","Events after selection steps",3,0,3, 4,0,4);
+  histoEventSelection = new TH2D("histoEventSelection","Events after selection steps",4,0,4, 4,0,4);
   histoEventSelection->GetXaxis()->SetTitle("Selection steps");
   histoEventSelection->GetYaxis()->SetTitle("trigger");
   histoEventSelection->Sumw2();
@@ -541,6 +549,19 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
   histoEventMultiplicity->Sumw2();
   fOutputList->Add(histoEventMultiplicity);
 
+  
+  histoEventMultV0M_MB = new TH1D("histoEventMultV0M_MB", "HM V0M amplitude",1001,0,1000);
+  histoEventMultV0M_MB->GetXaxis()->SetTitle("V0M amplitude");
+  histoEventMultV0M_MB->GetYaxis()->SetTitle("counts");
+  histoEventMultV0M_MB->Sumw2();
+  fOutputList->Add(histoEventMultV0M_MB);
+  
+  histoEventMultV0M_HM = new TH1D("histoEventMultV0M_HM", "HM V0M amplitude",1001,0,1000);
+  histoEventMultV0M_HM->GetXaxis()->SetTitle("V0M amplitude");
+  histoEventMultV0M_HM->GetYaxis()->SetTitle("counts");
+  histoEventMultV0M_HM->Sumw2();
+  fOutputList->Add(histoEventMultV0M_HM);
+  
   //Reduced Tree (Helium3)
   reducedTree_Helium = new TTree("reducedTree_Helium","reducedTree_Helium");
   //   reducedTree_Helium -> Branch("triggerMask",&triggerMask,"triggerMask/l");
@@ -672,6 +693,10 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
     reducedTree_Triton -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
     reducedTree_Triton -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
     reducedTree_Triton -> Branch("multPercentile_V0C",&multPercentile_V0C,"multPercentile_V0C/D");
+    
+    reducedTree_Triton -> Branch("isTrigINT7",&isTrigINT7,"isTrigINT7/O");
+    reducedTree_Triton -> Branch("isTrigHighMult",&isTrigHighMult,"isTrigHighMult/O");
+  
     //   reducedTree_Triton -> Branch("multPercentile_OnlineV0M",&multPercentile_OnlineV0M,"multPercentile_OnlineV0M/D"); //NOT FILLED FOR LHC16q (p--Pb)
     //   reducedTree_Triton -> Branch("multPercentile_OnlineV0A",&multPercentile_OnlineV0A,"multPercentile_OnlineV0A/D"); //NOT FILLED FOR LHC16q (p--Pb)
     //   reducedTree_Triton -> Branch("multPercentile_OnlineV0C",&multPercentile_OnlineV0C,"multPercentile_OnlineV0C/D"); //NOT FILLED FOR LHC16q (p--Pb)
@@ -1189,20 +1214,35 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   fAODevent = dynamic_cast <AliAODEvent*>(InputEvent());
   if (!fAODevent) return false;
 
+  
+  fAODVZERO = dynamic_cast <AliAODVZERO*>( fAODevent->GetVZEROData());
+  
   // checking for event trigger
   Long64_t triggerMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   isTrigINT7        = (triggerMask & AliVEvent::kINT7)    ? true : false;
   isTrigHighMult    = (triggerMask & AliVEvent::kHighMultV0)? true : false;
 
   int whichTrig = 0;
-  if (isTrigINT7 & isTrigHighMult){ whichTrig = 3;}
+  if (isTrigINT7 && isTrigHighMult){ whichTrig = 3;}
   else if (isTrigHighMult){ whichTrig = 2;}
   else if (isTrigINT7){ whichTrig = 1;}
 
+  // triggerd events
+  histoEventSelection->Fill(0.5,static_cast<Double_t>(whichTrig)); // Events before QA
+  if (whichTrig==0) return false;
+  
+  
+  // pileup rejection
+//   fAODeventCuts.IsPileupFromSPD
+  if (fUtils->IsPileUpEvent(fAODevent)) return false; //to be used in the analysis
+
+//   if (!fUtils->IsOutOfBunchPileUp(fAODevent) return false; // do I need this?!
+//   if (!fUtils->IsSPDClusterVsTrackletBG(fAODevent) return false; // do I need this?!
+  
+  
   
   //Event Cut
-  SelectionStep=0;
-  histoEventSelection->Fill(0.5,static_cast<Double_t>(whichTrig)); // Events before QA
+  histoEventSelection->Fill(1.5,static_cast<Double_t>(whichTrig)); // Events before QA
 
   fAODeventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny,false);
   if (!fAODeventCuts.AcceptEvent(fAODevent)) {
@@ -1213,8 +1253,7 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   AliMultSelection *MultSelection = NULL;
   MultSelection = (AliMultSelection*) fAODevent->FindListObject("MultSelection");
 
-  SelectionStep=1;
-  histoEventSelection->Fill(1.5,static_cast<Double_t>(whichTrig)); // Events before multiplicity
+  histoEventSelection->Fill(2.5,static_cast<Double_t>(whichTrig)); // Events before multiplicity
   if (!MultSelection){
     PostData(2, fOutputList);
     return false;
@@ -1252,9 +1291,12 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
   estimator = MultSelection->GetEstimator("V0A");          if (estimator) { Ntrk_V0A = estimator->GetValue(); }
   estimator = MultSelection->GetEstimator("V0C");          if (estimator) { Ntrk_V0C = estimator->GetValue(); }
 
-  SelectionStep=2;
-  histoEventSelection->Fill(2.5,static_cast<Double_t>(whichTrig)); // Selected events
-  histoEventMultiplicity->Fill(multPercentile_V0A,static_cast<Double_t>(whichTrig));
+  if (isTrigINT7) histoEventMultV0M_MB->Fill(fAODVZERO->GetMTotV0C()+fAODVZERO->GetMTotV0A());
+  else            histoEventMultV0M_HM->Fill(fAODVZERO->GetMTotV0C()+fAODVZERO->GetMTotV0A());
+
+
+  histoEventSelection->Fill(3.5,static_cast<Double_t>(whichTrig)); // Selected events
+  histoEventMultiplicity->Fill(multPercentile_V0M,static_cast<Double_t>(whichTrig));
   return true;
 }
 //_______________________________________________________________________________________________________________________________________________________

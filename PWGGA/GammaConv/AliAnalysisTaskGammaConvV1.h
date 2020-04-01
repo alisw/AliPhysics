@@ -52,6 +52,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonBDT();
     void ProcessClusters();
     void ProcessJets();
+    void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
     void CalculateBackgroundRP();
@@ -116,6 +117,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList*                            fClusterCutArray;                           //
     AliAnalysisTaskConvJet*           fConvJetReader;                             //
     Bool_t                            fDoJetAnalysis;                             //
+    Bool_t                            fDoIsolatedAnalysis;                        //
+    Bool_t                            fDoHighPtHadronAnalysis;                    //
     Bool_t                            fDoJetQA;                                   //
     TList**                           fJetHistograms;                             //
     TList**                           fTrueJetHistograms;                         //
@@ -124,6 +127,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoCaloGammaPt;                          //!
     TH1F**                            fHistoCaloGammaE;                           //!
     TH1F**                            fHistoConvGammaPt;                          //!
+    TH2F**                            fHistoConvGammaPtwithHighPtHadron;          //!
+    TH2F**                            fHistoConvGammaPtwithoutHighPtHadron;       //!
     TH1F**                            fHistoConvGammaR;                           //!
     TH1F**                            fHistoConvGammaEta;                         //!
     TH1F**                            fHistoConvGammaPhi;                         //!
@@ -145,6 +150,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                       // 5: dalitz
                                       // 6: primary gamma
     TH2F**                            fHistoMotherInvMassPt;                        //!
+    TH2F**                            fHistoMotherInvMassPtIso;                     //!
+    TH2F**                            fHistoMotherInvMassPtNonIso;                  //!
+    TH2F**                            fHistoMotherInvMassPtMCRecIsoTrueNonIso;      //!
+    TH2F**                            fHistoMotherInvMassPtMCRecNonIsoTrueIso;      //!
+    TH2F**                            fHistoMotherEisoPt;                           //!
+    TH2F**                            fHistoMotherRisoPt;                           //!
+    TH2F**                            fHistoMotherNtracksIsoPt;                     //!
     THnSparseF**                      sESDMotherInvMassPtZM;                        //!
     TH2F**                            fHistoMotherBackInvMassPt;                    //!
     THnSparseF**                      sESDMotherBackInvMassPtZM;                    //!
@@ -395,7 +407,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 46);
+    ClassDef(AliAnalysisTaskGammaConvV1, 48);
 };
 
 #endif

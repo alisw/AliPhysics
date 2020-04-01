@@ -129,11 +129,17 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     }
   }
 
-
+	//=================== for 5 TeV reweighting==========
 	TF1 * weightfit = new TF1("weightfit","expo");
 	weightfit -> SetParameter(0,8.66109e-01);
 	weightfit -> SetParameter(1,-2.59812e-01);
     task -> SetFunction(weightfit);
+	//=================== for 13 TeV reweighting===========
+	TF1 * weightfit13 = new TF1("weightfit13","expo");
+	weightfit13 -> SetParameter(0,1.04603e+00);
+	weightfit13 -> SetParameter(1,-2.46920e-01);
+    task -> SetFunction13(weightfit13);
+
 
 	//============== weight process for the acceptance phi distribution
 	// =========== electron =================================

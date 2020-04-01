@@ -93,7 +93,9 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fCutGeoNcrNclLength(130.),
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
-  fCutGeoNcrNclFractionNcl(0.7)
+  fCutGeoNcrNclFractionNcl(0.7),
+  fWhichCuts(kDefault),
+  fTPCclstCut(1)
 {
 
 }
@@ -138,7 +140,9 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fCutGeoNcrNclLength(130.),
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.9),
-  fCutGeoNcrNclFractionNcl(0.7)
+  fCutGeoNcrNclFractionNcl(0.7),
+  fWhichCuts(kDefault),
+  fTPCclstCut(1)
 {
   //
   // standard constructur
@@ -175,9 +179,49 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   // create track cuts
   //reproduce filtering cuts
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
-  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
-  fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);
-  fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
+  // choose a standard ESD track cut configuration, otherwise use the ESDtrackCuts object passed with SETESDtrackCuts function 
+  // NB: the default case is kStdITSTPCTrkCuts2011 with fTPCclstCut=1
+  switch (fWhichCuts)
+  {
+  // backward compatibility
+  case kDefault:
+    printf("\n### kDefault case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);   ---> cut on TPC # clusters\n   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(%.2f);\n\n",fCrossRowsOverFndCltTPC);
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
+    break;
+  
+  case kStdTPConlyTrkCuts:
+    printf("\n### kStdTPConlyTrkCuts case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    break;
+
+  case kStdITSTPCTrkCuts2009:
+    printf("\n### kStdITSTPCTrkCuts2009 case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kFALSE)\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kFALSE);
+    break;
+
+  case kStdITSTPCTrkCuts2010:
+    printf("\n### kStdITSTPCTrkCuts2010 case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,%d)\n",fTPCclstCut);
+    if(fTPCclstCut==0)  printf("   ---> cut on TPC # clusters\n\n");
+    else if(fTPCclstCut==1) printf("   ---> cuts on the number of crossed rows and on the ration crossed rows/findable clusters\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,fTPCclstCut);
+    break;
+
+  case kStdITSTPCTrkCuts2011:
+    printf("\n### kStdITSTPCTrkCuts2011 case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,%d)\n",fTPCclstCut);
+    if(fTPCclstCut==0)  printf("   ---> cut on TPC # clusters\n\n");
+    else if(fTPCclstCut==1) printf("   ---> cuts on the number of crossed rows and on the ration crossed rows/findable clusters\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,fTPCclstCut);
+    break;
+
+  case kStdITSTPCTrkCuts2015PbPb:
+    printf("\n### kStdITSTPCTrkCuts2015PbPb case for ESD track cuts\n   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,%d,kTRUE,kFALSE)\n\n",fTPCclstCut);
+    if(fTPCclstCut==0)  printf("   ---> cut on TPC # clusters\n\n");
+    else if(fTPCclstCut==1) printf("   ---> cuts on the number of crossed rows and on the ration crossed rows/findable clusters\n\n");
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,fTPCclstCut,kTRUE,kFALSE);
+    break;
+  }
+  fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);  // common for every ESD track cuts set
   if(fUseCutGeoNcrNcl)  fESDtrackCuts->SetCutGeoNcrNcl( fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
 
   //

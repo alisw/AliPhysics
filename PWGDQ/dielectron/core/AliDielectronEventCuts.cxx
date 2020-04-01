@@ -55,6 +55,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fCentMin(1.),
   fCentMax(0.),
   fRun2(kFALSE),
+  fEstimator("V0M"),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -68,6 +69,9 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
+  fRequireTimeRangeCut(kFALSE),
+  fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -96,6 +100,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fCentMin(1.),
   fCentMax(0.),
   fRun2(kFALSE),
+  fEstimator("V0M"),
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
@@ -109,6 +114,9 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fkVertex(0x0),
   fkVertexAOD(0x0),
   fRequireAliEventCuts(0),
+  fRequireTimeRangeCut(kFALSE),
+  fAODeventCuts(),
+	fTimeRangeCut(),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -155,12 +163,37 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   AliESDEvent *ev=dynamic_cast<AliESDEvent*>(event);
   if (!ev) return kFALSE;
 
+	//Fill values
+	Double_t values[AliDielectronVarManager::kNMaxValues];
+	if(fUsedVars->CountBits()) {
+		AliDielectronVarManager::SetFillMap(fUsedVars);
+		AliDielectronVarManager::Fill(ev,values);
+
+		// correlation cuts
+		for(Int_t i=0; i<5; i++) {
+			if(fCorrCutMin[i]) {
+				Double_t varx = values[fCorrCutMin[i]->GetXaxis()->GetUniqueID()];
+				Double_t vary = values[fCorrCutMin[i]->GetYaxis()->GetUniqueID()];
+				Double_t min  = ((TF1*)fCorrCutMin[i]->GetListOfFunctions()->At(0))->Eval(varx);
+				//      printf("coor cut %d: varx %f -> eval %f > %f \n",i,varx,min,vary);
+				if(vary<min) return kFALSE;
+			}
+			if(fCorrCutMax[i]) {
+				Double_t varx = values[fCorrCutMax[i]->GetXaxis()->GetUniqueID()];
+				Double_t vary = values[fCorrCutMax[i]->GetYaxis()->GetUniqueID()];
+				Double_t max  = ((TF1*)fCorrCutMax[i]->GetListOfFunctions()->At(0))->Eval(varx);
+				if(vary>max) return kFALSE;
+			}
+		}
+	}
+
+
   if (fCentMin<fCentMax){
 
     if(fRun2==kFALSE){
       AliCentrality *centrality=ev->GetCentrality();
       Double_t centralityF=-1;
-      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+      if (centrality) centralityF = centrality->GetCentralityPercentile(fEstimator);
       if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
     }
     else if(fRun2==kTRUE){
@@ -168,7 +201,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       //new centrality
       AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
       if ( multSelection ){
-	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+	centralityF = multSelection->GetMultiplicityPercentile(fEstimator,kFALSE);
 	if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
       } else{
 	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
@@ -294,6 +327,10 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
       }
   }
 
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
+
   return kTRUE;
 }
 //______________________________________________
@@ -349,13 +386,13 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     Double_t centralityF=-1;
     if(fRun2==kFALSE){
 
-      if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+      if (centrality) centralityF = centrality->GetCentralityPercentile(fEstimator);
     }else if(fRun2==kTRUE){
 
       //new centrality
       AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
       if ( multSelection ){
-	centralityF = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+	centralityF = multSelection->GetMultiplicityPercentile(fEstimator,kFALSE);
       } else{
 	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
 	}
@@ -472,9 +509,12 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     }
   }
 
+	fTimeRangeCut.InitFromEvent(ev);
+	Bool_t IsBadTimeRangeTPC = fTimeRangeCut.CutEvent(ev);
+	if(fRequireTimeRangeCut && IsBadTimeRangeTPC) return kFALSE;
+
   return kTRUE;
 }
-
 //______________________________________________
 void AliDielectronEventCuts::SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary)
 {

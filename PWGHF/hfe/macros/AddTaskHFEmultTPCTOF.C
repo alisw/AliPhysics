@@ -2,7 +2,7 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
 		TString HFEdir="",
 		Bool_t isMC=kFALSE,
 		TString estimatorFilename="",
-		Double_t refMult=13.0793,
+		Double_t refMult=11.76,
 		
 		AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7 ,
 		Int_t TPCNclus=100  ,
@@ -74,6 +74,7 @@ AliAnalysisTaskHFEmultTPCTOF *AddTaskHFEmultTPCTOF(
     const Char_t* profilebasename="SPDtr";
     
     const Char_t* periodNames[4] = { "16l", "17d20a2_extra","16k", "17d20a1_extra"};
+   
     TProfile* multEstimatorAvg[4];
     for(Int_t ip=0; ip<4; ip++) {
       cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;

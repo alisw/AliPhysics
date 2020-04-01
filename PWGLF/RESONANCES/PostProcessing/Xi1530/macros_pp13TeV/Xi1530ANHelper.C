@@ -18,16 +18,16 @@ void PrintdNdympT(vector<vector<double>> multibincheck);
 void Printfnorm();
 void Printfvtx();
 void Xi1530ANHelper(){
-    
     vector<vector<double>> multibincheck = {
-        {0, 10}, {10, 30}, {30, 50}, {50, 70}, {70, 100}, {0, 100}, {0, 0}};
-    
+        {0, 10},  {10, 30}, {30, 50},  {50, 70},  {70, 100},
+        {0, 100}, {0, 0},   {0, 0.01}, {0.01, 0.05}, {0.05, 0.1}};
+
     //PrintRawYields(multibincheck);
 
-    //PrintdNdympT(multibincheck);
+    PrintdNdympT(multibincheck);
 
     //Printfnorm();
-    Printfvtx();
+    //Printfvtx();
 
 }
 TH1* GethYeilds(double multi_start,
@@ -220,7 +220,7 @@ void PrintdNdympT(vector<vector<double>> multibincheck){
         cout << "\\centering" << endl;
         cout << "\\begin{tabular}{|l|l|l|l|}" << endl;
         cout << "\\hline" << endl;
-        cout << "Multiplicity & ${\\rm d}N/{\\rm d}y$ ($\\times \\num{e3}$) & $\\mpt$ & ratio [\\%] \\\\ \\hline"
+        cout << "Multiplicity & ${\\rm d}N/{\\rm d}y$ ($\\times \\num{e-3}$) & $\\mpt$ & ratio [\\%] \\\\ \\hline"
              << endl;
     for (int imultibin = 0; imultibin < multibincheck.size(); imultibin++) {
         hResults.clear();

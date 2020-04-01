@@ -1,6 +1,7 @@
 /*=================================================================================
  Kunal Garg - last modified 13 May 2018 (kgarg@cern.ch)
  Modified by Giuseppe Mandaglio and Daniele Pistone 31 July 2019
+ Modified by Giuseppe Mandaglio 19/12/2019 (check OOB effect)
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
@@ -26,11 +27,12 @@ Bool_t ConfigKStarPlusMinusMultiplicity
  TString                 monitorOpt="",
  Float_t                 massTol,
  Float_t                 massTolVeto,
- Int_t 				 	    tol_switch,
+ Int_t 				 	            tol_switch,
  Double_t                tol_sigma,
  Float_t                 pLife,
  Float_t                 radiuslow,
  Bool_t                  Switch,
+ Bool_t                  OOBCheck,
  Float_t                 k0sDCA,
  Float_t                 k0sCosPoinAn,
  Float_t                 k0sDaughDCA,
@@ -125,6 +127,7 @@ Bool_t ConfigKStarPlusMinusMultiplicity
     cutK0s->SetMaxRapidity(v0rapidity);
     cutK0s->SetpT_Tolerance(tol_switch);
     cutK0s->SetMassTolSigma(tol_sigma);
+    cutK0s->SetCheckOOBPileup(OOBCheck);
 
     if(enableSys)
     {

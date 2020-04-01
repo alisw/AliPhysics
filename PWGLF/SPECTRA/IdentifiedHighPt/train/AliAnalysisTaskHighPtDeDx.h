@@ -11,7 +11,6 @@
 
 // AliRoot includes
 #include <AliAnalysisTaskSE.h>
-#include <AliESDEvent.h>
 #include <AliAODEvent.h>
 #include <AliMCEvent.h>
 #include <AliAnalysisFilter.h>
@@ -19,11 +18,10 @@
 #include <AliGenEventHeader.h>
 #include <AliVHeader.h>
 #include <AliAODMCParticle.h> 
-#include <AliESDtrackCuts.h>
 #include "DebugClassesMultESA2013.h"
+#include "AliEventCuts.h"
 
-
-
+ 
 class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
  public:
   enum AnalysisMode { kInvalid = -1, kGlobalTrk = 0x1, kTPCTrk = 0x2 }; 
@@ -34,6 +32,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+
+  AliEventCuts fEventCuts; /// Event cuts
 
   Bool_t   GetAnalysisMC() { return fAnalysisMC; }
   Bool_t   GetCentFrameworkAliCen() { return fCentFrameworkAliCen; }   
@@ -50,6 +50,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetVtxR2Cut() { return fVtxR2Cut; }
   Double_t GetCrossedRowsCut() { return fCrossedRowsCut; }
   Double_t GetCrossedOverFindableCut() { return fCrossedOverFindableCut; }
+  ULong64_t GetNegTrackStatus() { return fNegTrackStatus; }
+  ULong64_t GetPosTrackStatus() { return fPosTrackStatus; }
+  Float_t GetNegTOFExpTDiff() { return fNegTOFExpTDiff; }
+  Float_t GetPosTOFExpTDiff() { return fPosTOFExpTDiff; }
   Bool_t   GetRejectKinks() { return fRejectKinks; }
   Bool_t   GetSigmaDedxCut() { return fSigmaDedxCut; }
   
@@ -60,6 +64,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
   virtual void  SetProduceVZEROBranch(Bool_t prodvzerob) {fVZEROBranch = prodvzerob;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
+  virtual void  SetCentDetector(const char* centDetector) {fCentDetector = centDetector;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
   virtual void  SetCentFrameworkAliCen(Bool_t isAliCen) {fCentFrameworkAliCen = isAliCen;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
@@ -72,6 +77,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;}   
   virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;}
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
+  virtual void  SetAnalysisRun2(Bool_t isanaRun2) {fAnalysisRun2 = isanaRun2;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
   virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}
   virtual void  SetContributorsVtxCut(Int_t value) {fContributorsVtxCut = value;}
@@ -80,26 +86,26 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetVtxR2Cut(Double_t value) { fVtxR2Cut = value;}
   virtual void  SetCrossedRowsCut(Double_t value) {fCrossedRowsCut = value;}
   virtual void  SetCrossedOverFindableCut(Double_t value) {fCrossedOverFindableCut = value;}
+  virtual void  SetNegTrackStatus(Double_t value) {fNegTrackStatus = value;}
+  virtual void  SetPosTrackStatus(Double_t value) {fPosTrackStatus = value;}
+  virtual void  SetNegTOFExpTDiff(Double_t value) {fNegTOFExpTDiff = value;}
+  virtual void  SetPosTOFExpTDiff(Double_t value) {fPosTOFExpTDiff = value;}
   virtual void  SetRejectKinks(Bool_t isRejectKinks) {fRejectKinks = isRejectKinks;}
   virtual void  SetSigmaDedxCut(Bool_t isSigmaDedxCut) {fSigmaDedxCut = isSigmaDedxCut;}
 
+  
   //Task Configuration: trigger selection
   /* void SetSelectedTriggerClass1(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType1 = trigType;} */
   /* void SetSelectedTriggerClass2(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType2 = trigType;}  */
   /* void SetSelectedTriggerClass3(AliVEvent::EOfflineTriggerTypes trigType) {fTrigType3 = trigType;}  */
 
-
  private:
   virtual Float_t GetVertex(const AliVEvent* event) const;
-  virtual void AnalyzeESD(AliESDEvent* esd); 
   virtual void AnalyzeAOD(AliAODEvent* aod); 
-  virtual void ProduceArrayTrksESD(AliESDEvent* event, AnalysisMode anamode );
-  virtual void ProduceArrayV0ESD(AliESDEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayTrksAOD(AliAODEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayV0AOD(AliAODEvent* event, AnalysisMode anamode );
   Short_t   GetPidCode(Int_t pdgCode) const;
 
-  void      ProcessMCTruthESD();
   void      ProcessMCTruthAOD(); 
   void      Sort(TClonesArray* array, Bool_t isMC);
   Short_t   GetPythiaEventProcessType(Int_t pythiaType);
@@ -123,18 +129,18 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
 
   static const Double_t fgkClight;   // Speed of light (cm/ps)
 
-  AliESDEvent* fESD;                  //! ESD object
   AliAODEvent* fAOD;                  //! AOD object
   AliMCEvent*  fMC;                   //! MC object
-  AliStack*    fMCStack;              //! MC ESD stack
   TClonesArray* fMCArray;             //! MC array for AOD
   AliAnalysisFilter* fTrackFilter;    //  Track Filter, old cuts 2010
   AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
   AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
   TString       fAnalysisType;        //  "ESD" or "AOD"
+  TString       fCentDetector;        //  e.g. "V0M" or "V0A"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fCentFrameworkAliCen; //   kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
+  Bool_t        fAnalysisRun2;        //  true for LHC run-2 analyses
   Bool_t        fVZEROBranch;         //true if you want to store VZERO cells information
   TRandom*      fRandom;              //! random number generator
   DeDxEvent*    fEvent;               //! event pointer
@@ -168,6 +174,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fVtxR2Cut;           // r = sqrt(x^2+y^2) which is the distance between PV and the z axis
   Double_t     fCrossedRowsCut;     // CrossedRowsTOC
   Double_t     fCrossedOverFindableCut; // CrossedRowsTPC / findable 
+  ULong64_t    fNegTrackStatus;     
+  ULong64_t    fPosTrackStatus;
+  Float_t      fNegTOFExpTDiff; 
+  Float_t      fPosTOFExpTDiff; 
   Bool_t       fRejectKinks;        // reject kink daughters
   Bool_t       fSigmaDedxCut;       // dE/dx cut < 3 sigma on proton daughter candidates with momentum < 1 GeV/c:
 
@@ -182,7 +192,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
 
-  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  Int_t        fTriggerInt;         // 0 = kMB, 1 = kCent, 2 = kSemiCent, 3 = kINT7
   Int_t        fV0Finder;           // 0 = oldFinder, 1 = newFinder
   Int_t        fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
     

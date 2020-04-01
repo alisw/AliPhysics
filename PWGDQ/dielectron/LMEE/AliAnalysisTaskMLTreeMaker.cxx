@@ -99,7 +99,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   TPCepC(0),
   NTPCclsEv(0),        
   fQnList(0),        
-  man(0),        
+  man(0),
+  isUsingEffi(0),
+  fEfficiencyFileName(0),
+  fSPDfile(0),
+  hBCmod4(0),
+  hSPDeff(0),  
+  fTriggerName(0),          
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -237,7 +243,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   TPCepC(0), 
   NTPCclsEv(0),          
   fQnList(0),         
-  man(0),         
+  man(0), 
+  isUsingEffi(0),
+  fEfficiencyFileName(0),
+  fSPDfile(0),
+  hBCmod4(0),
+  hSPDeff(0),  
+  fTriggerName(0),        
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -337,10 +349,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   fTree(0),
   fQAHist(0)
 {
-// SetupTrackCuts(); 
-// SetupEventCuts(); 
-// AliInfo("Track & Event cuts were set"); 
-//  if(useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
+
+  if(useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
   DefineOutput(1, TList::Class());
 }
 
@@ -364,7 +374,7 @@ AliAnalysisTaskMLTreeMaker::~AliAnalysisTaskMLTreeMaker(){
 
 void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 
-    if (useTMVA) SetupTMVAReader(TMVAWeightFileName);  
+  if (useTMVA) SetupTMVAReader(TMVAWeightFileName);  
   
     
    man=AliAnalysisManager::GetAnalysisManager();
@@ -411,7 +421,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
-  
+ 
   fTree->Branch("PsigTPC", &PsigTPC);
   fTree->Branch("PsigITS", &PsigITS);
   
@@ -510,9 +520,14 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
    AliWarning("AliMultSelection object not found!");
   }
   else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  
+  fQAHist->Fill("Events before cent",1);
 
-  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
+  if(fCentralityPercentileMax!=0 && (cent<fCentralityPercentileMin || cent>fCentralityPercentileMax)) return;
 
+  fQAHist->Fill("Events after cent",1);
+  
+  
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
   TBits* fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);  
@@ -525,12 +540,29 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
  AliInputEventHandler *eventHandler = nullptr;
  AliInputEventHandler *eventHandlerMC = nullptr;
-  
+ Bool_t isAOD=kTRUE; 
   if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
     eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     eventHandlerMC = eventHandler;
+    isAOD=kTRUE;
   }
-     
+  else   if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliESDInputHandler::Class()){
+    eventHandler = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
+    isAOD=kFALSE;    
+  }
+ 
+   fQAHist->Fill("Events before CCUP trigger",1);
+ 
+ if(!isAOD){
+   if(!IsTriggered(dynamic_cast<AliESDEvent*> (event))){
+//     cout<<"This event did not trigger!"<<endl;
+     return;
+   }
+ }
+ 
+ fQAHist->Fill("Events after CCUP trigger",1);   
+   
   if(hasMC){
     fMcArray = eventHandlerMC->MCEvent();
   }   
@@ -545,20 +577,19 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
   }
 
-  fQAHist->Fill("Events before cent",1);
-    
-  fQAHist->Fill("Events after cent",1);
   
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
   
   runn = event->GetRunNumber();
-
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(event->GetHeader());
   
-  NTPCclsEv= header->GetNumberOfTPCClusters();  
-  
+  AliAODHeader* header;
+  if(isAOD){
+    header = dynamic_cast<AliAODHeader*>(event->GetHeader());
+    NTPCclsEv= header->GetNumberOfTPCClusters();  
+  }
   n= acceptedTracks;
+  fQAHist->Fill("Events before get tracks",1); 
   if(acceptedTracks){
 
 if ((AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP")) != NULL){  
@@ -587,8 +618,9 @@ if ((AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP")) != 
     TPCep=-99;
   }
   fTree->Fill();
-  fQAHist->Fill("Events_track_and_cent_selected",1);
+  fQAHist->Fill("Events without tracks",1);
   }
+  else fQAHist->Fill("Events without tracks",1);
 
   PostData(1, fList);
 }
@@ -614,16 +646,16 @@ void AliAnalysisTaskMLTreeMaker::Terminate(Option_t *) {
 
 //________________________________________________________________________
 
-Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliVEvent *event){
-
-  if(event->GetPrimaryVertex()){
-    if (TMath::Abs(event->GetPrimaryVertex()->GetZ()) < 10){
-      if (event->GetPrimaryVertexSPD()->GetNContributors() > 0)
-	return 1;
-    }
-  }
-  return 0;
-}
+//Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliVEvent *event){
+//
+////  if(event->GetPrimaryVertex()){
+////    if (TMath::Abs(event->GetPrimaryVertex()->GetZ()) < 10){
+////      if (event->GetPrimaryVertexSPD()->GetNContributors() > 0)
+////	return 1;
+////    }
+////  }
+//  return 0;
+//}
 
 
 //________________________________________________________________________
@@ -1159,6 +1191,7 @@ int AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if th
   
 void AliAnalysisTaskMLTreeMaker::SetupTMVAReader(TString weightFile){
   
+
   TMVAReader = new TMVA::Reader( "!Color:!Silent" );
 
   TMVAReader->AddVariable( "nITS", &nITSTMVA);
@@ -1188,3 +1221,105 @@ void AliAnalysisTaskMLTreeMaker::SetupTMVAReader(TString weightFile){
 
 }
 
+
+// fuction that get two arrays and return if 0STP trigger was fired
+Bool_t AliAnalysisTaskMLTreeMaker::Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter) // array 20, 40
+{
+	Int_t fired(0);
+	 for (Int_t i(0); i<10; ++i) {
+	 	for (Int_t j(0); j<2; ++j) {
+			const Int_t k(2*i+j);
+	 		fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+	                    vPhiOuter[k+2]      )
+	                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+	                    vPhiOuter[(k+22)%40])
+	                && (vPhiInner[i]    || vPhiInner[i+1]       )
+	                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+	    }
+	  	}
+	if (fired != 0) return kTRUE;
+	else return kFALSE;
+}
+
+Bool_t AliAnalysisTaskMLTreeMaker::IsTriggered(AliESDEvent *esd)
+// return kTRUE if CCUP9 triggered was fired
+{
+	Bool_t V0A = kFALSE;
+	Bool_t V0C = kFALSE;
+	Bool_t ADA = kFALSE;
+	Bool_t ADC = kFALSE;
+	Bool_t STP = kFALSE;
+	Bool_t SMB = kFALSE;
+	Bool_t SM2 = kFALSE;
+	Bool_t SH1 = kFALSE;
+	Bool_t OM2 = kFALSE;
+	Bool_t OMU = kFALSE;
+	//SPD inputs
+	Int_t bcMod4 = 0;
+	if (isUsingEffi) bcMod4 = TMath::Nint(hBCmod4->GetRandom());
+	AliMultiplicity *mult = esd->GetMultiplicity();
+	Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+	Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+	Int_t nInner(0), nOuter(0);
+	for (Int_t i(0); i<1200; ++i) {
+		Double_t eff = 1;
+		if (isUsingEffi) eff = hSPDeff->GetBinContent(1+i, 1+bcMod4);
+		Bool_t isFired = (mult->TestFastOrFiredChips(i)) && (gRandom->Uniform(0,1) < eff);
+		if (i<400) {
+			vPhiInner[i/20] += isFired;
+			nInner += isFired;
+		} else {
+			vPhiOuter[(i-400)/20] += isFired;
+			nOuter += isFired;
+		}
+		}
+	// 0STP
+	STP = Is0STPfired(vPhiInner,vPhiOuter);
+	// 0SMB - At least one hit in SPD
+	if (nOuter > 0 || nInner > 0) SMB = kTRUE;
+	// 0SM2 - Two hits on outer layer
+	if (nOuter > 1) SM2 = kTRUE;
+	// 0SH1 - More then 6 hits on outer layer
+	// if (nOuter >= 7) SH1 = kTRUE;
+	//0SH1 2017 - Two hits on inner and outer layer
+	if (nInner >= 2 && nOuter >= 2) SH1 = kTRUE;
+	// V0
+	V0A = esd->GetHeader()->IsTriggerInputFired("0VBA");
+	V0C = esd->GetHeader()->IsTriggerInputFired("0VBC");
+	// AD
+	ADA = esd->GetHeader()->IsTriggerInputFired("0UBA");
+	ADC = esd->GetHeader()->IsTriggerInputFired("0UBC");
+	// TOF
+	OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+	OMU = esd->GetHeader()->IsTriggerInputFired("0OMU");
+        
+//        if(V0A) {
+//          cout<<"V0A"<<endl;
+//          return kFALSE;
+//        }
+//        if(V0C){
+//          cout<<"V0C"<<endl;
+//          return kFALSE;
+//        }
+//        if(ADA){
+//          cout<<"ADA"<<endl;
+//          return kFALSE;
+//        }          
+//        if(ADC){
+//          cout<<"ADC"<<endl;
+//          return kFALSE;
+//        }
+//        if(!STP){
+//          cout<<"!STP"<<endl;
+//	  return kFALSE;
+//        }
+//        if ( (!V0A && !V0C && !ADA && !ADC && STP)) cout<<"Got ONE CCUP9-B!!!"<<endl;
+	if ( (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
+//        if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) cout<<"Got ONE CCUP9-B!!!"<<endl;
+//	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
+//	if ((fTriggerName == "CCUP2-B") && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+//	if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return kTRUE; // CCUP4 is fired works only in 2015
+
+	else return kFALSE;
+} // end of MC trigger

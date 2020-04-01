@@ -425,7 +425,7 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
   if (fMCEvent) {
     fMcParticles->Clear();
     AliGenEventHeader* header = fMCEvent->GenEventHeader();
-    fMcEventWeight = header->GetEventWeight("AliGenWave");
+    fMcEventWeight = header->EventWeight();
     for (Int_t ipart=0;ipart<fMCEvent->GetNumberOfTracks();ipart++){
       AliVParticle* mcpart = fMCEvent->GetTrack(ipart);
       AliUpcParticle* part = new ((*fMcParticles)[fMcParticles->GetEntriesFast()]) AliUpcParticle(4,3);

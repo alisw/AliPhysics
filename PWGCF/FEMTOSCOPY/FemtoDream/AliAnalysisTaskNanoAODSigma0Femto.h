@@ -19,6 +19,7 @@
 #include "AliStack.h"
 #include "AliV0ReaderV1.h"
 #include "TChain.h"
+#include "AliFemtoDreamBaseDump.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -35,25 +36,42 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   void CastToVector(std::vector<AliFemtoDreamBasePart> &particlesOut,
                     std::vector<AliFemtoDreamBasePart> &particlesIn);
 
-  void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
-  void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
-  void SetGoDoThisFemtoJanitor(bool godothis) { fFemtoJanitor = godothis; }
-  void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
-  void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
-  void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
+  void SetIsMC(bool isMC) {
+    fIsMC = isMC;
+  }
+  void SetLightweight(bool isLightweight) {
+    fIsLightweight = isLightweight;
+  }
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
+  }
+  void SetV0Percentile(float v0perc) {
+    fV0PercentileMax = v0perc;
+  }
+  void SetTrigger(UInt_t trigger) {
+    fTrigger = trigger;
+  }
+  void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
+    fEvtCuts = cuts;
+  }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartProton = cuts;
   }
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartAntiProton = cuts;
   }
-  void SetV0Cuts(AliFemtoDreamv0Cuts *cuts) { fV0Cuts = cuts; }
-  void SetAntiV0Cuts(AliFemtoDreamv0Cuts *cuts) { fAntiV0Cuts = cuts; }
+  void SetV0Cuts(AliFemtoDreamv0Cuts *cuts) {
+    fV0Cuts = cuts;
+  }
+  void SetAntiV0Cuts(AliFemtoDreamv0Cuts *cuts) {
+    fAntiV0Cuts = cuts;
+  }
   void SetPhotonCuts(AliSigma0PhotonCuts *cuts) {
     fPhotonCuts = cuts;
   }
-  void SetSigmaCuts(AliSigma0AODPhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
+  void SetSigmaCuts(AliSigma0AODPhotonMotherCuts *cuts) {
+    fSigmaCuts = cuts;
+  }
   void SetAntiSigmaCuts(AliSigma0AODPhotonMotherCuts *cuts) {
     fAntiSigmaCuts = cuts;
   }
@@ -88,12 +106,15 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;                  //
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
-  AliFemtoDreamControlSample *fSample;               //!
+
+  AliFemtoDreamDump *fProtonSigmaDump;               //!
+  AliFemtoDreamDump *fAntiProtonAntiSigmaDump;       //!
+  AliFemtoDreamDump *fProtonSBDump;                  //!
+  AliFemtoDreamDump *fAntiProtonAntiSBDump;          //!
 
   bool fIsMC;              //
   bool fIsLightweight;     //
-  bool fCheckDaughterCF;   //
-  bool fFemtoJanitor;      //
+  bool fUseDumpster;       //
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
@@ -116,9 +137,9 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fAntiSigmaHistList;       //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
-  TList *fResultsSample;           //!
-  TList *fResultsSampleQA;         //!
+  TList *fDumpster;                //!
 
-  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 5)
+ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 8)
 };
+
 #endif

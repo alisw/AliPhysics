@@ -6,6 +6,10 @@
 Options ("opt" argument):
 - dim1 --> use TH1 only (no p or pt dependence)
 ***************************************************************************/
+
+#ifndef ALIRSNADDMONITOROUTPUTV0_C
+#define ALIRSNADDMONITOROUTPUTV0_C
+
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliRsnValueEvent.h"
 #include "AliRsnValueDaughter.h"
@@ -317,3 +321,5 @@ void AddMonitorOutputV0(Bool_t useMCMon, TObjArray *mon=0, TString v0name="K0S",
 
   return;
 }
+
+#endif

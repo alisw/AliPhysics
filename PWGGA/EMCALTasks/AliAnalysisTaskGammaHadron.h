@@ -52,13 +52,14 @@ public:
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
+  void                        SetEventWeightChoice(Int_t input)                     { fEventWeightChoice = input; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetSaveTriggerPool(Bool_t input)                      { fSaveTriggerPool = input  ; }
   void                        SetDownScaleMixTrigger(Float_t input)                 { fDownScaleMT     = input  ; }
   void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-  void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
+  void                        SetPi0MassSelection(Int_t input);
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
@@ -70,7 +71,8 @@ public:
   void                        SetClusterEnergyType(Int_t input)                     { fClusEnergyType = input   ; }
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
   void                        SetHadronicCorrection(Int_t input, Double_t dEta=-1, Double_t dPhi=-1) { // dEta, dPhi = -1 or 0 will use pt parametrized cut
-  fHadCorr = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; fClusEnergyType = AliVCluster::kHadCorr;
+  fHadCorr = input; if(fHadCorr == 0) return;
+  fTrackMatchEta=dEta; fTrackMatchPhi=dPhi; fClusEnergyType = AliVCluster::kHadCorr;
   AliWarning("This configuration modifies the HadCorr energy of input clusters. Following tasks beware!"); }
   void                        SetHadronicCorrectionEnergy(Double_t input)           { fHadCorrConstant = input;}
   void                        SetEOverPLimits(Double_t inputMin, Double_t inputMax) { fTrackMatchEOverPLow = inputMin; fTrackMatchEOverPHigh = inputMax; }
@@ -115,6 +117,7 @@ public:
   //..Functions for mixed event purposes
   void                        InitEventMixer(Int_t MixMode = 0); // 0: Init for Mixed Tracks.  1: Init for Mixed Triggers
   void                        InitClusMixer()											  ;
+  Int_t                       CalculateEventHash(); // Calculate a hash for the event for classifying and avoiding autocorrelations
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Function for event plane purposes
@@ -161,6 +164,10 @@ public:
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
   Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
+  Bool_t                      fEventWeightChoice;        ///< 0 = no event reweighting, 1 = reweight by GA function
+
+  static const Int_t kNMainCentBins = 4;                 ///< Centrality bins that the analysis is done in (and mass windows are defined in)
+
   //..Input histograms
   TF1 						 *funcpT_low[4];            ///< input functions for the efficiency correction
   TF1 						 *funcpT_high[4];
@@ -179,12 +186,15 @@ public:
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
-  //static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
+  static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
   Double_t                    fArray_G_Bins[10];         ///< 10=kNoGammaBins+1
   Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
   Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
-  //Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
+  Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
+
+  static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
+  static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
 
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
@@ -304,6 +314,7 @@ public:
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
+  TH1F           *fHistEventHash;            //!<! Histogram tracking the event hash for dividing data
 
   // Position Swap Correction Histograms
   Bool_t          bEnablePosSwapHists;  ///<  Whether to produce the following histograms for investigating the position swap method (very memory intensive, should have high cluster cut)
@@ -330,13 +341,13 @@ public:
   TH2             *fHistEtaMCDPhiDEta;         //!<! 2D Angle Difference between det. Eta and MC Eta.
 
 
-  Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
-  Double_t        fPi0MassFixed[kNoGammaBins]; ///< Fixed Mass Peak per pT bin
-  Double_t        fPi0SigmaFixed[kNoGammaBins];///< Fixed Sigma per pT bin
-  Double_t        fPi0MassFitPars[5];          ///< Fit Parameters for mass peak
-  Double_t        fPi0SigmaFitPars[5];         ///< Fit Parameters for sigma
-  Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
-  Float_t         fPi0AsymCut;                 ///< Asymmetry cut for Pi0 candidates
+  Bool_t          fUseParamMassSigma;                           ///< Whether to use parametrized or fixed mass,sigma
+  Double_t        fPi0MassFixed[kNMainCentBins][kNoGammaBins];  ///< Fixed Mass Peak per pT bin, per Main Cent bin
+  Double_t        fPi0SigmaFixed[kNMainCentBins][kNoGammaBins]; ///< Fixed Sigma per pT bin, per Main Cent bin
+  Double_t        fPi0MassFitPars[5];                           ///< Fit Parameters for mass peak
+  Double_t        fPi0SigmaFitPars[5];                          ///< Fit Parameters for sigma
+  Float_t         fPi0NSigma;                                   ///< number of sigma to cut on peak
+  Float_t         fPi0AsymCut;                                  ///< Asymmetry cut for Pi0 candidates
 
   TH2                      **fEffCorrectionCheck;      //!<! applied efficiency correction in eta-pT to cross check
   TH1 					    *fHistEvsPt;               //!<! E vs pT

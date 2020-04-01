@@ -153,22 +153,37 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetSoftDropZCut(Double_t d) {fSoftDropZCut = d; }
+    void SetSoftDropBeta(Double_t d) {fSoftDropBeta = d; }
     void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
     void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
-  
+    void SetITSUpgradeProduction(Bool_t b) { fITSUpgradeProduction = b; }
+    void SetITSUpgradePreSelect(Bool_t b) { fITSUpgradePreSelect = b; }
+    void SetStoreOnlyHIJINGBackground(Bool_t b) {fStoreOnlyHIJINGBackground = b; }
+    void SetLctopKpiPreselection(Bool_t d){ fPreSelectLctopKpi = d; }
+    void SetFillInjCandHijingTrackCombi(Bool_t b){ fFillInjCandHijingTrackCombi = b; }
+    
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
-  
+    void SetLc2V0type(Int_t opt=1) {fV0typeForLc2V0bachelor=opt;}
+    void SetOnFlySelectionValues(float invmass, float pt, float impparprod, float cosp, float cospxy){
+      fInvMassOnFlyCut = invmass;
+      fPtOnFlyCut = pt;
+      fImpParProdOnFlyCut = impparprod;
+      fCosPOnFlyCut = cosp;
+      fCosPXYOnFlyCut = cospxy;
+    }
+
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
     Int_t  GetSystem() const {return fSys;}
     Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
     
-    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
     void ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
@@ -215,7 +230,7 @@ public:
     void FillJetTree();
   
     
-    unsigned int GetEvID();
+    unsigned long GetEvID();
     
 private:
     
@@ -338,9 +353,17 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
+    Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
+    Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
-    UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+    UShort_t                fBC;                                   /// bunch crossing number
+    Int_t                   fOrbit;                                /// orbit
+    Int_t                   fPeriod;                               /// period
+    Int_t                   fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
+    Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
+    Long64_t                fEventIDLong;                          /// single unique event id (long64)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
@@ -353,12 +376,14 @@ private:
     Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
     Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
-    Bool_t                  fTriggerOnlineINT7;                       /// Flag explicitly whether bitmap contains INT7
-    Bool_t                  fTriggerOnlineHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
-    Bool_t                  fTriggerOnlineHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerOnlineINT7;                    /// Flag explicitly whether bitmap contains INT7
+    Bool_t                  fTriggerOnlineHighMultSPD;             /// Flag explicitly whether bitmap contains HighMultSPD
+    Bool_t                  fTriggerOnlineHighMultV0;              /// Flag explicitly whether bitmap kHighMultV0
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerBitCentral;                    /// Flag explicitly whether bitmap contains kCentral
+    Bool_t                  fTriggerBitSemiCentral;                /// Flag explicitly whether bitmap contains kSemiCentral
     TString                 fTriggerClasses;                       /// Collect all trigger classes
     Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
     Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
@@ -374,19 +399,32 @@ private:
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
+    Int_t                   fV0typeForLc2V0bachelor;               /// option to select Offline+OnTheFly (0), only Offline (1=default), only OnTheFly (2) V0's for the Lc->V0bachelor decay
+    Float_t                 fInvMassOnFlyCut;                      ///Cut on invariant mass for on fly hadron selection
+    Float_t                 fPtOnFlyCut;                           ///Cut on pT for on fly hadron  selection
+    Float_t                 fImpParProdOnFlyCut;                   ///Cut on d0xd0 for on fly hadron  selection
+    Float_t                 fCosPOnFlyCut;                         ///Cut on cos pointing angle for on fly hadron  selection
+    Float_t                 fCosPXYOnFlyCut;                       ///Cut on cos pointing angle xy for on fly hadron selection
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
 
-    Double_t                fJetRadius;                            //Setting the radius for jet finding
-    Double_t                fSubJetRadius;                         //Setting the radius for subjet finding
-    Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
-    Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
-    Double_t                fMinJetPt;                             //Setting the jet finding min pT
-    Double_t                fTrackingEfficiency;                   //Setting the jet finding tracking efficiency
+    Double_t                fJetRadius;                            /// Setting the radius for jet finding
+    Double_t                fSubJetRadius;                         /// Setting the radius for subjet finding
+    Int_t                   fJetAlgorithm;                         /// Setting the jet finding algorithm
+    Int_t                   fSubJetAlgorithm;                      /// Setting the jet finding algorithm
+    Double_t                fMinJetPt;                             /// Setting the jet finding min pT
+    Double_t                fSoftDropZCut;                         /// setting the soft drop z parameter
+    Double_t                fSoftDropBeta;                         /// setting the soft drop beta parameter
+    Double_t                fTrackingEfficiency;                   /// Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
+    Bool_t                  fITSUpgradeProduction;                 /// Setting for analysing an ITS Upgrade production
+    Bool_t                  fITSUpgradePreSelect;                  /// Setting to enable ITSUpgrade Preselect function
+    Bool_t                  fStoreOnlyHIJINGBackground;            /// Setting to store only HIJING background candidates
+    Bool_t                  fPreSelectLctopKpi;                    /// Setting for reduce the filling of reconstucted candidates  in an ITS Upgrade production
+    Bool_t                  fFillInjCandHijingTrackCombi;          /// Setting to store injected candidate + HIJING track for background shape studies
 
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -442,8 +480,8 @@ private:
 
 
     
-    bool                    fFillJets;                             //FillJetInfo
-    bool                    fDoJetSubstructure;                    //FillJetSubstructure
+    bool                    fFillJets;                             /// FillJetInfo
+    bool                    fDoJetSubstructure;                    /// FillJetSubstructure
     
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
@@ -462,7 +500,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,22);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,28);
     /// \endcond
 };
 

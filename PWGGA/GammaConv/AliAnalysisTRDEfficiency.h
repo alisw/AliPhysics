@@ -101,11 +101,18 @@ class AliAnalysisTRDEfficiency : public AliAnalysisTaskSE
         //track the events
         THnSparse*              fhtrckvnt;   // track event
         THnSparse*              fhtrckvnthqu;// track hqu event
-        TH1*                   fhtrvnt;
-        TH1*                   fhtrvnthqu;
+        TH1*                    fhtrvnt;
+        TH1*                    fhtrvnthqu;
         TList*                  lsttrckvnt;
         TList*                  lsttrckvnthqu;
         //AliConversionPhotonCuts fConversionCuts;
+        
+        TH2F*                   fhgetaphi1;
+        TH1F*                   fhgR1;
+        TH1F*                   fhgpt1;
+        TH2F*                   fhgetaphi5;
+        TH2F*                   fhgetaphi8;
+        TH2F*                   fhgetaphi9;
         
         AliAnalysisTRDEfficiency(const AliAnalysisTRDEfficiency&); // not implemented
         AliAnalysisTRDEfficiency& operator=(const AliAnalysisTRDEfficiency&); // not implemented

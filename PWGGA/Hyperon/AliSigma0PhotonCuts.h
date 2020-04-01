@@ -28,6 +28,9 @@ class AliSigma0PhotonCuts : public TObject {
                   std::vector<AliFemtoDreamBasePart> &container);
   bool ProcessPhoton(AliVEvent* event, AliMCEvent *mcEvent, AliAODConversionPhoton *PhotonCandidate,
                      AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  bool PiZeroRejection(AliAODConversionPhoton*photon,
+                       const TClonesArray *photons,
+                       int iPhoton);
   void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate, AliVEvent* event);
   float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
                        int pgdNeg) const;
@@ -94,6 +97,17 @@ class AliSigma0PhotonCuts : public TObject {
     fTransvRadRejectionLow = low;
     fTransvRadRejectionUp = up;
   }
+  void SetPhotonQualityCut(int cut) {
+    fDoPhotonQualityCut = true;
+    fPhotonQuality = cut;
+  }
+  void SetPhotonPileUpCut(int cut) {
+    fDoPhotonPileupCut = true;
+    fPhotonPileupCut = cut;
+  }
+  void DoPiZeroRejection(bool doIt) {
+    fDoExtraPiZeroRejection = doIt;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const {
@@ -136,6 +150,14 @@ class AliSigma0PhotonCuts : public TObject {
   float fTransvRadRejectionLow; //
   float fTransvRadRejectionUp;  //
 
+  bool fDoPhotonQualityCut; //
+  int fPhotonQuality; //
+
+  bool fDoPhotonPileupCut; //
+  bool fPhotonPileupCut; //
+
+  bool fDoExtraPiZeroRejection; //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
@@ -143,6 +165,7 @@ class AliSigma0PhotonCuts : public TObject {
   TH1F *fHistCuts;  //!
   TH1F *fHistNV0;   //!
 
+  TH1F *fHistPiZeroMass;       //!
   TH1F *fHistLambdaMass;       //!
   TH1F *fHistAntiLambdaMass;   //!
   TH1F *fHistK0Mass;           //!
@@ -169,11 +192,28 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistDCArBefore;              //!
   TH2F *fHistDCArAfter;               //!
   TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfterOthersBefore;   //!
+  TH2F *fHistDCAzAfterOthersBeforeQuality[4];   //!
   TH2F *fHistDCAzAfter;               //!
   TH2F *fHistDCA;                     //!
   TH2F *fHistDecayLength;             //!
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
+  TH2F *fHistQualityBefore;           //!
+  TH2F *fHistQualityAfter;            //!
+
+  TH2F *fHistTomography;              //!
+  TH2F *fHistTomographyRZ;            //!
+
+  TH1F* fHistMCTruthPhotonPt;         //;
+  TH1F* fHistMCTruthPhotonSigmaPt;    //;
+  TH1F* fHistMCPhotonPt;              //;
+  TH1F* fHistMCPhotonSigmaPt;         //;
+  TH1F* fHistMCTruthPhotonP;          //;
+  TH1F* fHistMCTruthPhotonSigmaP;     //;
+  TH1F* fHistMCPhotonP;               //;
+  TH1F* fHistMCPhotonSigmaP;          //;
+  TH2F* fHistMCPhotonSource;          //;
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!
@@ -197,7 +237,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 5)
+ClassDef(AliSigma0PhotonCuts, 9)
 };
 
 #endif

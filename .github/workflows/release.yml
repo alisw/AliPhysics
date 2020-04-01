@@ -1,0 +1,31 @@
+name: Release
+on:
+  release:
+    types: [published]
+jobs:
+  build_release:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Install Kerberos
+      run: |
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-user
+        cat << \EOF > krb5.conf
+        ${{secrets.KRB5CONF}}
+        EOF
+        grep rdns krb5.conf
+        sudo mv -f krb5.conf /etc/krb5.conf
+
+    - name: Trigger release in jenkins
+      run: |
+        set -x
+        ALIPHYSICS_TAG='${{github.event.release.tag_name}}'
+        echo $ALIPHYSICS_TAG | grep -e "v[0-9]-[0-9][0-9]-[0-9][0-9][a-z]*-01"
+        ALIROOT_TAG=`echo $ALIPHYSICS_TAG | sed -e's/-01//'`
+        git clone -b $ALIROOT_TAG https://github.com/alisw/AliRoot || { echo "Unable to clone AliRoot with specified tag"; exit 1; }
+        git clone -b AliPhysics-$ALIPHYSICS_TAG https://github.com/alisw/alidist || { echo "Unable to clone alidist with specified tag"; exit 1; }
+        echo ${{secrets.PASS}} | kinit ${{secrets.PRINCIPAL}}
+        curl -X POST -k --negotiate -u : ${{secrets.API_URL}} -H 'Content-Type: application/x-www-form-urlencoded'                    \
+          -d "ALIDIST_SLUG=alisw/alidist@AliPhysics-$ALIPHYSICS_TAG&OVERRIDE_TAGS=AliRoot=$ALIROOT_TAG%20AliPhysics=$ALIPHYSICS_TAG"
+        klist
+        kdestroy
+

@@ -187,7 +187,7 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   fh3PtJetAreaDRConst = new TH3F("fh3PtJetAreaDRConst","fh3PtJetAreaDRConst;pT;A;#Delta R",nBinsPt,minPt,maxPt,50,0.,1.,50,0.,1.);
   fOutput->Add(fh3PtJetAreaDRConst);
 
-  fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",11,-0.5, 9.5);
+  fNAccJets = new TH1F("fNAccJets","fNAccJets;N/ev",10,-0.5, 9.5);
   fOutput->Add(fNAccJets);
   
   if(fUseSumw2) {

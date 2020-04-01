@@ -2,7 +2,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update Oct 2019
+//Update Mar 2019
 
 #ifndef AliAnalysisTaskNetLambdaMCTrad_h
 #define AliAnalysisTaskNetLambdaMCTrad_h
@@ -25,7 +25,7 @@ class TH3F;
 class AliAnalysisTaskNetLambdaMCTrad : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskNetLambdaMCTrad(const char* name="AliAnalysisTaskNetLambdaMCTrad");
-    virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
+    virtual ~AliAnalysisTaskNetLambdaMCTrad ();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     
@@ -50,29 +50,33 @@ protected:
     TH2F*  f2fHistXiPlus;
     TH2F*  f2fHistXiMinus;
     
+    TH2F*  f2fHistGenCentVsPtLambda03;
+    TH2F*  f2fHistGenCentVsPtAntiLambda03;
+    TH2F*  f2fHistXiPlus03;
+    TH2F*  f2fHistXiMinus03;
+    
+    
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreetight;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreetight;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree03;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03;
+    
     
     TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
     
-    TH2F*  f2fHistRecMatCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecMatCentVsPtAntiLambdaFourSigthree;
     
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourSigthreetight;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthreetight;
+    TH3F*  f3fHistLambdafromXiFourSigthree03;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthree03;
+    
     
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut;
-    
     TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
+    
     
     
     
@@ -91,7 +95,6 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusChTruth;
-    
     THnSparse *fPtBinNplusNminusChRec;
     THnSparse *fPtBinNplusNminusChRecTag;
     
@@ -104,5 +107,8 @@ protected:
 
 
 #endif
+
+
+
 
 

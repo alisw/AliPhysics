@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include "AliEmcalTriggerAlias.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 
@@ -57,7 +58,25 @@ void AliEmcalTriggerDecisionContainer::AddTriggerDecision(AliEmcalTriggerDecisio
 }
 
 const AliEmcalTriggerDecision* AliEmcalTriggerDecisionContainer::FindTriggerDecision(const char* decname) const {
-  return dynamic_cast<const AliEmcalTriggerDecision *>(fContainer.FindObject(decname));
+  const AliEmcalTriggerDecision* result = nullptr, *tmp = nullptr;
+  TIter listiter(&fContainer);
+  while((tmp = static_cast<AliEmcalTriggerDecision *>(listiter()))){
+    auto alias = tmp->GetTriggerAlias();
+    if(alias) {
+      // trigger alias present, check for trigger class
+      if(alias->HasTriggerClass(decname)) {
+        result = tmp;
+        break;
+      }
+    } else {
+      // No trigger alias present, check for name of the trigger decision
+      if(TString(tmp->GetName()) == TString(decname)) {
+        result = tmp;
+        break;
+      }
+    }
+  }
+  return result;
 }
 
 bool AliEmcalTriggerDecisionContainer::IsEventSelected(const char *name)  const {

@@ -25,7 +25,7 @@ class AliHFMLResponseDstoKKpi : public AliHFMLResponse
 {
 public:
     AliHFMLResponseDstoKKpi();
-    AliHFMLResponseDstoKKpi(string configfilename);
+    AliHFMLResponseDstoKKpi(const Char_t *name, const Char_t *title, const std::string configfilepath);
     virtual ~AliHFMLResponseDstoKKpi();
 
     AliHFMLResponseDstoKKpi(const AliHFMLResponseDstoKKpi &source);

@@ -53,7 +53,8 @@ TH1* DoEff(TH1* hNum, TH1* hDen, string name, char letter, int iC, TArrayD& cent
 void Efficiency(bool MBonly = false) {
   /// Taking all the histograms from the MC file
   TFile input_file(kMCfilename.data());
-  TFile input_file_MB(kMCfilenameMB.data());
+  const char* file_name_MB = (kUseIntegratedForMB) ? kMCfilename.data() : kMCfilenameMB.data();
+  TFile input_file_MB(file_name_MB);
   TFile output_file(kEfficiencyOutput.data(),"recreate");
 
   gStyle->SetOptStat(0);
@@ -74,7 +75,7 @@ void Efficiency(bool MBonly = false) {
     string out_list = list_key->GetName();
     printf("list name: %s\n",out_list.data());
     string list_name_MB = out_list;
-    list_name_MB.insert(kFilterListNames.size()-1,"MB");
+    if(!kUseIntegratedForMB) list_name_MB.insert(kFilterListNames.size()-1,"MB");
     printf("list name MB: %s\n",list_name_MB.data());
     TTList* listMB = (TTList*)input_file_MB.Get(list_name_MB.data());
     //replace(out_list,"mpuccio","nuclei");

@@ -14,20 +14,13 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
                                                      Int_t fillTreeBplus=0,
                                                      Int_t fillTreeBs=0,
                                                      Int_t fillTreeLb=0,
-                                                     Int_t pidOptD0=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDs=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDplus=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDstar=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLctopKpi=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLc2V0bachelor=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptBplus=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptBs=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLb=AliHFTreeHandler::kNsigmaPID,
+                                                     Int_t pidOpt=AliHFTreeHandler::kNsigmaPID,
                                                      Int_t singletrackvarsopt=AliHFTreeHandler::kRedSingleTrackVars,
                                                      Bool_t fillParticleTree = kFALSE,
                                                      Bool_t fillTrackletTree = kFALSE,
                                                      Int_t fillNJetTrees = 0,
-                                                     Bool_t fillJetConstituentTrees = kFALSE)
+                                                     Bool_t fillJetConstituentTrees = kFALSE,
+                                                     Bool_t isITSUpgradeProd = kFALSE)
 {
     //
     //
@@ -131,17 +124,20 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     task->SetFillLbTree(fillTreeLb);
     task->SetFillParticleTree(fillParticleTree);
     task->SetFillTrackletTree(fillTrackletTree);
-    task->SetPIDoptD0Tree(pidOptD0);
-    task->SetPIDoptDsTree(pidOptDs);
-    task->SetPIDoptDplusTree(pidOptDplus);
-    task->SetPIDoptLctopKpiTree(pidOptLctopKpi);
-    task->SetPIDoptBplusTree(pidOptBplus);
-    task->SetPIDoptBsTree(pidOptBs);
-    task->SetPIDoptDstarTree(pidOptDstar);
-    task->SetPIDoptLc2V0bachelorTree(pidOptLc2V0bachelor);
-    task->SetPIDoptLbTree(pidOptLb);
+    task->SetPIDoptD0Tree(pidOpt);
+    task->SetPIDoptDsTree(pidOpt);
+    task->SetPIDoptDplusTree(pidOpt);
+    task->SetPIDoptLctopKpiTree(pidOpt);
+    task->SetPIDoptBplusTree(pidOpt);
+    task->SetPIDoptBsTree(pidOpt);
+    task->SetPIDoptDstarTree(pidOpt);
+    task->SetPIDoptLc2V0bachelorTree(pidOpt);
+    task->SetPIDoptLbTree(pidOpt);
     task->SetTreeSingleTrackVarsOpt(singletrackvarsopt);
-    if(fillTreeBs || fillTreeLb){
+    if(fillTreeBs || fillTreeLb || fillTreeBplus || isITSUpgradeProd){
+      task->SetITSUpgradeProduction(kTRUE);
+      task->SetITSUpgradePreSelect(kTRUE);
+      task->SetStoreOnlyHIJINGBackground(kTRUE);
       task->SetGoodTrackFilterBit(4);
       task->SetGoodTrackEtaRange(0.8);
       task->SetGoodTrackMinPt(0.3);
@@ -215,7 +211,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     TString outputfile = AliAnalysisManager::GetCommonFileName();
     outputfile += ":PWGHF_TreeCreator";
-    if(fillTreeLb || fillTreeBs){
+    if(fillTreeLb || fillTreeBs || fillTreeBplus || isITSUpgradeProd){
       //Needed to run ITS2 production together with ITS2+ITS3 improver
       outputfile += finDirname;
     }

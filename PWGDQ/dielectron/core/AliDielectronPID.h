@@ -94,14 +94,59 @@ public:
   static void SetWidthCorrFunctionITS(TH1 *fun) { fgFunWdthCorrITS=fun; }
   static void SetCentroidCorrFunctionTOF(TH1 *fun) { fgFunCntrdCorrTOF=fun; }
   static void SetWidthCorrFunctionTOF(TH1 *fun) { fgFunWdthCorrTOF=fun; }
+  static void SetCentroidCorrFunctionPU(Int_t id,Int_t ip,THnBase *fun) { fgFunCntrdCorrPU[id][ip]=fun; }
+  static void SetWidthCorrFunctionPU(Int_t id,Int_t ip,THnBase *fun) { fgFunWdthCorrPU[id][ip]=fun; }
+	static void SetPIDCalibinPU(Bool_t flag) {fgPIDCalibinPU = flag;}
 
   static Double_t GetEtaCorr(const AliVTrack *track);
-  static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
-  static Double_t GetWdthCorr(const AliVTrack *track)  { return (fgFunWdthCorr  ? GetPIDCorr(track,fgFunWdthCorr)  : 1.0); }
-  static Double_t GetCntrdCorrITS(const AliVTrack *track) { return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); }
-  static Double_t GetWdthCorrITS(const AliVTrack *track)  { return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS)  : 1.0); }
-  static Double_t GetCntrdCorrTOF(const AliVTrack *track) { return (fgFunCntrdCorrTOF ? GetPIDCorr(track,fgFunCntrdCorrTOF) : 0.0); }
-  static Double_t GetWdthCorrTOF(const AliVTrack *track)  { return (fgFunWdthCorrTOF  ? GetPIDCorr(track,fgFunWdthCorrTOF)  : 1.0); }
+
+	static Double_t GetCntrdCorr(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); 
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTPC][partype]) : 0.0);
+	}
+
+	static Double_t GetWdthCorr(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorr ? GetPIDCorr(track,fgFunWdthCorr) : 1.0); 
+			else return 1.0;
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kTPC][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTPC][partype]) : 1.0);
+	}
+
+	static Double_t GetCntrdCorrITS(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); 
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kITS][partype]) : 0.0);
+	}
+
+	static Double_t GetWdthCorrITS(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS) : 1.0); 
+			else return 1.0;	
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kITS][partype]) : 1.0);
+	}
+
+	static Double_t GetCntrdCorrTOF(const AliVTrack *track, UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunCntrdCorrTOF ? GetPIDCorr(track,fgFunCntrdCorrTOF) : 0.0);
+			else return 0.0;
+		}
+		else return (fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunCntrdCorrPU[AliDielectronPID::kTOF][partype]) : 0.0);
+	}
+
+	static Double_t GetWdthCorrTOF(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
+		if(!fgPIDCalibinPU){
+			if(partype == AliPID::kElectron) return (fgFunWdthCorrTOF  ? GetPIDCorr(track,fgFunWdthCorrTOF) : 1.0);
+			else return 1.0;
+		}
+		else return (fgFunWdthCorrPU[AliDielectronPID::kTOF][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kTOF][partype]) : 1.0);
+	}
 
 private:
   enum {kNmaxPID=30};
@@ -139,8 +184,12 @@ private:
   static TH1    *fgFunCntrdCorrTOF;  //function for correction of electron sigma (centroid) in TOF
   static TH1    *fgFunWdthCorrTOF;   //function for correction of electron sigma (width) in TOF
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
+  static THnBase *fgFunCntrdCorrPU[15][15];  //function for correction of centroid //multi-dimension for pileup
+  static THnBase *fgFunWdthCorrPU[15][15];   //function for correction of width    //multi-dimension for pileup
+	static Bool_t fgPIDCalibinPU;      //flag to calibrate PID spline in pileup event
 
   static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);
+  static Double_t GetPIDCorr(const AliVTrack *track, THnBase *hist);
   
   THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
@@ -153,7 +202,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,8)         // Dielectron PID
+  ClassDef(AliDielectronPID,10)         // Dielectron PID
 };
 
 #endif

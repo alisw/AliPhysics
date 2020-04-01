@@ -12,10 +12,12 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -47,14 +49,15 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
     void ProcessAODMCParticles();
-    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
-    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
+    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessAODSphericityParticles();
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
+    void SetECalibOutput( Bool_t flag ){fDoECalibOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
@@ -93,8 +96,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
     void FillPhotonBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
     void FillPhotonPlusConversionBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
-    void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
-    void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
+    void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, Double_t clusterM02, Int_t pdgCode);
+    void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, Double_t  clusterM02, Int_t pdgCode);
     void UpdateEventByEventData();
 
     // Additional functions for convenience
@@ -151,6 +154,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
@@ -352,6 +356,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileEtaShift;                                     //! array of profiles with eta shift
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
+    TH2F**                fHistoPtHardJJWeight;                                 //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH1F**                fHistoEventSphericityAxis;                            //! array of histos with phi of the event Sphericity axis
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
@@ -520,6 +525,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
     Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t                fDoECalibOutput;                                      // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -540,6 +546,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TObjString*           fFileNameBroken;                                      // string object for broken file name
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
+    TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
@@ -550,7 +557,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 71);
+    ClassDef(AliAnalysisTaskGammaCalo, 75);
 };
 
 #endif

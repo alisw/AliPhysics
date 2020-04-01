@@ -14,7 +14,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
                                         bool GetConfigFromAlien = false,
-                                        TString cFileName = "ConfigOtonOmega.C"
+                                        TString cFileName = "ConfigOtonOmega.C",
+                                        Int_t iConfigCuts = 0
 ) {
 
   //set fullBlastQA and suffix (cut variation)
@@ -58,15 +59,15 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
   //Cascade Cuts (bkg)
-  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
-  //AliOtonOmegaCascadeCuts* CascadeCuts = AliOtonOmegaCascadeCuts::XiCuts(false, false);
+  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::OmegaCuts(false, false);
+  //AliOtonOmegaCascadeCuts* CascadeCuts = AliOtonOmegaCascadeCuts::OmegaCuts(false, false);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
   XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
-  XiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  XiPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(false, true, false);
-  XiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  XiBachCuts->SetCheckTPCRefit(false);
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
@@ -76,18 +77,17 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-321);
   //AntiCascade cuts (bkg)
-  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
-  //AliOtonOmegaCascadeCuts* AntiCascadeCuts = AliOtonOmegaCascadeCuts::XiCuts(false, false);
+  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::OmegaCuts(false, false);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
   AntiXiNegCuts->SetCutCharge(-1);
-  AntiXiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiXiNegCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
   AntiXiPosCuts->SetCutCharge(1);
-  AntiXiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiXiPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *AntiXiBachCuts =AliFemtoDreamTrackCuts::OmegaBachKaonCuts(false, true, false);
   AntiXiBachCuts->SetCutCharge(1);
-  AntiXiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiXiBachCuts->SetCheckTPCRefit(false);
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
@@ -98,14 +98,13 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   AntiCascadeCuts->SetPDGCodeBach(321);
   //Omega Cuts 
   AliFemtoDreamCascadeCuts* CascadeOmegaCuts = AliFemtoDreamCascadeCuts::OmegaCuts(false, false);
-  //AliOtonOmegaCascadeCuts* CascadeOmegaCuts = AliOtonOmegaCascadeCuts::OmegaCuts(false, false);
   CascadeOmegaCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *OmegaNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
-  OmegaNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  OmegaNegCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *OmegaPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
-  OmegaPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  OmegaPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *OmegaBachCuts = AliFemtoDreamTrackCuts::OmegaBachKaonCuts(false, true, false);
-  OmegaBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  OmegaBachCuts->SetCheckTPCRefit(false);
   CascadeOmegaCuts->Setv0Negcuts(OmegaNegCuts);
   CascadeOmegaCuts->Setv0PosCuts(OmegaPosCuts);
   CascadeOmegaCuts->SetBachCuts(OmegaBachCuts);
@@ -116,17 +115,16 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   CascadeOmegaCuts->SetPDGCodeBach(-321);
   //AntiCascade cuts (bkg)
   AliFemtoDreamCascadeCuts* AntiCascadeOmegaCuts = AliFemtoDreamCascadeCuts::OmegaCuts(false, false);
-  //AliOtonOmegaCascadeCuts* AntiCascadeOmegaCuts = AliOtonOmegaCascadeCuts::OmegaCuts(false, false);
   AntiCascadeOmegaCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiOmegaNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
   AntiOmegaNegCuts->SetCutCharge(-1);
-  AntiOmegaNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiOmegaNegCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *AntiOmegaPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
   AntiOmegaPosCuts->SetCutCharge(1);
-  AntiOmegaPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiOmegaPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *AntiOmegaBachCuts =AliFemtoDreamTrackCuts::OmegaBachKaonCuts(false, true, false);
   AntiOmegaBachCuts->SetCutCharge(1);
-  AntiOmegaBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AntiOmegaBachCuts->SetCheckTPCRefit(false);
   AntiCascadeOmegaCuts->Setv0Negcuts(AntiOmegaNegCuts);
   AntiCascadeOmegaCuts->Setv0PosCuts(AntiOmegaPosCuts);
   AntiCascadeOmegaCuts->SetBachCuts(AntiOmegaBachCuts);
@@ -137,7 +135,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   AntiCascadeOmegaCuts->SetPDGCodeBach(321);
 
   //Pass cuts to config file (to be further setup of modified there)_
-  ConfigOtonOmega(CascadeCuts,XiPosCuts,XiNegCuts,XiBachCuts,AntiCascadeCuts,AntiXiPosCuts,AntiXiNegCuts,AntiXiBachCuts,CascadeOmegaCuts,OmegaPosCuts,OmegaNegCuts,OmegaBachCuts,AntiCascadeOmegaCuts,AntiOmegaPosCuts,AntiOmegaNegCuts,AntiOmegaBachCuts,TrackCuts,AntiTrackCuts);
+  ConfigOtonOmega(CascadeCuts,XiPosCuts,XiNegCuts,XiBachCuts,AntiCascadeCuts,AntiXiPosCuts,AntiXiNegCuts,AntiXiBachCuts,CascadeOmegaCuts,OmegaPosCuts,OmegaNegCuts,OmegaBachCuts,AntiCascadeOmegaCuts,AntiOmegaPosCuts,AntiOmegaNegCuts,AntiOmegaBachCuts,TrackCuts,AntiTrackCuts,iConfigCuts);
 
   //???????????????????
   if (suffix != "0" && suffix != "999") {

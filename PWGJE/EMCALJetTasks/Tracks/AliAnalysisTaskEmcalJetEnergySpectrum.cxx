@@ -131,12 +131,26 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetSpectrum", "Jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMax", "Max jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   if(fFillHSparse) {
-    TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
+    TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN, -0.5, kTrgClusterN -0.5);
     TVariableBinning jetptbinning(fUserPtBinning);
     const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
     fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
     fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
   }
+
+  // A bit of QA stuff
+  fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+  fHistos->CreateTH2("hQAConstPtCh", "p_{t} of charged constituents; p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hQAConstPtNe", "p_{t} of neutral constituents; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hQAConstPtChMax", "p_{t} of max charged constituents; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hQAConstPtNeMax", "p_{t} of max neutral constituents; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistos->CreateTH2("hQAEtaPhi", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiConstCh", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiConstNe", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -162,6 +176,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   auto datajets = this->GetJetContainer(fNameJetContainer);
+  auto clusters = this->GetClusterContainer(0);
+  auto tracks = this->GetTrackContainer(0);
   if(!datajets) {
     AliErrorStream() << "Jet container " << fNameJetContainer << " not found" << std::endl;
     return false;
@@ -204,7 +220,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
       // Apply artificial (fixed) shift of the jet energy scale to det. level jets
       ptjet += fScaleShift * ptjet; 
     }
-    double datapoint[6] = {eventCentrality, ptjet, j->Eta(), j->Phi(), j->NEF(), 0.};
+    double datapoint[6] = {eventCentrality, ptjet, j->Eta(), TVector2::Phi_0_2pi(j->Phi()), j->NEF(), 0.};
     for(auto t : trgclusters){
       fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), ptjet, weight);
       if(fFillHSparse) {
@@ -212,6 +228,48 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
       }
     }
+
+    // Fill QA plots - trigger cluster independent
+    // Those plots have been in before (as part of the THnSparse) but were 
+    // removed in order to reduce the memory consumption.
+    fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
+    fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
+    if(clusters){
+      auto leadcluster = j->GetLeadingCluster(clusters->GetArray());
+      if(leadcluster) {
+        TLorentzVector ptvec;
+        leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
+        fHistos->FillTH2("hQAConstPtNeMax", ptjet, ptvec.Pt(), weight);
+      } else {
+        fHistos->FillTH2("hQAZnePt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAConstPtNeMax", ptjet, 0., weight);
+      }
+      for(auto ine = 0; ine < j->GetNumberOfClusters(); ine++){
+        auto cluster = j->Cluster(ine);
+        TLorentzVector ptvec;
+        cluster->GetMomentum(ptvec, fVertex,(AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+        fHistos->FillTH2("hQAConstPtNe", ptjet, ptvec.Pt(), weight);
+        fHistos->FillTH2("hQAEtaPhiConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
+      }
+    }
+    if(tracks){
+      auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
+      if(leadingtrack) {
+        fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
+        fHistos->FillTH2("hQAConstPtChMax", ptjet, leadingtrack->Pt(), weight);
+      } else {
+        fHistos->FillTH2("hQAZchPt", ptjet, 0., weight);
+        fHistos->FillTH2("hQAConstPtChMax", ptjet, 0., weight);
+      }
+      for(int ich = 0; ich < j->GetNumberOfTracks(); ich++){
+        auto track = j->Track(ich);
+        fHistos->FillTH2("hQAConstPtCh", ptjet, track->Pt(), weight);
+        fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
+      }
+    }
+    fHistos->FillTH2("hQANChPt", ptjet, j->GetNumberOfTracks(), weight);
+    fHistos->FillTH2("hQANnePt", ptjet, j->GetNumberOfClusters(), weight);
   }
 
   double maxdata[6];
@@ -349,7 +407,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   if(isMC){
     // Create also particle and particle level jet container for outlier rejection
-    TString partcontname = namepartcont;
+    TString partcontname = namepartcont.data();
     if(partcontname == "usedefault") partcontname = "mcparticles";
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);

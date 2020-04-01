@@ -12,6 +12,7 @@
 #pragma link C++ class AliAnalysisTaskConversionQA+;
 #pragma link C++ class AliAnalysisTaskConversionTree+;
 #pragma link C++ class AliAnalysisTaskConvJet+;
+#pragma link C++ class AliAnalysisTaskJetOutlierRemoval+;
 #pragma link C++ class AliAnalysisTaskClusterQA+;
 #pragma link C++ class AliAnalysisTaskMaterial+;
 #pragma link C++ class AliAnalysisTaskMaterialHistos+;
@@ -21,6 +22,7 @@
 #pragma link C++ class AliAnalysisTaskOmegaMCStudies+;
 #pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 #pragma link C++ class AliAnalysisTaskHadronicCocktailMC+;
+#pragma link C++ class AliAnalysisTaskQA+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase+;
@@ -37,6 +39,9 @@
 #pragma link C++ class AliAnalysisTRDEfficiency+;
 #pragma link C++ class AliIdentifiedPrimarySelector+;
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
+#pragma link C++ class AliConversionAodSkimTask+;
+#pragma link C++ class AliAnalysisTaskSigmaPlToProtonPiZero+;
+
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
@@ -50,6 +55,7 @@
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
+#pragma link C++ class AliAnalysisTaskGammaCaloMix+;
 #pragma link C++ class AliAnalysisTaskGammaConvFlow+;
 
 #pragma link C++ class AliCutHandlerPCM+;

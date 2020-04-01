@@ -119,7 +119,7 @@ bool AliExternalBDT::LoadLightGBMModel(std::string path) {
 }
 
 bool AliExternalBDT::LoadModelLibrary(std::string path) {
-  const int status = TreelitePredictorLoad(path.data(), 1, 1, &fPredictor);
+  const int status = TreelitePredictorLoad(path.data(), 1, &fPredictor);
   if (status != 0) {
     std::cerr << "Library loading failed" << std::endl;
     return false;

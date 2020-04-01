@@ -120,6 +120,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   EventTZEROStartTimeTOFbest(Int_t side)  const {return (side>=0 && side<3 ? fT0TOFbest[side] : -999.);}
   Bool_t    IsPileupTZERO()                         const {return fT0pileup;}
   Bool_t    IsSatteliteCollisionTZERO()             const {return fT0sattelite;}
+  Float_t   DiamondX()                              const {return fDiamondDim[0];} 
+  Float_t   DiamondY()                              const {return fDiamondDim[1];}
+  Float_t   DiamondZ()                              const {return fDiamondDim[2];}
+  Float_t   DiamondCov(Int_t i)                     const {return (i>=0 && i<=2 ? fDiamondCov[i] : -999.);}
   
   Float_t   EnergyZDCnTree(UShort_t channel)  const {return (channel<10 ? fZDCnEnergy[channel] : -999.);};
   Float_t   EnergyZDCpTree(UShort_t channel)  const {return (channel<10 ? fZDCpEnergy[channel] : -999.);};
@@ -218,6 +222,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   fT0start;                // T0 timing
   Bool_t    fT0pileup;               // TZERO pileup flag
   Bool_t    fT0sattelite;            // TZERO flag for collisions from sattelite bunches
+  Float_t   fDiamondDim[3];          // Diamond size (x,y,z) 
+  Float_t   fDiamondCov[3];          // Diamond covariance matrix
     
   Int_t     fNCaloClusters;         // number of calorimeter clusters  
   TClonesArray* fCaloClusters;        //->   array containing calorimeter clusters
@@ -231,7 +237,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 14);
+  ClassDef(AliReducedEventInfo, 15);
 };
 
 #endif

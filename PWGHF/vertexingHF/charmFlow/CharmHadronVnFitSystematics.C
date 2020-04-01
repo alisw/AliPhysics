@@ -152,10 +152,12 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
     //arguments for ML application
     bool doMLsel = false;
-    vector<double> CutValuesML = {};
-    if (config["AnalysisOptions"]["MLSelection"]["ApplyML"]) {
+    vector<double> CutValuesMLmin = {};
+    vector<double> CutValuesMLmax = {};
+    if (config["AnalysisOptions"]["MLSelection"]) {
         doMLsel = static_cast<bool>(config["AnalysisOptions"]["MLSelection"]["ApplyML"].as<int>());
-        CutValuesML = config["AnalysisOptions"]["MLSelection"]["ApplyML"].as<vector<double> >();
+        CutValuesMLmin = config["AnalysisOptions"]["MLSelection"]["CutValuesMin"].as<vector<double> >();
+        CutValuesMLmax = config["AnalysisOptions"]["MLSelection"]["CutValuesMax"].as<vector<double> >();
     }
 
     //Load input file
@@ -308,7 +310,7 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
         SetHistoStyle(hVnResMeanVsMethodFreeSigma[iPt],kRed,kFullCircle);
         SetHistoStyle(hVnResMeanVsMethodFixSigma[iPt],kBlack,kFullTriangleUp);
         SetHistoStyle(hVnResMeanVsMethodBinCounting[iPt],kGreen+2,kFullSquare);
-        SetHistoStyle(hVnResMeanVsMethodSimFit[iPt],kBlue,kFullDiamond,2.);
+        SetHistoStyle(hVnResMeanVsMethodSimFit[iPt],kBlue,kFullDiamond,2.,2);
         hVnResMeanVsMethodSimFit[iPt]->GetXaxis()->SetBinLabel(1,"Simultaneus Fit");
         hVnResMeanVsMethodFreeSigma[iPt]->GetXaxis()->SetBinLabel(2,"Free Sigma");
         hVnResMeanVsMethodFixSigma[iPt]->GetXaxis()->SetBinLabel(3,"Fix Sigma");
@@ -334,12 +336,14 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
 
         float averagePtUnc = -1.;
         int bkgfunc = (meson==AliAnalysisTaskSECharmHadronvn::kDstartoKpipi) ? AliHFInvMassFitter::kPowEx : AliHFInvMassFitter::kExpo;
-        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], bkgfunc, SgnFunc, useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD, fixMeanSecP, fixSigmaSecP, DplusSigma[iPt], doMLsel, 0., CutValuesML[iPt]);
+        float averagePt = GetAveragePtInRange(averagePtUnc, sMassVsPtVsPhiVsCentrVsqn, qnmin, qnmax, PtMin[iPt], PtMax[iPt], bkgfunc, SgnFunc, 
+                                              useRefl, hMCRefl[iPt], SoverR, reflopt, meson, massD, fixMeanSecP, fixSigmaSecP, DplusSigma[iPt], 
+                                              doMLsel, CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
 
         //get inv-mass histos
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn,1,PtMin[iPt],PtMax[iPt]);
         if(doMLsel)
-            ApplySelection(sMassVsPtVsPhiVsCentrVsqn,9,0.,CutValuesML[iPt]);
+            ApplySelection(sMassVsPtVsPhiVsCentrVsqn,9,CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
 
         hInvMassInt = reinterpret_cast<TH1F*>(sMassVsPtVsPhiVsCentrVsqn->Projection(0));
         ResetAxes(sMassVsPtVsPhiVsCentrVsqn,1);
@@ -347,7 +351,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
             ResetAxes(sMassVsPtVsPhiVsCentrVsqn,9);
 
         if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEP)
-            GetInOutOfPlaneInvMassHistos(sMassVsPtVsPhiVsCentrVsqn, hInvMassDeltaPhi[0], hInvMassDeltaPhi[1], harmonic, qnmin, qnmax, PtMin[iPt], PtMax[iPt], doMLsel, 0., CutValuesML[iPt]);
+            GetInOutOfPlaneInvMassHistos(sMassVsPtVsPhiVsCentrVsqn, hInvMassDeltaPhi[0], hInvMassDeltaPhi[1], harmonic, qnmin, qnmax, PtMin[iPt], PtMax[iPt], 
+                                         doMLsel, CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
 
         for(unsigned int iSgnFunc=0; iSgnFunc<sSgnFunc.size(); iSgnFunc++) {
 
@@ -395,7 +400,8 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                             hInvMassDeltaPhiToFit[1]->Rebin(Rebin[iRebin]);
                         }
                         else
-                            hVnVsMassToFit = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hVnVsMassToFit_%d",iPt), 2, qnmin, qnmax, PtMin[iPt], PtMax[iPt], Rebin[iRebin], resol, doMLsel, 0., CutValuesML[iPt]);
+                            hVnVsMassToFit = GetFuncPhiVsMassHistos(sMassVsPtVsPhiVsCentrVsqn, Form("hVnVsMassToFit_%d",iPt), 2, qnmin, qnmax, PtMin[iPt], PtMax[iPt], 
+                                                                    Rebin[iRebin], resol, doMLsel, CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
 
                         for(unsigned int iMassMin=0; iMassMin<MassMin.size(); iMassMin++) {
                             for(unsigned int iMassMax=0; iMassMax<MassMax.size(); iMassMax++) {
@@ -573,10 +579,12 @@ void CharmHadronVnFitSystematics(string cfgFileName, string refFileName, int ref
                                     float array4ntuple[22] = {(float)PtMin[iPt],(float)PtMax[iPt],(float)averagePt,(float)averagePtUnc,(float)hInvMassIntToFit->GetBinWidth(1),(float)MassMin[iMassMin],(float)MassMax[iMassMax],(float)SgnFunc,(float)BkgFunc,(float)VnBkgFunc,(float)vnvsmassfitter->GetRawYield(),(float)vnvsmassfitter->GetRawYieldUncertainty(),(float)vnvsmassfitter->GetMean(),(float)vnvsmassfitter->GetMeanUncertainty(),(float)vnvsmassfitter->GetSigma(),(float)vnvsmassfitter->GetSigmaUncertainty(),(float)vnvsmassfitter->GetReducedChiSquare(),(float)vnvsmassfitter->GetVn(),(float)vnvsmassfitter->GetVnUncertainty(),(float)qnmin,(float)qnmax,(float)iTrial};
 
                                     multiTrialNtuple->Fill(array4ntuple);
-                                    if(vnvsmassfitter->GetReducedChiSquare()<maxRedChi2) {
-                                        hVnResSimFit[iPt]->Fill(vnvsmassfitter->GetVn()-vnRef);
 
-                                        gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnvsmassfitter->GetVn());
+                                    double vnEst = vnvsmassfitter->GetVn();
+                                    if(vnvsmassfitter->GetReducedChiSquare() < maxRedChi2 && TMath::Abs(vnEst - 0.10) > 1e-6) {
+                                        hVnResSimFit[iPt]->Fill(vnEst - vnRef);
+
+                                        gVnVsTrialSimFit[iPt]->SetPoint(iTrial,iTrial,vnEst);
                                         gVnVsTrialSimFit[iPt]->SetPointError(iTrial,0.,0.,vnvsmassfitter->GetVnUncertainty(),vnvsmassfitter->GetVnUncertainty());
                                     }
                                 }

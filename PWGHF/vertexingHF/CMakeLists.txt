@@ -18,26 +18,22 @@ set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
 add_subdirectory (TMVA)
 add_subdirectory (vHFBDT)
+add_subdirectory (vHFML)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFBDT)
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
-                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
-                    ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
-                    ${TREELITE_ROOT}/include
-  )
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -90,6 +86,8 @@ set(SRCS
   AliAnalysisTaskSED0MassNonPromptFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
+  AliAnalysisTaskSEDvsRT.cxx
+  AliAnalysisTaskSEDvsMultiplicity_BDT.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
@@ -126,10 +124,8 @@ set(SRCS
   AliAnalysisTaskSEImproveITSCVMFS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
-  charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
-  charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
@@ -145,6 +141,7 @@ set(SRCS
   upgrade/AliAnalysisTaskCountLcEta.cxx
   upgrade/AliAnalysisTaskSEImproveITS3.cxx
   upgrade/AliAnalysisTaskSELbtoLcpi4.cxx
+  upgrade/AliAnalysisTaskSECharmTriggerStudy.cxx
   AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
@@ -159,20 +156,12 @@ set(SRCS
   AliAnalysisTaskSEDmesonPIDSysProp.cxx
   AliAnalysisTaskSEXicTopKpi.cxx
   AliRDHFCutsXictopKpi.cxx
-   )
-
-# Sources for ROOT6 only - alphabetical order
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(SRCS
-      ${SRCS}
-      vHFML/AliHFMLResponse.cxx
-      vHFML/AliHFMLResponseDplustoKpipi.cxx
-      vHFML/AliHFMLResponseDstoKKpi.cxx
-      AliAnalysisTaskSEDplus.cxx
-      AliAnalysisTaskSEDs.cxx
-      charmFlow/AliAnalysisTaskSECharmHadronvn.cxx
-  )
-endif()
+  AliRDHFCutsCdeuterontodKpi.cxx
+  AliAnalysisTaskSECharmHadronvnTMVA.cxx
+  AliRDHFCutsKFP.cxx
+  AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
+  AliAnalysisTaskSESigmacTopK0Spi.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -188,11 +177,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT)
-# Dependencies for ROOT6 only
-if(ROOT_VERSION_MAJOR EQUAL 6)
-  set(LIBDEPS ${LIBDEPS} ML)
-endif()
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW KFParticle)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -200,6 +185,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
@@ -252,4 +238,3 @@ install(DIRECTORY
 
 install(DIRECTORY upgrade DESTINATION PWGHF/vertexingHF)
 install(DIRECTORY charmFlow DESTINATION PWGHF/vertexingHF)
-install(DIRECTORY vHFML DESTINATION PWGHF/vertexingHF)

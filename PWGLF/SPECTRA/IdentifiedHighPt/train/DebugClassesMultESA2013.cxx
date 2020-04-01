@@ -109,6 +109,7 @@ TObject(),
   dcadaughters(999),
   pdg(0),
   pdgmother(0),
+  oobPileupFlag(-1),
   primary(-1),  
   status(),  
   ptrack(),
@@ -146,6 +147,7 @@ void DeDxV0::Copy(TObject& object) const
   v0->dcadaughters = dcadaughters;	 
   v0->pdg	    = pdg;		 
   v0->pdgmother	    = pdgmother;
+  v0->oobPileupFlag = oobPileupFlag;
   v0->primary       = primary;  	 
   v0->status  	    = status;  	 
 

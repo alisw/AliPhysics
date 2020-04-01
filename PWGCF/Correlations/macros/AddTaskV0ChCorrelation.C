@@ -38,26 +38,22 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(50000);
-  //task->SetMixingTracks(10000);
-  //task->SetPoolSize(200); 
-  task->SetPoolSize(500); 
+  task->SetMixingTracks(10000);
+    task->SetPoolSize(50); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
-  task->SetVtxXMin(10e-5);
-  task->SetVtxYMin(10e-5);
-  task->SetVtxZMin(10e-5);
-  task->SetCentMin(0);
-  task->SetCentMax(90.);
+   task->SetCentMin(0);
+  task->SetCentMax(10.);
   //-----------------------------Track-------------------------------------
-  task->SetTrackMCPtMin(1);
+ // task->SetTrackMCPtMin(1);
 
   task->SetTrackPtMin(1.);
   task->SetTrackPtMax(8.);
   task->SetTrackEta(0.8);
+  task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
-  task->SetV0MCPtMin(3);
+  //task->SetV0MCPtMin(3);
   task->SetV0PtMin(3.);
   task->SetV0PtMax(15.);
   task->SetV0Eta(0.7);
@@ -65,10 +61,17 @@ if (!mgr->GetInputEventHandler()) {
   task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(25);
-  task->SetDCAV0DaughtersMax(0.8);
+  task->SetDCAV0DaughtersMax(0.9);//
+  task->SetDCAPostoPrimVertexMink0s(0.09);//
+  task->SetDCANegtoPrimVertexMink0s(0.09);//
+  task->SetDCAPostoPrimVertexMinLamb(0.1);
+  task->SetDCANegtoPrimVertexMinLamb(0.23);//
+  task->SetDCAPostoPrimVertexMinALamb(0.23);//
+  task->SetDCANegtoPrimVertexMinALamb(0.1);
 
   task->SetCosPointingAngleMin(0.975);
-  task->SetLambdaCPA(0.995);
+  task->SetLambdaCPA(0.993);//
+  task->Setk0sCPA(0.975);//
   task->Set2DFiducialMin(5);
   task->SetV0DaughterTrackTPCCluster(70.);
   task->SetNCrossedRowsTPCfindable(0.8);
@@ -125,7 +128,7 @@ AliAnalysisDataContainer *coutput7
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
    
-    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency50_90.root");
+    TFile *file = TFile::Open("alien:///alice/cern.ch/user/m/manaam/Efficiency/V0Efficiency0_10.root");
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n");

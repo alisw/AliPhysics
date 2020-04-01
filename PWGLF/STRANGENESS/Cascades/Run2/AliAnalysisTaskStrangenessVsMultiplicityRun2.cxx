@@ -101,6 +101,7 @@ class AliAODv0;
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionTask.h"
 
 #include "AliTriggerIR.h"
 #include "AliCFContainer.h"
@@ -144,6 +145,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
+fkDebugOOBPileupEventTree(kFALSE),
 fkDoExtraEvSels(kTRUE),
 fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
@@ -471,7 +473,9 @@ fTreeCascVarMagneticField(0),
 
 //Histos
 fHistEventCounter(0),
-fHistCentrality(0)
+fHistEventCounterDifferential(0),
+fHistCentrality(0),
+fHistEventMatrix(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -500,6 +504,7 @@ fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
+fkDebugOOBPileupEventTree(kFALSE),
 fkDoExtraEvSels(kTRUE),
 fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
@@ -532,6 +537,7 @@ fkConfigToSave(""),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
+fEvSel_TriggerMask(0), 
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
@@ -625,6 +631,7 @@ fTreeVariableAmplitudeV0C(-1.),
 fTreeVariableClosestNonEmptyBC(-1),
 
 fTreeVariableCentrality(0),
+fTreeVariable_TriggerMask(0),
 fTreeVariableMVPileupFlag(kFALSE),
 fTreeVariableOOBPileupFlag(kFALSE),
 
@@ -805,6 +812,7 @@ fTreeCascVarAmplitudeV0C(-1.),
 fTreeCascVarClosestNonEmptyBC(-1),
 
 fTreeCascVarCentrality(0),
+fTreeCascVar_TriggerMask(0), 
 fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarOOBPileupFlag(kFALSE),
 //Kink tagging
@@ -826,7 +834,8 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistEventCounterDifferential(0),
-fHistCentrality(0)
+fHistCentrality(0),
+fHistEventMatrix(0)
 {
     
     //Re-vertex: Will only apply for cascade candidates
@@ -891,6 +900,7 @@ fHistCentrality(0)
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
     if ( lExtraOptions.Contains("C") ) fkDebugOOBPileup           = kTRUE;
+    if ( lExtraOptions.Contains("D") ) fkDebugOOBPileupEventTree  = kTRUE;
     if ( lExtraOptions.Contains("S") ) fkSandboxMode              = kTRUE;
 }
 
@@ -967,8 +977,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         //Branch Definitions
         fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
         fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
+        fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
         //
-        if ( fkDebugOOBPileup ){
+        if ( fkDebugOOBPileupEventTree ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
             fTreeEvent->Branch("fNTOFClusters",&fNTOFClusters,"fNTOFClusters/I");
             fTreeEvent->Branch("fNTOFMatches",&fNTOFMatches,"fNTOFMatches/I");
@@ -1016,6 +1027,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+        fTreeV0->Branch("fTreeVariable_TriggerMask", &fTreeVariable_TriggerMask, "fTreeVariable_TriggerMask/i");
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
@@ -1128,6 +1140,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
+        fTreeCascade->Branch("fTreeCascVar_TriggerMask", &fTreeCascVar_TriggerMask, "fTreeCascVar_TriggerMask/i");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
         //-----------DECAY-LENGTH-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
@@ -1367,6 +1380,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListHist->Add(fHistCentrality);
     }
     
+    //Adaptive binning
+    //Set Adaptive Percentile Boundaries, adjust if finer selection desired
+    Double_t lDesiredBoundaries[1000];
+    Long_t   lNDesiredBoundaries=0;
+    lDesiredBoundaries[0] = 0.0;
+    //From High To Low Multiplicity
+    for( Int_t ib = 1; ib < 101; ib++) { // 100 bins  ] 0.0 , 0.1 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.001;
+    }
+    for( Int_t ib = 1; ib < 91; ib++) { // 90 bins  ] 0.1 , 1.0 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.01;
+    }
+    for( Int_t ib = 1; ib < 91; ib++) { // 90 bins ] 1.0 , 10. ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.1;
+    }
+    for( Int_t ib = 1; ib < 96; ib++) { // 95 bins ] 10.0 , 105.0 ]
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
+    }
+    
+    Double_t ltemp[] = {0,1,2,3,4};
+    if(! fHistEventMatrix ) {
+        //Histogram Output for relevant event counters
+        fHistEventMatrix = new TH2D( "fHistEventMatrix", "",lNDesiredBoundaries, lDesiredBoundaries, 4,ltemp);
+        fHistEventMatrix->GetYaxis()->SetBinLabel(1, "MB, tagged as not MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(2, "MB, tagged as MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(3, "High mult V0, tagged as not MV-pileup");
+        fHistEventMatrix->GetYaxis()->SetBinLabel(4, "High mult V0, tagged as MV-pileup");
+        fListHist->Add(fHistEventMatrix);
+    }
+    
     //Superlight mode output
     if ( !fListK0Short    ){ fListK0Short    = new TList();    fListK0Short->SetOwner();    }
     if ( !fListLambda     ){ fListLambda     = new TList();    fListLambda->SetOwner();     }
@@ -1603,6 +1650,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     }
     //===================================================================
     
+    //Implementation to do trigger selection a posteriori
+    fEvSel_TriggerMask =
+        ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //for full checks later
+    fTreeVariable_TriggerMask = fEvSel_TriggerMask;
+    fTreeCascVar_TriggerMask = fEvSel_TriggerMask;
+    
     if( lEvSelCode != 0 ) {
         //Regular Output: Slots 1-6
         PostData(1, fListHist    );
@@ -1738,6 +1791,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
+    
+    //Parse events
+    Bool_t lIsMB = kFALSE, lIsHighMultV0 = kFALSE;
+    if( AliMultSelectionTask::IsSelectedTrigger( lESDevent, AliVEvent::kINT7 ) ) lIsMB = kTRUE;
+    if( AliMultSelectionTask::IsSelectedTrigger( lESDevent, AliVEvent::kHighMultV0 ) ) lIsHighMultV0 = kTRUE;
+
+    Float_t lYValue = 0.5;
+    if(fMVPileupFlag) lYValue += 1.0;
+    if( lIsMB )         fHistEventMatrix->Fill(fCentrality, lYValue    );
+    if( lIsHighMultV0 ) fHistEventMatrix->Fill(fCentrality, lYValue+2.0);
     
     //Random denial
     Bool_t lKeepEventEntry = kTRUE;
@@ -2089,7 +2152,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
         if( 
             (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
-            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.) > 1e-6) ) lITSorTOFsatisfied = kTRUE;
         
         //------------------------------------------------
         // Fill Tree!

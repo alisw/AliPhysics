@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskUPCforwardpPb+;
 #pragma link C++ class AliAnalysisTaskMatchTriggerForward+;
 #pragma link C++ class AliAnalysisTaskNanoMUON+;
+#pragma link C++ class AliAnalysisTaskUpcEtaCAWP+;
 #pragma link C++ class AliAnalysisTaskCTrue+;
 #pragma link C++ class AliUPCTrack+;
 #pragma link C++ class AliUPCMuonTrack+;

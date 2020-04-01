@@ -16,6 +16,7 @@ class TTree;
 #include "AliEventCuts.h"
 #include "Math/Vector4D.h"
 
+class TSpline3;
 class AliPIDResponse;
 class AliESDtrack;
 
@@ -120,8 +121,8 @@ struct SGenericTracklet
 class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE
 {
 public:
-
-  enum kReducedTrigger { 
+  enum kReducedTrigger
+  {
     kINT7 = BIT(0),
     kCentral = BIT(1),
     kSemiCentral = BIT(2),
@@ -157,16 +158,27 @@ public:
     fMinTPCclusters = minCl;
   }
 
+  void SetMinPIDcluster(unsigned char minClu)
+  {
+    fMinPIDclusters = minClu;
+  }
+
   void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
   void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
   void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
-  void EnableLikeSign(bool enableIt = true) { fEnableLikeSign = enableIt; fV0Vertexer.fLikeSign = enableIt; }
+  void EnableLikeSign(bool enableIt = true)
+  {
+    fEnableLikeSign = enableIt;
+    fV0Vertexer.fLikeSign = enableIt;
+  }
+
+  void SetCVMFSPath(std::string path){fCVMFSPath = path;}
 
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
   bool fFillTracklet;
-  bool fStoreAllEvents;   
+  bool fStoreAllEvents;
   bool fSaveFileNames;
   bool fPropagetToPV;
   AliVertexerHyperTriton2Body fV0Vertexer; //
@@ -176,7 +188,7 @@ private:
 
   AliInputEventHandler *fInputHandler; //!
   AliPIDResponse *fPIDResponse;        //! PID response object
-
+  std::string fCVMFSPath;
   bool fMC;
   bool fUseOnTheFly;
 
@@ -199,29 +211,30 @@ private:
   float fMaxTPChe3Sigma;
   float fMinHe3pt;
   unsigned char fMinTPCclusters;
+  unsigned char fMinPIDclusters;
 
   float fMaxDeltaPhi;
   float fMaxDeltaTheta;
   float fMinTrackletCosP;
 
-  bool  fEnableLikeSign;
+  bool fEnableLikeSign;
 
   TTree *fFileNameTree;        //!
   TObjString fCurrentFileName; //!
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton; //!
-  std::vector<SGenericV0> fSGenericV0;          //!
-  std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
-  std::vector<RTracklet> fRTracklets;           //!
-  std::vector<SGenericTracklet> fSGenericTracklets;  //!
-  RCollision fRCollision;                       //!
+  std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
+  std::vector<SGenericV0> fSGenericV0;              //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
+  std::vector<RTracklet> fRTracklets;               //!
+  std::vector<SGenericTracklet> fSGenericTracklets; //!
+  RCollision fRCollision;                           //!
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented
   AliAnalysisTaskHyperTriton2He3piML &operator=(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 4);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 6);
 };
 
 #endif

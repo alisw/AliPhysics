@@ -116,6 +116,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPtRatio:      return "PtRatio";
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
+      case kCosThetaStarAbs:    return "CosThetaStarAbs";
       case kCosThetaJackson:    return "CosThetaJackson";
       case kCosThetaTransversity:    return "CosThetaTransversity";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
@@ -201,6 +202,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DipAngle(fUseMCInfo);
       case kCosThetaStar:
          return pair->CosThetaStar(fUseMCInfo);
+      case kCosThetaStarAbs:
+          return pair->CosThetaStarAbs(fUseMCInfo);           
       case kCosThetaJackson:
          return pair->CosThetaJackson(fUseMCInfo);
       case kCosThetaTransversity:

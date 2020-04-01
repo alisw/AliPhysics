@@ -42,6 +42,7 @@ public:
   void SetDownscaleEvents(Float_t ds) {fDownscaleEvents = ds;}
   void SetDownscaleTracks(Float_t ds) {fDownscaleTracks = ds;}
   void SetNParallelCuts(Int_t n) {fNParallelCuts = n;}
+  void SetNParallelPairCuts(Int_t n) {fNParallelPairCuts = n;}
   void SetHistogramManager(AliHistogramManager* histos) {fHistos = histos;}
   void SetHistClassNames(const Char_t* names) {fHistClassNames = names;}
   void AddCrossPairsCut(AliReducedInfoCut* cut) {fCrossPairsCuts.Add(cut);}
@@ -62,6 +63,7 @@ public:
   Float_t GetDownscaleEvents() const {return fDownscaleEvents;}
   Float_t GetDownscaleTracks() const {return fDownscaleTracks;}
   Int_t GetNParallelCuts() const {return fNParallelCuts;}
+  Int_t GetNParallelPairCuts() const {return fNParallelPairCuts;}
   Int_t GetPoolSize(Int_t cut, Float_t* values);
   Int_t GetPoolSize(Int_t cut, Int_t eventCategory) const;
   TString GetHistClassNames() const {return fHistClassNames;};
@@ -75,7 +77,7 @@ public:
   Bool_t AcceptTrack();    // randomly accept/reject a track for mixing
   void RunLeftoverMixing(Int_t type=-1);
   void PrintMixingLists(Int_t debug);  
-  Bool_t IsPairSelected(Float_t* values, Int_t pairType);
+  ULong_t IsPairSelected(Float_t* values, Int_t pairType);
   
 private:
    AliMixingHandler(const AliMixingHandler& handler);             
@@ -93,6 +95,7 @@ private:
   TClonesArray fPoolsLeg1;         // array of pools
   TClonesArray fPoolsLeg2;         // array of pools
   Int_t fNParallelCuts;            // number of parallel cuts which are run
+  Int_t fNParallelPairCuts;        // number of parallel pair cuts which are run
   TString fHistClassNames;         // name of the histogram classes for each cut, separated by a semicolon ";"
   TArrayI fPoolSize;               // counters for the pool sizes
   Bool_t fIsInitialized;           // check if the mixing handler is initialized
@@ -112,7 +115,7 @@ private:
   ULong_t IncrementPoolSizes(TList* list1, TList* list2, Int_t eventCategory);
   void ResetPoolSizes(ULong_t mixingMask, Int_t category);  
   
-  ClassDef(AliMixingHandler,3);
+  ClassDef(AliMixingHandler,4);
 };
 
 #endif

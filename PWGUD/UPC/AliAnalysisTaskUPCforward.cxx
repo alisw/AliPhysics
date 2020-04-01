@@ -79,6 +79,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
     : AliAnalysisTaskSE(),
       fAOD(0),
       fOutputList(0),
+      fSetSingleMuonPt(0),
+      fPtSingleMuonH(0),
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
@@ -359,10 +361,12 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
+AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward( const char* name, Int_t _fSetSingleMuonPt = 0 )
     : AliAnalysisTaskSE(name),
       fAOD(0),
       fOutputList(0),
+      fSetSingleMuonPt(_fSetSingleMuonPt),
+      fPtSingleMuonH(0),
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
@@ -788,6 +792,9 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 90, -2, -5);
   fOutputList->Add(fEtaMuonH);
+
+  fPtSingleMuonH = new TH1F("fPtSingleMuonH", "fPtSingleMuonH", 1000, 0., 10.);
+  fOutputList->Add(fPtSingleMuonH);
 
   fRAbsMuonH = new TH1F("fRAbsMuonH", "fRAbsMuonH", 100, 0, 100);
   fOutputList->Add(fRAbsMuonH);
@@ -2376,6 +2383,49 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         continue;
     }
 
+    /* -
+     * - Systematics:
+     * -
+     * - Trigger Efficiency
+     * -
+     */
+    if        ( fSetSingleMuonPt == 1 ) {
+      if ( !(track[nGoodMuons]->Pt() > 0.85) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 2 ) {
+      if ( !(track[nGoodMuons]->Pt() > 0.90) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 3 ) {
+      if ( !(track[nGoodMuons]->Pt() > 0.95) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 4 ) {
+      if ( !(track[nGoodMuons]->Pt() > 1.00) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 5 ) {
+      if ( !(track[nGoodMuons]->Pt() > 1.05) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 6 ) {
+      if ( !(track[nGoodMuons]->Pt() > 1.10) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    } else if ( fSetSingleMuonPt == 7 ) {
+      if ( !(track[nGoodMuons]->Pt() > 1.15) ) {
+      // track[nGoodMuons] = 0x0;
+      continue;
+      }
+    }
+
     // MUON SELECTION
     /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
        - the PWG-UD (UPC oriented) meeting. The event selection requires:
@@ -2408,8 +2458,9 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         return;
   }
   for(Int_t iFilling = 0; iFilling < nGoodMuons; iFilling++) {
-        fEtaMuonH ->Fill(track[iFilling]->Eta());
-        fRAbsMuonH->Fill(track[iFilling]->GetRAtAbsorberEnd());
+        fEtaMuonH     ->Fill(track[iFilling]->Eta());
+        fRAbsMuonH    ->Fill(track[iFilling]->GetRAtAbsorberEnd());
+        fPtSingleMuonH->Fill(track[iFilling]->Pt());
   }
   // store muons
   fNumberMuonsH->Fill(nGoodMuons);

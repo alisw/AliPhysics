@@ -1,48 +1,38 @@
+#include <TROOT.h>
 #include "TString.h"
 #include "TMath.h"
-#include "AliForwardFlowUtil.h"
 #include "TFile.h"
-
-#include <iostream>
-#include <TROOT.h>
+#include <TList.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
-#include <TList.h>
 #include <THn.h>
 
-#include "AliLog.h"
-#include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
-#include "AliForwardGenericFramework.h"
+#include <iostream>
 
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
-#include "AliMCEvent.h"
-
-#include "AliAODMCParticle.h"
-
-#include "AliForwardFlowUtil.h"
-
-#include "AliVVZERO.h"
 #include "AliAODVertex.h"
-#include "AliCentrality.h"
-
-#include "AliESDEvent.h"
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODTracklets.h"
 
-#include "AliAnalysisFilter.h"
+#include "AliMCEvent.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
+
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+
+#include "AliForwardFlowUtil.h"
+
+#include "AliVTrack.h"
 #include "AliMultSelection.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
+
 //________________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),
@@ -62,27 +52,85 @@ fStored(0)
 }
 
 
+Bool_t AliForwardFlowUtil::XeXe_Run(Int_t runnumber){
+    // Xe-Xe
+    if ((runnumber == 280234) || (runnumber == 280235)) return kTRUE;
+    return kFALSE;
+}
+
+Bool_t AliForwardFlowUtil::PbPb_lowIR_Run(Int_t runnumber){
+
+  if (fSettings.run_list == 0){
+    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
+    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  }
+  if (fSettings.run_list == 1){
+    if (runnumber >= 244918 && runnumber <= 245068) return kTRUE;
+  }
+  if (fSettings.run_list == 2){
+    if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  }
+  return kFALSE;
+}
+
+
+Bool_t AliForwardFlowUtil::PbPb_highIR_Run(Int_t runnumber){
+
+  if (fSettings.run_list == 0){
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809, 246089, 246153, 246185, 246225};
+    for (Int_t i = 0; i < 17; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }
+  }
+  if (fSettings.run_list == 1){
+    Int_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+    for (Int_t i = 0; i < 13; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }  
+  }
+  if (fSettings.run_list == 2){
+    Int_t HIR_goodruns[] = {246089, 246153, 246185, 246225};
+    for (Int_t i = 0; i < 4; i++){
+      if (runnumber == HIR_goodruns[i]) return kTRUE;
+    }   
+  }
+  return kFALSE;
+}
+
+
+Bool_t AliForwardFlowUtil::pPb_Run(Int_t runnumber){
+
+  Int_t pPb_goodruns[] = {265309, 265335, 265339, 265377, 265383, 265387, 265421, 265425, 
+                             265435, 265521, 265332, 265336, 265342, 265378, 265384, 265388, 
+                             265422, 265426, 265499, 265525, 265334, 265338, 265344, 265381,
+                             265385, 265420, 265424, 265427, 265501};
+  for (Int_t i = 0; i < 29; i++){
+    if (runnumber == pPb_goodruns[i]) return kTRUE;
+  }
+
+  return kFALSE;
+}
 
 Bool_t AliForwardFlowUtil::IsGoodRun(Int_t runnumber){
-  if (runnumber >= 244917 && runnumber <= 245068) return kTRUE;
-  if (runnumber >= 246390 && runnumber <= 246392) return kTRUE;
+  if (XeXe_Run(runnumber))        return kTRUE;
+  if (PbPb_lowIR_Run(runnumber))  return kTRUE;
+  if (PbPb_highIR_Run(runnumber)) return kTRUE;
+  if (pPb_Run(runnumber))         return kTRUE;
 
-  Double_t HIR_goodruns[] = {245683, 245705, 245833, 245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246089, 246153, 246185, 246225};
-  for (Int_t i = 0; i < 15; i++){
-    if (runnumber == HIR_goodruns[i]) return kTRUE;
-  }
   return kFALSE;
 }
 
 
 Int_t AliForwardFlowUtil::GetNUARunNumber(Int_t runnumber){
   // HIR
-  if (runnumber >= 245683 && runnumber <= 246808) return 0;
-  if (runnumber >= 246089 && runnumber <= 246185) return 1;
-  if (runnumber == 246225) return 2;
+  Double_t HIR_goodruns1[] = {245683,  245705,  245833,  245954, 246275, 246276, 246493, 246495, 246759, 246765, 246766, 246808, 246809};
+  Double_t HIR_goodruns2[] = {246089, 246153, 246185, 246225};
+
+  for (Int_t i = 0; i < 13; i++) if (runnumber == HIR_goodruns1[i]) return 0;
+  for (Int_t i = 0; i < 4; i++)  if (runnumber == HIR_goodruns2[i]) return 1;
 
   // lowIR
-  if (runnumber >= 244917 && runnumber <= 245068) return 0;
+  if (runnumber >= 244918 && runnumber <= 245068) return 0;
   if (runnumber >= 246390 && runnumber <= 246392) return 1;
 
   else return 0;
@@ -171,7 +219,7 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 
       // Fill refDist
       if (fSettings.ref_mode & fSettings.kFMDref) {
-        if (!fSettings.use_primaries_fwd) this->FillFromForwardClusters(refDist);
+        if (!fSettings.use_primaries_fwdref) this->FillFromForwardClusters(refDist);
         else this->FillFromPrimariesAODFMD(refDist);
       }
       else if (fSettings.ref_mode & fSettings.kITSref) {
@@ -196,6 +244,49 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
 }
 
 
+AliMCParticle* AliForwardFlowUtil::GetMother(AliMCParticle* p) {
+  // Recurses until the mother IsPhysicalPrimary
+  // Return NULL if no mother was found
+  // GetLabel() is the index on the Stack!
+  // event->Stack()->IsPhysicalPrimary(p->GetLabel());
+  Bool_t isPP = this->IsRedefinedPhysicalPrimary(p);
+  // Return this particle if it is stable
+  if (isPP) {
+    return p;
+  }
+  else {
+    // No stable particle found and no mother left !?
+    if (p->GetMother() < 0) {
+      return 0x0;
+    }
+    AliMCParticle* ancestor = dynamic_cast< AliMCParticle* >(fMCevent->GetTrack(p->GetMother()));
+    return GetMother(ancestor);
+  }
+}
+
+
+
+Bool_t AliForwardFlowUtil::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
+  // Is this a pi0 which was produced as a primary particle?
+  if (TMath::Abs(p->PdgCode()) == 111 /*pi0*/ &&
+      p->GetLabel() < fMCevent->Stack()->GetNprimary()) {
+      std::cout << "found a pi0" << std::endl;
+
+    return true;
+  }
+  // Is it a Physical Primary by the standard definition?
+  Bool_t isPPStandardDef = fMCevent->Stack()->IsPhysicalPrimary(p->GetLabel());
+  AliMCParticle *pi0Candidate = dynamic_cast< AliMCParticle* >(fMCevent->GetTrack(p->GetMother()));
+  // Check if this is a primary originating from a pi0
+  if (isPPStandardDef && pi0Candidate) {
+    if (TMath::Abs(pi0Candidate->PdgCode()) == 111/*pi0*/) {
+        std::cout << "found wrong pi0Candidate" << std::endl;
+
+      return false;//false; // Don't allow stable particles stemming from pi0!
+    }
+  }
+  return isPPStandardDef;
+}
 
 void AliForwardFlowUtil::FillDataCentral(TH2D*& centralDist)
 {
@@ -250,9 +341,24 @@ Double_t AliForwardFlowUtil::GetZ(){
 
 
 Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
+  if (((centrality_estimator == "V0A") & this->pPb_Run(fSettings.runnumber))& fSettings.mc){
+    AliVVZERO* fvzero = this->fevent->GetVZEROData();
+    Float_t sum = 0., max = 0.;
+    for(Int_t i = 32; i < 64; ++i){
+      sum +=fvzero->GetMultiplicity(i);
+      if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
+    }
+    sum -= max;
+    return sum;
+  }
   AliMultSelection *MultSelection;
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
-  return MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Double_t centrality = MultSelection->GetMultiplicityPercentile(centrality_estimator);
+  Int_t qual = MultSelection->GetEvSelCode();
+  if (qual == 199)  centrality = -999;
+  if (centrality < 0. || centrality > 100. - 0.0000001)   return -1;
+
+  return centrality;
 }
 
 
@@ -288,7 +394,8 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 
         Double_t phi_tr = this->GetTrackRefPhi(tr);
         Double_t eta_tr = this->GetTrackRefEta(tr);
-        if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+
+        fwd->Fill(eta_tr,phi_tr,1);
       }
     }
   }
@@ -308,6 +415,64 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 }
 
 
+void AliForwardFlowUtil::FillFromTrackrefsFMDperTR(TH2D*& fwd) 
+{
+  Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
+
+  if (this->fSettings.fMaxConsequtiveStrips == 0) {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+
+      for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        // Ignore things that do not make a signal in the FMD
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+
+        Double_t phi_tr = this->GetTrackRefPhi(tr);
+        Double_t eta_tr = this->GetTrackRefEta(tr);
+
+        fwd->Fill(eta_tr,phi_tr,1);
+      }
+    }
+  }
+  else {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* particle =
+        static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
+
+      // Check if this charged and a primary
+      if (particle->Charge() == 0) continue;
+
+      // IF the track corresponds to a primary, pass that as both
+      // arguments.
+      ProcessTrack(particle, fwd);
+    } // Loop over tracks
+  }
+}
+
+
+
+void AliForwardFlowUtil::FillFromPrimariesFMDperTR(TH2D*& fwd) 
+{
+  Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
+
+  if (this->fSettings.fMaxConsequtiveStrips == 0) {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+
+      for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+        AliTrackReference* tr = p->GetTrackReference(iTrRef);
+        // Ignore things that do not make a signal in the FMD
+        if (!tr || AliTrackReference::kFMD != tr->DetectorId()) continue;    
+        AliMCParticle* mother = GetMother(p);
+        if (!mother) mother = p;
+
+        fwd->Fill(mother->Eta(),mother->Phi(),1);
+        break;
+      }
+    }
+  }
+}
 
 Bool_t
 AliForwardFlowUtil::ProcessTrackITS(AliMCParticle* particle,TH2D*& cen)
@@ -515,7 +680,7 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t phi_tr = this->GetTrackRefPhi(particle); //Wrap02pi
   Double_t eta_tr = this->GetTrackRefEta(particle);
 
-  if ((phi_tr > 0) & (eta_tr > -10)) fwd->Fill(eta_tr,phi_tr,1);
+  fwd->Fill(eta_tr,phi_tr,1);
   return;
 }
 
@@ -560,11 +725,11 @@ void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
     if (p->Charge() == 0) continue;
 
     Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.7) {
-      if (p->Pt()>=this->minpt){// && p->Pt()<=this->maxpt){
+    //if (TMath::Abs(eta) < 1.7) {
+      if (p->Pt() < this->minpt || p->Pt() > this->maxpt) continue;
         cen->Fill(eta,p->Phi(),1);
-      }
-    }
+      
+    //}
   }
 }
 
@@ -728,6 +893,7 @@ void AliForwardFlowUtil::FillFromPrimariesFMD(TH2D*& fwd) const
     if (!p->IsPhysicalPrimary()) continue;
     if (p->Charge() == 0) continue;
 
+
     Double_t eta = p->Eta();
     if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
       if (TMath::Abs(eta) >= 1.7){
@@ -799,9 +965,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
+      Double_t weight = 1;
+
       if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
+
         Double_t dTrackXYZ[3]  = {0.,0.,0.};
         Double_t dVertexXYZ[3] = {0.,0.,0.};
         Double_t dDCAXYZ[3]    = {0.,0.,0.};
@@ -812,10 +981,27 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
 
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
-        if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
-        if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
+        if((fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax)) continue;
+        if((fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax)) continue;
+        
       }
-      cen->Fill(track->Eta(),track->Phi(), 1);
+
+      if (fSettings.doNUE){
+          Int_t nueeta = fSettings.nuehist->GetXaxis()->FindBin(track->Eta());
+          Double_t vtz = 0;
+
+
+          if (this->fSettings.mc) vtz= fMCevent->GetPrimaryVertex()->GetZ();
+          else vtz= fevent->GetPrimaryVertex()->GetZ();
+
+          Int_t nuept = fSettings.nuehist->GetZaxis()->FindBin(track->Pt());
+          Int_t nuevtz = fSettings.nuehist->GetZaxis()->FindBin(vtz);
+          Double_t factor = fSettings.nuehist->GetBinContent(nueeta,nuept,nuevtz);
+          if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*(1./factor);
+          else weight = 0.;
+      }
+
+      if (weight > 0. ) cen->Fill(track->Eta(),track->Phi(), weight);
     }
   }
 }
@@ -859,4 +1045,15 @@ void AliForwardFlowUtil::MakeFakeHoles(TH2D& forwarddNdedp){
   for (Int_t etaBin = 168; etaBin <= 185; etaBin++){
     forwarddNdedp.SetBinContent(etaBin,14, 0.0);
   }
+}
+
+
+
+Bool_t AliForwardFlowUtil::FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex){
+  Int_t nuaeta = fSettings.correct_nua_mc->GetXaxis()->FindBin(eta);
+  Int_t nuaphi = fSettings.correct_nua_mc->GetYaxis()->FindBin(phi);
+  Int_t nuavtz = fSettings.correct_nua_mc->GetZaxis()->FindBin(vertex);
+  Double_t weight = fSettings.correct_nua_mc->GetBinContent(nuaeta,nuaphi,nuavtz+10*fSettings.nua_runnumber);
+  if (weight > 0) return kTRUE;
+  else return kFALSE;
 }

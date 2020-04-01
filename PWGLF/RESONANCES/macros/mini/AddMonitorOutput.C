@@ -12,6 +12,10 @@ Options ("opt" argument):
 - NoSIGN --> disable splitting for single track charge
 - NoTrackQ  --> disable track quality monitoring (DCA, nCls) histos
 ***************************************************************************/
+
+#ifndef ALIRSNADDMONITOROUTPUT_C
+#define ALIRSNADDMONITOROUTPUT_C
+
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliRsnValueEvent.h"
 #include "AliRsnValueDaughter.h"
@@ -397,3 +401,5 @@ void AddMonitorOutput(Bool_t useMCMon, TObjArray *mon=0,TString opt="NoSIGN",Ali
   }
  
 }
+
+#endif

@@ -1352,12 +1352,17 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc()) continue;
+      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
 	 
          //get mother pdg code
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->Particle()->GetPdgCode() , def->GetMotherPDG())) continue;
+         if(def->IsSingle()) {
+           def->FillSingle(part, miniEvent, &fValues);
+           continue;
+         }
+
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
 	      if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
@@ -1477,11 +1482,16 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
-      if (!def->IsMother() && !def->IsMotherInAcc()) continue;
+      if (!def->IsMother() && !def->IsMotherInAcc() && !def->IsSingle()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
 	 
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->GetPdgCode() , def->GetMotherPDG())) continue;
+         if(def->IsSingle()) {
+           def->FillSingle(part, miniEvent, &fValues);
+           continue;
+         }
+
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
 	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;

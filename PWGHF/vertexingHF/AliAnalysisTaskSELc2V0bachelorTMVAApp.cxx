@@ -70,6 +70,7 @@
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDUtils.h"
+#include "AliDataFile.h"
 #include <TMVA/Tools.h>
 #include <TMVA/Reader.h>
 #include <TMVA/MethodCuts.h>
@@ -94,6 +95,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(0),
   fListCuts(0),
   fListWeight(0),
@@ -243,7 +245,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
-  fMultiplicityCutMax(99999.)
+  fMultiplicityCutMax(99999.),
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS("")
 {
   /// Default ctor
   //
@@ -259,6 +263,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fPIDCombined(0),
   fIsK0sAnalysis(kFALSE),
   fCounter(0),
+  fCounterC(0),
   fAnalCuts(analCuts),
   fListCuts(0),
   fListWeight(0),
@@ -409,7 +414,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
-  fMultiplicityCutMax(99999.)
+  fMultiplicityCutMax(99999.),
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS("")
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -450,6 +457,11 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::~AliAnalysisTaskSELc2V0bachelorTMVAApp() 
   if (fCounter) {
     delete fCounter;
     fCounter = 0;
+  }
+
+  if (fCounterC) {
+    delete fCounterC;
+    fCounterC = 0;
   }
 
   if (fAnalCuts) {
@@ -898,10 +910,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
 
+  fCounterC = new AliNormalizationCounter("NormalizationCounterCorrMult");
+  fCounterC->SetStudyMultiplicity(kTRUE,1.);
+  fCounterC->Init();
+
   fListCounters = new TList();
   fListCounters->SetOwner();
   fListCounters->SetName("ListCounters");
   fListCounters->Add(fCounter);
+  fListCounters->Add(fCounterC);
   
   PostData(2, fListCounters);
   
@@ -1082,13 +1099,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
       TString variable = ((TObjString*)(tokens->At(i)))->String();
       std::string tmpvar = variable.Data();
       inputNamesVec.push_back(tmpvar);
-      if (fUseXmlWeightsFile) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
     }      
     delete tokens;
     TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
     for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
       TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
-      if (fUseXmlWeightsFile) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddSpectator(variable.Data(), &fVarsTMVASpectators[i]);
     }
     delete tokensSpectators;
     if (fUseWeightsLibrary) {
@@ -1099,6 +1116,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     }
     
     if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
+
+    if (fUseXmlFileFromCVMFS){
+       TString pathToFileCVMFS = AliDataFile::GetFileName(fXmlFileFromCVMFS.Data());
+       if (pathToFileCVMFS.IsNull()){
+          AliFatal("Cannot access data files from CVMFS");
+       }
+       fReader->BookMVA("BDT method", pathToFileCVMFS); 
+    }
   }
   
   return;
@@ -1279,6 +1304,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
       }
     }
   }
+
+  fCounterC->StoreEvent(aodEvent, fAnalCuts, fUseMCInfo,countCorr);
   
   Bool_t isSelectedMultCut = kTRUE;
   if(fUseMultiplicityCut){
@@ -1499,6 +1526,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       continue;
     }
 
+    // use Preselect to filter out the tracks according to the pT
+    if (cutsAnal->GetUsePreselect()){
+      TObjArray arrTracks(2);
+      for(Int_t ipr = 0; ipr < 2; ipr++){
+	AliAODTrack *tr;
+	if (ipr == 0) tr = vHF->GetProng(aodEvent, lcK0spr, ipr);
+	else tr = (AliAODTrack*)(aodEvent->GetV0(lcK0spr->GetProngID(1)));
+	arrTracks.AddAt(tr, ipr);
+      }
+      Int_t preSelectLc = cutsAnal->PreSelect(arrTracks);
+      if (preSelectLc == 0) continue;
+    }
+
+    // fill the cascade candidate
     if(!vHF->FillRecoCasc(aodEvent, lcK0spr, kFALSE)){ //Fill the data members of the candidate only if they are empty.
       continue;
     }
@@ -1595,7 +1636,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 	pdgCode = -1;
       }
     }
-    AliDebug(2, Form("\n\n\n Analysing candidate %d\n", iLctopK0s));
+    AliDebug(2, Form("Analysing candidate %d\n", iLctopK0s));
     AliDebug(2, Form(">>>>>>>>>> Candidate is background, fFillOnlySgn = %d --> SKIPPING", fFillOnlySgn));
     if (!isLc) {
       if (fFillOnlySgn) { // if it is background, and we want only signal, we do not fill the tree
@@ -1654,8 +1695,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
       }
     }
 
-    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
-    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);    
+    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s, aodEvent);
+    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel, aodEvent);
   }
   
   delete vHF;
@@ -1668,7 +1709,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 							     Int_t isLc,
 							     Int_t &nSelectedAnal,
 							     AliRDHFCutsLctoV0 *cutsAnal,
-							     TClonesArray *mcArray, Int_t iLctopK0s){
+							     TClonesArray *mcArray, Int_t iLctopK0s, AliAODEvent *aod){
   //
   /// Fill histos for Lc -> K0S+proton
   //
@@ -1722,7 +1763,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }
   }
 
-  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
+  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
 
   if (isInV0window == 0) {
     AliDebug(2, "No: The candidate has NOT passed the V0 window cuts!");
@@ -1731,7 +1772,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   }
   else AliDebug(2, "Yes: The candidate has passed the mass cuts!");  
 
-  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
+  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
 
   if (!isInCascadeWindow) {
     AliDebug(2, "No: The candidate has NOT passed the cascade window cuts!");
@@ -1740,8 +1781,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   }
   else AliDebug(2, "Yes: The candidate has passed the cascade window cuts!");
 
-  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
-  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
+  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
+  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
     if (isLc) AliDebug(2, "SIGNAL candidate rejected");
@@ -1757,7 +1798,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     return;
   }
 
-  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
+  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID, aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
   Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
 
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
@@ -1806,13 +1847,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     return;
   }
 
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
     nSelectedAnal++;
   }
 
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(), part->Y(4122))) ) return;
 
-  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
+  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
     if (isLc) AliDebug(2, "SIGNAL candidate rejected");
     AliDebug(2, "No: Analysis cuts kTracks level NOT passed");
     return;
@@ -2211,6 +2252,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	inputVars[8] = nSigmaTPCpi;
 	inputVars[9] = nSigmaTPCka;
       }
+      else if (fNVars == 7) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = signd0;
+      }
 
       for (Int_t i = 0; i < fNVars; i++) {
 	fVarsTMVA[i] = inputVars[i];
@@ -2218,14 +2268,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       
       Double_t BDTResponse = -1;
       Double_t tmva = -1;
-      if (fUseXmlWeightsFile) tmva = fReader->EvaluateMVA("BDT method");
+      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) tmva = fReader->EvaluateMVA("BDT method");
       if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
       //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
       //Printf("tmva = %f", tmva); 
-      fBDTHisto->Fill(BDTResponse, invmassLc); 
+      fBDTHisto->Fill(BDTResponse, invmassLc);
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
       if (fDebugHistograms) {
-	if (fUseXmlWeightsFile) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
+	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
 	fBDTHistoVstImpParBach->Fill(BDTResponse, part->Getd0Prong(0));
 	fBDTHistoVstImpParV0->Fill(BDTResponse, part->Getd0Prong(1));

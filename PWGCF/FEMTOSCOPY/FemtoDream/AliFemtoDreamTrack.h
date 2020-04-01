@@ -121,6 +121,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fstatusITS;
   }
   ;
+  float GetdEdxITS() const {
+    return fdEdxITS;
+  }
+  ;
   float GetdEdxTPC() const {
     return fdEdxTPC;
   }
@@ -142,7 +146,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   }
   ;
   TString ClassName() {
-    return "TrackCuts";
+    return "AliFemtoDreamTrack";
   }
   ;
  private:
@@ -188,6 +192,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float fChi2ITS;
   std::vector<bool> fSharedClsITSLayer;
   bool fHasSharedClsITSLayer;
+  float fdEdxITS;
   float fdEdxTPC;
   float fbetaTOF;
   bool fHasITSHit;

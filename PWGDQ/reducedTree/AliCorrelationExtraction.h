@@ -85,7 +85,9 @@
     processing.
 
   3.2) If a fitting method (kBkgFitting) is requested for the background determination, a fit function must be
-    provided via SetBackgroundFitFunction(). There is no default fit function defined.
+    provided via SetBackgroundFitFunction(). There is no default fit function defined. A mass exclusion range
+    that should not be considered for the background fit is required as well as there is no default. It must be
+    set via SetMassExclusionRange().
 
   3.3) The e+e- pair mass signal window must be defined using SetSignalMassWindow(). Again, there is not default
     setting and the processing will be stopped if none is provided.
@@ -120,8 +122,13 @@
   4.5) The signal correlation function is calculated using the superposition principle from the inclusive
     e+e- - hadron and the background correlation function using CalculateSignalCorrelation().
 
-  4.6) If a hadron efficiency map is provided, the signal correlation function is corrected for the associated
-    hadron efficiency using EfficiencyCorrection().
+  4.6) There are two ways an efficiency correction can be applied, depending on if the J/psi should be efficiency
+    corrected or not: 1) If no J/psi efficicency correction is required, a hadron efficiency map (1D) can be set
+    using SetHadronEfficiencyHistogram(). The signal correlation will then be corrected for the hadron
+    efficiency after the signal extraction has been performed. 2) In case a J/psi efficiency correction is required
+    in addition to the hadron efficiency correction, the input correlation histograms already have to be corrected
+    for the efficiency using a 1/(eff_jpsi x eff_hadron) weight when filling the input histograms. If this is the case,
+    the J/psi efficiency must be provided via SetJpsiEfficiency() in order to properly correct the trigger normalization.
 
  5) Output ------------------------------------------------------------------------------------------------------
 
@@ -146,6 +153,7 @@
 #include <THnSparse.h>
 #include <TH1.h>
 #include <TF1.h>
+#include <TGraphErrors.h>
 
 #include "AliResonanceFits.h"
 
@@ -225,12 +233,15 @@ class AliCorrelationExtraction : public TObject {
     void SetMEOSPairHistogram(THnF* h) {fMEOSPair = h; fProcessDone = kFALSE;}
     void SetSELSPairHistogram(THnF* hpp, THnF* hmm) {fSEPPPair = hpp; fSEMMPair = hmm; fProcessDone = kFALSE;}
     void SetMELSPairHistogram(THnF* hpp, THnF* hmm) {fMEPPPair = hpp; fMEMMPair = hmm; fProcessDone = kFALSE;}
-    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fEfficiencyVariable = var; fProcessDone = kFALSE;}
+    void SetJpsiEfficiency(Double_t eff, Double_t effErr) {fJpsiEff = eff; fJpsiEffErr = effErr; fUseJpsiEfficiency = kTRUE; fProcessDone = kFALSE;}
+    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fHadronEfficiencyVariable = var; fProcessDone = kFALSE;}
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
     void SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta=kFALSE);
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
+    void SetFitPrecision(Double_t prec=1.e-06) {fFitPrecision = prec;}
     void SetSignalMassWindow(Double_t min, Double_t max) {fMassSignalRange[0] = min; fMassSignalRange[1] = max; fProcessDone = kFALSE;}
     void SetBackgroundMassWindows(Int_t n, Double_t* min, Double_t* max);
+    void SetMassExclusionRange(Double_t min, Double_t max) {fMassExclusionRange[0] = min, fMassExclusionRange[1] = max;}
     void SetVerbose() {fVerboseFlag = kTRUE;}
   
     // add variables and set ranges on the THnF
@@ -251,17 +262,15 @@ class AliCorrelationExtraction : public TObject {
     TH1D*             GetInclusiveCF1D() const {return (fProcessDone ? fInclusiveCF1D : 0x0);}
     TH1D*             GetInclusiveCF1D(Int_t massWindow) const {return (fProcessDone ? fInclusiveCF1DBackgroundMassWindow[massWindow] : 0x0);}
     TH1D*             GetInclusiveCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMass[phiBin][etaBin] : 0x0);}
-    TH1D*             GetInclusiveCF1DBackground(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassBackground[phiBin][etaBin] : 0x0);}
+    TH1D*             GetInclusiveCF1DBackgroundRange(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassBackgroundRange[phiBin][etaBin] : 0x0);}
     TH2D*             GetInclusiveCF2D() const {return (fProcessDone ? fInclusiveCF2D : 0x0);}
     TH2D*             GetInclusiveCF2D(Int_t massWindow) const {return (fProcessDone ? fInclusiveCF2DBackgroundMassWindow[massWindow] : 0x0);}
     TH3D*             GetInclusiveCF3D() const {return (fProcessDone ? fInclusiveCF3D : 0x0);}
     TH1D*             GetBackgroundCF1D() const {return (fProcessDone ? fBackgroundCF1D : 0x0);}
-    TH1D*             GetBackgroundCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fBackgroundCF1DInvMass[phiBin][etaBin] : 0x0);}
     TH2D*             GetBackgroundCF2D() const {return (fProcessDone ? fBackgroundCF2D : 0x0);}
     TH1D*             GetCombinatorialBackgroundCF1D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF1D[massWindow] : 0x0);}
     TH2D*             GetCombinatorialBackgroundCF2D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF2D[massWindow] : 0x0);}
     TH1D*             GetSignalCF1D() const {return (fProcessDone ? fSignalCF1D : 0x0);}
-    TH1D*             GetSignalCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fSignalCF1DInvMass[phiBin][etaBin] : 0x0);}
     TH1D*             GetSignalCF1DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF1DEffCorr : 0x0);}
     TH2D*             GetSignalCF2D() const {return (fProcessDone ? fSignalCF2D : 0x0);}
     TH2D*             GetSignalCF2DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF2DEffCorr : 0x0);}
@@ -269,6 +278,9 @@ class AliCorrelationExtraction : public TObject {
     Int_t             GetBackgroundMethod() const {return (fProcessDone ? fOptionBkgMethod : 0x0);}
     TF1*              GetBackgroundFitFunction() const {return (fProcessDone ? fBkgFitFunction : 0x0);}
     TF1*              GetBackgroundFitFunction(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fBackgroundCF1DInvMassFit[phiBin][etaBin] : 0x0);}
+    TF1*              GetGlobalFitFunction(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassFit[phiBin][etaBin] : 0x0);}
+    TGraphErrors*     GetGlobalFitFunctionCI(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fInclusiveCF1DInvMassFitCI[phiBin][etaBin] : 0x0);}
+    TH1*              GetSoverBMC(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fSoverBMC[phiBin][etaBin] : 0x0);}
     TH1D*             GetPairInvMassSEPP() const {return (fProcessDone ? fSEPPPairInvMass : 0x0);}
     TH1D*             GetPairInvMassSEMM() const {return (fProcessDone ? fSEMMPairInvMass : 0x0);}
     TH1D*             GetPairInvMassMEOS() const {return (fProcessDone ? fMEOSPairInvMass : 0x0);}
@@ -316,6 +328,8 @@ class AliCorrelationExtraction : public TObject {
   
     TH1D*       fHadronEff;
 
+    static TH1* fSoverBMC[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+
     // output histograms
     TH2D* fSEOSNorm;
     TH2D* fSEOSNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
@@ -333,20 +347,20 @@ class AliCorrelationExtraction : public TObject {
     TH2D* fMEMMNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH1D* fInclusiveCF1D;
     TH1D* fInclusiveCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
-    TH1D* fInclusiveCF1DInvMassBackground[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    TH1D* fInclusiveCF1DInvMassBackgroundRange[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH1D* fInclusiveCF1DBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH2D* fInclusiveCF2D;
     TH2D* fInclusiveCF2DBackgroundMassWindow[kNMaxBackgroundMassRanges];
     TH3D* fInclusiveCF3D;
     TH1D* fBackgroundCF1D;
-    TF1*  fBackgroundCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
-    TH1D* fBackgroundCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    static TF1*   fBackgroundCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    TF1*          fInclusiveCF1DInvMassFit[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
+    TGraphErrors* fInclusiveCF1DInvMassFitCI[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH2D* fBackgroundCF2D;
     TH1D* fCombinatorialBackgroundCF1D[kNMaxBackgroundMassRanges];
     TH2D* fCombinatorialBackgroundCF2D[kNMaxBackgroundMassRanges];
     TH1D* fSignalCF1D;
     TH1D* fSignalCF1DEffCorr;
-    TH1D* fSignalCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH2D* fSignalCF2D;
     TH2D* fSignalCF2DEffCorr;
 
@@ -367,21 +381,28 @@ class AliCorrelationExtraction : public TObject {
     Int_t     fDeltaPhiVariableIndex;
     Int_t     fDeltaEtaVariable;
     Int_t     fDeltaEtaVariableIndex;
-    Int_t     fEfficiencyVariable;                            // variable the efficiency (fHadronEff) is a function of
-    Int_t     fEfficiencyVariableIndex;                       // index of fEfficiencyVariable in fSEOS, etc.
+    Int_t     fHadronEfficiencyVariable;                      // variable the efficiency (fHadronEff) is a function of
+    Int_t     fHadronEfficiencyVariableIndex;                 // index of fHadronEfficiencyVariable in fSEOS, etc.
+
+    // J/psi efficiency
+    Double_t  fJpsiEff;
+    Double_t  fJpsiEffErr;
 
     // user options
     Bool_t            fVerboseFlag;
     Bool_t            fUseMixingVars;
     Bool_t            fIntegrateDeltaEta[kNBackgroundMethods];
+    Bool_t            fUseJpsiEfficiency;
     AliResonanceFits* fResonanceFits;
     Int_t             fOptionBkgMethod;
     TF1*              fBkgFitFunction;
+    Double_t          fFitPrecision;
   
     // mass ranges
     Int_t     fNBackgroundMassRanges;                               // number of background mass windows
     Double_t  fBackgroundMassRanges[kNMaxBackgroundMassRanges][2];  // background mass windows
     Double_t  fMassSignalRange[2];                                  // signal mass window
+    Double_t  fMassExclusionRange[2];                               // mass exclusion range for fit method
   
     // values
     Double_t fTrigValSig[kNTriggerValues];                            // trigger values signal mass range
@@ -394,11 +415,12 @@ class AliCorrelationExtraction : public TObject {
     void    ApplyUserRanges(THnBase* h);
     Bool_t  Initialize();
     Bool_t  NormalizeToNearSidePeak(TH2D* h);
-    Bool_t  InBackgroundRange(Double_t min, Double_t max, Int_t& index);
+    Bool_t  IsBackgroundRange(Double_t min, Double_t max, Int_t& index);
     TH1D*   ProjectToDeltaPhi(TH2D* hIn, TString name);
+    static Double_t GlobalFitFunction(Double_t* x, Double_t* par);
     Bool_t  CalculateInclusiveCorrelationInMixingBins(Int_t currentVar, Int_t& nCalls,
                                                       THnBase* seos, THnBase* meos, TH2D* (&inclCF));
-    Bool_t  CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass,
+    Bool_t  CalculateInclusiveCorrelation(Double_t minMass, Double_t maxMass, Bool_t isSignalRange,
                                           TH2D* (&seos), TH2D* (&meos),
                                           TH2D* (&incl2D), TH1D* (&incl1D));
     Bool_t  CalculateBackgroundCorrelationFitting();
@@ -408,9 +430,9 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateBackgroundCorrelationSuperposition();
     Bool_t  CalculateBackgroundCorrelationSuperpositionTwoComponent();
     Bool_t  CalculateSignalCorrelation();
-    Bool_t  EfficiencyCorrection();
+    Bool_t  HadronEfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 2);
+  ClassDef(AliCorrelationExtraction, 6);
 };
 
 #endif

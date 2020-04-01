@@ -90,13 +90,20 @@
 #include "AliPIDCombined.h"
 #include "AliLog.h"
 #include "AliAODEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliPDG.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliPicoTrack.h"
 #include "AliAODv0.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliEventPoolManager.h"
 
 #include "AliAnalysisTaskUniFlow.h"
 #include "AliUniFlowCorrTask.h"
@@ -111,13 +118,17 @@ namespace {
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fEventCuts{},
   fEventAOD{nullptr},
-  fEventMC{nullptr},
+  // fEventMC{nullptr},
+  fEvent{nullptr},
   fPVz{},
   fPIDResponse{nullptr},
   fPIDCombined{nullptr},
   fFlowWeightsList{nullptr},
   fMC{kFALSE},
+  fNeedPIDCorrection{kFALSE},
+  fIs2018data{kFALSE},
   fInit{kFALSE},
+  fUseGeneralFormula{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
   fEventCounter{0},
@@ -154,12 +165,25 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fNumSamples{1},
   fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
+  fFlowFillWeightsMultiD{kFALSE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{kFALSE},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
+  fEventPoolMgr{nullptr},
+  fCorrFill{kFALSE},
+  fFillMixed{kTRUE},
+  fPoolSize{-1},
+  fMixingTracks{50000},
+  fMinEventsToMix{5},
+  fCorrDEtaBinNum{32},
+  fCorrDPhiBinNum{72},
+  fCorrdEtaMin{-1.6},
+  fCorrdEtaMax{1.6},
+  fCorrdPhiMin{-0.5*TMath::Pi()},
+  fCorrdPhiMax{1.5*TMath::Pi()},
   fColSystem{kPPb},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -170,6 +194,10 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fCentMinAdd{0},
   fCentMaxAdd{0},
   fPVtxCutZ{10.0},
+  fVxMax{3.},
+  fVyMax{3.},
+  fVzMax{10.},
+  fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -237,17 +265,21 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fh3Weights{nullptr},
   fh2AfterWeights{nullptr},
   fh3AfterWeights{nullptr},
+  fhWeightsMultiD{nullptr},
   fhEventSampling{nullptr},
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
   fh2MeanMultRFP{nullptr},
+  fh2MCip{nullptr},
   fhRefsMult{nullptr},
   fhRefsPt{nullptr},
   fhRefsEta{nullptr},
   fhRefsPhi{nullptr},
   fpRefsMult{nullptr},
   fhChargedCounter{nullptr},
+  fh4CorrelationsSE{nullptr},
+  fh4CorrelationsME{nullptr},
   fhPIDCounter{nullptr},
   fhPIDMult{nullptr},
   fhPIDPt{nullptr},
@@ -367,13 +399,17 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
 AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSys, Bool_t bUseWeights, Bool_t bIsMC) : AliAnalysisTaskSE(name),
   fEventCuts{},
   fEventAOD{nullptr},
-  fEventMC{nullptr},
+  // fEventMC{nullptr},
+  fEvent{nullptr},
   fPVz{},
   fPIDResponse{nullptr},
   fPIDCombined{nullptr},
   fFlowWeightsList{nullptr},
   fMC{bIsMC},
+  fNeedPIDCorrection{kFALSE},
+  fIs2018data{kFALSE},
   fInit{kFALSE},
+  fUseGeneralFormula{kFALSE},
   fIndexSampling{0},
   fIndexCentrality{-1},
   fEventCounter{0},
@@ -410,12 +446,25 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fNumSamples{1},
   fEtaCheckRFP{kFALSE},
   fFlowFillWeights{kTRUE},
+  fFlowFillWeightsMultiD{kFALSE},
   fFlowFillAfterWeights{kTRUE},
   fFlowUseWeights{bUseWeights},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
+  fEventPoolMgr{nullptr},
+  fCorrFill{kFALSE},
+  fFillMixed{kTRUE},
+  fPoolSize{-1},
+  fMixingTracks{50000},
+  fMinEventsToMix{5},
+  fCorrDEtaBinNum{32},
+  fCorrDPhiBinNum{72},
+  fCorrdEtaMin{-1.6},
+  fCorrdEtaMax{1.6},
+  fCorrdPhiMin{-0.5*TMath::Pi()},
+  fCorrdPhiMax{1.5*TMath::Pi()},
   fColSystem{colSys},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -426,6 +475,10 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fCentMinAdd{0},
   fCentMaxAdd{0},
   fPVtxCutZ{10.0},
+  fVxMax{3.},
+  fVyMax{3.},
+  fVzMax{10.},
+  fImpactParameterMC{0.},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
   fCutChargedNumTPCclsMin{70},
@@ -493,17 +546,21 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fh3Weights{nullptr},
   fh2AfterWeights{nullptr},
   fh3AfterWeights{nullptr},
+  fhWeightsMultiD{nullptr},
   fhEventSampling{nullptr},
   fhEventCentrality{nullptr},
   fh2EventCentralityNumRefs{nullptr},
   fhEventCounter{nullptr},
   fh2MeanMultRFP{nullptr},
+  fh2MCip{nullptr},
   fhRefsMult{nullptr},
   fhRefsPt{nullptr},
   fhRefsEta{nullptr},
   fhRefsPhi{nullptr},
   fpRefsMult{nullptr},
   fhChargedCounter{nullptr},
+  fh4CorrelationsSE{nullptr},
+  fh4CorrelationsME{nullptr},
   fhPIDCounter{nullptr},
   fhPIDMult{nullptr},
   fhPIDPt{nullptr},
@@ -722,6 +779,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fSampling: (Bool_t) %s\n",    fSampling ? "kTRUE" : "kFALSE");
   printf("      fFillQA: (Bool_t) %s\n",    fFillQA ? "kTRUE" : "kFALSE");
   printf("      fEtaCheckRFP: (Bool_t) %s\n",    fEtaCheckRFP ? "kTRUE" : "kFALSE");
+  printf("      fUseGeneralFormula: (Bool_t) %s\n",    fUseGeneralFormula ? "kTRUE" : "kFALSE");
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) { printf("      fProcessSpec[k%s]: (Bool_t) %s\n",   GetSpeciesName(PartSpecies(iSpec)), fProcessSpec[iSpec] ? "kTRUE" : "kFALSE"); }
   printf("   -------- Flow related ----------------------------------------\n");
   printf("      fFlowRFPsPtMin: (Double_t) %g (GeV/c)\n",    fFlowRFPsPtMin);
@@ -735,6 +793,7 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fV0sNumBinsMass: (Int_t) %d\n",    fV0sNumBinsMass);
   printf("      fPhiNumBinsMass: (Int_t) %d\n",    fPhiNumBinsMass);
   printf("      fFlowFillWeights: (Bool_t) %s\n",    fFlowFillWeights ? "kTRUE" : "kFALSE");
+  printf("      fFlowFillWeightsMultiD: (Bool_t) %s\n",    fFlowFillWeightsMultiD ? "kTRUE" : "kFALSE");
   printf("      fFlowFillAfterWeights: (Bool_t) %s\n",    fFlowFillAfterWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowUseWeights: (Bool_t) %s\n",    fFlowUseWeights ? "kTRUE" : "kFALSE");
   printf("      fFlowWeightsTag: (TString) '%s'\n",    fFlowWeightsTag.Data());
@@ -817,7 +876,7 @@ void AliAnalysisTaskUniFlow::ClearVectors()
 
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
     if(!fProcessSpec[iSpec]) { continue; }
-    std::vector<AliVTrack*>* vector = fVector[iSpec];
+    std::vector<AliVParticle*>* vector = fVector[iSpec];
     if(!vector) { continue; }
     if(HasMass(PartSpecies(iSpec))) { for(auto part = vector->begin(); part != vector->end(); ++part) { delete *part; } }
     vector->clear();
@@ -845,7 +904,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   // returns kTRUE if succesfull
   // *************************************************************
   AliInfo("Checking task setting");
-  if(fAnalType != kAOD)
+  if(fAnalType != kAOD && fAnalType != kMC)
   {
     AliFatal("Analysis type: not kAOD (not implemented for ESDs yet)! Terminating!");
     return kFALSE;
@@ -855,7 +914,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fPIDResponse = inputHandler->GetPIDResponse();
-  if(!fPIDResponse)
+  if(!fPIDResponse && fAnalType != kMC)
   {
     AliFatal("AliPIDResponse object not found! Terminating!");
     return kFALSE;
@@ -1006,7 +1065,7 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec)
   {
     if(!fProcessSpec[iSpec]) { continue; }
-    fVector[iSpec] = new std::vector<AliVTrack*>();
+    fVector[iSpec] = new std::vector<AliVParticle*>();
     fVector[iSpec]->reserve(iReserve);
   }
 
@@ -1027,20 +1086,29 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(fRunMode == kTest && fEventCounter >= fNumEventsAnalyse) { return; }
 
   // event selection
-  fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!fEventAOD) { return; }
+  // fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  // if(!fEventAOD) { return; }
 
   // loading AliPIDResponse
   AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
-  if(!fPIDResponse) { AliFatal("AliPIDResponse not attached!"); return; }
+  if(!fPIDResponse && fAnalType != kMC) { AliFatal("AliPIDResponse not attached!"); return; }
 
   // loading array with MC particles
-  if(fMC) {
-    fEventMC = inputHandler->MCEvent();
-    if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
+  // if(fMC) {
+  //   fEventMC = inputHandler->MCEvent();
+  //   if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
+  // }
+
+  //loading VEvent with generated event / data
+  if(fAnalType == kMC){ fEvent = dynamic_cast<AliVEvent*>(MCEvent());}
+  else{
+    fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+    fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fEventAOD) { AliFatal("AOD not found!"); return; }
   }
+  if(!fEvent) { AliFatal("fEvent not found!"); return; }
 
   // "valid" events before selection
   fhEventCounter->Fill("Input",1);
@@ -1048,16 +1116,19 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // Fill event QA BEFORE cuts
   if(fFillQA) { FillQAEvents(kBefore); }
 
-  Bool_t bEventSelected = IsEventSelected();
-  // if(!IsEventSelected()) { return; }
+  Bool_t bEventSelected = kFALSE;
+  if(fAnalType != kMC) bEventSelected = IsEventSelected();
+  else bEventSelected = IsMCEventSelected();
 
   DumpTObjTable("UserExec: after event selection");
   if(!bEventSelected) { return; }
 
   fhEventCounter->Fill("Event OK",1);
 
+  if(fAnalType == kMC && fFlowUseWeights) { AliFatal("Cannot generate events and use weights on in the same time! Terminating!"); return; }
+
   // checking the run number for aplying weights & loading TList with weights
-  if(fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+  if(fAnalType != kMC && fFlowUseWeights && fFlowRunByRunWeights && fRunNumber != fEventAOD->GetRunNumber() && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
 
   DumpTObjTable("UserExec: before filtering");
 
@@ -1065,11 +1136,14 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // NB: clear charged vectors because it might keep particles from previous event (not happen for other species)
   fVector[kRefs]->clear();
   fVector[kCharged]->clear();
-  FilterCharged();
+
+  if(!fMC) FilterCharged();
+  else FilterChargedMC();
 
   // checking if there is at least 4/6/8 particles: needed to "properly" calculate correlations
   UInt_t minNOfPar = 4;
   if(fColSystem == kPbPb) minNOfPar = 8;
+  if(fUseGeneralFormula) minNOfPar = 12;
   if(fVector[kRefs]->size() <= minNOfPar) { return; }
 
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
@@ -1096,7 +1170,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   fIndexSampling = GetSamplingIndex();
 
   // extract PV-z for weights
-  fPVz = fEventAOD->GetPrimaryVertex()->GetZ();
+  fPVz = fEvent->GetPrimaryVertex()->GetZ();
 
   // Fill QA AFTER cuts (i.e. only in selected events)
   if(fFillQA) { FillQAEvents(kAfter); }
@@ -1115,35 +1189,38 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
     if(!FillFlowWeight(*part, kCharged)) { AliFatal("Flow weight filling failed!"); return; }
   }
 
+
   if(fFillQA) {
     // Charged QA before selection
-    for(Int_t iTrack(0); iTrack < fEventAOD->GetNumberOfTracks(); iTrack++) {
-      AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
+    for(Int_t iTrack(0); iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
+      AliVParticle* track = static_cast<AliVParticle*>(fEvent->GetTrack(iTrack));
       if(!track) { continue; }
       FillQACharged(kBefore,track);
     }
-
-    fhQAChargedMult[0]->Fill(fEventAOD->GetNumberOfTracks());
+    fhQAChargedMult[0]->Fill(fEvent->GetNumberOfTracks());
     fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
 
   // sorting charged hadrons
-  std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+  std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
 
   // Filtering other species
   if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) {
       FilterV0s();
-      std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
-      std::sort(fVector[kLambda]->begin(), fVector[kLambda]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kLambda]->begin(), fVector[kLambda]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
   }
   if(fProcessSpec[kPhi]) {
       FilterPhi();
-      std::sort(fVector[kPhi]->begin(), fVector[kPhi]->end(), [this](const AliVTrack* a, const AliVTrack* b){ return this->sortPt(a, b); });
+      std::sort(fVector[kPhi]->begin(), fVector[kPhi]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
   }
 
   DumpTObjTable("UserExec: after filtering");
+
+  Bool_t bCorrelations = FillCorrelations();
+  DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -1154,10 +1231,10 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // particles (Phi, V0s) because here new AliPicoTracks are created
   ClearVectors();
 
-  if(fMC) { ProcessMC(); }
+  // if(fMC) { ProcessMC(); }
 
   // extracting run number here to store run number from previous event (for current run number use info in AliAODEvent)
-  fRunNumber = fEventAOD->GetRunNumber();
+  if(fAnalType == kAOD) fRunNumber = fEventAOD->GetRunNumber();
 
   DumpTObjTable("UserExec: end");
 
@@ -1182,22 +1259,21 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   // Event selection for pp & p-Pb collision recorded in Run 2 using AliEventCuts
   // return kTRUE if event passes all criteria, kFALSE otherwise
   // *************************************************************
+  if(fAnalType == kMC) { AliFatal("Simulated event cannot pass 'IsEventSelected'! \n"); return kFALSE; }
 
   // Physics selection (trigger)
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!(fSelectMask & fTrigger)) { return kFALSE; }
+  fhEventCounter->Fill("Loaded OK",1);
 
-  // events passing physics && trigger selection
-  fhEventCounter->Fill("Physics selection OK",1);
-
+  if(fIs2018data){
+    fEventCuts.SetupPbPb2018();
+    fhEventCounter->Fill("2018 OK",1);
+  }
   // events passing AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fEventAOD)) { return kFALSE; }
+  if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
   fhEventCounter->Fill("EventCuts OK",1);
-
-  // Additional pile-up rejection cuts for LHC15o dataset
-  if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
 
   // estimate centrality & assign indexes (only if AliMultEstimator is requested)
   if(fCentEstimator != kRFP) {
@@ -1207,6 +1283,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
       if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
       if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
   }
+  fhEventCounter->Fill("Centrality OK",1);
 
   // additional centrality cut for "double differential" cut
   if(fCentEstimatorAdd != kRFP && fCentMaxAdd > 0) {
@@ -1214,8 +1291,73 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     if(addCentIndex < fCentMinAdd) { return kFALSE; }
     if(addCentIndex > fCentMaxAdd) { return kFALSE; }
   }
+  fhEventCounter->Fill("Centrality cuts OK",1);
 
-  fhEventCounter->Fill("Cent/Mult OK",1);
+  if(!fIs2018data){
+    if(!(fSelectMask & fTrigger)) { return kFALSE; }
+  }
+  else {
+    if((fIndexCentrality<10) || (fIndexCentrality>30 && fIndexCentrality<50)){
+      if(!(fSelectMask & (AliVEvent::kCentral|AliVEvent::kSemiCentral|fTrigger))) { return kFALSE; }
+    }
+    else{
+      if(!(fSelectMask & fTrigger)) { return kFALSE;}
+    }
+  }
+
+  // events passing physics && trigger selection
+  fhEventCounter->Fill("Triggers OK",1);
+
+  // Additional pile-up rejection cuts for LHC15o dataset
+  if(fColSystem == kPbPb && fEventRejectAddPileUp && fCentEstimatorAdd != kRFP && fIndexCentrality < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
+
+  fhEventCounter->Fill("PileUp cut OK",1);
+
+  return kTRUE;
+}
+// ============================================================================
+Bool_t AliAnalysisTaskUniFlow::IsMCEventSelected()
+{
+  // Return kTRUE if event passes all criteria, kFALSE otherwise
+  // for simulated events only
+  // *************************************************************
+
+  if(fAnalType != kMC) { AliFatal("Real event cannot pass 'IsMCEventSelected'! \n"); return kFALSE; }
+
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return kFALSE; }
+
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return kFALSE; }
+
+  fhEventCounter->Fill("Physics selection OK",1);
+
+  const AliVVertex *vertex = ev->GetPrimaryVertex();
+  if(!ev) { AliError("Vertex of MC not found!"); }
+
+  if(TMath::Abs(vertex->GetX()) > fVxMax) return kFALSE;
+  if(TMath::Abs(vertex->GetY()) > fVyMax) return kFALSE;
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) return kFALSE;
+
+  fhEventCounter->Fill("EventCuts OK",1);
+
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else
+    headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      fImpactParameterMC = headerH->ImpactParameter();
+  }
 
   return kTRUE;
 }
@@ -1225,7 +1367,6 @@ Bool_t AliAnalysisTaskUniFlow::IsEventRejectedAddPileUp() const
   // Check for additional pile-up rejection in Run 2 Pb-Pb collisions (15o, 17n)
   // based on multiplicity correlations
   // ***************************************************************************
-
   Bool_t bIs17n = kFALSE;
   Bool_t bIs15o = kFALSE;
 
@@ -1353,7 +1494,7 @@ Bool_t AliAnalysisTaskUniFlow::LoadWeights()
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVTrack* track, const PartSpecies species) const
+Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   if(!track) { AliError("Track not exists!"); return kFALSE; }
   if(species == kUnknown) { AliError("Invalid species 'Unknown'!"); return kFALSE; }
@@ -1363,6 +1504,18 @@ Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVTrack* track, const Part
       fh3Weights[species]->Fill(track->Phi(),track->Eta(),fPVz);
     } else {
       fh2Weights[species]->Fill(track->Phi(),track->Eta());
+    }
+
+    if(fFlowFillWeightsMultiD){
+      if(!fhWeightsMultiD) { Error("THnSparse not valid!","FillFlowWeight"); return kFALSE; }
+      Double_t dWeightsValues[SparseWeights::wDim] = {0};
+      dWeightsValues[SparseWeights::wPhi] = track->Phi();
+      dWeightsValues[SparseWeights::wCent] = fIndexCentrality;
+      dWeightsValues[SparseWeights::wPt] = track->Pt();
+      dWeightsValues[SparseWeights::wEta] = track->Eta();
+      dWeightsValues[SparseWeights::wVz] = fPVz;
+      dWeightsValues[SparseWeights::wSpec] = species;
+      fhWeightsMultiD->Fill(dWeightsValues);
     }
   }
 
@@ -1379,7 +1532,7 @@ Bool_t AliAnalysisTaskUniFlow::FillFlowWeight(const AliVTrack* track, const Part
   return kTRUE;
 }
 // ============================================================================
-Double_t AliAnalysisTaskUniFlow::GetFlowWeight(const AliVTrack* track, const PartSpecies species) const
+Double_t AliAnalysisTaskUniFlow::GetFlowWeight(const AliVParticle* track, const PartSpecies species) const
 {
   // if not applying for reconstructed
   if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
@@ -1404,23 +1557,37 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
 
   if(iQAindex == 1)
   {
-    fhEventCentrality->Fill(fIndexCentrality);
-    fh2EventCentralityNumRefs->Fill(fIndexCentrality,fVector[kRefs]->size());
     fpRefsMult->Fill(fIndexCentrality,fVector[kRefs]->size(),1.0);
     fhEventSampling->Fill(fIndexCentrality,fIndexSampling);
+    if(fAnalType == kMC) fh2MCip->Fill(fImpactParameterMC, fIndexCentrality);
   }
 
-  const AliAODVertex* aodVtx = fEventAOD->GetPrimaryVertex();
+  const AliVVertex* aodVtx = fEvent->GetPrimaryVertex();
   const Double_t dVtxZ = aodVtx->GetZ();
   const Int_t iNumContr = aodVtx->GetNContributors();
-  const AliAODVertex* spdVtx = fEventAOD->GetPrimaryVertexSPD();
-  const Int_t iNumContrSPD = spdVtx->GetNContributors();
-  const Double_t spdVtxZ = spdVtx->GetZ();
 
   fhQAEventsPVz[iQAindex]->Fill(dVtxZ);
   fhQAEventsNumContrPV[iQAindex]->Fill(iNumContr);
+
+  if(fAnalType == kMC) { return; }
+
+  if(iQAindex == 1)
+  {
+    fhEventCentrality->Fill(fIndexCentrality);
+    fh2EventCentralityNumRefs->Fill(fIndexCentrality,fVector[kRefs]->size());
+  }
+
+  const AliAODVertex* spdVtx = fEventAOD->GetPrimaryVertexSPD();
+  const Int_t iNumContrSPD = spdVtx->GetNContributors();
+  const Double_t spdVtxZ = spdVtx->GetZ();
   fhQAEventsNumSPDContrPV[iQAindex]->Fill(iNumContrSPD);
   fhQAEventsDistPVSPD[iQAindex]->Fill(TMath::Abs(dVtxZ - spdVtxZ));
+
+  // SPD vertexer resolution
+  Double_t cov[6] = {0};
+  spdVtx->GetCovarianceMatrix(cov);
+  Double_t zRes = TMath::Sqrt(cov[5]);
+  fhQAEventsSPDresol[iQAindex]->Fill(zRes);
 
   // // event / physics selection criteria
   // AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1432,25 +1599,19 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
   // else if (fSelectMask& AliVEvent::kHighMultSPD) { fQAEventsTriggerSelection[iQAindex]->Fill("kHighMultSPD",1); }
   // else { fQAEventsTriggerSelection[iQAindex]->Fill("Other",1); }
 
-  // SPD vertexer resolution
-  Double_t cov[6] = {0};
-  spdVtx->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
-  fhQAEventsSPDresol[iQAindex]->Fill(zRes);
-
   return;
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::ProcessMC() const
 {
-    if(!fEventMC) { AliError("fEventMC with MC particles not found!"); return; }
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    if(!ev) { AliFatal("MC event not found!"); return; }
 
-    const Int_t iNumTracksMC = fEventMC->GetNumberOfTracks();
+    const Int_t iNumTracksMC = ev->GetNumberOfTracks();
     for(Int_t iTrackMC(0); iTrackMC < iNumTracksMC; ++iTrackMC) {
 
-        AliAODMCParticle* trackMC = (AliAODMCParticle*) fEventMC->GetTrack(iTrackMC);
+        AliAODMCParticle* trackMC = (AliAODMCParticle*) ev->GetTrack(iTrackMC);
         if(!trackMC) { continue; }
-
 
         Double_t dEta = trackMC->Eta();
         Double_t dPt = trackMC->Pt();
@@ -1490,11 +1651,11 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
   // If track passes all requirements its pointer is pushed to relevant vector container
   // *************************************************************
 
-  Int_t iNumTracks = fEventAOD->GetNumberOfTracks();
+  Int_t iNumTracks = fEvent->GetNumberOfTracks();
   if(iNumTracks < 1) { return; }
 
   for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) {
-    AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
+    AliAODTrack* track = static_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
     if(!track) { continue; }
 
     // passing reconstruction criteria
@@ -1512,6 +1673,32 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
         if(fMC) { fh2MCPtEtaReco[kCharged]->Fill(track->Pt(), track->Eta()); }
     }
   } // end-for {iTrack}
+
+  return;
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::FilterChargedMC() const
+{
+  // Filtering input charged tracks for Monte Carlo POIs (stored in fVector[kCharged]) or RFPs (fVector[kRefs])
+  // If track passes all requirements its pointer is pushed to relevant vector container
+  // *************************************************************
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return; }
+
+  Int_t iNumTracks = ev->GetNumberOfPrimaries();
+  if(iNumTracks < 1) { return; }
+
+  for(Int_t iTrack(0); iTrack < iNumTracks; iTrack++) {
+    AliMCParticle* track = dynamic_cast<AliMCParticle*>(ev->GetTrack(iTrack));
+    if(!track) { continue; }
+
+    //excluding non stable particles
+    if(!(ev->IsPhysicalPrimary(iTrack))) continue;
+    if(track->Charge() == 0) continue;
+
+    if(IsWithinRefs(track)) { fVector[kRefs]->push_back(track); }
+    if(IsWithinPOIs(track)) { fVector[kCharged]->push_back(track); }
+  }
 
   return;
 }
@@ -1599,12 +1786,13 @@ void AliAnalysisTaskUniFlow::FillSparseCand(THnSparse* sparse, const AliVTrack* 
   dValues[SparseCand::kInvMass] = track->M();
   dValues[SparseCand::kPt] = track->Pt();
   dValues[SparseCand::kEta] = track->Eta();
+  dValues[SparseCand::kSample] = fIndexSampling;
   sparse->Fill(dValues);
 
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliAODTrack* track) const
+void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliVParticle* track) const
 {
   // Filling various QA plots related to RFPs subset of charged track selection
   // *************************************************************
@@ -1619,34 +1807,40 @@ void AliAnalysisTaskUniFlow::FillQARefs(const QAindex iQAindex, const AliAODTrac
   return;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQACharged(const QAindex iQAindex, const AliAODTrack* track) const
+void AliAnalysisTaskUniFlow::FillQACharged(const QAindex iQAindex, AliVParticle* track) const
 {
   // Filling various QA plots related to charged track selection
   // *************************************************************
   if(!track) return;
 
+  // printf("charge %d, QA idx %d , pdg code %d \n", track->Charge(), iQAindex, track->PdgCode());
   // track charge
   fhQAChargedCharge[iQAindex]->Fill(track->Charge());
 
-  // number of TPC clusters
-  fhQAChargedNumTPCcls[iQAindex]->Fill(track->GetTPCNcls());
+  if(fAnalType != kMC){
+    AliAODTrack* tr =  dynamic_cast<AliAODTrack*>(track);
+    if(!tr) { AliFatal("AOD track not found!"); return; }
 
-  // track DCA
-  Double_t dDCAXYZ[3] = {-999., -999., -999.};
-  const AliAODVertex* vertex = fEventAOD->GetPrimaryVertex();
-  if(vertex)
-  {
-    Double_t dTrackXYZ[3] = {-999., -999., -999.};
-    Double_t dVertexXYZ[3] = {-999., -999., -999.};
+    // number of TPC clusters
+    fhQAChargedNumTPCcls[iQAindex]->Fill(tr->GetTPCNcls());
 
-    track->GetXYZ(dTrackXYZ);
-    vertex->GetXYZ(dVertexXYZ);
+    // track DCA
+    Double_t dDCAXYZ[3] = {-999., -999., -999.};
+    const AliVVertex* vertex = fEventAOD->GetPrimaryVertex();
+    if(vertex)
+    {
+      Double_t dTrackXYZ[3] = {-999., -999., -999.};
+      Double_t dVertexXYZ[3] = {-999., -999., -999.};
 
-    for(Short_t i(0); i < 3; i++)
-      dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+      tr->GetXYZ(dTrackXYZ);
+      vertex->GetXYZ(dVertexXYZ);
+
+      for(Short_t i(0); i < 3; i++)
+        dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i];
+    }
+    fhQAChargedDCAxy[iQAindex]->Fill(TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]));
+    fhQAChargedDCAz[iQAindex]->Fill(dDCAXYZ[2]);
   }
-  fhQAChargedDCAxy[iQAindex]->Fill(TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]));
-  fhQAChargedDCAz[iQAindex]->Fill(dDCAXYZ[2]);
 
   // kinematics
   fhQAChargedPt[iQAindex]->Fill(track->Pt());
@@ -1990,14 +2184,15 @@ Double_t AliAnalysisTaskUniFlow::GetRapidity(const Double_t mass, const Double_t
 // ============================================================================
 AliAODMCParticle* AliAnalysisTaskUniFlow::GetMCParticle(const Int_t label) const
 {
-  if(!fEventMC) { AliError("fEventMC not found!"); return nullptr; }
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  if(!ev) { AliFatal("MC event not found!"); return nullptr; }
 
   const Int_t labelAbs = TMath::Abs(label);
   // Negative label just indicate track with shared clustes, but otherwise should be used
   // absolute value has to be used
   // if(label < 0) { /*AliWarning("MC label negative");*/ return nullptr; }
 
-  AliAODMCParticle* mcTrack = (AliAODMCParticle*) fEventMC->GetTrack(labelAbs);
+  AliAODMCParticle* mcTrack = (AliAODMCParticle*) ev->GetTrack(labelAbs);
   if(!mcTrack) { AliWarning("Corresponding MC track not found!"); return nullptr; }
   return mcTrack;
 }
@@ -2531,10 +2726,10 @@ void AliAnalysisTaskUniFlow::FilterPID() const
 
   for(auto part = fVector[kCharged]->begin(); part != fVector[kCharged]->end(); ++part)
   {
-    AliAODTrack* track = static_cast<AliAODTrack*>(*part);
+    AliVParticle* track = static_cast<AliVParticle*>(*part);
     if(!track) { continue; }
 
-    if(fColSystem == kPP || fColSystem == kPPb) {
+    if((fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb)) {
       Int_t counter = fIndexCentrality/10;
       fh2MeanMultRFP[counter]->Fill(track->Pt(), fVector[kCharged]->size());
     }
@@ -2544,7 +2739,9 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     if(fFillQA) { FillQAPID(kBefore,track,kUnknown); } // filling QA for tracks before selection (but after charged criteria applied)
 
     // PID track selection (return most favourable species)
-    PartSpecies species = IsPIDSelected(track);
+    PartSpecies species = kUnknown;
+    if(fAnalType != kMC) species = IsPIDSelected(track);
+    else species = IsPIDSelectedMC(track);
     if(species != kPion && species != kKaon && species != kProton) { continue; }
 
     // check if only protons should be used
@@ -2559,12 +2756,12 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     if(fFillQA) { FillQAPID(kAfter,track,species); } // filling QA for tracks AFTER selection }
 
     if(fProcessSpec[kPion] && fProcessSpec[kKaon] && fProcessSpec[kProton]) { // NB: aka process PID (not just Kaons for Phi)
-      if(!FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
+      if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
     }
 
     if(fMC) {
       fh2MCPtEtaReco[species]->Fill(track->Pt(), track->Eta());
-      if(CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
+      if(fAnalType != kMC && CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
     }
 
   } // end-for {part}
@@ -2579,12 +2776,14 @@ void AliAnalysisTaskUniFlow::FilterPID() const
   return;
 }
 // ============================================================================
-AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(const AliAODTrack* track) const
+AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(AliVParticle* tr) const
 {
   // Selection of PID tracks (pi,K,p) - track identification
   // Based on fCutUseBayesPID flag, either Bayes PID or nSigma cutting is used
   // returns AliAnalysisTaskUniFlow::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
   // *************************************************************
+  AliAODTrack* track = dynamic_cast<AliAODTrack*>(tr);
+  if(!track) {AliError("AOD track not found!"); return kUnknown; }
 
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -2605,13 +2804,18 @@ AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(const 
     dProbPID[iSpec] = -99.0;
   }
 
-
   for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-    dNumSigmaTPC[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec)));
     dNumSigmaTOF[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::EParticleType(iSpec)));
+    //2018 data PID correction
+    if(!fNeedPIDCorrection){
+      dNumSigmaTPC[iSpec] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec)));
+    }
+    else{
+      dNumSigmaTPC[iSpec] = TMath::Abs(PIDCorrection(track, PartSpecies(iSpec)));
+    }
   }
 
-  if(fCutUseBayesPID) {
+  if(fCutUseBayesPID && !fNeedPIDCorrection) {
     UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, dProbPID); // filling probabilities to dPropPID array
 
     // check which detector were used
@@ -2686,20 +2890,52 @@ AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelected(const 
   return kUnknown;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack* track, const PartSpecies species) const
+AliAnalysisTaskUniFlow::PartSpecies AliAnalysisTaskUniFlow::IsPIDSelectedMC(AliVParticle* tr) const
+{
+  // Selection of PID tracks (pi,K,p) - track identification
+  // returns AliAnalysisTaskUniFlow::PartSpecies enum : kPion, kKaon, kProton if any of this passed kUnknown otherwise
+  // *************************************************************
+  if(!tr) {AliError("AliMCParticle not found!"); return kUnknown; }
+
+  Int_t id = TMath::Abs(tr->PdgCode());
+
+  if(id == 211) { return kPion; }
+  else if(id == 321) { return kKaon; }
+  else if(id == 2212) { return kProton; }
+  else { return kUnknown; }
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* track, const PartSpecies species) const
 {
   // Filling various QA plots related to PID (pi,K,p) track selection
   // *************************************************************
   if(!track) { return; }
 
+  Int_t iPID = species - 2; // NB: translation from PartSpecies to PID QA index
+
+  if(fAnalType == kMC) {
+    AliMCParticle* tr = dynamic_cast<AliMCParticle*>(track);
+    if(!tr) { AliError("AliMCParticle not found!"); return; }
+
+    fhPIDPt[iPID]->Fill(tr->Pt());
+    fhPIDPhi[iPID]->Fill(tr->Phi());
+    fhPIDEta[iPID]->Fill(tr->Eta());
+    fhPIDCharge[iPID]->Fill(tr->Charge()/3.);
+
+    return;
+  }
+
   if(!fPIDResponse || !fPIDCombined) { AliError("AliPIDResponse or AliPIDCombined object not found!"); return; }
 
-  // TPC & TOF statuses & measures
-  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
-  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
+  AliAODTrack* tr = dynamic_cast<AliAODTrack*>(track);
+  if(!tr) { AliError("AliAODTrack not found!"); return; }
 
-  Bool_t bIsTPCok = HasTrackPIDTPC(track);
-  Bool_t bIsTOFok = HasTrackPIDTOF(track);
+  // TPC & TOF statuses & measures
+  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, tr);
+  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, tr);
+
+  Bool_t bIsTPCok = HasTrackPIDTPC(tr);
+  Bool_t bIsTOFok = HasTrackPIDTOF(tr);
 
   Double_t dBayesProb[fPIDNumSpecies];
   Float_t dNumSigmaTPC[fPIDNumSpecies];
@@ -2715,19 +2951,19 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
     dTOFbetaDelta[iSpec] = -999.9;
   }
 
-  Double_t dP = track->P();
-  Double_t dPt = track->Pt();
+  Double_t dP = tr->P();
+  Double_t dPt = tr->Pt();
 
   // TPC dEdx
-  Double_t dTPCdEdx = track->GetTPCsignal();
+  Double_t dTPCdEdx = tr->GetTPCsignal();
 
   // TOF beta
   Double_t dTOF[5];
-  track->GetIntegratedTimes(dTOF);
-  Double_t dTOFbeta = dTOF[0] / track->GetTOFsignal();
+  tr->GetIntegratedTimes(dTOF);
+  Double_t dTOFbeta = dTOF[0] / tr->GetTOFsignal();
 
   // filling Bayesian PID probabilities to dBayesProb array
-  UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, dBayesProb);
+  UInt_t iDetUsed = fPIDCombined->ComputeProbabilities(tr, fPIDResponse, dBayesProb);
 
   // check which detector were used
   Bool_t bUsedTPC = kFALSE;
@@ -2744,11 +2980,16 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
 
   if(iQAindex == 0 || bUsedTPC) {
       fhQAPIDTPCstatus[iQAindex]->Fill((Int_t) pidStatusTPC );
-      fhQAPIDTPCdEdx[iQAindex]->Fill(track->P(), dTPCdEdx);
+      fhQAPIDTPCdEdx[iQAindex]->Fill(tr->P(), dTPCdEdx);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(track, AliPID::EParticleType(iSpec));
-        dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, track, AliPID::EParticleType(iSpec));
+        if(!fNeedPIDCorrection){
+          dNumSigmaTPC[iSpec] = fPIDResponse->NumberOfSigmasTPC(tr, AliPID::EParticleType(iSpec));
+        }
+        else{
+          dNumSigmaTPC[iSpec] = TMath::Abs(PIDCorrection(tr, PartSpecies(iSpec)));
+        }
+        dTPCdEdxDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, tr, AliPID::EParticleType(iSpec));
       }
   }
   if(iQAindex == 0 || bUsedTOF) {
@@ -2756,25 +2997,23 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
       fhQAPIDTOFbeta[iQAindex]->Fill(dP,dTOFbeta);
 
       for(Int_t iSpec(0); iSpec < fPIDNumSpecies; ++iSpec) {
-        dNumSigmaTOF[iSpec] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::EParticleType(iSpec));
-        dTOFbetaDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, track, AliPID::EParticleType(iSpec));
+        dNumSigmaTOF[iSpec] = fPIDResponse->NumberOfSigmasTOF(tr, AliPID::EParticleType(iSpec));
+        dTOFbetaDelta[iSpec] = fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, tr, AliPID::EParticleType(iSpec));
       }
   }
 
-  fh3QAPIDnSigmaTPCTOFPtPion[iQAindex]->Fill(dNumSigmaTPC[2],dNumSigmaTOF[2],track->Pt());
-  fh3QAPIDnSigmaTPCTOFPtKaon[iQAindex]->Fill(dNumSigmaTPC[3],dNumSigmaTOF[3],track->Pt());
-  fh3QAPIDnSigmaTPCTOFPtProton[iQAindex]->Fill(dNumSigmaTPC[4],dNumSigmaTOF[4],track->Pt());
+  fh3QAPIDnSigmaTPCTOFPtPion[iQAindex]->Fill(dNumSigmaTPC[2],dNumSigmaTOF[2],tr->Pt());
+  fh3QAPIDnSigmaTPCTOFPtKaon[iQAindex]->Fill(dNumSigmaTPC[3],dNumSigmaTOF[3],tr->Pt());
+  fh3QAPIDnSigmaTPCTOFPtProton[iQAindex]->Fill(dNumSigmaTPC[4],dNumSigmaTOF[4],tr->Pt());
 
   if(species == kUnknown) { return; }
 
   // Here only selected particles (and iQAindex == 1 by construction)
 
-  Int_t iPID = species - 2; // NB: translation from PartSpecies to PID QA index
-
-  fhPIDPt[iPID]->Fill(track->Pt());
-  fhPIDPhi[iPID]->Fill(track->Phi());
-  fhPIDEta[iPID]->Fill(track->Eta());
-  fhPIDCharge[iPID]->Fill(track->Charge());
+  fhPIDPt[iPID]->Fill(tr->Pt());
+  fhPIDPhi[iPID]->Fill(tr->Phi());
+  fhPIDEta[iPID]->Fill(tr->Eta());
+  fhPIDCharge[iPID]->Fill(tr->Charge());
 
   // TODO: Potentially might be converted to fh2[fPIDNumSpecies][3]
 
@@ -2807,7 +3046,72 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
+Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
+{
+  if(!fCorrFill) { fEventCounter++; return kTRUE; }
+
+  Double_t fillingCorr[4];
+  fillingCorr[3] = fIndexCentrality;
+
+  for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
+  {
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(*part);
+    if(!track) AliError("Track was not dynamically recasted.");
+    Double_t etaTrig = track->Eta();
+    Double_t phiTrig = track->Phi();
+    Double_t ptTrig = track->Pt();
+    Int_t dTrigID = track->GetID();
+
+    for(Int_t iSpec(1); iSpec < kUnknown; iSpec++){
+      if(!fProcessSpec[iSpec]) continue;
+      if(!fh4CorrelationsSE[iSpec]) {AliError("Sparse (same event) doesn't exist."); return kFALSE; }
+
+      if(iSpec == kCharged || iSpec == kPion || iSpec == kKaon || iSpec == kProton){
+        for (auto partAs = fVector[iSpec]->begin(); partAs != fVector[iSpec]->end(); partAs++)
+        {
+          AliAODTrack* trackAs = dynamic_cast<AliAODTrack*>(*partAs);
+          Double_t ptAs = trackAs->Phi();
+          if(ptTrig > ptAs) continue;
+          if(dTrigID == trackAs->GetID()) continue;
+
+          Double_t etaAs = trackAs->Eta();
+          Double_t phiAs = trackAs->Phi();
+
+          fillingCorr[0] = etaTrig - etaAs;
+          fillingCorr[1] = RangePhi(phiTrig - phiAs);
+          fillingCorr[2] = ptAs;
+
+          fh4CorrelationsSE[kCharged]->Fill(fillingCorr);
+        }// end loop particle vector
+      } //end direct species
+      else{
+        AliWarning("Not implemented yet!"); return kFALSE;
+      } //end reconstructed species
+    }
+  } // end loop reference particles (triggers)
+
+  if(!fFillMixed) return kTRUE;
+
+  AliEventPool *pool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
+  if(!pool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
+  if (!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kTRUE;
+
+  for(Int_t iMix(0); iMix < pool->GetCurrentNEvents(); iMix++){
+    TObjArray *mixedEvent = pool->GetEvent(iMix);
+    if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
+  }
+
+
+  return kTRUE;
+}
+// ============================================================================
+Double_t AliAnalysisTaskUniFlow::RangePhi(Double_t dPhi){
+    if (dPhi < -0.5*TMath::Pi()) dPhi += 2 * TMath::Pi();
+    if (dPhi > 1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
+    return dPhi;
+}
+// ============================================================================
+Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder)
 {
     if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
     // task->PrintTask();
@@ -2817,14 +3121,13 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
 
     if(iNumGaps > 2) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
     if(iNumGaps == 2 && task->fdGaps[0] != task->fdGaps[1]) { AliError("Different position of the border when using 3 subevents! Not implemented yet!"); return kFALSE; }
-    if(iNumHarm > 8) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
-
+    if(iNumHarm > 12) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
     Double_t dGap = -1.0;
     if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
 
     // Fill anyway -> needed for any correlations
-    FillRefsVectors(task, dGap); // TODO might check if previous task uses different Gap and if so, not fill it
+    FillRefsVectors(task, dGap);
 
     for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
         AliDebug(2,Form("Processing species '%s'",GetSpeciesName(PartSpecies(iSpec))));
@@ -2832,12 +3135,21 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
         if(iSpec == kRefs) {
             if(!task->fbDoRefs) { continue; }
             CalculateCorrelations(task, kRefs);
+            if(doLowerOrder){
+              if(iNumHarm > 2) CalculateCorrelations(fVecCorrTask.at(iTask-1), kRefs);
+              if(iNumHarm > 4) CalculateCorrelations(fVecCorrTask.at(iTask-2), kRefs);
+              if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), kRefs);
+              if(iNumHarm > 8) CalculateCorrelations(fVecCorrTask.at(iTask-4), kRefs);
+              if(iNumHarm > 10) CalculateCorrelations(fVecCorrTask.at(iTask-5), kRefs);
+            }
             continue;
         }
 
         // here-after only POIs survive (Refs are dealt with already)
         if(!task->fbDoPOIs) { continue; }
         if(!fProcessSpec[iSpec]) { continue; }
+
+        if(iNumHarm > 4) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
         // NB: skip flow if Kaons are used only for Phi (flow not needed) not as full PID
         if(iSpec == kKaon && (!fProcessSpec[kPion] || !fProcessSpec[kProton])) { continue; }
@@ -2890,6 +3202,12 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
                 // filling POIs (P,S) flow vectors
                 Int_t iFilledHere = FillPOIsVectors(task, dGap ,PartSpecies(iSpec), contIndexStart, iNumInPtBin, dPtLow, dPtHigh, dMassLow, dMassHigh);
                 CalculateCorrelations(task, PartSpecies(iSpec),dPt,dMass);
+                if(doLowerOrder)
+                {
+                  if(iNumHarm > 2) CalculateCorrelations(fVecCorrTask.at(iTask-1), PartSpecies(iSpec),dPt,dMass);
+                  // if(iNumHarm > 4) CalculateCorrelations(fVecCorrTask.at(iTask-2), PartSpecies(iSpec),dPt,dMass);
+                  // if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), PartSpecies(iSpec),dPt,dMass);
+                }
 
                 // updating counters with numbers from this step
                 iNumFilled += iFilledHere;
@@ -2946,54 +3264,130 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
       }
   }
 
-  // calculating correlations
-  switch(iNumHarm)
-  {
-    case 2 : {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          cDenom = TwoDiff(0,0);
-          cNom = TwoDiff(task->fiHarm[0],task->fiHarm[1]);
-        }
-        else {
-          cDenom = Two(0,0);
-          cNom = Two(task->fiHarm[0],task->fiHarm[1]);
-        }
-      }
-      else { // has gap
-        if(bDiff) {
-          cDenom = TwoDiffGapPos(0,0);
-          cDenomNeg = TwoDiffGapNeg(0,0);
-          cNom = TwoDiffGapPos(task->fiHarm[0],task->fiHarm[1]);
-          cNomNeg = TwoDiffGapNeg(task->fiHarm[0],task->fiHarm[1]);
-          if(bHas3sub){
-            for(Int_t poiPos(0); poiPos < 3; poiPos++)
-              for(Int_t rfPos(0); rfPos < 3; rfPos++){
-                if(poiPos == rfPos) continue;
-                cDenom3Sub[poiPos][rfPos] = TwoDiffGap3sub(0,0,poiPos,rfPos);
-                cNom3Sub[poiPos][rfPos] = TwoDiffGap3sub(task->fiHarm[0],task->fiHarm[1],poiPos,rfPos);
-              }
-          }
-        }
-        else {
-          if(!etaCheck) {
-            cDenom = TwoGap(0,0);
-            cNom = TwoGap(task->fiHarm[0],task->fiHarm[1]);
+  if(!fUseGeneralFormula){
+    // calculating correlations
+    switch(iNumHarm)
+    {
+      case 2 : {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            cDenom = TwoDiff(0,0);
+            cNom = TwoDiff(task->fiHarm[0],task->fiHarm[1]);
           }
           else {
-            cDenom = TwoPos(0,0);
-            cDenomNeg = TwoNeg(0,0);
-            cNom = TwoPos(task->fiHarm[0],task->fiHarm[1]);
-            cNomNeg = TwoNeg(task->fiHarm[0],task->fiHarm[1]);
-            }
-          if(bHas3sub){
-            for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
-              if(rf1Pos > 1) break;
-              for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++ ){
-                  if(rf1Pos >= rf2Pos) continue;
-                  cDenom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(0,0,rf1Pos,rf2Pos);
-                  cNom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(task->fiHarm[0],task->fiHarm[1],rf1Pos,rf2Pos);
+            cDenom = Two(0,0);
+            cNom = Two(task->fiHarm[0],task->fiHarm[1]);
+          }
+        }
+        else { // has gap
+          if(bDiff) {
+            cDenom = TwoDiffGapPos(0,0);
+            cDenomNeg = TwoDiffGapNeg(0,0);
+            cNom = TwoDiffGapPos(task->fiHarm[0],task->fiHarm[1]);
+            cNomNeg = TwoDiffGapNeg(task->fiHarm[0],task->fiHarm[1]);
+            if(bHas3sub){
+              for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                  if(poiPos == rfPos) continue;
+                  cDenom3Sub[poiPos][rfPos] = TwoDiffGap3sub(0,0,poiPos,rfPos);
+                  cNom3Sub[poiPos][rfPos] = TwoDiffGap3sub(task->fiHarm[0],task->fiHarm[1],poiPos,rfPos);
                 }
+            }
+          }
+          else {
+            if(!etaCheck) {
+              cDenom = TwoGap(0,0);
+              cNom = TwoGap(task->fiHarm[0],task->fiHarm[1]);
+            }
+            else {
+              cDenom = TwoPos(0,0);
+              cDenomNeg = TwoNeg(0,0);
+              cNom = TwoPos(task->fiHarm[0],task->fiHarm[1]);
+              cNomNeg = TwoNeg(task->fiHarm[0],task->fiHarm[1]);
+              }
+            if(bHas3sub){
+              for(Int_t rf1Pos(0); rf1Pos < 3; rf1Pos++){
+                if(rf1Pos > 1) break;
+                for(Int_t rf2Pos(0); rf2Pos < 3; rf2Pos++ ){
+                    if(rf1Pos >= rf2Pos) continue;
+                    cDenom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(0,0,rf1Pos,rf2Pos);
+                    cNom3Sub[rf1Pos][rf2Pos] = TwoGap3sub(task->fiHarm[0],task->fiHarm[1],rf1Pos,rf2Pos);
+                  }
+                }
+              }
+            }
+          }
+          break;
+        }
+
+      case 3 : {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            cDenom = ThreeDiff(0,0,0);
+            cNom = ThreeDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+          }
+          else {
+            cDenom = Three(0,0,0);
+            cNom = Three(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+          }
+        }
+        else { // has gap
+          if(bDiff) {
+            cDenom = ThreeDiffGapPos(0,0,0);
+            cDenomNeg = ThreeDiffGapNeg(0,0,0);
+            cNom = ThreeDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+            cNomNeg = ThreeDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
+          }
+          else {
+            AliWarning("ThreeGap() not implemented!");
+            return;
+            // cDenom = ThreeGap(0,0,0);
+            // cNom = ThreeGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]); }
+          }
+        }
+        break;
+      }
+
+      case 4 : {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            cDenom = FourDiff(0,0,0,0);
+            cNom = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          }
+          else {
+            cDenom = Four(0,0,0,0);
+            cNom = Four(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+          }
+        }
+        else { // has gap
+          if(bDiff) {
+            cDenom = FourDiffGapPos(0,0,0,0);
+            cDenomNeg = FourDiffGapNeg(0,0,0,0);
+            cNom = FourDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            cNomNeg = FourDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            if(bHas3sub){
+              for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                  cDenom3Sub[poiPos][twoPos] = FourDiff3sub(0,0,0,0,poiPos,twoPos);
+                  cNom3Sub[poiPos][twoPos] = FourDiff3sub(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],poiPos,twoPos);
+                }
+            }
+          }
+          else {
+            if(!etaCheck) {
+              cDenom = FourGap(0,0,0,0);
+              cNom = FourGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            }
+            else {
+              cDenom = FourPos(0,0,0,0);
+              cDenomNeg = FourNeg(0,0,0,0);
+              cNom = FourPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+              cNomNeg = FourNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            }
+            if(bHas3sub){
+              for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                cDenom3Sub[0][twoPos] = Four3sub(0,0,0,0,twoPos);
+                cNom3Sub[0][twoPos] = Four3sub(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],twoPos);
               }
             }
           }
@@ -3001,189 +3395,133 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
         break;
       }
 
-    case 3 : {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          cDenom = ThreeDiff(0,0,0);
-          cNom = ThreeDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
-        }
-        else {
-          cDenom = Three(0,0,0);
-          cNom = Three(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
-        }
-      }
-      else { // has gap
-        if(bDiff) {
-          cDenom = ThreeDiffGapPos(0,0,0);
-          cDenomNeg = ThreeDiffGapNeg(0,0,0);
-          cNom = ThreeDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
-          cNomNeg = ThreeDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]);
-        }
-        else {
-          AliWarning("ThreeGap() not implemented!");
-          return;
-          // cDenom = ThreeGap(0,0,0);
-          // cNom = ThreeGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2]); }
-        }
-      }
-      break;
-    }
-
-    case 4 : {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          cDenom = FourDiff(0,0,0,0);
-          cNom = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-        }
-        else {
-          cDenom = Four(0,0,0,0);
-          cNom = Four(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-        }
-      }
-      else { // has gap
-        if(bDiff) {
-          cDenom = FourDiffGapPos(0,0,0,0);
-          cDenomNeg = FourDiffGapNeg(0,0,0,0);
-          cNom = FourDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-          cNomNeg = FourDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-          if(bHas3sub){
-            for(Int_t poiPos(0); poiPos < 3; poiPos++)
-              for(Int_t twoPos(0); twoPos < 3; twoPos++){
-                cDenom3Sub[poiPos][twoPos] = FourDiff3sub(0,0,0,0,poiPos,twoPos);
-                cNom3Sub[poiPos][twoPos] = FourDiff3sub(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],poiPos,twoPos);
-              }
-          }
-        }
-        else {
-          if(!etaCheck) {
-            cDenom = FourGap(0,0,0,0);
-            cNom = FourGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+      case 5: {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            AliWarning("Differential 5-particle correlations not implemented!");
+            return;
           }
           else {
-            cDenom = FourPos(0,0,0,0);
-            cDenomNeg = FourNeg(0,0,0,0);
-            cNom = FourPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
-            cNomNeg = FourNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]);
+            cDenom = Five(0,0,0,0,0);
+            cNom = Five(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4]);
           }
-          if(bHas3sub){
-            for(Int_t twoPos(0); twoPos < 3; twoPos++){
-              cDenom3Sub[0][twoPos] = Four3sub(0,0,0,0,twoPos);
-              cNom3Sub[0][twoPos] = Four3sub(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],twoPos);
+        }
+        else { // has gap
+          AliWarning("5-particle correlations with eta gap not implemented!");
+          return;
+        }
+        break;
+      }
+
+      case 6: {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            AliWarning("Differential 6-particle correlations with no gap not implemented!");
+            return;
+          }
+          else {
+            cDenom = Six(0,0,0,0,0,0);
+            cNom = Six(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          }
+        }
+        else { // has gap
+          if(bDiff) {
+            cDenom = SixDiffGapPos(0,0,0,0,0,0);
+            cDenomNeg = SixDiffGapNeg(0,0,0,0,0,0);
+            cNom = SixDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            cNomNeg = SixDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+          }
+          else {
+            if(!etaCheck) {
+              cDenom = SixGap(0,0,0,0,0,0);
+              cNom = SixGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            }
+            else {
+              cDenom = SixPos(0,0,0,0,0,0);
+              cDenomNeg = SixNeg(0,0,0,0,0,0);
+              cNom = SixPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+              cNomNeg = SixNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
             }
           }
         }
+        break;
       }
-      break;
-    }
 
-    case 5: {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          AliWarning("Differential 5-particle correlations not implemented!");
-          return;
-        }
-        else {
-          cDenom = Five(0,0,0,0,0);
-          cNom = Five(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4]);
-        }
-      }
-      else { // has gap
-        AliWarning("5-particle correlations with eta gap not implemented!");
-        return;
-      }
-      break;
-    }
-
-    case 6: {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          AliWarning("Differential 6-particle correlations with no gap not implemented!");
-          return;
-        }
-        else {
-          cDenom = Six(0,0,0,0,0,0);
-          cNom = Six(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
-        }
-      }
-      else { // has gap
-        if(bDiff) {
-          cDenom = SixDiffGapPos(0,0,0,0,0,0);
-          cDenomNeg = SixDiffGapNeg(0,0,0,0,0,0);
-          cNom = SixDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
-          cNomNeg = SixDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
-        }
-        else {
-          if(!etaCheck) {
-            cDenom = SixGap(0,0,0,0,0,0);
-            cNom = SixGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+      case 7: {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            AliWarning("Differential 7-particle correlations not implemented!");
+            return;
           }
           else {
-            cDenom = SixPos(0,0,0,0,0,0);
-            cDenomNeg = SixNeg(0,0,0,0,0,0);
-            cNom = SixPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
-            cNomNeg = SixNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]);
+            cDenom = Seven(0,0,0,0,0,0,0);
+            cNom = Seven(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6]);
           }
         }
-      }
-      break;
-    }
-
-    case 7: {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          AliWarning("Differential 7-particle correlations not implemented!");
+        else { // has gap
+          AliWarning("7-particle correlations with eta gap not implemented!");
           return;
         }
-        else {
-          cDenom = Seven(0,0,0,0,0,0,0);
-          cNom = Seven(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6]);
-        }
+        break;
       }
-      else { // has gap
-        AliWarning("7-particle correlations with eta gap not implemented!");
-        return;
-      }
-      break;
-    }
 
-    case 8: {
-      if(!bHasGap) { // no gap
-        if(bDiff) {
-          AliWarning("Differential 8-particle correlations with no gap not implemented!");
-          return;
-        }
-        else {
-          cDenom = Eight(0,0,0,0,0,0,0,0);
-          cNom = Eight(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
-        }
-      }
-      else { // has gap
-        if(bDiff) {
-          cDenom = EightDiffGapPos(0,0,0,0,0,0,0,0);
-          cDenomNeg = EightDiffGapNeg(0,0,0,0,0,0,0,0);
-          cNom = EightDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
-          cNomNeg = EightDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
-        }
-        else {
-          if(!etaCheck) {
-            cDenom = EightGap(0,0,0,0,0,0,0,0);
-            cNom = EightGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+      case 8: {
+        if(!bHasGap) { // no gap
+          if(bDiff) {
+            AliWarning("Differential 8-particle correlations with no gap not implemented!");
+            return;
           }
           else {
-            cDenom = EightPos(0,0,0,0,0,0,0,0);
-            cDenomNeg = EightNeg(0,0,0,0,0,0,0,0);
-            cNom = EightPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
-            cNomNeg = EightNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+            cDenom = Eight(0,0,0,0,0,0,0,0);
+            cNom = Eight(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
           }
         }
+        else { // has gap
+          if(bDiff) {
+            cDenom = EightDiffGapPos(0,0,0,0,0,0,0,0);
+            cDenomNeg = EightDiffGapNeg(0,0,0,0,0,0,0,0);
+            cNom = EightDiffGapPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+            cNomNeg = EightDiffGapNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+          }
+          else {
+            if(!etaCheck) {
+              cDenom = EightGap(0,0,0,0,0,0,0,0);
+              cNom = EightGap(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+            }
+            else {
+              cDenom = EightPos(0,0,0,0,0,0,0,0);
+              cDenomNeg = EightNeg(0,0,0,0,0,0,0,0);
+              cNom = EightPos(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+              cNomNeg = EightNeg(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]);
+            }
+          }
+        }
+        break;
       }
-      break;
-    }
 
 
-    default:
+      default:
+        return;
+    } // end switch
+  } // end not general formula
+  else{
+    if(bDiff) {
+      AliWarning("Differential correlations using general formula not implemented!");
       return;
-  }
+    }
+    if(bHasGap){
+      AliWarning("Correlations with eta gap using general formula not implemented!");
+      return;
+    }
+    std::vector<Int_t> vecHarm = task->fiHarm;
+    std::vector<Int_t> vecZeros(iNumHarm,0);
+    Int_t* harmAr = vecHarm.data();
+    Int_t* harmZerosAr = vecZeros.data();
+
+    cDenom = Correlator(iNumHarm, harmZerosAr);
+    cNom = Correlator(iNumHarm, harmAr);
+  } // end general formula
+
 
   Double_t dNom = cNom.Re();
   Double_t dDenom = cDenom.Re();
@@ -3323,16 +3661,38 @@ void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* con
     {
       if(bFillPos)
       {
-        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample0",task->fsName.Data()));
-        if(!prof) { AliError(Form("Profile '%s_Pos_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!prof) { AliError(Form("Profile '%s_Pos_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         prof->Fill(fIndexCentrality, dPt, dMass, dValue, dDenom);
       }
 
       if(bFillNeg)
       {
-        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample0",task->fsName.Data()));
-        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample0' not found!", task->fsName.Data())); return; }
+        TProfile3D* profNeg = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Neg_sample%d",task->fsName.Data(),fIndexSampling));
+        if(!profNeg) { AliError(Form("Profile '%s_Neg_sample%d' not found!", task->fsName.Data(),fIndexSampling)); return; }
         profNeg->Fill(fIndexCentrality, dPt, dMass, dValueNeg, dDenomNeg);
+      }
+      if(bHas3sub)
+      {
+        if(iNumHarm == 2){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t rfPos(0); rfPos < 3; rfPos++){
+              if(poiPos == rfPos) continue;
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_rfp_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_rfp_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[rfPos])); return; }
+              if(bFill3sub[poiPos][rfPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][rfPos], dDenom3Sub[poiPos][rfPos]);
+            }
+          }
+        else if(iNumHarm == 4){
+          for(Int_t poiPos(0); poiPos < 3; poiPos++)
+            for(Int_t twoPos(0); twoPos < 3; twoPos++){
+              TProfile3D* prof = (TProfile3D*) fListFlow[species]->FindObject(Form("%s_Pos_sample%d_poi_%c_two_%c",task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos]));
+              if(!prof) { AliError(Form("Profile '%s_Pos_sample%d_poi_%c_two_%c' not found!", task->fsName.Data(),fIndexSampling,sides[poiPos],sides[twoPos])); return; }
+              if(bFill3sub[poiPos][twoPos]) prof->Fill(fIndexCentrality, dPt, dMass, dValue3Sub[poiPos][twoPos], dDenom3Sub[poiPos][twoPos]);
+            }
+        }
+        else
+          return;
       }
       break;
     }
@@ -3355,10 +3715,31 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
   // >>>> Using AliUniFlowCorrTask <<<<<
 
   Int_t iNumTasks = fVecCorrTask.size();
+  Bool_t doLowerOrder = kFALSE;
   for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
   {
-    Bool_t process = ProcessCorrTask(fVecCorrTask.at(iTask));
+    //if you want to save some CPU time
+    //you need to add tasks with same gaps one after the other
+    //starting with the lowest harmonics
+    Bool_t isLowerOrder = kFALSE;
+    AliUniFlowCorrTask* thisTask = (AliUniFlowCorrTask*) fVecCorrTask.at(iTask);
+    AliUniFlowCorrTask* nextTask = nullptr;
+    if(iTask+1 < iNumTasks) {
+      nextTask = (AliUniFlowCorrTask*) fVecCorrTask.at(iTask+1);
+      if(thisTask->fiNumHarm < nextTask->fiNumHarm && thisTask->fiHarm[0] == nextTask->fiHarm[0] && thisTask->fiNumGaps == nextTask->fiNumGaps){
+        isLowerOrder = kTRUE;
+        for(Int_t gaps(0); gaps < thisTask->fiNumGaps; gaps++){
+          if(thisTask->fdGaps[gaps] != nextTask->fdGaps[gaps]) isLowerOrder = kFALSE;
+        }
+      }
+    }
+    if(isLowerOrder) {
+      doLowerOrder = kTRUE;
+      continue;
+    }
+    Bool_t process = ProcessCorrTask(fVecCorrTask.at(iTask), iTask, doLowerOrder);
     if(!process) { AliError("AliUniFlowCorrTask processing failed!\n"); fVecCorrTask.at(iTask)->Print(); return kFALSE; }
+    doLowerOrder = kFALSE;
   }
 
   fEventCounter++; // counter of processed events
@@ -3458,7 +3839,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 {
   // Filling p,q and s flow vectors with POIs (given by species) for differential flow calculation
   // *************************************************************
-  std::vector<AliVTrack*>* vector = fVector[species];
+  std::vector<AliVParticle*>* vector = fVector[species];
   if(!vector) { AliError("Vector with selected POIs not found."); return 0; }
 
   Double_t dEtaLimit = dEtaGap / 2.0;
@@ -3489,7 +3870,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 
   // for(auto part = vector->begin(); part != vector->end(); ++part)
   for(Int_t index(indStart); index < (Int_t) vector->size(); ++index) {
-    AliVTrack* part = vector->at(index);
+    AliVParticle* part = vector->at(index);
     if(!part) { AliError("Particle does not exists within given vector"); return -1; }
 
     Double_t dPhi = part->Phi();
@@ -3669,8 +4050,13 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex(CentEst est) const
 
   // assigning centrality based on number of selected charged tracks
   if(est == kRFP) {
-      iCentralityIndex = fVector[kRefs]->size();
+    iCentralityIndex = fVector[kRefs]->size();
   } else {
+    if(fMC) {
+      AliWarning("Monte Carlo run with centrality estimator different than Nch. Returning -1");
+      return -1;
+    }
+
     AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
     if(!multSelection) {
       AliError("AliMultSelection object not found! Returning -1");
@@ -3816,7 +4202,40 @@ TComplex AliAnalysisTaskUniFlow::SGapMid(const Int_t n, const Int_t p) const
   else return fFlowVecSmid[n][p];
 }
 // ============================================================================
+TComplex AliAnalysisTaskUniFlow::Correlator(Int_t n, Int_t* harmonic, Int_t mult, Int_t skip) const
+{
+  //general formula
+  //for calculation of correlations
+  Int_t n_m_1 = n-1;
+  TComplex c(Q(harmonic[n_m_1], mult));
+  if (n_m_1 == 0) return c;
+  c *= Correlator(n_m_1, harmonic);
+  if (n_m_1 == skip) return c;
 
+  Int_t mult_p_1 = mult+1;
+  Int_t n_m_2 = n-2;
+  Int_t counter1 = 0;
+  Int_t h_hold = harmonic[counter1];
+  harmonic[counter1] = harmonic[n_m_2];
+  harmonic[n_m_2] = h_hold + harmonic[n_m_1];
+  TComplex c2(Correlator(n_m_1, harmonic, mult_p_1, n_m_2));
+  Int_t counter2 = n-3;
+  while (counter2 >= skip) {
+    harmonic[n_m_2] = harmonic[counter1];
+    harmonic[counter1] = h_hold;
+    ++counter1;
+    h_hold = harmonic[counter1];
+    harmonic[counter1] = harmonic[n_m_2];
+    harmonic[n_m_2] = h_hold + harmonic[n_m_1];
+    c2 += Correlator(n_m_1, harmonic, mult_p_1, counter2);
+    --counter2;
+  }
+  harmonic[n_m_2] = harmonic[counter1];
+  harmonic[counter1] = h_hold;
+
+  if (mult == 1) return c-c2;
+  return c-Double_t(mult)*c2;;
+}
 // Set of flow calculation methods for cumulants of different orders with/out eta gap
 
 // ============================================================================
@@ -5353,7 +5772,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         for(Int_t iSample(0); iSample < fNumSamples; ++iSample)
         {
           if(iSample > 0 && !fSampling) { break; }
-          if(iSample > 0 && HasMass(PartSpecies(iSpec))) { break; } // reconstructed are not sampled
+          // if(iSample > 0 && HasMass(PartSpecies(iSpec))) {  } // reconstructed are not sampled
 
           TH1* profile = nullptr;
           TH1* profileNeg = nullptr;
@@ -5381,7 +5800,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                   }
                 }
                 else {
-                  AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- or 4-particle correlations.\n",iTask));
+                  AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- and 4-particle correlations.\n",iTask));
                   return;
                 }
               }
@@ -5415,7 +5834,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                       }
                   }
                   else {
-                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 4-particle correlations.\n",iTask));
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
                     return;
                   }
                 }
@@ -5431,6 +5850,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax); }
                 }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
+                }
                 break;
             }
 
@@ -5443,6 +5881,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax); }
                 }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
+                }
                 break;
             }
 
@@ -5454,6 +5911,25 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                 } else {
                     profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
                     if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax); }
+                }
+                if(bHas3sub){
+                  if(corrOrder == 2) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t rfPos(0); rfPos < 3; rfPos++){
+                        if(poiPos == rfPos) continue;
+                        profile3sub[poiPos][rfPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_rfp_%c",corName,iSample,sides[poiPos],sides[rfPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
+                      }
+                  }
+                  else if(corrOrder == 4) {
+                    for(Int_t poiPos(0); poiPos < 3; poiPos++)
+                      for(Int_t twoPos(0); twoPos < 3; twoPos++){
+                        profile3sub[poiPos][twoPos] = new TProfile3D(Form("%s_Pos_sample%d_poi_%c_two_%c",corName,iSample,sides[poiPos],sides[twoPos]), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax,fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
+                      }
+                  }
+                  else {
+                    AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- & 4-particle correlations.\n",iTask));
+                    return;
+                  }
                 }
                 break;
             }
@@ -5521,11 +5997,21 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     sLabelCand[SparseCand::kCent] = GetCentEstimatorLabel(fCentEstimator);
     sLabelCand[SparseCand::kPt] = "#it{p}_{T} (GeV/c)";
     sLabelCand[SparseCand::kEta] = "#eta";
+    sLabelCand[SparseCand::kSample] = "iSample";
     TString sAxes = TString(); for(Int_t i(0); i < SparseCand::kDim; ++i) { sAxes += Form("%s; ",sLabelCand[i].Data()); }
 
-    Int_t iNumBinsCand[SparseCand::kDim]; Double_t dMinCand[SparseCand::kDim]; Double_t dMaxCand[SparseCand::kDim];
-    iNumBinsCand[SparseCand::kCent] = fCentBinNum; dMinCand[SparseCand::kCent] = fCentMin; dMaxCand[SparseCand::kCent] = fCentMax;
-    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum; dMinCand[SparseCand::kEta] = -fFlowEtaMax; dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    Int_t iNumBinsCand[SparseCand::kDim];
+    Double_t dMinCand[SparseCand::kDim];
+    Double_t dMaxCand[SparseCand::kDim];
+    iNumBinsCand[SparseCand::kCent] = fCentBinNum;
+    dMinCand[SparseCand::kCent] = fCentMin;
+    dMaxCand[SparseCand::kCent] = fCentMax;
+    iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum;
+    dMinCand[SparseCand::kEta] = -fFlowEtaMax;
+    dMaxCand[SparseCand::kEta] = fFlowEtaMax;
+    iNumBinsCand[SparseCand::kSample] = fNumSamples;
+    dMinCand[SparseCand::kSample] = 0;
+    dMaxCand[SparseCand::kSample] = fNumSamples;
 
     // species dependent
     if(fProcessSpec[kK0s] || fProcessSpec[kLambda])
@@ -5584,6 +6070,53 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     }
   } // end-if {fRunMode != fSkipFlow || iNumCorrTask > 0 }
 
+  //creating output 2D histograms for correlations & preparing event pool
+  if(fCorrFill){
+    std::vector<Double_t> centVec, vertexVec, ptVec, etaVec, phiVec;
+    Double_t psiAr[2] = {-999.,999.};
+    for(Int_t counter(0); counter < fCentBinNum+1; counter++){ centVec.push_back(fCentMin + counter*(fCentMax - fCentMin)/fCentBinNum); }
+    for(Int_t counter(0); counter < 2*fPVtxCutZ+1; counter++){ vertexVec.push_back(-fPVtxCutZ + counter); }
+    for(Int_t counter(0); counter < fCorrDEtaBinNum+1; counter++){ etaVec.push_back(fCorrdEtaMin + counter*(fCorrdEtaMax - fCorrdEtaMin)/fCorrDEtaBinNum); }
+    for(Int_t counter(0); counter < fCorrDPhiBinNum+1; counter++){ phiVec.push_back(fCorrdPhiMin + counter*(fCorrdPhiMax - fCorrdPhiMin)/fCorrDPhiBinNum); }
+    ptVec = {-999., 999.};
+    if(fUsePtBinnedEventPool){
+      ptVec = fFlowPOIsPtBinEdges[kCharged];
+    }
+    else { ptVec = {-999., 999.}; }
+    Double_t* centAr = centVec.data();
+    Double_t* vertAr = vertexVec.data();
+    Double_t* ptAr = ptVec.data();
+    Double_t* etaAr = etaVec.data();
+    Double_t* phiAr = phiVec.data();
+    Int_t sizePt = ptVec.size() - 1;
+
+    fEventPoolMgr = new AliEventPoolManager(fPoolSize, fMixingTracks, fCentBinNum, centAr, 2*fPVtxCutZ, vertAr, 1, psiAr, sizePt, ptAr);
+    fEventPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
+    if(!fEventPoolMgr){ AliError("AliEventPoolManager doesn't exist!"); }
+
+    fEventPoolMgr->Validate();
+
+    const Int_t binsForCor[4] = {fCorrDEtaBinNum, fCorrDPhiBinNum, sizePt, fCentBinNum};
+    for(Int_t iSpec(1); iSpec < kUnknown; iSpec++)
+    {
+      if(!fProcessSpec[iSpec]) continue;
+
+      fh4CorrelationsSE[iSpec] = new THnSparseD(Form("fh4CorrelationsSE_%s",GetSpeciesName(PartSpecies(iSpec))), Form("%s: Distribution; #Delta #eta; #Delta #phi; p_{T} (assoc); centrality",GetSpeciesName(PartSpecies(iSpec))), 4, binsForCor);
+      fh4CorrelationsSE[iSpec]->SetBinEdges(0,etaAr);
+      fh4CorrelationsSE[iSpec]->SetBinEdges(1,phiAr);
+      fh4CorrelationsSE[iSpec]->SetBinEdges(2,ptAr);
+      fh4CorrelationsSE[iSpec]->SetBinEdges(3,centAr);
+      fListFlow[iSpec]->Add(fh4CorrelationsSE[iSpec]);
+
+      fh4CorrelationsME[iSpec] = new THnSparseD(Form("fh4CorrelationsME_%s",GetSpeciesName(PartSpecies(iSpec))), Form("%s: Distribution; #Delta #eta; #Delta #phi; p_{T} (assoc); centrality",GetSpeciesName(PartSpecies(iSpec))), 4, binsForCor);
+      fh4CorrelationsME[iSpec]->SetBinEdges(0,etaAr);
+      fh4CorrelationsME[iSpec]->SetBinEdges(1,phiAr);
+      fh4CorrelationsME[iSpec]->SetBinEdges(2,ptAr);
+      fh4CorrelationsME[iSpec]->SetBinEdges(3,centAr);
+      fListFlow[iSpec]->Add(fh4CorrelationsME[iSpec]);
+    }
+  }
+
   // creating GF weights
   if(fFlowFillWeights || fFlowUseWeights)
   {
@@ -5625,11 +6158,50 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
         }
       }
     } // end-for {iSpec}
+
+    if(fFlowFillWeightsMultiD){
+      TString wLabelCand[SparseWeights::wDim];
+      wLabelCand[SparseWeights::wPhi] = "#phi";
+      wLabelCand[SparseWeights::wCent] = GetCentEstimatorLabel(fCentEstimator);
+      wLabelCand[SparseWeights::wPt] = "#it{p}_{T} (GeV/c)";
+      wLabelCand[SparseWeights::wEta] = "#eta";
+      wLabelCand[SparseWeights::wVz] = "v_{z}";
+      wLabelCand[SparseWeights::wSpec] = "Species";
+      TString sAxesWeights = TString(); for(Int_t i(0); i < SparseWeights::wDim; ++i) { sAxesWeights += Form("%s; ",wLabelCand[i].Data()); }
+
+      Int_t iNumBinsWeights[SparseWeights::wDim];
+      Double_t dMinWeights[SparseWeights::wDim];
+      Double_t dMaxWeights[SparseWeights::wDim];
+      iNumBinsWeights[SparseWeights::wCent] = fCentBinNum;
+      dMinWeights[SparseWeights::wCent] = fCentMin;
+      dMaxWeights[SparseWeights::wCent] = fCentMax;
+      iNumBinsWeights[SparseWeights::wPhi] = fFlowPhiBinNum;
+      dMinWeights[SparseWeights::wPhi] = 0.0;
+      dMaxWeights[SparseWeights::wPhi] = TMath::TwoPi();
+      iNumBinsWeights[SparseWeights::wEta] = fFlowEtaBinNum;
+      dMinWeights[SparseWeights::wEta] = -fFlowEtaMax;
+      dMaxWeights[SparseWeights::wEta] = fFlowEtaMax;
+      iNumBinsWeights[SparseWeights::wPt] = fFlowPOIsPtBinNum;
+      dMinWeights[SparseWeights::wPt] = fFlowPOIsPtMin;
+      dMaxWeights[SparseWeights::wPt] = fFlowPOIsPtMax;
+      iNumBinsWeights[SparseWeights::wVz] = 2*fPVtxCutZ;
+      dMinWeights[SparseWeights::wVz] = -fPVtxCutZ;
+      dMaxWeights[SparseWeights::wVz] = fPVtxCutZ;
+      iNumBinsWeights[SparseWeights::wSpec] = kUnknown;
+      dMinWeights[SparseWeights::wSpec] = 0;
+      dMaxWeights[SparseWeights::wSpec] = kUnknown;
+
+      fhWeightsMultiD =
+      new THnSparseD("fhWeightsMultiD",Form("Weights distribution; %s;", sAxesWeights.Data()), SparseWeights::wDim, iNumBinsWeights, dMinWeights, dMaxWeights);
+      fhWeightsMultiD->Sumw2();
+      fFlowWeights->Add(fhWeightsMultiD);
+    }
   }
 
   // Selection / reconstruction counters : omni-present
   {
-    TString sEventCounterLabel[] = {"Input","Physics selection OK","EventCuts OK","Event OK","#RPFs OK","Multiplicity OK","Selected"};
+    // TString sEventCounterLabel[] = {"Input","Physics selection OK","EventCuts OK","Event OK","#RPFs OK","Multiplicity OK","Selected"};
+    TString sEventCounterLabel[] = {"Input"};
     const Int_t iEventCounterBins = sizeof(sEventCounterLabel)/sizeof(sEventCounterLabel[0]);
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Int_t i(0); i < iEventCounterBins; ++i) { fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() ); }
@@ -5642,7 +6214,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
     for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
     fQACharged->Add(fhChargedCounter);
-    if(fColSystem == kPP || fColSystem == kPPb){
+    if( (fCentEstimator != kRFP) && (fColSystem == kPP || fColSystem == kPPb) ){
       Int_t counter = fCentBinNum/10;
       for(Int_t iCen(0); iCen < counter; ++iCen)
       {
@@ -5698,35 +6270,42 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     const Int_t iNBinsPIDstatus = 4;
     TString sPIDstatus[iNBinsPIDstatus] = {"kDetNoSignal","kDetPidOk","kDetMismatch","kDetNoParams"};
 
-    // event histogram
-    fEventCuts.AddQAplotsToList(fQAEvents);
-
     fhEventSampling = new TH2D("fhEventSampling",Form("Event sampling; %s; sample index", GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fNumSamples,0,fNumSamples);
     fQAEvents->Add(fhEventSampling);
-    fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
-    fQAEvents->Add(fhEventCentrality);
 
-    Int_t iMinRFPs = 0;
-    Int_t iMaxRFPs = 150;
-    Int_t iBinsRPFs = 150;
-    if(fColSystem == kPbPb) {
-        iMinRFPs = 0;
-        iMaxRFPs = 5000;
-        iBinsRPFs = 100;
+    if(fAnalType == kMC){
+      fh2MCip = new TH2D("fh2MCip", "RFPs: impact parameter vs. multiplicity; b; multiplicity", 200,0,20,fCentBinNum,fCentMin,fCentMax);
+      fQAEvents->Add(fh2MCip);
     }
-    fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iBinsRPFs,iMinRFPs,iMaxRFPs);
-    fQAEvents->Add(fh2EventCentralityNumRefs);
+    else{
+      fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); %s", GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax);
+      fQAEvents->Add(fhEventCentrality);
 
-    if(fEventRejectAddPileUp)
-    {
-      fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
-      fQAEvents->Add(fhQAEventsfMult32vsCentr);
-      fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
-      fQAEvents->Add(fhQAEventsMult128vsCentr);
-      fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
-      fQAEvents->Add(fhQAEventsfMultTPCvsTOF);
-      fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
-      fQAEvents->Add(fhQAEventsfMultTPCvsESD);
+      // event histogram
+      fEventCuts.AddQAplotsToList(fQAEvents);
+
+      Int_t iMinRFPs = 0;
+      Int_t iMaxRFPs = 150;
+      Int_t iBinsRPFs = 150;
+      if(fColSystem == kPbPb) {
+          iMinRFPs = 0;
+          iMaxRFPs = 5000;
+          iBinsRPFs = 100;
+      }
+      fh2EventCentralityNumRefs = new TH2D("fh2EventCentralityNumRefs",Form("Event centrality (%s) vs. N_{RFP}; %s; N_{RFP}",GetCentEstimatorLabel(fCentEstimator), GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iBinsRPFs,iMinRFPs,iMaxRFPs);
+      fQAEvents->Add(fh2EventCentralityNumRefs);
+
+      if(fEventRejectAddPileUp)
+      {
+        fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
+        fQAEvents->Add(fhQAEventsfMult32vsCentr);
+        fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
+        fQAEvents->Add(fhQAEventsMult128vsCentr);
+        fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
+        fQAEvents->Add(fhQAEventsfMultTPCvsTOF);
+        fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
+        fQAEvents->Add(fhQAEventsfMultTPCvsESD);
+      }
     }
 
     // charged (tracks) histograms
@@ -6028,6 +6607,301 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
   DumpTObjTable("UserCreateOutputObjects: end");
 
   return;
+}
+// ============================================================================
+Double_t AliAnalysisTaskUniFlow::PIDCorrection(const AliAODTrack *track, const PartSpecies species) const
+{
+  // PID correction for 2018 data
+  // from PWG-HF
+
+  if(!track) { AliError("Track not exists!"); return -999.9; }
+  if(species == kUnknown) { AliError("Invalid species 'Unknown'!"); return -999.9; }
+
+  Int_t iRunNumber = fEventAOD->GetRunNumber();
+  Int_t nPbins = 8;
+  Float_t pTPClims[] = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};
+  Int_t nEtabins = 5;
+  Float_t absetalims[] = {0.,0.1,0.2,0.4,0.6,0.8};
+
+  Double_t NumPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+  Double_t NumKaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+  Double_t NumProton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+
+  Double_t eta = TMath::Abs( track->Eta() );
+  Double_t pTPC = track->GetTPCmomentum();
+  Double_t SigmaValue = -999.9;
+  if (species == kPion){
+     SigmaValue = NumPion;
+  }
+  else if (species == kKaon){
+     SigmaValue = NumKaon;
+  }
+  else if (species == kProton){
+      SigmaValue = NumProton;
+  }
+
+  std::vector<Double_t> meanPion, meanKaon, meanProton, sigmaPion, sigmaKaon, sigmaProton;
+
+  if(pTPC < 0.3) return SigmaValue;
+  if(fCentEstimator != kV0M) return SigmaValue;
+
+  if(fIndexCentrality > 50) return SigmaValue;
+
+  if(iRunNumber>=295585 && iRunNumber<=296623){
+    //LHC18q
+    if(fIndexCentrality >= 0 && fIndexCentrality<= 10){
+      meanPion = {
+        -0.656082, -0.604754, -0.63195, -0.669819, -0.708323, -0.746162, -0.800557, -0.893548,//eta 0
+        -0.711512, -0.686848, -0.711177, -0.752377, -0.781678, -0.838341, -0.80682, -0.917012,//eta 1
+        -0.650884, -0.706274, -0.752449, -0.798673, -0.835543, -0.859084, -0.823375, -0.854207,//eta 2
+        -0.479705, -0.700093, -0.815494, -0.895986, -0.958185, -0.980633, -0.967819, -0.996364,//eta 3
+        -0.264033, -0.637537, -0.828537, -0.952223, -1.06091, -1.10456, -1.09789, -1.15579 }; //eta 4
+      meanKaon = {
+        -0.48114, -0.672897, -0.625657, -0.776678, -0.786824, -0.708909, -0.822472, -0.491422,//eta 0
+        -0.432004, -0.71966, -0.708949, -0.870034, -0.856239, -0.825942, -0.871391, -1.17962,//eta 1
+        -0.336167, -0.71892, -0.735327, -0.93073, -0.864011, -0.891611, -0.924604, -0.735026,//eta 2
+        -0.391054, -0.716122, -0.796868, -1.0208, -0.984637, -0.998813, -1.01377, -1.06832,//eta 3
+        -0.551251, -0.696801, -0.815058, -1.05691, -1.06688, -1.06648, -1.07023, -1.05183};//eta 4
+      meanProton = {
+        -0.200581, -0.16751, -0.451043, -0.952266, -0.852847, -0.760682, -0.676723, -0.603716,//eta 0
+        -0.123522, -0.128086, -0.444873, -0.846087, -0.988114, -1.05446, -0.761678, -0.785548,//eta 1
+        -0.100534, -0.1431, -0.448783, -0.8385, -0.843197, -1.05925, -0.878891, -0.69573,//eta 2
+        -0.233023, -0.317509, -0.598837, -0.945108, -1.01043, -1.21354, -0.99634, -0.915479,//eta 3
+        -0.391233, -0.516667, -0.768414, -1.00696, -1.03589, -1.26272, -1.02806, -0.994112};//eta 4
+      sigmaPion = {
+        0.986692, 1.01991, 1.00333, 0.986744, 0.981785, 1.04139, 1.0638, 1.09162,//eta 0
+        0.968236, 0.999018, 0.984673, 0.963658, 0.963348, 0.991749, 1.00931, 1.07714,//eta 1
+        0.948544, 0.971808, 0.957514, 0.938766, 0.936994, 0.987149, 0.957657, 0.994133,//eta 2
+        0.92104, 0.931385, 0.916291, 0.896921, 0.890271, 0.926601, 0.891902, 0.905638,//eta 3
+        0.909424, 0.89589, 0.881729, 0.860767, 0.842961, 0.873783, 0.83704, 0.758586};//eta 4
+      sigmaKaon = {
+        0.891168, 1.00326, 1.04053, 0.952367, 0.919632, 0.951424, 0.902434, 1.07759,//eta 0
+        0.853805, 0.968212, 1.01839, 0.930692, 0.918841, 0.92428, 0.913715, 0.929855,//eta 1
+        0.830364, 0.911894, 0.987625, 0.912264, 0.939659, 0.906548, 0.893721, 1.00634,//eta 2
+        0.718803, 0.882484, 0.959253, 0.870302, 0.907273, 0.881795, 0.867757, 0.906373,//eta 3
+        0.688955, 0.855596, 0.932222, 0.839553, 0.867639, 0.855212, 0.845177, 0.90448};//eta 4
+      sigmaProton = {
+        0.771648, 0.841043, 0.917283, 1.12449, 1.0023, 0.952976, 0.963016, 1.01111,//eta 0
+        0.752951, 0.825488, 0.883897, 1.02998, 1.07061, 0.866346, 0.952794, 0.916068,//eta 1
+        0.72623, 0.799905, 0.860896, 0.996524, 1.02278, 0.866737, 0.834891, 0.988606,//eta 2
+        0.70374, 0.759504, 0.811721, 0.944681, 0.96305, 0.81128, 0.85648, 0.900749,//eta 3
+        0.702538, 0.723393, 0.781419, 0.83867, 0.940137, 0.785817, 0.841202, 0.859564 };//eta 4
+    } //end 0-10% centrality
+    else if(fIndexCentrality >= 10 && fIndexCentrality <= 30){
+      meanPion = {
+        -0.656082, -0.604754, -0.63195, -0.669819, -0.708323, -0.746162, -0.800557, -0.893548,//eta 0
+        -0.711512, -0.686848, -0.711177, -0.752377, -0.781678, -0.838341, -0.80682, -0.917012,//eta 1
+        -0.650884, -0.706274, -0.752449, -0.798673, -0.835543, -0.859084, -0.823375, -0.854207,//eta 2
+        -0.479705, -0.700093, -0.815494, -0.895986, -0.958185, -0.980633, -0.967819, -0.996364,//eta 3
+        -0.264033, -0.637537, -0.828537, -0.952223, -1.06091, -1.10456, -1.09789, -1.15579};//eta 4
+      meanKaon = {
+        -0.48114, -0.672897, -0.625657, -0.776678, -0.786824, -0.708909, -0.822472, -0.491422,//eta 0
+        -0.432004, -0.71966, -0.708949, -0.870034, -0.856239, -0.825942, -0.871391, -1.17962,//eta 1
+        -0.336167, -0.71892, -0.735327, -0.93073, -0.864011, -0.891611, -0.924604, -0.735026,//eta 2
+        -0.391054, -0.716122, -0.796868, -1.0208, -0.984637, -0.998813, -1.01377, -1.06832,//eta 3
+        -0.551251, -0.696801, -0.815058, -1.05691, -1.06688, -1.06648, -1.07023, -1.05183};//eta 4
+      meanProton = {
+        -0.200581, -0.16751, -0.451043, -0.952266, -0.852847, -0.760682, -0.676723, -0.603716,//eta 0
+        -0.123522, -0.128086, -0.444873, -0.846087, -0.988114, -1.05446, -0.761678, -0.785548,//eta 1
+        -0.100534, -0.1431, -0.448783, -0.8385, -0.843197, -1.05925, -0.878891, -0.69573,//eta 2
+        -0.233023, -0.317509, -0.598837, -0.945108, -1.01043, -1.21354, -0.99634, -0.915479,//eta 3
+        -0.391233, -0.516667, -0.768414, -1.00696, -1.03589, -1.26272, -1.02806, -0.994112};//eta 4
+      sigmaPion = {
+        0.986692, 1.01991, 1.00333, 0.986744, 0.981785, 1.04139, 1.0638, 1.09162,//eta 0
+        0.968236, 0.999018, 0.984673, 0.963658, 0.963348, 0.991749, 1.00931, 1.07714,//eta 1
+        0.948544, 0.971808, 0.957514, 0.938766, 0.936994, 0.987149, 0.957657, 0.994133,//eta 2
+        0.92104, 0.931385, 0.916291, 0.896921, 0.890271, 0.926601, 0.891902, 0.905638,//eta 3
+        0.909424, 0.89589, 0.881729, 0.860767, 0.842961, 0.873783, 0.83704, 0.758586};//eta 4
+      sigmaKaon = {
+        0.891168, 1.00326, 1.04053, 0.952367, 0.919632, 0.951424, 0.902434, 1.07759,//eta 0
+        0.853805, 0.968212, 1.01839, 0.930692, 0.918841, 0.92428, 0.913715, 0.929855,//eta 1
+        0.830364, 0.911894, 0.987625, 0.912264, 0.939659, 0.906548, 0.893721, 1.00634,//eta 2
+        0.718803, 0.882484, 0.959253, 0.870302, 0.907273, 0.881795, 0.867757, 0.906373,//eta 3
+        0.688955, 0.855596, 0.932222, 0.839553, 0.867639, 0.855212, 0.845177, 0.90448};//eta 4
+      sigmaProton = {
+        0.771648, 0.841043, 0.917283, 1.12449, 1.0023, 0.952976, 0.963016, 1.01111,//eta 0
+        0.752951, 0.825488, 0.883897, 1.02998, 1.07061, 0.866346, 0.952794, 0.916068,//eta 1
+        0.72623, 0.799905, 0.860896, 0.996524, 1.02278, 0.866737, 0.834891, 0.988606,//eta 2
+        0.70374, 0.759504, 0.811721, 0.944681, 0.96305, 0.81128, 0.85648, 0.900749,//eta 3
+        0.702538, 0.723393, 0.781419, 0.83867, 0.940137, 0.785817, 0.841202, 0.859564 };//eta 4
+    } //end 10-30% centrality
+    else if(fIndexCentrality >= 30 && fIndexCentrality <= 50){
+      meanPion = {
+        -0.537046, -0.427744, -0.411915, -0.42242, -0.445157, -0.423209, -0.403354, -0.39011,
+        -0.451747, -0.358803, -0.347827, -0.360332, -0.379419, -0.373067, -0.309076, -0.201842,
+        -0.37701, -0.342516, -0.352131, -0.375476, -0.397523, -0.380363, -0.348125, -0.334354,
+        -0.340843, -0.438716, -0.504516, -0.554322, -0.614602, -0.624125, -0.612949, -0.616095,
+        -0.273705, -0.510522, -0.643307, -0.739041, -0.830935, -0.860098, -0.885069, -0.956967};
+      meanKaon = {
+        -0.226216, -0.427422, -0.414774, -0.562412, -0.521969, -0.467143, -0.414713, -0.330372,
+        -0.16309, -0.36387, -0.436445, -0.395585, -0.452207, -0.408419, -0.30696, -0.323571,
+        -0.106973, -0.382832, -0.361131, -0.402223, -0.452784, -0.400874, -0.342613, -0.185365,
+        -0.252347, -0.480454, -0.500724, -0.573321, -0.642967, -0.616602, -0.546648, -0.482116,
+        -0.5916, -0.593699, -0.6563, -0.683526, -0.807421, -0.815922, -0.785543, -0.842433};
+      meanProton = {
+         0.00677222, 0.0347718, -0.211127, -0.466866, -0.323172, -0.53392, -0.504211, -0.334974,
+         0.0935506, 0.0970568, -0.138627, -0.392521, -0.399267, -0.43474, -0.200821, -0.23501,
+         0.075394, 0.0609517, -0.170246, -0.409987, -0.420188, -0.448851, -0.267424, -0.313302,
+         -0.133011, -0.210294, -0.42431, -0.562203, -0.459603, -0.673718, -0.649959, -0.520375,
+         -0.324865, -0.495658, -0.69697, -0.814164, -0.710279, -0.778491, -0.80033, -0.76221};
+      sigmaPion = {
+        0.915632, 0.93365, 0.932587, 0.931425, 0.922551, 0.92571, 0.881836, 0.796746,
+        0.906096, 0.925435, 0.924713, 0.919556, 0.906064, 0.911215, 0.866192, 0.773724,
+        0.881485, 0.902513, 0.901312, 0.893701, 0.89239, 0.875522, 0.825261, 0.764695,
+        0.835562, 0.850935, 0.853431, 0.846889, 0.834667, 0.819543, 0.798447, 0.774576,
+        0.809872, 0.807042, 0.80727, 0.799673, 0.785673, 0.757604, 0.74583, 0.726052};
+      sigmaKaon = {
+        0.814089, 0.877054, 0.944152, 0.90886, 0.92537, 0.931201, 0.926482, 0.722974,
+        0.798753, 0.841944, 0.952407, 0.952185, 0.929863, 0.921988, 0.932327, 0.828574,
+        0.733393, 0.821445, 0.903447, 0.928461, 0.917579, 0.921567, 0.923788, 0.727546,
+        0.694873, 0.772357, 0.864553, 0.886463, 0.866449, 0.86353, 0.872874, 0.990303,
+        0.687564, 0.747428, 0.792902, 0.87729, 0.824179, 0.814195, 0.813793, 0.901867};
+      sigmaProton = {
+         0.758072, 0.796573, 0.838565, 0.942299, 0.990804, 0.914681, 0.900297, 0.872938,
+         0.733353, 0.776217, 0.823004, 0.922272, 1.00522, 0.91665, 0.986521, 1.05648,
+         0.715624, 0.75819, 0.79931, 0.897033, 0.972885, 0.920213, 0.942288, 0.978577,
+         0.691934, 0.724153, 0.7582, 0.793117, 0.879233, 0.832657, 0.8289, 0.932063,
+         0.695097, 0.694242, 0.719957, 0.790272, 0.855222, 0.820038, 0.789541, 0.834146};
+    } //end 30-50% centrality
+  } //end LHC18q
+  else if(iRunNumber>=296690 && iRunNumber<=297595){
+    //LHC18r
+    if(fIndexCentrality >= 0 && fIndexCentrality<= 10){
+      meanPion = {
+        -0.744242, -0.715713, -0.69801, -0.696472, -0.717912, -0.767909, -0.822175, -0.883157,
+        -0.976407, -0.964248, -0.976588, -0.969265, -1.00251, -1.04185, -1.08507, -1.02488,
+        -0.938573, -1.02253, -1.0532, -1.06874, -1.09608, -1.11066, -1.07855, -1.06274,
+        -0.462091, -0.766549, -0.875959, -0.918783, -0.979887, -0.984493, -0.945828, -0.954307,
+         0.154123, -0.361271, -0.568491, -0.667592, -0.782836, -0.751772, -0.732903, -0.749};
+      meanKaon = {
+        -0.468947, -0.636701, -0.601858, -0.806051, -0.94714, -0.842379, -0.955165, -0.898824,
+        -0.588647, -0.883708, -0.894757, -1.09769, -1.11786, -1.08056, -1.15336, -1.44054,
+        -0.462369, -0.900829, -0.959231, -1.19209, -1.17182, -1.21788, -1.26831, -1.46315,
+        -0.28288, -0.585668, -0.942842, -1.13897, -1.18188, -1.1556, -1.20724, -1.06756,
+        -0.0830475, -0.129884, -0.40388, -0.905485, -1.03586, -0.963208, -0.95807, -0.591766};
+      meanProton = {
+        -0.43448, -0.41261, -0.468653, -0.766399, -0.906529, -0.87423, -0.925983, -0.834281,
+        -0.439377, -0.510631, -0.648086, -0.99403, -1.09146, -1.14373, -1.19123, -0.993241,
+        -0.400341, -0.54514, -0.649413, -0.979681, -1.22253, -1.27323, -1.27736, -1.12044,
+        -0.295184, -0.441872, -0.470702, -0.910766, -1.04581, -1.17824, -1.17277, -0.978326,
+        -0.169806, -0.33929, -0.309714, -0.680191, -0.862101, -0.972894, -0.951602, -0.676351 };
+      sigmaPion = {
+        1.19971, 1.20244, 1.19018, 1.18674, 1.19735, 1.27442, 1.31886, 1.35234,
+        1.17433, 1.18271, 1.16982, 1.17218, 1.17712, 1.26327, 1.33523, 1.30084,
+        1.16732, 1.17134, 1.16173, 1.15583, 1.16336, 1.24219, 1.23569, 1.24103,
+        1.1773, 1.16117, 1.14767, 1.14647, 1.19338, 1.22358, 1.21504, 1.20365,
+        1.21022, 1.17586, 1.16182, 1.15354, 1.15374, 1.22138, 1.19871, 1.20838};
+      sigmaKaon = {
+        1.2537, 1.29365, 1.27439, 1.1386, 1.06835, 1.10702, 1.03569, 1.12542,
+        1.20352, 1.25335, 1.24745, 1.12229, 1.12846, 1.11836, 1.0746, 1.33407,
+        1.17982, 1.21396, 1.23344, 1.13316, 1.15827, 1.10607, 1.06816, 1.14628,
+        1.10113, 1.23381, 1.30511, 1.11268, 1.11029, 1.1049, 1.02285, 1.26782,
+        1.09653, 1.23731, 1.28769, 1.10684, 1.09593, 1.11015, 1.04836, 1.12603};
+      sigmaProton = {
+        1.13405, 1.18163, 1.24085, 1.27282, 1.12543, 1.0912, 1.04366, 1.10697,
+        1.09801, 1.16854, 1.22617, 1.26278, 1.25383, 1.07191, 1.04581, 1.11811,
+        1.11623, 1.17665, 1.22384, 1.24119, 1.23884, 1.04855, 1.05348, 1.11713,
+        1.08417, 1.16621, 1.22578, 1.34172, 1.24733, 1.04892, 1.05745, 1.14111,
+        1.07421, 1.15563, 1.23173, 1.33796, 1.18478, 1.07793, 1.05178, 1.18215};
+    } //end 0-10% centrality
+    else if(fIndexCentrality >= 10 && fIndexCentrality <= 30){
+      meanPion = {
+        -0.694117,-0.631546,-0.587532,-0.568296,-0.572205,-0.587273,-0.592046,-0.597132,
+        -0.845603,-0.794267,-0.782727,-0.761903,-0.770849,-0.773905,-0.763973,-0.764653,
+        -0.790168,-0.822974,-0.830126,-0.824832,-0.834853,-0.822694,-0.799294,-0.760148,
+        -0.377544,-0.606416,-0.680226,-0.709356,-0.748197,-0.735027,-0.687131,-0.67114,
+        0.152892,-0.270204,-0.435937,-0.519352,-0.600842,-0.58243,-0.556651,-0.595698};
+      meanKaon = {
+        -0.32462,-0.482121,-0.52681,-0.702296,-0.801404,-0.736053,-0.758662,-0.649379,
+        -0.418126,-0.666333,-0.708767,-0.90688,-0.927897,-0.882262,-0.865255,-1.01626,
+        -0.326047,-0.690534,-0.767469,-0.967351,-0.968556,-0.963625,-0.937979,-0.87335,
+        -0.140399,-0.422132,-0.693828,-0.903177,-0.947538,-0.905028,-0.873963,-0.703542,
+        -0.0417266,-0.0456749,-0.283011,-0.714638,-0.824359,-0.758533,-0.708575,-0.496457};
+      meanProton = {
+        -0.292022,-0.284451,-0.320832,-0.571975,-0.719106,-0.745712,-0.750995,-0.728083,
+        -0.294409,-0.357698,-0.451651,-0.716477,-0.883707,-0.890497,-0.915806,-0.789553,
+        -0.274963,-0.404285,-0.462159,-0.704062,-0.864195,-1.00387,-0.968421,-0.796727,
+        -0.213432,-0.360112,-0.346473,-0.658365,-0.824904,-0.895539,-0.902184,-0.814731,
+        -0.139315,-0.309929,-0.251431,-0.465551,-0.697841,-0.764322,-0.748536,-0.549089};
+      sigmaPion = {
+        1.14223,1.15078,1.14811,1.1507,1.16023,1.20415,1.21901,1.16923,
+        1.12642,1.13908,1.13519,1.13835,1.14473,1.19325,1.2187,1.22128,
+        1.12001,1.13085,1.12843,1.12838,1.13356,1.17258,1.18389,1.15264,
+        1.12539,1.12088,1.11835,1.11784,1.14067,1.15473,1.13739,1.10985,
+        1.14555,1.12278,1.12099,1.11785,1.11802,1.15036,1.12267,1.11536};
+      sigmaKaon = {
+        1.17726,1.21852,1.22302,1.11337,1.07194,1.08253,1.01122,1.10989,
+        1.13178,1.1722,1.1896,1.10195,1.10604,1.10493,1.0549,1.22236,
+        1.11222,1.15166,1.19099,1.10719,1.12581,1.10115,1.0574,1.0145,
+        1.06012,1.16507,1.23038,1.09635,1.10469,1.09994,1.03767,1.1339,
+        1.08241,1.16377,1.21056,1.09332,1.09307,1.10426,1.03828,1.10098};
+      sigmaProton = {
+        1.09967,1.14495,1.19153,1.2288,1.11384,1.08263,1.06448,1.12628,
+        1.07441,1.13454,1.17493,1.20853,1.151,1.08579,1.07429,1.16777,
+        1.09054,1.145,1.17888,1.18472,1.18271,1.06515,1.07872,1.17542,
+        1.06934,1.13974,1.18288,1.25817,1.22109,1.07178,1.06567,1.11053,
+        1.06432,1.12584,1.19036,1.2397,1.11441,1.08026,1.053,1.15935};
+    } //end 10-30% centrality
+    else if(fIndexCentrality >= 30 && fIndexCentrality <= 50){
+      meanPion = {
+        -0.643992, -0.547379, -0.477054, -0.440121, -0.426498, -0.406638, -0.361916, -0.311107,
+        -0.714799, -0.624286, -0.588865, -0.554541, -0.539189, -0.50596, -0.442875, -0.504426,
+        -0.641763, -0.623418, -0.607051, -0.580924, -0.573627, -0.534728, -0.520039, -0.457556,
+        -0.292997, -0.446284, -0.484493, -0.499929, -0.516507, -0.485561, -0.428434, -0.387974,
+        0.151661, -0.179137, -0.303383, -0.371113, -0.418849, -0.413089, -0.380399, -0.442395};
+      meanKaon = {
+        -0.180292, -0.327542, -0.451762, -0.598542, -0.655667, -0.629728, -0.562158, -0.399934,
+        -0.247604, -0.448958, -0.522777, -0.71607, -0.737935, -0.683963, -0.577149, -0.59199,
+        -0.189726, -0.48024, -0.575707, -0.742612, -0.765291, -0.709371, -0.607647, -0.28355,
+        0.00208301, -0.258596, -0.444814, -0.667385, -0.713196, -0.654455, -0.540685, -0.339524,
+        -0.000405731, 0.0385342, -0.162143, -0.523791, -0.612858, -0.553858, -0.45908, -0.401148};
+      meanProton = {
+        -0.149563, -0.156293, -0.17301, -0.377551, -0.531683, -0.617193, -0.576007, -0.621884,
+        -0.14944, -0.204765, -0.255216, -0.438923, -0.675954, -0.637264, -0.640382, -0.585865,
+        -0.149585, -0.263429, -0.274904, -0.428442, -0.50586, -0.734513, -0.659482, -0.473013,
+        -0.13168, -0.278353, -0.222243, -0.405964, -0.603998, -0.612839, -0.631597, -0.651136,
+        -0.108823, -0.280568, -0.193149, -0.250911, -0.53358, -0.55575, -0.545469, -0.421828};
+      sigmaPion = {
+        1.08474, 1.09912, 1.10605, 1.11466, 1.12312, 1.13388, 1.11915, 0.98612,
+        1.0785, 1.09545, 1.10056, 1.10451, 1.11234, 1.12323, 1.10217, 1.14173,
+        1.0727, 1.09036, 1.09512, 1.10093, 1.10376, 1.10297, 1.1321, 1.06425,
+        1.07348, 1.08058, 1.08902, 1.08921, 1.08795, 1.08588, 1.05973, 1.01606,
+        1.08087, 1.06969, 1.08016, 1.08215, 1.08229, 1.07935, 1.04663, 1.02234};
+      sigmaKaon = {
+        1.10082, 1.14338, 1.17166, 1.08815, 1.07553, 1.05804, 0.98676, 1.09437,
+        1.06003, 1.09105, 1.13176, 1.08161, 1.08362, 1.0915, 1.0352, 1.11064,
+        1.04461, 1.08936, 1.14854, 1.08121, 1.09336, 1.09623, 1.04665, 0.882711,
+        1.01912, 1.09634, 1.15565, 1.08002, 1.09909, 1.09498, 1.05249, 0.999984,
+        1.0683, 1.09023, 1.13342, 1.07979, 1.0902, 1.09837, 1.0282, 1.07592};
+       sigmaProton = {
+         1.06529, 1.10828, 1.14221, 1.18478, 1.10225, 1.07407, 1.08529, 1.14558,
+         1.05081, 1.10053, 1.1237, 1.15429, 1.04817, 1.09967, 1.10276, 1.21743,
+         1.06485, 1.11335, 1.13392, 1.12825, 1.12658, 1.08174, 1.10395, 1.2337,
+         1.05451, 1.11328, 1.13998, 1.17462, 1.19486, 1.09464, 1.07388, 1.07995,
+         1.05442, 1.09606, 1.14899, 1.14143, 1.04405, 1.08258, 1.05422, 1.13655};
+    } //end 30-50% centrality
+  }
+  else {
+    return SigmaValue;
+  }
+
+  for (Int_t iEta(0); iEta < nEtabins; iEta++){
+     for(Int_t ipTPC(0); ipTPC < nPbins; ipTPC++){
+        if(eta > absetalims[iEta+1] || eta < absetalims[iEta]) continue;
+        if(pTPC > pTPClims[ipTPC+1] || pTPC < pTPClims[ipTPC]) continue;
+        if(species == kPion){
+          SigmaValue = (NumPion-meanPion[iEta*8+ipTPC])/sigmaPion[iEta*8+ipTPC];
+        }
+        else if(species == kKaon){
+          SigmaValue = (NumKaon-meanKaon[iEta*8+ipTPC])/sigmaKaon[iEta*8+ipTPC];
+        }
+        else if(species == kProton){
+          SigmaValue = (NumProton-meanProton[iEta*8+ipTPC])/sigmaProton[iEta*8+ipTPC];
+        }
+      } //end ipTPC
+    } //end iEta
+
+    return SigmaValue;
 }
 
 #endif

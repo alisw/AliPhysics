@@ -22,6 +22,9 @@ public:
                         double nsigmaTPC, double ptRangeTPC[2],
                         double nsigmaTOF, double ptRangeTOF[2]);
 
+  float fMinDeltaM;
+  float fMaxDeltaM;
+
 private:
   bool fTriggerOnSpecies[AliPID::kSPECIESC];
   AliESDtrackCuts *fTrackCuts[AliPID::kSPECIESC];

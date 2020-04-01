@@ -29,6 +29,7 @@
 
 #include "AliExternalTrackParam.h"
 
+#include <initializer_list>
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -584,7 +585,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         && (aodtrack->Chi2perNDF() < 4.0)
         && (0.15 <= aodtrack->Pt() && aodtrack->Pt() < 20)
         && (aodtrack->GetTPCNcls() > 70)
-        && (aodtrack->Eta() < 0.8)) {
+        && (TMath::Abs(aodtrack->Eta()) < 0.8)) {
       tNormMult++;
     }
 
@@ -634,6 +635,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       case kReference:
         norm_mult = fAODheader->GetRefMultiplicity();
         break;
+      case kRefComb08:
+        norm_mult = fAODheader->GetRefMultiplicityComb08();
+        break;
       case kTPCOnlyRef:
         norm_mult = fAODheader->GetTPConlyRefMultiplicity();
         break;
@@ -679,10 +683,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         continue;
       }
 
-      //loop over the 4 ITS Layrs and check for a hit!
-      for (int i = 0; i < 2; ++i) {
-        //we use layers 0, 1 /OR/ 0, 1, 4, 5
-        // if(i==2 || i==3) i+=2;
+      // loop over 2 ITS layers and check for a hit!
+      for (int i : {0, 1}) {
         if (aodtrackpid->HasPointOnITSLayer(i)) {
           passTrackPileUp = true;
         }
@@ -944,13 +946,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           passNeg = true;
         }
 
-        //loop over the 4 ITS Layrs and check for a hit!
-        for (int i = 0; i < 4; ++i) {
-          //checking layers 0, 1, 4, 5
-          if (i == 2 || i == 3) {
-            i += 2;
-          }
-
+        //loop over the 4 ITS layers and check for a hit!
+        for (int i : {0, 1, 4, 5}) {
           if (daughterTrackPos->HasPointOnITSLayer(i)) {
             passPos = true;
           }
@@ -1085,12 +1082,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           passBac = true;
         }
 
-        //loop over the 4 ITS Layrs and check for a hit!
-        for (int i = 0; i < 4; ++i) {
-          if (i == 2 || i == 3) {
-            i += 2; //checking layers 0, 1, 4, 5
-          }
-
+        //loop over the 4 ITS layers and check for a hit!
+        for (int i : {0, 1, 4, 5}) {
           if (daughterTrackPos->HasPointOnITSLayer(i)) {
             passPos = true;
           }
@@ -1201,7 +1194,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   return tEvent;
 }
 
-AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack)
+AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack)
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
   // If it exists, use the additional information from the PWG2 AOD
@@ -1583,15 +1576,13 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   //tFemtoV0->SetEtaPos(tAODv0->PseudoRapPos());
   //tFemtoV0->SetEtaNeg(tAODv0->PseudoRapNeg());
 
-  AliAODTrack *trackpos = (AliAODTrack *)tAODv0->GetDaughter(0);
-  AliAODTrack *trackneg = (AliAODTrack *)tAODv0->GetDaughter(1);
+  const AliAODTrack *trackpos = (AliAODTrack *)tAODv0->GetDaughter(0);
+  const AliAODTrack *trackneg = (AliAODTrack *)tAODv0->GetDaughter(1);
 
   // ensure that trackpos and trackneg are pointing to the correct children
   // This confusion seems to arise when fOnFlyStatusV0 = true
   if (trackpos->Charge() < 0 && trackneg->Charge() > 0) {
-    AliAODTrack *tmp = trackpos;
-    trackpos = trackneg;
-    trackneg = tmp;
+    std::swap(trackpos, trackneg);
   }
 
   if (trackpos && trackneg) {
@@ -2164,6 +2155,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
     probMis = fAODpidUtil->GetTOFMismatchProbability(tAodTrack);
   }
 
+  // tFemtoTrack->SetTOFsignal(tTOF);
+  tFemtoTrack->SetTOFsignal(tAodTrack->GetTOFsignal());
+
   tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4], tTOF);
 
   //////  TPC ////////////////////////////////////////////
@@ -2308,7 +2302,7 @@ void AliFemtoEventReaderAOD::SetEPVZERO(Bool_t iepvz)
 }
 
 void AliFemtoEventReaderAOD
-  ::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track,
+  ::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track,
                                              Float_t bfield,
                                              Float_t globalPositionsAtRadii[9][3])
 {

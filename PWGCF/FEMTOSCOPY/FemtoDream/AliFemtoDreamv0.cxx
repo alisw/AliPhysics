@@ -11,8 +11,8 @@
 #include "TClonesArray.h"
 
 ClassImp(AliFemtoDreamv0)
-AliFemtoDreamv0::AliFemtoDreamv0()
-    : AliFemtoDreamBasePart(),
+AliFemtoDreamv0::AliFemtoDreamv0(const int nDaugh)
+    : AliFemtoDreamBasePart(nDaugh),
       fOnlinev0(false),
       fHasDaughter(false),
       fpDaug(new AliFemtoDreamTrack()),
@@ -131,7 +131,21 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
-  this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
+
+  this->SetMomentum(0,trackSum.Px(), trackSum.Py(), trackSum.Pz());
+
+  // now copy the momenta from the daughter vector
+  int nDaughtersTotal = 1;
+  size_t nNegDaughDaughters = negDaughter.GetNdaughters();
+  for(size_t i=0; i< nNegDaughDaughters; ++i) {
+     this->SetMomentum(nDaughtersTotal++, negDaughter.GetMomentum(i));
+  }
+
+  size_t nPosDaughDaughters = posDaughter.GetNdaughters();
+  for(size_t i=0; i< nPosDaughDaughters; ++i) {
+     this->SetMomentum(nDaughtersTotal++, posDaughter.GetMomentum(i));
+  }
+
   this->SetEta(trackSum.Eta());
   this->SetPhi(trackSum.Phi());
   this->SetTheta(trackSum.Theta());
@@ -140,71 +154,71 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   this->fUse = true;
 
   // track IDs
-  auto IDpos = posDaughter.GetIDTracks();
-  for (const auto &itID : IDpos) {
-    this->SetIDTracks(itID);
-  }
   auto IDneg = negDaughter.GetIDTracks();
   for (const auto &itID : IDneg) {
     this->SetIDTracks(itID);
   }
+  auto IDpos = posDaughter.GetIDTracks();
+  for (const auto &itID : IDpos) {
+    this->SetIDTracks(itID);
+  }
 
   // Phi
-  auto Phipos = posDaughter.GetPhi();
-  for (size_t i = 0; i < Phipos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetPhi(Phipos[i]);
-  }
   auto Phineg = negDaughter.GetPhi();
   for (size_t i = 0; i < Phineg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetPhi(Phineg[i]);
   }
+  auto Phipos = posDaughter.GetPhi();
+  for (size_t i = 0; i < Phipos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetPhi(Phipos[i]);
+  }
 
   // Eta
-  auto Etapos = posDaughter.GetEta();
-  for (size_t i = 0; i < Etapos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetEta(Etapos[i]);
-  }
   auto Etaneg = negDaughter.GetEta();
   for (size_t i = 0; i < Etaneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetEta(Etaneg[i]);
   }
+  auto Etapos = posDaughter.GetEta();
+  for (size_t i = 0; i < Etapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetEta(Etapos[i]);
+  }
 
   // Theta
-  auto Thetapos = posDaughter.GetTheta();
-  for (size_t i = 0; i < Thetapos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetTheta(Thetapos[i]);
-  }
   auto Thetaneg = negDaughter.GetTheta();
   for (size_t i = 0; i < Thetaneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetTheta(Thetaneg[i]);
+  }
+  auto Thetapos = posDaughter.GetTheta();
+  for (size_t i = 0; i < Thetapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetTheta(Thetapos[i]);
   }
 
   // Charge
   auto Chargepos = posDaughter.GetCharge();
   auto Chargeneg = negDaughter.GetCharge();
   this->SetCharge(Chargepos.at(0) + Chargeneg.at(0));
-  for (size_t i = 0; i < Chargepos.size(); ++i) {
-    if (i == 0 && ignoreFirstPos) continue;
-    this->SetCharge(Chargepos[i]);
-  }
   for (size_t i = 0; i < Chargeneg.size(); ++i) {
     if (i == 0 && ignoreFirstNeg) continue;
     this->SetCharge(Chargeneg[i]);
   }
+  for (size_t i = 0; i < Chargepos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetCharge(Chargepos[i]);
+  }
 
   // Phi At Radii
-  auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
-  for (const auto &itPhiAtRadius : PhiAtRadiipos) {
-    this->SetPhiAtRadius(itPhiAtRadius);
-  }
   auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
+    this->SetPhiAtRadius(itPhiAtRadius);
+  }
+  auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
+  for (const auto &itPhiAtRadius : PhiAtRadiipos) {
     this->SetPhiAtRadius(itPhiAtRadius);
   }
 }
@@ -449,8 +463,11 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   //track is different to the one of the daughter track and is also
   //used in the official v0 class for the invarian mass
   //calculation.
-  fnDaug->SetMomentum(v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
-  fpDaug->SetMomentum(v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
+  fnDaug->SetMomentum(0, v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
+  fpDaug->SetMomentum(0, v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
+
+  this->SetMomentum(1, v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
+  this->SetMomentum(2, v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
 
   this->SetEta(fnDaug->GetMomentum().Eta());
   this->SetEta(fpDaug->GetMomentum().Eta());
@@ -497,8 +514,11 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
   v0->GetPPxPyPz(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
   v0->GetNPxPyPz(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
 
-  fnDaug->SetMomentum(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
-  fpDaug->SetMomentum(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+  fnDaug->SetMomentum(0, momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
+  fpDaug->SetMomentum(0, momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+
+  this->SetMomentum(1, momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+  this->SetMomentum(2, momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
 
   this->SetEta(fnDaug->GetMomentum().Eta());
   this->SetEta(fpDaug->GetMomentum().Eta());
@@ -537,7 +557,7 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
 void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
   this->SetCharge(v0->GetCharge());
   this->SetPt(v0->Pt());
-  this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
+  this->SetMomentum(0, v0->Px(), v0->Py(), v0->Pz());
   this->SetEta(v0->Eta());
   this->SetPhi(v0->Phi());
   this->SetTheta(v0->Theta());
@@ -557,7 +577,7 @@ void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
 
 void AliFemtoDreamv0::SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0) {
   this->SetPt(v0->Pt());
-  this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
+  this->SetMomentum(0, v0->Px(), v0->Py(), v0->Pz());
   float xvP = evt->GetPrimaryVertex()->GetX();
   float yvP = evt->GetPrimaryVertex()->GetY();
   float zvP = evt->GetPrimaryVertex()->GetZ();
@@ -607,6 +627,7 @@ void AliFemtoDreamv0::SetMCMotherInfo(TClonesArray *mcarray, AliAODv0 *v0) {
     //this should be kFake
     this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
   } else {
+    this->SetID(label); // to keep track of the actual MC particle
     AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(label);
     if (!mcPart) {
       //this should be fIsSet!
@@ -645,6 +666,7 @@ void AliFemtoDreamv0::SetMCMotherInfo(TClonesArray *mcarray, AliAODv0 *v0) {
       }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
+        this->SetMotherID(lastMother);
       }
     }
   }
@@ -663,7 +685,9 @@ void AliFemtoDreamv0::Reset() {
     fdcaPrimNeg = 0;
     flenDecay = 0;
     fTransRadius = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
+    GetMomentum(1).SetXYZ(0, 0, 0);
+    GetMomentum(2).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;

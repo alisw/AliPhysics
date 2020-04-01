@@ -1,5 +1,14 @@
 #include "TROOT.h"
 #include "TSystem.h"
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskFemtoDream.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskPIDResponse.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
                                      TString CentEst = "kInt7", bool notpp =
                                          true,  //1

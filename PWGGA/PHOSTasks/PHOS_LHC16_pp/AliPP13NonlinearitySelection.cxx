@@ -86,7 +86,7 @@ void AliPP13NonlinearitySelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma}, GeV; E_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
+		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma} (GeV/#it{c}^{2}); E_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fMassPt[i] = new AliPP13DetectorHistogram(hist, fListOfHistos, AliPP13DetectorHistogram::kModules);
 	}
 

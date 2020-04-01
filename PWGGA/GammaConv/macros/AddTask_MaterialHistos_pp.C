@@ -201,6 +201,17 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+  } else if (trainConfig == 27) {  // to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "0700bb09266300008884404000"); 
+    cuts.AddCutPCMMaterial("00010103", "0800bb09266300008850404000");
+
+  } else if (trainConfig == 28) {   // new Cuts on Psi pair, chi2, to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "0800bb0929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dkd0404000");
+
+
+
  } else if (trainConfig == 76) {   // +50 To be used with MBW
     cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
@@ -280,6 +291,17 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "1d00000926630000dkd0404000");
+ } else if (trainConfig == 127) {  // to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "1700bb09266300008884404000"); 
+    cuts.AddCutPCMMaterial("00010103", "1800bb09266300008850404000");
+
+  } else if (trainConfig == 128) {   // new Cuts on Psi pair, chi2, to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "1800bb0929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dkd0404000");
+
+
+
  } else if (trainConfig == 176) {   // +50 To be used with MBW
     cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");

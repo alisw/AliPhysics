@@ -18,7 +18,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     Double_t emcss_mim = 0.01,
     Double_t emcss_max = 0.35,
     Double_t invmass = 0.1,
-    Double_t invmass_pt = 0.15,
+    Double_t invmass_pt = 0.2,
+    Bool_t cent = kFALSE,
+    Bool_t semi = kTRUE,
     Bool_t TreeOn = kFALSE
  )
 {
@@ -69,6 +71,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalRun2(
     task->SetMaxCentrality(cmax);
     task->SetPIDcuts(tpcnsig, emceop, emcss_mim, emcss_max);
     task->SetMasscuts(invmass,invmass_pt);
+    task->SetMCCentral(cent);
+    task->SetMCSemiCentral(semi);
     task->SetTree(TreeOn);
 
     mgr->AddTask(task);

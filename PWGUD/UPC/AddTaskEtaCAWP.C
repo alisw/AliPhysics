@@ -40,6 +40,5 @@ AliAnalysisTaskUpcEtaCAWP *AddTaskEtaCAWP(Bool_t runTree = kFALSE, Bool_t runHis
 	mgr->ConnectOutput(task1, 4, coutput4);
 	mgr->ConnectOutput(task1, 5, coutput5);
 
-
 	return task;
 }

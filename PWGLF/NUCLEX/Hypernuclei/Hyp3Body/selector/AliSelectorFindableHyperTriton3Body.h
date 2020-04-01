@@ -9,8 +9,9 @@
 #include <TTreeReaderArray.h>
 #include <TTreeReaderValue.h>
 
-// Headers needed by this particular selector
-#include "AliExternalTrackParam.h"
+#include "AliESDtrack.h"
+#include "AliESDVertex.h"
+#include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
 #include "AliVertexerHyperTriton3Body.h"
 #include "AliVertexerTracks.h"
@@ -27,51 +28,29 @@ public:
   TTree *fChain = 0;   //! pointer to the analyzed TTree or TChain
 
   // Readers to access the data (delete the ones you do not need).
-  TTreeReaderValue<AliExternalTrackParam> fTreeHyp3BodyVarTracks[3] = {
-      {fReader, "fTreeHyp3BodyVarTrack0"}, {fReader, "fTreeHyp3BodyVarTrack1"}, {fReader, "fTreeHyp3BodyVarTrack2"}};
+  TTreeReaderValue<AliESDtrack> fTreeHyp3BodyVarTracks[3] = {{fReader, "fTreeHyp3BodyVarTrack0"}, {fReader, "fTreeHyp3BodyVarTrack1"}, {fReader, "fTreeHyp3BodyVarTrack2"}};
 
-  TTreeReaderValue<Int_t> fTreeHyp3BodyVarNclsTPC[3] = {{fReader, "fTreeHyp3BodyVarNclsTPC0"},
-                                                        {fReader, "fTreeHyp3BodyVarNclsTPC1"},
-                                                        {fReader, "fTreeHyp3BodyVarNclsTPC2"}};
-  TTreeReaderValue<Int_t> fTreeHyp3BodyVarNclsITS[3] = {{fReader, "fTreeHyp3BodyVarNclsITS0"},
-                                                        {fReader, "fTreeHyp3BodyVarNclsITS1"},
-                                                        {fReader, "fTreeHyp3BodyVarNclsITS2"}};
+  TTreeReaderValue<Int_t> fTreeHyp3BodyVarPDGcodes[3] = {{fReader, "fTreeHyp3BodyVarPDGcode0"},{fReader, "fTreeHyp3BodyVarPDGcode1"},{fReader, "fTreeHyp3BodyVarPDGcode2"}};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarGlobalChi2[3] = {{fReader, "fTreeHyp3BodyVarGlobalChi20"},
-                                                             {fReader, "fTreeHyp3BodyVarGlobalChi21"},
-                                                             {fReader, "fTreeHyp3BodyVarGlobalChi22"}};
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTPC[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTPC0"},{fReader, "fTreeHyp3BodyVarNsigmaTPC1"},{fReader, "fTreeHyp3BodyVarNsigmaTPC2"}};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTPC[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTPC0"},
-                                                            {fReader, "fTreeHyp3BodyVarNsigmaTPC1"},
-                                                            {fReader, "fTreeHyp3BodyVarNsigmaTPC2"}};
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTOF[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTOF0"},
-                                                            {fReader, "fTreeHyp3BodyVarNsigmaTOF1"},
-                                                            {fReader, "fTreeHyp3BodyVarNsigmaTOF2"}};
-
-  TTreeReaderValue<ULong64_t> fTreeHyp3BodyVarFlags[3] = {
-      {fReader, "fTreeHyp3BodyVarFlags0"}, {fReader, "fTreeHyp3BodyVarFlags1"}, {fReader, "fTreeHyp3BodyVarFlags2"}};
-
-  TTreeReaderValue<Int_t> fTreeHyp3BodyVarPDGcodes[3] = {{fReader, "fTreeHyp3BodyVarPDGcode0"},
-                                                         {fReader, "fTreeHyp3BodyVarPDGcode1"},
-                                                         {fReader, "fTreeHyp3BodyVarPDGcode2"}};
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarNsigmaTOF[3] = {{fReader, "fTreeHyp3BodyVarNsigmaTOF0"},{fReader, "fTreeHyp3BodyVarNsigmaTOF1"},{fReader, "fTreeHyp3BodyVarNsigmaTOF2"}};
 
   TTreeReaderValue<ULong64_t> fTreeHyp3BodyVarEventId = {fReader, "fTreeHyp3BodyVarEventId"};
-  TTreeReaderValue<Int_t> fTreeHyp3BodyVarMotherId    = {fReader, "fTreeHyp3BodyVarMotherId"};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {
-      {fReader, "fTreeHyp3BodyVarTruePx"}, {fReader, "fTreeHyp3BodyVarTruePy"}, {fReader, "fTreeHyp3BodyVarTruePz"}};
+  TTreeReaderValue<Int_t> fTreeHyp3BodyVarMotherId= { fReader, "fTreeHyp3BodyVarMotherId"};
 
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVtx[4] = {{fReader, "fTreeHyp3BodyVarDecayVx"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayVy"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayVz"},
-                                                           {fReader, "fTreeHyp3BodyVarDecayT"}};
-  TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVtx[4]     = {{fReader, "fTreeHyp3BodyVarPVx"},
-                                                       {fReader, "fTreeHyp3BodyVarPVy"},
-                                                       {fReader, "fTreeHyp3BodyVarPVz"},
-                                                       {fReader, "fTreeHyp3BodyVarPVt"}};
+  TTreeReaderValue<Bool_t> fTreeHyp3BodyVarIsFakeCand = {fReader, "fTreeHyp3BodyVarIsFakeCand"};
+
+  TTreeReaderValue<AliESDVertex> fPrimaryVertex = {fReader, "fPrimaryVertex"};
+
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {{fReader, "fTreeHyp3BodyVarTruePx"},{fReader, "fTreeHyp3BodyVarTruePy"},{fReader, "fTreeHyp3BodyVarTruePz"}};
+
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVtx[4] = {{fReader, "fTreeHyp3BodyVarDecayVx"},{fReader, "fTreeHyp3BodyVarDecayVy"},{fReader, "fTreeHyp3BodyVarDecayVz"},{fReader, "fTreeHyp3BodyVarDecayT"}};
+  
+  TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVtx[4] = {{fReader, "fTreeHyp3BodyVarPVx"},{fReader, "fTreeHyp3BodyVarPVy"},{fReader, "fTreeHyp3BodyVarPVz"},{fReader, "fTreeHyp3BodyVarPVt"}};
 
   TTreeReaderValue<Float_t> fTreeHyp3BodyVarMagneticField = {fReader, "fTreeHyp3BodyVarMagneticField"};
-  TTreeReaderValue<UChar_t> fTreeHyp3BodyVarCandStat      = {fReader, "fTreeHyp3BodyVarCandStat"};
 
   AliSelectorFindableHyperTriton3Body(TString outputName = "output.root", TString outputPath = ".",
                                       TTree * /*tree*/ = 0);
@@ -97,36 +76,46 @@ public:
   TString fOutputFileName;
   TString fOutputFilePath;
 
+
   AliVertexerHyperTriton3Body fHypertritonVertexer;
-  AliVertexerHyperTriton3Body fHypertritonVertexerHard;
+  AliESDtrackCuts *fESDtrackCuts = nullptr;
 
-  TVector3 fPrimaryVertexXYZ;
+  unsigned long fCurrentEventId = 0ull;
+  unsigned long fLastEventId = 0ull;
+  int fCurrentMotherId = -1;
+  int fLastMotherId = -1;
+  int fNclones = -1;
+  bool fFakeCand = false;
 
-  ULong_t fCurrentEventId = 0ull;
-  int fLastMother         = -1;
+  // Histogram for efficiencies
+  TH2D *fHistGen[2] = {nullptr};
+  TH2D *fHistRecSingle[2] = {nullptr};
+  TH2D *fHistRecFake[2] = {nullptr};
+  TH2D *fHistRecClones[2] = {nullptr};
 
-  TH2D *fHistInvMass[3][3][3] = {{{nullptr}}};
-  TH1D *fHistPt[2][3]         = {{nullptr}};
+  // Histograms for selection
+  TH2D *fHistInvMassPt[2][3] = {{nullptr}};
   TH1D *fHistDaughterPt[3][3] = {{nullptr}};
+  TH1D *fHistDaughterTPCchi2[3][3] = {{nullptr}};
+  TH1D *fHistDaughterITSchi2[3][3] = {{nullptr}};
+  TH1D *fHistNclsITS[3][3] = {{nullptr}};
+  TH1D *fHistNclsTPC[3][3] = {{nullptr}};
+  TH1D *fHistNSigmaTPC[3][3] = {{nullptr}};
+  TH1D *fHistNSigmaTOF[3][3] = {{nullptr}};
 
-  TH1D *fHistNclsITS[3]         = {nullptr};
-  TH1D *fHistNclsITSCheck       = nullptr;
-  TH1D *fHistNclsTPC[3]         = {nullptr};
-  TH1D *fHistNSigmaTPC[3]       = {nullptr};
-  TH1D *fHistNSigmaTOF[3]       = {nullptr};
-  TH1D *fHistCheckPID[4]        = {nullptr};
-  TH1D *fHistGlobalTrackChi2[3] = {nullptr};
-  TH1D *fHistResDecayVtx[3]     = {nullptr};
-  TH1D *fHistVertexChi2         = nullptr;
-  TH1D *fHistCosPAngle          = nullptr;
-  TH1D *fHistDCA2pvXY[3]        = {nullptr};
-  TH1D *fHistDCA2pvZ[3]         = {nullptr};
-  TH1D *fHistDCA2pv[3]          = {nullptr};
-  TH1D *fHistDCA2dvXY[3]        = {nullptr};
-  TH1D *fHistDCA2dvZ[3]         = {nullptr};
-  TH1D *fHistDCA2dv[3]          = {nullptr};
-  TH1D *fHistTrackDistance[3]   = {nullptr};
-  TH1D *fHistCT[2]              = {nullptr};
+  // Histograms after vertexer
+  TH1D *fHistVertexChi2 = nullptr;
+  TH1D *fHistResDecayVtx[3] = {nullptr};
+  TH1D *fHistCosPAngle = nullptr;
+  TH1D *fHistDCA2pvXY[3] = {nullptr};
+  TH1D *fHistDCA2pvZ[3] = {nullptr};
+  TH1D *fHistDCA2pv[3] = {nullptr};
+  TH1D *fHistDCA2dvXY[3] = {nullptr};
+  TH1D *fHistDCA2dvZ[3] = {nullptr};
+  TH1D *fHistDCA2dv[3] = {nullptr};
+  TH1D *fHistTrackDistance[3] = {nullptr};
+
+  bool AcceptCandidate();
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };

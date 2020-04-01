@@ -2496,7 +2496,7 @@ Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * 
   if (track== nullptr) return mcTrigger;
   if (track->GetInnerParam() == nullptr) return mcTrigger;
   if (track->GetTPCClusterInfo(3,1)<100) return mcTrigger;
-  if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.3) return mcTrigger;
+  if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.6) return mcTrigger;
   Int_t triggerMask=0;
   static Double_t mass[5]={TDatabasePDG::Instance()->GetParticle("e+")->Mass(), TDatabasePDG::Instance()->GetParticle("mu+")->Mass(), TDatabasePDG::Instance()->GetParticle("pi+")->Mass(),
                            TDatabasePDG::Instance()->GetParticle("K+")->Mass(), TDatabasePDG::Instance()->GetParticle("proton")->Mass()};

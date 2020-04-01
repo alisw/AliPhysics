@@ -116,10 +116,12 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 
     //arguments for ML application
     bool doMLsel = false;
-    vector<double> CutValuesML = {};
-    if (config["AnalysisOptions"]["MLSelection"]["ApplyML"]) {
+    vector<double> CutValuesMLmin = {};
+    vector<double> CutValuesMLmax = {};
+    if (config["AnalysisOptions"]["MLSelection"]) {
         doMLsel = static_cast<bool>(config["AnalysisOptions"]["MLSelection"]["ApplyML"].as<int>());
-        CutValuesML = config["AnalysisOptions"]["MLSelection"]["ApplyML"].as<vector<double> >();
+        CutValuesMLmin = config["AnalysisOptions"]["MLSelection"]["CutValuesMin"].as<vector<double> >();
+        CutValuesMLmax = config["AnalysisOptions"]["MLSelection"]["CutValuesMax"].as<vector<double> >();
     }
 
     //Load input file
@@ -221,7 +223,7 @@ void CharmHadronYieldRatioESE(string cfgFileName) {
 
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 1, PtMin[iPt], PtMax[iPt]);
         if(doMLsel)
-            ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 9, 0., CutValuesML[iPt]);
+            ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 9, CutValuesMLmin[iPt], CutValuesMLmax[iPt]);
         hInvMassUnb[iPt] = reinterpret_cast<TH1F*>(sMassVsPtVsPhiVsCentrVsqn->Projection(0));
         hInvMassUnb[iPt]->SetName(Form("hInvMassUnb_Pt%d", iPt));
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn, 8, qnmin, qnmax);

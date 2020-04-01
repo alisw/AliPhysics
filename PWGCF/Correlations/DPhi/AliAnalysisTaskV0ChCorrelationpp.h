@@ -65,6 +65,7 @@ public:
    void SetTrackPtMin(Double_t value){fTrackPtMin = value;} 
    void SetTrackPtMax(Double_t value){fTrackPtMax = value;}
    void SetTrackEta(Double_t value){fTrackEta = value;}
+   void SetFilterBit(Double_t value){fFilterBit = value;}
    void SetAssocNcls(Double_t value){fAssocNcls = value;}
    //---------------------V0---------------------------------
    void SetV0MCPtMin(Double_t value){fV0MCPtMin = value;}
@@ -77,9 +78,11 @@ public:
    void SetLambdaLifeTimeMax(Double_t value){fLambdaLifeTimeMax = value;}
    
    void SetV0DaughterPtMinCut(Double_t value){fV0DaughterPtMinCut = value;}
-   void SetDCANegtoPrimVertexMin(Double_t value){fDCANegtoPrimVertexMin = value;}
-   void SetDCAPostoPrimVertexMin(Double_t value){fDCAPostoPrimVertexMin = value;}
+   void SetDCANegtoPrimVertex(Double_t value){fDCANegtoPrimVertex = value;}
+   void SetDCAPostoPrimVertex(Double_t value){fDCAPostoPrimVertex = value;}
    void SetDCAV0DaughtersMax(Double_t value){fDCAV0DaughtersMax = value;}
+
+  void Setk0sCPA(Double_t value){fk0sCPA = value;}
   void SetLambdaCPA(Double_t value){fLambdaCPA = value;}
    void SetCosPointingAngleMin(Double_t value){fCosPointingAngleMin = value;}
    void Set2DFiducialMin(Double_t value){f2DFiducialMin = value;}
@@ -160,6 +163,7 @@ private:
    Double_t        fTrackPtMin;
    Double_t        fTrackPtMax;
    Double_t        fTrackEta;
+   Int_t          fFilterBit;
    Double_t        fAssocNcls;
    //---------------------------------V0----------------------------------------
    Double_t        fV0MCPtMin;
@@ -172,12 +176,13 @@ private:
    Double_t        fLambdaLifeTimeMax;
    
    Double_t        fV0DaughterPtMinCut;
-   Double_t        fDCANegtoPrimVertexMin;
-   Double_t        fDCAPostoPrimVertexMin;
+   Double_t        fDCANegtoPrimVertex;
+   Double_t        fDCAPostoPrimVertex;
    Double_t        fDCAV0DaughtersMax;
    Double_t        fCosPointingAngleMin;
 
    Double_t        fCPA;
+   Double_t        fk0sCPA;                
    Double_t        fLambdaCPA;
    Double_t        f2DFiducialMin;
    Double_t        fV0DaughterTrackTPCCluster;

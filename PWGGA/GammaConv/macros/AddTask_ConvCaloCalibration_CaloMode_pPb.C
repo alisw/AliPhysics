@@ -35,7 +35,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -49,6 +49,8 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
   Int_t     isRun2                        = 1,        // enables different number of SM
+  TString   ElecCuts                      = "",       // enables energy calib for EMCal with electrons (204b6200263202223710)
+  Bool_t    enableElecDeDxPostCalibration = kFALSE,   // dEdx re-calibration (only relevant for electron calibration)
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -64,6 +66,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
 
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
   TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if(corrTaskSetting.CompareTo(""))
@@ -248,10 +251,12 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
 
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
-  ConvCutList->SetOwner(kTRUE);
+  ClusterCutList->SetOwner(kTRUE);
   AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
+  ConvCutList->SetOwner(kTRUE);
+  AliConversionPhotonCuts **analysisConversionCuts      = new AliConversionPhotonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     //create AliCaloTrackMatcher instance, if there is none present
@@ -307,6 +312,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
+    if(ElecCuts != "") analysisClusterCuts[i]->SetElectronClusterCalibration(kTRUE);
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
@@ -319,6 +325,57 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+  }
+
+  //========= Add Electron Selector ================
+  if( ElecCuts.Sizeof() == 21 ){
+    if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
+      AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
+      //ConfigV0ReaderV1(fV0ReaderV1,ConvCutnumber,IsHeavyIon);
+      // Set AnalysisCut Number
+      AliDalitzElectronCuts *fElecCuts=0;
+
+      fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
+      if(fElecCuts->InitializeCutsFromCutString(ElecCuts.Data())){
+        fElecCuts->SetFillCutHistograms("",kTRUE);
+        fElectronSelector->SetDalitzElectronCuts(ElecCuts);
+      }
+      fElectronSelector->Init();
+      mgr->AddTask(fElectronSelector);
+      //connect input fElectronSelector
+      mgr->ConnectInput (fElectronSelector,0,cinput);
+    }
+    task->SetElectronMatchingCalibration(1);
+
+
+  //========= Add V0 Selector ================
+} else if( ElecCuts.Sizeof() == 27 ){
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    analysisConversionCuts[i]      = new AliConversionPhotonCuts();
+
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisConversionCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisConversionCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisConversionCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+      }
+    }
+    analysisConversionCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisConversionCuts[i]->SetLightOutput(kTRUE);
+    analysisConversionCuts[i]->InitializeCutsFromCutString(ElecCuts.Data());
+    ConvCutList->Add(analysisConversionCuts[i]);
+    analysisConversionCuts[i]->SetFillCutHistograms("",kFALSE);
+
+    task->SetElectronMatchingCalibration(2);
+    }
+    task->SetConversionCutList(numberOfCuts,ConvCutList);
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -334,7 +391,7 @@ void AddTask_ConvCaloCalibration_CaloMode_pPb(
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(isRun2){ task->SetNumOfCaloModules(20); }
-  if(!isRun2){ task->SetNumOfCaloModules(8); }
+  if(!isRun2){ task->SetNumOfCaloModules(10); }
   //connect containers
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("ConvCaloCalibration_%i_%i_%i",mesonRecoMode, selectedMeson, trainConfig)

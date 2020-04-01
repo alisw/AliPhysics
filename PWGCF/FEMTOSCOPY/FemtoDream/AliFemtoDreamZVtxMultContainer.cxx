@@ -15,12 +15,7 @@ ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
-      fWhichPairs(),
-      fRejPairs(),
-      fDeltaEtaMax(0.f),
-      fDeltaPhiMax(0.f),
-      fDeltaPhiEtaMax(0.f),
-      fDoDeltaEtaDeltaPhiCut(false) {
+      fWhichPairs(){
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -28,13 +23,7 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
     : fPartContainer(conf->GetNParticles(),
                      AliFemtoDreamPartContainer(conf->GetMixingDepth())),
       fPDGParticleSpecies(conf->GetPDGCodes()),
-      fWhichPairs(conf->GetWhichPairs()),
-      fRejPairs(conf->GetClosePairRej()),
-      fDeltaEtaMax(conf->GetDeltaEtaMax()),
-      fDeltaPhiMax(conf->GetDeltaPhiMax()),
-      fDeltaPhiEtaMax(
-          fDeltaPhiMax * fDeltaPhiMax + fDeltaEtaMax * fDeltaEtaMax),
-      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
+      fWhichPairs(conf->GetWhichPairs()){
   TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
                                         kTRUE, 0.0, 1, "Nucleus", 1000010020);
   TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
@@ -70,7 +59,6 @@ void AliFemtoDreamZVtxMultContainer::SetEvent(
 void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -82,7 +70,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
       HigherMath->FillPairCounterSE(HistCounter, itSpec1->size(),
                                     itSpec2->size());
       //Now loop over the actual Particles and correlate them
-      bool CPR = fRejPairs.at(HistCounter);
       for (auto itPart1 = itSpec1->begin(); itPart1 != itSpec1->end();
           ++itPart1) {
         AliFemtoDreamBasePart part1 = *itPart1;
@@ -94,21 +81,31 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
         }
         while (itPart2 != itSpec2->end()) {
           AliFemtoDreamBasePart part2 = *itPart2;
-          // Delta eta - Delta phi* cut
-          if (fDoDeltaEtaDeltaPhiCut && CPR) {
-            if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
-              ++itPart2;
-              continue;
-            }
+          TLorentzVector PartOne, PartTwo;
+          PartOne.SetXYZM(
+              itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+              itPart1->GetMomentum().Z(),
+              TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass());
+          PartTwo.SetXYZM(
+              itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+              itPart2->GetMomentum().Z(),
+              TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass());
+          float RelativeK = HigherMath->RelativePairMomentum(PartOne, PartTwo);
+          if (!HigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                               RelativeK, true, false)) {
+            ++itPart2;
+            continue;
           }
           RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
-                                                itPart1->GetMomentum(),
+                                                part1,
                                                 *itPDGPar1,
-                                                itPart2->GetMomentum(),
+                                                part2,
                                                 *itPDGPar2);
           HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
                                       *itPart2, *itPDGPar2, RelativeK, false);
+          HigherMath->SEMomentumResolution(HistCounter, &(*itPart1), *itPDGPar1,
+                                           &(*itPart2), *itPDGPar2, RelativeK);
           ++itPart2;
         }
       }
@@ -122,7 +119,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
 void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent) {
-  float RelativeK = 0;
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species
@@ -138,7 +134,6 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
         HigherMath->FillEffectiveMixingDepth(HistCounter,
                                              (int) itSpec2->GetMixingDepth());
       }
-      bool CPR = fRejPairs.at(HistCounter);
       for (int iDepth = 0; iDepth < (int) itSpec2->GetMixingDepth(); ++iDepth) {
         std::vector<AliFemtoDreamBasePart> ParticlesOfEvent = itSpec2->GetEvent(
             iDepth);
@@ -148,14 +143,24 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             ++itPart1) {
           for (auto itPart2 = ParticlesOfEvent.begin();
               itPart2 != ParticlesOfEvent.end(); ++itPart2) {
-            if (fDoDeltaEtaDeltaPhiCut && CPR) {
-              if (!HigherMath->PassesPairSelection(*itPart1, *itPart2, false)) {
-                continue;
-              }
+
+            TLorentzVector PartOne, PartTwo;
+            PartOne.SetXYZM(
+                itPart1->GetMomentum().X(), itPart1->GetMomentum().Y(),
+                itPart1->GetMomentum().Z(),
+                TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass());
+            PartTwo.SetXYZM(
+                itPart2->GetMomentum().X(), itPart2->GetMomentum().Y(),
+                itPart2->GetMomentum().Z(),
+                TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass());
+            float RelativeK = HigherMath->RelativePairMomentum(PartOne, PartTwo);
+            if (!HigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
+                                                 RelativeK, false, false)) {
+              continue;
             }
             RelativeK = HigherMath->FillMixedEvent(
-                HistCounter, iMult, cent, itPart1->GetMomentum(), *itPDGPar1,
-                itPart2->GetMomentum(), *itPDGPar2,
+                HistCounter, iMult, cent, *itPart1, *itPDGPar1,
+                *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
 
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,

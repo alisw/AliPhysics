@@ -1,13 +1,17 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // AddUniFlow                                                     //
-// Author: Vojtech Pacik (vojtech.pacik@cern.ch), NBI, 2016       //
+// Author: Ya Zhu (ya.zhu@cern.ch),CCNU & NBI, 2016       //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
-
-AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "name")
+class TList;
+class AliAnalysisTaskUniFlowMultiStrange;
+AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(Bool_t IsGrid, TString name = "UniFlow")
 {
+  if (IsGrid){
+  gGrid->Connect("alien://");
+  }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
@@ -38,8 +42,7 @@ AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "n
   AliAnalysisDataContainer* cOutput14 = mgr->CreateContainer(Form("QA_V0s_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
   AliAnalysisDataContainer* cOutput15 = mgr->CreateContainer(Form("QA_Phi_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
   AliAnalysisDataContainer* cOutput16 = mgr->CreateContainer(Form("Flow_Weights_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-//  AliAnalysisDataContainer* cOutput17 = mgr->CreateContainer(Form("Event_q2_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s",fileName.Data()));
-  
+
   // Connecting containers to task
   mgr->ConnectInput(task,0,cInput0); // your task needs input: here we connect the manager to your task
   mgr->ConnectOutput(task,1,cOutput1);
@@ -58,6 +61,6 @@ AliAnalysisTaskUniFlowMultiStrange* AddTaskUniFlowMultiStrange(TString name = "n
   mgr->ConnectOutput(task,14,cOutput14);
   mgr->ConnectOutput(task,15,cOutput15);
   mgr->ConnectOutput(task,16,cOutput16);
- // mgr->ConnectOutput(task,17,cOutput17);
+
   return task;
 }

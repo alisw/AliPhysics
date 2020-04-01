@@ -102,6 +102,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fTemplatePtDistributionRapidityH{ 0, 0, 0 },
+      //_______________________________
+      //
+      // SIDEBANDS
+      //
+      fTemplatePtDistributionHLowerSide(0),
+      fTemplatePtDistributionRapidityHLowerSide{ 0, 0, 0 },
+      fTemplatePtDistributionHHigherSide(0),
+      fTemplatePtDistributionRapidityHHigherSide{ 0, 0, 0 },
+      //_______________________________
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -305,6 +314,15 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fDimuonPtDistributionH(0),
       fTemplatePtDistributionH(0),
       fTemplatePtDistributionRapidityH{ 0, 0, 0 },
+      //_______________________________
+      //
+      // SIDEBANDS
+      //
+      fTemplatePtDistributionHLowerSide(0),
+      fTemplatePtDistributionRapidityHLowerSide{ 0, 0, 0 },
+      fTemplatePtDistributionHHigherSide(0),
+      fTemplatePtDistributionRapidityHHigherSide{ 0, 0, 0 },
+      //_______________________________
       fDcaAgainstInvariantMassH(0),
       fInvariantMassDistributionExtendedH(0),
       fInvariantMassDistributionCoherentExtendedH(0),
@@ -674,6 +692,35 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
                     );
     fOutputList->Add(fTemplatePtDistributionRapidityH[iRapidityBin]);
   }
+
+  //_______________________________
+  /* -
+   * - SIDEBANDS
+   */
+  fTemplatePtDistributionHLowerSide = new TH1F("fTemplatePtDistributionHLowerSide", "fTemplatePtDistributionHLowerSide", 4000, 0, 20);
+  fOutputList->Add(fTemplatePtDistributionHLowerSide);
+
+  for( Int_t iRapidityBin = 0; iRapidityBin < 3; iRapidityBin++ ){
+    fTemplatePtDistributionRapidityHLowerSide[iRapidityBin] =
+          new TH1F( Form( "fTemplatePtDistributionRapidityHLowerSide_%d", iRapidityBin),
+                    Form( "fTemplatePtDistributionRapidityHLowerSide_%d", iRapidityBin),
+                    4000, 0, 20
+                    );
+    fOutputList->Add(fTemplatePtDistributionRapidityHLowerSide[iRapidityBin]);
+  }
+
+  fTemplatePtDistributionHHigherSide = new TH1F("fTemplatePtDistributionHHigherSide", "fTemplatePtDistributionHHigherSide", 4000, 0, 20);
+  fOutputList->Add(fTemplatePtDistributionHHigherSide);
+
+  for( Int_t iRapidityBin = 0; iRapidityBin < 3; iRapidityBin++ ){
+    fTemplatePtDistributionRapidityHHigherSide[iRapidityBin] =
+          new TH1F( Form( "fTemplatePtDistributionRapidityHHigherSide_%d", iRapidityBin),
+                    Form( "fTemplatePtDistributionRapidityHHigherSide_%d", iRapidityBin),
+                    4000, 0, 20
+                    );
+    fOutputList->Add(fTemplatePtDistributionRapidityHHigherSide[iRapidityBin]);
+  }
+  //_______________________________
 
   fDcaAgainstInvariantMassH = new TH2F("fDcaAgainstInvariantMassH", "fDcaAgainstInvariantMassH", 4000, 0, 40, 2000, -100, 100);
   fOutputList->Add(fDcaAgainstInvariantMassH);
@@ -1334,6 +1381,7 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
         new TH1F( "fCosThetaHelicityFrameTwentyfiveBinsH",
                   "fCosThetaHelicityFrameTwentyfiveBinsH",
                   25, -1, 1
+                  // 100, -1, 1 // Reweighting
                   );
   fOutputList->Add(fCosThetaHelicityFrameTwentyfiveBinsH);
 
@@ -1341,6 +1389,7 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
         new TH1F( "fMCCosThetaHelicityFrameTwentyfiveBinsH",
                   "fMCCosThetaHelicityFrameTwentyfiveBinsH",
                   25, -1, 1
+                  // 100, -1, 1 // Reweighting
                   );
   fOutputList->Add(fMCCosThetaHelicityFrameTwentyfiveBinsH);
 
@@ -1381,6 +1430,7 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
         new TH1F( "fCosThetaCsFrameTwentyfiveBinsH",
                   "fCosThetaCsFrameTwentyfiveBinsH",
                   25, -1, 1
+                  // 100, -1, 1 // Reweighting
                   );
   fOutputList->Add(fCosThetaCsFrameTwentyfiveBinsH);
 
@@ -1388,6 +1438,7 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
         new TH1F( "fMCCosThetaCsFrameTwentyfiveBinsH",
                   "fMCCosThetaCsFrameTwentyfiveBinsH",
                   25, -1, 1
+                  // 100, -1, 1 // Reweighting
                   );
   fOutputList->Add(fMCCosThetaCsFrameTwentyfiveBinsH);
 
@@ -2098,6 +2149,36 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
     }
   }
 
+  //_______________________________
+  //    SIDEBANDS
+  /* -
+   * - (LOWER)
+   */
+  if ( (possibleJPsi.Mag() > 2.4) && (possibleJPsi.Mag() < 2.8) ) {
+    fTemplatePtDistributionHLowerSide->Fill(ptOfTheDimuonPair);
+    if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+      fTemplatePtDistributionRapidityHLowerSide[0]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+      fTemplatePtDistributionRapidityHLowerSide[1]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+      fTemplatePtDistributionRapidityHLowerSide[2]->Fill(possibleJPsi.Mag());
+    }
+  }
+  /* -
+   * - (HIGHER)
+   */
+  if ( (possibleJPsi.Mag() > 4.) && (possibleJPsi.Mag() < 5.5) ) {
+    fTemplatePtDistributionHHigherSide->Fill(ptOfTheDimuonPair);
+    if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.50 ) {
+      fTemplatePtDistributionRapidityHHigherSide[0]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.50 && possibleJPsi.Rapidity() <= -3.00 ) {
+      fTemplatePtDistributionRapidityHHigherSide[1]->Fill(possibleJPsi.Mag());
+    } else if ( possibleJPsi.Rapidity() > -3.00 && possibleJPsi.Rapidity() <= -2.50 ) {
+      fTemplatePtDistributionRapidityHHigherSide[2]->Fill(possibleJPsi.Mag());
+    }
+  }
+
+
 
   /* - Filling the J/Psi's polarization plots.
      -
@@ -2269,6 +2350,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
           Double_t TildePhiPositiveCosThetaCS  = PhiCollinsSoperValue - 0.25 * 3.14;
           Double_t TildePhiNegativeCosThetaCS  = PhiCollinsSoperValue - 0.75 * 3.14;
 
+          /* -
+           * - IMPORTANT:
+           * -
+           * - Comment this when you are not doing the
+           * - polarisation check.
+           */
+          Double_t ReweightingCosThetaHE = 1 / ( 1 + CosThetaHelicityFrameValue10 * CosThetaHelicityFrameValue10 );
+          Double_t ReweightingCosThetaCS = 1 / ( 1 + CosThetaCollinsSoperValue    * CosThetaCollinsSoperValue    );
+
+
           if( TildePhiPositiveCosTheta < 0. ) {
             TildePhiPositiveCosTheta += 2 * TMath::Pi();
           }
@@ -2287,6 +2378,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
            * -
            */
           fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10 );
+          // fCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrameValue10, ReweightingCosThetaHE );
           fPhiHelicityFrameTwentyfiveBinsH     ->Fill( PhiHelicityFrameValue10 );
           if( CosThetaHelicityFrameValue10 > 0 ){
             fTildePhiHelicityFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosTheta );
@@ -2298,6 +2390,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
            * -
            */
           fCosThetaCsFrameTwentyfiveBinsH->Fill( CosThetaCollinsSoperValue );
+          // fCosThetaCsFrameTwentyfiveBinsH->Fill( CosThetaCollinsSoperValue, ReweightingCosThetaCS  );
           fPhiCsFrameTwentyfiveBinsH     ->Fill( PhiCollinsSoperValue );
           if( CosThetaCollinsSoperValue > 0 ){
             fTildePhiCsFrameTwentyfiveBinsH->Fill( TildePhiPositiveCosThetaCS );
@@ -2826,6 +2919,19 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                         possibleJPsiMC
                                                                                         )
                                                                                        );
+                  /* -
+                   * - IMPORTANT:
+                   * -
+                   * - Comment this when you are not doing the
+                   * - polarisation check.
+                   */
+                  Double_t CosThetaHeForTrial   = CosThetaHelicityFrame(muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC);
+                  Double_t CosThetaCsForTrial   = CosThetaCollinsSoper( muonsMCcopy[0],muonsMCcopy[1],possibleJPsiMC);
+                  // Double_t ReweightedCosThetaHE = CosThetaHeForTrial / ( 1 + CosThetaHeForTrial * CosThetaHeForTrial );
+                  // Double_t ReweightedCosThetaCS = CosThetaCsForTrial / ( 1 + CosThetaCsForTrial * CosThetaCsForTrial );
+                  Double_t ReweightedCosThetaHE = 1 / ( 1 + CosThetaHeForTrial * CosThetaHeForTrial );
+                  Double_t ReweightedCosThetaCS = 1 / ( 1 + CosThetaCsForTrial * CosThetaCsForTrial );
+                  // fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHeForTrial, ReweightedCosThetaHE );
                   fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
                                                                                  muonsMCcopy[1],
                                                                                  possibleJPsiMC
@@ -2863,6 +2969,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                  possibleJPsiMC
                                                                                  )
                                                                                 );
+                  // fMCCosThetaCsFrameTwentyfiveBinsH->Fill( CosThetaCsForTrial, ReweightedCosThetaCS );
                   fMCPhiCsFrameTwentyfiveBinsH->Fill( CosPhiCollinsSoper( muonsMCcopy[0],
                                                                           muonsMCcopy[1],
                                                                           possibleJPsiMC
@@ -3077,11 +3184,24 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                   /* - HELICITY FRAME ANALYSIS
                    * -
                    */
+                  /* -
+                   * - IMPORTANT:
+                   * -
+                   * - Comment this when you are not doing the
+                   * - polarisation check.
+                   */
+                  Double_t CosThetaHeForTrial   = CosThetaHelicityFrame(muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC);
+                  Double_t CosThetaCsForTrial   = CosThetaCollinsSoper( muonsMCcopy[1],muonsMCcopy[0],possibleJPsiMC);
+                  // Double_t ReweightedCosThetaHE = CosThetaHeForTrial / ( 1 + CosThetaHeForTrial * CosThetaHeForTrial );
+                  // Double_t ReweightedCosThetaCS = CosThetaCsForTrial / ( 1 + CosThetaCsForTrial * CosThetaCsForTrial );
+                  Double_t ReweightedCosThetaHE = 1 / ( 1 + CosThetaHeForTrial * CosThetaHeForTrial );
+                  Double_t ReweightedCosThetaCS = 1 / ( 1 + CosThetaCsForTrial * CosThetaCsForTrial );
                   fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
                                                                                         muonsMCcopy[0],
                                                                                         possibleJPsiMC
                                                                                         )
                                                                                        );
+                  // fMCCosThetaHelicityFrameTwentyfiveBinsH->Fill( CosThetaHeForTrial, ReweightedCosThetaHE );
                   fMCPhiHelicityFrameTwentyfiveBinsH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
                                                                                  muonsMCcopy[0],
                                                                                  possibleJPsiMC
@@ -3119,6 +3239,7 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                  possibleJPsiMC
                                                                                  )
                                                                                 );
+                  // fMCCosThetaCsFrameTwentyfiveBinsH->Fill( CosThetaCsForTrial, ReweightedCosThetaCS );
                   fMCPhiCsFrameTwentyfiveBinsH->Fill( CosPhiCollinsSoper( muonsMCcopy[1],
                                                                           muonsMCcopy[0],
                                                                           possibleJPsiMC

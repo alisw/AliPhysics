@@ -85,6 +85,12 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistYtpcVsCent{nullptr},
   fHistZtpcVsCent{nullptr},
   fHistContrTpcVsCent{nullptr},
+  fHistXtrkResidVsMult{nullptr},
+  fHistYtrkResidVsMult{nullptr},
+  fHistZtrkResidVsMult{nullptr},
+  fHistXtrkResidVsCent{nullptr},
+  fHistYtrkResidVsCent{nullptr},
+  fHistZtrkResidVsCent{nullptr},
   fHistNtracklVsZtrue{nullptr},
   fHistoNOfPileupVertSPD{nullptr},
   fHistoNOfSelPileupVertSPD{nullptr},
@@ -152,6 +158,12 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistYtpcVsCent;
     delete fHistZtpcVsCent;
     delete fHistContrTpcVsCent;
+    delete fHistXtrkResidVsMult;
+    delete fHistYtrkResidVsMult;
+    delete fHistZtrkResidVsMult;
+    delete fHistXtrkResidVsCent;
+    delete fHistYtrkResidVsCent;
+    delete fHistZtrkResidVsCent;
     delete fHistNtracklVsZtrue;
     delete fHistoNOfPileupVertSPD;
     delete fHistoNOfSelPileupVertSPD;
@@ -290,6 +302,19 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistZtpcVsCent);
   fOutput->Add(fHistContrTpcVsCent);
 
+  fHistXtrkResidVsMult=new TH2F("hXtrkResidVsMult"," ; n_{Tracklets} ; x_{Vertex}-x_{TrueVertex} (cm)",100,0.,fMaxMult,1000,-0.1,0.1);
+  fHistYtrkResidVsMult=new TH2F("hYtrkResidVsMult"," ; n_{Tracklets} ; y_{Vertex}-y_{TrueVertex} (cm)",100,0.,fMaxMult,1000,-0.1,0.1);
+  fHistZtrkResidVsMult=new TH2F("hZtrkResidVsMult"," ; n_{Tracklets} ; z_{Vertex}-z_{TrueVertex} (cm)",100,0.,fMaxMult,1000,-0.1,0.1);
+  fHistXtrkResidVsCent=new TH2F("hXtrkResidVsCent"," ; n_{Tracklets} ; x_{Vertex}-x_{TrueVertex} (cm)",100,0.,100.,1000,-0.1,0.1);
+  fHistYtrkResidVsCent=new TH2F("hYtrkResidVsCent"," ; n_{Tracklets} ; y_{Vertex}-y_{TrueVertex} (cm)",100,0.,100.,1000,-0.1,0.1);
+  fHistZtrkResidVsCent=new TH2F("hZtrkResidVsCent"," ; n_{Tracklets} ; z_{Vertex}-z_{TrueVertex} (cm)",100,0.,100.,1000,-0.1,0.1);
+  fOutput->Add(fHistXtrkResidVsMult);
+  fOutput->Add(fHistYtrkResidVsMult);
+  fOutput->Add(fHistZtrkResidVsMult);
+  fOutput->Add(fHistXtrkResidVsCent);
+  fOutput->Add(fHistYtrkResidVsCent);
+  fOutput->Add(fHistZtrkResidVsCent);
+
   fHistNtracklVsZtrue=new TH2F("hNtracklVsZtrue"," ; z_{TrueVertex} (cm), n_{Tracklets}",300,-20.,20.,100,0.,fMaxMult);
   fOutput->Add(fHistNtracklVsZtrue);
 
@@ -319,6 +344,8 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
 
   
+  Double_t xMCVertex = -9999.;
+  Double_t yMCVertex = -9999.;
   Double_t zMCVertex = -9999.;
   AliAODMCHeader *mcHeader=0;
   if(fReadMC){
@@ -327,6 +354,8 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       printf("AliAnalysisTaskSEDplus::UserExec: MC header branch not found!\n");
       return;
     }
+    xMCVertex = mcHeader->GetVtxX();
+    yMCVertex = mcHeader->GetVtxY();
     zMCVertex = mcHeader->GetVtxZ();
   }
 
@@ -418,6 +447,14 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistYtrkVsCent->Fill(centr,yt);
       fHistZtrkVsCent->Fill(centr,zt);
       fHistContrTrkVsCent->Fill(centr,ct);
+      if(mcHeader){
+	fHistXtrkResidVsMult->Fill(ntracklets,xt-xMCVertex);
+	fHistYtrkResidVsMult->Fill(ntracklets,yt-yMCVertex);
+	fHistZtrkResidVsMult->Fill(ntracklets,zt-zMCVertex);
+	fHistXtrkResidVsCent->Fill(centr,xt-xMCVertex);
+	fHistYtrkResidVsCent->Fill(centr,yt-yMCVertex);
+	fHistZtrkResidVsCent->Fill(centr,zt-zMCVertex);
+      }
     }
   }
   Int_t cs=0;

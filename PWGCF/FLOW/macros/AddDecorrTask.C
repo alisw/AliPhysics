@@ -1,40 +1,4 @@
-AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containerName)
-{
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisDataContainer* weights;
-  if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
-  TFile* file;
-  file = TFile::Open(nua_file.Data(), "READ");
-
-  if(!file) { printf("E-MyAddTask: Input file with differential weights not found!\n"); return NULL; }
-
-  TList* weights_list = new TList();
-  weights_list->SetName("nuaWeights");
-  
-  TH2F* nuacentral = new TH2F();
-
-  file->GetObject("fHistPhiEta", nuacentral);
-  nuacentral->SetDirectory(0);
-  nuacentral->SetNameTitle("nuacentral","nuacentral");
-
-  file->Close();
-
-  weights_list->Add(nuacentral);
-
-  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
-  weights->SetData(weights_list);
-  return weights;
-}
-
-
-void connectContainer(AliAnalysisDataContainer* container,AliAnalysisDecorrTask* task)
-{
-
-  task->nuacentral = static_cast<TH2F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
-  task->nuacentral->SetDirectory(0);
-}
-
-AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = "", TString sWeightsFile = "", TString sVytauWeights = "")
+AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", Bool_t useOwnWeights = kTRUE, TString s2DWeightsFile = "", TString s3DWeightsFile = "", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -50,7 +14,7 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     }
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += Form(":%s",dirname.Data());      // create a subfolder in the file
+    fileName += Form(":%s",suffix);      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisDecorrTask* task = new AliAnalysisDecorrTask(name.Data());   
     if(!task) return 0x0;
@@ -62,44 +26,75 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("ObservableContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("ReferenceFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("DifferentialFlowContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("DifferentialPtAContainer_%s",dirname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("PtA_PtB_Container_%s",dirname.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("FlowList_%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("FlowWeights_%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("QAlist_%s",suffix),TList::Class(),AliAnalysisManager::kOutputContainer,fileName.Data()));
+
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-    if(!useWeights3D) 
+    if(useOwnWeights)
     {
-        TObjArray* taskContainers = mgr->GetContainers();
-        if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
+      if(!useWeights3D) 
+      {
+          TObjArray* taskContainers = mgr->GetContainers();
+          if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
-        // check if the input weights are already loaded (e.g. in different subwagon)
-        AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
-        if(!weights) 
-        {  
-            // if it does not exists create it
+          // check if the input weights are already loaded (e.g. in different subwagon)
+          AliAnalysisDataContainer* weights2D = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
+          if(!weights2D) 
+          {  
+              // if it does not exists create it
 
-            // in case of non-local run, establish connection to ALiEn for loading the weights
-           if(sWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+              // in case of non-local run, establish connection to ALiEn for loading the weights
+            if(s2DWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-            TFile* weights_file = TFile::Open(sWeightsFile.Data(),"READ");
-            if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+              TFile* weights2D_file = TFile::Open(s2DWeightsFile.Data(),"READ");
+              if(!weights2D_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
 
-            TList* weights_list = (TList*) weights_file->Get("weights");
-            if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+              TList* weights2D_list = (TList*) weights2D_file->Get("weights");
+              if(!weights2D_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights2D_file->ls(); return NULL; }
 
-            AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-            cInputWeights->SetData(weights_list);
-            mgr->ConnectInput(task,1,cInputWeights);
-        }
-        else 
-        {
-            // connect existing container
-            mgr->ConnectInput(task,1,weights);
-        }
+              AliAnalysisDataContainer* cInputWeights2D = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+              cInputWeights2D->SetData(weights2D_list);
+              mgr->ConnectInput(task,1,cInputWeights2D);
+          }
+          else 
+          {
+              // connect existing container
+              mgr->ConnectInput(task,1,weights2D);
+          }
+      }
+      else
+      {
+          TObjArray* taskContainers3D = mgr->GetContainers();
+          if(!taskContainers3D) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
+
+          // check if the input weights are already loaded (e.g. in different subwagon)
+          AliAnalysisDataContainer* weightsOwn3D = (AliAnalysisDataContainer*) taskContainers3D->FindObject("inputWeights");
+          if(!weightsOwn3D) 
+          {  
+              // if it does not exists create it
+
+              // in case of non-local run, establish connection to ALiEn for loading the weights
+              if(s3DWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+              TFile* weightsOwn3D_file = TFile::Open(s3DWeightsFile.Data(),"READ");
+              if(!weightsOwn3D_file) { printf("E-AddTaskUniFlow: Input file with weights not found at all!\n"); return NULL; }
+
+              TList* weightsOwn3D_list = (TList*) weightsOwn3D_file->Get("weights");
+              if(!weightsOwn3D_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weightsOwn3D_file->ls(); return NULL; }
+
+              AliAnalysisDataContainer* cInputWeightsOwn3D = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+              cInputWeightsOwn3D->SetData(weightsOwn3D_list);
+              mgr->ConnectInput(task,1,cInputWeightsOwn3D);
+          }
+          else 
+          {
+              // connect existing container
+              mgr->ConnectInput(task,1,weightsOwn3D);
+          }       
+      } 
     }
     else 
     {
@@ -107,26 +102,26 @@ AliAnalysisDecorrTask* AddDecorrTask(TString name = "name", TString dirname = ""
       if(!taskContainersVy) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
       // check if the input weights are already loaded (e.g. in different subwagon)
-      AliAnalysisDataContainer* weightsVy = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
-      if(!weightsVy) 
+      AliAnalysisDataContainer* weights3D = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
+      if(!weights3D) 
       {  
         // in case of non-local run, establish connection to ALiEn for loading the weights
-        if(sVytauWeights.Contains("alien://")) { gGrid->Connect("alien://"); }
+        if(s3DWeightsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-        TFile* weights_fileVy = TFile::Open(sVytauWeights.Data(),"READ");
-        if(!weights_fileVy) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+        TFile* weights3D_file = TFile::Open(s3DWeightsFile.Data(),"READ");
+        if(!weights3D_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
 
-        TList* weights_listVy = (TList*) weights_fileVy->Get("WeightList");
-        if(!weights_listVy) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_fileVy->ls(); return NULL; }
+        TList* weights3D_list = (TList*) weights3D_file->Get("WeightList");
+        if(!weights3D_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights3D_file->ls(); return NULL; }
 
-        AliAnalysisDataContainer* cInputWeightsVy = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-        cInputWeightsVy->SetData(weights_listVy);
-        mgr->ConnectInput(task,1,cInputWeightsVy);
+        AliAnalysisDataContainer* cInputWeights3D = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+        cInputWeights3D->SetData(weights3D_list);
+        mgr->ConnectInput(task,1,cInputWeights3D);
       }
       else 
       {
         // connect existing container
-        mgr->ConnectInput(task,1,weightsVy);
+        mgr->ConnectInput(task,1,weights3D);
       }
     }
   return task;

@@ -18,7 +18,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool DeltaEtaDeltaPhiCut=false,//14
     bool DoSpherocityCuts=false, //15
     const char *swuffix = "8",//16
-	const char *s0cut = "08", //17
+	  const char *s0cut = "08", //17
     const char *swuffixvar = "0") {
 
 
@@ -146,39 +146,139 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   Antiv0Cuts->SetPDGCodev0(-3122);//Lambda
 
 
+      //Cascade Cuts
+  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+      isMC, false);
+  CascadeCuts->SetXiCharge(-1);
+    AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+      isMC, true, false);
+  XiNegCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
+      isMC, true, false);
+  XiPosCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
+      isMC, true, false);
+  XiBachCuts->SetCheckTPCRefit(false);  //for nanos this is already done while prefiltering
+
+  CascadeCuts->Setv0Negcuts(XiNegCuts);
+  CascadeCuts->Setv0PosCuts(XiPosCuts);
+  CascadeCuts->SetBachCuts(XiBachCuts);
+  CascadeCuts->SetPDGCodeCasc(3312);
+  CascadeCuts->SetPDGCodev0(3122);
+  CascadeCuts->SetPDGCodePosDaug(2212);
+  CascadeCuts->SetPDGCodeNegDaug(-211);
+  CascadeCuts->SetPDGCodeBach(-211);
+
+  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+      isMC, false);
+  AntiCascadeCuts->SetXiCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiNegCuts =
+      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+  AntiXiNegCuts->SetCutCharge(-1);
+  AntiXiNegCuts->SetCheckTPCRefit(true);  //for nanos this is already done while prefiltering
+  AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+      isMC, true, false);
+  AntiXiPosCuts->SetCutCharge(1);
+  AntiXiPosCuts->SetCheckTPCRefit(true);  //for nanos this is already done while prefiltering
+  AliFemtoDreamTrackCuts *AntiXiBachCuts =
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
+  AntiXiBachCuts->SetCutCharge(1);
+  AntiXiBachCuts->SetCheckTPCRefit(true);  //for nanos this is already done while prefiltering
+
+  AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
+  AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
+  AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
+  AntiCascadeCuts->SetPDGCodev0(-3122);
+  AntiCascadeCuts->SetPDGCodePosDaug(211);
+  AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
+  AntiCascadeCuts->SetPDGCodeBach(211);
+
+
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
 
-  std::vector<int> PairQA;
-  PairQA.push_back(11);        // p p
-  PairQA.push_back(11);         // p barp
-  PairQA.push_back(12);        // p Lambda
-  PairQA.push_back(12);         // p barLambda
-  // PairQA.push_back(0);         // p Xi
-  // PairQA.push_back(0);         // p barXi
-  PairQA.push_back(11);        // barp barp
-  PairQA.push_back(12);         // barp Lambda
-  PairQA.push_back(12);        // barp barLambda
-  // PairQA.push_back(0);         // barp Xi
-  // PairQA.push_back(0);         // barp barXi
-  PairQA.push_back(22);         // Lambda Lambda
-  PairQA.push_back(22);         // Lambda barLambda
-  // PairQA.push_back(0);         // Lambda Xi
-  // PairQA.push_back(0);         // Lambda barXi
-  PairQA.push_back(22);         // barLambda barLamb
-  // PairQA.push_back(0);         // barLambda Xi
-  // PairQA.push_back(0);         // barLambda barXi
-  // PairQA.push_back(0);         // Xi Xi
-  // PairQA.push_back(0);         // Xi barXi
-  // PairQA.push_back(0);         // barXi barXi
-  config->SetExtendedQAPairs(PairQA);
+  std::vector<int> pairQA;
+  std::vector<int> NBins;
+  std::vector<float> kMin;
+  std::vector<float> kMax;
+  std::vector<bool> closeRejection;
 
   std::vector<int> PDGParticles;
+  PDGParticles.push_back(2212);//proton
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
+  PDGParticles.push_back(3122);//Lambda
   PDGParticles.push_back(3122);
-  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3312);//Cascade
+  PDGParticles.push_back(3312);
+
+  //pairs:
+  //pp                0
+  //p bar p           1
+  //p La              2
+  //p bar La          3
+  //bar p bar p       4
+  //bar p La          5
+  //bar p bar La      6
+  //p Xi              7
+  //p bar Xi          8
+  //bar p Xi          9
+  //bar p bar Xi      10
+  //La La             11
+  //La bar La         12
+  //bar La bar La     13
+  //La Xi             14
+  //bar La Xi         15
+  //La bar Xi         16
+  //bar La bar Xi     17
+  //Xi Xi             18
+  //Xi bar Xi         19
+  //Xi bar Xi bar     20
+
+  const int nPairs = 21;
+  for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
+    closeRejection.push_back(false);
+    NBins.push_back(1500);
+    kMin.push_back(0.);
+    kMax.push_back(6.);
+  }
+  pairQA[0] = 11;
+  pairQA[1] = 11;
+  pairQA[2] = 12;
+  pairQA[3] = 12;
+  pairQA[4] = 11;
+  pairQA[5] = 12;
+  pairQA[6] = 12;
+  pairQA[7] = 13;
+  pairQA[8] = 13;
+  pairQA[9] = 13;
+  pairQA[10] = 13;
+  pairQA[11] = 22;
+  pairQA[12] = 22;
+  pairQA[13] = 22;
+  pairQA[14] = 23;
+  pairQA[15] = 23;
+  pairQA[16] = 23;
+  pairQA[17] = 23;
+  pairQA[18] = 33;
+  pairQA[19] = 33;
+  pairQA[20] = 33;
+
+  closeRejection[0] = true;  // pp
+  closeRejection[4] = true;  // barp barp
+
+  closeRejection[18] = true;  // Xi Xi
+  closeRejection[20] = true;  // barXi barXi
+
   config->SetPDGCodes(PDGParticles);
+  config->SetNBinsHist(NBins);
+  config->SetMinKRel(kMin);
+  config->SetMaxKRel(kMax);
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
+  config->SetExtendedQAPairs(pairQA);
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -256,73 +356,6 @@ if (etaPhiPlotsAtTPCRadii) {
   }
 }
 
-
-  std::vector<int> NBins;
-  NBins.push_back(750);  // p p
-  NBins.push_back(750);  // p barp
-  NBins.push_back(750);  // p Lambda
-  NBins.push_back(750);  // p barLambda
-//  NBins.push_back(750);  // p Xi
-//  NBins.push_back(750);  // p barXi
-  NBins.push_back(750);  // barp barp
-  NBins.push_back(750);  // barp Lambda
-  NBins.push_back(750);  // barp barLambda
-//  NBins.push_back(750);  // barp Xi
-//  NBins.push_back(750);  // barp barXi
-  NBins.push_back(750);  // Lambda Lambda
-  NBins.push_back(750);  // Lambda barLambda
-//  NBins.push_back(750);  // Lambda Xi
-//  NBins.push_back(750);  // Lambda barXi
-  NBins.push_back(750);  // barLambda barLambda
-//  NBins.push_back(750);  // barLambda Xi
-//  NBins.push_back(750);  // barLambda barXi
-//  NBins.push_back(750);  // Xi Xi
-//  NBins.push_back(750);  // Xi barXi
-//  NBins.push_back(750);  // barXi barXi
-  std::vector<float> kMin;
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-  std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
@@ -1321,6 +1354,8 @@ if (etaPhiPlotsAtTPCRadii) {
   task->SetAntiTrackCuts(AntiTrackCuts);
   task->Setv0Cuts(v0Cuts);
   task->SetAntiv0Cuts(Antiv0Cuts);
+  task->SetXiCuts(CascadeCuts);
+  task->SetAntiXiCuts(AntiCascadeCuts);
   task->SetCollectionConfig(config);
   mgr->AddTask(task);
 
@@ -1426,6 +1461,36 @@ if(Systematic){
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
   mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
 
+    AliAnalysisDataContainer *couputXiCuts;
+  TString XiCutsName;
+  if(Systematic){
+    XiCutsName = Form("%sXiCuts%s_%s",addon.Data(),suffix.Data(),suffixvar.Data());
+  } else{
+   XiCutsName = Form("%sXiCuts%s",addon.Data(),suffix.Data());
+}
+  couputXiCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      XiCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), XiCutsName.Data()));
+  mgr->ConnectOutput(task, 7, couputXiCuts);
+
+  AliAnalysisDataContainer *coutputAntiXiCuts;
+  TString AntiXiCutsName;
+if(Systematic){
+  AntiXiCutsName = Form("%sAntiXiCuts%s_%s",addon.Data(),suffix.Data(),suffixvar.Data());
+}else{
+   AntiXiCutsName = Form("%sAntiXiCuts%s",addon.Data(),suffix.Data());
+}
+  coutputAntiXiCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiXiCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiXiCutsName.Data()));
+  mgr->ConnectOutput(task, 8, coutputAntiXiCuts);
+
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName;
   if(Systematic){
@@ -1438,7 +1503,7 @@ if(Systematic){
       ResultsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResults);
+  mgr->ConnectOutput(task, 9, coutputResults);
 
   AliAnalysisDataContainer *coutputResultQA;
   TString ResultQAName;
@@ -1452,7 +1517,7 @@ if(Systematic){
       ResultQAName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultQAName.Data()));
-  mgr->ConnectOutput(task, 8, coutputResultQA);
+  mgr->ConnectOutput(task, 10, coutputResultQA);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
@@ -1463,7 +1528,7 @@ if(Systematic){
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 11, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s",addon.Data(),suffix.Data());
@@ -1473,7 +1538,7 @@ if(Systematic){
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputv0CutsMC);
+    mgr->ConnectOutput(task, 12, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s",addon.Data(),suffix.Data());
@@ -1483,7 +1548,7 @@ if(Systematic){
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s",addon.Data(),suffix.Data());
@@ -1493,7 +1558,27 @@ if(Systematic){
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputAntiv0CutsMC);
+    mgr->ConnectOutput(task, 14, coutputAntiv0CutsMC);
+
+    AliAnalysisDataContainer *coutputXiCutsMC;
+    TString XiCutsMCName = Form("%sXiCutsMC%s",addon.Data(),suffix.Data());
+    coutputXiCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        XiCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), XiCutsMCName.Data()));
+    mgr->ConnectOutput(task, 15, coutputXiCutsMC);
+
+     AliAnalysisDataContainer *coutputAntiXiCutsMC;
+    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC%s",addon.Data(),suffix.Data());
+    coutputAntiXiCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiXiCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
+    mgr->ConnectOutput(task, 16, coutputAntiXiCutsMC);
   }
 
   return task;

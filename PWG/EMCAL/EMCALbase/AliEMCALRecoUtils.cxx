@@ -52,7 +52,7 @@ ClassImp(AliEMCALRecoUtils) ;
 AliEMCALRecoUtils::AliEMCALRecoUtils():
   fParticleType(0),                       fPosAlgo(0),                            
   fW0(0),                                 fShowerShapeCellLocationType(0),
-  fNonLinearityFunction(0),               fNonLinearThreshold(0),
+  fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
@@ -107,6 +107,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fParticleType(reco.fParticleType),                         fPosAlgo(reco.fPosAlgo),     
   fW0(reco.fW0),                                             fShowerShapeCellLocationType(reco.fShowerShapeCellLocationType),
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
+  fUseShaperNonlin(reco.fUseShaperNonlin),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),                   
@@ -199,6 +200,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
+  fUseShaperNonlin           = reco.fUseShaperNonlin;
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   
   fCellsRecalibrated         = reco.fCellsRecalibrated;
@@ -460,6 +462,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     
     if ( bad ) return kFALSE;
   }
+  Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
   
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
@@ -468,11 +471,14 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
       amp *= GetEMCALChannelRecalibrationFactor1D(absID);
     else
       amp *= GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+
+    if(fUseShaperNonlin && isLowGain){
+      amp = CorrectShaperNonLin(amp,fUse1Drecalib ? GetEMCALChannelRecalibrationFactor1D(absID) : GetEMCALChannelRecalibrationFactor(imod,ieta,iphi));
+    }
   }
   // Recalibrate time
   time = cells->GetCellTime(absID);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
-  Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
 
   RecalibrateCellTime(absID,bc,time,isLowGain);
   
@@ -629,12 +635,16 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 /// \param tcell: time of cell under control
 /// \param cells: full list of cells
 /// \param bc: bunch crossing number
+/// \param cellMinEn: add the cell energy if large enough (for high energy clusters)
+/// \param useWeight: add the cell energy if w > 0
+/// \param energy: cluster or cell max energy, used for weight calculation
 ///
 /// \return float E_cross
 ///
 //___________________________________________________________________________
 Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
-                                     AliVCaloCells* cells, Int_t bc)
+                                     AliVCaloCells* cells, Int_t bc, 
+                                     Float_t cellMinEn, Bool_t useWeight, Float_t energy )
 {  
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   
@@ -693,8 +703,142 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   if (TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
   if (TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
   if (TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
+ 
+  Float_t w1 = 1, w2 = 1, w3 = 1, w4 = 1;
+  if ( useWeight )
+  {
+    w1 = GetCellWeight(ecell1,energy);
+    w2 = GetCellWeight(ecell2,energy);
+    w3 = GetCellWeight(ecell3,energy);
+    w4 = GetCellWeight(ecell4,energy);
+  }
   
+  if ( ecell1 < cellMinEn || w1 <= 0 ) ecell1 = 0 ;
+  if ( ecell2 < cellMinEn || w2 <= 0 ) ecell2 = 0 ;
+  if ( ecell3 < cellMinEn || w3 <= 0 ) ecell3 = 0 ;
+  if ( ecell4 < cellMinEn || w4 <= 0 ) ecell4 = 0 ;
+ 
   return ecell1+ecell2+ecell3+ecell4;
+}
+
+//________________________________________________________________________________________
+/// Check if 2 cells belong to the same T-Card
+/// Only for EMCal.
+///
+///  \param absId1: Reference absId cell
+///  \param absId2: Cross checked cell absId
+///  \param rowDiff: Distance in rows
+///  \param colDiff: Distance in columns
+///  \return true if belong to same TCard
+///
+//________________________________________________________________________________________
+Bool_t  AliEMCALRecoUtils::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                                             Int_t & rowDiff, Int_t & colDiff) const
+{  
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+  
+  if ( !geom )
+  {
+    AliError("No instance of the geometry is available");
+    return -1;
+  }
+  
+  rowDiff = -100;
+  colDiff = -100;
+  
+  if(absId1 == absId2) return kFALSE;
+  
+  // Check if in same SM, if not for sure not same TCard
+  Int_t sm1 = geom->GetSuperModuleNumber(absId1);
+  Int_t sm2 = geom->GetSuperModuleNumber(absId2);
+  if ( sm1 != sm2 ) return kFALSE ;
+  
+  // Get the column and row of each absId
+  Int_t iTower = -1, iIphi = -1, iIeta = -1;
+  
+  Int_t col1, row1;
+  geom->GetCellIndex(absId1,sm1,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm1,iTower,iIphi, iIeta,row1,col1);
+  
+  Int_t col2, row2;
+  geom->GetCellIndex(absId2,sm2,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(sm2,iTower,iIphi, iIeta,row2,col2);
+  
+  Int_t row0 = Int_t(row1-row1%8);
+  Int_t col0 = Int_t(col1-col1%2);
+  
+  Int_t rowDiff0 = row2-row0;
+  Int_t colDiff0 = col2-col0;
+  
+  rowDiff = row1-row2;
+  colDiff = col1-col2;
+  
+  // TCard is made by 2x8 towers
+  if ( colDiff0 >=0 && colDiff0 < 2 && rowDiff0 >=0 && rowDiff0 < 8 ) 
+  {
+    
+    //    printf("\t absId (%d,%d), sm %d; col (%d,%d), colDiff %d; row (%d,%d),rowDiff %d\n",
+    //           absId1 , absId2, sm1, 
+    //           col1, col2, colDiff, 
+    //           row1, row2, rowDiff);
+    return kTRUE ;
+  }
+  else
+    return kFALSE;
+}
+
+//________________________________________________________________________________________
+/// Count the number of cells in same or different T-Card
+/// as the highest energy cell in the cluster.
+/// Only for EMCal.
+///
+///  \param clus: AliVCluster
+///  \param absIdMax: Abs Id number of highest energy cell in the cluster
+///  \param cells: AliVCaloCells
+///  \param nDiff: number of cells in different T-Card
+///  \param nSame: number of cells in same T-Card
+///  \param eDiff: sum of energy of cells in different T-Card
+///  \param eSame: sum of energy of cells in same T-Card
+///  \param emin: apply a min energy cut on cells while counting
+///
+//________________________________________________________________________________________
+void AliEMCALRecoUtils::GetEnergyAndNumberOfCellsInTCard
+(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+ Int_t   & nDiff, Int_t   & nSame, 
+ Float_t & eDiff, Float_t & eSame, 
+ Float_t   emin)
+{
+  Int_t nCaloCellsPerCluster = clus->GetNCells();
+  
+  nDiff = 0;
+  nSame = 0;
+  Int_t   absId   = -1;
+  Float_t amp     = 0;
+  Int_t   rowDiff = -100, colDiff = -100;
+  
+  // Loop on cluster cells count those in same or different T-Card
+  // with respect highest energy cell.
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
+  {
+    absId = clus->GetCellsAbsId()[ipos];  
+    
+    amp   = cells->GetCellAmplitude(absId);
+    
+    if ( absId == absIdMax || amp < emin ) continue;
+    
+    if ( IsAbsIDsFromTCard(absIdMax,absId,rowDiff,colDiff) ) 
+    { 
+      nSame++; 
+      eSame+=amp; 
+    }
+    else             
+    { 
+      nDiff++; 
+      eDiff+= amp; 
+    }
+    
+  } // cell cluster loop
+  
 }
 
 ///
@@ -2018,6 +2162,35 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
   }
 
   fCellsRecalibrated = kTRUE;
+}
+
+///
+/// Recalibrate all the cells with energy>40 GeV for the shaper nonlinearity
+///
+/// \param Emeas: energy of cell
+/// \param EcalibHG: HG energy calibration coefficient
+///
+//_______________________________________________________________________
+Float_t AliEMCALRecoUtils::CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG)
+{
+  // The following conversion factor needs to be applied to go from energy to ADC
+  // AliEMCALCalibData::fADCchannelRef = 0.0162;
+
+  if(Emeas<40){
+    return Emeas*16.3/16;
+  }
+  Float_t par[]={1, 29.8279, 0.607704, 0.00164896, -2.28595e-06, -8.54664e-10, 5.50191e-12, -3.28098e-15};
+  Float_t x = par[0]*Emeas/EcalibHG/16/0.0162;
+
+  Float_t res=par[1];
+  res+=par[2]*x;
+  res+=par[3]*x*x;
+  res+=par[4]*x*x*x;
+  res+=par[5]*x*x*x*x;
+  res+=par[6]*x*x*x*x*x;
+  res+=par[7]*x*x*x*x*x*x;
+
+  return  EcalibHG*16.3*res*0.0162;
 }
 
 ///

@@ -21,6 +21,7 @@
 #include <TH2F.h>
 #include <TF1.h>
 #include <TParticle.h>
+#include <TLorentzVector.h>
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
@@ -275,7 +276,8 @@ Double_t AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(AliAODEvent* ev){
 }
 
 //______________________________________________________________________
-void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
+void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, 
+                                    TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
 
   /// Compute <pt> from 2D histogram M vs pt
 
@@ -283,7 +285,8 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
   Int_t start=hMassD->FindBin(ptmin);
   Int_t end=hMassD->FindBin(ptmax)-1;
   const Int_t nx=end-start;
-  TH2F *hMassDpt=new TH2F("hptmass","hptmass",nx,ptmin,ptmax,hMassD->GetNbinsY(),hMassD->GetYaxis()->GetBinLowEdge(1),hMassD->GetYaxis()->GetBinLowEdge(hMassD->GetNbinsY())+hMassD->GetYaxis()->GetBinWidth(hMassD->GetNbinsY()));
+  TH2F *hMassDpt=new TH2F("hptmass","hptmass",nx,ptmin,ptmax,hMassD->GetNbinsY(),hMassD->GetYaxis()->GetBinLowEdge(1),
+                          hMassD->GetYaxis()->GetBinLowEdge(hMassD->GetNbinsY())+hMassD->GetYaxis()->GetBinWidth(hMassD->GetNbinsY()));
   for(Int_t ix=start;ix<end;ix++){
     for(Int_t iy=1;iy<=hMassD->GetNbinsY();iy++){
       hMassDpt->SetBinContent(ix-start+1,iy,hMassD->GetBinContent(ix,iy));
@@ -592,12 +595,17 @@ Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODM
 Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
   /// works also with not-refilled candidates of reduced AODs
+  /// For refilled candidates other IsCandidateInjected method recommended
 
   Int_t nprongs=cand->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     Int_t idDau=cand->GetProngID(i);
-    AliAODTrack *daugh=(AliAODTrack*)aod->GetTrack(idDau);
-    if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+    for(Int_t i=0; i<aod->GetNumberOfTracks(); i++) {
+      AliAODTrack *daugh=(AliAODTrack*)aod->GetTrack(i);
+      if(daugh && (Int_t)daugh->GetID()==idDau){
+        if(AliVertexingHFUtils::IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+      }
+    }
   }
   return kFALSE;
 }
@@ -620,6 +628,109 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
     }
   }
   return kFALSE;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::PreSelectITSUpgrade(TClonesArray* arrayMC, AliAODMCHeader *header, TObjArray aodTracks, Int_t nDaug, Int_t pdgabs, const Int_t *pdgDg){
+  /// Preselect function for ITS Upgrade MC's, to make a fast general preselection before filling the HF candidate
+  /// Returns 0 when combination of injected+HIJING
+  /// Returns 1 when purely injected + matched to MC
+  /// Returns 2 when purely injected + not matched
+  /// Returns 3 when purely HIJING
+
+  Bool_t injected = kFALSE;
+  Bool_t hijing = kFALSE;
+
+  AliAODTrack *track[(const Int_t)nDaug];
+  Int_t dgLabels[(const Int_t)nDaug];
+  for(Int_t iD=0; iD<nDaug; iD++) {
+    track[iD] = (AliAODTrack*)aodTracks.At(iD);
+    dgLabels[iD] = track[iD]->GetLabel();
+
+    Bool_t isTrInjected = IsTrackInjected(track[iD],header,arrayMC);
+    if(isTrInjected) injected = kTRUE;
+    else             hijing = kTRUE;
+
+    //Combination of injected signal + HIJING background
+    if(injected && hijing) return 0;
+  }
+
+  //Purely HIJING background, no need to MatchToMC
+  if(hijing) return 3;
+
+  //Purely injected signal, check by Matching to MC if it is considered as signal
+  //  Mimic MatchToMC (can't access as it is protected), code below is the same as:
+  //  Int_t MatchedToLabel = AliAODRecoDecay::MatchToMC(pdgabs, arrayMC, dgLabels, nDaug, 0, pdgDg);
+  if(injected){
+    //Label of mother particle, or -1 when some operation failed.
+    Int_t MatchedToLabel = 0;
+
+    Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
+    Int_t i,j,lab,labMother,pdgMother,pdgPart;
+    AliAODMCParticle *part=0;
+    AliAODMCParticle *mother=0;
+    Bool_t pdgUsed[10]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+
+    // loop on daughter labels
+    for(i=0; i<nDaug; i++) {
+      if(MatchedToLabel == -1) continue;
+
+      labMom[i]=-1;
+      lab = TMath::Abs(dgLabels[i]);
+      if(lab<0){ MatchedToLabel = -1; continue; }
+
+      part = (AliAODMCParticle*)arrayMC->At(lab);
+      if(!part){ MatchedToLabel = -1; continue; }
+
+      // check the PDG of the daughter, if requested
+      pdgPart=TMath::Abs(part->GetPdgCode());
+      for(j=0; j<nDaug; j++) {
+        if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
+          pdgUsed[j]=kTRUE;
+          break;
+        }
+      }
+
+      mother = part;
+      while(mother->GetMother()>=0) {
+        labMother=mother->GetMother();
+        mother = (AliAODMCParticle*)arrayMC->At(labMother);
+        if(!mother) break;
+
+        pdgMother = TMath::Abs(mother->GetPdgCode());
+        if(pdgMother==pdgabs) {
+          labMom[i]=labMother;
+          break;
+        } else if(pdgMother>pdgabs || pdgMother<10) {
+          break;
+        }
+      }
+      if(labMom[i]==-1) MatchedToLabel = -1; // mother PDG not ok for this daughter
+    } // end loop on daughters
+
+    if(MatchedToLabel == 0){
+      // check if the candidate is signal
+      labMother=labMom[0];
+      // all labels have to be the same and !=-1
+      for(i=0; i<nDaug; i++) {
+        if(labMom[i]==-1)        MatchedToLabel = -1;
+        if(labMom[i]!=labMother) MatchedToLabel = -1;
+      }
+
+      // check that all daughter PDGs are matched
+      for(i=0; i<nDaug; i++) {
+        if(pdgUsed[i]==kFALSE) MatchedToLabel = -1;
+      }
+    }
+
+    if(MatchedToLabel==0) MatchedToLabel = labMother;
+
+    if(MatchedToLabel != -1) return 1; //injected, matched to  MC
+    else                     return 2; //injected, not matched to MC
+  }
+
+  //Should not reach this, if so check. Return 0 for compilation warning
+  printf("AliVertexingHFUtils::PreSelectITSUpgrade: Neither injected, nor HIJING");
+  return 0;
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPart, Bool_t searchUpToQuark){
@@ -2504,7 +2615,180 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for B0->Dminuspi->Kpipipi, <0 in other cases
+  /// Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
+  ///
+  /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
+
+  if(label<0) return -1;
+  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(label);
+  TParticle* part = mcEvent->Particle(label);
+  if(!part || !mcPart) return -1;
+  Int_t pdgD=part->GetPdgCode();
+  if(TMath::Abs(pdgD)!=511) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterFirst();
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayB0 = -1;
+
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    TParticle* dau=mcEvent->Particle(indDau);
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==411){
+      /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+      Int_t labDauDplus[3] = {-1,-1,-1};
+      Int_t decayDplus = CheckDplusDecay(mcEvent, indDau, labDauDplus);
+
+      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+      //Fix implemented, to still select correct Dplus decay
+      if(decayDplus==-2){
+        AliMCParticle* mcDplus = (AliMCParticle*)mcEvent->GetTrack(indDau);
+        Int_t labelFirstDauDplus = mcDplus->GetDaughterFirst();
+        if(mcDplus->GetNDaughters() > 1){
+          TParticle* dauDplus1 = mcEvent->Particle(labelFirstDauDplus);
+          TParticle* dauDplus2 = mcEvent->Particle(labelFirstDauDplus+1);
+          if(dauDplus1 && dauDplus2){
+            Int_t pdgdauDplus1=dauDplus1->GetPdgCode();
+            Int_t pdgdauDplus2=dauDplus2->GetPdgCode();
+            if(TMath::Abs(pdgdauDplus1)==313 || TMath::Abs(pdgdauDplus2)==313) decayDplus=2;
+          }
+        }
+      }
+
+      if (decayDplus < 0 || labDauDplus[0] == -1) return -1;
+      decayB0 = decayDplus;
+      nPions+=2;
+      nKaons++;
+      for(Int_t iDplus = 0; iDplus < 3; iDplus++){
+        TParticle* dauDplus=mcEvent->Particle(labDauDplus[iDplus]);
+        sumPxDau+=dauDplus->Px();
+        sumPyDau+=dauDplus->Py();
+        sumPzDau+=dauDplus->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDplus[iDplus];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for B0->D-+pi- and B0bar->D+pi- decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+
+  if(nPions!=3) return -1;
+  if(nKaons!=1) return -1;
+  //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+  //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*decay - 1) is returned.
+  Int_t decayB0temp = decayB0;
+  if(TMath::Abs(part->Px()-sumPxDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(part->Py()-sumPyDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(part->Pz()-sumPzDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  decayB0 = decayB0temp;
+  return decayB0;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Bs decay channel. Returns >= 1 for B0->Dminuspi->Kpipipi, <0 in other cases
+  /// Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
+  ///
+  /// NB: Loosened cut on mom. conserv. (needed because of small issue in ITS Upgrade productions)
+
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=511) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  if(nDau!=2) return -1;
+
+  Int_t labelFirstDau = mcPart->GetDaughterLabel(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Int_t decayB0 = -1;
+
+  for(Int_t iDau=0; iDau<nDau; iDau++){
+    Int_t indDau = labelFirstDau+iDau;
+    if(indDau<0) return -1;
+    AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+    if(!dau) return -1;
+    Int_t pdgdau=dau->GetPdgCode();
+    if(TMath::Abs(pdgdau)==411){
+      /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+      Int_t labDauDplus[3] = {-1,-1,-1};
+      Int_t decayDplus = CheckDplusDecay(arrayMC, dau, labDauDplus);
+
+      //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+      //Fix implemented, to still select correct Dplus decay
+      if(decayDplus==-2){
+        Int_t labelFirstDauDplus = dau->GetDaughterLabel(0);
+        if(dau->GetNDaughters() > 1){
+          AliAODMCParticle* dauDplus1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDplus));
+          AliAODMCParticle* dauDplus2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labelFirstDauDplus+1));
+          if(dauDplus1 && dauDplus2){
+            Int_t pdgdauDplus1=dauDplus1->GetPdgCode();
+            Int_t pdgdauDplus2=dauDplus2->GetPdgCode();
+            if(TMath::Abs(pdgdauDplus1)==313 || TMath::Abs(pdgdauDplus2)==313) decayDplus=2;
+          }
+        }
+      }
+
+      if (decayDplus < 0 || labDauDplus[0] == -1) return -1;
+      decayB0 = decayDplus;
+      nPions+=2;
+      nKaons++;
+      for(Int_t iDplus = 0; iDplus < 3; iDplus++){
+        AliAODMCParticle* dauDplus=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDplus[iDplus]));
+        sumPxDau+=dauDplus->Px();
+        sumPyDau+=dauDplus->Py();
+        sumPzDau+=dauDplus->Pz();
+        arrayDauLab[nFoundKpi++]=labDauDplus[iDplus];
+      }
+      if(nFoundKpi>4) return -1;
+    }else if(TMath::Abs(pdgdau)==211){
+      //Temp fix for B0->D-+pi- and B0bar->D+pi- decays in ITS upgrade productions
+      //if(pdgD*pdgdau>0) return -1;
+      nPions++;
+      sumPxDau+=dau->Px();
+      sumPyDau+=dau->Py();
+      sumPzDau+=dau->Pz();
+      arrayDauLab[nFoundKpi++]=indDau;
+      if(nFoundKpi>4) return -1;
+    }
+  }
+
+  if(nPions!=3) return -1;
+  if(nKaons!=1) return -1;
+  //Momentum conservation for several beauty decays not satisfied at gen. level in Upgrade MC's.
+  //Fix implemented, loosening cut from 0.001 to 0.1. If >0.1, (-1*decay - 1) is returned.
+  Int_t decayB0temp = decayB0;
+  if(TMath::Abs(mcPart->Px()-sumPxDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(mcPart->Py()-sumPyDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.1) decayB0temp = -1*decayB0 - 1;
+  decayB0 = decayB0temp;
+  return decayB0;
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2560,6 +2844,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
         }
       }
 
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        TParticle* dauK1 = mcEvent->Particle(labDauDs[0]);
+        TParticle* dauK2 = mcEvent->Particle(labDauDs[1]);
+        TParticle* dauK3 = mcEvent->Particle(labDauDs[2]);
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
+      }
+
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
       decayBs = decayDs;
       nPions++;
@@ -2596,7 +2902,7 @@ Int_t AliVertexingHFUtils::CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   return decayBs;
 }
 //____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd){
   /// Checks the Bs decay channel. Returns >= 1 for Bs->Dspi->KKpipi, <0 in other cases
   /// Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
   /// If rejected by momentum conservation check, return (-1*decay - 1) (to allow checks at task level)
@@ -2645,6 +2951,28 @@ Int_t AliVertexingHFUtils::CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle 
             else decayDs=3;
           }
         }
+      }
+
+      //In ITS2 Upgrade production, phi not "stored", so decay read as non-resonant
+      if(decayDs==3 && ITS2UpgradeProd){
+        AliAODMCParticle* dauK1=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[0]));
+        AliAODMCParticle* dauK2=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[1]));
+        AliAODMCParticle* dauK3=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDauDs[2]));
+
+        TLorentzVector vK1, vK2, vKK;
+        if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK2->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK2->Momentum(vK2);
+        } else if(TMath::Abs(dauK1->GetPdgCode())==321 && TMath::Abs(dauK3->GetPdgCode())==321){
+          dauK1->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        } else {
+          dauK2->Momentum(vK1);
+          dauK3->Momentum(vK2);
+        }
+        vKK = vK1 + vK2;
+        //Small window around phi-mass, tag as Ds->phipi->KKpi if inside
+        if(vKK.M() > 1.00 && vKK.M() < 1.04) decayDs = 1;
       }
 
       if (decayDs < 0 || labDauDs[0] == -1) return -1;
@@ -3187,7 +3515,9 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
 
 //___________________________________________________________________________________//
 //method that performs simultaneus fit of in-plane and out-of-plane inv-mass spectra
-ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars) {
+ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, 
+                                                                            TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, 
+                                                                            Double_t massD, vector<UInt_t> commonpars) {
 
   cout << "\nIn-plane - out-of-plane simultaneus fit" << endl;
   cout << "\nIndependent prefits" << endl;
@@ -3304,4 +3634,32 @@ ROOT::Fit::FitResult AliVertexingHFUtils::DoInPlaneOutOfPlaneSimultaneusFit(AliH
 
   cout << "\n" << endl;
   return result;
+}
+
+//________________________________________________________________________
+Double_t AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, Double_t bfield) {
+  // Compute maximum difference between observed and expected impact parameter of the candidate prongs
+  Double_t dd0max = 0;
+  UInt_t fNProngsCand = static_cast<UInt_t>(cand->GetNProngs());
+  for (UInt_t iProng = 0; iProng < fNProngsCand; iProng++) {
+    Double_t d0diff, errd0diff;
+    cand->Getd0MeasMinusExpProng(iProng, bfield, d0diff, errd0diff);
+    Double_t normdd0 = d0diff / errd0diff;
+    if (iProng == 0 || TMath::Abs(normdd0) > TMath::Abs(dd0max))
+        dd0max = normdd0;
+  }
+  return dd0max;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t nsigmaTOF) {
+  // Combine TPC and TOF nsigma (sum in quadrature + special cases)
+  if (nsigmaTPC > -998. && nsigmaTOF > -998.)
+      return TMath::Sqrt((nsigmaTPC * nsigmaTPC + nsigmaTOF * nsigmaTOF) / 2);
+  else if (nsigmaTPC > -998. && nsigmaTOF < -998.)
+      return TMath::Abs(nsigmaTPC);
+  else if (nsigmaTPC < -998. && nsigmaTOF > -998.)
+      return TMath::Abs(nsigmaTOF);
+  else
+      return -999.;
 }

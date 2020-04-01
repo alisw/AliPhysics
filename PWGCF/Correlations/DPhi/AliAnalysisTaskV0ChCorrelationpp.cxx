@@ -102,6 +102,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -114,8 +115,8 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fLambdaLifeTimeMax(0),
 
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+     fDCANegtoPrimVertex(0),
+     fDCAPostoPrimVertex(0),
      fDCAV0DaughtersMax(0),
      fCosPointingAngleMin(0),
      f2DFiducialMin(0),
@@ -126,6 +127,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
       fLambdaCPA(0),
      fOStatus(1),
      fLambdaCosPointingAngleMin(0),
@@ -229,6 +231,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -241,8 +244,8 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fLambdaLifeTimeMax(0),
      
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+     fDCANegtoPrimVertex(0),
+     fDCAPostoPrimVertex(0),
      fDCAV0DaughtersMax(0),
      fCosPointingAngleMin(0),
      f2DFiducialMin(0),
@@ -253,6 +256,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
       fLambdaCPA(0),
      fOStatus(1),
      fLambdaCosPointingAngleMin(0),
@@ -617,8 +621,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
   // const Double_t* zvtxBins = vertexBins;
 
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -645,8 +649,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
  // const Double_t* zvtxBins = vertexBins;
 
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -688,14 +692,17 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQATrackCandidates()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 14;
-   const Double_t PtBins[] = {1.,2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0};
+   const Int_t nPtBins = 5;
+   const Double_t PtBins[6] =  {1.0,2.0,3.0,4.0,6.0,8.0}; 
+
+
+
 
    //defining bins of Eta distribution
    const Int_t nEtaBins = 16;
@@ -909,19 +916,33 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
-   
+   /*
    // pt bins of trigger particles for the analysis
+   const Int_t nPtBinsV0Xi = 5;
+   const Double_t PtBinsV0Xi[6] = {3.0, 4.0, 6.0,8.0,13.0,15.0}; 
+   
+   // pt bins of associate particles for the analysis
+   const Int_t nPtBins = 5;
+   const Double_t PtBins[6] =  {1.0,2.0,3.0,4.0,6.0,8.0}; 
+  */
+
+
+// pt bins of trigger particles for the analysis
    const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
+
+
+
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1077,19 +1098,19 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
   // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
   // const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
   // pt bins of trigger particles for the analysis
    const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1269,19 +1290,19 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
-   // pt bins of trigger particles for the analysis
+  // pt bins of trigger particles for the analysis
    const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
    // pt bins of associate particles for the analysis
-  const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+   const Int_t nPtBins = 7;
+   const Double_t PtBins[8] =  {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0}; 
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1512,7 +1533,7 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
   if ( TMath::Abs(lPVz) >= cutPrimVertex) return ;
   if( TMath::Abs( lPVzSPD-lPVz >0.8)) return ; 
   */
-    Short_t binVertex = Short_t((lPVz+7.)/2);
+    Short_t binVertex = Short_t((lPVz+10.)/2);
 
     //-----------------------------------Centrality definition------------------------------------
    /* AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
@@ -1867,7 +1888,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
     Int_t nRecTracks = selectedMCTracks->GetEntriesFast();
     for(Int_t i = 0; i < nRecTracks; i++){
       AliAODTrack* tr = (AliAODTrack*)selectedMCTracks->At(i);
-      if ( tr->Pt() < fTrackMCPtMin ) continue;
+      if ( tr->Pt() < fTrackPtMin ) continue;
       if(tr->Charge() == 0.) continue;
       if (!(IsGoodPrimaryTrack(tr))) continue;
       Double_t TrackLabel = tr->GetLabel();
@@ -2038,12 +2059,13 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
       }
       //------------------------------------Candidate selection cut-------------------------------------------
-      if(fAnalysisMC){
-        if(lPt < fV0MCPtMin || lPt > fV0PtMax) continue;}
-      else{
-        if(lPt < fV0PtMin || lPt > fV0PtMax) continue;}
+      //if(fAnalysisMC){
+       // if(lPt < fV0PtMin || lPt > fV0PtMax) continue;}
+     // else{
+        if(lPt < fV0PtMin || lPt > fV0PtMax) continue;
+      //}
       if(TMath::Abs(lEta) > fV0Eta) continue;
-      Bool_t ctK=kTRUE;  
+       Bool_t ctK=kTRUE;  
       if(dlK > fK0sLifeTimeMax || dlK <fK0sLifeTimeMin) ctK=kFALSE;
       Bool_t ctL=kTRUE;  
       if(dlL > fLambdaLifeTimeMax || dlL < fLambdaLifeTimeMin) ctL=kFALSE;
@@ -2061,7 +2083,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
-      if(ctK && lCPA > 0.98 /*&& lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0)*/ && xyn > 0.06 && xyp > 0.06 && isPosPionForTPC  && isNegPionForTPC)
+      if(ctK && lCPA > fk0sCPA /*&& lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0)*/ && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosPionForTPC  && isNegPionForTPC)
      if(TMath::Abs(massLambda - fMassMean[1]) >0.005 && TMath::Abs(massAntiLambda - fMassMean[1]) >0.005 ){
         selectedK0s->Add(v0);
         Double_t spK0s[4] = {massK0s, lPt, lPercentile, lPVz};
@@ -2086,7 +2108,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.06 && xyp > 0.06 && isPosProtonForTPC && isNegPionForTPC)
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosProtonForTPC && isNegPionForTPC)
        if(TMath::Abs(massK0s - fMassMean[0]) >0.01){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lPercentile, lPVz};
@@ -2117,7 +2139,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.06 && xyp > 0.06 && isPosPionForTPC && isNegProtonForTPC)
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosPionForTPC && isNegProtonForTPC)
        if(TMath::Abs(massK0s - fMassMean[0]) >0.01){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lPercentile, lPVz};
@@ -2627,7 +2649,8 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
   if (TMath::Abs(t->Eta())>fTrackEta) return kFALSE;
 
   //768-hybrid tracks
-  if (!t->TestFilterBit(768)) return kFALSE; 
+  if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
+  //if (!t->TestFilterBit(1)) return kFALSE; 
   /*
   // Minimum number of clusters
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
@@ -2639,7 +2662,7 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
 Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodDaughterTrack( const AliAODTrack *t)
 {
   // Pseudorapidity cut   
-  if (TMath::Abs(t->Eta()) > 0.9) return kFALSE;
+  if (TMath::Abs(t->Eta()) > 0.8) return kFALSE;
   
   //pt cut
   //if (t->Pt() < fV0DaughterPtMinCut) return kFALSE;//2017-8-28
@@ -2757,8 +2780,8 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodV0(AliAODv0* aodV0 , Int_t oSta)
   Double_t lPtNeg = TMath::Sqrt(lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1]);
 
 
-//Double_t cutMinPtDaughter = 0.160;
-//if (lPtPos<cutMinPtDaughter || lPtNeg<cutMinPtDaughter) return kFALSE;
+Double_t cutMinPtDaughter = 0.160;
+if (lPtPos<cutMinPtDaughter || lPtNeg<cutMinPtDaughter) return kFALSE;
 
 
 

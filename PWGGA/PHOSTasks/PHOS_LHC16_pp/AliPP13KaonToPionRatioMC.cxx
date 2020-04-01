@@ -30,10 +30,10 @@ void AliPP13KaonToPionRatioMC::InitSelectionHistograms()
 {
 	for (EnumNames::iterator i = fPartNames.begin(); i != fPartNames.end(); ++i)
 	{
-		fAll[i->first] = new TH1F(Form("hPt_%s_", i->second.Data()), Form("Generated Spectrum of %s; p_{T}, GeV/c", i->second.Data()), 2000, 0, 20);
+		fAll[i->first] = new TH1F(Form("hPt_%s_", i->second.Data()), Form("Generated Spectrum of %s; p_{T} (GeV/#it{c})", i->second.Data()), 2000, 0, 20);
 		fListOfHistos->Add(fAll[i->first]);
 
-		fPrimary[i->first] = new TH1F(Form("hPt_%s_primary", i->second.Data()), Form("Generated Spectrum of primary %s; p_{T}, GeV/c", i->second.Data()), 2000, 0, 20);
+		fPrimary[i->first] = new TH1F(Form("hPt_%s_primary", i->second.Data()), Form("Generated Spectrum of primary %s; p_{T} (GeV/#it{c})", i->second.Data()), 2000, 0, 20);
 		fListOfHistos->Add(fPrimary[i->first]);
 	}
 

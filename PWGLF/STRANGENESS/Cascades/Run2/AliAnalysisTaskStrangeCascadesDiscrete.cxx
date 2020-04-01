@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+//last edition:27.01.2020
 
 #include <stdio.h>
 #include <Riostream.h>
@@ -25,6 +25,7 @@
 #include "TClonesArray.h"
 #include "TF1.h"
 #include "TFile.h"
+#include "TObject.h"
 
 //AliPhysics/ROOT
 #include "AliAnalysisManager.h"
@@ -47,6 +48,12 @@
 
 //my task
 #include "AliAnalysisTaskStrangeCascadesDiscrete.h"
+
+
+
+ClassImp(AliRunningCascadeCandidate)
+ClassImp(AliRunningCascadeEvent)
+
 
 ClassImp(AliAnalysisTaskStrangeCascadesDiscrete) //not sure, if needed at all
 
@@ -84,40 +91,42 @@ Cascade_Track(0x0),
 Cascade_Event(0x0),
 fTreeCascadeAsEvent(0x0),
 fMagneticField(-100.),
-fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.)
+fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.),fkOmegaCleanMassWindow(0.1)
 {
     
 }
 
 //constructor with task configurations
 AliAnalysisTaskStrangeCascadesDiscrete::AliAnalysisTaskStrangeCascadesDiscrete(
-                                                                                             Bool_t lRunV0Vertexers,
-                                                                                             Bool_t lRunVertexers,
-                                                                                             Bool_t lUseLightVertexer,
-                                                                                             Bool_t lUseOnTheFlyV0Cascading,
-                                                                                             Bool_t lguard_CheckTrackQuality,
-                                                                                             Bool_t lguard_CheckCascadeQuality,
-                                                                                             Bool_t lguard_CheckTPCPID,
-                                                                                             
-                                                                                             Double_t lV0MaxChi2,
-                                                                                             Double_t lV0minDCAfirst,
-                                                                                             Double_t lV0minDCAsecond,
-                                                                                             Double_t lV0maxDCAdaughters,
-                                                                                             Double_t lV0minCosAngle,
-                                                                                             Double_t lV0minRadius,
-                                                                                             Double_t lV0maxRadius,
-                                                                                             
-                                                                                             Double_t lCascaderMaxChi2,
-                                                                                             Double_t lCascaderV0MinImpactParam,
-                                                                                             Double_t lCascaderV0MassWindow,
-                                                                                             Double_t lCascaderBachMinImpactParam,
-                                                                                             Double_t lCascaderMaxDCAV0andBach,
-                                                                                             Double_t lCascaderMinCosAngle,
-                                                                                             Double_t lCascaderMinRadius,
-                                                                                             Double_t lCascaderMaxRadius,
-                                                                                             Float_t sigmaRangeTPC,
-                                                                                             const char *name
-                                                                                             )
+                                                                               Bool_t lRunV0Vertexers,
+                                                                               Bool_t lRunVertexers,
+                                                                               Bool_t lUseLightVertexer,
+                                                                               Bool_t lUseOnTheFlyV0Cascading,
+                                                                               Bool_t lguard_CheckTrackQuality,
+                                                                               Bool_t lguard_CheckCascadeQuality,
+                                                                               Bool_t lguard_CheckTPCPID,
+                                                                               
+                                                                               Double_t lV0MaxChi2,
+                                                                               Double_t lV0minDCAfirst,
+                                                                               Double_t lV0minDCAsecond,
+                                                                               Double_t lV0maxDCAdaughters,
+                                                                               
+                                                                               Double_t lV0minCosAngle,
+                                                                               Double_t lV0minRadius,
+                                                                               Double_t lV0maxRadius,
+                                                                               
+                                                                               Double_t lCascaderMaxChi2,
+                                                                               Double_t lCascaderV0MinImpactParam,
+                                                                               Double_t lCascaderV0MassWindow,
+                                                                               Double_t lCascaderBachMinImpactParam,
+                                                                               Double_t lCascaderMaxDCAV0andBach,
+                                                                               Double_t lCascaderMinCosAngle,
+                                                                               Double_t lCascaderMinRadius,
+                                                                               Double_t lCascaderMaxRadius,
+                                                                               Float_t sigmaRangeTPC,
+                                                                               Float_t lOmegaCleanMassWindow,
+                                                                               const char *name
+                                                                               )
 :AliAnalysisTaskSE(name),
 fguard_CheckTrackQuality(kTRUE),
 fguard_CheckCascadeQuality(kTRUE),
@@ -150,8 +159,9 @@ Cascade_Track(0x0),
 Cascade_Event(0x0),
 fTreeCascadeAsEvent(0x0),
 fMagneticField(-100.),
-fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.)
+fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.),fkOmegaCleanMassWindow(0.1)
 {
+    
     
     fkUseLightVertexer = lUseLightVertexer;
     fkRunV0Vertexers = lRunV0Vertexers;
@@ -162,13 +172,13 @@ fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.)
     fguard_CheckTPCPID = lguard_CheckTPCPID;
     
     //set the variables to rerun V0 vertexer! (Keep in mind, that these V0 are daughters and do not have to point back to the primary vertex!
-   /* fV0VertexerSels[0] =  33.  ;  // max allowed chi2
-    fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-    fV0VertexerSels[4] =   0.8;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-    fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-    fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)*/
+    /* fV0VertexerSels[0] =  33.  ;  // max allowed chi2
+     fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+     fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+     fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+     fV0VertexerSels[4] =   0.8;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+     fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+     fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)*/
     
     fV0VertexerSels[0] = lV0MaxChi2;
     fV0VertexerSels[1] = lV0minDCAfirst;
@@ -178,8 +188,12 @@ fPV_X(0), fPV_Y(0), fPV_Z(0), sigmamaxrunning(-100.)
     fV0VertexerSels[5] = lV0minRadius;
     fV0VertexerSels[6] = lV0maxRadius;
     
+    
     //TPC sigma range, usually just set to 3. Looser cuts? -> set to 4-5
     sigmamaxrunning = sigmaRangeTPC;
+    
+    //Mass window for Omega baryons, when extra clean up needed
+    fkOmegaCleanMassWindow = lOmegaCleanMassWindow;
     
     //set the variables for the rerun of cascades
     fCascadeVertexerSels[0] = lCascaderMaxChi2  ;  // max allowed chi2 (same as PDC07) (33)
@@ -285,20 +299,6 @@ AliAnalysisTaskStrangeCascadesDiscrete::~AliAnalysisTaskStrangeCascadesDiscrete(
         lBaryonTrack = nullptr;
     }
     
-    if (fTreeCascadeAsEvent) {
-        delete fTreeCascadeAsEvent;
-        fTreeCascadeAsEvent = nullptr;
-    }
-    
-    if (Cascade_Event) {
-        delete Cascade_Event;
-        Cascade_Event = nullptr;
-    }
-    if (Cascade_Track) {
-        delete Cascade_Track;
-        Cascade_Track = nullptr;
-    }
-    
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -309,7 +309,7 @@ AliAnalysisTaskStrangeCascadesDiscrete::~AliAnalysisTaskStrangeCascadesDiscrete(
 
 void AliAnalysisTaskStrangeCascadesDiscrete::UserCreateOutputObjects()
 {
-//------------------------------------------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------
     man=AliAnalysisManager::GetAnalysisManager();
     inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     if (!inputHandler) {
@@ -351,16 +351,15 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserCreateOutputObjects()
     if( !fESDtrackCutsITSsa2010 && fkDebugOOBPileup ) {
         fESDtrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     }
-//----------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------
     
     
-    
-    Cascade_Event = new AliRunningCascadeEvent(1);
-    Cascade_Track = new AliRunningCascadeTrack(2);
-    fTreeCascadeAsEvent = NULL;
+    Int_t iii = 0;
+    Cascade_Event = new AliRunningCascadeEvent(iii);
+    Cascade_Track = new AliRunningCascadeCandidate(iii);
+    //  fTreeCascadeAsEvent = NULL;
     fTreeCascadeAsEvent = new TTree("fTreeCascadeAsEvent", "cascade tree as event");
-    fTreeCascadeAsEvent->Branch("fTreeCascadeAsEvent_branch", "Cascade_Event" ,Cascade_Event);
-  //  auto branch = fTreeCascadeAsEvent -> Branch("fPV_X", &fPV_X, "fPV_X/F");
+    fTreeCascadeAsEvent->Branch("fTreeCascadeAsEvent_branch", "Cascade_Event" , Cascade_Event);
     
     PostData(1, fTreeCascadeAsEvent);
 }
@@ -369,8 +368,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserCreateOutputObjects()
 
 void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
 {
-//----------------------EVENT SELECTION--------------------------------------------------------
-//First of all, call the events and deal with events, only "good events" should be selected!
+    //----------------------EVENT SELECTION--------------------------------------------------------
+    //First of all, call the events and deal with events, only "good events" should be selected!
     lESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!lESDevent) {
         AliWarning("ERROR: lESDevent not available \n");
@@ -385,15 +384,15 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     Bool_t goodevent = kTRUE;
     goodevent = GoodESDEvent(lESDevent, lPrimaryBestESDVtx, esdtrackcuts);
     if (!goodevent) return;
-//========================================================================================
-//------------------------------------------------
-// Multiplicity Information Acquistion
-//------------------------------------------------
-//Comment: fCentrality, lEvSelCode, fkUseOldCentrality should be declared in the header, so that the variables can be stored
-// we do not use any information about centralities.
+    //========================================================================================
+    //------------------------------------------------
+    // Multiplicity Information Acquistion
+    //------------------------------------------------
+    //Comment: fCentrality, lEvSelCode, fkUseOldCentrality should be declared in the header, so that the variables can be stored
+    // we do not use any information about centralities.
     Float_t lPercentile = 500;
     Float_t fCentrality = -10;
-   // Int_t lEvSelCode = 100;
+    // Int_t lEvSelCode = 100;
     MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -401,7 +400,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-       // lEvSelCode = MultSelection->GetEvSelCode();
+        // lEvSelCode = MultSelection->GetEvSelCode();
     }
     
     //just ask AliMultSelection. It will know.
@@ -419,8 +418,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
             fCentrality = centrality->GetCentralityPercentile( "V0M" );
         }
     }
-//=============================================================================================
-
+    //=============================================================================================
+    
     
     //Access the variables needed from the event:
     //1)Primary vertex; we deal with pp collisions, so vertex exists and |z| < 10 cm
@@ -440,8 +439,17 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     fkESDTrackMultiplicity = esdtrackcuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 0.8, 0.);
     Long64_t fkESDEventTriggerWord =lESDevent->GetTriggerMask();
     
-   //set all the event variables into the cascade event, which will be stored.
+    
+    //set all the event variables into the cascade event, which will be stored.
+    Int_t sizeeventbefore(0);
+    sizeeventbefore = Cascade_Event -> GetSizeEvent();
+    //   std::cout << "Size of the Cascade_Event array BEFORE clearing= " << sizeeventbefore << std::endl;
+    
     Cascade_Event -> ClearTrackList();
+    Int_t sizeeventafter(0);
+    sizeeventafter = Cascade_Event -> GetSizeEvent();
+    //   std::cout << "Size of the Cascade_Event array AFTER clearing = " << sizeeventafter << std::endl;
+    
     Cascade_Event -> setx(fPV_X);
     Cascade_Event -> sety(fPV_Y);
     Cascade_Event -> setz(fPV_Z);
@@ -453,20 +461,21 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     Cascade_Event -> setmultiplicity(fkESDTrackMultiplicity);
     Cascade_Event -> settrigger_word(fkESDEventTriggerWord);
     Cascade_Event -> setmagfield(fMagneticField);
-
-    
- //=======================================================================================================
-//======================================EVENT DATA AQUISITION IS OVER HERE================================
-//=========================SELECTION OF CASCADES BEGINS!==================================================
     
     
-   
+    
+    //=======================================================================================================
+    //======================================EVENT DATA AQUISITION IS OVER HERE================================
+    //=========================SELECTION OF CASCADES BEGINS!==================================================
+    
+    
+    
     //HINT: light vertexers might be still in the development mode, so use them at your own risk
     
     //-----------------------------------------------------
     //-------- 1)Rerun the V0 vertexer! -------------------
     //-----------------------------------------------------
-   if( fkRunV0Vertexers ) {
+    if( fkRunV0Vertexers ) {
         //Remove existing cascades
         lESDevent->ResetV0s();
         AliV0vertexer lV0Vtxer;
@@ -474,7 +483,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         lV0Vtxer.SetCuts(fV0VertexerSels);
         lV0Vtxer.Tracks2V0vertices(lESDevent);
     }
-
+    
     //-----------------------------------------------------
     //-------- 2)Rerun the cascade vertexer! --------------
     //-----------------------------------------------------
@@ -501,15 +510,27 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
     //---------- 2) Start the loop over the cascades ------------------
     //-----------------------------------------------------------------
     
-    Long_t ncascades = -1;
-    ncascades = lESDevent->GetNumberOfCascades();
+    Int_t ncascades = lESDevent -> GetNumberOfCascades();
     if(ncascades <= 0) return;
+    Cascade_Event -> setNumCascadeCandidates((UShort_t)ncascades);
+    
     Short_t lChargeXi = 3.;
+    UShort_t iXi_passed(0);
+
+    //--------VARIABLES USED FOR CLEANUP--------------
+    Bool_t goodPos = kFALSE; Bool_t goodNeg = kFALSE; Bool_t goodBach = kFALSE;
+    Double_t rapidity_range(0.5), eta_range(0.8);
+    Float_t lChargePos(0.), lChargeNeg(0.);
+    Bool_t extracleanupOmega = kFALSE;
+    Bool_t extracleanupTPCPID = kFALSE;
+   
+    
+    //preliminary loop is over
     for (Int_t iXi=0; iXi<ncascades; iXi++) {
         
         xi = lESDevent -> GetCascade(iXi);
-        lChargeXi = xi -> Charge();
         if(!xi) continue;
+        lChargeXi = xi -> Charge();
         
         if (TMath::Abs(lChargeXi) != 1) continue;
         
@@ -531,11 +552,13 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         nTrackXi        = lESDevent->GetTrack( lIdxNegXi );
         bachTrackXi    = lESDevent->GetTrack( lBachIdx );
         
-//------------CLEANUP guards----------------------------------------------------------------------------------------
+        //------------CLEANUP guards----------------------------------------------------------------------------------------
+        
+        
         //check if tracks are good!
-        Bool_t goodPos = kFALSE; Bool_t goodNeg = kFALSE; Bool_t goodBach = kFALSE;
-        Double_t rapidity_range = 0.5;
-        Double_t eta_range = 0.8;
+        goodPos = kFALSE; goodNeg = kFALSE; goodBach = kFALSE;
+        rapidity_range = 0.5;
+        eta_range = 0.8;
         goodPos = GoodESDTrack(pTrackXi,rapidity_range, eta_range);
         goodNeg = GoodESDTrack(nTrackXi,rapidity_range, eta_range);
         goodBach = GoodESDTrack(bachTrackXi,rapidity_range, eta_range);
@@ -545,38 +568,40 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         //cross-check for the charge consistency
         if(lChargeXi != bachTrackXi->Charge()) continue;
-        Float_t lChargePos(0.), lChargeNeg(0.);
+        //  Float_t lChargePos(0.), lChargeNeg(0.);
         lChargePos = pTrackXi->Charge(); lChargeNeg = nTrackXi->Charge();
         if((lChargePos*lChargeNeg) != -1) continue; //cross-check
         if(lChargePos < lChargeNeg) continue; //cross-check
         
         //extra cleanup for the omega!
-        Bool_t extracleanupOmega = kFALSE;
-        Double_t Omegamasswindow = 0.05;
-        Double_t Ximasswindow = 0.2;
-        extracleanupOmega = ExtraCleanupCascade(xi, pTrackXi, nTrackXi, bachTrackXi, Omegamasswindow, Ximasswindow);
-       if((extracleanupOmega == kFALSE) && fguard_CheckCascadeQuality) continue;
+        extracleanupOmega = kFALSE;
+        //  Double_t Omegamasswindow = 0.1;
+        extracleanupOmega = ExtraCleanupCascade(xi, pTrackXi, nTrackXi, bachTrackXi, fkOmegaCleanMassWindow);
+        if((extracleanupOmega == kFALSE) && fguard_CheckCascadeQuality) continue;
         
         //TPC PID (might be the strongest one)
-        Bool_t extracleanupTPCPID = kFALSE;
+        extracleanupTPCPID = kFALSE;
         extracleanupTPCPID = GoodCandidatesTPCPID(pTrackXi, nTrackXi, bachTrackXi, sigmamaxrunning);
         if((extracleanupTPCPID == kFALSE) && fguard_CheckTPCPID) continue;
         
-//----------cleanup guards over--------------------------------------------------------------------------------------
+        
+        
+        //----------cleanup guards over--------------------------------------------------------------------------------------
         
         //Some of the Cascade properties. We need the hCascTraj object for DCA
         Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
         for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
+        
         xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
         xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
         AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeXi);
         hCascTraj = &lCascTrajObject;
         
-//Get all the information for the tracks needed for the tree here:
+        //Get all the information for the tracks needed for the tree here:
         //First, declare all of them
         //1) Momentum of the daughters
         Double_t lBMom[3], lNMom[3], lPMom[3];
-    //    Float_t clBMom[3], clNMom[3], clPMom[3];
+        //    Float_t clBMom[3], clNMom[3], clPMom[3];
         //2) dcas
         Float_t RunningDCAxy_z[2] = {-1.,-1.}; //running one, the first component is the transverse DCA and the second - z component
         Float_t fTreeCascVarDCAPosToPrimVtx(-1), //transverse dca of positive track to prim. vertex.
@@ -587,7 +612,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         fTreeCascVarDCABachToPrimVtxZ(-1), //z component of the dca of bachelor track to prim. vertex.
         fTreeCascVarDCAV0ToPrimVtx(-1), //transverse DCA of the V0 to prim vertex
         fTreeCascVarCascDCAtoPVxy(-1),  //transverse DCA of the Cascade to PV
-        fTreeCascVarCascDCAtoPVz(-1),   //z component of the DCA of Cascade to PV
+        // fTreeCascVarCascDCAtoPVz(-1),   //z component of the DCA of Cascade to PV
         fTreeCascVarDCAV0Daughters(-1),  //DCA between positive and negative tracks
         fTreeCascVarDCACascDaughters(-1), //DCA between Lambda and bach
         fTreeCascVarDCABachToBaryon(-1); //DCA of the bachelor track to the proton (baryon in general from v0)
@@ -625,6 +650,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         
         
         //and now find them!
+        
+        
         //momenta
         xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] ); //has to be Double_t
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
@@ -650,8 +677,9 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         //dca Casc prim
         hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], fMagneticField, RunningDCAxy_z);
         fTreeCascVarCascDCAtoPVxy = RunningDCAxy_z[0];
-        fTreeCascVarCascDCAtoPVz = RunningDCAxy_z[1];
-        RunningDCAxy_z[0] = -1.; RunningDCAxy_z[1] = -1.;
+        //  fTreeCascVarCascDCAtoPVz = RunningDCAxy_z[1];
+        RunningDCAxy_z[0] = -1.;
+        //RunningDCAxy_z[1] = -1.;
         
         //pos and neg
         fTreeCascVarDCAV0Daughters = xi->GetDcaV0Daughters();
@@ -667,7 +695,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         }
         Double_t xn, xp; //reference planes at the DCA
         fTreeCascVarDCABachToBaryon = lBaryonTrack->GetDCA(bachTrackXi, fMagneticField, xn, xp);
-    
+        
         
         //positions
         fTreeCascVarCascCosPointingAngle = xi->GetCascadeCosineOfPointingAngle(lBestPrimaryVtxPos[0], lBestPrimaryVtxPos[1], lBestPrimaryVtxPos[2]);
@@ -685,21 +713,36 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         // mode = 1  - Track parameters estimated at the inner wall of TPC at PropagateBack stage
         // 2.0 - deadzone, dy (user defined)
         // dz = 220
+        
         TrackLengthInActiveZone[0]= pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         TrackLengthInActiveZone[1]= nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
         TrackLengthInActiveZone[2]= bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
-      
         
-    //----------------------------ACCESS DATA: ITS------------------------------------------
+        
+        //----------------------------ACCESS DATA: ITS------------------------------------------
         //access status on all ITS layers
         Int_t pITS[6], nITS[6], bITS[6];
+        Int_t iscpos[6], iscneg[6], iscbach[6]; //number of ITS shared clusters
+        Bool_t hasp(kFALSE), hasn(kFALSE), hasbach(kFALSE); //booleans for: shared clusters in its.
         for (int k=0; k<6; k++) {
             pITS[k] = GetITSstatus(pTrackXi, k);
             nITS[k] = GetITSstatus(nTrackXi, k);
             bITS[k] = GetITSstatus(bachTrackXi, k);
+            
+            hasp = pTrackXi -> HasSharedPointOnITSLayer(k);
+            hasn = nTrackXi -> HasSharedPointOnITSLayer(k);
+            hasbach = bachTrackXi -> HasSharedPointOnITSLayer(k);
+            
+            if(hasp == kTRUE)iscpos[k] = 1;
+            else iscpos[k] =0;
+            if (hasn == kTRUE)iscneg[k] =1;
+            else iscpos[k] = 0;
+            if(hasbach == kTRUE)iscbach[k] = 1;
+            else iscbach[k] = 0;
+            
         }
         //if the track was refitted in the ITS
-        ULong_t status[3]; Int_t ITSrefitflag[3];
+        ULong_t status[3]; Int_t ITSrefitflag[4];
         status[0] = pTrackXi ->GetStatus(); status[1] = nTrackXi ->GetStatus(); status[2] = bachTrackXi ->GetStatus();
         //refitflag
         if((status[0] & AliESDtrack::kITSrefit) == 0) ITSrefitflag[0] = 0;
@@ -708,16 +751,6 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         else ITSrefitflag[1]=1;
         if((status[2] & AliESDtrack::kITSrefit) == 0) ITSrefitflag[2] = 0;
         else ITSrefitflag[2]=1;
-        //shared points; we do not really need it?
-       /* Bool_t itssharedpoint[6];
-        Int_t itsshared[6];
-        for (int i(0); i<6; i++)
-        {
-            itssharedpoint[i] = pTrackXi -> HasPointOnITSLayer(i);
-            if (itssharedpoint[i] == kTRUE) itsshared[i] = 1;
-            else itsshared[i] = 0;
-            
-        }*/
         
         
         //its chi2
@@ -731,7 +764,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         itssignal[0] = pTrackXi -> GetITSsignal();
         itssignal[1] = nTrackXi -> GetITSsignal();
         itssignal[2] = bachTrackXi -> GetITSsignal();
-     
+        
         //number of sigmas
         fTreeCascVarPosITSNSigmaPion   = fPIDResponse->NumberOfSigmasITS( pTrackXi, AliPID::kPion );
         fTreeCascVarPosITSNSigmaProton = fPIDResponse->NumberOfSigmasITS( pTrackXi, AliPID::kProton );
@@ -740,14 +773,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         fTreeCascVarBachITSNSigmaPion  = fPIDResponse->NumberOfSigmasITS( bachTrackXi, AliPID::kPion );
         fTreeCascVarBachITSNSigmaKaon  = fPIDResponse->NumberOfSigmasITS( bachTrackXi, AliPID::kKaon );
         
-        //track probabilities in its
-     /*   Double_t ITSprobabilityPos[AliPID::kSPECIES], ITSprobabilityNeg[AliPID::kSPECIES],ITSprobabilityBach[AliPID::kSPECIES];
-        pidstatus = fPIDResponse -> ComputeITSProbability(pTrackXi, 5, ITSprobabilityPos);
-        pidstatus = fPIDResponse -> ComputeITSProbability(nTrackXi, 5, ITSprobabilityNeg);
-        pidstatus = fPIDResponse -> ComputeITSProbability(bachTrackXi, 5, ITSprobabilityBach);*/
         
-        
-//----------------------------------ACCESS DATA: TPC---------------------------------------------------------
+        //----------------------------------ACCESS DATA: TPC---------------------------------------------------------
         //PID
         fTreeCascVarPosNSigmaPion   = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kPion );
         fTreeCascVarPosNSigmaProton = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kProton );
@@ -755,114 +782,10 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         fTreeCascVarNegNSigmaProton = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kProton );
         fTreeCascVarBachNSigmaPion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
         fTreeCascVarBachNSigmaKaon  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kKaon );
-
-        //The positive particle should be either proton or pion dependent on the charge!
-        //If the TPC hypothesis assigns the positive track to any other particle, the array value is set 0.
-        //this is for test! Test h
-        Char_t posTPCpid[7] = {0x07,0x07,0x07,0x07,0x07,0x07,0x07};
-        Char_t negTPCpid[7] = {0x07,0x07,0x07,0x07,0x07,0x07,0x07};
-        Char_t bachTPCpid[7] = {0x07,0x07,0x07,0x07,0x07,0x07,0x07};
-        
-        //Check the positive track
-        Float_t Pos_Electron = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kElectron );
-        Float_t Pos_Muon = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kMuon );
-        Float_t Pos_Pion = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kPion );
-        Float_t Pos_Kaon = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kPion );
-        Float_t Pos_Proton = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kProton );
-        Float_t Pos_Deuteron = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kDeuteron);
-        Float_t Pos_Triton = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kTriton);
-        
-        if(Pos_Electron < 3) posTPCpid[0] = 0;
-        else posTPCpid[0] = 1;
-        
-        if(Pos_Muon < 3) posTPCpid[1] = 0;
-        else posTPCpid[1] = 1;
-        
-        if((Pos_Pion < 3) && (lChargeXi == -1) ) posTPCpid[2] = 0;
-        if((Pos_Pion > 3) && (lChargeXi == -1) ) posTPCpid[2] = 1;
-        if((Pos_Pion < 3) && (lChargeXi == 1) ) posTPCpid[2] = 2;
-        if((Pos_Pion > 3) && (lChargeXi == 1) ) posTPCpid[2] = 3;
-        
-        if(Pos_Kaon < 3) posTPCpid[3] = 0;
-        else posTPCpid[3] = 1;
-        
-        if((Pos_Proton < 3) && (lChargeXi == -1)) posTPCpid[4] = 0;
-        if((Pos_Proton > 3) && (lChargeXi == -1)) posTPCpid[4]= 1;
-        if((Pos_Proton < 3) && (lChargeXi == 1)) posTPCpid[4] = 2;
-        if((Pos_Proton > 3) && (lChargeXi == 1)) posTPCpid[4]= 3;
-        
-        if(Pos_Deuteron < 3) posTPCpid[5] = 0;
-        else posTPCpid[5] = 1;
-        if(Pos_Triton < 3) posTPCpid[6] = 0;
-        else posTPCpid[6] = 1;
-        
-        //check the negative track
-        Float_t Neg_Electron = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kElectron );
-        Float_t Neg_Muon = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kMuon );
-        Float_t Neg_Pion = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kPion );
-        Float_t Neg_Kaon = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kPion );
-        Float_t Neg_Proton = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kProton );
-        Float_t Neg_Deuteron = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kDeuteron );
-        Float_t Neg_Triton = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kTriton);
-        
-        if(Neg_Electron < 3) negTPCpid[0] = 0;
-        else negTPCpid[0] = 1;
-        
-        if(Neg_Muon < 3) negTPCpid[1] = 0;
-        else negTPCpid[1] = 1;
-        
-        if((Neg_Pion < 3) && (lChargeXi == -1) ) negTPCpid[2] = 0;
-        if((Neg_Pion > 3) && (lChargeXi == -1) ) negTPCpid[2] = 1;
-        if((Neg_Pion < 3) && (lChargeXi == 1) ) negTPCpid[2] = 2;
-        if((Neg_Pion > 3) && (lChargeXi == 1) ) negTPCpid[2] = 3;
-        
-        if(Neg_Kaon < 3) negTPCpid[3] = 0;
-        else negTPCpid[3] = 1;
-        
-        if((Neg_Proton < 3) && (lChargeXi == -1)) negTPCpid[4] = 0;
-        if((Neg_Proton > 3) && (lChargeXi == -1)) negTPCpid[4]= 1;
-        if((Neg_Proton < 3) && (lChargeXi == 1)) negTPCpid[4] = 2;
-        if((Neg_Proton > 3) && (lChargeXi == 1)) negTPCpid[4]= 3;
-        
-        if(Neg_Deuteron < 3) negTPCpid[5] = 0;
-        else negTPCpid[5] = 1;
-        if(Neg_Triton < 3) negTPCpid[6] = 0;
-        else negTPCpid[6] = 1;
         
         
-        //check the bachelor track
-        Float_t Bach_Electron = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kElectron );
-        Float_t Bach_Muon = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kMuon );
-        Float_t Bach_Pion = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
-        Float_t Bach_Kaon = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kKaon );
-        Float_t Bach_Proton = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kProton );
-        Float_t Bach_Deuteron = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kDeuteron );
-        Float_t Bach_Triton = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kTriton);
         
-        if(Bach_Electron < 3) bachTPCpid[0] = 0;
-        else bachTPCpid[0] = 1;
-        
-        if(Bach_Muon < 3) bachTPCpid[1] = 0;
-        else bachTPCpid[1] = 1;
-        
-        if((Bach_Pion < 3) && (lChargeXi == -1) ) bachTPCpid[2] = 0;
-        if((Bach_Pion > 3) && (lChargeXi == -1) ) bachTPCpid[2] = 1;
-        if((Bach_Pion < 3) && (lChargeXi == 1) ) bachTPCpid[2] = 2;
-        if((Bach_Pion > 3) && (lChargeXi == 1) ) bachTPCpid[2] = 3;
-        
-        if((Bach_Kaon < 3) && (lChargeXi == -1)) bachTPCpid[3] = 0;
-        if((Bach_Kaon > 3) && (lChargeXi == -1)) bachTPCpid[3]= 1;
-        if((Bach_Kaon < 3) && (lChargeXi == 1)) bachTPCpid[3] = 2;
-        if((Bach_Kaon > 3) && (lChargeXi == 1)) bachTPCpid[3]= 3;
-        
-        if(Bach_Proton < 3) bachTPCpid[4] = 0;
-        else bachTPCpid[4] = 1;
-        if(Bach_Deuteron < 3) bachTPCpid[5] = 0;
-        else bachTPCpid[5] = 1;
-        if(Bach_Triton < 3) bachTPCpid[6] = 0;
-        else bachTPCpid[6] = 1;
-        
-//-------------continue with TPC signal, etc.-------------
+        //-------------continue with TPC signal, etc.-------------
         Double_t tpcsignal[3];
         tpcsignal[0] = pTrackXi -> GetTPCsignal();
         tpcsignal[1] = nTrackXi -> GetTPCsignal();
@@ -882,15 +805,8 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         tpcclsF[0] = pTrackXi -> GetTPCNclsF();
         tpcclsF[1] = nTrackXi -> GetTPCNclsF();
         tpcclsF[2] = bachTrackXi -> GetTPCNclsF();
-
         
-      /*  Double_t TPCprobabilityPos[AliPID::kSPECIES], TPCprobabilityNeg[AliPID::kSPECIES],TPCprobabilityBach[AliPID::kSPECIES];
-        pidstatus = fPIDResponse -> ComputeTPCProbability(pTrackXi, 5, TPCprobabilityPos);
-        pidstatus = fPIDResponse -> ComputeTPCProbability(nTrackXi, 5, TPCprobabilityNeg);
-        pidstatus = fPIDResponse -> ComputeTPCProbability(bachTrackXi, 5, TPCprobabilityBach);*/
-        
-        
-//------data from TOF------------------------
+        //------data from TOF------------------------
         ULong_t statustof[3]; Int_t TOFrefitflag[3];
         statustof[0] = pTrackXi ->GetStatus(); statustof[1] = nTrackXi ->GetStatus(); statustof[2] = bachTrackXi ->GetStatus();
         //refitflag
@@ -907,17 +823,23 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         tofsignal[2] = bachTrackXi -> GetTOFsignal();
         
         
+        
         fTreeCascVarNegTOFNSigmaPion   = fPIDResponse->NumberOfSigmasTOF( nTrackXi, AliPID::kPion );
         fTreeCascVarNegTOFNSigmaProton = fPIDResponse->NumberOfSigmasTOF( nTrackXi, AliPID::kProton );
         fTreeCascVarPosTOFNSigmaPion   = fPIDResponse->NumberOfSigmasTOF( pTrackXi, AliPID::kPion );
         fTreeCascVarPosTOFNSigmaProton = fPIDResponse->NumberOfSigmasTOF( pTrackXi, AliPID::kProton );
         fTreeCascVarBachTOFNSigmaPion  = fPIDResponse->NumberOfSigmasTOF( bachTrackXi, AliPID::kPion );
         fTreeCascVarBachTOFNSigmaKaon  = fPIDResponse->NumberOfSigmasTOF( bachTrackXi, AliPID::kKaon );
-
         
         
-//-------------------set the variables to the track object and fill the tree!--------------------------------
-        Cascade_Track = Cascade_Event -> createTrack();
+        
+        //-------------------set the variables to the track object and fill the tree!--------------------------------
+        
+        
+        if(iXi_passed > 10000) continue; //see the AliRunningCascadeEvent class and the boundaries of Track array!
+        
+        Cascade_Track = Cascade_Event -> AddCandidate(iXi_passed);
+        
         Cascade_Track -> set_PMom(lPMom[0],lPMom[1],lPMom[2]);
         Cascade_Track -> set_NMom(lNMom[0],lNMom[1],lNMom[2]);
         Cascade_Track -> set_BMom(lBMom[0],lBMom[1],lBMom[2]);
@@ -926,12 +848,12 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_dca_neg_to_prim(fTreeCascVarDCANegToPrimVtx, fTreeCascVarDCANegToPrimVtxZ);
         Cascade_Track -> set_dca_bach_to_prim(fTreeCascVarDCABachToPrimVtx, fTreeCascVarDCABachToPrimVtxZ);
         Cascade_Track -> set_dca_V0_to_prim(fTreeCascVarDCAV0ToPrimVtx);
-        Cascade_Track -> set_dca_Omega_to_prim(fTreeCascVarCascDCAtoPVxy, fTreeCascVarCascDCAtoPVz);
+        Cascade_Track -> set_dca_Omega_to_prim(fTreeCascVarCascDCAtoPVxy);
         Cascade_Track -> set_dca_pos_to_neg(fTreeCascVarDCAV0Daughters);
         Cascade_Track -> set_dca_bach_to_Lambda(fTreeCascVarDCACascDaughters);
         Cascade_Track -> set_dca_bach_to_baryon(fTreeCascVarDCABachToBaryon);
-       
-       
+        
+        
         
         //fill with the positions of the V0 and Xi.
         Cascade_Track -> set_CosPointingAngle(fTreeCascVarCascCosPointingAngle);
@@ -947,11 +869,14 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_ITSrefitFlag(ITSrefitflag[0], ITSrefitflag[1], ITSrefitflag[2]);
         Cascade_Track -> set_ITSchi2(itschi2[0], itschi2[1], itschi2[2]);
         Cascade_Track -> set_ITSsignal(itssignal[0], itssignal[1], itssignal[2]);
-
+        
         Cascade_Track -> set_nSigma_ITS_pos(fTreeCascVarPosITSNSigmaProton, fTreeCascVarPosITSNSigmaPion);
         Cascade_Track -> set_nSigma_ITS_neg(fTreeCascVarNegITSNSigmaPion, fTreeCascVarNegITSNSigmaProton);
         Cascade_Track -> set_nSigma_ITS_bach(fTreeCascVarBachITSNSigmaKaon, fTreeCascVarBachITSNSigmaPion);
         
+        Cascade_Track -> set_ITSPosSharedPoints(iscpos[0],iscpos[1],iscpos[2],iscpos[3],iscpos[4],iscpos[5]);
+        Cascade_Track -> set_ITSNegSharedPoints(iscneg[0],iscneg[1],iscneg[2],iscneg[3],iscneg[4],iscneg[5]);
+        Cascade_Track -> set_ITSBachSharedPoints(iscbach[0],iscbach[1],iscbach[2],iscbach[3],iscbach[4],iscbach[5]);
         
         //Information from TPC
         Cascade_Track -> set_TPCsignal(tpcsignal[0], tpcsignal[1], tpcsignal[2]);
@@ -961,10 +886,6 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_nSigma_dEdx_pos(fTreeCascVarPosNSigmaProton, fTreeCascVarPosNSigmaPion); //[0] Casc charge = -1, [1] Casc +
         Cascade_Track -> set_nSigma_dEdx_neg(fTreeCascVarNegNSigmaPion,  fTreeCascVarNegNSigmaProton);
         Cascade_Track -> set_nSigma_dEdx_bach(fTreeCascVarBachNSigmaKaon, fTreeCascVarBachNSigmaPion);
-        Cascade_Track -> set_TPC_PartVar_Pos(posTPCpid[0],posTPCpid[1],posTPCpid[2],posTPCpid[3],posTPCpid[4],posTPCpid[5],posTPCpid[6]);
-        Cascade_Track -> set_TPC_PartVar_Neg(negTPCpid[0],negTPCpid[1],negTPCpid[2],negTPCpid[3],negTPCpid[4],negTPCpid[5],negTPCpid[6]);
-        Cascade_Track -> set_TPC_PartVar_Bach(bachTPCpid[0],bachTPCpid[1],bachTPCpid[2],bachTPCpid[3],bachTPCpid[4],bachTPCpid[5],bachTPCpid[6]);
-
         
         
         //TOF
@@ -974,25 +895,17 @@ void AliAnalysisTaskStrangeCascadesDiscrete::UserExec(Option_t *option)
         Cascade_Track -> set_nSigma_TOF_neg(fTreeCascVarNegTOFNSigmaPion, fTreeCascVarNegTOFNSigmaProton);
         Cascade_Track -> set_nSigma_TOF_bach(fTreeCascVarBachTOFNSigmaKaon, fTreeCascVarBachTOFNSigmaPion);
         
-        
-        
-        //do not implement it, just use the sigma deviations
-     /*   Cascade_Track -> set_TPCPIDProbPos(TPCprobabilityPos[4], TPCprobabilityPos[2]); //4 -proton, 2 -pion, 3-kaon
-        Cascade_Track -> set_TPCPIDProbNeg(TPCprobabilityNeg[4], TPCprobabilityNeg[2]);
-        Cascade_Track -> set_TPCPIDProbBach(TPCprobabilityBach[2], TPCprobabilityBach[3]);*/
-        /*   Cascade_Track -> set_ITSPIDProbPos(ITSprobabilityPos[4], ITSprobabilityPos[2]); //4 -proton, 2 -pion, 3-kaon
-         Cascade_Track -> set_ITSPIDProbNeg(ITSprobabilityNeg[4], ITSprobabilityNeg[2]);
-         Cascade_Track -> set_ITSPIDProbBach(ITSprobabilityBach[2], ITSprobabilityBach[3]);*/
+        iXi_passed++;
 
-
-     
-
-        fTreeCascadeAsEvent -> Fill();
-     
     }//end of the cascade loop.
-    
+      
+    Cascade_Event -> setNumSelectedCascades(iXi_passed);
+    if(iXi_passed < 1) return; //so we do not need to loop again.
+    fTreeCascadeAsEvent -> Fill();
     
     PostData(1, fTreeCascadeAsEvent);
+    
+    
 }
 
 void AliAnalysisTaskStrangeCascadesDiscrete::Terminate(Option_t *){}
@@ -1005,7 +918,7 @@ void AliAnalysisTaskStrangeCascadesDiscrete::Terminate(Option_t *){}
 
 Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDEvent(AliESDEvent* lESDevent, const AliESDVertex *lPrimaryBestESDVtx,AliESDtrackCuts* esdtrackcuts1){
     
-   
+    
     //general var to return
     Bool_t goodevent = kTRUE;
     
@@ -1015,7 +928,7 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDEvent(AliESDEvent* lESDeve
     if(!lmagneticfield) goodevent = kFALSE;
     
     //PRIMARY VERTEX can be got, should be changed for PbPb collisions
-   // const AliESDVertex *lPrimaryBestESDVtx  = lESDevent->GetPrimaryVertex();
+    // const AliESDVertex *lPrimaryBestESDVtx  = lESDevent->GetPrimaryVertex();
     if (!lPrimaryBestESDVtx) goodevent = kFALSE;
     Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
@@ -1038,7 +951,10 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDEvent(AliESDEvent* lESDeve
     Int_t fNtracks  = lESDevent ->GetNumberOfTracks();
     if(fNtracks < 0) goodevent = kFALSE;
     
-
+    //Number of cascades
+    Int_t ncascades = lESDevent -> GetNumberOfCascades();
+    if(ncascades < 1) goodevent = kFALSE;
+    
     return goodevent;
 }
 
@@ -1061,27 +977,11 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDTrack(AliESDtrack* trackES
     ULong_t status = trackESD->GetStatus();
     if((status & AliESDtrack::kTPCrefit) == 0) goodtrack = kFALSE;
     
-    //check the ITS status, do later in the analysis.(output is light)
-  //  Int_t statusITS1 = GetITSstatus(trackESD, 0);
-  //  Int_t statusITS2 = GetITSstatus(trackESD, 1);
-  //  if((statusITS1!=1)&&(statusITS2!=1)) goodtrack = kFALSE; //-> the hit is in the first OR second ITS layer
-    
-    //check the ITS innermost layers, do later in the analysis
-  //  Bool_t lits1 = trackESD -> HasPointOnITSLayer(0);
-  //  Bool_t lits2 = trackESD -> HasPointOnITSLayer(1);
-  //  if ((lits1==0)&&(lits2==0)) goodtrack = kFALSE;  //if the ITS layer info is saved, then we do not need it
-    
     //TPC clusters
     Int_t tpcnclus=trackESD->GetTPCNcls();
     Int_t tpcnclusF = trackESD -> GetTPCNclsF();
     if(tpcnclusF<70) goodtrack = kFALSE;
     if(tpcnclus<70) goodtrack = kFALSE; //looser because of V0
-    
-    //cluster ratio
-   /* Float_t ratio = -1;
-    if(tpcnclusF != 0.) ratio = tpcnclus/tpcnclusF;
-    if(ratio < 0.6) goodtrack = kFALSE;*/
-    
     
     //filter out the noise, cross check (done automatically?) AliPerformanceTPC
     if(trackESD -> GetTPCsignal() < 5) goodtrack = kFALSE;
@@ -1090,11 +990,6 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodESDTrack(AliESDtrack* trackES
     Float_t tpcchi2 = 1000;
     if(tpcnclus!=0) tpcchi2= trackESD->GetTPCchi2()/tpcnclus; //was with (Float_t)trackESD->...
     if(tpcchi2 > 4)goodtrack = kFALSE;
-    
-    
-    //rapidity, no cut on the rapidity of daughters! (can be switched on again, but we do not need it)
-   // Double_t y = trackESD->Y();
-   // if (!y || TMath::Abs(y) > raprange) goodtrack = kFALSE;
     
     //pseudorapity
     Double_t eta = trackESD->Eta();
@@ -1122,55 +1017,70 @@ Int_t AliAnalysisTaskStrangeCascadesDiscrete::GetITSstatus(AliESDtrack* esdtrack
 }
 
 Bool_t AliAnalysisTaskStrangeCascadesDiscrete::ExtraCleanupCascade(AliESDcascade* Xi,
-                                                                          AliESDtrack* gPtrack,
-                                                                          AliESDtrack* gNtrack,
-                                                                          AliESDtrack* gBtrack,
-                                                                          Double_t OmegaMassWindow,
-                                                                          Double_t XiMassWindow)
+                                                                   AliESDtrack* gPtrack,
+                                                                   AliESDtrack* gNtrack,
+                                                                   AliESDtrack* gBtrack,
+                                                                   Double_t OmegaMassWindow)
 {
     //extra cleanup is needed to reduce the weight of the output file.
     //in this analysis we want to study the central prod. omega baryons, d.h. rapidity of omega |y| < 0.5
-    //note: used code = 3334 or -3334
     //this cut won't be made for the Xi (using the same trio of tracks as for the omega under change of mass hypothesis!)
     //note: input tracks should have gone through the good track selection (Bool_t GoodESDTrack)
-    //note: magnetic field is just a parameter, the charges of the tracks are REAL PHYSICAL charges, so do not check for the magnetic field polarity
-    //note: the omega mass window is : 1.67 pm 0.05
+    //note: since magnetic field is just a parameter, the charges of the tracks are REAL PHYSICAL charges, so do not check for the magnetic field polarity
     Bool_t cleaned = kTRUE;
-    TLorentzVector vXi; Double_t vXiarr[4];
-   // TLorentzVector vXi2; Double_t vXiarr2[4]; //cuts for Xi, not used but - can be - in general.
-    Double_t y(1.);
-    Double_t mOmega(-1.);
-    
-    Int_t runningcode = - 3334 * gBtrack->Charge(); //if negative Kaon -> +3334, positive kaon -> -3334
     
     if(!Xi){AliWarning("No cascade found, no clean up"); cleaned = kFALSE; }
     if(!gPtrack){AliWarning("No positive track found, no clean up"); cleaned = kFALSE; }
     if(!gNtrack){AliWarning("No negative track found, no clean up"); cleaned = kFALSE; }
     if(!gBtrack){AliWarning("No bachelor track found, no clean up"); cleaned = kFALSE; }
     
-    if (TMath::Abs(runningcode)!=3334) {AliWarning("Bachelor track is neutral, no clean up"); cleaned = kFALSE;}
-    Double_t lv0q = 0;
-    Xi->ChangeMassHypothesis(lv0q, runningcode);
-    Xi->GetPxPyPz(vXiarr[0], vXiarr[1], vXiarr[2]);
-    vXiarr[3] = Xi->E(); //needs the hypothesis
-    vXi.SetPxPyPzE(vXiarr[0], vXiarr[1], vXiarr[2], vXiarr[3]);
-   
+    
+    TLorentzVector vXi;
+    Double_t y(1.);
+    Double_t mOmega(-1.);
+    
+    Double_t massproton = 0.9382;
+    Double_t masspion = 0.1395;
+    Double_t masskaon = 0.4937;
+    
+    Double_t Epos(0), Eneg(0),Ebach(0), EOmega(0);
+    Double_t Ppos(0), Pneg(0), Pbach(0);
+    //momentum of omega
+    Double_t POmega[4];
+    Xi -> GetPxPyPz(POmega[0], POmega[1], POmega[2]);
+    POmega[3] = TMath::Sqrt(POmega[0]*POmega[0] + POmega[1]*POmega[1] + POmega[2]*POmega[2]);
+    //momenta of tracks
+    Ppos = gPtrack -> P();
+    Pneg = gNtrack -> P();
+    Pbach = gBtrack -> P();
+    
+    if(gBtrack -> Charge() == -1){ //omega:proton-pos, pion-neg, kaon-bach
+        Epos = TMath::Sqrt(massproton*massproton + Ppos*Ppos);
+        Eneg = TMath::Sqrt(masspion*masspion + Pneg*Pneg);
+        Ebach = TMath::Sqrt(masskaon*masskaon + Pbach*Pbach);
+        EOmega = Epos + Eneg + Ebach;
+        if(EOmega <= POmega[3]) cleaned = kFALSE;
+        mOmega = TMath::Sqrt(TMath::Abs(EOmega*EOmega - POmega[3]*POmega[3]));
+        vXi.SetPxPyPzE(POmega[0], POmega[1], POmega[2], EOmega);
+    }
+    
+    if(gBtrack -> Charge() == +1){ //omega:proton-pos, pion-neg, kaon-bach
+        Epos = TMath::Sqrt(masspion*masspion + Ppos*Ppos);
+        Eneg = TMath::Sqrt(massproton*massproton + Pneg*Pneg);
+        Ebach = TMath::Sqrt(masskaon*masskaon + Pbach*Pbach);
+        EOmega = Epos + Eneg + Ebach;
+        if(EOmega <= POmega[3]) cleaned = kFALSE;
+        mOmega = TMath::Sqrt(TMath::Abs(EOmega*EOmega - POmega[3]*POmega[3]));
+        vXi.SetPxPyPzE(POmega[0], POmega[1], POmega[2], EOmega);
+    }
+    
     //RAPIDITY check
     y = vXi.Rapidity();
     if (TMath::Abs(y)>0.5) cleaned = kFALSE;
     
     //MASS WINDOW for OMEGA
     mOmega = TMath::Abs(vXi.M()); //M() already returns positive values only, but just in case
-    if(TMath::Abs(mOmega - 1.6725) > TMath::Abs(OmegaMassWindow)) cleaned = kFALSE;
-    
-    //Use LOOSER cut on XI MASS; do not need to implement it! Check later in the analysis, looking at analysis
-   /* runningcode = - 3312 * gBtrack->Charge();
-    Xi->ChangeMassHypothesis(lv0q, runningcode);
-    Xi->GetPxPyPz(vXiarr2[0], vXiarr2[1], vXiarr2[2]);
-    vXiarr2[3] = Xi->E(); //needs the hypothesis
-    vXi2.SetPxPyPzE(vXiarr2[0], vXiarr2[1], vXiarr2[2], vXiarr2[3]);
-    mXi = TMath::Abs(vXi2.M());*/
-   // if(TMath::Abs(mXi - 1.3217) > TMath::Abs(XiMassWindow)) cleaned = kFALSE;
+    if(TMath::Abs(mOmega - 1.672) > TMath::Abs(OmegaMassWindow)) cleaned = kFALSE;
     
     
     return cleaned;
@@ -1188,14 +1098,14 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodCandidatesTPCPID(AliESDtrack*
     if (!pTrackXi)goodTPCtrio = kFALSE;
     if (!nTrackXi)goodTPCtrio = kFALSE;
     if (!bachTrackXi)goodTPCtrio = kFALSE;
-
+    
     Short_t chargeCascade = bachTrackXi -> Charge();
     if(TMath::Abs(chargeCascade)!=1)goodTPCtrio = kFALSE; //cross-check
     Float_t PID_Pos_Pion  = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kPion );
     Float_t PID_Pos_Proton = fPIDResponse->NumberOfSigmasTPC( pTrackXi, AliPID::kProton );
     Float_t PID_Neg_Pion   = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kPion );
     Float_t PID_Neg_Proton = fPIDResponse->NumberOfSigmasTPC( nTrackXi, AliPID::kProton );
-   // Float_t PID_Bach_Pion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
+    // Float_t PID_Bach_Pion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
     Float_t PID_Bach_Kaon  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kKaon );
     
     if (chargeCascade == -1)
@@ -1204,10 +1114,6 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodCandidatesTPCPID(AliESDtrack*
         if(TMath::Abs(PID_Pos_Proton) > sigmamax) goodTPCtrio = kFALSE;
         if(TMath::Abs(PID_Neg_Pion) > sigmamax) goodTPCtrio = kFALSE;
         if(TMath::Abs(PID_Bach_Kaon) > sigmamax) goodTPCtrio = kFALSE;
-        
-   /*     if(TMath::Abs(PID_Pos_Pion) < 3.) goodTPCtrio = kFALSE;
-        if(TMath::Abs(PID_Neg_Proton) < 3.) goodTPCtrio = kFALSE;
-        if(TMath::Abs(PID_Bach_Pion) < 4.) goodTPCtrio = kFALSE; //allow for small contamination*/
         
     }
     
@@ -1218,11 +1124,8 @@ Bool_t AliAnalysisTaskStrangeCascadesDiscrete::GoodCandidatesTPCPID(AliESDtrack*
         if(TMath::Abs(PID_Neg_Proton) > sigmamax) goodTPCtrio = kFALSE;
         if(TMath::Abs(PID_Bach_Kaon) > sigmamax) goodTPCtrio = kFALSE;
         
-      /* if(TMath::Abs(PID_Pos_Proton) < 3.) goodTPCtrio = kFALSE;
-        if(TMath::Abs(PID_Neg_Pion) < 3.) goodTPCtrio = kFALSE;
-        if(TMath::Abs(PID_Bach_Pion) < 4.) goodTPCtrio = kFALSE;*/
-        
     }
     
     return goodTPCtrio;
 }
+

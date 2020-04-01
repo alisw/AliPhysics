@@ -50,21 +50,27 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3()
    fD0ZResPCur  (0),
    fD0ZResKCur  (0),
    fD0ZResPiCur (0),
+   fD0ZResDCur (0),
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPResDCur(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
+   fPt1ResDCur (0),
    fD0ZResPUpg  (0),
    fD0ZResKUpg  (0),
    fD0ZResPiUpg (0),
+   fD0ZResDUpg (0),
    fD0RPResPUpg (0),
    fD0RPResKUpg (0),
    fD0RPResPiUpg(0),
+   fD0RPResDUpg(0),
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fPt1ResDUpg (0),
 /*   fD0ZResPCurSA  (0),
    fD0ZResKCurSA  (0),
    fD0ZResPiCurSA (0),
@@ -84,13 +90,15 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3()
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
 */ fRunInVertexing(kFALSE),
+   fImproveDeuteron(kFALSE),
    fImproveTracks(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
    fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0), 
-   fNDebug      (0)
+   fNDebug      (0),
+   fOnlyProcessFilledCand(kFALSE)
 {
   //
   // Default constructor.
@@ -101,26 +109,33 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
                            const char *resfileCurURI,
                            const char *resfileUpgURI,
                            Bool_t isRunInVertexing,
+                           Bool_t isImproveDeuteron,
 			                     Int_t ndebug)
   :AliAnalysisTaskSE(name),
    fD0ZResPCur  (0),
    fD0ZResKCur  (0),
    fD0ZResPiCur (0),
+   fD0ZResDCur (0),
    fD0RPResPCur (0),
    fD0RPResKCur (0),
    fD0RPResPiCur(0),
+   fD0RPResDCur(0),
    fPt1ResPCur  (0),
    fPt1ResKCur  (0),
    fPt1ResPiCur (0),
+   fPt1ResDCur (0),
    fD0ZResPUpg  (0),
    fD0ZResKUpg  (0),
    fD0ZResPiUpg (0),
+   fD0ZResDUpg (0),
    fD0RPResPUpg (0),
    fD0RPResKUpg (0),
    fD0RPResPiUpg(0),
+   fD0RPResDUpg(0),
    fPt1ResPUpg  (0),
    fPt1ResKUpg  (0),
    fPt1ResPiUpg (0),
+   fPt1ResDUpg (0),
 /*   fD0ZResPCurSA  (0),
    fD0ZResKCurSA  (0),
    fD0ZResPiCurSA (0),
@@ -140,13 +155,15 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
   */ fRunInVertexing(isRunInVertexing),
+   fImproveDeuteron(isImproveDeuteron),
    fImproveTracks(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
    fUpdateSecVertCovMat(kTRUE),
    fDebugOutput (0),
    fDebugNtuple (0),
    fDebugVars   (0),
-   fNDebug      (ndebug)
+   fNDebug      (ndebug),
+   fOnlyProcessFilledCand(kFALSE)
 {
   //
   // Constructor to be used to create the task.
@@ -156,6 +173,7 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   // One may also specify for how many tracks debug information
   // is written to the output.
   //
+
   TFile *resfileCur=TFile::Open(resfileCurURI);
   fD0RPResPCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResP" )))->Clone("fD0RPResPCur"));
   fD0RPResKCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResK" )))->Clone("fD0RPResKCur"));
@@ -166,7 +184,14 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fPt1ResPCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResP" )))->Clone("fPt1ResPCur"));
   fPt1ResKCur   = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResK" )))->Clone("fPt1ResKCur"));
   fPt1ResPiCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResPi" )))->Clone("fPt1ResPiCur"));
-/*  fD0RPResPCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPSA" )));
+
+  if(fImproveDeuteron){
+    fD0RPResDCur = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0RPResD" )))->Clone("fD0RPResDCur"));
+    fD0ZResDCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("D0ZResD" )))->Clone("fD0ZResDCur"));
+    fPt1ResDCur  = static_cast<TGraph*>((static_cast<TGraph*>(resfileCur->Get("Pt1ResD" )))->Clone("fPt1ResDCur"));
+  }
+
+  /*fD0RPResPCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPSA" )));
   fD0RPResKCurSA =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResKSA" )));
   fD0RPResPiCurSA=new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0RPResPiSA")));
   fD0ZResPCurSA  =new TGraph(*static_cast<TGraph*>(resfileCur->Get("D0ZResPSA"  )));
@@ -184,7 +209,7 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fPt1ResPCurSA  ->SetName("Pt1ResPCurSA"  );
   fPt1ResKCurSA  ->SetName("Pt1ResKCurSA"  );
   fPt1ResPiCurSA ->SetName("Pt1ResPiCurSA" );
-*/
+  */
   delete resfileCur;
 
   TFile *resfileUpg=TFile::Open(resfileUpgURI );
@@ -197,7 +222,13 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fPt1ResPUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResP" )))->Clone("fPt1ResPUpg"));
   fPt1ResKUpg   = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResK" )))->Clone("fPt1ResKUpg"));
   fPt1ResPiUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResPi" )))->Clone("fPt1ResPiUpg"));
-  
+ 
+  if(fImproveDeuteron){
+    fD0RPResDUpg = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0RPResD" )))->Clone("fD0RPResDUpg"));
+    fD0ZResDUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("D0ZResD" )))->Clone("fD0ZResDUpg"));
+    fPt1ResDUpg  = static_cast<TGraph*>((static_cast<TGraph*>(resfileUpg->Get("Pt1ResD" )))->Clone("fPt1ResDUpg"));
+  }  
+
   /*fD0RPResPUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPSA" )));
   fD0RPResKUpgSA =new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResKSA" )));
   fD0RPResPiUpgSA=new TGraph(*static_cast<TGraph*>(resfileUpg->Get("D0RPResPiSA")));
@@ -216,7 +247,7 @@ AliAnalysisTaskSEImproveITS3::AliAnalysisTaskSEImproveITS3(const char *name,
   fPt1ResPUpgSA  ->SetName("Pt1ResPUpgSA"  );
   fPt1ResKUpgSA  ->SetName("Pt1ResKUpgSA"  );
   fPt1ResPiUpgSA ->SetName("Pt1ResPiUpgSA" );
-*/
+  */
   delete resfileUpg;
 
   DefineOutput(1,TList::Class());
@@ -233,6 +264,7 @@ void AliAnalysisTaskSEImproveITS3::UserCreateOutputObjects() {
   //
   // Creation of user output objects.
   //
+
   fDebugOutput=new TList();
   fDebugOutput->SetOwner();
   fDebugNtuple=new TNtuple("fDebugNtuple","Smearing","pdg:ptmc:d0rpo:d0zo:pt1o:sd0rpo:sd0zo:spt1o:d0rpn:d0zn:pt1n:sd0rpn:sd0zn:spt1n:d0rpmc:d0zmc:pt1mc");
@@ -243,21 +275,27 @@ void AliAnalysisTaskSEImproveITS3::UserCreateOutputObjects() {
   fDebugOutput->Add(fD0RPResPCur );
   fDebugOutput->Add(fD0RPResKCur );
   fDebugOutput->Add(fD0RPResPiCur);
+  fDebugOutput->Add(fD0RPResDCur);
   fDebugOutput->Add(fD0ZResPCur  ); 
   fDebugOutput->Add(fD0ZResKCur  );
   fDebugOutput->Add(fD0ZResPiCur );
+  fDebugOutput->Add(fD0ZResDCur );
   fDebugOutput->Add(fPt1ResPCur  );
   fDebugOutput->Add(fPt1ResKCur  );
   fDebugOutput->Add(fPt1ResPiCur );
+  fDebugOutput->Add(fPt1ResDCur );
   fDebugOutput->Add(fD0RPResPUpg );
   fDebugOutput->Add(fD0RPResKUpg );
   fDebugOutput->Add(fD0RPResPiUpg);
+  fDebugOutput->Add(fD0RPResDUpg);
   fDebugOutput->Add(fD0ZResPUpg  );
   fDebugOutput->Add(fD0ZResKUpg  );
   fDebugOutput->Add(fD0ZResPiUpg );
+  fDebugOutput->Add(fD0ZResDUpg );
   fDebugOutput->Add(fPt1ResPUpg  );
   fDebugOutput->Add(fPt1ResKUpg  );
   fDebugOutput->Add(fPt1ResPiUpg );
+  fDebugOutput->Add(fPt1ResDUpg );
 
   PostData(1,fDebugOutput);
 }
@@ -285,24 +323,27 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   
   // D0->Kpi
   TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
-  if (array2Prong) {
-    for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
+  if (array2Prong && !fOnlyProcessFilledCand) {
+    Int_t ncand = array2Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
       vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
     }
   }
   // Dstar->Kpipi
   TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
-  if (arrayCascade) {
-    for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
+  if (arrayCascade && !fOnlyProcessFilledCand) {
+    Int_t ncand = arrayCascade->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
       vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
     }
   }
   // Three prong
   TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
-  if (array3Prong) {
-    for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
+  if (array3Prong && !fOnlyProcessFilledCand) {
+    Int_t ncand = array3Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
       vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
     }
@@ -322,8 +363,11 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
   // Recalculate all candidates
   // D0->Kpi
   if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+    Int_t ncand = array2Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+      if(fOnlyProcessFilledCand && decay->GetIsFilled()!=2) continue;
+
       if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay))continue;
 
       // recalculate vertices
@@ -384,8 +428,11 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
   // Dstar->Kpipi
   if (arrayCascade) {
-    for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+    Int_t ncand = arrayCascade->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      if(fOnlyProcessFilledCand && decayDstar->GetIsFilled()!=2) continue;
+
       if(!vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE))continue;
       //Get D0 from D*
       AliAODRecoDecayHF2Prong* decay=(AliAODRecoDecayHF2Prong*)decayDstar->Get2Prong();
@@ -434,8 +481,11 @@ void AliAnalysisTaskSEImproveITS3::UserExec(Option_t*) {
 
   // Three prong
   if (array3Prong) {
-    for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+    Int_t ncand = array3Prong->GetEntriesFast();
+    for (Int_t icand=0;icand<ncand;++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+      if(fOnlyProcessFilledCand && decay->GetIsFilled()!=2) continue;
+
       if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay))continue;
       
       // recalculate vertices
@@ -521,8 +571,6 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
 
   // Check if the track was already "improved" (this is done with a trick using layer 7 (ie the 8th))
   if (TESTBIT(track->GetITSClusterMap(),7)) return;
-  //
-
 
   // Get reconstructed track parameters
   AliExternalTrackParam et; et.CopyFromVTrack(track);
@@ -586,6 +634,16 @@ void AliAnalysisTaskSEImproveITS3::SmearTrack(AliAODTrack *track,const TClonesAr
     sd0zn =EvalGraph(ptmc,fD0ZResPiUpg/*,fD0ZResPiUpgSA*/);
     spt1n =EvalGraph(ptmc,fPt1ResPiUpg/*,fPt1ResPiUpgSA*/);
     break;
+  case 1000010020: case -1000010020:
+    if(fImproveDeuteron){
+      sd0rpo=EvalGraph(ptmc,fD0RPResDCur/*,fD0RPResDCurSA*/);
+      sd0zo =EvalGraph(ptmc,fD0ZResDCur/*,fD0ZResDCurSA*/);
+      spt1o =EvalGraph(ptmc,fPt1ResDCur/*,fPt1ResDCurSA*/);
+      sd0rpn=EvalGraph(ptmc,fD0RPResDUpg/*,fD0RPResDUpgSA*/);
+      sd0zn =EvalGraph(ptmc,fD0ZResDUpg/*,fD0ZResDUpgSA*/);
+      spt1n =EvalGraph(ptmc,fPt1ResDUpg/*,fPt1ResDUpgSA*/);
+      break;
+    } else{ return;}
   default:
     return;
   }

@@ -60,8 +60,8 @@ public:
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t* opt="");
 
-	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
-	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, float fCent);
+	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
+	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
 	//float ReadAODCentrality( AliAODEvent* aod, TString Trig );
 	//float ReadMultSelectionCentrality( AliAODEvent* aod, TString Trig );
 	float ReadCentrality(AliAODEvent *aod, TString Trig);
@@ -122,13 +122,21 @@ public:
 		subeventMask = nsubeventMask;
 		cout << "setting subevent mask = " << hex << subeventMask << endl;
 	}
+	enum BINNING{ //should match the enum in AliJFFlucAnalysis
+		BINNING_CENT_PbPb,
+		BINNING_MULT_PbPb_1,
+		BINNING_MULT_pPb_1
+	};
+	void SetBinning(BINNING _binning){
+		binning = _binning;
+	}
 
 	enum{
 		FLUC_MC = 0x1,
 		FLUC_EXCLUDEWDECAY = 0x2,
 		FLUC_KINEONLY = 0x4,
 		//FLUC_PHI_MODULATION = 0x8,
-		//FLUC_PHI_INVERSE = 0x10,
+		FLUC_MULT_BINS = 0x8,
 		FLUC_PHI_CORRECTION = 0x10,
 		//FLUC_PHI_REJECTION = 0x20,
 		FLUC_SCPT = 0x40,
@@ -142,40 +150,41 @@ public:
 	}
 
 private:
-	 TClonesArray *fInputList;  // tracklist
-	 TDirectory *fOutput;     // output
-	 AliJFFlucAnalysis *fFFlucAna; // analysis code
-	 std::map<UInt_t, TH1 *> PhiWeightMap[CENTN_NAT];
+	TClonesArray *fInputList;  // tracklist
+	TDirectory *fOutput;     // output
+	AliJFFlucAnalysis *fFFlucAna; // analysis code
+	std::map<UInt_t, TH1 *> PhiWeightMap[96];
 
-	 TString fTaskName;
-	 TString fCentDetName;
-	 UInt_t fEvtNum;
-	 UInt_t fFilterBit;
-	 UInt_t fNumTPCClusters;
-	 UInt_t fEffMode;
-	 UInt_t fEffFilterBit;
-	 int fPcharge;
-	 int fRunNum;
-	 UInt_t GlobTracks;
-	 UInt_t TPCTracks;
-	 UInt_t FB32Tracks;
-	 UInt_t FB32TOFTracks;
-	 double fEta_min;
-	 double fEta_max;
-	 double fQC_eta_min;
-	 double fQC_eta_max;
-	 double fPt_min;
-	 double fPt_max;
-	 double fzvtxCut;
+	TString fTaskName;
+	TString fCentDetName;
+	UInt_t fEvtNum;
+	UInt_t fFilterBit;
+	UInt_t fNumTPCClusters;
+	UInt_t fEffMode;
+	UInt_t fEffFilterBit;
+	int fPcharge;
+	int fRunNum;
+	UInt_t GlobTracks;
+	UInt_t TPCTracks;
+	UInt_t FB32Tracks;
+	UInt_t FB32TOFTracks;
+	double fEta_min;
+	double fEta_max;
+	double fQC_eta_min;
+	double fQC_eta_max;
+	double fPt_min;
+	double fPt_max;
+	double fzvtxCut;
 
-	 UInt_t subeventMask;
+	UInt_t subeventMask;
+	BINNING binning;
 
-	 UInt_t flags;
-	 UInt_t inputIndex;
-	 UInt_t phiInputIndex;
-	 UInt_t centInputIndex;
+	UInt_t flags;
+	UInt_t inputIndex;
+	UInt_t phiInputIndex;
+	UInt_t centInputIndex;
 
-	 ClassDef(AliJFFlucTask, 1);
+	ClassDef(AliJFFlucTask, 1);
 
 };
 #endif // AliJFFlucTask_H

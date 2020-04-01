@@ -72,12 +72,18 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
 	void SetEMCalTriggerDG1() { fEMCDG1=kTRUE; };
 	void SetEMCalTriggerDG2() { fEMCDG2=kTRUE; };
+    //trigger selection for EMCal+DCal together
+    void SetEMCalTriggerEG1DG1() { fEMCEG1DG1=kTRUE; };
+    void SetEMCalTriggerEG2DG2() { fEMCEG2DG2=kTRUE; };
 	
 	void SetUseTender() { fUseTender=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
-
+    
+    //to select events with high energy cluster (to mimic the trigger)
+    void Set_Select_trigger_events2() {fSelect_trigger_events2=kTRUE;};
+    void Set_Select_trigger_events1() {fSelect_trigger_events1=kTRUE;};
 	//Setters analysis cuts
     
     //event cut
@@ -147,6 +153,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	Bool_t				fUseTender;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_MSparse;
+    Bool_t              fSelect_trigger_events1;
+    Bool_t              fSelect_trigger_events2;
     
     //new organization of tender using global variables
     TString        fTenderClusterName;//
@@ -181,6 +189,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 //EMCal threshold separation
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
+    
+    
+    Bool_t               fEMCEG1DG1;//to run both EMCal and DCal triggers together
+    Bool_t               fEMCEG2DG2;
 	
 //DCal threshold separation
 	Bool_t				fEMCDG1;
@@ -361,7 +373,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				*fHist_InvMass_pt_ULS_KF;
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
-   // TH2F                *fHist_InvMass_pt_ULS_KF_weight;
+   TH2F                *fHist_InvMass_pt_ULS_KF_weight;
     
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1;
@@ -380,7 +392,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     //KF
     
     
-    /*
+    
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight;
@@ -393,7 +405,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_3_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_4_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_5_weight;
-	*/
+	
     
 	//generators
 	//BB

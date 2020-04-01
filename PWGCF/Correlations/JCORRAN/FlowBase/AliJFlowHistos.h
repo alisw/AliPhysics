@@ -37,7 +37,7 @@ public:
 	AliJFlowHistos& operator=(const AliJFlowHistos& obj); // equal sign operator
 
 	void CreateEventTrackHistos();
-	#define NCENT 8
+	#define NCENT 16 
 	static Double_t CentBin[NCENT+1]; //8
 	static Double_t pttJacek[74];
 	static UInt_t NCentBin;

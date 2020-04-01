@@ -9,7 +9,8 @@ AliAnalysisTask *AddTaskMLTreeMakerwCutLib(
                                                     Bool_t isMC,
                                                     TString TMVAweight,
                                                     Int_t wagonnr=0,
-                                                    Bool_t usePileRej=kTRUE
+                                                    Bool_t usePileRej=kTRUE,
+                                                    Bool_t isUPC=kFALSE
                                                     )
 {
 
@@ -26,7 +27,7 @@ TString configBasePath= "./";
 
 TString configLMEECutLib("LMEECutLib_slehner.C");
 TString configLMEECutLibPath(configBasePath+configLMEECutLib);
-  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
+//  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
 //LOAD CUTLIB
 if(gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0){
 
@@ -45,7 +46,7 @@ Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler
 TString weightFile=TMVAweight;
 ::Info("AddTask_slehner_TreeMakerWCutLib","TMVA weights file: alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s",weightFile.Data());
 
-LMEECutLib* cutlib = new LMEECutLib();      
+LMEECutLib* cutlib = new LMEECutLib();    
 AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker",weightFile);   
 
 if(SetPIDCorrection){
@@ -60,12 +61,12 @@ if(SetPIDCorrection){
 else  task->SetUseCorr(kFALSE);
 
 task->isMC(isMC);
-task->SelectCollisionCandidates(AliVEvent::kINT7);
+if(isUPC)task->SelectCollisionCandidates(AliVEvent::kAny);
+else task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetCentralityPercentileRange(centmin,centmax);
-task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts,TMVAweight));
+task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts,TMVAweight,isUPC));
 task->SetUseTMVA(kTRUE);
-task->SetupEventCuts(cutlib->GetEventCuts(0, 0,usePileRej));
-//task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));   //not working when this task is the only task run (e.g. in train test), use centrality selectrion in TreeMaker instead - same result
+task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax,usePileRej,isUPC));
 
 mgr->AddTask(task);
 

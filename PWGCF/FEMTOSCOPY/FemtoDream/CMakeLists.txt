@@ -60,17 +60,22 @@ set(SRCS
   AliAnalysisTaskFemtoDreamDeuteron.cxx
   AliAnalysisTaskNanoPt.cxx
   AliAnalysisTaskNanoXioton.cxx
+  AliAnalysisTaskAODXioton.cxx
   AliAnalysisTaskNanoXioton1530.cxx
   AliAnalysisTaskNanoLoton.cxx
+  AliAnalysisTaskLeuteronAOD.cxx
+  AliAnalysisTaskLeuteronNanoAOD.cxx
+  AliAnalysisTaskAODLoton.cxx
   AliAnalysisTaskNanoBBar.cxx  
   AliAnalysisTaskFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
+  AliAnalysisTaskFemtoDreamSigPi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
-  AliAnalysisTaskSigma0Femto.cxx
-  AliAnalysisTaskAODSigma0Femto.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
+  AliAnalysisTaskNanoLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx
@@ -79,7 +84,10 @@ set(SRCS
   AliFemtoDreamHigherPairMath.cxx
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
-
+  AliAnalysisTaskGeorgiosNTuple.cxx
+  AliAnalysisTaskPOmegaPenne.cxx
+  AliFemtoDreamBaseDump.cxx
+  
   )
 
 

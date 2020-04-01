@@ -34,8 +34,8 @@
 
 class AliAnalysisTaskDeuteronAbsorption;
 
-const AliPID::EParticleType AliAnalysisTaskDeuteronAbsorption::fgkSpecies[4] = {AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
-const std::string AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[4] = {"Kaon", "Proton", "Deuteron", "Triton"};
+const AliPID::EParticleType AliAnalysisTaskDeuteronAbsorption::fgkSpecies[kNabsSpecies] = {AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton, AliPID::kHe3};
+const std::string AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[kNabsSpecies] = {"Kaon", "Proton", "Deuteron", "Triton","3He"};
 const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamPos[4][4] = {
       {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
       {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
@@ -50,10 +50,13 @@ const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamNeg[4][4] = {
 ClassImp(AliAnalysisTaskDeuteronAbsorption); // classimp: necessary for root
 
 AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char *name) : AliAnalysisTaskSE(name),
+                                                                                         fUseTRDboundariesCut{true},
+                                                                                         fNtpcSigmas{5.},
+                                                                                         fEventCuts{},
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
-                                                                                         fESDtrackCuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true)},
+                                                                                         fESDtrackCuts{*AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()},
                                                                                          fOutputList{nullptr},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
@@ -70,6 +73,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fTRDboundariesPos{nullptr},
                                                                                          fTRDboundariesNeg{nullptr}
 {
+  fESDtrackCuts.SetEtaRange(-0.8, 0.8);
+
   // constructor
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
                                    // this chain is created by the analysis manager, so no need to worry about it,
@@ -77,6 +82,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
   DefineOutput(1, TList::Class()); // define the ouptut of the analysis: in this case it's a list of histograms
                                    // you can add more output objects by calling DefineOutput(2, classname::Class())
                                    // if you add more output objects, make sure to call PostData for all of them, and to
+//  if (fTreemode)
+  DefineOutput(2, TTree::Class());
 }
 
 AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
@@ -90,11 +97,11 @@ AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
       delete fTRDboundariesNeg[iFunction];
   }
 
-  if (fESDtrackCuts)
-    delete fESDtrackCuts;
-
   if (fOutputList)
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function
+
+  if (fTreeTrack)
+    delete fTreeTrack;
 }
 
 void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
@@ -121,7 +128,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   std::string wTOF[2] = {"woTOF", "wTOF"};
   std::string pos_neg[2] = {"neg", "pos"};
 
-  for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+  for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
   {
     fHist3TPCpid[iSpecies] = new TH3F(Form("fHist3TPCpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); d#it{E}/d#it{x} (arb. units); #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 400, 0, 1000, 18, 0, TMath::TwoPi());
     fHist3TOFpid[iSpecies] = new TH3F(Form("fHist3TOFpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); #beta; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 300, 0, 1.2, 18, 0, 2 * TMath::Pi());
@@ -147,7 +154,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
         fHist1AcceptanceAll[iCharge][iTRD][iTOF] = new TH1F(Form("fHist1AcceptanceAll%s_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), 200, 0, 10);
         fOutputList->Add(fHist1AcceptanceAll[iCharge][iTRD][iTOF]);
       }
-      for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
       {
         fHist2Matching[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2Matching%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
         fOutputList->Add(fHist2Matching[iSpecies][iCharge][iTRD]);
@@ -159,12 +166,30 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     }
   }
 
-  // create track cuts object
-  if (fESDtrackCuts == nullptr) {
-    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true);
-    fESDtrackCuts->SetEtaRange(-0.8, 0.8);
+  // Tree
+  if (fTreemode)
+  {
+    OpenFile(2);
+    fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
+    //fTreeTrack->Branch("tP", &tP, "tP/D");
+    fTreeTrack->Branch("tPt", &tPt, "tPt/D");
+    fTreeTrack->Branch("tEta", &tEta, "tEta/D");
+    fTreeTrack->Branch("tPhi", &tPhi, "tPhi/D");
+    fTreeTrack->Branch("tnsigTPC", &tnsigTPC, "tnsigTPC/D");
+    fTreeTrack->Branch("tnsigTOF", &tnsigTOF, "tnsigTOF/D");
+    fTreeTrack->Branch("tmass2", &tmass2, "tmass2/D");
+    fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/I");
+    fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/D");
+    fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/D");
+    fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
+    fTreeTrack->Branch("tID", &tID, "tID/I");
   }
+  fEventCuts.AddQAplotsToList(fOutputList);
+
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
+
+  if (fTreemode)
+    PostData(2, fTreeTrack);
 
   for (int iFunction = 0; iFunction < 4; ++iFunction)
   {
@@ -196,9 +221,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     isMC = (mcEvent != nullptr);
   }
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  if(!(handl->IsEventSelected() & AliVEvent::kINT7))
+  if (!fEventCuts.AcceptEvent(esdEvent))
     return;
 
   // check for a proper primary vertex and monitor
@@ -227,7 +250,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
     if (!track)
       continue;
-    if (!fESDtrackCuts->AcceptTrack(track))
+    if (!fESDtrackCuts.AcceptTrack(track))
       continue; // check if track passes the cuts
     if (!track->GetInnerParam())
       continue;                                     // check if track is a proper TPC track
@@ -253,20 +276,43 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       if ((1 - beta * beta) > 0)
         mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
     }
+
+    if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4])) < 6)
+    {
+      //tP = track->GetInnerParam()->GetP();
+      tPt = track->GetInnerParam()->GetSignedPt();
+      tEta = track->GetInnerParam()->Eta();
+      tPhi = track->GetInnerParam()->Phi();
+      tmass2 = mass2;
+      tnPIDclsTPC = track->GetTPCsignalN();
+      tTOFsigDx = track->GetTOFsignalDx();
+      tTOFsigDz = track->GetTOFsignalDz();
+      tTOFclsN = track->GetTOFclusterN();
+      tID = track->GetID();
+      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
+      {
+        tnsigTPC[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
+        tnsigTOF[iSpecies] = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[iSpecies]);
+      }
+      fTreeTrack->Fill();
+    }
+
     //
     double sign = track->GetSign();
     // fill QA histograms
-    double tpcNsigmas[4]{999., 999., 999., 999.};
+    double tpcNsigmas[kNabsSpecies];
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies) tpcNsigmas[iSpecies] = 999.;
+    //
     fHist3TPCpidAll->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());
     if (hasTOF && track->GetTPCsignal() > fMindEdx)
     {
       fHist3TOFpidAll->Fill(ptot * sign, beta, track->Phi());
       fHist3TOFmassAll->Fill(ptot * sign, mass2, track->Phi());
     }
-    for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       tpcNsigmas[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
-      if (std::abs(tpcNsigmas[iSpecies]) < 3.)
+      if (std::abs(tpcNsigmas[iSpecies]) < fNtpcSigmas)
       {
         fHist3TPCpid[iSpecies]->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());
         if (hasTOF && track->GetTPCsignal() > fMindEdx)
@@ -287,15 +333,17 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     while (phi > TMath::TwoPi())
       phi -= TMath::TwoPi();
     bool withTRD[2]{
+        fUseTRDboundariesCut ? true :
         phi < fTRDboundariesNeg[0]->Eval(pt) ||
             (phi > fTRDboundariesNeg[1]->Eval(pt) && phi < fTRDboundariesNeg[2]->Eval(pt)) ||
             phi > fTRDboundariesNeg[3]->Eval(pt),
+        fUseTRDboundariesCut ? true :
         phi < fTRDboundariesPos[0]->Eval(pt) ||
             (phi > fTRDboundariesPos[1]->Eval(pt) && phi < fTRDboundariesPos[2]->Eval(pt)) ||
             phi > fTRDboundariesPos[3]->Eval(pt)};
     bool positive = sign > 0;
     fHist1AcceptanceAll[positive][withTRD[positive]][hasTOF]->Fill(ptot);
-    for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+    for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
     {
       if (track->GetTPCsignal() > fMindEdx) {
         fHist2TPCnSigma[iSpecies][positive][withTRD[positive]]->Fill(ptot, tpcNsigmas[iSpecies]);
@@ -316,7 +364,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
             if (tofLabel[iLabel] == label)
               trueMatch = true;
           }
-          double mcMass = trueMatch ? AliPID::ParticleMass(fgkSpecies[iSpecies]) : 0;
+          double mcMass = trueMatch ? AliPID::ParticleMassZ(fgkSpecies[iSpecies]) : 0;
           AliVParticle *mcpart = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
           if (mcpart)
           {
@@ -335,4 +383,5 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
   // post the data
   PostData(1, fOutputList);
+  PostData(2, fTreeTrack);
 } // end the UserExec

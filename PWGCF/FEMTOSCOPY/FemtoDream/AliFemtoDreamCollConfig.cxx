@@ -13,6 +13,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCentBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -40,7 +41,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -55,6 +58,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCentBinning(config.fCentBinning),
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
+      fkTandMultBinning(config.fkTandMultBinning),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -82,7 +86,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCorrelationRange(config.fCorrelationRange),
       fkTCentrality(config.fkTCentrality),
       fmTdEtadPhi(config.fmTdEtadPhi),
+      fmTMultBinning(config.fmTMultBinning),
       fEst(config.fEst),
+      fAncestors(config.fAncestors),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
@@ -97,6 +103,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCentBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -124,7 +131,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -138,6 +147,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCentBinning = config.fCentBinning;
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
+    this->fkTandMultBinning = config.fkTandMultBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
@@ -165,7 +175,9 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCorrelationRange = config.fCorrelationRange;
     this->fkTCentrality = config.fkTCentrality;
     this->fmTdEtadPhi = config.fmTdEtadPhi;
+    this->fmTMultBinning = config.fmTMultBinning; 
     this->fEst = config.fEst;
+    this->fAncestors = config.fAncestors;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
@@ -247,8 +259,8 @@ void AliFemtoDreamCollConfig::SetNBinsHist(std::vector<int> NBins) {
 std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
   if (fCoutVariables) {
     for (auto it : fNBinsHists) {
-    std::cout << "Stored  NBins for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored  NBins for your Analysis " << it << std::endl;
+    }
   }
   return fNBinsHists;
 }
@@ -259,8 +271,8 @@ void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel) {
 std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
   if (fCoutVariables) {
     for (auto it : fMinK_rel) {
-    std::cout << "Stored kMin for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored kMin for your Analysis " << it << std::endl;
+    }
   }
   return fMinK_rel;
 }
@@ -270,8 +282,8 @@ void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<float> maxKRel) {
 std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
   if (fCoutVariables) {
     for (auto it : fMaxK_rel) {
-    std::cout << "Stored kMax for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored kMax for your Analysis " << it << std::endl;
+    }
   }
   return fMaxK_rel;
 }
@@ -281,21 +293,21 @@ void AliFemtoDreamCollConfig::SetCentBins(std::vector<int> CentBins) {
 std::vector<int> AliFemtoDreamCollConfig::GetCentBins() {
   if (fCoutVariables) {
     for (auto it : fCentBins) {
-    std::cout << "Stored Centrality Ranges for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored Centrality Ranges for your Analysis " << it
+                << std::endl;
+    }
   }
   return fCentBins;
 }
-void AliFemtoDreamCollConfig::SetmTdEtadPhiBins(std::vector<float> mTBins) {
-  //Set Bins for the deta dphi mT Binning
-  fmTdEtadPhi = true;
+void AliFemtoDreamCollConfig::SetmTBins(std::vector<float> mTBins) {
+  //Set Bins for the deta dphi and multiplicity mT Binning 
   fmTBins = mTBins;
 }
 std::vector<float> AliFemtoDreamCollConfig::GetmTBins() {
   if (fCoutVariables) {
     for (auto it : fmTBins) {
-    std::cout << "Stored mTbins for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored mTbins for your Analysis " << it << std::endl;
+    }
   }
   return fmTBins;
 }
@@ -381,8 +393,6 @@ void AliFemtoDreamCollConfig::SetClosePairRejection(
 }
 
 std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
-//  std::vector<bool> Pairs;
-//  float out = 0;
   if ((int) fClosePairRej.size() == 0) {
     AliWarning("=========================================================");
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -395,10 +405,22 @@ std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
   } else if ((int) fClosePairRej.size() != this->GetNParticleCombinations()) {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
   } else {
+    int counter = 0;
+    std::cout << "=========================================================\n";
     for (auto it : fClosePairRej) {
       std::cout << "Stored CPR for your Analysis "
                 << (it ? "active" : "inactive") << std::endl;
+      if (it) {
+        std::cout
+            << "Using the number of pairs set from SetExtendedQAPairs() \n"
+            << "to determine the number of combinations for this pair: \n"
+            << "Checking " << (unsigned int) fWhichQAPairs.at(counter) / 10
+            << " Tracks against "
+            << (unsigned int) fWhichQAPairs.at(counter) % 10 << std::endl;
+      }
+      counter++;
     }
+    std::cout << "=========================================================\n";
   }
   return fClosePairRej;
 }

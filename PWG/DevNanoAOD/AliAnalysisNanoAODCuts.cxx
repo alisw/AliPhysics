@@ -7,6 +7,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliAODConversionPhoton.h"
 #include "AliAODv0.h"
 #include "AliEventCuts.h"
 #include "AliAODMCParticle.h"
@@ -14,6 +15,7 @@
 ClassImp(AliAnalysisNanoAODTrackCuts)
 ClassImp(AliAnalysisNanoAODV0Cuts)
 ClassImp(AliAnalysisNanoAODCascadeCuts)
+ClassImp(AliAnalysisNanoAODPhotonCuts)
 ClassImp(AliAnalysisNanoAODEventCuts)
 ClassImp(AliAnalysisNanoAODMCParticleCuts)
 ClassImp(AliNanoAODSimpleSetter)
@@ -90,7 +92,8 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
     Float_t zvP = evt->GetPrimaryVertex()->GetZ();
     Double_t vecTarget[3] = { xvP, yvP, zvP };
     Float_t TransverseRadius = v0->DecayLengthXY(vecTarget);
-    if (TransverseRadius > fTransverseRadiusMax || TransverseRadius < fTransverseRadiusMin)
+    if ((fTransverseRadiusMin > 0 && TransverseRadius < fTransverseRadiusMin) 
+    || (fTransverseRadiusMax > 0 && TransverseRadius > fTransverseRadiusMax))
       return false;
     if (fCPAMin > 0 && v0->CosPointingAngle(vecTarget) < fCPAMin)
       return false;
@@ -699,6 +702,39 @@ Bool_t AliAnalysisNanoAODCascadeParametricCuts::IsSelected(TObject* obj) {
     return true;
 }
 
+AliAnalysisNanoAODPhotonCuts::AliAnalysisNanoAODPhotonCuts()
+    : AliAnalysisCuts(),
+      fPhotonEtaMax(-1.f),
+      fPhotonConvRadiusMin(-1.f),
+      fPhotonConvRadiusMax(-1.f),
+      fPhotonPsiPairMax(-1.f)
+{ }
+
+Bool_t AliAnalysisNanoAODPhotonCuts::IsSelected(TObject* obj) {
+  // Photon selection
+
+  auto photonCandidate = dynamic_cast<AliAODConversionPhoton *>(obj);
+  if (!photonCandidate)
+    AliFatal("Did not pass a Photon Candidate");
+
+  if (fPhotonEtaMax > 0
+      && TMath::Abs(photonCandidate->GetPhotonEta()) > fPhotonEtaMax)
+    return false;
+
+  if (fPhotonConvRadiusMin > 0) {
+    const float transRadius = photonCandidate->GetConversionRadius();
+    if (transRadius > fPhotonConvRadiusMax
+        || transRadius < fPhotonConvRadiusMin)
+      return false;
+  }
+
+  if (fPhotonPsiPairMax > 0
+      && TMath::Abs(photonCandidate->GetPsiPair()) > fPhotonPsiPairMax) {
+    return false;
+  }
+
+  return kTRUE;
+}
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
   AliAnalysisCuts(), 

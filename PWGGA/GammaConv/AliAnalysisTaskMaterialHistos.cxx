@@ -53,6 +53,9 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fPrimVtxZ(0.),
   fNContrVtx(0),
   fNESDtracksEta08(0),
+  fNESDtracksEta08pt200(0),
+  fNESDtracksEta08pt300(0),
+  fNESDtracksEta08pt400(0),
   fNESDtracksEta0814(0),
   fNESDtracksEta14(0),
   fGammaMCPt(0.),
@@ -73,8 +76,16 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fDoMultWeights(0),
   fWeightMultMC(1),
   hNEvents(NULL),
+  hBCNumber(NULL),
+  hBCNumberSelected(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
+  hNGoodESDTracksEta08pt200(NULL),
+  hNGoodESDTracksWeightedEta08pt200(NULL),
+  hNGoodESDTracksEta08pt300(NULL),
+  hNGoodESDTracksWeightedEta08pt300(NULL),
+  hNGoodESDTracksEta08pt400(NULL),
+  hNGoodESDTracksWeightedEta08pt400(NULL),
   hNGoodESDTracksEta14(NULL),
   hNGoodESDTracksEta08_14(NULL),
   fHistoNV0Tracks(NULL),
@@ -141,7 +152,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hElectrondEdxMapsR2(NULL),
   hPositrondEdxMapsR3(NULL),
   hElectrondEdxMapsR3(NULL),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoSelectBCNumber(kFALSE),
+  fBCNumber(0),
+  fRunNumber(0)
 {
 
 }
@@ -166,6 +180,9 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fPrimVtxZ(0.),
   fNContrVtx(0),
   fNESDtracksEta08(0),
+  fNESDtracksEta08pt200(0),
+  fNESDtracksEta08pt300(0),
+  fNESDtracksEta08pt400(0),
   fNESDtracksEta0814(0),
   fNESDtracksEta14(0),
   fGammaMCPt(0.),
@@ -186,8 +203,16 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fDoMultWeights(0),
   fWeightMultMC(1),
   hNEvents(NULL),
+  hBCNumber(NULL),
+  hBCNumberSelected(NULL),
   hNGoodESDTracksEta08(NULL),
   hNGoodESDTracksWeightedEta08(NULL),
+  hNGoodESDTracksEta08pt200(NULL),
+  hNGoodESDTracksWeightedEta08pt200(NULL),
+  hNGoodESDTracksEta08pt300(NULL),
+  hNGoodESDTracksWeightedEta08pt300(NULL),
+  hNGoodESDTracksEta08pt400(NULL),
+  hNGoodESDTracksWeightedEta08pt400(NULL),
   hNGoodESDTracksEta14(NULL),
   hNGoodESDTracksEta08_14(NULL),
   fHistoNV0Tracks(NULL),
@@ -254,7 +279,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hElectrondEdxMapsR2(NULL),
   hPositrondEdxMapsR3(NULL),
   hElectrondEdxMapsR3(NULL),
-  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
+  fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoSelectBCNumber(kFALSE),
+  fBCNumber(0),
+  fRunNumber(0)
 {
   // Default constructor
 
@@ -285,6 +313,12 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);
   }
 
+  Int_t nTracks                 = 200;
+  if(fIsHeavyIon == 1){
+    nTracks                     = 4000;
+  } else if(fIsHeavyIon == 2){
+    nTracks                     = 400;
+  }
   // Array of current cut's gammas
 
   fGammaCandidates          = new TList();
@@ -296,10 +330,20 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fDeDxMapList            = new TList*[fnCuts];
   }
   hNEvents                  = new TH1F*[fnCuts];
+  hBCNumber                 = new TH1F*[fnCuts];
+  if(fDoSelectBCNumber){
+  hBCNumberSelected         = new TH1F*[fnCuts];
+  }
   hNGoodESDTracksEta08      = new TH1F*[fnCuts];
+  hNGoodESDTracksEta08pt200 = new TH1F*[fnCuts];
+  hNGoodESDTracksEta08pt300 = new TH1F*[fnCuts];
+  hNGoodESDTracksEta08pt400 = new TH1F*[fnCuts];
 
   if (fDoMultWeights>0 && fIsMC>0 ) {
     hNGoodESDTracksWeightedEta08  = new TH1F*[fnCuts];
+    hNGoodESDTracksWeightedEta08pt200  = new TH1F*[fnCuts];
+    hNGoodESDTracksWeightedEta08pt300  = new TH1F*[fnCuts];
+    hNGoodESDTracksWeightedEta08pt400  = new TH1F*[fnCuts];
   }
   hNGoodESDTracksEta14      = new TH1F*[fnCuts];
   hNGoodESDTracksEta08_14   = new TH1F*[fnCuts];
@@ -428,21 +472,61 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
     fESDList[iCut]->Add(hNEvents[iCut]);
 
-
-    hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",4000,-0.5,4000-0.5);
+    hBCNumber[iCut]                      = new TH1F("BCNumber","BCNumber",3564,-0.5,3563.5);
+    fESDList[iCut]->Add(hBCNumber[iCut]);
+    if(fDoSelectBCNumber){
+    hBCNumberSelected[iCut]              = new TH1F("BCNumberSel","BCNumberSel",3564,-0.5,3563.5);
+    fESDList[iCut]->Add(hBCNumberSelected[iCut]);
+    }
+    hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",nTracks, -0.5, nTracks-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta08[iCut]);
+
+    hNGoodESDTracksEta08pt200[iCut]      = new TH1F("GoodESDTracksEta08pt200","GoodESDTracksEta08pt200",nTracks, -0.5, nTracks-0.5);
+    fESDList[iCut]->Add(hNGoodESDTracksEta08pt200[iCut]);
+
+    hNGoodESDTracksEta08pt300[iCut]      = new TH1F("GoodESDTracksEta08pt300","GoodESDTracksEta08pt300",nTracks, -0.5, nTracks-0.5);
+    fESDList[iCut]->Add(hNGoodESDTracksEta08pt300[iCut]);
+
+    hNGoodESDTracksEta08pt400[iCut]      = new TH1F("GoodESDTracksEta08pt400","GoodESDTracksEta08pt400",nTracks, -0.5, nTracks-0.5);
+    fESDList[iCut]->Add(hNGoodESDTracksEta08pt400[iCut]);
+
+
+
+
     if(fDoMultWeights && fIsMC>0) {
-      hNGoodESDTracksWeightedEta08[iCut]      = new TH1F("GoodESDTracksWeightedEta08","GoodESDTracksWeigthedEta08",4000,-0.5,4000-0.5);
+      hNGoodESDTracksWeightedEta08[iCut]      = new TH1F("GoodESDTracksWeightedEta08","GoodESDTracksWeigthedEta08",nTracks, -0.5, nTracks-0.5);
       hNGoodESDTracksWeightedEta08[iCut]->Sumw2();
       fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08[iCut]);
+
+      hNGoodESDTracksWeightedEta08pt200[iCut]      = new TH1F("GoodESDTracksWeightedEta08pt200","GoodESDTracksWeigthedEta08pt200",nTracks, -0.5, nTracks-0.5);
+      hNGoodESDTracksWeightedEta08pt200[iCut]->Sumw2();
+      fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08pt200[iCut]);
+
+
+      hNGoodESDTracksWeightedEta08pt300[iCut]      = new TH1F("GoodESDTracksWeightedEta08pt300","GoodESDTracksWeigthedEta08pt300",nTracks, -0.5, nTracks-0.5);
+      hNGoodESDTracksWeightedEta08pt300[iCut]->Sumw2();
+      fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08pt300[iCut]);
+
+
+      hNGoodESDTracksWeightedEta08pt400[iCut]      = new TH1F("GoodESDTracksWeightedEta08pt400","GoodESDTracksWeigthedEta08pt300",nTracks, -0.5, nTracks-0.5);
+      hNGoodESDTracksWeightedEta08pt400[iCut]->Sumw2();
+      fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08pt400[iCut]);
+
+
     }
 
-    hNGoodESDTracksEta14[iCut]      = new TH1F("GoodESDTracksEta14","GoodESDTracksEta14",4000,-0.5,4000-0.5);
+    hNGoodESDTracksEta14[iCut]      = new TH1F("GoodESDTracksEta14","GoodESDTracksEta14",nTracks, -0.5, nTracks-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta14[iCut]);
-    hNGoodESDTracksEta08_14[iCut]   = new TH1F("GoodESDTracksEta08_14","GoodESDTracksEta08_14",4000,-0.50,4000-0.5);
+    hNGoodESDTracksEta08_14[iCut]   = new TH1F("GoodESDTracksEta08_14","GoodESDTracksEta08_14",nTracks, -0.5, nTracks-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta08_14[iCut]);
 
-    fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
+    if(fIsHeavyIon == 1)
+      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 20000, 0, 40000);
+    else if(fIsHeavyIon == 2)
+      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
+    else
+      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
+
     fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
 
     if(fDoMultWeights && fIsMC>0) {
@@ -771,6 +855,13 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   fInputEvent = InputEvent();
   if (fInputEvent==NULL) return;
 
+
+  for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    hBCNumber[iCut]->Fill(fBCNumber);
+  }
+
+  if(fDoSelectBCNumber) DoSelectBCNumbers();
+
   if(fIsMC>0) fMCEvent = MCEvent();
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
@@ -788,6 +879,7 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   // ------------------- BeginEvent ----------------------------
 
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    if(fDoSelectBCNumber) hBCNumberSelected[iCut]->Fill(fBCNumber);
     fiCut = iCut;
     Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if(eventNotAccepted){
@@ -806,9 +898,13 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 
 
     fNESDtracksEta08 = CountTracks08(); // Estimate Event Multiplicity
+    fNESDtracksEta08pt200 = CountTracks08pt200(); // Estimate Event Multiplicity
+    fNESDtracksEta08pt300 = CountTracks08pt300(); // Estimate Event Multiplicity
+    fNESDtracksEta08pt400 = CountTracks08pt400(); // Estimate Event Multiplicity
     fNESDtracksEta0814 = CountTracks0814(); // Estimate Event Multiplicity
     fNESDtracksEta14 = fNESDtracksEta08 + fNESDtracksEta0814;
 
+    // cout<< " pt dependent::  " <<  fNESDtracksEta08 << "  " << fNESDtracksEta08pt200 << "  "<< fNESDtracksEta08pt300 << "  " << fNESDtracksEta08pt400<< endl;
 
     if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()){
       if(!((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber())){
@@ -817,6 +913,9 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
     }
 
     hNGoodESDTracksEta08[iCut]->Fill(fNESDtracksEta08);
+    hNGoodESDTracksEta08pt200[iCut]->Fill(fNESDtracksEta08pt200);
+    hNGoodESDTracksEta08pt300[iCut]->Fill(fNESDtracksEta08pt300);
+    hNGoodESDTracksEta08pt400[iCut]->Fill(fNESDtracksEta08pt400);
     hNGoodESDTracksEta14[iCut]->Fill(fNESDtracksEta14);
     hNGoodESDTracksEta08_14[iCut]->Fill(fNESDtracksEta0814);
 
@@ -832,7 +931,11 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
       }
 
       hNGoodESDTracksWeightedEta08[iCut]->Fill(fNESDtracksEta08, fWeightMultMC);
-      fHistoNV0TracksWeighted[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightMultMC);
+      hNGoodESDTracksWeightedEta08pt200[iCut]->Fill(fNESDtracksEta08pt200, fWeightMultMC);
+      hNGoodESDTracksWeightedEta08pt300[iCut]->Fill(fNESDtracksEta08pt300, fWeightMultMC);
+      hNGoodESDTracksWeightedEta08pt400[iCut]->Fill(fNESDtracksEta08pt400, fWeightMultMC);
+ 
+     fHistoNV0TracksWeighted[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightMultMC);
     }
 
     fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
@@ -1348,7 +1451,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks08(){
             EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
             EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                         AliESDtrackCuts::kAny);
-            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
             EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
             EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
             EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
@@ -1384,7 +1487,231 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks08(){
   return fNumberOfESDTracks;
 
 }
+//________________________________________________________________________
+Int_t AliAnalysisTaskMaterialHistos::CountTracks08pt200(){
 
+  Int_t fNumberOfESDTracks = 0;
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+  // Using standard function for setting Cuts
+
+//     Bool_t selectPrimaries = kTRUE;
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+//     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    if (!EsdTrackCuts) {
+        // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+        if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
+        } else if (runNumber>=209122){ // else if run2 data use 2015 PbPb cuts
+            //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+            // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+            EsdTrackCuts = new AliESDtrackCuts();
+            // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+            EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+            EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+            EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+            //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+            EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+            // ITS; selPrimaries = 1
+            EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                        AliESDtrackCuts::kAny);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+            EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+
+        } else { // else use 2011 version of track cuts
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        }
+        EsdTrackCuts->SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+        EsdTrackCuts->SetPtRange(0.2);
+    }
+
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ){
+        if (fMCEvent){
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
+            if( (isFromMBHeader < 1) ) continue;
+          }
+        }
+        fNumberOfESDTracks++;
+      }
+    }
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+
+  }
+
+  return fNumberOfESDTracks;
+
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskMaterialHistos::CountTracks08pt300(){
+
+  Int_t fNumberOfESDTracks = 0;
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+  // Using standard function for setting Cuts
+
+//     Bool_t selectPrimaries = kTRUE;
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+//     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    if (!EsdTrackCuts) {
+        // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+        if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
+        } else if (runNumber>=209122){ // else if run2 data use 2015 PbPb cuts
+            //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+            // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+            EsdTrackCuts = new AliESDtrackCuts();
+            // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+            EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+            EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+            EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+            //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+            EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+            // ITS; selPrimaries = 1
+            EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                        AliESDtrackCuts::kAny);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+            EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+
+        } else { // else use 2011 version of track cuts
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        }
+        EsdTrackCuts->SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+        EsdTrackCuts->SetPtRange(0.3);
+    }
+
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ){
+        if (fMCEvent){
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
+            if( (isFromMBHeader < 1) ) continue;
+          }
+        }
+        fNumberOfESDTracks++;
+      }
+    }
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+
+  }
+
+  return fNumberOfESDTracks;
+
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskMaterialHistos::CountTracks08pt400(){
+
+  Int_t fNumberOfESDTracks = 0;
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+  // Using standard function for setting Cuts
+
+//     Bool_t selectPrimaries = kTRUE;
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+//     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    if (!EsdTrackCuts) {
+        // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+        if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+
+        } else if (runNumber>=209122){ // else if run2 data use 2015 PbPb cuts
+            //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+            // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+            EsdTrackCuts = new AliESDtrackCuts();
+            // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+            EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+            EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+            EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+            //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+            EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+            // ITS; selPrimaries = 1
+            EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+            EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                        AliESDtrackCuts::kAny);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+            EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+            EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+
+        } else { // else use 2011 version of track cuts
+            EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+        }
+        EsdTrackCuts->SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+        EsdTrackCuts->SetPtRange(0.4);
+    }
+
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ){
+        if (fMCEvent){
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
+            if( (isFromMBHeader < 1) ) continue;
+          }
+        }
+        fNumberOfESDTracks++;
+      }
+    }
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+
+  }
+
+  return fNumberOfESDTracks;
+
+}
 //________________________________________________________________________
 Int_t AliAnalysisTaskMaterialHistos::CountTracks0814(){
 
@@ -1475,7 +1802,22 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0814(){
   return fNumberOfESDTracks;
 }
 
-
+//________________________________________________________________________
+void AliAnalysisTaskMaterialHistos::DoSelectBCNumbers(){
+  if(fIsMC == 0 ){
+    fRunNumber  = fInputEvent->GetRunNumber();
+    fBCNumber = fInputEvent->GetBunchCrossNumber();
+    if(fRunNumber >= 265332 && fRunNumber <= 265344){//Fill 5506
+      if(1390 > fBCNumber || fBCNumber > 1540){
+	return;
+      }
+    }else if(fRunNumber >= 265377 && fRunNumber <= 265388){//Fill 5507
+      if(3010 > fBCNumber || fBCNumber > 3140){
+	return;
+      }
+    }
+  }
+}
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::SetLogBinningXTH2(TH2* histoRebin){
     TAxis *axisafter = histoRebin->GetXaxis();

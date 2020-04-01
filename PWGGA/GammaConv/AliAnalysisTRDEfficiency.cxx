@@ -94,14 +94,14 @@
 #include "AliConversionTrackCuts.h"
 #include "AliTRDTriggerAnalysis.h"
 //#include "AliKFParticle.h"
-//#include "AliV0ReaderV1.h"
+#include "AliV0ReaderV1.h"
 //#include "THnSparseD.h"
 
 class AliAnalysisTRDEfficiency;    // your analysis class
 //class AliConversionPhotonBase;
 class AliConversionPhotonCuts;
 //class AliConversionSelection;
-//class AliV0ReaderV1;
+class AliV0ReaderV1;
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
@@ -110,9 +110,11 @@ ClassImp(AliAnalysisTRDEfficiency) // classimp: necessary for root
 AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(), 
     fAOD(0), 
     fOutputList(0),
+    fHistPt(0),
+
     file(0),
     fConversionGammas(0),
-    fHistPt(0),
+
     fhm1pt2(0), 
     fhNpttr(0), 
     fhNptun(0),
@@ -133,8 +135,8 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     
     // gamma tracks
     fhgpt(0),
-    fhgRpt(0),
     fhgpttrd(0),
+    fhgRpt(0),
     fhgRpttrd(0),
     
     fhgMinvM(0),
@@ -147,6 +149,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fhgetaphi(0),
     fhgetaphihqu(0),
     
+    fhgxy(0),
+    fhgxyhqu(0),
+
     // v0 daughters
     fhdn(0),
     fhdpt(0),
@@ -173,7 +178,14 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
     fhtrvnt(0),
     fhtrvnthqu(0),
     lsttrckvnt(0),
-    lsttrckvnthqu(0)
+    lsttrckvnthqu(0),
+    
+    fhgetaphi1(0),
+    fhgR1(0),
+    fhgpt1(0),
+    fhgetaphi5(0),
+    fhgetaphi8(0),
+    fhgetaphi9(0)
     
 {
     // default constructor, don't allocate memory here!
@@ -183,9 +195,11 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency() : AliAnalysisTaskSE(),
 AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalysisTaskSE(name),
     fAOD(0), 
     fOutputList(0), 
+    fHistPt(0),
+
     file(0),
     fConversionGammas(0),
-    fHistPt(0),
+
     fhm1pt2(0), 
     fhNpttr(0), 
     fhNptun(0),
@@ -207,8 +221,8 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     
     // gamma tracks
     fhgpt(0),
-    fhgRpt(0),
     fhgpttrd(0),
+    fhgRpt(0),
     fhgRpttrd(0),
     
     fhgMinvM(0),
@@ -221,6 +235,9 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhgetaphi(0),
     fhgetaphihqu(0),
     
+    fhgxy(0),
+    fhgxyhqu(0),
+
     // v0 daughters
     fhdn(0),
     fhdpt(0),
@@ -229,7 +246,16 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhna(0),
     fhnp(0),
     fhnhqu(0),
-    
+
+    fhgevent2(0),
+    fhgevent3(0),
+    fhgevent4(0),
+    fhgevent5(0),
+    fhgevent6(0),
+    fhgevent7(0),
+    fhgevent8(0),
+    fhgevent9(0),
+
     fhgevent(0),
     fhevent(0),
     
@@ -238,7 +264,14 @@ AliAnalysisTRDEfficiency::AliAnalysisTRDEfficiency(const char* name) : AliAnalys
     fhtrvnt(0),
     fhtrvnthqu(0),
     lsttrckvnt(0),
-    lsttrckvnthqu(0)
+    lsttrckvnthqu(0),
+    
+    fhgetaphi1(0),
+    fhgR1(0),
+    fhgpt1(0),
+    fhgetaphi5(0),
+    fhgetaphi8(0),
+    fhgetaphi9(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -321,77 +354,7 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fhdpt       = new TH1F("fhdpt", "fhdpt",    1000, 0, 200);
     
     // n dimensional histogram ( hqutracks: pt, eta, phi, a, b  
-    //                           trdtracks: pt, eta, phi, a, b 
-    //                           aodtracks: pt, eta, phi 
-    //                          gamma conv: pt, eta, phi, R)
-    /*
-    Int_t dim = 15;          // dimensions
-    Int_t bins[15]        = {2000, 100, 100, 20000, 
-                             2000, 100, 100, 20000, 
-                             2000, 1000, 1000,
-                             2000, 1000, 1000, 1000};   // # of bins
-	Double_t xmin[15]     = {-200, 0., 0., -10000,            // pt, stack, sector, a
-                             -200, 0., 0., -10000,            // pt, stack, sector, a
-                             -200, -8, 0.,                // pt, eta, phi
-                             -200, -8, 0., 0.};           // pt, eta, phi, R         min 
-	Double_t xmax[15]     = {200., 100, 100, 10000, //20000,
-                             200., 100, 100, 10000, //20000,
-                             200., 8, 8,
-                             200., 8, 8, 1000};  // max
     
-    fhna       = new THnSparseD("fhna", "fhna",         dim, bins, xmin, xmax);  // name, title, dim, nbins, xmin, xmax
-    fhnp       = new THnSparseD("fhnp", "fhnp",         dim, bins, xmin, xmax);  // name, title, dim, nbins, xmin, xmax
-    fhnhqu     = new THnSparseD("fhnhqu", "fhnhqu",     dim, bins, xmin, xmax);  // name, title, dim, nbins, xmin, xmax
-    
-    // give names to taxis
-    fhna->GetAxis(0)->SetTitle("pT (GeV)");
-    fhna->GetAxis(1)->SetTitle("stack");
-    fhna->GetAxis(2)->SetTitle("sector");
-    fhna->GetAxis(3)->SetTitle("a");
-    fhna->GetAxis(4)->SetTitle("pT (GeV)");
-    fhna->GetAxis(5)->SetTitle("stack");
-    fhna->GetAxis(6)->SetTitle("sector");
-    fhna->GetAxis(7)->SetTitle("a");
-    fhna->GetAxis(8)->SetTitle("pT (GeV)");
-    fhna->GetAxis(9)->SetTitle("eta)");
-    fhna->GetAxis(10)->SetTitle("phi");
-    fhna->GetAxis(11)->SetTitle("pT (GeV)");
-    fhna->GetAxis(12)->SetTitle("eta");
-    fhna->GetAxis(13)->SetTitle("phi");
-    fhna->GetAxis(14)->SetTitle("R)");
-
-    fhnp->GetAxis(0)->SetTitle("pT (GeV)");
-    fhnp->GetAxis(1)->SetTitle("stack");
-    fhnp->GetAxis(2)->SetTitle("sector");
-    fhnp->GetAxis(3)->SetTitle("a");
-    fhnp->GetAxis(4)->SetTitle("pT (GeV)");
-    fhnp->GetAxis(5)->SetTitle("stack");
-    fhnp->GetAxis(6)->SetTitle("sector");
-    fhnp->GetAxis(7)->SetTitle("a");
-    fhnp->GetAxis(8)->SetTitle("pT (GeV)");
-    fhnp->GetAxis(9)->SetTitle("eta)");
-    fhnp->GetAxis(10)->SetTitle("phi");
-    fhnp->GetAxis(11)->SetTitle("pT (GeV)");
-    fhnp->GetAxis(12)->SetTitle("eta");
-    fhnp->GetAxis(13)->SetTitle("phi");
-    fhnp->GetAxis(14)->SetTitle("R)");    
-    
-    fhnhqu->GetAxis(0)->SetTitle("pT (GeV)");
-    fhnhqu->GetAxis(1)->SetTitle("stack");
-    fhnhqu->GetAxis(2)->SetTitle("sector");
-    fhnhqu->GetAxis(3)->SetTitle("a");
-    fhnhqu->GetAxis(4)->SetTitle("pT (GeV)");
-    fhnhqu->GetAxis(5)->SetTitle("stack");
-    fhnhqu->GetAxis(6)->SetTitle("sector");
-    fhnhqu->GetAxis(7)->SetTitle("a");
-    fhnhqu->GetAxis(8)->SetTitle("pT (GeV)");
-    fhnhqu->GetAxis(9)->SetTitle("eta)");
-    fhnhqu->GetAxis(10)->SetTitle("phi");
-    fhnhqu->GetAxis(11)->SetTitle("pT (GeV)");
-    fhnhqu->GetAxis(12)->SetTitle("eta");
-    fhnhqu->GetAxis(13)->SetTitle("phi");
-    fhnhqu->GetAxis(14)->SetTitle("R)");    
-    */
     Int_t dim = 6;          // dimensions
     Int_t bins[6]        = {2000, 300, 
                             2000, 1000, 
@@ -423,9 +386,9 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fhevent     = new TH1F("fhevent", "fhevent",    10, 0, 10);
     
      dim = 4;          // dimensions
-     Int_t bins1[4]     = {10000, 10000};   // # of bins
-	 Int_t xmin1[4]     = {0, 0};           //         min 
-	 Int_t xmax1[4]     = {10000, 10000};  // max
+//     Int_t bins1[4]     = {10000, 10000};   // # of bins
+//	 Int_t xmin1[4]     = {0, 0};           //         min
+//	 Int_t xmax1[4]     = {10000, 10000};  // max
     //fhtrckvnt   = new THnSparseD("fhtrckvnt", "fhtrckvnt",          dim, bins1, xmin1, xmax1);
     //fhtrckvnthqu= new THnSparseD("fhtrckvnthqu", "fhtrckvnthqu",    dim, bins1, xmin1, xmax1);
     
@@ -434,9 +397,17 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     
     lsttrckvnt   = new TList();
     lsttrckvnthqu= new TList();
+    
+    fhgetaphi1  = new TH2F("fhgetaphi1", "fhgetaphi1",  400, -1, 7, 400, -2, 2);
+    fhgR1       = new TH1F("fhgR1", "fhgR1",            2000, 0, 600);
+    fhgpt1      = new TH1F("fhgpt1", "fhgpt1",          2000, 0, 200);
+    fhgetaphi5  = new TH2F("fhgetaphi5", "fhgetaphi5",  800, -1, 7, 400, -2, 2);
+    fhgetaphi8  = new TH2F("fhgetaphi8", "fhgetaphi8",  800, -1, 7, 400, -2, 2);
+    fhgetaphi9  = new TH2F("fhgetaphi9", "fhgetaphi9",  800, -1, 7, 400, -2, 2);
+    
     //fOutputList->Add(fHistPt);          // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
-    ///fOutputList->Add(fhm1pt2);
+    //fOutputList->Add(fhm1pt2);
     //fOutputList->Add(fhNpttr);
     //fOutputList->Add(fhNptun);
     //fOutputList->Add(fhfA);
@@ -490,12 +461,19 @@ void AliAnalysisTRDEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fhgevent);
     fOutputList->Add(fhevent);
     
-    fOutputList->Add(fhtrckvnt);
-    fOutputList->Add(fhtrckvnthqu);
+    //fOutputList->Add(fhtrckvnt);
+    //fOutputList->Add(fhtrckvnthqu);
     fOutputList->Add(fhtrvnt);
     fOutputList->Add(fhtrvnthqu);
     //fOutputList->Add(lsttrckvnt);
     //fOutputList->Add(lsttrckvnthqu);
+    
+    fOutputList->Add(fhgetaphi1);
+    fOutputList->Add(fhgR1);
+    fOutputList->Add(fhgpt1);
+    fOutputList->Add(fhgetaphi5);
+    fOutputList->Add(fhgetaphi8);
+    fOutputList->Add(fhgetaphi9);
     //file = new TFile("AliAODGammaConversion.root", "READ");
     //if (!file) {cout << "well i'm out of ideas" << endl;}
     //TString fDeltaAODFilename("AliAODGammaConversion.root");
@@ -564,6 +542,9 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
     Bool_t hqupt    = kFALSE;
     Bool_t hqupid   = kFALSE;
     Bool_t hquptpid = kFALSE;
+    
+    Bool_t countedgamma = kFALSE;
+
     //cout << "start" << endl;
     TString fDeltaAODBranchName("GammaConv_00000003_06000008d00100001100000000_gamma");
  
@@ -610,7 +591,7 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                     
             // get the duaghter particles
             //cout << "get number of daughters? " << v0->GetNDaughters() << endl;  // why are there more than two duaghter particles sometimes
-        fhdn->Fill(v0->GetNDaughters());
+        //fhdn->Fill(v0->GetNDaughters());
                     
             // gamma tracks
         Double_t ptg = gamma->Pt();
@@ -618,14 +599,13 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
         Double_t phig= gamma->GetPhotonPhi();
         Double_t Rg  = gamma->GetConversionRadius();
                     
-        AliConversionPhotonCuts *cuts = new AliConversionPhotonCuts("00000003_06000008d00100001100000000");
+//        AliConversionPhotonCuts *cuts = new AliConversionPhotonCuts("00000003_06000008d00100001100000000");
                     
-            //      cout << "photon cuts " << cuts->PhotonIsSelected(gamma, fAODEvent) << endl;
-            //if (ptg < 2) continue;
+        fhgetaphi1->Fill(phig, etag);
+        fhgR1->Fill(Rg);
+        fhgpt1->Fill(ptg);
         
-        //cout << "Pt: " << gamma->Pt() << " = " << ( (AliAODTrack*)v0->GetDaughter(0) )->Pt() << " + " << ( (AliAODTrack*)v0->GetDaughter(1) )->Pt() << endl;
-        
-        for (Int_t j = 0; j < v0->GetNDaughters(); j++) {
+        for (Int_t j = 0; j < v0->GetNDaughters(); j++) {     // 
                         
                 //cout << v0->GetDaughter(j) << endl;
             AliAODTrack *track = (AliAODTrack*)v0->GetDaughter(j);
@@ -633,29 +613,14 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
             // v0 daughters
             if (!track) continue;
                 
-            fhdpt->Fill(track->Pt());
+            //fhdpt->Fill(track->Pt());
                 //fhn->FillBin(track->Pt(), 1);
 
                 // aodtracks                        
-            Double_t lst[15] = {0, 0, 0, 0,    // { hqutrack->Pt(), hqutrack->Eta(),        hqutrack->Phi(),        hqutrack->GetA(), hqutrack->GetB(),
-                                0, 0, 0, 0,    //   trdtrack->Pt(), trdtrack->Eta(),        trdtrack->Phi(),        trdtrack->GetA(), trdtrack->GetB(),    
-                                0, 0, 0,       //   track->Pt(),    track->Eta(),           track->Phi(),
-                                0, 0, 0, 0};   //   gamma->Pt(),    gamma->GetPhotonEta(),  gamma->GetPhotonPhi(),  gamma->GetConversionRadius() };
-
-            //Double_t ptd = track->Pt();
-            //Double_t etad= track->Eta();
-            //Double_t phid= track->Phi();
-                        
-            //lst[8] = ptd;
-            //lst[9] = etad;
-            //lst[10] = phid;
-                        
-            //if (j == 0){
-            //    lst[11] = ptg;
-            //    lst[12] = etag;
-            //    lst[13] = phig;
-            //    lst[14] = Rg;
-            //}
+//            Double_t lst[15] = {0, 0, 0, 0,    // { hqutrack->Pt(), hqutrack->Eta(),        hqutrack->Phi(),        hqutrack->GetA(), hqutrack->GetB(),
+//                                0, 0, 0, 0,    //   trdtrack->Pt(), trdtrack->Eta(),        trdtrack->Phi(),        trdtrack->GetA(), trdtrack->GetB(),
+//                                0, 0, 0,       //   track->Pt(),    track->Eta(),           track->Phi(),
+//                                0, 0, 0, 0};   //   gamma->Pt(),    gamma->GetPhotonEta(),  gamma->GetPhotonPhi(),  gamma->GetConversionRadius() };
                 
                 
             for (Int_t k = 0; k < fAODEvent->GetNumberOfTrdTracks(); k++){  // get the corresponding trd track
@@ -672,15 +637,14 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                     Double_t gR    = gamma->GetConversionRadius();
                     Double_t dpt   = 0;
                     Double_t dpid  = 0;
-                
-                    //if (trdpt < 0) cout << "pt" << endl;
-                    //if (trdpid < 0) cout << "pid" << endl;
-                    //if (gpt < 0) cout << "gpt" << endl;
-                    //if (gR < 0) cout << "gR" << endl;
-                    //if (dpt < 0) cout << "dpt" << endl;
-                    //if (dpid < 0) cout << "dpid" << endl;
-                    //trdpt   = TMath::Abs(trdpt);        
-                    //dpt     = TMath::Abs(dpt);
+                    
+                    countedgamma = haspt + haspid + haspitpt + hashqu + hqupt + hqupid + hquptpid;
+                    if (countedgamma){  // prevents double counting; numbers are supposed to be out of range
+                        ptg = -1;
+                        etag = 100;
+                        phig = 100;
+                        Rg = -1;
+                    }
                     
                     // grab the other daughter track
                     AliAODTrack *other = (AliAODTrack*)v0->GetDaughter(!j); 
@@ -699,21 +663,24 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                 
                     // but all of the variables in the list
                     Double_t lst[6]= {trdpt, trdpid, gpt, gR, dpt, dpid};
-                
+                    fhgptM->Fill(gamma->Pt(), gamma->GetPhotonMass());
+                    fhgevent2->Fill(lst);
                     if (!hasmatch){    // event has matched trd track
                         hasmatch= kTRUE;
-                        fhgptM->Fill(gamma->Pt(), gamma->GetPhotonMass());
+                        //fhgptM->Fill(gamma->Pt(), gamma->GetPhotonMass());
                         fhgevent->Fill(2);
-                        fhgevent2->Fill(lst);
+                        //fhgevent2->Fill(lst);
                     }
-                    if ((TMath::Abs(trdtrack->Pt()) >= 2.) && !haspt){              // e_pt > 2
+                    if ((TMath::Abs(trdtrack->Pt()) >= 2.) ){              // e_pt > 2
+                        if (!haspt) fhgevent->Fill(3);
                         haspt = kTRUE;
-                        fhgevent->Fill(3);
+                        //fhgevent->Fill(3);
                         fhgevent3->Fill(lst);
                     }
-                    if (trdtrack->GetPID() >= 164 && !haspid){     // this number was gotten from  ~PWG/TRD/AliTRDTriggerAnalysis.cxx
+                    if (trdtrack->GetPID() >= 164 ){     // this number was gotten from  ~PWG/TRD/AliTRDTriggerAnalysis.cxx
+                        if (!haspid) fhgevent->Fill(4);
                         haspid = kTRUE;
-                        fhgevent->Fill(4);
+                        //fhgevent->Fill(4);
                         fhgevent4->Fill(lst);
                             //ofstream ofile;
                             //ofile.open("file.txt", ios::app);
@@ -727,64 +694,36 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                             TString tmp[2] = { ((AliAODHeader*) fAODEvent->GetHeader() )->GetESDFileName(), ((AliAODHeader*) fAODEvent->GetHeader() )->GetEventNumberESDFile() };
                             //fhtrckvnt->Fill( { ((AliAODHeader*) fAODEvent->GetHeader() )->GetESDFileName(), ((AliAODHeader*) fAODEvent->GetHeader() )->GetEventNumberESDFile() } );
                             fhtrvnt->Fill(tmp[0].Append(tmp[1]), 1);
-                            fhgevent5->Fill(lst);
+                            //fhgevent5->Fill(lst);
                         }
+                        fhgetaphi5->Fill(phig, etag);
+                        fhgevent5->Fill(lst);
                         haspitpt = kTRUE;
-                        ofstream ofile;         // track all special track
-                        ofile.open("file.txt", ios::app);
-                            //TFile *file = new TFile("interesting.txt", "WRITE");
-                        ofile << " /**********************************************************/ " << endl;
-                        ofile << "trd pt " << trdtrack->Pt() << endl;
-                        ofile << "get pt " << trdtrack->GetPt() << endl;
-                        ofile << "A      " << trdtrack->GetA() << endl;
-                        ofile << "pt     " << track->Pt() << endl;
-                        ofile << "R      " << gamma->GetConversionRadius() << endl;
-                        ofile << "PID    " << trdtrack->GetPID() << endl;
-                        ofile << "eta    " << track->Eta() << endl;
-                        ofile << "phi    " << track->Phi() << endl;
-                        ofile << "/**********************************************************/ " << endl;
-                        ofile << "" << endl;
-                        ofile.close();
+                        
                     }
-                        //if (trdtrack->Pt() > 2 & trdtrack->GetPID() >= 164){
-                        //    index++;
-                        //    fhevent->Fill(index);
-                        //}
-
-                    // trdtracks
-                    //Double_t ptt = trdtrack->Pt();
-                    //Double_t stat= trdtrack->GetStack();
-                    //Double_t sect= trdtrack->GetSector();
-                    //Double_t at  = trdtrack->GetA();
-                            //Double_t bt  = trdtrack->GetB();
-                                
-                    //lst[4] = ptt;
-                    //lst[5] = stat;
-                    //lst[6] = sect;
-                    //lst[7] = at;
-                                
-                    fhgpttrd->Fill(trdtrack->Pt());
-                    //fhnp->Fill(lst);    // partial data
-                            //Long64_t bin = 0;
-                            //fhn->AddBinContent(bin, gamma->Pt());
-                                
+                       
                     if ( (fAODEvent->GetFiredTriggerClasses()).Contains("HQU") ){
                                 // fill this histogram
                         //cout << index << endl;
+                        fhgptMhqu->Fill(gamma->Pt(), gamma->GetPhotonMass());
+                        fhgevent6->Fill(lst);
+
                         if (!hashqu){
                             hashqu = kTRUE;
-                            fhgptMhqu->Fill(gamma->Pt(), gamma->GetPhotonMass());
+                            //fhgptMhqu->Fill(gamma->Pt(), gamma->GetPhotonMass());
                             fhgevent->Fill(6);
-                            fhgevent6->Fill(lst);
+                            //fhgevent6->Fill(lst);
                         }
-                        if (!hqupt && (TMath::Abs(trdtrack->Pt()) >= 2.)){
+                        if ( (TMath::Abs(trdtrack->Pt()) >= 2.)){
+                            if (!hqupt) fhgevent->Fill(7);
                             hqupt = kTRUE;
-                            fhgevent->Fill(7);
+                            //fhgevent->Fill(7);
                             fhgevent7->Fill(lst);
                         }
-                        if (!hqupid && trdtrack->GetPID() >= 164){
+                        if (trdtrack->GetPID() >= 164){
+                            if (!hqupid) fhgevent->Fill(8);
                             hqupid = kTRUE;
-                            fhgevent->Fill(8);
+                            //fhgevent->Fill(8);
                             fhgevent8->Fill(lst);
                         }
                         if ((TMath::Abs(trdtrack->Pt()) >= 2. && trdtrack->GetPID() >= 164)){
@@ -794,39 +733,16 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                                 fhtrvnthqu->Fill(tmp[0].Append(tmp[1]), 1);
                                 //lsttrckvnthqu->Add(tmp[0], tmp[0].Data());
                                 fhgevent->Fill(9);
-                                fhgevent9->Fill(lst);
                             }
+                            fhgetaphi9->Fill(phig, etag);
                             hquptpid = kTRUE;
-                            cout << "a unicorn" << endl;    // print special track more than once
-                            ofstream ofile;
-                            ofile.open("file.txt", ios::app);
-                            ofile << "?????????????????????????  a unicorn" << endl; 
-                            ofile.close();
+                            //cout << "a unicorn" << endl;    // print special track more than once
+                            fhgevent9->Fill(lst);
+                            
                         }
                         
-                        cout << "also has hqu" << endl;
-                                //fhnhqu->AddBinContent(0, trdtrack->Pt());
-                                //fhnhqu->AddBinContent(0, trdtrack->Pt());
-                                //fhnhqu->AddBinContent(0, trdtrack->Pt());
-                        ofstream ofile;
-                        ofile.open("file.txt", ios::app);
-                            //TFile *file = new TFile("interesting.txt", "WRITE");
-                        ofile << " /==========================================================/ " << endl;
-                        ofile << "trd pt " << trdtrack->Pt() << endl;
-                        ofile << "A      " << trdtrack->GetA() << endl;
-                        ofile << "pt     " << track->Pt() << endl;
-                        ofile << "R      " << gamma->GetConversionRadius() << endl;
-                        ofile << "PID    " << trdtrack->GetPID() << endl;
-                        ofile << "eta    " << track->Eta() << endl;
-                        ofile << "phi    " << track->Phi() << endl;
-                        ofile << "/==========================================================/ " << endl;
-                        ofile << "" << endl;
-                        ofile.close();
-                        
-                        //lst[0] = ptt;
-                        //lst[1] = stat;
-                        //lst[2] = sect;
-                        //lst[3] = at;
+                        //cout << "also has hqu" << endl;
+                                
     
                         //fhnhqu->Fill(lst);
                     } // hqu
@@ -838,16 +754,6 @@ Bool_t AliAnalysisTRDEfficiency::GetAODConversionGammas(AliAODEvent* fAODEvent){
                         
         } // aod tracks
                     
-                    
-        //if ( (fAODEvent->GetFiredTriggerClasses()).Contains("HQU") ){
-                    //fhgpttrd->Fill(gamma->Pt());
-            //fhgRpttrd->Fill(gamma->GetConversionRadius(), gamma->Pt());
-                        
-            //fhgptMhqu->Fill(gamma->Pt(), gamma->GetPhotonMass());
-            //fhgptQhqu->Fill(gamma->Pt(), gamma->GetPhotonQuality());
-            //fhgetaphihqu->Fill(gamma->GetPhotonEta(), gamma->GetPhotonPhi());
-        //}
-    //}
     }
     //}
     //}
@@ -906,14 +812,14 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //cout << "get cut number" << acs->GetCutString() << endl;
     //cout << "number of good photons " << acs->GetGoodGammas() << endl; //->GetNumberOfPhotons() << endl;
    
-    TClonesArray *photons = new TClonesArray();
+//    TClonesArray *photons = new TClonesArray();
     //photons->Add();
     //Bool_t bl = acs->ProcessEvent( photons, fAOD, NULL);
     //cout << "ending boolean " << bl << endl;
     
     Int_t tracks    = fAOD->GetNumberOfTracks();
     Int_t trdtracks = fAOD->GetNumberOfTrdTracks();
-    Int_t v0tracks  = fAOD->GetNumberOfV0s();
+//    Int_t v0tracks  = fAOD->GetNumberOfV0s();
    
     //cout << "v0tracks  " << v0tracks << endl;
     //cout << "vzero     " << fAOD->GetVZEROData() << endl;
@@ -924,7 +830,7 @@ void AliAnalysisTRDEfficiency::UserExec(Option_t *)
     //Photons(fAOD);   // vertices
    
 
-    Bool_t hasgamma = kFALSE;
+//    Bool_t hasgamma = kFALSE;
     Bool_t hasmatch = kFALSE;
     Bool_t haspt    = kFALSE;
     Bool_t haspid   = kFALSE;

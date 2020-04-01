@@ -9,4 +9,8 @@
 #pragma link C++ class AliAnalysisTaskUePid+;
 #pragma link C++ class AliAnalysisTaskUeMultDep+;
 #pragma link C++ class AliAnalysisTaskUeSpectraRT+;
+#pragma link C++ class AliAnalysisTaskMcKnoUe+;
+#pragma link C++ class AliAnalysisTaskMcKno+;
+#pragma link C++ class AliAnalysisTaskGenUeNchTS+;
+#pragma link C++ class AliAnalysisTaskMpiUE+;
 #endif

@@ -86,6 +86,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fUseFiredTriggers(false),
     fUseExclusiveTriggers(true),
     fFillTriggerClusters(true),
+    fMonitorEtaPhi(false),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -106,6 +107,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fUseFiredTriggers(false),
     fUseExclusiveTriggers(true),
     fFillTriggerClusters(true),
+    fMonitorEtaPhi(false),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -135,7 +137,15 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   TLinearBinning v0abinning(1000, 0., 1000.), centralitybinning(100, 0., 100.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), 
                  emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
-  const TBinning *clustallbinning[6] = {&smbinning, &centralitybinning, &energybinning, &etabinning, &phibinning, &trgclustbinning};
+  std::vector<const TBinning *> clusterallbinning;
+  clusterallbinning.push_back(&smbinning);
+  clusterallbinning.push_back(&centralitybinning);
+  clusterallbinning.push_back(&energybinning);
+  if(fMonitorEtaPhi) {
+    clusterallbinning.push_back(&etabinning);
+    clusterallbinning.push_back(&phibinning);
+  }
+  clusterallbinning.push_back(&trgclustbinning);
   AliDebugStream(1) << "Using exclusive triggers: " << (fUseExclusiveTriggers ? "yes" : "no") << std::endl;
   for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
     AliDebugStream(1) << "Creating histograms for trigger " << trg << std::endl;
@@ -143,9 +153,9 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
     if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
-    fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, 6, clustallbinning);
-    fHistos->CreateTHnSparse("hClusterTHnSparseMax" + trg, "Cluster THnSparse (max) for trigger" + trg, 6, clustallbinning);
-    if(fUseFiredTriggers) fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, 6, clustallbinning);
+    fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data());
+    fHistos->CreateTHnSparse("hClusterTHnSparseMax" + trg, "Cluster THnSparse (max) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data());
+    if(fUseFiredTriggers) fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, clusterallbinning.size(), clusterallbinning.data());
     fHistos->CreateTH2("hTimeEnergy" + trg, "Cluster time vs. energy for trigger class " + trg, timebinning, energybinning, optionstring);
     fHistos->CreateTH2("hNCellEnergy" + trg, "Cluster number of cells vs energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
     if(fUseFiredTriggers){
@@ -339,24 +349,30 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
 
   // Fill max cluster histogram 
   // in case not found fill also 0
-  double maxpoint[6] = {-1, fEventCentrality, 0, -1. -1., 0};
+  double maxpointFull[6] = {-1, fEventCentrality, 0, -1. -1., 0};
   if(maxcluster) {
-    maxpoint[2] = maxcluster->E();
+    maxpointFull[2] = maxcluster->E();
     TLorentzVector maxvector;
     maxcluster->GetMomentum(maxvector, fVertex);
-    maxpoint[3] = maxvector.Eta();
-    maxpoint[4] = maxvector.Phi();
-    if(maxpoint[4] < 0) maxpoint[4] += TMath::TwoPi();
+    maxpointFull[3] = maxvector.Eta();
+    maxpointFull[4] = maxvector.Phi();
+    if(maxpointFull[4] < 0) maxpointFull[4] += TMath::TwoPi();
     Int_t supermoduleID = -1;
     fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
-    maxpoint[0] = supermoduleID;
+    maxpointFull[0] = supermoduleID;
   }
+  std::vector<double> maxpoint = {maxpointFull[0], maxpointFull[1], maxpointFull[2]};
+  if(fMonitorEtaPhi) {
+    maxpoint.push_back(maxpointFull[3]);
+    maxpoint.push_back(maxpointFull[4]);
+  }
+  maxpoint.push_back(maxpointFull[5]);
   for(const auto & trg : fSelectedTriggers){
     if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
     auto weight = GetTriggerWeight(trg);
     for(auto trgclust : fTriggerClusters) {
       maxpoint[5] = trgclust;
-      fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint, weight);
+      fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint.data(), weight);
     }
   }
   return true;
@@ -373,8 +389,16 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
 
   fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
-  double point[6] = {static_cast<double>(supermoduleID), fEventCentrality, energy, eta, phi, static_cast<double>(trgcluster)};
-  fHistos->FillTHnSparse("hClusterTHnSparseAll" + triggerclass, point, weight);
+  std::vector<double> point;
+  point.push_back(static_cast<double>(supermoduleID));
+  point.push_back(fEventCentrality);
+  point.push_back(energy);
+  if(fMonitorEtaPhi){
+    point.push_back(eta);
+    point.push_back(phi);
+  }
+  point.push_back(static_cast<double>(trgcluster));
+  fHistos->FillTHnSparse("hClusterTHnSparseAll" + triggerclass, point.data(), weight);
 
   fHistos->FillTH2("hTimeEnergy" + triggerclass, clustertime, energy, weight);
   fHistos->FillTH2("hNCellEnergy" + triggerclass, ncell, energy, weight);
@@ -396,7 +420,7 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
     }
     fHistos->FillTH2("hCorrClusterEPatchADC" + triggerclass, energy, maxpatch->GetADCAmp());
     fHistos->FillTH2("hCorrClusterEPatchE" + triggerclass, energy, maxpatch->GetPatchE());
-    fHistos->FillTHnSparse("hClusterTHnSparseFired" + triggerclass, point, weight);
+    fHistos->FillTHnSparse("hClusterTHnSparseFired" + triggerclass, point.data(), weight);
   }
 }
 

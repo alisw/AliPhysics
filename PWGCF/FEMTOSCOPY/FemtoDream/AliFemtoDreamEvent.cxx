@@ -32,6 +32,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
+      fV0ATime(0),
+      fV0CTime(0),
       fV0MCentrality(0),
       fnContrib(0),
       fPassAliEvtSelection(false),
@@ -64,6 +66,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
+      fV0ATime(0),
+      fV0CTime(0),
       fV0MCentrality(0),
       fnContrib(0),
       fPassAliEvtSelection(false),
@@ -129,6 +133,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fRefMult08 = obj.fRefMult08;
   fV0AMult = obj.fV0AMult;
   fV0CMult = obj.fV0CMult;
+  fV0ATime = obj.fV0ATime;
+  fV0CTime = obj.fV0CTime;
   fV0MCentrality = obj.fV0MCentrality;
   fnContrib = obj.fnContrib;
   fPassAliEvtSelection = obj.fPassAliEvtSelection;
@@ -180,6 +186,8 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
+  this->fV0ATime = vZERO->GetV0ATime();
+  this->fV0CTime = vZERO->GetV0CTime();
   this->fspher = CalculateSphericityEvent(evt);
   if (fcalcsphero){
        this->fsphero = CalculateSpherocityEvent(evt);
@@ -302,6 +310,8 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
       evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
+  this->fV0ATime = vZERO->GetV0ATime();
+  this->fV0CTime = vZERO->GetV0CTime();
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
   if (!MultSelection) {

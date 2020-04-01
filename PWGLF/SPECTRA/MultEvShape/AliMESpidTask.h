@@ -29,7 +29,7 @@ private:
   AliMESpidTask(const AliMESpidTask&);
   AliMESpidTask& operator=(const AliMESpidTask&);
 
-  enum outputs_t {slot_MultEst, slot_AllESD, slot_Gen, slot_NoEvts, slot_PIDQA, slot_DeltaPhi, slot_testTree, slot_DCA};
+  enum outputs_t {slot_MultEst, slot_Response, slot_Miss, slot_AllESD, slot_Gen, slot_NoEvts, slot_PIDQA, slot_DeltaPhi, slot_testTree, slot_DCA, slot_Fakes};
 
   ClassDef(AliMESpidTask, 4)            // PID task for the Multi Event Shape
 };

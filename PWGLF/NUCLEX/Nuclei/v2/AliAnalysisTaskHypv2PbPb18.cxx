@@ -92,9 +92,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
   fhBB(0),
-  fhBBDeu(0),
-  fhTOF(0),
-  fhMassTOF(0),
+  fhBBHyp(0),
+  fhBBAHyp(0),
   EPVzAvsCentrality(0), 
   EPVzCvsCentrality(0), 
   hQVzAQVzCvsCentrality(0),
@@ -104,6 +103,12 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   hQyVzAvsCentrality(0),
   hQxVzCvsCentrality(0),
   hQyVzCvsCentrality(0),
+  hCos2DeltaTPCVzAvsCentrality(0),
+  hCos2DeltaTPCVzCvsCentrality(0),
+  hCos2DeltaVzAVzCvsCentrality(0),
+  hCos2DeltaVzATPCvsCentrality(0),
+  hCos2DeltaVzCTPCvsCentrality(0),
+  hCos2DeltaVzCVzAvsCentrality(0),
   eventtype(-999),
   ftree(0),           
   iEvent(0),
@@ -142,7 +147,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18():
   fPIDResponse(0),
   fESDtrackCuts_Pos(0),
   fESDtrackCuts_Neg(0),
-  fESDtrackCutsEP(0)
+  fESDtrackCutsEP(0),
+  fEventCuts(0)
 {
   cout<<"Dummy constructor"<<endl;
   fESDtrackCuts_Pos = new AliESDtrackCuts("fESDtrackCuts_Pos","fESDtrackCuts_Pos");
@@ -177,9 +183,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     fHistEventMultiplicity(0), 
     fHistTrackMultiplicity(0),
     fhBB(0),
-    fhBBDeu(0),
-    fhTOF(0),
-    fhMassTOF(0),
+    fhBBHyp(0),
+    fhBBAHyp(0),
     EPVzAvsCentrality(0), 
     EPVzCvsCentrality(0), 
     hQVzAQVzCvsCentrality(0),
@@ -189,6 +194,12 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
     hQyVzCvsCentrality(0),
+    hCos2DeltaTPCVzAvsCentrality(0),
+    hCos2DeltaTPCVzCvsCentrality(0),
+    hCos2DeltaVzAVzCvsCentrality(0),
+    hCos2DeltaVzATPCvsCentrality(0),
+    hCos2DeltaVzCTPCvsCentrality(0),
+    hCos2DeltaVzCVzAvsCentrality(0),			     
     eventtype(-999),
     ftree(0),           
     iEvent(0),
@@ -227,7 +238,8 @@ AliAnalysisTaskHypv2PbPb18::AliAnalysisTaskHypv2PbPb18(const char *name):
     fPIDResponse(0),
     fESDtrackCuts_Pos(0),
     fESDtrackCuts_Neg(0),
-    fESDtrackCutsEP(0)
+    fESDtrackCutsEP(0),
+    fEventCuts(0)
 {
   
   //
@@ -315,12 +327,13 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
         TVector3 P2 (negMomentum[0],negMomentum[1],negMomentum[2]);
         Double_t m = InvariantMassHypertriton (P1,P2);
 	
-	fhBBDeu->Fill(trackPos->GetTPCmomentum(),trackPos->GetTPCsignal());
-	fhBBDeu->Fill(trackNeg->GetTPCmomentum(),trackNeg->GetTPCsignal());
 
-        if (m>3.1) return false;
+        if (m>3.1){
+	  fhBBHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
+	  fhBBHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
+	  return false;
+	}
     }
-    
     //Anti-Hypertriton
     if (IsPionCandidate (trackPos) && Is3HeCandidate (trackNeg)) {
         
@@ -328,12 +341,12 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsHyperTritonCandidate (AliESDv0 *V0)  {
         TVector3 P2 (posMomentum[0],posMomentum[1],posMomentum[2]);
         Double_t m = InvariantMassHypertriton (P1,P2);
 
-	fhBBDeu->Fill(trackPos->GetTPCmomentum(),trackPos->GetTPCsignal());
-	fhBBDeu->Fill(trackNeg->GetTPCmomentum(),trackNeg->GetTPCsignal());
-
-        if (m>3.1) return false;
+        if (m>3.1) {
+	  fhBBAHyp->Fill(trackPos->GetTPCmomentum()*trackPos->Charge(),trackPos->GetTPCsignal());
+	  fhBBAHyp->Fill(trackNeg->GetTPCmomentum()*trackNeg->Charge(),trackNeg->GetTPCsignal());
+	  return false;
+	}
     }
-
     
     return true;
 }
@@ -351,14 +364,25 @@ Bool_t AliAnalysisTaskHypv2PbPb18::IsPionCandidate (AliESDtrack *track)  {
 }
 //_______________________________________________________________________________________
 Bool_t AliAnalysisTaskHypv2PbPb18::Is3HeCandidate (AliESDtrack *track)  {
-    
+  Double_t fParamHe3[5]   = { 1.74962, 27.4992, 4.00313e-15, 2.48485, 8.31768};
+  //Variables
+  Double_t p = track->GetInnerParam()->GetP();
+  Double_t mass = AliPID::ParticleMass (AliPID::kHe3);
+  Double_t dEdx_au = track->GetTPCsignal();
+
+  //Expected dE/dx for 3He
+  Float_t hel3Exp = 4.0*AliExternalTrackParam::BetheBlochAleph(2.0*p/mass,fParamHe3[0],fParamHe3[1],fParamHe3[2],fParamHe3[3],fParamHe3[4]);
+  Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
+  Double_t nSigmaHe3  = (dEdx_au - hel3Exp)/(sigma*hel3Exp);
+
+  fhBB->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
+  
+  if (TMath::Abs(nSigmaHe3)>4.0) return false;
+  /*
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
-
-    fhBB->Fill(track->GetTPCmomentum()*track->Charge(),track->GetTPCsignal());
-
     if (TMath::Abs(nsigmaTPC) > 4.0) return false;
-    
-    return true;
+ */
+  return true;
 }
 //_______________________________________________________________________________________
 Double_t AliAnalysisTaskHypv2PbPb18::InvariantMassHypertriton (TVector3 P1, TVector3 P2)  {
@@ -415,6 +439,22 @@ Double_t AliAnalysisTaskHypv2PbPb18::GetTransverseDCA (AliESDtrack *track)  {
     Double_t DCAxy = impactParameter[0];
     
     return DCAxy;
+}
+//_______________________________________________________________________________________
+Double_t AliAnalysisTaskHypv2PbPb18::GetDCA (AliESDtrack *track)  {
+    
+    /*
+     Double_t impactParameter[2];
+     track -> GetImpactParameters(impactParameter[0],impactParameter[1]);
+     */
+    
+    Double_t impactParameter[2];
+    Double_t covarianceMatrix[3];
+    if (!track->PropagateToDCA (fESDevent->GetPrimaryVertex(),fESDevent->GetMagneticField(),10000,impactParameter,covarianceMatrix)) return -999;
+    
+    Double_t DCA = TMath::Sqrt(impactParameter[0]*impactParameter[0]+impactParameter[1]*impactParameter[1]);
+    
+    return DCA;
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskHypv2PbPb18::GetPhi0Pi(Float_t phi){
@@ -474,19 +514,16 @@ void AliAnalysisTaskHypv2PbPb18::UserCreateOutputObjects()
     fListHist->Add(fhBB);
   }
   
-  if(! fhBBDeu ){
-    fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-10,10,250,0,1000);
-    fListHist->Add(fhBBDeu);
+  if(! fhBBHyp ){
+    fhBBHyp = new TH2F( "fhBBHyp" , "BetheBlochTPC - Hypertriton" , 240,-10,10,250,0,1000);
+    fListHist->Add(fhBBHyp);
+  }
+
+  if(! fhBBAHyp ){
+    fhBBAHyp = new TH2F( "fhBBAHyp" , "BetheBlochTPC - AHypertriton" , 240,-10,10,250,0,1000);
+    fListHist->Add(fhBBAHyp);
   }
  
-  if(! fhTOF ){
-    fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-10,10,500,0,1.2);
-    fListHist->Add(fhTOF);
-  }
-  if(! fhMassTOF){
-    fhMassTOF=new TH1F ("fhMassTOF","Particle Mass - TOF", 100,0 ,10);
-    fListHist->Add(fhMassTOF);
-  }
   
   EPVzAvsCentrality  = new TH2D("EPVzAvsCentrality" , "EPVzAvsCentrality" , 80,-TMath::Pi(),TMath::Pi(), 105,0,105);
   EPVzCvsCentrality  = new TH2D("EPVzCvsCentrality" , "EPVzCvsCentrality" , 80,-TMath::Pi(),TMath::Pi(), 105,0,105);
@@ -528,6 +565,21 @@ void AliAnalysisTaskHypv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(hQxVzCvsCentrality);
   fListHist->Add(hQyVzCvsCentrality);
  
+   hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+
+  fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzAVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzATPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+
+
   if(!ftree){
 
     //Reduced Tree HyperTriton
@@ -972,6 +1024,15 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
   }
   
   //  cout<<"Qxtn: "<<Qxtn<<endl;
+  // TBC
+  Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
+  
+  hCos2DeltaTPCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0A)) , iCen);
+  hCos2DeltaTPCVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0C)) , iCen);
+  hCos2DeltaVzAVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngV0C)) , iCen);
+  hCos2DeltaVzATPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngTPC)) , iCen);
+  hCos2DeltaVzCTPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngTPC)) , iCen);
+  hCos2DeltaVzCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngV0A)) , iCen);
 
   //Scalar Product -- Resolutions
   
@@ -1072,8 +1133,8 @@ void AliAnalysisTaskHypv2PbPb18::Analyze(AliVEvent* esd, Double_t vz, Int_t evtt
     decayLength      = GetDecayLengthV0 (V0);
 
     //flow variables
-    deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(V0->Phi()-evPlAngV0A));
-    deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(V0->Phi()-evPlAngV0C));
+    deltaphiV0A=GetPhi0Pi(V0->Phi()-evPlAngV0A);
+    deltaphiV0C=GetPhi0Pi(V0->Phi()-evPlAngV0C);
     
     // Scalar Product
     uqV0A = TMath::Cos(fNHarm*V0->Phi())*QxanCor+TMath::Sin(fNHarm*V0->Phi())*QyanCor;

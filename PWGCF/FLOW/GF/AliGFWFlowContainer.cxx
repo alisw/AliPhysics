@@ -935,6 +935,7 @@ Double_t AliGFWFlowContainer::VDN6Value(Double_t d6, Double_t c6) {
 Double_t AliGFWFlowContainer::VDN6Error(Double_t d6, Double_t d6e, Double_t c6, Double_t c6e) {
   if(!fPropagateErrors) return 0;
   if(c6<0) return 0;
+  if(d6==0) return 0;
   Double_t vdn6 = VDN6Value(d6, c6);
   Double_t dp = d6e/d6;
   Double_t cp = 5*c6e/6;
@@ -1001,3 +1002,18 @@ Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, 
   Double_t dc = -7*c8e/(8*c8);
   return vdn8v * TMath::Sqrt(dd*dd+dc*dc);
 };
+void AliGFWFlowContainer::SetPtRebin(Int_t nbins, Double_t *binedges) {
+  fPtRebin = nbins;
+  fPtRebinEdges = binedges;
+  return;
+   Int_t fPtRebin=0;
+   //Double_t *lPtRebinEdges=binedges;
+   if(!fbinsPt) SetXAxis();
+   for(Int_t i=0; i<nbins; i++) if(binedges[i] < fbinsPt[0] || binedges[i] > fbinsPt[fNbinsPt-1]) continue; else fPtRebin++;
+   if(fPtRebinEdges) delete [] fPtRebinEdges;
+   fPtRebinEdges = new Double_t[fPtRebin];
+   fPtRebin=0;
+   for(Int_t i=0; i<nbins; i++) if(binedges[i] < fbinsPt[0] || binedges[i] > fbinsPt[fNbinsPt]) continue;
+    else fPtRebinEdges[fPtRebin++] = binedges[i];
+  //fPtRebin--;
+}

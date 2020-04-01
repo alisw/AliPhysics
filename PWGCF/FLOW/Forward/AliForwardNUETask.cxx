@@ -17,7 +17,6 @@
 #include "AliAODMCHeader.h"
 #include "AliLog.h"
 #include "AliForwardNUETask.h"
-#include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardNUATask.h"
 #include "AliAODForwardMult.h"

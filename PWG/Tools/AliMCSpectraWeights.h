@@ -90,10 +90,10 @@ private:
     // functions
     std::string GetFunctionFromSysFlag(SysFlag flag); //!
     std::string GetSysVarFromSysFlag(SysFlag flag);   //!
-    double GetMultFromCent(int CentBin) const;              //!
-    std::vector<double> GetMultTupleFromCent(int CentBin) const; //!
-    double GetMultFromCent(std::string cent);         //!
-    double GetCentFromMult(double dMult);             //!
+    float GetMultFromCent(int CentBin) const;              //!
+    std::vector<float> GetMultTupleFromCent(int CentBin) const; //!
+    float GetMultFromCent(std::string cent);         //!
+    float GetCentFromMult(float dMult);             //!
     void InitHistos();                                //!
     void LoadMeasuredFractions();                     //!
     void CountEventMult();                            //!
@@ -101,26 +101,20 @@ private:
     int GetPartTypeNumber(std::string Particle);      //!
     int GetCentFromString(std::string cent);
     bool
-    LoadFromAliMCSpectraWeight(AliMCSpectraWeights* obj); //!
+    LoadFromAliMCSpectraWeight(AliMCSpectraWeights* obj);                 //!
     bool LoadFromTHnF(const char* histname);                              //!
     bool CalculateMCWeights();                                            //!
     bool CalcMCFractions();                                               //!
     bool CorrectFractionsforRest();                                       //!
-    #if defined (__CINT__)
-         AliMCSpectraWeights(const AliMCSpectraWeights&);
-         AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);
-    #endif
+     AliMCSpectraWeights(const AliMCSpectraWeights&);
+     AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);
 public:
     AliMCSpectraWeights(); /*!< default root constructor */
     AliMCSpectraWeights(
                         std::string collisionSystem, std::string stName,
                         AliMCSpectraWeights::SysFlag flag); /*!< constructor to be used.*/
 
-    #ifdef __CLING__
-         //C++ 11 feature
-       AliMCSpectraWeights(const AliMCSpectraWeights&) = delete;
-       AliMCSpectraWeights& operator=(const AliMCSpectraWeights&) = delete;
-    #endif
+    ~AliMCSpectraWeights();
     
     void
     Init(); /*!< Function to start initalizing after all setters are made. */
@@ -138,13 +132,13 @@ public:
      *  @brief function to set pt binning of all internal histograms
      *  @param bins a std::vector of doubles containing the binning
      */
-    void SetBinsPt(std::vector<double> bins);
+    void SetBinsPt(std::vector<float> bins);
     
     /** @fn void SetBinsMultCent(std::vector<double> bins)
      *  @brief function to set multiplicity binning of all internal histograms
      *  @param bins a std::vector of doubles containing the binning
      */
-    void SetBinsMultCent(std::vector<double> bins);
+    void SetBinsMultCent(std::vector<float> bins);
     
     void SetMCSpectraFile(const char* file) { fstFileMCSpectra = file; }
     void SetDataFractionsFile(const char* file) { fstFilePublished = file; }

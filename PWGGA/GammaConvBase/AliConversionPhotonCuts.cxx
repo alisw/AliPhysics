@@ -101,7 +101,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
+  fDoPlotTrackPID(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
   fMinR(0),
@@ -166,6 +167,10 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxPhotonAsymmetry(0.95),
   fUseCorrectedTPCClsInfo(kFALSE),
   fUseTOFpid(kFALSE),
+  fUseTOFtiming(kFALSE),
+  fTOFtimeMin(-1000),
+  fTOFtimeMax(1000),
+  fTOFtimingBothLegs(kFALSE),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
   fDo2DPsiPairChi2(0),
@@ -222,6 +227,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -231,6 +237,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
+  fHistoTOFtimeVSMomentum(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(kFALSE),
   fProcessAODCheck(kFALSE),
@@ -274,6 +281,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistograms(NULL),
   fPIDResponse(NULL),
   fDoLightOutput(ref.fDoLightOutput),
+  fDoPlotTrackPID(ref.fDoPlotTrackPID),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(ref.fMaxR),
   fMinR(ref.fMinR),
@@ -338,6 +346,10 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxPhotonAsymmetry(ref.fMaxPhotonAsymmetry),
   fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
   fUseTOFpid(ref.fUseTOFpid),
+  fUseTOFtiming(ref.fUseTOFtiming),
+  fTOFtimeMin(ref.fTOFtimeMin),
+  fTOFtimeMax(ref.fTOFtimeMax),
+  fTOFtimingBothLegs(ref.fTOFtimingBothLegs),
   fOpeningAngle(ref.fOpeningAngle),
   fPsiPairCut(ref.fPsiPairCut),
   fDo2DPsiPairChi2(ref.fDo2DPsiPairChi2),
@@ -394,6 +406,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoITSSigafter(NULL),
   fHistoPsiPairDeltaPhiafter(NULL),
   fHistoTrackCuts(NULL),
+  fHistoTrackPID(NULL),
   fHistoPhotonCuts(NULL),
   fHistoInvMassbefore(NULL),
   fHistoArmenterosbefore(NULL),
@@ -403,6 +416,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
+  fHistoTOFtimeVSMomentum(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(ref.fPreSelCut),
   fProcessAODCheck(ref.fProcessAODCheck),
@@ -485,10 +499,17 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
   TH1::AddDirectory(kFALSE);
 
+
   if(fHistograms != NULL){
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     fHistograms->SetOwner(kTRUE);
@@ -557,6 +578,11 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
   }
 
+  if(fUseTOFtiming){
+    fHistoTOFtimeVSMomentum=new TH2F(Form("TOFtime_Momentum %s",GetCutNumber().Data()),"TOFtime_Momentum",400,-150,250,400,0,20.);
+    fHistograms->Add(fHistoTOFtimeVSMomentum);
+  }
+
   if(!fDoLightOutput){
 
     if(preCut){
@@ -578,6 +604,26 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
     fHistograms->Add(fHistoAsymmetryafter);
       //    }
+  }
+
+  if (fDoPlotTrackPID) {
+      fHistoTrackPID=new TH2F(Form("TrackPID %s",GetCutNumber().Data()),"TrackPID",15,-0.5,14.5,250,0,25);
+      fHistoTrackPID->GetXaxis()->SetBinLabel(1,"Electron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(2,"Muon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(3,"Pion");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(4,"Kaon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(5,"Proton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(6,"Deuteron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(7,"Triton");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(8,"He3");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(9,"Alpha");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(10,"Photon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(11,"Pi0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(12,"Neutron");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(13,"Kaon0");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(14,"EleCon");
+      fHistoTrackPID->GetXaxis()->SetBinLabel(15,"Unknown");
+      fHistograms->Add(fHistoTrackPID);
   }
 
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",12,-0.5,11.5,250,0,50);
@@ -741,7 +787,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
    }else{
     fHistoEleMapRecalib[i]  = (TH2S*)file->Get(Form("Ele_R%d_recalib",i));
     fHistoPosMapRecalib[i]  = (TH2S*)file->Get(Form("Pos_R%d_recalib",i));
-   } 
+   }
   }
 
   if (fHistoEleMapRecalib[0] == NULL || fHistoEleMapRecalib[1] == NULL ||
@@ -969,6 +1015,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
   }
   return kFALSE;
 }
+
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma){
   // MonteCarlo Photon Selection
@@ -1412,6 +1459,14 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
     return kFALSE;
   }
 
+  if(fDoPlotTrackPID && fHistoTrackPID){
+    Int_t negpidForTracking = (Int_t)negTrack->GetPIDForTracking();
+    Int_t pospidForTracking = (Int_t)posTrack->GetPIDForTracking();
+    // cout << "PID:  " <<  negpidForTracking << ",     "<< pospidForTracking << endl;
+    fHistoTrackPID->Fill((Float_t)negpidForTracking,negTrack->Pt());
+    fHistoTrackPID->Fill((Float_t)pospidForTracking,posTrack->Pt());
+  }
+
   // Photon passed cuts
   FillPhotonCutIndex(kPhotonOut);
   return kTRUE;
@@ -1666,12 +1721,12 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   // avoid like sign
   if(fUseOnFlyV0FinderSameSign==0){
     if(negTrack->Charge() == posTrack->Charge()) {
-      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //1
       return kFALSE;
     }
   }else if(fUseOnFlyV0FinderSameSign==1){
     if(negTrack->Charge() != posTrack->Charge()) {
-      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //1
       return kFALSE;
     }
   }
@@ -1681,7 +1736,7 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
 
 
   if( negTrack->GetNcls(1) < fMinClsTPC || posTrack->GetNcls(1) < fMinClsTPC ) {
-    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //2
     return kFALSE;
   }
   cutIndex++;
@@ -1689,13 +1744,13 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   // Acceptance
   if( posTrack->Eta() > (fEtaCut) || posTrack->Eta() < (-fEtaCut) ||
     negTrack->Eta() > (fEtaCut) || negTrack->Eta() < (-fEtaCut) ){
-    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //3
     return kFALSE;
   }
   if(fEtaCutMin>-0.1){
     if( (posTrack->Eta() < (fEtaCutMin) && posTrack->Eta() > (-fEtaCutMin)) ||
       (negTrack->Eta() < (fEtaCutMin) && negTrack->Eta() > (-fEtaCutMin)) ){
-      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //3
       return kFALSE;
     }
   }
@@ -1704,13 +1759,46 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   // Single Pt Cut
   if(fDoAsymPtCut){
     if((posTrack->Pt()<fSinglePtCut || negTrack->Pt()<fSinglePtCut2) && (posTrack->Pt()<fSinglePtCut2 || negTrack->Pt()<fSinglePtCut) ){
-      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
       return kFALSE;
     }
   } else {
     if(posTrack->Pt()<fSinglePtCut || negTrack->Pt()<fSinglePtCut){
-      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
       return kFALSE;
+    }
+  }
+  // TOF timing cut (fill at same place as single pT)
+  if(fUseTOFtiming){
+    if(fTOFtimingBothLegs){
+      if( !((posTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetStatus()&AliVTrack::kTOFout)) ){ // no timing on both legs
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
+      } else if(
+        (((posTrack->GetStatus()&AliVTrack::kTOFout) && (posTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || posTrack->GetTOFsignal()/1000 < fTOFtimeMin) ||
+        (((negTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || negTrack->GetTOFsignal()/1000 < fTOFtimeMin)
+        ){ // timing outside of cut windows on either leg that has timing information
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
+      }
+    } else {
+      if( !((posTrack->GetStatus()&AliVTrack::kTOFout) || (negTrack->GetStatus()&AliVTrack::kTOFout)) ){ // timing on at least one leg
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
+      } else if(
+        (((posTrack->GetStatus()&AliVTrack::kTOFout) && (posTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || posTrack->GetTOFsignal()/1000 < fTOFtimeMin) ||
+        (((negTrack->GetStatus()&AliVTrack::kTOFout) && (negTrack->GetTOFsignal()/1000 > fTOFtimeMax)) || negTrack->GetTOFsignal()/1000 < fTOFtimeMin)
+        ){ // timing outside of cut windows on either leg that has timing information
+        if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex); //4
+        return kFALSE;
+      }
+    }
+    // fill histogram with timing info (in ns) versus momentum
+    if(posTrack->GetStatus()&AliVTrack::kTOFout){
+      fHistoTOFtimeVSMomentum->Fill(posTrack->GetTOFsignal()/1000,posTrack->Pt());
+    }
+    if(negTrack->GetStatus()&AliVTrack::kTOFout){
+      fHistoTOFtimeVSMomentum->Fill(negTrack->GetTOFsignal()/1000,negTrack->Pt());
     }
   }
   cutIndex++;
@@ -1719,7 +1807,7 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   Bool_t passCuts = kTRUE;
 
   if(negTrack->IsA()==AliAODTrack::Class()) {
-    passCuts = SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex);
+    passCuts = SpecificTrackCuts(static_cast<AliAODTrack*>(negTrack), static_cast<AliAODTrack*>(posTrack),cutIndex); //5,6,7
   } else {
     passCuts = SpecificTrackCuts(static_cast<AliESDtrack*>(negTrack), static_cast<AliESDtrack*>(posTrack),cutIndex);
   }
@@ -2478,6 +2566,10 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   } else {
     printf("\t accept: %3.2f <= Kappa_{TPC} < %3.2f\n", fKappaMinCut, fKappaMaxCut );
   }
+  if (fUseTOFtiming){
+    if(fTOFtimingBothLegs) printf("\t requiring TOF timing information on both electrons\n");
+    else printf("\t requiring TOF timing information on single electron\n");
+  }
   if (fUseTOFpid) printf("\t accept: %3.2f < n sigma_{e,TOF} < %3.2f\n", fTofPIDnSigmaBelowElectronLine, fTofPIDnSigmaAboveElectronLine);
   if (fUseITSpid) printf("\t accept: %3.2f < n sigma_{e,ITS} < %3.2f\n -- up to pT %3.2f", fITSPIDnSigmaBelowElectronLine, fITSPIDnSigmaAboveElectronLine, fMaxPtPIDITS);
 
@@ -2633,25 +2725,25 @@ Bool_t AliConversionPhotonCuts::SetEtaCut(Int_t etaCut){   // Set Cut
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 10: // 0.2-0.9
+  case 10: // a - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 11: // 0.2-0.9
+  case 11: // b - 0.2-0.9
     fEtaCut     = 0.9;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = 0.2;
     fLineCutZRSlopeMin = tan(2*atan(exp(-fEtaCutMin)));
     break;
-  case 12: // 0.85
+  case 12: // c - 0.85
     fEtaCut     = 0.85;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
     fLineCutZRSlopeMin = 0.;
     break;
-  case 13: // 0.8
+  case 13: // d - 0.8
     fEtaCut     = 0.8;
     fLineCutZRSlope = tan(2*atan(exp(-fEtaCut)));
     fEtaCutMin     = -0.1;
@@ -2806,6 +2898,48 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
     fExcludeMinR = 55.;
     fExcludeMaxR = 72.;
     break;
+  case 23: //n
+    fMaxR = 180.;
+    fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 24: //o
+    fMaxR = 180.;
+    fMinR = 15.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 25: //p
+    fMaxR = 180.;
+    fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 26: //q
+    fMaxR = 95.;
+    fMinR = 5.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 27: //r
+    fMaxR = 95.;
+    fMinR = 10.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 28: //s
+    fMaxR = 95.;
+    fMinR = 15.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 29: //t
+    fMaxR = 95.;
+    fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
 
   default:
     AliError("RCut not defined");
@@ -2893,6 +3027,11 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
   case 10: // distortions cut on A and C side
       fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
       break;
+  case 11:  // b
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
+    fMinPhiCut = 0.; // to calculate MBW for PHOS pi0 region
+    break;
+
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2948,6 +3087,11 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
   case 10: // distortions cut on A and C side
       fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
       break;
+  case 11:  // b
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
+    fMaxPhiCut = 3.16; // to calculate MBW for PHOS pi0 region
+    break;
+
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;
@@ -3269,6 +3413,9 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 10: //a
     fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=-14;
+  case 11: //b
+    fPIDnSigmaAbovePionLine=3;
+    fPIDnSigmaAbovePionLineHighPt=2;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
@@ -3337,6 +3484,9 @@ Bool_t AliConversionPhotonCuts::SetMaxMomPiondEdxCut(Int_t piMaxMomdedxSigmaCut)
     break;
   case 6:  // 2. GeV
     fPIDMaxPnSigmaAbovePionLine=2.;
+    break;
+  case 7:  // 8. GeV
+    fPIDMaxPnSigmaAbovePionLine=8.;
     break;
   default:
     AliError(Form("piMaxMomdedxSigmaCut not defined %d",piMaxMomdedxSigmaCut));
@@ -3513,6 +3663,30 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fUseTOFpid = kTRUE;
     fTofPIDnSigmaBelowElectronLine=-3;
     fTofPIDnSigmaAboveElectronLine=3;
+    break;
+  case 6: // TOF timing one leg
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimingBothLegs = kFALSE;
+    break;
+  case 7: // TOF timing both legs
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimingBothLegs = kTRUE;
+    break;
+  case 8: // TOF timing one leg and within 100ns
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimeMin = -100;
+    fTOFtimeMax = 100;
+    fTOFtimingBothLegs = kFALSE;
+    break;
+  case 9: // TOF timing both legs and within 100ns
+    fUseTOFpid = kFALSE;
+    fUseTOFtiming = kTRUE;
+    fTOFtimeMin = -100;
+    fTOFtimeMax = 100;
+    fTOFtimingBothLegs = kTRUE;
     break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));

@@ -55,7 +55,7 @@ public:
                               /// \param q charge, greater than one if positive negative otherwise
   void                        SetRequestedCharge_2(Int_t q) { fRequestedCharge_2 = q; }
 
-  void                        ConfigureBinning(const char *configstring);
+  Bool_t                      ConfigureBinning(const char *configstring);
   void                        ConfigureResonances(const char *confstring);
   TString                     GetBinningConfigurationString() const;
   TString                     GetResonancesConfigurationString() const;

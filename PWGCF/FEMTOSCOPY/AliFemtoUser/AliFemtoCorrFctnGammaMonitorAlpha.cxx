@@ -53,30 +53,16 @@ AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(const char*
 //____________________________
 AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(const AliFemtoCorrFctnGammaMonitorAlpha& aCorrFctn) :
   AliFemtoCorrFctn(),
-  fNumPMinvDAlpha(0),
-  fDenPMinvDAlpha(0),
-  fNumNMinvDAlpha(0),
-  fDenNMinvDAlpha(0)
+  fNumPMinvDAlpha(nullptr),
+  fDenPMinvDAlpha(nullptr),
+  fNumNMinvDAlpha(nullptr),
+  fDenNMinvDAlpha(nullptr)
 {
   // copy constructor
-  if (aCorrFctn.fNumPMinvDAlpha)
-    fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
-  else
-    fNumPMinvDAlpha = 0;
-  if (aCorrFctn.fDenPMinvDAlpha)
-    fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
-  else
-    fDenPMinvDAlpha = 0;
-
-  if (aCorrFctn.fNumNMinvDAlpha)
-    fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
-  else
-    fNumNMinvDAlpha = 0;
-  if (aCorrFctn.fDenNMinvDAlpha)
-    fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
-  else
-    fDenNMinvDAlpha = 0;
-
+  fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
+  fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
+  fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
+  fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
 }
 //____________________________
 AliFemtoCorrFctnGammaMonitorAlpha::~AliFemtoCorrFctnGammaMonitorAlpha(){
@@ -93,28 +79,16 @@ AliFemtoCorrFctnGammaMonitorAlpha& AliFemtoCorrFctnGammaMonitorAlpha::operator=(
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fNumPMinvDAlpha)
-    fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
-  else
-    fNumPMinvDAlpha = 0;
-  if (aCorrFctn.fDenPMinvDAlpha)
-    fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
-  else
-    fDenPMinvDAlpha = 0;
-
-  if (aCorrFctn.fNumNMinvDAlpha)
-    fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
-  else
-    fNumNMinvDAlpha = 0;
-  if (aCorrFctn.fDenNMinvDAlpha)
-    fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
-  else
-    fDenNMinvDAlpha = 0;
+  *fNumPMinvDAlpha = *aCorrFctn.fNumPMinvDAlpha;
+  *fDenPMinvDAlpha = *aCorrFctn.fDenPMinvDAlpha;
+  *fNumNMinvDAlpha = *aCorrFctn.fNumNMinvDAlpha;
+  *fDenNMinvDAlpha = *aCorrFctn.fDenNMinvDAlpha;
 
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnGammaMonitorAlpha::Finish(){
+void AliFemtoCorrFctnGammaMonitorAlpha::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -122,7 +96,6 @@ void AliFemtoCorrFctnGammaMonitorAlpha::Finish(){
   //  mShareNumerator->Draw();
   //mShareDenominator->Draw();
   //mRatio->Draw();
-
 }
 
 //____________________________

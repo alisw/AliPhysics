@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationpp+;
 #pragma link C++ class AliV0hParticle+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
+#pragma link C++ class AliAnalysisTaskLongFluctuations2PC+;
 #pragma link C++ class LRCParticle;
 #pragma link C++ class AliAnalysisTaskMuonHadronCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiMuonCorrelations+;

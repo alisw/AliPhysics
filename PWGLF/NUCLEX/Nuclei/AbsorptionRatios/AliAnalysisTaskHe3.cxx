@@ -6,6 +6,7 @@
 #include "THnSparse.h"
 #include "TMath.h"
 #include "TProfile.h"
+#include "TNtuple.h"
 
 #include <AliAnalysisTask.h>
 #include <AliAnalysisManager.h>
@@ -43,16 +44,13 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3()
 ,fVtxContrib(0)
 ,fSPDVtxResol(0)
 ,fVtxDisplacement(0)
-,fVertexZNch0test(0)
-,fVtxContribNch0test(0)
-,fSPDVtxResolNch0test(0)
-,fVtxDisplacementNch0test(0)
-,fCentV0MZoomedNch0test(0)
 ,fMultV0(0)
 ,fCentV0M(0)
 ,fCentV0MZoomed(0)
 ,fNch(0)
 ,fNchHeader(0)
+,fNtupleHe3(0)
+,fNtupleAHe3(0)
 ,fHistsProton()
 ,fHistsAProton()
 ,fHistsDeuteron()
@@ -71,6 +69,7 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3()
 ,fUseTOFPidCut(kFALSE)
 ,fMomTOFProt(10.)
 ,fMomTOFDeut(10.)
+,kAnalyseAllParticles(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -93,16 +92,13 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3(const char* name)
 ,fVtxContrib(0)
 ,fSPDVtxResol(0)
 ,fVtxDisplacement(0)
-,fVertexZNch0test(0)
-,fVtxContribNch0test(0)
-,fSPDVtxResolNch0test(0)
-,fVtxDisplacementNch0test(0)
-,fCentV0MZoomedNch0test(0)
 ,fMultV0(0)
 ,fCentV0M(0)
 ,fCentV0MZoomed(0)
 ,fNch(0)
 ,fNchHeader(0)
+,fNtupleHe3(0)
+,fNtupleAHe3(0)
 ,fHistsProton()
 ,fHistsAProton()
 ,fHistsDeuteron()
@@ -121,6 +117,7 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3(const char* name)
 ,fUseTOFPidCut(kFALSE)
 ,fMomTOFProt(10.)
 ,fMomTOFDeut(10.)
+,kAnalyseAllParticles(kFALSE)
 {
     // constructor
     
@@ -191,10 +188,12 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputAHe3->SetOwner(kTRUE);
     
     fOutputList->Add(fOutputEvent);
-    fOutputList->Add(fOutputProtons);
-    fOutputList->Add(fOutputAProtons);
-    fOutputList->Add(fOutputDeuterons);
-    fOutputList->Add(fOutputADeuterons);
+	if (kAnalyseAllParticles) {
+			fOutputList->Add(fOutputProtons);
+			fOutputList->Add(fOutputAProtons);
+			fOutputList->Add(fOutputDeuterons);
+			fOutputList->Add(fOutputADeuterons);
+	}
 	fOutputList->Add(fOutputHe3);
 	fOutputList->Add(fOutputAHe3);
     
@@ -251,36 +250,8 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-
-    // ============== high mult events tests ================
-	    
-    fVertexZNch0test = new TH1F("fVertexZNch0test", "Vertex Z distribution", 300, -15., 15.);
-    fVertexZNch0test->GetXaxis()->SetTitle("vertex Z, cm");
-    fVertexZNch0test->Sumw2();
-    fOutputEvent->Add(fVertexZNch0test);
-    
-    fVtxContribNch0test = new TH1F("fVtxContribNch0test", "N vertex contributors", 200, 0., 200.);
-    fVtxContribNch0test->GetXaxis()->SetTitle("N vertex contrib.");
-    fOutputEvent->Add(fVtxContribNch0test);
-    
-    fSPDVtxResolNch0test = new TH1F("fSPDVtxResolNch0test", "SPD vertex resolution", 100, 0., 1.);
-    fSPDVtxResolNch0test->GetXaxis()->SetTitle("SPD vertex resolution, cm");
-    fOutputEvent->Add(fSPDVtxResolNch0test);
-    
-    fVtxDisplacementNch0test = new TH2F("fVtxDisplacementNch0test", "SPD vertex displacement", 300, -15., 15.,300, -15., 15.);
-    fVtxDisplacementNch0test->GetXaxis()->SetTitle("SPD vertex position, cm");
-    fVtxDisplacementNch0test->GetYaxis()->SetTitle("Track vertex position, cm");
-    fOutputEvent->Add(fVtxDisplacementNch0test);
-
-	fCentV0MZoomedNch0test = new TH1F("fCentV0MZoomedNch0Test", "Nch percentile for events with Nh = 0", 100, 0, 1);
-    fCentV0MZoomedNch0test->GetXaxis()->SetTitle("V0M percentile");
-	fOutputEvent->Add(fCentV0MZoomedNch0test);
-
- 
-
-
-
-
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC");
 
 
     // track cuts config
@@ -312,36 +283,40 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
     
     // (anti)proton histograms
 	// CreateHistosTrack() creates a list of histograms which are added to the vector to be accessed later. Since the addition of more histograms changes the numberings, these have to be handled carefully.
-    CreateHistosTrack(fHistsProton);
-    for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
-        fOutputProtons->Add(fHistsProton.at(i));
-    }
-    
-    CreateHistosTrack(fHistsAProton);
-    for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
-        fOutputAProtons->Add(fHistsAProton.at(i));
-    }
-    
-    // (anti)deuteron histograms
-    CreateHistosTrack(fHistsDeuteron);
-    for (Int_t i=0;i<(int)(fHistsDeuteron.size()); i++){
-        fOutputDeuterons->Add(fHistsDeuteron.at(i));
-    }
-    
-    CreateHistosTrack(fHistsADeuteron);
-    for (Int_t i=0;i<(int)(fHistsADeuteron.size()); i++){
-        fOutputADeuterons->Add(fHistsADeuteron.at(i));
-    }
+    if (kAnalyseAllParticles) {
+			CreateHistosTrack(fHistsProton);  
+			for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
+				fOutputProtons->Add(fHistsProton.at(i));
+			}
+			
+			CreateHistosTrack(fHistsAProton);
+			for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
+				fOutputAProtons->Add(fHistsAProton.at(i));
+			}
+			
+			// (anti)deuteron histograms
+			CreateHistosTrack(fHistsDeuteron);
+			for (Int_t i=0;i<(int)(fHistsDeuteron.size()); i++){
+				fOutputDeuterons->Add(fHistsDeuteron.at(i));
+			}
+			
+			CreateHistosTrack(fHistsADeuteron);
+			for (Int_t i=0;i<(int)(fHistsADeuteron.size()); i++){
+				fOutputADeuterons->Add(fHistsADeuteron.at(i));
+			}
+	}
 
 	CreateHistosTrack(fHistsHe3);
 	for (Int_t i=0;i<(int)(fHistsHe3.size()); i++){
 		fOutputHe3->Add(fHistsHe3.at(i));
 	}
+	fOutputHe3->Add(fNtupleHe3);
     
 	CreateHistosTrack(fHistsAHe3);
 	for (Int_t i=0;i<(int)(fHistsAHe3.size()); i++){
 		fOutputAHe3->Add(fHistsAHe3.at(i));
 	}
+	fOutputAHe3->Add(fNtupleAHe3);
 
     PostData(1, fOutputList);
     // postdata will notify the analysis manager of changes / updates to the
@@ -452,13 +427,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 	AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
 	
     
-    // fill event histograms
-    fVertexZ->Fill(vertex->GetZ());
-    fVtxContrib->Fill(vertex->GetNContributors());
-    fSPDVtxResol->Fill(zRes);
-    fVtxDisplacement->Fill(vtxSPD->GetZ(),vertex->GetZ());
-	fNchHeader->Fill(header->GetRefMultiplicity());
-    
+     
     // V0 information
     Int_t MultV0A = 0;
     Int_t MultV0C = 0;
@@ -478,8 +447,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
     }else{
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
     }
-    fCentV0M->Fill(lPercentile);
-	fCentV0MZoomed->Fill(lPercentile);
+
 	int Nch = 0;
     
     // track loop
@@ -523,7 +491,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
 		// ===================== Multiplicity counter ==========
 		// After track cuts and secondary (DCA) cut
 
-		//if (TMath::Abs(track->Charge()) > 0.) { Nch++;} else { cout<< "Track is uncharged. Track charge is :" << track->Charge()<<endl;}
+		if (TMath::Abs(track->Charge()) > 0.) { Nch++;} 
 		//cout<< "Nch now : "<< Nch<<endl;
 
 
@@ -567,10 +535,11 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
         Bool_t isDeuteronSelected = (TMath::Abs(nSigmaTPCdeut) < fMaxTPCnSigma) &&
                                     (!(trackP > fMomTOFDeut && !TOFpid_deut));
         
-		Bool_t isHelium3Selected = (TMath::Abs(nSigmaTPCHe3) < 5.0); //Helium 3 is triggered in TPC only with a relaxed condition of 5, EDIT: cut reduced to 3 sigma due to large includion of background in the 5 sigma cut. See 16qt set from 260919.
+		Bool_t isHelium3Selected = (nSigmaTPCHe3 > -10.0) and (nSigmaTPCHe3 < 7); //Helium 3 is triggered in TPC only with a relaxed condition of 5, EDIT: cut reduced to 3 sigma due to large includion of background in the 5 sigma cut. See 16qt set from 260919. Edit2: considered relaxing condition to -10<nSigma<5 in order to better fit the TPCnSigma plots, but it is not necesary is the TPC Signal is cut at 100.
+		//Edit 3: Condition relaxed to 10 in order to fit larger background in low statistics bins. 
 
         // ===================== fill track histos =====================
-        if (isProtonSelected){
+        if (isProtonSelected && kAnalyseAllParticles){
             if (track->Charge() > 0){
                 FillHistosTrack(fHistsProton,track);
                 
@@ -580,7 +549,7 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
             }
         }
         
-        if (isDeuteronSelected){
+        if (isDeuteronSelected && kAnalyseAllParticles){
             if (track->Charge() > 0){
                 FillHistosTrack(fHistsDeuteron,track);
                 
@@ -591,23 +560,50 @@ void AliAnalysisTaskHe3::UserExec(Option_t *)
         }
 
 		if (isHelium3Selected){
+				Float_t vars[18];
+			   	vars[0] = track->P();
+			    	vars[1] = track->Pt();
+			   	vars[2] = track->GetTPCsignal();
+				vars[3] = nSigmaTPCHe3;
+				vars[4] = track->Charge();
+				vars[5] = GetTOFBeta(track);
+				vars[6] = DCAxy;
+				vars[7] = DCAz;
+				vars[8] = GetMass2TOF(GetTOFBeta(track), track);
+				vars[9] = track->GetTPCNcls();
+				vars[10] = track->GetITSNcls();
+				vars[11] = track->GetTPCsignalN();
+				vars[12] = track->Eta();
+				vars[13] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kHe3);
+				vars[14] = track->Chi2perNDF();
+				vars[15] = track->GetITSchi2();
+				vars[16] = track->GetTPCClusterInfo(2, 1);
+				vars[17] = track->GetTPCmomentum();
+				
 			if (track->Charge() > 0){
 				FillHistosTrack(fHistsHe3, track);
+				if (track->GetTPCsignal() >100) {fNtupleHe3->Fill(vars);}
 			} else if (track->Charge() < 0) {
 				FillHistosTrack(fHistsAHe3,track);
+				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(vars);} //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
 			}
 		}
         
     } // track loop
-	fNch->Fill(Nch);
-    
-	if(Nch<1){
-	    fVertexZNch0test->Fill(vertex->GetZ());
-	    fVtxContribNch0test->Fill(vertex->GetNContributors());
-	    fSPDVtxResolNch0test->Fill(zRes);
-	    fVtxDisplacementNch0test->Fill(vtxSPD->GetZ(),vertex->GetZ());
-		fCentV0MZoomedNch0test->Fill(lPercentile);
+	fNch->Fill(Nch);//Filled here to check how many events were completely excluded by the filterbit cut. Just cut off the zero bin for the correct number. Normalization can come from Vertex z distr.
+
+	if (Nch>0) { //filled here to exclude filterbit bias with normalization
+			// fill event histograms
+			fVertexZ->Fill(vertex->GetZ());
+			fVtxContrib->Fill(vertex->GetNContributors());
+			fSPDVtxResol->Fill(zRes);
+			fVtxDisplacement->Fill(vtxSPD->GetZ(),vertex->GetZ());
+			fCentV0M->Fill(lPercentile);
+			fCentV0MZoomed->Fill(lPercentile);		
+			fNchHeader->Fill(header->GetRefMultiplicity());
 	}
+  
+
     PostData(1, fOutputList);
 }
 

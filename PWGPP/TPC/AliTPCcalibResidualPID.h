@@ -99,10 +99,13 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   
   Bool_t GetCorrectdEdxEtaDependence() const { return fCorrectdEdxEtaDependence; };
   virtual void SetCorrectdEdxEtaDependence(Bool_t flag) { fCorrectdEdxEtaDependence = flag; };
-  
+
   Bool_t GetCorrectdEdxMultiplicityDependence() const { return fCorrectdEdxMultiplicityDependence; };
   virtual void SetCorrectdEdxMultiplicityDependence(Bool_t flag) { fCorrectdEdxMultiplicityDependence = flag; };
-  
+
+  Bool_t GetCorrectdEdxPileupDependence() const { return fCorrectdEdxPileupDependence; };
+  virtual void SetCorrectdEdxPileupDependence(Bool_t flag) { fCorrectdEdxPileupDependence = flag; };
+
   Bool_t GetCutOnProdRadiusForV0el() const { return fCutOnProdRadiusForV0el; };
   virtual void SetCutOnProdRadiusForV0el(Bool_t flag) { fCutOnProdRadiusForV0el = flag; };
   
@@ -216,9 +219,11 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   THnSparseF * fHistPidQAlong;         //! histogram for the QA of the PID long pads
   THnSparseF * fHistPidQAoroc;         //! histogram for the QA of the PID full oroc
   //
-  Bool_t fProduceTPCSignalSparse;      //for setter
-  Bool_t fCorrectdEdxEtaDependence;    // Correct eta dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  Bool_t fProduceTPCSignalSparse;            // for setter
+  Bool_t fCorrectdEdxEtaDependence;          // Correct eta dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
   Bool_t fCorrectdEdxMultiplicityDependence; // Correct multiplicity dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  Bool_t fCorrectdEdxPileupDependence;       // Correct pileup dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  //
   THnSparseF * fThnspTpc;              //! thnsparse containing the data
   //
   //

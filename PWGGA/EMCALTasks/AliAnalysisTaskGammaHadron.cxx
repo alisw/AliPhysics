@@ -1,4 +1,4 @@
-//
+
 // Task to estimate the number of gamma-hadron
 // statistic available in the Pb+Pb run.
 //
@@ -51,13 +51,13 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),
-  fUseManualEventCuts(0),fCorrectEff(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
   fRtoD(0),fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
-  fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
+  fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),
   fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
@@ -70,7 +70,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -91,13 +91,13 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
   fDebug(0),fSavePool(0),fPlotQA(0),
-  fUseManualEventCuts(0),fCorrectEff(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
   fRtoD(0),fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.290),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
-  fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
+  fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),
   fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
@@ -110,7 +110,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
+  fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -170,18 +170,19 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Define bins in which the 2D histograms are plotted
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	Double_t fZtStep =1.0/(7-1.0);  // Bin width for the zT histograms
+	//Double_t fZtStep =1.0/(7-1.0);  // Bin width for the zT histograms
 	Double_t fXiStep =2.5/(8-1.0);  // Bin width for the Xi histograms
 
 	Double_t fArray_G_BinsValue[kNoGammaBins+1] ={5,7,9,11,14,17,20,23,30,60};
-	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
+	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0.03,0.08,0.16,0.29,0.5,0.84,1.39,2.};
+//	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
 	Double_t fArray_XI_BinsValue[kNoXiBins+1]   ={-10,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,10};
-//	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.5,1.0,1.5,2.0,3.0,4.5,7,10};
+	Double_t fArray_HPT_BinsValue[kNoHPtBins+1]   ={0.15,0.4,0.8,1.45,2.5,4.2,6.95,11.4,18.6};
 
 	memcpy (fArray_G_Bins,  fArray_G_BinsValue,  sizeof (fArray_G_Bins));
 	memcpy (fArray_ZT_Bins, fArray_ZT_BinsValue, sizeof (fArray_ZT_Bins));
 	memcpy (fArray_XI_Bins, fArray_XI_BinsValue, sizeof (fArray_XI_Bins));
-//	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
+	memcpy (fArray_HPT_Bins, fArray_HPT_BinsValue, sizeof (fArray_HPT_Bins));
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Define vertex and centrality bins for the ME background
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,6 +266,20 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 		funcpEta_right[3]->SetParameter(param,paramSetEta_4[param+6]);
 	}
 
+  SetPi0MassSelection(fPi0MassSelection);
+
+	// Pi0 Mass and Sigma Fit parameters (for mass window)
+	Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
+	memcpy (fPi0MassFitPars, fPi0MassFitParsValue, sizeof(fPi0MassFitPars));
+	Double_t fPi0SigmaFitParsValue[5] = {8.34,9.90e-3,-1.09e-4,6.86e-4,0};
+	memcpy (fPi0SigmaFitPars, fPi0SigmaFitParsValue, sizeof(fPi0SigmaFitPars));
+
+	//..member function of AliAnalysisTaskEmcal
+	SetMakeGeneralHistograms(kTRUE);
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaHadron::SetPi0MassSelection(Int_t input) {
+
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//..Pi0 Cut values
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -286,51 +301,120 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	//  Double_t fPi0SigmaFixedValue[kNoGammaBins] = {0.013780,0.016556, 0.015154,
 	//                                                0.014779, 0.017486, 0.018040,
 	//                                                0.021053, 0.029528, 0.029528}; //9
-
 	// These are the values used prior to 20180824
 	// These cuts correspond to
 	// Lambda Range: [0.10 - 0.50]       Bins: 1 5
 	// Energy Range: [1.50 - 119.94]     Bins: 4 6
 	// Asym Range:   [0.00 - 1.0]        Bins: 1 5
 	// Angle Min Range:   [0.017 - 3.142]    Bins: 6 23
-	Double_t fPi0MassFixedValue_0[kNoGammaBins] = {0.138350, 0.130986, 0.137813,
-			0.145594, 0.156744, 0.175125,
-			0.220000, 0.220000, 0.220000};
-	Double_t fPi0SigmaFixedValue_0[kNoGammaBins] = {0.012870, 0.021483, 0.015919,
-			0.016042, 0.017068, 0.021500,
-			0.031488, 0.031488, 0.031488}; //9
+  // Not split up by cent bins (all cent bins identical
+	Double_t fPi0MassFixedValue_0[kNMainCentBins][kNoGammaBins] = {
+    { 0.138350, 0.130986, 0.137813, 0.145594, 0.156744, 0.175125, 0.220000, 0.220000, 0.220000},
+    { 0.138350, 0.130986, 0.137813, 0.145594, 0.156744, 0.175125, 0.220000, 0.220000, 0.220000},
+    { 0.138350, 0.130986, 0.137813, 0.145594, 0.156744, 0.175125, 0.220000, 0.220000, 0.220000},
+    { 0.138350, 0.130986, 0.137813, 0.145594, 0.156744, 0.175125, 0.220000, 0.220000, 0.220000}
+  };
+	Double_t fPi0SigmaFixedValue_0[kNMainCentBins][kNoGammaBins] = {
+    { 0.012870, 0.021483, 0.015919, 0.016042, 0.017068, 0.021500, 0.031488, 0.031488, 0.031488},
+    { 0.012870, 0.021483, 0.015919, 0.016042, 0.017068, 0.021500, 0.031488, 0.031488, 0.031488},
+    { 0.012870, 0.021483, 0.015919, 0.016042, 0.017068, 0.021500, 0.031488, 0.031488, 0.031488},
+    { 0.012870, 0.021483, 0.015919, 0.016042, 0.017068, 0.021500, 0.031488, 0.031488, 0.031488}
+  }; //9
 	
 	// These are the values add for GA triggered data on 20180824
+  // These were not done in different centrality bins, so all cent bins are identical
 	// Lambda Range: [0.10 - 0.50]     Bins: 1 5
 	// Energy Range: [1.50 - 119.94]     Bins: 4 6 (old bins)
 	// Asym Range:   [0.00 - 0.80]     Bins: 1 4
 	// OpeningAngle Range:   [0.017 - 3.142]     Bins: 6 29
 	// EOverP Cut    [0.60 - 1.40]
-	Double_t fPi0MassFixedValue_1[kNoGammaBins] = {
-	0.140730, 0.135875, 0.139245,
-	0.146724, 0.158606, 0.173285,
-	0.190328, 0.200000, 0.200000};
-	Double_t fPi0SigmaFixedValue_1[kNoGammaBins] = {
-	0.016273, 0.016512, 0.015727,
-	0.016063, 0.017414, 0.017614,
-	0.018374, 0.011323, 0.011323}; //9
-	
+	Double_t fPi0MassFixedValue_1[kNMainCentBins][kNoGammaBins] = {
+    { 0.140730, 0.135875, 0.139245, 0.146724, 0.158606, 0.173285, 0.190328, 0.200000, 0.200000},
+    { 0.140730, 0.135875, 0.139245, 0.146724, 0.158606, 0.173285, 0.190328, 0.200000, 0.200000},
+    { 0.140730, 0.135875, 0.139245, 0.146724, 0.158606, 0.173285, 0.190328, 0.200000, 0.200000},
+    { 0.140730, 0.135875, 0.139245, 0.146724, 0.158606, 0.173285, 0.190328, 0.200000, 0.200000}
+  };
+	Double_t fPi0SigmaFixedValue_1[kNMainCentBins][kNoGammaBins] = {
+    { 0.016273, 0.016512, 0.015727, 0.016063, 0.017414, 0.017614, 0.018374, 0.011323, 0.011323},
+    { 0.016273, 0.016512, 0.015727, 0.016063, 0.017414, 0.017614, 0.018374, 0.011323, 0.011323},
+    { 0.016273, 0.016512, 0.015727, 0.016063, 0.017414, 0.017614, 0.018374, 0.011323, 0.011323},
+    { 0.016273, 0.016512, 0.015727, 0.016063, 0.017414, 0.017614, 0.018374, 0.011323, 0.011323}
+  }; //9
 	// These are the values add for MB data on 20180824
 	// Lambda Range: [0.10 - 0.50]     Bins: 1 5
 	// Energy Range: [1.50 - 119.94]     Bins: 4 6
 	// Asym Range:   [0.00 - 0.80]     Bins: 1 4
 	// OpeningAngle Range:   [0.017 - 3.142]     Bins: 6 29
   // EOverP Cut    [0.60 - 1.40]
-	Double_t fPi0MassFixedValue_2[kNoGammaBins] = {
-	0.138988, 0.138666, 0.140109,
-	0.147061, 0.158484, 0.200000,
-	0.200000, 0.197369, 0.197369};
-	Double_t fPi0SigmaFixedValue_2[kNoGammaBins] = {
-	0.013807, 0.014188, 0.014031,
-	0.015245, 0.014975, 0.160000,
-	0.160000, 0.020498, 0.020498};
+	Double_t fPi0MassFixedValue_2[kNMainCentBins][kNoGammaBins] = {
+    { 0.138988, 0.138666, 0.140109, 0.147061, 0.158484, 0.200000, 0.200000, 0.197369, 0.197369},
+    { 0.138988, 0.138666, 0.140109, 0.147061, 0.158484, 0.200000, 0.200000, 0.197369, 0.197369},
+    { 0.138988, 0.138666, 0.140109, 0.147061, 0.158484, 0.200000, 0.200000, 0.197369, 0.197369},
+    { 0.138988, 0.138666, 0.140109, 0.147061, 0.158484, 0.200000, 0.200000, 0.197369, 0.197369}
+  };
+	Double_t fPi0SigmaFixedValue_2[kNMainCentBins][kNoGammaBins] = {
+    { 0.013807, 0.014188, 0.014031, 0.015245, 0.014975, 0.160000, 0.160000, 0.020498, 0.020498},
+    { 0.013807, 0.014188, 0.014031, 0.015245, 0.014975, 0.160000, 0.160000, 0.020498, 0.020498},
+    { 0.013807, 0.014188, 0.014031, 0.015245, 0.014975, 0.160000, 0.160000, 0.020498, 0.020498},
+    { 0.013807, 0.014188, 0.014031, 0.015245, 0.014975, 0.160000, 0.160000, 0.020498, 0.020498}
+  };
 
-	switch (fPi0MassSelection) {
+  // These are the values for GA Data on 20191202
+  // Lambda Range: [0.10 - 0.70]     Bins: 1 7
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 0.70]     Bins: 1 1
+  // OpeningAngle Range:   [0.017 - 3.142]     Bins: 3 12
+  // Track Cluster Correction: Subtraction
+
+  // note: last three bins are basically fake
+	Double_t fPi0MassFixedValue_3[kNMainCentBins][kNoGammaBins] = {
+    { 0.129265, 0.130740, 0.138696, 0.147779, 0.160138, 0.177054, 0.177054, 0.177054, 0.177054},
+    { 0.131305, 0.131078, 0.137113, 0.143671, 0.153884, 0.171041, 0.171041, 0.171041, 0.171041},
+    { 0.130332, 0.129157, 0.134172, 0.140263, 0.151399, 0.162242, 0.162242, 0.162242, 0.162242},
+    { 0.127595, 0.128214, 0.132793, 0.137396, 0.148063, 0.167322, 0.167322, 0.167322, 0.167322}
+  };
+	Double_t fPi0SigmaFixedValue_3[kNMainCentBins][kNoGammaBins] = {
+    { 0.019000, 0.019000, 0.017793, 0.017149, 0.017567, 0.011105, 0.011105, 0.011105, 0.011105},
+    { 0.019000, 0.019000, 0.013467, 0.012001, 0.014112, 0.013643, 0.011105, 0.011105, 0.011105},
+    { 0.019000, 0.016856, 0.010454, 0.010690, 0.011508, 0.011226, 0.011226, 0.011226, 0.011226},
+    { 0.019000, 0.003000, 0.009186, 0.011264, 0.014117, 0.012515, 0.012515, 0.012515, 0.012515}
+  };
+
+  // These values correspond to MB Data on 20191202
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 0.70]     Bins: 1 1
+  // OpeningAngle Range:   [0.023 - 3.142]     Bins: 6 12
+  // Track Cluster Correction: Subtraction
+  // Lambda cuts vary by Centrality
+  // Cent 0 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 1 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 2 : [0.10 - 0.60]     Bins: 1 6
+  // Cent 3 : [0.10 - 0.40]     Bins: 1 3
+
+
+	Double_t fPi0MassFixedValue_4[kNMainCentBins][kNoGammaBins] = {
+    {  0.137945, 0.138191, 0.141075,  0.147679, 0.148967, 0.183629  ,0.183629,0.183629,0.183629 },
+    {  0.136807, 0.136838, 0.138779,  0.143453, 0.150812, 0.137669  ,0.137669,0.137669,0.137669 },
+    {  0.135318, 0.134796, 0.136419, 0.139745, 0.141703, 0.111335   ,0.111335,0.111335,0.111335 },
+    {  0.135276, 0.135471, 0.136128, 0.141905, 0.101601, 0.126029   ,0.126029,0.126029,0.126029 }
+  };
+	Double_t fPi0SigmaFixedValue_4[kNMainCentBins][kNoGammaBins] = {
+    {  0.012025, 0.012813, 0.012214, 0.011307, 0.019000, 0.019000  ,0.019000,0.019000,0.019000},
+    {  0.010155, 0.010165, 0.009131, 0.009708, 0.019000, 0.018995  ,0.018995,0.018995,0.018995},
+    {  0.008285, 0.008858, 0.008698, 0.010906, 0.018227, 0.016506  ,0.016506,0.016506,0.016506},
+    {  0.006975, 0.006388, 0.005972, 0.007425, 0.005017, 0.010000  ,0.010000,0.010000,0.010000}
+  };
+
+
+	switch (input) {
+    case 4:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_4, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_4, sizeof(fPi0SigmaFixed));
+      break;
+    case 3:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_3, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_3, sizeof(fPi0SigmaFixed));
+      break;
 		case 2:
 			memcpy (fPi0MassFixed , fPi0MassFixedValue_2 , sizeof(fPi0MassFixed));
 			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_2, sizeof(fPi0SigmaFixed));
@@ -344,15 +428,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 			memcpy (fPi0MassFixed , fPi0MassFixedValue_0 , sizeof(fPi0MassFixed));
 			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_0, sizeof(fPi0SigmaFixed));
 	}
-
-	// Pi0 Mass and Sigma Fit parameters (for mass window)
-	Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
-	memcpy (fPi0MassFitPars, fPi0MassFitParsValue, sizeof(fPi0MassFitPars));
-	Double_t fPi0SigmaFitParsValue[5] = {8.34,9.90e-3,-1.09e-4,6.86e-4,0};
-	memcpy (fPi0SigmaFitPars, fPi0SigmaFitParsValue, sizeof(fPi0SigmaFitPars));
-
-	//..member function of AliAnalysisTaskEmcal
-	SetMakeGeneralHistograms(kTRUE);
+	fPi0MassSelection = input;
 }
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::~AliAnalysisTaskGammaHadron()
@@ -483,6 +559,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  // Event Hash tracking histogram
+  fHistEventHash = new TH1F("HistEventHash","Event Hash Value;Hash Value",11,-0.5,10.5);
+  fOutput->Add(fHistEventHash);
+
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the 2D histograms
 	//   Dimensions are eta,phi
@@ -496,10 +576,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThn[20] = {0};
 
     titleThn[dimThn] = "#Delta #varphi";
-    nbinsThn[dimThn] = 50;
-    Double_t deltaPhiArray[50+1];
+    nbinsThn[dimThn] = 54;
+    Double_t deltaPhiArray[54+1];
     binEdgesThn[dimThn] = deltaPhiArray;
-    GenerateFixedBinArray(50,-pi/2.,3.*pi/2.,deltaPhiArray);
+    GenerateFixedBinArray(54,-pi/2.,3.*pi/2.,deltaPhiArray);
     minThn[dimThn] = -pi/2.;
     maxThn[dimThn] = 3.*pi/2.;
     dimThn++;
@@ -528,12 +608,21 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThn[dimThn] = fArray_ZT_Bins[kNoZtBins];
     dimThn++;
 
-    titleThn[dimThn] = "#Xi";
-    nbinsThn[dimThn] = kNoXiBins;
-    binEdgesThn[dimThn] = fArray_XI_Bins;
-    minThn[dimThn] = fArray_XI_Bins[0];
-    maxThn[dimThn] = fArray_XI_Bins[kNoXiBins];
-    dimThn++;
+    if (bEnableTrackPtAxis) {
+      titleThn[dimThn] = "Track p_{T}";
+      nbinsThn[dimThn] = kNoHPtBins;
+      binEdgesThn[dimThn] = fArray_HPT_Bins;
+      minThn[dimThn] = fArray_HPT_Bins[0];
+      maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
+      dimThn++;
+    } else {
+      titleThn[dimThn] = "#Xi";
+      nbinsThn[dimThn] = kNoXiBins;
+      binEdgesThn[dimThn] = fArray_XI_Bins;
+      minThn[dimThn] = fArray_XI_Bins[0];
+      maxThn[dimThn] = fArray_XI_Bins[kNoXiBins];
+      dimThn++;
+    }
 
     titleThn[dimThn] = "z vertex position";
     nbinsThn[dimThn] = kNvertBins;
@@ -573,13 +662,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
      	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
-    // Track p_T disabled. No longer necessary.
-		//titleThn[dimThn] = "Track p_{T}";
-		//nbinsThn[dimThn] = kNoHPtBins;
-		//binEdgesThn[dimThn] = fArray_HPT_Bins;
-		//minThn[dimThn] = fArray_HPT_Bins[0];
-		//maxThn[dimThn] = fArray_HPT_Bins[kNoHPtBins];
-		//dimThn++;
 
     if(fPlotQA==0)
     {
@@ -1314,15 +1396,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,fEventPlaneBinArray);
 
   // pt bins for tracks
-  Int_t nTrackPtBins = 150;
-  Double_t fTrackPtMin = 0;
+  Int_t nTrackPtBins = 200-1; // Bin Size = 150 MeV/c
+  Double_t fTrackPtMin = 0.15; // Min Pt Cut
   Double_t fTrackPtMax = 30;
   Double_t fTrackPtArray[nTrackPtBins+1];
   GenerateFixedBinArray(nTrackPtBins,fTrackPtMin,fTrackPtMax,fTrackPtArray);
 
-  fHistTrackPsiEPPtCent = new TH3F("fHistTrackPsiEPPtCent","Track #Delta_Psi{EP};#Delta#Psi_{EP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fHistTrackPsiEPPtCent = new TH3F("fHistTrackPsiEPPtCent","Track #Delta#Psi_{EP};#Delta#Psi_{EP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiEPPtCent);
-  fHistTrackPsiRPPtCent = new TH3F("fHistTrackPsiRPPtCent","Track #Delta_Psi{EP};#Delta#Psi_{RP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fHistTrackPsiRPPtCent = new TH3F("fHistTrackPsiRPPtCent","Track #Delta#Psi_{RP};#Delta#Psi_{RP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiRPPtCent);
 
 
@@ -1496,14 +1578,15 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 //	const Int_t nUsedEvtPlaneBins = 3;
 //	Double_t fEventPlaneArray[nUsedEvtPlaneBins+1] = {0,1,2,3}; // In Plane, MP, Out of Plane}
 	// Fake event plane array:
-	const Int_t nUsedEvtPlaneBins = 1;
-	Double_t fEventPlaneArray[nUsedEvtPlaneBins+1] = {0,1};
+	//const Int_t nUsedEvtPlaneBins = 1;
 
+	Double_t fEventPlaneArray[3] = {-0.5,0.5,1.5}; //0 and 1 used for even/odd events
+  Int_t nUsedEvtPlaneBins = 1;
+  if (bEnableEventHashMixing) nUsedEvtPlaneBins = 2;
 
 	//..Pt Pools
 	// using fArray_G_BinsValue [5+1]
 //	Int_t nUsedTriggerPtBins = 5;
-
 
 	//..in case no external pool is provided create one here
 	if(!fPoolMgr)
@@ -1832,6 +1915,9 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//..This function is called in AliAnalysisTaskEmcal::UserExec.
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::FillHistograms()"<<endl;
 
+  Int_t iEventHash = CalculateEventHash();
+  fHistEventHash->Fill((float) iEventHash);
+
   // Getting corrected event plane, saving information
   LoadQnCorrectedEventPlane();
   if (fIsMC && fMCHeader) {
@@ -1922,6 +2008,10 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 			}
 		}
 	}
+  Double_t fEventWeight = 1;
+  if (fEventWeightChoice != 0) {
+    fEventWeight = 1;
+  }
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Same event section
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1929,8 +2019,8 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//..Do this only for events that are of fTriggerType
 	if(fSEvMEv==0 && fCurrentEventTrigger & fTriggerType)
 	{
-		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,1);//correlate with same event
-		else               CorrelatePi0AndTrack(tracks,0,1,1);    //correlate with same event
+		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,fEventWeight);//correlate with same event
+		else               CorrelatePi0AndTrack(tracks,0,1,fEventWeight);    //correlate with same event
     FillTrackHistograms(tracks);
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1939,8 +2029,8 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//..Do this only for events that are of fTriggerType
 	if(fSEvMEv==2 && fCurrentEventTrigger & fTriggerType)
 	{
-		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,1);//correlate with same event
-		else               CorrelatePi0AndTrack(tracks,0,1,1);    //correlate with same event
+		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,fEventWeight);//correlate with same event
+		else               CorrelatePi0AndTrack(tracks,0,1,fEventWeight);    //correlate with same event
 	}
 
 
@@ -1996,7 +2086,7 @@ void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* track
     if ((TMath::Pi() - fDeltaPsiEP) < fDeltaPsiEP) fDeltaPsiEP = TMath::Pi() - fDeltaPsiEP; //DeltaPsi in [0,pi/2]
     fHistTrackPsiEPPtCent->Fill(fDeltaPsiEP,track->Pt(),fCent);
     // MC True ReactionPlaneAngle
-    Double_t fDeltaPsiRP = abs(DeltaPhi(fLocalVector,fQnCorrEventPlaneAngle));
+    Double_t fDeltaPsiRP = abs(DeltaPhi(fLocalVector,fMCReactionPlaneAngle));
     if ((TMath::Pi() - fDeltaPsiRP) < fDeltaPsiRP) fDeltaPsiRP = TMath::Pi() - fDeltaPsiRP;
     fHistTrackPsiRPPtCent->Fill(fDeltaPsiRP,track->Pt(),fCent);
 
@@ -2601,6 +2691,13 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		AliEventPool * pool = 0x0;
 		// maybe iterate over pt bins?
 		Double_t EventPlaneAngle = 0.;
+
+    // Use event hash to split data set, avoid autocorrelation
+    Int_t iEventHash = CalculateEventHash();
+    if (bEnableEventHashMixing) {
+      EventPlaneAngle = (Double_t) !(iEventHash); // use pool 0 for 1, pool 1 for 0
+    }
+
 		for (Int_t PtIndex = 0; PtIndex < kUsedPi0TriggerPtBins; PtIndex++) {
 			pool = fPoolMgr->GetEventPool(fCent, zVertex,EventPlaneAngle,PtIndex);
 			if (!pool) {
@@ -2694,6 +2791,11 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 //					Double_t evtPlaneAngle= DeltaPhi(aliCaloClusterVecpi0,fEPV0);
 					Double_t evtPlaneCategory=0;
+
+          Int_t iEventHash = CalculateEventHash();
+          if (bEnableEventHashMixing) {
+            evtPlaneCategory = (Double_t) iEventHash; // are you a 1 or a 0?
+          }
 /*
 					Double_t angleFromAxis;
 					//..fold around 0 axis
@@ -2837,8 +2939,8 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
           if (fMCEmbedReweightMode > 0) {
             if (iLCAStatus == 1) { // is embedded particle
-              Double_t pLCA_Pt = pLCA->Pt();
-              Double_t pLCA_M  = pLCA->M();
+          //    Double_t pLCA_Pt = pLCA->Pt();
+          //    Double_t pLCA_M  = pLCA->M();
             }
             if (fMCEmbedReweightMode == 2 && iLCAPdg == 221) return; // Vetoing on embedded eta
           }
@@ -2930,7 +3032,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 						}
 					}
 					else if (iLCAPdg == 22) MCMatchStatus = 8;
-					else MCMatchStatus = 9;
+					else MCMatchStatus = 9; // FIXME check if it is a parton? Then jet.
 
 				} else {
 					MCMatchStatus = 0;
@@ -3113,11 +3215,11 @@ void AliAnalysisTaskGammaHadron::FillGhHistograms(Int_t identifier,AliTLorentzVe
 	valueArray[1]=deltaEta;
 	valueArray[2]=G_PT_Value;
 	valueArray[3]=ZT_Value;
-	valueArray[4]=XI_Value;
+  if (bEnableTrackPtAxis) valueArray[4]=TrackVec->Pt();
+	else valueArray[4]=XI_Value;
 	valueArray[5]=zVertex;
 	valueArray[6]=evtPlaneCategory;
 	valueArray[7]=fCent;
-	//valueArray[8]=TrackVec->Pt();
 
 	if(identifier==0 && fPlotQA==0)fCorrVsManyThings  ->Fill(valueArray,Weight);
 
@@ -3432,16 +3534,26 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
     // Finding pT Bin:
     Int_t ptBin = 0; // Default is to use lowest bin
 
-    for (Int_t k = 0; k < kNoGammaBins-1; k++)
-    {
+    for (Int_t k = 0; k < kNoGammaBins-1; k++) {
       if ((Pi0Pt >= fArray_G_Bins[k]) && (Pi0Pt < fArray_G_Bins[k+1]))
       {
         ptBin = k;
         break;
       }
     }
-    Pi0Mass  = fPi0MassFixed[ptBin];
-    Pi0Sigma = fPi0SigmaFixed[ptBin];
+
+    Double_t centBinArray[kNMainCentBins+1]  = {0.0,10.0,30.0,50.0,90.0};
+    Int_t iCentBin = 0;
+
+    for (Int_t k = 0; k < kNMainCentBins; k++) {
+      if ((fCent >= centBinArray[k]) && (fCent < centBinArray[k+1]))
+      {
+        iCentBin = k;
+        break;
+      }
+    }
+    Pi0Mass  = fPi0MassFixed[iCentBin][ptBin];
+    Pi0Sigma = fPi0SigmaFixed[iCentBin][ptBin];
     SBsplit  = (0.5-(Pi0Mass+Pi0Sigma*3))*0.5; //..Upper range 500MeV lower range mass+3sigma
   }
   //..if you select the pi0 peak region
@@ -3876,6 +3988,25 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
 	}
 
 	return DetectionEff;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskGammaHadron::CalculateEventHash() {
+
+  //UInt_t fTimeStamp = InputEvent()->GetTimeStamp();
+  Int_t nTracks = InputEvent()->GetNumberOfTracks();
+  Int_t nClusters = InputEvent()->GetNumberOfCaloClusters();
+  //Double_t fT0TOF = (Double_t) InputEvent()->GetT0TOF()[0];
+
+  UInt_t iOrbitNumber = InputEvent()->GetOrbitNumber();
+  UInt_t iBC = (UInt_t) InputEvent()->GetBunchCrossNumber();
+  //Int_t iEventNumberInFile = InputEvent()->GetEventNumberInFile();
+
+  if (!fIsMC) { // Data
+    return (iOrbitNumber) % 2;
+  } else { // MC
+    // orbit number and bunch cross not defined in MC,
+    return (nTracks-nClusters) % 2;
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {

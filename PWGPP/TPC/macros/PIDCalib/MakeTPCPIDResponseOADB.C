@@ -5,7 +5,9 @@
 #include "TError.h"
 #include "TROOT.h"
 #include "TPRegexp.h"
+#include "TClass.h"
 
+#include "AliNDLocalRegression.h"
 #include "AliOADBContainer.h"
 #include "AliTPCPIDResponse.h"
 #include "AliPID.h"
@@ -18,7 +20,9 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString pass,
                                    const TString dEdxType="",
                                    const TString multCorr="",
-                                   const TString resolution="");
+                                   const TString resolution="",
+                                   const TString pileupDefinition="");
+
 Bool_t CheckMultiplicityCorrection(const TString& corrections);
 TObjArray* SetupSplineArrayFromFile(const TString fileName);
 
@@ -342,7 +346,8 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString pass,
                                    const TString dEdxType,
                                    const TString multCorr,
-                                   const TString resolution)
+                                   const TString resolution,
+                                   const TString pileupDefinition)
 {
 
   // ---| Master array for TPC PID response |-----------------------------------
@@ -397,6 +402,20 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
     arrTPCPIDResponse->Add(resolutionParam);
   }
 
+  // ---| Pileup correction |---------------------------------------------------
+  if (!pileupDefinition.IsNull()) {
+    if (pileupDefinition.BeginsWith("fileName:")) {
+      // if the string begins with 'fileName:' add the fileName to the array
+      TString fileName(pileupDefinition);
+      fileName.ReplaceAll("fileName:", "");
+      TNamed *pileupCorrectionFile = new TNamed("PileupCorrectionFile", fileName.Data());
+      arrTPCPIDResponse->Add(pileupCorrectionFile);
+    } else {
+      // else directly load the object from file and add it
+      AliNDLocalRegression* pileupCorrection = AliTPCPIDResponse::GetPileupCorrectionFromFile(pileupDefinition);
+      arrTPCPIDResponse->Add(pileupCorrection);
+    }
+  }
   fContainer.AppendObject(arrTPCPIDResponse, firstRun, lastRun, pass);
 
   return kTRUE;
@@ -437,4 +456,3 @@ Bool_t CheckMultiplicityCorrection(const TString& corrections)
   delete arrCorrectionSets;
   return kTRUE;
 }
-

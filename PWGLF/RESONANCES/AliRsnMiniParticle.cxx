@@ -34,6 +34,7 @@ void AliRsnMiniParticle::Clear(Option_t *)
    fIsFromB = kFALSE;
    fIsQuarkFound = kFALSE;
    fCutBits = 0;
+   fPassesOOBPileupCut = kTRUE;
 }
 
 //__________________________________________________________________________________________________
@@ -52,6 +53,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fIsFromB = kFALSE;
    fIsQuarkFound = kFALSE;
    fCutBits = 0x0;
+   fPassesOOBPileupCut = kTRUE;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
    fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
    fMass[0] = fMass[1] = -1.0;
@@ -183,7 +185,25 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
           fIndexDaughters[0] = xi->GetPindex();
           fIndexDaughters[1] = xi->GetNindex();
           fIndexDaughters[2] = xi->GetBindex();
+
        }
+
+       if (esdEvent) {
+          Double_t bfield = esdEvent->GetMagneticField();
+          if (xi) {
+             fPassesOOBPileupCut = false;
+             AliESDtrack* tp = esdEvent->GetTrack(xi->GetPindex());
+             AliESDtrack* tn = esdEvent->GetTrack(xi->GetNindex());
+             AliESDtrack* tb = esdEvent->GetTrack(xi->GetBindex());
+             if ( TrackPassesOOBPileupCut(tp, bfield) || TrackPassesOOBPileupCut(tn, bfield) || TrackPassesOOBPileupCut(tb, bfield) ) fPassesOOBPileupCut = true;
+          } else if (v0) {
+             fPassesOOBPileupCut = false;
+             AliESDtrack* tp = esdEvent->GetTrack(v0->GetPindex());
+             AliESDtrack* tn = esdEvent->GetTrack(v0->GetNindex());
+             if ( TrackPassesOOBPileupCut(tp, bfield) || TrackPassesOOBPileupCut(tn, bfield) ) fPassesOOBPileupCut = true;
+          }
+       }
+
        // Number of Daughters from MC and Momentum of the Mother
        if (event->GetRefMC()) {
    AliMCParticle *part = (AliMCParticle *)event->GetRefMC()->GetTrack(fMother);
@@ -242,4 +262,12 @@ void AliRsnMiniParticle::Set4Vector(TLorentzVector &v, Float_t mass, Bool_t mc)
 
    if (mass<0.0) mass = Mass();
    v.SetXYZM(Px(mc), Py(mc), Pz(mc), mass);
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnMiniParticle::TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b){
+    if (!t) return true;
+    if ((t->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) return true;
+    if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
+    return false;
 }

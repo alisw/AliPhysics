@@ -362,7 +362,9 @@ class AliAnalysisVertexingHF : public TNamed {
 		       const TObjArray *trkArray) const;
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
 				      AliAODVertex *secVert,Double_t dcap1n1,
-				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar, Bool_t refill=kFALSE, AliAODRecoDecayHF2Prong *rd=0x0);
+				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar,
+				      Bool_t callFromCascade=kFALSE, Bool_t refill=kFALSE,
+				      AliAODRecoDecayHF2Prong *rd=0x0);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
 				      AliAODVertex *secVert,
 				      Double_t dispersion,
@@ -410,6 +412,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t SelectInvMassAndPt3prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPt4prong(TObjArray *trkArray);
   Bool_t SelectInvMassAndPtDstarD0pi(TObjArray *trkArray);
+  Bool_t SelectInvMassAndPtCascade(TObjArray *trkArray);
 
   void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
 				   TObjArray &seleTrksArray,

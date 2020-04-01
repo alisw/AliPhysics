@@ -159,15 +159,45 @@ void AliReducedAnalysisJpsi2ee::AddTrackCut(AliReducedInfoCut* cut) {
    //
    // Add a new cut
    //
-   fTrackCuts.Add(cut); 
+   fTrackCuts.Add(cut);
    fMixingHandler->SetNParallelCuts(fMixingHandler->GetNParallelCuts()+1);
    TString histClassNames = fMixingHandler->GetHistClassNames();
-   histClassNames += Form("PairMEPP_%s;", cut->GetName());
-   histClassNames += Form("PairMEPM_%s;", cut->GetName());
-   histClassNames += Form("PairMEMM_%s;", cut->GetName());
+   if (fPairCuts.GetEntries()>1) {
+      histClassNames = "";
+      for (Int_t iPairCut=0; iPairCut<fPairCuts.GetEntries(); iPairCut++) {
+         for (Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); iTrackCut++) {
+            histClassNames += Form("PairMEPP_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNames += Form("PairMEPM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNames += Form("PairMEMM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+         }
+      }
+   } else {
+      histClassNames += Form("PairMEPP_%s;", cut->GetName());
+      histClassNames += Form("PairMEPM_%s;", cut->GetName());
+      histClassNames += Form("PairMEMM_%s;", cut->GetName());
+   }
    fMixingHandler->SetHistClassNames(histClassNames.Data());
 }
 
+//___________________________________________________________________________
+void AliReducedAnalysisJpsi2ee::AddPairCut(AliReducedInfoCut* cut) {
+   //
+   // Add a new cut
+   //
+   fPairCuts.Add(cut);
+   fMixingHandler->SetNParallelPairCuts(fMixingHandler->GetNParallelPairCuts()+1);
+   if (fPairCuts.GetEntries()>1) {
+      TString histClassNamesNew = "";
+      for (Int_t iPairCut=0; iPairCut<fPairCuts.GetEntries(); iPairCut++) {
+         for (Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); iTrackCut++) {
+            histClassNamesNew += Form("PairMEPP_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNamesNew += Form("PairMEPM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+            histClassNamesNew += Form("PairMEMM_%s_%s;", fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName());
+          }
+      }
+      fMixingHandler->SetHistClassNames(histClassNamesNew.Data());
+   }
+}
 
 //___________________________________________________________________________
 Bool_t AliReducedAnalysisJpsi2ee::IsEventSelected(AliReducedBaseEvent* event, Float_t* values/*=0x0*/) {
@@ -232,17 +262,18 @@ Bool_t AliReducedAnalysisJpsi2ee::IsTrackPrefilterSelected(AliReducedBaseTrack* 
 }
 
 //___________________________________________________________________________
-Bool_t AliReducedAnalysisJpsi2ee::IsPairSelected(Float_t* values) {
+ULong_t AliReducedAnalysisJpsi2ee::IsPairSelected(Float_t* values) {
   //
   // apply pair cuts
   //
-  if(fPairCuts.GetEntries()==0) return kTRUE;
-  // loop over all the cuts and make a logical and between all cuts in the list
-  for(Int_t i=0; i<fPairCuts.GetEntries(); ++i) {
-    AliReducedInfoCut* cut = (AliReducedInfoCut*)fPairCuts.At(i);
-    if(!cut->IsSelected(values)) return kFALSE;
+  if(fPairCuts.GetEntries()==0) return 1;
+
+  ULong_t mask = 0;
+  for (Int_t i=0; i<fPairCuts.GetEntries(); ++i) {
+     AliReducedInfoCut* cut = (AliReducedInfoCut*)fPairCuts.At(i);
+     if (cut->IsSelected(values)) mask|=(ULong_t(1)<<i);
   }
-  return kTRUE;
+  return mask;
 }
 
 //___________________________________________________________________________
@@ -524,22 +555,41 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(AliReducedBaseTrack* track, 
 
 
 //___________________________________________________________________________
-void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass /*="PairSE"*/, UInt_t mcDecisions /* = 0*/) {
+void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t trackMask, ULong_t pairMask, Int_t pairType, TString pairClass /*="PairSE"*/, UInt_t mcDecisions /* = 0*/) {
    //
    // fill pair level histograms
    // NOTE: pairType can be 0,1 or 2 corresponding to ++, +- or -- pairs
    TString typeStr[3] = {"PP", "PM", "MM"};
-   for(Int_t icut=0; icut<fTrackCuts.GetEntries(); ++icut) {
-      if(mask & (ULong_t(1)<<icut)) {
-         fHistosManager->FillHistClass(Form("%s%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
-         if(mcDecisions && pairType==1) {
-            for(Int_t iMC=0; iMC<=fLegCandidatesMCcuts.GetEntries(); ++iMC) {
-               if(mcDecisions & (UInt_t(1)<<iMC))
-                  fHistosManager->FillHistClass(Form("%s%s_%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName(), fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
+   if (fPairCuts.GetEntries()>1) {
+      for(Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); ++iTrackCut) {
+         for(Int_t iPairCut=0; iPairCut<fPairCuts.GetEntries(); ++iPairCut) {
+            if((trackMask & (ULong_t(1)<<iTrackCut)) && (pairMask & (ULong_t(1)<<iPairCut))) {
+               fHistosManager->FillHistClass(Form("%s%s_%s_%s", pairClass.Data(), typeStr[pairType].Data(),
+                                                  fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName()), fValues);
+               if(mcDecisions && pairType==1) {
+                  for(Int_t iMC=0; iMC<=fLegCandidatesMCcuts.GetEntries(); ++iMC) {
+                     if(mcDecisions & (UInt_t(1)<<iMC))
+                        fHistosManager->FillHistClass(Form("%s%s_%s_%s_%s", pairClass.Data(), typeStr[pairType].Data(),
+                                                           fTrackCuts.At(iTrackCut)->GetName(), fPairCuts.At(iPairCut)->GetName(),
+                                                           fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
+                  }
+               }
             }
          }
       }
-   }  // end loop over cuts
+   } else {
+      for(Int_t iTrackCut=0; iTrackCut<fTrackCuts.GetEntries(); ++iTrackCut) {
+         if(trackMask & (ULong_t(1)<<iTrackCut)) {
+            fHistosManager->FillHistClass(Form("%s%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(iTrackCut)->GetName()), fValues);
+            if(mcDecisions && pairType==1) {
+               for(Int_t iMC=0; iMC<=fLegCandidatesMCcuts.GetEntries(); ++iMC) {
+                  if(mcDecisions & (UInt_t(1)<<iMC))
+                     fHistosManager->FillHistClass(Form("%s%s_%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(iTrackCut)->GetName(), fLegCandidatesMCcuts.At(iMC)->GetName()), fValues);
+               }
+            }
+         }
+      }  // end loop over cuts
+   }
 }
 
 //___________________________________________________________________________
@@ -691,12 +741,15 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
          // verify that the two current tracks have at least 1 common bit
          if(!(pTrack->GetFlags() & nTrack->GetFlags())) continue;
          AliReducedVarManager::FillPairInfo(pTrack, nTrack, AliReducedPairInfo::kJpsiToEE, fValues);
-         if(IsPairSelected(fValues)) {
-            FillPairHistograms(pTrack->GetFlags() & nTrack->GetFlags(), 1, pairClass, (fOptionRunOverMC ? CheckReconstructedLegMCTruth(pTrack, nTrack) : 0));    // 1 is for +- pairs 
+
+         ULong_t pairCutMask = IsPairSelected(fValues);
+         if(pairCutMask) {
+            FillPairHistograms(pTrack->GetFlags() & nTrack->GetFlags(), pairCutMask, 1, pairClass, (fOptionRunOverMC ? CheckReconstructedLegMCTruth(pTrack, nTrack) : 0));    // 1 is for +- pairs
             fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
             if(fOptionStoreJpsiCandidates) {
                AliReducedPairInfo* pair = new AliReducedPairInfo();
                pair->SetFlags(pTrack->GetFlags() & nTrack->GetFlags());
+               pair->SetQualityFlags(pairCutMask);
                pair->PtPhiEta(fValues[AliReducedVarManager::kPt], fValues[AliReducedVarManager::kPhi], fValues[AliReducedVarManager::kEta]);
                pair->SetMass(fValues[AliReducedVarManager::kMass]);
                pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
@@ -716,12 +769,15 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
             // verify that the two current tracks have at least 1 common bit
             if(!(pTrack->GetFlags() & pTrack2->GetFlags())) continue;
             AliReducedVarManager::FillPairInfo(pTrack, pTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
-            if(IsPairSelected(fValues)) {
-               FillPairHistograms(pTrack->GetFlags() & pTrack2->GetFlags(), 0, pairClass);       // 0 is for ++ pairs 
+
+            ULong_t pairCutMask = IsPairSelected(fValues);
+            if(pairCutMask) {
+               FillPairHistograms(pTrack->GetFlags() & pTrack2->GetFlags(), pairCutMask, 0, pairClass);       // 0 is for ++ pairs
                fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
                if(fOptionStoreJpsiCandidates) {
                   AliReducedPairInfo* pair = new AliReducedPairInfo();
                   pair->SetFlags(pTrack->GetFlags() & pTrack2->GetFlags());
+                  pair->SetQualityFlags(pairCutMask);
                   pair->PtPhiEta(fValues[AliReducedVarManager::kPt], fValues[AliReducedVarManager::kPhi], fValues[AliReducedVarManager::kEta]);
                   pair->SetMass(fValues[AliReducedVarManager::kMass]);
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);
@@ -747,12 +803,15 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
             // verify that the two current tracks have at least 1 common bit
             if(!(nTrack->GetFlags() & nTrack2->GetFlags())) continue;
             AliReducedVarManager::FillPairInfo(nTrack, nTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
-            if(IsPairSelected(fValues)) {
-               FillPairHistograms(nTrack->GetFlags() & nTrack2->GetFlags(), 2, pairClass);      // 2 is for -- pairs
+
+            ULong_t pairCutMask = IsPairSelected(fValues);
+            if(pairCutMask) {
+               FillPairHistograms(nTrack->GetFlags() & nTrack2->GetFlags(), pairCutMask, 2, pairClass);      // 2 is for -- pairs
                fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
                if(fOptionStoreJpsiCandidates) {
                   AliReducedPairInfo* pair = new AliReducedPairInfo();
                   pair->SetFlags(nTrack->GetFlags() & nTrack2->GetFlags());
+                  pair->SetQualityFlags(pairCutMask);
                   pair->PtPhiEta(fValues[AliReducedVarManager::kPt], fValues[AliReducedVarManager::kPhi], fValues[AliReducedVarManager::kEta]);
                   pair->SetMass(fValues[AliReducedVarManager::kMass]);
                   pair->CandidateId(AliReducedPairInfo::kJpsiToEE);

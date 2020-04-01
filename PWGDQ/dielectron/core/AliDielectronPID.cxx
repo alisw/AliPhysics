@@ -58,6 +58,9 @@ TH1     *AliDielectronPID::fgFunWdthCorrITS=0x0;
 TH1     *AliDielectronPID::fgFunCntrdCorrTOF=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorrTOF=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
+THnBase *AliDielectronPID::fgFunCntrdCorrPU[15][15] = {0x0};
+THnBase *AliDielectronPID::fgFunWdthCorrPU[15][15] = {0x0};
+Bool_t  AliDielectronPID::fgPIDCalibinPU=kFALSE;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -349,6 +352,20 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorrTOF->GetZaxis()->GetUniqueID(), kTRUE);
   }
+  if(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron])  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(0)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(1)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(2)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(3)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(4)->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron])  {
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(0)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(1)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(2)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(3)->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrPU[AliDielectronPID::kTPC][AliPID::kElectron]->GetAxis(4)->GetUniqueID(), kTRUE);
+  }
 
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
@@ -457,12 +474,22 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasITS(part, fPartType[icut]);
 
-  // post pid corrections ("eta corrections")
-  if (fPartType[icut]==AliPID::kElectron){
-    // via functions (1-3D)
-    numberOfSigmas-=GetCntrdCorrITS(part);
-    numberOfSigmas/=GetWdthCorrITS(part);
-  }
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorrITS(part);
+//			//numberOfSigmas/=GetWdthCorrITS(part);
+//			numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
+//		}
+//	}
+//	else{
+//		numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
+//	}
+	numberOfSigmas-=GetCntrdCorrITS(part,fPartType[icut]);
+	numberOfSigmas/=GetWdthCorrITS(part ,fPartType[icut]);
 
   // test if we are supposed to use a function for the cut
   if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
@@ -485,15 +512,31 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
 
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
+	//printf("TPC::icut = %d , nsigma (before) = %f\n",icut,numberOfSigmas);
 
-  // post pid corrections ("eta corrections")
-  if (fPartType[icut]==AliPID::kElectron){
-    // old way 1D
-    numberOfSigmas-=fgCorr;
-    // via functions (1-3D)
-    numberOfSigmas-=GetCntrdCorr(part);
-    numberOfSigmas/=GetWdthCorr(part);
-  }
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// old way 1D
+//			numberOfSigmas-=fgCorr;
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorr(part);
+//			//numberOfSigmas/=GetWdthCorr(part);
+//			numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+//		}
+//		printf("TPC::icut = %d , nsigma (after) = %f\n",icut,numberOfSigmas);
+//	}
+//	else{
+//		numberOfSigmas-=fgCorr;
+//		numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+//	}
+
+	if(fPartType[icut]==AliPID::kElectron) numberOfSigmas-=fgCorr;
+	numberOfSigmas-=GetCntrdCorr(part,fPartType[icut]);
+	numberOfSigmas/=GetWdthCorr(part ,fPartType[icut]);
+	//printf("TPC::icut = %d , nsigma (after) = %f\n",icut,numberOfSigmas);
 
   // matching of MC and data //
 
@@ -583,12 +626,23 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
 
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
 
-  // post pid corrections ("eta corrections")
-  if (fPartType[icut]==AliPID::kElectron){
-    // via functions (1-3D)
-    numberOfSigmas-=GetCntrdCorrTOF(part);
-    numberOfSigmas/=GetWdthCorrTOF(part);
-  }
+//	if(!fgPIDCalibinPU){
+//		// post pid corrections ("eta corrections")
+//		if (fPartType[icut]==AliPID::kElectron){
+//			// via functions (1-3D)
+//			//numberOfSigmas-=GetCntrdCorrTOF(part);
+//			//numberOfSigmas/=GetWdthCorrTOF(part);
+//			numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
+//			numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
+//		}
+//	}
+//	else{
+//		numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
+//		numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
+//	}
+
+	numberOfSigmas-=GetCntrdCorrTOF(part,fPartType[icut]);
+	numberOfSigmas/=GetWdthCorrTOF(part ,fPartType[icut]);
 
   Bool_t selected=((numberOfSigmas>=fNsigmaLow[icut])&&(numberOfSigmas<=fNsigmaUp[icut]))^fExclude[icut];
   return selected;
@@ -780,7 +834,6 @@ Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
   if (!fgFunEtaCorr) return 1;
   return fgFunEtaCorr->Eval(track->Eta());
 }
-
 //______________________________________________
 Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
 {
@@ -807,3 +860,28 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
   //  printf("%d-dim CORR value: %f (track %p) \n",dim,corr,track);
   return corr;
 }
+//______________________________________________
+Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, THnBase *hist)
+{
+  //
+  // return correction value
+  //
+  //TODO: think about taking an values array as argument to reduce # var fills
+
+  //Fill only event and vparticle values (otherwise we end up in a circle)
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::FillVarVParticle(track,values);
+  Int_t dim = hist->GetNdimensions();
+
+  Double_t var[5] = {0.,0.,0.,0.,0.};
+  if(dim>0) var[0] = values[hist->GetAxis(0)->GetUniqueID()];
+  if(dim>1) var[1] = values[hist->GetAxis(1)->GetUniqueID()];
+  if(dim>2) var[2] = values[hist->GetAxis(2)->GetUniqueID()];
+  if(dim>3) var[3] = values[hist->GetAxis(3)->GetUniqueID()];
+  if(dim>4) var[4] = values[hist->GetAxis(4)->GetUniqueID()];
+
+  Double_t corr = hist->GetBinContent( hist->GetBin(var) );
+  //printf("var[0] = %f GeV/c , var[1] = %f , var[2] = %f , var[3] = %f , var[4] = %f , binID = %lld , corr = %f\n",var[0],var[1],var[2],var[3],var[4],hist->GetBin(var),corr);
+  return corr;
+}
+//______________________________________________

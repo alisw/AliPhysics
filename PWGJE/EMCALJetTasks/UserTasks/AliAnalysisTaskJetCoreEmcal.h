@@ -51,6 +51,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetFillRecoilTree(Bool_t b){fFillRecoilTree=b;}
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
+	virtual void     SetMoreTreeVars(Bool_t more){fMoreTreeVars=more;} 
 
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal( //      const char *ntracks            = "usedefault", //      const char *nclusters          = "usedefault", //      const char* ncells             = "usedefault",
 //      const char *suffix             = "");
@@ -116,12 +117,15 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillRecoilTHnSparse; ///< switch to fill recoil THnSparse for main analysis
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
+	Bool_t fMoreTreeVars; ///< add more variables to the output tree
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
 	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
 	TRandom3 *fRandom; ///<
 	Float_t fTreeVarsInclusive[9]; ///<
-	Float_t fTreeVarsRecoil[10]; ///<
+	Float_t fTreeVarsInclusiveMoreVars[13]; ///<
+	Float_t fTreeVarsRecoil[8]; ///<
+	Float_t fTreeVarsRecoilMoreVars[14]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
@@ -130,7 +134,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
+	TH2F *fhRhoCentSig; //!<!
+	TH2F *fhRhoCentRef; //!<!
+	TH2F *fhDphiPtSigPi; //!<!
 	TH2F *fhDphiPtSig; //!<!
+	TH2F *fhDphiPtRefPi; //!<!
 	TH2F *fhDphiPtRef; //!<!
 	// embedding histograms
 	// inclusive jets
@@ -175,7 +183,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 9);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 12);
   /// \endcond
 };
 #endif

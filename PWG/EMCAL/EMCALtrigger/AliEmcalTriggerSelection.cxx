@@ -43,13 +43,15 @@ namespace EMCAL{
 
 AliEmcalTriggerSelection::AliEmcalTriggerSelection() :
   TNamed(),
-  fSelectionCuts(NULL)
+  fSelectionCuts(nullptr),
+  fTriggerAlias(nullptr)
 {
 }
 
-AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts):
+AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts, const AliEmcalTriggerAlias *alias):
   TNamed(name, ""),
-  fSelectionCuts(cuts)
+  fSelectionCuts(cuts),
+  fTriggerAlias(alias)
 {
 }
 
@@ -76,11 +78,13 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
   }
   if(mainPatch) result->SetMainPatch(mainPatch);
   result->SetSelectionCuts(fSelectionCuts);
+  if(fTriggerAlias) result->SetTriggerAlias(fTriggerAlias);
   return result;
 }
 
 void AliEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
   stream << "  Name of the trigger class: " << GetName() << std::endl;
+  if(fTriggerAlias) stream << fTriggerAlias;
   stream << *fSelectionCuts << std::endl;
 }
 

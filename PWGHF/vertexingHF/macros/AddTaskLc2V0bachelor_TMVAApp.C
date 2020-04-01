@@ -18,7 +18,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
                   Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
                   Bool_t useMultCut = kFALSE,
                   Float_t multMin = 0.,    // Minimum is included
-                  Float_t multMax = 99999. // Maximum is excluded
+                  Float_t multMax = 99999., // Maximum is excluded
+                  Bool_t useXmlFileFromCVMFS = kFALSE,
+                  TString xmlFileFromCVMFS = ""
                   ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -73,14 +75,14 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
   else if (nvars == 11) {
     namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
-    nvarsSpectators = 15;
-    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+    nvarsSpectators = 12;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,bachelorPt,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
   }
   else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
   else if (nvars == 7) {
     namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
-    nvarsSpectators = 15;
-    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLc2Lambdapi,massLambda,massLambdaBar,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+    nvarsSpectators = 16;
+    namesTMVAvarsSpectators = "nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,massLc2K0Sp,LcPt,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,bachelorPt,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
   }
 
   //CREATE THE TASK
@@ -106,6 +108,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetUseWeightsLibrary(useWeightsLibrary);
   task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
   
+  task->SetUseXmlFileFromCVMFS(useXmlFileFromCVMFS);
+  task->SetXmlFileFromCVMFS(xmlFileFromCVMFS);
+
   if(useMultCorrection){
 
     task->SetUseMultiplicityCorrection(useMultCorrection);

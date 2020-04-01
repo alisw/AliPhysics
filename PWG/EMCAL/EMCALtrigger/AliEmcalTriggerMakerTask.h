@@ -208,6 +208,12 @@ public:
    */
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
+  /**
+   * @brief Switch for smearing mode
+   * @param doRun If true also the smeared patch energy is calculated
+   */
+  void SetRunSmearing(Bool_t doRun) { fRunSmearing = doRun; }
+
 protected:
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -284,6 +290,19 @@ protected:
    */
   void InitializeFastORMaskingFromOADB();
 
+  /**
+   * @brief Initialise smearing parameters for generated FastOR ADCs
+   * 
+   * The smear model is used to generate FastOR ADC signals calculated
+   * from the FEE energy using the energy resolution at FastOR level
+   * obtained from data. A gaussian distribution with the mean and 
+   * the width taken from the smear model for a given energy is used
+   * to calculate the smeared energy. The smearing is particularly important
+   * when running on MC in order to properly describe the turnon observed
+   * in data.
+   */
+  void InitializeSmearModel();
+
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
@@ -295,6 +314,7 @@ protected:
   Bool_t                                  fLoadFastORMaskingFromOCDB; ///< Load FastOR masking from the OCDB
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
+  Bool_t                                  fRunSmearing;               ///< Also calculate smeared patch energy based on FastOR energy resolution
   Bool_t                                  fDoQA;                      ///< Fill QA histograms
   THistManager                            *fQAHistos;                 //!<! Histograms for QA
 

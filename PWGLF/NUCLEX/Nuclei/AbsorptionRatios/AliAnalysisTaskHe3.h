@@ -44,6 +44,7 @@ public:
     void     SetUseTOFPidCut(Bool_t useTOFPidCut)        {fUseTOFPidCut = useTOFPidCut;}
     void     SetMomForTOFanaProt(Float_t momTOFprot)     {fMomTOFProt = momTOFprot;}
     void     SetMomForTOFanaDeut(Float_t momTOFdeut)     {fMomTOFDeut = momTOFdeut;}
+	void	 SetAnalyseAllParticles(Bool_t doAnalyse)	 {kAnalyseAllParticles = doAnalyse;} // Call this function with argument kTRUE in the AddTask macro in order to run the analysis for protons and deuterons as well. 
     
     void     CreateHistosTrack(vector<TH1*> &histos);
     void     FillHistosTrack(vector<TH1*> &histos, AliAODTrack *track);
@@ -68,19 +69,19 @@ private:
     // Event histograms
     TH1I        *fEventStat;       //! Event statistics
     TH1F        *fVertexZ;         //! Vertex Z coordinate
-    TH1F        *fVertexZNch0test;         //! Vertex Z coordinate
     TH1F        *fVtxContrib;      //! Vertex contributors
-    TH1F        *fVtxContribNch0test;      //! Vertex contributors
     TH1F        *fSPDVtxResol;     //! SPD vertex resolution
-    TH1F        *fSPDVtxResolNch0test;     //! SPD vertex resolution
     TH2F        *fVtxDisplacement; //! displacement btw track and spd vertices
-    TH2F        *fVtxDisplacementNch0test; //! displacement btw track and spd vertices
     TH1F        *fMultV0;          //! V0 multiplicity
     TH1F        *fCentV0M;         //! V0M centrality
 	TH1F		*fCentV0MZoomed;	//! V0M centrality Zoomed to 0-1%
-	TH1F		*fCentV0MZoomedNch0test;	//! V0M centrality Zoomed to 0-1%
 	TH1F		*fNch;				//! Number of charged tracks at mid rapidity per event histogram
 	TH1F		*fNchHeader;		//! -||- but from AliAODheader
+
+	// TNtuple
+	
+	TNtuple		*fNtupleHe3;		//! Ntuple for He3 Candidates
+	TNtuple		*fNtupleAHe3;		//! Ntuple for AHe3 Candidates
     
     // track histograms
 	//
@@ -112,6 +113,7 @@ private:
     Bool_t        fUseTOFPidCut;
     Float_t       fMomTOFProt;
     Float_t       fMomTOFDeut;
+	Bool_t		  kAnalyseAllParticles;
     
     enum {kSelectedEvents=0, kINT7selected, kDAQincomplete, kV0timing, kClusterTrackletCut, kVertexZ, kVtxNcontrib, kSPDPileUp, kVtxDisplace, kVtxRes, kNbinsEvent};
     

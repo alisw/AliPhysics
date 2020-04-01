@@ -181,6 +181,10 @@ public:
   void SetCentroidCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
+  void SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *hb, UInt_t var0, UInt_t var1=0, UInt_t var2=0, UInt_t var3=0, UInt_t var4=0);//PID calibration in pileup events
+  void SetWidthCorrFunctionPU(   UInt_t detID, UInt_t parID, THnBase *hb, UInt_t var0, UInt_t var1=0, UInt_t var2=0, UInt_t var3=0, UInt_t var4=0);//PID calibration in pileup events
+	void SetPIDCaibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
+
   void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
   void SetQnVectorNormalisation(TString norm) {fQnVectorNorm = norm;}
   void SaveDebugTree();
@@ -206,6 +210,11 @@ private:
   TH1 *fPostPIDCntrdCorrTOF;// post pid correction object for electron sigma centroids in TOF
   TH1 *fPostPIDWdthCorrTOF; // post pid correction object for electron sigma widths in TOF
                             /// @TODO: smart way to store corrections, potentially for all detectors.
+
+  THnBase *fPostPIDCntrdCorrPU[15][15];   // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
+  THnBase *fPostPIDWdthCorrPU[15][15];    // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
+	Bool_t fPIDCalibinPU;           // flag to calibrate PID spline in pileup event
+
   TObject *fLegEffMap;      // single electron efficiency map
   TObject *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
@@ -312,7 +321,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
 
-  ClassDef(AliDielectron,17);
+  ClassDef(AliDielectron,18);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

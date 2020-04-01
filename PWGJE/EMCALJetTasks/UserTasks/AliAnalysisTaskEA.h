@@ -134,6 +134,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
   void        SetMode(Int_t mode){ fMode = mode;}       //Analysi mode normal=0 or embedded event =1 
 
+  void        SetRhoType(Int_t type){ fRhoType = type;}       //Rho type   kt=0 or cms = 1 
+
   void        SetPhiCut(Double_t pcut){ fPhiCut = TMath::Pi()-pcut; }
 
   void        SetMinFractionShared(Double_t fr){ fMinFractionShared = fr;} 
@@ -142,6 +144,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
   void        SetJetAcut(Double_t ac){ fJetAcut = ac;} 
 
+  void        SetV0MeanForMCWithDeltaElectronBug() { kOldV0MC = kTRUE;}  
+
+  void        SetUseMultiplicity() { fMultFramework = kTRUE;}  
 
 
   Bool_t      PassedGATrigger();
@@ -167,7 +172,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   // ######### STANDARD FUNCTIONS
   void        ExecOnceLocal();                    
 
-  void        GetMyRho(AliJetContainer* ktjets, Double_t &rhokt, Double_t &rhocms);
+  Double_t    GetMyRho(AliJetContainer* ktjets);
   
 
   Double_t    GetDeltaPt(Double_t phiTT, Double_t etaTT, Double_t phiLJ, Double_t etaLJ, Double_t phiSJ, Double_t etaSJ, Double_t rho, Int_t level);
@@ -211,8 +216,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Bool_t  fIsEmcalTrig;                               //! triggered by EMCAL
   Bool_t  fIsHighMultTrig;                            //! triggered by high multiplicity trigger 
                                                       
-  Float_t fCentralityV0A;                             //! Centrality from V0A
-  Float_t fCentralityV0C;                             //! Centrality from V0C
+  //Float_t fCentralityV0A;                             //! Centrality from V0A
+  //Float_t fCentralityV0C;                             //! Centrality from V0C
   Float_t fCentralityV0M;                             //! Centrality from V0M
                                                       
   Double_t fxVertex;                                  //!  X vertex from ITS
@@ -261,26 +266,26 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    THnSparse *fhTrackPtEtaPhiV0norm[kTG];               //!  pt, eta, phi, V0M for inclusive tracks 
    THnSparse *fhJetPtEtaPhiV0norm[kTG];                  //!  pt, eta, phi, V0M for inclusive jets 
    THnSparse *fhJetPtEtaPhiV0normTTH[kTG][fkTTbins];    //!  pt, eta, phi, V0M for recoil jets 
-   THnSparse *fhJetPtAreaV0norm[kTG][kRho];             //!  pt, area V0M for inclusive jets 
-   THnSparse *fhJetPtAreaV0norm_PartLevel[kRho];        //!  pt, area V0M for inclusive jets 
-   THnSparse *fhJetPtAreaV0normTTH[kTG][fkTTbins][kRho];       //!  pt, area V0M for recoil jets 
-   THnSparse *fhJetPtAreaV0normTTH_PartLevel[fkTTbins][kRho];  //!  pt, area V0M for recoil jets particle level 
+   THnSparse *fhJetPtAreaV0norm[kTG];             //!  pt, area V0M for inclusive jets 
+   THnSparse *fhJetPtAreaV0norm_PartLevel;        //!  pt, area V0M for inclusive jets 
+   THnSparse *fhJetPtAreaV0normTTH[kTG][fkTTbins];       //!  pt, area V0M for recoil jets 
+   THnSparse *fhJetPtAreaV0normTTH_PartLevel[fkTTbins];  //!  pt, area V0M for recoil jets particle level 
  
-   TH1D     *fhRho[kTG][kRho];                          //! minimum bias rho inclusive
-   TH1D     *fhRhoTTH[kTG][fkTTbins][kRho];             //! in events MB with hadron TT
+   TH1D     *fhRho[kTG];                          //! minimum bias rho inclusive
+   TH1D     *fhRhoTTH[kTG][fkTTbins];             //! in events MB with hadron TT
    TH1D     *fhRhoTTJ[kTG][fkTTbins];                   //! in events MB with jet TT
-   TH1D     *fhRhoTTC[kTG][fkTTbins][kRho];             //! in events MB with cluster TT
+   TH1D     *fhRhoTTC[kTG][fkTTbins];             //! in events MB with cluster TT
 
-   TH1D     *fhRhoMBpart[kRho];                         //! minimum bias rho inclusive particle level
-   TH1D     *fhRhoTTHinMBpart[fkTTbins][kRho];          //! in events MB with hadron TT particle level
-   TH1D     *fhRhoTTCinMBpart[fkTTbins][kRho];          //! in events MB with cluster TT particle level
+   TH1D     *fhRhoMBpart;                         //! minimum bias rho inclusive particle level
+   TH1D     *fhRhoTTHinMBpart[fkTTbins];          //! in events MB with hadron TT particle level
+   TH1D     *fhRhoTTCinMBpart[fkTTbins];          //! in events MB with cluster TT particle level
 
    TH1D* fhVertex[fkVtx];                             //! vertex distribution 
                                                       
-   TH2D* fhCentrality[kTG][fkCE];                      //! estimated centrality based on  mult V0, mult VC, V0M 
-   TH2D* fhCentralityTTH[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with hadron TT 
-   TH2D* fhCentralityTTJ[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with ch jet TT 
-   TH2D* fhCentralityTTC[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with cluster TT
+   TH2D* fhCentrality[kTG];                      //! estimated centrality based on  mult V0, mult VC, V0M 
+   //TH2D* fhCentralityTTH[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with hadron TT 
+   //TH2D* fhCentralityTTJ[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with ch jet TT 
+   //TH2D* fhCentralityTTC[kTG][fkCE][fkTTbins];         //! estimated centrality  biased with cluster TT
                                                       
    TH1D* fhSignal[kTG][fkCE];                          //! centrality estimators:  mult V0, mult VC, tracklets, znatower0, znctower0, V0M, V0Mnorm  in MB
    TH1D* fhSignalTTH[kTG][fkCE][fkTTbins];             //! distributions of centrality estimators biased with hadron TT in min bias
@@ -339,50 +344,50 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    //recoil jet yields with hadron TT
 //   TH2D* fhRecoilJetPtTTH_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M centrality  
-   TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins][kRho];       //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
-   TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins][kRho];  //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
+   TH2D* fhRecoilJetPtTTH_V0Mnorm1[kTG][fkTTbins];       //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
+   TH2D* fhRecoilJetPtTTH_V0Mnorm1_PartLevel[fkTTbins];  //! pT spectrum of recoil jets associated to semi-inclusive hadron TT versus V0M/mean
 
-   TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins][kRho];        //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  
-   TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins][kRho];   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level 
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm1[kTG][fkTTbins];        //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  
+   TH3D* fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[fkTTbins];   //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level 
 
-   THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins][kRho];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
-   THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins][kRho]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
+   THnSparse *fhRecoilJetTTH_V0Mnorm1[kTG][fkTTbins];      //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
+   THnSparse *fhRecoilJetTTH_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean, V0 assymetry , recoil jet pT,  delta phi)
 
 
-   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[kTG][kRho][fkShift];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TTsignal
+   TH2D* fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[kTG][fkShift];   //! reference pT spectrum of recoil jets TT67 vs V0M/mean with rho shifted for TTsignal
    
    //recoil jet yields with EMCAL cluster TT
 //   TH2D* fhRecoilJetPtTTC_CentV0M[kTG][fkTTbins];         //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M    centrality 
-   TH2D* fhRecoilJetPtTTC_V0Mnorm1[kTG][fkTTbins][kRho];        //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M/mean
+   TH2D* fhRecoilJetPtTTC_V0Mnorm1[kTG][fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive emcal TT versus V0M/mean
 
-   TH2D* fhRecoilJetPtTTC_V0Mnorm1_PartLevel[fkTTbins][kRho];   //! pT spectrum of recoil jets associated to semi-inclusive emcal TT in MB versus V0M/mean
+   TH2D* fhRecoilJetPtTTC_V0Mnorm1_PartLevel[fkTTbins];   //! pT spectrum of recoil jets associated to semi-inclusive emcal TT in MB versus V0M/mean
 
 
 //   TH2D* fhDeltaPtTTH_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with hadron TT versus V0M centrality  
 //   TH2D* fhDeltaPtTTC_RC_CentV0M[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with emcal  TT versus V0M centrality   
 
-   TH2D* fhDeltaPtTTH_RC_V0Mnorm1[kTG][fkTTbins][kRho];         //! delta pT spectrum from random cones  in events with hadron TT  versus V0M/mean V0M  
-   TH2D* fhDeltaPtTTC_RC_V0Mnorm1[kTG][fkTTbins][kRho];         //! delta pT spectrum from random cones  in events with emcal  TT  versus V0M/mean V0M  
+   TH2D* fhDeltaPtTTH_RC_V0Mnorm1[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with hadron TT  versus V0M/mean V0M  
+   TH2D* fhDeltaPtTTC_RC_V0Mnorm1[kTG][fkTTbins];         //! delta pT spectrum from random cones  in events with emcal  TT  versus V0M/mean V0M  
 
 
 
-   TH2D* fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[fkTTbins][kRho];  //! delta pT spectrum from random cones  in events with  hadron TT in MB versus V0M/mean V0M   PARTICLE LEVEL
-   TH2D* fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[fkTTbins][kRho];  //! delta pT spectrum from random cones  in events with  emcal  TT in MB versus V0M/mean V0M   PARTICLE LEVEL
+   TH2D* fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[fkTTbins];  //! delta pT spectrum from random cones  in events with  hadron TT in MB versus V0M/mean V0M   PARTICLE LEVEL
+   TH2D* fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[fkTTbins];  //! delta pT spectrum from random cones  in events with  emcal  TT in MB versus V0M/mean V0M   PARTICLE LEVEL
 
 
    TH3D* fhPtTrkTruePrimGen;                            //! physical primary mc particle eta vs pT  vs V0Mnorm
    TH3D* fhPtTrkTruePrimRec;                            //! physical primary detector level track eta vs pT vs V0Mnorm
    TH3D* fhPtTrkSecOrFakeRec;                           //! secondary tracks eta vs pT vs V0Mnorm
 
-   TH1D* fhJetPtPartLevelCorr[kRho];                          //! response matrix normalization spectrum, jet pT corrected on rho
+   TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhJetPtPartLevelCorrTTHdl[fkTTbins][kRho];           //! response matrix normalization spectrum, events with det. level TTH 
+   TH1D* fhJetPtPartLevelCorrTTHdl[fkTTbins];           //! response matrix normalization spectrum, events with det. level TTH 
 
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr[kRho];           //! response matrix jet pT corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[fkTTbins][kRho];  //! response matrix events with detector level TTH
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[fkTTbins];  //! response matrix events with detector level TTH
 
-   TH2D* fhJetPtResolutionVsPtPartLevel[kRho];                //! resolution of jet pT
+   TH2D* fhJetPtResolutionVsPtPartLevel;                //! resolution of jet pT
 
    TH2D* fhOneOverPtVsPhiNeg;                           //! 1/p_T,track  versus phi for negative tracks //AID//             
    TH2D* fhOneOverPtVsPhiPos;                           //! 1/p_T,track  versus phi for positive tracks //AID//             
@@ -393,28 +398,46 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhDCAinYVsPtPhysPrimary;                       //! Y DCA versus pT for physical primaries  //AID//
    TH2D* fhDCAinXVsPtSecondary;                         //! X DCA versus pT for secondaries //AID// 
    TH2D* fhDCAinYVsPtSecondary;                         //! Y DCA versus pT for secondaries //AID//
-   TH2D* fhFractionOfSecInJet[kRho];                    //! Fraction of jet pT carried by secondaries //AID//
+   TH2D* fhFractionOfSecInJet;                    //! Fraction of jet pT carried by secondaries //AID//
 
    TH2D* fhV0ARunByRunMB;                               //! run by run V0M
    TH2D* fhV0CRunByRunMB;                               //! run by run V0M
    TH2D* fhV0MRunByRunMB;                               //! run by run V0M
    TH2D* fhV0MnormRunByRunMB;                           //! run by run V0M norm
 
+   TH2D* fhJetPtAsymmetryCB[kTG][fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   TH2D* fhTrackPtAsymmetryCB[kTG][fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   THnSparse* fhNumberOfHighPtJetsCB[kTG][fkTTbins];     //! number of jets with pT larger than X in central barrel 
+   THnSparse* fhNumberOfHighPtJetsRecoil[kTG][fkTTbins]; //! number of jets with pT larger than X in recoil region 
+   TH1D* fhJetPtEvtByEvent;                              //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEvent[fkTTbins];              //! event by event pt spectrum of jets 
+
+   TH2D* fhJetPtAsymmetryCBPartLevel[fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   TH2D* fhTrackPtAsymmetryCBPartLevel[fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
+   THnSparse* fhNumberOfHighPtJetsCBPartLevel[fkTTbins];     //! number of jets with pT larger than X in central barrel 
+   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region 
+   TH1D* fhJetPtEvtByEventPartLevel;                              //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];              //! event by event pt spectrum of jets 
+
+
+
    //EMBEDDING
    TH2D* fhTrackEtaInclEMB;                              //!  Eta dist inclusive embedded tracks vs pT 
-   TH3D* fhRecoilJetPhiTTH_EMB_V0Mnorm1[kTG][fkTTbins][kRho];  //!  filled with any detector level pythia recoil jet 
-   TH3D* fhRecoilJetPhiTTH_TAG_V0Mnorm1[kTG][fkTTbins][kRho];  //!  filled  tagged closest detector level pythia recoil jet 
+   TH3D* fhRecoilJetPhiTTH_EMB_V0Mnorm1[kTG][fkTTbins];  //!  filled with any detector level pythia recoil jet 
+   TH3D* fhRecoilJetPhiTTH_TAG_V0Mnorm1[kTG][fkTTbins];  //!  filled  tagged closest detector level pythia recoil jet 
 
-   TH1D* fhJetPtPartLevelCorr_EMB[kTG][kRho];                   //! response matrix normalization spectrum, jet pT corrected on rho
+   TH1D* fhJetPtPartLevelCorr_EMB[kTG];                   //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero_EMB[kTG];                   //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhJetPtPartLevelCorrTTHdl_EMB[kTG][fkTTbins][kRho];    //! response matrix normalization spectrum, events with det. level TTH 
+   TH1D* fhJetPtPartLevelCorrTTHdl_EMB[kTG][fkTTbins];    //! response matrix normalization spectrum, events with det. level TTH 
    TH1D* fhJetPtPartLevelZeroTTHdl_EMB[kTG][fkTTbins];    //! response matrix normalization spectrum, events with det. level TTH 
 
 
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[kTG][kRho];           //! response matrix jet pT corrected on rho    embedded to minimum bias events
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero_EMB[kTG][kRho];           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[kTG][fkTTbins][kRho];  //! response matrix events with detector level TTH
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[kTG][fkTTbins][kRho];  //! response matrix events with detector level TTH
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[kTG];           //! response matrix jet pT corrected on rho    embedded to minimum bias events
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero_EMB[kTG];           //! response matrix jet pT not corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
+
+  
 
    Double_t fMinFractionShared;     // cut on shared fraction
 
@@ -457,8 +480,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Int_t fIndexTTH[fkTTbins];                      //! index of the chosen hadron trigger 
    Int_t fIndexTTJ[fkTTbins];                      //! index of the chosen jet trigger 
 
-   Int_t fdeltapT[fkTTbins][kRho];                       //! delta pT detector level
-   Int_t fdeltapT_PartLevel[fkTTbins][kRho];             //! delta pT particle level
+   Int_t fdeltapT[fkTTbins];                       //! delta pT detector level
+   Int_t fdeltapT_PartLevel[fkTTbins];             //! delta pT particle level
 
    Int_t fIndexTTH_PartLevel[fkTTbins];             //! index of the chosen hadron trigger particle level 
    Int_t fIndexTTC_PartLevel[fkTTbins];             //! index of the chosen gamma trigger particle level 
@@ -475,16 +498,21 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Double_t fPhiCut;                             // phi angle cut on the recoil jet  pi-fPhiCut
    TRandom3* fRandom;                            //! Radom 
 
-   Double_t frhoveckt[999];                        //! auxiliary array to store pT/A of kT jets for kt
-   Double_t frhovecms[999];                        //! auxiliary array to store pT/A of kT jets for cms
+   Double_t frhovec[999];                        //! auxiliary array to store pT/A of kT jets for kt
 
    Double_t fJetR;                                 // jet radius
    Double_t fJetAcut;                              // jet area cut
 
+   Bool_t fRhoType;                               //rho type   0=kt ;   1=cms
+
+   Bool_t kOldV0MC;                                // set old MC settings for V0 which had a bug in delta electrons 
+
+   Bool_t fMultFramework;                        // use mean V0M values from the centrality framework 
+  
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 25); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 28); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

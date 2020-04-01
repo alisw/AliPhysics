@@ -66,7 +66,10 @@ fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0),
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
 fEMCALBadChMinDist(0),       fPHOSBadChMinDist (0),           
-fEMCALNCellsCut(0),          fPHOSNCellsCut(0),
+fEMCALNCellsCut(0),          fEMCALNCellsCutEnDepEnMin(0),
+fEMCALNCellsCutEnDepConstant(0), fEMCALNCellsCutEnDepSlope(0),      
+fPHOSNCellsCut(0),
+fEMCALHighEnergyNdiffCut(0), fEMCALMinCellEnNdiffCut(0),
 fUseEMCALTimeCut(1),         fUseParamTimeCut(0),
 fUseTrackTimeCut(0),         fAccessTrackTOF(0),
 fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
@@ -107,6 +110,12 @@ fWriteOutputDeltaAOD(kFALSE),
 fEMCALClustersListName(""),  fEMCALCellsListName(""),  
 fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
+fLEDHighEnergyCutSM(0),      fLEDHighNCellsCutSM(0), 
+fLEDLowEnergyCutSM3(0),      fLEDLowNCellsCutSM3(0),
+fLEDMinCellEnergy(0),        fLEDMaxCellEnergy(0),
+fRemoveLEDStripEvents(0),    fLEDEventMaxNumberOfStrips(0),
+fLEDLowEnergyCutSM3Strip(0), fLEDLowNCellsCutSM3Strip(0),
+
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
@@ -139,7 +148,9 @@ fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
-fhEMCALClusterTimeE(0),
+fhEMCALClusterTimeE(0),      
+fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
+fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
 fEnergyHistogramNbins(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0)
@@ -767,13 +778,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(20,"20=TOF BC"); 
   fOutputContainer->Add(fhNEventsAfterCut);
 
-  if(fFillEMCAL)
+  if ( fFillEMCAL )
   {
-    for(Int_t i = 0; i < 8; i++)
+    for(Int_t i = 0; i < 9; i++)
     {
       TString names[] = 
       { "NoCut", "Corrected", "GoodCluster", "NonLinearity", 
-        "EnergyAndFidutial", "NCells", "BadDist", "Time" } ;
+        "EnergyAndFidutial", "NCells", "BadDist", "Time","NcellsDiff" } ;
       
       fhEMCALClusterCutsE[i] = new TH1F(Form("hEMCALReaderClusterCuts_%d_%s",i,names[i].Data()),
                                         Form("EMCal %d, %s",i,names[i].Data()),   
@@ -784,23 +795,62 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
     
     fhEMCALClusterTimeE  = new TH2F 
-    ("hEMCALReaderTimeE","time vs #it{E} after cuts (if no calib, shifted -615 ns)", 100,0,100,400,-400,400);
-    fhEMCALClusterTimeE->SetXTitle("#it{E} (GeV)");
-    fhEMCALClusterTimeE->SetYTitle("#it{time} (ns)");
+    ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
+    fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
-    ("hEMCALReaderEtaPhi","#eta vs #varphi",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhi);    
     
     fhEMCALClusterEtaPhiFidCut  = new TH2F 
-    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",40,-2, 2,50, 0,10);
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",80,-2, 2,100, 0,10);
     fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
     fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
     fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
+    
+    if ( fRemoveLEDEvents > 1 )
+    {
+      fhEMCALNSumEnCellsPerSM = new TH2F 
+      ("hEMCALNSumEnCellsPerSM","Total number of cells and energy in any SM",144,0,1152,250,0,5000);
+      fhEMCALNSumEnCellsPerSM->SetXTitle("#it{n}_{cells}^{SM}");
+      fhEMCALNSumEnCellsPerSM->SetYTitle("#Sigma #it{E}_{cells}^{SM} (GeV)");
+      fOutputContainer->Add(fhEMCALNSumEnCellsPerSM);
+      
+      fhEMCALNSumEnCellsPerSMAfter = new TH2F 
+      ("hEMCALNSumEnCellsPerSMAfter","Total number of cells and energy in any SM, after LED SM event rejection",144,0,1152,250,0,5000);
+      fhEMCALNSumEnCellsPerSMAfter->SetXTitle("#it{n}_{cells}^{SM}");
+      fhEMCALNSumEnCellsPerSMAfter->SetYTitle("#Sigma #it{E}_{cells}^{SM} (GeV)");
+      fOutputContainer->Add(fhEMCALNSumEnCellsPerSMAfter);
+      
+      if ( fRemoveLEDStripEvents )
+      {
+        fhEMCALNSumEnCellsPerSMAfterStripCut = new TH2F 
+        ("hEMCALNSumEnCellsPerSMAfterStripCut","Total number of cells and energy in any SM, after LED SM and strip event rejection ",144,0,1152,250,0,5000);
+        fhEMCALNSumEnCellsPerSMAfterStripCut->SetXTitle("#it{n}_{cells}^{SM}");
+        fhEMCALNSumEnCellsPerSMAfterStripCut->SetYTitle("#Sigma #it{E}_{cells}^{SM} (GeV)");
+        fOutputContainer->Add(fhEMCALNSumEnCellsPerSMAfterStripCut);
+      }
+    }
+    
+    if ( fRemoveLEDStripEvents && fRemoveLEDEvents > 0 )
+    {
+      fhEMCALNSumEnCellsPerStrip = new TH2F 
+      ("hEMCALNSumEnCellsPerStrip","Total number of cells and energy in any strip, after LED SM event rejection",48,0,48,100,0,500);
+      fhEMCALNSumEnCellsPerStrip->SetXTitle("#it{n}_{cells}^{strip}");
+      fhEMCALNSumEnCellsPerStrip->SetYTitle("#Sigma #it{E}_{cells}^{strip} (GeV)");
+      fOutputContainer->Add(fhEMCALNSumEnCellsPerStrip);
+      
+      fhEMCALNSumEnCellsPerStripAfter = new TH2F 
+      ("hEMCALNSumEnCellsPerStripAfter","Total number of cells and energy in any strip, after LED SM event rejection",48,0,48,100,0,500);
+      fhEMCALNSumEnCellsPerStripAfter->SetXTitle("#it{n}_{cells}^{strip}");
+      fhEMCALNSumEnCellsPerStripAfter->SetYTitle("#Sigma #it{E}_{cells}^{strip} (GeV)");
+      fOutputContainer->Add(fhEMCALNSumEnCellsPerStripAfter);
+    }
   }
   
   if(fFillPHOS)
@@ -859,6 +909,14 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"N cells: EMC > %d, PHOS > %d; ",fEMCALNCellsCut,fPHOSNCellsCut) ;
   parList+=onePar ;
+  if ( fEMCALNCellsCutEnDepEnMin < 200 )
+  {
+    snprintf(onePar,buffersize,"For Emin>%2.1f, ncell>%2.2f+ %2.2fE; ",
+             fEMCALNCellsCutEnDepEnMin,fEMCALNCellsCutEnDepConstant,fEMCALNCellsCutEnDepSlope) ;
+    parList+=onePar ;
+  }
+  snprintf(onePar,buffersize,"N cells diff TCard: E > %2.2f, Ecell > %1.2f; ",fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
+  parList+=onePar ;
   snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
@@ -881,9 +939,31 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
            fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   parList+=onePar ;
   
-  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d, Reject LED %d ",
-          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster, fRemoveLEDEvents);
+  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d",
+          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster);
   parList+=onePar ;
+  
+  if ( fRemoveLEDEvents > 0 )
+  {
+    snprintf(onePar,buffersize,"Remove LED %d, %2.1f < Ecell < %1.2f : SM - nCell > %d, Sum E > %2.0f; SM3 - nCell < %d, Sum E < %2.0f;",
+             fRemoveLEDEvents, fLEDMinCellEnergy, fLEDMaxCellEnergy, 
+             fLEDHighNCellsCutSM, fLEDHighEnergyCutSM, fLEDLowNCellsCutSM3, fLEDLowEnergyCutSM3);
+    parList+=onePar ;
+    
+    if ( fRemoveLEDStripEvents > 0 )
+    {
+      snprintf(onePar,buffersize,"Remove LED strip? %d, with n strip > %d: "
+               "Full SM, nCell > %d, Sum E > %2.0f; "
+               "1/3 SM, nCell > %d, Sum E > %2.0f; "
+               "SM3, nCell < %d, Sum E < %2.0f;",
+               fRemoveLEDStripEvents    , fLEDEventMaxNumberOfStrips, 
+               fLEDHighNCellsCutStrip[0], fLEDHighEnergyCutStrip[0], 
+               fLEDHighNCellsCutStrip[1], fLEDHighEnergyCutStrip[1], 
+               fLEDLowNCellsCutSM3Strip , fLEDLowEnergyCutSM3Strip);
+      parList+=onePar ;
+    }
+  }
+  
   
   if(fNMCGenerToAccept)
   {
@@ -1067,6 +1147,16 @@ void AliCaloTrackReader::InitParameters()
   fEMCALNCellsCut    = 0; // open, 1; // standard          
   fPHOSNCellsCut     = 0; // open, 2; // standard
   
+  fEMCALNCellsCutEnDepEnMin    = 10000 ;  
+  fEMCALNCellsCutEnDepConstant = 4.9;    // for emin=40 GeV
+  fEMCALNCellsCutEnDepSlope    = 0.04;   // for emin=40 GeV
+  
+  // For clusters with energy above fEMCALHighEnergyNdiffCut, count cells
+  // with E > fEMCALMinCellEnNdiffCut in different T-Card than highest energy cell.
+  // Reject if 0.
+  fEMCALHighEnergyNdiffCut = 50.;
+  fEMCALMinCellEnNdiffCut  = 0.;
+  
   //Track DCA cuts
   // dca_xy cut = 0.0105+0.0350/TMath::Power(pt,1.1);
   fTrackDCACut[0] = 0.0105;
@@ -1089,6 +1179,19 @@ void AliCaloTrackReader::InitParameters()
   
   fAcceptFastCluster = kTRUE;
   fEventType         = -1;
+  
+  fRemoveLEDEvents = 0;
+  fLEDHighEnergyCutSM = 500.; fLEDHighNCellsCutSM = 100;
+  fLEDLowEnergyCutSM3 = 20. ; fLEDLowNCellsCutSM3 = 20;
+  fLEDMinCellEnergy = 0.5;
+  fLEDMaxCellEnergy = 15.;
+  
+  fRemoveLEDStripEvents     = 0  ;
+  fLEDEventMaxNumberOfStrips= 0  ; 
+  fLEDHighEnergyCutStrip[0] = 80 ; fLEDHighEnergyCutStrip[1] = 55 ; 
+  fLEDHighNCellsCutStrip[0] = 24 ; fLEDHighNCellsCutStrip[1] = 15 ;
+  fLEDLowEnergyCutSM3Strip  = 100; // open
+  fLEDLowNCellsCutSM3Strip  = 100; // open
   
   //We want tracks fitted in the detectors:
   //fTrackStatus=AliESDtrack::kTPCrefit;
@@ -1123,9 +1226,9 @@ void AliCaloTrackReader::InitParameters()
   fAODBranchList   = new TList ;
   fOutputContainer = new TList ;
   
-  fEnergyHistogramNbins    = 200;
-  fEnergyHistogramLimit[0] = 0  ;
-  fEnergyHistogramLimit[1] = 100;
+  fEnergyHistogramNbins    = 500 ;
+  fEnergyHistogramLimit[0] = 0.  ;
+  fEnergyHistogramLimit[1] = 250.;
   
   fPileUpParamSPD[0] = 3   ; fPileUpParamSPD[1] = 0.8 ;
   fPileUpParamSPD[2] = 3.0 ; fPileUpParamSPD[3] = 2.0 ; fPileUpParamSPD[4] = 5.0;
@@ -1303,16 +1406,18 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   fIsTriggerMatchOpenCut[2] = kFALSE ;
 
   fCurrentParIndex = 0;
-  if(IsParRun()){
+  if(IsParRun())
+  {
     ULong64_t globalEventID = (ULong64_t)fInputEvent->GetBunchCrossNumber() + (ULong64_t)fInputEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fInputEvent->GetPeriodNumber() * (ULong64_t)59793994260;
-    for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++){
-      if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) {
-	fCurrentParIndex++;
+    for(Short_t ipar=0;ipar<GetCaloUtils()->GetEMCALRecoUtils()->GetNPars();ipar++)
+    {
+      if(globalEventID >= GetCaloUtils()->GetEMCALRecoUtils()->GetGlobalIDPar(ipar)) 
+      {
+        fCurrentParIndex++;
       }
     }
   }
   GetCaloUtils()->GetEMCALRecoUtils()->SetCurrentParNumber(fCurrentParIndex);
-
   
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent)
@@ -2158,10 +2263,26 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //----------------------------------------------------
   // Apply N cells cut
   //
-  if(clus->GetNCells() <= fEMCALNCellsCut && fDataType != AliCaloTrackReader::kMC) 
+  if ( fDataType != AliCaloTrackReader::kMC )
   {
-    AliDebug(2,Form("Cluster with n cells %d < %d",clus->GetNCells(), fEMCALNCellsCut));
-    return ;
+    Int_t nCells =  clus->GetNCells();
+    if (  nCells <= fEMCALNCellsCut ) 
+    {
+      AliDebug(2,Form("Reject cluster with n cells %d < %d",nCells, fEMCALNCellsCut));
+      return ;
+    }
+    
+    // Energy dependent n cell cut
+    if ( clus->E() > fEMCALNCellsCutEnDepEnMin )
+    {
+      Float_t nCellsCut = fEMCALNCellsCutEnDepConstant + fEMCALNCellsCutEnDepSlope*clus->E();
+      if ( nCells <= nCellsCut )
+      {
+        AliDebug(2,Form("Reject cluster with n cells %d < %2.1f for E %2.1f > %2.1f",
+                        nCells, nCellsCut, clus->E(), fEMCALNCellsCutEnDepEnMin));
+        return ;
+      }
+    }
   }
   
   // Check effect of n cells cut
@@ -2190,7 +2311,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 
   // Shift time in case of no calibration with rough factor
   Double_t tofShift = tof;
-  if(tof > 400) tofShift-=615;
+  //if(tof > 400) tofShift-=615;
   fhEMCALClusterTimeE->Fill(clus->E(),tofShift);
   
   if(!IsInTimeWindow(tof,clus->E()))
@@ -2210,6 +2331,25 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Check effect of time cut
   fhEMCALClusterCutsE[7]->Fill(clus->E());
   
+  //----------------------------------------
+  // Apply cut on number of cells in different T-Card
+  // than highest energy cell. At high E it should be more than 0
+  // if not, sign of exotic cluster 
+  
+  Int_t   nDiff = 0, nSame = 0;
+  Float_t eDiff = 0, eSame = 0;
+  GetCaloUtils()->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, GetEMCALCells(), 
+                                                   nDiff, nSame, eDiff, eSame,
+                                                   fEMCALMinCellEnNdiffCut);  
+  if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
+  {
+    printf("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d\n",
+           clus->E(),fEMCALHighEnergyNdiffCut,nDiff,fEMCALMinCellEnNdiffCut,clus->GetM02(),clus->GetNCells());
+    return;
+  }
+  
+  fhEMCALClusterCutsE[8]->Fill(clus->E());
+
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
@@ -3161,7 +3301,13 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("EMCAL Bad Dist > %2.1f \n"     , fEMCALBadChMinDist) ;
   printf("PHOS  Bad Dist > %2.1f \n"     , fPHOSBadChMinDist) ;
   printf("EMCAL N cells  > %d \n"        , fEMCALNCellsCut) ;
+  if ( fEMCALNCellsCutEnDepEnMin < 200 )
+   {
+     printf("\t For Emin>%2.1f, ncell>%2.2f+ %2.2fE; \n",
+              fEMCALNCellsCutEnDepEnMin,fEMCALNCellsCutEnDepConstant,fEMCALNCellsCutEnDepSlope) ;
+   }
   printf("PHOS  N cells  > %d \n"        , fPHOSNCellsCut) ;
+  printf("EMCAL Reject cluster N cells in diff = 0, for E>%2.2f and E cell > %1.2f \n", fEMCALHighEnergyNdiffCut,fEMCALMinCellEnNdiffCut) ;
   printf("EMCAL Time Cut: %3.1f < TOF  < %3.1f\n", fEMCALTimeCutMin, fEMCALTimeCutMax);
   printf("Use CTS         =     %d\n",     fFillCTS) ;
   printf("Use EMCAL       =     %d\n",     fFillEMCAL) ;
@@ -3183,15 +3329,34 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
-  if(fComparePtHardAndJetPt)
+  if ( fComparePtHardAndJetPt )
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
   
-  if(fComparePtHardAndClusterPt)
+  if ( fComparePtHardAndClusterPt )
     printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
+  
+  if ( fRemoveLEDEvents > 0 )
+  {
+    printf("Remove LED events %d, %2.1f < Ecell < %1.2f:\n", fRemoveLEDEvents, fLEDMinCellEnergy, fLEDMaxCellEnergy  );
+    printf("\t SM - nCell >= %d - Sum E >= %2.0f; \n", fLEDHighNCellsCutSM, fLEDHighEnergyCutSM);
+    printf("\t SM3: nCell <= %d - Sum E <= %2.0f  \n", fLEDLowNCellsCutSM3, fLEDLowEnergyCutSM3);
+    
+    if ( fRemoveLEDStripEvents > 0 )
+    {
+      printf("Remove LED strip? %d, with n strip > %d\n: "
+               "\t Full SM, nCell > %d, Sum E > %2.0f;\n "
+               "\t  1/3 SM, nCell > %d, Sum E > %2.0f;\n "
+               "\t     SM3, nCell < %d, Sum E < %2.0f\n",
+               fRemoveLEDStripEvents    , fLEDEventMaxNumberOfStrips, 
+               fLEDHighNCellsCutStrip[0], fLEDHighEnergyCutStrip[0], 
+               fLEDHighNCellsCutStrip[1], fLEDHighEnergyCutStrip[1], 
+               fLEDLowNCellsCutSM3Strip , fLEDLowEnergyCutSM3Strip);
+    }
+  }
   
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
   printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
-  
+
   printf("    \n") ;
 }
 
@@ -3206,53 +3371,233 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
 {
   // For LHC11a
   // Count number of cells with energy larger than 0.1 in SM3, cut on this number
+  Int_t   ncellsSM[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Float_t ecellsSM[] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  
+  // LHC11a case
   if ( fRemoveLEDEvents == 1 )
   {
-    Int_t ncellsSM3 = 0;
     for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
     {
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
+      
+      if ( fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm == 3) ncellsSM[3]++;
     }
     
     Int_t ncellcut = 21;
-    if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
+    if ( GetFiredTriggerClasses().Contains("EMC") ) ncellcut = 35;
     
-    if(ncellsSM3 >= ncellcut)
+    if ( ncellsSM[3] >= ncellcut )
     {
       AliDebug(1,Form("Reject event with ncells in SM3 %d, cut %d, trig %s",
-                      ncellsSM3,ncellcut,GetFiredTriggerClasses().Data()));
+                      ncellsSM[3],ncellcut,GetFiredTriggerClasses().Data()));
       return kTRUE;
     }
   }
-  // For testing
-  // Count number of cells with energy larger than 0.1 any SM, cut on this number
+  // Run2 and general case
   else if ( fRemoveLEDEvents > 1 )
   {
-    Int_t ncellsSM[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    
     for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++)
     {
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm    = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1) ncellsSM[sm]++;
-    }
-    
-    Int_t ncellcut = 21;
-    if(GetFiredTriggerClasses().Contains("EMC")) ncellcut = 35;
-    
-    for(Int_t ism = 0; ism <  GetCaloUtils()->GetEMCALGeometry()->GetNumberOfSuperModules(); ism++)
-    {
-      if(ncellsSM[ism] >= ncellcut)
+      Float_t amp = fInputEvent->GetEMCALCells()->GetAmplitude(icell);
+      
+      if ( amp >= fLEDMinCellEnergy && amp <= fLEDMaxCellEnergy ) 
       {
-        AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
-                        ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
-        
-        return kTRUE;
+        ncellsSM[sm]++;
+        ecellsSM[sm]+=amp;
       }
     }
-  }
+    
+    for(Int_t ism = 0; ism < 20; ism++)
+      fhEMCALNSumEnCellsPerSM->Fill(ncellsSM[ism],ecellsSM[ism]);
+    
+    // Run2
+    if ( fRemoveLEDEvents == 2 ) 
+    {
+      // if there is some activity in SM3, accept the event
+      if ( ncellsSM[3] <= fLEDLowNCellsCutSM3 || ecellsSM[3] <= fLEDLowEnergyCutSM3 ) 
+      {      
+        for(Int_t ism = 0; ism < 20; ism++)
+        {
+          if ( ism == 3 ) continue;
+          
+          if ( ncellsSM[ism] >=  fLEDHighNCellsCutSM )
+          {
+            printf("Reject event because of SM%d: ",ism);
+            for(Int_t jsm = 0; jsm < 20; jsm++){
+              if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+            return kTRUE;
+          }
+          
+          if ( ecellsSM[ism] >= fLEDHighEnergyCutSM )
+          {
+            printf("Reject event because of SM%d: ",ism);
+            for(Int_t jsm = 0; jsm < 20; jsm++) {
+              if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+            return kTRUE;
+          }
+        }
+      } // SM3 activity
+      
+    } // fRemoveLEDEvents == 2
+    
+    // General case without condition on SM3 low activity
+    else //fRemoveLEDEvents > 2
+    {      
+      for(Int_t ism = 0; ism <  GetCaloUtils()->GetEMCALGeometry()->GetNumberOfSuperModules(); ism++)
+      {
+        if ( ncellsSM[ism] >=  fLEDHighNCellsCutSM )
+        {
+          printf("Reject event because of SM%d: ",ism);
+          for(Int_t jsm = 0; jsm < 20; jsm++){
+            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+          return kTRUE;
+        }
+        
+        if ( ecellsSM[ism] >= fLEDHighEnergyCutSM )
+        {
+          printf("Reject event because of SM%d: ",ism);
+          for(Int_t jsm = 0; jsm < 20; jsm++) {
+            if ( ncellsSM[jsm] > 0 ) printf("\t SM%d: ncells %d; sum E %3.1f \n",jsm,ncellsSM[jsm],ecellsSM[jsm]);}
+          return kTRUE;
+        }
+      } // SM loop
+    }  //fRemoveLEDEvents > 2
+    
+    for(Int_t ism = 0; ism < 20; ism++)
+      fhEMCALNSumEnCellsPerSMAfter->Fill(ncellsSM[ism],ecellsSM[ism]);
+      
+  } // fRemoveLEDEvents > 1
+  
+  // Check activity inside all the strips 
+  // (24 strips, 2x24 cells in full SM, 2x8 cellsin 1/3 SM), 
+  // n cells (max 48) and sum of cells energy
+  if ( fRemoveLEDStripEvents )
+  {    
+    Float_t amp1   = 0., amp2   = 0. ;
+    Int_t   absId1 = -1, absId2 = -1 ;
+    Int_t   eventNStripActiveSM[20];
+    Float_t enCellsStrip[20][24];
+    Int_t    nCellsStrip[20][24];
+    
+    for (Int_t ism = 0; ism < 20; ism++)
+    {
+      eventNStripActiveSM[ism] = 0;
+      
+      for (Int_t ieta = 0; ieta < 48; ieta=ieta+2)
+      {
+        enCellsStrip[ism][ieta/2] = 0.; 
+        nCellsStrip [ism][ieta/2] = 0 ; 
+        
+        for (Int_t iphi = 0; iphi < 24; iphi++)
+        {
+          absId1 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(ism, iphi, ieta);
+          if ( absId1 < 0 || absId1 > 17664 ) continue;
+          
+          absId2 = GetCaloUtils()->GetEMCALGeometry()->GetAbsCellIdFromCellIndexes(ism, iphi, ieta+1);
+          if ( absId2 < 0 || absId2 > 17664 ) continue;   
+          
+          amp1 = fInputEvent->GetEMCALCells()->GetCellAmplitude(absId1);
+          amp2 = fInputEvent->GetEMCALCells()->GetCellAmplitude(absId2);
+          
+          if ( amp1 > fLEDMinCellEnergy && amp1 < fLEDMaxCellEnergy )
+          {            
+             nCellsStrip[ism][ieta/2]++;
+            enCellsStrip[ism][ieta/2]+=amp1;
+//            printf("Reader: cell1 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                   absId1, amp1,
+//                   ism,ieta,
+//                    nCellsStrip[ism][ieta/2],
+//                   enCellsStrip[ism][ieta/2] 
+//                   );
+          }
+          
+          if ( amp2 > fLEDMinCellEnergy && amp2 < fLEDMaxCellEnergy )
+          {            
+             nCellsStrip[ism][ieta/2]++;
+            enCellsStrip[ism][ieta/2]+=amp2;
+//            printf("Reader: cell2 %d amp %f; SM %d, strip %d, n cells %d, sum E %f \n",
+//                   absId2, amp2,
+//                   ism,ieta,
+//                    nCellsStrip[ism][ieta/2],
+//                   enCellsStrip[ism][ieta/2] 
+//                   );
+          }
+        }// iphi
+        
+        fhEMCALNSumEnCellsPerStrip->Fill(nCellsStrip[ism][ieta/2],enCellsStrip[ism][ieta/2]);
+        
+      } // ieta
+    } // ism 
+    
+    // Count per event over event cut
+    // Low activity on SM3 for emin = 0.5
+    Bool_t bSM3StripsLowActivity = kTRUE;
+    for (Int_t ieta = 0; ieta < 24; ieta++)
+    {
+      if ( enCellsStrip[3][ieta] > fLEDLowEnergyCutSM3Strip || 
+            nCellsStrip[3][ieta] > fLEDLowNCellsCutSM3Strip   ) 
+        bSM3StripsLowActivity = kFALSE;
+    }
+    
+    // Count number or active strips, depending on cuts
+    //
+    Int_t   nStrips = 0;
+    
+    if ( bSM3StripsLowActivity )
+    {
+      Int_t   maxNCells = 24;
+      Float_t maxECells = 80;
+      for (Int_t ism = 0; ism < 20; ism++)
+      {
+        if ( ism == 3 ) continue ;
+
+        maxNCells = fLEDHighNCellsCutStrip[0];
+        maxECells = fLEDHighEnergyCutStrip[0];
+        if ( ism == 10 || ism == 11 || 
+             ism == 18 || ism == 19   ) 
+        {
+          maxNCells = fLEDHighNCellsCutStrip[1];
+          maxECells = fLEDHighEnergyCutStrip[1];
+        }
+  
+        for (Int_t ieta = 0; ieta < 24; ieta++)
+        {
+//          if ( nCellsStrip[ism][ieta] > 0 || enCellsStrip[ism][ieta] > 0 )
+//            printf("Reader: SM %d, strip %d, n cells %d < %d , sum E %f < %f \n",
+//                   ism,ieta,
+//                   nCellsStrip[ism][ieta],maxNCells,
+//                   enCellsStrip[ism][ieta],maxECells 
+//                   );
+
+          if( enCellsStrip[ism][ieta] >= maxECells || 
+               nCellsStrip[ism][ieta] >= maxNCells   )
+          {
+            nStrips++;
+          }
+        } // ieta
+      } // ism
+    } // bSM03
+    
+    //printf("Reader: Number of strips %d\n",nStrips);
+
+    if ( nStrips > fLEDEventMaxNumberOfStrips ) return kTRUE;
+    
+    for (Int_t ism = 0; ism < 20; ism++)
+    {
+      if ( fRemoveLEDEvents > 1 )
+        fhEMCALNSumEnCellsPerSMAfterStripCut->Fill(ncellsSM[ism],ecellsSM[ism]);
+      
+      for (Int_t ieta = 0; ieta < 24; ieta++)
+      {
+        fhEMCALNSumEnCellsPerStripAfter->Fill(nCellsStrip[ism][ieta],enCellsStrip[ism][ieta]);
+      }
+    }
+    
+  } // remove strip LED events
   
   return kFALSE;
 }

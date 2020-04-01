@@ -64,7 +64,6 @@ public:
   
   UInt_t GetNanoFlags() const { return fNanoFlags; }
   virtual Short_t  Charge() const { return TESTBIT(fNanoFlags, kNanoCharge) ? 1 : -1; }
-  Bool_t HasTOFPID() { return TESTBIT(fNanoFlags, kNanoHasTOFPID); }
   virtual Bool_t HasPointOnITSLayer(Int_t i) const { return TESTBIT(fNanoFlags, i+kNanoClusterITS0); }
 
   using TObject::ClassName;
@@ -363,8 +362,8 @@ public:
 
 
   /// NanoAOD information that cannot be retrieved with the same interface of AliAODtrack
-  bool   IsTRDrefit() { return fNanoFlags & ENanoFlags::kTRDrefit; }
-  bool   HasTOFpid() { return fNanoFlags & ENanoFlags::kNanoHasTOFPID; }
+  bool   IsTRDrefit() { return TESTBIT(fNanoFlags, ENanoFlags::kTRDrefit); }
+  bool   HasTOFpid() { return TESTBIT(fNanoFlags, ENanoFlags::kNanoHasTOFPID); }
 
 private :
 

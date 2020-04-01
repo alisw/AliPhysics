@@ -19,6 +19,7 @@
 #include "AliVTrack.h"
 #include "AliPIDResponse.h"
 #include "AliEventCuts.h"
+#include "AliAODTrack.h"
 
 
 class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
@@ -34,7 +35,8 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
 
 
   Float_t GetPhi0Pi(Float_t phi);
- 
+  Float_t nSigmaTPC3He(AliAODTrack *track);
+    
   void SetParticle(Int_t ptc)                    {fptc       = ptc;      };
   void SetVzMax(Float_t Vzmax)                   {fVzmax     = Vzmax;    };
   void SetCentralityEstimator(Short_t centEst)   {fCenCalV0  = centEst;  };
@@ -104,6 +106,15 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   TH2F *hQxVzCvsCentrality;
   TH2F *hQyVzCvsCentrality;
   
+  //----------------------------
+  // for EP
+  TH2F *hCos2DeltaTPCVzAvsCentrality;
+  TH2F *hCos2DeltaTPCVzCvsCentrality;
+  TH2F *hCos2DeltaVzAVzCvsCentrality;
+  TH2F *hCos2DeltaVzATPCvsCentrality;
+  TH2F *hCos2DeltaVzCTPCvsCentrality;
+  TH2F *hCos2DeltaVzCVzAvsCentrality;
+  
   Int_t eventtype;
   
   // TTree
@@ -125,7 +136,10 @@ class AliAnalysisTaskNucleiv2PbPb18 : public AliAnalysisTaskSE {
   
   //-------------------------
   AliPIDResponse  *fPIDResponse;   //! pointer to PID response
-  
+
+  AliAnalysisTaskNucleiv2PbPb18(const AliAnalysisTaskNucleiv2PbPb18&);
+  AliAnalysisTaskNucleiv2PbPb18& operator=(const AliAnalysisTaskNucleiv2PbPb18&);
+    
   
   ClassDef(AliAnalysisTaskNucleiv2PbPb18, 1);    //Analysis task for high pt analysis
   

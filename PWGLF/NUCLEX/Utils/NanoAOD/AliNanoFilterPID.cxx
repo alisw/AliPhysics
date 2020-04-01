@@ -7,11 +7,12 @@
 #include <AliESDtrackCuts.h>
 #include <AliInputEventHandler.h>
 #include <AliPIDResponse.h>
+#include <AliAnalysisTaskNucleiYield.h>
 
 #include <AliVEvent.h>
 
 AliNanoFilterPID::AliNanoFilterPID()
-    : AliAnalysisCuts{}, fTriggerOnSpecies{}, fTrackCuts{}, fFilterBits{}, fTOFpidTriggerNsigma{},
+    : AliAnalysisCuts{}, fMinDeltaM{-2.4}, fMaxDeltaM{3.6 }, fTriggerOnSpecies{}, fTrackCuts{}, fFilterBits{}, fTOFpidTriggerNsigma{},
       fTOFpidTriggerPtRange{}, fTPCpidTriggerNsigma{}, fTPCpidTriggerPtRange{} {
   for (int iSpecies{0}; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
     fTriggerOnSpecies[iSpecies] = false;
@@ -72,11 +73,17 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
         std::abs(pid->NumberOfSigmasTPC(trk, AliPID::EParticleType(iSpecies)));
     double nTOFsigma =
         std::abs(pid->NumberOfSigmasTOF(trk, AliPID::EParticleType(iSpecies)));
+    
+    float beta = AliAnalysisTaskNucleiYield::HasTOF(aodTrk,pid);
+    if (beta > 1. - EPS) beta = -1;
+    const float m2 = aodTrk->P() * aodTrk->P() * (1.f / (beta * beta) - 1.f);
+    bool goodTOF = m2 > fMinDeltaM && m2 < fMaxDeltaM;
+
     if ((nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
         pt > fTPCpidTriggerPtRange[iSpecies][0] &&
         pt < fTPCpidTriggerPtRange[iSpecies][1]) ||
-        (nTOFsigma < fTOFpidTriggerNsigma[iSpecies] &&
-        nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
+        (goodTOF &&
+        nTOFsigma < fTOFpidTriggerNsigma[iSpecies] &&
         pt > fTOFpidTriggerPtRange[iSpecies][0] &&
         pt < fTOFpidTriggerPtRange[iSpecies][1])) {
       SETBIT(fFilterMask,iSpecies);

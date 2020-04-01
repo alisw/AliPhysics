@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
-    bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7", bool doCloseRej=true, const char *cutVar = "0") {
+    bool isMC=false, bool MCtemplatefit=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    TString CentEst="kInt7", const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
@@ -25,55 +25,632 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   evtCuts->CleanUpMult(false,false,false,true);
   evtCuts->SetZVtxPosition(-10., 10.);
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  evtCuts->SetSphericityCuts(fSpherDown, 1.0);
 
+  AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
+
+  if (suffix == "10") {//pT low
   //Track Cuts are defined here
   //positive pions
-  //Track Cuts tuned according to:
-  //https://alice-notes.web.cern.ch/system/files/notes/analysis/911/2019-05-06-NotepPP_Spher_ver3.pdf
-  //+ most recent Indico-Präsentation:
-  //https://indico.cern.ch/event/761862/contributions/3594774/attachments/1922911/3181566/pipi_KK_Sep2019.pdf
-  AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
-  fTrackCutsPosPion->SetFilterBit(128); // Indico Filterbit 7
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.11, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.11, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if (suffix == "11") {//pT high
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 5.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 5.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "20" ) {//eta low
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.6, 0.6);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.6, 0.6);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "21" ) {//eta high
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.9, 0.9);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.9, 0.9);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "22" ) {//eta high conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.85, 0.85);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.85, 0.85);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "23" ) {//eta low conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.75, 0.75);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.75, 0.75);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "30" ) {//#TPC Cls low
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(70);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(70);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "31" ) {//#TPC Cls high conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(85);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(85);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "32" ) {//#TPC Cls high
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(90);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(90);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "33" ) {//#TPC Cls low conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(75);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(75);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "40" ) {//DCA XYZ low conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
   fTrackCutsPosPion->SetPtRange(0.14, 4.0);
   fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsPosPion->SetNClsTPC(80);
-  // Not mention in AN oder Indico
-  fTrackCutsPosPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  fTrackCutsPosPion->SetDCAVtxZ(0.3);
-  fTrackCutsPosPion->SetDCAVtxXY(0.3);
-  // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
-  fTrackCutsPosPion->SetCutSharedCls(true);
-  fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.28);
+  fTrackCutsPosPion->SetDCAVtxXY(0.28);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsPosPion->SetChi2Cut(0., 4.0);
   fTrackCutsPosPion->SetMinimalBooking(false);
-  //this checks if the sigma of the wanted hypothesis is the smallest, and if
-  //another particle has a smaller sigma, the track is rejected.
-  // Not mention in AN oder Indico
-  //fTrackCutsPosPion->SetCutSmallestSig(true);
 
   //The same things for negative pions
-  AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  fTrackCutsNegPion->SetFilterBit(128);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.28);
+  fTrackCutsNegPion->SetDCAVtxXY(0.28);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "41" ) {//DCA XYZ high conservative
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.32);
+  fTrackCutsPosPion->SetDCAVtxXY(0.32);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.32);
+  fTrackCutsNegPion->SetDCAVtxXY(0.32);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "42" ) {//DCA XYZ high
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.35);
+  fTrackCutsPosPion->SetDCAVtxXY(0.35);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.35);
+  fTrackCutsNegPion->SetDCAVtxXY(0.35);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "43" ) {//DCA XYZ low
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.25);
+  fTrackCutsPosPion->SetDCAVtxXY(0.25);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.25);
+  fTrackCutsNegPion->SetDCAVtxXY(0.25);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "50" ) {//Sphericity low
+  fSpherDown = 0.6;
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
   fTrackCutsNegPion->SetDCAVtxZ(0.3);
   fTrackCutsNegPion->SetDCAVtxXY(0.3);
-  fTrackCutsNegPion->SetCutSharedCls(true);
-  fTrackCutsNegPion->SetNClsTPC(80);
-  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsNegPion->SetChi2Cut(0., 4.0);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  //fTrackCutsNegPion->SetCutSmallestSig(true);
+  } else if ( suffix == "51" ) {//Sphericity high
+  fSpherDown = 0.8;
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "60" ) {//PID low
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.45);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.45);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "61" ) {//PID high
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.55);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.55);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "70" ) {//CPR low
+  fdPhidEta=0.008;
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else if ( suffix == "71" ) {//CPR high
+  fdPhidEta=0.012;
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  } else {//Default
+  //Track Cuts are defined here
+  //positive pions
+  fTrackCutsPosPion->SetIsMonteCarlo(isMC);
+  fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetFilterBit(96);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  fTrackCutsPosPion->SetDCAReCalculation(true);
+  fTrackCutsPosPion->SetDCAVtxZ(0.3);
+  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsPosPion->SetMinimalBooking(false);
+
+  //The same things for negative pions
+  fTrackCutsNegPion->SetIsMonteCarlo(isMC);
+  fTrackCutsNegPion->SetCutCharge(-1);
+  fTrackCutsNegPion->SetFilterBit(96);
+  fTrackCutsNegPion->SetPtRange(0.14, 4.0);
+  fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsNegPion->SetNClsTPC(80);
+  fTrackCutsNegPion->SetDCAReCalculation(true);
+  fTrackCutsNegPion->SetDCAVtxZ(0.3);
+  fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
+  fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
+  fTrackCutsNegPion->SetMinimalBooking(false);
+  }
+
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0);  
+
+
+  
+  //Check proton-pi(-)
+  //AliFemtoDreamTrackCuts* fTrackCutsProton = 
+  //	AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, false, true, false);
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -84,6 +661,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   std::vector<int> PDGParticles;
   PDGParticles.push_back(211); // pi+
   PDGParticles.push_back(-211); // pi-
+ // PDGParticles.push_back(2212); // p
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -101,10 +679,8 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(14);
-  MultBins.push_back(22);
-  MultBins.push_back(31);
-  MultBins.push_back(55);
+  MultBins.push_back(18);
+  MultBins.push_back(30);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
@@ -117,46 +693,44 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   NBins.push_back(750);
   NBins.push_back(750);
   NBins.push_back(750);
+ // NBins.push_back(750);
+ // NBins.push_back(750);
+ // NBins.push_back(750);
   std::vector<float> kMin;
   //minimum k* value
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
+ // kMin.push_back(0.);
+ // kMin.push_back(0.);
+ // kMin.push_back(0.);
   //maximum k* value
   std::vector<float> kMax;
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
+ // kMax.push_back(3.);
+ // kMax.push_back(3.);
+ // kMax.push_back(3.);
   //pair rejection
   std::vector<bool> closeRejection;
   closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
+ // closeRejection.push_back(true); // pi+ p
+ // closeRejection.push_back(false); // pi- p 
+ // closeRejection.push_back(true); // p p
 
-  if(!doCloseRej) {
-	  //Deactivate the ClosePairRejection
-  	  fdPhidEta=0.;
-	  closeRejection.clear();
-	  closeRejection.push_back(false); // pi+ pi+
-	  closeRejection.push_back(false); // pi+ pi-
-	  closeRejection.push_back(false); // pi- pi-
-  }
-
-  //Variations for fdPhidEta
-  if(suffix == "1") {
- 	  fdPhidEta=0.035;
-  }
-
-  if(suffix == "2") {
-	  fdPhidEta=0.03;
-  }
-
-  if(suffix == "3") {
-  	  fdPhidEta=0.025;
-  }
-
-  if(suffix == "4") {
-  	  fdPhidEta=0.02;
+  if (suffix == "5") {
+    //Deactivate the ClosePairRejection
+    fdPhidEta=0.;
+    closeRejection.clear();
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi- pi-
+  //  closeRejection.push_back(false); // pi+ p
+  //  closeRejection.push_back(false); // pi- p
+  //  closeRejection.push_back(false); // p p
   }
 
   //QA plots for tracks
@@ -164,6 +738,9 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   pairQA.push_back(11); // pi+ pi+
   pairQA.push_back(11); // pi+ pi-
   pairQA.push_back(11); // pi- pi-
+ // pairQA.push_back(11); // pi+ p
+ // pairQA.push_back(11); // pi- p
+ // pairQA.push_back(11); // p p
 
   //To put all this into the task we add it to our collection config object in
   //the following way:
@@ -186,7 +763,10 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
-  config->SetdPhidEtaPlots(true);
+  config->SetdPhidEtaPlots(false);
+  config->SetkTandMultBinning(true);
+  config->SetdPhidEtaPlotsSmallK(false);
+  config->SetPhiEtaBinnign(false);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -224,6 +804,7 @@ AliAnalysisTaskSE* AddTaskNanoAODFemtoDreamPion(
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsPosPion(fTrackCutsPosPion);
   task->SetTrackCutsNegPion(fTrackCutsNegPion);
+  //task->SetTrackCutsProton(fTrackCutsProton);
   task->SetCollectionConfig(config);
 
   mgr->AddTask(task);

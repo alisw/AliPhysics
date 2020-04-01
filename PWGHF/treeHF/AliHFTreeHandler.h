@@ -82,10 +82,10 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
-    bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
+    bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
 
     void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
@@ -112,7 +112,7 @@ class AliHFTreeHandler : public TObject
     void SetDoJetSubstructure(bool DoJetSubstructure) {fDoJetSubstructure=DoJetSubstructure;}
     void SetTrackingEfficiency(Double_t TrackingEfficiency) {fTrackingEfficiency=TrackingEfficiency;}
     void SetJetProperties(Double_t JetRadius,Int_t JetAlgorithm,Double_t MinJetPt) {fJetRadius=JetRadius;fJetAlgorithm=JetAlgorithm;fMinJetPt=MinJetPt;}
-    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;}
+    void SetSubJetProperties(Double_t SubJetRadius,Int_t SubJetAlgorithm,Double_t SoftDropZCut,Double_t SoftDropBeta) {fSubJetRadius=SubJetRadius;fSubJetAlgorithm=SubJetAlgorithm;fSoftDropZCut=SoftDropZCut;fSoftDropBeta=SoftDropBeta;}
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
     void SetOptSingleTrackVars(int opt) {fSingleTrackOpt=opt;}
     void SetFillOnlySignal(bool fillopt=true) {fFillOnlySignal=fillopt;}
@@ -182,7 +182,7 @@ class AliHFTreeHandler : public TObject
     const float kCSPEED = 2.99792457999999984e-02; // cm / ps
 
     //helper methods for derived clases (to be used in BuildTree and SetVariables functions)
-    void AddCommonDmesonVarBranches();
+    void AddCommonDmesonVarBranches(Bool_t HasSecVtx = kTRUE);
     void AddSingleTrackBranches();
     void AddJetBranches();
     void AddGenJetBranches();
@@ -238,7 +238,9 @@ class AliHFTreeHandler : public TObject
     bool fFillOnlySignal; ///flag to enable only signal filling
     bool fIsMCGenTree; ///flag to know if is a tree for MC generated particles
     bool fDauInAcceptance; ///flag to know if the daughter are in acceptance in case of MC gen
-    unsigned int fEvID; ///event ID corresponding to the one set in fTreeEvChar
+    int fEvID; ///event ID corresponding to the one set in fTreeEvChar, first 32 bit of fEvIDLong
+    int fEvIDExt; ///event ID corresponding to the one set in fTreeEvChar, second 32 bit of fEvIDLong
+    Long64_t fEvIDLong; ///event ID corresponding to the one set in fTreeEvChar, full fEvIDLong
     int fRunNumber; ///run number
     int fRunNumberPrevCand; ///run number of previous candidate
     bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
@@ -272,6 +274,18 @@ class AliHFTreeHandler : public TObject
     float fZgGenJet; //gen zg
     float fRgJet; //Rg
     float fRgGenJet; //gen Rg
+    float fNsdJet; //Nsd
+    float fNsdGenJet; //gen Nsd
+    float fPt_motherJet; //Pt_mother
+    float fPt_motherGenJet; //gen Pt_mother
+    float fk0Jet; //k0
+    float fk0GenJet; //gen k0
+    float fk1Jet; //k1
+    float fk1GenJet; //gen k1
+    float fk2Jet; //k2
+    float fk2GenJet; //gen k2
+    float fkTJet; //kT
+    float fkTGenJet; //gen kT
     bool  fFillJets; //fill jets
     bool  fDoJetSubstructure; //fill jet substructure
     Double_t fJetRadius; //Jet finding radius
@@ -279,6 +293,8 @@ class AliHFTreeHandler : public TObject
     Int_t fJetAlgorithm; //Jet finding algorithm
     Int_t fSubJetAlgorithm; //SubJet finding algorithm
     Double_t fMinJetPt; //Jet finding mimimum Jet pT
+    Double_t fSoftDropZCut; //soft drop z parameter
+    Double_t fSoftDropBeta; //soft drop beta  parameter
     Double_t fTrackingEfficiency;
 
   /// \cond CLASSIMP

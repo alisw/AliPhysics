@@ -46,7 +46,12 @@ AliHFTreeHandlerBstoDspi::AliHFTreeHandlerBstoDspi():
   fMassKK_Ds(-9999.),
   fCosPiDs_Ds(-9999.),
   fCosPiKPhi_Ds(-9999.),
-  fNormd0MeasMinusExp_Ds(-9999.)
+  fNormd0MeasMinusExp_Ds(-9999.),
+  fInvMassBsCut(0.3),
+  fPtBsCut(-1),
+  fImpParProdBsCut(9999.),
+  fCosPBsCut(-9999.),
+  fCosPXYBsCut(-9999.)
 {
   //
   // Default constructor
@@ -80,7 +85,12 @@ AliHFTreeHandlerBstoDspi::AliHFTreeHandlerBstoDspi(int PIDopt):
   fMassKK_Ds(-9999.),
   fCosPiDs_Ds(-9999.),
   fCosPiKPhi_Ds(-9999.),
-  fNormd0MeasMinusExp_Ds(-9999.)
+  fNormd0MeasMinusExp_Ds(-9999.),
+  fInvMassBsCut(0.3),
+  fPtBsCut(-1),
+  fImpParProdBsCut(9999.),
+  fCosPBsCut(-9999.),
+  fCosPXYBsCut(-9999.)
 {
   //
   // Standard constructor
@@ -152,20 +162,19 @@ TTree* AliHFTreeHandlerBstoDspi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Ds*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerBstoDspi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Ds*/, AliPIDResponse* pidrespo)
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   fIsMCGenTree=false;
 
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandType&kSignal)) return true;
+    if(!(fCandType&kSignal || fCandType&kRefl)) return true;
   }
-  fRunNumber=runnumber;
-  fEvID=eventID;
   fPtGen=ptgen;
-  
-  //TOCHECK: Is this true?
-  fCandType &= ~kRefl; //protection --> Bs -> Dspi cannot be reflected
   
   AliAODRecoDecayHF3Prong* candDs = (AliAODRecoDecayHF3Prong*)cand->GetDaughter(0); //Ds
   
@@ -271,4 +280,45 @@ Int_t AliHFTreeHandlerBstoDspi::IsBsPionSelected(TObject* obj, AliRDHFCutsDstoKK
   }
   
   return 1;
+}
+
+//________________________________________________________________
+Int_t AliHFTreeHandlerBstoDspi::IsBsSelected(AliAODRecoDecayHF2Prong* bs) {
+
+  if (!bs){ AliWarning("No Bs AliAODRecoDecayHF2Prong object. Candidate rejected."); return 0; }
+
+  UInt_t pdgDgBstoDspiUInt[2] = {431,211};
+  Double_t invmassBs = bs->InvMass(2, pdgDgBstoDspiUInt);
+  Double_t massBsPDG = TDatabasePDG::Instance()->GetParticle(531)->Mass();
+  if(TMath::Abs(invmassBs-massBsPDG) > fInvMassBsCut) return 0;
+
+  Double_t ptBs = bs->Pt();
+  if(ptBs < fPtBsCut) return 0;
+
+  Double_t impparprodBs = bs->Prodd0d0();
+  if(impparprodBs > fImpParProdBsCut) return 0;
+
+  Double_t cospBs = bs->CosPointingAngle();
+  if(cospBs < fCosPBsCut) return 0;
+
+  Double_t cospxyBs = bs->CosPointingAngleXY();
+  if(cospxyBs < fCosPXYBsCut) return 0;
+
+  return 1;
+}
+
+//________________________________________________________________
+void AliHFTreeHandlerBstoDspi::SetDsBackgroundShapeType(bool isPr, bool isFDBplus, bool isFDB0, bool isFDLb0, bool isFDBs0) {
+
+  if(isPr)      fCandType |= kDsPrompt;
+  else          fCandType &= ~kDsPrompt;
+  if(isFDBplus) fCandType |= kDsFDBplus;
+  else          fCandType &= ~kDsFDBplus;
+  if(isFDB0)    fCandType |= kDsFDB0;
+  else          fCandType &= ~kDsFDB0;
+  if(isFDLb0)   fCandType |= kDsFDLb0;
+  else          fCandType &= ~kDsFDLb0;
+  if(isFDBs0)   fCandType |= kDsFDBs0;
+  else          fCandType &= ~kDsFDBs0;
+
 }

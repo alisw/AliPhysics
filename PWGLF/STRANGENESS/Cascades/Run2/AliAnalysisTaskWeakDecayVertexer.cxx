@@ -102,6 +102,7 @@ class AliAODv0;
 #include "AliESDInputHandler.h"
 #include "AliLog.h"
 #include "AliTrackerBase.h"
+#include "AliV0HypSel.h"
 
 using std::cout;
 using std::endl;
@@ -117,8 +118,8 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(301.0),
-fkRevertexAllEvents(kTRUE),
+fMaxCentrality(200.5),
+fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
@@ -153,6 +154,7 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
 //________________________________________________
@@ -178,8 +180,8 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(300.0),
-fkRevertexAllEvents(kTRUE),
+fMaxCentrality(200.5),
+fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
@@ -214,6 +216,7 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
 //________________________________________________
@@ -645,6 +648,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     
     if (nentr<2) return 0;
     
+    AliV0HypSel::AccountBField(b);
+    
     TArrayI neg(nentr);
     TArrayI pos(nentr);
     
@@ -669,6 +674,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if (esdTrack->GetSign() < 0. && TMath::Abs(d)>fV0VertexerSels[1]) neg[nneg++]=i;
         if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
+    
+      int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
     
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
@@ -801,6 +808,20 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(7.5); //within pT range
             if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
+
+            if (nHypSel) { // do we select particular hypthesis? - i.e. does object exist
+                Bool_t reject = kTRUE;
+                float pt = vertex.Pt();
+                for (int ih=0;ih<nHypSel;ih++) {
+                    const AliV0HypSel* hyp = (const AliV0HypSel*)(*fV0HypSelArray)[ih];
+                    double m = vertex.GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
+                    if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
+                        reject = kFALSE;
+                        break;
+                    }
+                }
+                if (reject) continue;
+            }
             
             event->AddV0(&vertex);
             
@@ -2853,4 +2874,38 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
             iV0++;
         }
     }
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(TObjArray* selArr)
+{
+    if (!selArr || !selArr->GetEntriesFast()) {
+        AliInfo("No V0 hypothesis selection will be performed");
+        return;
+    }
+    fV0HypSelArray = selArr;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddV0HypSel(const AliV0HypSel& sel)
+{
+    if( !fV0HypSelArray )
+        fV0HypSelArray = new TObjArray();
+    //Direct add functionality
+    fV0HypSelArray->AddLast(new AliV0HypSel(sel));
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddStandardV0HypSel()
+{
+    //Add standard stuff
+    AddV0HypSel( AliV0HypSel("gamma",0.5486e-3, 0.5486e-3, 1.099e-3, 0.001, 20, 0.6, 0.,0.0));
+    AddV0HypSel( AliV0HypSel("K0",139.570e-3, 139.570e-3, 497.7e-3, 0.003,20,0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("Lambda",938.272e-3, 139.570e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("antiLambda",139.570e-3, 938.272e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("HyperTriton",-2.8092, 139.570e-3, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("antiHyperTriton",139.570e-3, -2.8092, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    
 }

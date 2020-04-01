@@ -11,216 +11,553 @@
 #include "AliVEvent.h"
 ClassImp(AliAnalysisTaskFemtoDreamDeuteron)
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
-:AliAnalysisTaskSE()
-,fIsMC(false)
-,fOutput()
-,fEvent()
-,fTrack()
-,fEventCuts()
-,fTrackCutsDeuteronDCA()
-,fTrackCutsDeuteronMass()
-,fTrackCutsAntiDeuteronDCA()
-,fTrackCutsAntiDeuteronMass()
-,fTrackCutsProtonDCA()
-,fTrackCutsProtonMass()
-,fTrackCutsAntiProtonDCA()
-,fTrackCutsAntiProtonMass()
-,fConfig()
-,fPairCleaner()
-,fPartColl()
-,fGTI()
-,fDRestMass()
-,fAntiDRestMass()
-,fPRestMass()
-,fAntiPRestMass()
-,fTrackBufferSize()
-{
-
+  : AliAnalysisTaskSE(),
+    fIsMC(false),
+    fEvent(nullptr),
+    fTrack(nullptr),
+    fEventCuts(nullptr),
+    fTrackCutsDeuteronDCA(nullptr),
+    fTrackCutsDeuteronMass(nullptr),
+    fTrackCutsAntiDeuteronDCA(nullptr),
+    fTrackCutsAntiDeuteronMass(nullptr),
+    fTrackCutsProtonDCA(nullptr),
+    fTrackCutsProtonMass(nullptr),
+    fTrackCutsAntiProtonDCA(nullptr),
+    fTrackCutsAntiProtonMass(nullptr),
+    fConfig(nullptr),
+    fProtonList(nullptr),
+    fProtonMCList(nullptr),
+    fAntiProtonList(nullptr),
+    fAntiProtonMCList(nullptr),
+    fDeuteronList(nullptr),
+    fDeuteronMCList(nullptr),
+    fAntiDeuteronList(nullptr),
+    fAntiDeuteronMCList(nullptr),
+    fProtonNoTOFList(nullptr),
+    fProtonMCNoTOFList(nullptr),
+    fAntiProtonNoTOFList(nullptr),
+    fAntiProtonMCNoTOFList(nullptr),
+    fDeuteronNoTOFList(nullptr),
+    fDeuteronMCNoTOFList(nullptr),
+    fAntiDeuteronNoTOFList(nullptr),
+    fAntiDeuteronMCNoTOFList(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fGTI(nullptr),
+    fProtonRestMass(nullptr),
+    fAntiProtonRestMass(nullptr),
+    fDeuteronRestMass(nullptr),
+    fAntiDeuteronRestMass(nullptr),
+    fProtonRestMassNoTOF(nullptr),
+    fAntiProtonRestMassNoTOF(nullptr),
+    fDeuteronRestMassNoTOF(nullptr),
+    fAntiDeuteronRestMassNoTOF(nullptr),
+    fProtonRestMassMC(nullptr),
+    fAntiProtonRestMassMC(nullptr),
+    fDeuteronRestMassMC(nullptr),
+    fAntiDeuteronRestMassMC(nullptr),
+    fKaonRestMassMC(nullptr),
+    fAntiKaonRestMassMC(nullptr),
+    fDProtonRestMassMC(nullptr),
+    fDKaonRestMassMC(nullptr),
+    fAntiDProtonRestMassMC (nullptr),
+    fAntiDKaonRestMassMC(nullptr),
+    fPionRestMassMC(nullptr),
+    fAntiPionRestMassMC(nullptr),
+    fDPionRestMassMC(nullptr),
+    fAntiDPionRestMassMC(nullptr),
+    fProtonBackgroundMC(nullptr),
+    fAntiProtonBackgroundMC(nullptr),
+    fDeuteronBackgroundMC(nullptr),
+    fAntiDeuteronBackgroundMC(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
+    fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
+    fProtonAntiDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
+    fAntiProtonDeuteronDump(nullptr),
+    fAntiProtonAntiDeuteronDump(nullptr),
+    fDeuteronAntiDeuteronDump(nullptr),
+    fDumpster(nullptr),
+    fUseDumpster(nullptr),
+    fUseDumpsterRestPairs(nullptr),
+    fTrackBufferSize() {
 }
 
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC)
-:AliAnalysisTaskSE(name)
-,fIsMC(isMC)
-,fOutput()
-,fEvent()
-,fTrack()
-,fEventCuts()
-,fTrackCutsDeuteronDCA()
-,fTrackCutsDeuteronMass()
-,fTrackCutsAntiDeuteronDCA()
-,fTrackCutsAntiDeuteronMass()
-,fTrackCutsProtonDCA()
-,fTrackCutsProtonMass()
-,fTrackCutsAntiProtonDCA()
-,fTrackCutsAntiProtonMass()
-,fConfig()
-,fPairCleaner()
-,fPartColl()
-,fGTI()
-,fDRestMass()
-,fAntiDRestMass()
-,fPRestMass()
-,fAntiPRestMass()
-,fTrackBufferSize(2000)
-{
-  DefineOutput(1,TList::Class());
+  : AliAnalysisTaskSE(name),
+    fIsMC(isMC),
+    fEvent(nullptr),
+    fTrack(nullptr),
+    fEventCuts(nullptr),
+    fTrackCutsDeuteronDCA(nullptr),
+    fTrackCutsDeuteronMass(nullptr),
+    fTrackCutsAntiDeuteronDCA(nullptr),
+    fTrackCutsAntiDeuteronMass(nullptr),
+    fTrackCutsProtonDCA(nullptr),
+    fTrackCutsProtonMass(nullptr),
+    fTrackCutsAntiProtonDCA(nullptr),
+    fTrackCutsAntiProtonMass(nullptr),
+    fConfig(nullptr),
+    fProtonList(nullptr),
+    fProtonMCList(nullptr),
+    fAntiProtonList(nullptr),
+    fAntiProtonMCList(nullptr),
+    fDeuteronList(nullptr),
+    fDeuteronMCList(nullptr),
+    fAntiDeuteronList(nullptr),
+    fAntiDeuteronMCList(nullptr),
+    fProtonNoTOFList(nullptr),
+    fProtonMCNoTOFList(nullptr),
+    fAntiProtonNoTOFList(nullptr),
+    fAntiProtonMCNoTOFList(nullptr),
+    fDeuteronNoTOFList(nullptr),
+    fDeuteronMCNoTOFList(nullptr),
+    fAntiDeuteronNoTOFList(nullptr),
+    fAntiDeuteronMCNoTOFList(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fGTI(nullptr),
+    fProtonRestMass(nullptr),
+    fAntiProtonRestMass(nullptr),
+    fDeuteronRestMass(nullptr),
+    fAntiDeuteronRestMass(nullptr),
+    fProtonRestMassNoTOF(nullptr),
+    fAntiProtonRestMassNoTOF(nullptr),
+    fDeuteronRestMassNoTOF(nullptr),
+    fAntiDeuteronRestMassNoTOF(nullptr),
+    fProtonRestMassMC(nullptr),
+    fAntiProtonRestMassMC(nullptr),
+    fDeuteronRestMassMC(nullptr),
+    fAntiDeuteronRestMassMC(nullptr),
+    fKaonRestMassMC(nullptr),
+    fAntiKaonRestMassMC(nullptr),
+    fDProtonRestMassMC(nullptr),
+    fDKaonRestMassMC(nullptr),
+    fAntiDProtonRestMassMC (nullptr),
+    fAntiDKaonRestMassMC(nullptr),
+    fPionRestMassMC(nullptr),
+    fAntiPionRestMassMC(nullptr),
+    fDPionRestMassMC(nullptr),
+    fAntiDPionRestMassMC(nullptr),
+    fProtonBackgroundMC(nullptr),
+    fAntiProtonBackgroundMC(nullptr),
+    fDeuteronBackgroundMC(nullptr),
+    fAntiDeuteronBackgroundMC(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
+    fProtonProtonDump(nullptr),
+    fProtonAntiProtonDump(nullptr),
+    fProtonDeuteronDump(nullptr),
+    fProtonAntiDeuteronDump(nullptr),
+    fAntiProtonAntiProtonDump(nullptr),
+    fAntiProtonDeuteronDump(nullptr),
+    fAntiProtonAntiDeuteronDump(nullptr),
+    fDeuteronAntiDeuteronDump(nullptr),
+    fDumpster(nullptr),
+    fUseDumpster(nullptr),
+    fUseDumpsterRestPairs(nullptr),
+    fTrackBufferSize(2000) {
+  DefineOutput(1, TList::Class());  //Output for the Event Cuts
+  DefineOutput(2, TList::Class());  //Output for the Proton Cuts
+  DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
+  DefineOutput(4, TList::Class());  //Output for the Dueteron Cuts
+  DefineOutput(5, TList::Class());  //Output for the AntiDeuteron Cuts
+  DefineOutput(6, TList::Class());  //Output for the ProtonNoTOF Cuts
+  DefineOutput(7, TList::Class());  //Output for the AntiProtonNoTOF Cuts
+  DefineOutput(8, TList::Class());  //Output for the DueteronNoTOF Cuts
+  DefineOutput(9, TList::Class());  //Output for the AntiDeuteronNoTOF Cuts
+  DefineOutput(10, TList::Class());  //Output for the Results
+  DefineOutput(11, TList::Class());  //Output for the Results QA
+  DefineOutput(12, TList::Class());  //Output for the Dumpster
+  if (fIsMC) {
+    DefineOutput(13, TList::Class());  //Output for the Proton MC
+    DefineOutput(14, TList::Class());  //Output for the AntiProton MC
+    DefineOutput(15, TList::Class());  //Output for the Deuteron MC
+    DefineOutput(16, TList::Class());  //Output for the AntiDeuteron MC
+  }
 }
 
 AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
-  // TODO Auto-generated destructor stub
+  delete fEvent;
+  delete fTrack;
+  delete fTrackCutsDeuteronDCA;
+  delete fTrackCutsDeuteronMass;
+  delete fTrackCutsAntiDeuteronDCA;
+  delete fTrackCutsAntiDeuteronMass;
+  delete fTrackCutsProtonDCA;
+  delete fTrackCutsProtonMass;
+  delete fTrackCutsAntiProtonDCA;
+  delete fTrackCutsAntiProtonMass;
+  delete fPairCleaner;
+  delete fPartColl;
+
+  if (fProtonProtonDump) {
+    delete fProtonProtonDump;
+  }
+  if (fProtonAntiProtonDump) {
+    delete fProtonAntiProtonDump;
+  }
+  if (fProtonDeuteronDump) {
+    delete fProtonDeuteronDump;
+  }
+  if (fProtonAntiDeuteronDump) {
+    delete fProtonAntiDeuteronDump;
+  }
+  if (fAntiProtonAntiProtonDump) {
+    delete fAntiProtonAntiProtonDump;
+  }
+  if (fAntiProtonDeuteronDump) {
+    delete fAntiProtonDeuteronDump;
+  }
+  if (fAntiProtonAntiDeuteronDump) {
+    delete fAntiProtonAntiDeuteronDump;
+  }
+  if (fDeuteronAntiDeuteronDump) {
+    delete fDeuteronAntiDeuteronDump;
+  }
+  if (fDumpster) {
+    delete fDumpster;
+  }
 }
 
 Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(AliFemtoDreamTrack *track) {
-    Float_t p = track->GetP();
-    Float_t mass2sq = -999;
-    Float_t beta = track->GetbetaTOF();
-    if(!(beta<0)){
-        mass2sq = ((1/(beta*beta))-1)*(p*p);
-    }
-    return mass2sq;
-}
-
-void AliAnalysisTaskFemtoDreamDeuteron::InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName) {
-  if (!trkCuts) {
-    // If the track cuts didn't arrive here, we can go home
-    AliFatal("Track Cuts not set!");
+  Float_t p = track->GetP();
+  Float_t mass2sq = -999;
+  Float_t beta = track->GetbetaTOF();
+  if (!(beta < 0)) {
+    mass2sq = ((1 / (beta * beta)) - 1) * (p * p);
   }
-  //For the next step the order is really important, else you do not have histograms
-   //First initialize the Histogramms in the Track Cut object. This is done to not initialize
-   //the histograms already in the add task, but in the Analysis Task itself and therefore on the
-   //worker node.
-  trkCuts->Init();
-  //To avoid collision in the output list, we rename the List carrying all the histograms of this object
-  trkCuts->SetName(trkCutsName.Data());
-  //Now connect the output of the Track Cuts to the output
-  fOutput->Add(trkCuts->GetQAHists());
-  //If we are running over MC more histos are created and we get them seperately
-  //This is done, since later you might want to use seperate output slots, so you
-  //do not overload one slot.
-  if (trkCuts->GetIsMonteCarlo()) {
-    trkCuts->SetMCName(MCName.Data());
-    fOutput->Add(trkCuts->GetMCQAHists());
-  }
+  return mass2sq;
 }
 
 void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
-  fOutput = new TList();
-  fOutput->SetName("Output"); // Every output objects needs a name, be careful names can collide!
-  fOutput->SetOwner();        // This tells ROOT that this list belongs to the top list / top object
 
-  // Here we are playing a little bit dirty and simply initialising the Histogramms for invariant mass inside the
-  // analysis task. This is bad style and in the future should definitely be outsourced but for the moment it is fine 
-  // as long as it works.	
-  fDRestMass = new TH2F("fDRestMass","Deuteron_RestMsq", 36, 0.4, 4., 300, 2., 5.);
-  fDRestMass->GetXaxis()->SetTitle("pT");
-  fDRestMass->GetYaxis()->SetTitle("m^2");
-  fAntiDRestMass = new TH2F("fAntiDRestMass","Antideuteron_RestMsq", 36, 0.4, 4., 300, 2., 5.);
-  fAntiDRestMass->GetXaxis()->SetTitle("pT");
-  fAntiDRestMass->GetYaxis()->SetTitle("m^2");
-  fPRestMass = new TH2F("fPRestMass","Proton_RestMsq", 36, 0.5, 4.05, 180, 0.2, 2.);
-  fPRestMass->GetXaxis()->SetTitle("pT");
-  fPRestMass->GetYaxis()->SetTitle("m^2");
-  fAntiPRestMass = new TH2F("fAntiPRestMass","Antiproton_RestMsq", 36, 0.5, 4.05, 180, 0.2, 2.);
-  fAntiPRestMass->GetXaxis()->SetTitle("pT");
-  fAntiPRestMass->GetYaxis()->SetTitle("m^2");
-  fOutput->Add(fDRestMass);
-  fOutput->Add(fAntiDRestMass);
-  fOutput->Add(fPRestMass);
-  fOutput->Add(fAntiPRestMass);
+  fGTI = new AliAODTrack*[fTrackBufferSize];
 
-  //Set up the Femto Event
-  //Now not to go into the details the arguments are as follows:
-  //1. for the old runs the Pile Up rejection was configured manually, this is
-  //from that time, nowadays we use the AliEventCuts (offically provided by the
-  // ALICE DPG), and there is no need for this
-  //2. Do you want the QA from the AliEventCuts?
-  //3. The trigger, if you ever switch to High Multiplicity, you need to change this
-  fEvent=new AliFemtoDreamEvent(false,true,GetCollisionCandidates());
-  fOutput->Add(fEvent->GetEvtCutList());
-  //Nothing special about the Femto Track, we just initialize it
-  fTrack=new AliFemtoDreamTrack();
-  //If this is false, the MC information is not included
-  fTrack->SetUseMCInfo(fIsMC);
-  //Now this is a very ugly solution, a vector would be way better. Maybe one day it will change
-  //(J.C.Hrist)
-  //In principal we need this to map the tracks flagged with Filterbit 128 (TPC only Tracks constrained to the
-  //Primary Vertex estimated with ITS tracks) to the global tracks. This is neccessary to have the full tracking
-  //information available.
-  fGTI=new AliAODTrack*[fTrackBufferSize];
-
-  if (fEventCuts) {
+  if (!fEventCuts) {
+    AliError("No Event cuts \n");
+  } else {
     fEventCuts->InitQA();
-    if (fEventCuts->GetHistList()) {
-      fOutput->Add(fEventCuts->GetHistList());
+  }
+
+  if (!fTrackCutsProtonDCA) {
+    AliError("No Proton cuts \n");
+  } else {
+    fTrackCutsProtonDCA->Init();
+    fProtonRestMass = new TH2F("fProtonRestMass", "Proton", 36, 0.5, 4.05, 400, 0.00, 3);
+    fProtonRestMass->GetXaxis()->SetTitle("pT(GeV)");
+    fProtonRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fProtonList = fTrackCutsProtonDCA->GetQAHists();
+    if (fIsMC) {
+      fProtonMCList = fTrackCutsProtonDCA->GetMCQAHists();
+    }
+    fProtonList->Add(fProtonRestMass);
+  }
+
+  if (!fTrackCutsAntiProtonDCA) {
+    AliError("No AntiProton cuts \n");
+  } else {
+    fTrackCutsAntiProtonDCA->Init();
+    fAntiProtonRestMass = new TH2F("fAntiProtonRestMass", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 3);
+    fAntiProtonRestMass->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiProtonRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiProtonList = fTrackCutsAntiProtonDCA->GetQAHists();
+    if (fIsMC) {
+      fAntiProtonMCList = fTrackCutsAntiProtonDCA->GetMCQAHists();
+    }
+    fAntiProtonList->Add(fAntiProtonRestMass);
+  }
+
+  if (!fTrackCutsDeuteronDCA) {
+    AliError("No Proton cuts \n");
+  } else {
+    fTrackCutsDeuteronDCA->Init();
+    fDeuteronRestMass = new TH2F("fDeuteronRestMass", "Deuteron", 72, 0.5, 8.05, 800, 0.00, 10.0);
+    fDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
+    fDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fDeuteronList = fTrackCutsDeuteronDCA->GetQAHists();
+    if (fIsMC) {
+      fDeuteronMCList = fTrackCutsDeuteronDCA->GetMCQAHists();
+    }
+    fDeuteronList->Add(fDeuteronRestMass);
+  }
+
+  if (!fTrackCutsAntiDeuteronDCA) {
+    AliError("No Proton cuts \n");
+  } else {
+    fTrackCutsAntiDeuteronDCA->Init();
+    fAntiDeuteronRestMass = new TH2F("fAntiDeuteronRestMass", "AntiDeuteron", 72, 0.5, 8.05, 800, 0.00, 10.0);
+    fAntiDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiDeuteronList = fTrackCutsAntiDeuteronDCA->GetQAHists();
+    if (fIsMC) {
+      fAntiDeuteronMCList = fTrackCutsAntiDeuteronDCA->GetMCQAHists();
+    }
+    fAntiDeuteronList->Add(fAntiDeuteronRestMass);
+  }
+//--------------------------------------------------------------------------------------------------------------------
+  if (!fTrackCutsProtonMass) {
+    AliError("No ProtonNoTOF cuts \n");
+  } else {
+    fTrackCutsProtonMass->Init();
+    fProtonRestMassNoTOF = new TH2F("fProtonRestMassNoTOF", "Proton NoTOF", 36, 0.5, 4.05, 400, 0.00, 3);
+    fProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fProtonNoTOFList = fTrackCutsProtonMass->GetQAHists();
+    fProtonNoTOFList->Add(fProtonRestMassNoTOF);
+  }
+
+  if (!fTrackCutsAntiProtonMass) {
+    AliError("No AntiProtonNoTOF cuts \n");
+  } else {
+    fTrackCutsAntiProtonMass->Init();
+    fAntiProtonRestMassNoTOF = new TH2F("fAntiProtonRestMassNoTOF", "AntiProtonNoTOF", 36, 0.5, 4.05, 400, 0.00, 3);
+    fAntiProtonRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiProtonRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiProtonNoTOFList = fTrackCutsAntiProtonMass->GetQAHists();
+    fAntiProtonNoTOFList->Add(fAntiProtonRestMassNoTOF);
+  }
+
+  if (!fTrackCutsDeuteronMass) {
+    AliError("No DeuteronNoTOF cuts \n");
+  } else {
+    fTrackCutsDeuteronMass->Init();
+    fDeuteronRestMassNoTOF = new TH2F("fDeuteronRestMassNoTOF", "DeuteronNoTOF", 72, 0.5, 8.05, 800, 0.00, 10.0);
+    fDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fDeuteronNoTOFList = fTrackCutsDeuteronMass->GetQAHists();
+    fDeuteronNoTOFList->Add(fDeuteronRestMassNoTOF);
+  }
+
+  if (!fTrackCutsAntiDeuteronMass) {
+    AliError("No AntiDeuteronNoTOF cuts \n");
+  } else {
+    fTrackCutsAntiDeuteronMass->Init();
+    fAntiDeuteronRestMassNoTOF = new TH2F("fAntiDeuteronRestMassNoTOF", "AntiDeuteronNoTOF", 72, 0.5, 8.05, 800, 0.00, 10.0);
+    fAntiDeuteronRestMassNoTOF->GetXaxis()->SetTitle("pT(GeV)");
+    fAntiDeuteronRestMassNoTOF->GetYaxis()->SetTitle("m^2(Gev)^2");
+    fAntiDeuteronNoTOFList = fTrackCutsAntiDeuteronMass->GetQAHists();
+    fAntiDeuteronNoTOFList->Add(fAntiDeuteronRestMassNoTOF);
+  }
+//===================================================================== MC HistogramsfProtonRestMassMCfKaonRestMassMC
+  if (fIsMC) {
+    if (!fTrackCutsProtonMass) {
+      AliError("No Proton cuts \n");
+    } else {
+      fProtonRestMassMC = new TH2F("fProtonRestMassMC", "Proton", 36, 0.5, 4.05, 400, 0.0, 3);
+      fProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fKaonRestMassMC = new TH2F("fKaonRestMassMC", "kaon", 36, 0.5, 4.05, 400, 0.0, 3);
+      fKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fPionRestMassMC = new TH2F("fPionRestMassMC", "pion", 36, 0.5, 4.05, 400, 0.0, 3);
+      fPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fProtonBackgroundMC = new TH2F("fProtonBackgroundMC", "background", 36, 0.5, 4.05, 400, 0.0, 3);
+      fProtonBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
+      fProtonBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fProtonMCList->Add(fProtonRestMassMC);
+      fProtonMCList->Add(fKaonRestMassMC);
+      fProtonMCList->Add(fPionRestMassMC);
+      fProtonMCList->Add(fProtonBackgroundMC);
+    }
+
+    if (!fTrackCutsAntiProtonMass) {
+      AliError("No AntiProton cuts \n");
+    } else {
+      fAntiProtonRestMassMC = new TH2F("fAntiProtonRestMassMC", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 3);
+      fAntiProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiKaonRestMassMC = new TH2F("fAntiKaonRestMassMC", "AntiProton", 36, 0.5, 4.05, 400, 0.00, 3);
+      fAntiKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiPionRestMassMC = new TH2F("fAntiPionRestMassMC", "AntiPion", 36, 0.5, 4.05, 400, 0.00, 3);
+      fAntiPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiProtonBackgroundMC = new TH2F("fAntiProtonBackgroundMC", "AntiProtonBackgroundMC", 36, 0.5, 4.05, 400, 0.00, 3);
+      fAntiProtonBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiProtonBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiProtonMCList->Add(fAntiProtonRestMassMC);
+      fAntiProtonMCList->Add(fAntiKaonRestMassMC);
+      fAntiProtonMCList->Add(fAntiPionRestMassMC);
+      fAntiProtonMCList->Add(fAntiProtonBackgroundMC);
+    }
+
+    if (!fTrackCutsDeuteronMass) {
+      AliError("No Proton cuts \n");
+    } else {
+      fDeuteronRestMassMC = new TH2F("fDeuteronRestMassMC", "Deuteron", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fDeuteronRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fDeuteronRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fDProtonRestMassMC = new TH2F("fDProtonRestMassMC", "Proton", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fDProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fDProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fDKaonRestMassMC = new TH2F("fDKaonRestMassMC", "Kaon", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fDKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fDKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fDPionRestMassMC = new TH2F("fDPionRestMassMC", "Pion", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fDPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fDPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fDeuteronBackgroundMC = new TH2F("fDeuteronBackgroundMC", "Pion", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
+      fDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fDeuteronMCList->Add(fDeuteronRestMassMC);
+      fDeuteronMCList->Add(fDProtonRestMassMC);
+      fDeuteronMCList->Add(fDKaonRestMassMC);
+      fDeuteronMCList->Add(fDPionRestMassMC);
+      fDeuteronMCList->Add(fDeuteronBackgroundMC);
+    }
+
+    if (!fTrackCutsAntiDeuteronMass) {
+      AliError("No Proton cuts \n");
+    } else {
+      fAntiDeuteronRestMassMC = new TH2F("fAntiDeuteronRestMassMC", "AntiDeuteron", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fAntiDeuteronRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiDeuteronRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiDProtonRestMassMC = new TH2F("fAntiDProtonRestMassMC", "AntiProton", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fAntiDProtonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiDProtonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiDKaonRestMassMC = new TH2F("fAntiDKaonRestMassMC", "AntiKaon", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fAntiDKaonRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiDKaonRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiDPionRestMassMC = new TH2F("fAntiDPionRestMassMC", "AntiPion", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fAntiDPionRestMassMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiDPionRestMassMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiDeuteronBackgroundMC = new TH2F("fAntiDeuteronBackgroundMC", "AntiDeuteronBackgroundMC", 72, 0.5, 8.05, 800, 0.00, 10.0);
+      fAntiDeuteronBackgroundMC->GetXaxis()->SetTitle("pT(GeV)");
+      fAntiDeuteronBackgroundMC->GetYaxis()->SetTitle("m^2(Gev)^2");
+      fAntiDeuteronMCList->Add(fAntiDeuteronRestMassMC);
+      fAntiDeuteronMCList->Add(fAntiDProtonRestMassMC);
+      fAntiDeuteronMCList->Add(fAntiDKaonRestMassMC);
+      fAntiDeuteronMCList->Add(fAntiDPionRestMassMC);
+      fAntiDeuteronMCList->Add(fAntiDeuteronBackgroundMC);
+    }
+  }
+  if (!fConfig) {
+    AliError("No Correlation Config \n");
+  } else {
+    fPartColl = new AliFemtoDreamPartCollection(fConfig,
+        fConfig->GetMinimalBookingME());
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 0,
+        fConfig->GetMinimalBookingME());
+  }
+
+  fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates());
+  fTrack = new AliFemtoDreamTrack();
+  fTrack->SetUseMCInfo(fIsMC);
+
+  fDumpster = new TList();
+  fDumpster->SetName("Dumpster");
+  fDumpster->SetOwner(kTRUE);
+
+  if (fUseDumpster) {
+    fProtonDeuteronDump = new AliFemtoDreamDump("pd");
+    fDumpster->Add(fProtonDeuteronDump->GetOutput());
+
+    fAntiProtonAntiDeuteronDump = new AliFemtoDreamDump("ApAd");
+    fDumpster->Add(fAntiProtonAntiDeuteronDump->GetOutput());
+  }
+
+  if (fUseDumpsterRestPairs) {
+
+    fProtonProtonDump = new AliFemtoDreamDump("pp");
+    fDumpster->Add(fProtonProtonDump->GetOutput());
+
+    fProtonAntiProtonDump = new AliFemtoDreamDump("pAp");
+    fDumpster->Add(fProtonAntiProtonDump->GetOutput());
+
+    fProtonAntiDeuteronDump = new AliFemtoDreamDump("pAd");
+    fDumpster->Add(fProtonAntiDeuteronDump->GetOutput());
+
+    fAntiProtonAntiProtonDump = new AliFemtoDreamDump("ApAp");
+    fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
+
+    fAntiProtonDeuteronDump = new AliFemtoDreamDump("Apd");
+    fDumpster->Add(fAntiProtonDeuteronDump->GetOutput());
+
+    fDeuteronAntiDeuteronDump = new AliFemtoDreamDump("dAd");
+    fDumpster->Add(fDeuteronAntiDeuteronDump->GetOutput());
+  }
+
+  if (!fEventCuts->GetMinimalBooking()) {
+    fEvtList = fEventCuts->GetHistList();
+  } else {
+    fEvtList = new TList();
+    fEvtList->SetName("EventCuts");
+    fEvtList->SetOwner();
+  }
+
+  fResultsQA = new TList();
+  fResultsQA->SetOwner();
+  fResultsQA->SetName("ResultsQA");
+
+  if (fConfig->GetUseEventMixing()) {
+    fResults = fPartColl->GetHistList();
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
     }
   } else {
-    AliWarning("Event cuts are missing! \n");
+    fResults = new TList();
+    fResults->SetOwner();
+    fResults->SetName("Results");
   }
-  
-  InitHistograms(fTrackCutsDeuteronDCA, "DCADeuterons", "MCDCADeuterons");
-  InitHistograms(fTrackCutsDeuteronMass, "MassDeuterons", "MCMassDeuterons");
-  InitHistograms(fTrackCutsAntiDeuteronDCA, "DCAAntiDeuterons", "MCDCAAntiDeuterons");
-  InitHistograms(fTrackCutsAntiDeuteronMass, "MassAntiDeuterons", "MCMassAntiDeuterons");   
 
-  InitHistograms(fTrackCutsProtonDCA, "DCAProtons", "MCDCAProtons");
-  InitHistograms(fTrackCutsProtonMass, "MassProtons", "MCMassProtons");
-  InitHistograms(fTrackCutsAntiProtonDCA, "DCAAntiProtons", "MCDCAAntiProtons");
-  InitHistograms(fTrackCutsAntiProtonMass, "MassAntiProtons", "MCMassAntiProtons");  
+  PostData(1, fEvtList);
+  PostData(2, fProtonList);
+  PostData(3, fAntiProtonList);
+  PostData(4, fDeuteronList);
+  PostData(5, fAntiDeuteronList);
+  PostData(6, fProtonNoTOFList);
+  PostData(7, fAntiProtonNoTOFList);
+  PostData(8, fDeuteronNoTOFList);
+  PostData(9, fAntiDeuteronNoTOFList);
+  PostData(10, fResults);
+  PostData(11, fResultsQA);
+  PostData(12, fDumpster);
 
-  //Arguments for the pair cleaner as follows:
-  //1. How many pairs of Tracks + Decays do you want to clean?
-  //(for the purpose of this tutorial, we are going to treat the
-  //second track as a decay ;)
-  //2. How many decays and decays do you want to clean
-  //3. Minimal booking == true means no histograms are created and filled
-  //might be handy for systematic checks, in order to reduce the memory
-  //usage
-  fPairCleaner=new AliFemtoDreamPairCleaner(2,4,false);
-  //The output histograms have to also be added to the output
-  fOutput->Add(fPairCleaner->GetHistList());
-  //1. fConfig: This is the config object from your AddTask where all the things are
-  //set for the calculation of the correlatin function
-  //2. Minimal booking again, see above. However the Results are always filled, just
-  //the QA is not existing.
-  fPartColl=new AliFemtoDreamPartCollection(fConfig,false);
-  //The output also has to be added to the list
-  fOutput->Add(fPartColl->GetHistList());
-  fOutput->Add(fPartColl->GetQAList());
-  PostData(1,fOutput);
+  if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
+    PostData(13, fProtonMCList);
+  }
+  if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
+    PostData(14, fAntiProtonMCList);
+  }
+
+  if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
+    PostData(15, fDeuteronMCList);
+  }
+  if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
+    PostData(16, fAntiDeuteronMCList);
+  }
 }
 
-
-
 void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
-  AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);
+  AliAODEvent *Event = static_cast<AliAODEvent*>(fInputEvent);
+
   if (!Event) {
     AliWarning("No Input Event");
   } else {
-    //Put all the event information into the Event Object
+
     fEvent->SetEvent(Event);
-    //Use the event cut object to check if we want to use this event by
-    //applying the selection criteria defined in the add task.
+
     if (fEventCuts->isSelected(fEvent)) {
-      //if we pass the event selection criteria we can continue. First some boring
-      //technical necessary stuff. We need to fill the Global Track Array (fGTI) once
-      //per event with our mapping of the tracks. For beginners this is fine to ignore.
+
       ResetGlobalTrackReference();
-      for(int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack){
-        AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+
+      for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
+        AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
         if (!track) {
           AliFatal("No Standard AOD");
           return;
         }
         StoreGlobalTrackReference(track);
       }
-      //Set the global track array for the track to be able to access it.
-      fTrack->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
-      //After this is done, let the search for particles begin.
-      //This is where we are going to store the particles we find for now. But hold up!
-      //AliFemtoDreamBasePart?? Well, see every particle candidate type, be it track, v0 or
-      //cascade inherits from this base type, which carries all the information relevant for the
-      //same and mixed event distributions (e.g. momentum, angles, etc. ). E.g. the dEdx of the TPC
-      //doesnt matter for this porpouse.
+
+      fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
       static std::vector<AliFemtoDreamBasePart> DCADeuterons;
       DCADeuterons.clear();
       static std::vector<AliFemtoDreamBasePart> MassDeuterons;
@@ -239,179 +576,233 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       static std::vector<AliFemtoDreamBasePart> MassAntiProtons;
       MassAntiProtons.clear();
       //Now we loop over all the tracks in the reconstructed event.
-      for (int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack) {
-        AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+      for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
+        AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
         if (!track) {
           AliFatal("No Standard AOD");
           return;
         }
-        //First we fill all the track information into the track object
+
         fTrack->SetTrack(track);
-        //then we pass it to the track cut objects, which checks if it passes our selection criteria
-        //for particle 1 and if it returns true ...
+
         if (fTrackCutsDeuteronDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
           DCADeuterons.push_back(*fTrack);
+          fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
         if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
           MassDeuterons.push_back(*fTrack);
-	  fDRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          if (fIsMC) {
+
+            if (fTrack->GetMCPDGCode() == 1000010020) {
+              fDeuteronRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            } else if (fTrack->GetMCPDGCode() == 2212) {
+              fDProtonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            } else if (fTrack->GetMCPDGCode() == 321 ) {
+              fDKaonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            } else if (fTrack->GetMCPDGCode() == 211 ) {
+              fDPionRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            } else {
+              fDeuteronBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            }
+          }
         }
-	if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
+
+        if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)) {
           DCAAntiDeuterons.push_back(*fTrack);
+          fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
+
         if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
           MassAntiDeuterons.push_back(*fTrack);
-	  fAntiDRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          if (fIsMC) {
+
+            if (fTrack->GetMCPDGCode() == -1000010020) {
+
+              fAntiDeuteronRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == -2212) {
+
+              fAntiDProtonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == -321 ) {
+
+              fAntiDKaonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == -211 ) {
+
+              fAntiDPionRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else {
+              fAntiDeuteronBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            }
+          }
         }
+
         if (fTrackCutsProtonDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
-	  fTrack->SetCPA(gRandom->Uniform());
-          DCAProtons.push_back(*fTrack);
+           DCAProtons.push_back(*fTrack);
+           fProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
         if (fTrackCutsProtonMass->isSelected(fTrack)) {
           MassProtons.push_back(*fTrack);
-	  fPRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          if (fIsMC) {
+
+            if (fTrack->GetMCPDGCode() == 2212) {
+
+              fProtonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == 321 ) {
+
+              fKaonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == 211 ) {
+
+              fPionRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else {
+              fProtonBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            }
+          }
         }
-	if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
-          //.. we add it to our particle buffer
+
+        if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
           DCAAntiProtons.push_back(*fTrack);
+          fAntiProtonRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
+
         if (fTrackCutsAntiProtonMass->isSelected(fTrack)) {
           MassAntiProtons.push_back(*fTrack);
-	  fAntiPRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          fAntiProtonRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          if (fIsMC) {
+            if (fTrack->GetMCPDGCode() == -2212) {
+
+              fAntiProtonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == -321 ) {
+
+              fAntiKaonRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else if (fTrack->GetMCPDGCode() == -211 ) {
+
+              fAntiPionRestMassMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            } else {
+              fAntiProtonBackgroundMC->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+
+            }
+          }
         }
       }
-      //This is where the magic of selecting particles ends, and we can turn our attention to
-      //calculating the results. First we need to ensure to not have any Autocorrelations by
-      //selecting a track twice. Now this is hypothetical, because we are selecting opposite
-      //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
 
-      fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons,0);
-      fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons,1);
- 
-      fPairCleaner->CleanDecay(&DCAProtons,0);
-      fPairCleaner->CleanDecay(&DCAAntiProtons,1);
-      fPairCleaner->CleanDecay(&DCADeuterons,2);
-      fPairCleaner->CleanDecay(&DCAAntiDeuterons,3);
-
-      //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
-      //pairer, that's why we call store particles, which only takes the particles marked 'good' from
-      //our buffer vector.
-      //First we need to reset any particles in the array!
+      fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons, 0);
+      fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons, 1);
       fPairCleaner->ResetArray();
       fPairCleaner->StoreParticle(DCAProtons);
       fPairCleaner->StoreParticle(DCAAntiProtons);
       fPairCleaner->StoreParticle(DCADeuterons);
       fPairCleaner->StoreParticle(DCAAntiDeuterons);
+      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                          fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+      void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
+                    std::vector<AliFemtoDreamBasePart> &vec2,
+                    AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
 
-      //Now we can give our particlers to the particle collection where the magic happens.
-      //The arguments one by one:
-      //1. A vector of a vector of cleaned particles fresh from the laundromat.
-      //2. The Z-Vtx of the event, this is used for event mixing, since we only want to mix events which
-      //have the same acceptance in the detector to avoid acceptance effects.
-      //3. Same for the multiplicity.
-      //4. The centrality is really only of interest for pPb collisions (or PbPb) in order to also
-      //do a binning there - kind of similar to a multiplicity binning.
-      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
-                         fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
+
+      if (fUseDumpster) {
+        if (fProtonDeuteronDump) {
+          fProtonDeuteronDump->SetEvent(DCAProtons, DCADeuterons, fEvent, 2212, 1000010020);
+        }
+
+        if (fAntiProtonAntiDeuteronDump) {
+          fAntiProtonAntiDeuteronDump->SetEvent(DCAAntiProtons, DCAAntiDeuterons, fEvent, -2212, -1000010020);
+        }
+      }
+      if (fUseDumpsterRestPairs) {
+        if (fProtonProtonDump) {
+          fProtonProtonDump->SetEvent(DCAProtons, DCAProtons, fEvent, 2212, 2212);
+        }
+        if (fProtonAntiProtonDump) {
+          fProtonAntiProtonDump->SetEvent(DCAProtons, DCAAntiProtons, fEvent, 2212, -2212);
+        }
+        if (fProtonAntiDeuteronDump) {
+          fProtonAntiDeuteronDump->SetEvent(DCAProtons, DCAAntiDeuterons, fEvent, 2212, -1000010020);
+        }
+        if (fAntiProtonAntiProtonDump) {
+          fAntiProtonAntiProtonDump->SetEvent(DCAAntiProtons, DCAAntiProtons, fEvent, -2212, -2212);
+        }
+        if (fAntiProtonDeuteronDump) {
+          fAntiProtonDeuteronDump->SetEvent(DCAAntiProtons, DCADeuterons, fEvent, -2212, 1000010020);
+        }
+        if (fDeuteronAntiDeuteronDump) {
+          fDeuteronAntiDeuteronDump->SetEvent(DCADeuterons, DCAAntiDeuterons, fEvent, 1000010020, -1000010020);
+        }
+      }
     }
   }
- //For this porpouse you are done, now you only need to post the output.
-      PostData(1,fOutput);
+
+  PostData(1, fEvtList);
+  PostData(2, fProtonList);
+  PostData(3, fAntiProtonList);
+  PostData(4, fDeuteronList);
+  PostData(5, fAntiDeuteronList);
+  PostData(6, fProtonNoTOFList);
+  PostData(7, fAntiProtonNoTOFList);
+  PostData(8, fDeuteronNoTOFList);
+  PostData(9, fAntiDeuteronNoTOFList);
+  PostData(10, fResults);
+  PostData(11, fResultsQA);
+  PostData(12, fDumpster);
+//-----------------------------------------MCTracksStorage------------------------------------------------------------------------------
+  if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
+    PostData(13, fProtonMCList);
+  }
+  if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
+    PostData(14, fAntiProtonMCList);
+  }
+  if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
+    PostData(15, fDeuteronMCList);
+  }
+  if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
+    PostData(16, fAntiDeuteronMCList);
+  }
 }
 
-void AliAnalysisTaskFemtoDreamDeuteron::ResetGlobalTrackReference(){
-    //This method was inherited form H. Beck analysis
-    
-    // Sets all the pointers to zero. To be called at
-    // the beginning or end of an event
-    for(UShort_t i=0;i<fTrackBufferSize;i++)
-    {
-        fGTI[i]=0;
-    }
+void AliAnalysisTaskFemtoDreamDeuteron::ResetGlobalTrackReference() {
+
+  for (UShort_t i = 0; i < fTrackBufferSize; i++) {
+    fGTI[i] = 0;
+  }
 }
-void AliAnalysisTaskFemtoDreamDeuteron::StoreGlobalTrackReference(AliAODTrack *track){
-    //This method was inherited form H. Beck analysis
-    
-    //bhohlweg@cern.ch: We ask for the Unique Track ID that points back to the
-    //ESD. Seems like global tracks have a positive ID, Tracks with Filterbit
-    //128 only have negative ID, this is used to match the Tracks later to their
-    //global counterparts
-    
-    // Stores the pointer to the global track
-    
-    // This was AOD073
-    // // Don't use the filter bits 2 (ITS standalone) and 128 TPC only
-    // // Remove this return statement and you'll see they don't have
-    // // any TPC signal
-    // if(track->TestFilterBit(128) || track->TestFilterBit(2))
-    //   return;
-    // This is AOD086
-    // Another set of tracks was introduced: Global constrained.
-    // We only want filter bit 1 <-- NO! we also want no
-    // filter bit at all, which are the v0 tracks
-    //  if(!track->TestFilterBit(1))
-    //    return;
-    
-    // There are also tracks without any filter bit, i.e. filter map 0,
-    // at the beginning of the event: they have ~id 1 to 5, 1 to 12
-    // This are tracks that didn't survive the primary track filter but
-    // got written cause they are V0 daughters
-    
-    // Check whether the track has some info
-    // I don't know: there are tracks with filter bit 0
-    // and no TPC signal. ITS standalone V0 daughters?
-    // if(!track->GetTPCsignal()){
-    //   printf("Warning: track has no TPC signal, "
-    //     //    "not adding it's info! "
-    //     "ID: %d FilterMap: %d\n"
-    //     ,track->GetID(),track->GetFilterMap());
-    //   //    return;
-    // }
-    
-    // Check that the id is positive
-    const int trackID = track->GetID();
-    if(trackID<0){
-        return;
+
+void AliAnalysisTaskFemtoDreamDeuteron::StoreGlobalTrackReference(AliAODTrack *track) {
+
+  const int trackID = track->GetID();
+  if (trackID < 0) {
+    return;
+  }
+
+  if (trackID >= fTrackBufferSize) {
+    printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
+           , trackID, fTrackBufferSize);
+    return;
+  }
+
+  if (fGTI[trackID]) {
+
+    if ( (!track->GetFilterMap()) && (!track->GetTPCNcls()) ) {
+      return;
     }
-    
-    // Check id is not too big for buffer
-    if(trackID>=fTrackBufferSize){
-        printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
-               ,trackID,fTrackBufferSize);
-        return;
+
+    if ( fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ) {
+      // If we come here, there's a problem
+      printf("Warning! global track info already there!");
+      printf("         TPCNcls track1 %u track2 %u",
+             (fGTI[trackID])->GetTPCNcls(), track->GetTPCNcls());
+      printf("         FilterMap track1 %u track2 %u\n",
+             (fGTI[trackID])->GetFilterMap(), track->GetFilterMap());
     }
-    
-    // Warn if we overwrite a track
-    if(fGTI[trackID])
-    {
-        // Seems like there are FilterMap 0 tracks
-        // that have zero TPCNcls, don't store these!
-        if( (!track->GetFilterMap()) && (!track->GetTPCNcls()) ){
-            return;
-        }
-        // Imagine the other way around, the zero map zero clusters track
-        // is stored and the good one wants to be added. We ommit the warning
-        // and just overwrite the 'bad' track
-        if( fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ){
-            // If we come here, there's a problem
-            printf("Warning! global track info already there!");
-            printf("         TPCNcls track1 %u track2 %u",
-                   (fGTI[trackID])->GetTPCNcls(),track->GetTPCNcls());
-            printf("         FilterMap track1 %u track2 %u\n",
-                   (fGTI[trackID])->GetFilterMap(),track->GetFilterMap());
-        }
-    } // Two tracks same id
-    
-    // // There are tracks with filter bit 0,
-    // // do they have TPCNcls stored?
-    // if(!track->GetFilterMap()){
-    //   printf("Filter map is zero, TPCNcls: %u\n"
-    //     ,track->GetTPCNcls());
-    // }
-    
-    // Assign the pointer
-    (fGTI[trackID]) = track;
+  }
+  (fGTI[trackID]) = track;
 }

@@ -33,6 +33,8 @@
 #include <TProfile.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TMatrixD.h>
+#include <TMatrixDEigen.h>
 #include <THashList.h>
 #include <TFile.h>
 #include <TROOT.h>
@@ -78,6 +80,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCentWeight(1.),
   fCentBin(0), 
   fRunNumber(0),
+  fForseRun(kFALSE),
   fIsMB(kTRUE),
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
@@ -88,7 +91,14 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fPhimax(0.),
   fPhimin(0.),
   fMinBCDistance(0.),
-  fTimeCut(12.5e-9)
+  fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
+  fNPID(4),
+  fMCType(kFullMC),
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   //Deafult constructor
   //no memory allocations
@@ -130,6 +140,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCentWeight(1.),
   fCentBin(0), 
   fRunNumber(0),
+  fForseRun(kFALSE),
   fIsMB(kTRUE),
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
@@ -140,7 +151,14 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fPhimax(250.),
   fPhimin(320.),
   fMinBCDistance(0.),
-  fTimeCut(12.5e-9)
+  fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
+  fNPID(4),
+  fMCType(kFullMC),
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)
 {
   // Constructor.
 
@@ -177,6 +195,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCentWeight(1.),
   fCentBin(0), 
   fRunNumber(0),
+  fForseRun(kFALSE),
   fIsMB(kTRUE),
   fUseCaloFastTr(kFALSE),
   fIsMC(0),
@@ -187,7 +206,14 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fPhimax(250.),
   fPhimin(320.),
   fMinBCDistance(0.),
-  fTimeCut(12.5e-9)
+  fTimeCut(12.5e-9),
+  fNonlinA(1.),
+  fNonlinB(0.),
+  fNonlinC(1.),
+  fNPID(4),
+  fMCType(kFullMC),
+  fCutType(kDefCut),
+  fPHOSTrigger(kPHOSAny)  
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -242,7 +268,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->SetName(GetName()) ; 
 
   //QA histograms
-  fOutputContainer->Add(new TH1F("hSelEvents","Event selection", 10,0.,10.)) ;
+  fOutputContainer->Add(new TH1F("hSelEvents","Event selection", 15,0.,15.)) ;
   
   //vertex distribution
   fOutputContainer->Add(new TH1F("hNvertexTracks","N of primary tracks from the primary vertex",150,0.,150.));
@@ -278,6 +304,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hCentrality1SPDTracklets","Centrality SPDTracklets",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality1RefMult05","Centrality RefMult05",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality1RefMult08","Centrality RefMult08",105,0.,105.));
+  fOutputContainer->Add(new TH3F("hSpheriSpheroMult","SSM",22,-0.2,1.,22,-0.2,1.,100,0.,100.)) ;
+
 
   fOutputContainer->Add(new TH1F("hCentrality2V0A","Centrality V0A",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2V0C","Centrality V0C",105,0.,105.));
@@ -312,10 +340,10 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCluEXZM3","Clu E(X,Z), M3"  ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluEXZM4","Clu E(X,Z), M4"  ,64,0.5,64.5, 56,0.5,56.5));
   
-  fOutputContainer->Add(new TH2F("hTofM1","TOF in mod1",200,-1.e-6,1.e-6,200,0.,20.)) ;
-  fOutputContainer->Add(new TH2F("hTofM2","TOF in mod2",200,-1.e-6,1.e-6,200,0.,20.)) ;
-  fOutputContainer->Add(new TH2F("hTofM3","TOF in mod3",200,-1.e-6,1.e-6,200,0.,20.)) ;
-  fOutputContainer->Add(new TH2F("hTofM4","TOF in mod4",200,-1.e-6,1.e-6,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM1","TOF in mod1",200,-1.e-7,1.e-7,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM2","TOF in mod2",200,-1.e-7,1.e-7,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM3","TOF in mod3",200,-1.e-7,1.e-7,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM4","TOF in mod4",200,-1.e-7,1.e-7,200,0.,20.)) ;
 
   fOutputContainer->Add(new TH3F("hDispE","Dispersion vs E",130,0.,65.,100,0.,10.,100,0.,10.)) ;
   fOutputContainer->Add(new TH3F("hDispEneu","Dispersion vs E",130,0.,65.,100,0.,10.,100,0.,10.)) ;
@@ -523,7 +551,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     for(Int_t cen=0; cen<fNCenBin; cen++){
        fOutputContainer->Add(new TH1F(Form("hMC_all_%s_cent%d",partName[ipart],cen),"Spectum (full rapifity)",nPt,ptBins)) ;
        fOutputContainer->Add(new TH1F(Form("hMC_unitEta_%s_cent%d",partName[ipart],cen),"Spectum, |y|<0.15",nPt,ptBins)) ;
-       fOutputContainer->Add(new TH1F(Form("hMC_rap_%s_cent%d",partName[ipart],cen),"Rapidity",100,-5.,5.)) ;
+       fOutputContainer->Add(new TH1F(Form("hMC_rap_%s_cent%d",partName[ipart],cen),"Rapidity",100,-1.,1.)) ;
        fOutputContainer->Add(new TH1F(Form("hMC_phi_%s_cent%d",partName[ipart],cen),"Azimuthal angle",100,0.,TMath::TwoPi())) ;
     }
   }
@@ -608,9 +636,14 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
 
   //Prepare PHOS trigger utils if necessary
-  if(!fIsMB )
-   fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ; 
-  
+  if(!fIsMB ){
+    fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ; 
+    if(fForseRun){
+      printf("Forse run %d \n", fRunNumber) ;       
+      fPHOSTrigUtils->ForseUsingRun(fRunNumber) ; 
+    }
+  } 
+   
   
   PostData(1, fOutputContainer);
 
@@ -624,18 +657,16 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //Select photons
   //Fill QA histograms
   //Fill Tagging histogsms
-    
-  // Event selection flags
-  //  FillHistogram("hSelEvents",0) ;
-    
+        
   AliAODEvent* event = (AliAODEvent*)InputEvent();
   if(!event){
     AliDebug(1,"No event") ;
     PostData(1, fOutputContainer);
     return;
   }
-  FillHistogram("hSelEvents",1) ;
-  fRunNumber=event->GetRunNumber() ;
+  FillHistogram("hSelEvents",0) ;
+  if(!fForseRun)
+    fRunNumber=event->GetRunNumber() ;
 
   //MC stack init
   fStack = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
@@ -649,30 +680,53 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
       fUtils = new AliAnalysisUtils();
   
   if((!fIsFastMC) && (!fIsMC)){
-
-    Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
-    Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+    TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
     if(fUseCaloFastTr){
-      if(fInputHandler->IsEventSelected() & AliVEvent::kMuonCalo){ 
-        TString trigClasses = ((AliAODHeader*)event->GetHeader())->GetFiredTriggerClasses();
-//         //MuonCalo includes EMCAL and PHOS triggers. Select only PHOS triggers  
-        Bool_t is0PH0fired = trigClasses.Contains("CPHI7-B-NOPF-CALOFAST") ;       
-        if(is0PH0fired)FillHistogram("hSelEvents",9) ;
-        isPHI7=isPHI7 || is0PH0fired;
+      if(fIsMB){  //Select only INT7 events
+        if( !trigClasses.Contains("CINT7-B-NOPF-") ){
+          PostData(1, fOutputContainer);
+          return;    
+        }
+      }
+      else{ //PHI7 
+        if(!trigClasses.Contains("CPHI7-B-NOPF-CALOFAST")){ //only calofast to avoid double counting
+          PostData(1, fOutputContainer);
+          return;    
+        }
+      }  
+    } else{
+        
+      Bool_t isMB = (fInputHandler->IsEventSelected() & AliVEvent::kINT7)  ; 
+      Bool_t isPHI7 = (fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
+      
+      switch(fPHOSTrigger){
+      case kPHOSL0: isPHI7 = (trigClasses.Contains("CPHI7-B-NOPF-")) ;
+                    break ;
+      case kPHOSL1low : isPHI7 =( trigClasses.Contains("CPHI7PHL-B-NOPF-") &&
+                                 !trigClasses.Contains("CPHI7-B-NOPF-") ) ;
+                        break ;
+      case kPHOSL1med: isPHI7 =( trigClasses.Contains("CPHI7PHM-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHL-B-NOPF-")) ;
+                       break ;
+      case kPHOSL1high: isPHI7=( trigClasses.Contains("CPHI7PHH-B-NOPF-") &&
+                                !trigClasses.Contains("CPHI7PHM-B-NOPF-")) ;
+                        break ;
+      case kPHOSAny: ; //do nothing
+      default: ;
+      }
+        
+      if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
+        PostData(1, fOutputContainer);
+        return;    
       }
     }
-
-    if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
-      PostData(1, fOutputContainer);
-      return;    
-    }
   }
-  
+
   //If we work with PHOS trigger, prepapre TriggerUtils
   if(!fIsMB)
    fPHOSTrigUtils->SetEvent(event) ;
   
-  FillHistogram("hSelEvents",2) ;
+  FillHistogram("hSelEvents",1) ;
   
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
@@ -683,7 +737,6 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   vtx5[2] = event->GetPrimaryVertex()->GetZ();
 
   FillHistogram("hNvertexTracks",event->GetPrimaryVertex()->GetNContributors());
-  FillHistogram("hZvertex"      ,vtx5[2]);
   if(fIsFastMC){ //vertex from header
     AliAODMCHeader *cHeaderAOD = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
     if(!cHeaderAOD){
@@ -692,13 +745,25 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     }
     cHeaderAOD->GetVertex(vtx5);
   }
+  FillHistogram("hZvertex"      ,vtx5[2]);
   if (TMath::Abs(vtx5[2]) > 10. ){
     PostData(1, fOutputContainer);
     return ;
   }
-  FillHistogram("hSelEvents",3) ;
+  FillHistogram("hSelEvents",2) ;
   //Vtx class z-bin
   Int_t zvtx = TMath::Min(9,Int_t((vtx5[2]+10.)/2.)) ; 
+  
+
+  //Number of contributors
+  Int_t nPrimContributors = event->GetPrimaryVertex()->GetNContributors() ;
+  if (!fIsMC && (nPrimContributors < 1)){
+    PostData(1, fOutputContainer);
+    return;   
+  }
+  FillHistogram("hSelEvents",3) ;
+  
+  
 
   if(!SelectCentrality(event)){
     PostData(1, fOutputContainer);
@@ -732,17 +797,28 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
     AliAODTrack *track = (AliAODTrack*)event->GetTrack(i) ;
-    if(!track->IsHybridGlobalConstrainedGlobal())
+    if(!track->IsOn(AliVTrack::kITSpureSA))
       continue ;
-    if(TMath::Abs(track->Eta())< 0.9){
-      if(trackMult>=fTrackEvent->GetSize())
+    if(TMath::Abs(track->Eta())> 0.8)
+      continue ;
+    if(track->Pt() < 0.15 || track->Pt()>10.) continue ;
+    if(track->GetITSNcls()<4) continue ; 
+    if(track->GetITSchi2()> 36.*track->GetITSNcls()) continue ; 
+    float dr, dz;
+    track->GetImpactParameters(dr, dz);
+    // Check pointing to the primary vertex
+    if(TMath::Abs(dr) > 3.2) continue;
+    if(TMath::Abs(dz) > 2.4) continue;
+    
+    if(trackMult>=fTrackEvent->GetSize())
 	fTrackEvent->Expand(2*trackMult) ;
-      new ((*fTrackEvent)[trackMult]) AliCaloPhoton(track->Px(),track->Py(),track->Pz(),track->P());
+    new ((*fTrackEvent)[trackMult]) AliCaloPhoton(track->Px(),track->Py(),track->Pz(),track->P());
       trackMult++;
-     FillHistogram("hTrackEtaPhi",track->Eta(),track->Phi(),fCentWeight) ;
-     FillHistogram("hTrackEtaPt",track->Eta(),track->Pt(),fCentWeight) ;
-    }
+    FillHistogram("hTrackEtaPhi",track->Eta(),track->Phi(),fCentWeight) ;
+    FillHistogram("hTrackEtaPt",track->Eta(),track->Pt(),fCentWeight) ;
   }
+  
+  
   FillHistogram("hTrackMult",fCentrality,trackMult+0.5) ;
 
   if(!fPHOSEvents[zvtx][fCentBin]) 
@@ -767,13 +843,23 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     if(clu->E()<0.1) 
       continue;
-
-    if(clu->E()>1. && clu->GetNCells()<3)
-      continue ;          
     
-    if(clu->E()>1 && clu->GetM02()<0.1) 
-      continue ;          
-  
+    if(fCutType ==kDefCut){
+      if(clu->GetNCells()<3)
+        continue ;          
+    
+      if(clu->GetM02()<0.1) 
+        continue ;          
+        
+    }
+    if(fCutType ==kLowECut){
+      if(clu->E()>1. && clu->GetNCells()<3)
+        continue ;          
+    
+      if(clu->E()>1 && clu->GetM02()<0.1) 
+        continue ;          
+    }
+    
 //     if(clu->GetMCEnergyFraction()>kEcrossCut) //Ecross cut, should be filled with Tender
 //      continue ;    
 //     
@@ -804,8 +890,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
-    
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
+    Double_t cluE = NonLinearity(clu->E()); 
+    Double_t sc = cluE/clu->E(); 
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(sc*momentum.Px(),sc*momentum.Py(),sc*momentum.Pz(),sc*clu->E() );
     inList++;
     
     p->SetModule(mod) ;
@@ -825,28 +912,27 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     //Mark photons fired trigger
     if(!fIsMB){   
       if(fIsMC){
-        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)) ;    
+        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;    
       }
       else
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
     }
-    
     if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
-      FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
+      FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,cluE);
     }
     
     if(fIsMC){    
        //Check trigger efficiency
-       FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E(),fCentWeight) ;
+       FillHistogram(Form("hMCMinBiasPhot%d",mod),cluE,fCentWeight) ;
        //CheckTrigBadMap
        if((!fIsMB) && fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
-         FillHistogram(Form("hMCMinBiasPhotMap%d",mod),clu->E(),fCentWeight) ;
+         FillHistogram(Form("hMCMinBiasPhotMap%d",mod),cluE,fCentWeight) ;
        
        if(p->IsTrig())
-          FillHistogram(Form("hMCTrigPhot%d",mod),clu->E(),fCentWeight) ;
+          FillHistogram(Form("hMCTrigPhot%d",mod),cluE,fCentWeight) ;
        //Look for MC particle entered PHOS
-       FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
+       FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),cluE,float(clu->GetNLabels())) ;
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
        //Look what particle left vertex
        if(primLabel>-1){
@@ -881,13 +967,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetDispBit(clu->GetDispersion()<2.5*2.5) ;
     p->SetNsigmaFullDisp(TMath::Sqrt(clu->GetDispersion())) ;
 // printf("Disp=%e \n",p->GetNsigmaFullDisp()) ;    
-    p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
+    p->SetTOFBit(TestTOF(clu->GetTOF(),cluE)) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;  
     p->SetNsigmaCPV(clu->GetEmcCpvDistance()) ;
 
-    FillHistogram("hDispE", clu->E(),clu->GetM02(),clu->GetM20()) ;
+    FillHistogram("hDispE", cluE,clu->GetM02(),clu->GetM20()) ;
     if(p->IsCPVOK())
-      FillHistogram("hDispEneu", clu->E(),clu->GetM02(),clu->GetM20()) ;
+      FillHistogram("hDispEneu", cluE,clu->GetM02(),clu->GetM20()) ;
 
     
     if(fIsMB || (!fIsMB && p->IsTrig())){ 
@@ -939,8 +1025,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   for(Int_t i=0;i<nPrim;i++){
     AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(i) ;
     Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
-    if(r2>rcut*rcut)
-      continue ;
+    if(r2>rcut*rcut){
+      continue ;      
+    }
 
     Int_t pdg=prim->GetPdgCode() ;    
     char partName[30] ;
@@ -1020,6 +1107,12 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   const Int_t n=fPHOSEvent->GetEntriesFast() ;
   for(Int_t i=0;i<n;i++){
     AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
+    
+   //photon should be trigger in PHOS triggered events
+   if(!fIsMB && !p->IsTrig() ) 
+     continue ;
+        
+    
     Int_t label=p->GetPrimary() ;
     if(label<0){ //No label!
       FillHistogram("hMCRecNoLabel",p->Pt(),p->GetWeight());
@@ -1259,7 +1352,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                     AliVCluster * clu = event->GetCaloCluster(iclu);
                     if(!clu->IsPHOS())
                       continue ; 
-		    if(clu->E()==p->E()) //same cluster as current
+		    if(NonLinearity(clu->E())==p->E()) //same cluster as current
 		      continue ;
 	      	    Int_t nCluPrimaries = clu->GetNLabels() ;
 		    for(Int_t iAODLabel=0; (iAODLabel<nCluPrimaries) && (!isPartnerLost); iAODLabel++){
@@ -1320,7 +1413,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
     Double_t ptP1 = p1->Pt() ;
     Double_t w1=fCentWeight*p1->GetWeight() ;
     Double_t w1TOF = 1.; 
-    if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+    if(fIsMC){ //simulate TOF cut efficiency
       w1TOF=TOFCutEff(ptP1) ; 
     }
     for(Int_t j = i+1 ; j < n ; j++) {
@@ -1339,7 +1432,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-      if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+      if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
       }
@@ -1361,8 +1454,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         }
         if((p1->E()>0.3) && (p2->E()>0.3)){
           if(p1->Module()==p2->Module()){
-	       Double_t w=fCentWeight*TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-               fhReMod[p1->Module()]->Fill(invMass,ptPi,w) ; 
+	       Double_t ww=fCentWeight*TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+               fhReMod[p1->Module()]->Fill(invMass,ptPi,ww) ; 
 	  }
         }
       }
@@ -1598,7 +1691,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         Double_t w2=fCentWeight*p2->GetWeight() ;
         Double_t w1TOF = 1.; 
         Double_t w2TOF = 1.; 
-        if(fIsMC && fIsMB){ //simulate TOF cut efficiency
+        if(fIsMC ){ //simulate TOF cut efficiency
           w1TOF=TOFCutEff(ptP1) ; 
           w2TOF=TOFCutEff(ptP2) ; 
           w*=w1TOF*w2TOF ;
@@ -1703,9 +1796,18 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 //   //Parameterization 13.10.2018
 //   Double_t mpi0mean =1.34693e-01-3.68195e-04*TMath::TanH((pt-5.00834e+00)/1.81347e+00) ;  
   
-  //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0mean =1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
-  
+  Double_t mpi0mean = 0; 
+  Double_t mpi0sigma=1.;
+  if(fRunNumber>=265015 && fRunNumber<=267166){ //LHC16qrst
+     mpi0mean = -8.62422e-01+(2.63467e-02+7.57835e-02*pt+1.78852e-01*pt*pt+ 2.94777e-01*pt*pt*pt+pt*pt*pt*pt)/(2.63711e-02+7.56551e-02*pt+1.79822e-01*pt*pt+2.94594e-01*pt*pt*pt+pt*pt*pt*pt) ;
+     mpi0sigma =-1.25637e-04/pt/pt+1.33167e-03/pt+4.91759e-03-7.48837e-04*sqrt(pt)+2.18500e-04*pt ;
+  }
+  else{
+     //Parameterization 21.08.2018 with updated NonLin Run2TuneMC
+     mpi0mean = 1.36269e-01-1.81643456e-05/((pt-4.81920e-01)*(pt-4.81920e-01)+3.662247e-02)-2.15520e-04*exp(-pt/1.72016e+00) ;  
+     //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
+     mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
+  }   
   
   //Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
   //Parameterization of data 30.08.2014
@@ -1713,9 +1815,6 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
 
 //   //Parameterization 13.10.2018
 //   Double_t mpi0sigma=TMath::Sqrt(3.79261e-03*3.79261e-03/pt+4.76506e-03*4.76506e-03+4.87152e-05*4.87152e-05*pt*pt*pt) ;
-  
-  //Parameterization 13.10.2018 with updated NonLin Run2TuneMC
-  Double_t mpi0sigma=TMath::Sqrt(2.59195e-05+1.101556186e-05/pt+2.e-8*pt*pt) ;
   
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
@@ -1990,12 +2089,16 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph, Bool_t is
 
    //Calculate UE cut + threshold
    Double_t a[5]={3.40313,2.14956,1.51481,8.94272e-01,3.96717e-01} ;
+
+   //TODO!!! cut for pp
+//   Double_t a[6]={0.49,0.49,0.49,0.49,0.49,0.49} ;  //pp
+
    const Double_t cutEcone1=eCut+coneR1*coneR1*TMath::Pi()*(a[fCentBin]+0.008*ph->Pt()) ;
    const Double_t cutEcone2=eCut+coneR2*coneR2*TMath::Pi()*(a[fCentBin]+0.008*ph->Pt()) ;
    const Double_t cutEcone3=eCut+coneR3*coneR3*TMath::Pi()*(a[fCentBin]+0.008*ph->Pt()) ;
 
 
-   //Sum of energies in cones, tracks and clusters in EMCAL
+   //Sum of energies in cones, tracks and clusters in PHOS
    Double_t eCone1 = 0;
    Double_t eCone2 = 0;
    Double_t eCone3 = 0;
@@ -2173,51 +2276,37 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
      return 1;
   //Classify parent at vertex
   //Introduce for eta and pi0 weights   
-     
-  Double_t r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+    
+  if(fMCType==kFullMC){
+    return 1.; //For full MC scan
+  }
   Int_t mother = particle->GetMother() ;
-  while(mother>-1){
-    if(r2<1.)
-      break ;
+  Int_t pdg = particle->GetPdgCode() ;
+  Int_t parentPDG=0; 
+  if(fMCType==kSingleGamma){
+    parentPDG=22; 
+  }
+  if(fMCType==kSinglePi0){
+    parentPDG=111; 
+  }
+  if(fMCType==kSingleEta){
+    parentPDG=221; 
+  }
+  while(mother>-1 && pdg!=parentPDG){
     particle = (AliAODMCParticle*) fStack->At(mother);
     mother = particle->GetMother() ;
-    r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+    pdg = particle->GetPdgCode() ;
+  }
+  if(pdg!=parentPDG){
+    return 0. ;
   }
   
   //Particle within 1 cm from the virtex
-  Int_t pdg = particle->GetPdgCode() ;
   Double_t x = particle->Pt() ;
-  mother = particle->GetMother() ;
-  while(TMath::Abs(pdg)<100){//gamma, electrons, muons 
-    if(mother>-1){
-      AliAODMCParticle * tmpP=(AliAODMCParticle*)fStack->At(mother) ;
-      pdg=tmpP->GetPdgCode() ;
-      x = tmpP->Pt() ;
-      mother = tmpP->GetMother() ;
-    }
-    else{ //direct photon/electron....
-      if(x<1) x=1. ;
-        return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
-             (fWeightParamPi0[2]+x*fWeightParamPi0[3]+x*x)/
-             (fWeightParamPi0[4]+x*fWeightParamPi0[5]+x*x) +fWeightParamPi0[6])  ;        
-    }
-  } 
-  if(pdg == 111){
-  //Pi0
-     if(x<0.4) x=0.4 ;
-     return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
+  if(x<0.4) x=0.4 ;
+  return fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
        (fWeightParamPi0[2]+x*fWeightParamPi0[3]+x*x)/
        (fWeightParamPi0[4]+x*fWeightParamPi0[5]+x*x) +fWeightParamPi0[6])  ;
-  }
-  if(pdg == 221){
-  //Eta - same same shape, but yield 0.48 and Br(eta->2gamma)
-     Double_t norm=0.48 * 0.3943;
-     if(x<1) return norm ;
-     else return norm*fWeightParamPi0[0]*(TMath::Power(x,fWeightParamPi0[1])*
-       (fWeightParamPi0[2]+x*fWeightParamPi0[3]+x*x)/
-       (fWeightParamPi0[4]+x*fWeightParamPi0[5]+x*x) +fWeightParamPi0[6]) ;
-  }
-  return 1. ;
 }
 //_________________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
@@ -2259,15 +2348,15 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
     }
   }
   if(hasGamma){
-    FillHistogram(Form("LabelsGamma_cent%d",fCentBin),clu->E()) ;
-    FillHistogram(Form("LabelsGammaE_cent%d",fCentBin),clu->E(),eMax/clu->E()) ;
+    FillHistogram(Form("LabelsGamma_cent%d",fCentBin),NonLinearity(clu->E())) ;
+    FillHistogram(Form("LabelsGammaE_cent%d",fCentBin),NonLinearity(clu->E()),eMax/NonLinearity(clu->E())) ;
   }  
   
   for(Int_t i=0;  i<n;  i++){
     AliAODMCParticle*  p= (AliAODMCParticle*) fStack->At(clu->GetLabelAt(i)) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
-      if(p->E()>emFraction*clu->E()){
+      if(p->E()>emFraction*NonLinearity(clu->E())){
 	sure=kTRUE ;
 	return clu->GetLabelAt(i);
       }
@@ -2558,7 +2647,10 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
 
     Double_t v0M = multSelection->GetMultiplicityPercentile("V0M");
     FillHistogram("hCentrality1V0M",v0M) ;
-
+    if(v0M==199. && !fIsMB){
+      v0M=0.;  // No calibration
+    }
+    
     Double_t v0A =multSelection->GetMultiplicityPercentile("V0A");
     FillHistogram("hCentrality1V0A",v0A) ;
       
@@ -2594,6 +2686,12 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     
     Double_t refMu08 =multSelection->GetMultiplicityPercentile("RefMult08");
     FillHistogram("hCentrality1RefMult08",refMu08) ;
+    
+    Double_t sphericity = CalculateSphericity() ;
+    
+    Double_t spherocity = CalculateSpherocity() ;
+    FillHistogram("hSpheriSpheroMult",sphericity,spherocity,v0M) ;
+    
         
     FillHistogram("hSelEvents",4) ;
   
@@ -2602,60 +2700,39 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     }
     FillHistogram("hSelEvents",5) ;
     
-    v0M = multSelection->GetMultiplicityPercentile("V0M");
     FillHistogram("hCentrality2V0M",v0M) ;
-
-    v0A =multSelection->GetMultiplicityPercentile("V0A");
     FillHistogram("hCentrality2V0A",v0A) ;
-      
-    v0C =multSelection->GetMultiplicityPercentile("V0C");
     FillHistogram("hCentrality2V0C",v0C) ;
-
-    olv0M =multSelection->GetMultiplicityPercentile("OnlineV0M");
     FillHistogram("hCentrality2OnlineV0M",olv0M) ;
-    
-    olv0A =multSelection->GetMultiplicityPercentile("OnlineV0A");
     FillHistogram("hCentrality2OnlineV0A",olv0A) ;
-    
-    olv0C =multSelection->GetMultiplicityPercentile("OnlineV0C");
     FillHistogram("hCentrality2OnlineV0C",olv0C) ;
-    
-    adM = multSelection->GetMultiplicityPercentile("ADM");
     FillHistogram("hCentrality2ADM",adM) ;
-
-    adA =multSelection->GetMultiplicityPercentile("ADA");
     FillHistogram("hCentrality2ADA",adA) ;
-      
-    adC =multSelection->GetMultiplicityPercentile("ADC");
     FillHistogram("hCentrality2ADC",adC) ;
-
-    cl1 =multSelection->GetMultiplicityPercentile("SPDClusters");
     FillHistogram("hCentrality2SPDClusters",cl1) ;
-      
-    spd =multSelection->GetMultiplicityPercentile("SPDTracklets");
     FillHistogram("hCentrality2SPDTracklets",spd) ;
-
-    refMu05 =multSelection->GetMultiplicityPercentile("RefMult05");
     FillHistogram("hCentrality2RefMult05",refMu05) ;
-    
-    refMu08 =multSelection->GetMultiplicityPercentile("RefMult08");
     FillHistogram("hCentrality2RefMult08",refMu08) ;
     
     
     //centrality
     fCentrality=1.;
     switch(fCentEstimator){
-            case 13 : fCentrality=multSelection->GetMultiplicityPercentile("V0M");
+            case 15 : fCentrality=100*sphericity ; //
                      break;
-            case 12 : fCentrality=multSelection->GetMultiplicityPercentile("V0A");
+            case 14 : fCentrality=100*spherocity ; //
+                     break;
+            case 13 : fCentrality=v0M;
+                     break;
+            case 12 : fCentrality=v0A;
                      break;         
-            case 11 : fCentrality=multSelection->GetMultiplicityPercentile("V0C");
+            case 11 : fCentrality=v0C;
                      break;         
-            case 10 : fCentrality=multSelection->GetMultiplicityPercentile("OnlineV0M");
+            case 10 : fCentrality=olv0M;
                      break;         
-            case 9 : fCentrality=multSelection->GetMultiplicityPercentile("OnlineV0A");
+            case 9 : fCentrality=olv0A;
                      break;         
-            case 8 : fCentrality=multSelection->GetMultiplicityPercentile("OnlineV0C");
+            case 8 : fCentrality=olv0C;
                      break;         
             case 7 : fCentrality=multSelection->GetMultiplicityPercentile("ADM");
                      break;         
@@ -2676,6 +2753,16 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     }
     
      fCentBin=0;
+     if(fCentrality<0){
+       FillHistogram("hSelEvents",11) ;
+       return kFALSE ;  
+     }
+     
+     if(fCentrality>100){
+       FillHistogram("hSelEvents",12) ;
+       return kFALSE ;  
+     }
+     
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
      if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
@@ -2689,12 +2776,31 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
 }
 //___________________________________________________________________________
 Double_t AliAnalysisTaskTaggedPhotons::TOFCutEff(Double_t x ){
-  //time cut efficiency in 15n+17pq, update 28.05.2019
-  if(x<3.){
-   return 9.53502e-01*(-1.11165e-02+8.29452e-02*x-1.69099e-01*x*x+4.72339e-01*x*x*x+x*x*x*x)/(-1.12328e-02+4.14454e-02*x+4.60774e-01*x*x+1.22286e-01*x*x*x+x*x*x*x)   ;
+  //Time cut efficiency in MC  
+  //time cut efficiency in 15n+17pq, update 02.10.2019
+  //12.5 ns cut
+  if(TMath::Abs(fTimeCut-12.5e-9)<0.01*12.5e-9){  
+     if(x<4.6){
+       return TMath::Exp(3.64952e-03*(-5.80032e+01-1.53442e+02*x+1.30994e+02*x*x+-3.53094e+01*x*x*x+x*x*x*x)/
+                        (-7.75638e-02+8.64761e-01*x+1.22320e+00*x*x-1.00177e+00*x*x*x+x*x*x*x)) ;
+     }
+     else{
+       return 0.63922783*(1.-1.63273e-01*TMath::TanH((x-7.94528e+00)/1.28997e+00))*
+                         (-4.39257e+00*x+2.25503e+00*x*x+x*x*x)/(2.37160e+00*x-6.93786e-01*x*x+x*x*x) ;
+     }
   }
-  else{
-    return 4.53246e-01*(5.06449e+02+8.31956e+01*x+1.22067e+01*x*x-2.99056e+00*x*x*x+x*x*x*x)/(7.49534e+01+1.37457e+02*x-5.41052e+00*x*x-4.53166e+00*x*x*x+x*x*x*x)  ;
+  if(TMath::Abs(fTimeCut-30.e-9)<0.01*30.e-9){  
+    if(x<2.5){
+      //17pq_02.10.2019 (with ev.selection)   
+      return TMath::Exp((-7.35340e+01+7.14029e+01*x-2.25335e+01*x*x+x*x*x)/(1.-4.99060e+01*x+1.28905e+03*x*x+x*x*x)) ;
+    }
+    else{
+      return 0.9975 ;
+    }
   }
-    
+  if(TMath::Abs(fTimeCut-100.e-9)<0.01*100.e-9){
+    return 1.;  
+  }
+  //no other parameterizations so far
+  return 1.; 
 }

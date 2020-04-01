@@ -86,7 +86,7 @@ struct MacroParams : public TNamed {
 
   MacroParams(PionAnalysis::AnalysisParams &a, PionAnalysis::CutParams &c, TString params);
 
-  std::vector<std::pair<int,int>> centrality_ranges;
+  std::vector<std::pair<double,double>> centrality_ranges;
   std::set<PionAnalysis::PionType> pair_codes;
   std::vector<float> kt_ranges;
 
@@ -130,8 +130,8 @@ struct MacroParams : public TNamed {
   Float_t delta_eta_min { -0.1 };
   Float_t delta_eta_max { 0.1 };
 
-  UInt_t q3d_bin_count { 51 };
-  Float_t q3d_maxq { 0.1275 };
+  UInt_t q3d_bin_count { 41 };
+  Float_t q3d_maxq { 0.1025 };
 
   UInt_t avgsep_nbins { 100 };
   Float_t avgsep_max { 20.0 };
@@ -331,7 +331,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                                                         : "??";
 
       // build unique analysis name from centrality and pair types
-      const TString analysis_name = Form("PiPiAnalysis_%02d_%02d_%s",
+      const TString analysis_name = Form("PiPiAnalysis_%02g_%02g_%s",
                                          centrality_range.first,
                                          centrality_range.second,
                                          pair_type_str);
@@ -779,9 +779,9 @@ BuildConfiguration(const TString &text,
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
-        TString prev = TString::Format("%02d", subrange_it->String().Atoi());
+        TString prev = TString::Format("%f", subrange_it->String().Atof());
         while ((subrange_it = (TObjString *)next_subrange())) {
-          TString next = TString::Format("%02d", subrange_it->String().Atoi());
+          TString next = TString::Format("%f", subrange_it->String().Atof());
 
           cmd = macro_varname + "->centrality_ranges.emplace_back(" + prev + "," + next + ");";
           gROOT->ProcessLineFast(cmd);

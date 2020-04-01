@@ -7,6 +7,8 @@
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
 
+// CorrectionFW
+#pragma link C++ class AliPHOSCorrectionFW+;
 
 // PHOS_Run2
 #pragma link C++ class AliAnalysisTaskPHOSObjectCreator+;
@@ -113,6 +115,7 @@
 #pragma link C++ class AliPP13SelectionWeightsMC+;
 #pragma link C++ class AliPP13SelectionWeightsFeeddown+;
 #pragma link C++ class AliPP13SelectionWeightsSPMC+;
+#pragma link C++ class AliPP13SelectionWeightsScan+;
 #pragma link C++ class AliPP13DetectorHistogram+;
 #pragma link C++ class SelectionLimits+;
 #pragma link C++ class AliPP13PhysicsSelection+;

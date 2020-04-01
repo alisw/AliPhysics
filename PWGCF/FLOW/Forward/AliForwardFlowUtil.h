@@ -27,9 +27,17 @@ class AliForwardFlowUtil : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
  public:
-   AliForwardFlowUtil();
-   Int_t GetNUARunNumber(Int_t runnumber);
-   Bool_t IsGoodRun(Int_t runnumber);
+  AliForwardFlowUtil();
+  // ~AliForwardFlowUtil();                                       // destructor
+  // AliForwardFlowUtil(const AliForwardFlowUtil &L);             // copy constructor
+  // AliForwardFlowUtil & operator=(const AliForwardFlowUtil &L); // assignment
+  
+  Int_t GetNUARunNumber(Int_t runnumber);
+  Bool_t IsGoodRun(Int_t runnumber);
+  Bool_t XeXe_Run(Int_t runnumber);
+  Bool_t PbPb_lowIR_Run(Int_t runnumber);
+  Bool_t PbPb_highIR_Run(Int_t runnumber);
+  Bool_t pPb_Run(Int_t runnumber);
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc,TH2D* hOutliers);
   void FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& forwardDist);
   void FillDataCentral(TH2D*& centralDist);
@@ -37,7 +45,9 @@ class AliForwardFlowUtil : public TObject {
   // ESD
   void FillFromTrackrefsITS(TH2D*& fwd) ;
   void FillFromTrackrefsFMD(TH2D*& fwd) ;
+  void FillFromTrackrefsFMDperTR(TH2D*& fwd) ;
   void FillFromPrimariesFMD(TH2D*& fwd) const;
+  void FillFromPrimariesFMDperTR(TH2D*& fwd) ;
   void FillFromPrimariesTPC(TH2D*& cen) const;
   void FillFromPrimariesSPD(TH2D*& cen) const;
   void FillFromPrimariesITS(TH2D*& cen) const;
@@ -60,6 +70,8 @@ class AliForwardFlowUtil : public TObject {
   void FillFromPrimaries(TH2D*& cen) const;
   void FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimariesAOD(TH2D*& cen) const;
+  AliMCParticle* GetMother(AliMCParticle* p);
+  Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);
 
   Bool_t ProcessTrackITS(AliMCParticle* particle,TH2D*& cen);
 
@@ -75,6 +87,8 @@ class AliForwardFlowUtil : public TObject {
   Double_t GetTrackRefPhi(AliTrackReference* ref);
 
   void MakeFakeHoles(TH2D& forwarddNdedp);
+  Bool_t FMDAcceptanceExistMC(Double_t eta,Double_t phi,Double_t vertex);
+
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!
@@ -129,7 +143,15 @@ class AliForwardFlowUtil : public TObject {
   AliTrackReference* fStored; //! Last stored
 
 
+
+// For a new value newValue, compute the new count, new mean, the new M2.
+// mean accumulates the mean of the entire dataset
+// M2 aggregates the squared distance from the mean
+// count aggregates the number of samples seen so far
+
+
+
 private:
-  ClassDef(AliForwardFlowUtil, 2);
+  ClassDef(AliForwardFlowUtil, 1);
 };
 #endif

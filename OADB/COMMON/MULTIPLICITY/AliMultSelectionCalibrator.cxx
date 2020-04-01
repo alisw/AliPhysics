@@ -33,7 +33,8 @@ ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() : TNamed(),
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE),
+fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE),
+fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE), fFiredTrigString(""),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0),
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -62,7 +63,8 @@ fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
     TNamed(name,title),
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE),
+fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE),
+fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE), fFiredTrigString(""),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0),
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -206,6 +208,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fTree->SetBranchAddress("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ);
     fTree->SetBranchAddress("fEvSel_HasGoodVertex2016", &fEvSel_HasGoodVertex2016);
 
+    TString *fFiredTriggerClasses = new TString();
+    fTree->SetBranchAddress("fFiredTriggerClasses",&fFiredTriggerClasses);
+    
     //============================================================
     // Auto-configure Input
     //============================================================
@@ -348,6 +353,10 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         isSelected = fEvSel_TriggerMask & fTrigType;
         if(!isSelected && fCheckTriggerType) lSaveThisEvent = kFALSE;
 
+        if(fFiredTrigString.EqualTo("")==kFALSE) {
+            if (fFiredTriggerClasses->Contains( fFiredTrigString.Data() ) == kFALSE ) lSaveThisEvent = kFALSE;
+        }
+        
         //Check Selections as they are in the fMultSelectionCuts Object
         if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;

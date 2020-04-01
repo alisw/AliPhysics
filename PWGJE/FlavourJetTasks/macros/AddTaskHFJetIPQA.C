@@ -12,7 +12,7 @@ Bool_t DefineCutsTaskpp(AliJetContainer* cont, double radius)
 }
 
 
-//
+
 
 
 AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
@@ -28,7 +28,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *njetsMC              = "Jets",
                                            const char *ntracksMC            = "tracksMC",
                                            const char *nrhoMC               = "RhoMC",
-                                           int nThresh                      =1,
+                                           int nTCThresh                      =1,
+                                           int iTagSetting              =0,
                                            TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
                                            TString PathToThresholds = "alien:///alice/cern.ch/user/k/kgarner/ThresholdHists_LHC16JJ_new.root",
                                           // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
@@ -80,6 +81,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         return 0x0;
     }
 
+
     TFile* fileMCoverDataWeights;
     if(isMC){
         if(PathToWeights.EqualTo("") ) {
@@ -100,6 +102,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     AliAnalysisTaskHFJetIPQA* jetTask = new AliAnalysisTaskHFJetIPQA(combinedName);
     if(useCorrelationTree) jetTask->useTreeForCorrelations(kTRUE);
     jetTask->SetJetRadius(jetradius);
+    jetTask->setTaskName(taskname);
 
     if(isMC && fileMCoverDataWeights){
         TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
@@ -146,46 +149,13 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         if(fileFlukaCorrection) fileFlukaCorrection->Close();
     }
 
-    // Load and setup Threshold values for Tagger
-    //==============================================================================
-    TFile* fileThresholds;
-    if( PathToThresholds.EqualTo("") ) {
-      } else {
-        fileThresholds=TFile::Open(PathToThresholds.Data());
-        if(!fileThresholds ||(fileThresholds&& !fileThresholds->IsOpen())){
-        printf("%s :: File with threshold values not found",taskname);
-        return 0x0;
-      }
-    }
+    jetTask->ReadThresholdHists(PathToThresholds, taskname, nTCThresh, iTagSetting);
 
-    Printf("%s :: File %s successfully loaded, setting up threshold functions.",taskname,PathToThresholds.Data());
-
-    if(fileThresholds){
-        printf("Reading threshold histograms for track counting...\n");
-
-        TObjArray** thresh=new TObjArray*[nThresh];
-        for(int iThresh=0;iThresh<nThresh;iThresh++){
-          fileThresholds->GetObject(Form("Thres_%i",iThresh),thresh[iThresh]);
-        }
-
-        printf("Pointers in the C file: %p, %p, %p\n",thresh[0], thresh[1],thresh[2]);
-
-        printf("Reading prob <-> IP lookup histograms...\n");
-        TObjArray* oLookup;
-        fileThresholds->GetObject("ProbLookup",oLookup);
-        //printf("Lookup Pointer in Read file:%p\n", oLookup);
-
-
-        jetTask->SetThresholds(nThresh,thresh);
-        jetTask->setfNThresholds(nThresh);
-        jetTask->ReadProbvsIPLookup(oLookup);
-    }
 
     // Setup input containers
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
     AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
-    AliParticleContainer *trackContMC  = jetTask->AddParticleContainer(ntracksMC);
     AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
     TString strType(type);
     AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
@@ -196,9 +166,9 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetCont->ConnectClusterContainer(clusterCont);
         DefineCutsTaskpp(jetCont, jetradius);
     }
-    
-    if(isMC)
-    {
+
+    if(isMC){
+        AliParticleContainer *trackContMC   = jetTask->AddParticleContainer(ntracksMC);
         AliJetContainer *jetContMC = jetTask->AddJetContainer(njetsMC,strType,jetradius);
         
         if(jetContMC) {
@@ -259,24 +229,20 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname("");
-    contname += Form("BasicAnalysisHists%.1f",jetradius);
-    TString contnamecorr(combinedName);
-    contnamecorr += Form("_correlations_R%.1f",jetradius);
-    TString contname2(combinedName);
-    contname2 += Form("_histos_R%.1f",jetradius);
+    contname += Form("Hists_R%.1f_%s",jetradius,taskname);
+    TString contname2("");
+    contname2 += Form("Tree_R%.1f_%s",jetradius,taskname);
+
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               AliEmcalList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
-    /*AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
-                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
-                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));*/
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+                                                              TTree::Class(), AliAnalysisManager::kOutputContainer,
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
-   // mgr->ConnectOutput (jetTask, 2, coutput2 );
-    
-
-    
+    mgr->ConnectOutput (jetTask, 2, coutput2 );
 
     return jetTask;
 }

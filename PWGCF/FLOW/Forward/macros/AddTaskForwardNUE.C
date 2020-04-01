@@ -7,7 +7,7 @@
  *
  */
 
-AliAnalysisTaskSE* AddTaskForwardNUE()
+AliAnalysisTaskSE* AddTaskForwardNUE(TString name1)
 {
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

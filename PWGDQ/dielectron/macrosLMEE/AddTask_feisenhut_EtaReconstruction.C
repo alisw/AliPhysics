@@ -1,4 +1,3 @@
-
 AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString name = "name",
                                                                 Bool_t isAOD,
                                                                 Bool_t getFromAlien = kFALSE,
@@ -8,7 +7,6 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
-bool debug = false;
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -19,47 +17,6 @@ bool debug = false;
   TString fileName = AliAnalysisManager::GetCommonFileName();
 
   fileName = "AnalysisResults.root"; // create a subfolder in the file
-  // fileName = "AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full.root"; // create a subfolder in the file
-
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS__Full
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY
-  // AnalysisResults_TrackCuts_ImpactParXY_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParZ
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_TPCchi2Cl_NclsSITS__wo_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_NclsSITS__wo_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParXY_ImpParZ_NclsTPC_TPCchi2Cl__wo_NclsSITS
-
-  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl_NclsSITS__wo_ImpParZ_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParXY_TPCchi2Cl__wo_ImpParZ_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParXY_NclsSITS__wo_ImpParZ_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParXY__wo_ImpParZ_NclsTPC_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl_NclsSITS__wo_ImpParXY_NclsTPC
-  // AnalysisResults_TrackCuts_ImpactParZ_TPCchi2Cl__wo_ImpParXY_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsSITS__wo_ImpParXY_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParZ__wo_ImpParXY_NclsTPC_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ
-  // AnalysisResults_TrackCuts_NclsTPC_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsSITS
-  // AnalysisResults_TrackCuts_NclsTPC_NclsSITS__wo_ImpParXY_ImpactParZ_TPCchi2Cl
-  // AnalysisResults_TrackCuts_NclsTPC__wo_ImpParXY_ImpactParZ_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_TrackCuts_TPCchi2Cl_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC
-  // AnalysisResults_TrackCuts_TPCchi2Cl__wo_ImpParXY_ImpactParZ_NclsTPC_NclsSITS
-
-  // AnalysisResults_TrackCuts_NclsSITS__wo_ImpParXY_ImpactParZ_NclsTPC_TPCchi2Cl
-
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsTPC__wo_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_TPCchi2Cl__wo_NclsTPC_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ_NclsSITS__wo_NclsTPC_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpParXY_ImpactParZ__wo_NclsTPC_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_TPCchi2Cl__wo_ImpactParZ_NclsSITS
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC_NclsSITS__wo_ImpactParZ_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpParXY_NclsTPC__wo_ImpactParZ_TPCchi2Cl_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_TPCchi2Cl__wo_ImpParXY_NclsSITS
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC_NclsSITS__wo_ImpParXY_TPCchi2Cl
-  // AnalysisResults_TrackCuts_ImpactParZ_NclsTPC__wo_ImpParXY_TPCchi2Cl_NclsSITS
-
-  // AnalysisResults_NoTrackCuts
 
 
   // #########################################################
@@ -143,8 +100,14 @@ bool debug = false;
   // #########################################################
   // #########################################################
   // Set mass cuts for primary and secondary pairs
-  task->SetMassCutPrimaries(MassCutPrimaries);
-  task->SetMassCutSecondaries(MassCutSecondaries);
+  task->SetMassCut(DoMassCut);
+  task->SetPhotonMass(photonMass);
+  task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
+  task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
+  task->SetUpperPreFilterMass(upperPreFilterMass);
+  task->SetLowerPreFilterMass(lowerPreFilterMass);
+  task->SetMassCutSecondaries(massCutSecondaries);
+
 
 
   // #########################################################
@@ -169,7 +132,6 @@ bool debug = false;
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
-  task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -198,18 +160,22 @@ bool debug = false;
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
-  task->SetULSandLS(DoULSLS);
-  task->SetDeactivateLS(DeactivateLS);
+  // task->SetULSandLS(DoULSLS);
+  task->SetUsePreFilter(UsePreFilter);
 
   // #########################################################
   // #########################################################
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  AddSinglePrimaryLegMCSignal(task);
+  AddSingleSecondaryLegMCSignal(task);
+  AddPrimaryPairMCSignal(task);
+  AddSecondaryPairMCSignal(task);
   AddFourPairMCSignal(task);
-  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
-  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  std::vector<bool> PrimaryDielectronsPairNotFromSameMother = AddSinglePrimaryLegMCSignal(task);
+  std::vector<bool> SecondaryDielectronsPairNotFromSameMother = AddSingleSecondaryLegMCSignal(task);
+  task->AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(PrimaryDielectronsPairNotFromSameMother);
+  task->AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(SecondaryDielectronsPairNotFromSameMother);
 
 
   // #########################################################
@@ -218,26 +184,63 @@ bool debug = false;
 
 
   // #########################################################
+  // #                set track cutsettings                  #
   // #########################################################
-  // Adding primary electron cutsettings
-  TObjArray*  arrNames_prim=names_Prim_Cuts.Tokenize(";");
+  // Adding standard primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_standard_Cuts.Tokenize(";");
+
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding PreFilter primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_PreFilter_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_prim->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_primary(filter);
+    task->AddTrackCuts_primary_PreFilter(filter);
     DoAdditionalWork(task);
   }
-  // Adding secondary electron cutsettings
-  TObjArray*  arrNames_sec=names_Sec_Cuts.Tokenize(";");
+
+  // #########################################################
+  // #                 set pair cutsettings                  #
+  // #########################################################
+  // Adding primary pair cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Pair_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddPairCuts_primary(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding standard secondary pair cutsettings
+  TObjArray*  arrNames_sec=names_Sec_Pair_standard_Cuts.Tokenize(";");
   const Int_t nDie=arrNames_sec->GetEntriesFast();
 
   for (int iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames_sec->At(iCut)->GetName());
-                                                                                // if(debug) std::cout << __LINE__ << " DEBUG_AddTask: arrNames_sec->At(iCut)->GetName(): " <<  arrNames_sec->At(iCut)->GetName()<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-    task->AddTrackCuts_secondary(filter);
+    task->AddPairCuts_secondary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding PreFilter secondary pair cutsettings
+  TObjArray*  arrNames_sec_PreFilter=names_Sec_Pair_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec_PreFilter->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec_PreFilter->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddPairCuts_secondary_PreFilter(filter);
     DoAdditionalWork(task);
   }
 

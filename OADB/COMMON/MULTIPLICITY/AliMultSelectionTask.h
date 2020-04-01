@@ -68,8 +68,8 @@ public:
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
-    static Bool_t IsSelectedTrigger                    (AliVEvent* event, AliVEvent::EOfflineTriggerTypes lCheckedTrig);
-    static Bool_t IsINELgtZERO                         (AliVEvent *event);
+    static Bool_t IsSelectedTrigger                    (AliVEvent* event, UInt_t lCheckedTrig);
+    static Bool_t IsINELgtZERO                         (const AliVEvent *event);
     static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
     static Bool_t IsNotPileupSPD                       (AliVEvent *event);
     static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
@@ -79,6 +79,7 @@ public:
     static Bool_t HasGoodVertex2016                    (AliVEvent *event);
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
+    void SetSelectedTriggerClass(UInt_t trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
     TString GetPeriodNameByLPM(TString lTag); //try userInfo first
@@ -196,7 +197,8 @@ private:
     TRandom3 *fRand; //PRNG (MT) for random downscaling
     
     //Trigger selection
-    AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
+    //AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
+    UInt_t fkTrigger; //kMB, kINT7, etc as needed
     
     TString fAlternateOADBForEstimators;
     TString fAlternateOADBFullManualBypass;

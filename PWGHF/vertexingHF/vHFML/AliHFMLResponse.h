@@ -22,67 +22,37 @@
 #include <vector>
 #include <map>
 
-#include "AliExternalBDT.h"
+#include "AliMLResponse.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODPidHF.h"
 
-using std::map;
-using std::string;
-using std::vector;
-
-class AliHFMLResponse : public TObject
+class AliHFMLResponse : public AliMLResponse
 {
 public:
-    enum libraries
-    {
-        kXGBoost,
-        kLightGBM,
-        kModelLibrary
-    };
-
     AliHFMLResponse();
-    AliHFMLResponse(string configfilename);
+    AliHFMLResponse(const Char_t *name, const Char_t *title, const std::string configfilepath);
     virtual ~AliHFMLResponse();
 
     AliHFMLResponse(const AliHFMLResponse &source);
     AliHFMLResponse& operator=(const AliHFMLResponse& source);
 
-    /// method to set yaml config file
-    void SetConfigFile(const string configfilename);
-    /// method to initialise and compile models (it has to be done run time)
-    void InitModels();
-
     /// methods to get ML response
-    bool IsSelectedML(double &prob, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
-    bool IsSelectedML(double &prob, double pt, vector<double> variables);
-    double PredictProbaML(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
-    double PredictProbaML(double pt, vector<double> variables);
+    using AliMLResponse::IsSelected; // exposes function from mother class
+    bool IsSelected(double &prob, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
+    using AliMLResponse::Predict; // exposes function from mother class
+    double Predict(AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF = nullptr, int masshypo = 0);
 
     /// method to get variable (feature) from map
-    double GetVariable(string name = "") {return fVars[name];}
+    double GetVariable(std::string name = "") {return fVars[name];}
 
 protected:
-    string GetFile(const string path);
-    int FindPtBin(double pt);
-    double ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, double bfield);
-    double CombineNsigmaTPCTOF(double nsigmaTPC, double nsigmaTOF);
-
     /// method used to define map of name <-> variables (features) --> to be implemented for each derived class
     virtual void SetMapOfVariables(AliAODRecoDecayHF * /*cand*/, double /*bfield*/, AliAODPidHF * /*pidHF*/, int /*masshypo*/) { return; }
 
-    map<string, int> kLibMap = {{"kXGBoost", kXGBoost}, {"kLightGBM", kLightGBM}, {"kModelLibrary", kModelLibrary}};
-
-    vector<AliExternalBDT> fModels;  /// vector of ML models
-    vector<string> fModelLibraries;  /// python libraries used to train ML model (kXGBoost, kLightGBM, or kModelLibrary)
-    vector<string> fModelVarNames;   /// vector with names of variables (features) used in ML model (in the correct order)
-    vector<string> fModelPaths;      /// vector of paths of the files containing the ML model
-    vector<double> fModelOutputCuts; /// vector of model output cuts
-    vector<double> fPtBinsModel;     /// vector with pT bins defined for the ML model application
-    int fPtBinCand;                  /// pT bin of the analysed candidate
-    map<string, double> fVars;       /// map of variables (features) that can be used for the ML model application
+    std::map<std::string, double> fVars;       /// map of variables (features) that can be used for the ML model application
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLResponse, 1); ///
+    ClassDef(AliHFMLResponse, 2); ///
     /// \endcond
 };
 #endif

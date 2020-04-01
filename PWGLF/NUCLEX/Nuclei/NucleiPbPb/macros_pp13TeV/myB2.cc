@@ -36,7 +36,7 @@ const char* kFixedPtLabel[3] = {"75","55","105"};
 
 constexpr int kInputCent = 10;
 constexpr int kMultInput[11]{0,1,5,10,15,20,30,40,50,70,100};
-constexpr int myCent[kCentLength -1][2]{
+constexpr int myCent[kCentLength][2]{
   {0,0}, /// 0-1%
   {1,1}, /// 1-5%
   {2,2}, /// 5-10%
@@ -45,11 +45,12 @@ constexpr int myCent[kCentLength -1][2]{
   {6,6}, /// 30-40%
   {7,7}, /// 40-50%
   {8,8}, /// 50-70%
-  {9,9}  /// 70-100%
+  {9,9}, /// 70-100%
+  {0,9}  /// 0-100%
 };
 void myB2(){
 
-  double dNdEta_tmp, dNdEtaErr_tmp, proton_yields_tmp, proton_yields_stat_tmp, proton_yields_syst_tmp;
+  double dNdEta_tmp, dNdEtaErr_tmp, proton_yields_tmp, proton_yields_stat_tmp, proton_yields_syst_tmp, proton_yields_syst_uncorr_tmp, proton_yields_syst_corr_tmp;
 
   std::vector<double> dNdEta_vec, dNdEtaErr_vec, proton_yields_vec, proton_yields_stat_vec, proton_yields_syst_vec;
 
@@ -59,7 +60,7 @@ void myB2(){
     exit(1);
   }
   else{
-    while(protonFile >> dNdEta_tmp >> dNdEtaErr_tmp >> proton_yields_tmp >> proton_yields_stat_tmp >> proton_yields_syst_tmp){
+    while(protonFile >> dNdEta_tmp >> dNdEtaErr_tmp >> proton_yields_tmp >> proton_yields_stat_tmp >> proton_yields_syst_tmp >> proton_yields_syst_uncorr_tmp >> proton_yields_syst_corr_tmp){
       dNdEta_vec.push_back(dNdEta_tmp);
       dNdEtaErr_vec.push_back(dNdEtaErr_tmp);
       proton_yields_vec.push_back(proton_yields_tmp);
@@ -93,7 +94,7 @@ void myB2(){
   TFile deuteron_file(kFinalOutput.data());
   TFile output_file(Form("%s/B2.root",kBaseOutputDir.data()),"recreate");
 
-  TFile input_file(Form("%sFinal_combined_spectra_TPCTOFTOFonlyrTPCKinksITSsa_pp13TeV_Before_Merging_High_pt_bins.root",kBaseOutputDir.data()));
+  TFile input_file(Form("%sFinal_combined_spectra_TPCTOFTOFonlyrTPCKinksITSsa_pp13TeV.root",kBaseOutputDir.data()));
 
   TGraphErrors* grB2atPtFixedStat[2][3];
   TGraphErrors* grB2atPtFixedSyst[2][3];
@@ -146,22 +147,35 @@ void myB2(){
   }
 
   // MB
-
-  TFile input_file_MB(Form("%spp13TeV.mb.fullpT.INEL.FINAL-2019-05-30.root",kBaseOutputDir.data()));
-
-  auto stat = (TH1F*)input_file_MB.Get("hstat_pp13_mb_proton_sum");
-  Requires(stat,"hstat_pp13_mb_proton_sum");
-  auto syst = (TH1F*)input_file_MB.Get("hsys_pp13_mb_proton_sum");
-  Requires(syst,"hsys_pp13_mb_proton_sum");
-  stat->Scale(0.5);
-  syst->Scale(0.5);
-  hProtSpectraStat[9] = (TH1F*)stat->Clone("hProton_stat_9");
-  hProtSpectraSyst[9] = (TH1F*)syst->Clone("hProton_syst_9");
-  //MakeItInvariant(hProtSpectraStat[9]);
-  //MakeItInvariant(hProtSpectraSyst[9]);
-  grProtSpectraStat[9] = new TGraphErrors(hProtSpectraStat[9]);
-  grProtSpectraSyst[9] = new TGraphErrors(hProtSpectraSyst[9]);
-
+  if(kUseIntegratedForMB){
+    auto stat = (TH1F*)input_file.Get("hCombinedTPCTOFTOFonlyrTPCKinksITSsa_Pr_0to100_stat");
+    Requires(stat,"hCombinedTPCTOFTOFonlyrTPCKinksITSsa_Pr_0to100_stat");
+    auto syst = (TH1F*)input_file.Get("hCombinedTPCTOFTOFonlyrTPCKinksITSsa_Pr_0to100_syst");
+    Requires(syst,"hCombinedTPCTOFTOFonlyrTPCKinksITSsa_Pr_0to100_syst");
+    stat->Scale(0.5);
+    syst->Scale(0.5);
+    hProtSpectraStat[9] = (TH1F*)stat->Clone("hProton_stat_9");
+    hProtSpectraSyst[9] = (TH1F*)syst->Clone("hProton_syst_9");
+    MakeItInvariant(hProtSpectraStat[9]);
+    MakeItInvariant(hProtSpectraSyst[9]);
+    grProtSpectraStat[9] = new TGraphErrors(hProtSpectraStat[9]);
+    grProtSpectraSyst[9] = new TGraphErrors(hProtSpectraSyst[9]);
+  }
+  else{
+    TFile input_file_MB(Form("%spp13TeV.mb.fullpT.INEL.FINAL-2019-05-30.root",kBaseOutputDir.data()));
+    auto stat = (TH1F*)input_file_MB.Get("hstat_pp13_mb_proton_sum");
+    Requires(stat,"hstat_pp13_mb_proton_sum");
+    auto syst = (TH1F*)input_file_MB.Get("hsys_pp13_mb_proton_sum");
+    Requires(syst,"hsys_pp13_mb_proton_sum");
+    stat->Scale(0.5);
+    syst->Scale(0.5);
+    hProtSpectraStat[9] = (TH1F*)stat->Clone("hProton_stat_9");
+    hProtSpectraSyst[9] = (TH1F*)syst->Clone("hProton_syst_9");
+    //MakeItInvariant(hProtSpectraStat[9]);
+    //MakeItInvariant(hProtSpectraSyst[9]);
+    grProtSpectraStat[9] = new TGraphErrors(hProtSpectraStat[9]);
+    grProtSpectraSyst[9] = new TGraphErrors(hProtSpectraSyst[9]);
+  }
   //
 
   TH1F* hDeutSpectraStat[2][kCentLength];

@@ -12,7 +12,10 @@ Int_t trigger_index=0,
 Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
-Bool_t is_MSparse
+Bool_t is_MSparse,
+Bool_t is_EventsEG1,
+Bool_t is_EventsEG2
+                                            
                                               
 )
 
@@ -33,6 +36,8 @@ Bool_t is_MSparse
     if(is_ESparse)task->Set_Fill_ESparse();
     if(is_MSparse)task->Set_Fill_MSparse();
     
+    if(is_EventsEG1)task->Set_Select_trigger_events1();
+    if(is_EventsEG2)task->Set_Select_trigger_events2();
     
     //event cuts
     task->SetVertexCut(10.0);
@@ -45,6 +50,9 @@ Bool_t is_MSparse
 	
 	if(trigger_index==7) task->SetEMCalTriggerDG1();
 	if(trigger_index==8) task->SetEMCalTriggerDG2();
+    
+    if(trigger_index==10) task->SetEMCalTriggerEG1DG1();
+    if(trigger_index==11) task->SetEMCalTriggerEG2DG2();
 //========================================================================================
    //track cuts
     task->SetPtCutMainEle(1.0);
@@ -105,13 +113,13 @@ Bool_t is_MSparse
     
     if(trigger_index==3)task->SetEnergyCut(7);//eg1 16l
     
-    if(trigger_index==4 || trigger_index==8){
+    if(trigger_index==4 || trigger_index==8 || trigger_index==11){
         
         if(config==27)task->SetEnergyCut(4.5);//eg2
         else if(config==28)task->SetEnergyCut(5.5);//eg2
         else task->SetEnergyCut(5);//eg2
     }
-    if(trigger_index==6 || trigger_index==7){
+    if(trigger_index==6 || trigger_index==7 || trigger_index==10){
         if(config==29)task->SetEnergyCut(9.5);//eg1
         else if(config==30)task->SetEnergyCut(10.5);//eg1
         else task->SetEnergyCut(10);//eg1

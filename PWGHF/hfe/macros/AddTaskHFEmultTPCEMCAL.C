@@ -22,14 +22,16 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 		Double_t EopEMin= 0.8 ,		
 		Double_t EopEMax=  1.2,		
 	    Double_t  M20Min= 0.02 ,		
-		Double_t M20Max= 0.9,
-	
+		Double_t M20Max1= 0.9,
+	    Double_t M20Max2= 0.7,
 		Double_t InvmassCut= 0.14,		
 		Int_t AssoTPCCluster= 60 ,
 		Bool_t AssoITSRefit= kTRUE ,
 		Double_t AssopTMin= 0.1  ,
 		Double_t AssoEtarange= 0.9 ,
-		Double_t AssoTPCnsig=  3.5
+		Double_t AssoTPCnsig=  3.5,
+		Double_t Deltaeta = 0.01,
+		Double_t Deltaphi = 0.01
 		)
 {
   
@@ -116,7 +118,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetDCACut(DCAxyCut,DCAzCut);
 	taskhfe->SetTPCnsigma(TPCnsigmin,TPCnsigmax);
 	taskhfe->SetEopE(EopEMin,EopEMax);
-    taskhfe->SetShowerShapeEM20(M20Min,M20Max);
+    taskhfe->SetShowerShapeEM20(M20Min,M20Max1,M20Max2);
 
 
 	taskhfe->SetInvMassCut(InvmassCut);
@@ -125,6 +127,7 @@ AliAnalysisTaskHFEmultTPCEMCAL *AddTaskHFEmultTPCEMCAL(
 	taskhfe->SetAssopTMin(AssopTMin);
 	taskhfe->SetAssoEtarange(AssoEtarange);
 	taskhfe->SetAssoTPCnsig(AssoTPCnsig);
+	taskhfe->SetDeltaEtaDeltaPhi(Deltaeta,Deltaphi);
 	
 	
 	if(trigger==AliVEvent::kINT7){

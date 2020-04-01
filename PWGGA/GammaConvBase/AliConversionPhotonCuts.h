@@ -170,7 +170,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void PrintCuts();
     void PrintCutsWithValues();
 
-    void SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
+    void SetPlotTrackPID( Bool_t flag ){fDoPlotTrackPID = flag; return;}
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
@@ -270,7 +271,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
     //cuts
@@ -337,6 +339,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
+    Bool_t            fUseTOFtiming;                        ///< flag to use tof timing information
+    Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
+    Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
+    Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
@@ -394,6 +400,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoITSSigafter;                    ///< ITS Sigma after cuts
     TH2F*             fHistoPsiPairDeltaPhiafter;           ///< TOF Sigma after cuts
     TH1F*             fHistoTrackCuts;                      ///< bookkeeping for track cuts
+    TH2F*             fHistoTrackPID;                      ///< bookkeeping for track pid
     TH2F*             fHistoPhotonCuts;                     ///< bookkeeping for photon specific cuts
     TH1F*             fHistoInvMassbefore;                  ///< e+e- inv mass distribution before cuts
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
@@ -403,6 +410,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
+    TH2F*             fHistoTOFtimeVSMomentum;              ///< TOF timing (ns) versus e+- momentum
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
@@ -427,7 +435,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,30)
+    ClassDef(AliConversionPhotonCuts,33)
     /// \endcond
 };
 

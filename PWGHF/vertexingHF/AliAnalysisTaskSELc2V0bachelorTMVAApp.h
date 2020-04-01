@@ -89,7 +89,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   /// histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
-			   TClonesArray *mcArray, Int_t iLctopK0s);
+			   TClonesArray *mcArray, Int_t iLctopK0s, AliAODEvent *aod);
 
   void MakeAnalysisForLc2prK0S(AliAODEvent *aodEvent,
 			       TClonesArray *arrayLctopK0s,
@@ -181,6 +181,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
   TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
+
+  void SetUseXmlFileFromCVMFS(Bool_t flag) {fUseXmlFileFromCVMFS = flag;}
+  Bool_t GetUseXmlFileFromCVMFS() const {return fUseXmlFileFromCVMFS;}
+
+  void SetXmlFileFromCVMFS(TString fileName) {fXmlFileFromCVMFS = fileName;}
+  TString GetXmlFileFromCVMFS() const {return fXmlFileFromCVMFS;}
 
   void SetUseMultiplicityCorrection(Bool_t flag){fUseMultCorrection=flag;}
 
@@ -422,6 +428,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   AliPIDCombined *fPIDCombined;       //!<! combined PID response object
   Bool_t fIsK0sAnalysis;              /// switch between Lpi and K0sp
   AliNormalizationCounter *fCounter;  //!<! AliNormalizationCounter on output slot 4
+  AliNormalizationCounter *fCounterC; //!<! AliNormalizationCounter on output slot 4, corrected with multiplicity dependence
   AliRDHFCutsLctoV0 *fAnalCuts;       /// Cuts - sent to output slot 5
   TList *fListCuts;                   //!<! list of cuts
   TList *fListWeight;                 /// list of weights
@@ -596,6 +603,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
   TString fXmlWeightsFile;              // file with TMVA weights
   TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  Bool_t fUseXmlFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
+  TString fXmlFileFromCVMFS;            // Path in CVMFS directory
   
   // Multiplicity corrections
   TProfile* GetEstimatorHistogram(const AliVEvent *event);
@@ -615,7 +624,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 10); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 12); /// class for Lc->p K0
   /// \endcond    
 };
 

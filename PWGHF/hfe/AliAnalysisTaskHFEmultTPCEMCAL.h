@@ -146,9 +146,10 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 			fCutEopEMax=EopEMax;
 	}
 
-	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max){
+	void SetShowerShapeEM20(Double_t M20Min,Double_t M20Max1,Double_t M20Max2){
 			fCutM20Min=M20Min;
-			fCutM20Max=M20Max;
+			fCutM20Max1=M20Max1;
+			fCutM20Max2=M20Max2;
 	}
 	//-----------------Setter For EMCal--------------------
 	void                  SetEMCalTriggerEG1(Bool_t flagTrEG1) { fEMCEG1=flagTrEG1;};
@@ -165,7 +166,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
 	void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
 	void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
-	
+	void SetDeltaEtaDeltaPhi(Double_t Deltaeta,Double_t Deltaphi){fdeltaeta=Deltaeta;fdeltaphi=Deltaphi;}
 	
 	private:
 	
@@ -187,14 +188,16 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	Double_t fCutEopEMax;
   	Bool_t IsM20;
   	Double_t fCutM20Min;
-  	Double_t fCutM20Max;
+  	Double_t fCutM20Max1;
+	Double_t fCutM20Max2;
 	Double_t fInvmassCut;	//	  invariant mass cut value
 	Int_t fAssoTPCCluster;  
 	Bool_t fAssoITSRefit;  
 	Double_t fAssopTMin;  
 	Double_t fAssoEtarange;  
 	Double_t fAssoTPCnsig;  
-	
+	Double_t fdeltaeta;
+	Double_t fdeltaphi;
 	
 	Double_t fDCAxy;  
 	Double_t fDCAz;  
@@ -406,3 +409,4 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 };
 	
 #endif	
+

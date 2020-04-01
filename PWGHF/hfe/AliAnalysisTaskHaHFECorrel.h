@@ -99,7 +99,7 @@ public:
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
     void   PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight);
     
-    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult); 
+    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult, Double_t recEffE); 
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t MCPartnerPt, Float_t RecPartnerPt, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
@@ -185,22 +185,23 @@ public:
     };
     void SetUseEventWeights(Bool_t UseEventWeights) {
       fUseEventWeights = UseEventWeights;
-    }
+    };
 
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
-    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
-    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
-    void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
-    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");};
+    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");};
+    void SetBGWeight(TH2F & BGWeight) {fBgWeight = BGWeight; fBgWeight.SetName("fBgWeight");};
+    void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");};
+    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");};
     //  void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
     void SetSPDConfigHist(TH1I & SPDConfigHist) {fSPDConfigHist = SPDConfigHist; fSPDConfigHist.SetName("SPDConfigHist");
       /* for (Int_t i=1; i<300; i++) { */
       /* 	printf("%i, %s, %10.2f, %s, %10.2f", i, fSPDConfigHist.GetXaxis()->GetBinLabel(i), fSPDConfigHist.GetBinContent(i),  SPDConfigHist.GetXaxis()->GetBinLabel(i) ,  SPDConfigHist.GetBinContent(i)); */
       /* } */
 
-    }
+    };
     void SetSPDConfigProfiles(TH3F & SPDConfigProfiles) {fSPDConfigProfiles = SPDConfigProfiles; fSPDConfigProfiles.SetName("fSPDConfigProfiles");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
     void SetTriggerWeight(TH3F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
@@ -226,6 +227,8 @@ public:
 
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
     Bool_t                Thrust(const TObjArray* tracks, Double_t t[2], Double_t MaxEta, Double_t MinPt);
+
+    Int_t                 CheckParticleOrigin(Int_t Label);
 
     Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
@@ -544,7 +547,19 @@ public:
     THnSparse             *fTagMotherPt;            //!
     TH2F                  *fTagEffInclMult;         //!
     TH2F                  *fTagEffULSMult;          //!
+    TH2F                  *fTagEffInclBGMult;       //!
+    TH2F                  *fTagEffULSBGMult;        //!
     TH2F                  *fTagTruePairsMult;       //!
+    TH2F                  *fTagEffInclMultWoW;         //!
+    TH2F                  *fTagEffULSMultWoW;          //!
+    TH2F                  *fTagEffInclBGMultWoW;       //!
+    TH2F                  *fTagEffULSBGMultWoW;        //!
+    TH2F                  *fTagTruePairsMultWoW;       //!
+    TH2F                  *fTagEffInclMultWoWS;         //!
+    TH2F                  *fTagEffULSMultWoWS;          //!
+    TH2F                  *fTagEffInclBGMultWoWS;       //!
+    TH2F                  *fTagEffULSBGMultWoWS;        //!
+    TH2F                  *fTagTruePairsMultWoWS;       //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
@@ -558,7 +573,7 @@ public:
     Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
-    TH1F                  fBgWeight;       
+    TH2F                  fBgWeight;       
     Double_t              GetBackgroundWeight(Int_t PDGMother, Double_t pt);
    
 

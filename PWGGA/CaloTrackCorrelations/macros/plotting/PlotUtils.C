@@ -289,8 +289,11 @@ static void ScaleBinBySize(TH1D* h)
   {
     Double_t width   = h->GetBinWidth(ibin);
     Double_t content = h->GetBinContent(ibin);
+    Double_t error   = h->GetBinError(ibin);
+    
     //printf("bin %d, width %f, content %e\n",ibin,width,content);
     h->SetBinContent(ibin,content/width);
+    h->SetBinError  (ibin,  error/width);
   }
 }
 

@@ -91,13 +91,16 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
   UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
 
+  Float_t   MatchedEMCalClusterEnergy() const {return fMatchedEMCalClusterEnergy;}
   Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
   Int_t     CaloClusterId() const {return fCaloClusterId;}
   
-  Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
-  Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  Float_t TrackParam(Int_t iPar = 0) const {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
+  Float_t CovMatrix(Int_t iCov = 0) const {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  void    SetCovMatrix(Int_t iCov, Float_t val) {if(iCov>=0 && iCov<21) fCovMatrix[iCov] = val;}
   
-  Float_t MCmom(Int_t dim);  
+  Float_t MCmom(Int_t dim); 
+  void    SetMCmom(Int_t dim, Float_t val) {if(dim>=0 && dim<3) fMCMom[dim] = val; return;}
   Float_t PtMC() {return (fIsMCTruth ? Pt() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]));}
   Float_t PMC()   const {return (fIsMCTruth ? P() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]));}
   Float_t PhiMC() const;
@@ -111,8 +114,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
+  // setters
+  void SetMatchedEMCalClusterEnergy(Float_t energy) {fMatchedEMCalClusterEnergy=energy;}
 
-     
  protected:
   ULong_t fStatus;              // tracking status
   Float_t fTPCPhi;              // inner param phi
@@ -175,6 +179,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  fTRDGTUPID;          // TRD online track pid
 
   // EMCAL/PHOS
+  Float_t fMatchedEMCalClusterEnergy; // EMCal cluster energy for matched cluster
   Float_t fEMCALnSigEle;        // EMCal n-sigma deviation from expected electron signal
   Int_t   fCaloClusterId;       // ID for the calorimeter cluster (if any)
   
@@ -193,7 +198,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 10);
+  ClassDef(AliReducedTrackInfo, 11);
 };
 
 //_______________________________________________________________________________

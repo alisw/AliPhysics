@@ -74,7 +74,6 @@ set(SRCS
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
   AliAnalysisTaskZDCGainEq.cxx
-  AliAnalysisTaskZDCEP.cxx
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
   AliAnalysisTaskCMEV0.cxx
@@ -84,6 +83,10 @@ set(SRCS
   AliAnalysisTaskStudentsML.cxx
   AliAnalysisTaskTwoMultiCorrelations.cxx
   AliAnalysisTaskStudentsMW.cxx
+  AliAnalysisTaskCVE.cxx
+  AliAnalysisTaskNBodyFemtoscopy.cxx
+  AliAnalysisTaskCMW.cxx
+  AliAnalysisTaskCVEUNI.cxx
   )
 
 # Headers from sources

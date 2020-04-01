@@ -42,6 +42,7 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsXictopKpi.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliAODRecoDecay.h"
@@ -179,13 +180,15 @@ void AliAnalysisTaskTrackingSysPropagation::Init(){
   else if(fDecayChannel == kLctopK0s) {
       fAnalysisCuts = new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fAnalysisCuts)));
   }
+  else if(fDecayChannel == kLctopKpiFromSc){
+      fAnalysisCuts = new AliRDHFCutsXictopKpi(*(static_cast<AliRDHFCutsXictopKpi*>(fAnalysisCuts)));
+  }
   else {
     AliFatal("The decay channel MUST be defined according to AliCFVertexing::DecayChannel - Exiting...");
   }
 }
 //________________________________________________________________________
 void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
-    
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fInputEvent);
   fHistNEvents->Fill(0); // all events
     
@@ -213,7 +216,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     if(aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-      if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi)
+      if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc)
 	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       else if(fDecayChannel == kD0toKpi)
 	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
@@ -224,7 +227,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     }
   }
   else {
-    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi)
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc)
       arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     else if(fDecayChannel == kD0toKpi)
       arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
@@ -255,7 +258,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     fPDGcode = 421;
   }else if(fDecayChannel == kDstartoKpipi){
     fPDGcode = 413;
-  }else if(fDecayChannel == kLctopKpi || fDecayChannel == kLctopK0s){
+  }else if(fDecayChannel == kLctopKpi || fDecayChannel == kLctopK0s || fDecayChannel == kLctopKpiFromSc){
     fPDGcode = 4122;
   }
   Bool_t isEvSel  = fAnalysisCuts->IsEventSelected(aod);
@@ -339,10 +342,11 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     pdgDaughter[1]=211;
     pdg2Daughter[0]=321;
     pdg2Daughter[1]=211;
-  }else if(fDecayChannel == kLctopKpi){
+  }else if((fDecayChannel == kLctopKpi) || (fDecayChannel == kLctopKpiFromSc)){
       fPDGcode = 4122;
       nprongs  = 3;
       fPartName="LctopKpi";
+      if(fDecayChannel == kLctopKpiFromSc)  fPartName="LctopKpiFromSc";
       pdgDaughter[0]=2212;
       pdgDaughter[1]=321;
       pdgDaughter[2]=211;
@@ -368,7 +372,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
         
     AliAODRecoDecayHF* d = 0x0;
         
-    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi) {
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc) {
       d = (AliAODRecoDecayHF3Prong*)arrayBranch->UncheckedAt(iCand);
       if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d)) {
 	fHistNEvents->Fill(14);
@@ -438,7 +442,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
 	int nbinsME = fHistMESyst->GetNbinsX();
 	int bin = 0;
 
-  if(!(fDecayChannel == kLctopK0s) && !(fDecayChannel == kLctopKpi)) {  
+  if(!(fDecayChannel == kLctopK0s) && !(fDecayChannel == kLctopKpi) && !(fDecayChannel == kLctopKpiFromSc)) {
     if(!(fDecayChannel == kDstartoKpipi)) {
       mcLabel = d->MatchToMC(fPDGcode,arrayMC,nprongs,pdgDaughter);
       if (mcLabel < 0) continue;
@@ -528,6 +532,22 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
 
    } 
   else /*if (fDecayChannel == kLctopKpi)*/ { // Lc->pKpi case
+
+    if(fDecayChannel == kLctopKpiFromSc){ // Lc->pKpi from Sc case
+      // get the MC particle for the Lc->pKpi
+      mcLabel = d->MatchToMC(fPDGcode,arrayMC,nprongs,pdgDaughter);
+      if (mcLabel < 0) continue;
+      AliAODMCParticle* partLc = (AliAODMCParticle*) arrayMC->At(mcLabel);
+
+      // get the mother and look if it is a SigmaC0 or SigmaC++
+      Int_t mcLabelMother = partLc->GetMother();
+      if(mcLabelMother>0){
+        AliAODMCParticle* partSc = (AliAODMCParticle*) arrayMC->At(mcLabelMother);
+        Int_t pdgMother = partSc->GetPdgCode();
+        if((pdgMother != 4112) && (pdgMother != 4222))  continue; // skip this Lc, because it does not come from a SigmaC
+      }
+      else  continue; // skip this Lc, because it does not come from a SigmaC
+    }
 
     for (Int_t ii=0; ii<3; ii++) {
       track = (AliAODTrack*)(((AliAODRecoDecayHF3Prong*)d)->GetDaughter(ii));

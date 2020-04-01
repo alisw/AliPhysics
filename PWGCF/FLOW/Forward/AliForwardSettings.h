@@ -18,7 +18,9 @@ class AliForwardSettings : public TObject {
 
  public:
   AliForwardSettings();
-
+  //~AliForwardSettings();                                       // destructor
+  //AliForwardSettings(const AliForwardSettings &);             // copy constructor
+  //AliForwardSettings & operator=(const AliForwardSettings &); // assignment
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
@@ -44,13 +46,15 @@ class AliForwardSettings : public TObject {
   Int_t fNRefEtaBins; // eta bins in reference histograms
   Int_t fNDiffEtaBins; // eta bins in differential histograms
   Int_t fCentBins; // bins in centrality
+  Int_t fCentUpEdge; // up edge in centrality
 
   TH3F* nuacentral;
   TH3F* nuaforward;
   TH3F* seccorr_fwd;
   TH3F* seccorr_cent;
-
+  TH3F* nuehist;
   bool doNUA;
+  bool doNUE;
 
   Double_t gap;
   Double_t minpt;
@@ -66,6 +70,7 @@ class AliForwardSettings : public TObject {
   Bool_t useITS;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
+  Bool_t use_primaries_fwdref;
   Bool_t useEventcuts;
   TString centrality_estimator;
   Bool_t etagap;
@@ -102,9 +107,9 @@ class AliForwardSettings : public TObject {
 
   // flags used for method of cumulant
   enum {
-    kNormal   = 0x0001, // Standard QC{2} and QC{4} calculations
-    kFill  = 0x0002, // QC{2} w/ an eta-gap
-    kInterpolate    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+    kNormal   = 0x0001,
+    kFill  = 0x0002, 
+    kInterpolate    = 0x0004, 
   };
 
   enum {
@@ -180,6 +185,9 @@ class AliForwardSettings : public TObject {
   //   kW4ThreeTwoA,
   //   kW4ThreeTwoB
   // };
+  Int_t kCountBin = 0;
+  Int_t kMBin = 1;
+  Int_t kMeanBin = 2;
 
   Int_t dW2A         = 1; // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
   Int_t dW2TwoA      = 2; // <w2*two>
@@ -206,7 +214,7 @@ class AliForwardSettings : public TObject {
   Int_t  kW4Four=4;           // <w4*four>
   // Int_t  kW4FourTwo=5;
   // Int_t  kW4ThreeTwo=6;
-
+  Int_t track_sample;
   // enum {
   //   kW2 =1,               // <w2>
   //   kW2Two,             // <w2*two>
@@ -222,6 +230,22 @@ class AliForwardSettings : public TObject {
   };
 
   Int_t nua_runnumber;
+  TH3F* correct_nua_mc;
+  Int_t run_list;
+  
+  Bool_t second_analysis;
+  Bool_t SC_analysis;
+  Bool_t decorr_analysis;
+  Bool_t normal_analysis;
+
+  Int_t runnumber;
+  Double_t TPC_maxeta;
+
+  TString nua_file;
+  TString nue_file;
+  TString sec_file;
+  TString sec_cent_file;
+  Bool_t XeXe;
 
 private:
   ClassDef(AliForwardSettings, 1);

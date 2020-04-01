@@ -200,6 +200,26 @@ private:
     ClassDef(AliAnalysisNanoAODCascadeParametricCuts, 1); // track cut object for nano AOD filtering
 };
 
+class AliAnalysisNanoAODPhotonCuts : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNanoAODPhotonCuts();
+  virtual ~AliAnalysisNanoAODPhotonCuts() {}
+  virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
+  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+
+  void SetPhotonEtaMax(float EtaMax)               { fPhotonEtaMax = EtaMax; }
+  void SetConversionRadius(float min, Float_t max) { fPhotonConvRadiusMin = min; fPhotonConvRadiusMax = max; }
+  void SetPsiPairMax(float psiPairMax)             { fPhotonPsiPairMax = psiPairMax; }
+
+private:
+  float fPhotonEtaMax;
+  float fPhotonConvRadiusMin;
+  float fPhotonConvRadiusMax;
+  float fPhotonPsiPairMax;
+
+  ClassDef(AliAnalysisNanoAODPhotonCuts, 1); // track cut object for nano AOD filtering
+};
 
 
 class AliAnalysisNanoAODEventCuts : public AliAnalysisCuts

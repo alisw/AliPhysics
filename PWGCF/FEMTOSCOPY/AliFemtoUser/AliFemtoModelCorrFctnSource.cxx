@@ -7,7 +7,7 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __ROOT__
-  ClassImp(AliFemtoModelCorrFctnSource, 1)
+  ClassImp(AliFemtoModelCorrFctnSource)
 #endif
 
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
@@ -15,73 +15,52 @@
 #include "AliFemtoModelCorrFctnSource.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoAnalysisReactionPlane.h"
-    
+
 //_______________________
-AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(): 
-  AliFemtoModelCorrFctn(),
-  fHistROut(0),
-  fHistRSide(0),
-  fHistRLong(0),
-  fHistRStar(0),
-  fHistdNdR(0),
-  fHistNumWS(0),
-  fHistDenWS(0),
-  fUseRPSelection(0)
+AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource():
+  AliFemtoModelCorrFctnSource("CFSource", 50, 0.0, 0.5)
 {
-  // default constructor
-  char buf[100];
-  char title[100] = "CFSource";
-  snprintf(buf , 100,  "%sOut", title);
-  fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sSide", title);
-  fHistRSide = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sLong", title);
-  fHistRLong = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sInv", title);
-  fHistRStar = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sdNdR", title);
-  fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
-
-  snprintf(buf , 100,  "%sNWS", title);
-  fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
-  snprintf(buf , 100,  "%sDWS", title);
-  fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
-
-  fHistROut->Sumw2();
-  fHistRSide->Sumw2();
-  fHistRLong->Sumw2();
-  fHistRStar->Sumw2();
-  fHistdNdR->Sumw2();
 }
 //_______________________
 AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi):
   AliFemtoModelCorrFctn(title, aNbins, aQinvLo, aQinvHi),
-  fHistROut(0),
-  fHistRSide(0),
-  fHistRLong(0),
-  fHistRStar(0),
-  fHistdNdR(0),
-  fHistNumWS(0),
-  fHistDenWS(0),
+  fHistROut(nullptr),
+  fHistRSide(nullptr),
+  fHistRLong(nullptr),
+  fHistRStar(nullptr),
+  fHistdNdR(nullptr),
+  fHistNumWS(nullptr),
+  fHistDenWS(nullptr),
   fUseRPSelection(0)
 {
   // basic constructor
-  char buf[100];
-  snprintf(buf , 100,  "%sOut", title);
-  fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sSide", title);
-  fHistRSide = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sLong", title);
-  fHistRLong = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sInv", title);
-  fHistRStar = new TH1D(buf,buf,100,-50.0,50.0);
-  snprintf(buf , 100,  "%sdNdR", title);
-  fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
+  char *outname = Form("%sOut", title);
+  char *outtitle = Form("%sOut; R_{out}", title);
+  fHistROut = new TH1D(outname,outtitle,100,-50.0,50.0);
 
-  snprintf(buf , 100,  "%sNWS", title);
-  fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
-  snprintf(buf , 100,  "%sDWS", title);
-  fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
+  char *sidename = Form("%sSide", title);
+  char *sidetitle = Form("%sSide; R_{side}", title);
+  fHistRSide = new TH1D(sidename,sidetitle,100,-50.0,50.0);
+
+  char *longname = Form("%sLong", title);
+  char *longtitle = Form("%sLong; R_{long}", title);
+  fHistRLong = new TH1D(longname,longtitle,100,-50.0,50.0);
+
+  char *invname = Form("%sInv", title);
+  char *invtitle = Form("%sInv; R_{inv}", title);
+  fHistRStar = new TH1D(invname,invtitle,100,-50.0,50.0);
+
+  char *dndrname = Form("%sdNdR", title);
+  char *dndrtitle = Form("%sdNdR; R_{inv}; 1/R*^2", title);
+  fHistdNdR = new TH1D(dndrname,dndrtitle,100,-50.0,50.0);
+
+  char *nwsname = Form("%sNWS", title);
+  char *nwstitle = Form("Weighted Numerator; q_{inv}; weight", title);
+  fHistNumWS = new TH2D(nwsname,nwstitle,50,0.0,0.5,100,0.0,2.0);
+
+  char *dwsname = Form("%sDWS", title);
+  char *dwstitle = Form("Unweighted denominator; q_{inv}; weight");
+  fHistDenWS = new TH2D(dwsname,dwstitle,50,0.0,0.5,100,0.0,2.0);
 
   fHistROut->Sumw2();
   fHistRSide->Sumw2();
@@ -132,29 +111,17 @@ AliFemtoModelCorrFctnSource::~AliFemtoModelCorrFctnSource()
 AliFemtoModelCorrFctnSource& AliFemtoModelCorrFctnSource::operator=(const AliFemtoModelCorrFctnSource& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn) 
+  if (this == &aCorrFctn)
     return *this;
-  if (aCorrFctn.fHistROut)
-    fHistROut = new TH1D (*aCorrFctn.fHistROut);
-  else fHistROut = 0;
-  if (aCorrFctn.fHistRSide)
-    fHistRSide = new TH1D(*aCorrFctn.fHistRSide);
-  else fHistRSide = 0;
-  if (aCorrFctn.fHistRLong)
-    fHistRLong = new TH1D(*aCorrFctn.fHistRLong);
-  else fHistRLong = 0;
-  if (aCorrFctn.fHistRStar)
-    fHistRStar = new TH1D(*aCorrFctn.fHistRStar);
-  fHistRStar = 0;
-  if (aCorrFctn.fHistdNdR)
-    fHistdNdR = new TH1D(*aCorrFctn.fHistdNdR);
-  else fHistdNdR = 0;
-  if (aCorrFctn.fHistNumWS)
-    fHistNumWS = new TH2D(*aCorrFctn.fHistNumWS);
-  else fHistNumWS = 0;
-  if (aCorrFctn.fHistDenWS)
-    fHistDenWS = new TH2D(*aCorrFctn.fHistDenWS);
-  else fHistDenWS = 0;
+
+  *fHistROut = *aCorrFctn.fHistROut;
+  *fHistRSide = *aCorrFctn.fHistRSide;
+  *fHistRLong = *aCorrFctn.fHistRLong;
+
+  *fHistRStar = *aCorrFctn.fHistRStar;
+  *fHistdNdR = *aCorrFctn.fHistdNdR;
+  *fHistNumWS = *aCorrFctn.fHistNumWS;
+  *fHistDenWS = *aCorrFctn.fHistDenWS;
 
   fUseRPSelection = aCorrFctn.fUseRPSelection;
 
@@ -164,68 +131,75 @@ AliFemtoModelCorrFctnSource& AliFemtoModelCorrFctnSource::operator=(const AliFem
 AliFemtoString AliFemtoModelCorrFctnSource::Report()
 {
   // construct report
-  AliFemtoString tStr = "AliFemtoModelCorrFctnSource report";
+  AliFemtoString report = "AliFemtoModelCorrFctnSource report\n";
 
-  return tStr;
+  return report;
 }
 
 //_______________________
 void AliFemtoModelCorrFctnSource::AddRealPair(AliFemtoPair* aPair)
 {
   // add real (effect) pair
-//   if (fPairCut){
-//     if (!(fPairCut->Pass(aPair))) return;
-//   }
   if (fPairCut){
     if (fUseRPSelection) {
-      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
-	cout << "RP aware cut requested, but not connected to the CF" << endl;
-	if (!(fPairCut->Pass(aPair))) return;
+      auto *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) {
+        std::cout << "RP aware cut requested, but not connected to the CF\n";
+        if (!(fPairCut->Pass(aPair))) {
+          return;
+        }
       }
       else {
-	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
-	if (!arp) {
-	  cout << "RP aware cut requested, but not connected to the CF" << endl;
-	  if (!(fPairCut->Pass(aPair))) return;
-	}
-	else if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+        auto *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *>(HbtAnalysis());
+        if (!arp) {
+          std::cout << "RP aware cut requested, but not connected to the CF\n";
+          if (!fPairCut->Pass(aPair)) {
+            return;
+          }
+        }
+        else if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) {
+          return;
+        }
       }
     }
-    else
-      if (!(fPairCut->Pass(aPair))) return;
+    else if (!fPairCut->Pass(aPair)) {
+      return;
+    }
   }
-  
-  AliFemtoModelCorrFctn::AddRealPair(aPair);
 
+  AliFemtoModelCorrFctn::AddRealPair(aPair);
 }
 //_______________________
 void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
 {
   // add mixed (background) pair
-//   if (fPairCut){
-//     if (!(fPairCut->Pass(aPair))) return;
-//   }
   if (fPairCut){
     if (fUseRPSelection) {
-      AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
-	cout << "RP aware cut requested, but not connected to the CF" << endl;
-	if (!(fPairCut->Pass(aPair))) return;
+      auto *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
+      if (!ktc) {
+        std::cout << "RP aware cut requested, but not connected to the CF\n";
+        if (!fPairCut->Pass(aPair)) {
+          return;
+        }
       }
       else {
-	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
-	if (!arp) {
-	  cout << "RP aware cut requested, but not connected to the CF" << endl;
-	  if (!(fPairCut->Pass(aPair))) return;
-	}
-	else if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+        auto *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *>(HbtAnalysis());
+        if (!arp) {
+          std::cout << "RP aware cut requested, but not connected to the CF\n";
+          if (!fPairCut->Pass(aPair)) {
+             return;
+          }
+        }
+        else if (!ktc->Pass(aPair, arp->GetCurrentReactionPlane())) {
+          return;
+        }
       }
     }
-    else
-      if (!(fPairCut->Pass(aPair))) return;
+    else if (!fPairCut->Pass(aPair)) {
+      return;
+    }
   }
-  
+
   AliFemtoModelCorrFctn::AddMixedPair(aPair);
   // save the generated positions
   if (aPair->KStar() < 0.2) {
@@ -233,7 +207,7 @@ void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
     fHistRSide->Fill(fManager->GetWeightGenerator()->GetRStarSide());
     fHistRLong->Fill(fManager->GetWeightGenerator()->GetRStarLong());
     fHistRStar->Fill(fManager->GetWeightGenerator()->GetRStar());
-    fHistdNdR->Fill (fManager->GetWeightGenerator()->GetRStar(),1.0/(fManager->GetWeightGenerator()->GetRStar()*fManager->GetWeightGenerator()->GetRStar()));
+    fHistdNdR->Fill (fManager->GetWeightGenerator()->GetRStar(), 1.0/(fManager->GetWeightGenerator()->GetRStar()*fManager->GetWeightGenerator()->GetRStar()));
   }
 
   fHistDenWS->Fill(aPair->QInv(), 1.0);
@@ -260,11 +234,11 @@ TList* AliFemtoModelCorrFctnSource::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
 
-  tOutputList->Add(fHistROut); 
-  tOutputList->Add(fHistRSide);  
-  tOutputList->Add(fHistRLong);  
-  tOutputList->Add(fHistRStar);  
-  tOutputList->Add(fHistdNdR);  
+  tOutputList->Add(fHistROut);
+  tOutputList->Add(fHistRSide);
+  tOutputList->Add(fHistRLong);
+  tOutputList->Add(fHistRStar);
+  tOutputList->Add(fHistdNdR);
   tOutputList->Add(fHistDenWS);
   tOutputList->Add(fHistNumWS);
 

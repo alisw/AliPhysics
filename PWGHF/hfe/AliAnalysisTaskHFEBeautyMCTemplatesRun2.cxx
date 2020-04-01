@@ -45,14 +45,14 @@ ClassImp(AliAnalysisTaskHFEBeautyMCTemplatesRun2)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionTPCSignal(0)
 {
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionTPCSignal(0)
 {
   // Constructor
   // Define input and output slots here
@@ -162,6 +162,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
 
     fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
     fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
+    fPionTPCSignal = new TH3D(Form("fPionTPCSignal"),Form("fPionTPCSignal"), 25, 0., 5., 200, -10., 10., 20, 0., 100.);
 
     fRd = new TRandom3(0);
 
@@ -230,6 +231,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fOutputContainer->Add(fDCAHadronsCorrected);
     fOutputContainer->Add(fPionV0pTRNoCuts);
     fOutputContainer->Add(fPionV0pTRWithCuts);
+    fOutputContainer->Add(fPionTPCSignal);
 
     PostData(1, fOutputContainer);
     
@@ -600,6 +602,10 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
       radius = TMath::Sqrt(mcple->Xv()*mcple->Xv()+mcple->Yv()*mcple->Yv());
       // static_cast<Int_t>(fSignalCuts->GetSignalSource(mcple))
       // FindSource(mcple, fMCEvent, MotherPt, GSMotherPt)
+      if(TMath::Abs(pdgCode) == 211)
+      {
+        fPionTPCSignal->Fill(pt, pid->NumberOfSigmasTPC(track, AliPID::kElectron), centrality);
+      }
       if(TMath::Abs(pdgCode) == 11)
       {
         rndm = fRd->Rndm();

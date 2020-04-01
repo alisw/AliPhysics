@@ -42,14 +42,8 @@ set(SRCS
         AliAnalysisTaskSigma0.cxx
         AliAnalysisTaskSigma0Spectra.cxx
         AliCaloParticle.cxx
-        AliSigma0ParticleBase.cxx
-        AliSigma0ParticlePhotonMother.cxx
-        AliSigma0ParticleV0.cxx
         AliSigma0PhotonCuts.cxx
-        AliSigma0V0Cuts.cxx
-        AliSigma0PhotonMotherCuts.cxx
         AliSigma0AODPhotonMotherCuts.cxx
-        AliAnalysisTaskSigma0Run2.cxx
    )
 
 # Headers from sources

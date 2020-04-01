@@ -176,37 +176,11 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
   UserFillHistosBeforeEventSelection();
 
-  if(fApplyVertexCuts){
-    const AliVVertex *vtx = fUseSPDVertex ? fInputEvent->GetPrimaryVertexSPD() : fInputEvent->GetPrimaryVertex();
-    //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-    if(vtx->GetNContributors() < 1) {
-      AliDebugStream(1) << "Failed Vertex Selection" << std::endl;
-      return false;
-    }
-    if(!fVertexCut.IsInRange(fUseSPDVertex ? fVertexSPD[2] : fVertex[2])) {
-      AliDebugStream(1) << "Failed vertex-z cut" << std::endl;
-      return false;
-    }
-  }
-
-  if(fRequireAnalysisUtils){
-    AliDebugStream(1) << "Checking cuts in AliAnalysisUtils" << std::endl;
-    if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
-    if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
-    if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent))return false;       // Apply new vertex cut
-  }
+  if(!AliAnalysisTaskEmcal::IsEventSelected()) return false;
 
   if(!IsUserEventSelected()) {
     AliDebugStream(1) << "Failed user extra cuts" << std::endl;
     return false;
-  }
-
-  // Do MC outlier cut
-  if(fIsPythia){
-    if(!CheckMCOutliers()){
-      AliDebugStream(1) << GetName() << ": Reject MC outliers" << std::endl;
-      return false;
-    }
   }
 
   // Fill histogram with trigger correlation

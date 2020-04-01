@@ -60,6 +60,7 @@ CellEnergy:                                         # Cell Energy correction com
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
@@ -77,9 +78,9 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    doMergedBCs: false                              # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should use the merged BC histogram
     doCalibrateLowGain: false                       # Whether the task should calibrate the low gain cells
-    doCalibMergedLG: false                          # Whether the task should calibrate the low gain cells
+    doCalibMergedLG: false                          # Whether the task should calibrate the low gain cells using the all periods merged LG histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk
@@ -194,6 +195,8 @@ ClusterExotics:                                     # Cluster exotics identifica
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
     fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
+    fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV 
+    fMinCellEnNdiffCut: 0                           # Count cells in different T-Card above this value (GeV), for tests, use 0
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

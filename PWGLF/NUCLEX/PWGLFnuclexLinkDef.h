@@ -1,5 +1,3 @@
-
-
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -45,6 +43,7 @@
 #pragma link C++ class AliLightNTrackMCHist+;
 #pragma link C++ class AliAnalysisTaskAntipd+;
 #pragma link C++ class AliAnalysisTaskHe3+;
+#pragma link C++ class AliAnalysisTaskHe3_ESD+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -89,6 +88,8 @@
 #pragma link C++ class AliReducedHypTritV0+;
 #pragma link C++ class AliReducedHypTritTrack+;
 #pragma link C++ class AliReducedHypTritEvent+;
+#pragma link C++ class AliAnalysisTaskS3ParticleYields+;
+#pragma link C++ class AliAnalysisTaskHe3EffTree+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
@@ -107,21 +108,35 @@
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
-#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
-#pragma link C++ class RHypertriton3+;
-#pragma link C++ class SHypertriton3+;
-#pragma link C++ class std::vector<RHypertriton3>+;
-#pragma link C++ class std::vector<SHypertriton3>+;
-#pragma link C++ class REvent+;
+
+/// * KF2Body
+#pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
 
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class AliAnalysisTaskHyperTriton3KF+;
+#pragma link C++ class REvent3KF+;
+#pragma link C++ class RHyperTriton3KF+;
+#pragma link C++ class SHyperTriton3KF+;
+#pragma link C++ class std::vector<RHyperTriton3KF>+;
+#pragma link C++ class std::vector<SHyperTriton3KF>+;
+#pragma link C++ class RHypertriton3+;
+#pragma link C++ class SHypertriton3+;
+#pragma link C++ class MLSelected+;
+#pragma link C++ class std::vector<RHypertriton3>+;
+#pragma link C++ class std::vector<SHypertriton3>+;
+#pragma link C++ class std::vector<MLSelected>+;
+#pragma link C++ class REvent+;
 #endif
 
 /// * VertexerHyp3Body
 #pragma link C++ class AliVertexerHyperTriton2Body+;
 #pragma link C++ class AliVertexerHyperTriton3Body+;
+
+// * DoubleHypNuc
+#pragma link C++ class AliAnalysisTaskDoubleHypNucTree+;
 
 /// Utils
 /// * CODEX

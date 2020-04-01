@@ -147,6 +147,7 @@ public:
   void     SetNonLinearityFunction(Int_t fun)            { fNonLinearityFunction = fun     ; InitNonLinearityParam() ; }
   void     SetNonLinearityThreshold(Int_t threshold)     { fNonLinearThreshold = threshold ; } //only for Alexie's non linearity correction
   Int_t    GetNonLinearityThreshold()              const { return fNonLinearThreshold      ; }
+  void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
 
   //-----------------------------------------------------
   // MC clusters energy smearing
@@ -168,6 +169,7 @@ public:
 
   // Energy recalibration
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
+  Float_t  CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG) ; // shaper energy nonlinearity
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
@@ -457,8 +459,8 @@ public:
   void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
   void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
   Bool_t   IsRejectExoticCell()                 const { return fRejectExoticCells      ; }
-  Float_t  GetECross(Int_t absID, Double_t tcell,
-                     AliVCaloCells* cells, Int_t bc);
+  Float_t  GetECross(Int_t absID, Double_t tcell, AliVCaloCells* cells, Int_t bc, 
+                     Float_t cellMinEn = 0., Bool_t useWeight = kFALSE, Float_t energyClus = 0.);
   Float_t  GetExoticCellFractionCut()           const { return fExoticCellFraction     ; }
   Float_t  GetExoticCellDiffTimeCut()           const { return fExoticCellDiffTime     ; }
   Float_t  GetExoticCellMinAmplitudeCut()       const { return fExoticCellMinAmplitude ; }
@@ -471,6 +473,14 @@ public:
   void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
   Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
 
+  Bool_t   IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                             Int_t & rowDiff, Int_t & colDiff) const ;
+  
+  void     GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+                                            Int_t   & nDiff, Int_t   & nSame, 
+                                            Float_t & eDiff, Float_t & eSame, 
+                                            Float_t   emin = 0.);
+  
   // Cluster selection
   Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
                          AliVCaloCells* cells, Int_t bc =-1);
@@ -514,6 +524,7 @@ private:
   Int_t      fNonLinearityFunction;      ///< Non linearity function choice, see enum NonlinearityFunctions
   Float_t    fNonLinearityParams[10];    ///< Parameters for the non linearity function
   Int_t	     fNonLinearThreshold;        ///< Non linearity threshold value for kBeamTest non linearity function 
+  Bool_t     fUseShaperNonlin;        ///< Shaper non linearity correction for towers
   
   // Energy smearing for MC
   Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
@@ -614,7 +625,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 32) ;
+  ClassDef(AliEMCALRecoUtils, 33) ;
   /// \endcond
 
 };

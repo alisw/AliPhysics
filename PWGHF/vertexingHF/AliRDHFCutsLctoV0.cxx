@@ -271,7 +271,7 @@ AliRDHFCutsLctoV0::~AliRDHFCutsLctoV0() {
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters, AliAODEvent *aod) {
   //
   // Fills in vars the values of the variables
   //
@@ -288,6 +288,18 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   AliAODRecoCascadeHF *dd = (AliAODRecoCascadeHF*)d;
+
+  //recalculate vertex w/o daughters
+  Bool_t cleanvtx=kFALSE;
+  AliAODVertex *origownvtx=0x0;
+  if(fRemoveDaughtersFromPrimary && aod) {
+    if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+    cleanvtx=kTRUE;
+    if(!RecalcOwnPrimaryVtx(dd,aod)) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      cleanvtx=kFALSE;
+    }
+  }
 
   // Get the v0 and all daughter tracks
   AliAODTrack *bachelorTrack = (AliAODTrack*)dd->GetBachelor();
@@ -430,7 +442,7 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
     vars[iter]= v0->PtArmV0()/TMath::Abs(v0->AlphaV0());
   }
 
-
+  if(cleanvtx) CleanOwnPrimaryVtx(dd,aod,origownvtx);
   return;
 }
 //---------------------------------------------------------------------------
@@ -526,6 +538,19 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kCandidate) {
 
+    //recalculate vertex w/o daughters
+    Bool_t cleanvtx=kFALSE;
+    AliAODVertex *origownvtx=0x0;
+    if(fRemoveDaughtersFromPrimary && aod) {
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      cleanvtx=kTRUE;
+      if(!RecalcOwnPrimaryVtx(d,aod)) {
+        CleanOwnPrimaryVtx(d,aod,origownvtx);
+        cleanvtx=kFALSE;
+        return 0;
+      }
+    }
+
     Double_t pt = d->Pt();
     Int_t ptbin = PtBin(pt);
 
@@ -580,19 +605,22 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     // cut on K0S invariant mass veto
     if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)] && fExcludedCut!=12) { // K0S invariant mass veto
       AliDebug(4,Form(" veto on K0S invariant mass doesn't pass the cut"));
-      //return 0;
       isNotK0S=kFALSE;
+      //if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
+      //return 0;
     }
 
     // cut on Lambda/LambdaBar invariant mass veto
     if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // Lambda invariant mass veto
       AliDebug(4,Form(" veto on Lambda invariant mass doesn't pass the cut"));
       isNotLambda=kFALSE;
+      //if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       //return 0;
     }
     if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) { // LambdaBar invariant mass veto
       AliDebug(4,Form(" veto on LambdaBar invariant mass doesn't pass the cut"));
       isNotLambdaBar=kFALSE;
+      //if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       //return 0;
     }
 
@@ -600,6 +628,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)] && fExcludedCut!=14) { // K0S invariant mass veto
       AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
       isNotGamma=kFALSE;
+      //if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       //return 0;
     }
 
@@ -607,55 +636,67 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     okLcLpi    = okLcLpi    && okLppi    && isNotK0S    && isNotLambdaBar && isNotGamma;
     okLcLBarpi = okLcLBarpi && okLBarpip && isNotK0S    && isNotLambda    && isNotGamma;
 
-    if (!okLck0sp && !okLcLpi && !okLcLBarpi) return 0;
+    if (!okLck0sp && !okLcLpi && !okLcLBarpi){
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
 
     // cuts on the minimum pt of the tracks
     if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)] && fExcludedCut!=4) {
       AliDebug(4,Form(" bachelor track Pt=%2.2e > %2.2e",bachelorTrack->Pt(),fCutsRD[GetGlobalIndex(4,ptbin)]));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
     if (TMath::Abs(v0positiveTrack->Pt()) < fCutsRD[GetGlobalIndex(5,ptbin)] && fExcludedCut!=5) {
       AliDebug(4,Form(" V0-positive track Pt=%2.2e > %2.2e",v0positiveTrack->Pt(),fCutsRD[GetGlobalIndex(5,ptbin)]));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
     if (TMath::Abs(v0negativeTrack->Pt()) < fCutsRD[GetGlobalIndex(6,ptbin)] && fExcludedCut!=6) {
       AliDebug(4,Form(" V0-negative track Pt=%2.2e > %2.2e",v0negativeTrack->Pt(),fCutsRD[GetGlobalIndex(6,ptbin)]));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on cascade dca (prong-to-prong)
     if ( TMath::Abs(d->GetDCA()) > fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) { // prong-to-prong cascade DCA
       AliDebug(4,Form(" cascade tracks DCA don't pass the cut"));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on V0 dca (prong-to-prong)
     if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) { // prong-to-prong V0 DCA
       AliDebug(4,Form(" V0 DCA don't pass the cut"));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on V0 cosine of pointing angle wrt PV
     if (d->CosV0PointingAngle() < fCutsRD[GetGlobalIndex(9,ptbin)] && fExcludedCut!=9) { // cosine of V0 pointing angle wrt primary vertex
       AliDebug(4,Form(" V0 cosine of pointing angle doesn't pass the cut"));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on bachelor transverse impact parameter wrt PV
     if (TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(10,ptbin)] && fExcludedCut!=10) { // bachelor transverse impact parameter wrt PV
       AliDebug(4,Form(" bachelor transverse impact parameter doesn't pass the cut"));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on V0 transverse impact parameter wrt PV
     if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(11,ptbin)] && fExcludedCut!=11) { // V0 transverse impact parameter wrt PV
       AliDebug(4,Form(" V0 transverse impact parameter doesn't pass the cut"));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // cut on V0 pT min
     if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)] && fExcludedCut!=15) { // V0 pT min
       AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",v0->Pt(),fCutsRD[GetGlobalIndex(15,ptbin)]));
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
@@ -664,10 +705,12 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
       Double_t cutvar = GetProtonEmissionAngleCMS(d);
       if (cutvar > fCutsRD[GetGlobalIndex(16,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
         AliDebug(4,Form(" Cos proton emission=%2.2e < %2.2e",cutvar,fCutsRD[GetGlobalIndex(16,ptbin)]));
+        if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
         return 0;
       }
       if (cutvar < fCutsRD[GetGlobalIndex(17,ptbin)] && fExcludedCut!=16 && fExcludedCut!=17) { // Proton emission angle
         AliDebug(4,Form(" Cos proton emission=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(17,ptbin)]));
+        if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
         return 0;
       }
     }
@@ -677,6 +720,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
       Double_t cutvar = GetReSignedd0(d) ;
       if (cutvar< fCutsRD[GetGlobalIndex(18,ptbin)] && fExcludedCut!=18) { // proton d0
         AliDebug(4,Form(" Proton d0 (re-signed)=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(18,ptbin)]));
+        if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
         return 0;
       }
     }
@@ -686,10 +730,12 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
       Double_t cutvar = v0->PtArmV0()/TMath::Abs(v0->AlphaV0());
       if (cutvar < fCutsRD[GetGlobalIndex(19,ptbin)] && fExcludedCut!=19) { // v0 armenteros variable
         AliDebug(4,Form(" qT/|alpha|=%2.2e > %2.2e",cutvar,fCutsRD[GetGlobalIndex(19,ptbin)]));
+        if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
         return 0;
       }
     }
 
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
   Int_t returnvalue = okLck0sp+2*okLcLBarpi+4*okLcLpi;
@@ -724,6 +770,53 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
 
 }
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctoV0::PreSelect(TObjArray aodTracks){
+  //
+  // Apply pT and PID pre-selections, used before refilling candidate
+  // Note, PID checks only Lc -> pK0s case
+  //
+
+  if(!fUsePreselect) return 3;
+
+  Int_t retVal=3;
+
+  AliAODTrack *track0 = (AliAODTrack*)aodTracks.At(0);
+  AliAODTrack *track1 = (AliAODTrack*)aodTracks.At(1);
+
+  // calculate pt
+  Double_t px0=track0->Px();
+  Double_t px1=track1->Px();
+
+  Double_t py0=track0->Py();
+  Double_t py1=track1->Py();
+
+  Double_t ptD=TMath::Sqrt((px0+px1)*(px0+px1)+(py0+py1)*(py0+py1));
+
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
+  Int_t ptbin=PtBin(ptD);
+  if (ptbin==-1) return 0;
+
+  // V0 pT min
+  if (track1->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
+
+  // bachelor pT min
+  if (track0->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+
+  if(fUsePID){
+    Bool_t okLcK0Sp = kTRUE; // K0S case
+    Bool_t okLcLambdaBarPi = kTRUE; // LambdaBar case
+    Bool_t okLcLambdaPi = kTRUE; // Lambda case
+
+    CheckPID(track0,0x0,0x0,okLcK0Sp,okLcLambdaBarPi,okLcLambdaPi);
+
+    retVal = okLcK0Sp;
+  }
+
+  return retVal;
+}
+//---------------------------------------------------------------------------
 Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){
   //
   // Apply pre-selections, used in the AOD filtering
@@ -750,7 +843,7 @@ Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bache
   if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
 
   // cuts on the minimum pt of the bachelor
-  if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+  if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
 
   Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
@@ -1296,6 +1389,19 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kCandidate) {
 
+    //recalculate vertex w/o daughters
+    Bool_t cleanvtx=kFALSE;
+    AliAODVertex *origownvtx=0x0;
+    if(fRemoveDaughtersFromPrimary && aod) {
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      cleanvtx=kTRUE;
+      if(!RecalcOwnPrimaryVtx(d,aod)) {
+        CleanOwnPrimaryVtx(d,aod,origownvtx);
+        cleanvtx=kFALSE;
+        return 0;
+      }
+    }
+
     Double_t pt = d->Pt();
     Int_t ptbin = PtBin(pt);
 
@@ -1430,6 +1536,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       okLcLBarpi = okLck0sp;
       break;
     }
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
   Int_t returnvalue = okLck0sp+2*okLcLBarpi+4*okLcLpi;

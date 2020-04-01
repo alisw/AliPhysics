@@ -95,6 +95,7 @@ public:
   Bool_t CheckHijingHeader() const;
 
   Bool_t HaveSameMother(const AliDielectronPair *pair) const;
+  Bool_t HaveSameGrandMother(const AliDielectronPair *pair) const;
 
   Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);

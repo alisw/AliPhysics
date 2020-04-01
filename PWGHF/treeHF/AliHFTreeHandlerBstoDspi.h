@@ -16,11 +16,21 @@
 
 #include "AliHFTreeHandler.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliAODRecoDecayHF2Prong.h"
 
 class AliHFTreeHandlerBstoDspi : public AliHFTreeHandler
 {
   public:
   
+    //Flag to store injected candidate + HIJING track for background shape studies
+    enum dsmesontype {
+      kDsPrompt  = BIT(11),
+      kDsFDBplus = BIT(12),
+      kDsFDB0    = BIT(13),
+      kDsFDLb0   = BIT(14),
+      kDsFDBs0   = BIT(15)
+    };
+
     //Need a bit for reflections/different decay? To check
     //static const int kDplustoKKpi = BIT(11);
 
@@ -30,8 +40,18 @@ class AliHFTreeHandlerBstoDspi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerBstoDspi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
     Int_t IsBsPionSelected(TObject* obj, AliRDHFCutsDstoKKpi* cutsDs, AliAODPidHF* fPidHFDs, AliAODEvent* aod, AliAODVertex *vtx);
+    Int_t IsBsSelected(AliAODRecoDecayHF2Prong* bs);
+    void SetDsBackgroundShapeType(bool isPr, bool isFDBplus, bool isFDB0, bool isFDLb0, bool isFDBs0);
+
+    void SetBsSelectionValues(float invmass, float pt, float impparprod, float cosp, float cospxy){
+      fInvMassBsCut = invmass;
+      fPtBsCut = pt;
+      fImpParProdBsCut = impparprod;
+      fCosPBsCut = cosp;
+      fCosPXYBsCut = cospxy;
+    }
 
   private:
 
@@ -60,8 +80,14 @@ class AliHFTreeHandlerBstoDspi : public AliHFTreeHandler
     float fCosPiKPhi_Ds; /// Ds cospiKphi
     float fNormd0MeasMinusExp_Ds; ///Ds topomatic variable
   
+    float fInvMassBsCut; ///Cut on invariant mass for Bs selection
+    float fPtBsCut; ///Cut on pT for Bs selection
+    float fImpParProdBsCut; ///Cut on d0xd0 for Bs selection
+    float fCosPBsCut; ///Cut on cos pointing angle for Bs selection
+    float fCosPXYBsCut; ///Cut on cos pointing angle xy for Bs selection
+
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerBstoDspi,1); ///
+    ClassDef(AliHFTreeHandlerBstoDspi,2); ///
     /// \endcond
 };
 #endif

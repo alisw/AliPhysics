@@ -1168,7 +1168,7 @@ private:
 #endif
 
   /// \cond CLASSIMP
-  ClassDef(AliFemtoConfigObject, 1);
+  ClassDef(AliFemtoConfigObject, 2);
   /// \endcond
 };
 

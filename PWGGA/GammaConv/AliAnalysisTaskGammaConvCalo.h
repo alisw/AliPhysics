@@ -13,6 +13,7 @@
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
@@ -70,7 +71,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
-    void SetLightOutput                 ( Bool_t flag )                                     { fDoLightOutput = flag                       ;}
+    void SetLightOutput                 ( Int_t flag )                                     { fDoLightOutput = flag                       ;}
+    void SetECalibOutput                ( Bool_t flag )                                     { fDoECalibOutput = flag                      ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
@@ -181,6 +183,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fMesonCutArray;         // List with Meson Cuts
     AliConversionMesonCuts*             fMesonCuts;             // MesonCutObject
     AliAnalysisTaskConvJet*             fConvJetReader;         // JetReader
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     Bool_t                              fDoJetAnalysis;         // Bool to produce Jet Plots
     Bool_t                              fDoJetQA;               // Bool to produce Jet QA Plots
     TList**                             fJetHistograms;         // Jet Histograms
@@ -532,6 +535,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoNGammaCandidates;                             //! array of histos with number of gamma candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNGammaCandidates;             //! array of histos with number of good tracks vs gamma candidates
     TH2F**                  fHistoSPDClusterTrackletBackground;                 //! array of histos with SPD tracklets vs SPD clusters for background rejection
+    TH2F**                  fHistoV0MultVsNumberTPCoutTracks;                   //! correlation V=Mult vs number TPC out Tracks
     TH1F**                  fHistoNV0Tracks;                                    //! array of histos with V0 counts
     TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
     TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
@@ -544,6 +548,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // additional variables
     Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
+    TTree**                 tESDMesonsInvMassPtDcazMinDcazMaxFlag;              //!
+    Float_t                 fInvMass;                                           //!
+    Float_t                 fPt;                                                //!
+    Float_t                 fDCAzGammaMin;                                      //!
+    Float_t                 fDCAzGammaMax;                                      //!
+    UChar_t                 iFlag;                                              //!
+    UChar_t                 iMesonMCInfo;                                       //!
     TRandom3                fRandom;                                            // random
     Int_t                   fNGammaCandidates;                                  // number of gamma candidates in event
     Double_t*               fUnsmearedPx;                                       //[fNGammaCandidates]
@@ -558,7 +569,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fiCut;                                              // current cut
     Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
-    Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t                   fDoLightOutput;                                     // switch for running light output, 0 -> normal mode, 1 -> light mode, 2 -> minimum
+    Bool_t                  fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
@@ -584,7 +596,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 55);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 59);
 };
 
 #endif

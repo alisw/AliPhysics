@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskElectronEfficiencyV2+;
 #pragma link C++ class AliAnalysisTaskEtaReconstruction+;
+#pragma link C++ class AliAnalysisTaskTagAndProbe+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
 #pragma link C++ class AliDielectronTMVACuts+;
@@ -68,10 +69,10 @@
 #pragma link C++ class AliAnalysisTaskBeauty+;
 #pragma link C++ class AliAnalysisTaskJpsi+;
 #pragma link C++ class AlimakeJPsiTree+;
-#ifdef HAVE_FASTJET
-// Classes which need direct access only to Fastjet objects (not
-// needed if wrapped into ALICE objects)
-#pragma link C++ class AliAnalysisTaskJpsiJet+;
-#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
-#endif
+//#ifdef HAVE_FASTJET
+//// Classes which need direct access only to Fastjet objects (not
+//// needed if wrapped into ALICE objects)
+//#pragma link C++ class AliAnalysisTaskJpsiJet+;
+//#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
+//#endif
 #endif
