@@ -126,6 +126,13 @@ ClassImp(AliAnalysisTaskSigma1385PM)
     : AliAnalysisTaskSE(),
       fTrackCuts(nullptr),
       fEventCuts(),
+      fCheckTPCGeo(kFALSE),
+      fTPCActiveLengthCutDeltaY(3.0),
+      fTPCActiveLengthCutDeltaZ(220.0),
+      fRequireCutGeoNcrNclLength(130),
+      fRequireCutGeoNcrNclGeom1Pt(1.5),
+      fCutGeoNcrNclFractionNcr(0.85),
+      fCutGeoNcrNclFractionNcl(0.7),
       fPIDResponse(),
       fMixingPool(),
       fEvt(nullptr),
@@ -150,6 +157,7 @@ ClassImp(AliAnalysisTaskSigma1385PM)
       fBinCent(),
       fBinZ(),
       fPosPV(),
+      fMagField(0),
       fCent(-1),
       fnMix(10),
       fCentBin(-1),
@@ -185,6 +193,13 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
     : AliAnalysisTaskSE(name),
       fTrackCuts(nullptr),
       fEventCuts(),
+      fCheckTPCGeo(kFALSE),
+      fTPCActiveLengthCutDeltaY(3.0),
+      fTPCActiveLengthCutDeltaZ(220.0),
+      fRequireCutGeoNcrNclLength(130),
+      fRequireCutGeoNcrNclGeom1Pt(1.5),
+      fCutGeoNcrNclFractionNcr(0.85),
+      fCutGeoNcrNclFractionNcl(0.7),
       fPIDResponse(),
       fMixingPool(),
       fEvt(nullptr),
@@ -209,6 +224,7 @@ AliAnalysisTaskSigma1385PM::AliAnalysisTaskSigma1385PM(const char* name,
       fBinCent(),
       fBinZ(),
       fPosPV(),
+      fMagField(0),
       fCent(-1),
       fnMix(10),
       fCentBin(-1),
@@ -339,6 +355,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QA/hDCAPVPion", "", 30, 0, 3, "s");
     fHistos->CreateTH1("QA/hDCArPVPion", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hPtPion", "", 200, 0, 20);
+    if(fCheckTPCGeo)
+      fHistos->CreateTH1("QA/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 200, 0,
@@ -366,6 +384,8 @@ void AliAnalysisTaskSigma1385PM::UserCreateOutputObjects() {
     fHistos->CreateTH1("QAcut/hDCAPVPion", "", 30, 0, 3, "s");
     fHistos->CreateTH1("QAcut/hDCArPVPion", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hPtPion", "", 200, 0, 20);
+    if(fCheckTPCGeo)
+      fHistos->CreateTH1("QAcut/hTPCGeoCheck", "", 2, -0.5, 1.5, "s");
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0,
                        200);
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
@@ -530,6 +550,7 @@ void AliAnalysisTaskSigma1385PM::UserExec(Option_t*) {
   fPosPV[0] = pVtx->GetX();
   fPosPV[1] = pVtx->GetY();
   fPosPV[2] = pVtx->GetZ();
+  fMagField = fEvt->GetMagneticField();
 
   // Event Mixing pool -----------------------------------------------------
   fZbin = fBinZ.FindBin(fPosPV[2]) - 1;    // Event mixing z-bin
@@ -561,6 +582,7 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
   Float_t b[2];
   Float_t bCov[3];
   Double_t nTPCNSigPion, pionZ, pionPt, pionSigmaDCA_r, pionDCA_r, lEta;
+  Int_t isTPCGeo;
 
   for (UInt_t it = 0; it < nTracks; it++) {
     track = (AliVTrack*)fEvt->GetTrack(it);
@@ -569,14 +591,26 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
 
     // ---------- Track selection begin ----------
     if (!fIsAOD) {
-      if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
-        continue;
+        if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
+            continue;
+        if(fCheckTPCGeo)
+            isTPCGeo = IsSelectedTPCGeoCut(((AliESDtrack*)track)) ? 1 : 0;
     }  // ESD Case
     else {
-      if (!fIsNano && !((AliAODTrack*)track)->TestFilterBit(fFilterBit))
-        continue;
-    }  // AOD Case
-
+        if (!fIsNano) {
+            if (!((AliAODTrack*)track)->TestFilterBit(fFilterBit))
+                continue;
+            if(fCheckTPCGeo)
+                isTPCGeo = IsSelectedTPCGeoCut(((AliAODTrack*)track)) ? 1 : 0;
+        } else {
+            if (!(static_cast<AliNanoAODTrack*>(track)->TestFilterBit(fFilterBit)))
+                continue;
+            if(fCheckTPCGeo) {
+                static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
+                isTPCGeo = (static_cast<AliNanoAODTrack*>(track)->GetVar(tpcGeo_index) > 0.5) ? 1 : 0;
+            }
+        }
+    }
     GetImpactParam(track, b, bCov);
 
     pionZ = b[1];
@@ -592,6 +626,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
       fHistos->FillTH1("QA/hPtPion", pionPt);
       fHistos->FillTH2("QA/hTPCPIDPion", track->GetTPCmomentum(),
                        track->GetTPCsignal());
+      if(fCheckTPCGeo)
+        fHistos->FillTH1("QA/hTPCGeoCheck", isTPCGeo);
     }
 
     if (TMath::Abs(nTPCNSigPion) > fTPCNsigSigmaStarPionCut)
@@ -604,6 +640,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
       continue;
     if (pionDCA_r > pionSigmaDCA_r * fSigmaStarPionXYVertexSigmaCut)
       continue;
+    if (fCheckTPCGeo && isTPCGeo < 0.5)
+      continue;
 
     if (fFillQAPlot) {
       fHistos->FillTH1("QAcut/hDCAPVPion", pionZ);
@@ -612,6 +650,8 @@ Bool_t AliAnalysisTaskSigma1385PM::GoodTracksSelection() {
       fHistos->FillTH1("QAcut/hPtPion", pionPt);
       fHistos->FillTH2("QAcut/hTPCPIDPion", track->GetTPCmomentum(),
                        track->GetTPCsignal());
+      if(fCheckTPCGeo)
+            fHistos->FillTH1("QAcut/hTPCGeoCheck", isTPCGeo);
     }
 
     fGoodTrackArray.push_back(it);
@@ -2112,4 +2152,47 @@ void AliAnalysisTaskSigma1385PM::GetImpactParam(AliVTrack* track,
     nanoT->AliNanoAODTrack::GetImpactParameters(p[0], p[1]);
   else
     track->GetImpactParameters(p, cov);
+}
+Bool_t AliAnalysisTaskSigma1385PM::IsSelectedTPCGeoCut(AliAODTrack* track) {
+  Bool_t checkResult = kTRUE;
+
+  AliESDtrack esdTrack(track);
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+
+  auto nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+  auto lengthInActiveZoneTPC = esdTrack.GetLengthInActiveZone(
+      0, fTPCActiveLengthCutDeltaY, fTPCActiveLengthCutDeltaZ, fMagField);
+  auto cutGeoNcrNclLength = fRequireCutGeoNcrNclLength -
+                            TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),
+                                         fRequireCutGeoNcrNclGeom1Pt);
+
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength)
+    checkResult = false;
+  if (nCrossedRowsTPC < fCutGeoNcrNclFractionNcr * cutGeoNcrNclLength)
+    checkResult = false;
+  if (esdTrack.GetTPCncls() < fCutGeoNcrNclFractionNcl * cutGeoNcrNclLength)
+    checkResult = false;
+
+  return checkResult;
+}
+Bool_t AliAnalysisTaskSigma1385PM::IsSelectedTPCGeoCut(AliESDtrack* track) {
+  Bool_t checkResult = kTRUE;
+
+  auto nCrossedRowsTPC = track->GetTPCCrossedRows();
+  auto lengthInActiveZoneTPC = track->GetLengthInActiveZone(
+      0, fTPCActiveLengthCutDeltaY, fTPCActiveLengthCutDeltaZ, fMagField);
+  auto cutGeoNcrNclLength = fRequireCutGeoNcrNclLength -
+                            TMath::Power(TMath::Abs(track->GetSigned1Pt()),
+                                         fRequireCutGeoNcrNclGeom1Pt);
+
+  if (lengthInActiveZoneTPC < cutGeoNcrNclLength)
+    checkResult = false;
+  if (nCrossedRowsTPC < fCutGeoNcrNclFractionNcr * cutGeoNcrNclLength)
+    checkResult = false;
+  if (track->GetTPCncls() < fCutGeoNcrNclFractionNcl * cutGeoNcrNclLength)
+    checkResult = false;
+
+  return checkResult;
 }
