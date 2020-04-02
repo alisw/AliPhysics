@@ -2351,19 +2351,13 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // EG2+DG2
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // EG1+DG1
     cuts.AddCutPCMCalo("0009b113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // EGJ+DJ1
-  } else if (trainConfig == 2004){  // EMCal+DCAL clusters standard cuts, Sphericity
+} else if (trainConfig == 2005){  // EMCal+DCAL clusters standard cuts, Sphericity
     cuts.AddCutPCMCalo("h0310113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.    - 0.3
     cuts.AddCutPCMCalo("h0510113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.    - 0.5
     cuts.AddCutPCMCalo("h3710113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.3    - 0.7
     cuts.AddCutPCMCalo("h5a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.5   - 1.
     cuts.AddCutPCMCalo("h7a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.7   - 1.
     cuts.AddCutPCMCalo("h0a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); //  0.    - 1.
-  } else if (trainConfig == 2005){  // EMCal+DCAL clusters standard cuts, V0M mult selections
-    cuts.AddCutPCMCalo("n0a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 0-100%
-    cuts.AddCutPCMCalo("n0110113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 0-10%
-    cuts.AddCutPCMCalo("n1210113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 10-20%
-    cuts.AddCutPCMCalo("n2510113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 20-50%
-    cuts.AddCutPCMCalo("n5a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 50-100%
   } else if (trainConfig == 2006){  // EMCal+DCAL clusters standard cuts, V0M mult selections
     cuts.AddCutPCMCalo("n0a10113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 0-100%
     cuts.AddCutPCMCalo("m0110113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // INT7 0-1%
@@ -3077,7 +3071,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0s63103100b00010"); // 90 degree rotation with evt. weight
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0t63103100b00010"); // random angle with evt. weight
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0u63103100b00010"); // random angle with multiple decays with evt. weight
-  } else if (trainConfig == 3101 {  //   (fPSigSmearing, fPSigSmearingCte)
+  } else if (trainConfig == 3101) {  //   (fPSigSmearing, fPSigSmearingCte)
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100b00010"); // smearing (0.025,  0.030)
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
@@ -3177,7 +3171,7 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0s63103100b00010"); // 90 degree rotation with evt. weight
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0t63103100b00010"); // random angle with evt. weight
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0u63103100b00010"); // random angle with multiple decays with evt. weight
-  } else if (trainConfig == 3201 {  //   (fPSigSmearing, fPSigSmearingCte)
+  } else if (trainConfig == 3201) {  //   (fPSigSmearing, fPSigSmearingCte)
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100b00010"); // smearing (0.025,  0.030)
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
