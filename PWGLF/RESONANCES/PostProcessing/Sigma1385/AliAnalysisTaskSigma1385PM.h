@@ -7,8 +7,8 @@
 #include <deque>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliEventCuts.h"
 #include "AliAnalysisTaskTrackMixer.h"
+#include "AliEventCuts.h"
 class THistManager;
 class AliPIDResponse;
 class AliESDtrackCuts;
@@ -23,8 +23,12 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
   void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
-  void SetMixerTask(AliAnalysisTaskTrackMixer* mixerTask) { fMixingPool = mixerTask; }
-  void SetUseBuiltinMixer(Bool_t builtinmixer) { fUseBuiltinMixer = builtinmixer; }
+  void SetMixerTask(AliAnalysisTaskTrackMixer* mixerTask) {
+    fMixingPool = mixerTask;
+  }
+  void SetUseBuiltinMixer(Bool_t builtinmixer) {
+    fUseBuiltinMixer = builtinmixer;
+  }
   void SetMixing(Bool_t setmixing) { fSetMixing = setmixing; }
   void SetnMix(Int_t nMix) { fnMix = nMix; }
   void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
@@ -102,6 +106,9 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Bool_t IsTrueSigmaStar(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
   double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
   void GetImpactParam(AliVTrack* track, Float_t p[2], Float_t cov[3]);
+
+  Bool_t IsSelectedTPCGeoCut(AliAODTrack* track);
+  Bool_t IsSelectedTPCGeoCut(AliESDtrack* track);
   void SetCutOpen();
 
   // helper
@@ -125,15 +132,23 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   TAxis AxisStr(TString name, std::vector<TString> bin);
 
   AliEventCuts fEventCuts;  // Event cuts
+  // TPC GeoCut
+  Bool_t fCheckTPCGeo;                   //
+  Double_t fTPCActiveLengthCutDeltaY;    //
+  Double_t fTPCActiveLengthCutDeltaZ;    //
+  Double_t fRequireCutGeoNcrNclLength;   //
+  Double_t fRequireCutGeoNcrNclGeom1Pt;  //
+  Double_t fCutGeoNcrNclFractionNcr;     //
+  Double_t fCutGeoNcrNclFractionNcl;     //
 
  private:
   typedef std::vector<AliVTrack*> tracklist;
   typedef std::deque<tracklist> eventpool;
   typedef std::vector<std::vector<eventpool>> mixingpool;
 
-  AliESDtrackCuts* fTrackCuts;   //!
-  AliPIDResponse* fPIDResponse;  //!
-  AliAnalysisTaskTrackMixer* fMixingPool; //!
+  AliESDtrackCuts* fTrackCuts;             //!
+  AliPIDResponse* fPIDResponse;            //!
+  AliAnalysisTaskTrackMixer* fMixingPool;  //!
 
   AliVEvent* fEvt;             //!
   AliMCEvent* fMCEvent;        //!
@@ -159,6 +174,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   TAxis fBinCent;      //!
   TAxis fBinZ;         //!
   Double_t fPosPV[3];  //!
+  Double_t fMagField;  //!
 
   Double_t fCent;  //!
   Int_t fnMix;     //!
