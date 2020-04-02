@@ -104,11 +104,13 @@ fResponseMatrix(),
 fJetRadius(0.4),
 fRecluster(kFALSE),
 fhLPThetaEnergy(),
+fhLPThetaEnergyMC(),
 fMinLnOneByTheta(),
 fMaxLnOneByTheta(),
 fMinEnergy(),
 fMaxEnergy(),
 fhDmesonOrNot(),
+fhDmesonOrNotMC(),
 fMinDelMass(),
 fMaxDelMass()
 {
@@ -159,11 +161,13 @@ fResponseMatrix(),
 fJetRadius(0.4),
 fRecluster(kFALSE),
 fhLPThetaEnergy(),
+fhLPThetaEnergyMC(),
 fMinLnOneByTheta(),
 fMaxLnOneByTheta(),
 fMinEnergy(),
 fMaxEnergy(),
 fhDmesonOrNot(),
+fhDmesonOrNotMC(),
 fMinDelMass(),
 fMaxDelMass()
 {
@@ -546,30 +550,12 @@ void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* a
     // calling the reclustering function, and declustering the jet
     if(jet && fRecluster)
     {
+        ReDeCluster(jet, fUseMCInfo);
         // Pseudo code:
         //  1. Recluster the jet
         //  2. Start declustering
         //  2.1. Get two subjets of the jet
         //  2.2. Get and fill in a histogram, the theta and E of the soft subjet/radiator as, you follow the hard subjet
-        //
-        // ClusterSequence runs the jet clustering. see https://github.com/alisw/fastjet/blob/master/fastjet/example/01-basic.cc line 71
-        fastjet::ClusterSequence* cs = Recluster(jet); // used to give warning:did you mean 'fastjet::contrib::Recluster'? (FixIt) 
-        if (cs)
-        {
-            std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
-            if( recl_jets.size() > 0 )
-            {
-               DeclusterTheJet( recl_jets[0], jet);            // 2. Declustering the jet
-               // 3. Fill the Lund Plane. This is done within the DeclusterTheJet function
-            }
-        }
-        delete cs;
-        
-        // The FastJet::contrib way
-        //fastjet::PseudoJet recl_jet = ReclusteredJet(jet);  // 1. getting the reclustered jet
-        //// the AliEmcal jet is provided to compare the last hard jet of recl_jet with D meson from AliEmcal jet
-        //DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
-        //FillLundPlane(4.0, 5.2);
     }
 
 }
@@ -755,6 +741,13 @@ void AliATDJetCorrDev::CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* a
             }
 
         } // if HF reco jet
+        /*
+        if (jet && fRecluster)
+        {
+            ReDeCluster(jet, fUseMCInfo);
+        
+        }
+        */
     } // if jet cont reco
 
     Double_t fillRM[13] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes,multiplicity};
@@ -774,7 +767,7 @@ void AliATDJetCorrDev::FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t
     if(rho>0) z = Z(Dmeson,jet,rho);
     else z = Z(Dmeson,jet);
 
-    if(IsBkg==kFALSE && fBuildRM==kTRUE) CreateResponseMatrix(jet);
+    if(IsBkg==kFALSE && fBuildRM==kTRUE) CreateResponseMatrix(jet);//default fBuildRM=false, also same in MC wagon settings
 
     Bool_t bDInEMCalAcc=InEMCalAcceptance(Dmeson);
     Bool_t bJetInEMCalAcc=InEMCalAcceptance(jet);
@@ -1087,17 +1080,27 @@ Bool_t  AliATDJetCorrDev::DefineHistoForAnalysis(){
     fhPtJet->Sumw2();
 
     // reclutering/Lund plane related histograms
-    fhLPThetaEnergy = new TH2F("hLPThetaEnergy","Lund Plane in theta, energy of the radiator",nbinstheta,fMinLnOneByTheta,fMaxLnOneByTheta,nbinsenergy,fMinEnergy,fMaxEnergy);
+    fhLPThetaEnergy = new TH2F("hLPThetaEnergy","Lund Plane in theta, E of the softer radiator",nbinstheta,fMinLnOneByTheta,fMaxLnOneByTheta,nbinsenergy,fMinEnergy,fMaxEnergy);
+    fhLPThetaEnergyMC = new TH2F("hLPThetaEnergyMC","MC Lund Plane in theta, E of softer radiator",nbinstheta,fMinLnOneByTheta,fMaxLnOneByTheta,nbinsenergy,fMinEnergy,fMaxEnergy);
     fhLPThetaEnergy->SetStats(kTRUE);
+    fhLPThetaEnergyMC->SetStats(kTRUE);
     fhLPThetaEnergy->GetYaxis()->SetTitle("ln (1/#theta)");
+    fhLPThetaEnergyMC->GetYaxis()->SetTitle("ln (1/#theta)");
     fhLPThetaEnergy->GetXaxis()->SetTitle("E");
+    fhLPThetaEnergyMC->GetXaxis()->SetTitle("E");
     fhLPThetaEnergy->Sumw2();
+    fhLPThetaEnergyMC->Sumw2();
 
+    // there should be a better way to check if the past hard prong is a D meson or not
     fhDmesonOrNot   = new TH1F("fhDmesonOrNot","Inv mass (D meson - hard track)",  nbinsdelmass,fMinDelMass,fMaxDelMass);
     fhDmesonOrNot->SetStats(kTRUE);
+    fhDmesonOrNotMC   = new TH1F("fhDmesonOrNotMC","Inv mass (D meson - hard track)",  nbinsdelmass,fMinDelMass,fMaxDelMass);
+    fhDmesonOrNotMC->SetStats(kTRUE);
 
     fOutput->Add(fhLPThetaEnergy);
+    fOutput->Add(fhLPThetaEnergyMC);
     fOutput->Add(fhDmesonOrNot);
+    fOutput->Add(fhDmesonOrNotMC);
 
     fOutput->Add(fhPhiJetTrks);
     fOutput->Add(fhEtaJetTrks);
@@ -1504,7 +1507,8 @@ Bool_t AliATDJetCorrDev::InEMCalAcceptance(AliVParticle *vpart){
 //}
 //    
 //_______________________________________________________________________________
-fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet){
+fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet)
+{
     // reclustering a fastjet jet with CA algorithm
     // ref(arxiv/1111/6097, pg. 13, section 3.3: fastjet::ClusterSequence)
     // ClusterSequence object is created to run the jet clustering
@@ -1524,7 +1528,7 @@ fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet){
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet)
+void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet, bool theMCInfo)
 {
     fastjet::PseudoJet jj = fj_jet;
     fastjet::PseudoJet j1;
@@ -1541,7 +1545,7 @@ void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* a
                                                     //
         Double_t rad_E = j2.E();                    // the radiator energy
         // Fill the 2D histogram with del_R and del_E
-        FillLundPlane(del_R, rad_E);
+        FillLundPlane(del_R, rad_E, theMCInfo);
         jj = j1;
     }
     // check stats here if the final jet `jj' is a D meson or not
@@ -1554,15 +1558,46 @@ void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* a
     fastjet::PseudoJet hardTrk=jj;
     AliVParticle* Dmeson = ali_jet->GetFlavourTrack(0);
     Double_t deltaM = (Dmeson->M() - hardTrk.m());
-    fhDmesonOrNot->Fill(deltaM);
+    if(theMCInfo)fhDmesonOrNotMC->Fill(deltaM);
+    else{fhDmesonOrNot->Fill(deltaM);}
 
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy)
+void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy, bool theMCInfo)
 {
-    fhLPThetaEnergy->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);
+    if(theMCInfo)
+    {   fhLPThetaEnergyMC->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);}
+    else
+    {   fhLPThetaEnergy->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);}
     
 }
 
-
+//_______________________________________________________________________________
+void AliATDJetCorrDev::ReDeCluster(const AliEmcalJet* jet, bool theMCInfo)
+{
+    // Pseudo code:
+    //  1. Recluster the jet
+    //  2. Start declustering
+    //  2.1. Get two subjets of the jet
+    //  2.2. Get and fill in a histogram, the theta and E of the soft subjet/radiator as, you follow the hard subjet
+    //
+    // ClusterSequence runs the jet clustering. see https://github.com/alisw/fastjet/blob/master/fastjet/example/01-basic.cc line 71
+    fastjet::ClusterSequence* cs = Recluster(jet); // used to give warning:did you mean 'fastjet::contrib::Recluster'? (FixIt) 
+    if (cs)
+    {
+        std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
+        if( recl_jets.size() > 0 )
+        {
+           DeclusterTheJet( recl_jets[0], jet, theMCInfo);            // 2. Declustering the jet
+           // 3. Fill the Lund Plane. This is done within the DeclusterTheJet function
+        }
+    }
+    delete cs;
+    
+    // The FastJet::contrib way
+    //fastjet::PseudoJet recl_jet = ReclusteredJet(jet);  // 1. getting the reclustered jet
+    //// the AliEmcal jet is provided to compare the last hard jet of recl_jet with D meson from AliEmcal jet
+    //DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
+    //FillLundPlane(4.0, 5.2);
+}

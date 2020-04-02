@@ -200,20 +200,23 @@ private:
    //fastjet::PseudoJet ReclusteredJet(const AliEmcalJet* jet);//recluster with CA using fastjet::contirb::Recluster package. importing contrib package doesn't work
    void DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet);//decluster the jet, access the soft subjet's properties to fill the Lund Plane
    void FillLundPlane(Double_t sj_deltaR, Double_t sj_energy);
+   void ReDeCluster(const AliEmcalJet* jet, bool theMCInfo);
    Double_t fJetRadius;             //jet radius for reclustering. Should be assigned in AddTask from its parameter.
    Bool_t fRecluster;
    //reclustering histograms and variables
    TH2F* fhLPThetaEnergy;
+   TH2F* fhLPThetaEnergyMC;
    Double_t fMinLnOneByTheta;
    Double_t fMaxLnOneByTheta;
    Double_t fMinEnergy;
    Double_t fMaxEnergy;
    TH1F* fhDmesonOrNot;
+   TH1F* fhDmesonOrNotMC;
    Double_t fMinDelMass;
    Double_t fMaxDelMass;
 
 
-   ClassDef(AliATDJetCorrDev,1); // class for charm-jet CorrelationsExch
+   ClassDef(AliATDJetCorrDev,2); // class for charm-jet CorrelationsExch
 };
 
 #endif
