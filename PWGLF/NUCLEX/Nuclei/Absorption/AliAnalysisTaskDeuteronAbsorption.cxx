@@ -69,6 +69,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tTOFsigDx{-999.},
                                                                                          tTOFsigDz{-999.},
                                                                                          tTOFclsN{0},
+                                                                                         tTRDclsN{0},
                                                                                          tID{0},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
@@ -194,6 +195,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/D");
     fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/D");
     fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
+    fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
     fTreeTrack->Branch("tID", &tID, "tID/I");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
@@ -300,6 +302,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTOFsigDx = track->GetTOFsignalDx();
       tTOFsigDz = track->GetTOFsignalDz();
       tTOFclsN = track->GetTOFclusterN();
+      tTRDclsN = track->GetTRDncls();
       tID = track->GetID();
       tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
       tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
