@@ -101,7 +101,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
-  fDoLightOutput(kFALSE),
+  fDoLightOutput(0),
   fDoPlotTrackPID(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
@@ -499,10 +499,17 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
   TH1::AddDirectory(kFALSE);
 
+
   if(fHistograms != NULL){
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightOutput==2) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     fHistograms->SetOwner(kTRUE);

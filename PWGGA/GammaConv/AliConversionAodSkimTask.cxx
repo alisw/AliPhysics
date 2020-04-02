@@ -26,10 +26,6 @@ AliConversionAodSkimTask::AliConversionAodSkimTask(const char* name) :
   AliAodSkimTask(name), fConvMinPt(-1), fConvMinEta(-999.), fConvMaxEta(999.), fConvMinPhi(999.), fConvMaxPhi(999.),fDoBothConvPtAndAcc(0),
   fDoQA(0),fHconvPtBeforeCuts(0), fHconvPtAfterCuts(0), fHconvAccBeforeCuts(0), fHconvAccAfterCuts(0)
 {
-  if (name) {
-    DefineInput(0, TChain::Class());
-    DefineOutput(1, TList::Class());
-  }
 }  
 
 AliConversionAodSkimTask::~AliConversionAodSkimTask()
@@ -192,7 +188,7 @@ Bool_t AliConversionAodSkimTask::SelectEvent()
     store     = kTRUE;
   }
 
-  if(fDoQA){
+  if(fDoQA&&store){
     TClonesArray *convgammas  = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fGammaBr));
     if(convgammas){
       for(Int_t i=0;i<convgammas->GetEntriesFast();i++){
@@ -209,83 +205,3 @@ Bool_t AliConversionAodSkimTask::SelectEvent()
   }
   return store;
 }
-
-Bool_t AliConversionAodSkimTask::UserNotify()
-{
-  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  if (!tree) {
-    AliError(Form("%s: No current tree!",GetName()));
-    return kFALSE;
-  }
-
-  Float_t xsection    = 0;
-  Float_t trials      = 0;
-  Int_t   pthardbin   = 0;
-
-  TFile *curfile = tree->GetCurrentFile();
-  if (!curfile) {
-    AliError(Form("%s: No current file!",GetName()));
-    return kFALSE;
-  }
-
-  TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain) tree = chain->GetTree();
-  Int_t nevents = tree->GetEntriesFast();
-
-  Int_t slevel = gErrorIgnoreLevel;
-  gErrorIgnoreLevel = kFatal;
-  Bool_t res = PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
-  gErrorIgnoreLevel=slevel;
-
-  if (res) {
-    cout << "AliConversionAodSkimTask " << GetName() << " found xsec info: " << xsection << " " << trials << " " << pthardbin << " " << nevents << endl;
-    fPyxsec      = xsection;
-    fPytrials    = trials;
-    fPypthardbin = pthardbin;
-  }
-
-  return res;
-}
-
-void AliConversionAodSkimTask::Terminate(Option_t *)
-{
-   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-   if (man->GetAnalysisType()!=0)
-     return;
-   if (fHevs==0)
-     return;
-   Int_t norm = fHevs->GetEntries();
-   if (norm<1)
-     norm=1;
-   cout << "AliConversionAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/norm
-	<< " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
-}
-
-const char *AliConversionAodSkimTask::Str() const
-{
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
-              fClusMinE,
-              fCutMC,
-              fYCutMC,
-              fDoCopyHeader,
-              fDoCopyVZERO,
-              fDoCopyTZERO,
-              fDoCopyVertices,
-              fDoCopyTOF,
-              fDoCopyTracklets,
-              fDoCopyTracks,
-              fDoCopyTrigger,
-              fDoCopyPTrigger,
-              fDoCopyCells,
-              fDoCopyPCells,
-              fDoCopyClusters,
-              fDoCopyDiMuons,
-              fDoCopyTrdTracks,
-              fDoCopyV0s,
-              fDoCopyCascades,
-              fDoCopyZDC,
-              fDoCopyConv,
-              fDoCopyMC,
-              fDoCopyMCHeader);
-}
-

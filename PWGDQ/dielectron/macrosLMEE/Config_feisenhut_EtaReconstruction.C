@@ -1,32 +1,38 @@
 
 // +++++++++++++++++ Cuts for primary single electrons +++++++++++++++++
+TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
+// TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+
+
 // TString names_Prim_Cuts=("noPID");     // still has kin cuts (pt 75 MeV/c)
 // TString names_Prim_Cuts=("JPID_sum_pt75");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum2_pt75_sec_OnlyCosOpenAngle;JPID_sum7_pt75_sec_OnlyM;JPID_sum8_pt75_sec_OnlyArmPt;JPID_sum9_pt75_sec_OnlyArmAlpha;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Cuts=("JPID_sum_pt75;JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM;JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt;JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha");
-TString names_Prim_Single_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
+// TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 
 // +++++++++++++++++ Cuts for primary pairs  +++++++++++++++++
-TString names_Prim_Pair_Cuts=("pairJPID_sum_pt75;pairJPID_sum1_pt75_sec_kV0");
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
 
 // +++++++++++++++++ Cuts for secondary electrons +++++++++++++++++
-// TString names_Sec_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
-// TString names_Sec_Cuts=("JPID_sum_pt75_secondary");
-// TString names_Sec_Cuts=("kV0");
-// TString names_Sec_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
-// TString names_Sec_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
-TString names_Sec_Cuts=("noPID;kV0");
-// TString names_Sec_Cuts=("noPID;kV0_loose");
+// TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
+TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0_PreFilter");
 
 
-                                                                                // TString names_Sec_Cuts=("onlyPIDcut1_noTrackCuts");
-                                                                                // TString names_Sec_Cuts=("cut1_pt75_secondary");
-                                                                                // TString names_Sec_Cuts=("cut1_pt75");
-                                                                                // TString names_Sec_Cuts=("noPID;cut1_pt75_secondary");
+// TString names_Sec_Pair_standard_Cuts=("noPID");      // still has kin cuts (pt 75 MeV/c)
+// TString names_Sec_Pair_standard_Cuts=("JPID_sum_pt75_secondary");
+// TString names_Sec_Pair_standard_Cuts=("kV0");
+// TString names_Sec_Pair_standard_Cuts=("noPID;kV0OnlyCosOpenAngle;kV0OnlyM;kV0OnlyArmPt;kV0OnlyArmAlpha;kV0");
+// TString names_Sec_Pair_standard_Cuts=("noPID;kV0wPairM;kV0wPairMArmPt;kV0wPairMArmPtAlpha");
+TString names_Sec_Pair_standard_Cuts=("noPID;kV0");
+// TString names_Sec_Pair_standard_Cuts=("noPID;kV0_PreFilter");
 
 
-// TString names_Sec_loose_Cuts=("noPID;kV0");
-TString names_Sec_loose_Cuts=("noPID;kV0_loose");
+                                                                                // TString names_Sec_Pair_standard_Cuts=("onlyPIDcut1_noTrackCuts");
+                                                                                // TString names_Sec_Pair_standard_Cuts=("cut1_pt75_secondary");
+                                                                                // TString names_Sec_Pair_standard_Cuts=("cut1_pt75");
+                                                                                // TString names_Sec_Pair_standard_Cuts=("noPID;cut1_pt75_secondary");
+
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // 400 MEV CUT !!!!!!!!!!!!!!!
@@ -51,10 +57,12 @@ Bool_t SetTOFCorrection = kFALSE;
 
 bool debug = false;
 
-bool DoPairing      = true;
-bool DoFourPairing  = true;
-bool UsePreFilter   = false;
-bool DoMassCut      = false;
+bool DoPairing         = true;
+bool DoFourPairing     = true;
+bool UsePreFilter      = true;
+bool UseSecPreFilter   = false;
+bool DoMassCut         = true;
+// bool DoULSLS   = true;
 
 bool UseMCDataSig   = false;
 
@@ -102,8 +110,11 @@ const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
 
-const double upperMassCutPrimaries = 0.547862;
-const double lowerMassCutPrimaries = 0.1349766;
+// const double upperMassCutPrimaries = 0.547862;
+// const double lowerMassCutPrimaries = 0.1349766;
+// const double upperMassCutPrimaries = 1.;
+const double upperMassCutPrimaries = 0.1349766;
+const double lowerMassCutPrimaries = 0;
 const double upperPreFilterMass = 0.25;
 const double lowerPreFilterMass = 0.03;
 const double massCutSecondaries = 0.01;
@@ -333,6 +344,15 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
+  else if (cutDefinition == "JPID_sum_pt75_PreFilter" || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_PreFilter);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2_PreFilter);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
   else if (cutDefinition == "JPID_sum_pt200"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01_pt200);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
@@ -350,7 +370,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
            cutDefinition == "JPID_sum6_pt75_sec_OnlyPsiPair"           || cutDefinition == "JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM"           ||
            cutDefinition == "JPID_sum7_pt75_sec_OnlyM"                 || cutDefinition == "JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt"      ||
            cutDefinition == "JPID_sum8_pt75_sec_OnlyArmPt"             || cutDefinition == "JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha" ||
-           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"
+           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"          || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"
           ){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
@@ -363,7 +383,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt75"){
+  else if (cutDefinition == "pairJPID_sum_pt20"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -371,7 +391,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "pairJPID_sum1_pt75_sec_kV0"){
+  else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -416,7 +436,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "kV0_loose"){
+  else if (cutDefinition == "kV0_PreFilter"){
     // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
@@ -425,7 +445,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
 
-    AnaCut.SetPairCutsAna(LMEECutLib::kV0_loose);
+    AnaCut.SetPairCutsAna(LMEECutLib::kV0_PreFilter);
 
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -955,9 +975,9 @@ void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
     task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
     // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
 }

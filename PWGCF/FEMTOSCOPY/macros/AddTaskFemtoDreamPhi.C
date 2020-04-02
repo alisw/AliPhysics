@@ -16,7 +16,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-  evtCuts->SetSphericityCuts(0.7, 1);
+  evtCuts->SetSphericityCuts(0.0, 1);
+
+    if (suffix == "1") {
+        evtCuts->SetSphericityCuts(0.7, 1);
+    }
+
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -118,7 +123,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   PDGParticles.push_back(2212);  // 3
   PDGParticles.push_back(2212);  // 4
   PDGParticles.push_back(333);   // 5
-  PDGParticles.push_back(333);   // 6
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -190,7 +194,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   //  pairQA.push_back(12);
   //  pairQA.push_back(22);
 
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7); i++) {
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 ); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
@@ -200,21 +204,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   pairQA[0] = 11;   // pp
   pairQA[1] = 0;    // pap
   pairQA[2] = 12;   // pphi
-  pairQA[7] = 11;   // apap
-  pairQA[8] = 12;   // apphi
-  pairQA[13] = 22;  // phiphi
+  pairQA[6] = 11;   // apap
+  pairQA[7] = 12;   // apphi
+  pairQA[11] = 22;  // phiphi
 
   if (isMC) {
+    pairQA[15] = 11;
+    pairQA[16] = 11;  // ptapt
+    pairQA[17] = 11;
     pairQA[18] = 11;
-    pairQA[19] = 11;  // ptapt
+    pairQA[19] = 11;
     pairQA[20] = 11;
-    pairQA[22] = 11;
-    pairQA[23] = 11;
-    pairQA[25] = 11;
-
-    pairQA[21] = 11;  // ptphiall
-    pairQA[24] = 11;  // aptphiall
-    pairQA[27] = 11;  // phiallphiall
   }
 
   AliFemtoDreamCollConfig *config =
@@ -230,6 +230,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
   config->SetExtendedQAPairs(pairQA);
+  config->SetUseEventMixing(true);
+
   /*
   //This is just to show off what would be possible in case you are interested,
   don't be confused by this at the beginning
@@ -251,6 +253,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   } else {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
+  }
+
+
+  if (isMC){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
   }
 
   /*
@@ -302,6 +310,8 @@ fix it wont work! \n";
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
+  task->SetOEventMixing(false);
+  task->SetMCTruth(false);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();

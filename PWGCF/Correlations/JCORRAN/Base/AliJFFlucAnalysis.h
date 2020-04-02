@@ -1,7 +1,7 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-#include <AliAnalysisTaskSE.h>
+//#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
@@ -9,7 +9,7 @@
 class TClonesArray;
 class AliJEfficiency;
 
-class AliJFFlucAnalysis : public AliAnalysisTaskSE {
+class AliJFFlucAnalysis{// : public AliAnalysisTaskSE {
 public:
 	AliJFFlucAnalysis();
 	AliJFFlucAnalysis(const char *name);
@@ -189,7 +189,7 @@ private:
 	//AliJTH1D fh_QvectorQCphi;//!
 	AliJTH1D fh_evt_SP_QC_ratio_2p;//! // check SP QC evt by evt ratio
 	AliJTH1D fh_evt_SP_QC_ratio_4p;//! // check SP QC evt by evt ratio
-	ClassDef(AliJFFlucAnalysis, 1); // example of analysis
+	//ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };
 
 #endif

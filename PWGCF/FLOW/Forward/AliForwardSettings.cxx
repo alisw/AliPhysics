@@ -26,7 +26,7 @@ AliForwardSettings::AliForwardSettings() :
   doNUA(true),
   doNUE(true),
   gap(0.0),
-  minpt(0.0),
+  minpt(0.2),
   maxpt(5),
   mc(kFALSE),
   esd(kFALSE),
@@ -59,14 +59,15 @@ AliForwardSettings::AliForwardSettings() :
   correct_nua_mc(),
   run_list(0),
   second_analysis(kFALSE),
-  SC_analysis(kTRUE),
-  decorr_analysis(kTRUE),
+  SC_analysis(kFALSE),
+  decorr_analysis(kFALSE),
   normal_analysis(kTRUE),
   runnumber(0),
   TPC_maxeta(0),
   nua_file(""),
   nue_file(""),
   sec_file(""),
-  sec_cent_file("")
+  sec_cent_file(""),
+  XeXe(kFALSE)
 {
 }

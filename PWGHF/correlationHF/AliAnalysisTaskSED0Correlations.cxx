@@ -1209,11 +1209,11 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   }
   if(fFillTrees==kFillTrees && fAlreadyFilled) FillTreeTracks(aod);
   
-  ((TH1F*)fOutputStudy->FindObject("fHistNtrUnCorrEvSel"))->Fill(fMultEvOrig); //Fill multiplicity histo
-  if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fHistNtrCorrEvSel"))->Fill(fMultEv); //Fill multiplicity histo
+  ((TH1F*)fOutputStudy->FindObject("hNtrUnCorrEvSel"))->Fill(fMultEvOrig); //Fill multiplicity histo
+  if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("hNtrCorrEvSel"))->Fill(fMultEv); //Fill multiplicity histo
   if(fAlreadyFilled) { //there's a selected D candidate in the event
-    ((TH1F*)fOutputStudy->FindObject("fHistNtrUnCorrEvWithCand"))->Fill(fMultEvOrig); //Fill multiplicity histo
-    if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("fHistNtrCorrEvWithCand"))->Fill(fMultEv); //Fill multiplicity histo
+    ((TH1F*)fOutputStudy->FindObject("hNtrUnCorrEvWithCand"))->Fill(fMultEvOrig); //Fill multiplicity histo
+    if(fEqualizeTracklets) ((TH1F*)fOutputStudy->FindObject("hNtrCorrEvWithCand"))->Fill(fMultEv); //Fill multiplicity histo
   }
 
 
@@ -2000,20 +2000,20 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   hMultEvTrkl1->SetMinimum(0);
   fOutputStudy->Add(hMultEvTrkl1);   
 
-  TH1F *fHistNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
-  fHistNtrUnCorrEvSel->SetMinimum(0);
-  fHistNtrUnCorrEvSel->Sumw2();
-  fOutputStudy->Add(fHistNtrUnCorrEvSel); 
+  TH1F *hNtrUnCorrEvSel = new TH1F("hNtrUnCorrEvSel","Uncorrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
+  hNtrUnCorrEvSel->SetMinimum(0);
+  hNtrUnCorrEvSel->Sumw2();
+  fOutputStudy->Add(hNtrUnCorrEvSel); 
 
-  TH1F *fHistNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand","Uncorrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
-  fHistNtrUnCorrEvWithCand->SetMinimum(0);
-  fHistNtrUnCorrEvWithCand->Sumw2();
-  fOutputStudy->Add(fHistNtrUnCorrEvWithCand); 
+  TH1F *hNtrUnCorrEvWithCand = new TH1F("hNtrUnCorrEvWithCand","Uncorrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
+  hNtrUnCorrEvWithCand->SetMinimum(0);
+  hNtrUnCorrEvWithCand->Sumw2();
+  fOutputStudy->Add(hNtrUnCorrEvWithCand); 
 
-  //TH1F *fHistNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //
-  //fHistNtrUnCorrEvWithD->SetMinimum(0);
-  //fHistNtrUnCorrEvWithD->Sumw2();
-  //fOutputStudy->Add(fHistNtrUnCorrEvWithD); 
+  //TH1F *hNtrUnCorrEvWithD = new TH1F("hNtrUnCorrEvWithD","Uncorrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //
+  //hNtrUnCorrEvWithD->SetMinimum(0);
+  //hNtrUnCorrEvWithD->Sumw2();
+  //fOutputStudy->Add(hNtrUnCorrEvWithD); 
 
   if(fEqualizeTracklets) {
     TH1F *hMultEvTrkl1Equal = new TH1F("hMultEvTrkl1Equal","Multiplicity of events (v2 pp analysis) in Tracklets <1, EQUALIZED; SPD tracklets in |eta|<1; # Events",200,0,200);
@@ -2028,20 +2028,20 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hNtrCorrVsZvtx->SetMinimum(0);
     fOutputStudy->Add(hNtrCorrVsZvtx); 
 
-    TH1F *fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
-    fHistNtrCorrEvSel->SetMinimum(0);
-    fHistNtrCorrEvSel->Sumw2();
-    fOutputStudy->Add(fHistNtrCorrEvSel); 
+    TH1F *hNtrCorrEvSel = new TH1F("hNtrCorrEvSel","Corrected Trkl multiplicity for selected events; Trkl ; Entries",200,-0.5,199.5);
+    hNtrCorrEvSel->SetMinimum(0);
+    hNtrCorrEvSel->Sumw2();
+    fOutputStudy->Add(hNtrCorrEvSel); 
 
-    TH1F *fHistNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand","Corrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
-    fHistNtrCorrEvWithCand->SetMinimum(0);
-    fHistNtrCorrEvWithCand->Sumw2();
-    fOutputStudy->Add(fHistNtrCorrEvWithCand); 
+    TH1F *hNtrCorrEvWithCand = new TH1F("hNtrCorrEvWithCand","Corrected Trkl multiplicity for events with D candidates; Trkl ; Entries",200,-0.5,199.5);// Total multiplicity
+    hNtrCorrEvWithCand->SetMinimum(0);
+    hNtrCorrEvWithCand->Sumw2();
+    fOutputStudy->Add(hNtrCorrEvWithCand); 
 
-    //TH1F *fHistNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD","Corrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //   
-    //fHistNtrCorrEvWithD->SetMinimum(0);
-    //fHistNtrCorrEvWithD->Sumw2();
-    //fOutputStudy->Add(fHistNtrCorrEvWithD); 
+    //TH1F *hNtrCorrEvWithD = new TH1F("hNtrCorrEvWithD","Corrected Trkl multiplicity for events with D in mass region ; Trkl ; Entries",200,-0.5,199.5); //   
+    //hNtrCorrEvWithD->SetMinimum(0);
+    //hNtrCorrEvWithD->Sumw2();
+    //fOutputStudy->Add(hNtrCorrEvWithD); 
   }
 
   if(fVsMultAnalysis) {

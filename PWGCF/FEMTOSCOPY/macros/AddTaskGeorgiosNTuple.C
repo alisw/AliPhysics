@@ -1,0 +1,413 @@
+#include <vector>
+//#include "AliAnalysisTaskSE.h"
+//#include "AliAnalysisManager.h"
+//#include "AliAnalysisTaskGeorgiosNTuple.h"
+//#include "AliFemtoDreamEventCuts.h"
+//#include "AliFemtoDreamTrackCuts.h"
+//#include "AliFemtoDreamCascadeCuts.h"
+//#include "AliFemtoDreamCollConfig.h"
+
+
+AliAnalysisTaskSE *AddTaskGeorgiosNTuple() {
+
+  //set fullBlastQA and suffix (cut variation)
+  bool fullBlastQA = true;
+  const char *cutVariation = "0";
+  TString suffix = TString::Format("%s", cutVariation);
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskSigma0Run2()", "No analysis manager found.");
+    return 0x0;
+  }
+
+  // ================== GetInputEventHandler =============================
+  AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+
+  //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetMultVsCentPlots(true);
+
+
+//v0 Cuts (Georgios)
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true, false);
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(false, true, false);//PileUpRej, false
+  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(false, true, false);
+  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
+  v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
+  v0Cuts->SetPDGCodePosDaug(2212);  //Proton
+  v0Cuts->SetPDGCodeNegDaug(-211);  //Pion
+  v0Cuts->SetPDGCodev0(3122);  //Lambda
+  v0Cuts->SetCutInvMass(0.03);
+//Anti v0 Cuts
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true, false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(false, true, false);
+  PosAntiv0Daug->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(false, true, false);
+  NegAntiv0Daug->SetCutCharge(-1);
+  Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
+  Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
+  Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
+  Antiv0Cuts->SetPDGCodeNegDaug(-2212);  //Proton
+  Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
+  Antiv0Cuts->SetCutInvMass(0.03);
+
+
+  //Cascade Cuts
+  AliFemtoDreamCascadeCuts* CascadeXiBGRCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
+  CascadeXiBGRCuts->SetXiCharge(-1);
+  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
+  XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+  XiPosCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+  XiBachCuts->SetCheckTPCRefit(false);
+  CascadeXiBGRCuts->Setv0Negcuts(XiNegCuts);
+  CascadeXiBGRCuts->Setv0PosCuts(XiPosCuts);
+  CascadeXiBGRCuts->SetBachCuts(XiBachCuts);
+  CascadeXiBGRCuts->SetPDGCodeCasc(3312);                
+  CascadeXiBGRCuts->SetPDGCodev0(3122);
+  CascadeXiBGRCuts->SetPDGCodePosDaug(2212);
+  CascadeXiBGRCuts->SetPDGCodeNegDaug(-211);
+  CascadeXiBGRCuts->SetPDGCodeBach(-211);
+  //AntiCascade cuts
+  AliFemtoDreamCascadeCuts* AntiCascadeXiBGRCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
+  AntiCascadeXiBGRCuts->SetXiCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+  AntiXiNegCuts->SetCutCharge(-1);
+  AntiXiNegCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
+  AntiXiPosCuts->SetCutCharge(1);
+  AntiXiPosCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *AntiXiBachCuts =AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+  AntiXiBachCuts->SetCutCharge(1);
+  AntiXiBachCuts->SetCheckTPCRefit(false);
+  AntiCascadeXiBGRCuts->Setv0Negcuts(AntiXiNegCuts);
+  AntiCascadeXiBGRCuts->Setv0PosCuts(AntiXiPosCuts);
+  AntiCascadeXiBGRCuts->SetBachCuts(AntiXiBachCuts);
+  AntiCascadeXiBGRCuts->SetPDGCodeCasc(-3312);
+  AntiCascadeXiBGRCuts->SetPDGCodev0(-3122);
+  AntiCascadeXiBGRCuts->SetPDGCodePosDaug(211);
+  AntiCascadeXiBGRCuts->SetPDGCodeNegDaug(-2212);
+  AntiCascadeXiBGRCuts->SetPDGCodeBach(211); 
+
+  //Cascade Cuts (bkg)
+  AliFemtoDreamCascadeCuts* CascadeXiCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
+  CascadeXiCuts->SetXiCharge(-1);
+  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
+  XiNegCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+  XiPosCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+  XiBachCuts->SetCheckTPCRefit(false);
+  CascadeXiCuts->Setv0Negcuts(XiNegCuts);
+  CascadeXiCuts->Setv0PosCuts(XiPosCuts);
+  CascadeXiCuts->SetBachCuts(XiBachCuts);
+  CascadeXiCuts->SetPDGCodeCasc(3312);
+  CascadeXiCuts->SetPDGCodev0(3122);
+  CascadeXiCuts->SetPDGCodePosDaug(2212);
+  CascadeXiCuts->SetPDGCodeNegDaug(-211);
+  CascadeXiCuts->SetPDGCodeBach(-211);
+  CascadeXiCuts->SetXiMassRange(1.322, 0.06);
+  //AntiCascade cuts (bkg)
+  AliFemtoDreamCascadeCuts* AntiCascadeXiCuts = AliFemtoDreamCascadeCuts::XiCuts(false, false);
+  AntiCascadeXiCuts->SetXiCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiNegCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+  AntiXiNegCuts->SetCutCharge(-1);
+  AntiXiNegCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(false, true, false);
+  AntiXiPosCuts->SetCutCharge(1);
+  AntiXiPosCuts->SetCheckTPCRefit(false);
+  AliFemtoDreamTrackCuts *AntiXiBachCuts =AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+  AntiXiBachCuts->SetCutCharge(1);
+  AntiXiBachCuts->SetCheckTPCRefit(false);
+  AntiCascadeXiCuts->Setv0Negcuts(AntiXiNegCuts);
+  AntiCascadeXiCuts->Setv0PosCuts(AntiXiPosCuts);
+  AntiCascadeXiCuts->SetBachCuts(AntiXiBachCuts);
+  AntiCascadeXiCuts->SetPDGCodeCasc(-3312);
+  AntiCascadeXiCuts->SetPDGCodev0(-3122);
+  AntiCascadeXiCuts->SetPDGCodePosDaug(211);
+  AntiCascadeXiCuts->SetPDGCodeNegDaug(-2212);
+  AntiCascadeXiCuts->SetPDGCodeBach(211);
+  AntiCascadeXiCuts->SetXiMassRange(1.322, 0.06);
+
+
+  if (suffix != "0" && suffix != "999") {
+    evtCuts->SetMinimalBooking(true);
+    v0Cuts->SetMinimalBooking(true);
+    Antiv0Cuts->SetMinimalBooking(true);
+    CascadeXiBGRCuts->SetMinimalBooking(true);
+    AntiCascadeXiBGRCuts->SetMinimalBooking(true);
+    CascadeXiCuts->SetMinimalBooking(true);
+    AntiCascadeXiCuts->SetMinimalBooking(true);
+  }
+
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto","Femto");
+
+
+  // Femto Collection
+  std::vector<int> PDGParticles;   
+  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3312);
+
+
+
+  std::vector<int> NBins;
+  std::vector<float> kMin;
+  std::vector<float> kMax;
+  std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
+  //pairs:
+  //Lambda Lambda               0
+  //Lambda barLambda            1
+  //Lambda XiBGR                2
+  //Lambda barXiBGR             3
+  //Lambda Xi                   4
+  //Lambda barXi                5
+  //barLambda barLambda         6
+  //barLambda XiBGR             7
+  //barLambda barXiBGR          8
+  //barp Xi                     9
+  //barp barXi                  10
+  //XiBGR XiBGR                 11
+  //XiBGR barXiBGR              12
+  //XiBGR Xi                    13
+  //XiBGR barXi                 14
+  //barXiBGR barXiBGR           15
+  //barXiBGR Xi                 16
+  //barXiBGR barXi              17
+  //Xi Xi                       18
+  //Xi barXi                    19
+  //barXi barXi                 20
+
+
+  const int nPairs = 21;
+  for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
+    closeRejection.push_back(false);
+    if (suffix == "0") {
+      NBins.push_back(1500);
+      kMin.push_back(0.);
+      kMax.push_back(6.);
+    } else {
+      NBins.push_back(250);
+      kMin.push_back(0.);
+      kMax.push_back(1.);
+    }
+  }
+
+  pairQA[4] = 13;//p-Omega  //to be changed 
+  pairQA[10] = 13;//pbar-antiOmega  //to be changed
+
+  closeRejection[0] = true;  // pp             //to be changed
+  closeRejection[6] = true;  // barp barp      //to be changed
+
+  config->SetPDGCodes(PDGParticles);
+  config->SetNBinsHist(NBins);
+  config->SetMinKRel(kMin);
+  config->SetMaxKRel(kMax);
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
+  config->SetExtendedQAPairs(pairQA);
+
+  config->SetMixingDepth(10);
+  config->SetUseEventMixing(true);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+
+  std::vector<int> MultBins;
+  MultBins.push_back(0);
+  MultBins.push_back(4);
+  MultBins.push_back(8);
+  MultBins.push_back(12);
+  MultBins.push_back(16);
+  MultBins.push_back(20);
+  MultBins.push_back(24);
+  MultBins.push_back(28);
+  MultBins.push_back(32);
+  MultBins.push_back(36);
+  MultBins.push_back(40);
+  MultBins.push_back(44);
+  MultBins.push_back(48);
+  MultBins.push_back(52);
+  MultBins.push_back(56);
+  MultBins.push_back(60);
+  MultBins.push_back(64);
+  MultBins.push_back(68);
+  MultBins.push_back(72);
+  MultBins.push_back(76);
+  MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
+
+  config->SetMultBins(MultBins);
+
+  std::vector<float> ZVtxBins;
+  ZVtxBins.push_back(-10);
+  ZVtxBins.push_back(-8);
+  ZVtxBins.push_back(-6);
+  ZVtxBins.push_back(-4);
+  ZVtxBins.push_back(-2);
+  ZVtxBins.push_back(0);
+  ZVtxBins.push_back(2);
+  ZVtxBins.push_back(4);
+  ZVtxBins.push_back(6);
+  ZVtxBins.push_back(8);
+  ZVtxBins.push_back(10);
+
+  config->SetZBins(ZVtxBins);
+
+  config->SetMultBinning(true);
+  config->SetdPhidEtaPlotsSmallK(false);
+  config->SetdPhidEtaPlots(false);
+
+  config->SetPhiEtaBinnign(false);
+
+  if (suffix == "0" && fullBlastQA) {
+    config->SetkTBinning(true);
+    config->SetmTBinning(true);
+    config->SetPtQA(true);
+  }
+
+  if (suffix != "0") {
+    config->SetMinimalBookingME(true);
+  }
+  AliAnalysisTaskGeorgiosNTuple* task = new AliAnalysisTaskGeorgiosNTuple("GeorgiosNTuple",true);
+  if (suffix != "0" && suffix != "999") {
+    task->SetRunTaskLightWeight(true);
+  }
+  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  task->SetEventCuts(evtCuts);
+  task->SetLambdaCuts(v0Cuts);
+  task->SetAntiLambdaCuts(Antiv0Cuts);
+  task->SetXiBGRCuts(CascadeXiBGRCuts);
+  task->SetAntiXiBGRCuts(AntiCascadeXiBGRCuts);
+  task->SetXiCuts(CascadeXiCuts);
+  task->SetAntiXiCuts(AntiCascadeXiCuts);
+  task->SetCorrelationConfig(config);
+  mgr->AddTask(task);
+
+  TString addon = "LambdaXi";
+
+  TString file = AliAnalysisManager::GetCommonFileName();
+
+  mgr->ConnectInput(task, 0, cinput);
+
+
+  TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
+      EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), EvtCutsName.Data()));
+  mgr->ConnectOutput(task, 1, coutputEvtCuts);
+
+  TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputv0Cuts = mgr->CreateContainer(
+      v0CutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), v0CutsName.Data()));
+  mgr->ConnectOutput(task, 2, couputv0Cuts);
+
+  TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(),
+                                   suffix.Data());
+  AliAnalysisDataContainer *coutputAntiv0Cuts = mgr->CreateContainer(
+      Antiv0CutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
+  mgr->ConnectOutput(task, 3, coutputAntiv0Cuts);
+
+  AliAnalysisDataContainer *coutputCascadeXiBGRCuts;
+  TString CascadeXiBGRCutsName = Form("%sCascadeXiBGRCuts%s", addon.Data(), suffix.Data());
+  coutputCascadeXiBGRCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      CascadeXiBGRCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), CascadeXiBGRCutsName.Data()));
+  mgr->ConnectOutput(task, 4, coutputCascadeXiBGRCuts);
+
+
+  AliAnalysisDataContainer *coutputAntiCascadeXiBGRCuts;
+  TString AntiCascadeXiBGRCutsName = Form("%sAntiCascadeXiBGRCuts%s", addon.Data(), suffix.Data());
+  coutputAntiCascadeXiBGRCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiCascadeXiBGRCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiCascadeXiBGRCutsName.Data()));
+  mgr->ConnectOutput(task, 5, coutputAntiCascadeXiBGRCuts);
+
+
+  AliAnalysisDataContainer *coutputCascadeXiCuts;
+  TString CascadeXiCutsName = Form("%sCascadeXiCuts%s", addon.Data(), suffix.Data());
+  coutputCascadeXiCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      CascadeXiCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), CascadeXiCutsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputCascadeXiCuts);
+
+
+  AliAnalysisDataContainer *coutputAntiCascadeXiCuts;
+  TString AntiCascadeXiCutsName = Form("%sAntiCascadeXiCuts%s", addon.Data(), suffix.Data());
+  coutputAntiCascadeXiCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiCascadeXiCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiCascadeXiCutsName.Data()));
+  mgr->ConnectOutput(task, 7, coutputAntiCascadeXiCuts);
+
+
+
+
+
+
+
+
+
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 8, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultsQA;
+  TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  coutputResultsQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsQAName.Data()));
+  mgr->ConnectOutput(task, 9, coutputResultsQA);
+
+
+  //Georgios tree:
+  AliAnalysisDataContainer *coutputTreeGeorgos;
+  TString TreeGeorgiosName = Form("%sTreeGeorgios",addon.Data());
+  coutputTreeGeorgios = mgr->CreateContainer(
+    //@suppress("Invalid arguments") it works ffs
+    TreeGeorgiosName.Data(),
+    TTree::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), TreeGeorgiosName.Data()));
+  mgr->ConnectOutput(task, 10, coutputTreeGeorgios);
+
+
+
+  return task;
+}

@@ -84,6 +84,7 @@ set(SRCS
   AliFemtoDreamHigherPairMath.cxx
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
+  AliAnalysisTaskGeorgiosNTuple.cxx
   AliAnalysisTaskPOmegaPenne.cxx
   AliFemtoDreamBaseDump.cxx
   

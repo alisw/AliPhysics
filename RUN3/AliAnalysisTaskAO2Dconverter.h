@@ -53,6 +53,7 @@ public:
     kMCvtx,
     kRange,
     kLabels,
+    kTrigger,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -92,6 +93,8 @@ private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
+  
+  Int_t fEventCount = 0; //! event count
 
   // Output TTree
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
@@ -114,7 +117,7 @@ private:
     Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
     // Event data
     Int_t     fRunNumber;       /// Run Number (added in case of multirun skimming)
-    ULong64_t fEventId = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
+    ULong64_t fGlobalBC = 0u;    /// Event (collision) unique id. Contains period, orbit and bunch crossing numbers
     // Primary vertex position
     Float_t  fX = -999.f;       /// Primary vertex x coordinate
     Float_t  fY = -999.f;       /// Primary vertex y coordinate
@@ -132,12 +135,17 @@ private:
 
     // The calculation of event time certainly will be modified in Run3
     // The prototype below can be switched on request
-    Float_t fEventTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
-    Float_t fEventTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
-    UChar_t fEventTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
+    Float_t fCollisionTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
+    Float_t fCollisionTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
+    UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
 
+  struct {
+    ULong64_t fGlobalBC = 0u;     /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
+    ULong64_t fTriggerMask = 0u; /// Trigger class mask
+  } trigger; //! structure to keep trigger-related info
+  
   struct {
     // Track data
 
@@ -385,7 +393,7 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 6);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 7);
 };
 
 #endif

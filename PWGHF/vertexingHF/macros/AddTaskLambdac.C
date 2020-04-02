@@ -121,13 +121,16 @@
 								     AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNev);
 
-  AliAnalysisDataContainer *coutputAPriori = mgr->CreateContainer(aPrioriname,TList::Class(),
+  if(priorsHists){
+    AliAnalysisDataContainer *coutputAPriori = mgr->CreateContainer(aPrioriname,TList::Class(),
 								  AliAnalysisManager::kOutputContainer,outputfile.Data());
-  mgr->ConnectOutput(lambdacTask,5,coutputAPriori);
-  AliAnalysisDataContainer *coutputMultiplicity = mgr->CreateContainer(multiplicityname,TList::Class(),
+    mgr->ConnectOutput(lambdacTask,5,coutputAPriori);
+  }
+  if(multiplicityHists){
+    AliAnalysisDataContainer *coutputMultiplicity = mgr->CreateContainer(multiplicityname,TList::Class(),
 								       AliAnalysisManager::kOutputContainer,outputfile.Data());
-  mgr->ConnectOutput(lambdacTask,6,coutputMultiplicity);
-
+    mgr->ConnectOutput(lambdacTask,6,coutputMultiplicity);
+  }
   AliAnalysisDataContainer *coutputLambdacNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
  mgr->ConnectOutput(lambdacTask,7,coutputLambdacNorm);

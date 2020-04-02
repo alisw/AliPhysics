@@ -77,6 +77,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdCascNTPCClustersMin(0.0),
+  fProdCascNTPCCrossedRowsMin(0.0),
+  fProdCascNTPCCrossedOverFindableRatioMin(0.0),
   fProdLikeSignDcaMax(2.0),
   fProdRoughMassTol(0.25),
   fProdRoughPtMin(0.0)
@@ -85,7 +87,7 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   // Default Constructor
   //
 
-  const Int_t nvars=13;
+  const Int_t nvars=14;
   SetNVars(nvars);
   TString varNames[nvars]={"Xic inv. mass [GeV/c2]",                   //  0
 			   "Xic Pt [GeV/c]", //1
@@ -99,7 +101,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
 			   "Min d0 Xi-V0 [cm]",//9
 			   "Min Xic cosPA ",//10
 			   "Min DecayLengthXY ",//11
-			   "Min Bachelor pT"//12
+			   "Min Bachelor pT",//12
+			   "Max DecayLengthXY "//13
   };
 
   Bool_t isUpperCut[nvars]={kTRUE,  //  0
@@ -114,7 +117,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
 			    kFALSE, //9
 			    kFALSE, //10
 			    kFALSE,//11
-			    kFALSE //12
+			    kFALSE, //12
+			    kTRUE //13
   };
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[nvars]={kFALSE, //  0
@@ -129,7 +133,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
 			kTRUE, //9
 			kTRUE, //10
 			kTRUE, //11
-			kTRUE //12
+			kTRUE, //12
+			kTRUE  //13
   };
   SetVarsForOpt(nvars,forOpt);
 
@@ -165,6 +170,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
+  fProdCascNTPCCrossedRowsMin(source.fProdCascNTPCCrossedRowsMin),
+  fProdCascNTPCCrossedOverFindableRatioMin(source.fProdCascNTPCCrossedRowsMin),
   fProdLikeSignDcaMax(source.fProdLikeSignDcaMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin)
@@ -209,6 +216,8 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks &AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
   fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
   fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
+  fProdCascNTPCCrossedRowsMin = source.fProdCascNTPCCrossedRowsMin;
+  fProdCascNTPCCrossedOverFindableRatioMin = source.fProdCascNTPCCrossedRowsMin;
   fProdLikeSignDcaMax = source.fProdLikeSignDcaMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
@@ -303,7 +312,10 @@ void AliRDHFCutsXicPlustoXiPiPifromAODtracks::GetCutVarsForOpt(AliAODRecoDecayHF
     iter++;
     vars[iter]= dd->PtProng(0);
   }
-
+  if(fVarsForOpt[13]){
+    iter++;
+    vars[iter]= dd->DecayLengthXY();
+  }
   return;
 }
 //---------------------------------------------------------------------------
@@ -395,6 +407,10 @@ Int_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::IsSelected(TObject* obj,Int_t sel
 	okcand = kFALSE;
       }
     if( d->DecayLengthXY() < fCutsRD[GetGlobalIndex(11,ptbin)]) 
+      {
+	okcand = kFALSE;
+      }
+    if( d->DecayLengthXY() > fCutsRD[GetGlobalIndex(13,ptbin)]) 
       {
 	okcand = kFALSE;
       }
@@ -532,10 +548,19 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
   
   if(!ptrack||!ntrack||!btrack) return kFALSE;
 
-  if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
-  if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
-  if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //obsolete
+  //if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
 
+   if ( ptrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( ntrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( btrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( ptrack->GetTPCNclsF()==0 || ntrack->GetTPCNclsF()==0 || btrack->GetTPCNclsF()==0) return kFALSE;
+  if ( static_cast<Double_t>(ptrack->GetTPCNCrossedRows())/static_cast<Double_t>(ptrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  if ( static_cast<Double_t>(ntrack->GetTPCNCrossedRows())/static_cast<Double_t>(ntrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  if ( static_cast<Double_t>(btrack->GetTPCNCrossedRows())/static_cast<Double_t>(btrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  
 
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();

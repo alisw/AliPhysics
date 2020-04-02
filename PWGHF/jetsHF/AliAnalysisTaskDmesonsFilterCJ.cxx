@@ -499,263 +499,255 @@ void AliAnalysisTaskDmesonsFilterCJ::ExecOnce()
 //_______________________________________________________________________________
 Bool_t AliAnalysisTaskDmesonsFilterCJ::Run()
 {
-  //
-  // Analysis execution
-  //
+    //
+    // Analysis execution
+    //
 
-  if (fInhibitTask) return kFALSE;
+    if (fInhibitTask) return kFALSE;// if the task is inhibited, return false
 
-  Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-  if (matchingAODdeltaAODlevel<=0) {
-      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      return kFALSE;
-  }
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<=0) {
+        // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+        return kFALSE;
+    }
 
-  AliDebug(2, "Entering Run()");
+    AliDebug(2, "Entering Run()");
 
-  //clear the TClonesArray from the previous event
-  fCandidateArray->Clear();
-  fSideBandArray->Clear();
-  fCombinedDmesons->Clear();
-  fCombinedDmesonsBkg->Clear();
-  AliDebug(2, "TClonesArray cleared");
+    //clear the TClonesArray from the previous event
+    fCandidateArray->Clear();
+    fSideBandArray->Clear();
+    fCombinedDmesons->Clear();
+    fCombinedDmesonsBkg->Clear();
+    AliDebug(2, "TClonesArray cleared");
 
-  fHistStat->Fill(0);
-  fCounter->StoreEvent(fAodEvent,fCuts,fUseMCInfo);
+    fHistStat->Fill(0);
+    fCounter->StoreEvent(fAodEvent,fCuts,fUseMCInfo);
 
-  // fix for temporary bug in ESDfilter
-  // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
+    // fix for temporary bug in ESDfilter
+    // the AODs with null vertex pointer didn't pass the PhysSel
+    if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
 
-  //Event selection
-  Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
-  if (!iseventselected) return kFALSE;
-  fHistStat->Fill(1);
+    //Event selection
+    Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
+    if (!iseventselected) return kFALSE;
+    fHistStat->Fill(1);
 
-  AliDebug(2, "Event selected");
+    AliDebug(2, "Event selected");
 
-  const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
-  AliDebug(2, Form("Found %d vertices", nD));
-  if (!fUseMCInfo) fHistStat->Fill(2, nD);
+    const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
+    AliDebug(2, Form("Found %d vertices", nD));
+    if (!fUseMCInfo) fHistStat->Fill(2, nD);
  
+    Int_t pdgMeson = 413;
+    if (fCandidateType == kD0toKpi) pdgMeson = 421;
 
-  Int_t pdgMeson = 413;
-  if (fCandidateType == kD0toKpi) pdgMeson = 421;
+    fNCand = 0;
+    fNSBCand = 0;
 
-  fNCand = 0;
-  fNSBCand = 0;
+    AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
-  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-
-      
-// for MC response matrix of efficiency studies, fMultCand option only
-if(fUseMCInfo && fBuildRMEff){
-  
-  const Int_t nDMC = fMCarray->GetEntriesFast(); 
-  
-  for (Int_t iMCcharm = 0; iMCcharm < nDMC; iMCcharm++){ //loop over MC D
+    // for MC response matrix of efficiency studies, fMultCand option only
+    if(fUseMCInfo && fBuildRMEff){  
+        const Int_t nDMC = fMCarray->GetEntriesFast(); 
+        
+        for (Int_t iMCcharm = 0; iMCcharm < nDMC; iMCcharm++){ //loop over MC D
+            AliAODMCParticle* charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(iMCcharm));
+            if(TMath::Abs(charmPart->GetPdgCode()) != pdgMeson) continue;
+            if(!charmPart) continue;
+            fHistStat->Fill(2);
+           
+            Int_t origin = CheckOrigin(charmPart, fMCarray);
+            if (origin < 0) continue;
+            if (fRejectQuarkNotFound && origin == kQuarkNotFound) {
+              fHistStat->Fill(6);
+              continue;
+            }
+            if (fRejectDfromB && origin == kFromBottom) {
+              fHistStat->Fill(7);
+              continue;
+            }
+            if (fKeepOnlyDfromB && origin != kFromBottom) {
+              fHistStat->Fill(8);
+              continue;
+            }
     
-    AliAODMCParticle* charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(iMCcharm));
-    if(TMath::Abs(charmPart->GetPdgCode()) != pdgMeson) continue;
-    if(!charmPart) continue;
-     fHistStat->Fill(2);
-     
-    Int_t origin = CheckOrigin(charmPart, fMCarray);
-    if (origin < 0) continue;
-    if (fRejectQuarkNotFound && origin == kQuarkNotFound) {
-      fHistStat->Fill(6);
-      continue;
-    }
-    if (fRejectDfromB && origin == kFromBottom) {
-      fHistStat->Fill(7);
-      continue;
-    }
-    if (fKeepOnlyDfromB && origin != kFromBottom) {
-      fHistStat->Fill(8);
-      continue;
-    }
-
-     Int_t decay = CheckDecayChannel(charmPart, fMCarray);
-    if( TMath::Abs(charmPart->GetPdgCode()) == 413 && decay != kDecayDStartoKpipi) continue;
-    if( TMath::Abs(charmPart->GetPdgCode()) == 421 && decay != kDecayD0toKpi) continue;
-
-    fHistStat->Fill(3);
+            Int_t decay = CheckDecayChannel(charmPart, fMCarray);
+            if( TMath::Abs(charmPart->GetPdgCode()) == 413 && decay != kDecayDStartoKpipi) continue;
+            if( TMath::Abs(charmPart->GetPdgCode()) == 421 && decay != kDecayD0toKpi) continue;
     
-    if (fNCand==fAnalyseCand){  
-        
-        new ((*fMCCombinedDmesons)[0]) AliAODMCParticle(*charmPart); 
+            fHistStat->Fill(3);
+            
+            if (fNCand==fAnalyseCand){// the SetAnalysedCandidate function configured in the custom settings of the wagon
+                new ((*fMCCombinedDmesons)[0]) AliAODMCParticle(*charmPart); 
+                AliAODRecoDecayHF2Prong* charmCand = 0;
+                AliAODRecoCascadeHF* dstar = 0;
+                
+                // loop over reco D candidates to find a match to MC
+                Int_t isRecoD = kFALSE;
+                for (Int_t icharm = 0; icharm < nD; icharm++) {  
+                    charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
+                    if (!charmCand) continue;
+                    if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
+                    
+                    Int_t nprongs = charmCand->GetNProngs();
+                    AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
     
-        AliAODRecoDecayHF2Prong* charmCand = 0;
-        AliAODRecoCascadeHF* dstar = 0;
-        
-        // loop over reco D candidates to find a match to MC
-        Int_t isRecoD = kFALSE;
-        for (Int_t icharm = 0; icharm < nD; icharm++) {  
- 
-          charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
-          if (!charmCand) continue;
-          if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
-          
-          Int_t nprongs = charmCand->GetNProngs();
-          AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
-
-          if (fCandidateType == kDstartoKpipi) {
-              dstar = dynamic_cast<AliAODRecoCascadeHF*>(charmCand);
-              if (!dstar) {
-                Error("AliAnalysisTaskDmesonsFilterCJ::UserExec","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
-                continue;
-              }
-          }
+                    if (fCandidateType == kDstartoKpipi) {
+                        dstar = dynamic_cast<AliAODRecoCascadeHF*>(charmCand);
+                        if (!dstar) {
+                          Error("AliAnalysisTaskDmesonsFilterCJ::UserExec","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
+                          continue;
+                        }
+                    }
+            
+                    Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
+                    Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
+                    
+                    Int_t mcLabel = 0;
+                    if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
+                    else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
     
-          Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
-          Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
-          
-          Int_t mcLabel = 0;
-          if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
-          else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
-
-          if(mcLabel == iMCcharm) { isRecoD = kTRUE; break; }
-        }
-        
-          if (!isRecoD) break;
-         if (!charmCand) break;
-         if (fCandidateType == kDstartoKpipi &&  !dstar) break;
-        
-         fHistStat->Fill(4);
-
-        // region of interest + cuts
-        if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) break;
-        
-        //candidate selected by cuts and PID
-        Int_t isSelected = 0;
-        isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
-        if (!isSelected) break;
-
-        fHistStat->Fill(5);
-
-        if (fCandidateType == kDstartoKpipi) {
-          AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
-          fHistInvMassS->Fill(dstar->DeltaInvMass());
-          fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
-          fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
-          fHistImpParS->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
-        }
-        else {
-          fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
-          fHistImpParS->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
-          fHistInvMassS->Fill(charmCand->InvMassD0());
-          fHistInvMassS->Fill(charmCand->InvMassD0bar());
-        }
-        
-        if (fCandidateType == kDstartoKpipi) {
-          Int_t isDstar = charmPart == NULL ? 0 : 1;
-           //fill histograms of kinematics, using MC truth
-          FillDStarMCTruthKinHistos(dstar, isSelected, isDstar);
-
-          new ((*fCandidateArray)[0]) AliAODRecoCascadeHF(*dstar);
-          new ((*fCombinedDmesons)[0]) AliEmcalParticle(dstar);
-         
-        }
-        else {
-         
-          Int_t isD0 = 0;
-          Int_t pdgCode = charmPart->GetPdgCode();
-          if (pdgCode ==  421)  { isD0 = 1; }
-          else if (pdgCode == -421)  { isD0 = -1; }
-           //fill histograms of kinematics, using MC truth
-          FillD0MCTruthKinHistos(charmCand, isSelected, isD0);
-  
-          new ((*fCandidateArray)[0]) AliAODRecoDecayHF2Prong(*charmCand);
-          new ((*fCombinedDmesons)[0]) AliEmcalParticle(charmCand);
-      }
-        
-        break;
-   }
-   else { fNCand++; }         
-  
-} 
-}
-// for data, or MC without RM or efficiency studies
-else {
-  for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
-    Int_t isSelected = 0;
-
-    AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
-    if (!charmCand) continue;
-    if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
-
-    Int_t nprongs = charmCand->GetNProngs();
-    AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
-
-    AliAODRecoCascadeHF* dstar = 0;
-
-    if (fCandidateType == kDstartoKpipi) {
-      dstar = dynamic_cast<AliAODRecoCascadeHF*>(charmCand);
-      if (!dstar) {
-        Error("AliAnalysisTaskDmesonsFilterCJ::UserExec","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
-        continue;
-      }
-    }
-
-    // region of interest + cuts
-    if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) continue;
-
-    if (!fUseMCInfo && fCandidateType == kDstartoKpipi) {
-      FillDstarSideBands(dstar);
-    }
-
+                    if(mcLabel == iMCcharm) { isRecoD = kTRUE; break; }
+                }//end of loop over reco D candidates to find a match to MC
+                
+                if (!isRecoD) break;
+                if (!charmCand) break;
+                if (fCandidateType == kDstartoKpipi &&  !dstar) break;
+                
+                fHistStat->Fill(4);
     
-    //candidate selected by cuts and PID
-    isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
-    if (!isSelected) continue;
+                // region of interest + cuts
+                if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) break;
+                
+                //candidate selected by cuts and PID
+                Int_t isSelected = 0;
+                isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
+                if (!isSelected) break;
+    
+                fHistStat->Fill(5);
+    
+                if (fCandidateType == kDstartoKpipi) {
+                    AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
+                    fHistInvMassS->Fill(dstar->DeltaInvMass());
+                    fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
+                    fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
+                    fHistImpParS->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+                }
+                else {
+                    fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
+                    fHistImpParS->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
+                    fHistInvMassS->Fill(charmCand->InvMassD0());
+                    fHistInvMassS->Fill(charmCand->InvMassD0bar());
+                }
+                
+                if (fCandidateType == kDstartoKpipi) {
+                    Int_t isDstar = charmPart == NULL ? 0 : 1;
+                    //fill histograms of kinematics, using MC truth
+                    FillDStarMCTruthKinHistos(dstar, isSelected, isDstar);
+    
+                    new ((*fCandidateArray)[0]) AliAODRecoCascadeHF(*dstar);
+                    new ((*fCombinedDmesons)[0]) AliEmcalParticle(dstar);
+                 
+                }
+                else {
+                    Int_t isD0 = 0;
+                    Int_t pdgCode = charmPart->GetPdgCode();
+                    if (pdgCode ==  421)  { isD0 = 1; }
+                    else if (pdgCode == -421)  { isD0 = -1; }
+                    //fill histograms of kinematics, using MC truth
+                    FillD0MCTruthKinHistos(charmCand, isSelected, isD0);
+        
+                    new ((*fCandidateArray)[0]) AliAODRecoDecayHF2Prong(*charmCand);
+                    new ((*fCombinedDmesons)[0]) AliEmcalParticle(charmCand);
+                }
+                
+                break;
+            }// end if (fNcand==fAnalyseCand)
+            else { fNCand++; }         
+        }//end loop over MC D 
+    }//end if(fUseMCInfo && fBuildRMEff)
 
-    if (fCandidateType == kDstartoKpipi) {
-      ProcessDstar(dstar, isSelected);
-    }
+    // for data, or MC without RM or efficiency studies
     else {
-      ProcessD0(charmCand, isSelected);
+        for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
+            Int_t isSelected = 0;
+    
+            AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
+            if (!charmCand) continue;
+            if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
+    
+            Int_t nprongs = charmCand->GetNProngs();
+            AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
+    
+            AliAODRecoCascadeHF* dstar = 0;
+    
+            if (fCandidateType == kDstartoKpipi) {
+                dstar = dynamic_cast<AliAODRecoCascadeHF*>(charmCand);
+                if (!dstar) {
+                    Error("AliAnalysisTaskDmesonsFilterCJ::UserExec","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
+                    continue;
+                }
+            }
+    
+            // region of interest + cuts
+            if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) continue;
+    
+            if (!fUseMCInfo && fCandidateType == kDstartoKpipi) {
+                FillDstarSideBands(dstar);
+            }
+    
+            
+            //candidate selected by cuts and PID
+            isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
+            if (!isSelected) continue;
+    
+            if (fCandidateType == kDstartoKpipi) {
+                ProcessDstar(dstar, isSelected);
+            }
+            else {
+                ProcessD0(charmCand, isSelected);
+            }
+        } // end of D cand loop
     }
-  } // end of D cand loop
-}
 
 
-  delete vHF;
+    delete vHF;
  
 
-  AliDebug(2, "Loop done");
+    AliDebug(2, "Loop done");
 
-  if (fCombineDmesons) {
-    if (fCombinedDmesons->GetEntriesFast() > 0) {
-      AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
+    if (fCombineDmesons) {
+        if (fCombinedDmesons->GetEntriesFast() > 0) {
+            AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
+        }
+
+        if (fMCCombinedDmesons->GetEntriesFast() > 0) {
+            AddMCEventTracks(fMCCombinedDmesons, GetParticleContainer(1));
+        }
+
+        if (fCombinedDmesonsBkg->GetEntriesFast() > 0) {
+            AddEventTracks(fCombinedDmesonsBkg, GetParticleContainer(0));
+        }
     }
 
-    if (fMCCombinedDmesons->GetEntriesFast() > 0) {
-        AddMCEventTracks(fMCCombinedDmesons, GetParticleContainer(1));
+    fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
+    if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
+        Int_t nsbcand = fSideBandArray->GetEntriesFast();
+        fHistStat->Fill(4, nsbcand);
+        fHistNSBCandEv->Fill(nsbcand);
     }
 
-    if (fCombinedDmesonsBkg->GetEntriesFast() > 0) {
-      AddEventTracks(fCombinedDmesonsBkg, GetParticleContainer(0));
-    }
-  }
+    PostData(1, fOutput);
+    PostData(3, fCandidateArray);
+    PostData(4, fSideBandArray);
+    PostData(5, fCombinedDmesons);
+    PostData(6, fCombinedDmesonsBkg);
+    PostData(7, fMCCombinedDmesons);
+    PostData(8, fCounter);
 
-  fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
-  if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
-    Int_t nsbcand = fSideBandArray->GetEntriesFast();
-    fHistStat->Fill(4, nsbcand);
-    fHistNSBCandEv->Fill(nsbcand);
-  }
+    AliDebug(2, "Exiting method");
 
-  PostData(1, fOutput);
-  PostData(3, fCandidateArray);
-  PostData(4, fSideBandArray);
-  PostData(5, fCombinedDmesons);
-  PostData(6, fCombinedDmesonsBkg);
-  PostData(7, fMCCombinedDmesons);
-  PostData(8, fCounter);
-
-  AliDebug(2, "Exiting method");
-
-  return kTRUE;
+    return kTRUE;
 }
 
 //_______________________________________________________________________________

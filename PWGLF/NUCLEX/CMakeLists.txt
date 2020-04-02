@@ -54,11 +54,13 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
-  Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
-  Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
+  Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx

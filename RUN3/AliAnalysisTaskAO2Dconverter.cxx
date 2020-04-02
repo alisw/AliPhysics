@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collisions", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -110,7 +110,7 @@ TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
 {
   fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
   // if (fTreeStatus[t])
-  //   fTree[t]->Branch("fEventId", &vtx.fEventId, "fEventId/l"); // Branch common to all trees
+  //   fTree[t]->Branch("fGlobalBC", &vtx.fGlobalBC, "fGlobalBC/l"); // Branch common to all trees
   return fTree[t];
 }
 
@@ -157,7 +157,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fRunNumber", &vtx.fRunNumber, "fRunNumber/I");
     tEvents->Branch("fStart", vtx.fStart, sstart.Data());
     tEvents->Branch("fNentries", vtx.fNentries, sentries.Data());
-    tEvents->Branch("fEventId", &vtx.fEventId, "fEventId/l");
+    tEvents->Branch("fGlobalBC", &vtx.fGlobalBC, "fGlobalBC/l");
     tEvents->Branch("fX", &vtx.fX, "fX/F");
     tEvents->Branch("fY", &vtx.fY, "fY/F");
     tEvents->Branch("fZ", &vtx.fZ, "fZ/F");
@@ -169,12 +169,22 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fCovZZ", &vtx.fCovZZ, "fCovZZ/F");
     tEvents->Branch("fChi2", &vtx.fChi2, "fChi2/F");
     tEvents->Branch("fN", &vtx.fN, "fN/i");
-    tEvents->Branch("fEventTime", &vtx.fEventTime, "fEventTime/F");
-    tEvents->Branch("fEventTimeRes", &vtx.fEventTimeRes, "fEventTimeRes/F");
-    tEvents->Branch("fEventTimeMask", &vtx.fEventTimeMask, "fEventTimeMask/b");
+    tEvents->Branch("fCollisionTime", &vtx.fCollisionTime, "fCollisionTime/F");
+    tEvents->Branch("fCollisionTimeRes", &vtx.fCollisionTimeRes, "fCollisionTimeRes/F");
+    tEvents->Branch("fCollisionTimeMask", &vtx.fCollisionTimeMask, "fCollisionTimeMask/b");
   }
   PostTree(kEvents);
 
+  // Associate branches for fEventTree
+  TTree* tTrigger = CreateTree(kTrigger);
+  tTrigger->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kTrigger]) {
+    tTrigger->Branch("fGlobalBC", &trigger.fGlobalBC, "fGlobalBC/l");
+    tTrigger->Branch("fTriggerMask", &trigger.fTriggerMask, "fTriggerMask/l");
+  }
+  PostTree(kTrigger);
+
+  
   // Associate branches for fTrackTree
   TTree* tTracks = CreateTree(kTracks);
   tTracks->SetAutoFlush(fNumberOfEventsPerCluster);
@@ -311,6 +321,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
     tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
     tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
+    tVzero->Branch("fBBFlag", &vzero.fBBFlag, "fBBFlag/l");
+    tVzero->Branch("fBGFlag", &vzero.fBGFlag, "fBGFlag/l");
   }
   PostTree(kVzero);
 
@@ -443,10 +455,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     return;
   }
 
-  // Get access to the current event number
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  Int_t eventID = mgr->GetNcalls();
-
   // Configuration of the PID response
   AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
@@ -465,11 +473,21 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       AliFatal("Could not retrieve MC event");
     PIDResponse->SetCurrentMCEvent(MCEvt); //Set The PID response on the current MC event
   }
-  // const AliVVertex *pvtx = fEventCuts.GetPrimaryVertex();
+
+  // Selection of events with at least two contributors (GMI)
+  // Can this be done using the physics selection? (PH)
+
   const AliESDVertex * pvtx = fESD->GetPrimaryVertex();
   if (!pvtx) {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
   }
+  TString title=pvtx->GetTitle();
+  if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
+  if(pvtx->GetNContributors()<2) return;
+
+  // Get access to the current event number
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  Int_t eventID = fEventCount++;
 
   //---------------------------------------------------------------------------
   // Collision data
@@ -480,7 +498,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   vtx.fNentries[kEvents] = 1;  // one entry per vertex
   vtx.fRunNumber = fESD->GetRunNumber();
-  vtx.fEventId = GetEventIdAsLong(fESD->GetHeader());
+  ULong64_t evtid = GetEventIdAsLong(fESD->GetHeader());
+  if(!evtid){
+    evtid = (ULong64_t(fESD->GetTimeStamp())<<32) + ULong64_t((fESD->GetNumberOfTPCClusters()<<5)|(fESD->GetNumberOfTPCTracks()));
+  }
+  vtx.fGlobalBC = evtid;
   vtx.fX = pvtx->GetX();
   vtx.fY = pvtx->GetY();
   vtx.fZ = pvtx->GetZ();
@@ -512,25 +534,32 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     //PH The part below is just a place holder
     if (TOFResponse.GetStartTimeMask(mom) & 0x1)
-      SETBIT(vtx.fEventTimeMask, 0);
+      SETBIT(vtx.fCollisionTimeMask, 0);
     else
-      CLRBIT(vtx.fEventTimeMask, 0);
+      CLRBIT(vtx.fCollisionTimeMask, 0);
     //
     if (TOFResponse.GetStartTimeMask(mom) & 0x2)
-      SETBIT(vtx.fEventTimeMask, 1);
+      SETBIT(vtx.fCollisionTimeMask, 1);
     else
-      CLRBIT(vtx.fEventTimeMask, 1);
+      CLRBIT(vtx.fCollisionTimeMask, 1);
     //
     if (TOFResponse.GetStartTimeMask(mom) & 0x3)
-      SETBIT(vtx.fEventTimeMask, 2);
+      SETBIT(vtx.fCollisionTimeMask, 2);
     else
-      CLRBIT(vtx.fEventTimeMask, 2);
+      CLRBIT(vtx.fCollisionTimeMask, 2);
   }
 
   // Recalculate unique event time and its resolution
-  vtx.fEventTime = TMath::Mean(10,eventTime,eventTimeWeight); // Weighted mean of times per momentum interval
-  vtx.fEventTimeRes = TMath::Sqrt(9./10.)*TMath::Mean(10,eventTimeRes); // PH bad approximation
+  vtx.fCollisionTime = TMath::Mean(10,eventTime,eventTimeWeight); // Weighted mean of times per momentum interval
+  vtx.fCollisionTimeRes = TMath::Sqrt(9./10.)*TMath::Mean(10,eventTimeRes); // PH bad approximation
 
+  //---------------------------------------------------------------------------
+  // Trigger data
+  
+  trigger.fGlobalBC = GetEventIdAsLong(fESD->GetHeader());
+  trigger.fTriggerMask = fESD->GetTriggerMask();
+  FillTree(kTrigger);
+  
   //---------------------------------------------------------------------------
   // Track data
 
@@ -791,12 +820,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       zdc.fZDCTDCCorrected[ii][jj] = esdzdc->GetZDCTDCCorrected(ii,jj);
   // ZDC flags
   zdc.fFired = 0x0;                  // Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  if (esdzdc->IsZNAhit()) zdc.fFired | (0x1);
-  if (esdzdc->IsZNChit()) zdc.fFired | (0x1 << 1);
-  if (esdzdc->IsZPAhit()) zdc.fFired | (0x1 << 2);
-  if (esdzdc->IsZPChit()) zdc.fFired | (0x1 << 3);
-  if (esdzdc->IsZEM1hit()) zdc.fFired | (0x1 << 4);
-  if (esdzdc->IsZEM2hit()) zdc.fFired | (0x1 << 5);
+  if (esdzdc->IsZNAhit()) zdc.fFired |= (0x1);
+  if (esdzdc->IsZNChit()) zdc.fFired |= (0x1 << 1);
+  if (esdzdc->IsZPAhit()) zdc.fFired |= (0x1 << 2);
+  if (esdzdc->IsZPChit()) zdc.fFired |= (0x1 << 3);
+  if (esdzdc->IsZEM1hit()) zdc.fFired |= (0x1 << 4);
+  if (esdzdc->IsZEM2hit()) zdc.fFired |= (0x1 << 5);
   FillTree(kZdc);
   if (fTreeStatus[kZdc]) vtx.fNentries[kZdc] = 1;
 
@@ -808,6 +837,15 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     vzero.fAdc[ich] = vz->GetAdc(ich);
     vzero.fTime[ich] = vz->GetTime(ich);
     vzero.fWidth[ich] = vz->GetWidth(ich);
+    vzero.fBBFlag = 0u;
+    vzero.fBGFlag = 0u;
+    ULong64_t mask = 1u;
+    for (Int_t i=0; i<64; ++i) {
+      if (vz->GetBBFlag(i))
+	vzero.fBBFlag |= (mask << i);
+      if (vz->GetBGFlag(i))
+	vzero.fBGFlag |= (mask << i);
+    }
   }
   FillTree(kVzero);
   if (fTreeStatus[kVzero]) vtx.fNentries[kVzero] = 1;

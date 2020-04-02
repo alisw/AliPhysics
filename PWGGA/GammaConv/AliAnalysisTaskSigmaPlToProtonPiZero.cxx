@@ -609,7 +609,16 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 					    PhotonCandidate1.SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma1,fEvent));
 					    // get MC label
 					    if(fIsMC> 0){
-							PhotonCandidate1.SetNCaloPhotonMCLabels(gamma1->GetNLabels());
+						      Int_t* mclabelsCluster = gamma1->GetLabels();
+						      PhotonCandidate1.SetNCaloPhotonMCLabels(gamma1->GetNLabels());
+						      // cout << gamma1->GetNLabels() << endl;
+						      if (gamma1->GetNLabels()>0){
+						        for (Int_t k =0; k<(Int_t)gamma1->GetNLabels(); k++){
+						          if (k<50)PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+						          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
+						        }
+						      }
 							trueSigmaPhoton1 = IsRealPhoton(&PhotonCandidate1, fMCEvent);
 						}
 						for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
@@ -629,7 +638,16 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserExec(Option_t *)
 							    PhotonCandidate2.SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->FindLargestCellInCluster(gamma2,fEvent));
 							    // get MC label
 							    if(fIsMC> 0){
-									PhotonCandidate2.SetNCaloPhotonMCLabels(gamma2->GetNLabels());
+									 Int_t* mclabelsCluster = gamma2->GetLabels();
+								      PhotonCandidate2.SetNCaloPhotonMCLabels(gamma2->GetNLabels());
+								      // cout << gamma2->GetNLabels() << endl;
+								      if (gamma2->GetNLabels()>0){
+								        for (Int_t k =0; k<(Int_t)gamma2->GetNLabels(); k++){
+								          if (k<50)PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+								          // Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+						          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
+								        }
+								      }
 									trueSigmaPhoton2 = IsRealPhoton(&PhotonCandidate2, fMCEvent);
 								}
 							    AliAODConversionMother pi0cand = AliAODConversionMother(&PhotonCandidate1,&PhotonCandidate2);
@@ -707,7 +725,7 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0Selected(AliAODConversionMothe
 			return kFALSE;
 		}
 		minPi0Mass = meanMass - 3*width;
-		maxPi0Mass = meanMass + 3*width;
+		maxPi0Mass = meanMass + 5*width;
 		if(pi0CandTmp->M() < maxPi0Mass && pi0CandTmp->M() > minPi0Mass){
 			return kTRUE;
 		}
@@ -737,7 +755,7 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsPi0SelectedMC(AliAODConversionMot
 			return kFALSE;
 		}
 		minPi0Mass = meanMass - 3*width;
-		maxPi0Mass = meanMass + 3*width;
+		maxPi0Mass = meanMass + 5*width;
 		if(pi0CandTmp->M() < maxPi0Mass && pi0CandTmp->M() > minPi0Mass){
 			return kTRUE;
 		}
@@ -764,13 +782,13 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealProtonKink(AliESDkink* kink,A
 	//if (Label1>MCNTracks) return kFALSE;
 	//if (Label2>MCNTracks) return kFALSE;
 
-	TParticle *particle1 = fMCStack->Particle(TMath::Abs(Label1)); //mother MC particle object
-	TParticle *particle2 = fMCStack->Particle(TMath::Abs(Label2)); //daughter MC particle object
+	TParticle *KinkSigmaCandidate = fMCStack->Particle(TMath::Abs(Label1)); //mother MC particle object
+	TParticle *KinkProtonCandidate = fMCStack->Particle(TMath::Abs(Label2)); //daughter MC particle object
 
-	Int_t code1 = particle1->GetPdgCode(); //mother's pdg code obtained from MC mother object
-	Int_t code2 = particle2->GetPdgCode(); //daughter's pdg code obtained from MC daughter object
+	Int_t code1 = KinkSigmaCandidate->GetPdgCode(); //mother's pdg code obtained from MC mother object
+	Int_t code2 = KinkProtonCandidate->GetPdgCode(); //daughter's pdg code obtained from MC daughter object
 
-	if( (code1==2212) && (code2==-3222) ){
+	if( (code1==3222) && (code2==2212) ){
 		return kTRUE;
 	} else {
 		return kFALSE;
@@ -781,15 +799,35 @@ Bool_t AliAnalysisTaskSigmaPlToProtonPiZero::IsRealPhoton(AliAODConversionPhoton
 { //checks if a reconstructed photon from sigma plus
 	TParticle *Photon = NULL;
 	if (PhotonCandidate->GetNCaloPhotonMCLabels() > 0){
+		// Photon = PhotonCandidate->GetMCParticle(fMCEvent);
+		if (PhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return kFALSE;
 		Photon = fMCEvent->Particle(PhotonCandidate->GetCaloPhotonMCLabel(0));
 		if (Photon) {
-			TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
-			TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
-			if(motherPart2->GetPdgCode() == 111 && grandmotherPart2->GetPdgCode() == 3222){
-				 return kTRUE;
+			if(Photon->GetPdgCode() == 22){
+				if (Photon->GetMother(0) < 0) return kFALSE;
+				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
+				if (motherPart2->GetMother(0) < 0) return kFALSE;
+				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
+				if(motherPart2->GetPdgCode() == 111 && grandmotherPart2->GetPdgCode() == 3222){
+					return kTRUE;
+				} else {
+					return kFALSE;
+				}
+			} else if(Photon->GetPdgCode() == 11 || Photon->GetPdgCode() == -11){
+				if (Photon->GetMother(0) < 0) return kFALSE;
+				TParticle* motherPart2 = (TParticle*)fMCEvent->Particle(Photon->GetMother(0));
+				if (motherPart2->GetMother(0) < 0) return kFALSE;
+				TParticle* grandmotherPart2 = (TParticle*)fMCEvent->Particle(motherPart2->GetMother(0));
+				if (grandmotherPart2->GetMother(0) < 0) return kFALSE;
+				TParticle* grandgrandmotherPart2 = (TParticle*)fMCEvent->Particle(grandmotherPart2->GetMother(0));
+				if(motherPart2->GetPdgCode() == 22 && grandmotherPart2->GetPdgCode() == 111  && grandgrandmotherPart2->GetPdgCode() == 3222){
+					return kTRUE;
+				} else {
+					return kFALSE;
+				}
+			} else {
+				return kFALSE;
 			}
-			else
-				 return kFALSE;
 		}
 	}
 	return kFALSE;

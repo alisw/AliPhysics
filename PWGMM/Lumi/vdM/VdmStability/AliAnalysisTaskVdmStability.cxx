@@ -166,8 +166,8 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     //Check if V0 event
     TString ftc = fEvent->GetFiredTriggerClasses();
     if (ftc.Contains("CINT7-B"))
-        fIsV0ANDfired = kFALSE;
-    else fIsV0ANDfired = kTRUE;
+        fIsV0ANDfired = kTRUE;
+    else fIsV0ANDfired = kFALSE;
     if (!fIsV0ANDfired) return;
     
     //check if T0 trigger was fired

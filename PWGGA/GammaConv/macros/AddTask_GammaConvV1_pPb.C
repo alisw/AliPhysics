@@ -570,6 +570,7 @@ void AddTask_GammaConvV1_pPb(
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0s52103500800000"); 
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0t52103500800000"); 
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0u52103500800000"); 
+
   //--------------------------------------------------------------------------
   // Systematics variations for direct photons pPb 5 TeV Run1 and Run2 - 0-100%
   //--------------------------------------------------------------------------
@@ -1099,6 +1100,24 @@ void AddTask_GammaConvV1_pPb(
 
   } else if (trainConfig == 1125) { // T0-based cuts
     cuts.AddCutPCM("80011103", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+
+
+  } else if (trainConfig == 1126) { // rapidity vars
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152403500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152a03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152b03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152e03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152f03500000000"); // new default (R region rej. + eta<0.8 + DC)
+
+  } else if (trainConfig == 1130) {
+    cuts.AddCutPCM("80210103", "0dm00009f9730000dge0404000", "0152103500000000"); // 00-20
+    cuts.AddCutPCM("82410103", "0dm00009f9730000dge0404000", "0152103500000000"); // 20-40
+    cuts.AddCutPCM("84610103", "0dm00009f9730000dge0404000", "0152103500000000"); // 40-60
+  } else if (trainConfig == 1131) {
+    cuts.AddCutPCM("86810103", "0dm00009f9730000dge0404000", "0152103500000000"); // 60-80
+    cuts.AddCutPCM("88010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 80-100
+    cuts.AddCutPCM("89010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 90-100
 
   } else if (trainConfig == 1150) {
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000", "4117901050032230000"); // new default for 8TeV+triggers

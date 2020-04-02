@@ -6,7 +6,8 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
                                      TString filename="",
                                      TString finAnObjname = "D0toKpiCuts",
                                      Bool_t useNsparse = kFALSE,
-                                     Bool_t isLcV0 = kFALSE
+                                     Bool_t isLcV0 = kFALSE,
+                                     Double_t cutPtLead = 6.
                                     )
 { 
        //=========================================================
@@ -90,7 +91,7 @@ AliAnalysisTaskSEDvsRT *AddTaskDvsRT(Int_t system=0,
   dRTTask->SetMCOption(MCOption);
   dRTTask->SetLctoV0(isLcV0);
   dRTTask->SetUseNsparse(useNsparse);
-  
+  dRTTask->SetPtLeadMin(cutPtLead);
   //RT-specific settings
   dRTTask->SetEtaCut(0.8);
   dRTTask->SetPtLeadMin(5.0);

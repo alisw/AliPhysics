@@ -230,6 +230,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   // Isolation
   histoRanges->SetHistoPtInConeRangeAndNBins(0, 50 , 250);
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
+  if ( col=="PbPb" )  histoRanges->SetHistoPtSumRangeAndNBins   (0, 200, 400);
   
   //
   // MC histograms?
@@ -997,19 +998,19 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   else
   {
     printf("ConfigureIsolationCuts() *** Careful, use old hardcoded values\n");
-    if ( col == "pp" )
+    if ( col == "pp" || col == "pPb" )
     {
       ic->SetPtThreshold(0.5);
       ic->SetSumPtThreshold(1.0) ;
       ic->SetConeSize(0.4);
-      ic->SetMinDistToTrigger(-1);    
+      ic->SetMinDistToTrigger(-1);
     }
     if ( col == "PbPb" )
     {
       ic->SetPtThreshold(3.);
       ic->SetSumPtThreshold(3.0) ;
       ic->SetConeSize(0.3);
-      ic->SetMinDistToTrigger(-1);    
+      ic->SetMinDistToTrigger(-1);  
     }
   }
   
@@ -1036,6 +1037,23 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     //ic->SetConeSizeBandGap(0.0);
   }
   
+  // Set ratio of neutral energy over charged energy
+  // Needed for UE subtraction using perp cones and using neutral in cone   
+  // 
+  if ( col == "pp" || col == "pPb" )
+  {
+    ic->SetNeutralOverChargedRatio(0.363,0.0,0.0,0.0); // Erwann Thesis p-Pb
+  }
+  if ( col == "PbPb" )
+  {
+    ic->SetNeutralOverChargedRatio(1.49e-1,-2.54e-3,0.0,7.32e-7); // LHC18qr, random cone, eta-band
+  //ic->SetNeutralOverChargedRatio(1.29e-1,-2.47e-3,0.0,7.38e-7); // LHC18qr, random cone, phi-band
+  //ic->SetNeutralOverChargedRatio(1.26e-1,-2.27e-3,0.0,6.91e-7); // LHC18qr, random cone
+    
+  //ic->SetNeutralOverChargedRatio(2.13e-1,-3.27e-3,0.0,8.86e-7); // LHC11h, random cone, eta-band
+  //ic->SetNeutralOverChargedRatio(1.94e-1,-3.40e-3,0.0,9.37e-7); // LHC11h, random cone, phi-band
+  //ic->SetNeutralOverChargedRatio(1.82e-1,-3.04e-3,0.0,8.40e-7); // LHC11h, random cone
+  }
 }
 
 ///

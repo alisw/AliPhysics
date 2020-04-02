@@ -67,6 +67,7 @@ private:
 	Bool_t       fIspPb;
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
+	AliAnalysisFilter*  fTrackFilterwoDCA;
 	TList*                  fOutputList;                                      //! output list in the root file
 	
 
@@ -84,6 +85,8 @@ private:
 	Int_t    fRecLeadIn;
 	Double_t ftrackmult08;
 	Double_t fv0mpercentile;
+	Float_t fdcaxy;
+	Float_t fdcaz;	
 	AliMultSelection *fMultSelection;
 
 	// KNO
@@ -99,8 +102,24 @@ private:
 	TH1D * hNchRec;
 	TH1D * hNchRecTest;
 	TH1D * hPtInPrim;
+	TH1D * hPtInPrim_pion;
+	TH1D * hPtInPrim_kaon;
+	TH1D * hPtInPrim_proton;
+	TH1D * hPtInPrim_sigmap;
+	TH1D * hPtInPrim_sigmam;
+	TH1D * hPtInPrim_omega;
+	TH1D * hPtInPrim_xi;
+	TH1D * hPtInPrim_rest;
 	TH1D * hPtOut;
-	TH1D * hPtOutPrim; 
+	TH1D * hPtOutPrim;
+	TH1D * hPtOutPrim_pion;
+	TH1D * hPtOutPrim_kaon;
+	TH1D * hPtOutPrim_proton;
+	TH1D * hPtOutPrim_sigmap;
+	TH1D * hPtOutPrim_sigmam;
+	TH1D * hPtOutPrim_omega;
+	TH1D * hPtOutPrim_xi;
+	TH1D * hPtOutPrim_rest;
 	TH1D * hPtOutSec; 
 	TH1D * hCounter;
 	TH1D * hRefMult08;
@@ -135,6 +154,18 @@ private:
 	TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
 
 	//TH3D * hV0MVsUEvsRef;//UE->NchTS
+
+	TH2D * hPTVsDCAData;
+	TH2D * hPTVsDCAcentData;
+
+	TH2F * hptvsdcaPrim;
+	TH2F * hptvsdcaDecs;
+	TH2F * hptvsdcaMatl;
+	TH2F * hptvsdcacentralPrim;
+	TH2F * hptvsdcacentralDecs;
+	TH2F * hptvsdcacentralMatl;
+	TH2F * hptvsdcaAll;
+	TH2F * hptvsdcacentralAll;
 
 	AliAnalysisTaskMcKno(const AliAnalysisTaskMcKno&);                  // not implemented
 	AliAnalysisTaskMcKno& operator=(const AliAnalysisTaskMcKno&);       // not implemented

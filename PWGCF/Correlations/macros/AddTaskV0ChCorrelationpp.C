@@ -62,13 +62,13 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(25);
-  task->SetDCANegtoPrimVertex(0.06);
-  task->SetDCAPostoPrimVertex(0.06);
+  task->SetDCANegtoPrimVertex(0.05);//
+  task->SetDCAPostoPrimVertex(0.05);//
   
   
-  task->SetDCAV0DaughtersMax(1);
-  task->Setk0sCPA(0.98);
-  task->SetLambdaCPA(0.998);
+  task->SetDCAV0DaughtersMax(1);//
+  task->Setk0sCPA(0.975);//
+  task->SetLambdaCPA(0.995);//
   task->SetCosPointingAngleMin(0.975);
   task->Set2DFiducialMin(0.5);
 
@@ -81,7 +81,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetPtArmV0AlphaV0(0.2);
   
   //-------------------------------------PID--------------------------------
-  task->SetV0PIDSigma(2);
+  task->SetV0PIDSigma(3);
   //-------------------------------------------------------------------------
   mgr->AddTask(task);
     

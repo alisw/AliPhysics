@@ -631,15 +631,16 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoJetJetNTrials[iCut]);
     }
 
-    if(fIsHeavyIon == 1)
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 4000, 0, 4000);
-    else if(fIsHeavyIon == 2)
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 400, 0, 400);
-    else
-      fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 200, 0, 200);
-    fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
-    fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
-
+    if(fDoLightOutput!=2){
+        if(fIsHeavyIon == 1)
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 4000, 0, 4000);
+        else if(fIsHeavyIon == 2)
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 400, 0, 400);
+        else
+          fHistoNGoodESDTracks[iCut]    = new TH1F("GoodESDTracks", "GoodESDTracks", 200, 0, 200);
+        fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
+        fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
+    }
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
       fHistoEventSphericity[iCut]     = new TH1F("EventSphericity", "EventSphericity", 100, 0, 1);
       fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
@@ -717,34 +718,34 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fHistoEventSphericityvsMeanpt[iCut]->GetYaxis()->SetTitle("Mean p_{T}");
       fESDList[iCut]->Add(fHistoEventSphericityvsMeanpt[iCut]);
     }
+    if(fDoLightOutput!=2){
+        fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
+        fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
+        fESDList[iCut]->Add(fHistoVertexZ[iCut]);
 
-    fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
-    fHistoVertexZ[iCut]->GetXaxis()->SetTitle("Z_{vtx} (cm)");
-    fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+        if(fIsHeavyIon == 1)
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 600, 0, 600);
+        else if(fIsHeavyIon == 2)
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 400, 0, 400);
+        else
+          fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 100, 0, 100);
+        fHistoNGammaCandidatesBasic[iCut]->GetXaxis()->SetTitle("#cluster candidates basic");
+        fESDList[iCut]->Add(fHistoNGammaCandidatesBasic[iCut]);
 
-    if(fIsHeavyIon == 1)
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 600, 0, 600);
-    else if(fIsHeavyIon == 2)
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 400, 0, 400);
-    else
-      fHistoNGammaCandidatesBasic[iCut]  = new TH1F("GammaCandidatesBasic", "GammaCandidatesBasic", 100, 0, 100);
-    fHistoNGammaCandidatesBasic[iCut]->GetXaxis()->SetTitle("#cluster candidates basic");
-    fESDList[iCut]->Add(fHistoNGammaCandidatesBasic[iCut]);
-
-
-    if(fIsHeavyIon == 1) {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 200, 0, 200);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 200, 0, 200);
-    } else if(fIsHeavyIon == 2) {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 100, 0, 100);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 100, 0, 100);
-    } else {
-        fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 50, 0, 50);
-        fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 50, 0, 50);
+        if(fIsHeavyIon == 1) {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 200, 0, 200);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 200, 0, 200);
+        } else if(fIsHeavyIon == 2) {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 100, 0, 100);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 100, 0, 100);
+        } else {
+            fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates", "GammaCandidates", 50, 0, 50);
+            fHistoNGammaCandidates2[iCut]  = new TH1F("GammaCandidates2", "GammaCandidates2", 50, 0, 50);
+        }
+        fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
+        fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
+        fESDList[iCut]->Add(fHistoNGammaCandidates2[iCut]);
     }
-    fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
-    fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
-    fESDList[iCut]->Add(fHistoNGammaCandidates2[iCut]);
 
     if(!fDoLightOutput){
       if(fIsHeavyIon == 1)
@@ -778,7 +779,7 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
 
     if (fIsMC > 1){
       fHistoNEvents[iCut]->Sumw2();
-      fHistoNGoodESDTracks[iCut]->Sumw2();
+      if(fDoLightOutput!=2) fHistoNGoodESDTracks[iCut]->Sumw2();
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         fHistoEventSphericity[iCut]->Sumw2();
         fHistoEventSphericityAxis[iCut]->Sumw2();
@@ -799,10 +800,12 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoEtaSpectrum[iCut]->Sumw2();
         fHistoDMesonSpectrum[iCut]->Sumw2();
       }
-      fHistoVertexZ[iCut]->Sumw2();
-      fHistoNGammaCandidates[iCut]->Sumw2();
-      fHistoNGammaCandidates2[iCut]->Sumw2();
-      fHistoNGammaCandidatesBasic[iCut]->Sumw2();
+      if(fDoLightOutput!=2){
+          fHistoVertexZ[iCut]->Sumw2();
+          fHistoNGammaCandidates[iCut]->Sumw2();
+          fHistoNGammaCandidates2[iCut]->Sumw2();
+          fHistoNGammaCandidatesBasic[iCut]->Sumw2();
+      }
       if(!fDoLightOutput){
         fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
         fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
@@ -841,6 +844,8 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
       if(!fDoLightOutput && fDoClusterQA > 0)fHistoClusGammaPtM02[iCut]->Sumw2();
     }
+
+    if(fDoLightOutput==2) nBinsMinv/=2;
 
     if(fDoMesonAnalysis){
       fHistoMotherInvMassPt[iCut]           = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
@@ -1289,10 +1294,12 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoTruePi0InvMassPtAlpha               = new TH2F*[fnCuts];
         fHistoTruePi0PureGammaInvMassPtAlpha      = new TH2F*[fnCuts];
       }
-      fHistoMCPrimaryPtvsSource                   = new TH2F*[fnCuts];
-      fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
-      fHistoMCSecPi0InAccPtvsSource               = new TH2F*[fnCuts];
-      fHistoMCSecPi0Source                        = new TH1F*[fnCuts];
+      if(fDoLightOutput!=2){
+          fHistoMCPrimaryPtvsSource                   = new TH2F*[fnCuts];
+          fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
+          fHistoMCSecPi0InAccPtvsSource               = new TH2F*[fnCuts];
+          fHistoMCSecPi0Source                        = new TH1F*[fnCuts];
+      }
 
       if (fDoMesonQA > 0 && fDoMesonQA < 3 ){
         fHistoMCPi0PtY                            = new TH2F*[fnCuts];
@@ -1488,25 +1495,36 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
             }
           }
         }
-        fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 7, -0.5, 6.5);
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
-        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
-        fHistoMCPrimaryPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fHistoMCPrimaryPtvsSource[iCut]->SetYTitle("particle");
-        fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
+        if(fDoLightOutput!=2){
+            fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 7, -0.5, 6.5);
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+            fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
+            fHistoMCPrimaryPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
+            fHistoMCPrimaryPtvsSource[iCut]->SetYTitle("particle");
+            fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
 
-        fHistoMCSecPi0Source[iCut]      = new TH1F("MC_SecPi0_Source", "MC_SecPi0_Source", 5000, 0., 5000);
-        fHistoMCSecPi0Source[iCut]->SetYTitle("source PDG");
-        fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
-        if( !fDoPi0Only ){
-          fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
-          fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
-          fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
+            fHistoMCSecPi0Source[iCut]      = new TH1F("MC_SecPi0_Source", "MC_SecPi0_Source", 5000, 0., 5000);
+            fHistoMCSecPi0Source[iCut]->SetYTitle("source PDG");
+            fMCList[iCut]->Add(fHistoMCSecPi0Source[iCut]);
+            if( !fDoPi0Only ){
+              fHistoMCSecEtaSource[iCut]      = new TH1F("MC_SecEta_Source", "MC_SecEta_Source", 5000, 0, 5000);
+              fHistoMCSecEtaSource[iCut]->SetYTitle("source PDG");
+              fMCList[iCut]->Add(fHistoMCSecEtaSource[iCut]);
+            }
+            if( !fDoPi0Only ){
+                fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+                fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+                fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
+            }
+            if (fIsMC == 2) {
+              fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+              if( !fDoPi0Only ) fHistoMCSecEtaPt[iCut]->Sumw2();
+          }
         }
         fHistoMCSecPi0PtvsSource[iCut]  = new TH2F("MC_SecPi0_Pt_Source", "MC_SecPi0_Pt_Source", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt, 16, -0.5, 15.5);
         fHistoMCSecPi0PtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
@@ -1516,17 +1534,11 @@ void AliAnalysisTaskGammaCaloMix::UserCreateOutputObjects(){
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMCSecPi0InAccPtvsSource[iCut]->SetYTitle("source");
         fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
-        if( !fDoPi0Only ){
-          fHistoMCSecEtaPt[iCut]          = new TH1F("MC_SecEta_Pt", "MC_SecEta_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
-          fHistoMCSecEtaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-          fMCList[iCut]->Add(fHistoMCSecEtaPt[iCut]);
-        }
         if (fIsMC == 2) {
-          fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
-          if( !fDoPi0Only ) fHistoMCSecEtaPt[iCut]->Sumw2();
         }
+
 
 
         if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -3667,7 +3679,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessAODMCParticles()
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+        if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
           if ( particle->GetPdgCode() == 211 ){  // positve pions
             fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight);
           } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -3971,7 +3983,7 @@ void AliAnalysisTaskGammaCaloMix::ProcessMCParticles()
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+        if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
           if ( particle->GetPdgCode() == 211 ){  // positve pions
             fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., tempParticleWeight);
           } else if ( particle->GetPdgCode() == -211 ){  // negative pions

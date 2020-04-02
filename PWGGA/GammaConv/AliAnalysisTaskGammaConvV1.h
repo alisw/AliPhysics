@@ -55,6 +55,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
+    void CalculateBackgroundSwapp();
     void CalculateBackgroundRP();
     void ProcessMCParticles();
     void ProcessAODMCParticles();
@@ -407,7 +408,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 48);
+    ClassDef(AliAnalysisTaskGammaConvV1, 49);
 };
 
 #endif

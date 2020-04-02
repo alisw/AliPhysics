@@ -52,6 +52,7 @@ set(SRCS
     AliAnalysisTaskHadronPhiCorr.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
+    AliAnalysisTaskLongFluctuations2PC.cxx
     AliAnalysisTaskMinijet.cxx
     AliAnalysisTaskMinijetV2.cxx
     AliAnalysisTaskPhiCorrelations.cxx

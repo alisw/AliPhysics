@@ -489,8 +489,11 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     OpenFile(4);
     fMLhandler = new AliHFMLVarHandlerDstoKKpi(fPIDopt, AliHFMLVarHandlerDstoKKpi::kDeltaMassKKPhi);
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
-    if(fReadMC && fFillOnlySignal)
-      fMLhandler->SetFillOnlySignal();
+    if(fReadMC) {
+      if(fFillOnlySignal)
+        fMLhandler->SetFillOnlySignal();
+      fMLhandler->SetFillBeautyMotherPt();
+    }
     fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
@@ -836,6 +839,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Int_t origWoQuark = 0;
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
+    Float_t ptB = -999.;
 
     if (fReadMC)
     {
@@ -900,6 +904,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       if(partDs){
         orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
         origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
+        if(orig == 5 || origWoQuark==5)
+           ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
       }
        
     }
@@ -1203,11 +1209,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
               else if(orig == 5)
                 isFD = kTRUE;
             }
-          }
+          }          
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
-        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kKKpi, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
           fMLhandler->FillTree();
@@ -1248,10 +1255,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
                 isFD = kTRUE;
             }
           }
+          fMLhandler->SetBeautyMotherPt(ptB);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
-        fMLhandler->SetlsSignalWoQuark(isSignalWoQuark);
+        fMLhandler->SetIsSignalWoQuark(isSignalWoQuark);
         fMLhandler->SetVariables(d, aod->GetMagneticField(), AliHFMLVarHandlerDstoKKpi::kpiKK, Pid_HF);
         if(!(fReadMC && !issignal && !isbkg && !isprompt && !isFD && !isrefl))
           fMLhandler->FillTree();

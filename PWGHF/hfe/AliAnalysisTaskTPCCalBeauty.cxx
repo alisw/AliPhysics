@@ -179,6 +179,10 @@ fPhotonHijingDCA(0),
 fPhotonHijingPt(0),
 fEnhPhotonDCA(0),
 fEnhPhotonWeightedPt(0),
+
+fPhotonHijingTagDCA(0),
+fEnhPhotonTagDCA(0),
+
 fComboNumWeight(0),
 fComboNumNoWeight(0),
 fComboDenomWeight(0),
@@ -423,6 +427,10 @@ fPhotonHijingDCA(0),
 fPhotonHijingPt(0),
 fEnhPhotonDCA(0),
 fEnhPhotonWeightedPt(0),
+
+fPhotonHijingTagDCA(0),
+fEnhPhotonTagDCA(0),
+
 fComboNumWeight(0),
 fComboNumNoWeight(0),
 fComboDenomWeight(0),
@@ -1039,6 +1047,13 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fEnhPhotonWeightedPt->Sumw2();
         fOutputList->Add(fEnhPhotonWeightedPt);
     
+        fPhotonHijingTagDCA = new TH2F("fPhotonHijingTagDCA","Tagged Hijing Photon DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fPhotonHijingTagDCA->Sumw2();
+        fOutputList->Add(fPhotonHijingTagDCA);
+        fEnhPhotonTagDCA = new TH2F("fEnhPhotonTagDCA","Tagged Enh Photon DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fEnhPhotonTagDCA->Sumw2();
+        fOutputList->Add(fEnhPhotonTagDCA);
+        
         fComboNumWeight = new TH1F("fComboNumWeight","Eff Num with Weight; p_{T}(GeV/c); counts;", 60,0,30.);
         fComboNumWeight->Sumw2();
         fOutputList->Add(fComboNumWeight);
@@ -2327,7 +2342,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         //if mom is Pi0--------------------------------
                         if(fpidSort==3) {
                             //fPi0DCA->Fill(track->Pt(),DCA);
-                            if(!kEmbEta && !kEmbEta && kHijing) {
+                            if(!kEmbEta && !kEmbPi0 && kHijing) {
                                 fPi0HijingDCA->Fill(track->Pt(),DCA);
                                 fPi0HijingPt->Fill(track->Pt());
                                 //ComboDenomWeight->Fill(track->Pt());
@@ -2399,7 +2414,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             //if mom is Pi0--------------------------------
                             if(fpidSort==3) {
                                 //fPi0DCA->Fill(track->Pt(),DCA);
-                                if(!kEmbEta && !kEmbEta && kHijing) {
+                                if(!kEmbEta && !kEmbPi0 && kHijing) {
                                     fULSHijingPi0->Fill(track->Pt()); //pi0 mama
                                     //ComboNumWeight->Fill(track->Pt());
                                     //ComboNumNoWeight->Fill(track->Pt());
@@ -2437,17 +2452,20 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             if(fpidSort==5){
                                 if(!kEmbEta && !kEmbPi0 && kHijing) {
                                     fULSHijingPhoton->Fill(track->Pt()); //photon mama
+                                    fPhotonHijingTagDCA->Fill(track->Pt(),DCA);
                                     //ComboNumWeight->Fill(track->Pt());
                                     //ComboNumNoWeight->Fill(track->Pt());
                                 }
                                 if(kEmbPi0) {
                                     fWeight = fPi0Weight->Eval(momPt);
+                                    fEnhPhotonTagDCA->Fill(track->Pt(),DCA);
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());
                                 }
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
+                                    fEnhPhotonTagDCA->Fill(track->Pt(),DCA);
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
                                     fComboNumWeight->Fill(track->Pt(),fWeight);
                                     fComboNumNoWeight->Fill(track->Pt());

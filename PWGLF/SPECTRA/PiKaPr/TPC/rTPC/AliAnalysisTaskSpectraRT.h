@@ -10,6 +10,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
+#include <TAxis.h>
 
 
 #include <TProfile.h>
@@ -66,6 +67,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		virtual void  SetMeanMultTSdata(const double MeanCh) { fMeanChT = MeanCh; }
 		virtual void  SetMeanMultTSMCGen(const double MeanMultTSMCGen) { fMeanMultTSMCGen = MeanMultTSMCGen; }
 		virtual void  SetMeanMultTSMCRec(const double MeanMultTSMCRec) { fMeanMultTSMCRec = MeanMultTSMCRec; }
+		virtual void  SetMinPt(const double MinPt) { fPtMin = MinPt; }
 		virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
 
 	private:
@@ -162,8 +164,10 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		TH2D *hPtVsP[4];
 
-		TH1D* hPhiGen[3];
-		TH1D* hPhiRec[3];
+		TH1D* hPhiGen[4];
+		TH1D* hPhiRec[4];
+		TH2D* hNchGenGTZVsPtGen[4];
+                TH2D* hNchGenGTZVsPtRec[4];
 
 		TH1D* hMultTSGen;
 		TH1D* hMultTSRec;
@@ -173,9 +177,11 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH1D* hNchTSContamination;
 		TH1D* hNchTSRecAll;
 		TH2D* hNchResponse;
+		TH3D* hNchRMvsPt;
+		TH1D* hPtTS;
 		TH2D* hPtResponsePID[4];
-		TH2D* hNchGenVsPtGenPID[3][4];
-		TH2D* hNchGenVsPtRec[3][4];
+		TH2D* hNchGenVsPtGenPID[4][4];
+		TH2D* hNchGenVsPtRec[4][4];
 
 		TH1D* hNchTSGenTest;
 		TH1D* hNchTSRecTest;
@@ -183,15 +189,15 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TH1D* hNchTSData;
 		TH1D* hRTData;
 		TH2D* hPtLVsRT;
-		TH1D* hPhiData[3];
+		TH1D* hPhiData[4];
 
-		TH3D* hNchVsPtDataTPC[3][4];
-		TH3D* hNchVsPtDataPosTPC[3][4];
-		TH3D* hNchVsPtDataNegTPC[3][4];
+		TH3D* hNchVsPtDataTPC[4][4];
+		TH3D* hNchVsPtDataPosTPC[4][4];
+		TH3D* hNchVsPtDataNegTPC[4][4];
 
-		TH3D* hNchVsPtDataTOF[3][4];
-		TH3D* hNchVsPtDataPosTOF[3][4];
-		TH3D* hNchVsPtDataNegTOF[3][4];
+		TH3D* hNchVsPtDataTOF[4][4];
+		TH3D* hNchVsPtDataPosTOF[4][4];
+		TH3D* hNchVsPtDataNegTOF[4][4];
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;

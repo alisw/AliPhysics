@@ -39,25 +39,52 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
+    TH1D*  hpVz;
+    TH2F*  hlmasseta;
+    TH2F*  hamasseta;
+ 
+    
+    TH2F*  hetaVO;
+    TH2F*  hpetaVO;
+    TH2F*  hnetaVO;
+    TH2F*  hpxy;
+    TH2F*  hprow;
+    TH2F*  hnrow;
+    TH2F*  hposp;
+    TH2F*  hnegp;
+    TH2F*  hpospi;
+    TH2F*  hnegpi;
+    
+    TH2F*  lhDCAd;
+    TH2F*  ahDCAd;
+    TH2F*  lhV0rad;
+    TH2F*  ahV0rad;
+    
+    TH2F*  lhCosp;
+    TH2F*  ahCosp;
+    TH2F*  lhV0tPV;
+    TH2F*  ahV0tPV;
+    
+    TH2F*  lhntPV;
+    TH2F*  ahntPV;
+    TH2F*  lhptPV;
+    TH2F*  ahptPV;
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
-    
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
+    TH3F*  f3fHistCentVsInvMassLambda0point3;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point3;
     
     Float_t fCentrality;
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
-    
     UInt_t fEvSel;
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusCh;
-
+    THnSparse *fPtBinNplusNminusCh03;
     Int_t    GetPtBin(Double_t pt);
-    
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 

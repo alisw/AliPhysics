@@ -397,10 +397,9 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   PostData(1,fList);
 
   if (fSaveTrees) {
+    OpenFile(1);
     fRTree = new TTree("RTree", "Reconstructed nuclei");
     fRTree->Branch("RLightNucleus", &fRecNucleus);
-    if (fIsMC) fRTree->Branch("SLightNucleus", &fSimNucleus);
-
     PostData(2, fRTree);
 
     if (fIsMC) {
@@ -430,6 +429,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   if (fParticle == AliPID::kUnknown) {
     ::Error("AliAnalysisTaskNucleiYield::UserExec", "No particle type set");
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
@@ -493,6 +498,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   if (!EventAccepted) {
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
@@ -512,6 +523,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   if (Flatten(fCentrality) && fEnableFlattening) {
     PostData(1, fList);
+    if(fSaveTrees){
+      PostData(2, fRTree);
+      if(fIsMC){
+        PostData(3, fSTree);
+      }
+    }
     return;
   }
 
@@ -536,8 +553,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           continue;
         }
       }
-      SetSLightNucleus(part,fSimNucleus);
-      if (fSaveTrees) fSTree->Fill();
+      if (fSaveTrees) {
+        SetSLightNucleus(part,fSimNucleus);
+        fSTree->Fill();
+      }
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());

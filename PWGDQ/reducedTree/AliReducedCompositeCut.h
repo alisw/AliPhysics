@@ -22,6 +22,7 @@ public:
    Int_t    GetNCuts() const {return fCuts.GetEntries();}
    
    virtual Bool_t IsSelected(TObject* obj);
+   virtual Bool_t IsSelected(Float_t* values);
    virtual Bool_t IsSelected(TObject* obj, Float_t* values);
   
 protected:
@@ -31,7 +32,7 @@ protected:
    AliReducedCompositeCut(const AliReducedCompositeCut &c);
    AliReducedCompositeCut& operator= (const AliReducedCompositeCut &c);
   
-   ClassDef(AliReducedCompositeCut,1);
+   ClassDef(AliReducedCompositeCut,2);
 };
 
 #endif

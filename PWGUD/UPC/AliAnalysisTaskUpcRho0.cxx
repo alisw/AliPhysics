@@ -52,7 +52,7 @@ ClassImp(AliAnalysisTaskUpcRho0);
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   : AliAnalysisTaskSE(),
     fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50),
 	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
@@ -74,7 +74,7 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   : AliAnalysisTaskSE(name),
     fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50),
   	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
@@ -356,7 +356,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
  	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-    if(trk->GetTPCNcls() < 50)continue;
+    if(trk->GetTPCNcls() < fTPCNcls)continue;
     // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
     if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
     Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;

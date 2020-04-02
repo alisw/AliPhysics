@@ -82,7 +82,9 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
   void SetProdLikeSignDcaMax(Double_t a){fProdLikeSignDcaMax=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
-
+  void SetProdCascNTPCCrossedRowsMin(Double_t a){fProdCascNTPCCrossedRowsMin=a;}
+  void SetProdCascNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdCascNTPCCrossedOverFindableRatioMin=a;}
+  
   Double_t GetProdTrackPtMin(){return fProdTrackPtMin;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
@@ -106,7 +108,9 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdLikeSignDcaMax(){return fProdLikeSignDcaMax;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
-
+  Double_t GetProdCascNTPCCrossedRowsMin(){return fProdCascNTPCCrossedRowsMin;}
+  Double_t GetProdCascNTPCCrossedOverFindalbleRatioMin(){return fProdCascNTPCCrossedOverFindableRatioMin;}
+  
  protected:
 	
  private:
@@ -136,13 +140,15 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
   Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
   Double_t fProdV0CosineOfPoiningAngleXiMin;  // /Min V0 cos pointing angle  to Xi vertex
-  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters -->obselete
+  Double_t fProdCascNTPCCrossedRowsMin;   
+  Double_t fProdCascNTPCCrossedOverFindableRatioMin;
   Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
   Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,4); 
+  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,5); 
   /// \endcond
 };
 

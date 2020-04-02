@@ -11,6 +11,7 @@ AliAnalysisTaskNucleiYield* AddTaskProtonYield_pp5TeV(Bool_t isMC = kFALSE,
     AliPID::EParticleType part = AliPID::kProton,
     Int_t pdgCode = 2212,
     TString tskname = "proton",
+    bool saveTrees = true,
     TString suffix = "") {
 
   // Get the current analysis manager
@@ -34,7 +35,8 @@ AliAnalysisTaskNucleiYield* AddTaskProtonYield_pp5TeV(Bool_t isMC = kFALSE,
   task->SetPDG(pdgCode);
   task->SetIsMC(isMC);
   task->SetDCABins(80,-0.5,0.5);
-	task->SaveTrees();
+  if (saveTrees)
+	  task->SaveTrees();
 
   task->SetRequireTPCpidSigmas(3.f);
   float cent[14] = {-5.f,0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
@@ -58,12 +60,28 @@ AliAnalysisTaskNucleiYield* AddTaskProtonYield_pp5TeV(Bool_t isMC = kFALSE,
 
   mgr->AddTask(task);
 
+  int slot = 0;
   TString output = "AnalysisResults.root";
   AliAnalysisDataContainer *cont = mgr->CreateContainer(Form("nuclei_%s",tskname.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       output.Data());
-  mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task,  1, cont);
+  mgr->ConnectInput  (task,  slot++, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput (task,  slot++, cont);
+  if (saveTrees) {
+    cont = mgr->CreateContainer(Form("%s_rectree",tskname.Data()),
+        TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        output.Data());
+    mgr->ConnectOutput (task,  slot++, cont);
+    if (isMC) {
+      cont = mgr->CreateContainer(Form("%s_simtree",tskname.Data()),
+        TTree::Class(),
+        AliAnalysisManager::kOutputContainer,
+        output.Data());
+      mgr->ConnectOutput (task,  slot++, cont);
+    }
+  }
+
   return task;
 }

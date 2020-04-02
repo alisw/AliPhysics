@@ -24,14 +24,12 @@ R__ADD_INCLUDE_PATH($ALICE_ROOT)
 #include <TString.h>
 #include <TLatex.h>
 #include "AliNormalizationCounter.h"
+#include "TStyle.h"
 #endif
 
 #include <vector>
 
-/* ROUGH MACRO TO ANALYSE SigmaC TASK OUTPUT
-   A. Rossi, M. Faggin
-
-   Goal: bash script that reproduces all plots, studies and results
+/* Goal: bash script that reproduces all plots, studies and results
    - yield extraction:
            - study of Lc SB for background shape, rotational background
 	          - chi2 shape selection for functional forms?
@@ -49,11 +47,70 @@ Other open points:
 */
 
 Int_t version=1;
-Double_t minMassScFit=0.148,maxMassScFit=0.190;// so-far 0.2
+Double_t minMassScFit=0.148,maxMassScFit=0.19;//0.190;// so-far 0.2
 Double_t fixSigma=0.0012;
 Double_t fixSigmaBW=0.0007;
 Double_t widthSigmaBW=0.00189;
+Double_t deltaMshift_Scpp0 = 0.00022;
 enum ECandStatus {kGenLimAcc=1,kGenAccMother,kGenAcc,kReco=6,kRecoCuts,kRecoPID,kRecoLc=13,kRecoLcCuts,kRecoLcPID};
+
+////////////////////////////////////////
+//   Ingredients for cut variation   ///
+////////////////////////////////////////
+std::vector<double> cutvar_Lxy    = {-1.,  0., 0.01, 0.01,  0.01, 0.015, 0.015, 0.02,  0.02, 0.02, 0.02, 0.02, 0.02, 0.025, 0.025,  0.03,  0.03, 0.03}; // Lxy
+std::vector<double> cutvar_nLxy   = {-1.,  0.,   0.,  0.5,    1.,    1.,    1.,   1.,   1.5,  1.5,   2.,   2.,   2.,    2.,    2.,    2.,   2.5,  2.5}; // nLxy
+std::vector<double> cutvar_pAngle = {-1., 0.8,  0.8,  0.8, 0.825, 0.825,  0.85, 0.85,  0.85, 0.85, 0.85, 0.85,  0.9,   0.9,  0.95,  0.95,  0.95, 0.95}; // cosine pointing angle
+std::vector<double> cutvar_topom  = {-1., 2.5,  2.5,  2.5,   2.5,   2.5,   2.5,  2.5,   2.5,   2.,   2.,   2.,   2.,    2.,    2.,    2.,    2.,  1.5}; // topomatic
+
+std::string buildTitleCutVar(double lxy=-99., double nlxy=-99., double pAngle=-99., double topom=-99.){
+  std::string final_title("");
+  final_title += "cutvar";
+  // Lxy
+  std::string str_lxy = std::to_string(lxy);
+  str_lxy.erase( str_lxy.find_last_not_of("0")+1, std::string::npos );  // remove useless zeros
+  final_title += "_Lxy" + str_lxy;
+  // nLxy
+  std::string str_nLxy = std::to_string(nlxy);
+  str_nLxy.erase( str_nLxy.find_last_not_of("0")+1, std::string::npos );  // remove useless zeros
+  final_title += "_nLxy" + str_nLxy;
+  // pAngle
+  std::string str_pAngle = std::to_string(pAngle);
+  str_pAngle.erase( str_pAngle.find_last_not_of("0")+1, std::string::npos );  // remove useless zeros
+  final_title += "_pAngle" + str_pAngle;
+  // topomatic
+  std::string str_topom = std::to_string(topom);
+  str_topom.erase( str_topom.find_last_not_of("0")+1, std::string::npos );  // remove useless zeros
+  final_title += "_topom" + str_topom; 
+  final_title += ".root";
+  return final_title;
+}
+std::string suffix_title("");
+//
+//
+
+//
+// values from MC fit ---> CHECKS DONE ON LCSC (not SC) !!!
+//
+// case 2 MC: free Gaus sigma, free BW width, fixed deltaMshift ---> 20 for data!
+std::vector<Double_t> valMCGausSigma_FreeGausSigma_FreeBWwidth_FixedDmassShift = {1.861e-06,0.0008374,1.057e-06,0.0008524,0.00102,0.0009187};
+std::vector<Double_t> valMCwidthBW_FreeGausSigma_FreeBWwidth_FixedDmassShift = {0.001263,4.755e-05,0.001153,0.0003137,0.0001216,0.0003963};
+//
+// case 4 MC: fixed Gaus sigma, free BW width, free deltaMshift ---> 40 for data!
+std::vector<Double_t> valMCwidthBW_FixedGausSigma_FreeBWwidth_FreeDmassShift = {0.0004156,0.0002126,0.000251,0.0003702,0.000603,0.0007312};
+std::vector<Double_t> valMCdeltaMshift_FixedGausSigma_FreeBWwidth_FreeDmassShift = {0.000786,4.539,-0.0009328,-0.00084,2.975,4.189};
+//
+// case 6 MC: fixed Gaus sigma, free BW width, fixed deltaMshift ---> 60 for data!
+std::vector<Double_t> valMCwidthBW_FixedGausSigma_FreeBWwidth_FixedDmassShift = {0.0005366,0.0001983,0.0004404,0.0005144,0.0005885,0.0007185};
+//
+// case 8 MC: Gauss sigma fixed at 0, free BW width, free deltaMshift ---> 80 for data!
+std::vector<Double_t> valMCwidthBW_GausSigma0_FreeBWwidth_FreeDmassShift = {0.0009887,0.000672,0.0009297,0.0009408,0.000799,0.0009015};
+std::vector<Double_t> valMCDmassShift_GausSigma0_FreeBWwidth_FreeDmassShift = {0.000947,0.001051,0.0007924,0.0009532,0.001254,0.001006};
+//
+// case 9 MC: Gauss sigma fixed at 0, free BW width, fixed deltaMshift ---> 90 for data!
+std::vector<Double_t> valMCwidthBW_GausSigma0_FreeBWwidth_FixedDmassShift = {0.001263,0.001118,0.001153,0.00125,0.001412,0.001344};
+//
+// case 11 MC: free Gaus sigma, BW width fixed to 0, deltaMshift fixed to 0 ---> 110 for data!
+std::vector<Double_t> valGausSigma_FreeGausSigma_BWwidth0_FreeDmassShift = {0.001094,0.0008883,0.001041,0.001166,0.001121,0.001269};
 
 //const Int_t nbinsGlobal=6;
 //Double_t ptbinsGlobal[nbinsGlobal+1]={1.,2.,3.,5.,8,16,24.};
@@ -67,7 +124,7 @@ Int_t skipBinGlobal[nbinsGlobal]={0,0,0,0,0,0};
 //  0: pT of Lc(<-Sc)
 //  10: pT of SigmaC
 //
-//  TODO
+//  TODO ---> implemented!
 //
 
 TH1D *hEffRecoLc;
@@ -95,6 +152,10 @@ void DivideCanvas(TCanvas *c,Int_t nbins){
   else if(nbins<=16)c->Divide(4,4);
   else c->Divide(5,5);    
 }
+
+// flag just for plotting reasons
+bool b_setoptfitMC    = true;
+bool b_plot_pars_data = false;
 
 void WriteFitResultsAndAxisOnPad(TH1 *h,TF1 *f,TPad *p,Double_t signal,Double_t errsignal,Double_t signifRange=-1/*used to define the range around the function mean that will be used to calculate the significance and S/B*/,Bool_t isPerformance=kFALSE,TString strPtPerf=""){
   p->cd();
@@ -271,6 +332,11 @@ void WriteFitResultsAndAxisOnPad(TH1 *h,TF1 *f,TPad *p,Double_t signal,Double_t 
     }
 }
 
+// for MC fit
+Double_t fitSigmaBWGauss_noBkg(Double_t *x,Double_t *par){
+  return par[0]*0.5*(TMath::Voigt(x[0]-par[1],par[2],par[3])+TMath::Voigt(x[0]-par[1]+par[4],par[2],par[3]));
+}
+
 Double_t fitSigmaBWGauss(Double_t *x,Double_t *par){
   return par[0]*0.5*(TMath::Voigt(x[0]-par[1],par[2],widthSigmaBW)+TMath::Voigt(x[0]-par[1]+0.00022,par[2],widthSigmaBW))+par[3]*TMath::Sqrt(TMath::Power(x[0]-0.139,par[4]));
 }
@@ -286,6 +352,9 @@ Double_t fitSigmaBWGaussPol2Back(Double_t *x,Double_t *par){
 Double_t fitSigmaBWGaussPol3Back(Double_t *x,Double_t *par){
   return par[0]*0.5*(TMath::Voigt(x[0]-par[1],par[2],widthSigmaBW)+TMath::Voigt(x[0]-par[1]+0.00022,par[2],widthSigmaBW))+par[3]*(1.+par[4]*x[0]+par[5]*x[0]*x[0]+par[6]*x[0]*x[0]*x[0]);
 }
+Double_t fitSigmaBWGaussPol3Back_freeParsGammaBW_DmassShift(Double_t *x,Double_t *par){
+  return par[0]*0.5*(TMath::Voigt(x[0]-par[1],par[2],par[7])+TMath::Voigt(x[0]-par[1]+par[8],par[2],par[7]))+par[3]*(1.+par[4]*x[0]+par[5]*x[0]*x[0]+par[6]*x[0]*x[0]*x[0]);
+}
 
 Double_t fitSigmaBWGaussPol4Back(Double_t *x,Double_t *par){
   return par[0]*0.5*(TMath::Voigt(x[0]-par[1],par[2],widthSigmaBW)+TMath::Voigt(x[0]-par[1]+0.00022,par[2],widthSigmaBW))+par[3]*(1.+par[4]*x[0]+par[5]*x[0]*x[0]+par[6]*x[0]*x[0]*x[0]+par[7]*x[0]*x[0]*x[0]*x[0]);
@@ -293,7 +362,7 @@ Double_t fitSigmaBWGaussPol4Back(Double_t *x,Double_t *par){
 
 
 
-TF1* FitHisto(TH1D* h, Int_t particle/*Lc=0, Sigma_c=1, Xic=2*/,Int_t backOpt,Int_t signalOpt,Double_t &signal,Double_t &errsignal,TString strFitOption=""){
+TF1* FitHisto(TH1D* h, Int_t particle/*Lc=0, Sigma_c=1, Xic=2*/,Int_t backOpt,Int_t signalOpt,Double_t &signal,Double_t &errsignal,TString strFitOption="",int MCopt=0,int DATAopt=0){
   if(strFitOption.IsNull()){
     strFitOption="RLEMI";
   }
@@ -302,6 +371,13 @@ TF1* FitHisto(TH1D* h, Int_t particle/*Lc=0, Sigma_c=1, Xic=2*/,Int_t backOpt,In
     if(signalOpt==1&&backOpt==-1){
       f=new TF1("fFit","[0]/(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))+[3]*TMath::Sqrt(TMath::Power(x-0.139,[4]))",0.139,0.22);
     }
+
+    // for MC fit
+    else if(signalOpt==2&&backOpt==0){
+      std::cout << "---> Fit function: C*0.5*(Voigt+Voigt) (NO BACKGROUND)" << std::endl;
+      f=new TF1("fFit",&fitSigmaBWGauss_noBkg,0.139,0.22,5);
+    }
+
     else if(signalOpt==2&&backOpt==-2){
       f=new TF1("fFit",&fitSigmaBWGauss,0.139,0.22,4);
     }
@@ -313,6 +389,9 @@ TF1* FitHisto(TH1D* h, Int_t particle/*Lc=0, Sigma_c=1, Xic=2*/,Int_t backOpt,In
     }
     else if(signalOpt==2&&backOpt==3){
       f=new TF1("fFit",&fitSigmaBWGaussPol3Back,0.139,0.22,7);
+    }
+    else if(signalOpt==2&&backOpt==30){
+      f=new TF1("fFit",&fitSigmaBWGaussPol3Back_freeParsGammaBW_DmassShift,0.139,0.22,9);
     }
     else if(signalOpt==2&&backOpt==4){
       f=new TF1("fFit",&fitSigmaBWGaussPol4Back,0.139,0.22,8);
@@ -381,7 +460,186 @@ TF1* FitHisto(TH1D* h, Int_t particle/*Lc=0, Sigma_c=1, Xic=2*/,Int_t backOpt,In
       }
     }
     
-    h->Fit(f,strFitOption.Data(),"",minMassScFit,maxMassScFit);   
+
+    // set specific stuff to fit MC peaks
+    if(signalOpt==2&&backOpt==0){
+      std::cout << "### going to fit peaks without background" << std::endl;
+      if(b_setoptfitMC) gStyle->SetOptFit(1112);
+      f->SetParName(0,"C");
+      f->SetParName(1,"#mu");
+      f->SetParName(2,"Gauss #sigma");
+      f->SetParName(3,"#Gamma_{BW}");
+      f->SetParName(4,"#Deltam shift");
+      switch (MCopt)
+      {
+      //
+      case 0:
+        std::cout << "Fixing gaussian sigma, BW width and delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->FixParameter(3,widthSigmaBW);
+        f->FixParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 1:
+        std::cout << "Free gaussian sigma, BW width and delta mass shift (only SetParameter)" << std::endl;
+        f->ReleaseParameter(2);
+        f->SetParameter(2,fixSigmaBW);
+        f->SetParameter(3,widthSigmaBW);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 2:
+        std::cout << "Free gaussian sigma, free BW width, fixed delta mass shift" << std::endl;
+        f->ReleaseParameter(2);
+        f->SetParameter(2,fixSigmaBW);
+        f->SetParameter(3,widthSigmaBW);
+        f->FixParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 3:
+        std::cout << "Free gaussian sigma, fixed BW width, free delta mass shift" << std::endl;
+        f->ReleaseParameter(2);
+        f->SetParameter(2,fixSigmaBW);
+        f->FixParameter(3,widthSigmaBW);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 4:
+        std::cout << "Fixed gaussian sigma, free BW width, free delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->SetParameter(3,widthSigmaBW);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 5:
+        std::cout << "Fixed gaussian sigma, fixed BW width, free delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->FixParameter(3,widthSigmaBW);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 6:
+        std::cout << "Fixed gaussian sigma, free BW width, fixed delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->SetParameter(3,widthSigmaBW);
+        f->FixParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 7:
+        std::cout << "Free gaussian sigma, fixed BW width, fixed delta mass shift" << std::endl;
+        f->ReleaseParameter(2);
+        f->SetParameter(2,fixSigmaBW);
+        f->FixParameter(3,widthSigmaBW);
+        f->FixParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 8:
+        std::cout << "Gaussian sigma fixed at 0, free BW width, free delta mass shift" << std::endl;
+        f->ReleaseParameter(3);
+        f->ReleaseParameter(4);
+        f->FixParameter(2,0.);
+        f->SetParLimits(3,0.,0.002);
+        f->SetParameter(3,widthSigmaBW);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 9:
+        std::cout << "Gaussian sigma fixed at 0, free BW width, fixed delta mass shift" << std::endl;
+        f->ReleaseParameter(3);
+        f->FixParameter(2,0.);
+        //f->SetParLimits(3,0.,0.002);
+        f->SetParameter(3,widthSigmaBW);
+        f->FixParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 10:
+        std::cout << "Free gaussian sigma, BW fixed to 0, free delta mass shift" << std::endl;
+        f->ReleaseParameter(2);
+        f->ReleaseParameter(4);
+        f->SetParameter(2,fixSigmaBW);
+        f->FixParameter(3,0.);
+        f->SetParameter(4,deltaMshift_Scpp0);
+        break;
+      //
+      case 11:
+        std::cout << "Free gaussian sigma, BW fixed to 0, delta mass shift fixed to 0" << std::endl;
+        f->ReleaseParameter(2);
+        f->SetParameter(2,fixSigmaBW);
+        f->FixParameter(3,0.);
+        f->FixParameter(4,0.);
+        break;
+      }
+    }
+
+    // set specific stuff to fit data with a function that has potentially 
+    // free GammaBW and free deltaMshift
+    if(signalOpt==2&&backOpt==30){
+      b_plot_pars_data = true;
+      std::cout << "### function used for fits: " << f->GetFormula()         << std::endl;
+      std::cout << "### pol3+Voigt+Voigt with potentially free parameters" << std::endl;
+      //if(DATAopt>0) gStyle->SetOptFit(1112);
+      f->SetParName(0,"C_Voigts");
+      f->SetParName(1,"#mu");
+      f->SetParName(2,"Gauss #sigma");
+      f->SetParName(7,"#Gamma_{BW}");
+      f->SetParName(8,"#DeltaM shift");
+      f->SetParName(3,"C_pol3");
+      f->SetParName(4,"a1_pol3");
+      f->SetParName(5,"a2_pol3");
+      f->SetParName(6,"a3_pol3");
+      //
+      // settings 
+      f->SetParameters(h->Integral(h->FindBin(0.160),h->FindBin(0.180))/(h->FindBin(0.180)-(h->FindBin(0.160))),0.168,TMath::Abs(fixSigmaBW));
+      f->SetParameter(3,h->Integral(h->FindBin(0.1390),h->FindBin(0.220))/(h->FindBin(0.220)-(h->FindBin(0.1390))));  // for pol3
+        // what about par 6? fix???
+      // put settings for preliminary fit as done originally by ARossi
+      f->FixParameter(2,fixSigmaBW);
+      f->FixParameter(7,widthSigmaBW);
+      f->FixParameter(8,deltaMshift_Scpp0);
+      f->FixParameter(6,0);
+      h->Fit(f,"REM","",minMassScFit*1.2,maxMassScFit*0.8);   
+      f->ReleaseParameter(6);
+      //
+      // release Gauss sigma, BW width and deltaMshift
+      f->ReleaseParameter(2);
+      f->ReleaseParameter(7);
+      f->ReleaseParameter(8);
+      switch (DATAopt)
+      {
+      case 0:
+        std::cout << "Fixing gaussian sigma, BW width and delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->FixParameter(7,widthSigmaBW);
+        f->FixParameter(8,deltaMshift_Scpp0);
+        break;
+      case 1:
+        std::cout << "Fixed gaussian sigma, free BW width, fixed delta mass shift" << std::endl;
+        f->FixParameter(2,fixSigmaBW);
+        f->SetParameter(7,widthSigmaBW);
+        f->FixParameter(8,deltaMshift_Scpp0);
+        break;
+      case 2:
+        std::cout << "Free gaussian sigma, free BW width, fixed delta mass shift" << std::endl;
+        f->SetParameter(2,fixSigmaBW);
+        f->SetParameter(7,widthSigmaBW);
+        f->FixParameter(8,deltaMshift_Scpp0);
+        break;
+      case 3:
+        std::cout << "Free gaussian sigma, fixed BW width, fixed delta mass shift" << std::endl;
+        f->SetParameter(2,fixSigmaBW);
+        f->FixParameter(7,widthSigmaBW);
+        f->FixParameter(8,deltaMshift_Scpp0);
+        break;
+      default:
+        std::cout << "#### FIT BAD: no option chosen" << std::endl;
+        break;
+      }
+    }
+
+    Double_t minimumFit = (signalOpt==2&&backOpt==0)?0.16:minMassScFit;
+    Double_t maximumFit = (signalOpt==2&&backOpt==0)?0.175:maxMassScFit;
+
+    h->Fit(f,strFitOption.Data(),"",minimumFit,maximumFit);
 
   }
 
@@ -1540,11 +1798,12 @@ void SetFilteringCuts(const Int_t nptbins,const Double_t *ptbins,Double_t cutsMi
 
   // these are global variables
   version=1;
-  minMassScFit=0.148;
-  maxMassScFit=0.190;
-  fixSigma=0.0012;
+  //minMassScFit=0.148;
+  //maxMassScFit=0.190;
+
+/*  fixSigma=0.0012;
   fixSigmaBW=0.0007;
-  widthSigmaBW=0.00189;
+  widthSigmaBW=0.00189;*/
 
   // these 
   Double_t lcMassCutDefault=isForBackgroundStudy ? 999. : 0.012*0.999;
@@ -1620,6 +1879,149 @@ void SetFilteringCuts(const Int_t nptbins,const Double_t *ptbins,Double_t cutsMi
 }
 
 
+void SetScFromFilteringCuts(const Int_t nptbins,const Double_t *ptbins,Double_t cutsMin[nptbins][10],Double_t cutsMax[nptbins][10],Int_t *isCommonCut,Bool_t isForBackgroundStudy=kFALSE
+, Int_t case_cutvar=0 // mfaggin
+){
+
+  //
+  //  Starting point: filtering cuts, then we move from them
+  //
+
+  // inv. mass [GeV]	pTK [GeV/c]	    pTP [GeV/c]	       d0K [cm]   lower limit!	       d0Pi [cm]  lower limit!	
+  //   0.35                0.4                 0.5                       0                             0
+  // dist12 (cm)	sigmavert (cm)	 dist prim-sec (cm)	pM=Max{pT1,pT2,pT3} (GeV/c)	cosThetaPoint	Sum d0^2 (cm^2)	    dca cut (cm)	cut on pTpion [GeV/c]
+  // 0.01                 0.06                0.005                    0.7                           0                 0               0.05                    0.4
+
+
+  // these are global variables
+  version=1;
+  //minMassScFit=0.148;
+  //maxMassScFit=0.190;
+
+/*  fixSigma=0.0012;
+  fixSigmaBW=0.0007;
+  widthSigmaBW=0.00189;*/
+
+  // these 
+  Double_t lcMassCutDefault=isForBackgroundStudy ? 999. : 0.012*0.999;
+  Int_t itsRefit=1;
+  Double_t sigmaCMincosthetaStarDefCut=-1.1;
+
+//   const Int_t nbins=(useGlobalPt ? nbinsGlobal : 6);
+//   Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+//   Double_t *ptbins=(useGlobalPt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
+
+//   const Int_t nptbinsPrel=6;
+//   Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,16,24.};
+//   if(nptbinsPrel!=nptbins){
+//     Printf("SetQM2019MassPlotCuts:  incompatible number of ptbins ");
+//     return;
+//   }
+ 
+    for(Int_t k=0;k<nptbins;k++){
+//       if(TMath::Abs(ptbins[k]-ptbinsPrel[k])>1.e-9 || TMath::Abs(ptbins[k+1]-ptbinsPrel[k+1])>1.e-9){
+// 	Printf("SetQM2019MassPlotCuts: Incompatible bin edges");
+// 	return;
+//       }
+      cutsMin[k][0]=-1;// pt, dummy value
+      cutsMax[k][0]=99;// pt, dummy value
+
+      cutsMin[k][1]=-1;// mass, dummy value
+      cutsMax[k][1]=999;// mass, dummy value
+
+      cutsMin[k][2]=-1; // lxy
+      cutsMax[k][2]=999; // lxy
+
+      cutsMin[k][3]=-1;//nlxy
+      cutsMax[k][3]=99;//nlxy
+
+      cutsMin[k][4]=-1.1;// thetaPoint (set to filtering cut)
+      cutsMax[k][4]=1.1;// thetaPoint (set to filtering cut)
+
+      cutsMin[k][5]=-1;// topomatic
+      //cutsMax[k][5]=99;// topomatic
+      cutsMax[k][5]=2.5;// topomatic
+
+      if(itsRefit){
+	cutsMin[k][6]=-0.001;// ITS refit: 0 -> ITSrefit = kTRUE
+	cutsMax[k][6]=0.001;// ITS refit: 0 -> ITSrefit = kTRUE
+      }
+      else {
+	cutsMin[k][6]=-99;// ITS refit: 0 -> ITSrefit = kTRUE
+	cutsMax[k][6]=99;// ITS refit: 0 -> ITSrefit = kTRUE
+      }
+
+      cutsMin[k][7]=-0.0001;// pID sel, 0= Bayes
+      cutsMax[k][7]=0.0001;// pID sel, 0= Bayes
+
+      cutsMin[k][8]=2.286-lcMassCutDefault;// lcMassCut, a range mass be set, dummy value
+      cutsMax[k][8]=2.286+lcMassCutDefault;// lcMassCut, a range mass be set, dummy value
+
+      cutsMin[k][9]=-1.1;
+      cutsMax[k][9]=1.1;
+    }
+
+    // specific bin cuts
+    //
+    /*cutsMin[1][2]=0.0100; // lxy
+    cutsMin[1][3]=2.;*/  //nlxy
+    cutsMin[1][4]=0.8;    // thetaPoint
+    cutsMax[1][5]=99;
+    //
+    //cutsMin[2][2]=0.0100; // lxy
+    //cutsMin[2][3]=1.;  //nlxy
+    cutsMin[2][4]=0.8;    // thetaPoint ---> good alone (Lc<-Sc)
+    //
+    /*//cutsMin[3][2]=0.0100; // lxy
+    cutsMin[3][3]=1.;  //nlxy
+    cutsMin[2][4]=0.8;*/    // thetaPoint
+    cutsMax[3][5]=99;// topomatic
+    //
+    //cutsMin[4][2]=0.0100; // lxy
+    //cutsMin[4][3]=1.5;  //nlxy
+    cutsMax[4][5]=99;// topomatic
+    //////////////////////////////////////////////////////
+    //  best config (05 March 2020) - binning 24-46-68  //
+    //  THIS IS FOR THE SC !!!                          //
+    //////////////////////////////////////////////////////
+    //cutsMin[2][2]=0.0100; // lxy
+    //cutsMin[2][3]=2.;  //nlxy
+    //cutsMin[2][4]=0.8;    // thetaPoint
+    ////
+    //cutsMin[3][3]=1.;  //nlxy
+    //cutsMin[2][4]=0.8;    // thetaPoint
+    ////
+    //cutsMax[4][5]=99;// topomatic
+
+    isCommonCut[0]=0;
+    isCommonCut[1]=0;
+    isCommonCut[2]=0;
+    isCommonCut[3]=0;
+    isCommonCut[4]=0;
+    isCommonCut[5]=0;
+    isCommonCut[6]=1;
+    isCommonCut[7]=1;
+    isForBackgroundStudy ? isCommonCut[8]=0 : isCommonCut[8]=1;
+    isCommonCut[9]=1;
+
+
+    /////////////////////
+    //  cut variation  //
+    /////////////////////
+    if(case_cutvar>0){
+      for(int ipt=0; ipt<nptbins; ipt++){
+        cutsMin[ipt][2] = cutvar_Lxy.at(case_cutvar);
+        cutsMin[ipt][3] = cutvar_nLxy.at(case_cutvar);
+        cutsMin[ipt][4] = cutvar_pAngle.at(case_cutvar);
+        cutsMax[ipt][5] = cutvar_topom.at(case_cutvar);
+      }
+    }
+
+    return;
+
+}
+
+
 void SetCuts(Int_t setType,const Int_t nptbins,const Double_t *ptbins,Double_t cutsMin[nptbins][10],Double_t cutsMax[nptbins][10],Int_t *isCommonCut,Bool_t isForBackgroundStudy=kFALSE){
   if(setType<2)return;
   // inv. mass [GeV]	pTK [GeV/c]	    pTP [GeV/c]	       d0K [cm]   lower limit!	       d0Pi [cm]  lower limit!	
@@ -1630,11 +2032,12 @@ void SetCuts(Int_t setType,const Int_t nptbins,const Double_t *ptbins,Double_t c
 
   // these are global variables
   version=1;
-  minMassScFit=0.148;
-  maxMassScFit=0.190;
-  fixSigma=0.0012;
+  //minMassScFit=0.148;
+  //maxMassScFit=0.190;
+
+/*  fixSigma=0.0012;
   fixSigmaBW=0.0007;
-  widthSigmaBW=0.00189;
+  widthSigmaBW=0.00189;*/
 
   // these 
   Double_t lcMassCutDefault=isForBackgroundStudy ? 999. : 0.012*0.999;
@@ -1764,11 +2167,12 @@ void SetQM2019MassPlotCuts(const Int_t nptbins,const Double_t *ptbins,Double_t c
 
   // these are global variables
   version=1;
-  minMassScFit=0.148;
-  maxMassScFit=0.190;
-  fixSigma=0.0012;
+  //minMassScFit=0.148;
+  //maxMassScFit=0.190;
+
+/*  fixSigma=0.0012;
   fixSigmaBW=0.0007;
-  widthSigmaBW=0.00189;
+  widthSigmaBW=0.00189;*/
 
   // these 
   Double_t lcMassCutDefault=0.012*0.999;
@@ -1776,7 +2180,8 @@ void SetQM2019MassPlotCuts(const Int_t nptbins,const Double_t *ptbins,Double_t c
   Int_t itsRefit=1;
   Double_t sigmaCMincosthetaStarDefCut=-1.1;
   const Int_t nptbinsPrel=6;
-  Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,16,24.};
+  //Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,4.,6.,8,16,24.};
+  Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,16,24.};  // performance
   /*Double_t ptbinsPrel[nptbinsPrel+1]={1.,2.,3.,5.,8,12,24.};*/
   if(nptbinsPrel!=nptbins){
     Printf("SetQM2019MassPlotCuts:  incompatible number of ptbins ");
@@ -1966,10 +2371,44 @@ void CalculateCombinedEff(TH1D** hCombined, TH1D** hEffDirect, TH1D** hEffRes2, 
     legeffcomp->AddEntry((*hEffRes4),"resonant channel (4)");
     legeffcomp->Draw();
 
+    // compare efficiency from single decay with the combined efficiency
+    TCanvas* compEff_channels_combined = new TCanvas("compEff_channels_combined","Channel vs. combined efficiency",1000,1000);
+    TH1D* hEffRatio_direct_combined = (TH1D*) (*hEffDirect)->Clone();
+    TH1D* hEffRatio_2_combined      = (TH1D*) (*hEffRes2)->Clone();
+    TH1D* hEffRatio_3_combined      = (TH1D*) (*hEffRes3)->Clone();
+    TH1D* hEffRatio_4_combined      = (TH1D*) (*hEffRes4)->Clone();
+    hEffRatio_direct_combined->Divide((*hEffDirect),(*hCombined),1.,1.,"B");
+    hEffRatio_2_combined->Divide((*hEffRes2),(*hCombined),1.,1.,"B");
+    hEffRatio_3_combined->Divide((*hEffRes3),(*hCombined),1.,1.,"B");
+    hEffRatio_4_combined->Divide((*hEffRes4),(*hCombined),1.,1.,"B");
+    hEffRatio_direct_combined->SetMarkerColor(kBlack);
+    hEffRatio_direct_combined->SetLineColor(kBlack);
+    hEffRatio_2_combined->SetMarkerColor(kBlue);
+    hEffRatio_2_combined->SetLineColor(kBlue);
+    hEffRatio_3_combined->SetMarkerColor(kOrange-3);
+    hEffRatio_3_combined->SetLineColor(kOrange-3);
+    hEffRatio_direct_combined->GetYaxis()->SetRangeUser(0,2);
+    hEffRatio_direct_combined->Draw();
+    hEffRatio_2_combined->Draw("same");
+    hEffRatio_3_combined->Draw("same");
+    hEffRatio_4_combined->Draw("same");
+    hEffRatio_direct_combined->SetTitle("direct(1)/combined");
+    hEffRatio_2_combined->SetTitle("(2)/combined");
+    hEffRatio_3_combined->SetTitle("(3)/combined");
+    hEffRatio_4_combined->SetTitle("(4)/combined");
+    TLegend* legratEff_combined = new TLegend(0.45,0.55,0.8,0.8);
+    legratEff_combined->SetHeader("efficiency ratio");
+    legratEff_combined->AddEntry(hEffRatio_direct_combined);
+    legratEff_combined->AddEntry(hEffRatio_2_combined);
+    legratEff_combined->AddEntry(hEffRatio_3_combined);
+    legratEff_combined->AddEntry(hEffRatio_4_combined);
+    legratEff_combined->Draw();
 }
 
 void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0
 , bool useScpt=false  // mfaggin
+, int mcoption=0  // mfaggin
+, int cutvar_case=0 // mfaggin
 ){
 
   TDatime *t=new TDatime();
@@ -1978,7 +2417,8 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   const Int_t nbins=(useGlobalPt ? nbinsGlobal : 6);
   const Int_t nVarSc=10;
   const Int_t nVarLc=8;
-  Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+  //Double_t ptbinsLocal[7]={1.,2.,4.,6.,8,16,24.};
+  Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.}; // performance plot
   /*Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,12,24.};*/
   Int_t skipBinLocal[6]={1,1,0,0,0,1};
   Double_t *ptbins=(useGlobalPt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
@@ -2109,6 +2549,10 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   else if(cutSet==1){
     SetFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
   }
+  else if(cutSet==10){
+    std::cout << "### SetScFromFilteringCuts" << std::endl;
+    SetScFromFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,false,cutvar_case);
+  }
   else {
     SetCuts(cutSet,nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
   }
@@ -2126,6 +2570,28 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
       Printf(" %f < x < %f (is common-pt cut :%d)",cutsMinSigmaC[ipt][ivarSc],cutsMaxSigmaC[ipt][ivarSc],isPtCommonCutSigmaC[ivarSc]);
     }
   }
+
+          //
+          //  TH2 to look at the correlation between pT_Sc and pT_LcSc
+          //
+          /*TAxis* ax_mass_Sc = hsparseScAllAxes->GetAxis(1);
+          TH2F*  h2_ptcorr = (TH2F*) (hsparseScAllAxes->Projection(0,10,"A") )->Clone();
+            h2_ptcorr->SetName("h2_ptcorr");
+            ax_mass_Sc->SetRangeUser(0.160*1.001,0.175*0.999);
+          TH2F*  h2_ptcorr_masscut = (TH2F*) (hsparseScAllAxes->Projection(0,10,"A") )->Clone();
+            h2_ptcorr_masscut->SetName("h2_ptcorr_masscut");
+            ax_mass_Sc->SetRange(0,-1);
+          
+            // save the th2
+            TFile* f_h2 = new TFile(Form("h2_pt_corr_MC.root"),"recreate");
+            f_h2->cd();
+            h2_ptcorr->SetName("h2_ptcorr");
+            h2_ptcorr->Write();
+            h2_ptcorr_masscut->SetName("h2_ptcorr_masscut");
+            h2_ptcorr_masscut->Write();
+            f_h2->Close();
+            if(f_h2)  delete f_h2;*/
+
 
   // REDUCED SPARSES TO SPEED UP PROJECTIONS
     Int_t naxisSp=hsparseScAllAxes->GetNdimensions();
@@ -2190,6 +2656,11 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   DivideCanvas(cScMassPlots,nbins);
   
   // NOW START WORK
+  TH1D* hChi2_MCfit        = new TH1D("hChi2_MCfit"       ,"#chi^{2}/ndf (MC fit)" ,nbins,ptbins);
+  TH1D* hmean_MCfit        = new TH1D("hmean_MCfit"       ,"#mu (MC fit)"          ,nbins,ptbins);
+  TH1D* hGauss_MCfit       = new TH1D("hGauss_MCfit"      ,"Gauss #sigma (MC fit)" ,nbins,ptbins);
+  TH1D* hGammaBW_MCfit     = new TH1D("hGammaBW_MCfit"    ,"#Gamma_{BW} (MC fit)"  ,nbins,ptbins);
+  TH1D* hDeltaMshift_MCfit = new TH1D("hDeltaMshift_MCfit","#Deltam shift (MC fit)",nbins,ptbins);
   for(Int_t jpt=0;jpt<nbins;jpt++){
     if(skipBin[jpt])continue;
     axptLc->SetRangeUser(ptbins[jpt]*1.0001,ptbins[jpt+1]*0.9999);
@@ -2226,11 +2697,72 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
     TH1D *hSc=hsparseSc->Projection(1);
     hSc->Sumw2();
     hSc->SetName(Form("hMCScPt%d",jpt));
-    hSc->SetTitle(Form("Sc %.0f<pt<%.0f",ptbins[jpt],ptbins[jpt+1]));	 
+    hSc->SetTitle(Form("Sc %.0f<pt<%.0f",ptbins[jpt],ptbins[jpt+1]));
     hSc->Draw();
     hLcScMCRecoPID->SetBinContent(hLcScMCRecoPID->GetXaxis()->FindBin(ptbins[jpt]*1.0001),hSc->Integral());
-    
+
+    // fit MC peaks
+    if(lowch==1 && upch==4){
+      Double_t signalMCSc=-1, errsignalMCSc=-1;
+      //int mcoption = 0;
+      TF1* funcMCfit = FitHisto(hSc,1,0,2,signalMCSc,errsignalMCSc,"",mcoption);
+      hSc->GetXaxis()->SetRangeUser(0.14,0.18);
+
+      // fill histograms with the fit parameters vs. pt
+      int bin = hChi2_MCfit->FindBin( (ptbins[jpt]+ptbins[jpt+1])/2. );
+        // chi2
+      double chi2 = funcMCfit->GetChisquare()/funcMCfit->GetNDF();
+      hChi2_MCfit->SetBinContent( bin, chi2 );
+      hChi2_MCfit->SetBinError( bin, 0 );
+        // mu
+      double mu     = funcMCfit->GetParameter(1);
+      double mu_err = funcMCfit->GetParError(1);
+      hmean_MCfit->SetBinContent( bin, mu );
+      hmean_MCfit->SetBinError( bin, mu_err );
+        // Gauss sigma
+      double gaussSigma     = funcMCfit->GetParameter(2);
+      double gaussSigma_err = funcMCfit->GetParError(2);
+      hGauss_MCfit->SetBinContent( bin, gaussSigma );
+      hGauss_MCfit->SetBinError( bin, gaussSigma_err );
+        // Gamma BW
+      double gammaBW     = funcMCfit->GetParameter(3);
+      double gammaBW_err = funcMCfit->GetParError(3);
+      hGammaBW_MCfit->SetBinContent( bin, gammaBW );
+      hGammaBW_MCfit->SetBinError( bin, gammaBW_err );
+        // Delta mass shift
+      double deltaMshift     = funcMCfit->GetParameter(4);
+      double deltaMshift_err = funcMCfit->GetParError(4);
+      hDeltaMshift_MCfit->SetBinContent( bin, deltaMshift );
+      hDeltaMshift_MCfit->SetBinError( bin, deltaMshift_err );
+    }
   }
+  // plot the fit parameters vs. pt
+  TCanvas* can_fitparamMC = new TCanvas("can_fitparamMC","fit params. (MC)",1500,1000);
+  can_fitparamMC->Divide(3,2);
+  //
+  can_fitparamMC->cd(1);
+  hChi2_MCfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hChi2_MCfit->SetMarkerStyle(8);
+  hChi2_MCfit->Draw("pe");
+  //
+  can_fitparamMC->cd(2);
+  hmean_MCfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hmean_MCfit->SetMarkerStyle(8);
+  hmean_MCfit->Draw("pe");
+  //
+  can_fitparamMC->cd(3);
+  hGauss_MCfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hGauss_MCfit->SetMarkerStyle(8);
+  hGauss_MCfit->Draw("pe");
+  //
+  can_fitparamMC->cd(4);
+  hGammaBW_MCfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hGammaBW_MCfit->SetMarkerStyle(8);
+  hGammaBW_MCfit->Draw("pe");
+  can_fitparamMC->cd(5);
+  hDeltaMshift_MCfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hDeltaMshift_MCfit->SetMarkerStyle(8);
+  hDeltaMshift_MCfit->Draw("pe");
 
   TCanvas *cCompareRecoGenSpectra=new TCanvas(Form("cCompareRecoGenSpectra_%d_%d",lowch,upch),Form("cCompareRecoGenSpectra_%d_%d",lowch,upch),800,800);
   cCompareRecoGenSpectra->Divide(1,2);
@@ -2272,21 +2804,21 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   hLcScMCGenLimAcc->Sumw2();
   hLcScMCGenLimAcc->SetMarkerStyle(20);
   hLcScMCGenLimAcc->SetMarkerColor(hLcScMCGenLimAcc->GetLineColor());
-  hLcScMCGenLimAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
+  hLcScMCGenLimAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})"));
   hLcScMCGenLimAcc->Draw();
 
   hLcScMCGenAcc->SetLineColor(kBlue);
   hLcScMCGenAcc->Sumw2();
   hLcScMCGenAcc->SetMarkerStyle(20);
   hLcScMCGenAcc->SetMarkerColor(hLcScMCGenAcc->GetLineColor());
-  hLcScMCGenAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
+  hLcScMCGenAcc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})"));
   hLcScMCGenAcc->Draw("sames");
 
   hLcScMCRecoPID->SetLineColor(kRed);
   hLcScMCRecoPID->Sumw2();
   hLcScMCRecoPID->SetMarkerStyle(20);
   hLcScMCRecoPID->SetMarkerColor(hLcScMCRecoPID->GetLineColor());
-  hLcScMCRecoPID->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
+  hLcScMCRecoPID->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})"));
   hLcScMCRecoPID->Draw("sames");
 
   legGenReco->Draw();
@@ -2367,6 +2899,19 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
   legGenAcc_over_GenLimAcc->AddEntry(hGenAccOverLimAccLcSc,hGenAccOverLimAccLcSc->GetName());
   legeff->Draw();
 
+  // save stuff (cut variation)
+  std::string file_title = "eff_" + std::to_string(lowch) + "_" + std::to_string(upch) + "_" + (useScpt?std::string("Sc_"):std::string("LcSc_"));
+  if(cutvar_case>0) file_title += buildTitleCutVar(cutsMinSigmaC[0][2],cutsMinSigmaC[0][3],cutsMinSigmaC[0][4],cutsMaxSigmaC[0][5]);
+  else  file_title += "default.root";
+  std::unique_ptr<TFile> file_eff {new TFile(file_title.c_str(),"recreate")};
+  hGenAccOverLimAccLc->Write();
+  hGenAccOverLimAccLcSc->Write();
+  cEfficiencyGenAccOverLimAcc->Write();
+  (*heff_ptr_Lc)->Write();
+  (*heff_ptr_LcSc)->Write();
+  cEfficiency->Write();
+  file_eff->Close();
+
 }
 
 //
@@ -2374,7 +2919,7 @@ void StudyEfficiency(int lowch, int upch, TString strfile="AnalysisResults.root"
 //    1. with separation of decay channels
 //    2. without separation of decay channels
 //
-void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0,bool useScpt=false){
+void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisResults.root",TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Int_t cutSet=0,bool useScpt=false, int mcoption=0, int cutvar_case=0){
 
   std::cout << "=========================================================" << std::endl;
   std::cout << "========== CalculateEfficiency function called ==========" << std::endl;
@@ -2384,23 +2929,23 @@ void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisRe
   if(!do_channel_separation){
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      NO channel separation     ===" << std::endl;
-    StudyEfficiency(1,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
+    StudyEfficiency(1,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt,mcoption,cutvar_case);
   }
 
   // with channel separation
   else{
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===         Direct channel         ===" << std::endl;
-    StudyEfficiency(1,1,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
+    StudyEfficiency(1,1,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt,mcoption,cutvar_case);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (2)      ===" << std::endl;
-    StudyEfficiency(2,2,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
+    StudyEfficiency(2,2,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt,mcoption,cutvar_case);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (3)      ===" << std::endl;
-    StudyEfficiency(3,3,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
+    StudyEfficiency(3,3,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt,mcoption,cutvar_case);
     std::cout << "======= Efficiency computation =======" << std::endl;
     std::cout << "===      Resonant channel (4)      ===" << std::endl;
-    StudyEfficiency(4,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt);
+    StudyEfficiency(4,4,strfile,strSuff,strDir,useGlobalPt,cutSet,useScpt,mcoption,cutvar_case);
 
     //
     //  Calculate now the combined efficiency as the weighted sum of the 
@@ -2437,12 +2982,16 @@ void CalculateEfficiency(bool do_channel_separation, TString strfile="AnalysisRe
 
 void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString strDir="PWG3_D2H_XicpKpi",Bool_t useGlobalPt=kFALSE,Bool_t produceQM2019Performance=kTRUE,Int_t cutSet=0
 , bool useScpt=false  // mfaggin
+, int DATAopt=0      // mfaggin
+, int cutvar_case=0 // mfaggin
 ){
 
+    //gStyle->SetOptFit(0000);
     TDatime *t=new TDatime();
     TString tdate(Form("%d%d%d",t->GetDate(),t->GetMinute(),t->GetSecond()));
     const Int_t nbins=(useGlobalPt ? nbinsGlobal : 6);
-    Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+    //Double_t ptbinsLocal[7]={1.,2.,4.,6.,8,16,24.};
+    Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.}; // performance plot
     /*Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,12,24.};*/
     Int_t skipBinLocal[6]={1,1,0,0,0,1};
     const Int_t nVarSc=10;
@@ -2460,55 +3009,7 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
     Int_t isPtCommonCutSigmaC[nVarSc];
     Int_t isPtCommonCutLc[nVarLc];
     
-//    std::vector<TString> vec_filenames = {
-//      //
-//      // 2701
-//      //
-//       "/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_1.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_2.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_3.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_4.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_5.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_6.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_7.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_8.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_9.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_10.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_11.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_12.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2701/AnalysisResults_2701_data_child_13.root"
-//      //
-//      //  2702
-//      //
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child1.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child2.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child3/merged_2702_child3.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child4.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child5.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child6/merged_2702_child6.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child7.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child8/merged_2702_child8.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/AnalysisResults_2702_child9.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2702/child10/merged_2702_child10.root"
-//      //
-//      //  2703
-//      //
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2703/merged_2703_child1.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2703/AnalysisResults_2703_child2_hadPID.root"
-//      //
-//      //  2704
-//      //
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_1.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_2.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_3.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_4_posMagField.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_4_negMagField.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_5.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_6_hadPID.root"
-//      ,"/media/mattia/VirMachine/SigmaC_analysis/Data_ptSc_rotations/2704/AnalysisResults_2704_data_child_7.root"
-//    };
     THnSparseF *hsparseLc, *hsparseSc;
-
     for(int ifile=0; ifile<vec_filenames.size(); ifile++){
           TString strfile = vec_filenames.at(ifile);
           std::cout << "[StudyFit] Looking at file " << strfile.Data() << "..." << std::endl;
@@ -2571,6 +3072,10 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
           }
           else if(cutSet==1){
             SetFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
+          }
+          else if(cutSet==10){
+            std::cout << "### SetScFromFilteringCuts" << std::endl;
+            SetScFromFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,false,cutvar_case);
           }
           else {
             SetCuts(cutSet,nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
@@ -2642,17 +3147,41 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
           }
           if(ifile==0)  hsparseLc=(THnSparseF*)(hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A"))->Clone();
           else          hsparseLc->Add( (THnSparseF*)(hsparseLcAllAxes->Projection(ndimredLc,dimredLc,"A"))->Clone() );
+
+          //
+          //  TH2 to look at the correlation between pT_Sc and pT_LcSc
+          //
+          /*TAxis* ax_mass_Sc = hsparseScAllAxes->GetAxis(1);
+          TH2F*  h2_ptcorr = (TH2F*) (hsparseScAllAxes->Projection(0,10,"A") )->Clone(Form("h1_%d",ifile));
+            h2_ptcorr->SetName("h2_ptcorr");
+            ax_mass_Sc->SetRangeUser(0.160*1.001,0.175*0.999);
+          TH2F*  h2_ptcorr_masscut = (TH2F*) (hsparseScAllAxes->Projection(0,10,"A") )->Clone(Form("h1_cut_%d",ifile));
+            h2_ptcorr_masscut->SetName("h2_ptcorr_masscut");
+            ax_mass_Sc->SetRange(0,-1);
+          
+            // save the th2
+            TFile* f_h2 = new TFile(Form("h2_pt_corr_%d.root",ifile),"recreate");
+            f_h2->cd();
+            h2_ptcorr->SetName("h2_ptcorr");
+            h2_ptcorr->Write();
+            h2_ptcorr_masscut->SetName("h2_ptcorr_masscut");
+            h2_ptcorr_masscut->Write();
+            f_h2->Close();
+            if(f_h2)  delete f_h2;*/
+          
+          
+
           std::cout << "... done!" << std::endl;
           delete f;
           delete hsparseScAllAxes;
           delete hsparseLcAllAxes;
     }
+    
     hsparseSc->SetName("hsparseSc");
     TAxis *axptSc=hsparseSc->GetAxis(0);
     std::cout << "---> [StudyFit] used pT (reco) for Sc analysis: " << axptSc->GetTitle() << std::endl;
     hsparseLc->SetName("hsparseLc");
     TAxis *axptLc=hsparseLc->GetAxis(0); 
-    
     
     TCanvas *cLcMassPlots=new TCanvas("cLcMassPlots","cLcMassPlots",800,800);
     DivideCanvas(cLcMassPlots,nbins);
@@ -2665,6 +3194,11 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
     cPerfQM2019->Divide(2,1);
 
     // NOW START WORK
+    TH1D* hChi2_DATAfit        = new TH1D("hChi2_DATAfit"       ,"#chi^{2}/ndf (DATA fit)" ,nbins,ptbins);
+    TH1D* hmean_DATAfit        = new TH1D("hmean_DATAfit"       ,"#mu (DATA fit)"          ,nbins,ptbins);
+    TH1D* hGauss_DATAfit       = new TH1D("hGauss_DATAfit"      ,"Gauss #sigma (DATA fit)" ,nbins,ptbins);
+    TH1D* hGammaBW_DATAfit     = new TH1D("hGammaBW_DATAfit"    ,"#Gamma_{BW} (DATA fit)"  ,nbins,ptbins);
+    TH1D* hDeltaMshift_DATAfit = new TH1D("hDeltaMshift_DATAfit","#Deltam shift (DATA fit)",nbins,ptbins);
     for(Int_t jpt=0;jpt<nbins;jpt++){
       Int_t reduceLc=0;
       Int_t reduceSc=0;
@@ -2715,11 +3249,92 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
       TH1D *hSc=hsparseSc->Projection(1);
       hSc->Sumw2();
       hSc->SetName(Form("hScPt%d",jpt));
-      hSc->SetTitle(Form("Sc %.0f<#it{p}_{T}^{%s}<%.0f",ptbins[jpt],useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})",ptbins[jpt+1]));	 
+      hSc->SetTitle(Form("Sc %.0f<#it{p}_{T}^{%s}<%.0f",ptbins[jpt],useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})",ptbins[jpt+1]));	 
+      //hSc->GetXaxis()->SetRangeUser(0.148,0.19);
       hSc->Draw();
       if(significanceLc>3.8){
 	Printf("fitting Sc");
-	TF1 *f=FitHisto(hSc,1,3,2,signalSc,errsignalSc,"RLEM");
+  //
+  // Cases with different combination of fixed/free parameters
+  //
+  int input_DATAopt=DATAopt;
+  if(DATAopt==20){
+    // case 2 MC: free Gaus sigma, free BW width, fixed deltaMshift ---> 20 for data
+    std::cout << "================================================================" << std::endl;
+    std::cout << "                Fixing parameters to MC values                  " << std::endl;
+    std::cout << " MC fit with: free Gaus sigma, free BW width, fixed deltaMshift " << std::endl;
+    std::cout << "================================================================" << std::endl;
+    fixSigmaBW   = valMCGausSigma_FreeGausSigma_FreeBWwidth_FixedDmassShift.at(jpt);
+    widthSigmaBW = valMCwidthBW_FreeGausSigma_FreeBWwidth_FixedDmassShift.at(jpt);
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==40){
+    // case 4 MC: fixed Gaus sigma, free BW width, free deltaMshift ---> 40 for data!
+    std::cout << "================================================================" << std::endl;
+    std::cout << "                Fixing parameters to MC values                  " << std::endl;
+    std::cout << " MC fit with: fixed Gaus sigma, free BW width, free deltaMshift " << std::endl;
+    std::cout << "================================================================" << std::endl;
+    widthSigmaBW      = valMCwidthBW_FixedGausSigma_FreeBWwidth_FreeDmassShift.at(jpt);
+    deltaMshift_Scpp0 = valMCdeltaMshift_FixedGausSigma_FreeBWwidth_FreeDmassShift.at(jpt);
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==60){
+    // case 6 MC: fixed Gaus sigma, free BW width, fixed deltaMshift ---> 60 for data!
+    std::cout << "=================================================================" << std::endl;
+    std::cout << "               Fixing parameters to MC values                    " << std::endl;
+    std::cout << " MC fit with: fixed Gaus sigma, free BW width, fixed deltaMshift " << std::endl;
+    std::cout << "=================================================================" << std::endl;
+    widthSigmaBW      = valMCwidthBW_FixedGausSigma_FreeBWwidth_FixedDmassShift.at(jpt);
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==80){
+    // case 8 MC: Gauss sigma fixed at 0, free BW width, free deltaMshift ---> 80 for data!
+    std::cout << "=====================================================================" << std::endl;
+    std::cout << "               Fixing parameters to MC values                        " << std::endl;
+    std::cout << " MC fit with: Gaus sigma fixed to 0, free BW width, free deltaMshift " << std::endl;
+    std::cout << "=====================================================================" << std::endl;
+    fixSigmaBW        = 0;
+    widthSigmaBW      = valMCwidthBW_GausSigma0_FreeBWwidth_FreeDmassShift.at(jpt);
+    deltaMshift_Scpp0 = valMCDmassShift_GausSigma0_FreeBWwidth_FreeDmassShift.at(jpt);
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==90){
+    // case 9 MC: Gauss sigma fixed at 0, free BW width, fixed deltaMshift ---> 90 for data!
+    std::cout << "======================================================================" << std::endl;
+    std::cout << "               Fixing parameters to MC values                         " << std::endl;
+    std::cout << " MC fit with: Gaus sigma fixed to 0, free BW width, fixed deltaMshift " << std::endl;
+    std::cout << "======================================================================" << std::endl;
+    fixSigmaBW        = 0;
+    widthSigmaBW      = valMCwidthBW_GausSigma0_FreeBWwidth_FixedDmassShift.at(jpt);
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==110){
+    // case 11 MC: free Gaus sigma, BW width fixed to 0, deltaMshift fixed to 0 ---> 110 for data!
+    std::cout << "===========================================================================" << std::endl;
+    std::cout << "               Fixing parameters to MC values                              " << std::endl;
+    std::cout << " MC fit with: free Gaus sigma, BW width fixed to 0, deltaMshift fixed to 0 " << std::endl;
+    std::cout << "===========================================================================" << std::endl;
+    fixSigmaBW        = valGausSigma_FreeGausSigma_BWwidth0_FreeDmassShift.at(jpt);
+    widthSigmaBW      = 0;
+    deltaMshift_Scpp0 = 0;
+    DATAopt=0;  // ---> in this way the parameter are fixed
+  }
+  else if(DATAopt==111){
+    // case 11 MC: free Gaus sigma, BW width fixed to 0, deltaMshift fixed to 0 ---> 110 for data!
+    std::cout << "===========================================================================" << std::endl;
+    std::cout << "               Fixing parameters to MC values                              " << std::endl;
+    std::cout << " MC fit with: free Gaus sigma, BW width fixed to 0, deltaMshift fixed to 0 " << std::endl;
+    std::cout << "===========================================================================" << std::endl;
+    fixSigmaBW        = valGausSigma_FreeGausSigma_BWwidth0_FreeDmassShift.at(jpt);
+    widthSigmaBW      = 0;
+    deltaMshift_Scpp0 = 0;
+    DATAopt=3;  // ---> in this way the parameter are fixed
+  }
+	//TF1 *f=FitHisto(hSc,1,3,2,signalSc,errsignalSc,"RLEM"); // original
+	TF1 *f=FitHisto(hSc,1,30,2,signalSc,errsignalSc,"RLEM",0,DATAopt);
+  DATAopt=input_DATAopt;  // restore the input value for data opt (necessary for next pt bin)
+
+      hSc->GetXaxis()->SetRangeUser(minMassScFit,maxMassScFit);
 	f->SetLineColor(kBlue);
 	f->SetLineWidth(3);
 	hSc->GetFunction("fFit")->SetLineColor(kBlue);
@@ -2734,6 +3349,39 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
 	hRawYieldLcSc->SetBinContent(jpt+1,signalSc);
 	hRawYieldLcSc->SetBinError(jpt+1,errsignalSc);
 
+  //
+  //  Fill here histograms with parameters
+  //
+  if(b_plot_pars_data){
+    int bin = hChi2_DATAfit->FindBin( (ptbins[jpt]+ptbins[jpt+1])/2. );
+      // chi2
+    double chi2 = f->GetChisquare()/f->GetNDF();
+    hChi2_DATAfit->SetBinContent( bin, chi2 );
+    hChi2_DATAfit->SetBinError( bin, 0 );
+      // mu
+    double mu     = f->GetParameter(1);
+    double mu_err = f->GetParError(1);
+    hmean_DATAfit->SetBinContent( bin, mu );
+    hmean_DATAfit->SetBinError( bin, mu_err );
+      // Gauss sigma
+    double gaussSigma     = f->GetParameter(2);
+    double gaussSigma_err = f->GetParError(2);
+    hGauss_DATAfit->SetBinContent( bin, gaussSigma );
+    hGauss_DATAfit->SetBinError( bin, gaussSigma_err );
+      // Gamma BW
+    double gammaBW     = f->GetParameter(7);
+    double gammaBW_err = f->GetParError(7);
+    hGammaBW_DATAfit->SetBinContent( bin, gammaBW );
+    hGammaBW_DATAfit->SetBinError( bin, gammaBW_err );
+      // Delta mass shift
+    double deltaMshift     = f->GetParameter(8);
+    double deltaMshift_err = f->GetParError(8);
+    hDeltaMshift_DATAfit->SetBinContent( bin, deltaMshift );
+    hDeltaMshift_DATAfit->SetBinError( bin, deltaMshift_err );
+  }
+  //
+  //
+  //
 
 	TF1 *fBack=f->DrawCopy("same");
 	fBack->SetName("fback");
@@ -2792,29 +3440,85 @@ void StudyFit(std::vector<TString> vec_filenames={},TString strSuff="AR",TString
 	  else hRes->SetBinContent(kr,0);	
 	}
 	cScRes->cd(jpt+1);
+  hRes->GetXaxis()->SetRangeUser(0.148,0.19);
 	hRes->Draw();
 	fSign->SetRange(minMassScFit,maxMassScFit);
 	fSign->Draw("same");
 	WriteFitResultsAndAxisOnPad(hRes,f,(TPad*)(cScRes->cd(jpt+1)),signalSc,errsignalSc);
       }
     }
+  //
+  //  Plot the fit parameter trend vs. pT (DATA)
+  //
+  TCanvas* can_par_data;
+  if(b_plot_pars_data){
+    can_par_data = new TCanvas("ca_par_data","[DATA] Fit parameters",1500,1000);
+    can_par_data->Divide(3,2);
+    //
+    can_par_data->cd(1);
+    hChi2_DATAfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hChi2_DATAfit->SetMarkerStyle(8);
+    hChi2_DATAfit->Draw("pe");
+    //
+    can_par_data->cd(2);
+    hmean_DATAfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hmean_DATAfit->SetMarkerStyle(8);
+    hmean_DATAfit->Draw("pe");
+    //
+    can_par_data->cd(3);
+    hGauss_DATAfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hGauss_DATAfit->SetMarkerStyle(8);
+    hGauss_DATAfit->Draw("pe");
+    //
+    can_par_data->cd(4);
+    hGammaBW_DATAfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hGammaBW_DATAfit->SetMarkerStyle(8);
+    hGammaBW_DATAfit->Draw("pe");
+    can_par_data->cd(5);
+    hDeltaMshift_DATAfit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hDeltaMshift_DATAfit->SetMarkerStyle(8);
+    hDeltaMshift_DATAfit->Draw("pe");
+  }
+  //
+  //
+  //
+  // save stuff (cut variation)
+  std::string file_title = "yield_" + (useScpt?std::string("Sc_"):std::string("LcSc_"));
+  if(cutvar_case>0) file_title += buildTitleCutVar(cutsMinSigmaC[0][2],cutsMinSigmaC[0][3],cutsMinSigmaC[0][4],cutsMaxSigmaC[0][5]);
+  else  file_title += "default.root";
+  std::unique_ptr<TFile> file_yield {new TFile(file_title.c_str(),"recreate")};
+  cLcMassPlots->Write();
+  hRawYieldLc->Write();
+  cScMassPlots->Write();
+  cScRes->Write();
+  hRawYieldLcSc->Write();
+  if(can_par_data)  can_par_data->Write();
+  file_yield->Close();
+
+  suffix_title = file_title;
 }
 
 void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t cutset=0,TString strSuffData="AR",TString strDirData="PWG3_D2H_XicpKpi",TString strSuffMC="AR",TString strDirMC="PWG3_D2H_XicpKpi"
 , bool useGlobalpt = false  // mfaggin
 , bool do_ch_separation = false // mfaggin
 , bool useScpt = false  // mfaggin
+, int DATAopt = 0 // mfaggin
+, int cutvar_case=0 // mfaggin
 ){
   
+  // just for plotting reasons
+  b_setoptfitMC = false;
+
   //StudyEfficiency(strFileMC,strSuffMC,strDirMC,kTRUE,cutset); // arossi
   //StudyFit(strFileData,strSuffData,strDirData,kTRUE,kTRUE,cutset);  // arossi
   
   //StudyEfficiency(strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset);
-  CalculateEfficiency(do_ch_separation,strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset,useScpt);
-  StudyFit(vec_files,strSuffData,strDirData,useGlobalpt,kTRUE,cutset,useScpt);
+  CalculateEfficiency(do_ch_separation,strFileMC,strSuffMC,strDirMC,useGlobalpt,cutset,useScpt,0,cutvar_case);
+  StudyFit(vec_files,strSuffData,strDirData,useGlobalpt,kTRUE,cutset,useScpt,DATAopt,cutvar_case);
 
   Int_t skipBinLocal[6]={1,1,0,0,0,1};
-  Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.};
+  //Double_t ptbinsLocal[7]={1.,2.,4.,6.,8,16,24.};
+  Double_t ptbinsLocal[7]={1.,2.,3.,5.,8,16,24.}; // performance plot
   Double_t *ptbins=(useGlobalpt ? &ptbinsGlobal[0] : &ptbinsLocal[0]);//new Double_t[nbins]);
   Int_t *skipBin=(useGlobalpt ? &skipBinGlobal[0] : &skipBinLocal[0]);//new Int_t[nbins]);
 
@@ -2850,7 +3554,7 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hRawYieldLcSc->SetLineColor(kRed);
   hRawYieldLcSc->SetMarkerColor(hRawYieldLcSc->GetLineColor());
   hRawYieldLcSc->SetMarkerStyle(20);
-  hRawYieldLcSc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(<-#Sigma_{c})"));
+  hRawYieldLcSc->GetXaxis()->SetTitle(Form("#it{p}_{T}^{%s} (GeV/#it{c})",useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})"));
   hRawYieldLcSc->Draw("Same");
   gPad->SetTicks();
   gPad->SetLogy();
@@ -2900,13 +3604,47 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hCrossSectionRatioLcMineLcPrel->Divide(hPrel);
   hCrossSectionRatioLcMineLcPrel->Draw();
   //
-
+  TCanvas *cRatiosLcOverSc = nullptr;
   if(!useScpt){
-    TCanvas *cRatiosLcOverSc=new TCanvas("cRatiosLcOverSc","cRatiosLcOverSc",800,800);
+    cRatiosLcOverSc=new TCanvas("cRatiosLcOverSc","cRatiosLcOverSc",800,800);
     cRatiosLcOverSc->cd();
     TH1D *hCrossSectionRatioLcSc=(TH1D*)hCrossSectionLcSc->Clone("hCrossSectionRatioLcSc");
+    hCrossSectionRatioLcSc->GetYaxis()->SetTitle("");
     hCrossSectionRatioLcSc->Divide(hCrossSectionLc);
     hCrossSectionRatioLcSc->Draw();
+    hCrossSectionRatioLcSc->GetYaxis()->SetRangeUser(0.,1.);
+    //
+    TH1D* hCrossSectionRatioLcSc_scaledIsospin = (TH1D*) hCrossSectionRatioLcSc->Clone();
+    hCrossSectionRatioLcSc_scaledIsospin->Scale(3./2.);
+    hCrossSectionRatioLcSc_scaledIsospin->SetName("hCrossSectionRatioLcSc_scaledIsospin");
+    hCrossSectionRatioLcSc_scaledIsospin->SetLineStyle(2);
+    hCrossSectionRatioLcSc_scaledIsospin->SetMarkerStyle(24);
+    hCrossSectionRatioLcSc_scaledIsospin->Draw("same");
+    TLegend* leg_Lcratios = new TLegend(0.4,0.2,0.7,0.45);
+    //
+    //  ratios with Lc preliminary
+    //
+    TH1D *hCrossSectionRatioLcSc_LcPrel=(TH1D*)hCrossSectionLcSc->Clone("hCrossSectionRatioLcSc_LcPrel");
+    hCrossSectionRatioLcSc_LcPrel->GetYaxis()->SetTitle("");
+    hCrossSectionRatioLcSc_LcPrel->Divide(hPrel);
+    hCrossSectionRatioLcSc_LcPrel->Draw("same");
+    hCrossSectionRatioLcSc_LcPrel->GetYaxis()->SetRangeUser(0.,1.);
+    hCrossSectionRatioLcSc_LcPrel->SetMarkerColor(kBlue);
+    hCrossSectionRatioLcSc_LcPrel->SetLineColor(kBlue);
+    TH1D* hCrossSectionRatioLcSc_LcPrel_scaledIsospin = (TH1D*) hCrossSectionRatioLcSc_LcPrel->Clone();
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->Scale(3./2.);
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->SetName("hCrossSectionRatioLcSc_LcPrel_scaledIsospin");
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->SetLineStyle(2);
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->SetMarkerStyle(24);
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->Draw("same");
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->SetMarkerColor(kBlue);
+    hCrossSectionRatioLcSc_LcPrel_scaledIsospin->SetLineColor(kBlue);
+
+    leg_Lcratios->AddEntry(hCrossSectionRatioLcSc,"#Lambda_{c}(#leftarrow#Sigma_{c}^{++,0})/#Lambda_{c}");
+    leg_Lcratios->AddEntry(hCrossSectionRatioLcSc_LcPrel,"#Lambda_{c}(#leftarrow#Sigma_{c}^{++,0})/#Lambda_{c}^{prel.}");
+    leg_Lcratios->AddEntry(hCrossSectionRatioLcSc_scaledIsospin,"#Lambda_{c}(#leftarrow#Sigma_{c}^{++,0})/#Lambda_{c} isospin scaled (#times 3/2)");
+    leg_Lcratios->AddEntry(hCrossSectionRatioLcSc_LcPrel_scaledIsospin,"#Lambda_{c}(#leftarrow#Sigma_{c}^{++,0})/#Lambda_{c}^{prel.} isospin scaled (#times 3/2)");
+    leg_Lcratios->Draw();
   }
 
   //
@@ -2922,8 +3660,13 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hPrelD0->Scale(1/0.0389);
   hPrelD0->SetYTitle("#frac{d#sigma}{d#it{p}_{T}} (#mub#upoint#it{c}/GeV)");
   hPrelD0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-
+  hPrelD0->SetMarkerColor(kBlue);
+  hPrelD0->SetLineColor(hPrelD0->GetMarkerColor());
   hPrelD0->Draw("same");
+  hPrelD0->GetYaxis()->SetRangeUser(0.01,1000);
+  gPad->SetTicks();
+  gPad->SetLogy();
+
   TH1D *hCrossSectionLcBRcorr=(TH1D*)hCrossSectionLc->Clone("hCrossSectionLcBRcorr");
   hCrossSectionLcBRcorr->Scale(1./0.0635);
   hCrossSectionLcBRcorr->Draw("same");
@@ -2932,6 +3675,13 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hCrossSectionLcScBRcorr->Scale(1./0.0635);
   hCrossSectionLcScBRcorr->Draw("same");
 
+  TLegend* legD0comp = new TLegend(0.4,0.55,0.8,0.75);
+  legD0comp->SetHeader("with branching ratio correction");
+  legD0comp->AddEntry(hCrossSectionLcBRcorr  ,"#Lambda_{c}");
+  legD0comp->AddEntry(hCrossSectionLcScBRcorr,useScpt?"#Sigma_{c}":"#Lambda_{c}(#leftarrow#Sigma_{c})");
+  legD0comp->AddEntry(hPrelD0                ,"D^{0} preliminary");
+  legD0comp->Draw();
+  
   TCanvas *cRatioToD0=new TCanvas("cRatioToD0","cRatioToD0",800,800);
   cRatioToD0->cd();
   TH1D *hCrossSectionLcBRcorrRatioToD0=(TH1D*)hCrossSectionLcBRcorr->Clone("hCrossSectionLcBRcorrRatioToD0");
@@ -2943,6 +3693,8 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hCrossSectionLcBRcorrRatioToD0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   hCrossSectionLcBRcorrRatioToD0->SetYTitle("ratio to D0");
   hCrossSectionLcBRcorrRatioToD0->Draw();
+  hCrossSectionLcBRcorrRatioToD0->GetYaxis()->SetRangeUser(0,1);
+  gPad->SetTicks();
   hCrossSectionLcScBRcorrRatioToD0->Draw("same");
   hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->SetLineStyle(2);
   hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");
@@ -2970,11 +3722,115 @@ void GetCrossSectionLcSc(std::vector<TString> vec_files,TString strFileMC,Int_t 
   hPrelLcOverD0->Scale(1./0.0635);
   hPrelLcOverD0->Divide(hPrelD0);
   hPrelLcOverD0->Draw("same");
+
+  TLegend* legD0compRatio = new TLegend(0.6,0.5,0.8,0.75);
+  legD0compRatio->SetHeader("with branching ratio correction");
+  legD0compRatio->AddEntry(hCrossSectionLcBRcorrRatioToD0                ,"#Lambda_{c}/D^{0}_{prel}");
+  legD0compRatio->AddEntry(hCrossSectionLcScBRcorrRatioToD0              ,useScpt?"#Sigma_{c}/D^{0}_{prel}":"#Lambda_{c}(#leftarrow#Sigma_{c})/D^{0}_{prel}");
+  legD0compRatio->AddEntry(hCrossSectionLcScBRcorrRatioToD0ScaledIsospin,useScpt?"#Sigma_{c}/D^{0}_{prel} isospin scaled (#times 3/2)":"#Lambda_{c}(#leftarrow#Sigma_{c})/D^{0}_{prel} isospin scaled (#times 3/2)");
+  legD0compRatio->AddEntry(hPrelLcOverD0                                 ,"#Lambda_{c}^{prel}/D^{0}_{prel}");
+  legD0compRatio->Draw();
+
   //
 
   /*TLegend *leg=(TLegend*)cModels->FindObject("TPave");
   leg->Draw("same");*/
   
+  //
+  //  Compare with Pythia - ratio over D0
+  //
+  TCanvas* can_pythia;
+  if(!useScpt){ // Lc(<-Sc)
+    TFile* file_LcScoverD0_pythia = TFile::Open( "/home/mattia/Documenti/PhD/D2H_Analysis/PYTHIA_charmedBaryons_ARossi_06March2020/merged_LcSc_over_D0_tobeRechecked.root" );
+    std::map<std::string,TH1D*> LcScoverD0_pythia = {
+         std::pair<std::string,TH1D*> ( "Monash 2013", (TH1D*) file_LcScoverD0_pythia->Get("h1DtempLcFromSigmaY05_Mon2013def") )
+        ,std::pair<std::string,TH1D*> ( "Mode 0"     , (TH1D*) file_LcScoverD0_pythia->Get("h1DtempLcFromSigmaY05_Md0_13tev") )
+        ,std::pair<std::string,TH1D*> ( "Mode 2"     , (TH1D*) file_LcScoverD0_pythia->Get("h1DtempLcFromSigmaY05_Md2_13tev") )
+        ,std::pair<std::string,TH1D*> ( "Mode 3"     , (TH1D*) file_LcScoverD0_pythia->Get("h1DtempLcFromSigmaY05_Md3_13tev") )
+    };
+
+    TH1D* hrange = new TH1D("hrange","",100,0,24);
+    hrange->GetYaxis()->SetTitle( "ratio" );
+    hrange->GetXaxis()->SetTitle( "#it{p}_{T} (GeV/#it{c})" );
+    hrange->GetYaxis()->SetRangeUser( 0.001,2 );
+    hrange->SetStats(false);
+
+    can_pythia = new TCanvas("can_pythia","pythia", 1000,1000);
+    TLegend* legpythia = new TLegend(0.4,0.6,0.8,0.8);
+    hrange->DrawCopy();
+    for(auto& el: LcScoverD0_pythia){
+        el.second->Draw("HIST C same");
+        el.second->SetTitle( Form( "PYTHIA |y|<0.5 #Lambda_{c}(#leftarrow#Sigma_{c})/D^{0} %s", el.first.c_str() ) );
+        legpythia->AddEntry(el.second,el.second->GetTitle(),"l");
+    }
+    //LcScoverD0_pythia["Mode 0"]->SetMarkerStyle(26);
+    //LcScoverD0_pythia["Mode 2"]->SetMarkerStyle(25);
+    //LcScoverD0_pythia["Mode 3"]->SetMarkerStyle(30);
+    //LcScoverD0_pythia["Monash 2013"]->SetMarkerStyle(24);
+
+    gPad->SetTicks();
+    gPad->SetLogy();
+
+    hCrossSectionLcScBRcorrRatioToD0->Draw("same");
+    hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");
+    legpythia->AddEntry(hCrossSectionLcScBRcorrRatioToD0,"#Lambda_{c}(#leftarrow#Sigma_{c})/D^{0}_{prel}");
+    legpythia->AddEntry(hCrossSectionLcScBRcorrRatioToD0ScaledIsospin,"#Lambda_{c}(#leftarrow#Sigma_{c})/D^{0}_{prel} isospin scaled (#times 3/2)");
+
+    legpythia->Draw();
+  }
+  else if(useScpt){ // Sc
+    TFile* file_ScoverD0_pythia = TFile::Open( "/home/mattia/Documenti/PhD/D2H_Analysis/PYTHIA_charmedBaryons_ARossi_06March2020/merged_Sc_over_D0_tobeRechecked.root" );
+    std::map<std::string,TH1D*> ScoverD0_pythia = {
+         std::pair<std::string,TH1D*> ( "Monash 2013", (TH1D*) file_ScoverD0_pythia->Get("h1DtempSigmacY05_Mon2013def") )
+        ,std::pair<std::string,TH1D*> ( "Mode 0"     , (TH1D*) file_ScoverD0_pythia->Get("h1DtempSigmacY05_Md0_13tev") )
+        ,std::pair<std::string,TH1D*> ( "Mode 2"     , (TH1D*) file_ScoverD0_pythia->Get("h1DtempSigmacY05_Md2_13tev") )
+        ,std::pair<std::string,TH1D*> ( "Mode 3"     , (TH1D*) file_ScoverD0_pythia->Get("h1DtempSigmacY05_Md3_13tev") )
+    };
+
+    TH1D* hrange = new TH1D("hrange","",100,0,24);
+    hrange->GetYaxis()->SetTitle( "ratio" );
+    hrange->GetXaxis()->SetTitle( "#it{p}_{T} (GeV/#it{c})" );
+    hrange->GetYaxis()->SetRangeUser( 0.001,2 );
+    hrange->SetStats(false);
+
+    can_pythia = new TCanvas("can_pythia","pythia", 1000,1000);
+    TLegend* legpythia = new TLegend(0.4,0.6,0.8,0.8);
+    hrange->DrawCopy();
+    for(auto& el: ScoverD0_pythia){
+        el.second->Draw("HIST C same");
+        el.second->SetTitle( Form( "PYTHIA |y|<0.5 #Sigma_{c}/D^{0} %s", el.first.c_str() ) );
+        legpythia->AddEntry(el.second,el.second->GetTitle(),"l");
+    }
+    //LcScoverD0_pythia["Mode 0"]->SetMarkerStyle(26);
+    //LcScoverD0_pythia["Mode 2"]->SetMarkerStyle(25);
+    //LcScoverD0_pythia["Mode 3"]->SetMarkerStyle(30);
+    //LcScoverD0_pythia["Monash 2013"]->SetMarkerStyle(24);
+
+    gPad->SetTicks();
+    gPad->SetLogy();
+
+    hCrossSectionLcScBRcorrRatioToD0->Draw("same");
+    hCrossSectionLcScBRcorrRatioToD0ScaledIsospin->Draw("same");
+    legpythia->AddEntry(hCrossSectionLcScBRcorrRatioToD0,"#Sigma_{c}/D^{0}_{prel}");
+    legpythia->AddEntry(hCrossSectionLcScBRcorrRatioToD0ScaledIsospin,"#Sigma_{c}/D^{0}_{prel} isospin scaled (#times 3/2)");
+
+    legpythia->Draw();
+  }
+
+  // save stuff (cut variation)
+  std::string file_title("xsec_");
+  file_title += suffix_title;
+  std::unique_ptr<TFile> file_xsec {new TFile(file_title.c_str(),"recreate")};
+  can_pythia->Write();
+  cRatioToD0->Write();
+  cCompareToD0->Write();
+  if(cRatiosLcOverSc) cRatiosLcOverSc->Write();
+  cLcCompare->Write();
+  cCrossSectionCompare->Write();
+  hCrossSectionLc->Write();
+  hCrossSectionLcSc->Write();
+  cRawYield->Write();
+  file_xsec->Close();
 
 }
 
@@ -3024,6 +3880,10 @@ void StudyRotationalBackground(TString strfile="AnalysisResults.root",TString st
     }
     else if(cutSet==1){
       SetFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,kTRUE);
+    }
+    else if(cutSet==10){
+      std::cout << "### SetScFromFilteringCuts" << std::endl;
+      SetScFromFilteringCuts(nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC);
     }
     else {
       SetCuts(cutSet,nbins,ptbins,cutsMinSigmaC,cutsMaxSigmaC,isPtCommonCutSigmaC,kTRUE);

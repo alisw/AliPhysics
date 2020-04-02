@@ -25,7 +25,6 @@
 
 #include "AliForwardSettings.h"
 #include "AliForwardNUATask.h"
-
 #include <iostream>
 
 /**
@@ -137,23 +136,87 @@ public:
     return weight;
   }
 
-  Double_t applySecondaryCorr(Int_t n, Double_t eta,Double_t zvertex,Double_t cent, Double_t weight){
-    Int_t secn = n-1;
+  Double_t applyInterpolateCorr(Int_t n, Double_t cent, Int_t etaBin, Double_t weight){
+    Int_t ccbin = 0;
 
+    if ((cent > 0.) & (cent < 5.)) ccbin = 0;
+    if ((cent > 5.) & (cent < 10.)) ccbin = 1;
+    else{
+      for (Int_t cbin = 1; cbin < 7; cbin++){
+        if ((cent > (cbin)*10 ) & (cent < (cbin+1)*10 )){
+          ccbin = cbin+1;
+          break;
+        }
+      }
+    }
+ 
+    if (n == 2){
+      Double_t hole1_e1[] = {1.002, 1.003, 1.009, 1.017, 1.023, 1.023, 1.018, 1.023, 1.023};
+      Double_t hole1_e2[] = {1.002, 1.004, 1.011, 1.023, 1.031, 1.029, 1.023, 1.018, 1.018};
+      Double_t hole1_e3[] = {1.001, 1.004, 1.01 , 1.019, 1.024, 1.023, 1.021, 1.02 , 1.02 };
+      Double_t hole2_e1[] = {1.003, 1.006, 1.01 , 1.014, 1.018, 1.017, 1.015, 1.011, 1.011};
+      Double_t hole2_e2[] = {1.006, 1.008, 1.014, 1.019, 1.023, 1.022, 1.022, 1.011, 1.011};
+
+      if (etaBin == 24) return weight*hole1_e1[ccbin];
+      if (etaBin == 25) return weight*hole1_e2[ccbin];
+      if (etaBin == 26) return weight*hole1_e3[ccbin];
+      if (etaBin == 34) return weight*hole2_e1[ccbin];
+      if (etaBin == 35) return weight*hole2_e2[ccbin];
+    }
+
+    if (n == 3){
+      Double_t hole1_e1[] = {1.002, 1.004, 1.009, 1.023, 1.034, 1.039, 1.036, 1.036, 1.036};
+      Double_t hole1_e2[] = {1.001, 1.005, 1.014, 1.031, 1.047, 1.045, 1.059, 1.059, 1.059};
+      Double_t hole1_e3[] = {1.002, 1.004, 1.012, 1.024, 1.037, 1.04 , 1.051, 1.051, 1.051};
+      Double_t hole2_e1[] = {1.003, 1.006, 1.01 , 1.018, 1.023, 1.015, 1.052, 1.052, 1.052};
+      Double_t hole2_e2[] = {1.007, 1.008, 1.016, 1.02 , 1.028, 1.024, 1.05 , 1.05 , 1.05 };
+      if (etaBin == 24) return weight*hole1_e1[ccbin];
+      if (etaBin == 25) return weight*hole1_e2[ccbin];
+      if (etaBin == 26) return weight*hole1_e3[ccbin];
+      if (etaBin == 34) return weight*hole2_e1[ccbin];
+      if (etaBin == 35) return weight*hole2_e2[ccbin];      
+    }
+    if (n == 4){
+      Double_t hole1_e1[] = {1.001, 1.004, 1.009, 1.026, 1.054, 1.061, 1.061, 1.061, 1.061};
+      Double_t hole1_e2[] = {1.001, 1.005, 1.012, 1.029, 1.068, 1.089, 1.089, 1.089, 1.089};
+      Double_t hole1_e3[] = {1.002, 1.003, 1.011, 1.031, 1.054, 1.104, 1.104, 1.104, 1.104};
+      Double_t hole2_e1[] = {1.01 , 1.006, 1.01 , 1.025, 1.02 , 1.058, 1.058, 1.058, 1.058};
+      Double_t hole2_e2[] = {1.003, 1.01 , 1.038, 1.038, 1.015, 1.041, 1.041, 1.041, 1.041};
+      if (etaBin == 24) return weight*hole1_e1[ccbin];
+      if (etaBin == 25) return weight*hole1_e2[ccbin];
+      if (etaBin == 26) return weight*hole1_e3[ccbin];
+      if (etaBin == 34) return weight*hole2_e1[ccbin];
+      if (etaBin == 35) return weight*hole2_e2[ccbin];      
+    }
+  return weight;
+  }
+
+
+
+  Double_t applySecondaryCorr(Int_t n, Double_t eta,Double_t zvertex,Double_t cent, Double_t weight){
     if (fSettings.seccorr_fwd){
       Int_t seceta = fSettings.seccorr_fwd->GetZaxis()->FindBin(eta);
       Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
-      Double_t factor = fSettings.seccorr_fwd->GetBinContent(secn,secvtz,seceta);
+      Double_t factor = fSettings.seccorr_fwd->GetBinContent(n,secvtz,seceta);
       if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
       else weight = 0.;
     }
+
     if (fSettings.seccorr_cent){
       Int_t seceta = fSettings.seccorr_cent->GetYaxis()->FindBin(eta);
-      Int_t seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
-      Double_t factor = fSettings.seccorr_cent->GetBinContent(secn,seceta,seccent);
+      Int_t seccent = 1;
+      if (fSettings.XeXe){
+        if (cent < 10) seccent = 2;
+        if (cent > 10) seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent+10);
+      }
+      if (!fSettings.XeXe){
+        seccent = fSettings.seccorr_cent->GetZaxis()->FindBin(cent);
+      }
+      Double_t factor = fSettings.seccorr_cent->GetBinContent(n,seceta,seccent);
       if (!(TMath::IsNaN(factor)) & (factor > 0.)) weight = weight*factor;
-      else weight = 0.;      
+      else weight = 0.; 
     }
+    
     return weight;
   }
 

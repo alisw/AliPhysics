@@ -512,8 +512,10 @@ class AliReducedVarManager : public TObject {
     kPdgMC,
     kCharge = kPdgMC+4,
     kVZEROFlowVn,                     // v_n using VZERO RP
-    kTPCFlowVn=kVZEROFlowVn+6*3,      // v_n using TPC RP
-    kVZEROFlowSine=kTPCFlowVn+6,      // sin(n*(phi-Psi)) using VZERO RP
+    kVZERODeltaPhiPsiN = kVZEROFlowVn+6*3,   // delta phi = phi - Psi  for VZERO event plane
+    kTPCFlowVn=kVZERODeltaPhiPsiN+6*3,      // v_n using TPC RP
+    kTPCDeltaPhiPsiN=kTPCFlowVn+6,         // delta phi = phi - Psi  for TPC event plane
+    kVZEROFlowSine=kTPCDeltaPhiPsiN+6,      // sin(n*(phi-Psi)) using VZERO RP
     kTPCFlowSine=kVZEROFlowSine+6*3,  // sin(n*(phi-Psi)) using TPC RP
     kVZEROuQ = kTPCFlowSine+6,        // cosine term from the u*Q products from VZERO (harmonics 1-6; VZERO-A and VZERO-C)
     kVZEROuQsine = kVZEROuQ+6*2,      // sine terms from the u*Q products from VZERO (harmonics 1-6; VZERO-A and VZERO-C)
@@ -534,7 +536,15 @@ class AliReducedVarManager : public TObject {
     kPairPhiCS,                    // phi* in Collins-Soper frame
     kPairThetaHE,                // cos (theta*) in helicity frame       
     kPairPhiHE,                    // phi* in helicity frame
-    kPairQualityFlag,
+    kPairVZEROFlowNom,            // Nominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairVZEROFlowDenom=kPairVZEROFlowNom+6*3,  // Denominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairTPCFlowNom=kPairVZEROFlowDenom+6*3,
+    kPairTPCFlowDenom=kPairTPCFlowNom+6,
+    kPairVZEROFlowSPNom=kPairTPCFlowDenom+6,     // Nominator of combinatorial Scalar Product pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairVZEROFlowSPDenom=kPairVZEROFlowSPNom+6*3,  // Denominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairTPCFlowSPNom=kPairVZEROFlowSPDenom+6*3,
+    kPairTPCFlowSPDenom=kPairTPCFlowSPNom+6,
+    kPairQualityFlag=kPairTPCFlowSPDenom+6,
     kPairQualityFlag2,
     kDMA,                        // Distance of minimal approach
     kPairPhiV,                   // angle between pair plane and magnetic field
@@ -555,9 +565,10 @@ class AliReducedVarManager : public TObject {
     kPairLegPtSum=kPairLegPt+2,                   // sum of the pt of the two legs
     kPairLegPtMC,                                // MC truth pair leg pt
     kPairLegPtMCSum=kPairLegPtMC+2,               // sum of the MC truth leg pt's
+    kPairLegEMCALmatchedEnergy,                   // pair leg EMCal cluster energy
 
     // Track-only variables -------------------------------------
-    kPtTPC,     
+    kPtTPC=kPairLegEMCALmatchedEnergy+2,
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
@@ -673,6 +684,59 @@ class AliReducedVarManager : public TObject {
     kOneOverAssocHadronEff,                 // 1 / associated hadron efficiency (correction factor)
     kTriggerEffTimesAssocHadronEff,         // J/psi candidate efficiency x associated hadron efficiency
     kOneOverTriggerEffTimesAssocHadronEff,  // 1 / (J/psi candidate efficiency x associated hadron efficiency)
+    // vars related to psiprime decay into J/psi + pi+pi- channel
+    kAssociated2Pt,
+    kAssociated2Eta,
+    kAssociated2Phi,
+
+    kOpAngleMotherPosPion,
+    kDeltaRPosPi,
+    kPPosPi,
+    kPtPosPi,
+    kDeltaRPosPiJPsi,
+
+    kOpAngleMotherNegPion,
+    kDeltaRNegPi,
+    kPNegPi,
+    kPtNegPi,
+    kDeltaRNegPiJPsi,
+    
+    kOpAngleMotherJPsi,
+    kDeltaRJPsi,
+    kPJPsi,
+    kPtJPsi,
+    kEtaJPsi,
+    
+    kMassPionPair,
+    kP_PionPair,
+    kPt_PionPair,
+    kPhi_PionPair,
+    kEta_PionPair,
+    kOpAngleMotherDiPion,
+    kDeltaRDiPion,
+    
+    kMassPsiPrime,
+    kPt_PsiPrime, 
+    kPhi_PsiPrime,
+    kEta_PsiPrime,
+
+    kJPsiPosPionOpeningAngle,
+    kJPsiNegPionOpeningAngle,
+    kPionsOpeningAngle,
+    kJPsiDiPionOpeningAngle,
+    
+    kQValue,
+
+    kMassElecPairPosPion,
+    kPt_ElecPairPosPion,
+    kEta_ElecPairPosPion,
+    kPhi_ElecPairPosPion,
+    
+    kMassPsiPrime_II,
+    kPt_PsiPrime_II,
+    kEta_PsiPrime_II,
+    kJPsiPosPion_NegPionOpeningAngle,
+
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -739,8 +803,10 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
+  static void FillPairMEflow(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values/*, Int_t idx=0*/);
   static void FillCorrelationInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
+  static void FillPsiPrimeInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values);//tariq
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
   static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
@@ -848,7 +914,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 16);
+  ClassDef(AliReducedVarManager, 17);
 };
 
 #endif

@@ -912,7 +912,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     //Mark photons fired trigger
     if(!fIsMB){   
       if(fIsMC){
-        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<fPHOSTrigger)) ;    
+        p->SetTrig(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;    
       }
       else
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
@@ -2536,8 +2536,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
         
     
   //In case of p-Pb data  
-  if((fRunNumber >=195344 && fRunNumber <= 197388 ) || //LHC13bcdef: pPb 5.02
-     (fRunNumber >=265015 	 && fRunNumber <= 267161 )){ //LHC16qrst
+  if(fRunNumber >=195344 && fRunNumber <= 197388 ){ //LHC13bcdef: pPb 5.02
     
     //Fill Centrality before vertex/pileup cuts
     AliCentrality *centrality = event->GetCentrality();
@@ -2634,6 +2633,60 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      return kTRUE ;
   } //end of p-Pb case
     
+  
+  
+  //In case of p-Pb data Run2  
+  if(fRunNumber >=265015 	 && fRunNumber <= 267161 ){ //LHC16qrst
+    
+    //Fill Centrality before vertex/pileup cuts
+    AliMultSelection *multSelection = (AliMultSelection*) event -> FindListObject("MultSelection");
+    if(!multSelection)
+      return kFALSE ;  
+
+    Double_t v0A =multSelection->GetMultiplicityPercentile("V0A");
+    FillHistogram("hCentrality1V0A",v0A) ;
+      
+    Double_t v0C =multSelection->GetMultiplicityPercentile("V0C");
+    FillHistogram("hCentrality1V0C",v0C) ;
+
+    Double_t v0M =multSelection->GetMultiplicityPercentile("V0M");
+    FillHistogram("hCentrality1V0M",v0M) ;
+    
+    Double_t cl1 =multSelection->GetMultiplicityPercentile("CL1");
+    FillHistogram("hCentrality1CL1",cl1) ;
+      
+    Double_t zna =multSelection->GetMultiplicityPercentile("ZNA");
+    FillHistogram("hCentrality1ZNA",zna) ;
+
+    Double_t znc =multSelection->GetMultiplicityPercentile("ZNC");
+    FillHistogram("hCentrality1ZNC",znc) ;
+           
+    //multSelection
+    fCentrality=1.;
+    switch(fCentEstimator){
+      case 4 : fCentrality=cl1;
+               break;
+      case 3 : fCentrality=zna;
+               break;         
+      case 2 : fCentrality=v0M;
+               break;
+      case 1 : 
+      default: fCentrality=v0A;
+    }
+
+     fCentBin=0;
+     while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
+        fCentBin++ ;
+     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
+      
+     if(fIsMB)
+        fCentWeight=MBCentralityWeight(fCentrality); 
+     else
+        fCentWeight=TrigCentralityWeight(fCentrality); 
+     return kTRUE ;
+  } //end of p-Pb Run2 case
+    
+  
   
   //pp collisions
   //Fill Multiplicity before vertex/pileup cuts

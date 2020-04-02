@@ -67,6 +67,7 @@ public:
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void SetMCclosure(Bool_t mode) { fMCclosure = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void Setmcprim(Bool_t mode){fprim=mode;}
   
@@ -148,6 +149,7 @@ private:
   Bool_t fcentcalib;
   Bool_t frun2;
   Bool_t fQA;
+  Bool_t fMCclosure;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
   Bool_t fptdiff;
@@ -172,6 +174,7 @@ private:
   TList *fOutputList2; // Output list
 
   AliPIDResponse *fPIDResponse; // PID Response
+  TH3D* fhcorreffi[10];
 
   Int_t ffilterbit;
   Double_t fPtMin;

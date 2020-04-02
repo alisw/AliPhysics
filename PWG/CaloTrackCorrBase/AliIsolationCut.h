@@ -145,10 +145,24 @@ class AliIsolationCut : public TObject {
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
   Int_t      GetDebug()               const { return fDebug          ; }
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
+  Bool_t     IsTrackMatchedClusterRejectionInConeOn()  { return fIsTMClusterInConeRejected ; }
   Float_t    GetMinDistToTrigger()    const { return fDistMinToTrigger ; }
-  Float_t    GetNeutralOverChargedRatio() const { return fNeutralOverChargedRatio ; }
+  Double_t   GetNeutralOverChargedRatioParam(Int_t p = 0) 
+  const {  if ( p >= 0 && p < 4 ) return fNeutralOverChargedRatio[p] ; else return 0 ; }
+  
+  /// \return Fraction of neutral energy with respect charged energy in cone
+  /// \param  cen collision centrality
+  Double_t   GetNeutralOverChargedRatio(Float_t cen) const 
+  { return fNeutralOverChargedRatio[0]         + fNeutralOverChargedRatio[1]*cen         +
+           fNeutralOverChargedRatio[2]*cen*cen + fNeutralOverChargedRatio[3]*cen*cen*cen; }
+  
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
 
+  Float_t    GetTPCEtaSize()          const { return fTPCEtaSize     ; }
+  Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
+  Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
+  Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
+  
   void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
@@ -165,7 +179,9 @@ class AliIsolationCut : public TObject {
   void       SetTrackMatchedClusterRejectionInCone(Bool_t tm)  { fIsTMClusterInConeRejected = tm ; }
   void       SetMinDistToTrigger(Float_t md)                   { fDistMinToTrigger  = md   ; }
   void       SetHistogramRanges(AliHistogramRanges * range)    { fHistoRanges       = range; } 
-  void       SetNeutralOverChargedRatio(Float_t r)             { fNeutralOverChargedRatio = r ; }
+  void       SetNeutralOverChargedRatio(Double_t r0, Double_t r1, Double_t r2, Double_t r3)             
+  { fNeutralOverChargedRatio[0] = r0 ; fNeutralOverChargedRatio[1] = r1 ; 
+    fNeutralOverChargedRatio[2] = r2 ; fNeutralOverChargedRatio[3] = r3 ; }
   void       SetNCentrBins(Int_t nbins)                        { fNCentBins         = nbins; }
   
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
@@ -215,7 +231,7 @@ class AliIsolationCut : public TObject {
   
   Float_t    fDistMinToTrigger;                        ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation. Do not count in cone particles close to the trigger.
   
-  Float_t    fNeutralOverChargedRatio;                 ///< Fix ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction.
+  Float_t    fNeutralOverChargedRatio[4];              ///< Ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction. Might depend on centrality. Parameters of third order polynomial.
   
   Int_t      fDebug;                                   ///< Debug level.
 
@@ -241,16 +257,16 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
-  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger.
+  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger.
 
   TH2F *   fhConeSumPtUESub ;                          //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubCluster ;                   //!<! Clusters Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubTrack ;                     //!<! Tracks Sum Pt in the cone minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt Sum Pt in the cone  minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt Sum Pt in the cone  minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt in the cone  minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt in the cone  minus UE and excess corrected.
+  TH2F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
 
   TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
   TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
@@ -310,7 +326,7 @@ class AliIsolationCut : public TObject {
   TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
   TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
-  TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta or phi band.
+  TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt in the cone, after subtraction in eta or phi band.
   
   TH2F *   fhBandClustervsTrack ;                      //!<! Accumulated pT in eta or phi band to estimate UE in cone, clusters vs tracks.
   TH2F *   fhBandNormClustervsTrack ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone, normalized to cone size, clusters vs tracks.
@@ -323,11 +339,15 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtCent ;                           //!<! Cluster and tracks Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtClusterCent ;                    //!<! Clusters Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtTrackCent ;                      //!<! Tracks Sum Pt in the cone vs centrality.
-  
-  TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
-  TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE and excess corrected vs centrality.
-  TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE and excess corrected vs centrality.
-  
+  TH3F *   fhConeSumPtClustervsTrackCent ;             //!<! Cluster vs tracks Sum Pt in the cone vs centrality.
+  TH3F *   fhConeSumPtClusterTrackFracCent ;           //!<! Cluster / tracks Sum Pt in the cone vs centrality.
+
+  TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE  vs centrality.
+  TH3F *   fhConeSumPtUESubClustervsTrackCent ;        //!<! Cluster vs tracks Sum Pt in the cone minus UE vs centrality.
+  TH3F *   fhConeSumPtUESubClusterTrackFracCent;       //!<! Cluster / tracks Sum Pt in the cone  minus UE vs centrality.
+
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   

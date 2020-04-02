@@ -625,6 +625,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparseSigma[7]=1;
     upEdgesSigma[7]=0.5;
   }
+  if(fReadMC){
+    // save the generated pT for reco particles with finer binning
+    nbinsSparseSigma[0]=80;
+    nbinsSparseSigma[10]=80;
+  }
   if(!fFillTree)  fhSparseAnalysisSigma=new THnSparseF("fhSparseAnalysisSigma","fhSparseAnalysis;pt;deltamass;Lxy;nLxy;cosThetaPoint;normImpParXY;softPiITSrefit;PIDcase;LcMass;CosThetaStarSoftPion;ptsigmac;checkorigin;isRotated;channel",14,nbinsSparseSigma,lowEdgesSigma,upEdgesSigma);
   
   fCosPointDistrAll=new TH1F("fCosPointDistrAll","fCosPointDistrAll",200,-1.1,1.1);
@@ -673,10 +678,13 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //
   //  THnSparse to study the Sc peak in MC
   //
-  Int_t bin_ScPeakMC[6]        = {16,  400,  400,   800,   3,  11};
-  Double_t lowEdge_ScPeakMC[6] = { 0,2.250,2.250,-0.200,-0.5,-0.5};
-  Double_t upEdge_ScPeakMC[6]  = {16,2.650,2.650, 0.200, 2.5,10.5};
-  if(fStudyScPeakMC)  fhsparseMC_ScPeak = new THnSparseF("fhsparseMC_ScPeak","fhsparseMC_ScPeak;ptgen_Sc;recoMass_Sc;MCcalcMass_Sc;recoMinusMCcalc_mass_Sc;charge;PIDcase;",6,bin_ScPeakMC,lowEdge_ScPeakMC,upEdge_ScPeakMC);
+  Int_t bin_ScPeakMC[7]        = {16,  400,  400,   500,   3,  11, 350};
+  Double_t lowEdge_ScPeakMC[7] = { 0,2.250,2.440, 0.150,-0.5,-0.5,2.25};
+  Double_t upEdge_ScPeakMC[7]  = {16,2.650,2.480, 0.200, 2.5,10.5,2.32};
+  if(fStudyScPeakMC)  fhsparseMC_ScPeak = new THnSparseF("fhsparseMC_ScPeak","fhsparseMC_ScPeak;ptgen_Sc;recoMass_Sc;MCcalcMass_Sc;gausTerm_deltaM_Sc;charge;PIDcase;LCmass_reco;",7,bin_ScPeakMC,lowEdge_ScPeakMC,upEdge_ScPeakMC);
+  //
+  //  gausTerm_deltaM_Sc defined as     (massSc_reco-MCcalcMass_Sc+massSc_truefromMCparticle)-massLc_reco
+  //
 
 
   fOutput->Add(fDist12Signal);
@@ -1587,7 +1595,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     Double_t pcand[3];
     io3Prong->PxPyPz(pcand);
     Double_t rotStep=0.;
-    
+    //printf("###### Soft pion candidate charge: %d\n",tracksoft->Charge());
     
     pointSigma[12]=1;
     if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot     
@@ -1659,7 +1667,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
           //  Sc peak in MC
           //
           if(fStudyScPeakMC){
-            Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+            Double_t arr_ScPeakMC[7]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7],pointSigma[8]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
 
             // reconstructed Sc mass
             arr_ScPeakMC[1] = lsum.M();
@@ -1707,9 +1715,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 
             // difference between the reconstructed mass and the one computed from generated particles
             arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+            // sum with the MC true mass of Sc ---> in this way, we should retrieve the gaus term of the Sc peak
+            arr_ScPeakMC[3] += pSigmaC->M();
+            // difference with the reconstructed Lc mass ---> in this way, we should retrieve the gaus term of the deltaM peak (since the Lc is gaussian)
+            arr_ScPeakMC[3] -= pointSigma[8];
 
             // fill the sparse
-            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.6f, charge=%.3f, PIDcase=%.3f, recoMass_Lc=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],arr_ScPeakMC[6],pSigmaC->GetPdgCode());
+            printf("### true mass Sc from MC: %f\n",pSigmaC->M());
             fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
           }
 
@@ -1744,7 +1757,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
         //  Sc peak in MC
         //
         if(fStudyScPeakMC){
-          Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+          Double_t arr_ScPeakMC[7]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7],pointSigma[8]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
 
           // reconstructed Sc mass
           arr_ScPeakMC[1] = lsum.M();
@@ -1793,9 +1806,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 
           // difference between the reconstructed mass and the one computed from generated particles
           arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+          // sum with the MC true mass of Sc ---> in this way, we should retrieve the gaus term of the Sc peak
+          arr_ScPeakMC[3] += pSigmaC->M();
+          // difference with the reconstructed Lc mass ---> in this way, we should retrieve the gaus term of the deltaM peak (since the Lc is gaussian)
+          arr_ScPeakMC[3] -= pointSigma[8];
 
           // fill the sparse
-          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.6f, charge=%.3f, PIDcase=%.3f, recoMass_Lc=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],arr_ScPeakMC[6],pSigmaC->GetPdgCode());
+          printf("### true mass Sc from MC: %f\n",pSigmaC->M());
           fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
         }
 		  }
@@ -1857,7 +1875,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
           //  Sc peak in MC
           //
           if(fStudyScPeakMC){
-            Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+            Double_t arr_ScPeakMC[7]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7],pointSigma[8]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
 
             // reconstructed Sc mass
             arr_ScPeakMC[1] = lsum.M();
@@ -1905,9 +1923,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 
             // difference between the reconstructed mass and the one computed from generated particles
             arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+            // sum with the MC true mass of Sc ---> in this way, we should retrieve the gaus term of the Sc peak
+            arr_ScPeakMC[3] += pSigmaC->M();
+            // difference with the reconstructed Lc mass ---> in this way, we should retrieve the gaus term of the deltaM peak (since the Lc is gaussian)
+            arr_ScPeakMC[3] -= pointSigma[8];
 
             // fill the sparse
-            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+            printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.6f, charge=%.3f, PIDcase=%.3f, recoMass_Lc=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],arr_ScPeakMC[6],pSigmaC->GetPdgCode());
+            printf("### true mass Sc from MC: %f\n",pSigmaC->M());
             fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
           }
 	      }
@@ -1941,7 +1964,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
         //  Sc peak in MC
         //
         if(fStudyScPeakMC){
-          Double_t arr_ScPeakMC[6]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
+          Double_t arr_ScPeakMC[7]={ptsigmacMC,-1.,-1.,-1.,(Double_t) TMath::Abs( pSigmaC->Charge()/3. ),pointSigma[7],pointSigma[8]};  // beware: AliAODMCParticle::Charge() returns the charge in unit of |e|/3 (see AliAODMCParticle--->TParticlePDG)
 
           // reconstructed Sc mass
           arr_ScPeakMC[1] = lsum.M();
@@ -1989,9 +2012,14 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 
           // difference between the reconstructed mass and the one computed from generated particles
           arr_ScPeakMC[3] = arr_ScPeakMC[1]-arr_ScPeakMC[2];
+          // sum with the MC true mass of Sc ---> in this way, we should retrieve the gaus term of the Sc peak
+          arr_ScPeakMC[3] += pSigmaC->M();
+          // difference with the reconstructed Lc mass ---> in this way, we should retrieve the gaus term of the deltaM peak (since the Lc is gaussian)
+          arr_ScPeakMC[3] -= pointSigma[8];
 
           // fill the sparse
-          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.3f, charge=%.3f, PIDcase=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],pSigmaC->GetPdgCode());
+          printf("### before filling for Sc peak: ptSc_gen=%.3f, recoMass_Sc=%.3f, calcMCmass_Sc=%3f, diff=%.6f, charge=%.3f, PIDcase=%.3f, recoMass_Lc=%.3f, PDGcode=%d\n",arr_ScPeakMC[0],arr_ScPeakMC[1],arr_ScPeakMC[2],arr_ScPeakMC[3],arr_ScPeakMC[4],arr_ScPeakMC[5],arr_ScPeakMC[6],pSigmaC->GetPdgCode());
+          printf("### true mass Sc from MC: %f\n",pSigmaC->M());
           fhsparseMC_ScPeak->Fill(arr_ScPeakMC);
         }
 		  }
@@ -2310,6 +2338,7 @@ void AliAnalysisTaskSEXicTopKpi::FillDist12and23(AliAODRecoDecayHF3Prong *pr,Dou
   Double_t dist23=TMath::Sqrt((vertexESD->GetX()-pos[0])*(vertexESD->GetX()-pos[0])+(vertexESD->GetY()-pos[1])*(vertexESD->GetY()-pos[1])+(vertexESD->GetZ()-pos[2])*(vertexESD->GetZ()-pos[2]));
   pr->SetDist23toPrim(dist23);
   delete vertexESD; vertexESD=NULL;
+  delete twoTrackArray;
 
   for(Int_t j=0;j<3;j++){
     delete esdTrack[j];

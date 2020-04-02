@@ -106,7 +106,7 @@ AliAnalysisTaskNanoAODskimming* AliAnalysisTaskNanoAODskimming::AddTask(std::str
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Skimming_Normalisation", AliNanoFilterNormalisation::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), "NanoAODskimming"));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Skimming_Normalisation", AliNanoFilterNormalisation::Class(), AliAnalysisManager::kOutputContainer, "AliAOD.NanoAOD.root:NanoAODskimming");
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;

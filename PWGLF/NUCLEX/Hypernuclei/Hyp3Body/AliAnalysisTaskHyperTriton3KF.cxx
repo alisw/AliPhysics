@@ -26,6 +26,10 @@
 #include "Math/Vector3Dfwd.h"
 #include "Math/Vector3D.h"
 
+#include "AliDataFile.h"
+#include <TFile.h>
+#include <TSpline.h>
+
 #define HomogeneousField
 #include "KFParticle.h"
 #include "KFVertex.h"
@@ -43,7 +47,7 @@ struct HelperParticle {
   KFParticle   particle = KFParticle();
 };
 
-// constexpr float kHyperTritonMass{2.99131};
+constexpr float kHyperTritonMass{2.99131};
 
 constexpr float kDeuMass{1.87561};
 constexpr float kPMass{0.938272};
@@ -136,6 +140,9 @@ AliAnalysisTaskHyperTriton3KF::~AliAnalysisTaskHyperTriton3KF() {
     fTreeHyp3 = nullptr;
   }
 
+  if (fCosPAsplineFile)
+    delete fCosPAsplineFile;
+
 }
 
 void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
@@ -173,6 +180,11 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) {
     fTreeHyp3->Branch("SHyperTriton", &fGenHyp);
     fTreeHyp3->Branch("SGenRecMap", &fGenRecMap);
+  }
+
+  fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
+  if (fCosPAsplineFile) {
+    fCosPAspline = (TSpline3*)fCosPAsplineFile->Get("cutSpline");
   }
 
   PostData(1, fListHist);
@@ -310,7 +322,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       track->GetCovarianceXYZPxPyPz(cov);
       for (int iT{0}; iT < 3; ++iT) {
         if (candidate[iT]) {
-          helper.particle.Create(posmom,cov,track->Charge(),kMasses[iT]);
+          short chargeSwap = (fSwapSign && iT == 0) ? -1 : 1;
+          helper.particle.Create(posmom,cov,track->Charge() * chargeSwap, kMasses[iT]);
           helper.particle.Chi2() = track->GetTPCchi2();
           helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           helper.nSigmaTPC = nSigmasTPC[iT];
@@ -340,13 +353,13 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     for (const auto &p : helpers[kProton]) {
       if (deu.track == p.track || p.particle.GetQ() * deu.particle.GetQ() < 0)
         continue;
+
       KFParticle twoCandidate{oneCandidate};
       twoCandidate.AddDaughter(p.particle);
 
       recHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
       if (recHyp.chi2_deuprot > fMaxKFchi2[0])
         continue;
-
       for (const auto &pi : helpers[kPion]) {
         if (p.track == pi.track || deu.track == pi.track || pi.particle.GetQ() * p.particle.GetQ() > 0) 
           continue;
@@ -355,20 +368,37 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.chi2_3prongs = hyperTriton.GetChi2() / hyperTriton.GetNDF();
         if (recHyp.chi2_3prongs > fMaxKFchi2[1])
           continue;
+        double mass = hyperTriton.GetMass();
+        if (mass < fMassWindow[0] || mass > fMassWindow[1])
+          continue;
         ROOT::Math::XYZVectorF decayVtx{hyperTriton.X() - prodVertex.X(), hyperTriton.Y() - prodVertex.Y(), hyperTriton.Z() - prodVertex.Z()};
         ROOT::Math::XYZVectorF mom{hyperTriton.Px(), hyperTriton.Py(), hyperTriton.Pz()};
-        recHyp.cosPA = mom.Dot(decayVtx) / std::sqrt(decayVtx.Mag2() * mom.Mag2());
-        double mass = hyperTriton.GetMass();
+
+        const float totalMom = std::sqrt(mom.Mag2());
+        const float len = std::sqrt(decayVtx.Mag2());
+        recHyp.cosPA = mom.Dot(decayVtx) / (totalMom * len);
+        const float cosPA = fUseAbsCosPAcut ? std::abs(recHyp.cosPA) : recHyp.cosPA;
+
         hyperTriton.SetProductionVertex(prodVertex);
         recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
         if (recHyp.chi2_topology > fMaxKFchi2[2])
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.px = hyperTriton.GetPx();
-        recHyp.py = hyperTriton.GetPy();
-        recHyp.pz = hyperTriton.GetPz();
+        recHyp.px = mom.x();
+        recHyp.py = mom.y();
+        recHyp.pz = mom.z();
         recHyp.m = mass;
+
+        const float ct = recHyp.l * kHyperTritonMass / totalMom;
+        if (ct < fCtRange[0] || ct > fCtRange[1])
+          continue;
+        if (fCosPAspline) {
+          if (cosPA < fCosPAspline->Eval(ct))
+            continue;
+        } else if (cosPA < fMinCosPA) {
+          continue;
+        }
 
         float dca[2], bCov[3];
         deu.track->GetImpactParameters(dca, bCov);

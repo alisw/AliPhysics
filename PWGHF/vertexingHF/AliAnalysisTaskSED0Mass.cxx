@@ -2852,9 +2852,9 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     cstname="cstat1";
   }
 
-  TCanvas *cMass=new TCanvas(cvname,cvname);
-  cMass->cd();
-  ((TH1F*)fOutputMass->FindObject("histMass_3"))->Draw();
+  //TCanvas *cMass=new TCanvas(cvname,cvname);
+  //cMass->cd();
+  //((TH1F*)fOutputMass->FindObject("histMass_3"))->Draw();
 
   TCanvas* cStat=new TCanvas(cstname,Form("Stat%s",fArray ? "LS" : "D0"));
   cStat->cd();

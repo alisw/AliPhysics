@@ -98,12 +98,17 @@ fITSncut(3),
 fAssTPCnCut(60),
 fTPCnCut(100),
 fAssITSrefitCut(kTRUE),
-fUseTender(kFALSE),
 fSigmaTOFcut(3.),
-fSigmaTPCcut(-1.),
+fSigmaTPCcutLowPt(-1.),
+fSigmaTPCcutHighPt(-1.5),
+fSigmTPCcutExcElec(3.5),
 fDcaXYcut(1.),
 fDcaZcut(2.),
 fIMcut(0.1),
+fEtaCut(0.7),
+fMinEoPcut(0.9),
+fMaxEoPcut(1.3),
+fM20cut(0.35),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -148,7 +153,6 @@ fptJetPE(0),
 fptJetHFE(0),
 fptRecPE(0),
 fptTruePE(0),
-fptWrongPE(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -224,18 +228,24 @@ fTreeObservableTagging(0)
     for(Int_t i=0;i<5;i++){
         fInvmassLS[i] = NULL;
         fInvmassULS[i] = NULL;
-        fRecPEJetPt[i] = NULL;
-        fTotPEJetPt[i] = NULL;
-        fRecPEAng[i] = NULL;
-        fTotPEAng[i] = NULL;
         for(Int_t j=0;j<18;j++){
             fnTPCSigma[i][j] = NULL;
         }
     }
     
-    for(Int_t i=0;i<6;i++){
-        fRecPEDisp[i] = NULL;
-        fTotPEDisp[i] = NULL;
+    for(Int_t i=0;i<5;i++){
+        for(Int_t j=0;j<5;j++){
+            fRecPEAng[i][j] = NULL;
+            fTotPEAng[i][j] = NULL;
+            fULSptAng[i][j] = NULL;
+            fLSptAng[i][j] = NULL;
+        }
+        for(Int_t j=0;j<6;j++){
+            fRecPEDisp[i][j] = NULL;
+            fTotPEDisp[i][j] = NULL;
+            fULSptDisp[i][j] = NULL;
+            fLSptDisp[i][j] = NULL;
+        }
     }
     
     
@@ -284,12 +294,17 @@ fITSncut(3),
 fAssTPCnCut(60),
 fTPCnCut(100),
 fAssITSrefitCut(kTRUE),
-fUseTender(kFALSE),
 fSigmaTOFcut(3.),
-fSigmaTPCcut(-1.),
+fSigmaTPCcutLowPt(-1.),
+fSigmaTPCcutHighPt(-1.5),
+fSigmTPCcutExcElec(3.5),
 fDcaXYcut(1.),
 fDcaZcut(2.),
 fIMcut(0.1),
+fEtaCut(0.7),
+fMinEoPcut(0.9),
+fMaxEoPcut(1.3),
+fM20cut(0.35),
 fNeventV0(0),
 fNeventT0(0),
 fh2ResponseUW(0x0),
@@ -334,7 +349,6 @@ fptJetPE(0),
 fptJetHFE(0),
 fptRecPE(0),
 fptTruePE(0),
-fptWrongPE(0),
 fPtTrack(0),
 fPhiTrack(0x0),
 fEtaTrack(0x0),
@@ -410,20 +424,25 @@ fTreeObservableTagging(0)
     for(Int_t i=0;i<5;i++){
         fInvmassLS[i] = NULL;
         fInvmassULS[i] = NULL;
-        fRecPEJetPt[i] = NULL;
-        fTotPEJetPt[i] = NULL;
-        fRecPEAng[i] = NULL;
-        fTotPEAng[i] = NULL;
         for(Int_t j=0;j<18;j++){
             fnTPCSigma[i][j] = NULL;
         }
     }
     
-    for(Int_t i=0;i<6;i++){
-        fRecPEDisp[i] = NULL;
-        fTotPEDisp[i] = NULL;
+    for(Int_t i=0;i<5;i++){
+        for(Int_t j=0;j<5;j++){
+            fRecPEAng[i][j] = NULL;
+            fTotPEAng[i][j] = NULL;
+            fULSptAng[i][j] = NULL;
+            fLSptAng[i][j] = NULL;
+        }
+        for(Int_t j=0;j<6;j++){
+            fRecPEDisp[i][j] = NULL;
+            fTotPEDisp[i][j] = NULL;
+            fULSptDisp[i][j] = NULL;
+            fLSptDisp[i][j] = NULL;
+        }
     }
-    
     
     SetMakeGeneralHistograms(kTRUE);
     DefineOutput(1, TList::Class());
@@ -448,7 +467,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     Double_t ptRange[34] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
         1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 26., 30.,
+        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
         35., 40., 45., 50.};
     
     int nbin = 59;
@@ -595,34 +614,37 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fOutput->Add(fGenPePt);
     
     for(Int_t i=0;i<5;i++){
-        fRecPEJetPt[i] = new TH1F(Form("fRecPEJetPt%d",i), Form("fRecPEJetPt%d",i), 33,ptRange);
-        fOutput->Add(fRecPEJetPt[i]);
+        
+        for(Int_t j=0;j<5;j++){
+            fRecPEAng[i][j] = new TH1F(Form("fRecPEAng%d%d",i,j), Form("fRecPEAng%d%d",i,j), 33,ptRange);
+            fOutput->Add(fRecPEAng[i][j]);
+
+            fTotPEAng[i][j] = new TH1F(Form("fTotPEAng%d%d",i,j), Form("fTotPEAng%d%d",i,j), 33,ptRange);
+            fOutput->Add(fTotPEAng[i][j]);
+            
+            fULSptAng[i][j] = new TH1F(Form("fULSptAng%d%d",i,j), Form("fULSptAng%d%d",i,j), 33,ptRange);
+            fOutput->Add(fULSptAng[i][j]);
+
+            fLSptAng[i][j] = new TH1F(Form("fLSptAng%d%d",i,j), Form("fLSptAng%d%d",i,j), 33,ptRange);
+            fOutput->Add(fLSptAng[i][j]);
+        }
+        
+        for(Int_t j=0;j<6;j++){
+            fRecPEDisp[i][j] = new TH1F(Form("fRecPEDisp%d%d",i,j), Form("fRecPEDisp%d%d",i,j), 33,ptRange);
+            fOutput->Add(fRecPEDisp[i][j]);
+            
+            fTotPEDisp[i][j] = new TH1F(Form("fTotPEDisp%d%d",i,j), Form("fTotPEDisp%d%d",i,j), 33,ptRange);
+            fOutput->Add(fTotPEDisp[i][j]);
+            
+            fULSptDisp[i][j] = new TH1F(Form("fULSptDisp%d%d",i,j), Form("fULSptDisp%d%d",i,j), 33,ptRange);
+            fOutput->Add(fULSptDisp[i][j]);
+            
+            fLSptDisp[i][j] = new TH1F(Form("fLSptDisp%d%d",i,j), Form("fLSptDisp%d%d",i,j), 33,ptRange);
+            fOutput->Add(fLSptDisp[i][j]);
+        }
     }
     
-    for(Int_t i=0;i<5;i++){
-        fTotPEJetPt[i] = new TH1F(Form("fTotPEJetPt%d",i), Form("fTotPEJetPt%d",i), 33,ptRange);
-        fOutput->Add(fTotPEJetPt[i]);
-    }
-    
-    for(Int_t i=0;i<5;i++){
-        fRecPEAng[i] = new TH1F(Form("fRecPEAng%d",i), Form("fRecPEAng%d",i), 33,ptRange);
-        fOutput->Add(fRecPEAng[i]);
-    }
 
-    for(Int_t i=0;i<5;i++){
-        fTotPEAng[i] = new TH1F(Form("fTotPEAng%d",i), Form("fTotPEAng%d",i), 33,ptRange);
-        fOutput->Add(fTotPEAng[i]);
-    }
-
-    for(Int_t i=0;i<6;i++){
-        fRecPEDisp[i] = new TH1F(Form("fRecPEDisp%d",i), Form("fRecPEDisp%d",i), 33,ptRange);
-        fOutput->Add(fRecPEDisp[i]);
-    }
-
-    for(Int_t i=0;i<6;i++){
-        fTotPEDisp[i] = new TH1F(Form("fTotPEDisp%d",i), Form("fTotPEDisp%d",i), 33,ptRange);
-        fOutput->Add(fTotPEDisp[i]);
-    }
     
     fPtP=new TH2F("fPtP", "fPtP", 33,ptRange,33,ptRange);
     fOutput->Add(fPtP);
@@ -666,9 +688,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
             fOutput->Add(fptTrueHFEeffEMCalwJetPt[i][j]);
         }
     }
-    
-    fptWrongPE= new TH1F("fptWrongPE", "fptWrongPE", 33,ptRange);
-    fOutput->Add(fptWrongPE);
     
     fPtTrack= new TH1F("fPtTrack", "fPtTrack", 100, 0, 200);
     fOutput->Add(fPtTrack);
@@ -1338,7 +1357,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
     
     Double_t ptRange[34] = {0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4,
         1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 5.,
-        6., 8., 10., 12., 14., 16., 19., 22., 26., 30.,
+        6., 8., 10., 12., 14., 16., 19., 22., 25., 30.,
         35., 40., 45., 50.};
     Double_t ptJetRange[6] = {5,20,40,60,80,120};
     
@@ -1404,11 +1423,11 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             }
             
             
-            if(TMath::Abs(fTPCnSigma)<3.5) hasElecCand = kTRUE;
+            if(TMath::Abs(fTPCnSigma)<fSigmTPCcutExcElec) hasElecCand = kTRUE;
             
             if (TMath::Abs(fTOFnSigma)<fSigmaTOFcut) fPtP->Fill(pt,p);
             
-            if (fTPCnSigma>fSigmaTPCcut  && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt >= 0.5 && pt < 4){
+            if (fTPCnSigma>fSigmaTPCcutLowPt  && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt >= 0.5 && pt < 4){
                 fPhiRecElecTPC->Fill(pt,phi);
                 fEtaRecElecTPC->Fill(pt,eta);
                 fEtaPhiRecElecTPC->Fill(phi,eta);
@@ -1416,7 +1435,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 nIE++;
                 pte=pt;
                 pe=p;
-                nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
+                nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,0,1);
                 if (nPairs>0) nPE++;
             }
             
@@ -1458,9 +1477,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             fnEovPelecNoTPCcut->Fill(pt,EovP);
             
             
-            if (fTPCnSigma>-1.5  && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
+            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3) fnEovPelecTPCcut->Fill(pt,EovP);
             
-            if (fTPCnSigma>-1.5  && fTPCnSigma<3 && m20 > 0.01 && m20 < 0.35){
+            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut){
                 fnEovPelecTPCEMCalcut->Fill(pt,EovP);
                 
                 for (Int_t l=0;l<5;l++){// pt jet range
@@ -1468,13 +1487,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 }
             }
             
-            if (fTPCnSigma < -3.5) fnEovPbackg->Fill(pt,EovP);
+            if (TMath::Abs(fTPCnSigma) > fSigmTPCcutExcElec) fnEovPbackg->Fill(pt,EovP);
             fnClsE->Fill(pt,clsE);
             fnM20->Fill(pt,m20);
             fnM02->Fill(pt,m02);
             fnClsTime->Fill(pt,clsTime);
             
-            if (fTPCnSigma>-1.5  && fTPCnSigma<3 && EovP>0.9 && EovP<1.3 && m20 > 0.01 && m20 < 0.35 && pt >= 4 && pt < 50){
+            if (fTPCnSigma>fSigmaTPCcutHighPt  && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut && pt >= 4 && pt < 25){
                 fPhiRecElecEMCal->Fill(pt,phi);
                 fEtaRecElecEMCal->Fill(pt,eta);
                 fEtaPhiRecElecEMCal->Fill(phi,eta);
@@ -1482,7 +1501,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                 nIE++;
                 pte=pt;
                 pe=p;
-                nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
+                nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,0,1);
                 if (nPairs>0) nPE++;
             }
         }//tagged track
@@ -1508,7 +1527,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nHFE=0, nPE=0, nPairs=0, iDecay = 0, nDmeson = 0, nBmeson = 0, nElecFromB = 0, nElecFromD = 0, nElecFromDfromB = 0, nQuark = 0, nGluon = 0, nBeauty = 0, nCharm = 0;
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1., eta = -99., phi = -99., pte=0.;
-
+    
     Double_t ptJetRange[6] = {5.,20.,40.,60.,80.,120.};
     Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
     Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
@@ -1603,7 +1622,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             
                             if (((motherPDG/100)%10) == 4) nDmeson++;
                             if (((motherPDG/100)%10) == 5) nBmeson++;
-
+                            
                             
                             Int_t idSecondMother = mother->GetMother();
                             if (idSecondMother>0){
@@ -1617,7 +1636,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                                 
                                 if (((secondMotherPDG/100)%10) == 4) nDmeson++;
                                 if (((secondMotherPDG/100)%10) == 5) nBmeson++;
-
+                                
                                 
                                 Int_t idThirdMother = secondMother->GetMother();
                                 if (idThirdMother>0){
@@ -1636,7 +1655,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                                     
                                     if (((thirdMotherPDG/100)%10) == 4) nDmeson++;
                                     if (((thirdMotherPDG/100)%10) == 5) nBmeson++;
-
+                                    
                                     
                                     Int_t idForthMother = thirdMother->GetMother();
                                     if (idForthMother>0){
@@ -1653,7 +1672,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                                         
                                         if (thirdMotherPDG == 4 || forthMotherPDG == 4) nCharm++;
                                         if (thirdMotherPDG == 5 || forthMotherPDG == 5) nBeauty++;
-                                            
+                                        
                                     }
                                 }//3rd mother
                             }//2nd mother
@@ -1683,22 +1702,22 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             fptTrueHFEeffTPCTOF[1]->Fill(pt);
                             fptTrueHFEeffEMCal[1]->Fill(pt);
                             
-                            if (fTPCnSigma>fSigmaTPCcut && fTPCnSigma<3)
+                            if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3)
                                 fptTrueHFEeffTPCTOF[2]->Fill(pt);
                             
                             if (TMath::Abs(fTOFnSigma)<fSigmaTOFcut)
                                 fptTrueHFEeffTPCTOF[3]->Fill(pt);
                             
-                            if (fTPCnSigma>fSigmaTPCcut && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut)
+                            if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut)
                                 fptTrueHFEeffTPCTOF[4]->Fill(pt);
                             
-                            if (fTPCnSigma>-1.5 && fTPCnSigma<3 && m20 > 0.01 && m20 < 0.35)
+                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && m20 > 0.01 && m20 < fM20cut)
                                 fptTrueHFEeffEMCal[2]->Fill(pt);
                             
-                            if (fTPCnSigma>-1.5 && fTPCnSigma<3 && EovP>0.9 && EovP<1.3)
+                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut)
                                 fptTrueHFEeffEMCal[3]->Fill(pt);
                             
-                            if (fTPCnSigma>-1.5 && fTPCnSigma<3 && EovP>0.9 && EovP<1.3 && m20 > 0.01 && m20 < 0.35){
+                            if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut && m20 > 0.01 && m20 < fM20cut){
                                 
                                 fptTrueHFEeffEMCal[4]->Fill(pt);
                                 
@@ -1721,62 +1740,58 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                         
                         
                         // TPC-TOF
-                        if (fTPCnSigma>fSigmaTPCcut && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt >= 0.5 && pt < 4){
-                            nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
-                            if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt);
-                            if (nPairs>0 && iDecay==0) fptWrongPE->Fill(pt);
-                            if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt);
+                        if (fTPCnSigma>fSigmaTPCcutLowPt && fTPCnSigma<3 && TMath::Abs(fTOFnSigma)<fSigmaTOFcut && pt >= 0.5 && pt < 4){
+                            nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
+                            if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
+                            if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
                             
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEJetPt[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEJetPt[l]->Fill(pt,MCweight);
-                                }
-                            }
-                            
-                            for (Int_t l=0;l<5;l++){// angularity
-                                if (ang>=angRange[l] && ang<angRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEAng[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l]->Fill(pt,MCweight);
-                                }
-                            }
-
-                            for (Int_t l=0;l<6;l++){// dispersion
-                                if (disp>=dispRange[l] && disp<dispRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEDisp[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l]->Fill(pt,MCweight);
+                                    
+                                    for (Int_t m=0;m<5;m++){// angularity
+                                        if (ang>=angRange[m] && ang<angRange[m+1]){
+                                            if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
+                                            if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
+                                        }
+                                    }
+                                    
+                                    for (Int_t m=0;m<6;m++){// dispersion
+                                        if (disp>=dispRange[m] && disp<dispRange[m+1]){
+                                            if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
+                                            if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
+                                        }
+                                    }
                                 }
                             }
                         }// PID cuts
                         
                         //EMCal
-                        if (fTPCnSigma>-1.5 && fTPCnSigma<3 && EovP>0.9 && EovP<1.3 && m20 > 0.01 && m20 < 0.35 && pt >= 4 && pt < 50 ){
-                            nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
-                            if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt);
-                            if (nPairs>0 && iDecay==0) fptWrongPE->Fill(pt);
-                            if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt);
+                        if (fTPCnSigma>fSigmaTPCcutHighPt && fTPCnSigma<3 && EovP>fMinEoPcut && EovP<fMaxEoPcut &&
+                            m20 > 0.01 && m20 < fM20cut && pt >= 4 && pt < 25 ){
+                            nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother,iDecay,MCweight);
+                            if (nPairs>0 && iDecay>0 && iDecay<7) fptRecPE->Fill(pt,MCweight);
+                            if (iDecay>0 && iDecay<7) fptTruePE->Fill(pt,MCweight);
                             
                             for (Int_t l=0;l<5;l++){// pt jet range
                                 if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEJetPt[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEJetPt[l]->Fill(pt,MCweight);
-                                }
-                            }
-                            
-                            for (Int_t l=0;l<5;l++){// angularity
-                                if (ang>=angRange[l] && ang<angRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEAng[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l]->Fill(pt,MCweight);
-                                }
-                            }
-                            
-                            for (Int_t l=0;l<6;l++){// dispersion
-                                if (disp>=dispRange[l] && disp<dispRange[l+1]){
-                                    if (iDecay>0 && iDecay<7) fTotPEDisp[l]->Fill(pt,MCweight);
-                                    if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l]->Fill(pt,MCweight);
+                                    
+                                    for (Int_t m=0;m<5;m++){// angularity
+                                        if (ang>=angRange[m] && ang<angRange[m+1]){
+                                            if (iDecay>0 && iDecay<7) fTotPEAng[l][m]->Fill(pt,MCweight);
+                                            if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEAng[l][m]->Fill(pt,MCweight);
+                                        }
+                                    }
+                                    
+                                    for (Int_t m=0;m<6;m++){// dispersion
+                                        if (disp>=dispRange[m] && disp<dispRange[m+1]){
+                                            if (iDecay>0 && iDecay<7) fTotPEDisp[l][m]->Fill(pt,MCweight);
+                                            if (nPairs>0 && iDecay>0 && iDecay<7) fRecPEDisp[l][m]->Fill(pt,MCweight);
+                                        }
+                                    }
                                 }
                             }
                         }// PID cuts
+                        
                     }
                 }
             }
@@ -1805,7 +1820,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
         fAngBeauty->Fill(jet->Pt(),GetJetAngularity(jet,0));
         fDispBeauty->Fill(jet->Pt(),GetJetpTD(jet,0));
     }
-
+    
     if (nDmeson > 1){
         fAngD->Fill(jet->Pt(),GetJetAngularity(jet,0));
         fDispD->Fill(jet->Pt(),GetJetpTD(jet,0));
@@ -1842,7 +1857,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 }
 
 //_________________________________________
-Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[])
+Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODTrack *track,const AliVVertex *pVtx,
+                                                       Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight)
 {
     //Get number of ULS and LS pairs per event
     
@@ -1854,7 +1870,12 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
     Int_t sub = -1;
     
     Double_t ptJetRange[6] = {5,20,40,60,80,120};
+    Double_t angRange[6] = {0.,0.02,0.04,0.06,0.08,0.12};
+    Double_t dispRange[7] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+    
     Double_t jetPt = jet->Pt();
+    Double_t  ang = GetJetAngularity(jet,0);
+    Double_t disp = GetJetpTD(jet,0);
     
     for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
         
@@ -1900,7 +1921,7 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(trackAsso, AliPID::kElectron);
         fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
         
-        if(TMath::Abs(fTPCnSigmaAsso)>3.5) continue;
+        if(TMath::Abs(fTPCnSigmaAsso)>3.) continue;
         
         // invariant mass
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
@@ -1935,15 +1956,37 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODT
         
         if(mass<fIMcut && fFlagULS){
             nULSpairs++;
-            fAngULS->Fill(jet->Pt(),GetJetAngularity(jet,0));
-            fDispULS->Fill(jet->Pt(),GetJetpTD(jet,0));
+            fAngULS->Fill(jetPt,ang);
+            fDispULS->Fill(jetPt,disp);
         }
         
         if(mass<fIMcut && fFlagLS){
             nLSpairs++;
-            fAngLS->Fill(jet->Pt(),GetJetAngularity(jet,0));
-            fDispLS->Fill(jet->Pt(),GetJetpTD(jet,0));
+            fAngLS->Fill(jetPt,ang);
+            fDispLS->Fill(jetPt,disp);
         }
+        
+        
+        for (Int_t l=0;l<5;l++){// pt jet range
+            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
+                
+                for (Int_t m=0;m<5;m++){// angularity
+                    if (ang>=angRange[m] && ang<angRange[m+1] && decay>0 && decay<7 && mass<fIMcut){
+                        if (fFlagULS) fULSptAng[l][m]->Fill(pt,weight);
+                        if (fFlagLS) fLSptAng[l][m]->Fill(pt,weight);
+                    }
+                }
+                
+                for (Int_t m=0;m<6;m++){// dispersion
+                    if (disp>=dispRange[m] && disp<dispRange[m+1]  && decay>0 && decay<7 && mass<fIMcut){
+                        if (fFlagULS) fULSptDisp[l][m]->Fill(pt,weight);
+                        if (fFlagLS) fLSptDisp[l][m]->Fill(pt,weight);
+                    }
+                }
+            }
+        }
+        
+        
         
     }//track loop
     
@@ -2641,7 +2684,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::InclElecTrackCuts(const AliVVertex *pViet
     // track cuts for inclusive electrons
     
     if(!ietrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE;
-    if(TMath::Abs(ietrack->Eta())>0.7) return kFALSE;
+    if(TMath::Abs(ietrack->Eta())>fEtaCut) return kFALSE;
     if(ietrack->GetTPCNcls() < fTPCnCut) return kFALSE;
     if (ietrack->GetITSNcls() < fITSncut) return kFALSE;
     if(!ietrack->IsOn(AliAODTrack::kITSrefit)) return kFALSE;

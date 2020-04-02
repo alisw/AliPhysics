@@ -51,6 +51,7 @@ AliForwardTaskValidation::AliForwardTaskValidation()
     fFMDV0C_post(0),
     fOutliers(0),
     fCentrality(0),      
+    fCentrality_before(0),      
     fVertex(0),       
     centralDist(),
     refDist(),
@@ -85,6 +86,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
     fFMDV0C(0),
     fFMDV0C_post(0),
     fOutliers(0),
+    fCentrality_before(0),      
     fCentrality(0),      
     fVertex(0),   
     centralDist(),
@@ -121,7 +123,7 @@ AliForwardTaskValidation::AliForwardTaskValidation(const char *name)
   // Enable mulivertex pileup cuts
   // fEventCuts.SetCentralityEstimators("V0A","CL0");
   fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
-  fEventCuts.fPileUpCutMV = true;
+  //fEventCuts.fPileUpCutMV = true;
 }
 
 Bool_t AliForwardTaskValidation::AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType) {
@@ -256,7 +258,7 @@ outlist->Add(this->fQA_event_discard_flow_MC);
 }
 
 void AliForwardTaskValidation::UserCreateOutputObjects() {
-  fEventCuts.SetCentralityEstimators((std::string)this->fSettings.centrality_estimator,"CL0");
+  //fEventCuts.SetCentralityEstimators((std::string)this->fSettings.centrality_estimator,"CL0");
 
 
   // Stop right here if there are no Validators to work with
@@ -299,9 +301,11 @@ void AliForwardTaskValidation::UserCreateOutputObjects() {
   				1000, 0, 1000, 1000, 0, 1000);
     this->fOutputList->Add(this->fFMDV0C_post);
 
+  fCentrality_before = new TH1D("centrality_before","centrality_before",100,0,100);;
   fCentrality = new TH1D("centrality","centrality",100,0,100);;
   fVertex = new TH1D("vertex","vertex",100,-20,20);
   this->fOutputList->Add(this->fCentrality);
+  this->fOutputList->Add(this->fCentrality_before);
   this->fOutputList->Add(this->fVertex);
 
   // Slot 0 is reserved; 1 needs to be called here to get at least empty histograms
@@ -351,13 +355,16 @@ void AliForwardTaskValidation::UserExec(Option_t *)
         if (!fSettings.esd) this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); 
         break;
       case EventValidation::kHasFMD:
-        if (!fSettings.esd) this->fIsValidEvent = this->HasFMD(); 
+        if (!fSettings.esd) {
+          this->fIsValidEvent = this->HasFMD(); 
+          fCentrality_before->Fill(fUtil.GetCentrality(fSettings.centrality_estimator));
+        }
         break;
       case EventValidation::kHasEntriesFMD:
         if (fSettings.use_primaries_fwd & fSettings.use_primaries_fwdref) continue;
         else this->fIsValidEvent = this->HasEntriesFMD(); break;
       case EventValidation::kHasValidFMD:
-        this->fIsValidEvent = this->HasValidFMD(); break;
+        this->fIsValidEvent = kTRUE;//this->HasValidFMD(); break;
       case EventValidation::kPassesFMD_V0CorrelatioCut:
         this->fIsValidEvent = this->PassesFMDV0CorrelatioCut(true); break;
       }
@@ -369,10 +376,13 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       }
     }
     if(this->fIsValidEvent){
-      if (fUtil.pPb_Run(fSettings.runnumber))
-        fCentrality->Fill(fUtil.GetCentrality("V0A"));
-      else
+      if (fUtil.pPb_Run(fSettings.runnumber)){
+        if (fUtil.GetCentrality(fSettings.centrality_estimator) > 0.) fCentrality->Fill(fUtil.GetCentrality(fSettings.centrality_estimator));
+        else this->fIsValidEvent=kFALSE;
+      }
+      else{
         fCentrality->Fill(fUtil.GetCentrality("V0M"));       
+      }
       fVertex->Fill(fUtil.GetZ());
     }
   }
@@ -478,29 +488,29 @@ Bool_t AliForwardTaskValidation::PassesFMDV0CorrelatioCut(Bool_t fill_qa) {
     Float_t nV0A_hits =
       std::accumulate(v0hits.begin(), v0hits.end(), 0,
           [](Float_t a, AliForwardTaskValidation::Track t) {
-            return a + ((2.8 < t.eta && t.eta < 5.1) ? t.weight : 0.0f);
+            return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
           });
     Float_t nFMD_fwd_hits =
       std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
           [](Float_t a, AliForwardTaskValidation::Track t) {
-            return a + ((1.7 < t.eta && t.eta < 3.68) ? t.weight : 0.0f);
+            return a + ((2.8 < t.eta && t.eta < 5.03) ? t.weight : 0.0f);
           });
     Float_t nV0C_hits =
       std::accumulate(v0hits.begin(), v0hits.end(), 0,
           [](Float_t a, AliForwardTaskValidation::Track t) {
-            return a + ((-3.7 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
+            return a + ((-3.68 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
           });
     Float_t nFMD_bwd_hits =
       std::accumulate(fmdhits.begin(), fmdhits.end(), 0,
           [](Float_t a, AliForwardTaskValidation::Track t) {
-            return a + ((-3.4 < t.eta && t.eta < 1.7) ? t.weight : 0.0f);
+            return a + ((-3.68 < t.eta && t.eta < -1.7) ? t.weight : 0.0f);
           });
     this->fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
     this->fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
 
-    if (nV0A_hits < 1.5*(nFMD_fwd_hits)-100) return false;
-    if (nV0C_hits < 2.3*(nFMD_bwd_hits)-100) return false;
+    if (nV0A_hits < 2.3*(nFMD_fwd_hits)-150) return false;
+    if (nV0C_hits < 2.73*(nFMD_bwd_hits)-200) return false;
 
     this->fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
     this->fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
