@@ -8,6 +8,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisTaskTrackMixer.h"
 class THistManager;
 class AliPIDResponse;
 class AliESDtrackCuts;
@@ -22,6 +23,8 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
   void SetFillQAPlot(Bool_t input) { fFillQAPlot = input; }
+  void SetMixerTask(AliAnalysisTaskTrackMixer* mixerTask) { fMixingPool = mixerTask; }
+  void SetUseBuiltinMixer(Bool_t builtinmixer) { fUseBuiltinMixer = builtinmixer; }
   void SetMixing(Bool_t setmixing) { fSetMixing = setmixing; }
   void SetnMix(Int_t nMix) { fnMix = nMix; }
   void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
@@ -130,6 +133,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
 
   AliESDtrackCuts* fTrackCuts;   //!
   AliPIDResponse* fPIDResponse;  //!
+  AliAnalysisTaskTrackMixer* fMixingPool; //!
 
   AliVEvent* fEvt;             //!
   AliMCEvent* fMCEvent;        //!
@@ -141,6 +145,7 @@ class AliAnalysisTaskSigma1385PM : public AliAnalysisTaskSE {
   Bool_t fIsAOD;              //!
   Bool_t fIsNano;             //!
   Bool_t fSetMixing;          //
+  Bool_t fUseBuiltinMixer;    //
   Bool_t fFillQAPlot;         //
   Bool_t fIsMC;               //
   Bool_t fIsPrimaryMC;        //
