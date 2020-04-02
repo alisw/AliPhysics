@@ -1507,7 +1507,7 @@ Bool_t AliATDJetCorrDev::InEMCalAcceptance(AliVParticle *vpart){
 //}
 //    
 //_______________________________________________________________________________
-fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(const AliEmcalJet* jet)
+fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(AliEmcalJet* jet)
 {
     // reclustering a fastjet jet with CA algorithm
     // ref(arxiv/1111/6097, pg. 13, section 3.3: fastjet::ClusterSequence)
@@ -1574,7 +1574,7 @@ void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy, boo
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::ReDeCluster(const AliEmcalJet* jet, bool theMCInfo)
+void AliATDJetCorrDev::ReDeCluster(AliEmcalJet* jet, bool theMCInfo)
 {
     // Pseudo code:
     //  1. Recluster the jet

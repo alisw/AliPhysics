@@ -196,11 +196,11 @@ private:
    THnSparse* fResponseMatrix;      //!
 
    // jet stuff: functions for reclustering/deculstering
-   fastjet::ClusterSequence* Recluster(const AliEmcalJet* jet); // recluster with CA with own defined function
+   fastjet::ClusterSequence* Recluster(AliEmcalJet* jet); // recluster with CA with own defined function
    //fastjet::PseudoJet ReclusteredJet(const AliEmcalJet* jet);//recluster with CA using fastjet::contirb::Recluster package. importing contrib package doesn't work
-   void DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet);//decluster the jet, access the soft subjet's properties to fill the Lund Plane
-   void FillLundPlane(Double_t sj_deltaR, Double_t sj_energy);
-   void ReDeCluster(const AliEmcalJet* jet, bool theMCInfo);
+   void DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet, bool theMCInfo);//decluster the jet, access the soft subjet's properties to fill the Lund Plane
+   void FillLundPlane(Double_t sj_deltaR, Double_t sj_energy, bool theMCInfo);
+   void ReDeCluster(AliEmcalJet* jet, bool theMCInfo);
    Double_t fJetRadius;             //jet radius for reclustering. Should be assigned in AddTask from its parameter.
    Bool_t fRecluster;
    //reclustering histograms and variables
