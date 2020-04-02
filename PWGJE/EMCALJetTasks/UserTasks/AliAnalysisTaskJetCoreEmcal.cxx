@@ -244,7 +244,7 @@ void AliAnalysisTaskJetCoreEmcal::UserCreateOutputObjects()
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive); // Post data for ALL output slots > 0 here.
-  if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree)    PostData(3, fTreeEmbRecoil); // Post data for ALL output slots > 0 here.
+  if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil); // Post data for ALL output slots > 0 here.
 }
 
 /*
@@ -706,7 +706,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
     }
 	}
 
-	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree) {
+	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree) {
 		const char* nameEmbRecoil= GetOutputSlot(3)->GetContainer()->GetName();
 		fTreeEmbRecoil = new TTree(nameEmbRecoil, nameEmbRecoil);
     if(fMoreTreeVars) {
@@ -742,7 +742,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	PostData(1, fOutput);
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive);
 
-  if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree)    PostData(3, fTreeEmbRecoil);
+  if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil);
 }
 
 /**
