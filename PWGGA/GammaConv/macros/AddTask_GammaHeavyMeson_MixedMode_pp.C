@@ -415,6 +415,12 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   } else if (trainConfig == 904){ // for eta prime
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // INT7
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // PHI7
+  } else if (trainConfig == 905){ // new for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // PHI7
+  } else if (trainConfig == 906){ // new for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // PHI7
 
 
   // *********************************************************************************************************
@@ -424,7 +430,14 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //INT7
     cuts.AddCutPCMCalo("0008e113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG2
     cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG1
-
+  } else if (trainConfig == 1001){ // EMCAL + DCal clusters for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG1
+  } else if (trainConfig == 1002){ // EMCAL + DCal clusters for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG1
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
