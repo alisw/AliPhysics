@@ -43,9 +43,12 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
 
+    v0Cuts->SetCutInvMass(0.006);                   // same mass range as in XiCuts()
     v0Cuts->SetCutTransverseRadius(1.4, 200);           // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
                                                         // 
-    v0Cuts->SetCutCPA(0.97);                            // CPA für sekundäre kleiner?
+    v0Cuts->SetCutCPA(0.97);                            // CPA für sekundäre weiter!
+    v0Cuts->SetCutDCADaugTov0Vtx(1.4);                  // set a little tighter than dimi (1.5); here it's same to bernie
+
     v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
     v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
     v0Cuts->SetPDGCodePosDaug(2212); //Proton
@@ -60,8 +63,11 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     NegAntiv0Daug->SetCutCharge(-1);
 
+    Antiv0Cuts->SetCutInvMass(0.006);                   // same v0 mass range as in XiCuts()
     Antiv0Cuts->SetCutTransverseRadius(1.4, 200);       // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
-    Antiv0Cuts->SetCutCPA(0.97);                        // CPA für sekundäre kleiner?
+    Antiv0Cuts->SetCutCPA(0.97);                        // CPA für sekundäre weiter!
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.4);              // set a little tighter than dimi (1.5); here it's same to bernie
+    
     Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
     Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
     Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
@@ -210,7 +216,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     config->SetPtQA(true);
     config->SetMassQA(true);
 
-    // task creation
+    // ##### Task creation!!!!! ################
     AliAnalysisTaskPOmegaPenne *task = new AliAnalysisTaskPOmegaPenne("FemtoDreamPOmegaPenne", isMC);
     if (CentEst == "kInt7")
     {

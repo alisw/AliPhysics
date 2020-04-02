@@ -427,20 +427,14 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             PostData(7, tlAntiCascadeCutsXi);
             PostData(8, tlResults);
             PostData(9, tlResultsQA);
-            if (fTrackCutsProton->GetIsMonteCarlo())
+            if (fIsMC)
             {
                 PostData(10, tlProtonMC);
-            }
-            if (fTrackCutsAntiProton->GetIsMonteCarlo())
-            {
+            
                 PostData(11, tlAntiProtonMC);
-            }
-            if (fLambdaV0Cuts->GetIsMonteCarlo())
-            {
+            
                 PostData(12, tlLambdaMC);
-            }
-            if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
-            {
+            
                 PostData(13, tlAntiLambdaMC);
             }
         }
