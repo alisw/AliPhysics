@@ -6887,10 +6887,10 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
           for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
-            AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+            std::unique_ptr<AliAODConversionMother> backgroundCandidate (new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0));
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID(),currentEventGoodV0.GetIsCaloPhoton(),  previousGoodV0.GetIsCaloPhoton() ))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID(),currentEventGoodV0.GetIsCaloPhoton(),  previousGoodV0.GetIsCaloPhoton() ))){
               // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
               if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
                 if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(previousGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
@@ -6926,8 +6926,6 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 tBckInvMassPtAlphaTheta[fiCut]->Fill();
               }
             }
-            delete backgroundCandidate;
-            backgroundCandidate = 0x0;
           }
         }
       }
