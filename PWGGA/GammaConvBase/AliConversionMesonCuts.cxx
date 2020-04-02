@@ -1849,6 +1849,9 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
     printf("\t depth of pool: %d\n", fNumberOfBGEvents);
     if (fUseRotationMethodInBG )printf("\t degree's for BG rotation: %d\n", fNDegreeRotationPMForBG);
     if (!fUseRotationMethodInBG  & !fUseTrackMultiplicityForBG & fBackgroundHandler) printf("\t BG scheme: event plane angle with V0 mult \n");
+    if (fDoGammaSwappForBg && fGammaSwappMethodBg == 0) printf("\t BG scheme: new in event rotation with 90 degree rotation \n");
+    if (fDoGammaSwappForBg && fGammaSwappMethodBg == 1) printf("\t BG scheme: new in event rotation with random rotation: %d rotations \n", fNumberOfSwappsForBg);
+    if (fDoGammaSwappForBg && fGammaSwappMethodBg == 10) printf("\t BG scheme: new in event rotation with TGPS: %d rotations \n", fNumberOfSwappsForBg);
   }
 }
 
@@ -3314,41 +3317,48 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
     break;
   case 28: // s cluster swapping method with 90 degree rotation angle
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
     break;
   case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
   case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 4;
+    fBackgroundHandler          = 2;
     break;
   case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
     break;
   case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
     break;
   case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
     fDoGammaSwappForBg          = kTRUE;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
     fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
