@@ -2489,14 +2489,20 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * particle){
   ///
   Int_t mcTrigger=0;
+  const Float_t dcaCut=20;  // dca cut 20 cm
   if (particle!= nullptr){
     // hack - we do not have particle id for nuclei available - trigger PDG code >proton
-    if (TMath::Abs(particle->GetPdgCode())>kProton) mcTrigger=4;
+    if (TMath::Abs(particle->GetPdgCode())>kProton && particle->R()<dcaCut && particle->Vz()<dcaCut)  {
+      mcTrigger=4;
+    }
   }
   if (track== nullptr) return mcTrigger;
   if (track->GetInnerParam() == nullptr) return mcTrigger;
   if (track->GetTPCClusterInfo(3,1)<100) return mcTrigger;
   if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.6) return mcTrigger;
+  Float_t dcaTPC[2];
+  track->GetImpactParametersTPC(dcaTPC[0],dcaTPC[1]);
+  if (TMath::Sqrt(dcaTPC[0]*dcaTPC[0]+dcaTPC[1]*dcaTPC[1])>dcaCut) return mcTrigger;
   Int_t triggerMask=0;
   static Double_t mass[5]={TDatabasePDG::Instance()->GetParticle("e+")->Mass(), TDatabasePDG::Instance()->GetParticle("mu+")->Mass(), TDatabasePDG::Instance()->GetParticle("pi+")->Mass(),
                            TDatabasePDG::Instance()->GetParticle("K+")->Mass(), TDatabasePDG::Instance()->GetParticle("proton")->Mass()};
@@ -3277,7 +3283,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   //
    /// dEdx and TPC ncl aliases
   tree->SetAlias("mdEdx", "50./esdTrack.fTPCsignal");
-  tree->SetAlias("dEdxExpPion",Form("AliPIDtools::BetheBlochAleph(%d,0+esdTrack.fIp.P()/0.13597)",pidHash));
+  //tree->SetAlias("dEdxExpPion",Form("AliPIDtools::BetheBlochAleph(%d,0+esdTrack.fIp.P()/0.13597)",pidHash));
   for (Int_t i=0; i<4; i++){
     tree->SetAlias(Form("ratioTotMax%d",i) , Form("fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalMax(%d)",i,i));
     tree->SetAlias(Form("logTotMax%d",i) , Form("log(fTPCdEdxInfo.GetSignalTot(%d)/fTPCdEdxInfo.GetSignalMax(%d))",i,i));
