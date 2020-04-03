@@ -15,6 +15,8 @@
 //AliRoot and AliPhysics includes
 #include "AliVEvent.h"
 #include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
+#include "AliAODExtension.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 
@@ -41,6 +43,7 @@
 //STL includes
 #include <iostream>
 #include <exception>
+#include <set>
 //#include <algorithm>
 
 ClassImp(AliAnalysisTaskDHFeCorr)
@@ -170,12 +173,15 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
     // Reconstructed candidates
     auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
 
+    const auto mc_information = dynamic_cast<TClonesArray *>(InputEvent()->GetList()->FindObject(
+            AliAODMCParticle::StdBranchName()));
+
     std::vector<AliDHFeCorr::AliElectron> tracks;
     tracks.reserve(static_cast<unsigned long>(aod_event->GetNumberOfTracks()));
 
     for (int i(0); i < aod_event->GetNumberOfTracks(); i++) {
         tracks.emplace_back(dynamic_cast<AliAODTrack *>(aod_event->GetTrack(i)), fRunNumber, fDirNumber,
-                            fEventNumber, aod_event, fInputHandler->GetPIDResponse());
+                            fEventNumber, aod_event, fInputHandler->GetPIDResponse(), mc_information);
     }
 
     auto selected_tracks = FilterElectronsTracking(fElectronRequirements, tracks);
@@ -189,24 +195,29 @@ std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::ElectronAnalysis(
             FindNonHFe(electron, partner_electrons);
     }
 
-    if (fSaveHistograms) {
-        //fill the electron (track) QA before applying the cuts
-        FillElectronQA(tracks, fElectronQABeforeCuts);
-        //fill the electron QA after track selection
-        FillElectronQA(selected_tracks, fElectronQAAfterTrackCuts);
-        //fill the electron QA after applying the cuts
-        FillElectronQA(selected_electrons, fElectronQAAfterCuts);
-    }
-
     if (fIsMC) {
-        FillAllElectronsMCInfo(selected_electrons);
-
         auto mc_particles = FillMCParticleInfo();
         auto hfe_mc = FilterHFeInMCParticles(mc_particles);
 
         FillTreeFromStdContainer(hfe_mc, &fMCParticle, fElectronTreeMC);
 
-        selected_electrons = selected_tracks; //Remove PID Cuts from MC
+        // In case of MC, it is necessary to save: all HFes in the event (even if not selected by the PID cuts)
+        // plus all the selected tracks.
+        auto hfe_tracks = FilterHFeInRecoParticles(selected_tracks);
+        auto hfe_and_selected_electrons = std::set<AliDHFeCorr::AliElectron>(selected_electrons.begin(),
+                                                                             selected_electrons.end());
+        hfe_and_selected_electrons.insert(hfe_tracks.begin(), hfe_tracks.end());
+
+        //Reassign the values of selected electrons to include both hfe tracks and selecte electrons
+        selected_electrons = std::vector<AliDHFeCorr::AliElectron>(hfe_and_selected_electrons.begin(),
+                                                                        hfe_and_selected_electrons.end());
+
+    }
+
+    if (fSaveHistograms) {
+        FillElectronQA(tracks, fElectronQABeforeCuts);
+        FillElectronQA(selected_tracks, fElectronQAAfterTrackCuts);
+        FillElectronQA(selected_electrons, fElectronQAAfterCuts);
     }
 
     FillTreeFromStdContainer(selected_electrons, &fElectron, fElectronTree);
@@ -230,7 +241,7 @@ std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FillMCParticleI
 
         auto origin = AliVertexingHFUtils::CheckOrigin(mc_information, particle, false);
 
-        mc_particles.emplace_back(particle, fRunNumber, fDirNumber,fEventNumber, i, origin);
+        mc_particles.emplace_back(particle, fRunNumber, fDirNumber, fEventNumber, i, origin);
     }
 
     return mc_particles;
@@ -256,7 +267,7 @@ std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FindHFParticleI
 }
 
 std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FilterHFeInMCParticles(
-        std::vector<AliDHFeCorr::AliParticleMC> &electrons) {
+        const std::vector<AliDHFeCorr::AliParticleMC> &electrons) {
 
     std::vector<AliDHFeCorr::AliParticleMC> hfe;
     hfe.reserve(electrons.size());
@@ -272,6 +283,31 @@ std::vector<AliDHFeCorr::AliParticleMC> AliAnalysisTaskDHFeCorr::FilterHFeInMCPa
     hfe.shrink_to_fit();
 
     return hfe;
+}
+
+std::vector<AliDHFeCorr::AliElectron> AliAnalysisTaskDHFeCorr::FilterHFeInRecoParticles(
+        const std::vector<AliDHFeCorr::AliElectron> &electrons) {
+
+    std::vector<AliDHFeCorr::AliElectron> hfe;
+    hfe.reserve(electrons.size());
+
+    for (auto &reco_electron: electrons) {
+        if (IsHFe(reco_electron))
+            hfe.push_back(reco_electron);
+    }
+
+    hfe.shrink_to_fit();
+
+    return hfe;
+}
+
+bool AliAnalysisTaskDHFeCorr::IsHFe(const AliDHFeCorr::AliElectron &electron) {
+    if (abs(electron.fPDGCode) != 11)
+        return false;
+
+    auto abs_pdg_mother = abs(electron.fFirstMotherPDG);
+
+    return (abs_pdg_mother > 400 && abs_pdg_mother < 600) || (abs_pdg_mother > 4000 && abs_pdg_mother < 6000);
 }
 
 bool AliAnalysisTaskDHFeCorr::IsHFe(AliAODMCParticle *particle, TClonesArray *mc_information) {
@@ -296,13 +332,30 @@ bool AliAnalysisTaskDHFeCorr::IsHFe(AliAODMCParticle *particle, TClonesArray *mc
 
 }
 
+TClonesArray * AliAnalysisTaskDHFeCorr::GetDMesonList() {
+    auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
+    auto* aod_handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+
+    if(aod_handler->GetExtensions()) {
+            auto ext = dynamic_cast<AliAODExtension*>(aod_handler->GetExtensions()->FindObject("AliAOD.VertexingHF.root"));
+            auto aod_ext = ext->GetAOD();
+            auto d_meson_array = dynamic_cast<TClonesArray *> (
+                aod_ext->GetList()->FindObject(fgkDMesonListName.at(fDmesonSpecies).c_str()));
+            return d_meson_array;
+    }
+    else {
+        auto d_meson_array = dynamic_cast<TClonesArray *>(
+            aod_event->GetList()->FindObject(fgkDMesonListName.at(fDmesonSpecies).c_str()));
+        return d_meson_array;
+    }
+}
+
 
 std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::DMesonAnalysis() {
     auto aod_event = dynamic_cast<AliAODEvent *>(InputEvent());
 
     //Move D meson candidates to vectors
-    const TClonesArray *dmeson_candidates = dynamic_cast<TClonesArray *>(aod_event->GetList()->FindObject(
-            fgkDMesonListName.at(fDmesonSpecies).c_str()));
+    const auto dmeson_candidates = GetDMesonList();
 
     auto d_mesons = FillDMesonInfo(dmeson_candidates, fDmesonSpecies, fDMesonRequirements);
     //Select D mesons
@@ -420,44 +473,6 @@ AliAnalysisTaskDHFeCorr::FilterElectronsPID(AliDHFeCorr::AliElectronSelection el
     return selected_electrons;
 }
 
-void AliAnalysisTaskDHFeCorr::FillAllElectronsMCInfo(std::vector<AliDHFeCorr::AliElectron> &electrons) {
-    const auto mc_information = dynamic_cast<TClonesArray *>(InputEvent()->GetList()->FindObject(
-            AliAODMCParticle::StdBranchName()));
-
-    if (!mc_information)
-        return;
-
-    for (auto &candidate: electrons) {
-        auto track = candidate.fTrack;
-        auto label = TMath::Abs(track->GetLabel());
-
-        auto mc_part = dynamic_cast<AliAODMCParticle *>(mc_information->At(label));
-
-        if (!mc_part)
-            continue;
-
-        candidate.fPtMC = mc_part->Pt();
-        candidate.fEtaMC = mc_part->Eta();
-        candidate.fPhiMC = mc_part->Phi();
-        candidate.fPDGCode = mc_part->PdgCode();
-        candidate.fOrigin = AliVertexingHFUtils::CheckOrigin(mc_information, mc_part, false);
-        candidate.fLabel = label;
-
-        if (mc_part->GetMother() > 0) {
-            const auto mc_mother = dynamic_cast<AliAODMCParticle *>(mc_information->At(mc_part->GetMother()));
-            candidate.fFirstMotherPDG = mc_mother->GetPdgCode();
-            candidate.fFirstMotherPt = mc_mother->Pt();
-
-            if (mc_mother->GetMother() > 0) {
-                const auto mc_grandmother = dynamic_cast<AliAODMCParticle *>(mc_information->At(
-                        mc_mother->GetMother()));
-                candidate.fSecondMotherPDG = mc_grandmother->GetPdgCode();
-                candidate.fSecondMotherPt = mc_grandmother->Pt();
-            }
-        }
-    }
-}
-
 
 void AliAnalysisTaskDHFeCorr::FillDmesonMCInfo(std::vector<AliDHFeCorr::AliDMeson> &d_mesons,
                                                AliAnalysisTaskDHFeCorr::DMeson_t meson_species) const {
@@ -518,7 +533,7 @@ void AliAnalysisTaskDHFeCorr::SetRunAndEventNumber() {
 
     if (fCurrentFile != current_file_name) {
         auto tokens = (current_file_name.Tokenize("/"));
-        auto folder = dynamic_cast<TObjString *>(tokens->At(tokens->GetLast()-1))->GetString();        
+        auto folder = dynamic_cast<TObjString *>(tokens->At(tokens->GetLast() - 1))->GetString();
         fDirNumber = static_cast<UInt_t >(folder.Atoi());
         delete tokens;
     }
@@ -724,7 +739,7 @@ std::vector<AliDHFeCorr::AliDMeson> AliAnalysisTaskDHFeCorr::FillDMesonInfo(cons
         if (!reco_candidate)
             continue;
 
-        //Preselect to save  time
+        //Preselect to save time
         TObjArray arrTracks(cand.fRecoObj->GetNProngs());
         for (Int_t itrack = 0; itrack < cand.fRecoObj->GetNProngs(); itrack++) {
             AliAODTrack *tr = vertexing_HF.GetProng(aod_event, cand.fRecoObj, itrack);
@@ -1481,5 +1496,102 @@ void AliAnalysisTaskDHFeCorr::AddDMesonMCVariables(std::unique_ptr<TTree> &tree)
     tree->Branch("IsD", &fDmeson.fIsD);
     tree->Branch("IsParticle", &fDmeson.fIsParticle);
     tree->Branch("IsPrompt", &fDmeson.fIsPrompt);
+}
+
+namespace AliDHFeCorr {
+    AliElectron::AliElectron(AliAODTrack *track, UInt_t run_number, UInt_t dir_number,
+                             UInt_t event_number, AliAODEvent *aod_event, AliPIDResponse *pid_response,
+                             TClonesArray *mc_information) {
+        fTrack = track;
+        fRunNumber = run_number;
+        fDirNumber = dir_number;
+        fEventNumber = event_number;
+        fID = TMath::Abs(track->GetID());
+
+        fCharge = track->Charge();
+        fPt = track->Pt();
+        fP = track->P();
+        fEta = track->Eta();
+        fPhi = track->Phi();
+
+        fNCrossedRowsTPC = track->GetTPCNCrossedRows();
+        fNClsTPCDeDx = track->GetTPCsignalN();
+        fNITSCls = track->GetITSNcls();
+
+        fITSHitFirstLayer = track->HasPointOnITSLayer(0);
+        fITSHitSecondLayer = track->HasPointOnITSLayer(1);
+
+        Double_t d0z0[2] = {-999., -999.};
+        Double_t cov[3] = {-999., -999., -999.};
+        const AliVVertex *primaryVertex = aod_event->GetPrimaryVertex();
+
+        AliAODTrack copy_track = AliAODTrack(*track);
+
+        if (copy_track.PropagateToDCA(primaryVertex, aod_event->GetMagneticField(), 20., d0z0, cov)) {
+            fDCAxy = d0z0[0];
+            fDCAz = d0z0[1];
+        }
+
+        fTPCNSigma = pid_response->NumberOfSigmasTPC(track, AliPID::kElectron);
+        fTOFNSigma = pid_response->NumberOfSigmasTOF(track, AliPID::kElectron);
+
+        fInvMassPartnersULS = std::vector<Float_t>();
+        fInvMassPartnersLS = std::vector<Float_t>();
+        fPtPartnersULS = std::vector<Float_t>();
+        fPtPartnersLS = std::vector<Float_t>();
+        fCrossedRowsTPCPartnersULS = std::vector<UShort_t>();
+        fCrossedRowsTPCPartnersLS = std::vector<UShort_t>();
+        fPartnersULSID = std::vector<UInt_t>();
+        fPartnersLSID = std::vector<UInt_t>();
+
+        if (mc_information) {
+            auto label = abs(fTrack->GetLabel());
+            auto mc_part = dynamic_cast<AliAODMCParticle *>(mc_information->At(label));
+
+            if (mc_part) {
+                fPtMC = mc_part->Pt();
+                fEtaMC = mc_part->Eta();
+                fPhiMC = mc_part->Phi();
+                fPDGCode = mc_part->PdgCode();
+                fOrigin = AliVertexingHFUtils::CheckOrigin(mc_information, mc_part, false);
+                fLabel = label;
+
+                if (mc_part->GetMother() > 0) {
+                    const auto mc_mother = dynamic_cast<AliAODMCParticle *>(mc_information->At(mc_part->GetMother()));
+                    fFirstMotherPDG = mc_mother->GetPdgCode();
+                    fFirstMotherPt = mc_mother->Pt();
+
+                    if (mc_mother->GetMother() > 0) {
+                        const auto mc_grandmother = dynamic_cast<AliAODMCParticle *>(mc_information->At(
+                                mc_mother->GetMother()));
+                        fSecondMotherPDG = mc_grandmother->GetPdgCode();
+                        fSecondMotherPt = mc_grandmother->Pt();
+                    }
+                }
+            }
+
+        }
+    }
+
+    AliParticleMC::AliParticleMC(AliAODMCParticle *particle, UInt_t run_number, UInt_t dir_number,
+                                 UInt_t ev_number, UInt_t label, UShort_t origin) {
+        fMCParticle = particle;
+        fRunNumber = run_number;
+        fDirNumber = dir_number;
+        fEventNumber = ev_number;
+        fLabel = label;
+        fOrigin = origin;
+
+        fE = particle->E();
+        fPt = particle->Pt();
+        fEta = particle->Eta();
+        fPhi = particle->Phi();
+        fXv = particle->Xv();
+        fYv = particle->Yv();
+        fZv = particle->Zv();
+        fTv = particle->Tv();
+        fCharge = particle->Charge();
+        fPDGCode = particle->PdgCode();
+    }
 }
 
