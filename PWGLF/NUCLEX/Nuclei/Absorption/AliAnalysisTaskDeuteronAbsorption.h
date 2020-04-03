@@ -71,6 +71,7 @@ private:
   Int_t tnPIDclsTPC;      // number of clusters used for PID in the TPC
   Double_t tTOFsigDx;     // track-to-hit residual in TOF (x-direction)
   Double_t tTOFsigDz;     // track-to-hit residual in TOF (z-direction)
+  Double_t tTOFchi2;      // chi2 of the hit in the TOF
   Int_t tTOFclsN;         // number of cluster candidates in TOF
   Int_t tTRDclsN;         // number of TRD clusters attached to the track
   Int_t tID;              // identification number of the track
