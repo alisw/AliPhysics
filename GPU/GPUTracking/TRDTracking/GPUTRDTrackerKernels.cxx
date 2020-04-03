@@ -14,51 +14,25 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file ClusterAccumulator.h
-/// \author Felix Weiglhofer
+/// \file GPUTRDTrackerKernels.cxx
+/// \author David Rohr
 
-#ifndef O2_GPU_CLUSTER_ACCUMULATOR_H
-#define O2_GPU_CLUSTER_ACCUMULATOR_H
-
-#include "clusterFinderDefs.h"
-#include "PackedCharge.h"
-
-namespace GPUCA_NAMESPACE
-{
-
-namespace tpc
-{
-struct ClusterNative;
-}
-
-namespace gpu
-{
-
-struct ChargePos;
-
-class ClusterAccumulator
-{
-
- public:
-  GPUd() Charge updateInner(PackedCharge, Delta2);
-  GPUd() Charge updateOuter(PackedCharge, Delta2);
-
-  GPUd() void finalize(const ChargePos&, Charge);
-  GPUd() void toNative(const ChargePos&, Charge, tpc::ClusterNative&) const;
-
- private:
-  float mQtot = 0;
-  float mPadMean = 0;
-  float mPadSigma = 0;
-  float mTimeMean = 0;
-  float mTimeSigma = 0;
-  uchar mSplitInTime = 0;
-  uchar mSplitInPad = 0;
-
-  GPUd() void update(Charge, Delta2);
-};
-
-} // namespace gpu
-} // namespace GPUCA_NAMESPACE
-
+#include "GPUTRDTrackerKernels.h"
+#include "GPUTRDGeometry.h"
+#include "GPUConstantMem.h"
+#if defined(WITH_OPENMP) && !defined(GPUCA_GPUCODE)
+#include "GPUReconstruction.h"
 #endif
+
+using namespace GPUCA_NAMESPACE::gpu;
+
+template <>
+GPUdii() void GPUTRDTrackerKernels::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUSharedMemory& smem, processorType& processors)
+{
+#if defined(WITH_OPENMP) && !defined(GPUCA_GPUCODE)
+#pragma omp parallel for num_threads(processors.trdTracker.GetRec().GetDeviceProcessingSettings().nThreads)
+#endif
+  for (int i = get_global_id(0); i < processors.trdTracker.NTracks(); i += get_global_size(0)) {
+    processors.trdTracker.DoTrackingThread(i, get_global_id(0));
+  }
+}

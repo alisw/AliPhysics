@@ -59,6 +59,8 @@ class GPUCommonMath
   GPUhdni() static float ATan2(float y, float x);
   GPUhdni() static float Sin(float x);
   GPUhdni() static float Cos(float x);
+  GPUhdni() static void SinCos(float x, float& s, float& c);
+  GPUhdni() static void SinCos(double x, double& s, double& c);
   GPUhdni() static float Tan(float x);
   GPUhdni() static float Copysign(float x, float y);
   GPUhdni() static float TwoPi() { return 6.28319f; }
@@ -80,6 +82,9 @@ class GPUCommonMath
   GPUd() static int Mul24(int a, int b);
   GPUd() static float FMulRZ(float a, float b);
 
+  template <int I, class T>
+  GPUd() CONSTEXPR static T nextMultipleOf(T val);
+
  private:
   template <class S, class T>
   GPUd() static unsigned int AtomicExchInt(S* addr, T val);
@@ -100,6 +105,22 @@ typedef GPUCommonMath CAMath;
 #else
     #define CHOICE(c1, c2, c3) (c1) //Select first option for Host
 #endif // clang-format on
+
+template <int I, class T>
+GPUdi() CONSTEXPR T GPUCommonMath::nextMultipleOf(T val)
+{
+  CONSTEXPRIF(I & (I - 1))
+  {
+    T tmp = val % I;
+    if (tmp)
+      val += I - tmp;
+    return val;
+  }
+  else
+  {
+    return (val + I - 1) & ~(T)(I - 1);
+  }
+}
 
 GPUhdi() float2 GPUCommonMath::MakeFloat2(float x, float y)
 {
@@ -136,6 +157,28 @@ GPUhdi() float GPUCommonMath::Sin(float x) { return CHOICE(sinf(x), sinf(x), sin
 
 GPUhdi() float GPUCommonMath::Cos(float x) { return CHOICE(cosf(x), cosf(x), cos(x)); }
 
+GPUhdi() void GPUCommonMath::SinCos(float x, float& s, float& c)
+{
+#if !defined(GPUCA_GPUCODE_DEVICE) && defined(__APPLE__)
+  __sincosf(x, &s, &c);
+#elif !defined(GPUCA_GPUCODE_DEVICE) && defined(__GNU_SOURCE__)
+  sincosf(x, &s, &c);
+#else
+  CHOICE({s = sin(x); c = cos(x); }, sincosf(x, &s, &c), s = sincos(x, &c));
+#endif
+}
+
+GPUhdi() void GPUCommonMath::SinCos(double x, double& s, double& c)
+{
+#if !defined(GPUCA_GPUCODE_DEVICE) && defined(__APPLE__)
+  __sincos(x, &s, &c);
+#elif !defined(GPUCA_GPUCODE_DEVICE) && defined(__GNU_SOURCE__)
+  sincos(x, &s, &c);
+#else
+  CHOICE({s = sin(x); c = cos(x); }, sincos(x, &s, &c), s = sincos(x, &c));
+#endif
+}
+
 GPUhdi() float GPUCommonMath::Tan(float x) { return CHOICE(tanf(x), tanf(x), tan(x)); }
 
 GPUhdi() unsigned int GPUCommonMath::Clz(unsigned int x)
@@ -155,7 +198,7 @@ GPUhdi() unsigned int GPUCommonMath::Clz(unsigned int x)
 GPUhdi() unsigned int GPUCommonMath::Popcount(unsigned int x)
 {
 #if (defined(__GNUC__) || defined(__clang__) || defined(__CUDACC__) || defined(__HIPCC__)) && (!defined(__OPENCL__) /*|| defined(__OPENCLCPP__)*/) // TODO: remove OPENCLCPP workaround when reported SPIR-V bug is fixed
-  return CHOICE(__builtin_popcount(x), __popc(x), __builtin_popcount(x)); // use builtin if available
+  return CHOICE(__builtin_popcount(x), __popc(x), __builtin_popcount(x));                                                                          // use builtin if available
 #else
   unsigned int retVal = 0;
   for (int i = 0; i < 32; i++) {

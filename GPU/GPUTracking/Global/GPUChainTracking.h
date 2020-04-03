@@ -55,7 +55,7 @@ namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-class GPUTRDTracker;
+//class GPUTRDTrackerGPU;
 class GPUTPCGPUTracker;
 class GPUDisplay;
 class GPUQA;
@@ -102,7 +102,7 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
     std::unique_ptr<GPUTPCGMMergedTrackHit[]> mergedTrackHits;
     std::unique_ptr<GPUTRDTrackletWord[]> trdTracklets;
     std::unique_ptr<GPUTRDTrackletLabels[]> trdTrackletsMC;
-    std::unique_ptr<GPUTRDTrack[]> trdTracks;
+    std::unique_ptr<GPUTRDTrackGPU[]> trdTracks;
   } mIOMem;
 
   // Read / Dump / Clear Data
@@ -123,7 +123,7 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
   void ConvertZSFilter(bool zs12bit);
 
   // Getters for external usage of tracker classes
-  GPUTRDTracker* GetTRDTracker() { return &processors()->trdTracker; }
+  GPUTRDTrackerGPU* GetTRDTracker() { return &processors()->trdTracker; }
   GPUTPCTracker* GetTPCSliceTrackers() { return processors()->tpcTrackers; }
   const GPUTPCTracker* GetTPCSliceTrackers() const { return processors()->tpcTrackers; }
   const GPUTPCGMMerger& GetTPCMerger() const { return processors()->tpcMerger; }
@@ -192,6 +192,7 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
   void PrintDebugOutput();
 
   bool ValidateSteps();
+  bool ValidateSettings();
 
   // Pointers to tracker classes
   GPUTrackingFlatObjects mFlatObjectsShadow; // Host copy of flat objects that will be used on the GPU
@@ -211,6 +212,10 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
   std::unique_ptr<TPCFastTransform> mTPCFastTransformU;               // Global TPC fast transformation object
   std::unique_ptr<o2::base::MatLayerCylSet> mMatLUTU;                 // Material Lookup Table
   std::unique_ptr<o2::trd::TRDGeometryFlat> mTRDGeometryU;            // TRD Geometry
+  std::unique_ptr<unsigned long long int[]> mTPCZSBuffer;             // Memory to store TPC ZS pages
+  std::unique_ptr<unsigned int[]> mTPCZSSizes;                        // Array with TPC ZS numbers of pages
+  std::unique_ptr<void*[]> mTPCZSPtrs;                                // Array with pointers to TPC ZS pages
+  std::unique_ptr<GPUTrackingInOutZS> mTPCZS;                         // TPC ZS Data Structure
 
   // Upper bounds for memory allocation
   unsigned int mMaxTPCHits;
@@ -221,16 +226,7 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
 
   // Synchronization and Locks
   eventStruct* mEvents = nullptr;
-#ifdef __ROOT__ // ROOT5 BUG: cint doesn't do volatile
-#define volatile
-#endif
-  volatile int mSliceOutputReady = 0;
-  volatile char mSliceLeftGlobalReady[NSLICES] = {0};
-  volatile char mSliceRightGlobalReady[NSLICES] = {0};
-#ifdef __ROOT__
-#undef volatile
-#endif
-  std::array<char, NSLICES> mGlobalTrackingDone;
+  VOLATILE int mSliceSelectorReady = 0;
   std::array<char, NSLICES> mWriteOutputDone;
 
  private:

@@ -14,25 +14,52 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUTRDTrackerGPU.cxx
+/// \file GPURawData.h
 /// \author David Rohr
 
-#include "GPUTRDTrackerGPU.h"
-#include "GPUTRDGeometry.h"
-#include "GPUConstantMem.h"
-#if defined(WITH_OPENMP) && !defined(GPUCA_GPUCODE)
-#include "GPUReconstruction.h"
-#endif
+#ifndef O2_GPU_RAW_DATA_H
+#define O2_GPU_RAW_DATA_H
 
-using namespace GPUCA_NAMESPACE::gpu;
+// Raw data parser is not accessible from GPU, therefore we use this header to wrap direct access to the current RDH
+// Since OpenCL currently doesn't support bit fields, we have to access the members directly
 
-template <>
-GPUdii() void GPUTRDTrackerGPU::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUSharedMemory& smem, processorType& processors)
+#include "GPUCommonDef.h"
+#ifndef __OPENCL__
+#include "Headers/RAWDataHeader.h"
+#else
+namespace o2
 {
-#if defined(WITH_OPENMP) && !defined(GPUCA_GPUCODE)
-#pragma omp parallel for num_threads(processors.trdTracker.GetRec().GetDeviceProcessingSettings().nThreads)
+namespace header
+{
+struct RAWDataHeader {
+  union {
+    unsigned int words[8];
+  };
+};
+} // namespace header
+} // namespace o2
 #endif
-  for (int i = get_global_id(0); i < processors.trdTracker.NTracks(); i += get_global_size(0)) {
-    processors.trdTracker.DoTrackingThread(i, get_global_id(0));
-  }
+
+namespace GPUCA_NAMESPACE
+{
+namespace gpu
+{
+class GPURawDataUtils
+{
+ public:
+  static GPUd() unsigned int getOrbit(const o2::header::RAWDataHeader* rdh);
+};
+
+GPUdi() unsigned int GPURawDataUtils::getOrbit(const o2::header::RAWDataHeader* rdh)
+{
+#ifndef __OPENCL__
+  return rdh->heartbeatOrbit;
+#else
+  return (rdh->words[2] >> 32);
+#endif
 }
+
+} // namespace gpu
+} // namespace GPUCA_NAMESPACE
+
+#endif

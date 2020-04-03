@@ -65,6 +65,7 @@ class GPUTPCRow
 
  private:
   friend class GPUTPCNeighboursFinder;
+  friend class GPUTPCStartHitsFinder;
 
   int mNHits;       // number of hits
   float mX;         // X coordinate of the row

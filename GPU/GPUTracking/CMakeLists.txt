@@ -55,7 +55,7 @@ set(SRCS
     TRDTracking/GPUTRDTrack.cxx
     TRDTracking/GPUTRDTracker.cxx
     TRDTracking/GPUTRDTrackletWord.cxx
-    TRDTracking/GPUTRDTrackerGPU.cxx
+    TRDTracking/GPUTRDTrackerKernels.cxx
     Base/GPUParam.cxx)
 
 set(SRCS_NO_CINT
@@ -116,11 +116,13 @@ set(HDRS_INSTALL
     Base/GPUO2DataTypes.h
     Base/GPUHostDataTypes.h
     Base/GPUMemorySizeScalers.h
+    Base/GPURawData.h
     dEdx/GPUdEdxInfo.h
     TPCConvert/GPUTPCConvertImpl.h
     Base/GPUReconstructionKernelMacros.h
     Base/GPUO2FakeClasses.h
     Base/GPUParam.inc
+    Merger/GPUTPCGMMergerTypes.h
 )
 
 # Sources only for O2
@@ -228,10 +230,10 @@ string(REPLACE ".cxx" ".h" HDRS_TMP "${SRCS_NO_CINT}")
 set(HDRS_INSTALL ${HDRS_INSTALL} ${HDRS_TMP})
 unset(HDRS_TMP)
 
+# the internal copy of ImgGUI has been removed in commit 64a93f3f and there is
+# only the optional external package
 if (TARGET AliceO2::DebugGUI)
   set(DEBUGGUI_TARGET AliceO2::DebugGUI)
-else()
-  set(DEBUGGUI_TARGET O2::DebugGUI)
 endif()
 # Main CMake part for O2
 if(ALIGPU_BUILD_TYPE STREQUAL "O2")
@@ -242,6 +244,7 @@ if(ALIGPU_BUILD_TYPE STREQUAL "O2")
                                        O2::TRDBase
                                        O2::ITStracking
                                        O2::TPCFastTransformation
+                                       O2::DetectorsRaw
                                        ${DEBUGGUI_TARGET}
                  PUBLIC_INCLUDE_DIRECTORIES SliceTracker
                                             Base

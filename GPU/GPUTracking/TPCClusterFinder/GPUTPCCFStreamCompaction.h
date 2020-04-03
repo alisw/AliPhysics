@@ -42,7 +42,7 @@ class GPUTPCCFStreamCompaction
     nativeScanUp,
     nativeScanTop,
     nativeScanDown,
-    compactDigit,
+    compact,
   };
 
   static GPUd() void nativeScanUpStartImpl(int, int, int, int, GPUSharedMemory&,
@@ -58,10 +58,10 @@ class GPUTPCCFStreamCompaction
   static GPUd() void nativeScanDownImpl(int, int, int, int, GPUSharedMemory&,
                                         int*, const int*, unsigned int, int);
 
-  static GPUd() void compactDigitImpl(int, int, int, int, GPUSharedMemory&,
-                                      const deprecated::Digit*, deprecated::Digit*,
-                                      const uchar*, int*, const int*,
-                                      int, size_t);
+  static GPUd() void compactImpl(int, int, int, int, GPUSharedMemory&,
+                                 const ChargePos*, ChargePos*,
+                                 const uchar*, int*, const int*,
+                                 int, size_t);
 
 #ifdef HAVE_O2HEADERS
   typedef GPUTPCClusterFinder processorType;

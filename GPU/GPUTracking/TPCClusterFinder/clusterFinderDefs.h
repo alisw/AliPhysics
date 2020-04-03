@@ -128,6 +128,4 @@ GPUconstexpr() int MIN_SPLIT_NUM = 1;
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 
-#include "Digit.h"
-
 #endif

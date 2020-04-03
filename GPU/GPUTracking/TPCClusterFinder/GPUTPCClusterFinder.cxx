@@ -23,12 +23,22 @@
 #include "GPUHostDataTypes.h"
 
 #include "DataFormatsTPC/ZeroSuppression.h"
+
+#include "ChargePos.h"
+#include "Array2D.h"
 #include "Digit.h"
 
 using namespace GPUCA_NAMESPACE::gpu;
 using namespace o2::tpc;
 
-void GPUTPCClusterFinder::InitializeProcessor() {}
+void GPUTPCClusterFinder::InitializeProcessor()
+{
+}
+
+GPUTPCClusterFinder::~GPUTPCClusterFinder()
+{
+  clearMCMemory();
+}
 
 void* GPUTPCClusterFinder::SetPointersMemory(void* mem)
 {
@@ -41,7 +51,7 @@ void* GPUTPCClusterFinder::SetPointersInput(void* mem)
   if (mNMaxPages && (mRec->GetRecoStepsGPU() & GPUDataTypes::RecoStep::TPCClusterFinding)) {
     computePointerWithAlignment(mem, mPzs, mNMaxPages * TPCZSHDR::TPC_ZS_PAGE_SIZE);
   }
-  if (mNMaxPages || (mRec->GetRecoStepsGPU() & GPUDataTypes::RecoStep::TPCClusterFinding)) {
+  if (mNMaxPages == 0 && (mRec->GetRecoStepsGPU() & GPUDataTypes::RecoStep::TPCClusterFinding)) {
     computePointerWithAlignment(mem, mPdigits, mNMaxDigits);
   }
   return mem;
@@ -64,17 +74,12 @@ void* GPUTPCClusterFinder::SetPointersOutput(void* mem)
 
 void* GPUTPCClusterFinder::SetPointersScratch(void* mem)
 {
-  computePointerWithAlignment(mem, mPpeaks, mNMaxPeaks);
-  computePointerWithAlignment(mem, mPfilteredPeaks, mNMaxPeaks);
+  computePointerWithAlignment(mem, mPpositions, mNMaxDigits);
+  computePointerWithAlignment(mem, mPpeakPositions, mNMaxPeaks);
+  computePointerWithAlignment(mem, mPfilteredPeakPositions, mNMaxClusters);
   computePointerWithAlignment(mem, mPisPeak, mNMaxDigits);
-  computePointerWithAlignment(mem, mPchargeMap, TPC_NUM_OF_PADS * TPC_MAX_TIME_PADDED);
-  computePointerWithAlignment(mem, mPpeakMap, TPC_NUM_OF_PADS * TPC_MAX_TIME_PADDED);
-  if (not mRec->IsGPU() && mRec->GetDeviceProcessingSettings().runMC) {
-    computePointerWithAlignment(mem, mPindexMap, TPC_NUM_OF_PADS * TPC_MAX_TIME_PADDED);
-    computePointerWithAlignment(mem, mPlabelsByRow, GPUCA_ROW_COUNT * mNMaxClusterPerRow);
-    computePointerWithAlignment(mem, mPlabelHeaderOffset, GPUCA_ROW_COUNT);
-    computePointerWithAlignment(mem, mPlabelDataOffset, GPUCA_ROW_COUNT);
-  }
+  computePointerWithAlignment(mem, mPchargeMap, TPCMapMemoryLayout<decltype(*mPchargeMap)>::items());
+  computePointerWithAlignment(mem, mPpeakMap, TPCMapMemoryLayout<decltype(*mPpeakMap)>::items());
   computePointerWithAlignment(mem, mPbuf, mBufSize * mNBufs);
   return mem;
 }
@@ -90,9 +95,9 @@ void GPUTPCClusterFinder::RegisterMemoryAllocation()
 
 void GPUTPCClusterFinder::SetMaxData(const GPUTrackingInOutPointers& io)
 {
-  mNMaxPeaks = mRec->MemoryScalers()->NTPCClusters(mNMaxDigits);
-  mNMaxClusters = mNMaxPeaks; // Noise suppression doesn't remove that many peaks, so don't scale this
-  mNMaxClusterPerRow = 0.01f * mNMaxDigits;
+  mNMaxPeaks = mRec->MemoryScalers()->NTPCPeaks(mNMaxDigits);
+  mNMaxClusters = mRec->MemoryScalers()->NTPCClusters(mNMaxDigits);
+  mNMaxClusterPerRow = 0.01f * mNMaxClusters;
   mBufSize = nextMultipleOf<std::max<int>(GPUCA_MEMALIGN, mScanWorkGroupSize)>(mNMaxDigits);
   mNBufs = getNSteps(mBufSize);
 }
@@ -115,4 +120,27 @@ size_t GPUTPCClusterFinder::getNSteps(size_t items) const
     c++;
   }
   return c;
+}
+
+void GPUTPCClusterFinder::PrepareMC()
+{
+  assert(mNMaxClusterPerRow > 0);
+
+  clearMCMemory();
+  mPindexMap = new uint[TPCMapMemoryLayout<decltype(*mPindexMap)>::items()];
+  mPlabelsByRow = new GPUTPCClusterMCInterim[GPUCA_ROW_COUNT * mNMaxClusterPerRow];
+  mPlabelHeaderOffset = new uint[GPUCA_ROW_COUNT];
+  mPlabelDataOffset = new uint[GPUCA_ROW_COUNT];
+}
+
+void GPUTPCClusterFinder::clearMCMemory()
+{
+  delete[] mPindexMap;
+  mPindexMap = nullptr;
+  delete[] mPlabelsByRow;
+  mPlabelsByRow = nullptr;
+  delete[] mPlabelHeaderOffset;
+  mPlabelHeaderOffset = nullptr;
+  delete[] mPlabelDataOffset;
+  mPlabelDataOffset = nullptr;
 }

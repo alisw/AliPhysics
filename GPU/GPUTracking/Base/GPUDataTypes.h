@@ -50,6 +50,7 @@ using CompressedClusters = CompressedClustersPtrs_helper<CompressedClustersCount
 
 namespace o2
 {
+struct InteractionRecord;
 class MCCompLabel;
 namespace base
 {
@@ -185,8 +186,8 @@ struct GPUTrackingInOutZS {
   static constexpr unsigned int NSLICES = GPUDataTypes::NSLICES;
   static constexpr unsigned int NENDPOINTS = 20;
   struct GPUTrackingInOutZSSlice {
-    void** zsPtr[NENDPOINTS];
-    unsigned int* nZSPtr[NENDPOINTS];
+    const void* const* zsPtr[NENDPOINTS];
+    const unsigned int* nZSPtr[NENDPOINTS];
     unsigned int count[NENDPOINTS];
   };
   struct GPUTrackingInOutZSCounts {
@@ -197,6 +198,7 @@ struct GPUTrackingInOutZS {
     unsigned int n[NSLICES][NENDPOINTS];
   };
   GPUTrackingInOutZSSlice slice[NSLICES];
+  o2::InteractionRecord* ir;
 };
 
 struct GPUTrackingInOutDigits {
@@ -235,7 +237,7 @@ struct GPUTrackingInOutPointers {
   unsigned int nTRDTracklets = 0;
   const GPUTRDTrackletLabels* trdTrackletsMC = nullptr;
   unsigned int nTRDTrackletsMC = 0;
-  const GPUTRDTrack* trdTracks = nullptr;
+  const GPUTRDTrackGPU* trdTracks = nullptr;
   unsigned int nTRDTracks = 0;
 };
 #else
