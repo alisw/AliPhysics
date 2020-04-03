@@ -2224,9 +2224,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411792106f032230000","01631031000000a0"); // EG1 Op. Ang. var 1 cell dist + 0
     cuts.AddCutCalo("0008d113","411792106f032230000","01631051000000d0"); // EG1 alpha cut 0-0.75
     cuts.AddCutCalo("0008d113","411792106f032230000","01631081000000d0"); // EG1 alpha cut 0-0.6
-  } else if (trainConfig == 2038){ // //EMCal + DCal EG1 cut var. trigger mimick
-    cuts.AddCutCalo("0008e113","411792106f032230000","01631031000000d0"); // EG2  NL 12 + TB
-    cuts.AddCutCalo("0008d113","411792106f032230000","01631031000000d0"); // EG1  NL 12 + TB
+  } else if (trainConfig == 2038){ // //EMCal + DCal EG1 EMCal NCell cut efficiency
+    cuts.AddCutCalo("00010113","411792106f03h230000","01631031000000d0"); // EG2  NL 01
+    cuts.AddCutCalo("00010113","411792106f03j230000","01631031000000d0"); // EG2  NL 01
+    cuts.AddCutCalo("00010113","411792106f03k230000","01631031000000d0"); // EG2  NL 01
 
 
   } else if (trainConfig == 2040){ //EMCal + DCal EG1 mult. diff.
@@ -2275,6 +2276,12 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2047){ //EMCal + DCal EG1 sphericity.
     cuts.AddCutCalo("h058d113","411791106f032230000","01631031000000d0"); // EG1, NL12, sphericity
     cuts.AddCutCalo("h5a8d113","411791106f032230000","01631031000000d0"); // EG1, NL12, sphericity
+
+  } else if (trainConfig == 2048){
+    cuts.AddCutCalo("00010113","411793706f032230000","01631031000000d0"); // INT7 TBNL wihout fine tuning
+  } else if (trainConfig == 2049){
+    cuts.AddCutCalo("0008e113","411793706f032230000","01631031000000d0"); // EG2 TBNL wihout fine tuning
+    cuts.AddCutCalo("0008d113","411793706f032230000","01631031000000d0"); // EG1 TBNL wihout fine tuning
 
 
   } else if (trainConfig == 2050){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
