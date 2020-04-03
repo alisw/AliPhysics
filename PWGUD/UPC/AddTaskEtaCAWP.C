@@ -33,12 +33,12 @@ AliAnalysisTaskUpcEtaCAWP *AddTaskEtaCAWP(Bool_t runTree = kFALSE, Bool_t runHis
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("K0s3PiPi4K2K4PiList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
 
 	// Connect input/output
-	mgr->ConnectInput(task1, 0, cinput1);
-	mgr->ConnectOutput(task1, 1, coutput1);
-	mgr->ConnectOutput(task1, 2, coutput2);
-	mgr->ConnectOutput(task1, 3, coutput3);
-	mgr->ConnectOutput(task1, 4, coutput4);
-	mgr->ConnectOutput(task1, 5, coutput5);
+	mgr->ConnectInput(task, 0, cinput1);
+	mgr->ConnectOutput(task, 1, coutput1);
+	mgr->ConnectOutput(task, 2, coutput2);
+	mgr->ConnectOutput(task, 3, coutput3);
+	mgr->ConnectOutput(task, 4, coutput4);
+	mgr->ConnectOutput(task, 5, coutput5);
 
 	return task;
 }
