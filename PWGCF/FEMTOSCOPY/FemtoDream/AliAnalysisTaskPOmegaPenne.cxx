@@ -18,8 +18,6 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 fTrack(0),
                                                                 fCascade(0),
                                                                 fEventCuts(0),
-                                                                fTrackCutsProton(0),
-                                                                fTrackCutsAntiProton(0),
                                                                 fv0(0),
                                                                 fLambdaV0Cuts(0),
                                                                 fAntiLambdaV0Cuts(0),
@@ -31,16 +29,12 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 fGTI(0),
                                                                 fTrackBufferSize(10000),
                                                                 tlEventCuts(0),
-                                                                tlTrackCutsProton(0),
-                                                                tlAntiTrackCutsProton(0),
                                                                 tlLambdaList(0),
                                                                 tlAntiLambdaList(0),
                                                                 tlCascadeCutsXi(0),
                                                                 tlAntiCascadeCutsXi(0),
                                                                 tlResults(0),
                                                                 tlResultsQA(0),
-                                                                tlProtonMC(0),
-                                                                tlAntiProtonMC(0),
                                                                 tlLambdaMC(0),
                                                                 tlAntiLambdaMC(0)
 {
@@ -53,8 +47,6 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       fTrack(0),
                                                                                       fCascade(0),
                                                                                       fEventCuts(0),
-                                                                                      fTrackCutsProton(0),
-                                                                                      fTrackCutsAntiProton(0),
                                                                                       fv0(0),
                                                                                       fLambdaV0Cuts(0),
                                                                                       fAntiLambdaV0Cuts(0),
@@ -66,34 +58,26 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       fGTI(0),
                                                                                       fTrackBufferSize(10000),
                                                                                       tlEventCuts(0),
-                                                                                      tlTrackCutsProton(0),
-                                                                                      tlAntiTrackCutsProton(0),
                                                                                       tlLambdaList(0),
                                                                                       tlAntiLambdaList(0),
                                                                                       tlCascadeCutsXi(0),
                                                                                       tlAntiCascadeCutsXi(0),
                                                                                       tlResults(0),
                                                                                       tlResultsQA(0),
-                                                                                      tlProtonMC(0),
-                                                                                      tlAntiProtonMC(0),
                                                                                       tlLambdaMC(0),
                                                                                       tlAntiLambdaMC(0)
 {
     DefineOutput(1, TList::Class());    // Event Cuts
-    DefineOutput(2, TList::Class());    // Proton Track Cuts
-    DefineOutput(3, TList::Class());    // Anti Proton Track Cuts
-    DefineOutput(4, TList::Class());    // Lambda Track Cuts
-    DefineOutput(5, TList::Class());    // Anti Lambda Track Cuts
-    DefineOutput(6, TList::Class());    // Xi Track Cuts
-    DefineOutput(7, TList::Class());    // Anti Xi Track Cuts
-    DefineOutput(8, TList::Class());    // Results
-    DefineOutput(9, TList::Class());    // QA Results
+    DefineOutput(2, TList::Class());    // Lambda Track Cuts
+    DefineOutput(3, TList::Class());    // Anti Lambda Track Cuts
+    DefineOutput(4, TList::Class());    // Xi Track Cuts
+    DefineOutput(5, TList::Class());    // Anti Xi Track Cuts
+    DefineOutput(6, TList::Class());    // Results
+    DefineOutput(7, TList::Class());    // QA Results
     if (isMC)
     {
-        DefineOutput(10, TList::Class());    // MC Track Proton
-        DefineOutput(11, TList::Class());    // MC Track AntiProton
-        DefineOutput(12, TList::Class());    // MC V0 - Lamba
-        DefineOutput(13, TList::Class());    // MC AntiV0 - AntiLambda
+        DefineOutput(8, TList::Class());    // MC V0 - Lamba
+        DefineOutput(9, TList::Class());    // MC AntiV0 - AntiLambda
     }
     
 }
@@ -105,8 +89,6 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete fTrack;
     delete fCascade;
     delete fEventCuts;
-    delete fTrackCutsProton;
-    delete fTrackCutsAntiProton;
     delete fv0;
     delete fLambdaV0Cuts;
     delete fAntiLambdaV0Cuts;
@@ -117,16 +99,12 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete fPartColl;
     delete *fGTI;
     delete tlEventCuts;
-    delete tlTrackCutsProton;
-    delete tlAntiTrackCutsProton;
     delete tlLambdaList;
     delete tlAntiLambdaList;
     delete tlCascadeCutsXi;
     delete tlAntiCascadeCutsXi;
     delete tlResults;
     delete tlResultsQA;
-    delete tlProtonMC;
-    delete tlAntiProtonMC;
     delete tlLambdaMC;
     delete tlAntiLambdaMC;
     }
@@ -140,8 +118,6 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 fTrack(obj.fTrack),
                                                                                                 fCascade(obj.fCascade),
                                                                                                 fEventCuts(obj.fEventCuts),
-                                                                                                fTrackCutsProton(obj.fTrackCutsProton),
-                                                                                                fTrackCutsAntiProton(obj.fTrackCutsAntiProton),
                                                                                                 fv0(obj.fv0),
                                                                                                 fLambdaV0Cuts(obj.fLambdaV0Cuts),
                                                                                                 fAntiLambdaV0Cuts(obj.fAntiLambdaV0Cuts),
@@ -153,16 +129,12 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 fGTI(obj.fGTI),
                                                                                                 fTrackBufferSize(obj.fTrackBufferSize),
                                                                                                 tlEventCuts(obj.tlEventCuts),
-                                                                                                tlTrackCutsProton(obj.tlTrackCutsProton),
-                                                                                                tlAntiTrackCutsProton(obj.tlAntiTrackCutsProton),
                                                                                                 tlLambdaList(obj.tlLambdaList),
                                                                                                 tlAntiLambdaList(obj.tlAntiLambdaList),
                                                                                                 tlCascadeCutsXi(obj.tlCascadeCutsXi),
                                                                                                 tlAntiCascadeCutsXi(obj.tlAntiCascadeCutsXi),
                                                                                                 tlResults(obj.tlResults),
                                                                                                 tlResultsQA(obj.tlResultsQA),
-                                                                                                tlProtonMC(obj.tlProtonMC),
-                                                                                                tlAntiProtonMC(obj.tlAntiProtonMC),
                                                                                                 tlLambdaMC(obj.tlLambdaMC),
                                                                                                 tlAntiLambdaMC(obj.tlAntiLambdaMC)
 
@@ -202,25 +174,17 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fGTI = new AliAODTrack *[fTrackBufferSize];
     
     fEventCuts->InitQA();
-
-    // Proton Cuts      ###########
-    if (!fTrackCutsProton){AliFatal("Track Cuts for Particle Proton not set!");}
-    fTrackCutsProton->Init();
-    fTrackCutsProton->SetName("Protons");
-    // ##
-
-    // AntiProton Cuts  ###########
-    if (!fTrackCutsAntiProton){AliFatal("Track Cuts for Particle AntiProton not set!");}
-    fTrackCutsAntiProton->Init();
-    fTrackCutsAntiProton->SetName("AntiProtons");
-    // ##
  
     // Lambda Cutys    ###########
+    if (!fLambdaV0Cuts){AliFatal("Track Cuts for Particle Lambda not set!");}
     fLambdaV0Cuts->Init();
+    fLambdaV0Cuts->SetName("Lambda");
     // ##
 
     // AntiLambda Cutys    ###########
+    if (!fAntiLambdaV0Cuts){AliFatal("Track Cuts for Particle AntiLambda not set!");}
     fAntiLambdaV0Cuts->Init();
+    fAntiLambdaV0Cuts->SetName("AntiLambda");
     // ##
 
     // V0 Candidates
@@ -259,7 +223,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fCascade->Setv0PDGCode(3122);
     // ##
 
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2, false);
+    fPairCleaner = new AliFemtoDreamPairCleaner(0, 2, false);
     fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
     
     tlCascadeCutsXi = new TList();
@@ -276,8 +240,6 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 
     // Connect Cuts to OutputContainers
     tlEventCuts             = fEventCuts->GetHistList();
-    tlTrackCutsProton       = fTrackCutsProton->GetQAHists();
-    tlAntiTrackCutsProton   = fTrackCutsAntiProton->GetQAHists();
     tlLambdaList            = fLambdaV0Cuts->GetQAHists();
     tlAntiLambdaList        = fAntiLambdaV0Cuts->GetQAHists();
     tlCascadeCutsXi         = fCascadeCutsXi->GetQAHists();
@@ -288,39 +250,27 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlResultsQA->Add(         fEvent->GetEvtCutList());
 
     PostData(1, tlEventCuts);
-    PostData(2, tlTrackCutsProton);
-    PostData(3, tlAntiTrackCutsProton);
-    PostData(4, tlLambdaList);
-    PostData(5, tlAntiLambdaList);
-    PostData(6, tlCascadeCutsXi);
-    PostData(7, tlAntiCascadeCutsXi);
-    PostData(8, tlResults);
-    PostData(9, tlResultsQA);
+    PostData(2, tlLambdaList);
+    PostData(3, tlAntiLambdaList);
+    PostData(4, tlCascadeCutsXi);
+    PostData(5, tlAntiCascadeCutsXi);
+    PostData(6, tlResults);
+    PostData(7, tlResultsQA);
 
-    if (fTrackCutsProton->GetIsMonteCarlo())
-    {
-        tlProtonMC = fTrackCutsProton->GetMCQAHists();
-        PostData(10, tlProtonMC);
-    }
-    if (fTrackCutsAntiProton->GetIsMonteCarlo())
-    {
-        tlAntiProtonMC = fTrackCutsAntiProton->GetMCQAHists();
-        PostData(11, tlAntiProtonMC);
-    }
     if (fLambdaV0Cuts->GetIsMonteCarlo())
     {
         tlLambdaMC = fLambdaV0Cuts->GetMCQAHists();
-        PostData(12, tlLambdaMC);
+        PostData(8, tlLambdaMC);
     }
     if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
     {
         tlAntiLambdaMC = fAntiLambdaV0Cuts->GetMCQAHists();
-        PostData(13, tlAntiLambdaMC);
+        PostData(9, tlAntiLambdaMC);
     }
 }
 
-static std::vector<AliFemtoDreamBasePart> vProtons;         // Particle Vectors  
-static std::vector<AliFemtoDreamBasePart> vAntiProtons;     
+static std::vector<AliFemtoDreamBasePart> vLambda;           
+static std::vector<AliFemtoDreamBasePart> vAntiLambda;       
 static std::vector<AliFemtoDreamBasePart> vXi;           
 static std::vector<AliFemtoDreamBasePart> vAntiXi;       
 
@@ -351,31 +301,32 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
            
             fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
-            vProtons.clear();
-            vAntiProtons.clear();
             vXi.clear();
             vAntiXi.clear();
-            
-            for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
-            {
-                aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
-                if (!aaTrack)
-                {
-                    AliFatal("No Standard AOD");
-                    return;
-                }
-                fTrack->SetTrack(aaTrack);
+            vLambda.clear();
+            vAntiLambda.clear();
+        
 
-                // mark track (anti-)proton and/or (anti-)xi
-                if (fTrackCutsProton->isSelected(fTrack))
-                {
-                    vProtons.push_back(*fTrack);
-                }
-                if (fTrackCutsAntiProton->isSelected(fTrack))
-                {
-                    vAntiProtons.push_back(*fTrack);
-                }
-            }
+            // for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
+            // {
+            //     aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
+            //     if (!aaTrack)
+            //     {
+            //         AliFatal("No Standard AOD");
+            //         return;
+            //     }
+            //     fTrack->SetTrack(aaTrack);
+
+            //     // mark track (anti-)proton and/or (anti-)xi
+            //     if (fTrackCutsProton->isSelected(fTrack))
+            //     {
+            //         vProtons.push_back(*fTrack);
+            //     }
+            //     if (fTrackCutsAntiProton->isSelected(fTrack))
+            //     {
+            //         vAntiProtons.push_back(*fTrack);
+            //     }
+            // }
 
             // ## Lambda Selection
             fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
@@ -383,10 +334,19 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 AliAODv0 *v0 = aaEvent->GetV0(iv0);
                 fv0->Setv0(aaEvent, v0, fEvent->GetMultiplicity());
-                fLambdaV0Cuts->isSelected(fv0);
-                fAntiLambdaV0Cuts->isSelected(fv0);
+                if (fLambdaV0Cuts->isSelected(fv0)) 
+                {
+                    vLambda.push_back(*fv0);
+                    vLambda[vLambda.size() - 1].SetCPA(1.0);
+                }
+                if (fAntiLambdaV0Cuts->isSelected(fv0)) 
+                {
+                    vAntiLambda.push_back(*fv0);
+                    vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
+                }
             }
 
+            // ## Xi selection
             for (int iCasc = 0; iCasc < static_cast<TClonesArray *>(aaEvent->GetCascades())->GetEntriesFast(); ++iCasc)
             {
                 AliAODcascade *casc = aaEvent->GetCascade(iCasc);
@@ -394,54 +354,47 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 if (fCascadeCutsXi->isSelected(fCascade))
                 {
                     vXi.push_back(*fCascade);
+                    vXi[vXi.size() - 1].SetCPA(0.5);
                 }
                 if (fCascadeCutsAntiXi->isSelected(fCascade))
                 {
                     vAntiXi.push_back(*fCascade);
+                    vAntiXi[vAntiXi.size() -1].SetCPA(0.5);
                 }
             }                                                                         
             // remove double-matched tracks
             fPairCleaner->ResetArray();
-            fPairCleaner->CleanTrackAndDecay(&vProtons, &vXi, 0);
-            fPairCleaner->CleanTrackAndDecay(&vAntiProtons, &vAntiXi, 1);
+
+            fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda,  0);
+            fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 1);
             
-            fPairCleaner->CleanDecay(&vXi, 0);
-            fPairCleaner->CleanDecay(&vAntiXi, 1);
-            
-            fPairCleaner->StoreParticle(vProtons);
-            fPairCleaner->StoreParticle(vAntiProtons);
+            // fPairCleaner->CleanDecay(&vXi, 0);
+            // fPairCleaner->CleanDecay(&vAntiXi, 1);
+
+            fPairCleaner->StoreParticle(vLambda); 
+            fPairCleaner->StoreParticle(vAntiLambda);
+
             fPairCleaner->StoreParticle(vXi);
             fPairCleaner->StoreParticle(vAntiXi);
 
-            // lambdas nicht in storeparticle weil sonst mit setevent pairQA betrieben wird was wir nicht brauchen
-            fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+            fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality()); // proton xi and lambda analysis
             // soweit ich das richtig verstanden habe wird pairQA mit den teilchen gemacht die im pairCleaner 
             // sind und pdgCodes in der richtigen Reihenfolge vorhanden sind.
 
+
             PostData(1, tlEventCuts);
-            PostData(2, tlTrackCutsProton);
-            PostData(3, tlAntiTrackCutsProton);
-            PostData(4, tlLambdaList);
-            PostData(5, tlAntiLambdaList);
-            PostData(6, tlCascadeCutsXi);
-            PostData(7, tlAntiCascadeCutsXi);
-            PostData(8, tlResults);
-            PostData(9, tlResultsQA);
-            if (fTrackCutsProton->GetIsMonteCarlo())
+            PostData(2, tlLambdaList);
+            PostData(3, tlAntiLambdaList);
+            PostData(4, tlCascadeCutsXi);
+            PostData(5, tlAntiCascadeCutsXi);
+            PostData(6, tlResults);
+            PostData(7, tlResultsQA);
+            if (fIsMC)
             {
-                PostData(10, tlProtonMC);
-            }
-            if (fTrackCutsAntiProton->GetIsMonteCarlo())
-            {
-                PostData(11, tlAntiProtonMC);
-            }
-            if (fLambdaV0Cuts->GetIsMonteCarlo())
-            {
-                PostData(12, tlLambdaMC);
-            }
-            if (fAntiLambdaV0Cuts->GetIsMonteCarlo())
-            {
-                PostData(13, tlAntiLambdaMC);
+ 
+                PostData(8, tlLambdaMC);
+            
+                PostData(9, tlAntiLambdaMC);
             }
         }
     }
