@@ -2226,10 +2226,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCSecPi0InAccPtvsSource[iCut]);
 
         if (fIsMC == 2){
-          fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+          if(fDoLightOutput!=2){
+              fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+              fHistoMCSecEtaPt[iCut]->Sumw2();
+          }
           fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
-          fHistoMCSecEtaPt[iCut]->Sumw2();
         }
 
         // book histograms for pure MC handling of PCM-Calo dir gamma reco
