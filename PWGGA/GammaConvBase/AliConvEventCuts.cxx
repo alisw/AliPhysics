@@ -3939,8 +3939,11 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         } else {
           weight = 1;
         }
-
-        if(isnan(weight)) weight = -1;
+        if(isnan(weight) || weight == 0){
+          TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
+          TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: ", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
+          AliFatal(debugMessage.Data());
+        }
         if (weight == -1) return kFALSE;
         else return eventAccepted;
 
@@ -4549,8 +4552,11 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     } else {
       weight = 1;
     }
-
-    if(isnan(weight)) weight = -1;
+    if(isnan(weight) || weight == 0){
+      TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
+      TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: ", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
+      AliFatal(debugMessage.Data());
+    }
     if (weight == -1) return kFALSE;
     else return eventAccepted;
 
