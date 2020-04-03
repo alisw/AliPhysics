@@ -318,6 +318,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventMultDist;
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
+  TH2F **fSameEventmTvsMultDist;
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTandMultDist;
   TH2F ***fSameEventkTCentDist;
@@ -335,6 +336,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fMixedEventMultDist;
   TH2F **fMixedEventCentDist;
   TH2F **fMixedEventmTDist;
+  TH2F **fMixedEventmTvsMultDist;
   TH2F **fMixedEventkTDist;
   TH2F ***fMixedEventkTandMultDist;
   TH2F ***fMixedEventkTCentDist;
