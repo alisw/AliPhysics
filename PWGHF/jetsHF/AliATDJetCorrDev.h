@@ -171,6 +171,7 @@ private:
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
 
    Int_t fNAxesBigSparse;           // number of axis
+   Int_t fNAxesBigSparsesub;        // number of axis for substructure sparse
    Bool_t fUseCandArray;            //! Use D meson candidates array
    Bool_t fUseSBArray;              //! Use D meson SB array
 
@@ -194,6 +195,7 @@ private:
    //main histograms
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
+   THnSparse* fhsDphizsub;          //! for substructure
 
    // jet stuff: functions for reclustering/deculstering
    fastjet::ClusterSequence* Recluster(AliEmcalJet* jet); // recluster with CA with own defined function

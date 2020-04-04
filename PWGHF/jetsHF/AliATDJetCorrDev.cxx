@@ -85,6 +85,7 @@ fCandidateArray(nullptr),
 fSideBandArray(nullptr),
 fAnalyseDBkg(kFALSE),
 fNAxesBigSparse(9),
+fNAxesBigSparsesub(11),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
 fhstat(),
@@ -101,6 +102,7 @@ fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
 fResponseMatrix(),
+fhsDphizsub(),
 fJetRadius(0.4),
 fRecluster(kFALSE),
 fhLPThetaEnergy(),
@@ -142,6 +144,7 @@ fCandidateArray(nullptr),
 fSideBandArray(nullptr),
 fAnalyseDBkg(kFALSE),
 fNAxesBigSparse(9),
+fNAxesBigSparsesub(11),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
 fhstat(),
@@ -158,6 +161,7 @@ fhInvMassptDbg(),
 fhPtPion(),
 fhsDphiz(),
 fResponseMatrix(),
+fhsDphizsub(),
 fJetRadius(0.4),
 fRecluster(kFALSE),
 fhLPThetaEnergy(),
@@ -1148,6 +1152,8 @@ Bool_t  AliATDJetCorrDev::DefineHistoForAnalysis(){
     }
 
     fhsDphiz=nullptr; //definition below according to the switches
+    fhsDphizsub=nullptr; // smaller dimension sparse for substructure
+                        // can be filled into the main sparse later on
 
     if(fUseMCInfo){
         if(fCandidateType==kDstartoKpipi){
@@ -1167,23 +1173,40 @@ Bool_t  AliATDJetCorrDev::DefineHistoForAnalysis(){
             const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],fMaxMass,fMaxMass,nTracksLims[1],multLims[1],centLims[1], 1.5, 1.5 , 1.5};
             fNAxesBigSparse=nAxis;
             fhsDphiz=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, mass_{true}, mass_{refl}, nTrk, mult, cent, Bkg?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
+
+            const Int_t nAxissub=16;
+            const Int_t nbinsSparsesub[nAxissub]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy,nbinsSpsmass,nbinsSpsmass, nbinNtracks,nbinsMult,nbinsCent,2, 2, 2, nbinstheta, nbinsenergy};
+            const Double_t minSparsesub[nAxissub]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,etalims[0],etalims[0],fMinMass,fMinMass,nTracksLims[0],multLims[0],centLims[0], -0.5,-0.5,-0.5, fMinLnOneByTheta, fMinEnergy};
+            const Double_t maxSparsesub[nAxissub]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],fMaxMass,fMaxMass,nTracksLims[1],multLims[1],centLims[1], 1.5, 1.5 , 1.5, fMaxLnOneByTheta, fMaxEnergy};
+            fNAxesBigSparsesub=nAxissub;
+            fhsDphizsub=new THnSparseF("hsDphizsub","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, mass_{true}, mass_{refl}, nTrk, mult, cent, Bkg?, D in EMCal acc?, jet in EMCal acc?, theta, E", nAxissub, nbinsSparsesub, minSparsesub, maxSparsesub);
         }
 
     }
     else{
-        AliInfo("Creating a 9 axes container");
+        AliInfo("Creating a 9 axes and 11 axes container");
         const Int_t nAxis=9;
         const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy,nbinNtracks,nbinsMult,nbinsCent};
         const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,etalims[0],etalims[0],nTracksLims[0],multLims[0],centLims[0]};
         const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],nTracksLims[1],multLims[1],centLims[1]};
         fNAxesBigSparse=nAxis;
         fhsDphiz=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, nTrk, mult, cent,", nAxis, nbinsSparse, minSparse, maxSparse);
+
+        const Int_t nAxissub=11;
+        const Int_t nbinsSparsesub[nAxissub]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy,nbinNtracks,nbinsMult,nbinsCent,nbinstheta,nbinsenergy};
+        const Double_t minSparsesub[nAxissub]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,etalims[0],etalims[0],nTracksLims[0],multLims[0],centLims[0],fMinLnOneByTheta,fMinEnergy};
+        const Double_t maxSparsesub[nAxissub]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],nTracksLims[1],multLims[1],centLims[1],fMaxLnOneByTheta,fMaxEnergy};
+        fNAxesBigSparsesub=nAxissub;
+        fhsDphizsub=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, nTrk, mult, cent,theta, energy", nAxissub, nbinsSparsesub, minSparsesub, maxSparsesub);
     }
 
     if(!fhsDphiz) AliFatal("No THnSparse created");
+    if(!fhsDphizsub) AliFatal("No THnSparseSub created");
     fhsDphiz->Sumw2();
+    fhsDphizsub->Sumw2();
 
     fOutput->Add(fhsDphiz);
+    fOutput->Add(fhsDphizsub);
 
     if(fBuildRM == kTRUE || fBuildRMEff == kTRUE)
     {
