@@ -546,7 +546,10 @@ void AliSysInfo::printTreeTable(const char *inputLog, const char *mask,  Int_t n
   TString query = TString::Format("cat %s|egrep %s|sed s_dumpTreeSize::__|", inputLog, mask);
   query += TString::Format("sort -r -k %d| head -n %d", sortCol, nrows);
   //if (isJira) query+=TString::Format("|gawk '{print }'")
-  if (isJIRA) query += "|gawk '{print \"|\"$1\"|\"$2\"|\"$3\"|\"$4\"|\"$5\"|\"$6\"|\"$7\"|\"}'";
+  if (isJIRA) {
+    query += "|gawk '{print \"|\"$1\"|\"$2\"|\"$3\"|\"$4\"|\"$5\"|\"$6\"|\"$7\"|\"}'";
+    printf("|BranchName|Self size|Self Zip size|Full Total size|Full zip|Compression|Fraction|\n");
+  }
   if (verbose) printf("%s\n", query.Data());
   gSystem->Exec(query.Data());
 }
