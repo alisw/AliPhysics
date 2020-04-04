@@ -83,15 +83,6 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
     }
     else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
     Name="Lc2pK0S";
-  }
-  }else if(pdgMeson==4122 && isLcV0){
-    if(stdcuts) {
-      analysiscuts = new AliRDHFCutsLctoV0();
-      if (system == 0) analysiscuts->SetStandardCutsPP2010();
-      else analysiscuts->SetStandardCutsPbPb2011();
-    }
-    else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(finAnObjname);
-    Name="Lc2pK0S";
   }else if(pdgMeson==4122 && !isLcV0){
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsLctopKpi();
