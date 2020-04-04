@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-//Apr 2 syst.
+//Apr 3 eta03 syst.
 
 
 #include "AliAnalysisManager.h"
