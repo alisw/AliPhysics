@@ -384,7 +384,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 
             
-            if(abseta < 0.5)
+            if(abseta < 0.3)
             {
                 if(genpid == 3122)
                 {
@@ -614,7 +614,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 Int_t iptbin = GetPtBin(mcpt);
                 if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 4 && TMath::Abs(negpion) <= 4)
                     {
@@ -883,7 +883,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     
-                }//|eta|<0.5
+                }//|eta|<0.3
             } //MC condition
         }// zero onfly V0
     }// end of V0 loop
