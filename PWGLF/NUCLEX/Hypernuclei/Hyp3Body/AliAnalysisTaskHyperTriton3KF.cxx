@@ -310,7 +310,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       nSigmasTOF[iT] = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[iT]);
       if (std::abs(nSigmasTPC[iT]) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] && 
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[kDeuteron]);
+        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[iT]);
     }
   
     if (candidate[0] || candidate[1] || candidate[2]) {
@@ -423,6 +423,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.dca_de_pr = deu.particle.GetDistanceFromParticle(p.particle);
         recHyp.dca_de_pi = deu.particle.GetDistanceFromParticle(pi.particle);
         recHyp.dca_pr_pi = p.particle.GetDistanceFromParticle(pi.particle);
+
+        recHyp.tpcClus_de = deu.track->GetTPCsignalN();
+        recHyp.tpcClus_pr = p.track->GetTPCsignalN();
+        recHyp.tpcClus_pi = pi.track->GetTPCsignalN();
 
         bool record{!fMC || !fOnlyTrueCandidates};
         if (fMC) {
