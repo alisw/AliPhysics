@@ -104,7 +104,13 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fSearchUpToQuark(kFALSE),
   fSystem(0),
   fESDtrackCuts(0x0),
-  fReadMC(kTRUE)
+  fReadMC(kTRUE),
+  fPtMin(0.),
+  fPtMax(40.),
+  fNPtBins(40),
+  fYMin(2.),
+  fYMax(-2.),
+  fNYBins(40)
 {
   //
   for(Int_t i=0; i<5; i++){
@@ -205,42 +211,42 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistoNbVsNc = new TH2F("hnbvsnc","",nBinscb,-0.5,maxncn,nBinscb,-0.5,maxncn);
   fOutput->Add(fHistoNbVsNc);
 
-  fHistYPtPrompt[0] = new TH2F("hyptD0prompt","D0 - Prompt",40,0.,40.,20,-2.,2.);
-  fHistYPtPrompt[1] = new TH2F("hyptDplusprompt","Dplus - Prompt",40,0.,40.,20,-2.,2.);
-  fHistYPtPrompt[2] = new TH2F("hyptDstarprompt","Dstar - Prompt",40,0.,40.,20,-2.,2.);
-  fHistYPtPrompt[3] = new TH2F("hyptDsprompt","Ds - Prompt",40,0.,40.,20,-2.,2.);
-  fHistYPtPrompt[4] = new TH2F("hyptLcprompt","Lc - Prompt",40,0.,40.,20,-2.,2.);
+  fHistYPtPrompt[0] = new TH2F("hyptD0prompt","D0 - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPrompt[1] = new TH2F("hyptDplusprompt","Dplus - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPrompt[2] = new TH2F("hyptDstarprompt","Dstar - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPrompt[3] = new TH2F("hyptDsprompt","Ds - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPrompt[4] = new TH2F("hyptLcprompt","Lc - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",40,0.,40.,40,-2.,2.);
-  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",40,0.,40.,40,-2.,2.);
-  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",40,0.,40.,40,-2.,2.);
-  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",40,0.,40.,40,-2.,2.);
-  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",40,0.,40.,40,-2.,2.);
+  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistYPtAllDecay[0] = new TH2F("hyptD0AllDecay","D0 - All",40,0.,40.,40,-2.,2.);
-  fHistYPtAllDecay[1] = new TH2F("hyptDplusAllDecay","Dplus - All",40,0.,40.,40,-2.,2.);
-  fHistYPtAllDecay[2] = new TH2F("hyptDstarAllDecay","Dstar - All",40,0.,40.,40,-2.,2.);
-  fHistYPtAllDecay[3] = new TH2F("hyptDsAllDecay","Ds - All",40,0.,40.,40,-2.,2.);
-  fHistYPtAllDecay[4] = new TH2F("hyptLcAllDecay","Lc - All",40,0.,40.,40,-2.,2.);
+  fHistYPtAllDecay[0] = new TH2F("hyptD0AllDecay","D0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtAllDecay[1] = new TH2F("hyptDplusAllDecay","Dplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtAllDecay[2] = new TH2F("hyptDstarAllDecay","Dstar - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtAllDecay[3] = new TH2F("hyptDsAllDecay","Ds - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtAllDecay[4] = new TH2F("hyptLcAllDecay","Lc - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistYPtPromptAllDecay[0] = new TH2F("hyptD0promptAllDecay","D0 - Prompt",40,0.,40.,40,-2.,2.);
-  fHistYPtPromptAllDecay[1] = new TH2F("hyptDpluspromptAllDecay","Dplus - Prompt",40,0.,40.,40,-2.,2.);
-  fHistYPtPromptAllDecay[2] = new TH2F("hyptDstarpromptAllDecay","Dstar - Prompt",40,0.,40.,40,-2.,2.);
-  fHistYPtPromptAllDecay[3] = new TH2F("hyptDspromptAllDecay","Ds - Prompt",40,0.,40.,40,-2.,2.);
-  fHistYPtPromptAllDecay[4] = new TH2F("hyptLcpromptAllDecay","Lc - Prompt",40,0.,40.,40,-2.,2.);
+  fHistYPtPromptAllDecay[0] = new TH2F("hyptD0promptAllDecay","D0 - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPromptAllDecay[1] = new TH2F("hyptDpluspromptAllDecay","Dplus - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPromptAllDecay[2] = new TH2F("hyptDstarpromptAllDecay","Dstar - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPromptAllDecay[3] = new TH2F("hyptDspromptAllDecay","Ds - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtPromptAllDecay[4] = new TH2F("hyptLcpromptAllDecay","Lc - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistYPtFeeddownAllDecay[0] = new TH2F("hyptD0feeddownAllDecay","D0 - FromB",40,0.,40.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[1] = new TH2F("hyptDplusfeeddownAllDecay","Dplus - FromB",40,0.,40.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[2] = new TH2F("hyptDstarfeeddownAllDecay","Dstar - FromB",40,0.,40.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[3] = new TH2F("hyptDsfeeddownAllDecay","Ds - FromB",40,0.,40.,40,-2.,2.);
-  fHistYPtFeeddownAllDecay[4] = new TH2F("hyptLcfeeddownAllDecay","Lc - FromB",40,0.,40.,40,-2.,2.);
+  fHistYPtFeeddownAllDecay[0] = new TH2F("hyptD0feeddownAllDecay","D0 - FromB",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddownAllDecay[1] = new TH2F("hyptDplusfeeddownAllDecay","Dplus - FromB",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddownAllDecay[2] = new TH2F("hyptDstarfeeddownAllDecay","Dstar - FromB",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddownAllDecay[3] = new TH2F("hyptDsfeeddownAllDecay","Ds - FromB",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddownAllDecay[4] = new TH2F("hyptLcfeeddownAllDecay","Lc - FromB",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
 
-  fHistYPtFeeddown[0] = new TH2F("hyptD0feeddown","D0 - Feeddown",40,0.,40.,20,-2.,2.);
-  fHistYPtFeeddown[1] = new TH2F("hyptDplusfeeddown","Dplus - Feeddown",40,0.,40.,20,-2.,2.);
-  fHistYPtFeeddown[2] = new TH2F("hyptDstarfeedown","Dstar - Feeddown",40,0.,40.,20,-2.,2.);
-  fHistYPtFeeddown[3] = new TH2F("hyptDsfeedown","Ds - Feeddown",40,0.,40.,20,-2.,2.);
-  fHistYPtFeeddown[4] = new TH2F("hyptLcfeedown","Lc - Feeddown",40,0.,40.,20,-2.,2.);
+  fHistYPtFeeddown[0] = new TH2F("hyptD0feeddown","D0 - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddown[1] = new TH2F("hyptDplusfeeddown","Dplus - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddown[2] = new TH2F("hyptDstarfeedown","Dstar - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddown[3] = new TH2F("hyptDsfeedown","Ds - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtFeeddown[4] = new TH2F("hyptLcfeedown","Lc - Feeddown",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
   for(Int_t ih=0; ih<5; ih++){
     fHistBYPtAllDecay[ih]->SetMinimum(0);
@@ -257,13 +263,13 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
     fOutput->Add(fHistYPtFeeddown[ih]);
   }
 
-  fHistYPtD0byDecChannel[0] = new TH2F("hyptD02","D0 - 2prong",40,0.,40.,20,-2.,2.);
-  fHistYPtD0byDecChannel[1] = new TH2F("hyptD04","D0 - 4prong",40,0.,40.,20,-2.,2.);
-  fHistYPtDplusbyDecChannel[0] = new TH2F("hyptDplusnonreson","Dplus - non reson",40,0.,40.,20,-2.,2.);
-  fHistYPtDplusbyDecChannel[1] = new TH2F("hyptDplusreson","Dplus - reson via K0*",40,0.,40.,20,-2.,2.);
-  fHistYPtDplusbyDecChannel[2] = new TH2F("hyptDplusKKpi","Dplus -> KKpi",40,0.,40.,20,-2.,2.);
-  fHistYPtDsbyDecChannel[0] = new TH2F("hyptDsphi","Ds - vis Phi",40,0.,40.,20,-2.,2.);
-  fHistYPtDsbyDecChannel[1] = new TH2F("hyptDsk0st","Ds - via k0*",40,0.,40.,20,-2.,2.);
+  fHistYPtD0byDecChannel[0] = new TH2F("hyptD02","D0 - 2prong",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtD0byDecChannel[1] = new TH2F("hyptD04","D0 - 4prong",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtDplusbyDecChannel[0] = new TH2F("hyptDplusnonreson","Dplus - non reson",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtDplusbyDecChannel[1] = new TH2F("hyptDplusreson","Dplus - reson via K0*",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtDplusbyDecChannel[2] = new TH2F("hyptDplusKKpi","Dplus -> KKpi",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtDsbyDecChannel[0] = new TH2F("hyptDsphi","Ds - vis Phi",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistYPtDsbyDecChannel[1] = new TH2F("hyptDsk0st","Ds - via k0*",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
   for(Int_t ih=0; ih<2; ih++){
 
