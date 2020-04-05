@@ -7,6 +7,7 @@
 #include <TObject.h>
 class TStopwatch;
 class TTree;
+class TBranch;
 class TMemStatManager;
 using std::fstream;
 
@@ -32,6 +33,10 @@ public:
   static void SetDisabled(Bool_t v=kTRUE)   {fgDisabled = v; fgVerbose=kFALSE;}
   static Bool_t IsDisabled()               {return fgDisabled;}
   static void PrintJiraTable(TTree * tree, const char *var, const char *cut, const char *format, const char *output="syswatch.table");
+  //
+  static void dumpBranchSize(FILE *pFile,  TBranch * branch, const char *dumpName, Float_t &totBytes, Float_t &zipBytes, Float_t zipBytesNorm);
+  static void dumpTreeSize(TTree * tree, const char *dumpName, const char * outName=0);
+  static void printTreeTable(const char *inputLog, const char *mask,  Int_t nrows, Int_t sortCol=7, Bool_t isJIRA=1, Bool_t verbose=0);
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);

@@ -472,3 +472,86 @@ TTree * AliSysInfo::MakeDUTree(const char *lname, const char * fout){
     tree=(TTree*)ftout->Get("du");
   return tree;  
 }
+
+
+/// recursive dumpBrachSize to outout file (or STDOUT)
+/// \param pFile         - output file (or STDOUT)
+/// \param branch        - branch to dump recursivele
+/// \param dumpName      - dump ID
+/// \param totBytes      - total bytes
+/// \param zipBytes      - zip butes
+/// \param zipBytesNorm  - overal normalization factor (full tree size)
+/// \return
+void AliSysInfo::dumpBranchSize(FILE *pFile,  TBranch * branch, const char *dumpName, Float_t &totBytes, Float_t &zipBytes, Float_t zipBytesNorm){
+  Int_t nBranches = branch->GetListOfBranches()->GetSize();
+  zipBytes=branch->GetZipBytes();
+  totBytes=branch->GetTotBytes();
+  for (Int_t iBranch=0; iBranch<nBranches; iBranch++){
+    TBranch * br = (TBranch*)branch->GetListOfBranches()->At(iBranch);
+    if (br== NULL) continue;
+    Float_t totBytesSelf=branch->GetTotBytes();
+    Float_t zipBytesSelf=branch->GetZipBytes();
+    Float_t totBytesL=branch->GetTotBytes();
+    Float_t zipBytesL=branch->GetZipBytes();
+    if (branch->GetListOfBranches()){
+      TString dumpNameLocal=TString::Format("%s",dumpName);
+      dumpBranchSize(pFile, br, dumpNameLocal, totBytesL, zipBytesL, zipBytesNorm);
+    }
+    zipBytes+=zipBytesL;
+    totBytes+=totBytesL;
+    fprintf(pFile, "dumpTreeSize::%s.%s\t%0.0f\t%0.0f\t%0.0f\t%0.0f\t%0.2f\t%0.4f\n", dumpName, br->GetName(), totBytesSelf,zipBytesSelf, totBytesL, zipBytesL,  zipBytesL/totBytesL, zipBytesL/zipBytesNorm);
+  }
+}
+
+/// recursie dumpTreeSize to ouput file or STDOUT
+/// \param tree            - input tree
+/// \param dumpName        - ID to dump
+/// \param outName         - out file to dump - defaut to STDOUT
+void AliSysInfo::dumpTreeSize(TTree * tree, const char *dumpName, const char * outName){
+  FILE * pFile;
+  if (outName!=0) {
+    pFile = fopen(outName, "w");
+  }else{
+    pFile=stdout;
+  }
+  Int_t nBranches = tree->GetListOfBranches()->GetSize();
+  Float_t nZipBytes=tree->GetZipBytes();
+  Float_t nTotBytes=tree->GetTotBytes();
+  fprintf(pFile,"dumpTreeSize::%s.%s\t%s\t%s\t%s\t%s\t%s\n", "Name", "BranchName", "Self Total", "Self Zip", "Full Total", "Full zip" , "Fraction");
+  fprintf(pFile,"dumpTreeSize::%s.base\t%0.0f\t%0.0f\t%0.0f\t%0.0f\t%0.2f\t%0.4f\n", dumpName, nTotBytes, nZipBytes, nTotBytes, nZipBytes, nZipBytes/nTotBytes,1.);
+  for (Int_t iBranch=0; iBranch<nBranches; iBranch++){
+    TBranch * branch = (TBranch*)tree->GetListOfBranches()->At(iBranch);
+    if (branch== NULL) continue;
+    Float_t totBytesSelf=branch->GetTotBytes();
+    Float_t zipBytesSelf=branch->GetZipBytes();
+    Float_t totBytes=branch->GetTotBytes();
+    Float_t zipBytes=branch->GetZipBytes();
+    if (branch->GetListOfBranches() && branch->GetListOfBranches()->GetSize()>0){
+      TString dumpNameLocal=TString::Format("%s",dumpName);
+      AliSysInfo::dumpBranchSize(pFile, branch, dumpNameLocal, totBytes, zipBytes,nZipBytes);
+    }
+    fprintf(pFile,"dumpTreeSize::%s.%s\t%0.0f\t%0.0f\t%0.0f\t%0.0f\t%0.2f\t%0.4f\n", dumpName, branch->GetName(), totBytesSelf, zipBytesSelf, totBytes, zipBytes,  zipBytes/totBytes, zipBytes/nZipBytes);
+  }
+  fflush(pFile);
+}
+
+/// print Tree memory and disk usage table  parsing dumpTreeSize log
+/// \param inputLog     - input log file
+/// \param mask         - mask to dump
+/// \param nrows        - number of raws to dump
+/// \param sortCol      - column to sort
+/// \param isJIRA       - flag - JIRA format
+/// \param verbose
+void AliSysInfo::printTreeTable(const char *inputLog, const char *mask,  Int_t nrows, Int_t sortCol, Bool_t isJIRA, Bool_t verbose) {
+  TString query = TString::Format("cat %s|egrep %s|sed s_dumpTreeSize::__|", inputLog, mask);
+  query += TString::Format("sort -r -k %d| head -n %d", sortCol, nrows);
+  //if (isJira) query+=TString::Format("|gawk '{print }'")
+  if (isJIRA) {
+    query += "|gawk '{print \"|\"$1\"|\"$2\"|\"$3\"|\"$4\"|\"$5\"|\"$6\"|\"$7\"|\"}'";
+    printf("|BranchName|Self size|Self Zip size|Full Total size|Full zip|Compression|Fraction|\n");
+  }
+  if (verbose) printf("%s\n", query.Data());
+  gSystem->Exec(query.Data());
+}
+
+
