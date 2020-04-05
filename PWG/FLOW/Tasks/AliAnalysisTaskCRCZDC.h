@@ -343,6 +343,8 @@ private:
   TF1 *fMultTOFLowCut; //!
   TF1 *fMultTOFHighCut; //!
   TProfile2D *fVZEROMult; //!
+  TH1F *fRecordNegativeEZNA; //! record # of event with negative EZNA value which causes Power(EZNA, fZDCGainAlpha) problem (Shi)
+  TH1F *fRecordNegativeEZNC; //! record # of event with negative EZNC value which causes Power(EZNC, fZDCGainAlpha) problem (Shi)
 
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   Bool_t fUseTowerEq; //
