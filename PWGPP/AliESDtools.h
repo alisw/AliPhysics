@@ -10,6 +10,7 @@ class TH1F;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDfriend;
+class AliTriggerAnalysis;
 //class TVectorF;
 #include "TNamed.h"
 
@@ -53,6 +54,7 @@ class AliESDtools : public TNamed {
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner
   AliESDEvent * fEvent;                           //! esd event pointer - class is not owner
   AliPIDResponse   * fPIDResponse;                //! PID response object
+  AliTriggerAnalysis *fTriggerAnalysis;           //! tigger analysis
   Bool_t   fTaskMode;                             // analysis task mode
   TH1F *fHisITSVertex;                            // ITS z vertex histogram
   TH1F *fHisTPCVertexA;                           // TPC z vertex A side

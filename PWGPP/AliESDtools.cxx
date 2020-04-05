@@ -76,6 +76,10 @@
 #include "AliMathBase.h"
 #include "AliESDTOFHit.h"
 #include "AliTOFGeometry.h"
+#include "AliESDZDC.h"
+#include "AliESDHeader.h"
+#include "AliTriggerAnalysis.h"
+#include "AliESDUtils.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -110,6 +114,8 @@ AliESDtools::AliESDtools():
   fStreamer(nullptr)
 {
   fgInstance=this;
+  fTriggerAnalysis=new AliTriggerAnalysis;
+
 }
 
 /// Initialize tool - set ESD address and book histogram counters
@@ -844,6 +850,14 @@ Int_t AliESDtools::DumpEventVariables() {
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
   Int_t tpcTrackBeforeClean=fEvent->GetNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+  TBits onlineMultMap = multObj->GetFastOrFiredChips();
+  TBits offlineMultMap = multObj->GetFiredChipMap();
+  AliESDZDC* esdZDC = fEvent->GetESDZDC();
+  bool isLaserEvent =  fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+  bool isHVdip =  fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+  bool isIncomplete = fTriggerAnalysis->IsIncompleteEvent(fEvent);
+  bool isZnaHit = esdZDC->IsZNAhit();
+  bool isZncHit = esdZDC->IsZNChit();
 
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
@@ -855,6 +869,9 @@ Int_t AliESDtools::DumpEventVariables() {
   TVectorF phiCountCITSOnly(36);
   TVectorF tZeroMult(24);  for (Int_t i=1;i<24;i++) tZeroMult[i] = 0.f;
   TVectorF vZeroMult(64);  for (Int_t i=1;i<64;i++) vZeroMult[i] = 0.f;
+  TVectorF tZeroTime(24);  for (Int_t i=1;i<24;i++) tZeroTime[i] = 0.f;
+  TVectorF vZeroTime(64);  for (Int_t i=1;i<64;i++) vZeroTime[i] = 0.f;
+
   TVectorF itsClustersPerLayer(6); for (Int_t i=1;i<6;i++) itsClustersPerLayer[i] = 0.f;
   //
   for (Int_t i=1;i<37;i++){
@@ -868,11 +885,33 @@ Int_t AliESDtools::DumpEventVariables() {
   //
   // Additional counters for ITS TPC V0 and T0
   const AliESDTZERO *esdTzero = fEvent->GetESDTZERO();
-  const Double32_t *t0amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Time=esdTzero->GetT0time();
+  //  ZDC amplitude  and timers
+  TMatrixF zdcTime(32,4);
+  TMatrixF zdcEnergy(8,5);
+  for (Int_t i=0; i<32; i++) {
+    for (Int_t j=0; j<4; j++) {
+      zdcTime(i, j) = esdZDC->GetZDCTDCData(i, j);
+      //printf("%d\t%d\n",i,j);
+    }
+  }
+  for (int i=0; i<5; i++){
+    zdcEnergy(0,i)=esdZDC->GetZN1TowerEnergy()[i];
+    zdcEnergy(1,i)=esdZDC->GetZN2TowerEnergy()[i];
+    zdcEnergy(2,i)=esdZDC->GetZP1TowerEnergy()[i];
+    zdcEnergy(3,i)=esdZDC->GetZP2TowerEnergy()[i];
+    zdcEnergy(4,i)=esdZDC->GetZN1TowerEnergyLR()[i];
+    zdcEnergy(5,i)=esdZDC->GetZN2TowerEnergyLR()[i];
+    zdcEnergy(6,i)=esdZDC->GetZP1TowerEnergyLR()[i];
+    zdcEnergy(7,i)=esdZDC->GetZP2TowerEnergyLR()[i];
+  }
   //
 
-  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0Amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroTime[i] = (Float_t) t0Time[i]; }
   for (Int_t i=0;i<64;i++) { vZeroMult[i] = fEvent->GetVZEROData()-> GetMultiplicity(i); }
+  for (Int_t i=0;i<64;i++) { vZeroTime[i] = fEvent->GetVZEROData()-> GetTime(i); }
   for (Int_t i=0;i<6;i++)  { itsClustersPerLayer[i] = multObj->GetNumberOfITSClusters(i); }
   Int_t runNumber=fEvent->GetRunNumber();
   Double_t timeStampS=fEvent->GetTimeStamp();
@@ -934,6 +973,22 @@ Int_t AliESDtools::DumpEventVariables() {
     delete grLumiGraph;
     timeStampCache=timeStamp;
   }
+  // pile-up info from ESD as in ANALYSIS/ESDfilter/AliAnalysisTaskESDfilter.cxx
+  // Add custom TPC and ITS pileup infos
+  static TVectorF vtiTPCESD(10), vtiITSESD(8);
+   AliESDHeader* headESD = fEvent->GetHeader();
+  if (headESD->GetTPCPileUpInfo()) {
+    vtiTPCESD=*(headESD->GetTPCPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetTPCPileupVertexInfo(fEvent, vtiTPCESD);
+  }
+  if (headESD->GetITSPileUpInfo()) {
+    vtiITSESD=*(headESD->GetITSPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
+  }
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -944,10 +999,17 @@ Int_t AliESDtools::DumpEventVariables() {
                      "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
                      "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
                      "triggerMask="          << triggerMask           <<  //trigger mask
-                     "vz="                   << fVz                    <<  // vertex Z
+                     //
+                     "isLaserEvent="        <<isLaserEvent           <<  // fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+                     "isHVdip="             <<isHVdip                <<  // fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+                     "isIncomplete="        <<isIncomplete           <<  // fTriggerAnalysis->IsIncompleteEvent(fEvent);
+                     "isZnaHit="            <<isZnaHit               <<  //esdZDC->IsZNAhit();
+                     "isZncHit="            << isZncHit              <<  // esdZDC->IsZNChit();
+                     //
+                     "vz="                   << fVz                   <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
-                     "tpcMult="              << TPCMult               <<  //  TPC multiplicity
+                     "tpcMult="              << TPCMult               <<  //  TPC multiplicityf
                      "eventMult="            << eventMult             <<  //  event multiplicity
                      "eventMultESD="         << eventMultESD           <<  //  event multiplicity ESD
                      "nTracksStored="        << nTracksStored          <<  // number of sored tracks
@@ -957,6 +1019,14 @@ Int_t AliESDtools::DumpEventVariables() {
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
                      "centrality.="          <<&centrality<<                // vector of centrality estimators
                      //
+                     "onlineMultMap.="       <<&onlineMultMap          <<  // online multiplicity bitmask
+                     "offlineMultMap.="       <<&offlineMultMap        <<  // offline multiplicity bitmask
+                     //
+                     "zdcTime.="            <<&zdcTime                 <<  //zdc time matrix
+                     "zdcEnergy.="            <<&zdcEnergy             <<  //zdc energy matrix
+                     //
+                     "tZeroTime.="           << &tZeroTime             <<  // T0 time
+                     "vZeroTime.="           << &vZeroTime             <<  // V0 time
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity
                      "itsClustersPerLayer.=" << &itsClustersPerLayer   <<  // its clusters per layer
@@ -973,13 +1043,16 @@ Int_t AliESDtools::DumpEventVariables() {
                      "phiCountAITSOnly.="    << &phiCountAITSOnly      <<  // track count only ITS on A side
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
                      //
+                     "tpcVertexInfoESD.="    <<&vtiTPCESD              <<  // TPC vertex information -as calculated in ESD - before cleaning
+                     "itsVertexInfoESD.="    <<&vtiITSESD              <<  // ITS vertex information for pile up rejection -as caclulated in ESD after cleaning
+                      //
                      "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
                      "itsVertexInfo.="<<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
                      //
                      "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
                      "nTOFhits="<<nTOFhits<<
                      "nTOFmatches="<<nTOFmatches<<
-                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter mutltiplicity estimators
+                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter multiplicity estimators
                      "\n";
 
   return 0;
