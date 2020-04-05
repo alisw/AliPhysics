@@ -2469,11 +2469,11 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   const Double_t cutGammaMass=0.1;
   const Double_t cutAlpha=1.1;
   if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
-  Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass);
+  Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass);
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtTrackDownscaligF, 10./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass)*8;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtV0DownscaligF, 10./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
@@ -2484,15 +2484,18 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 /// \return trigger mask
 ///        bit 0.) ITS PID trigger
 ///        bit 1.) TPC PID trigger
-/// TODO  - for the moment cuts are hardwired - assuming ITS/TPC is calibrated and stable. Should parameterize
+///        bit 2.) MC true trigger
+///        bit 3.) MC MB trigger  - bit 0,1 accpeted also if not MC true - downsampled by hardwaired factor const Float_t mcDownsample=0.05;
+/// TODO  - for the moment cuts are hardwired - assuming ITS/TPC is calibrated and stable. Should be parameterize
 /// TODO      - we should get "Robust PID" before filtering - currently using Aleph default
 Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * particle){
   ///
   Int_t mcTrigger=0;
-  const Float_t dcaCut=20;  // dca cut 20 cm
+  const Float_t dcaCut=15;  // dca cut 15 cm
+  const Float_t mcDownsample=0.05;
   if (particle!= nullptr){
     // hack - we do not have particle id for nuclei available - trigger PDG code >proton
-    if (TMath::Abs(particle->GetPdgCode())>kProton && particle->R()<dcaCut && particle->Vz()<dcaCut)  {
+    if (TMath::Abs(particle->GetPdgCode())>kProton && TMath::Abs(particle->R())<dcaCut && TMath::Abs(particle->Vz())<dcaCut)  {
       mcTrigger=4;
     }
   }
@@ -2524,6 +2527,12 @@ Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * 
     isOK&=(track->GetTPCsignal()/AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[2]))>75.0;
     if (track->GetITSsignal()>0) isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>10.5;
     triggerMask|=2*isOK;
+  }
+  triggerMask|=mcTrigger;
+  if (triggerMask==0) return 0;
+  if (particle!=nullptr ) {
+    if (gRandom->Rndm()<mcDownsample )  mcTrigger|=8; // MC
+    if (mcTrigger==0) return 0;
   }
   triggerMask|=mcTrigger;
   return triggerMask;
