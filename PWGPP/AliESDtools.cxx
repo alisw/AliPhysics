@@ -77,7 +77,9 @@
 #include "AliESDTOFHit.h"
 #include "AliTOFGeometry.h"
 #include "AliESDZDC.h"
+#include "AliESDHeader.h"
 #include "AliTriggerAnalysis.h"
+#include "AliESDUtils.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -888,10 +890,12 @@ Int_t AliESDtools::DumpEventVariables() {
   //  ZDC amplitude  and timers
   TMatrixF zdcTime(32,4);
   TMatrixF zdcEnergy(8,5);
-  for (int i0=0; i0<32; i0++)
-    for (int i1=0; i1<5; i1++){
-      zdcTime(i0,i1)=esdZDC->GetZDCTDCData(i0,i1);
+  for (Int_t i=0; i<32; i++) {
+    for (Int_t j=0; j<4; j++) {
+      zdcTime(i, j) = esdZDC->GetZDCTDCData(i, j);
+      //printf("%d\t%d\n",i,j);
     }
+  }
   for (int i=0; i<5; i++){
     zdcEnergy(0,i)=esdZDC->GetZN1TowerEnergy()[i];
     zdcEnergy(1,i)=esdZDC->GetZN2TowerEnergy()[i];
@@ -969,6 +973,22 @@ Int_t AliESDtools::DumpEventVariables() {
     delete grLumiGraph;
     timeStampCache=timeStamp;
   }
+  // pile-up info from ESD as in ANALYSIS/ESDfilter/AliAnalysisTaskESDfilter.cxx
+  // Add custom TPC and ITS pileup infos
+  static TVectorF vtiTPCESD(10), vtiITSESD(8);
+   AliESDHeader* headESD = fEvent->GetHeader();
+  if (headESD->GetTPCPileUpInfo()) {
+    vtiTPCESD=*(headESD->GetTPCPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetTPCPileupVertexInfo(fEvent, vtiTPCESD);
+  }
+  if (headESD->GetITSPileUpInfo()) {
+    vtiITSESD=*(headESD->GetITSPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
+  }
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -1023,6 +1043,9 @@ Int_t AliESDtools::DumpEventVariables() {
                      "phiCountAITSOnly.="    << &phiCountAITSOnly      <<  // track count only ITS on A side
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
                      //
+                     "tpcVertexInfoESD.="    <<&vtiTPCESD              <<  // TPC vertex information -as calculated in ESD - before cleaning
+                     "itsVertexInfoESD.="    <<&vtiITSESD              <<  // ITS vertex information for pile up rejection -as caclulated in ESD after cleaning
+                      //
                      "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
                      "itsVertexInfo.="<<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
                      //
