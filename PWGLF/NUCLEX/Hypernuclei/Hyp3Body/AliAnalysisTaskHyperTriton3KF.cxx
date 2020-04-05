@@ -310,7 +310,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       nSigmasTOF[iT] = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[iT]);
       if (std::abs(nSigmasTPC[iT]) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] && 
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[kDeuteron]);
+        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[iT]);
     }
   
     if (candidate[0] || candidate[1] || candidate[2]) {
