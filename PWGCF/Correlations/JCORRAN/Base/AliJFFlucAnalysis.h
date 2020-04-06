@@ -5,6 +5,7 @@
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
+#include <TF3.h>
 
 class TClonesArray;
 class AliJEfficiency;

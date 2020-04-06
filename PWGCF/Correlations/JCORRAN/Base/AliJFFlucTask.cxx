@@ -241,7 +241,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
 		fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
 
-		fFFlucAna->SetPhiWeights(0);
+		fFFlucAna->SetPhiWeights((TH1*)0);
+		fFFlucAna->SetPhiWeights((TF3*)0);
 		if(flags & FLUC_PHI_CORRECTION){
 			//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			int cbin = (binning != BINNING_CENT_PbPb)?
