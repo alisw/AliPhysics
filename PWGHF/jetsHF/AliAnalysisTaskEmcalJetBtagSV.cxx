@@ -1664,7 +1664,7 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
          fhDeltaPtLxy6->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
          fillMask = fillMask | 2;
       }       
-      if(lxy > 1 && ((fillMask & 4) >> 2) == 0 ){
+      if(lxy > 7 && ((fillMask & 4) >> 2) == 0 ){
          fillMask = fillMask | 4; 
          fhDeltaPtLxy7->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
 //---------------------------------------------------EMB_clus
