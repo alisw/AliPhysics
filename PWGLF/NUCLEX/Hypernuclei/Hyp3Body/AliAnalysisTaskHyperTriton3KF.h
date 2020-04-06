@@ -154,6 +154,9 @@ private:
   REvent3KF                    fREvent;
   std::vector<SHyperTriton3KF> fGenHyp;
   std::vector<int>             fGenRecMap;
+  std::vector<float>           fGenRecDeutMom;
+  std::vector<float>           fGenRecProtMom;
+  std::vector<float>           fGenRecPiMom;
   std::vector<RHyperTriton3KF> fRecHyp;
 
   AliAnalysisTaskHyperTriton3KF(const AliAnalysisTaskHyperTriton3KF &);               // not implemented

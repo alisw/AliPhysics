@@ -180,6 +180,9 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) {
     fTreeHyp3->Branch("SHyperTriton", &fGenHyp);
     fTreeHyp3->Branch("SGenRecMap", &fGenRecMap);
+    fTreeHyp3->Branch("SGenRecDeutMom", &fGenRecDeutMom);
+    fTreeHyp3->Branch("SGenRecProtMom", &fGenRecProtMom);
+    fTreeHyp3->Branch("SGenRecPiMom", &fGenRecPiMom);
   }
 
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
@@ -218,6 +221,9 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fGenHyp.clear();
   fRecHyp.clear();
   fGenRecMap.clear();
+  fGenRecDeutMom.clear();
+  fGenRecProtMom.clear();
+  fGenRecPiMom.clear();
 
   double pvPos[3], pvCov[6];
   fEventCuts.GetPrimaryVertex()->GetXYZ(pvPos);
@@ -387,7 +393,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.pt = std::hypot(mom.x(),mom.y());
+        float hSign = deu.track->Charge() > 0 ? 1. : -1;
+        recHyp.pt = hSign * std::hypot(mom.x(),mom.y());
         recHyp.phi = std::atan2(mom.y(),mom.x());
         recHyp.pz = mom.z();
         recHyp.m = mass;
@@ -434,8 +441,12 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         if (fMC) {
           int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
           record = record || momId >=0;
-          if (record)
+          if (record) {
             fGenRecMap.push_back(mcMap[momId]);
+            fGenRecDeutMom.push_back(deu.track->P());
+            fGenRecProtMom.push_back(p.track->P());
+            fGenRecPiMom.push_back(pi.track->P());
+          }
         }
         if (record)
           fRecHyp.emplace_back(recHyp);
