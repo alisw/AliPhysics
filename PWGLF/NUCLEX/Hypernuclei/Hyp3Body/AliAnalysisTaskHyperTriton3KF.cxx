@@ -225,6 +225,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fREvent.fX = pvPos[0];
   fREvent.fY = pvPos[1];
   fREvent.fZ = pvPos[2];
+  fREvent.fCent = fEventCuts.GetCentrality();
 
   KFPVertex kfPVertex;
   kfPVertex.SetXYZ(pvPos[0],pvPos[1],pvPos[2]);
@@ -272,8 +273,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       }
       SHyperTriton3KF genHyp;
       genHyp.l = Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2]);
-      genHyp.px = part->Px();
-      genHyp.py = part->Py();
+      genHyp.pt = part->Pt();
+      genHyp.phi = std::atan2(part->Py(),part->Px());
       genHyp.pz = part->Pz();
       genHyp.t = decayVtx[3];
       genHyp.positive = part->PdgCode() > 0;
@@ -308,9 +309,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     for (int iT{0}; iT < 3; ++iT) {
       nSigmasTPC[iT] = fPIDResponse->NumberOfSigmasTPC(track, kAliPID[iT]);
       nSigmasTOF[iT] = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[iT]);
+      bool requireTOFpid = track->P() > fRequireTOFpid[iT];
       if (std::abs(nSigmasTPC[iT]) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] && 
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[iT]);
+        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !requireTOFpid);
     }
   
     if (candidate[0] || candidate[1] || candidate[2]) {
@@ -385,13 +387,13 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.px = mom.x();
-        recHyp.py = mom.y();
+        recHyp.pt = std::hypot(mom.x(),mom.y());
+        recHyp.phi = std::atan2(mom.y(),mom.x());
         recHyp.pz = mom.z();
         recHyp.m = mass;
 
         const float ct = recHyp.l * kHyperTritonMass / totalMom;
-        if (ct < fCtRange[0] || ct > fCtRange[1])
+        if (ct < fCandidateCtRange[0] || ct > fCandidateCtRange[1])
           continue;
         if (fCosPAspline) {
           if (cosPA < fCosPAspline->Eval(ct))
