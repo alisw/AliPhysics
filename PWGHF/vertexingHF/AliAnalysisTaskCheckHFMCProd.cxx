@@ -108,8 +108,8 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fPtMin(0.),
   fPtMax(40.),
   fNPtBins(40),
-  fYMin(2.),
-  fYMax(-2.),
+  fYMin(-2.),
+  fYMax(2.),
   fNYBins(40)
 {
   //
