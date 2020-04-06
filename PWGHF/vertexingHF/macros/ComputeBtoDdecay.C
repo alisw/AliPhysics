@@ -57,7 +57,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-50MeVbins.txt",
 		      Int_t opt4ff=0,
-		      Int_t optForNorm=0,
+		      Int_t optForNorm=1,
 		      Bool_t writeTree=kFALSE){
 
   const Int_t nBeautyHadSpecies=4;
@@ -253,11 +253,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 	arrpD.push_back(part->P());
 	arryD.push_back(yD);
 	arrpdgD.push_back(pdgdau);
+	hBhadDau[iBhad]->Fill(iChad); // filled outside the cut on yD to recover correctly the BRs
 	if(optForNorm==0 || (optForNorm==1 && TMath::Abs(yD)<0.5)){
 	  hnonpromptDorigin[iChad]->Fill(iBhad);
 	  hnonpromptDpt[iChad]->Fill(ptD);
 	  hnonpromptDptByOrigin[iChad]->Fill(iBhad,ptD);
-	  hBhadDau[iBhad]->Fill(iChad);
 	  hDptVsBpt[iBhad*nCharmHadSpecies+iChad]->Fill(ptB,ptD);
 	}
       }
