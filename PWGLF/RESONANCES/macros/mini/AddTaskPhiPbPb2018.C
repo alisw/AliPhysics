@@ -1,5 +1,5 @@
 /***************************************************************************
-            dmallick@cern.ch - last modified on 17/03/2020
+            dmallick@cern.ch - last modified on 04/04/2020
 //
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
@@ -27,7 +27,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
 					    Int_t       nmix                = 5,
 					    Float_t     maxDiffVzMix        = 1.0,
 					    Float_t     maxDiffMultMix      = 5.0,
-					    TString     outNameSuffix       = "PbPb",						
+                     			    TString     outNameSuffix       = "PbPb",						
+					    UInt_t      trigger =   AliVEvent::kINT7,
 					    Int_t     Multbin       = 100,
 					    Int_t     lMultbin       = 0,
 					    Int_t     hMultbin       = 100,
@@ -55,7 +56,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
    TString taskName = Form("KStar%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   task->UseESDTriggerMask(AliVEvent::kINT7);
+   task->UseESDTriggerMask(trigger);
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
@@ -120,10 +121,13 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   //
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
-   //   gROOT->LoadMacro("ConfigKStarPbPbRunII.C"); 
-   if (!ConfigPhiPbPb2018(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK, enableMonitor,Multbin, lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
+   
+   //     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
+
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
+    //         gROOT->LoadMacro("ConfigPhiPbPb2018.C");
+    
+    if (!ConfigPhiPbPb2018(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK, enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
 
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
