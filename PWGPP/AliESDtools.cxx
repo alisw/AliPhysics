@@ -862,7 +862,7 @@ Int_t  AliESDtools::FillTrackCounters(){
     Float_t tglNorm=multObj->GetTheta(iTracklet);
     tglNorm = -TMath::Tan(tglNorm-TMath::Pi()/2.);
     tglNorm+=vertexNorm*vertex->GetZ();
-    fHist2DTrackletsCounter->Fill(tglNorm,phi);
+    fHist2DTrackletsCounter->Fill(phi,tglNorm);
   }
   // track  multiplicity  and sum pt histogram
   fHist2DTrackCounter->Reset();
@@ -879,11 +879,11 @@ Int_t  AliESDtools::FillTrackCounters(){
     pTrack->GetImpactParameters(dcaXY, dcaz);
     if (TMath::Abs(dcaXY) > kDCACut) continue;
     Double_t phi = pTrack->GetAlpha();
-    if (phi<0) phi=TMath::TwoPi();
-    fHist2DTrackCounter->Fill(pTrack->GetTgl(),phi);
+    if (phi<0) phi+=TMath::TwoPi();
+    fHist2DTrackCounter->Fill(phi,pTrack->GetTgl());
     // use k sigma biased  pt measurement
     mPt+=kSigmaBias*TMath::Sqrt(pTrack->GetSigma1Pt2());
-    fHist2DTrackSumPt->Fill(pTrack->GetTgl(),phi,1./mPt);
+    fHist2DTrackSumPt->Fill(phi, pTrack->GetTgl(),1./mPt);
   }
 }
 
