@@ -364,6 +364,15 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             }                                                                         
             // remove double-matched tracks
             fPairCleaner->ResetArray();
+            
+            // for (auto i = vXi.begin(); i < vXi.end(); i++)
+            // {
+            //     vAntiXi[i].SetCPA(1.0);
+            // }
+            // for (auto i = vAntiXi.begin(); i < vAntiXi.end(); i++)
+            // {
+            //     vAntiXi[i].SetCPA(1.0);
+            // }
 
             fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda,  0);
             fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 1);
