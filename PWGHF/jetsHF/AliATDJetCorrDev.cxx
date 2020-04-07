@@ -554,12 +554,15 @@ void AliATDJetCorrDev::ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* a
     // calling the reclustering function, and declustering the jet
     if(jet && fRecluster)
     {
-        ReDeCluster(jet, fUseMCInfo);
+        ReDeCluster(jet,rho, IsBkg, aodEvent);
         // Pseudo code:
         //  1. Recluster the jet
         //  2. Start declustering
         //  2.1. Get two subjets of the jet
         //  2.2. Get and fill in a histogram, the theta and E of the soft subjet/radiator as, you follow the hard subjet
+        
+        // A. Fill just the Lund plane(2D in theta, E), similar to fhInvMassptD(2D in Dmass, Dpt)
+        // B. Fill the THnSparase. Add 2 extra dimensions of the Lund plane to the old THnSparse fhsDphiz
     }
 
 }
@@ -748,14 +751,16 @@ void AliATDJetCorrDev::CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* a
         /*
         if (jet && fRecluster)
         {
-            ReDeCluster(jet, fUseMCInfo);
+            ReDeCluster(jet, rho, IsBkg, aodEvent);
         
         }
         */
     } // if jet cont reco
 
     Double_t fillRM[13] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes,multiplicity};
+    //Double_t fillRMsub[17] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes,multiplicity,thetaRec,energyRec, thetaGen,EnergyGen};
     fResponseMatrix->Fill(fillRM,1.);
+    //fResponseMatrixSub->Fill(fillRMsub,1.);
 
 }
 
@@ -1551,7 +1556,7 @@ fastjet::ClusterSequence* AliATDJetCorrDev::Recluster(AliEmcalJet* jet)
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet, bool theMCInfo)
+void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet)
 {
     fastjet::PseudoJet jj = fj_jet;
     fastjet::PseudoJet j1;
@@ -1567,12 +1572,21 @@ void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* a
                                                     // subjets j1 and j2
                                                     //
         Double_t rad_E = j2.E();                    // the radiator energy
-        // Fill the 2D histogram with del_R and del_E
-        FillLundPlane(del_R, rad_E, theMCInfo);
+
+        // Filling our histograms
+        // ------------------------
+        // A. Fill the 2D histogram with del_R and del_E
+        FillLundPlane(del_R, rad_E);
+        // B. Filling the THnSparse. This is the important part
+        //FillDJetHistogramsSub(del_R, rad_E, theMCInfo, );
+        
+
         jj = j1;
     }
     // check stats here if the final jet `jj' is a D meson or not
+    // ----------------------------------------------------------
     // put the stats into a histogram
+    //
     // // AliVParticle* hardTrack = ... maybe cast pseudojet to alivparticle and then get the flavour track of this jet. compare these two tracks
     // // or compare their invariant masses, or their transverse momenta
     // Doublt_t hardDMass = jj.perp() - Dmeson->Pt();
@@ -1581,15 +1595,17 @@ void AliATDJetCorrDev::DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* a
     fastjet::PseudoJet hardTrk=jj;
     AliVParticle* Dmeson = ali_jet->GetFlavourTrack(0);
     Double_t deltaM = (Dmeson->M() - hardTrk.m());
-    if(theMCInfo)fhDmesonOrNotMC->Fill(deltaM);
+    if(fUseMCInfo)fhDmesonOrNotMC->Fill(deltaM);
     else{fhDmesonOrNot->Fill(deltaM);}
+    //-- there should be a better way to do this
+    //
 
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy, bool theMCInfo)
+void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy)
 {
-    if(theMCInfo)
+    if(fUseMCInfo)
     {   fhLPThetaEnergyMC->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);}
     else
     {   fhLPThetaEnergy->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);}
@@ -1597,7 +1613,52 @@ void AliATDJetCorrDev::FillLundPlane(Double_t sj_deltaR, Double_t sj_energy, boo
 }
 
 //_______________________________________________________________________________
-void AliATDJetCorrDev::ReDeCluster(AliEmcalJet* jet, bool theMCInfo)
+void AliATDJetCorrDev::DeclusterTheJetAndFillSparse(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent)//mimics the FillDJetHistograms function
+{
+
+    // Set up variables to fill the THnSparse
+    AliVParticle *Dmeson = ali_jet->GetFlavourTrack(0);
+    Double_t JetPtCorr = ali_jet->Pt() - rho*ali_jet->Area();
+    Double_t JetEtaRec = ali_jet->Eta();
+    Double_t JetnTrkRec = ali_jet->GetNumberOfTracks();
+    Double_t z = 0;
+    if(rho>0) z = Z(Dmeson,ali_jet,rho);
+    else z = Z(Dmeson,ali_jet);
+    Bool_t bDInEMCalAcc=InEMCalAcceptance(Dmeson);
+    Bool_t bJetInEMCalAcc=InEMCalAcceptance(ali_jet);
+
+    AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)Dmeson;
+
+    // Decluster
+    fastjet::PseudoJet jj = fj_jet;
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;
+
+    while(jj.has_parents(j1, j2))
+    {
+        if(j1.perp2() < j2.perp2()) std::swap(j1,j2); // j1 is assumed to be harder subjet. if not, swap
+        Double_t del_R = j1.delta_R(j2);            // find the angular distance between j1 and j2
+        Double_t rad_E = j2.E();                    // the radiator energy
+
+        // Filling our histograms
+        // ------------------------
+        // A. Fill the 2D histogram with del_R and del_E
+        FillHistosD0JetSub(dzero, del_R, rad_E, z,Dmeson->Pt(),JetPtCorr,JetEtaRec,JetnTrkRec,IsBkg,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,-999);
+        // B. Filling the THnSparse. This is the important part
+        FillLundPlane(del_R, rad_E);
+        //FillDJetHistogramsSub(del_R, rad_E, theMCInfo, );
+        
+
+        jj = j1;
+    }
+    // check stats here if the final jet `jj' is a D meson or not
+    // ----------------------------------------------------------
+    //-- there should be a better way to do this
+
+}
+
+//_______________________________________________________________________________
+void AliATDJetCorrDev::ReDeCluster(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent)
 {
     // Pseudo code:
     //  1. Recluster the jet
@@ -1612,7 +1673,9 @@ void AliATDJetCorrDev::ReDeCluster(AliEmcalJet* jet, bool theMCInfo)
         std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
         if( recl_jets.size() > 0 )
         {
-           DeclusterTheJet( recl_jets[0], jet, theMCInfo);            // 2. Declustering the jet
+           DeclusterTheJet( recl_jets[0], jet);            // 2. Declustering the jet
+           DeclusterTheJetAndFillSparse( recl_jets[0], jet, rho, IsBkg, aodEvent);//mimics the FillDJetHistograms function
+ //       FillDJetHistograms(jet,rho,IsBkg,aodEvent);
            // 3. Fill the Lund Plane. This is done within the DeclusterTheJet function
         }
     }
@@ -1624,3 +1687,260 @@ void AliATDJetCorrDev::ReDeCluster(AliEmcalJet* jet, bool theMCInfo)
     //DeclusterTheJet(recl_jet, jet);                     // 2. Declustering the jet
     //FillLundPlane(4.0, 5.2);
 }
+
+//_______________________________________________________________________________
+void AliATDJetCorrDev::FillHistosD0JetSub(AliAODRecoDecayHF* candidate, Double_t del_R, Double_t rad_E, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Double_t nJetTrack, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdgTrue)
+{
+
+    Float_t nTracklets = static_cast<Float_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+    // multiplicity estimator with VZERO
+    Float_t vzeroMult=0;
+    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
+    if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+    Float_t multiplicity = nTracklets; // set to the Ntracklet estimator
+    if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
+
+    Float_t lPercentile = -1.;
+    if(!fIsPPData) {
+        lPercentile = fCuts->GetCentrality(aodEvent);
+    }
+
+   Double_t masses[2]={0.,0.};
+   Int_t pdgdaughtersD0[2]={211,321};//pi,K
+   Int_t pdgdaughtersD0bar[2]={321,211};//K,pi
+   Int_t pdgMeson = 413;
+   if (fCandidateType == kD0toKpi) pdgMeson = 421;
+
+   masses[0]=candidate->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0); //D0
+   masses[1]=candidate->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0bar); //D0bar
+
+   Double_t *point=nullptr;
+
+   if(!fUseMCInfo)
+   {
+      point=new Double_t[11];
+      point[0]=z;
+      point[1]=ptj;
+      point[2]=ptD;
+      point[3]=masses[0];
+      point[4]=candidate->Y(pdgMeson);
+      point[5]=jetEta;
+      point[6]=nJetTrack;
+      point[7]=multiplicity;
+      point[8]=lPercentile;
+      point[9]=del_R;
+      point[10]=rad_E;
+   }
+   else
+   {
+      point=new Double_t[16];
+      point[0]=z;
+      point[1]=ptj;
+      point[2]=ptD;
+      point[3]=masses[0];
+      point[4]=candidate->Y(pdgMeson);
+      point[5]=jetEta;
+      point[6]=-999;
+      point[7]=-999;
+      point[8]=nJetTrack;
+      point[9]=multiplicity;
+      point[10]=lPercentile;
+      point[11]=static_cast<Double_t>(IsBkg ? 1 : 0);
+      point[12]=static_cast<Double_t>(bDInEMCalAcc ? 1 : 0);
+      point[13]=static_cast<Double_t>(bJetInEMCalAcc ? 1 : 0);
+      point[14]=TMath::Log(1.0/del_R);
+      point[15]=rad_E;
+
+   }
+    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
+
+    //fhLPThetaEnergyMC->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);
+    //else
+    //fhLPThetaEnergy->Fill(TMath::Log(1.0/sj_deltaR), sj_energy);
+    if(!fUseMCInfo) {
+      if(isselected==1 || isselected==3)
+      {
+          //fhInvMassptD->Fill(masses[0],ptD);
+          point[3]=masses[0];
+          fhsDphizsub->Fill(point,1.);
+      }
+      if(isselected>=2)
+      {
+          //fhInvMassptD->Fill(masses[1],ptD);
+          point[3]=masses[1];
+          fhsDphizsub->Fill(point,1.);
+      }
+    }
+    else {
+      if(isselected==1 || isselected==3)
+      {
+          //fhInvMassptD->Fill(masses[0],ptD);
+          point[3]=masses[0];
+
+          if(isselected==1) {
+            point[6]=masses[0];
+            point[7]=-999;
+          }
+          else if(isselected==3 && pdgTrue==421){
+            point[6]=masses[0];
+            point[7]=masses[1];
+          }
+          else if(isselected==3 && pdgTrue==-421){
+            point[6]=masses[1];
+            point[7]=masses[0];
+          }
+          fhsDphizsub->Fill(point,1.);
+      }
+      if(isselected>=2)
+      {
+          //fhInvMassptD->Fill(masses[1],ptD);
+          point[3]=masses[1];
+          if(isselected==2) {
+            point[6]=masses[1];
+            point[7]=-999;
+          }
+          else if(isselected==3){
+            point[6]=-999;
+            point[7]=-999;
+          }
+          fhsDphizsub->Fill(point,1.);
+      }
+
+    }
+
+    delete[] point;
+}
+//
+////_______________________________________________________________________________
+//void AliATDJetCorrDev::CreateMCResponseMatrixSub(AliEmcalJet* MCjet, AliAODEvent* aodEvent)
+//{
+//    if(!MCjet) AliDebug(2, "No Generated Level Jet Found!");
+//
+//    Float_t nTracklets = static_cast<Float_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+//    // multiplicity estimator with VZERO
+//    Float_t vzeroMult=0;
+//    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aodEvent->GetVZEROData();
+//    if(vzeroAOD) vzeroMult = vzeroAOD->GetMTotV0A() +  vzeroAOD->GetMTotV0C();
+//    Float_t multiplicity = nTracklets; // set to the Ntracklet estimator
+//    if(fMultiplicityEstimator==kVZERO) { multiplicity = vzeroMult; }
+//
+//
+//    AliVParticle *Dgen = MCjet->GetFlavourTrack();
+//    Double_t zGen = Z(Dgen,MCjet,0);
+//    Double_t JetPtGen = MCjet->Pt();
+//    Double_t JetEtaGen = MCjet->Eta();
+//    Double_t DPtGen = Dgen->Pt();
+//    //Double_t JetnTrkGen = MCjet->GetNumberOfTracks();//unused variable
+//    AliAODMCParticle* DTrk = (AliAODMCParticle*)Dgen;
+//    Double_t DYGen = DTrk->Y();
+//    Int_t pdg = DTrk->GetPdgCode();
+//
+//    Double_t zRec = -999;
+//    Double_t JetPtRec = -999;
+//    Double_t JetEtaRec = -999;
+//    Double_t DPtRec = -999;
+//    Double_t DYRec = -999;
+//    Double_t JetnTrkRec = -999;
+//    Double_t pTRes = -999;
+//    Double_t zRes = -999;
+//
+//    AliJetContainer* JetContRec = GetJetContainer(0);
+//    if(JetContRec){
+//        AliEmcalJet* jet;
+//        GetHFJet(jet,kFALSE);
+//
+//        if (jet){
+//            AliVParticle *Drec = jet->GetFlavourTrack();
+//
+//            Double_t rho = 0;
+//            if(!fUsePythia){
+//                rho = JetContRec->GetRhoVal();
+//                if(fLocalRho) rho = fLocalRho->GetLocalVal(jet->Phi(),JetContRec->GetJetRadius(),JetContRec->GetRhoVal());
+//            }
+//            zRec = 0;
+//            if(rho>0) zRec = Z(Drec,jet,rho);
+//            else zRec = Z(Drec,jet);
+//            JetPtRec = jet->Pt() - rho*jet->Area();
+//            JetEtaRec = jet->Eta();
+//            DPtRec = Drec->Pt();
+//            JetnTrkRec = jet->GetNumberOfTracks();
+//            pTRes = JetPtGen ? ((JetPtRec - JetPtGen) / JetPtGen) : -999;
+//            zRes = zGen ? ((zRec - zGen) / zGen) : -999;
+//
+//            Int_t pdgMeson = 413;
+//            if (fCandidateType == kD0toKpi) pdgMeson = 421;
+//
+//            if(fCandidateType==kD0toKpi)
+//            {
+//                AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)Drec;
+//                DYRec = dzero->Y(pdgMeson);
+//
+//            }
+//
+//            Bool_t bDInEMCalAcc=InEMCalAcceptance(Drec);
+//            Bool_t bJetInEMCalAcc=InEMCalAcceptance(jet);
+//
+//            if(fCandidateType==kD0toKpi)
+//            {
+//                AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)Drec;
+//                //FillHistogramsD0JetCorr(dzero,zRec,Drec->Pt(),JetPtRec,JetEtaRec,JetnTrkRec,kFALSE,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,pdg);
+//                fastjet::ClusterSequence* cs = Recluster(jet);
+//                if (cs)
+//                {
+//                    std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
+//                    if ( recl_jets.size() > 0)
+//                    {
+//                        //DeclusterTheJetAndFillSparse(recl_jets[0], jet, IsBkg, aodEvent);
+//                        fastjet::PseudoJet jj = recl_jets[0];
+//                        fastjet::PseudoJet j1;
+//                        fastjet::PseudoJet j2;
+//
+//                        while(jj.has_parents(j1,j2))
+//                        {
+//                            if(j1.perp2() < j2.perp()) std::swap(j1, j2);
+//                            Double_t del_Rrec = j1.delta_R(j2);
+//                            Double_t rad_Erec = j2.E();
+//                            FillHistosD0JetSub(dzero, del_Rrec, rad_Erec, zRec,Drec->Pt(),JetPtRec,JetEtaRec,JetnTrkRec,kFALSE,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,pdg);
+//
+//                            jj=j1;
+//                        }
+//                    }
+//                }
+//                delete cs;
+//            }
+//
+//        } // if HF reco jet
+//    } // if jet cont reco
+//    // Reclustering and declustering the MCjet-----------------------------
+//                fastjet::ClusterSequence* cs = Recluster(MCjet);
+//                if (cs)
+//                {
+//                    std::vector<fastjet::PseudoJet> recl_jets = sorted_by_pt( cs->inclusive_jets() );
+//                    if ( recl_jets.size() > 0)
+//                    {
+//                        //DeclusterTheJetAndFillSparse(recl_jets[0], jet, IsBkg, aodEvent);
+//                        fastjet::PseudoJet jj = recl_jets[0];
+//                        fastjet::PseudoJet j1;
+//                        fastjet::PseudoJet j2;
+//
+//                        while(jj.has_parents(j1,j2))
+//                        {
+//                            if(j1.perp2() < j2.perp()) std::swap(j1, j2);
+//                            Double_t del_Rgen = j1.delta_R(j2);
+//                            Double_t rad_Egen = j2.E();
+//                            FillHistosD0JetSub(dzero, del_Rrec, rad_Erec, zRec,Drec->Pt(),JetPtRec,JetEtaRec,JetnTrkRec,kFALSE,bDInEMCalAcc,bJetInEMCalAcc,aodEvent,pdg);
+//
+//                            jj=j1;
+//                        }
+//                    }
+//                }
+//                delete cs;
+//    //=============end Reclustering and declustering the MCjet--------------
+//
+//    Double_t fillRM[13] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes,multiplicity};
+//    //Double_t fillRMsub[17] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes,multiplicity,thetaRec,energyRec, thetaGen,EnergyGen};
+//    fResponseMatrix->Fill(fillRM,1.);
+//    //fResponseMatrixSub->Fill(fillRMsub,1.);
+//
+//}
+//
