@@ -60,7 +60,8 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow():
   fGFW(0),
   fZMWeights(0),
   fBayesPID(0),
-  fPtAxis(0)
+  fPtAxis(0),
+  fRndm(0)
 {
 };
 AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t IsMC, TString stageSwitch):
@@ -86,7 +87,8 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
   fGFW(0),
   fZMWeights(0),
   fBayesPID(0),
-  fPtAxis(0)
+  fPtAxis(0),
+  fRndm(0)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
@@ -246,7 +248,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     fFC->SetName("FlowContainer");
     fFC->SetXAxis(fPtAxis);
     Double_t l_MultiBins[] = {5,10,20,30,40,50,60};
-    fFC->Initialize(oba,6,l_MultiBins);
+    fFC->Initialize(oba,6,l_MultiBins,10);
     delete oba;
     PostData(1,fFC);
     //Initializing GFW
@@ -274,6 +276,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
     fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
 
+    fRndm = new TRandom(0);
   }
 
   fMidSelection = new AliGFWCuts();
@@ -506,7 +509,8 @@ void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Doub
       //                         l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
     }
   };
-  for(Int_t i=0;i<corrconfigs.size();i++)  Bool_t dm = FillFCs(corrconfigs.at(i),l_Cent,0);
+  Double_t rndm = fRndm->Rndm();
+  for(Int_t i=0;i<corrconfigs.size();i++)  Bool_t dm = FillFCs(corrconfigs.at(i),l_Cent,rndm);
   PostData(1,fFC);
 }
 Bool_t AliAnalysisTaskGFWPIDFlow::GetIntValAndDNX(AliGFW::CorrConfig corconf, Double_t &l_val, Double_t &l_dnx) {

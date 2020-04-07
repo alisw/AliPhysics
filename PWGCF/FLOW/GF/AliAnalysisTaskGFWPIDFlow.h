@@ -29,6 +29,7 @@ class AliGFWCuts;
 class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
+class TRandom;
 
 class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
  public:
@@ -98,6 +99,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   void AddToOBA(TObjArray *oba, TString l_name, Int_t nPT=0);
   TAxis *fPtAxis; //!
   Bool_t GetIntValAndDNX(AliGFW::CorrConfig corconf, Double_t &l_val, Double_t &l_dnx);
+  TRandom *fRndm; //!
   ClassDef(AliAnalysisTaskGFWPIDFlow,1);
 };
 
