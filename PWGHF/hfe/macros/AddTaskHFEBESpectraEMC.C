@@ -13,6 +13,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.7,
                                  Double_t m20Min=0.0, Double_t m20Max=20000,
                                  Double_t eovpMin=0.9, Double_t eovpMax=1.2,
+                                 Int_t itsNCls = 3,
                                  Bool_t IsPPAnalysis=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
                                  TString centrality="V0M",
@@ -87,6 +88,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     hfecalqa7->SetM02Cut(m02Min,m02Max1,m02Max2);
     hfecalqa7->SetM20Cut(m20Min,m20Max);
     hfecalqa7->SetEovPCut(eovpMin,eovpMax);
+    hfecalqa7->SetITSNCls(itsNCls);
     
     if(SwitchFillMCTemp){
         TString DMesonWeightMaps, BMesonWeightMaps;
@@ -181,6 +183,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig01->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig01->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig01->SetITSNCls(itsNCls);
             
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGAEG1";
@@ -217,6 +220,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig02->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig02->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig02->SetITSNCls(itsNCls);
 
             TString containerName02 = mgr->GetCommonFileName();
             containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGAEG2";
@@ -256,6 +260,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig01->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig01->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig01->SetITSNCls(itsNCls);
             
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGADG1";
@@ -292,6 +297,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig02->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig02->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig02->SetITSNCls(itsNCls);
             
             TString containerName02 = mgr->GetCommonFileName();
             containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGADG2";
