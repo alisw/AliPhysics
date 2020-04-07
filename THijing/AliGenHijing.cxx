@@ -78,7 +78,7 @@ AliGenHijing::AliGenHijing()
      fNoHeavyQuarks(kFALSE),
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
-     fNoElas(0),
+     fNoElas(1),
      fDataFragmentation(kTRUE),
      fFreeProjSpecn(0),
      fFreeProjSpecp(0),
@@ -135,7 +135,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fNoHeavyQuarks(kFALSE),
      fHeader(AliGenHijingEventHeader("Hijing")),
      fSigmaNN(-1),
-     fNoElas(0),
+     fNoElas(1),
      fDataFragmentation(kTRUE),
      fFreeProjSpecn(0),
      fFreeProjSpecp(0),
@@ -196,8 +196,11 @@ void AliGenHijing::Init()
     fHijing->SetHIPR1(50, fSimpleJet);
     //
     // Switching off elastic scattering
-    if (fNoElas)
+    // By deafult it is off
+    if (fNoElas) {
       fHijing->SetIHPR2(14, 0);
+      printf("\n Elastic scattering between N-N pairs is switched off. \n");
+    }
 //
 //  Quenching
 //
