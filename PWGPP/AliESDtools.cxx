@@ -104,6 +104,9 @@ AliESDtools::AliESDtools():
   fHistPhiTPCCounterCITS(nullptr),      // helper histogram for TIdentity tree
   fHistPhiITSCounterA(nullptr),         // helper histogram for TIdentity tree
   fHistPhiITSCounterC(nullptr),         // helper histogram for TIdentity tree
+  fHist2DTrackletsCounter(nullptr),     // 2D tracklet Phi x tgl norm histogram
+  fHist2DTrackCounter(nullptr),         // 2D track Phi x tgl histogram
+  fHist2DTrackSumPt(nullptr),           // 2D track Phi x tgl sum pt histogram
   fCacheTrackCounters(nullptr),         // track counter
   fCacheTrackTPCCountersZ(nullptr),         // track counter
   fCacheTrackdEdxRatio(nullptr),        // dEdx info counter
@@ -164,6 +167,10 @@ void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
     fHistPhiTPCCounterCITS = new TH1F("hPhiTPCCounterCITS", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
     fHistPhiITSCounterA = new TH1F("hPhiITSCounterA", "control histogram to count tracks on the A side in phi ", 36, 0., 18.);
     fHistPhiITSCounterC = new TH1F("hPhiITSCounterC", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
+    //
+    fHist2DTrackletsCounter= new TH2S("Hist2DTrackletsCounter"," 2D tracklet Phi x tgl norm histogram",18,0,TMath::TwoPi(),8,-2,2);
+    fHist2DTrackCounter    = new TH2S("fHist2DTrackCounter"," 2D track Phi x tgl histogram", 18,0,TMath::TwoPi(),8,-1,1);
+    fHist2DTrackSumPt      = new TH2F("fHist2DTrackSumPt","2D track Phi x tgl sum pt histogram", 36,0,TMath::TwoPi(),8,-1,1);
   }
 }
 
@@ -482,6 +489,7 @@ Int_t AliESDtools::CalculateEventVariables(){
   CacheTPCEventInformation();
   CachePileupVertexTPC(fEvent->GetEventNumberInFile());
   CacheITSVertexInformation(true,0.1,0.2);
+  FillTrackCounters();
   //
   //
   const Int_t kNclTPCCut=60;
@@ -838,7 +846,46 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t ver
   }
   return 1;
 }
-
+Int_t  AliESDtools::FillTrackCounters(){
+  const Float_t vertexNorm=0.14;
+  const Int_t kNCRCut=130;
+  const Float_t kNCRCut1=10;
+  const Double_t kDCACut=5;
+  const Double_t kSigmaBias=2;
+  const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+  const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
+  Int_t nTracklets = multObj->GetNumberOfTracklets();
+  // tracklet multiplicity histogram
+  fHist2DTrackletsCounter->Reset();
+  for (Int_t iTracklet=0; iTracklet<nTracklets; iTracklet++){
+    Float_t phi=multObj->GetPhi(iTracklet);
+    Float_t tglNorm=multObj->GetTheta(iTracklet);
+    tglNorm = -TMath::Tan(tglNorm-TMath::Pi()/2.);
+    tglNorm+=vertexNorm*vertex->GetZ();
+    fHist2DTrackletsCounter->Fill(tglNorm,phi);
+  }
+  // track  multiplicity  and sum pt histogram
+  fHist2DTrackCounter->Reset();
+  fHist2DTrackSumPt->Reset();
+  Int_t nTracks=fEvent->GetNumberOfTracks();
+  for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+    AliESDtrack *pTrack = fEvent->GetTrack(iTrack);
+    Float_t dcaXY, dcaz;
+    Float_t mPt = 1/pTrack->Pt();
+    if (pTrack == nullptr) continue;
+    if (pTrack->IsOn(AliVTrack::kTPCin) == 0) continue;
+    if (pTrack->IsOn(AliVTrack::kITSin) == 0) continue;
+    if (pTrack->GetTPCClusterInfo(3, 1) < kNCRCut-kNCRCut1*mPt) continue;
+    pTrack->GetImpactParameters(dcaXY, dcaz);
+    if (TMath::Abs(dcaXY) > kDCACut) continue;
+    Double_t phi = pTrack->GetAlpha();
+    if (phi<0) phi=TMath::TwoPi();
+    fHist2DTrackCounter->Fill(pTrack->GetTgl(),phi);
+    // use k sigma biased  pt measurement
+    mPt+=kSigmaBias*TMath::Sqrt(pTrack->GetSigma1Pt2());
+    fHist2DTrackSumPt->Fill(pTrack->GetTgl(),phi,1./mPt);
+  }
+}
 
 /// DumpEvent variables ito the tree
 /// \return
@@ -989,6 +1036,8 @@ Int_t AliESDtools::DumpEventVariables() {
   else {
     AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
   }
+  // Barrel counter histograms (PWGPP-550)
+
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -1046,8 +1095,12 @@ Int_t AliESDtools::DumpEventVariables() {
                      "tpcVertexInfoESD.="    <<&vtiTPCESD              <<  // TPC vertex information -as calculated in ESD - before cleaning
                      "itsVertexInfoESD.="    <<&vtiITSESD              <<  // ITS vertex information for pile up rejection -as caclulated in ESD after cleaning
                       //
-                     "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
-                     "itsVertexInfo.="<<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
+                     "tpcVertexInfo.="       <<fTPCVertexInfo<<                   // TPC vertex information
+                     "itsVertexInfo.="       <<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
+                     //
+                     "hist2DTrackletsCounter.=" <<fHist2DTrackletsCounter<<    // 2D tracklet Phi x tgl norm histogram
+                     "hist2DTrackCounter.="   << fHist2DTrackCounter<<        // 2D track Phi x tgl histogram
+                     "hist2DTrackSumPt.="     << fHist2DTrackSumPt<<          // 2D track Phi x tgl sum pt histogram
                      //
                      "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
                      "nTOFhits="<<nTOFhits<<
