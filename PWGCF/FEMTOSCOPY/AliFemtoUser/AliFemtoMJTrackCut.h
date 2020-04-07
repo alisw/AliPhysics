@@ -57,6 +57,7 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
+  void SetMostProbableDeuteron();
   void SetLeastProbableProton();
   void SetNoMostProbable();
   void SetMostProbable(const int& num);
@@ -153,6 +154,8 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   bool IsPionNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
   bool IsProtonNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
 
+  bool IsDeuteronTPCNSigma(float mom, float nsigmaTPC);
+
 
 
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
@@ -182,6 +185,7 @@ inline void AliFemtoMJTrackCut::SetminITScls(const int& minITScls){fminITScls=mi
 inline void AliFemtoMJTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoMJTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoMJTrackCut::SetMostProbableProton() { fMostProbable = 4; }
+inline void AliFemtoMJTrackCut::SetMostProbableDeuteron() { fMostProbable = 30; }
 inline void AliFemtoMJTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
 inline void AliFemtoMJTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoMJTrackCut::SetMostProbable(const int& num) {  fMostProbable =  num; }

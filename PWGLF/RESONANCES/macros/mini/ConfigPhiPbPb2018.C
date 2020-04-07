@@ -1,7 +1,7 @@
 /***************************************************************************
-              dmallick@cern.ch - last modified on 17/03/2020
+              adash@cern.ch - last modified on 05/09/2016
 
-// *** Configuration script for KStar-Meson analysis with 2020 PbPb runs ***
+// *** Configuration script for KStar-Meson analysis with 2016 PbPb runs ***
 // 
 // A configuration script for RSN package needs to define the followings:
 //
@@ -10,6 +10,7 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 ****************************************************************************/
+
 Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task, 
 			    Bool_t                 isMC, 
 			    Bool_t                 isPP,
@@ -20,14 +21,15 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
 			    Float_t                nsigmaPi = 3.0,
 			    Float_t                nsigmaK  = 3.0,
 			    Bool_t                 enableMonitor = kTRUE,
-			    Int_t                   Multbin=100,
+			   Int_t                   Multbin=100,
 			    Int_t                   lMultbin=0,
-			    Int_t                   hMultbin=100,
+			   Int_t                   hMultbin=100,
 			    Int_t                   Ptbin=100,
 			    Int_t                   lPtbin=0,
 			    Int_t                   hPtbin=10
-			    
-			    )
+			   
+			 )
+
 {
   // retrieve mass from PDG database
   Int_t         pdg  = 333;
@@ -64,22 +66,19 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,       kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,        kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
-  /* CosThetaStar     */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
-
+  /* CosThetaStar     */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
   if(isMC==1)
-  {
+   {
   /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
-  }
-  //else
-
-  {
-  /* CosThetaStar     */  Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
-   }
-  
-
-  // -- Create all needed outputs -----------------------------------------------------------------
+    }
+     else
+       {
+       /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+       }
+     
+     // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
-  // [0] = unlike
+     // // [0] = unlike
   // [1] = mixing
   // [2] = like ++
   // [3] = like --
@@ -94,6 +93,17 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
   Int_t   cutIDK  [10] = {iCutK    ,iCutK    ,iCutK  ,iCutK  ,iCutK   ,iCutK   ,iCutK   ,iCutK   ,iCutK  ,iCutK};
   Int_t   PDGCode [10] = {333      ,333      ,333    ,333    ,333     ,333     ,333     ,333     ,333    ,333};
 
+  /*
+  Bool_t  use     [3] = {isMC     ,isMC     ,isMC};
+  Bool_t  useIM   [3] = {1        ,1        ,0 };
+  TString name    [3] = {"MCGenPM","TruesPM","ResPM"};
+  TString comp    [3] = {"MOTHER" ,"TRUE"   ,"TRUE"};
+  TString output  [3] = {"SPARSE" ,"SPARSE" ,"SPARSE"};
+  Char_t  charge1 [3] = {'+'      ,'+'      ,'+'};
+  Char_t  charge2 [3] = {'-'      ,'_'      ,'-'};
+  Int_t   cutIDK  [3] = {iCutK   ,iCutK   ,iCutK};
+  Int_t   PDGCode [3] = {333     ,333     ,333};
+  */
 
  for (Int_t i = 0; i < 10; i++) {
     if (!use[i]) continue;
@@ -110,19 +120,21 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 114, 0.986, 1.1);
+      out->AddAxis(imID, 115, 0.985, 1.1);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
-    
+
     // axis Y: transverse momentum
+    //    out->AddAxis(ptID, 100, 0.0, 10.0);
     out->AddAxis(ptID, Ptbin,lPtbin,hPtbin);
-    
     // axis Z: centrality-multiplicity
     if (!isPP)
-      out->AddAxis(centID, Multbin,lMultbin,hMultbin);
+      //      out->AddAxis(centID, 100, 0.0, 100.0);
+      //out->AddAxis(centID, 100, 0.0, 100.0);
+    out->AddAxis(centID, Multbin,lMultbin,hMultbin);
     else 
       out->AddAxis(centID, 400, 0.0, 400.0);
-    
+
     // axis W: CosThetaStar
     if (!isPP)
       out->AddAxis(cosThStarID, 10, 0.0, 1.0);

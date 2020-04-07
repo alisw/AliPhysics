@@ -690,7 +690,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
   TString varNamesInclusive[9]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart"};
   TString varNamesInclusiveMoreVars[13]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart","ptDet","phiDet","matchedJetDistanceRec","matchedJetDistancePart"};
   TString varNamesRecoil[8]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart"};
-  TString varNamesRecoilMoreVars[12]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart","ptDet","DPhiDet","matchedJetDistanceRec","matchedJetDistancePart"};
+  TString varNamesRecoilMoreVars[14]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart","ptDet","DPhiDet","matchedJetDistanceRec","matchedJetDistancePart","phiTTPart","phiTTRec"};
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) {
 		const char* nameEmbInclusive = GetOutputSlot(2)->GetContainer()->GetName();
 		fTreeEmbInclusive = new TTree(nameEmbInclusive, nameEmbInclusive);
@@ -710,7 +710,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 		const char* nameEmbRecoil= GetOutputSlot(3)->GetContainer()->GetName();
 		fTreeEmbRecoil = new TTree(nameEmbRecoil, nameEmbRecoil);
     if(fMoreTreeVars) {
-      for(Int_t ivar=0; ivar < 12; ivar++){
+      for(Int_t ivar=0; ivar < 14; ivar++){
         fTreeEmbRecoil->Branch(varNamesRecoilMoreVars[ivar].Data(), &fTreeVarsRecoilMoreVars[ivar], Form("%s/F", varNamesRecoilMoreVars[ivar].Data()));
       }
     }
@@ -1024,6 +1024,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
             fTreeVarsRecoilMoreVars[9] = dPhiDetShiftPi;
             fTreeVarsRecoilMoreVars[10] = distanceClosestJet1;
             fTreeVarsRecoilMoreVars[11] = distanceClosestJet2;
+            fTreeVarsRecoilMoreVars[12] = phiTTMC;
+            fTreeVarsRecoilMoreVars[13] = phiTTreco;
           }
           else {
             fTreeVarsRecoil[0] = fCent;

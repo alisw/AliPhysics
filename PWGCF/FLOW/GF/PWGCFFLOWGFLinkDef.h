@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskChargedFlow+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
+#pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskFlowExample+;
 #pragma link C++ class AliDecorrFlowCorrTask+;
 #pragma link C++ class AliGFWCuts+;

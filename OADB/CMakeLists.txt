@@ -45,6 +45,7 @@ set(SRCS
     AliEventCuts.cxx
     AliTimeRangeMasking.cxx
     AliTimeRangeCut.cxx
+    AliEMCALLEDEventsCut.cxx
     COMMON/MULTIPLICITY/AliMultVariable.cxx
     COMMON/MULTIPLICITY/AliMultEstimator.cxx
     COMMON/MULTIPLICITY/AliMultInput.cxx
@@ -66,8 +67,8 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
-# Dependecies
-set(LIBDEPS STEERBase AOD ESD STEER ANALYSIS ANALYSISalice CDB ITSrec VZERObase)
+# Dependencies
+set(LIBDEPS STEERBase AOD ESD STEER ANALYSIS ANALYSISalice CDB ITSrec VZERObase EMCALUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

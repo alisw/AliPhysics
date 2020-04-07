@@ -10,6 +10,7 @@ class TH1F;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDfriend;
+class AliTriggerAnalysis;
 //class TVectorF;
 #include "TNamed.h"
 
@@ -24,6 +25,7 @@ class AliESDtools : public TNamed {
   Int_t  CacheITSVertexInformation(Bool_t doReset=1, Double_t dcaCut=0.05,  Double_t dcaZcut=0.15);
   Int_t  CacheTOFEventInformation(Bool_t dumpStreamer=0);
   Int_t CalculateEventVariables();
+  Int_t  FillTrackCounters();
   void TPCVertexFit(TH1F *hisVertex);
   Int_t  GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest);
   void   ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, TTreeStream *pcstream);
@@ -53,6 +55,7 @@ class AliESDtools : public TNamed {
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner
   AliESDEvent * fEvent;                           //! esd event pointer - class is not owner
   AliPIDResponse   * fPIDResponse;                //! PID response object
+  AliTriggerAnalysis *fTriggerAnalysis;           //! tigger analysis
   Bool_t   fTaskMode;                             // analysis task mode
   TH1F *fHisITSVertex;                            // ITS z vertex histogram
   TH1F *fHisTPCVertexA;                           // TPC z vertex A side
@@ -69,6 +72,11 @@ class AliESDtools : public TNamed {
   TH1F             * fHistPhiTPCCounterCITS;      // helper histogram phi counters
   TH1F             * fHistPhiITSCounterA;         // helper histogram phi counters
   TH1F             * fHistPhiITSCounterC;         // helper histogram phi counters
+  //
+  TH2S             * fHist2DTrackletsCounter;     // 2D tracklet Phi x tgl norm histogram
+  TH2S             * fHist2DTrackCounter;         // 2D track Phi x tgl histogram
+  TH2F             * fHist2DTrackSumPt;           // 2D track Phi x tgl sum pt histogram
+  //
   TVectorF         * fCacheTrackCounters;         // track counter
   TVectorF         * fCacheTrackTPCCountersZ;     // track counter with DCA z cut
   TVectorF         * fCacheTrackdEdxRatio;        // dEdx info counter

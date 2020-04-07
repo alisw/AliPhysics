@@ -148,6 +148,7 @@ ClassImp(AliAnalysisTaskSpectraRT)
 		hNchTSRecAll(0x0),
 		hNchResponse(0x0),
 		hNchRMvsPt(0x0),
+		hPtTS(0x0),
 		hNchTSGenTest(0x0),
 		hNchTSRecTest(0x0),
 		hNchTSData(0x0),
@@ -260,6 +261,7 @@ AliAnalysisTaskSpectraRT::AliAnalysisTaskSpectraRT(const char *name):
 	hNchTSRecAll(0x0),
 	hNchResponse(0x0),
 	hNchRMvsPt(0x0),
+	hPtTS(0x0),
 	hNchTSGenTest(0x0),
 	hNchTSRecTest(0x0),
 	hNchTSData(0x0),
@@ -344,7 +346,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fTrackFilter = new AliAnalysisFilter("trackFilter");
 		SetTrackCuts(fTrackFilter);
 	}
-	
+
 	printf("The min cut in Pt is: %f\n",fPtMin);
 
 
@@ -621,6 +623,10 @@ p: fMeanChT = 7.216
 		hNchRMvsPt = new TH3D("hNchRMvsPt","; #it{R}_{T}^{rec}; #it{R}_{T}^{gen}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nBinsRT,binsRT,nPtBins,ptBins);
 		hNchRMvsPt->Sumw2();
 		fListOfObjects->Add(hNchRMvsPt);
+
+		hPtTS = new TH1D("hPtTS","; #it{R}_{T}^{rec}; Entries",nPtBins,ptBins);
+		hPtTS->Sumw2();
+		fListOfObjects->Add(hPtTS);
 
 		hNchRecVsPtRecOut = new TH2D("hNchRecVsPtRecOut","; #it{R}_{T}^{rec}; #it{p}_{T}^{rec}",nBinsRT,binsRT,nPtBins,ptBins);
 		hNchRecVsPtRecOut->Sumw2();
@@ -1179,6 +1185,7 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 		else{
 			multTSrec++;
 			hPhiRec[2]->Fill(DPhi);
+			hPtTS->Fill(track->Pt());
 		}
 
 		hPhiRec[3]->Fill(DPhi);
@@ -1186,7 +1193,6 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 
 	double RTgen = (double)multTSgen/fMeanMultTSMCGen;
 	double RTrec = (double)multTSrec/fMeanMultTSMCRec;
-
 	hNchResponse->Fill(RTrec,RTgen);
 
 	for(int i = 0; i < iTracks; i++){              
@@ -1222,21 +1228,39 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 
 	}
 
-		printf(" iTracks = %d\n",iTracks);
+	for(int binPt = 1; binPt <= hNchRMvsPt->GetNbinsZ(); binPt++){
 
-	for(int i = 0; i < iTracks; i++){              
+		double Nchr = -1.0;
+		double Nchg = -1.0;
 
-		if(i==fRecLeadIn) continue;
-		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
-		if(!track) continue;
-		if(!fTrackFilter->IsSelected(track)) continue;
-		if (track->Charge() == 0 ) continue;
-		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
-		if( track->Pt() < fPtMin) continue;
+		for(int i = 0; i < iTracks; i++){              
 
-		hNchRMvsPt->Fill(RTrec,RTgen,track->Pt());
+			if(i==fRecLeadIn) continue;
+			AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i)); 
+			if(!track) continue;
+			if(!fTrackFilter->IsSelected(track)) continue;
+			if (track->Charge() == 0 ) continue;
+			if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+			if( track->Pt() < fPtMin) continue;
 
+			if( (track->Pt() >= hNchRMvsPt->GetZaxis()->GetBinLowEdge(binPt)) && (track->Pt() < hNchRMvsPt->GetZaxis()->GetBinUpEdge(binPt)))
+				Nchr = Nchr + 1.0;
+
+			const int label = TMath::Abs(track->GetLabel());
+			AliMCParticle *trackMC = (AliMCParticle*)fMC->GetTrack(label);
+
+			if( (trackMC->Pt() >= hNchRMvsPt->GetZaxis()->GetBinLowEdge(binPt)) && (trackMC->Pt() < hNchRMvsPt->GetZaxis()->GetBinUpEdge(binPt)))
+				Nchg = Nchg + 1.0;
+		}
+
+		if(Nchg >= 0.0){
+			printf("--------------- %.2f <= Pt = %.2f\n",hNchRMvsPt->GetZaxis()->GetBinLowEdge(binPt),hNchRMvsPt->GetZaxis()->GetBinUpEdge(binPt));
+			printf("::::::::::::::: NchRec = %f\n",Nchr);
+			printf("::::::::::::::: NchGen = %f\n",Nchg);
+			hNchRMvsPt->Fill(Nchr,Nchg,hNchRMvsPt->GetZaxis()->GetBinCenter(binPt));
+		}
 	}
+
 
 }
 //_____________________________________________________________________________

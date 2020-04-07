@@ -49,35 +49,37 @@ protected:
     TH2F*  f2fHistGenCentVsPtAntiLambda;
     TH2F*  f2fHistXiPlus;
     TH2F*  f2fHistXiMinus;
-    
-    TH2F*  f2fHistGenCentVsPtLambda03;
-    TH2F*  f2fHistGenCentVsPtAntiLambda03;
-    TH2F*  f2fHistXiPlus03;
-    TH2F*  f2fHistXiMinus03;
-    
+
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree03;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree03;
-    
-    
-    TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
-    
-    
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-    TH3F*  f3fHistLambdafromXiFourSigthree03;
-    TH3F*  f3fHistAntiLambdafromXiFourSigthree03;
     
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreensigtight;
+    TH3F*  f3fHistLambdafromXiFourSigthreensigtight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreensigtight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreensigtight;
     
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthree;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthree;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreenegloose;
+    TH3F*  f3fHistLambdafromXiFourSigthreenegloose;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreenegloose;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreenegloose;
+
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreenegtight;
+    TH3F*  f3fHistLambdafromXiFourSigthreenegtight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreenegtight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreenegtight;
     
-    
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreeposloose;
+    TH3F*  f3fHistLambdafromXiFourSigthreeposloose;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreeposloose;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreeposloose;
+
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreepostight;
+    TH3F*  f3fHistLambdafromXiFourSigthreepostight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreepostight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreepostight;
     
     
     Float_t fCentrality;
@@ -95,8 +97,14 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusChTruth;
-    THnSparse *fPtBinNplusNminusChRec;
-    THnSparse *fPtBinNplusNminusChRecTag;
+    THnSparse *fPtBinNplusNminusChnsigtight;
+    THnSparse *fPtBinNplusNminusChnegloose;
+    THnSparse *fPtBinNplusNminusChnegtight;
+    THnSparse *fPtBinNplusNminusChposloose;
+    THnSparse *fPtBinNplusNminusChpostight;
+    THnSparse *fPtBinNplusNminusCh;
+
+
     
     Int_t    GetPtBin(Double_t pt);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;

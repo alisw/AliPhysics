@@ -1523,7 +1523,11 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   TCustomBinning cenBinning;
   cenBinning.SetMinimum(0.0);
-  cenBinning.AddStep(100, 100/GetNCentrBin()); 
+  if ( GetNCentrBin() > 0 ) 
+    cenBinning.AddStep(100, 100./GetNCentrBin()); 
+  else 
+    cenBinning.AddStep(100, 100.); 
+
   TArrayD cenBinsArray;
   cenBinning.CreateBinEdges(cenBinsArray);
   

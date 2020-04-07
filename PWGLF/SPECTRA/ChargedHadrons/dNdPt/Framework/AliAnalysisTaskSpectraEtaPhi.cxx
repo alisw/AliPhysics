@@ -68,6 +68,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("tpceta","#eta_{TPC}",10,-1.,+1.);
     AddAxis("tpcphi","#phi_{TPC}",18,0.,2*TMath::Pi());
     AddAxis("tpcz","Z_{TPC}",60,-30,+30);
+    AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistEffCont = CreateHist("fHistEffCont");
     fOutputList->Add(fHistEffCont);
     
@@ -78,6 +79,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("tpceta","#eta_{TPC}",10,-1.,+1.);
     AddAxis("tpcphi","#phi_{TPC}",18,0.,2*TMath::Pi());
     AddAxis("tpcz","Z_{TPC}",60,-30,+30);
+    AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistTrack = CreateHist("fHistTrack");
     fOutputList->Add(fHistTrack);
         
@@ -114,7 +116,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrackM) return;
     
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEtaInnerTPC, fPhiInnerTPC), fZInnerTPC;
+    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEtaInnerTPC, fPhiInnerTPC, fZInnerTPC, fTPCSignalN);
 }
 
 //_____________________________________________________________________________
@@ -126,7 +128,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEtaInnerTPC, fPhiInnerTPC, fZInnerTPC);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEtaInnerTPC, fPhiInnerTPC, fZInnerTPC, fTPCSignalN);
 
 }
 
@@ -141,7 +143,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3, fEtaInnerTPC, fPhiInnerTPC);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3, fEtaInnerTPC, fPhiInnerTPC, fTPCSignalN);
 
 }
 

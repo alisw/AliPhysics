@@ -119,12 +119,14 @@ namespace AliDHFeCorr {
         Float_t fAngleD0dkpPisoft{-999.};
 
         //Single-track information
-        std::vector<Float_t> fPtDaughters{std::vector<Float_t> ()};
-        std::vector<Float_t> fD0Daughters{std::vector<Float_t> ()};
-        std::vector<UInt_t> fIDDaughters{std::vector<UInt_t> ()}; ///< ID obtained using GetID()
+        std::vector<Float_t> fPtDaughters{std::vector<Float_t>()};
+        std::vector<Float_t> fD0Daughters{std::vector<Float_t>()};
+        std::vector<UInt_t> fIDDaughters{std::vector<UInt_t>()}; ///< ID obtained using GetID()
 
-        std::array<std::vector<Float_t>, 3> fNSigmaTPCDaughters{std::array<std::vector<Float_t>, 3>()}; ///< The PID TPC response (n )sigma
-        std::array<std::vector<Float_t>, 3> fNSigmaTOFDaughters{std::array<std::vector<Float_t>, 3>()}; ///< The PID TOF response (n sigma)
+        std::array<std::vector<Float_t>, 3> fNSigmaTPCDaughters{
+                std::array<std::vector<Float_t>, 3>()}; ///< The PID TPC response (n )sigma
+        std::array<std::vector<Float_t>, 3> fNSigmaTOFDaughters{
+                std::array<std::vector<Float_t>, 3>()}; ///< The PID TOF response (n sigma)
 
         //MC Level information
         Float_t fPtMC{-999.};///< Transverse momentum (MC information)
@@ -136,7 +138,7 @@ namespace AliDHFeCorr {
 
     typedef struct AliEvent {
         UInt_t fRunNumber{0};
-        UInt_t fDirNumber{0};
+        UInt_t fDirNumber{99999999};
         UInt_t fEventNumber{0};
 
         Float_t fVtxZ{-999.};
@@ -155,52 +157,33 @@ namespace AliDHFeCorr {
     public:
         AliElectron() = default;
 
-        ~AliElectron(){};
+        ~AliElectron() {};
 
-        AliElectron(AliAODTrack* track, UInt_t run_number,  UInt_t dir_number, UInt_t event_number,
-                AliAODEvent *aod_event, AliPIDResponse *pid_response) {
+        AliElectron(AliAODTrack *track, UInt_t run_number, UInt_t dir_number, UInt_t event_number,
+                    AliAODEvent *aod_event, AliPIDResponse *pid_response, TClonesArray *mc_information);
 
-            fTrack = track;
-            fRunNumber = run_number;
-            fDirNumber = dir_number;
-            fEventNumber = event_number;
-            fID = TMath::Abs(track->GetID());
+        bool operator==(const AliElectron &rhs) const {
+            return fID == rhs.fID;
+        }
 
-            fCharge = track->Charge();
-            fPt = track->Pt();
-            fP = track->P();
-            fEta = track->Eta();
-            fPhi = track->Phi();
+        bool operator!=(const AliElectron &rhs) const {
+            return !(rhs == *this);
+        };
 
-            fNCrossedRowsTPC = track->GetTPCNCrossedRows();
-            fNClsTPCDeDx = track->GetTPCsignalN();
-            fNITSCls = track->GetITSNcls();
+        bool operator<(const AliElectron &rhs) const {
+            return fID < rhs.fID;
+        }
 
-            fITSHitFirstLayer = track->HasPointOnITSLayer(0);
-            fITSHitSecondLayer = track->HasPointOnITSLayer(1);
+        bool operator>(const AliElectron &rhs) const {
+            return rhs < *this;
+        }
 
-            Double_t d0z0[2] = {-999., -999.};
-            Double_t cov[3] = {-999., -999., -999.};
-            const AliVVertex *primaryVertex = aod_event->GetPrimaryVertex();
+        bool operator<=(const AliElectron &rhs) const {
+            return !(rhs < *this);
+        }
 
-            AliAODTrack copy_track = AliAODTrack(*track);
-
-            if (copy_track.PropagateToDCA(primaryVertex, aod_event->GetMagneticField(), 20., d0z0, cov)) {
-                fDCAxy = d0z0[0];
-                fDCAz = d0z0[1];
-            }
-
-            fTPCNSigma = pid_response->NumberOfSigmasTPC(track, AliPID::kElectron);
-            fTOFNSigma = pid_response->NumberOfSigmasTOF(track, AliPID::kElectron);
-
-            fInvMassPartnersULS = std::vector<Float_t>();
-            fInvMassPartnersLS = std::vector<Float_t>();
-            fPtPartnersULS = std::vector<Float_t>();
-            fPtPartnersLS = std::vector<Float_t>();
-            fCrossedRowsTPCPartnersULS = std::vector<UShort_t>();
-            fCrossedRowsTPCPartnersLS = std::vector<UShort_t>();
-            fPartnersULSID = std::vector<UInt_t>();
-            fPartnersLSID = std::vector<UInt_t>();
+        bool operator>=(const AliElectron &rhs) const {
+            return !(*this < rhs);
         }
 
         AliAODTrack *fTrack{nullptr};
@@ -256,31 +239,13 @@ namespace AliDHFeCorr {
 
     };
 
+
     class AliParticleMC {
     public:
         AliParticleMC() = default;
 
-        AliParticleMC(AliAODMCParticle *particle,
-                      UInt_t run_number = 0, UInt_t dir_number = 0, UInt_t ev_number = 0, UInt_t label = 0, UShort_t origin = 0) {
-            fMCParticle = particle;
-            fRunNumber = run_number;
-            fDirNumber = dir_number;
-            fEventNumber = ev_number;
-            fLabel = label;
-            fOrigin = origin;
-
-            fE = particle->E();
-            fPt = particle->Pt();
-            fEta = particle->Eta();
-            fPhi = particle->Phi();
-            fXv = particle->Xv();
-            fYv = particle->Yv();
-            fZv = particle->Zv();
-            fTv = particle->Tv();
-            fCharge = particle->Charge();
-            fPDGCode = particle->PdgCode();
-
-        }
+        AliParticleMC(AliAODMCParticle *particle, UInt_t run_number = 0,
+                      UInt_t dir_number = 0, UInt_t ev_number = 0, UInt_t label = 0, UShort_t origin = 0);
 
         ~AliParticleMC() = default;
 
@@ -508,7 +473,7 @@ public:
             {"kAny",             AliAnalysisTaskDHFeCorr::kAny},
             {"kExclusiveSecond", AliAnalysisTaskDHFeCorr::kExclusiveSecond},
             {"kExclusiveFirst",  AliAnalysisTaskDHFeCorr::kExclusiveFirst}
-    }; ///< ITS pixel 
+    }; ///< ITS pixel
 
     const std::map<DMeson_t, std::vector<AliPID::EParticleType> > fgkDMesonDaughterAliPID = {
             {AliAnalysisTaskDHFeCorr::kD0,    {AliPID::kPion, AliPID::kKaon}},
@@ -548,13 +513,13 @@ private:
     std::string fCurrentFile;
 
     Float_t fVtxZ{-999.}; ///< Vertex Z
-    Float_t fCentrality{-999.};    
+    Float_t fCentrality{-999.};
 
     //Stores the current electron and D meson to save in the tree
-    AliDHFeCorr::AliElectron fElectron; ///< Electron information that will be used in the fElectronTree
-    AliDHFeCorr::AliDMeson fDmeson;///< D meson information that will be used in the fDmesonTree
-    AliDHFeCorr::AliParticleMC fMCParticle; ////<  Used to hold data about the MC information (D and e)
-    AliDHFeCorr::AliEvent fEventInfo; ////<  Used to hold data about the Event
+    AliDHFeCorr::AliElectron fElectron; //!//< Electron information that will be used in the fElectronTree
+    AliDHFeCorr::AliDMeson fDmeson;//!/< D meson information that will be used in the fDmesonTree
+    AliDHFeCorr::AliParticleMC fMCParticle; //!//<  Used to hold data about the MC information (D and e)
+    AliDHFeCorr::AliEvent fEventInfo; //!//<  Used to hold data about the Event
 
 
     //Task Configuration
@@ -662,8 +627,6 @@ private:
     static std::vector<AliDHFeCorr::AliElectron> FilterElectronsPID(AliDHFeCorr::AliElectronSelection electronSelection,
                                                                     const std::vector<AliDHFeCorr::AliElectron> &electrons);
 
-    void FillAllElectronsMCInfo(std::vector<AliDHFeCorr::AliElectron> &electrons);
-
     void FindNonHFe(AliDHFeCorr::AliElectron &main_electron,
                     const std::vector<AliDHFeCorr::AliElectron> &partners) const;
 
@@ -672,11 +635,19 @@ private:
 
     static bool IsHFe(AliAODMCParticle *particle, TClonesArray *mc_information);
 
+    static bool IsHFe(const AliDHFeCorr::AliElectron &electron);
+
     std::vector<AliDHFeCorr::AliParticleMC> FillMCParticleInfo();
 
-    std::vector<AliDHFeCorr::AliParticleMC> FilterHFeInMCParticles(std::vector<AliDHFeCorr::AliParticleMC> &electrons);
+    std::vector<AliDHFeCorr::AliParticleMC>
+    FilterHFeInMCParticles(const std::vector<AliDHFeCorr::AliParticleMC> &electrons);
+
+    std::vector<AliDHFeCorr::AliElectron> FilterHFeInRecoParticles(
+            const std::vector<AliDHFeCorr::AliElectron> &electrons);
 
     //DMeson analysis
+    TClonesArray* GetDMesonList();
+
     std::vector<AliDHFeCorr::AliDMeson> DMesonAnalysis();
 
     std::vector<AliDHFeCorr::AliDMeson> FillDMesonInfo(const TClonesArray *dmeson_candidates, DMeson_t meson_species,
@@ -695,12 +666,12 @@ private:
     void FillTreeFromStdContainer(std::vector<T> &items, T *item_to_fill, std::unique_ptr<TTree> &tree);
 
 
-ClassDef(AliAnalysisTaskDHFeCorr, 4);
-
     AliDHFeCorr::AliDMeson BuildReflection(const AliDHFeCorr::AliDMeson &cand) const;
+
+ClassDef(AliAnalysisTaskDHFeCorr, 5);
 };
 
-template<class T>
+template<typename T>
 void AliAnalysisTaskDHFeCorr::FillTreeFromStdContainer(std::vector<T> &items, T *item_to_fill,
                                                        std::unique_ptr<TTree> &tree) {
 

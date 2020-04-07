@@ -26,6 +26,10 @@
 #include "Math/Vector3Dfwd.h"
 #include "Math/Vector3D.h"
 
+#include "AliDataFile.h"
+#include <TFile.h>
+#include <TSpline.h>
+
 #define HomogeneousField
 #include "KFParticle.h"
 #include "KFVertex.h"
@@ -43,7 +47,7 @@ struct HelperParticle {
   KFParticle   particle = KFParticle();
 };
 
-// constexpr float kHyperTritonMass{2.99131};
+constexpr float kHyperTritonMass{2.99131};
 
 constexpr float kDeuMass{1.87561};
 constexpr float kPMass{0.938272};
@@ -136,6 +140,9 @@ AliAnalysisTaskHyperTriton3KF::~AliAnalysisTaskHyperTriton3KF() {
     fTreeHyp3 = nullptr;
   }
 
+  if (fCosPAsplineFile)
+    delete fCosPAsplineFile;
+
 }
 
 void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
@@ -173,6 +180,14 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) {
     fTreeHyp3->Branch("SHyperTriton", &fGenHyp);
     fTreeHyp3->Branch("SGenRecMap", &fGenRecMap);
+    fTreeHyp3->Branch("SGenRecDeutMom", &fGenRecDeutMom);
+    fTreeHyp3->Branch("SGenRecProtMom", &fGenRecProtMom);
+    fTreeHyp3->Branch("SGenRecPiMom", &fGenRecPiMom);
+  }
+
+  fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
+  if (fCosPAsplineFile) {
+    fCosPAspline = (TSpline3*)fCosPAsplineFile->Get("cutSpline");
   }
 
   PostData(1, fListHist);
@@ -206,6 +221,9 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fGenHyp.clear();
   fRecHyp.clear();
   fGenRecMap.clear();
+  fGenRecDeutMom.clear();
+  fGenRecProtMom.clear();
+  fGenRecPiMom.clear();
 
   double pvPos[3], pvCov[6];
   fEventCuts.GetPrimaryVertex()->GetXYZ(pvPos);
@@ -213,6 +231,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fREvent.fX = pvPos[0];
   fREvent.fY = pvPos[1];
   fREvent.fZ = pvPos[2];
+  fREvent.fCent = fEventCuts.GetCentrality();
 
   KFPVertex kfPVertex;
   kfPVertex.SetXYZ(pvPos[0],pvPos[1],pvPos[2]);
@@ -260,8 +279,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       }
       SHyperTriton3KF genHyp;
       genHyp.l = Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2]);
-      genHyp.px = part->Px();
-      genHyp.py = part->Py();
+      genHyp.pt = part->Pt();
+      genHyp.phi = std::atan2(part->Py(),part->Px());
       genHyp.pz = part->Pz();
       genHyp.t = decayVtx[3];
       genHyp.positive = part->PdgCode() > 0;
@@ -296,9 +315,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     for (int iT{0}; iT < 3; ++iT) {
       nSigmasTPC[iT] = fPIDResponse->NumberOfSigmasTPC(track, kAliPID[iT]);
       nSigmasTOF[iT] = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[iT]);
+      bool requireTOFpid = track->P() > fRequireTOFpid[iT];
       if (std::abs(nSigmasTPC[iT]) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] && 
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[kDeuteron]);
+        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !requireTOFpid);
     }
   
     if (candidate[0] || candidate[1] || candidate[2]) {
@@ -310,7 +330,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       track->GetCovarianceXYZPxPyPz(cov);
       for (int iT{0}; iT < 3; ++iT) {
         if (candidate[iT]) {
-          helper.particle.Create(posmom,cov,track->Charge(),kMasses[iT]);
+          short chargeSwap = (fSwapSign && iT == 0) ? -1 : 1;
+          helper.particle.Create(posmom,cov,track->Charge() * chargeSwap, kMasses[iT]);
           helper.particle.Chi2() = track->GetTPCchi2();
           helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           helper.nSigmaTPC = nSigmasTPC[iT];
@@ -338,13 +359,9 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     oneCandidate.AddDaughter(deu.particle);
 
     for (const auto &p : helpers[kProton]) {
-      if (deu.track == p.track)
+      if (deu.track == p.track || p.particle.GetQ() * deu.particle.GetQ() < 0)
         continue;
-      const bool rightSign{p.particle.GetQ() * deu.particle.GetQ() > 0};
-      if (!rightSign && !fSwapSign)
-        continue;
-      else if (rightSign && fSwapSign)
-        continue;
+
       KFParticle twoCandidate{oneCandidate};
       twoCandidate.AddDaughter(p.particle);
 
@@ -364,17 +381,33 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
           continue;
         ROOT::Math::XYZVectorF decayVtx{hyperTriton.X() - prodVertex.X(), hyperTriton.Y() - prodVertex.Y(), hyperTriton.Z() - prodVertex.Z()};
         ROOT::Math::XYZVectorF mom{hyperTriton.Px(), hyperTriton.Py(), hyperTriton.Pz()};
-        recHyp.cosPA = mom.Dot(decayVtx) / std::sqrt(decayVtx.Mag2() * mom.Mag2());
+
+        const float totalMom = std::sqrt(mom.Mag2());
+        const float len = std::sqrt(decayVtx.Mag2());
+        recHyp.cosPA = mom.Dot(decayVtx) / (totalMom * len);
+        const float cosPA = fUseAbsCosPAcut ? std::abs(recHyp.cosPA) : recHyp.cosPA;
+
         hyperTriton.SetProductionVertex(prodVertex);
         recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
         if (recHyp.chi2_topology > fMaxKFchi2[2])
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.px = mom.x();
-        recHyp.py = mom.y();
+        float hSign = deu.track->Charge() > 0 ? 1. : -1;
+        recHyp.pt = hSign * std::hypot(mom.x(),mom.y());
+        recHyp.phi = std::atan2(mom.y(),mom.x());
         recHyp.pz = mom.z();
         recHyp.m = mass;
+
+        const float ct = recHyp.l * kHyperTritonMass / totalMom;
+        if (ct < fCandidateCtRange[0] || ct > fCandidateCtRange[1])
+          continue;
+        if (fCosPAspline) {
+          if (cosPA < fCosPAspline->Eval(ct))
+            continue;
+        } else if (cosPA < fMinCosPA) {
+          continue;
+        }
 
         float dca[2], bCov[3];
         deu.track->GetImpactParameters(dca, bCov);
@@ -400,12 +433,20 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.dca_de_pi = deu.particle.GetDistanceFromParticle(pi.particle);
         recHyp.dca_pr_pi = p.particle.GetDistanceFromParticle(pi.particle);
 
+        recHyp.tpcClus_de = deu.track->GetTPCsignalN();
+        recHyp.tpcClus_pr = p.track->GetTPCsignalN();
+        recHyp.tpcClus_pi = pi.track->GetTPCsignalN();
+
         bool record{!fMC || !fOnlyTrueCandidates};
         if (fMC) {
           int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
           record = record || momId >=0;
-          if (record)
+          if (record) {
             fGenRecMap.push_back(mcMap[momId]);
+            fGenRecDeutMom.push_back(deu.track->P());
+            fGenRecProtMom.push_back(p.track->P());
+            fGenRecPiMom.push_back(pi.track->P());
+          }
         }
         if (record)
           fRecHyp.emplace_back(recHyp);

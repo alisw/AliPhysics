@@ -26,11 +26,11 @@ AliAnalysisTaskUpcEtaCAWP *AddTaskEtaCAWP(Bool_t runTree = kFALSE, Bool_t runHis
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Trigger List", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Histogram List", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
-	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("Kstar List", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
-	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("2Rho4Pion List", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
-	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("K0s3PiPi4K2K4Pi List", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TriggerList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("HistogramList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("KstarList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("2Rho4PionList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("K0s3PiPi4K2K4PiList", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
 
 	// Connect input/output
 	mgr->ConnectInput(task, 0, cinput1);
@@ -39,7 +39,6 @@ AliAnalysisTaskUpcEtaCAWP *AddTaskEtaCAWP(Bool_t runTree = kFALSE, Bool_t runHis
 	mgr->ConnectOutput(task, 3, coutput3);
 	mgr->ConnectOutput(task, 4, coutput4);
 	mgr->ConnectOutput(task, 5, coutput5);
-
 
 	return task;
 }

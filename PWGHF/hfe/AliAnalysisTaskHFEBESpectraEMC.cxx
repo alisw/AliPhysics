@@ -100,6 +100,7 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
 fTPCnSigma(-999.0),
@@ -352,6 +353,7 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fITSNCls(3),
 fDeltaEta(0.05),
 fDeltaPhi(0.05),
 fTPCnSigma(-999.0),
@@ -1460,7 +1462,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         Double_t DCAxyCut = 0.25, DCAzCut = 1;
         
         if(atrack->GetTPCNcls() < 80) continue;
-        if(atrack->GetITSNcls() < 3) continue;
+        if(atrack->GetITSNcls() < fITSNCls) continue;
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
         

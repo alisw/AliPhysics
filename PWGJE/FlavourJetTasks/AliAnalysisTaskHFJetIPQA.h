@@ -449,6 +449,9 @@ private:
     Float_t fTrackIPs[100];
     Float_t fTrackIPSigs[100];
     Float_t fTrackProb[100];
+    Float_t fTrackChi2OverNDF[100];
+    Float_t fTrackPt[100];
+    Int_t iTrackITSHits[100];
     Bool_t bTrackIsV0[100];
     Bool_t bFull[30];
     Bool_t bSingle1st[30];
@@ -712,7 +715,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 57)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 58)
 };
 
 #endif

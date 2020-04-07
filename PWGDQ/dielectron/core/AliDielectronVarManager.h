@@ -189,6 +189,8 @@ public:
     kImpactParZ,             // Impact parameter in Z
     kImpactParXYsigma,       // Impact parameter in XY plane normalized to resolution
     kImpactParZsigma,        // Impact parameter in Z normalized to resolution
+    kImpactParXYres,         // Resolution of the Impact parameter in XY plane
+    kImpactParZres,          // Resolution of the Impact parameter in Z
     kTrackLength,            // Track length
     kDistPrimToSecVtxXYMC,      // Distance of secondary vertex to primary vertex  in the XY plane
     kDistPrimToSecVtxZMC,       // Distance of secondary vertex to primary vertex in Z
@@ -1094,6 +1096,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kImpactParZ]    = impactParZ;
   values[AliDielectronVarManager::kImpactParXYsigma]   = -1.;
   values[AliDielectronVarManager::kImpactParZsigma]    = -1.;
+  values[AliDielectronVarManager::kImpactParXYres]   = -1.;
+  values[AliDielectronVarManager::kImpactParZres]    = -1.;
 
   if(TMath::Abs(impactParXY)>0)  values[AliDielectronVarManager::kLogDCAXY]   = TMath::Log(TMath::Abs(impactParXY));
   else                    values[AliDielectronVarManager::kLogDCAXY]   = 0;
@@ -1105,6 +1109,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   esdTrack->GetImpactParameters(dca, dcaRes);
   if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = dca[0]/TMath::Sqrt(dcaRes[0]);
   if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = dca[1]/TMath::Sqrt(dcaRes[2]);
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYres] = TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZres]  = TMath::Sqrt(dcaRes[2]);
 
 
   values[AliDielectronVarManager::kPdgCode]=-1;
@@ -1421,13 +1427,17 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   Double_t d0z0[2]={-999.0,-999.0};
   Double_t dcaRes[3] = {-999.,-999.,-999.};
-  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) || Req(kLogDCAXY) || Req(kLogDCAZ)) GetDCA(particle, d0z0, dcaRes);
+  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) || Req(kImpactParXYres) || Req(kImpactParZres) || Req(kLogDCAXY) || Req(kLogDCAZ)) GetDCA(particle, d0z0, dcaRes);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
   values[AliDielectronVarManager::kImpactParXYsigma] = -999.0;
   values[AliDielectronVarManager::kImpactParZsigma] = -999.0;
+  values[AliDielectronVarManager::kImpactParXYres] = -999.0;
+  values[AliDielectronVarManager::kImpactParZres] = -999.0;
   if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = d0z0[0]/TMath::Sqrt(dcaRes[0]);
   if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = d0z0[1]/TMath::Sqrt(dcaRes[2]);
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYres] = TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZres]  = TMath::Sqrt(dcaRes[2]);
 
   if(TMath::Abs(d0z0[0])>0)  values[AliDielectronVarManager::kLogDCAXY]  = TMath::Log(TMath::Abs(d0z0[0]));
   else                       values[AliDielectronVarManager::kLogDCAXY]  = 0;
