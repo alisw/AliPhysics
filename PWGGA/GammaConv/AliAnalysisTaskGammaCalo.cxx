@@ -1099,19 +1099,19 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       }
 
     } else {
-      nBinsMinv                 = 400;
+      nBinsMinv                 = 800;
 
-      nBinsPt                   = 157;
+      nBinsPt                   = 310;
       minPt                     = 0;
       maxPt                     = 100;
       binWidthPt                = 0.1;
       for(Int_t i=0; i<nBinsPt+1;i++){
         if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<98) arrPtBinning[i]           = 0.3+0.1*(i-1);
-        else if(i<138) arrPtBinning[i]          = 10.+0.25*(i-98);
-        else if(i<148) arrPtBinning[i]          = 20.+1.0*(i-138);
-        else if(i<152) arrPtBinning[i]          = 30.+5.0*(i-148);
-        else if(i<157) arrPtBinning[i]          = 50.+10.*(i-152);
+        else if(i<198) arrPtBinning[i]          = 0.3+0.1*(i-1);
+        else if(i<238) arrPtBinning[i]          = 20.+0.25*(i-198);
+        else if(i<278) arrPtBinning[i]          = 30.+0.5*(i-238);
+        else if(i<298) arrPtBinning[i]          = 50.+1.0*(i-278);
+        else if(i<310) arrPtBinning[i]          = 70.+2.5*(i-298);
         else  arrPtBinning[i]                   = maxPt;
       }
       nBinsQAPt                 = 240;
@@ -1123,16 +1123,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         else if(i<240) arrQAPtBinning[i]        = 40.+1.0*(i-180);
         else arrQAPtBinning[i]                  = maxQAPt;
       }
-      nBinsClusterPt            = 157;
+      nBinsClusterPt            = 310;
       minClusterPt              = 0;
       maxClusterPt              = 100;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
         if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
-        else if(i<138) arrClusPtBinning[i]      = 10.+0.25*(i-98);
-        else if(i<148) arrClusPtBinning[i]      = 20.+1.0*(i-138);
-        else if(i<152) arrClusPtBinning[i]      = 30.+5.0*(i-148);
-        else if(i<157) arrClusPtBinning[i]      = 50.+10.*(i-152);
+        else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
+        else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
+        else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
+        else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
+        else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
         else  arrClusPtBinning[i]               = maxClusterPt;
       }
     }
