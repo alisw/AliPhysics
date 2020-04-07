@@ -88,6 +88,7 @@
 #include "TVectorD.h"
 #include "TStatToolkit.h"
 #include "AliESDtools.h"
+#include "TVectorF.h"
 using namespace std;
 
 ClassImp(AliAnalysisTaskFilteredTree)
@@ -1559,15 +1560,20 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    "indexNearestComb="<<indexNearestComb;   // index of  nearest track for constrained track
 
           if (mcEvent){
+            Int_t multMCTracksAll= mcEvent->GetNumberOfTracks();
             static AliTrackReference refDummy;
             if (!refITS) refITS = &refDummy;
             if (!refTRD) refTRD = &refDummy;
             if (!refTOF) refTOF = &refDummy;
             if (!refEMCAL) refEMCAL = &refDummy;
             if (!refPHOS) refPHOS = &refDummy;
+            TVectorF vtxMCS(3,vtxMC.GetArray());
 	    downscaleCounter++;
             (*fTreeSRedirector)<<"highPt"<<	
               "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
+              "multMCTracksAll="<<  multMCTracksAll<<   //  mcEvent->GetNumberOfTracks();
+              "mcStackSize="<<mcStackSize<<      // MC stack sides - tack->GetNtrack();
+              "vtxMC.="<< &vtxMCS<<
               "nrefITS="<<nrefITS<<              // number of track references in the ITS
               "nrefTPC="<<nrefTPC<<              // number of track references in the TPC
               "nrefTRD="<<nrefTRD<<              // number of track references in the TRD
