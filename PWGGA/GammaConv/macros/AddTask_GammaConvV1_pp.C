@@ -1644,10 +1644,6 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9760000dge0404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
     cuts.AddCutPCM("00010113", "0dm00009f9710000dge0404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
 
-  } else if (trainConfig == 883) {   // qT variations
-    cuts.AddCutPCM("00010113", "0dm00009f9730000age0404000", "0152103500000000"); // qT max 0.040, qtptmax 0.11
-    cuts.AddCutPCM("00010113", "0dm00009f9730000ege0404000", "0152103500000000"); // qT max 0.060, qtptmax 0.14
-    cuts.AddCutPCM("00010113", "0dm00009f9730000fge0404000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
 
   } else if (trainConfig == 885) {   // chi2 variations
     cuts.AddCutPCM("00010113", "0dm00009f9730000d1e0404000", "0152103500000000"); // chi2 50
@@ -1667,6 +1663,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152107500000000"); // alpha meson 0.85
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152105500000000"); // alpha meson 0.75
 
+  } else if (trainConfig == 888) {   // qT variations
+    cuts.AddCutPCM("00010113", "0dm00009f9730000age0404000", "0152103500000000"); // qT max 0.040, qtptmax 0.11
+    cuts.AddCutPCM("00010113", "0dm00009f9730000ege0404000", "0152103500000000"); // qT max 0.060, qtptmax 0.14
+    cuts.AddCutPCM("00010113", "0dm00009f9730000fge0404000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
 
 
 
