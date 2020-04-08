@@ -1,8 +1,8 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 TVectorD *GetVector(Int_t var);
 
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts (AliDielectron *die, Int_t cutDefinition);
+void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition, Double_t ptMin, Bool_t reqTPCnTOF);
+void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 void SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 void SetTOFSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 const AliDielectronEventCuts *GetEventCutsMinBias();
@@ -24,7 +24,7 @@ Bool_t kTPCCorr  = 1;
 Bool_t kTOFCorr  = 1;
 Bool_t copyCorr  = 1; // kTRUE to download the TPC & TOF correction maps
 
-AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFALSE, char *period = "16d", Bool_t sysUnc = 0)
+AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFALSE, char *period = "16d", Double_t ptMin = 0.2, Bool_t sysUnc = kFALSE, Bool_t reqTPCnTOF = kFALSE)
 {
     //
     // Setup the instance of AliDielectron
@@ -44,7 +44,7 @@ AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFAL
 
     //=== cut setup ===================================================
     //--- track cuts
-    SetupTrackCuts(die, cutDefinition);
+    SetupTrackCuts(die, cutDefinition, ptMin, reqTPCnTOF);
     //--- pair cuts
     if (kPairCuts) SetupPairCuts(die, cutDefinition);
 
@@ -80,7 +80,7 @@ AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFAL
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
+void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition, Double_t ptMin, Bool_t reqTPCnTOF)
 {
     //
     // Setup the track cuts
@@ -124,10 +124,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     // for AOD analysis, one can cut on the DielectronVarManager variables directly
     AliDielectronVarCuts *etaRange08 = new AliDielectronVarCuts("etaRange08","etaRange08");
     etaRange08->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-    AliDielectronVarCuts *ptRange04to100 = new AliDielectronVarCuts("ptRange04to100","ptRange04to100");
-    ptRange04to100->AddCut(AliDielectronVarManager::kPt, 0.4, 100.0);
-    //AliDielectronVarCuts *ptRange02to100 = new AliDielectronVarCuts("ptRange02to100","ptRange02to100");
-    //ptRange02to100->AddCut(AliDielectronVarManager::kPt, 0.2, 100.0);
+    AliDielectronVarCuts *ptRangeMinTo100 = new AliDielectronVarCuts("ptRangeMinTo100","ptRangeMinTo100");
+    ptRangeMinTo100->AddCut(AliDielectronVarManager::kPt, ptMin, 100.0);
 
     AliDielectronVarCuts* trackCutsAOD = new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
 
@@ -145,7 +143,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,   -1*impactParZ, impactParZ);
 
     cuts->AddCut(etaRange08);
-    cuts->AddCut(ptRange04to100);
+    cuts->AddCut(ptRangeMinTo100);
     cuts->AddCut(trackCutsAOD);
 
     Double_t TPCv = 0.;
@@ -189,8 +187,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     combinedPIDcuts->AddCut(pidTPCTOFreq);
     combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
 
-    die->GetTrackFilter().AddCuts(combinedPIDcuts);
-    //die->GetTrackFilter().AddCuts(pidTPCTOFreq);
+	if (reqTPCnTOF) die->GetTrackFilter().AddCuts(pidTPCTOFreq);
+    else die->GetTrackFilter().AddCuts(combinedPIDcuts);
     //die->GetTrackFilter().AddCuts(pidTPCHadRejTOFif);
     
     printf("Track cuts: %.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%c\n",impactParXY,impactParZ,nClusITS,chi2ITS,nClusTPC,nFclsTPCr,nFclsTPCfCross,nClsSFracTPC,chi2TPC,trackCutsVar[cutDefinition][8]);
@@ -279,10 +277,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
     histos->UserHistogram("Track","dZ","dZ;DCA_{z} (cm);N of tracks",  400,-4.,4.,AliDielectronVarManager::kImpactParZ);
     histos->UserHistogram("Track","dXY_dZ","dXY dZ Map;DCA_{xy} (cm);DCA_{z} (cm)", 150,-1.5.,1.5.,400,-4.,4.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
 	if (!sysUnc){
-		histos->UserHistogram("Track","Pt_dcaXYres0","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)", 150,0.,15.,1000,0.,   0.4,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
-		histos->UserHistogram("Track","Pt_dcaXYres1","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)", 150,0.,15.,1000,0.,  0.04,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
-		histos->UserHistogram("Track","Pt_dcaXYres2","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)", 150,0.,15.,1000,0., 0.004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
-		histos->UserHistogram("Track","Pt_dcaXYres3","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)", 150,0.,15.,1000,0.,0.0004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres0","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.4,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres1","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.04,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres2","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres3","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.0004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
 	}
 
     //--- track checks (TPC) ---------------------------------------------
