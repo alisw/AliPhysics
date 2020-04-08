@@ -113,8 +113,15 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TH1D *hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
   hBptDistr->SetName("hfonllB");
   hBptDistr->Scale(1.e-6); // convert to ub
+  TH1D *hbFragmFrac = new  TH1D("hbFragmFrac"," ; ; Fragmentation Fraction",nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
+  hbFragmFrac->SetStats(0);
+  for(Int_t ib=0; ib<nBeautyHadSpecies; ib++){
+    hbFragmFrac->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
+    hbFragmFrac->SetBinContent(ib+1,fracB[ib]);
+  }
 
   TH1D** hpromptDpt=new TH1D*[nCharmHadSpecies];
+  TH1D *hcFragmFrac = new  TH1D("hcFragmFrac"," ; ; Fragmentation Fraction",nCharmHadSpecies,-0.5,nCharmHadSpecies-0.5);
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     if(pdgArrC[ic]==411) hpromptDpt[ic] = ReadFONLL(fileNameFONLLdplus.Data(),fonllCase,nPtBins,ptmin,ptmax);
     else if(pdgArrC[ic]==421) hpromptDpt[ic] = ReadFONLL(fileNameFONLLd0.Data(),fonllCase,nPtBins,ptmin,ptmax);
@@ -123,6 +130,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     hpromptDpt[ic]->Scale(fracC[ic]);
     hpromptDpt[ic]->SetName(Form("hfonllPrompt%s",chadrname[ic].Data()));
     hpromptDpt[ic]->Scale(1.e-6); // convert to ub
+    hcFragmFrac->GetXaxis()->SetBinLabel(ic+1,chadrname[ic].Data());
+    hcFragmFrac->SetBinContent(ic+1,fracC[ic]);
   }
   
   Double_t xsecb=0;
@@ -393,6 +402,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   if(optForNorm==1) outfilnam.Append("_yDcut");
   outfilnam.Append(".root");
   TFile* outfil=new TFile(outfilnam.Data(),"recreate");
+  hcFragmFrac->Write();
+  hbFragmFrac->Write();
   hBptDistr->Write();
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     hpromptDpt[ic]->Write();
