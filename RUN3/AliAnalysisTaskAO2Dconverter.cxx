@@ -556,7 +556,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   //---------------------------------------------------------------------------
   // Trigger data
   
-  trigger.fGlobalBC = GetEventIdAsLong(fESD->GetHeader());
+  trigger.fGlobalBC = evtid;
   trigger.fTriggerMask = fESD->GetTriggerMask();
   FillTree(kTrigger);
   
