@@ -12,7 +12,9 @@ AliAnalysisTask *AddTask_hdegenhardt_minbiaspp(
           Bool_t kPairC = 0,  //kPairCus
           Bool_t kTPCc  = 1,  //kTPCCor
           Bool_t kTOFc  = 1,  //kTOFCor
-          Bool_t cpAlien  = 0 //Copy Correction Maps
+          Bool_t cpAlien  = 1, //Copy Correction Maps
+          Double_t ptMin  = 0.4, //minimum pt cut
+          Bool_t reqTPCnTOF = 0 //kTRUE only to fill correction maps
 ){
 
     //=== get the current analysis manager ===========================
@@ -58,15 +60,15 @@ AliAnalysisTask *AddTask_hdegenhardt_minbiaspp(
     task->SetRandomizeDaughters(kTRUE);
 
     //=== Add event filter ============================================
+    task->SetEventFilter(GetEventCutsMinBias());
 
-    task->SetEventFilter(GetEventCutsMinBias() );
-
-	printf("Number of die configs = %d\n",nDie);
+	printf("Number of available die configs = %d\n",nDie);
 	
     Int_t numberConfigs = nDie;
     if (!sysUnc) numberConfigs = 1;
+    printf("Number of used die configs = %d\n",numberConfigs);
     for (Int_t i=0; i<numberConfigs; ++i){ //nDie defined in config file
-        AliDielectron *diele = Config_hdegenhardt_pp(i, kTRUE, period, sysUnc);
+        AliDielectron *diele = Config_hdegenhardt_pp(i, kTRUE, period, ptMin, sysUnc, reqTPCnTOF);//, kPair, kMix, kPairC, kTPCc, kTOFc, cpAlien);
         if(!diele)continue;
         task->AddDielectron(diele);
     }   
