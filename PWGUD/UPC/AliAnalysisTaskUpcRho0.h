@@ -33,6 +33,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
  	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
  	void SetTPCNcls(Int_t _fTPCNcls) {fTPCNcls = _fTPCNcls;}
+ 	void SetOption(TString _fOption){fOption = _fOption;}
 
   private:
   	Bool_t Is0STPfired(Int_t *, Int_t *);
@@ -42,6 +43,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
   	Bool_t debugMode;
   	TString fTriggerName;
   	Int_t fTPCNcls; // number of TPC clusters
+  	TString fOption;
 
   	// tree
   	TTree *fRhoTree;
