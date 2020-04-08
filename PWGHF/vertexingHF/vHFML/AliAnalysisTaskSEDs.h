@@ -232,7 +232,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;              /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs, 39);       /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 40);       /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
