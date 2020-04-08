@@ -97,7 +97,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
  private:
-  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
+  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,knVarForSparseAccFD=3,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
