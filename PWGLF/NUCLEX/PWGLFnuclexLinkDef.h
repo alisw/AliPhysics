@@ -122,6 +122,11 @@
 #pragma link C++ class SHyperTriton3KF+;
 #pragma link C++ class std::vector<RHyperTriton3KF>+;
 #pragma link C++ class std::vector<SHyperTriton3KF>+;
+#pragma link C++ class AliAnalysisTaskHypertritonO2+;
+#pragma link C++ class RHyperTritonO2+;
+#pragma link C++ class SHyperTritonO2+;
+#pragma link C++ class std::vector<RHyperTritonO2>+;
+#pragma link C++ class std::vector<SHyperTritonO2>+;
 #pragma link C++ class RHypertriton3+;
 #pragma link C++ class SHypertriton3+;
 #pragma link C++ class MLSelected+;
@@ -129,6 +134,8 @@
 #pragma link C++ class std::vector<SHypertriton3>+;
 #pragma link C++ class std::vector<MLSelected>+;
 #pragma link C++ class REvent+;
+#pragma link C++ class o2::vertexing::DCAFitter2+;
+#pragma link C++ class o2::vertexing::DCAFitter3+;
 #endif
 
 /// * VertexerHyp3Body
