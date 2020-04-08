@@ -151,17 +151,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TH1D** hnonpromptDpt=new TH1D*[nCharmHadSpecies];
   TH2D** hnonpromptDptByOrigin=new TH2D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
-    hnonpromptDorigin[ic] = new TH1F(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),4,-0.5,3.5);
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(1,"B+");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(2,"B0");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(3,"B_s");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(4,"Lb");
+    hnonpromptDorigin[ic] = new TH1F(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
+    for(Int_t ib=0; ib<nBeautyHadSpecies; ib++)  hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
     hnonpromptDpt[ic]  = new TH1D(Form("hnonprompt%spt",chadrname[ic].Data())," ; p_{T} (GeV) ; d#sigma/dp_{T} (#mub/GeV)",nPtBins,ptmin,ptmax);
-    hnonpromptDptByOrigin[ic]  = new TH2D(Form("hnonprompt%sptByOrigin",chadrname[ic].Data()),"",4,-0.5,3.5,nPtBins,ptmin,ptmax);
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(1,"B+");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(2,"B0");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(3,"B_s");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(4,"Lb");
+    hnonpromptDptByOrigin[ic]  = new TH2D(Form("hnonprompt%sptByOrigin",chadrname[ic].Data()),"",nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5,nPtBins,ptmin,ptmax);
+    for(Int_t ib=0; ib<nBeautyHadSpecies; ib++) hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
     hnonpromptDptByOrigin[ic]->GetYaxis()->SetTitle("p_{T} (GeV)");
   }
 
