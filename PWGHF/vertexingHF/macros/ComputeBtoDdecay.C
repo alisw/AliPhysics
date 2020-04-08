@@ -55,6 +55,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 		      TString fileNameFONLLb="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLd0="FONLL-D0-dsdpt-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-50MeVbins.txt",
+		      TString fileNameFONLLdave="FONLL-D0DplusAv-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-50MeVbins.txt",
 		      Int_t opt4ff=0,
 		      Int_t optForNorm=1,
@@ -109,15 +110,16 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TDatabasePDG* db=TDatabasePDG::Instance();
   pdec->Init();
 
-  TH1D * hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
+  TH1D *hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
   hBptDistr->SetName("hfonllB");
   hBptDistr->Scale(1.e-6); // convert to ub
 
   TH1D** hpromptDpt=new TH1D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     if(pdgArrC[ic]==411) hpromptDpt[ic] = ReadFONLL(fileNameFONLLdplus.Data(),fonllCase,nPtBins,ptmin,ptmax);
+    else if(pdgArrC[ic]==421) hpromptDpt[ic] = ReadFONLL(fileNameFONLLd0.Data(),fonllCase,nPtBins,ptmin,ptmax);
     else if(pdgArrC[ic]==413) hpromptDpt[ic] = ReadFONLL(fileNameFONLLdstar.Data(),fonllCase,nPtBins,ptmin,ptmax);
-    else hpromptDpt[ic]= ReadFONLL(fileNameFONLLd0.Data(),fonllCase,nPtBins,ptmin,ptmax);
+    else hpromptDpt[ic] = ReadFONLL(fileNameFONLLdave.Data(),fonllCase,nPtBins,ptmin,ptmax);
     hpromptDpt[ic]->Scale(fracC[ic]);
     hpromptDpt[ic]->SetName(Form("hfonllPrompt%s",chadrname[ic].Data()));
     hpromptDpt[ic]->Scale(1.e-6); // convert to ub
