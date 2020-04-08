@@ -1,4 +1,4 @@
-PWGLF/SPECTRA/ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.h/// \class AlidNdPtTools
+/// \class AlidNdPtTools
 /// \brief Collection of functionality used in dNdPt anlysis
 ///
 /// all methods are static
