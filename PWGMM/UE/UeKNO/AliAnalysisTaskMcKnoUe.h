@@ -98,7 +98,6 @@ private:
     TH2D * hPtDCAWeak;
     TH2D * hPtDCAMat;
     TH2D * hPtDCAall;    
-    TH2D * hPtInPrimParticle;
     
 	// KNO
 	TH1D * hPhiGen[3];
@@ -177,7 +176,7 @@ private:
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
 
-	ClassDef(AliAnalysisTaskMcKnoUe, 3);
+	ClassDef(AliAnalysisTaskMcKnoUe, 4);
 };
 
 #endif
