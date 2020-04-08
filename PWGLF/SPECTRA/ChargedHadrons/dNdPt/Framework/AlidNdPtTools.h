@@ -1,4 +1,4 @@
-/// \class AlidNdPtTools
+PWGLF/SPECTRA/ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.h/// \class AlidNdPtTools
 /// \brief Collection of functionality used in dNdPt anlysis
 ///
 /// all methods are static
@@ -11,6 +11,7 @@
 #define AlidNdPtTools_H
 
 #include "THnSparse.h"
+#include <vector>
 
 class TGraph;
 class AliESDtrackCuts;
@@ -29,6 +30,7 @@ class AlidNdPtTools : public TObject
 
         static Long64_t        FillHist(THnBase* s, Double_t x0, Double_t x1=0, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0);
         static Long64_t        FillHist(Double_t w, THnBase* s, Double_t x0, Double_t x1=0, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0);
+        static Long64_t        FillHistWeighted(THnBase* s, std::vector<double> const& val, double weight);
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0);                    // options: <none>
         static Int_t           AddAxis(const char* label, const char* title, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0); // options: <none>
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t* xbins, const char* option = 0);        // options: <none>

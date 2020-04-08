@@ -44,36 +44,49 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskBaseWeights(const char *name);
         virtual                 ~AliAnalysisTaskBaseWeights();
 
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event
+        virtual void            LoopOverAllTracks(Int_t flag = 0);
+        virtual void            LoopOverAllParticles(Int_t flag = 0);
+        virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in DATA event
+        virtual void            AnaParticleMC(Int_t flag = 0);   //called once for every track in MC event
+    
         // new functions added to steer the behavior of the MC re-weighting
-        virtual void            SetUseMCWeights(Bool_t use=kTRUE) { fUseMCWeights = use; }              
+        virtual void            SetUseMCWeights(Bool_t use=kTRUE) { fUseMCWeights = use;}   
         virtual Bool_t          GetUseMCWeights() { return fUseMCWeights;  }
-        virtual void            SetUseRandomSeed(Bool_t use=kTRUE) { fUseRandomSeed = use; }              
+    
+        virtual void            SetUseRandomSeed(Bool_t use=kTRUE) { fUseRandomSeed = use; }
         virtual Bool_t          GetUseRandomSeed() { return fUseRandomSeed;  }        
-             
+    
+        double                  GetRandomRoundDouble(double val);
+        Double_t                MCScalingFactor();
+        virtual void            FillDefaultHistograms(Int_t step=0);
+    
         static AliAnalysisTaskBaseWeights* AddTaskBaseWeights(const char* name = "TaskBaseWeights", const char* outfile = 0, const char* collisionSystem = 0, Int_t sysFlag = 0, const char* prevTrainOutputPath = 0);
-
-    protected:    
-        // override the track and particle loops from the AliAnalysisTaskMKBase class
-        virtual void            LoopOverAllTracks(Int_t flag = 0);    // loops over all tracks in the event, calls AnaTrack(), AnaTrackMC() and AnaTrackDATA() for each track
-        virtual void            LoopOverAllParticles(Int_t flag = 0); // loops over all MC particles in the event, calls AnaParticleMC() for each particle
-        virtual void            FillDefaultHistograms(Int_t step); // overwrite this function to include the filling of the MCSpectraWeights histograms
-        virtual Double_t        MCScalingFactor();  //internal method to determine the proper scaling factor for primaries and secondaries
-        virtual void            BaseAddOutput();   // add even more output
-        
+    protected:
         virtual UInt_t          GetSeed();
         
-        Bool_t               fUseMCWeights;      ///  use mc weights (default) or do nothing
-        Bool_t               fUseRandomSeed;     ///  use a random seed or a deterministic one (default)        
-        TRandom*             fRand;              //-> random generator to be used
-        AliMCSpectraWeights* fMCSpectraWeights;  //-> object to determine efficiency scaling
-        Double_t             fMCweight;          //!<! MC weight of the current track/particle
-        
+        Bool_t                  fUseMCWeights;      ///  use mc weights (default) or do nothing
+        Bool_t                  fUseRandomSeed;     ///  use a random seed or a deterministic one (default)
+        TRandom*                fRand;              //-> random generator to be used
+        AliMCSpectraWeights*    fMCSpectraWeights;  //-> object to determine efficiency scaling
+        Double_t                fMCweight;          //!<! MC weight of the current track/particle
+        Double_t                fMCweightRandom;          //!<! MC weight of the current track/particle random rounded
+        Double_t                fNch;
+        Double_t                fNchWeighted;
+        Double_t                fNchWeightedRandom;
+        Double_t                fNacc;
+        Double_t                fNaccWeighted;
+        Double_t                fNaccWeightedRandom;
+        THnSparseD*             fHistEffCont;         //-> efficiency/contamination histogram pure/weighted/randomWeight
+        THnSparseD*             fHistMultCorrelation; //!<! N_acc vs N_ch pure/weighted/randomWeight
     private:
         AliAnalysisTaskBaseWeights(const AliAnalysisTaskBaseWeights&); // not implemented
         AliAnalysisTaskBaseWeights& operator=(const AliAnalysisTaskBaseWeights&); // not implemented
         
     /// \cond CLASSIMP    
-        ClassDef(AliAnalysisTaskBaseWeights, 3);
+        ClassDef(AliAnalysisTaskBaseWeights, 4);
     /// \endcond        
 };
 
