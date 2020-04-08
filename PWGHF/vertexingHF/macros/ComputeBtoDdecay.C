@@ -55,6 +55,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 		      TString fileNameFONLLb="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLd0="FONLL-D0-dsdpt-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-50MeVbins.txt",
+		      TString fileNameFONLLdave="FONLL-D0DplusAv-sqrts5020-50MeVbins.txt",
 		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-50MeVbins.txt",
 		      Int_t opt4ff=0,
 		      Int_t optForNorm=1,
@@ -109,18 +110,28 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TDatabasePDG* db=TDatabasePDG::Instance();
   pdec->Init();
 
-  TH1D * hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
+  TH1D *hBptDistr = ReadFONLL(fileNameFONLLb.Data(),fonllCase,nPtBins,ptmin,ptmax);
   hBptDistr->SetName("hfonllB");
   hBptDistr->Scale(1.e-6); // convert to ub
+  TH1D *hbFragmFrac = new  TH1D("hbFragmFrac"," ; ; Fragmentation Fraction",nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
+  hbFragmFrac->SetStats(0);
+  for(Int_t ib=0; ib<nBeautyHadSpecies; ib++){
+    hbFragmFrac->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
+    hbFragmFrac->SetBinContent(ib+1,fracB[ib]);
+  }
 
   TH1D** hpromptDpt=new TH1D*[nCharmHadSpecies];
+  TH1D *hcFragmFrac = new  TH1D("hcFragmFrac"," ; ; Fragmentation Fraction",nCharmHadSpecies,-0.5,nCharmHadSpecies-0.5);
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     if(pdgArrC[ic]==411) hpromptDpt[ic] = ReadFONLL(fileNameFONLLdplus.Data(),fonllCase,nPtBins,ptmin,ptmax);
+    else if(pdgArrC[ic]==421) hpromptDpt[ic] = ReadFONLL(fileNameFONLLd0.Data(),fonllCase,nPtBins,ptmin,ptmax);
     else if(pdgArrC[ic]==413) hpromptDpt[ic] = ReadFONLL(fileNameFONLLdstar.Data(),fonllCase,nPtBins,ptmin,ptmax);
-    else hpromptDpt[ic]= ReadFONLL(fileNameFONLLd0.Data(),fonllCase,nPtBins,ptmin,ptmax);
+    else hpromptDpt[ic] = ReadFONLL(fileNameFONLLdave.Data(),fonllCase,nPtBins,ptmin,ptmax);
     hpromptDpt[ic]->Scale(fracC[ic]);
     hpromptDpt[ic]->SetName(Form("hfonllPrompt%s",chadrname[ic].Data()));
     hpromptDpt[ic]->Scale(1.e-6); // convert to ub
+    hcFragmFrac->GetXaxis()->SetBinLabel(ic+1,chadrname[ic].Data());
+    hcFragmFrac->SetBinContent(ic+1,fracC[ic]);
   }
   
   Double_t xsecb=0;
@@ -136,27 +147,21 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   }
 
   
-  TH1F** hnonpromptDorigin=new TH1F*[nCharmHadSpecies];
+  TH1D** hnonpromptDorigin=new TH1D*[nCharmHadSpecies];
   TH1D** hnonpromptDpt=new TH1D*[nCharmHadSpecies];
   TH2D** hnonpromptDptByOrigin=new TH2D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
-    hnonpromptDorigin[ic] = new TH1F(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),4,-0.5,3.5);
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(1,"B+");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(2,"B0");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(3,"B_s");
-    hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(4,"Lb");
+    hnonpromptDorigin[ic] = new TH1D(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
+    for(Int_t ib=0; ib<nBeautyHadSpecies; ib++)  hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
     hnonpromptDpt[ic]  = new TH1D(Form("hnonprompt%spt",chadrname[ic].Data())," ; p_{T} (GeV) ; d#sigma/dp_{T} (#mub/GeV)",nPtBins,ptmin,ptmax);
-    hnonpromptDptByOrigin[ic]  = new TH2D(Form("hnonprompt%sptByOrigin",chadrname[ic].Data()),"",4,-0.5,3.5,nPtBins,ptmin,ptmax);
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(1,"B+");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(2,"B0");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(3,"B_s");
-    hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(4,"Lb");
+    hnonpromptDptByOrigin[ic]  = new TH2D(Form("hnonprompt%sptByOrigin",chadrname[ic].Data()),"",nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5,nPtBins,ptmin,ptmax);
+    for(Int_t ib=0; ib<nBeautyHadSpecies; ib++) hnonpromptDptByOrigin[ic]->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
     hnonpromptDptByOrigin[ic]->GetYaxis()->SetTitle("p_{T} (GeV)");
   }
 
-  TH1F** hBhadDau = new TH1F*[nBeautyHadSpecies];
+  TH1D** hBhadDau = new TH1D*[nBeautyHadSpecies];
   for(Int_t ib=0; ib<nBeautyHadSpecies; ib++){
-    hBhadDau[ib] = new TH1F(Form("h%sdau",bhadrname[ib].Data())," ; ; Entries",nCharmHadSpecies+1,-1.5,nCharmHadSpecies-0.5);
+    hBhadDau[ib] = new TH1D(Form("h%sdau",bhadrname[ib].Data())," ; ; Entries",nCharmHadSpecies+1,-1.5,nCharmHadSpecies-0.5);
     hBhadDau[ib]->GetXaxis()->SetBinLabel(1,Form("All %s",bhadrname[ib].Data()));
     for(Int_t ic=0; ic<nCharmHadSpecies; ic++) hBhadDau[ib]->GetXaxis()->SetBinLabel(2+ic,chadrname[ic].Data());
   }
@@ -304,9 +309,9 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   }
   printf("\n");
 
-  TH1F** hfpromptD = new TH1F*[nCharmHadSpecies];
+  TH1D** hfpromptD = new TH1D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
-    hfpromptD[ic] = new TH1F(Form("hfprompt%s",chadrname[ic].Data())," ; p_{T} (GeV) ; f_{prompt}",hnonpromptDpt[ic]->GetNbinsX(),hnonpromptDpt[ic]->GetXaxis()->GetXmin(),hnonpromptDpt[ic]->GetXaxis()->GetXmax());
+    hfpromptD[ic] = new TH1D(Form("hfprompt%s",chadrname[ic].Data())," ; p_{T} (GeV) ; f_{prompt}",hnonpromptDpt[ic]->GetNbinsX(),hnonpromptDpt[ic]->GetXaxis()->GetXmin(),hnonpromptDpt[ic]->GetXaxis()->GetXmax());
     hfpromptD[ic]->SetStats(0);
     for(Int_t i=1; i<=hnonpromptDpt[ic]->GetNbinsX(); i++){
       Double_t fp=hpromptDpt[ic]->GetBinContent(i)/(hpromptDpt[ic]->GetBinContent(i)+hnonpromptDpt[ic]->GetBinContent(i));
@@ -320,7 +325,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hBptDistr->GetYaxis()->SetTitle("d#sigma/dp_{T} (#mub/GeV)");
   hBptDistr->GetXaxis()->SetTitle("p_{T} (GeV)");
 
-  TH1F* hnonpromptDsKKpipt=(TH1F*)hnonpromptDpt[2]->Clone("hnonpromptDsKKpipt");
+  TH1D* hnonpromptDsKKpipt=(TH1D*)hnonpromptDpt[2]->Clone("hnonpromptDsKKpipt");
   hnonpromptDsKKpipt->Scale(0.0227);
   hnonpromptDsKKpipt->GetYaxis()->SetTitle("d#sigma/dp_{T}xBR (#mub/GeV)");
     
@@ -391,6 +396,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   if(optForNorm==1) outfilnam.Append("_yDcut");
   outfilnam.Append(".root");
   TFile* outfil=new TFile(outfilnam.Data(),"recreate");
+  hcFragmFrac->Write();
+  hbFragmFrac->Write();
   hBptDistr->Write();
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     hpromptDpt[ic]->Write();
