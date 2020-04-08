@@ -767,11 +767,12 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  }
 		} //end of loop over xic daughters
 	      if(nFound==5){
-		if(isInAcc){
-		  if ((TMath::Abs(mcdaughter1->Eta())>0.9) || (TMath::Abs(mcdaughter2->Eta())>0.9) || (TMath::Abs(mcdaughterProtonFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromXi->Eta())>0.9)){ //to check also the y acceptance of Xi and Lambda?
-		    isInAcc=kFALSE;
-		  }
-		}
+		//this is actually already done at previous steps SelectSingleTrk and SelectCascades -> this is not needed here
+		//if(isInAcc){
+		//		  if ((TMath::Abs(mcdaughter1->Eta())>0.8) || (TMath::Abs(mcdaughter2->Eta())>0.8) || (TMath::Abs(mcdaughterProtonFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromXi->Eta())>0.9)){ //to check also the y acceptance of Xi and Lambda?
+		  //  isInAcc=kFALSE;
+		  //}
+		//}
 		if(isInAcc){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco,checkOrigin);
 		  isXic=kTRUE;
@@ -781,6 +782,16 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+		  }
+		  fAnalCuts->SetUsePID(kTRUE);
+		} else {
+		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco08,checkOrigin);
+		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
+		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+		  }
+		  fAnalCuts->SetUsePID(kFALSE);
+		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
+		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kTRUE);
 		}
@@ -833,10 +844,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
     nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);      
     nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
 	
-    if(fAnalCuts->GetPidHF()->GetUseCombined()){
-      probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
-      probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
-    }
+    probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
+    probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+    
   }
 
       
@@ -912,6 +922,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[53] = -9999;
       fCandidateVariables[54] = -9999;
       fCandidateVariables[58] = -9999;
+      fCandidateVariables[60] = -9999;
+      fCandidateVariables[61] = -9999;
+      fCandidateVariables[62] = -9999;
  
  
       if(fUseMCInfo){
@@ -941,6 +954,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	    fCandidateVariables[53] = mcdaughter2->Pt();
 	    fCandidateVariables[54] = mcdaughterxi->Pt();
 	    fCandidateVariables[58] = static_cast<Float_t>(checkOrigin);
+	    fCandidateVariables[60] = mcsecvertx;
+	    fCandidateVariables[61] = mcsecverty;
+	    fCandidateVariables[62] = mcdaughter1->Zv();
 	  }
 	}
       }
@@ -1011,7 +1027,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 60;
+  Int_t nVar = 63;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1084,6 +1100,11 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   
   fCandidateVariableNames[58]="isPrompt";
   fCandidateVariableNames[59]="Xicy";
+
+  fCandidateVariableNames[60]="mcxicsecvertx";
+  fCandidateVariableNames[61]="mcxicsecverty";
+  fCandidateVariableNames[62]="mcxicsecvertz";
+  
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }
@@ -1187,6 +1208,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHistoXiMassvsPtRef5);
   fOutput->Add(fHistoXiMassvsPtRef6);
   fOutput->Add(fHistoPiPtRef);
+  fOutput->Add(fHistoPiEtaRef);
   fOutput->Add(fQAHistoNSelectedTracks);
   fOutput->Add(fQAHistoNSelectedCasc);
   fOutput->Add(fQAHistoDCApi1pi2);
@@ -1202,7 +1224,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fQAHistoSecondaryVertexXY);
   
   if(fUseMCInfo) {
-    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,20,-0.5,9.5,2,3.5,5.5);
+    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,2,3.5,5.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
   }
 
@@ -1756,12 +1778,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	    isInAcc=kFALSE;
 	  }
 	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
-	    
+	if (TMath::Abs(ypart)<0.8) {
+	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  for(Int_t k=0;k<5;k++){
+	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);;    
+	  }
+	}
+	
 	if(isInAcc){
 	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
-	    if(TMath::Abs(mcpartdau->Eta())>0.9) isInAcc=kFALSE;    
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) isInAcc=kFALSE;    
 	  }
 	}
 	if(isInAcc) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
