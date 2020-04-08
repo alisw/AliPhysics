@@ -147,11 +147,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   }
 
   
-  TH1F** hnonpromptDorigin=new TH1F*[nCharmHadSpecies];
+  TH1D** hnonpromptDorigin=new TH1D*[nCharmHadSpecies];
   TH1D** hnonpromptDpt=new TH1D*[nCharmHadSpecies];
   TH2D** hnonpromptDptByOrigin=new TH2D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
-    hnonpromptDorigin[ic] = new TH1F(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
+    hnonpromptDorigin[ic] = new TH1D(Form("hnonprompt%sOrigin",chadrname[ic].Data()),Form("%s mother ; ; Entries",chadrname[ic].Data()),nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5);
     for(Int_t ib=0; ib<nBeautyHadSpecies; ib++)  hnonpromptDorigin[ic]->GetXaxis()->SetBinLabel(ib+1,bhadrname[ib].Data());
     hnonpromptDpt[ic]  = new TH1D(Form("hnonprompt%spt",chadrname[ic].Data())," ; p_{T} (GeV) ; d#sigma/dp_{T} (#mub/GeV)",nPtBins,ptmin,ptmax);
     hnonpromptDptByOrigin[ic]  = new TH2D(Form("hnonprompt%sptByOrigin",chadrname[ic].Data()),"",nBeautyHadSpecies,-0.5,nBeautyHadSpecies-0.5,nPtBins,ptmin,ptmax);
@@ -159,9 +159,9 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     hnonpromptDptByOrigin[ic]->GetYaxis()->SetTitle("p_{T} (GeV)");
   }
 
-  TH1F** hBhadDau = new TH1F*[nBeautyHadSpecies];
+  TH1D** hBhadDau = new TH1D*[nBeautyHadSpecies];
   for(Int_t ib=0; ib<nBeautyHadSpecies; ib++){
-    hBhadDau[ib] = new TH1F(Form("h%sdau",bhadrname[ib].Data())," ; ; Entries",nCharmHadSpecies+1,-1.5,nCharmHadSpecies-0.5);
+    hBhadDau[ib] = new TH1D(Form("h%sdau",bhadrname[ib].Data())," ; ; Entries",nCharmHadSpecies+1,-1.5,nCharmHadSpecies-0.5);
     hBhadDau[ib]->GetXaxis()->SetBinLabel(1,Form("All %s",bhadrname[ib].Data()));
     for(Int_t ic=0; ic<nCharmHadSpecies; ic++) hBhadDau[ib]->GetXaxis()->SetBinLabel(2+ic,chadrname[ic].Data());
   }
@@ -309,9 +309,9 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   }
   printf("\n");
 
-  TH1F** hfpromptD = new TH1F*[nCharmHadSpecies];
+  TH1D** hfpromptD = new TH1D*[nCharmHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
-    hfpromptD[ic] = new TH1F(Form("hfprompt%s",chadrname[ic].Data())," ; p_{T} (GeV) ; f_{prompt}",hnonpromptDpt[ic]->GetNbinsX(),hnonpromptDpt[ic]->GetXaxis()->GetXmin(),hnonpromptDpt[ic]->GetXaxis()->GetXmax());
+    hfpromptD[ic] = new TH1D(Form("hfprompt%s",chadrname[ic].Data())," ; p_{T} (GeV) ; f_{prompt}",hnonpromptDpt[ic]->GetNbinsX(),hnonpromptDpt[ic]->GetXaxis()->GetXmin(),hnonpromptDpt[ic]->GetXaxis()->GetXmax());
     hfpromptD[ic]->SetStats(0);
     for(Int_t i=1; i<=hnonpromptDpt[ic]->GetNbinsX(); i++){
       Double_t fp=hpromptDpt[ic]->GetBinContent(i)/(hpromptDpt[ic]->GetBinContent(i)+hnonpromptDpt[ic]->GetBinContent(i));
@@ -325,7 +325,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hBptDistr->GetYaxis()->SetTitle("d#sigma/dp_{T} (#mub/GeV)");
   hBptDistr->GetXaxis()->SetTitle("p_{T} (GeV)");
 
-  TH1F* hnonpromptDsKKpipt=(TH1F*)hnonpromptDpt[2]->Clone("hnonpromptDsKKpipt");
+  TH1D* hnonpromptDsKKpipt=(TH1D*)hnonpromptDpt[2]->Clone("hnonpromptDsKKpipt");
   hnonpromptDsKKpipt->Scale(0.0227);
   hnonpromptDsKKpipt->GetYaxis()->SetTitle("d#sigma/dp_{T}xBR (#mub/GeV)");
     
