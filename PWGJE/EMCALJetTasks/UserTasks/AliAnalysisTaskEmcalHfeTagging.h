@@ -100,6 +100,10 @@ public:
     void SetMinEoPcut(Double_t d)                             { fMinEoPcut = d;}
     void SetMaxEoPcut(Double_t d)                             { fMaxEoPcut = d;}
     void SetM20cut(Double_t d)                                { fM20cut = d;}
+    void SetMinPtTPC(Double_t d)                              { fMinPtTPC = d;}
+    void SetMaxPtTPC(Double_t d)                              { fMaxPtTPC = d;}
+    void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
+    void SetMaxPtEMCal(Double_t d)                            { fMaxPtEMCal = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -189,7 +193,10 @@ protected:
     Double_t                            fMinEoPcut;              // minimum value of the E/p cut
     Double_t                            fMaxEoPcut;              // maximum value of the E/p cut
     Double_t                            fM20cut;                 // maximum value of the M20 cut
-    
+    Double_t                            fMinPtTPC;               // minimum pt for the TPC analysis
+    Double_t                            fMaxPtTPC;               // maximum pt for the TPC analysis
+    Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
+    Double_t                            fMaxPtEMCal;             // maximum pt for the EMCal analysis
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;
@@ -247,9 +254,11 @@ protected:
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
     TH1F                                *fptTrueHFEeffTPCTOF[5];
-    TH1F                                *fptTrueHFEeffTPCTOFwJetPt[2][5];
+    TH3F                                *fptTrueHFEeffTPCTOFang[2];
+    TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
     TH1F                                *fptTrueHFEeffEMCal[5];
-    TH1F                                *fptTrueHFEeffEMCalwJetPt[2][5];
+    TH3F                                *fptTrueHFEeffEMCalang[2];
+    TH3F                                *fptTrueHFEeffEMCaldisp[2];
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;

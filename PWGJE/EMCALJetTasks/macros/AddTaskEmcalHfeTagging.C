@@ -36,7 +36,13 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
                                                        Double_t EtaCut = 0.7,
                                                        Double_t MinEoPcut = 0.9,
                                                        Double_t MaxEoPcut = 1.3,
-                                                       Double_t M20cut = 0.35) {
+                                                       Double_t M20cut = 0.35,
+                                                       Double_t MinPtTPC = 0.5,
+                                                       Double_t MaxPtTPC = 4.,
+                                                       Double_t MinPtEMCal = 4.,
+                                                       Double_t MaxPtEMCal = 25.
+                                                       
+                                                       ) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr)
@@ -86,6 +92,10 @@ AliAnalysisTaskEmcalHfeTagging* AddTaskEmcalHfeTagging(const char * njetsBase,
     task->SetMinEoPcut(MinEoPcut);
     task->SetMaxEoPcut(MaxEoPcut);
     task->SetM20cut(M20cut);
+    task->SetMinPtTPC(MinPtTPC);
+    task->SetMaxPtTPC(MaxPtTPC);
+    task->SetMinPtEMCal(MinPtEMCal);
+    task->SetMaxPtEMCal(MaxPtEMCal);
     
     
     
