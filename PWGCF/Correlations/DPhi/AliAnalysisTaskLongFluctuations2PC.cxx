@@ -17,18 +17,12 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskLongFluctuations2PC.h"
 #include "AliAODMCParticle.h"
-//#include <iostream>
-//class AliAnalysisTaskLongFluctuations2PC;
 
 ClassImp(AliAnalysisTaskLongFluctuations2PC)
 
 AliAnalysisTaskLongFluctuations2PC::AliAnalysisTaskLongFluctuations2PC() : AliAnalysisTaskSE(),
-    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fFilterBit(768), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
+    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fFB(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
 {
-    mCounter = 0;
-    mCent = 0;
-    mPVz = 0;
-    mIsMC = 0;
     for(Int_t i(0);i<9;i++) {
         fHistSigMC[i]=0; fHistBgMC[i]=0; fHistSigGapMC[i]=0; fHistBgGapMC[i]=0;
         for(Int_t j(0);j<17;j++) {fHistSig[i][j]=0; fHistBg[i][j]=0; fHistSigGap[i][j]=0; fHistBgGap[i][j]=0;}
@@ -36,25 +30,12 @@ AliAnalysisTaskLongFluctuations2PC::AliAnalysisTaskLongFluctuations2PC() : AliAn
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLongFluctuations2PC::AliAnalysisTaskLongFluctuations2PC(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fFilterBit(768), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
+    fAOD(0), fOutputList(0), fMultD(0), fMultDpT(0), fMultDMC(0), fMultDpTMC(0), fMultDReMC(0), fPVzCentNevents(0), fCentMultQA(0), fAllCentQA(0), fIsMC(0), fFB(0), fCentrality("V0M"), fChi2DoF(0), fTPCNcls(0), fPtmin(0), fPtmax(0), fEta(0)
 {
-    mCounter = 0;
-    mCent = 0;
-    mPVz = 0;
-    mIsMC = 0;
     for(Int_t i(0);i<9;i++) {
         fHistSigMC[i]=0; fHistBgMC[i]=0; fHistSigGapMC[i]=0; fHistBgGapMC[i]=0;
         for(Int_t j(0);j<17;j++) {fHistSig[i][j]=0; fHistBg[i][j]=0; fHistSigGap[i][j]=0; fHistBgGap[i][j]=0;}
     }
-
-/*    cout<<"******** Filter bit:  "<<fFilterBit<<endl;
-    cout<<"******** Centrality: "<<fCentrality<<endl;
-    cout<<"******** chi2 per dof:  "<<fChi2DoF<<endl;
-    cout<<"******** TPC Ncls:  "<<fTPCNcls<<endl;
-    cout<<"******** Pt min:  "<<fPtmin<<endl;
-    cout<<"******** Pt max:  "<<fPtmax<<endl;
-    cout<<"******** Eta limit:  "<<fEta<<endl;*/
-
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -69,7 +50,14 @@ AliAnalysisTaskLongFluctuations2PC::~AliAnalysisTaskLongFluctuations2PC()
 }
 //_____________________________________________________________________________
 
-void AliAnalysisTaskLongFluctuations2PC::SetMCRead(Bool_t bs){mIsMC=bs;}
+void AliAnalysisTaskLongFluctuations2PC::SetMCRead(Bool_t bs){fIsMC=bs;}
+void AliAnalysisTaskLongFluctuations2PC::SetFilterBit(Int_t fb){fFB = fb;}
+void AliAnalysisTaskLongFluctuations2PC::SetCentrality(TString Cent){fCentrality = Cent;}
+void AliAnalysisTaskLongFluctuations2PC::SetChi2DoF(Double_t Chi2DoF){fChi2DoF = Chi2DoF;}
+void AliAnalysisTaskLongFluctuations2PC::SetNclTPC(Int_t ncl){fTPCNcls = ncl;}
+void AliAnalysisTaskLongFluctuations2PC::SetPtLimits(Double_t ptmin, Double_t ptmax){fPtmin = ptmin; fPtmax = ptmax;}
+void AliAnalysisTaskLongFluctuations2PC::SetEtaLimit(Double_t etalimit){fEta = etalimit;}
+
 
 void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
 {
@@ -78,7 +66,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
 
     Double_t centbins[9] = {0.,5,10,20,30,40,50,60,70};
     Double_t pvzbins[17] = {-8.,-7.,-6.,-5.,-4.,-3.,-2.,-1.,0.,1.,2.,3.,4.,5.,6.,7.,8.};
-    Double_t etabins[17] = {-.8,-.7,-.6,-.5,-.4,-.3,-.2,-.1,0.,.1,.2,.3,.4,.5,.6,.7,.8};
+    Int_t etaBins = 40;
     char hname[20];
     
     fMultD = new TH1D("multD","",4000,-0.5,3999.5);
@@ -86,10 +74,24 @@ void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
     fMultDpT = new TProfile("multDpT","",4000,-0.5,3999.5);
     fMultDpT->SetXTitle("N_{ch}");
     fMultDpT->SetYTitle("#langle p_{T} #rangle");
+    fPVzCentNevents = new TH2D("PVzCentNevents","",16,pvzbins,8,centbins);
+    fPVzCentNevents->SetXTitle("PVz");
+    fPVzCentNevents->SetYTitle("Cent");
+    fCentMultQA = new TH2D("CentMultQA","",100,0.0,100.0,4000,-0.5,3999.5);
+    fCentMultQA->SetXTitle("Cent V0M");
+    fCentMultQA->SetYTitle("Mult");
+    fAllCentQA = new TH3D("AllCentQA","",100,0,100,100,0,100,100,0,100);
+    fAllCentQA->SetXTitle("Cent V0M");
+    fAllCentQA->SetYTitle("Cent CL0");
+    fAllCentQA->SetZTitle("Cent TPC");
+    
     fOutputList->Add(fMultD);
     fOutputList->Add(fMultDpT);
+    fOutputList->Add(fPVzCentNevents);
+    fOutputList->Add(fCentMultQA);
+    fOutputList->Add(fAllCentQA);
 
-    if(mIsMC) {
+    if(fIsMC) {
         fMultDMC = new TH1D("multDMC","",4000,-0.5,3999.5);
         fMultDMC->SetXTitle("N_{ch}");
         fMultDpTMC = new TProfile("multDpTMC","",4000,-0.5,3999.5);
@@ -106,49 +108,49 @@ void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
     for(Int_t i(0);i<9;i++){
         for(Int_t j(0);j<17;j++){
             sprintf(hname,"histSig_%i_%i",i,j);
-            fHistSig[i][j] = new TH2D(hname,"",16, etabins,16, etabins);
+            fHistSig[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins, -0.8,0.8);
             fHistSig[i][j]->SetXTitle("#eta_{1}");
             fHistSig[i][j]->SetYTitle("#eta_{2}");
             fOutputList->Add(fHistSig[i][j]);
 
             sprintf(hname,"histBg_%i_%i",i,j);
-            fHistBg[i][j] = new TH1D(hname,"",16, etabins);
+            fHistBg[i][j] = new TH1D(hname,"",etaBins,-0.8,0.8);
             fHistBg[i][j]->SetXTitle("#eta");
             fOutputList->Add(fHistBg[i][j]);
 
             sprintf(hname,"histSigGap_%i_%i",i,j);
-            fHistSigGap[i][j] = new TH2D(hname,"",16, etabins,16, etabins);
+            fHistSigGap[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
             fHistSigGap[i][j]->SetXTitle("#eta_{1}");
             fHistSigGap[i][j]->SetYTitle("#eta_{2}");
             fOutputList->Add(fHistSigGap[i][j]);
 
             sprintf(hname,"histBgGap_%i_%i",i,j);
-            fHistBgGap[i][j] = new TH2D(hname,"",16, etabins,25, 0.0, 2.0*PI);
+            fHistBgGap[i][j] = new TH2D(hname,"",etaBins,-0.8,0.8,25, 0.0, 2.0*PI);
             fHistBgGap[i][j]->SetXTitle("#eta");
             fHistBgGap[i][j]->SetYTitle("#phi");           
             fOutputList->Add(fHistBgGap[i][j]);
 
         }
-        if(mIsMC) {
+        if(fIsMC) {
             sprintf(hname,"histSigMC_%i",i);
-            fHistSigMC[i] = new TH2D(hname,"",16, etabins,16, etabins);
+            fHistSigMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
             fHistSigMC[i]->SetXTitle("#eta_{1}");
             fHistSigMC[i]->SetYTitle("#eta_{2}");
             fOutputList->Add(fHistSigMC[i]);
 
             sprintf(hname,"histBgMC_%i",i);
-            fHistBgMC[i] = new TH1D(hname,"",16, etabins);
+            fHistBgMC[i] = new TH1D(hname,"",etaBins,-0.8,0.8);
             fHistBgMC[i]->SetXTitle("#eta");
             fOutputList->Add(fHistBgMC[i]);
 
             sprintf(hname,"histSigGapMC_%i",i);
-            fHistSigGapMC[i] = new TH2D(hname,"",16, etabins,16, etabins);
+            fHistSigGapMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,etaBins,-0.8,0.8);
             fHistSigGapMC[i]->SetXTitle("#eta_{1}");
             fHistSigGapMC[i]->SetYTitle("#eta_{2}");
             fOutputList->Add(fHistSigGapMC[i]);
 
             sprintf(hname,"histBgGapMC_%i",i);
-            fHistBgGapMC[i] = new TH2D(hname,"",16, etabins,25, 0.0, 2.0*PI);
+            fHistBgGapMC[i] = new TH2D(hname,"",etaBins,-0.8,0.8,25, 0.0, 2.0*PI);
             fHistBgGapMC[i]->SetXTitle("#eta");
             fHistBgGapMC[i]->SetYTitle("#phi");
             fOutputList->Add(fHistBgGapMC[i]);
@@ -160,12 +162,10 @@ void AliAnalysisTaskLongFluctuations2PC::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
 {
-    //if(mCounter%100==0) cout<<"Event number "<<mCounter<<endl;
-    mCounter++;
-    
+        
     Double_t centbins[9] = {0.,5,10,20,30,40,50,60,70};
     Double_t pvzbins[17] = {-8.,-7.,-6.,-5.,-4.,-3.,-2.,-1.,0.,1.,2.,3.,4.,5.,6.,7.,8.};
-
+    Float_t mPVz, mCent;
     Double_t eta1, eta2, phi1, phi2;
     TAxis *centaxis = new TAxis(8, centbins);
     TAxis *pvzaxis = new TAxis(16, pvzbins);
@@ -183,16 +183,20 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
     if(!MultSelection) return;
     mCent = MultSelection->GetMultiplicityPercentile(fCentrality); //centrality
     if(mCent < 0.000001) return;
+    if(fAOD->IsPileupFromSPD(20)) return;
+    
+    fAllCentQA->Fill(MultSelection->GetMultiplicityPercentile("V0M"),MultSelection->GetMultiplicityPercentile("CL0"),MultSelection->GetMultiplicityPercentile("CL1"));
+    fPVzCentNevents->Fill(mPVz,mCent);
     Int_t bCent(centaxis->FindBin(mCent)-1);
     Int_t bPVz(pvzaxis->FindBin(mPVz)-1);
     Int_t nTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     
     Double_t nAcc = 0.0;
     Double_t mpT = 0.0;
-    
+        
     for(Int_t i(0); i < nTracks; i++) {                 // loop over all these tracks
         AliAODTrack* track1 = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track1 || !track1->TestFilterBit(fFilterBit)) continue;
+        if(!track1 || !track1->TestFilterBit(fFB)) continue;
         if(fabs(track1->Eta()) > fEta) continue;//eta cut
         if(track1->Pt() < fPtmin|| track1->Pt() > fPtmax) continue; //pt cut
         if(track1->GetTPCNcls()<fTPCNcls || track1->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls and chi2/dof
@@ -204,7 +208,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
         mpT+= track1->Pt();
         for(Int_t j(i+1); j < nTracks; j++) {
             AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-            if(!track2 || !track2->TestFilterBit(fFilterBit)) continue;
+            if(!track2 || !track2->TestFilterBit(fFB)) continue;
             if(fabs(track2->Eta()) > fEta) continue;//eta cut
             if(track2->Pt() < fPtmin|| track2->Pt() > fPtmax) continue; //pt cut
             if(track2->GetTPCNcls()<fTPCNcls || track2->Chi2perNDF() > fChi2DoF) continue;//cut in TPC Ncls and chi2/dof
@@ -220,9 +224,10 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
         mpT/=nAcc;
         fMultD->Fill(nAcc);
         fMultDpT->Fill(nAcc,mpT);
+        fCentMultQA->Fill(mCent,nAcc);
     }
    
-    if(mIsMC){
+    if(fIsMC){
         Double_t nAccMC = 0.0;
         mpT = 0.0;
         TClonesArray *stack = 0;
