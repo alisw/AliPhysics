@@ -52,11 +52,11 @@ TH1D* ReadFONLL(TString filename, Int_t fonllCase, Int_t nPtBins, Double_t histo
 void ComputeBtoDdecay(Int_t nGener=10000000,
 		      Int_t pythiaver=8,
 		      Int_t fonllCase=0,
-		      TString fileNameFONLLb="FONLL-Bhadron-dsdpt-sqrts5020-50MeVbins.txt",
-		      TString fileNameFONLLd0="FONLL-D0-dsdpt-sqrts5020-50MeVbins.txt",
-		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-50MeVbins.txt",
-		      TString fileNameFONLLdave="FONLL-D0DplusAv-sqrts5020-50MeVbins.txt",
-		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-50MeVbins.txt",
+		      TString fileNameFONLLb="FONLL-Bhadron-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
+		      TString fileNameFONLLd0="FONLL-D0-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
+		      TString fileNameFONLLdplus="FONLL-Dplus-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
+		      TString fileNameFONLLdave="FONLL-D0DplusAv-sqrts5020-100GeV-50MeVbins.txt",
+		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
 		      Int_t opt4ff=0,
 		      Int_t optForNorm=1,
 		      Bool_t writeTree=kFALSE){
@@ -85,9 +85,9 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   Double_t fracC[nCharmHadSpecies]={0.542,0.225,0.092,0.057,0.236}; // Values from e+e- ARXIV:1404.3888 (D0, D+, Ds, Lc, D*+)
   Int_t cols[nCharmHadSpecies]={2,4,kGreen+1,kMagenta+1,kYellow+1};
   
-  Int_t nPtBins=1001;
+  Int_t nPtBins=2001;
   Double_t ptmin=0.;
-  Double_t ptmax=50.05;
+  Double_t ptmax=100.05;
 
   TVirtualMCDecayer* pdec=0x0;
   
@@ -169,7 +169,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TH2F** hDptVsBpt = new TH2F*[nCharmHadSpecies*nBeautyHadSpecies];
   for(Int_t ic=0; ic<nCharmHadSpecies; ic++){
     for(Int_t ib=0; ib<nBeautyHadSpecies; ib++){
-      hDptVsBpt[ib*nCharmHadSpecies+ic] = new TH2F(Form("h%sptVs%spt",chadrname[ic].Data(),bhadrname[ib].Data()),Form(" ; p_{T}(%s) ; p_{T}(%s)",bhadrname[ib].Data(),chadrname[ic].Data()),100,0.,50.,100.,0.,50.);
+      hDptVsBpt[ib*nCharmHadSpecies+ic] = new TH2F(Form("h%sptVs%spt",chadrname[ic].Data(),bhadrname[ib].Data()),Form(" ; p_{T}(%s) ; p_{T}(%s)",bhadrname[ib].Data(),chadrname[ic].Data()),200,0.,100.,200.,0.,100.);
     }
   }
 
