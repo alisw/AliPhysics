@@ -80,6 +80,7 @@
 #include "AliESDHeader.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDUtils.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -968,6 +969,12 @@ Int_t AliESDtools::DumpEventVariables() {
   ULong64_t bunchCrossID = (ULong64_t)fEvent->GetBunchCrossNumber();
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
+  // generate GID from the file name and event number
+  if (gid==0 && AliAnalysisManager::GetAnalysisManager()) {
+    TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+    fileName += TString::Format("%d", fEvent->GetEventNumberInFile());
+    gid = fileName.Hash();
+  }
   Short_t   eventMult = fEvent->GetNumberOfTracks();
   ULong64_t triggerMask = fEvent->GetTriggerMask();
   const Int_t  kNEstimators=27;
