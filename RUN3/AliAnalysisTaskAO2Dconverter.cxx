@@ -40,7 +40,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
-
+#include "AliMultiplicity.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliPIDResponse.h"
@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collisions", "O2tracks", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collisions", "O2tracks", "O2SPDtracklets", "O2calo",  "O2caloTrigger", "O2muon", "O2muoncls", "O2zdc", "O2vzero", "O2v0s", "O2cascades", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2trigger" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "SPD tracklets", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "VZERO", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "Trigger info"};
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -233,6 +233,19 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   }
   PostTree(kTracks);
 
+  // Associate branches for SPD tracklets
+  TTree* tSPDtracklets = CreateTree(kSPDtracklets);
+  tSPDtracklets->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kSPDtracklets]) {
+    tSPDtracklets->Branch("fNtracklets", &SPDtracklets.fNtracklets, "fNtracklets/I");
+    tSPDtracklets->Branch("fTh", &SPDtracklets.fTh, "fTh/F");
+    tSPDtracklets->Branch("fPhi", &SPDtracklets.fPhi, "fPhi/F");
+    tSPDtracklets->Branch("fDeltTh", &SPDtracklets.fDeltTh, "fDeltTh/F");
+    tSPDtracklets->Branch("fDeltPhi", &SPDtracklets.fDeltPhi, "fDeltPhi/F");
+    tSPDtracklets->Branch("fDist", &SPDtracklets.fDist, "fDist/F");
+  }
+  PostTree(kSPDtracklets);
+  
   // Associate branches for Calo
   TTree* tCalo = CreateTree(kCalo);
   tCalo->SetAutoFlush(fNumberOfEventsPerCluster);
@@ -666,6 +679,35 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   } // end loop on tracks
   vtx.fNentries[kTOF]    = ntofcls_filled;
   vtx.fNentries[kTracks] = ntrk_filled;
+
+
+
+  //---------------------------------------------------------------------------
+  // SPD tracklets
+
+  AliMultiplicity *mlt = fESD->GetMultiplicity();
+  Int_t Ntracklets = mlt->GetNumberOfTracklets();
+  SPDtracklets.fNtracklets = Ntracklets;
+  
+  Float_t theta, phi, dtheta, dphi, dist;
+  Int_t nspdtracklets_filled = 0; // total number of SPD tracklets filled per event
+  for (Int_t itr = Ntracklets; itr--;) {
+    theta  = mlt->GetTheta(itr);
+    phi    = mlt->GetPhi(itr); 
+    dtheta = mlt->GetDeltaTheta(itr);
+    dphi   = mlt->GetDeltaPhi(itr);
+    dist   = mlt->CalcDist(itr);
+   
+    SPDtracklets.fTh = theta;
+    SPDtracklets.fPhi = phi;
+    SPDtracklets.fDeltTh = dtheta;
+    SPDtracklets.fDeltPhi = dphi;
+    SPDtracklets.fDist = dist;
+    
+    FillTree(kSPDtracklets);
+    if (fTreeStatus[kSPDtracklets]) nspdtracklets_filled++;
+    }
+    vtx.fNentries[kSPDtracklets] = nspdtracklets_filled;
 
   //---------------------------------------------------------------------------
   // Calorimeter data
