@@ -135,8 +135,10 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
 
     // Function to Fill QA plots to reduce redudant code
     void FillQAPlots ( AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
-      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2,
-      TH2F* fHistoMotherRestGammaCosAnglePt, TH2F* fHistoMotherRestPi0CosAnglePt, TH2F* fHistoMotherDalitzPlot );
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
+
+    void FillQAPlotsMC(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
+      AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
 
     void PhotonSelectionCalo(std::set<UInt_t>* dropOutGammas_CALO);
     void PhotonSelectionPCM(std::set<UInt_t>* dropOutGammas_PCM);
@@ -356,7 +358,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 17);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 18);
 };
 
 #endif

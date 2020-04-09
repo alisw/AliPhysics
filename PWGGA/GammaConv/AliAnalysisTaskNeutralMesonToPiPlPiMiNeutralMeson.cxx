@@ -668,7 +668,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   TString NameNDM                                     = "not set";
   TString NameNDMLatex                                = "not set";
   Double_t HistoMassRangeDalitz                       = 3.0;
-  
+
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
     HistoNMassBins                                    = 400;
@@ -748,7 +748,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fPDGCodeNDM                                       = 111; // PDG value pi0
     fPDGMassChargedPion                               = 0.1395706; // hard coded PDG 2018 value to keep results reproducable later
     fPDGCodeAnalyzedMeson                             = 421; // PDG value D0
-    break; 
+    break;
   default:
     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
   }
@@ -882,7 +882,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
     // Set min pt of pi0 that each method is able to reconstruct -> will be used for MC studies
     if(fSelectedHeavyNeutralMeson == 1){ // omega
-      if(fNDMRecoMode==0){ // PCM 
+      if(fNDMRecoMode==0){ // PCM
         fNDMMinPtPossible                              = 0.3;
       } else if (fNDMRecoMode==1){ // mixed
         if(cutstringCaloGamma(0,1).String().EqualTo("1") || cutstringCaloGamma(0,1).String().EqualTo("4")){
@@ -1030,7 +1030,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistovParticledSOneConstrained[iCut]->GetXaxis()->SetTitle("dS");
       fHistovParticledSOneConstrained[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistovParticledSOneConstrained[iCut]);
-      
+
       if (fNDMRecoMode < 2){
         fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1043,7 +1043,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoConvGammaEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
       }
-      
+
       fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
@@ -1053,7 +1053,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoPosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
       fHistoPosPionPt[iCut]->Sumw2();
-      fESDList[iCut]->Add(fHistoPosPionPt[iCut]);  
+      fESDList[iCut]->Add(fHistoPosPionPt[iCut]);
       fHistoNegPionPhi[iCut]        = new TH1F("ESD_PrimaryNegPions_Phi","ESD_PrimaryNegPions_Phi",360,0,2*TMath::Pi());
       fHistoNegPionPhi[iCut]->GetXaxis()->SetTitle("#phi");
       fHistoNegPionPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
@@ -1401,7 +1401,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM  = new TH2F*[fnCuts];
         fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM    = new TH2F*[fnCuts];
         fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM    = new TH2F*[fnCuts];
-        
+
         fHistoTruevParticleChi2PerNDF = new TH1F*[fnCuts];
         fHistoTruevParticleFromSameMotherChi2PerNDF = new TH1F*[fnCuts];
         fHistoTruevParticleFromHNMChi2PerNDF = new TH1F*[fnCuts];
@@ -1477,7 +1477,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoMCAllNegPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllNegPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
         fHistoMCAllNegPionsPt[iCut]->Sumw2();
-        fMCList[iCut]->Add(fHistoMCAllNegPionsPt[iCut]);        
+        fMCList[iCut]->Add(fHistoMCAllNegPionsPt[iCut]);
         fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
@@ -1635,7 +1635,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistMCChannelPiPMinusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{-}}");
           fHistMCChannelPiPMinusFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPMinusFromHeavyPhi[iCut]);
-        
+
           fHistMCChannelNDMPtHeavyPt[iCut]                    = new TH2F("MC_CorrPtNDMHeavyChannel", "MC_CorrPtNDMHeavyChannel", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelNDMPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCChannelNDMPtHeavyPt[iCut]->SetYTitle(Form("p_{t, %s} (GeV/c)", NameNDMLatex.Data()));
@@ -1714,7 +1714,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{-}}");
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->Sumw2();
-          fMCList[iCut]->Add(fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]);        
+          fMCList[iCut]->Add(fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]);
 
           fHistMCReconstructibleNDMPtHeavyPt[iCut]                    = new TH2F("MC_CorrPtNDMHeavyReconstructible", "MC_CorrPtNDMHeavyReconstructible", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructibleNDMPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
@@ -1854,7 +1854,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[iCut]);
 
-      
+
 
       if(!fDoLightOutput){
         fHistoTrueMotherGammaGammaInvMassPt[iCut]           = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
@@ -1900,22 +1900,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruevParticleChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
           fHistoTruevParticleChi2PerNDF[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruevParticleChi2PerNDF[iCut]);
-          
+
           fHistoTruevParticleFromSameMotherChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleFromSameMotherChi2PerNDF","fHistoTruevParticleFromSameMotherChi2PerNDF",300,0,300);
           fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
           fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]);
-          
+
           fHistoTruevParticleFromHNMChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleFromHNMChi2PerNDF","fHistoTruevParticleFromHNMChi2PerNDF",300,0,300);
           fHistoTruevParticleFromHNMChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
           fHistoTruevParticleFromHNMChi2PerNDF[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruevParticleFromHNMChi2PerNDF[iCut]);
-          
+
           fHistoTruevParticledS[iCut] = new TH1F("fHistoTruevParticledS","fHistoTruevParticledS",500,-4,4);
           fHistoTruevParticledS[iCut]->GetXaxis()->SetTitle("dS");
           fHistoTruevParticledS[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruevParticledS[iCut]);
-          
+
           fHistoTruevParticleFromSameMotherdS[iCut] = new TH1F("fHistoTruevParticleFromSameMotherdS","fHistoTruevParticleFromSameMotherdS",400,-4,4);
           fHistoTruevParticleFromSameMotherdS[iCut]->GetXaxis()->SetTitle("dS");
           fHistoTruevParticleFromSameMotherdS[iCut]->Sumw2();
@@ -1925,7 +1925,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruevParticleFromHNMdS[iCut]->GetXaxis()->SetTitle("dS");
           fHistoTruevParticleFromHNMdS[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruevParticleFromHNMdS[iCut]);
-         
+
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]    = new TH2F("ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt","ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -2284,7 +2284,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     if(fInputEvent->IsA()==AliAODEvent::Class()) ProcessPionCandidatesAOD();
 
     //CalculateMesonCandidates();
-    
+
     if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
         CalculateBackground(5);
@@ -3623,7 +3623,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
     FixPzVecToMatchPDGInvMass(negPionforHandler);
     AliAODConversionPhoton *negPionHandler = new AliAODConversionPhoton(negPionforHandler);
     delete negPionforHandler;
-    
+
     fNegPionCandidates->Add(negPionHandler);
     if(!fDoLightOutput){
         fHistoNegPionPt[fiCut]->Fill(negPionCandidate->Pt(), fWeightJetJetMC);
@@ -3674,7 +3674,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
     AliESDtrack* posPionCandidate = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(fSelectorPosPionIndex[i]));
     if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
     lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
-    
+
     TLorentzVector* posPionforHandler = new TLorentzVector();
     posPionforHandler->SetPxPyPzE(posPionCandidate->Px(), posPionCandidate->Py(), posPionCandidate->Pz(), posPionCandidate->E());
     FixPzVecToMatchPDGInvMass(posPionforHandler);
@@ -3730,7 +3730,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
-    
+
     //AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
     AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
@@ -3740,17 +3740,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       // AliInfo(Form("virtualPhoton distance before pi+ pi- = %f", negPionCandidateKF.GetDistanceFromParticle(posPionCandidateKF)));
 
       AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
-     
-     // AliInfo(Form(" GetPrimaryVertex() x=%f y=%f z=%f",primx,primy,primz));   
+
+     // AliInfo(Form(" GetPrimaryVertex() x=%f y=%f z=%f",primx,primy,primz));
      // virtualPhoton->SetProductionVertex(primaryVertex);
       virtualPhoton.SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
-      
+
       TLorentzVector posPionVec4;
       TLorentzVector negPionVec4;
-      TLorentzVector virtPionVec4; 
+      TLorentzVector virtPionVec4;
       TLorentzVector posKFPionVec4;
       TLorentzVector negKFPionVec4;
-      TLorentzVector virtKFPionVec4; 
+      TLorentzVector virtKFPionVec4;
 
       if(use4vecformass){
         posKFPionVec4.SetPxPyPzE(posPionCandidateKF.Px(),posPionCandidateKF.Py(),posPionCandidateKF.Pz(),posPionCandidateKF.E());
@@ -3891,7 +3891,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
         if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
           survivesMassCut = kTRUE;
-        } 
+        }
       } else{
         survivesMassCut = kTRUE;
       }
@@ -3985,7 +3985,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD(){
 
   Bool_t use4vecformass = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->Use4VecForMass();
- 
+
   Double_t magField = fInputEvent->GetMagneticField();
   if( magField  < 0.0 ){
     magField =  1.0;
@@ -4120,13 +4120,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
-    AliAODTrack* negPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i])); 
+    AliAODTrack* negPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
     AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
 
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      AliAODTrack* posPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j])); 
-      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 ); 
+      AliAODTrack* posPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
+      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
       AliKFConversionPhoton* virtualPhoton = NULL;
       virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidateKF);
 
@@ -4138,10 +4138,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
 
       TLorentzVector posPionVec4;
       TLorentzVector negPionVec4;
-      TLorentzVector virtPionVec4; 
+      TLorentzVector virtPionVec4;
       TLorentzVector posKFPionVec4;
       TLorentzVector negKFPionVec4;
-      TLorentzVector virtKFPionVec4; 
+      TLorentzVector virtKFPionVec4;
 
       if(use4vecformass){
         posKFPionVec4.SetPxPyPzE(posPionCandidateKF.Px(),posPionCandidateKF.Py(),posPionCandidateKF.Pz(),posPionCandidateKF.E());
@@ -4149,7 +4149,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         virtKFPionVec4 = posKFPionVec4 + negKFPionVec4;
       }
 
-      Int_t labeln=0;    
+      Int_t labeln=0;
       Int_t labelp=0;
       Int_t motherlabelp = 0;
       Int_t motherlabeln = 0;
@@ -4171,9 +4171,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       }
       // AliInfo(Form("virtualPhoton chi2 = %f", virtualPhoton->GetChi2perNDF()));
       //AliInfo(Form("virtualPhoton distance pi+ pi- = %f", negPionCandidateKF.GetDeviationFromParticle(posPionCandidateKF)));
- 
+
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
-      
+
       if(use4vecformass){
         vParticle->SetPxPyPzE(virtKFPionVec4.Px(),virtKFPionVec4.Py(),virtKFPionVec4.Pz(),virtKFPionVec4.E());
         vParticle->SetMass(vParticle->M());
@@ -4181,19 +4181,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       if(!fDoLightOutput){
         Bool_t isPiMiGlobalC = negPionCandidateAOD->IsGlobalConstrained();
         Bool_t isPiPlGlobalC = posPionCandidateAOD->IsGlobalConstrained();
-      
+
         Double_t ds,dsp;
         posPionCandidateKF.GetDStoParticle(negPionCandidateKF,ds,dsp);
         //AliInfo(Form("ds = %f dsp = %f", ds,dsp));
         //AliInfo(Form("Is pi+ constrained = %i Is pi- constrained = %i",isPiPlGlobalC,isPiMiGlobalC));
         Float_t chi2 = virtualPhoton->GetChi2perNDF();
-     
+
         if(chi2>299) chi2 = 299; // to illustrate overflow bin
         fHistovParticleChi2PerNDF[fiCut]->Fill(chi2);
         fHistovParticledS[fiCut]->Fill(ds);
-      
+
         if(isPiMiGlobalC == isPiPlGlobalC){
-          fHistovParticleChi2PerNDFBothConstrained[fiCut]->Fill(chi2);    
+          fHistovParticleChi2PerNDFBothConstrained[fiCut]->Fill(chi2);
           fHistovParticledSBothConstrained[fiCut]->Fill(ds);
         } else{
           fHistovParticleChi2PerNDFOneConstrained[fiCut]->Fill(chi2);
@@ -4298,7 +4298,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
         if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
           survivesMassCut = kTRUE;
-        } 
+        }
       } else{
         survivesMassCut = kTRUE;
       }
@@ -4476,7 +4476,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                         if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon1->Particle(),fMCEvent,kFALSE)  &&
                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent)) ||
                            !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(photon2->Particle(),fMCEvent,kFALSE)  &&
-                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent))                  
+                             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(photon1->Particle(),fMCEvent))
                         ) reconstructible = false;
                         break;
                       }
@@ -4506,7 +4506,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                   fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt(), tempParticleWeight);
                   fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt(), tempParticleWeight);
                 }
-              } 
+              }
             }
           }
         }
@@ -4646,15 +4646,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                   ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCEvent) &&								// test negative pion
                   ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCEvent) 								// test positive pion
               ) {
-                if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){ 
+                if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
-                  
+
                   // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                   if(!fDoLightOutput){
                     if(particleNDM->Pt() >= fNDMMinPtPossible) fHistoMCHNMInAccVsNDMPt[fiCut]->Fill(particle->Pt(),particleNDM->Pt(),weighted* tempParticleWeight);
                   }
                 }
-              
+
               }
             } else if (fNDMRecoMode == 1){ // mixed mode
               // check acceptamce of pions firs
@@ -4668,9 +4668,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                    (((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCEvent,kFALSE)	&&
                    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma1,fMCEvent))
                    ){
-                      if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){ 
+                      if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                         fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
-                        
+
                         // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                         if(!fDoLightOutput){
                           if(particleNDM->Pt() >= fNDMMinPtPossible) fHistoMCHNMInAccVsNDMPt[fiCut]->Fill(particle->Pt(),particleNDM->Pt(),weighted* tempParticleWeight );
@@ -4685,7 +4685,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
                   ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCEvent) &&								// test negative pion
                   ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCEvent) 								// test positive pion
               ) {
-                if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){ 
+                if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                   fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight  ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
 
                   // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
@@ -4698,8 +4698,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessMCParticles(){
           }
         }
       }
-    } 
-    
+    }
+
   }
 }
 
@@ -4779,7 +4779,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     // exclude Dalitz-decays
                     reconstructible = false;
                   } else {
-                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterFirst())), 
+                    AliAODMCParticle *photon1 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterFirst())),
                                      *photon2 = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(neutralMeson->GetDaughterLast()));
                     if(!(photon1 && photon2)) reconstructible = false;
                     else {
@@ -4793,7 +4793,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                           if(!(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon1, AODMCTrackArray, kFALSE)  &&
                               ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray)) ||
                              !(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(photon2, AODMCTrackArray, kFALSE)  &&
-                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray))                  
+                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(photon1, AODMCTrackArray))
                           ) reconstructible = false;
                           break;
                         }
@@ -4824,7 +4824,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     fHistMCReconstructiblePiPlusPtHeavyPt[fiCut]->Fill(particle->Pt(), piplus->Pt(), fWeightJetJetMC);
                     fHistMCReconstructiblePiMinusPtHeavyPt[fiCut]->Fill(particle->Pt(), piminus->Pt(), fWeightJetJetMC);
                   }
-                } 
+                }
               }
             }
           }
@@ -4837,7 +4837,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                   AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
                   if (fDoMesonQA>0){
                     fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
-                    fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);                    
+                    fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
                     fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
                   }
                   if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
@@ -4963,7 +4963,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     ) {
                   if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson) {
                     fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
-                    
+
                     // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                     if(!fDoLightOutput){
                       if(particleNDM->Pt() >= fNDMMinPtPossible) fHistoMCHNMInAccVsNDMPt[fiCut]->Fill(particle->Pt(),particleNDM->Pt(),tempParticleWeight);
@@ -4983,7 +4983,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(gamma2,AODMCTrackArray) ){
                     if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                       fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta, omega or eta prime with pi+ pi- pi0 with gamma's and e+e- in acc
-                      
+
                       // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                       if(!fDoLightOutput){
                         if(particleNDM->Pt() >= fNDMMinPtPossible) fHistoMCHNMInAccVsNDMPt[fiCut]->Fill(particle->Pt(),particleNDM->Pt(),weighted* tempParticleWeight);
@@ -5000,13 +5000,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
                     ) {
                   if(particle->GetPdgCode() == fPDGCodeAnalyzedMeson){
                     fHistoMCHNMPiPlPiMiNDMInAccPt[fiCut]->Fill(particle->Pt(), weighted* tempParticleWeight ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
-        
+
                     // check relation between HNM pt and NDM, while respecting pT cutoff for NDM
                     if(!fDoLightOutput){
                       if(particleNDM->Pt() >= fNDMMinPtPossible) fHistoMCHNMInAccVsNDMPt[fiCut]->Fill(particle->Pt(),particleNDM->Pt(),weighted* tempParticleWeight);
                     }
                   }
-                } 
+                }
               }
             }
           }
@@ -5062,7 +5062,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
 
             if(fDoMesonQA>0){
               //Dalitz plot
-              AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 ); 
+              AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
               AliKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
 
               TLorentzVector PosPionTLVtmp;
@@ -5113,7 +5113,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
 
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_t mode = 4){
-  
+
   /*
   * Mode 1 => pi+ and pi- from same event
   * Mode 2 => pi+ and pi0 from same event
@@ -5147,7 +5147,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
   }
   //
   // ─── LOOP OVER ALL NDM FROM CURRENT EVENT ───────────────────────────────────────
-  //   
+  //
   for (Int_t iCurrentNDM = 0; iCurrentNDM < NNDMCandidates; iCurrentNDM++) {
     AliAODConversionMother *EventNDMGoodMeson;
     if ((((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixing()) || (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())) {
@@ -5159,17 +5159,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
     // ─── Pi+ PI- from same event───
     //
     if(mode==1){
-      // Begin loop over BG events for Pi+   
+      // Begin loop over BG events for Pi+
       for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
 
         // Store all Pi+ of current event in right binning in vector
         AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
         if(!EventPiPlMeson) continue;
-        
+
         // Begin loop over BG events for Pi-
         for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiMi[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
           AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
-          
+
           // If one of the events isn't found skip to next one
           if(!EventPiMiMeson) continue;
 
@@ -5204,7 +5204,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
               vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
               vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
-              
+
               // Mass cut (pi+pi-)
               if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
                 TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
@@ -5242,19 +5242,19 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
       }       // end loop over pi+ events
     //
     // ─── NO PIONS FROM SAME EVENT ───
-    //   
-    } else if(mode==4){ 
-      // Begin loop over BG events for Pi+   
+    //
+    } else if(mode==4){
+      // Begin loop over BG events for Pi+
       for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
 
         // Store all Pi+ of current event in right binning in vector
         AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
         if(!EventPiPlMeson) continue;
-        
+
         // Begin loop over BG events for Pi-
         for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiMi[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
           AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
-          
+
           // If one of the events isn't found skip to next one
           if(!EventPiMiMeson) continue;
 
@@ -5289,7 +5289,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
               vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
               vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
-              
+
               // Mass cut (pi+pi-)
               if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
                 TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
@@ -5333,11 +5333,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
       // Loop over PiPl from current event
       for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++) {
          AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl));
-        
+
         // Begin loop over BG events for Pi-
         for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiMi[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
           AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
-          
+
           // If one of the events isn't found skip to next one
           if(!EventPiMiMeson) continue;
 
@@ -5359,7 +5359,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
             vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
             vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
-            
+
             // Mass cut (pi+pi-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
@@ -5400,11 +5400,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
       // Loop over PiMi from current event
       for (Int_t iCurrentPiMi = 0; iCurrentPiMi < fNegPionCandidates->GetEntries(); iCurrentPiMi++) {
          AliAODConversionMother EventPiMiGoodMeson = *(AliAODConversionMother *)(fNegPionCandidates->At(iCurrentPiMi));
-        
+
         // Begin loop over BG events for Pi+
         for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
           AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
-          
+
           // If one of the events isn't found skip to next one
           if(!EventPiPlMeson) continue;
 
@@ -5426,7 +5426,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             vec4PiPlus.SetPxPyPzE(EventPiPlGoodMeson.Px(),EventPiPlGoodMeson.Py(),EventPiPlGoodMeson.Pz(),EventPiPlGoodMeson.Energy());
             vec4PiMinus.SetPxPyPzE(EventPiMiGoodMeson.Px(),EventPiMiGoodMeson.Py(),EventPiMiGoodMeson.Pz(),EventPiMiGoodMeson.Energy());
             vec4NDM.SetPxPyPzE(EventNDMGoodMeson->Px(),EventNDMGoodMeson->Py(),EventNDMGoodMeson->Pz(),EventNDMGoodMeson->Energy());
-            
+
             // Mass cut (pi+pi-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
@@ -5466,7 +5466,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
 
     //
     // ─── LIKESIGN MIXING ─────────────────────────────────────────────
-    //      
+    //
     } else if (mode == 5){
       // Loops for Pi0Pi+Pi+ LikeSign mixing
       for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++) {
@@ -5558,7 +5558,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                 fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiMiPiMiNDMtmp.M(), PiMiPiMiNDMtmp.Pt(), fWeightJetJetMC);
               }
             }
-          
+
         } // end of iCurrentPiMi2
       }   // end of iCurrenPiMi
     } // end of mode if
@@ -5662,9 +5662,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if(isSameMotherPiPlPiMiNDM){
     if(fMCEvent->Particle(NDMMotherLabel)->GetPdgCode()                        == fPDGCodeAnalyzedMeson){
       // neutral meson was found
-      
+
       fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      
+
       // Subtract mass of used NDM candidate and then add PDG mass
       fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM[fiCut]->Fill(mesoncand->M()-(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM),mesoncand->Pt(),weighted);
 
@@ -5675,8 +5675,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       AliAODConversionMother mesontmp(&NDMtmp,TrueVirtualParticleCandidate);
 
       fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(),weighted);
-      
-      
+
+
       AliAODConversionMother PosPiontmp, NegPiontmp;
       PosPiontmp.SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
       NegPiontmp.SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
@@ -5684,7 +5684,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
          fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(TrueNeutralDecayMesonCandidate->Vect()))));
          fHistoTrueHNMesonPtvsNDMPt[fiCut]->Fill(mesoncand->Pt(),TrueNeutralDecayMesonCandidate->Pt(),weighted);
       }
-      
+
 
       // Fill tree to get info about event that the eta was found in
       if(fDoMesonQA>1 && (!fDoLightOutput)){
@@ -5873,9 +5873,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if(isSameMotherPiPlPiMiNDM){
     if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetPdgCode()                        == fPDGCodeAnalyzedMeson){
       // neutral meson was found
-      
+
       fHistoTrueMotherPiPlPiMiNDMInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      
+
       // Subtract mass of used NDM candidate and then add PDG mass
       fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM[fiCut]->Fill(mesoncand->M()-(TrueNeutralDecayMesonCandidate->M()-fPDGMassNDM),mesoncand->Pt(),weighted);
 
@@ -6353,7 +6353,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiP
   Int_t grandMotherLabel = mother->GetMother(0);
   if( grandMotherLabel < 0 || grandMotherLabel >= fMCEvent->GetNumberOfTracks() ) return kFALSE;
   TParticle* grandmother = fMCEvent->Particle( grandMotherLabel );
-  
+
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
   case 1: // OMEGA MESON
@@ -6368,7 +6368,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiP
   default:
     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
   }
-  
+
   return kFALSE;
 }
 
@@ -6510,7 +6510,7 @@ AliExternalTrackParam* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GetCon
 }
 
 //_____________________________________________________________________________
-Double32_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateP2(Double_t xyz[3],Double_t pxpypz[3]) 
+Double32_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateP2(Double_t xyz[3],Double_t pxpypz[3])
 {
   //
   // create external track parameters from the global parameters
@@ -6529,13 +6529,13 @@ Double32_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateP2(Double
   const double kSafe = 1e-5;
   Double32_t p2;
   Double32_t fAlpha;
-  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
+  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];
   Double_t radMax  = 45.; // approximately ITS outer radius
-  if (radPos2 < radMax*radMax) { // inside the ITS     
+  if (radPos2 < radMax*radMax) { // inside the ITS
      fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
   } else { // outside the ITS
      Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
-     fAlpha = 
+     fAlpha =
      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
   }
   //
