@@ -176,7 +176,7 @@ private:
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
 
-	ClassDef(AliAnalysisTaskMcKnoUe, 4);
+	ClassDef(AliAnalysisTaskMcKnoUe, 3);
 };
 
 #endif
