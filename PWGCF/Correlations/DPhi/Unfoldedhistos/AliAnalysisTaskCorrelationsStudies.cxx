@@ -706,6 +706,7 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
 /// The option string could be one of the following
 /// - trueval   the reconstructed results will use reconstructed tracks but with true data
 /// - primaries   the reconstructed results will use true primary reconstructed tracks
+/// - pritrueval   the reconstructed results will use true primary reconstructed tracks but with true data
 /// It should only be used at initial task configuration
 Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
 {
@@ -808,6 +809,9 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
     }
     else if(fAdditionalMCRecOption.EqualTo("notacc")) {
       fMCRecOption = kRecWithNotAccepted;
+    }
+    else if (fAdditionalMCRecOption.EqualTo("pritrueval")) {
+      fMCRecOption = kRecTruePrimariesWithTrue;
     }
     else {
       AliFatal("Unknown option for additional MC rec results. ABORTING!!!");
@@ -1702,6 +1706,18 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
             /* additional results with true primary reconstructed tracks */
             if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
               fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+            }
+            break;
+          case kRecTruePrimariesWithTrue:
+            /* additional results with true primary reconstructed tracks */
+            if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
+              /* but using the true values */
+              if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
+                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
+              }
+              else {
+                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+              }
             }
             break;
           case kRecWithNotAccepted:
