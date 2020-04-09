@@ -113,9 +113,9 @@ Double_t ptbins1[ptNbins+1] = {
 
 const Int_t ptNbinsL = 24;
 Double_t ptbins1L[ptNbinsL+1] = {
-        0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
-        5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
-        20.0, 25.0, 30.0, 40.0, 50.0
+	0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
+	5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
+	20.0, 25.0, 30.0, 40.0, 50.0
 };
 
 const Int_t particleNbins = 6;
@@ -123,7 +123,7 @@ Double_t particlebins1[particleNbins+1] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5};
 
 const Int_t numbinDCAxy = 121;
 Double_t binsDcaXY[numbinDCAxy+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.725,-2.675,-2.625,-2.575,-2.525,-2.475,-2.425,-2.375,-2.325,-2.275,-2.225, -2.175,-2.125,-2.075,-2.025,-1.975,-1.925,-1.875,-1.825,-1.775,-1.725,-1.675,-1.625,-1.575,-1.525,-1.475,-1.425,-1.375,-1.325,-1.275,-1.225,-1.175,-1.125,-1.075,-1.025,-0.975,-0.925,-0.875,-0.825,-0.775,-0.725,-0.675,-0.625,-0.575,-0.525,-0.475,-0.425,-0.375,-0.325,-0.275,-0.225,-0.175,-0.125,-0.075,-0.025,0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.525,0.575,0.625,0.675,0.725,0.775,0.825,0.875,0.925,0.975,1.025,1.075,1.125,1.175,1.225,1.275,1.325,1.375,1.425,1.475,1.525,1.575,1.625,1.675,1.725,1.775,1.825,1.875,1.925,1.975,2.025,2.075,2.125,2.175,2.225,2.275,2.325,2.375,2.425,2.475,2.525,2.575,2.625,2.675,2.725,2.775,2.825,2.875,2.925,2.975,3.025};
-	
+
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 class AliAnalysisTaskMcKnoUe;    // your analysis class
 
@@ -185,11 +185,11 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 		hPtVsUERecTest[i]=0;
 		hPtVsUEData[i]=0;
 	}
-	
+
 	for(Int_t i=0;i<6;++i){
-        hPtInPrimPart[i]=0;
-        hPtOutPrimPart[i]=0;
-    }	
+		hPtInPrimPart[i]=0;
+		hPtOutPrimPart[i]=0;
+	}	
 
 
 	// default constructor, don't allocate memory here!  this is used by root for IO purposes, it needs to remain empty
@@ -213,7 +213,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hSumPtMCMatchDd[i]=0;
 
 		hPtVsPtLeadingMeasured[i]=0;
-                hPtVsPtLeadingData[i]=0;// only for data
+		hPtVsPtLeadingData[i]=0;// only for data
 		hPtVsPtLeadingTrue[i]=0;		
 		pNumDenMeasured[i]=0;
 		pSumPtMeasured[i]=0;
@@ -248,6 +248,12 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hPtVsUERecTest[i]=0;
 		hPtVsUEData[i]=0;
 	}
+        for(Int_t i=0;i<6;++i){
+                hPtInPrimPart[i]=0;
+                hPtOutPrimPart[i]=0;
+        }
+
+
 
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
@@ -294,9 +300,9 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		fCuts1->SetRequireTPCRefit(kTRUE);//
 		fCuts1->SetRequireITSRefit(kTRUE);//
 		fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
-        fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+		fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
 		fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
-        fCuts1->SetMaxDCAToVertexZ(2);//
+		fCuts1->SetMaxDCAToVertexZ(2);//
 		fCuts1->SetDCAToVertex2D(kFALSE);//
 		fCuts1->SetRequireSigmaToVertex(kFALSE);//
 		fCuts1->SetMaxChi2PerClusterITS(36);//
@@ -314,36 +320,36 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		fTrackFilter->AddCuts(fCuts2);
 	}
 
-    // fCuts for DCA studies
-    if (!fTrackFilterForDCA){
-        fTrackFilterForDCA = new AliAnalysisFilter("trackFilter2015");
-        AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
-    
-//     fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
-//     fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
+	// fCuts for DCA studies
+	if (!fTrackFilterForDCA){
+		fTrackFilterForDCA = new AliAnalysisFilter("trackFilterForDCA2015");
+		AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
 
-        // TPC    
-        fCuts1->SetRequireTPCRefit(kTRUE);//
-        fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
-        fCuts1->SetMaxChi2PerClusterTPC(4);//
-        fCuts1->SetMaxFractionSharedTPCClusters(0.4);//
+		//     fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+		//     fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
 
-        // ITS
-        fCuts1->SetRequireITSRefit(kTRUE);//
-        fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
-        fCuts1->SetMaxChi2PerClusterITS(36);//
+		// TPC    
+		fCuts1->SetRequireTPCRefit(kTRUE);//
+		fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
+		fCuts1->SetMaxChi2PerClusterTPC(4);//
+		fCuts1->SetMaxFractionSharedTPCClusters(0.4);//
 
-        // Selection of primaries
-        fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
-        fCuts1->SetAcceptKinkDaughters(kFALSE);//
-        fCuts1->SetMaxDCAToVertexZ(2);//
-        fCuts1->SetDCAToVertex2D(kFALSE);//
-        fCuts1->SetRequireSigmaToVertex(kFALSE);//
-    
-        fTrackFilterForDCA->AddCuts(fCuts1);
-    }
-	
-	
+		// ITS
+		fCuts1->SetRequireITSRefit(kTRUE);//
+		fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
+		fCuts1->SetMaxChi2PerClusterITS(36);//
+
+		// Selection of primaries
+		fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+		fCuts1->SetAcceptKinkDaughters(kFALSE);//
+		fCuts1->SetMaxDCAToVertexZ(2);//
+		fCuts1->SetDCAToVertex2D(kFALSE);//
+		fCuts1->SetRequireSigmaToVertex(kFALSE);//
+
+		fTrackFilterForDCA->AddCuts(fCuts1);
+	}
+
+
 	// create output objects
 
 	OpenFile(1);
@@ -469,35 +475,35 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		hPtLeadingGenGood = new TH1D("hPtLeadingGenGood","gen pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 		fOutputList->Add(hPtLeadingGenGood);
 
-        
-        //      To weight the efficiency
 
-        for(Int_t i=0;i<6;++i){
-            
-            hPtInPrimPart[i] = new TH1D(Form("hPtInPrimPart_%d",i),"histogram for charged particle composition (true);#it{p}_{T} (GeV/#it{c})",ptNbins,ptbins1);
-            hPtInPrimPart[i]->Sumw2();
-            fOutputList->Add(hPtInPrimPart[i]);
+		//      To weight the efficiency
 
-            hPtOutPrimPart[i] = new TH1D(Form("hPtOutPrimPart_%d",i),"histogram for charged particle composition (reco);#it{p}_{T} (GeV/#it{c})",ptNbins,ptbins1);
-            hPtOutPrimPart[i]->Sumw2();
-            fOutputList->Add(hPtOutPrimPart[i]);
-        }
-            
-            
-        //      DCA histos for secondary estimation
-    
-        hPtDCAPrimary = new TH2D("hPtDCAPrimary","pt vs dca Primaries",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-        fOutputList->Add(hPtDCAPrimary);
-  
-        hPtDCAWeak = new TH2D("hPtDCAWeak","pt vs dca Decays",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-        fOutputList->Add(hPtDCAWeak);
-    
-        hPtDCAMat = new TH2D("hPtDCAMat","pt vs dca Material",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-        fOutputList->Add(hPtDCAMat);
-	
-        hPtDCAall = new TH2D("hPtDCAall","pt vs dca all",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-        fOutputList->Add(hPtDCAall);
-        
+		for(Int_t i=0;i<6;++i){
+
+			hPtInPrimPart[i] = new TH1D(Form("hPtInPrimPart_%d",i),"histogram for charged particle composition (true);#it{p}_{T} (GeV/#it{c})",ptNbins,ptbins1);
+			hPtInPrimPart[i]->Sumw2();
+			fOutputList->Add(hPtInPrimPart[i]);
+
+			hPtOutPrimPart[i] = new TH1D(Form("hPtOutPrimPart_%d",i),"histogram for charged particle composition (reco);#it{p}_{T} (GeV/#it{c})",ptNbins,ptbins1);
+			hPtOutPrimPart[i]->Sumw2();
+			fOutputList->Add(hPtOutPrimPart[i]);
+		}
+
+
+		//      DCA histos for secondary estimation
+
+		hPtDCAPrimary = new TH2D("hPtDCAPrimary","pt vs dca Primaries",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+		fOutputList->Add(hPtDCAPrimary);
+
+		hPtDCAWeak = new TH2D("hPtDCAWeak","pt vs dca Decays",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+		fOutputList->Add(hPtDCAWeak);
+
+		hPtDCAMat = new TH2D("hPtDCAMat","pt vs dca Material",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+		fOutputList->Add(hPtDCAMat);
+
+		hPtDCAall = new TH2D("hPtDCAall","pt vs dca all",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+		fOutputList->Add(hPtDCAall);
+
 	}
 
 	hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
@@ -593,12 +599,12 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
-    
-    
-    //      DCA histos for secondary estimation
-    
-    hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-    fOutputList->Add(hPTVsDCAData);
+
+
+	//      DCA histos for secondary estimation
+
+	hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+	fOutputList->Add(hPTVsDCAData);
 
 
 }
@@ -985,42 +991,42 @@ void AliAnalysisTaskMcKnoUe::GetPtLeadingMisRecCorrection(){
 void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 
 	// Histos for efficiencyxacceptance
-    
-    // loop over generated tracks
-    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+	// loop over generated tracks
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
 		if (!particle) continue;
-        
+
 		if (!fMC->IsPhysicalPrimary(i)) 
-            continue; 
-        if (particle->Charge() == 0) 
-            continue;
-        if ( TMath::Abs(particle->Eta()) > fEtaCut ) 
-            continue;
-        if( particle->Pt() < fPtMin) 
-            continue;
-        
-        hPtInPrim->Fill(particle->Pt()); // inital pT distribution (MC gen)
+			continue; 
+		if (particle->Charge() == 0) 
+			continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut ) 
+			continue;
+		if( particle->Pt() < fPtMin) 
+			continue;
 
-        // Fill Id MC spectra 
-        Int_t partpdg = TMath::Abs(particle->PdgCode());
+		hPtInPrim->Fill(particle->Pt()); // inital pT distribution (MC gen)
 
-        if (partpdg==211)                           // pi
-            hPtInPrimPart[0]->Fill(particle->Pt());
-        else if (partpdg==321)                      // K       
-            hPtInPrimPart[1]->Fill(particle->Pt());
-        else if (partpdg==2212)                     // p
-            hPtInPrimPart[2]->Fill(particle->Pt());
-        else if (partpdg==3222)                     // Sigma+
-            hPtInPrimPart[3]->Fill(particle->Pt());
-        else if (partpdg==3112)                     // Sigma-
-            hPtInPrimPart[4]->Fill(particle->Pt());
-        else                                        // Rest
-            hPtInPrimPart[5]->Fill(particle->Pt());
+		// Fill Id MC spectra 
+		Int_t partpdg = TMath::Abs(particle->PdgCode());
+
+		if (partpdg==211)                           // pi
+			hPtInPrimPart[0]->Fill(particle->Pt());
+		else if (partpdg==321)                      // K       
+			hPtInPrimPart[1]->Fill(particle->Pt());
+		else if (partpdg==2212)                     // p
+			hPtInPrimPart[2]->Fill(particle->Pt());
+		else if (partpdg==3222)                     // Sigma+
+			hPtInPrimPart[3]->Fill(particle->Pt());
+		else if (partpdg==3112)                     // Sigma-
+			hPtInPrimPart[4]->Fill(particle->Pt());
+		else                                        // Rest
+			hPtInPrimPart[5]->Fill(particle->Pt());
 	}
 
-    // loop over reconstructed tracks
+	// loop over reconstructed tracks
 	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
 	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
 
@@ -1032,39 +1038,70 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 		if(TMath::Abs(track->Eta()) > fEtaCut)
 			continue;
 		if( track->Pt() < fPtMin)
-            continue;
+			continue;
 
 		hPtOut->Fill(track->Pt());
-        
-        const Int_t label = TMath::Abs(track->GetLabel());
 
-        // Fill Id MC spectra 
-        if( fMCStack->IsPhysicalPrimary(label) )
-        {
-            TParticle *mcPart = fMC->GetTrack(label)->Particle();
-            
-            Int_t partpdg_reco = TMath::Abs(mcPart->GetPdgCode());
-            
-            if (partpdg_reco==211)                           // pi
-                hPtOutPrimPart[0]->Fill(track->Pt());
-            else if (partpdg_reco==321)                      // K       
-                hPtOutPrimPart[1]->Fill(track->Pt());
-            else if (partpdg_reco==2212)                     // p
-                hPtOutPrimPart[2]->Fill(track->Pt());
-            else if (partpdg_reco==3222)                     // Sigma+
-                hPtOutPrimPart[3]->Fill(track->Pt());
-            else if (partpdg_reco==3112)                     // Sigma-
-                hPtOutPrimPart[4]->Fill(track->Pt());
-            else                                             // Rest
-                hPtOutPrimPart[5]->Fill(track->Pt());
-        }
-        
+		const Int_t label = TMath::Abs(track->GetLabel());
+
+		// Fill Id MC spectra 
+		if( fMCStack->IsPhysicalPrimary(label) )
+		{
+			TParticle *mcPart = fMC->GetTrack(label)->Particle();
+
+			Int_t partpdg_reco = TMath::Abs(mcPart->GetPdgCode());
+
+			if (partpdg_reco==211)                           // pi
+				hPtOutPrimPart[0]->Fill(track->Pt());
+			else if (partpdg_reco==321)                      // K       
+				hPtOutPrimPart[1]->Fill(track->Pt());
+			else if (partpdg_reco==2212)                     // p
+				hPtOutPrimPart[2]->Fill(track->Pt());
+			else if (partpdg_reco==3222)                     // Sigma+
+				hPtOutPrimPart[3]->Fill(track->Pt());
+			else if (partpdg_reco==3112)                     // Sigma-
+				hPtOutPrimPart[4]->Fill(track->Pt());
+			else                                             // Rest
+				hPtOutPrimPart[5]->Fill(track->Pt());
+		}
+
 		if( fMCStack->IsPhysicalPrimary(label) ){
 			hPtOutPrim->Fill(track->Pt());
 		}
 		if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
 			hPtOutSec->Fill(track->Pt());
 		}
+	}
+
+	// For DCA studies
+	for(Int_t i=0; i < iTracks; i++) {             
+
+		if(i==fRecLeadIn) continue;
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+		if(!track) continue;
+
+		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+		if( track->Pt() < fPtMin) continue;
+		if(!fTrackFilterForDCA->IsSelected(track)) continue;
+
+		Int_t mcLabel = TMath::Abs(track->GetLabel());
+		TParticle *mcPart = fMC->GetTrack(mcLabel)->Particle();
+		if(!mcPart) continue;
+
+		track->GetImpactParameters(fDCAxy,fDCAz);
+		hPtDCAall->Fill(track->Pt(),fDCAxy);
+
+		if (!(fMC->IsPhysicalPrimary(mcLabel))) 
+		{          
+			if (fMC->IsSecondaryFromWeakDecay(mcLabel))
+				hPtDCAWeak->Fill(track->Pt(),fDCAxy);
+			if (fMC->IsSecondaryFromMaterial(mcLabel))
+				hPtDCAMat->Fill(track->Pt(),fDCAxy);		
+		}
+		else
+			hPtDCAPrimary->Fill(track->Pt(),fDCAxy);
+
 	}
 
 }
@@ -1296,6 +1333,26 @@ void AliAnalysisTaskMcKnoUe::GetUEObservablesData(){
 	}
 	hPtLeadingData->Fill(fRecLeadPt);
 
+	// For DCA studies
+	for(Int_t i=0; i < iTracks; i++) {
+
+		if(i==fRecLeadIn) continue;
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+		if(!track) continue;
+
+		if(!fTrackFilterForDCA->IsSelected(track)) 
+			continue;
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+		if( track->Pt() < fPtMin) 
+			continue;
+
+		track->GetImpactParameters(fDCAxy,fDCAz);
+		hPTVsDCAData->Fill(track->Pt(),fDCAxy);
+
+	}
+
 }
 
 void AliAnalysisTaskMcKnoUe::GetUEObservables(){
@@ -1394,7 +1451,25 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 	}
 	hPtLeadingTrue->Fill(fGenLeadPt);
 	hPtLeadingMeasured->Fill(fRecLeadPt);
+	// For DCA studies
+	for(Int_t i=0; i < iTracks; i++) {
 
+		if(i==fRecLeadIn) continue;
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+		if(!track) continue;
+
+		if(!fTrackFilterForDCA->IsSelected(track)) 
+			continue;
+		if(TMath::Abs(track->Eta()) > fEtaCut)
+			continue;
+		if( track->Pt() < fPtMin) 
+			continue;
+
+		track->GetImpactParameters(fDCAxy,fDCAz);
+		hPTVsDCAData->Fill(track->Pt(),fDCAxy);
+
+	}
 
 
 }
@@ -1469,33 +1544,13 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributionsData(){
 		}
 
 	}
-	
-	// DCA studies
-	
-  for(Int_t i=0; i < iTracks; i++) {
 
-     if(i==fRecLeadIn) continue;
-     
-    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
-    if(!track) continue;
-    
-    if(!fTrackFilterForDCA->IsSelected(track)) 
-        continue;
-    if(TMath::Abs(track->Eta()) > fEtaCut)
-      continue;
-    if( track->Pt() < fPtMin) 
-        continue;
 
-    track->GetImpactParameters(fDCAxy,fDCAz);
-    hPTVsDCAData->Fill(track->Pt(),fDCAxy);
-
-  }
-	
-	
 
 }
 //____________________________________________________________
 void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
+
 
 	Int_t multTSgen=0;
 	Int_t multTSrec=0;
@@ -1530,7 +1585,7 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
 	}
 	hNchTSGenTest->Fill(multTSgen);
 
-    // Filling pT vs UE activity
+	// Filling pT vs UE activity
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		if(i==fGenLeadIn)
@@ -1624,36 +1679,7 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
 		}
 
 	}
-	
-	// DCA studies
-    for(Int_t i=0; i < iTracks; i++) {             
 
-        if(i==fRecLeadIn) continue;
-
-        AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
-        if(!track) continue;
-
-        if(TMath::Abs(track->Eta()) > fEtaCut) continue;
-        if( track->Pt() < fPtMin) continue;
-        if(!fTrackFilterForDCA->IsSelected(track)) continue;
-
-        Int_t mcLabel = TMath::Abs(track->GetLabel());
-        TParticle *mcPart = fMC->GetTrack(mcLabel)->Particle();
-        if(!mcPart) continue;
-
-        track->GetImpactParameters(fDCAxy,fDCAz);
-        hPtDCAall->Fill(track->Pt(),fDCAxy);
-
-        if (!(fMC->IsPhysicalPrimary(mcLabel))) 
-        {          
-            if (fMC->IsSecondaryFromWeakDecay(mcLabel))
-                hPtDCAWeak->Fill(track->Pt(),fDCAxy);
-            if (fMC->IsSecondaryFromMaterial(mcLabel))
-                hPtDCAMat->Fill(track->Pt(),fDCAxy);		
-        }
-
-        hPtDCAPrimary->Fill(track->Pt(),fDCAxy);
-    }
 
 }
 
