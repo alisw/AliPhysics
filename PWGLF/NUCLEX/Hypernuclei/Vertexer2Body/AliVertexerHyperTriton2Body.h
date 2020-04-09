@@ -7,9 +7,13 @@
 #include <TSpline.h>
 #include <AliESDtrackCuts.h>
 #include <AliESDv0.h>
+#include "Math/Vector4D.h"
+
 
 class AliPIDResponse;
 class AliMCEvent;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliVertexerHyperTriton2Body : public TNamed
 {

@@ -56,6 +56,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHypV0s.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
@@ -105,6 +106,7 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
+  Utils/NanoAOD/AliNanoSkimmingV0s.cxx  
   Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 

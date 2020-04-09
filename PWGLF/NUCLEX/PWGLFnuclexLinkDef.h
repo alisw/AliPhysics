@@ -92,6 +92,7 @@
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class SHyperTritonHe3pi+;
@@ -154,6 +155,7 @@
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
 #pragma link C++ class AliNanoSkimmingPID+;
+#pragma link C++ class AliNanoSkimmingV0s+;
 /// * ChunkFilter
 #pragma link C++ class AliAnalysisTaskFilterHe3+;
 #endif
