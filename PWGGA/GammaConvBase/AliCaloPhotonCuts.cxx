@@ -7106,13 +7106,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       break;
     // PCM-EDC based nonlinearity for LHC16x,17x,18x pp 13TeV ******* shifting   MC
     case 37:
-      if(isMC>0){
-        //pp 13 TeV MCs for LHC16 || LHC17 || LHC18
-        if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ ||   fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ){
-          if(fClusterType==4 || fClusterType==1 || fClusterType==3){
-            energy /= (FunctionNL_ExpExp(energy, 0.9872432434, 0.3665071019, -2.8842177373, 7.4181896132)/FunctionNL_ExpExp(energy, 1.0469170329,   0.2974710295, -2.4204052267, 7.2038176960));
-            energy /= (FunctionNL_DExp(energy, 1.0361977366, 0.3308840475, -2.4266515809, 1.0396249348, 0.3489018147, -2.3611819266));
-          }
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version without. fine tuning)
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
         }
       }
       break;

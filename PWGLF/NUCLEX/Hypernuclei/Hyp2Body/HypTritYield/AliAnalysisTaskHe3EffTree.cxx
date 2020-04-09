@@ -202,7 +202,7 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fOutputList->Add(fHistdEdx);
 	fEventCuts.AddQAplotsToList(fOutputList);
 
-	fTree = new TTree("tree","fTree");
+	fTree = new TTree("treeHe","fTree");
 
 	fTree->Branch("tRunNumber"      , &tRunNumber      , "tRunNumber/I");
 	fTree->Branch("tTrigMB"         , &tTrigMB         , "tTrigMB/I");
@@ -246,7 +246,7 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTree->Branch("tMaterial"       , &tMaterial       , "tMaterial/I");
 	fTree->Branch("tHypertriton"    , &tHypertriton    , "tHypertriton/I");
 
-	fTreeGen = new TTree("treeGen","fTreeGen");
+	fTreeGen = new TTree("treeGenHe","fTreeGen");
 	fTreeGen->Branch("tTrigMB"        , &tTrigMB        , "tTrigMB/I");
 	fTreeGen->Branch("tTrigHMV0"      , &tTrigHMV0      , "tTrigHMV0/I");
 	fTreeGen->Branch("tTrigHMSPD"     , &tTrigHMSPD     , "tTrigHMSPD/I");

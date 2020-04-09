@@ -69,6 +69,7 @@ AliDielectronMC* AliDielectronMC::Instance()
 
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if(type == kESD) hasMC=mcHandler!=0x0;
+    else if (type == kAOD) hasMC=mcHandler!=0x0;
     }
 
   fgInstance=new AliDielectronMC(type);

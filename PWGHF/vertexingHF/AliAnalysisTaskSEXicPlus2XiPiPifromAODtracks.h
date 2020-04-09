@@ -43,7 +43,7 @@ class AliNormalizationCounter;
 class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE 
 {
  public:
-  enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAcc,kReco,kRecoCuts,kRecoPID};
+  enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAccMother08,kGenAcc,kGenAcc08,kReco,kReco08,kRecoCuts,kRecoCuts08,kRecoPID,kRecoPID08};
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE);

@@ -115,6 +115,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // BG HandlerSettings
     void CalculateBackground            ();
+    void CalculateBackgroundSwapp       ();
     void CalculateBackgroundRP          ();
     void RotateParticle                 ( AliAODConversionPhoton *gamma );
     void RotateParticleAccordingToEP    ( AliAODConversionPhoton *gamma,
@@ -596,7 +597,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 59);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 60);
 };
 
 #endif

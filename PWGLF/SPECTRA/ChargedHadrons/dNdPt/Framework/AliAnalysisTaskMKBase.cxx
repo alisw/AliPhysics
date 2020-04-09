@@ -65,7 +65,7 @@ ClassImp(AliAnalysisTaskMKBase)
       fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
       fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
       fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-      fChargeSign(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
+      fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
       fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE), fMCisSecDecay(kFALSE),
       fMCisSecMat(kFALSE), fMCPrimSec(-1),
       fMCParticleType(AlidNdPtTools::kUndefined),
@@ -118,7 +118,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
       fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
       fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
       fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-      fChargeSign(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
+      fChargeSign(0),fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
       fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE), fMCisSecDecay(kFALSE),
       fMCisSecMat(kFALSE), fMCPrimSec(-1),
       fMCParticleType(AlidNdPtTools::kUndefined),
@@ -443,7 +443,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent() {
             if (!track)
                 continue;
             if (fESDtrackCutsM->AcceptTrack(track)) {
-                fNTracksAcc++;
+                ++fNTracksAcc;
             }
         }
     } else {
@@ -820,6 +820,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack() {
     fDCAr = fDCA[0];
     fDCAz = fDCA[1];
     fSigma1Pt2 = fESDTrack->GetSigma1Pt2();
+    fTPCSignalN = fESDTrack->GetTPCsignalN();
     if (fSigma1Pt2 < 0) {
         Err("Sigma1Pt2<0");
     }

@@ -162,6 +162,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetDoFourPairing(DoFourPairing);
   // task->SetULSandLS(DoULSLS);
   task->SetUsePreFilter(UsePreFilter);
+  task->SetUseSecPreFilter(UseSecPreFilter);
 
   // #########################################################
   // #########################################################

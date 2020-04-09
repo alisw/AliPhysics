@@ -9,6 +9,7 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fIsMCTruth(false),
       fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
@@ -31,6 +32,7 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fIsMCTruth(false),
       fUseOMixing(false),
       fTrigger(AliVEvent::kINT7),
       fOutput(),
@@ -186,15 +188,13 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   ProtonTRUE.clear();
   static std::vector<AliFemtoDreamBasePart> AProtonTRUE;
   AProtonTRUE.clear();
-  static std::vector<AliFemtoDreamBasePart> PhiALL;
-  PhiALL.clear();
+
 
   static float massKaon =
       TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
 
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
-
     if (!track) continue;
     fTrack->SetTrack(track);
     // find mothers of MC Kaons (if phi->stop loop, else loop until arriving to
@@ -234,10 +234,10 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
         break;  // if we don't have MC Information, don't use that track
       }
     }
-
     fTrack->SetInvMass(massKaon);
     if (fPosKaonCuts->isSelected(fTrack)) {
       Particles.push_back(*fTrack);
+
     }
     if (fNegKaonCuts->isSelected(fTrack)) {
       AntiParticles.push_back(*fTrack);
@@ -251,7 +251,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   }
 
 
-  if (fIsMC) {
+  if (fIsMC && fIsMCTruth) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         Event->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
@@ -288,12 +288,6 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
         }
       }
 
-      if (mcpdg == 333) {
-        part.SetMCParticleRePart(mcPart);
-        PhiALL.push_back(part);
-      }
-
-
       if (mcpdg == 2212) {
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
@@ -321,11 +315,12 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     for (const auto &negK : AntiParticles) {
       fPhiParticle->Setv0(posK, negK, Event, false, false, true);
       fPhiParticle->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
-      //      std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
-      //      std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;
-      //      std::cout<<"PDG kp: "<<posK.GetMCPDGCode()<<endl;
-      //      std::cout<<"PDG km: "<<negK.GetMCPDGCode()<<endl;
-      //      std::cout<<"PDG phi: "<<fPhiParticle->GetMCPDGCode()<<endl;
+//            std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
+//            std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;
+//            std::cout<<"PDG kp: "<<posK.GetMCPDGCode()<<endl;
+//            std::cout<<"PDG km: "<<negK.GetMCPDGCode()<<endl;
+//            std::cout<<"PDG phi: "<<fPhiParticle->GetMCPDGCode()<<endl;
+
       if (fPhiCuts->isSelected(fPhiParticle)) {
         fPhiParticle->SetCPA(
             gRandom->Uniform());  // cpacode needed for CleanDecay v0;
@@ -347,7 +342,6 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(ProtonTRUE);
   fPairCleaner->StoreParticle(AProtonTRUE);
   fPairCleaner->StoreParticle(PhiTRUE);
-  fPairCleaner->StoreParticle(PhiALL);
 
 
 
@@ -356,7 +350,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles =
           fPairCleaner->GetCleanParticles();
       int size = Particles.size();
-      if (size == 7) {
+      if (size == 6) {
         if ((Particles.at(2)).size() > 0) {
           if (((Particles.at(0)).size() > 0) ||
               ((Particles.at(1)).size() > 0)) {
@@ -366,9 +360,8 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
           }
         }
 
-        if (fIsMC) {
-          if ((Particles.at(5)).size() > 0 ||
-              ((Particles.at(6)).size() > 0)) {
+        if (fIsMC&&fIsMCTruth) {
+          if ((Particles.at(5)).size() > 0) {
             if (((Particles.at(3)).size() > 0) ||
                 ((Particles.at(4)).size() > 0)) {
                 fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),

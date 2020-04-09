@@ -58,6 +58,20 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fPIDResponse{nullptr},
                                                                                          fESDtrackCuts{*AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()},
                                                                                          fOutputList{nullptr},
+                                                                                         fTreeTrack{nullptr},
+                                                                                         tPt{-999.},
+                                                                                         tEta{-999.},
+                                                                                         tPhi{-999.},
+                                                                                         tnsigTPC{-999.},
+                                                                                         tnsigTOF{-999.},
+                                                                                         tmass2{-999.},
+                                                                                         tnPIDclsTPC{0},
+                                                                                         tTOFsigDx{-999.},
+                                                                                         tTOFsigDz{-999.},
+                                                                                         tTOFchi2{-999.},
+                                                                                         tTOFclsN{0},
+                                                                                         tTRDclsN{0},
+                                                                                         tID{0},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -181,7 +195,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tnPIDclsTPC", &tnPIDclsTPC, "tnPIDclsTPC/I");
     fTreeTrack->Branch("tTOFsigDx", &tTOFsigDx, "tTOFsigDx/D");
     fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/D");
+    fTreeTrack->Branch("tTOFchi2", &tTOFchi2, "tTOFchi2/D");
     fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
+    fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
     fTreeTrack->Branch("tID", &tID, "tID/I");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
@@ -287,13 +303,12 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tnPIDclsTPC = track->GetTPCsignalN();
       tTOFsigDx = track->GetTOFsignalDx();
       tTOFsigDz = track->GetTOFsignalDz();
+      tTOFchi2 = track->GetTOFchi2();
       tTOFclsN = track->GetTOFclusterN();
+      tTRDclsN = track->GetTRDncls();
       tID = track->GetID();
-      for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
-      {
-        tnsigTPC[iSpecies] = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[iSpecies]);
-        tnsigTOF[iSpecies] = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[iSpecies]);
-      }
+      tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
+      tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
       fTreeTrack->Fill();
     }
 

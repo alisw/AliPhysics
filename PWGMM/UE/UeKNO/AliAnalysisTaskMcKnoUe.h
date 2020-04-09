@@ -30,18 +30,20 @@ class THnSparse;
 class AliAnalysisTaskMcKnoUe : public AliAnalysisTaskSE
 {
 public:
-	AliAnalysisTaskMcKnoUe();
+    AliAnalysisTaskMcKnoUe();
 	AliAnalysisTaskMcKnoUe(const char *name);
-	virtual                 ~AliAnalysisTaskMcKnoUe();
+	
+    virtual                 ~AliAnalysisTaskMcKnoUe();
 
 	virtual void            UserCreateOutputObjects();
 	virtual void            UserExec(Option_t* option);
 	virtual void            Terminate(Option_t* option);
+    
 	void       GetLeadingObject(Bool_t isMC);
 	void       GetDetectorResponse();
 	void       GetBinByBinCorrections();
 	void       GetUEObservables();
-        void       GetUEObservablesData();
+    void       GetUEObservablesData();
 	void       GetPtLeadingMisRecCorrection();
 	void       GetMeanUEObservables(std::vector<Double_t> &gen, std::vector<Double_t> &rec);
 	void       GetMultiplicityDistributions();
@@ -51,21 +53,22 @@ public:
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
 	void       SetParametrizationEfficiency(Bool_t ispy = kTRUE)  {fIsPythia = ispy;}
 	bool       HasRecVertex();
-	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
-			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+
 protected:
 
 
 
 private:
-	AliESDEvent*            fESD;                                        //! input ESD event
+	AliESDEvent* fESD;                                        //! input ESD event
 	Bool_t       fIsPythia; 
-	AliEventCuts        fEventCuts;
+	AliEventCuts fEventCuts;
 	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
 	Bool_t       fUseMC;                // analyze MC events
 	Bool_t       fIsMCclosure;         
 	AliAnalysisFilter*  fLeadingTrackFilter;
+	AliAnalysisFilter*  fTrackFilterForDCA;
 	AliAnalysisFilter*  fTrackFilter;
 	TList*                  fOutputList;                                      //! output list in the root file
 
@@ -80,6 +83,22 @@ private:
 	Double_t fRecLeadPt;
 	Int_t    fRecLeadIn;
 
+	Float_t fDCAxy;
+	Float_t fDCAz;	
+    
+    
+//     // Corrections
+//     
+//     TH2D * hMCFractions;    // ! Histos for particle abundances from MC
+//     
+    
+    // DCA 
+    TH2D * hPTVsDCAData;
+    TH2D * hPtDCAPrimary;
+    TH2D * hPtDCAWeak;
+    TH2D * hPtDCAMat;
+    TH2D * hPtDCAall;    
+    
 	// KNO
 	TH1D * hPhiGen[3];
 	TH1D * hNchTSGen;
@@ -142,6 +161,9 @@ private:
 	TH2D * hPtVsUERecTest[3];
 	TH2D * hPtVsUEData[3];
 
+	TH1D * hPtInPrimPart[6];
+	TH1D * hPtOutPrimPart[6];
+    
 	TH1D * hPtLeadingRecPS;
 	TH1D * hPtLeadingRecPSV;
 	TH1D * hPtLeadingRecGood;
@@ -154,7 +176,7 @@ private:
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
 
-	ClassDef(AliAnalysisTaskMcKnoUe, 3);
+	ClassDef(AliAnalysisTaskMcKnoUe, 4);
 };
 
 #endif

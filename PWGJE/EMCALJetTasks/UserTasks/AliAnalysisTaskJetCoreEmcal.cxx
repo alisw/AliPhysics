@@ -244,7 +244,7 @@ void AliAnalysisTaskJetCoreEmcal::UserCreateOutputObjects()
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive); // Post data for ALL output slots > 0 here.
-  if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree)    PostData(3, fTreeEmbRecoil); // Post data for ALL output slots > 0 here.
+  if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil); // Post data for ALL output slots > 0 here.
 }
 
 /*
@@ -690,7 +690,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
   TString varNamesInclusive[9]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart"};
   TString varNamesInclusiveMoreVars[13]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptPart","phiPart","ptLeadingTrackRec","ptLeadingTrackPart","ptDet","phiDet","matchedJetDistanceRec","matchedJetDistancePart"};
   TString varNamesRecoil[8]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart"};
-  TString varNamesRecoilMoreVars[12]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart","ptDet","DPhiDet","matchedJetDistanceRec","matchedJetDistancePart"};
+  TString varNamesRecoilMoreVars[14]={"centrality","ptTT","ptRawRec","areaRec","ptCorrRec","DPhiRec","ptPart","DPhiPart","ptDet","DPhiDet","matchedJetDistanceRec","matchedJetDistancePart","phiTTPart","phiTTRec"};
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) {
 		const char* nameEmbInclusive = GetOutputSlot(2)->GetContainer()->GetName();
 		fTreeEmbInclusive = new TTree(nameEmbInclusive, nameEmbInclusive);
@@ -706,11 +706,11 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
     }
 	}
 
-	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree) {
+	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree) {
 		const char* nameEmbRecoil= GetOutputSlot(3)->GetContainer()->GetName();
 		fTreeEmbRecoil = new TTree(nameEmbRecoil, nameEmbRecoil);
     if(fMoreTreeVars) {
-      for(Int_t ivar=0; ivar < 12; ivar++){
+      for(Int_t ivar=0; ivar < 14; ivar++){
         fTreeEmbRecoil->Branch(varNamesRecoilMoreVars[ivar].Data(), &fTreeVarsRecoilMoreVars[ivar], Form("%s/F", varNamesRecoilMoreVars[ivar].Data()));
       }
     }
@@ -742,7 +742,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	PostData(1, fOutput);
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive);
 
-  if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree)    PostData(3, fTreeEmbRecoil);
+  if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil);
 }
 
 /**
@@ -786,22 +786,33 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	// Do jet core analysis and fill histograms.
 
 	AliJetContainer *jetCont = GetJetContainer(fJetContName);
-	AliJetContainer *jetContPart = 0x0; 
-	AliJetContainer *jetContTrue = 0x0; 
-	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart){
- 	 jetContTrue = GetJetContainer(fJetContTrueName);
- 	 jetContPart = GetJetContainer(fJetContPartName);
-	}
+	AliJetContainer *jetContPart = GetJetContainer(fJetContPartName);
+  AliJetContainer *jetContTrue = 0x0;
+  if(fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+    AliParticleContainer *partCont2 = GetParticleContainer(2);
+    jetContTrue = GetJetContainer(fJetContTrueName);
+  }
 
-	if(!jetCont ||
-			(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && !jetContPart)) {
-		AliError(Form("jet container not found - check name %s",fJetContName.Data()));
+	if((fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbPart && (!jetCont || !jetContPart || !jetContTrue)) || 
+      ((fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && (!jetCont || !jetContPart ))
+    )
+	{ // if jet containers not found
+		AliError(Form("jet container not found - check name %s(base), %s (part) or %s (true)",fJetContName.Data(), fJetContPartName.Data(), fJetContTrueName.Data()));
 		TIter next(&fJetCollArray);
 		while ((jetCont = static_cast<AliJetContainer*>(next())))
 			AliError(Form("%s",jetCont->GetName()));
 		AliFatal("Exit...");
 		return;
 	}
+
+	if(fDebug) {
+		Printf("n particle jets = %i",jetContPart->GetNJets());
+    Printf("n reco jets = %i",jetCont->GetNJets());
+    if(fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+      Printf("n PYTHIA jets = %i",jetContTrue->GetNJets());
+    }
+	}
+
 
 	fHistEvtSelection->Fill(0); 
 
@@ -815,6 +826,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	// reconstructed and MC-level trigger tracks
 	AliParticleContainer *partCont = 0x0; 
 	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) partCont = GetParticleContainer(2);
+	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) partCont = GetParticleContainer(1);
 //	AliParticleContainer *partCont = 0x0;
 //	TIter next(&fParticleCollArray);
 //	while ((partCont = static_cast<AliParticleContainer*>(next()))) {
@@ -926,9 +938,9 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				fHJetSpec->Fill(fillspec);
 			}
 
-			if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+			if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
 				//
-				// embedding for recoil jets
+				// matching for recoil jets
 				// get MC info
 				//
 				Double_t ptTTMC = 0;
@@ -952,24 +964,40 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				fhTTPtDetMatchedToPart->Fill(ptTTreco,ptTTMC);
 				fhTTPhiDetMatchedToPart->Fill(phiTTreco,phiTTMC);
 
-				auto jet2 = jetbig->ClosestJet();
-				if(!jet2) {
-					//Printf("jet 2 cant be found");
-					continue;}
-        distanceClosestJet1 = jetbig->ClosestJetDistance();
-				Double_t ptJet2 = jet2->Pt();
-				Double_t phiJet2 = jet2->Phi();
-				fhPtDetRecoil->Fill(ptJet2);
-				auto jet3 = jet2->ClosestJet();
-				if(!jet3) {
-					//Printf("jet3 can't be found");
-					continue;
-				}
-        distanceClosestJet2 = jet2->ClosestJetDistance();
-				fhPtDetMatchedToPartRecoil->Fill(ptJet2);
-				Double_t ptJet3 = jet3->Pt();
-				Double_t phiJet3 = jet3->Phi();
-
+				Double_t ptJet2 = 0;
+				Double_t phiJet2 = 0;
+				Double_t ptJet3 = 0;
+				Double_t phiJet3 = 0;
+        if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+    				auto jet2 = jetbig->ClosestJet();
+    				if(!jet2) {
+    					//Printf("jet 2 cant be found");
+    					continue;}
+            distanceClosestJet1 = jetbig->ClosestJetDistance();
+    				ptJet2 = jet2->Pt();
+    				phiJet2 = jet2->Phi();
+    				fhPtDetRecoil->Fill(ptJet2);
+    				auto jet3 = jet2->ClosestJet();
+    				if(!jet3) {
+    					//Printf("jet3 can't be found");
+    					continue;
+    				}
+            distanceClosestJet2 = jet2->ClosestJetDistance();
+    				ptJet3 = jet3->Pt();
+    				phiJet3 = jet3->Phi();
+            fhPtDetMatchedToPartRecoil->Fill(ptJet3);
+        }
+        if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) { // loop over detector jets
+          auto jet3 = jetbig->ClosestJet();
+          if(!jet3) {
+            if(fDebug) Printf("jet3 can't be found");
+            continue;
+          }
+          distanceClosestJet1 = jetbig->ClosestJetDistance();
+          ptJet3 = jet3->Pt();
+          phiJet3 = jet3->Phi();
+          fhPtDetMatchedToPartRecoil->Fill(ptJet3);
+        }
 
 				Double_t dPhiPart=phiJet3-phiTTMC;
         Double_t dPhiPartShiftPi=phiJet3-phiTTMC;
@@ -983,15 +1011,21 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
         if(dPhiPartShiftPi<-2*TMath::Pi()) dPhiPartShiftPi += 2*TMath::Pi();
         if(dPhiPartShiftPi<0)              dPhiPartShiftPi += 2*TMath::Pi();
 
-        Double_t dPhiDetShiftPi=phiJet2-partback->Phi();
-        if(dPhiDetShiftPi>2*TMath::Pi())  dPhiDetShiftPi -= 2*TMath::Pi();
-        if(dPhiDetShiftPi<-2*TMath::Pi()) dPhiDetShiftPi += 2*TMath::Pi();
-        if(dPhiDetShiftPi<0)              dPhiDetShiftPi += 2*TMath::Pi();
+        Double_t dPhiDetShiftPi;
+        if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart){ 
+          dPhiDetShiftPi = phiJet2-partback->Phi();
+
+          if(dPhiDetShiftPi>2*TMath::Pi())  dPhiDetShiftPi -= 2*TMath::Pi();
+          if(dPhiDetShiftPi<-2*TMath::Pi()) dPhiDetShiftPi += 2*TMath::Pi();
+          if(dPhiDetShiftPi<0)              dPhiDetShiftPi += 2*TMath::Pi();
+        }
+        else  dPhiDetShiftPi = 0;
 
 				if(fDebug) Printf("--- recoil - jet pt = jet hybrid pt = %f\t jet matched det pt = %f\t jet matched particle level pt = %f\t\n\tjet reco phi = %f\t jet particle phi = %f",ptbig,ptJet2,ptJet3,phibig,phiJet3);
 
 				fhPtDetPartRecoil->Fill(ptJet2,ptJet3);
-				Double_t fraction = jetCont->GetFractionSharedPt(jetbig);
+        Double_t fraction = 1.;
+        if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) fraction = jetCont->GetFractionSharedPt(jetbig); 
         fhFractionSharedPtRecoil->Fill(ptcorr,fraction);
 				if(fraction < fMinFractionSharedPt) continue;
 
@@ -1024,6 +1058,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
             fTreeVarsRecoilMoreVars[9] = dPhiDetShiftPi;
             fTreeVarsRecoilMoreVars[10] = distanceClosestJet1;
             fTreeVarsRecoilMoreVars[11] = distanceClosestJet2;
+            fTreeVarsRecoilMoreVars[12] = phiTTMC;
+            fTreeVarsRecoilMoreVars[13] = phiTTreco;
           }
           else {
             fTreeVarsRecoil[0] = fCent;
@@ -1044,8 +1080,6 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 
 void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 
-	AliParticleContainer *partCont0 = GetParticleContainer(0);
-	AliParticleContainer *partCont1 = GetParticleContainer(1);
 	AliJetContainer *jetCont = GetJetContainer(fJetContName);
 	AliJetContainer *jetContPart = GetJetContainer(fJetContPartName);
   AliJetContainer *jetContTrue = 0x0;
@@ -1053,7 +1087,6 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
     AliParticleContainer *partCont2 = GetParticleContainer(2);
     jetContTrue = GetJetContainer(fJetContTrueName);
   }
-	//if(fDebug) Printf("particle container 0 entries = %i \t1 entries = %i\t 2 entries = %i",partCont0->GetNParticles(),partCont1->GetNParticles(),partCont2->GetNParticles());
 
 	if((fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbPart && (!jetCont || !jetContPart || !jetContTrue)) || 
       ((fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType==AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && (!jetCont || !jetContPart ))
@@ -1458,7 +1491,7 @@ Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Doub
 
 	AliParticleContainer* partCont = 0x0;
 	AliParticleContainer* partContDet = 0x0;
-	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) partCont = GetParticleContainer(1);
+	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart|| fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) partCont = GetParticleContainer(1);
   else if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) {
     partCont = GetParticleContainer(0);
     partContDet = GetParticleContainer(1);

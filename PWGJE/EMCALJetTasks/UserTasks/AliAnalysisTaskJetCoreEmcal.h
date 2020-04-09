@@ -125,7 +125,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fTreeVarsInclusive[9]; ///<
 	Float_t fTreeVarsInclusiveMoreVars[13]; ///<
 	Float_t fTreeVarsRecoil[8]; ///<
-	Float_t fTreeVarsRecoilMoreVars[12]; ///<
+	Float_t fTreeVarsRecoilMoreVars[14]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
@@ -183,7 +183,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 11);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 12);
   /// \endcond
 };
 #endif

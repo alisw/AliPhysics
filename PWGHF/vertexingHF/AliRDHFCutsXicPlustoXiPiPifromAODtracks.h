@@ -84,6 +84,7 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
   void SetProdCascNTPCCrossedRowsMin(Double_t a){fProdCascNTPCCrossedRowsMin=a;}
   void SetProdCascNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdCascNTPCCrossedOverFindableRatioMin=a;}
+  void SetProdTrackTPCsignalNMin(Double_t a) {fProdTrackTPCsignalNMin=a;}
   
   Double_t GetProdTrackPtMin(){return fProdTrackPtMin;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
@@ -110,6 +111,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
   Double_t GetProdCascNTPCCrossedRowsMin(){return fProdCascNTPCCrossedRowsMin;}
   Double_t GetProdCascNTPCCrossedOverFindalbleRatioMin(){return fProdCascNTPCCrossedOverFindableRatioMin;}
+  Double_t GetProdTrackTPCsignalNMin() {return fProdTrackTPCsignalNMin;}
+  
   
  protected:
 	
@@ -143,6 +146,7 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters -->obselete
   Double_t fProdCascNTPCCrossedRowsMin;   
   Double_t fProdCascNTPCCrossedOverFindableRatioMin;
+  Double_t fProdTrackTPCsignalNMin;
   Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
   Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
