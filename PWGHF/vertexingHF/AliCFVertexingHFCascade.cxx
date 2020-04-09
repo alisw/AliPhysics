@@ -387,14 +387,6 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   Double_t phi = cascade->Phi();
   Double_t cosPointingAngleXY = neutrDaugh->CosPointingAngleXY(fPrimVtx);
   Double_t normDecayLengthXY = neutrDaugh->NormalizedDecayLengthXY(fPrimVtx);
-  Double_t deltaPhiLeading = 0.;
-  if (fConfiguration == AliCFTaskVertexingHF::kRT) {
-         deltaPhiLeading = phi - fPhiLeading;
-           
-         if (deltaPhiLeading <= -TMath::PiOver2()) deltaPhiLeading += TMath::TwoPi();
-         if (deltaPhiLeading > 3*TMath::PiOver2()) deltaPhiLeading-=TMath::TwoPi();
-         
-     }
   
   
   Int_t pdgCode = fmcPartCandidate->GetPdgCode();
