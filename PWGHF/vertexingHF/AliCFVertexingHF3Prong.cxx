@@ -340,6 +340,13 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   if(fConfiguration == AliCFTaskVertexingHF::kESE) {
     localmult = ComputeLocalMultiplicity(decay->Eta(), decay->Phi(), 0.4);
   }
+  Double_t deltaPhiLeading = 0.;
+  if (fConfiguration == AliCFTaskVertexingHF::kRT) {
+         deltaPhiLeading = fmcPartCandidate->Phi() - fPhiLeading; 
+         if (deltaPhiLeading <= -TMath::PiOver2()) deltaPhiLeading += TMath::TwoPi();
+         if (deltaPhiLeading > 3*TMath::PiOver2()) deltaPhiLeading-=TMath::TwoPi();
+         
+     }
 
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
@@ -398,7 +405,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     vectorMC[1] = fmcPartCandidate->Y() ;
     vectorMC[2] = fMultiplicity;   // multiplicity (diff estimators can be used)
     vectorMC[3] = fRT;   // RT val calculated from TPC tracks
-    vectorMC[4] = fPhiLeading; // delta-phi of candidate wrt leading track
+    vectorMC[4] = deltaPhiLeading; // delta-phi of candidate wrt leading track
     break;
 	}
 	delete decay;	
@@ -473,7 +480,13 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   if(fConfiguration == AliCFTaskVertexingHF::kESE) {
     localmult = ComputeLocalMultiplicity(decay3->Eta(), decay3->Phi(), 0.4);
   }
-
+  Double_t deltaPhiLeading = 0.;
+  if (fConfiguration == AliCFTaskVertexingHF::kRT) {
+         deltaPhiLeading = phi - fPhiLeading;
+         if (deltaPhiLeading <= -TMath::PiOver2()) deltaPhiLeading += TMath::TwoPi();
+         if (deltaPhiLeading > 3*TMath::PiOver2()) deltaPhiLeading-=TMath::TwoPi();         
+     }
+     
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
 		vectorReco[0] = pt;
@@ -534,7 +547,7 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
     vectorReco[1] = rapidity;
     vectorReco[2] = fMultiplicity; // reconstructed multiplicity
     vectorReco[3] = fRT;           // RT value calculated from TPC tracks
-    vectorReco[4] = fPhiLeading; // delta-phi of candidate wrt leading track
+    vectorReco[4] = deltaPhiLeading; // delta-phi of candidate wrt leading track
     break; 
 	}
 

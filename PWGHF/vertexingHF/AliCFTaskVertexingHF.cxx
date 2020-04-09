@@ -537,7 +537,6 @@ void AliCFTaskVertexingHF::Init()
       fListProfiles->Add(hprof);
     }
   }
-  ///!TODO track filter cuts for RT
   
   // Save also the weight functions or histograms
   if(fFuncWeight) fListProfiles->Add(fFuncWeight);
