@@ -83,7 +83,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS()
       fDataType(kTRUE),
       fcentcalib(kFALSE),
       frun2(kTRUE),
-      fQA(kTRUE),
+      fQA(kFALSE),
       fMCclosure(kFALSE),
       fFMDcut(kTRUE),
       fFMDcutmode(1),
@@ -298,7 +298,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS(const
       fDataType(kTRUE),
       fcentcalib(kFALSE),
       frun2(kTRUE),
-      fQA(kTRUE),
+      fQA(kFALSE),
       fMCclosure(kFALSE),
       fFMDcut(kTRUE),
       fFMDcutmode(1),
@@ -676,7 +676,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      fHistVZERO->SetBinLimits(0, binning_eta_vzero);
      fHistVZERO->SetBinLimits(1, binning_phi_vzero);
      fHistVZERO->SetBinLimits(2, binning_cent);
-     fOutputList1->Add(fHistVZERO);
+     if(fQA) fOutputList1->Add(fHistVZERO);
 
 
  }
@@ -729,13 +729,6 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
    }
 
    fHistLeadQA = new AliTHn("fHistLeadQA", "fHistLeadQA", 1, 5, ipidBin_effi);
-   /*
-   fHistLeadQA->SetBinLimits(0, binning_pt_lead);
-   fHistLeadQA->SetBinLimits(1, binning_eta);
-   fHistLeadQA->SetBinLimits(2, 0,2*TMath::Pi());
-   fHistLeadQA->SetBinLimits(3, binning_cent);
-   fHistLeadQA->SetBinLimits(4, -10.,10.);
-   */
    fHistLeadQA->SetBinLimits(0,0,5);
    fHistLeadQA->SetBinLimits(1,-1.,1);
    fHistLeadQA->SetBinLimits(2,0.,2*TMath::Pi());
@@ -746,7 +739,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
    fHistLeadQA->SetVarTitle(2, "phi");
    fHistLeadQA->SetVarTitle(3, "centrality");
    fHistLeadQA->SetVarTitle(4, "vz");
-   fOutputList1->Add(fHistLeadQA);
+   if(fQA) fOutputList1->Add(fHistLeadQA);
 
 
 
@@ -763,7 +756,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      fhistmcprim->SetVarTitle(2,"phi");
      fhistmcprim->SetVarTitle(3,"centrality");
      fhistmcprim->SetVarTitle(4,"vz");
-     fOutputList2->Add(fhistmcprim);
+     if(fQA)     fOutputList2->Add(fhistmcprim);
 
 
      const Int_t ipidBinfmd[5] = {12, 200, 20, 15,20};
@@ -2248,7 +2241,7 @@ if(fAnaMode=="TPCTPC"){
    conmcprim[4]=fPrimaryZVtx;
    
    if(TrIsPrim){
-     if(mcTrackEta>-1. && mcTrackEta<1.) fhistmcprim->Fill(conmcprim,0);//primay charged partilce distribution(no mother particle)
+     if(fQA) if(mcTrackEta>-1. && mcTrackEta<1.) fhistmcprim->Fill(conmcprim,0);//primay charged partilce distribution(no mother particle)
      if(mcTrackEta>-0.8&& mcTrackEta<0.8) {
        if(mcTrackPt>fPtMin && mcTrackPt<fPtMax) {
 	 nMCtrackssamecut++;
@@ -2650,9 +2643,9 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksLeading(AliAOD
        Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
        TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
        AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(myTrackLabel);
-       if(mcTrack->IsPhysicalPrimary()) fHistLeadQA->Fill(pidqa,0);
+       if(fQA) if(mcTrack->IsPhysicalPrimary()) fHistLeadQA->Fill(pidqa,0);
      }else {
-       fHistLeadQA->Fill(pidqa,0);
+        fHistLeadQA->Fill(pidqa,0);
      }
     }
 
