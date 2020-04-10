@@ -174,7 +174,7 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
         Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectOutput (task, 2, coutput2 );
   }
-  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart ) {
+  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3.Data(),
         TTree::Class(),AliAnalysisManager::kOutputContainer,
         Form("%s", AliAnalysisManager::GetCommonFileName()));

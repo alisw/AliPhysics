@@ -92,6 +92,7 @@
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
+#pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
 #pragma link C++ class RHyperTritonHe3pi+;
 #pragma link C++ class SHyperTritonHe3pi+;
@@ -122,6 +123,11 @@
 #pragma link C++ class SHyperTriton3KF+;
 #pragma link C++ class std::vector<RHyperTriton3KF>+;
 #pragma link C++ class std::vector<SHyperTriton3KF>+;
+#pragma link C++ class AliAnalysisTaskHypertritonO2+;
+#pragma link C++ class RHyperTritonO2+;
+#pragma link C++ class SHyperTritonO2+;
+#pragma link C++ class std::vector<RHyperTritonO2>+;
+#pragma link C++ class std::vector<SHyperTritonO2>+;
 #pragma link C++ class RHypertriton3+;
 #pragma link C++ class SHypertriton3+;
 #pragma link C++ class MLSelected+;
@@ -129,6 +135,8 @@
 #pragma link C++ class std::vector<SHypertriton3>+;
 #pragma link C++ class std::vector<MLSelected>+;
 #pragma link C++ class REvent+;
+#pragma link C++ class o2::vertexing::DCAFitter2+;
+#pragma link C++ class o2::vertexing::DCAFitter3+;
 #endif
 
 /// * VertexerHyp3Body
@@ -147,6 +155,7 @@
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
 #pragma link C++ class AliNanoSkimmingPID+;
+#pragma link C++ class AliNanoSkimmingV0s+;
 /// * ChunkFilter
 #pragma link C++ class AliAnalysisTaskFilterHe3+;
 #endif

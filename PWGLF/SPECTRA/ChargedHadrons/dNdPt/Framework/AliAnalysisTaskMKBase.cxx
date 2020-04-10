@@ -443,7 +443,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent() {
             if (!track)
                 continue;
             if (fESDtrackCutsM->AcceptTrack(track)) {
-                fNTracksAcc++;
+                ++fNTracksAcc;
             }
         }
     } else {

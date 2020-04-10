@@ -1595,11 +1595,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if (TMath::Abs(fBzkG)<0.001) return;
   KFParticle::SetField(fBzkG);
 
-  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
-
   fpVtx = (AliAODVertex*)AODEvent->GetPrimaryVertex();
   if (!fpVtx) return;
   fHistEvents->Fill(2);
+
+  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
 
   //------------------------------------------------
   // MC analysis setting                                                                    

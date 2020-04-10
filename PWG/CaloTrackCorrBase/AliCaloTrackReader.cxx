@@ -148,7 +148,7 @@ fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
-fhEMCALClusterTimeE(0),      
+fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
 fEnergyHistogramNbins(0),
@@ -799,6 +799,12 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
     fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
+
+    fhEMCALClusterDisToBadE  = new TH2F 
+    ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,20,0,20);
+    fhEMCALClusterDisToBadE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhEMCALClusterDisToBadE->SetYTitle("Distance to bad cell");
+    fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
     ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
@@ -2292,6 +2298,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Apply distance to bad channel cut
   //
   Double_t distBad = clus->GetDistanceToBadChannel() ; //Distance to bad channel
+  fhEMCALClusterDisToBadE->Fill(clus->E(),distBad);
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   

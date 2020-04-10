@@ -238,27 +238,33 @@ void AliMixingHandler::FillEvent(TList* leg1List, TList* leg2List, Float_t* valu
   if (leg1List) {
     for(Int_t it=0; it<entries1; ++it) {
       // HACK: to transmit the VZERO and TPC event plane Q vector to event mixing
-      track = (AliReducedTrackInfo*)leg1List->At(it)->Clone();  
-      track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
-      track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
-      track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
-      track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
-      track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
-      track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
-      list1->Add(track);
+      if(fMixingSetup==kMixResonanceLegs && leg1List->At(it)->IsA()==AliReducedTrackInfo::Class()) {  
+         track = (AliReducedTrackInfo*)leg1List->At(it)->Clone();  
+         track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
+         track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
+         track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
+         track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
+         track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
+         track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
+         list1->Add(track);
+      }
+      else list1->Add(leg1List->At(it)->Clone());
     }
   }
   if (leg2List) {
     for(Int_t it=0; it<entries2; ++it) {
       // HACK: to transmit the VZERO and TPC event plane Q vector to event mixing
-      track = (AliReducedTrackInfo*)leg2List->At(it)->Clone();  
-      track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
-      track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
-      track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
-      track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
-      track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
-      track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
-      list2->Add(track);  
+      if(fMixingSetup==kMixResonanceLegs && leg2List->At(it)->IsA()==AliReducedTrackInfo::Class()) {  
+        track = (AliReducedTrackInfo*)leg2List->At(it)->Clone();  
+        track->SetCovMatrix(0, values[AliReducedVarManager::kVZEROQvecX+0*6+1]);
+        track->SetCovMatrix(1, values[AliReducedVarManager::kVZEROQvecY+0*6+1]);
+        track->SetCovMatrix(2, values[AliReducedVarManager::kVZEROQvecX+1*6+1]);
+        track->SetCovMatrix(3, values[AliReducedVarManager::kVZEROQvecY+1*6+1]);
+        track->SetCovMatrix(4, values[AliReducedVarManager::kTPCQvecXtree+1]);
+        track->SetCovMatrix(5, values[AliReducedVarManager::kTPCQvecYtree+1]);
+        list2->Add(track);  
+      }
+      else list2->Add(leg2List->At(it)->Clone());
     }
   }
     

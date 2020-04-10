@@ -52,7 +52,7 @@ ClassImp(AliAnalysisTaskUpcRho0);
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   : AliAnalysisTaskSE(),
     fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0), fTPCNcls(50),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50), fOption(0),
 	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
@@ -74,7 +74,7 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   : AliAnalysisTaskSE(name),
     fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0), fTPCNcls(50),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50), fOption(0),
   	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
@@ -546,7 +546,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
 
-	if ((fTriggerName == "CCUP2-B") &&
+	if ((fTriggerName.Contains("CCUP2-B")) &&
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		)) ChipCut_T = 1;
@@ -658,7 +658,12 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	OMU = esd->GetHeader()->IsTriggerInputFired("0OMU");
 	  
 	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
-	if ((fTriggerName == "CCUP2-B") && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+	if (fOption.Contains("17n")) {
+		if ((fTriggerName.Contains("CCUP2")) && (!V0A && !V0C && SH1 && OM2)) return kTRUE; // CCUP2 in 17n
+		}
+	else {
+		if ((fTriggerName.Contains("CCUP2")) && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+	}
 	if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return kTRUE; // CCUP4 is fired works only in 2015
 
 	else return kFALSE;

@@ -115,6 +115,7 @@ public:
     void    RecalImpactParam(const AliVTrack * const track, Double_t dz[2], Double_t covar[3]);
     AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
     
+    void    SetITSNCls(Int_t fnCls) {fITSNCls = fnCls;};
     
 private:
     enum{
@@ -158,6 +159,7 @@ private:
     
     Bool_t              fRecalIP;//
     
+    Int_t               fITSNCls;//
     Double_t            fDeltaEta;//
     Double_t            fDeltaPhi;//
     Double_t            fTPCnSigma;//

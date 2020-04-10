@@ -2,7 +2,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-//Apr2 syst.
+//Apr6 eta03 syst.
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -397,7 +397,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-        if(TMath::Abs(eta) < 0.5)
+        if(TMath::Abs(eta) < 0.8)
         {
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 4 && TMath::Abs(negpion) <= 4)
                 {
@@ -501,7 +501,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     ptChEta1point0postight[iptbin+fNptBins] += 1;
                 }
             }
-        } //|eta|<0.5
+        } //|eta|<0.8
         }// zero onfly V0
     }// end of V0 loop
 

@@ -1,7 +1,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-//Apr 2 syst.
+//Apr 6 eta08 syst.
 
 
 #include "AliAnalysisManager.h"
@@ -187,7 +187,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
         
         //Gen
         
-        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
+        f2fHistGenCentVsPtLambda = new TH2F( "f2fHistGenCentVsPtLambda", "Centrality Vs #Lambda Gen Pt 08",CentbinNum, CentBins,fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistGenCentVsPtLambda);
         
         f2fHistGenCentVsPtAntiLambda = new TH2F( "f2fHistGenCentVsPtAntiLambda", "Centrality Vs #bar{#Lambda} Gen Pt",CentbinNum, CentBins,fNptBins, LambdaPtBins);
@@ -384,7 +384,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 
             
-            if(abseta < 0.5)
+            if(abseta < 0.8)
             {
                 if(genpid == 3122)
                 {
@@ -614,7 +614,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 Int_t iptbin = GetPtBin(mcpt);
                 if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.8)
                 {
                     if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 4 && TMath::Abs(negpion) <= 4)
                     {
@@ -883,7 +883,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     
-                }//|eta|<0.5
+                }//|eta|<0.8
             } //MC condition
         }// zero onfly V0
     }// end of V0 loop

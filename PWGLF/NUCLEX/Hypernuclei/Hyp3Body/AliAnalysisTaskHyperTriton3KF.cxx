@@ -180,6 +180,9 @@ void AliAnalysisTaskHyperTriton3KF::UserCreateOutputObjects() {
   if (man->GetMCtruthEventHandler()) {
     fTreeHyp3->Branch("SHyperTriton", &fGenHyp);
     fTreeHyp3->Branch("SGenRecMap", &fGenRecMap);
+    fTreeHyp3->Branch("SGenRecDeutMom", &fGenRecDeutMom);
+    fTreeHyp3->Branch("SGenRecProtMom", &fGenRecProtMom);
+    fTreeHyp3->Branch("SGenRecPiMom", &fGenRecPiMom);
   }
 
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
@@ -218,6 +221,9 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fGenHyp.clear();
   fRecHyp.clear();
   fGenRecMap.clear();
+  fGenRecDeutMom.clear();
+  fGenRecProtMom.clear();
+  fGenRecPiMom.clear();
 
   double pvPos[3], pvCov[6];
   fEventCuts.GetPrimaryVertex()->GetXYZ(pvPos);
@@ -225,6 +231,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
   fREvent.fX = pvPos[0];
   fREvent.fY = pvPos[1];
   fREvent.fZ = pvPos[2];
+  fREvent.fCent = fEventCuts.GetCentrality();
 
   KFPVertex kfPVertex;
   kfPVertex.SetXYZ(pvPos[0],pvPos[1],pvPos[2]);
@@ -272,8 +279,8 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       }
       SHyperTriton3KF genHyp;
       genHyp.l = Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2]);
-      genHyp.px = part->Px();
-      genHyp.py = part->Py();
+      genHyp.pt = part->Pt();
+      genHyp.phi = std::atan2(part->Py(),part->Px());
       genHyp.pz = part->Pz();
       genHyp.t = decayVtx[3];
       genHyp.positive = part->PdgCode() > 0;
@@ -308,9 +315,10 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
     for (int iT{0}; iT < 3; ++iT) {
       nSigmasTPC[iT] = fPIDResponse->NumberOfSigmasTPC(track, kAliPID[iT]);
       nSigmasTOF[iT] = fPIDResponse->NumberOfSigmasTOF(track, kAliPID[iT]);
+      bool requireTOFpid = track->P() > fRequireTOFpid[iT];
       if (std::abs(nSigmasTPC[iT]) < fTPCsigmas[iT] && dcaNorm > fMinTrackDCA[iT] && track->Pt() < fTrackPtRange[iT][1] && 
           track->Pt() > fTrackPtRange[iT][0] && track->GetTPCsignalN() >= fMinTPCpidClusters[iT])
-        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !fRequireTOFpid[kDeuteron]);
+        candidate[iT] = (std::abs(nSigmasTOF[iT]) < fTOFsigmas[iT]) || (!hasTOF && !requireTOFpid);
     }
   
     if (candidate[0] || candidate[1] || candidate[2]) {
@@ -385,13 +393,14 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
-        recHyp.px = mom.x();
-        recHyp.py = mom.y();
+        float hSign = deu.track->Charge() > 0 ? 1. : -1;
+        recHyp.pt = hSign * std::hypot(mom.x(),mom.y());
+        recHyp.phi = std::atan2(mom.y(),mom.x());
         recHyp.pz = mom.z();
         recHyp.m = mass;
 
         const float ct = recHyp.l * kHyperTritonMass / totalMom;
-        if (ct < fCtRange[0] || ct > fCtRange[1])
+        if (ct < fCandidateCtRange[0] || ct > fCandidateCtRange[1])
           continue;
         if (fCosPAspline) {
           if (cosPA < fCosPAspline->Eval(ct))
@@ -424,12 +433,20 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         recHyp.dca_de_pi = deu.particle.GetDistanceFromParticle(pi.particle);
         recHyp.dca_pr_pi = p.particle.GetDistanceFromParticle(pi.particle);
 
+        recHyp.tpcClus_de = deu.track->GetTPCsignalN();
+        recHyp.tpcClus_pr = p.track->GetTPCsignalN();
+        recHyp.tpcClus_pi = pi.track->GetTPCsignalN();
+
         bool record{!fMC || !fOnlyTrueCandidates};
         if (fMC) {
           int momId = IsTrueHyperTriton3Candidate(deu.track, p.track, pi.track, mcEvent);
           record = record || momId >=0;
-          if (record)
+          if (record) {
             fGenRecMap.push_back(mcMap[momId]);
+            fGenRecDeutMom.push_back(deu.track->P());
+            fGenRecProtMom.push_back(p.track->P());
+            fGenRecPiMom.push_back(pi.track->P());
+          }
         }
         if (record)
           fRecHyp.emplace_back(recHyp);

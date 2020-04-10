@@ -94,6 +94,21 @@ Long64_t AlidNdPtTools::FillHist(Double_t w, THnBase* s, Double_t x0,
 
 //____________________________________________________________________________
 
+/// Function to fill THnSparse or THn with weight
+///
+/// \param weight   weight to be used for Histogram filling
+/// \param s   Pointer to histogram to be filled
+/// \param val vector of values
+///
+/// \return return value of THnBase->Fill(...) or 0 in case of error
+
+Long64_t AlidNdPtTools::FillHistWeighted(THnBase* s, std::vector<double> const& val, double weight) {
+    if(val.size() < 1) return 0;
+    return s->Fill(val.data(), weight);
+}
+
+//____________________________________________________________________________
+
 /// Add an Axis (Dimension) to the THnSparseD
 ///
 /// function to add a user defined axes

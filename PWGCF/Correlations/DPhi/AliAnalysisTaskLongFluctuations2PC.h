@@ -22,12 +22,12 @@ class AliAnalysisTaskLongFluctuations2PC : public AliAnalysisTaskSE
         virtual void    UserExec(Option_t* option);
         virtual void    Terminate(Option_t* option);
         void            SetMCRead(Bool_t bs);
-        void            SetFilterBit(Int_t fb)                      {fFilterBit = fb;}
-        void            SetCentrality(TString Cent)                 {fCentrality = Cent;}
-        void            SetChi2DoF(Double_t Chi2DoF)                {fChi2DoF = Chi2DoF;}
-        void            SetNclTPC(Int_t ncl)                        {fTPCNcls = ncl;}
-        void            SetPtLimits(Double_t ptmin, Double_t ptmax) {fPtmin = ptmin; fPtmax = ptmax;}
-        void            SetEtaLimit(Double_t etalimit)              {fEta = etalimit;}  
+        void            SetFilterBit(Int_t fb);
+        void            SetCentrality(TString Cent);
+        void            SetChi2DoF(Double_t Chi2DoF);
+        void            SetNclTPC(Int_t ncl);
+        void            SetPtLimits(Double_t ptmin, Double_t ptmax);
+        void            SetEtaLimit(Double_t etalimit);
 
     private:
         AliAODEvent*            fAOD;           //! input event
@@ -46,13 +46,12 @@ class AliAnalysisTaskLongFluctuations2PC : public AliAnalysisTaskSE
         TH1D*                   fMultDMC;
         TProfile*               fMultDpTMC;
         TH2D*                   fMultDReMC;
+        TH2D*                   fPVzCentNevents;
+        TH2D*                   fCentMultQA;
+        TH3D*                   fAllCentQA;
     
-    Int_t mCounter;
-        
-    Float_t mPVz;
-        Float_t mCent;
-        Bool_t mIsMC;
-        Int_t fFilterBit;
+        Bool_t fIsMC;
+        Int_t fFB;
         TString fCentrality;
         Double_t fChi2DoF;
         Int_t fTPCNcls;
@@ -63,7 +62,7 @@ class AliAnalysisTaskLongFluctuations2PC : public AliAnalysisTaskSE
         AliAnalysisTaskLongFluctuations2PC(const AliAnalysisTaskLongFluctuations2PC&); // not implemented
         AliAnalysisTaskLongFluctuations2PC& operator=(const AliAnalysisTaskLongFluctuations2PC&); // not implemented
 
-        ClassDef(AliAnalysisTaskLongFluctuations2PC, 1);
+        ClassDef(AliAnalysisTaskLongFluctuations2PC, 2);
 };
 
 #endif

@@ -79,6 +79,7 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdCascNTPCClustersMin(0.0),
   fProdCascNTPCCrossedRowsMin(0.0),
   fProdCascNTPCCrossedOverFindableRatioMin(0.0),
+  fProdTrackTPCsignalNMin(50.),
   fProdLikeSignDcaMax(2.0),
   fProdRoughMassTol(0.25),
   fProdRoughPtMin(0.0)
@@ -172,6 +173,7 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks::AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
   fProdCascNTPCCrossedRowsMin(source.fProdCascNTPCCrossedRowsMin),
   fProdCascNTPCCrossedOverFindableRatioMin(source.fProdCascNTPCCrossedRowsMin),
+  fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fProdLikeSignDcaMax(source.fProdLikeSignDcaMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin)
@@ -218,6 +220,7 @@ AliRDHFCutsXicPlustoXiPiPifromAODtracks &AliRDHFCutsXicPlustoXiPiPifromAODtracks
   fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
   fProdCascNTPCCrossedRowsMin = source.fProdCascNTPCCrossedRowsMin;
   fProdCascNTPCCrossedOverFindableRatioMin = source.fProdCascNTPCCrossedRowsMin;
+  fProdTrackTPCsignalNMin=source.fProdTrackTPCsignalNMin;
   fProdLikeSignDcaMax = source.fProdLikeSignDcaMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
@@ -560,7 +563,9 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCuts(AliAODcascade 
   if ( static_cast<Double_t>(ptrack->GetTPCNCrossedRows())/static_cast<Double_t>(ptrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
   if ( static_cast<Double_t>(ntrack->GetTPCNCrossedRows())/static_cast<Double_t>(ntrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
   if ( static_cast<Double_t>(btrack->GetTPCNCrossedRows())/static_cast<Double_t>(btrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
-  
+  if ( ptrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE; 
+  if ( ntrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+  if ( btrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE; 
 
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
@@ -682,10 +687,22 @@ Bool_t AliRDHFCutsXicPlustoXiPiPifromAODtracks::SingleCascadeCutsRef(AliAODcasca
   //if(casc->RapXi()<-0.5) return kFALSE;
   //if(casc->RapXi()>0.0) return kFALSE;
 
-  if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
-  if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
-  if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //obsolete
+  // if(ptrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
+  //if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
 
+  if ( ptrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( ntrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( btrack->GetTPCNCrossedRows()< fProdCascNTPCCrossedRowsMin ) return kFALSE;
+  if ( ptrack->GetTPCNclsF()==0 || ntrack->GetTPCNclsF()==0 || btrack->GetTPCNclsF()==0) return kFALSE;
+  if ( static_cast<Double_t>(ptrack->GetTPCNCrossedRows())/static_cast<Double_t>(ptrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  if ( static_cast<Double_t>(ntrack->GetTPCNCrossedRows())/static_cast<Double_t>(ntrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  if ( static_cast<Double_t>(btrack->GetTPCNCrossedRows())/static_cast<Double_t>(btrack->GetTPCNclsF()) <= fProdCascNTPCCrossedOverFindableRatioMin ) return kFALSE;
+  if ( ptrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE; 
+  if ( ntrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+  if ( btrack->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+  
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();

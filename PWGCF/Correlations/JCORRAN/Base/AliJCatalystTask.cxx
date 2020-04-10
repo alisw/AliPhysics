@@ -295,7 +295,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					if(fPcharge == -1)
 						continue;
 				}else continue;
-
+                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel(track->GetLabel());
 				itrack->SetParticleType( pdg);
@@ -331,6 +331,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						continue;
 				}else continue;
 
+                                if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
