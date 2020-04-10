@@ -258,6 +258,10 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTHnSparse(Form("hNsdResponseClosureSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningNsd);
         fHistManager.CreateTHnSparse(Form("hThetagResponseClosureSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningThetag);
 
+        fHistManager.CreateTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningZg);
+        fHistManager.CreateTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningRg);
+        fHistManager.CreateTHnSparse(Form("hNsdResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningNsd);
+        fHistManager.CreateTHnSparse(Form("hThetagResponseClosureNoRespSparse_%d", cent), Form("z_{g} response matrix for closure test, %d centrality bin", cent), 4, sparsebinningThetag);
         fHistManager.CreateTH2(Form("hZgPartLevelClosureNoRespFine_%d", cent), Form("Zg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hZgDetLevelClosureNoRespFine_%d", cent), Form("Zg response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hRgPartLevelClosureNoRespFine_%d", cent), Form("Rg response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
@@ -353,6 +357,10 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTHnSparse("hNsdResponseClosureSparse", "z_{g} response matrix for closure test", 4, sparsebinningNsd);
       fHistManager.CreateTHnSparse("hThetagResponseClosureSparse", "z_{g} response matrix for closure test", 4, sparsebinningThetag);
 
+      fHistManager.CreateTHnSparse("hZgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningZg);
+      fHistManager.CreateTHnSparse("hRgResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningRg);
+      fHistManager.CreateTHnSparse("hNsdResponseClosureNoRespSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningNsd);
+      fHistManager.CreateTHnSparse("hThetagResponseNoRespClosureSparse", "z_{g} response matrix for closure test pseudo data", 4, sparsebinningThetag);
       fHistManager.CreateTH2("hZgPartLevelClosureNoRespFine", "Zg response at particle level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hZgDetLevelClosureNoRespFine", "Zg response at detector level (closure test, jets not used for the response matrix)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hRgPartLevelClosureNoRespFine", "Rg response at particle level (closure test, jets not used for the response matrix)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
@@ -699,12 +707,12 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
               fHistManager.FillTH2("hThetagDetLevelClosureResp", pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
               fHistManager.FillTH2("hThetagPartLevelClosureResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             }
-          if(fHasResponseMatrixSparse){
-            fHistManager.FillTHnSparse("hZgResponseClosureSparse", pointZg);
-            fHistManager.FillTHnSparse("hRgResponseClosureSparse", pointRg);
-            fHistManager.FillTHnSparse("hNsdResponseClosureSparse", pointNsd);
-            fHistManager.FillTHnSparse("hThetagResponseClosureSparse", pointThetag); 
-          }
+            if(fHasResponseMatrixSparse){
+              fHistManager.FillTHnSparse("hZgResponseClosureSparse", pointZg);
+              fHistManager.FillTHnSparse("hRgResponseClosureSparse", pointRg);
+              fHistManager.FillTHnSparse("hNsdResponseClosureSparse", pointNsd);
+              fHistManager.FillTHnSparse("hThetagResponseClosureSparse", pointThetag); 
+            }
           }
         }
         else
@@ -722,6 +730,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
               fHistManager.FillTH2(Form("hThetagDetLevelClosureNoResp_%d", fCentBin), pointThetag[kIndSDDet], pointThetag[kIndPtDet]);
             }
             if(fHasResponseMatrixSparse){
+              fHistManager.FillTHnSparse(Form("hZgResponseClosureNoRespSparse_%d", fCentBin), pointZg);
+              fHistManager.FillTHnSparse(Form("hRgResponseClosureNoRespSparse_%d", fCentBin), pointRg);
+              fHistManager.FillTHnSparse(Form("hNsdResponseClosureNoRespSparse_%d", fCentBin), pointNsd);
+              fHistManager.FillTHnSparse(Form("hThetagResponseClosureNoRespSparse_%d", fCentBin), pointThetag); 
               fHistManager.FillTH2(Form("hZgPartLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
               fHistManager.FillTH2(Form("hZgDetLevelClosureNoRespFine_%d", fCentBin), pointZg[kIndSDDet], pointZg[kIndPtDet]);
               fHistManager.FillTH2(Form("hRgPartLevelClosureNoRespFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
@@ -745,6 +757,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
               fHistManager.FillTH2("hThetagPartLevelClosureNoResp", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
             } 
             if(fHasResponseMatrixSparse) {
+              fHistManager.FillTHnSparse("hZgResponseClosureNoRespSparse", pointZg);
+              fHistManager.FillTHnSparse("hRgResponseClosureNoRespSparse", pointRg);
+              fHistManager.FillTHnSparse("hNsdResponseClosureNoRespSparse", pointNsd);
+              fHistManager.FillTHnSparse("hThetagResponseClosureNoRespSparse", pointThetag); 
               fHistManager.FillTH2("hZgDetLevelClosureNoRespFine", pointZg[kIndSDDet], pointZg[kIndPtDet]);
               fHistManager.FillTH2("hZgPartLevelClosureNoRespFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
               fHistManager.FillTH2("hRgDetLevelClosureNoRespFine", pointRg[kIndSDDet], pointRg[kIndPtDet]);
