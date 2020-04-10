@@ -1086,11 +1086,11 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 		track->GetImpactParameters(fDCAxy,fDCAz);
 		hPtDCAall->Fill(track->Pt(),fDCAxy);
 
-		if (!(fMC->IsPhysicalPrimary(mcLabel))) 
+		if (!(fMCStack->IsPhysicalPrimary(mcLabel))) 
 		{          
-			if (fMC->IsSecondaryFromWeakDecay(mcLabel))
+			if (fMCStack->IsSecondaryFromWeakDecay(mcLabel))
 				hPtDCAWeak->Fill(track->Pt(),fDCAxy);
-			if (fMC->IsSecondaryFromMaterial(mcLabel))
+			if (fMCStack->IsSecondaryFromMaterial(mcLabel))
 				hPtDCAMat->Fill(track->Pt(),fDCAxy);		
 		}
 		else
