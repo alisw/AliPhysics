@@ -147,6 +147,8 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistDeltaPtTPCInwVsPhiTPCselLowPt;   //!<!  histo of delta pt inw - pt refit
   TH2F* fHistDeltaPtTPCInwVsPhiTPCselMidPt;   //!<!  histo of delta pt inw - pt refit
   TH2F* fHistDeltaPtTPCInwVsPhiTPCselHighPt;  //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselITSref;        //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselSPDany;        //!<!  histo of pt inw vs. pt refit
 
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
@@ -256,7 +258,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,22);
+  ClassDef(AliAnalysisTaskCheckESDTracks,23);
 };
 
 

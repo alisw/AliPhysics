@@ -87,6 +87,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistDeltaPtTPCInwVsPhiTPCselLowPt{nullptr},
   fHistDeltaPtTPCInwVsPhiTPCselMidPt{nullptr},
   fHistDeltaPtTPCInwVsPhiTPCselHighPt{nullptr},
+  fHistPtTPCInwVsPtTPCselITSref{nullptr},
+  fHistPtTPCInwVsPtTPCselSPDany{nullptr},
   fHistEtaPhiPtInnerTPCsel{nullptr},
   fHistEtaPhiPtInnerTPCselITSref{nullptr},
   fHistEtaPhiPtInnerTPCselSPDany{nullptr},
@@ -256,6 +258,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistDeltaPtTPCInwVsPhiTPCselLowPt;
     delete fHistDeltaPtTPCInwVsPhiTPCselMidPt;
     delete fHistDeltaPtTPCInwVsPhiTPCselHighPt;
+    delete fHistPtTPCInwVsPtTPCselITSref;
+    delete fHistPtTPCInwVsPtTPCselSPDany;
     delete fHistEtaPhiPtInnerTPCsel;
     delete fHistEtaPhiPtInnerTPCselITSref;
     delete fHistEtaPhiPtInnerTPCselSPDany;
@@ -557,11 +561,16 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistDeltaPtTPCInwVsPhiTPCselLowPt = new TH2F("hDeltaPtTPCInwVsPhiTPCselLowPt"," ; #varphi position at TPC inner radius ; p_{T}^{inw}-p_{T}^{refit} (GeV/c) (GeV/c)",720,0.,2*TMath::Pi(),100,-5.,5.);
   fHistDeltaPtTPCInwVsPhiTPCselMidPt = new TH2F("hDeltaPtTPCInwVsPhiTPCselMidPt"," ; #varphi position at TPC inner radius ; p_{T}^{inw}-p_{T}^{refit} (GeV/c) (GeV/c)",720,0.,2*TMath::Pi(),100,-5.,5.);
   fHistDeltaPtTPCInwVsPhiTPCselHighPt = new TH2F("hDeltaPtTPCInwVsPhiTPCselHighPt"," ; #varphi position at TPC inner radius ; p_{T}^{inw}-p_{T}^{refit} (GeV/c) (GeV/c)",720,0.,2*TMath::Pi(),100,-5.,5.);
+  fHistPtTPCInwVsPtTPCselITSref = new TH2F("hPtTPCInwVsPtTPCselITSref"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
+  fHistPtTPCInwVsPtTPCselSPDany = new TH2F("hPtTPCInwVsPtTPCselSPDany"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistPtTPCInwVsPtTPCsel);
   fOutput->Add(fHistDeltaPtTPCInwVsPtTPCsel);
   fOutput->Add(fHistDeltaPtTPCInwVsPhiTPCselLowPt);
   fOutput->Add(fHistDeltaPtTPCInwVsPhiTPCselMidPt);
   fOutput->Add(fHistDeltaPtTPCInwVsPhiTPCselHighPt);
+  fOutput->Add(fHistPtTPCInwVsPtTPCselITSref);
+  fOutput->Add(fHistPtTPCInwVsPtTPCselSPDany);
+  
   
   fHistEtaPhiPtInnerTPCsel = new TH3F("hEtaPhiPtInnerTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtInnerTPCselITSref = new TH3F("hEtaPhiPtInnerTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -1060,6 +1069,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(pttrack<1) fHistDeltaPtTPCInwVsPhiTPCselLowPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>1 && pttrack<3) fHistDeltaPtTPCInwVsPhiTPCselMidPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>3) fHistDeltaPtTPCInwVsPhiTPCselHighPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
+      if(itsRefit){
+	fHistPtTPCInwVsPtTPCselITSref->Fill(pttrack,pttrack0tpc);
+	if(spdAny) fHistPtTPCInwVsPtTPCselSPDany->Fill(pttrack,pttrack0tpc);
+      }
     }
     fHistEtaPhiPtInnerTPCsel->Fill(etatrackTPC,phitrackTPC,pttrackTPC);
     fHistNtrackeltsPtTPCsel->Fill(ntracklets,pttrack);
