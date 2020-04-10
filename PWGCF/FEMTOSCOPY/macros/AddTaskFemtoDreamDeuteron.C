@@ -7,6 +7,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     bool ContributionSplitting = false,//5,
     bool DumpPdApAd = true,//6
     bool DumpRest = false,//7
+    bool fullBlastQA = true,
+    bool RefMult08 = true,
     const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -35,7 +37,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronMass->SetCutCharge(1);
   TrackCutsDeuteronMass->SetMinimalBooking(false);
-  TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.,60.);
+  TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //anti deuterons
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
@@ -45,7 +47,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
   TrackCutsAntiDeuteronMass->SetMinimalBooking(false);
-  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.,60.);
+  TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //proton
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
@@ -74,6 +76,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   PDGParticles.push_back(1000010020);
 
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {1.14, 1.26, 999.};
   std::vector<int> pairQA;
   //pairs:
   // pp             0
@@ -177,7 +180,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   kMax.push_back(3.);
   kMax.push_back(3.);
 
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -191,6 +194,21 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   config->SetDeltaEtaMax(0.012); // and here you set the actual values
   config->SetDeltaPhiMax(0.012); // and here you set the actual values
   config->SetMixingDepth(10);
+
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
+  config->SetmTBinning(true);
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
+  if (fullBlastQA) {
+    config->SetkTBinning(true);
+    config->SetPtQA(true);
+  }
+  if (RefMult08) {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  }
 
   AliAnalysisTaskFemtoDreamDeuteron *task =
     new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);

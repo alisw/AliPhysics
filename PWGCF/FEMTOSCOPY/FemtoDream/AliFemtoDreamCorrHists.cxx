@@ -675,6 +675,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                          *itNBins, *itKMin, *itKMax,
                                                          multbins, 1, multbins + 1); 
           fPairs[Counter]->Add(fMixedEventmTMultDist[Counter][imT]);
+	      }
 
           TString SamemTvsMultEventName = TString::Format("SEmTvsMultDist_Particle%d_Particle%d", iPar1,
                                                iPar2);
@@ -691,9 +692,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                       225, 0, 7.5, multbins, 1, 
                                                       multbins + 1);
           fPairs[Counter]->Add(fMixedEventmTvsMultDist[Counter]);
-
-	      }
       } 
+
       if (fillHists && fDomTBinning) {
         TString SamemTEventName = TString::Format("SEmTDist_Particle%d_Particle%d", iPar1,
                                        iPar2);
@@ -1459,8 +1459,7 @@ void AliFemtoDreamCorrHists::FillMixedEventmTMultDist(int iHist, float mT, int i
       fMixedEventmTMultDist[iHist][pos]->Fill(RelK, iMult); 
       if (fMixedEventmTvsMultDist[iHist]){
         fMixedEventmTvsMultDist[iHist]->Fill(mT, iMult);
-      }
-       
+      }   
     }
   } 
 }
