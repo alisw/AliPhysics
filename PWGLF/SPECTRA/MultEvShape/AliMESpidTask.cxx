@@ -101,7 +101,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   vec_hNoEvts[0] = 0.;
   // hNoEvts->Fill(vec_hNoEvts);
-  
+
   Double_t directivity = fEvInfo->GetEventShape()->GetSphericity();
   // printf("\n\n\n Sphericity = %f\n\n\n", directivity);
 
@@ -131,7 +131,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
           directivity =  (directivity_plus + directivity_minus) / 2.0;
       }
   }
-*/  
+*/
 /*
   // select events with both dirs close
   if(TMath::Abs(directivity_plus - directivity_minus) < 0.2){
@@ -151,7 +151,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
       // MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
       // MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
       // MC_directivity = MC_directivity_plus;
-      
+
       MC_directivity = fMCevInfo->GetEventShape()->GetSphericity();
   }
 
@@ -725,7 +725,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
         vec_hMiss[l_charge_miss] = vec_hGen[l_MC_charge];
         vec_hMiss[l_pidMC_miss] = vec_hGen[l_MC_PID];
         vec_hMiss[l_rapidity_miss] = vec_hGen[l_MC_rapidity];
-        vec_hMiss[l_delta_phi_miss] = ComputeDeltaPhi(tMC->Phi(), phi_LP);  // NOTE: compute dP vs REC LP!
+        // vec_hMiss[l_delta_phi_miss] = ComputeDeltaPhi(tMC->Phi(), phi_LP);  // NOTE: compute dP vs REC LP!
+        vec_hMiss[l_delta_phi_miss] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
         vec_hMiss[l_delta_y_miss] = y_LP_MC - vec_hGen[l_MC_rapidity];
 
         hMiss->Fill(vec_hMiss);
@@ -781,14 +782,17 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // test response
   const Int_t ndimResponse(13);
-  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 42, 2, 5, 20, 80, 20, 7, 5, 42, 2, 5};
+  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 52, 2, 5, 20, 80, 20, 7, 5, 52, 2, 5};
+  // const Int_t cldNbinsResponse[ndimResponse]   = {20, 10, 42, 2, 5, 20, 80, 20, 20, 10, 42, 2, 5};
   const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0., 0., 0., -0.5, -0.5},
-  cldMaxResponse[ndimResponse]  = {100., 1., 3., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 100., 1., 3., 1.5, 4.5};
+  cldMaxResponse[ndimResponse]  = {100., 1., 5., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 100., 1., 5., 1.5, 4.5};
   THnSparseD *hResponse = new THnSparseD("Response","Response;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;generated 0.8;generated directivity;generated p_{T};generated_primary;generated_PID", ndimResponse, cldNbinsResponse, cldMinResponse, cldMaxResponse);
   hResponse->GetAxis(0)->Set(7, binLimits_mult);
-  hResponse->GetAxis(2)->Set(42, binLimits_reduced);
+  // hResponse->GetAxis(2)->Set(42, binLimits_reduced);
+  hResponse->GetAxis(2)->Set(52, binLimits);
   hResponse->GetAxis(8)->Set(7, binLimits_mult);
-  hResponse->GetAxis(10)->Set(42, binLimits_reduced);
+  // hResponse->GetAxis(10)->Set(42, binLimits_reduced);
+  hResponse->GetAxis(10)->Set(52, binLimits);
   fHistosQA->AddAt(hResponse, slot_Response);
 /*
   // test fakes
@@ -802,33 +806,39 @@ Bool_t AliMESpidTask::BuildQAHistos()
 */
   // test miss
   const Int_t ndimMiss(8);
-  const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 42, 2, 5, 20, 80, 20};
+  const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 52, 2, 5, 20, 80, 20};
+  // const Int_t cldNbinsMiss[ndimMiss]   = {20, 10, 42, 2, 5, 20, 80, 20};
   const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2.},
-  cldMaxMiss[ndimMiss]  = {100., 1.0, 3., 2., 4.5, 1., (3.*TMath::PiOver2()), 2.};
+  cldMaxMiss[ndimMiss]  = {100., 1.0, 5., 2., 4.5, 1., (3.*TMath::PiOver2()), 2.};
   THnSparseD *hMiss = new THnSparseD("Miss","Miss;combined08;directivity;p_{T};charge;PID_MC;y;delta_phi;delta_y;", ndimMiss, cldNbinsMiss, cldMinMiss, cldMaxMiss);
   hMiss->GetAxis(0)->Set(7, binLimits_mult);
-  hMiss->GetAxis(2)->Set(42, binLimits_reduced);
+  // hMiss->GetAxis(2)->Set(42, binLimits_reduced);
+  hMiss->GetAxis(2)->Set(52, binLimits);
   fHistosQA->AddAt(hMiss, slot_Miss);
 
   // used for raw spectra and a lot of corrections
   const Int_t ndimAllESD(14);
-  const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 42, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 52, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
+  // const Int_t cldNbinsAllESD[ndimAllESD]   = {20, 102, 10, 42, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
   const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
-  cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 3., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
+  cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
   THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(0)->Set(7, binLimits_mult);
   hAllESD->GetAxis(1)->Set(102, binLimitsV0M);
-  hAllESD->GetAxis(3)->Set(42, binLimits_reduced);
+  // hAllESD->GetAxis(3)->Set(42, binLimits_reduced);
+  hAllESD->GetAxis(3)->Set(52, binLimits);
   fHistosQA->AddAt(hAllESD, slot_AllESD);
 
   // used for tracking efficiency
   const Int_t ndimGen(10);
-  const Int_t cldNbinsGen[ndimGen]   = {7, 5, 42, 2, 5, 20, 80, 20, 150, 20};
+  const Int_t cldNbinsGen[ndimGen]   = {7, 5, 52, 2, 5, 20, 80, 20, 150, 20};
+  // const Int_t cldNbinsGen[ndimGen]   = {20, 10, 42, 2, 5, 20, 80, 20, 150, 20};
   const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0.5, 0.},
-  cldMaxGen[ndimGen]  = {100., 1., 3., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 150.5, 1.};
+  cldMaxGen[ndimGen]  = {100., 1., 5., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 150.5, 1.};
   THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCdirectivity;MCp_{T};MCcharge;MCPID;MCy;MCdelta_phi;MCdelta_y;ESDmultiplicity;ESDdirectivity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
   hGen->GetAxis(0)->Set(7, binLimits_mult);
-  hGen->GetAxis(2)->Set(42, binLimits_reduced);
+  // hGen->GetAxis(2)->Set(42, binLimits_reduced);
+  hGen->GetAxis(2)->Set(52, binLimits);
   fHistosQA->AddAt(hGen, slot_Gen);
 
   // 	TH1D *testCounter = new TH1D("testCounter","testCounter", 4, 0.5, 4.5);
