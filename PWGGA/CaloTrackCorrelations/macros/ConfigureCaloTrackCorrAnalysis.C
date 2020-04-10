@@ -292,11 +292,15 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+     if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+     else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
-    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
-    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
@@ -443,11 +447,15 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "DCAL"  )
+  {
+    if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+    else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
-    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
-    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
@@ -647,7 +655,11 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
       else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
     }
-    else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+    else if ( calorimeter == "DCAL"  ) 
+    {
+      if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+      else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+    }
     
     if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
     {
@@ -817,11 +829,15 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 178.8) ; //10 SM
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 81.2, 118.8) ; // 4 SM
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+    if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+    else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
-    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
-    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
@@ -905,27 +921,25 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis
   // A flat eta and phi distribution limited to known detectors
   if      ( detector=="EMCAL" )
   {
-    ana->SetEtaCut(-0.7,0.7);
-    ana->SetPhiCut(80*TMath::DegToRad(), 187*TMath::DegToRad());
-    if      ( year == 2010 ) ana->SetPhiCut(80*TMath::DegToRad(), 120*TMath::DegToRad());
-    else if ( year <  2014 ) ana->SetPhiCut(80*TMath::DegToRad(), 180*TMath::DegToRad());
-
+    ana->SetEtaCut(-0.67,0.67);
+    if      ( year == 2010 ) ana->SetPhiCut(81.2*TMath::DegToRad(), 118.8*TMath::DegToRad());
+    else if ( year <  2014 ) ana->SetPhiCut(81.2*TMath::DegToRad(), 178.8*TMath::DegToRad());
+    else                     ana->SetPhiCut(81.2*TMath::DegToRad(), 185.8*TMath::DegToRad());
   }
   else if ( detector=="DCAL" )
    {
-     ana->SetEtaCut(0.22,0.7);
-     ana->SetPhiCut(260*TMath::DegToRad(), 327*TMath::DegToRad());
+     ana->SetEtaCut(0.25,0.67);
+     ana->SetPhiCut(261.2*TMath::DegToRad(), 325.8*TMath::DegToRad());
    }
   else if ( detector=="PHOS" )
   {
-    ana->SetEtaCut(-0.13,0.13);
-    ana->SetPhiCut(250*TMath::DegToRad(), 320*TMath::DegToRad());
-    if ( year <  2014 ) ana->SetPhiCut(260*TMath::DegToRad(), 320*TMath::DegToRad());
-
+    ana->SetEtaCut(-0.12,0.12);
+    if ( year <  2014 ) ana->SetPhiCut(260.5*TMath::DegToRad(), 319.5*TMath::DegToRad());
+    else                ana->SetPhiCut(250.5*TMath::DegToRad(), 319.5*TMath::DegToRad());
   }
   else if ( detector=="CTS" )
   {
-    ana->SetEtaCut(-0.9,0.9);
+    ana->SetEtaCut(-0.8,0.8);
     ana->SetPhiCut(0, TMath::TwoPi());
   }
   
@@ -1157,7 +1171,11 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 169.5) ;
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 109.5) ;
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.7, 316.5) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+    if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.5, 309.5) ; 
+    else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.5, 316.5) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
     if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 260.5, 309.5) ; 
@@ -1165,9 +1183,36 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
+   {
+     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  90.5, 316.5) ; //20 SM
+   }
+  
+  // Open phi acceptance in case of charged only in isolation cone
+  if ( partInCone == AliIsolationCut::kOnlyCharged )
   {
-    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
-  }
+    if      ( calorimeter == "EMCAL" )
+    {
+      if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 185.8) ;
+      else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 178.8) ;
+      else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 118.8) ;
+    }
+    else if ( calorimeter == "DCAL"  )
+    {
+      if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 261.2, 318.8) ; 
+      else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 261.2, 325.8) ; 
+    }
+    else if ( calorimeter == "PHOS"  )
+    {
+      if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+      else                  ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ; 
+    }
+    
+    if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
+    {
+      ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
+    }
+  } // acceptance for only charged in isolation cone
+  
   
   if ( kAnaCutsString.Contains("TightAcc") ) // pp 7 TeV analysis cut
   {
@@ -1440,14 +1485,18 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //
   ana->SwitchOnFiducialCut();
   
-  // Set candidate acceptance cuts similar as in p-Pb Isolation Erwann's analysis
+  // Set isolation candidate acceptance cuts similar as in p-Pb Erwann's analysis
   if      ( calorimeter == "EMCAL" )
   {
     if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 176.5) ;
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 169.5) ;
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 90.5, 109.5) ;
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.7, 316.5) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+    if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.5, 309.5) ; 
+    else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 270.5, 316.5) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
     if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 260.5, 309.5) ; 
@@ -1455,9 +1504,35 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
+   {
+     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  90.5, 316.5) ; //20 SM
+   }
+  
+  // Open phi acceptance in case of charged only in isolation cone
+  if ( partInCone == AliIsolationCut::kOnlyCharged )
   {
-    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
-  }
+    if      ( calorimeter == "EMCAL" )
+    {
+      if      ( year > 2014 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 185.8) ;
+      else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 178.8) ;
+      else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 81.2, 118.8) ;
+    }
+    else if ( calorimeter == "DCAL"  )
+    {
+      if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 261.2, 318.8) ; 
+      else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.52, 261.2, 325.8) ; 
+    }
+    else if ( calorimeter == "PHOS"  )
+    {
+      if    ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+      else                  ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ; 
+    }
+    
+    if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
+    {
+      ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 325.8) ; //20 SM
+    }
+  } // acceptance for only charged in isolation cone
   
   if ( kAnaCutsString.Contains("TightAcc") ) // pp 7 TeV isolation  analysis cut
   {
@@ -1773,11 +1848,15 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis
     else if ( year > 2010 ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
     else                    ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+    if ( year == 2016 ) ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+    else                ana->GetFiducialCutForTrigger()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
-    if      ( year > 2014 ) ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
-    else                    ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+    if      ( year > 2014 ) ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCutForTrigger()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
@@ -1802,11 +1881,15 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis
     else if ( year > 2010 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
     else                    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
   }
-  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  else if ( calorimeter == "DCAL"  ) 
+  {
+    if ( year == 2016 ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
+    else                ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+  }
   else if ( calorimeter == "PHOS"  )
   {
-    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
-    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ;
+    if      ( year > 2014 ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250.5, 319.5) ; 
+    else                    ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 260.5, 319.5) ;
   }
   
   if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
