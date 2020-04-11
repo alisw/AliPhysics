@@ -896,22 +896,24 @@ Int_t  AliESDtools::FillTrackCounters(){
 
 /// check if the particle belongs to pile-up
 Bool_t AliESDtools::IsPileup(Int_t index) {
-  const Float_t kPileUpCut = 0.001;
+  const Float_t kPileUpCut = 1.0;
   if (fMCEvent == nullptr) return kFALSE;
   AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
   if (cocktailHeader == nullptr) return kFALSE;
   TList *lgen = cocktailHeader->GetHeaders();
   AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(index);
+  if (!mcPart) return kFALSE;
   Int_t theGen = mcPart->GetGeneratorIndex();
   AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(theGen);
   Double_t timeNs = gh->InteractionTime() * 1e9;
   if (TMath::Abs(timeNs) > kPileUpCut) return kTRUE;
+  return kFALSE;
 }
 
 /// fill MC counters and sum pt histograms
 /// \return
 Int_t AliESDtools::FillMCCounters() {
-  const Float_t kPileUpCut = 0.001;
+  const Float_t kPileUpCut = 1;
   const Float_t kPtCut=0.005; //
   if (!fMCEvent) return 0;
   AliStack *stack = fMCEvent->Stack();
