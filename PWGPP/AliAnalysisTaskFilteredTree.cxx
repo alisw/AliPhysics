@@ -319,7 +319,7 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskFilteredTree::UserExec(Option_t *) 
+void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
 {
   //
   // Called for each event
@@ -361,7 +361,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   }
   fESDtool->Init(NULL,fESD);
   fESDtool->CalculateEventVariables();
-
+  fESDtool->SetMCEvent(fMC);
   fESDtool->DumpEventVariables();
 
   //if set, use the environment variables to set the downscaling factors
@@ -1253,6 +1253,12 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       {
         do //artificial loop (once) to make the continue statements jump out of the MC part
         {
+          if (gid==0) {
+            // generate GID from the file name and event number
+            TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+            fileName += TString::Format("%d", esdEvent->GetEventNumberInFile());
+            gid = fileName.Hash();
+          }
           multMCTrueTracks = GetMCTrueTrackMult(mcEvent,evtCuts,accCuts);
           //
           // global track
@@ -2136,6 +2142,11 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       }
 
       downscaleCounter++;
+      if (gid==0 && fMC) {
+        TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+        fileName += TString::Format("%d", esdEvent->GetEventNumberInFile());
+        gid = fileName.Hash();
+      }
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
         "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
