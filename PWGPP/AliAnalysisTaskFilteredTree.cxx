@@ -1237,6 +1237,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Bool_t isFromStrangess=kFALSE, isFromStrangessTPC=kFALSE, isFromStrangessITS=kFALSE;
       Bool_t isFromConversion=kFALSE, isFromConversionTPC=kFALSE, isFromConversionITS=kFALSE;
       Bool_t isFromMaterial=kFALSE, isFromMaterialTPC=kFALSE, isFromMaterialITS=kFALSE;
+      Bool_t isPileUpMC=kFALSE;
 
       AliTrackReference *refTPCIn = NULL;
       AliTrackReference *refTPCOut = NULL;
@@ -1269,6 +1270,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           if (!particle) continue;
           if(particle && particle->GetPDG() && particle->GetPDG()->Charge()!=0.)
           {
+            isPileUpMC=fESDtool->IsPileup(TMath::Abs(label));
             particleMother = GetMother(particle,stack);
             mech = particle->GetUniqueID();
             isPrim = stack->IsPhysicalPrimary(label);
@@ -1600,6 +1602,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
               "isFromStrangess="<<isFromStrangess<<
               "isFromConversion="<<isFromConversion<<
               "isFromMaterial="<<isFromMaterial<<
+              "isPileUpMC="<<isPileUpMC<<
               "particleTPC.="<<particleTPC<<
               "particleMotherTPC.="<<particleMotherTPC<<
               "mechTPC="<<mechTPC<<
@@ -2142,10 +2145,13 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       }
 
       downscaleCounter++;
+      Int_t isPileUpMC=0;
       if (gid==0 && fMC) {
         TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
         fileName += TString::Format("%d", esdEvent->GetEventNumberInFile());
         gid = fileName.Hash();
+        if (fESDtool->IsPileup(track0->GetLabel())) isPileUpMC+=1;
+        if (fESDtool->IsPileup(track1->GetLabel())) isPileUpMC+=2;
       }
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
@@ -2174,6 +2180,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         "friendTrack0.="<<friendTrackStore0<<
         "friendTrack1.="<<friendTrackStore1<<
         "centralityF="<<centralityF<<
+        "isPileUpMC="<<isPileUpMC<<
         "\n";
     }
   }
