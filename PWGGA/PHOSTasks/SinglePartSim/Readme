@@ -1,0 +1,11 @@
+Scripts for on-flight simulation of single particles and reconstruction in PHOS
+
+
+Generator described in GeneratorCustom.C macors
+
+Analysis macros (Tagging.C for example) are called in aliroot_dpgsim.sh
+One can call several scans with different PHOSTender settings
+Can not be done within one root session as PHOSTender modifies PHOS clusters in AOD
+
+
+Proper calibration and bad maps for PHOSTender settings can be selected in Tagging.C macro(s)
