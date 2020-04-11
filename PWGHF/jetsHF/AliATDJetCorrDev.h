@@ -74,17 +74,12 @@ public:
    Bool_t DefineHistoForAnalysis();
 
    // Re-clustering stuff.
-   // -------------------
    // set jet radius
    void SetJetRadius(Double_t radius) {fJetRadius = radius;}
    Double_t GetJetRadius() const {return fJetRadius;}
    // to recluster or not
    void SetUseRecluster(Bool_t dorclr) {fRecluster=dorclr;} //dorlr is do recluster-ing
    Bool_t GetUseRecluster() const {return fRecluster;} 
-
-   void DeclusterTheJetAndFillSparse(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);//substructure
-   void FillHistosD0JetSub(AliAODRecoDecayHF* candidate, Double_t sj_deltaR, Double_t sj_energy, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Double_t jetNtrack, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg);
-   // -------------------
 
    // set MC usage
    void   SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
@@ -137,8 +132,6 @@ public:
    Bool_t GetBuildResponseMatrixEff() const {return fBuildRMEff;}
 
 
-   //substructure
-   void CreateMCResponseMatrixSub(AliEmcalJet* MCjet, AliAODEvent* aodEvent);
 private:
 
    AliATDJetCorrDev(const AliATDJetCorrDev &source);
@@ -178,7 +171,6 @@ private:
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
 
    Int_t fNAxesBigSparse;           // number of axis
-   Int_t fNAxesBigSparsesub;        // number of axis for substructure sparse
    Bool_t fUseCandArray;            //! Use D meson candidates array
    Bool_t fUseSBArray;              //! Use D meson SB array
 
@@ -202,30 +194,26 @@ private:
    //main histograms
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
-   THnSparse* fhsDphizsub;          //! for substructure
 
    // jet stuff: functions for reclustering/deculstering
-   fastjet::ClusterSequence* Recluster(AliEmcalJet* jet); // recluster with CA with own defined function
+   fastjet::ClusterSequence* Recluster(const AliEmcalJet* jet); // recluster with CA with own defined function
    //fastjet::PseudoJet ReclusteredJet(const AliEmcalJet* jet);//recluster with CA using fastjet::contirb::Recluster package. importing contrib package doesn't work
    void DeclusterTheJet(fastjet::PseudoJet fj_jet, AliEmcalJet* ali_jet);//decluster the jet, access the soft subjet's properties to fill the Lund Plane
    void FillLundPlane(Double_t sj_deltaR, Double_t sj_energy);
-   void ReDeCluster(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    Double_t fJetRadius;             //jet radius for reclustering. Should be assigned in AddTask from its parameter.
    Bool_t fRecluster;
    //reclustering histograms and variables
    TH2F* fhLPThetaEnergy;
-   TH2F* fhLPThetaEnergyMC;
    Double_t fMinLnOneByTheta;
    Double_t fMaxLnOneByTheta;
    Double_t fMinEnergy;
    Double_t fMaxEnergy;
    TH1F* fhDmesonOrNot;
-   TH1F* fhDmesonOrNotMC;
    Double_t fMinDelMass;
    Double_t fMaxDelMass;
 
 
-   ClassDef(AliATDJetCorrDev,2); // class for charm-jet CorrelationsExch
+   ClassDef(AliATDJetCorrDev,1); // class for charm-jet CorrelationsExch
 };
 
 #endif
