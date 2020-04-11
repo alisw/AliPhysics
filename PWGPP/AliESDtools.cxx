@@ -81,6 +81,8 @@
 #include "AliTriggerAnalysis.h"
 #include "AliESDUtils.h"
 #include "AliAnalysisManager.h"
+#include "AliMCEvent.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -89,6 +91,7 @@ AliESDtools::AliESDtools():
   fVerbose(0),
   fESDtree(nullptr),
   fEvent(nullptr),
+  fMCEvent(nullptr),                   // ponter to MC event if available
   fPIDResponse(nullptr),               // PID response parametrization
   fTaskMode(kFALSE),                   // switch - task mode
   fHisITSVertex(nullptr),                            // ITS z vertex histogram
@@ -172,6 +175,9 @@ void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
     fHist2DTrackletsCounter= new TH2S("Hist2DTrackletsCounter"," 2D tracklet Phi x tgl norm histogram",18,0,TMath::TwoPi(),8,-2,2);
     fHist2DTrackCounter    = new TH2S("fHist2DTrackCounter"," 2D track Phi x tgl histogram", 18,0,TMath::TwoPi(),8,-1,1);
     fHist2DTrackSumPt      = new TH2F("fHist2DTrackSumPt","2D track Phi x tgl sum pt histogram", 36,0,TMath::TwoPi(),8,-1,1);
+    //
+    fHist2DMCCounter    = new TH2S("fHist2DMCCounter"," 2D MC particle Phi x tgl histogram", 18,0,TMath::TwoPi(),32,-4,4);
+    fHist2DMCSumPt      = new TH2F("fHist2DMCSumPt","2D MC particle Phi x tgl sum pt histogram", 36,0,TMath::TwoPi(),32,-4,4);
   }
 }
 
@@ -888,6 +894,58 @@ Int_t  AliESDtools::FillTrackCounters(){
   }
 }
 
+/// check if the particle belongs to pile-up
+Bool_t AliESDtools::IsPileup(Int_t index) {
+  const Float_t kPileUpCut = 0.001;
+  if (fMCEvent == nullptr) return kFALSE;
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+  if (cocktailHeader == nullptr) return kFALSE;
+  TList *lgen = cocktailHeader->GetHeaders();
+  AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(index);
+  Int_t theGen = mcPart->GetGeneratorIndex();
+  AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(theGen);
+  Double_t timeNs = gh->InteractionTime() * 1e9;
+  if (TMath::Abs(timeNs) > kPileUpCut) return kTRUE;
+}
+
+/// fill MC counters and sum pt histograms
+/// \return
+Int_t AliESDtools::FillMCCounters() {
+  const Float_t kPileUpCut = 0.001;
+  if (!fMCEvent) return 0;
+  AliStack *stack = fMCEvent->Stack();
+  if (!stack) return 0;
+  Int_t nPart = stack->GetNtrack();
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+  TList *lgen = cocktailHeader ?  cocktailHeader->GetHeaders():nullptr;
+
+  for (Int_t iMc = 0; iMc < nPart; ++iMc) {
+    if (lgen){
+      AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(iMc);
+      Int_t theGen = mcPart->GetGeneratorIndex();
+      AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(theGen);
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if (TMath::Abs(timeNs) > kPileUpCut) continue;
+    }
+    TParticle *particle = stack->Particle(iMc);
+    if (!particle) continue;
+    // only charged particles
+    if (!particle->GetPDG()) continue;
+    Double_t charge = particle->GetPDG()->Charge() / 3.;
+    if (TMath::Abs(charge) < 0.001) continue;
+    // physical primary
+    Bool_t prim = stack->IsPhysicalPrimary(iMc);
+    if (!prim) continue;
+    Float_t phi = TMath::ATan2(particle->Py(), particle->Px());
+    if (phi<0) phi+=TMath::TwoPi();
+    Float_t tgl= particle->Pz()/particle->Pt();
+    fHist2DMCCounter->Fill(phi,tgl);
+    fHist2DMCCounter->Fill(phi,tgl,particle->Pt());
+  }
+}
+
+
+
 /// DumpEvent variables ito the tree
 /// \return
 Int_t AliESDtools::DumpEventVariables() {
@@ -1044,7 +1102,9 @@ Int_t AliESDtools::DumpEventVariables() {
     AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
   }
   // Barrel counter histograms (PWGPP-550)
-
+   if (fMCEvent){
+     FillMCCounters();
+   }
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -1108,11 +1168,17 @@ Int_t AliESDtools::DumpEventVariables() {
                      "hist2DTrackletsCounter.=" <<fHist2DTrackletsCounter<<    // 2D tracklet Phi x tgl norm histogram
                      "hist2DTrackCounter.="   << fHist2DTrackCounter<<        // 2D track Phi x tgl histogram
                      "hist2DTrackSumPt.="     << fHist2DTrackSumPt<<          // 2D track Phi x tgl sum pt histogram
-                     //
+                         //
                      "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
                      "nTOFhits="<<nTOFhits<<
                      "nTOFmatches="<<nTOFmatches<<
-                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter multiplicity estimators
+                     "nCaloClusters="<<nCaloClusters;                     // calorimeter multiplicity estimators
+
+                     if (fMCEvent) (*fStreamer)<<"events"<<
+                     "hist2DMCCounter.="      << fHist2DMCCounter<<           // 2D MC Phi x tgl histogram
+                     "hist2DMCSumPt.="        << fHist2DMCSumPt;         // 2D MC Phi x tgl sum pt histogram
+
+                     (*fStreamer)<<"events"<<
                      "\n";
 
   return 0;
