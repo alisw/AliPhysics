@@ -45,7 +45,6 @@ ClassImp(AliAnalysisTaskDoubleHypNucTree)
 AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
 :AliAnalysisTaskSE("AliAnalysisTaskDoubleHypNucTree"),
 fPIDCheckOnly(kFALSE),
-ftrackAnalysis(kFALSE),
 fInputHandler(0),
 fPID(0),
 fESDevent(0),
@@ -230,7 +229,6 @@ fTriggerClasses() //< fired trigger classes
 AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *name)
 :AliAnalysisTaskSE(name),
 fPIDCheckOnly(kFALSE),
-ftrackAnalysis(kFALSE),
 fInputHandler(0),
 fPID(0),
 fESDevent(0),
@@ -899,50 +897,19 @@ void AliAnalysisTaskDoubleHypNucTree::UserExec(Option_t *) {
 		AliError("Could not get PID response.\n");
 		return;
 	}
-
+    //SetBetheBlochParams
+    Int_t runNumber = fESDevent->GetRunNumber();
+    SetBetheBlochParams(runNumber);
+    //
 	fHistNumEvents->Fill(0);
 	Float_t centrality = -1;
 	const AliESDVertex *vertex = fESDevent->GetPrimaryVertexSPD();
 	fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
-	if (fPeriod == 2010 || fPeriod == 2011) {
-		if (vertex->GetNContributors() < 1) {
-			vertex = fESDevent->GetPrimaryVertexSPD();
-			if (vertex->GetNContributors() < 1) {
-				PostData(1,fHistogramList);
-				return;
-			}
-		}
-		if (TMath::Abs(vertex->GetZ()) > 10) {
-			PostData(1, fHistogramList);
-			return;
-		}
-		centrality = fESDevent->GetCentrality()->GetCentralityPercentile("V0M");
-		if(!fMCtrue){
-			if (centrality < 0.0 || centrality > 100.0 ) {
-				return;
-			}
-		}
-	}
-	if (fPeriod == 2015) {
-		if(!fEventCuts.AcceptEvent(fESDevent)) {
-			PostData(1,fHistogramList);
-			return;
-		}
-    //++ 0 = V0M ++
-		centrality = fEventCuts.GetCentrality(0);
-		if(!fMCtrue){
-			if (centrality < 0.0 || centrality > 100.0 ) {
-				return;
-			}
-		}
-	}
-	if (fPeriod == 2016 || fPeriod == 2017 || fPeriod == 2018) {
-		Int_t r = fESDevent->GetRunNumber();
-		if(r == 297219 || r == 297194 || r == 297029 || r == 296890 || r == 296849 || r == 296750 || r == 296749) fEventCuts.UseTimeRangeCut(); 
-		if(!fEventCuts.AcceptEvent(fESDevent)) {
-			PostData(1,fHistogramList);
-			return;
-		}
+    //
+    if(!fMCtrue && (runNumber == 297219 || runNumber == 297194 || runNumber == 297029 || runNumber == 296890 || runNumber == 296849 || runNumber == 296750 || runNumber == 296749)) fEventCuts.UseTimeRangeCut();
+    if(!fMCtrue && !fEventCuts.AcceptEvent(fESDevent)) {
+        PostData(1,fHistogramList);
+        return;
   //++ 0 = V0M ++
 		centrality = fEventCuts.GetCentrality(0);
 	}
@@ -958,7 +925,6 @@ void AliAnalysisTaskDoubleHypNucTree::UserExec(Option_t *) {
 	dn[2] = esdVer1->GetZ();
 	if(esdVer1) delete esdVer1;
 	//++ runnumber ++
-	Int_t runNumber = fESDevent->GetRunNumber();
 	frunnumber = runNumber;
 	TriggerSelection();
 	//++ Number of Events ++
@@ -981,43 +947,39 @@ void AliAnalysisTaskDoubleHypNucTree::UserExec(Option_t *) {
 	AliESDtrackCuts trackCutsNuc("AlitrackCutsNuc", "AlitrackCutsNuc");
 	AliESDtrackCuts trackCutsP("AlitrackCutsP", "AlitrackCutsP");
 	AliESDtrackCuts trackCutsPi("AlitrackCutsPi", "AlitrackCutsPi");
-	
-	if(ftrackAnalysis){
-		//++ Track 1 ++
-		trackCutsNuc.SetEtaRange(-0.9,0.9);
-		trackCutsNuc.SetAcceptKinkDaughters(kFALSE);
-		trackCutsNuc.SetRequireTPCRefit(kTRUE);
-		trackCutsNuc.SetMaxChi2PerClusterTPC(5);
-		trackCutsNuc.SetMinNClustersTPC(60);
-		trackCutsNuc.SetMaxRel1PtUncertainty(0.1);
-		trackCutsNuc.SetPtRange(0.0, 10.0);
-		//++ Track 2 ++
-		trackCutsP.SetEtaRange(-0.9,0.9);
-		trackCutsP.SetAcceptKinkDaughters(kFALSE);
-		trackCutsP.SetRequireTPCRefit(kTRUE);
-		trackCutsP.SetMaxChi2PerClusterTPC(5);
-		trackCutsP.SetMinNClustersTPC(60);
-		trackCutsP.SetMaxRel1PtUncertainty(0.1);
-		trackCutsP.SetPtRange(0.0, 5.0);
-		//trackCutsP.SetMinDCAToVertexXY(0.05);
-  		//trackCutsP.SetMinDCAToVertexZ(0.05);
-		//++ Track 3 & Track 4 ++
-		trackCutsPi.SetEtaRange(-0.9,0.9);
-		trackCutsPi.SetAcceptKinkDaughters(kFALSE);
-		trackCutsPi.SetRequireTPCRefit(kTRUE);
-		trackCutsPi.SetMaxChi2PerClusterTPC(5);
-		trackCutsPi.SetMinNClustersTPC(60);
-		trackCutsPi.SetMaxRel1PtUncertainty(0.2);
-		trackCutsPi.SetPtRange(0.0, 1.0);
-		//trackCutsP.SetMinDCAToVertexXY(0.1);
-  		//trackCutsP.SetMinDCAToVertexZ(0.1);
-	}	
+    //++ Track 1 ++
+    trackCutsNuc.SetEtaRange(-0.9,0.9);
+    trackCutsNuc.SetAcceptKinkDaughters(kFALSE);
+    trackCutsNuc.SetRequireTPCRefit(kTRUE);
+    trackCutsNuc.SetMaxChi2PerClusterTPC(5);
+    trackCutsNuc.SetMinNClustersTPC(60);
+    trackCutsNuc.SetMaxRel1PtUncertainty(0.1);
+    trackCutsNuc.SetPtRange(0.0, 10.0);
+    //++ Track 2 ++
+    trackCutsP.SetEtaRange(-0.9,0.9);
+    trackCutsP.SetAcceptKinkDaughters(kFALSE);
+    trackCutsP.SetRequireTPCRefit(kTRUE);
+    trackCutsP.SetMaxChi2PerClusterTPC(5);
+    trackCutsP.SetMinNClustersTPC(60);
+    trackCutsP.SetMaxRel1PtUncertainty(0.1);
+    trackCutsP.SetPtRange(0.0, 5.0);
+    //trackCutsP.SetMinDCAToVertexXY(0.05);
+    //trackCutsP.SetMinDCAToVertexZ(0.05);
+    //++ Track 3 & Track 4 ++
+    trackCutsPi.SetEtaRange(-0.9,0.9);
+    trackCutsPi.SetAcceptKinkDaughters(kFALSE);
+    trackCutsPi.SetRequireTPCRefit(kTRUE);
+    trackCutsPi.SetMaxChi2PerClusterTPC(5);
+    trackCutsPi.SetMinNClustersTPC(60);
+    trackCutsPi.SetMaxRel1PtUncertainty(0.2);
+    trackCutsPi.SetPtRange(0.0, 1.0);
+    //trackCutsP.SetMinDCAToVertexXY(0.1);
+    //trackCutsP.SetMinDCAToVertexZ(0.1);
 	//++ Pidqa loop ++
 	if(fPIDCheckOnly){
 		dEdxCheck();
 	}
-	//++ use Tracks to reconstruct 4LLH, 4LHe, 4LH, 5LHe ++
-	if(ftrackAnalysis){
+    else{
 		TrackAnalysis(trackCutsNuc, trackCutsP, trackCutsPi, vertexer, dn, dd, xthiss, xpp);
 	}
 
@@ -1078,7 +1040,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 	Bool_t piNeg4 = kFALSE;
 	//+++++
 	Bool_t Check4LH3B = kFALSE; //4LH 3-Body on/off
-	Bool_t ShowProgress = kTRUE; //special progress for checks
+	Bool_t ShowProgress = kFALSE; //special progress for checks
    	//++ Variables for TOF ++
 	Float_t mass = 0;
 	Float_t time = -1;
@@ -1170,7 +1132,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				else if(sign2 >0 && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kPion)) <= 3) piPos2 = kTRUE;
 				else if(sign2 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kPion)) <= 3) piNeg2 = kTRUE;
 				else continue;
-				//else if(!dPos2 && !dNeg2 && !pPos2 && !pNeg2 && !piPos2 && !piNeg2) continue;
 			}
 			else {
 				if(sign2 >0 && TMath::Abs(Bethe(*track2, AliPID::ParticleMass(AliPID::kDeuteron), 1, fBetheParamsT)) <= 3) dPos2 = kTRUE;
@@ -1180,7 +1141,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				else if(sign2 >0 && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kPion)) <= 3) piPos2 = kTRUE;
 				else if(sign2 <0 && TMath::Abs(fPID->NumberOfSigmasTPC(track2, AliPID::kPion)) <= 3) piNeg2 = kTRUE;
 				else continue;
-				//else if(!dPos2 && !dNeg2 && !pPos2 && !pNeg2 && !piPos2 && !piNeg2) continue;
 			}
 			//++ sign control for different cases ++
 			if((He3Pos1 || He3Neg1) && sign1 != sign2) continue;
@@ -1220,7 +1180,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				vecSecDaughter->SetXYZM(track2->Px(),track2->Py(),track2->Pz(),AliPID::ParticleMass(AliPID::kPion));
 				*vecMother = *vecFirstDaughter + *vecSecDaughter;
 				//++ 4he info ++
-				fhe4P = vecFirstDaughter->P();
+				fhe4P = track1->GetInnerParam()->GetP();
 				fhe4Ncls = track1->GetTPCNcls();
 				fhe4NclsITS = track1->GetNumberOfITSClusters();
 				fhe4Dedx = track1->GetTPCsignal();
@@ -1240,7 +1200,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		            fTOFSignalHe4 = mass;
 		        }
 		        //++ pi info ++
-		        fpiP = vecSecDaughter->P();
+		        fpiP = track2->GetInnerParam()->GetP();
 		        fpiNcls = track2->GetTPCNcls();
 		        fpiNclsITS = track2->GetNumberOfITSClusters();
 		        fpiDedx = track2->GetTPCsignal();
@@ -1290,7 +1250,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    }
         	//************ 4LH Neg **************
 		    if(He4Neg1 && piPos2){
-	    		//cout<<"4LH -"<<endl;
 		    	TObjArray *trkArray = new TObjArray(2);                  
 		    	trkArray->AddAt(track1,0);
 		    	trkArray->AddAt(track2,1);
@@ -1315,7 +1274,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    	vecSecDaughter->SetXYZM(track2->Px(),track2->Py(),track2->Pz(),AliPID::ParticleMass(AliPID::kPion));
 		    	*vecMother = *vecFirstDaughter + *vecSecDaughter;
 		    	//++ he4 info ++
-		    	fhe4P = vecFirstDaughter->P();
+		    	fhe4P = track1->GetInnerParam()->GetP();
 		    	fhe4Ncls = track1->GetTPCNcls();
 		    	fhe4NclsITS = track1->GetNumberOfITSClusters();
 		    	fhe4Dedx = track1->GetTPCsignal();
@@ -1335,7 +1294,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		            fTOFSignalHe4 = mass;
 		        }
 		        //++ pi info ++
-		        fpiP = vecSecDaughter->P();
+		        fpiP = track2->GetInnerParam()->GetP();
 		        fpiNcls = track2->GetTPCNcls();
 		        fpiNclsITS = track2->GetNumberOfITSClusters();
 		        fpiDedx = track2->GetTPCsignal();
@@ -1385,7 +1344,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    }
         	//************ 4Li Pos **************
 		    if(He3Pos1 && pPos2){
-	    		//cout<<"4Li"<<endl;
 	    		Double_t *dca = new Double_t(track2->GetDCA(track1,fMagneticField,xthiss,xpp));
 		    	fDCAHe3P = *dca;
 		    	if(dca) delete dca;
@@ -1394,8 +1352,8 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    	vecSecDaughter->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
 		    	*vecMother = *vecFirstDaughter + *vecSecDaughter;
 	      		//++ Daughter P ++
-		    	fhe3P = vecFirstDaughter->P();
-		    	fpP = vecSecDaughter->P();
+		    	fhe3P = track1->GetInnerParam()->GetP();
+		    	fpP = track2->GetInnerParam()->GetP();
 	      		//++ Mother m, p, pt ++
 		    	fzLi4 = 3;
 		    	fmLi4 = vecMother->M();
@@ -1441,7 +1399,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    }
         	//************ 4Li Neg **************
 		    if(He3Neg1 && pNeg2){
-	    		//cout<<"4Li -"<<endl;
 	    		Double_t *dca = new Double_t(track2->GetDCA(track1,fMagneticField,xthiss,xpp));
 		    	fDCAHe3P = *dca;
 		    	if(dca) delete dca;
@@ -1450,8 +1407,8 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 		    	vecSecDaughter->SetXYZM(track2->Px(), track2->Py(), track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
 		    	*vecMother = *vecFirstDaughter + *vecSecDaughter;
           		//++ Daughter P ++
-		    	fhe3P = vecFirstDaughter->P();
-		    	fpP = vecSecDaughter->P();
+		    	fhe3P = track1->GetInnerParam()->GetP();
+		    	fpP = track2->GetInnerParam()->GetP();
           		//++ Mother m, p, pt ++
 		    	fzLi4 = -3;
 		    	fmLi4 = vecMother->M();
@@ -1530,7 +1487,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				if(dca2) delete dca2;
 				//************ 4LH Pos (t + p + pi) **************
 				if(tPos1 && pPos2 && piNeg3 && Check4LH3B){
-					//cout<<"4LH3B"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -1564,7 +1520,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ t info ++
-					ftP = vecFirstDaughter->P();
+					ftP = track1->GetInnerParam()->GetP();
 					ftNcls = track1->GetTPCNcls();
 					ftNclsITS = track1->GetNumberOfITSClusters();
 					ftDedx = track1->GetTPCsignal();
@@ -1584,7 +1540,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalT = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP = track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -1604,7 +1560,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -1646,7 +1602,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 4LH Neg (t + p + pi) **************
 				if(tNeg1 && pNeg2 && piPos3 && Check4LH3B){
-					//cout<<"4LH3B -"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -1680,7 +1635,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ t info ++
-					ftP = vecFirstDaughter->P();
+					ftP = track1->GetInnerParam()->GetP();
 					ftNcls = track1->GetTPCNcls();
 					ftNclsITS = track1->GetNumberOfITSClusters();
 					ftDedx = track1->GetTPCsignal();
@@ -1700,7 +1655,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalT = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP = track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -1720,7 +1675,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -1762,7 +1717,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 4LHe Pos (3He + p + pi) **************
 				if(He3Pos1 && pPos2 && piNeg3){
-					//cout<<"4LHe"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -1796,7 +1750,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he3 info ++
-					fhe3P = vecFirstDaughter->P();
+					fhe3P = track1->GetInnerParam()->GetP();
 					fhe3Ncls = track1->GetTPCNcls();
 					fhe3NclsITS = track1->GetNumberOfITSClusters();
 					fhe3Dedx = track1->GetTPCsignal();
@@ -1816,7 +1770,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe3 = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP = track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -1836,7 +1790,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -1878,7 +1832,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 4LHe Neg (3He + p + pi) **************
 				if(He3Neg1 && pNeg2 && piPos3){
-					//cout<<"4LHe -"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -1912,7 +1865,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he3 info ++
-					fhe3P = vecFirstDaughter->P();
+					fhe3P = track1->GetInnerParam()->GetP();
 					fhe3Ncls = track1->GetTPCNcls();
 					fhe3NclsITS = track1->GetNumberOfITSClusters();
 					fhe3Dedx = track1->GetTPCsignal();
@@ -1932,7 +1885,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe3 = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP = track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -1952,7 +1905,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -1994,7 +1947,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 5LHe Pos (4He + p + pi) **************
 				if(He4Pos1 && pPos2 && piNeg3){
-					//cout<<"5LHe1"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -2028,7 +1980,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he4 info ++
-					fhe4P = vecFirstDaughter->P();
+					fhe4P = track1->GetInnerParam()->GetP();
 					fhe4Ncls = track1->GetTPCNcls();
 					fhe4NclsITS = track1->GetNumberOfITSClusters();
 					fhe4Dedx = track1->GetTPCsignal();
@@ -2048,7 +2000,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe4 = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP =  track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -2068,7 +2020,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP =  track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -2110,7 +2062,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 5LHe Neg (4He + p + pi) **************
 				if(He4Neg1 && pNeg2 && piPos3){
-					//cout<<"5LHe1 -"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -2144,7 +2095,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he4 info ++
-					fhe4P = vecFirstDaughter->P();
+					fhe4P = track1->GetInnerParam()->GetP();
 					fhe4Ncls = track1->GetTPCNcls();
 					fhe4NclsITS = track1->GetNumberOfITSClusters();
 					fhe4Dedx = track1->GetTPCsignal();
@@ -2164,7 +2115,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe4 = mass;
 					}
 					//++ p info ++
-					fpP = vecSecDaughter->P();
+					fpP = track2->GetInnerParam()->GetP();
 					fpNcls = track2->GetTPCNcls();
 					fpNclsITS = track2->GetNumberOfITSClusters();
 					fpDedx = track2->GetTPCsignal();
@@ -2184,7 +2135,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalP = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -2226,7 +2177,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 5LHe Pos (3He + d + pi) **************
 				if(He3Pos1 && dPos2 && piNeg3){
-					//cout<<"5LHe2"<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -2260,7 +2210,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he3 info ++
-					fhe3P = vecFirstDaughter->P();
+					fhe3P = track1->GetInnerParam()->GetP();
 					fhe3Ncls = track1->GetTPCNcls();
 					fhe3NclsITS = track1->GetNumberOfITSClusters();
 					fhe3Dedx = track1->GetTPCsignal();
@@ -2280,7 +2230,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe3 = mass;
 					}
 					//++ d info ++
-					fdP = vecSecDaughter->P();
+					fdP = track2->GetInnerParam()->GetP();
 					fdNcls = track2->GetTPCNcls();
 					fdNclsITS = track2->GetNumberOfITSClusters();
 					fdDedx = track2->GetTPCsignal();
@@ -2300,7 +2250,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalD = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -2342,7 +2292,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 				}
 				//************ 5LHe Neg (3He + d + pi) **************
 				if(He3Neg1 && dNeg2 && piPos3){
-					//cout<<"5LHe2 - "<<endl;
 					TObjArray *trkArray = new TObjArray(3);                  
 					trkArray->AddAt(track1,0);
 					trkArray->AddAt(track2,1);
@@ -2376,7 +2325,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					vecThirdDaughter->SetXYZM(track3->Px(),track3->Py(),track3->Pz(),AliPID::ParticleMass(AliPID::kPion));
 					*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter;
 					//++ he3 info ++
-					fhe3P = vecFirstDaughter->P();
+					fhe3P = track1->GetInnerParam()->GetP();
 					fhe3Ncls = track1->GetTPCNcls();
 					fhe3NclsITS = track1->GetNumberOfITSClusters();
 					fhe3Dedx = track1->GetTPCsignal();
@@ -2396,7 +2345,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalHe3 = mass;
 					}
 					//++ d info ++
-					fdP = vecSecDaughter->P();
+					fdP = track2->GetInnerParam()->GetP();
 					fdNcls = track2->GetTPCNcls();
 					fdNclsITS = track2->GetNumberOfITSClusters();
 					fdDedx = track2->GetTPCsignal();
@@ -2416,7 +2365,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					fTOFSignalD = mass;
 					}
 					//++ pi info ++
-					fpiP = vecThirdDaughter->P();
+					fpiP = track3->GetInnerParam()->GetP();
 					fpiNcls = track3->GetTPCNcls();
 					fpiNclsITS = track3->GetNumberOfITSClusters();
 					fpiDedx = track3->GetTPCsignal();
@@ -2502,9 +2451,7 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 					if(TMath::Abs(track4->GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField)) <0.1) continue;				
 					//********** 4LLH Pos **********
 					if(He3Pos1 && pPos2 && piNeg3 && piNeg4){
-						//cout<<"4LLH"<<endl;
 						TObjArray *trkArray = new TObjArray(3);
-
 						trkArray->AddAt(track1,0);
 						trkArray->AddAt(track2,1);
 						trkArray->AddAt(track3,2);
@@ -2539,10 +2486,10 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 						vecFourthDaughter->SetXYZM(track4->Px(),track4->Py(),track4->Pz(),AliPID::ParticleMass(AliPID::kPion));
 						*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter + *vecThirdDaughter;    
 						//++ Daughter momenta ++
-						fpiP = vecThirdDaughter->Pt();          
-						fhe3P =vecFirstDaughter->Pt();
-						fpi1P = vecFourthDaughter->Pt();
-						fpP = vecSecDaughter->Pt();
+						fpiP = track3->GetInnerParam()->GetP();
+						fhe3P = track1->GetInnerParam()->GetP();
+						fpi1P = track4->GetInnerParam()->GetP();
+						fpP = track2->GetInnerParam()->GetP();
 						//++ Ncls TPC ++
 						fhe3Ncls = track1->GetTPCNcls();
 						fpNcls = track2->GetTPCNcls();
@@ -2672,7 +2619,6 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 
 					//********** 4LLH Neg**********
 					if(He3Neg1 && pNeg2 && piPos3 && piPos4){
-						//cout<<"4LLH -"<<endl;
 						TObjArray *trkArray = new TObjArray(3);
 						trkArray->AddAt(track1,0);
 						trkArray->AddAt(track2,1);
@@ -2707,10 +2653,10 @@ void AliAnalysisTaskDoubleHypNucTree::TrackAnalysis(AliESDtrackCuts trackCutsNuc
 						vecFourthDaughter->SetXYZM(track4->Px(),track4->Py(),track4->Pz(),AliPID::ParticleMass(AliPID::kPion));
 						*vecMother = *vecFirstDaughter + *vecSecDaughter + *vecThirdDaughter + *vecThirdDaughter;    
 						//++ Daughter momenta ++
-						fpiP = vecThirdDaughter->Pt();          
-						fhe3P =vecFirstDaughter->Pt();
-						fpi1P = vecFourthDaughter->Pt();
-						fpP = vecSecDaughter->Pt();
+						fpiP = track3->GetInnerParam()->GetP();
+                        fhe3P = track1->GetInnerParam()->GetP();
+                        fpi1P = track4->GetInnerParam()->GetP();
+                        fpP = track2->GetInnerParam()->GetP();
 						//++ Ncls TPC ++
 						fhe3Ncls = track1->GetTPCNcls();
 						fpNcls = track2->GetTPCNcls();
@@ -2880,4 +2826,181 @@ Double_t AliAnalysisTaskDoubleHypNucTree::GeoLength(const AliESDtrack& track) {
 	Double_t deadZoneWidth = 3.0;
 	Double_t lengthInActiveZone = track.GetLengthInActiveZone(1, deadZoneWidth, 220, track.GetESDEvent()->GetMagneticField(),0,0);
 	return lengthInActiveZone;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskDoubleHypNucTree::SetBetheBlochParams(Int_t runNumber) {
+  // set Bethe-Bloch parameter
+    //2015 PbPb
+    if(runNumber >= 244917 && runNumber <= 246994){
+      fBetheParamsHe[0] = 2.45605;
+      fBetheParamsHe[1] = 19.8067;
+      fBetheParamsHe[2] = -0.77472;
+      fBetheParamsHe[3] = 1.96279;
+      fBetheParamsHe[4] = 0.172695;
+      fBetheParamsHe[5] = 0.06;
+      
+      fBetheParamsT[0] = 2.32603;
+      fBetheParamsT[1] = 19.2492;
+      fBetheParamsT[2] = 30.7943;
+      fBetheParamsT[3] = 2.1697;
+      fBetheParamsT[4] = -8.11114;
+      fBetheParamsT[5] = 0.06;
+    }
+    //2018 PbPb
+    if(runNumber >= 295581 && runNumber <= 297624){
+      fBetheParamsT[0] = 0.669634;
+      fBetheParamsT[1] = 53.1497;
+      fBetheParamsT[2] =-1.32853e-08;
+      fBetheParamsT[3] = 2.5775;
+      fBetheParamsT[4] = 17.7607;
+      fBetheParamsT[5] = 0.06;
+      
+      fBetheParamsHe[0] = 1.50582;
+      fBetheParamsHe[1] = 33.7232;
+      fBetheParamsHe[2] = -0.0923749;
+      fBetheParamsHe[3] = 2.00901;
+      fBetheParamsHe[4] = 2.28772;
+      fBetheParamsHe[5] = 0.06;
+    }
+  if (runNumber >= 252235 && runNumber <= 264347 ) { // 2016 pp
+    if(!fMCtrue) { // Data
+      // LHC16 + LHC18
+      // He3
+      fBetheParamsT[0] = 0.427978;
+      fBetheParamsT[1] = 105.46;
+      fBetheParamsT[2] =-7.08642e-07;
+      fBetheParamsT[3] = 2.23332;
+      fBetheParamsT[4] = 18.8231;
+      fBetheParamsT[5] = 0.06;
+      // Triton
+      fBetheParamsHe[0] = 1.81085;
+      fBetheParamsHe[1] = 29.4656;
+      fBetheParamsHe[2] = 0.0458225;
+      fBetheParamsHe[3] = 2.08689;
+      fBetheParamsHe[4] = 2.28772;
+      fBetheParamsHe[5] = 0.06;
+    } else { // MC
+      if (runNumber >= 262424 || runNumber <= 256418 ) {
+    //LHC18a2b (->LHC16)
+    // He3
+    fBetheParamsHe[0] = 3.05245;
+    fBetheParamsHe[1] = 15.7252;
+    fBetheParamsHe[2] = -0.00453331;
+    fBetheParamsHe[3] = 2.17241;
+    fBetheParamsHe[4] = 2.88422;
+    fBetheParamsHe[5] = 0.0834274;
+    // Triton
+    fBetheParamsT[0] = 2.74259;
+    fBetheParamsT[1] = 18.3295;
+    fBetheParamsT[2] = 5.91594;
+    fBetheParamsT[3] = 1.93471;
+    fBetheParamsT[4] = 0.292147;
+    fBetheParamsT[5] = 0.0728241;
+      }
+      if (runNumber >= 256941 && runNumber <= 258537 ) {
+    // LHC18a2b2 (LHC16k)
+    // He3
+    fBetheParamsHe[0] = 2.80527;
+    fBetheParamsHe[1] = 14.2379;
+    fBetheParamsHe[2] = 0.0232811;
+    fBetheParamsHe[3] = 2.11464;
+    fBetheParamsHe[4] = 1.615;
+    fBetheParamsHe[5] = 0.0815227;
+    // Triton
+    fBetheParamsT[0] = 1.31603;
+    fBetheParamsT[1] = 36.1798;
+    fBetheParamsT[2] = 493.036;
+    fBetheParamsT[3] = 2.10841;
+    fBetheParamsT[4] = 7.43391;
+    fBetheParamsT[5] = 0.0769041;
+      }
+      if (runNumber >= 258962 && runNumber <= 259888 ) {
+    //LHC18a2b3 (->LHC16l)
+    // He3
+    fBetheParamsHe[0] = 2.80121;
+    fBetheParamsHe[1] = 14.2397;
+    fBetheParamsHe[2] = 0.0100894;
+    fBetheParamsHe[3] = 2.10396;
+    fBetheParamsHe[4] = 1.41608;
+    fBetheParamsHe[5] = 0.0817429;
+    // Triton
+    fBetheParamsT[0] = 4.80597;
+    fBetheParamsT[1] = 13.8813;
+    fBetheParamsT[2] = 189.651;
+    fBetheParamsT[3] = 2.05969;
+    fBetheParamsT[4] = 4.38013;
+    fBetheParamsT[5] = 0.077593;
+      }
+    }
+  }
+  if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
+    if(!fMCtrue) {
+      //LHC17
+      // He3
+      fBetheParamsHe[0] = 3.20025;
+      fBetheParamsHe[1] = 16.4971;
+      fBetheParamsHe[2] = -0.0116571;
+      fBetheParamsHe[3] = 2.3152;
+      fBetheParamsHe[4] = 3.11135;
+      fBetheParamsHe[5] = 0.06;
+      // Triton
+      fBetheParamsT[0] = 0.420434;
+      fBetheParamsT[1] = 106.102;
+      fBetheParamsT[2] = -3.15587e-07;
+      fBetheParamsT[3] = 2.32499;
+      fBetheParamsT[4] = 21.3439;
+      fBetheParamsT[5] = 0.06;
+    } else {
+      // LHC18a2a (->LHC17)
+      // He3
+      fBetheParamsHe[0] = 3.12796;
+      fBetheParamsHe[1] = 16.1359;
+      fBetheParamsHe[2] = -0.00682978;
+      fBetheParamsHe[3] = 2.26624;
+      fBetheParamsHe[4] = 2.58652;
+      fBetheParamsHe[5] = 0.0847009;
+      // Triton
+      fBetheParamsT[0] = 2.8303;
+      fBetheParamsT[1] = 15.4337;
+      fBetheParamsT[2] = 3.18352;
+      fBetheParamsT[3] = 2.20975;
+      fBetheParamsT[4] = 0.218244;
+      fBetheParamsT[5] = 0.0780191;
+    }
+  }
+  if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
+    if(!fMCtrue) {
+      // LHC16 + LHC18
+      // He3
+      fBetheParamsT[0] = 0.427978;
+      fBetheParamsT[1] = 105.46;
+      fBetheParamsT[2] =-7.08642e-07;
+      fBetheParamsT[3] = 2.23332;
+      fBetheParamsT[4] = 18.8231;
+      fBetheParamsT[5] = 0.06;
+      // Triton
+      fBetheParamsHe[0] = 1.81085;
+      fBetheParamsHe[1] = 29.4656;
+      fBetheParamsHe[2] = 0.0458225;
+      fBetheParamsHe[3] = 2.08689;
+      fBetheParamsHe[4] = 2.28772;
+      fBetheParamsHe[5] = 0.06;
+    } else {
+      //LHC18a2d (->LHC18)
+      // He3
+      fBetheParamsHe[0] = 3.07104;
+      fBetheParamsHe[1] = 15.8085;
+      fBetheParamsHe[2] = 0.0150992;
+      fBetheParamsHe[3] = 2.13909;
+      fBetheParamsHe[4] = 2.59495;
+      fBetheParamsHe[5] = 0.0865179;
+      // Triton
+      fBetheParamsT[0] = 2.54486;
+      fBetheParamsT[1] = 17.1203;
+      fBetheParamsT[2] = -0.0452007;
+      fBetheParamsT[3] = 2.00988;
+      fBetheParamsT[4] = 0.849292;
+      fBetheParamsT[5] = 0.0768715;
+    }
+  }
 }
