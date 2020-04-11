@@ -912,13 +912,15 @@ Bool_t AliESDtools::IsPileup(Int_t index) {
 /// \return
 Int_t AliESDtools::FillMCCounters() {
   const Float_t kPileUpCut = 0.001;
+  const Float_t kPtCut=0.005; //
   if (!fMCEvent) return 0;
   AliStack *stack = fMCEvent->Stack();
   if (!stack) return 0;
   Int_t nPart = stack->GetNtrack();
   AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
   TList *lgen = cocktailHeader ?  cocktailHeader->GetHeaders():nullptr;
-
+  fHist2DMCCounter->Reset();
+  fHist2DMCSumPt->Reset();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) {
     if (lgen){
       AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(iMc);
@@ -932,15 +934,16 @@ Int_t AliESDtools::FillMCCounters() {
     // only charged particles
     if (!particle->GetPDG()) continue;
     Double_t charge = particle->GetPDG()->Charge() / 3.;
-    if (TMath::Abs(charge) < 0.001) continue;
+    if (TMath::Abs(charge) < 0.5) continue;
     // physical primary
     Bool_t prim = stack->IsPhysicalPrimary(iMc);
     if (!prim) continue;
+    if (particle->Pt()<kPtCut) continue;
     Float_t phi = TMath::ATan2(particle->Py(), particle->Px());
     if (phi<0) phi+=TMath::TwoPi();
     Float_t tgl= particle->Pz()/particle->Pt();
     fHist2DMCCounter->Fill(phi,tgl);
-    fHist2DMCCounter->Fill(phi,tgl,particle->Pt());
+    fHist2DMCSumPt->Fill(phi,tgl,particle->Pt());
   }
 }
 
