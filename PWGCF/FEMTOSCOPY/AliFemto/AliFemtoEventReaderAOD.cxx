@@ -2111,6 +2111,11 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
     Double_t DCAXY = TMath::Sqrt((DCAX * DCAX) + (DCAY * DCAY));
 
+    cout<<"pos[0] "<<pos[0]<<" vertexX "<<vertexX<<" DCAX "<<DCAX<<endl;
+      cout<<"pos[1] "<<pos[1]<<" vertexY "<<vertexY<<" DCAY "<<DCAY<<endl;
+      cout<<"pos[2] "<<pos[2]<<" vertexZ "<<vertexZ<<" DCAZ "<<DCAZ<<endl;
+      cout<<"DCAXY "<<DCAXY<<endl;
+    
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
 

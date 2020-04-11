@@ -200,21 +200,20 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Basic track cut for pions:
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc1etaphitpc[aniter]->SetNsigma(3.0);
+	  dtc1etaphitpc[aniter]->SetNsigma(2.5);
 	  
 	  //Basic track cut for kaons:
 	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
 	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
-
 
 	  //Set charge of particles:
 	  if (ichg == 0) {

@@ -253,8 +253,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 	  
 	  //****** Track quality cuts ******
-	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
-	  dtc2etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc1etaphitpc[aniter]->SetminTPCncls(50);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(50);
 	  
 	  //============PION============
 
