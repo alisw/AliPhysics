@@ -112,8 +112,33 @@ void CalorimeterFiducialCut(AliFiducialCut* fidCut, TString calorimeter, Int_t y
   }
   else if ( calorimeter == "DCAL"  ) 
   {
-    if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ; 
-    else                    fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
+//  if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 318.8) ;
+//  else                    fidCut->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ;
+    
+    if ( year == 2016 ) // DCal 2 regions
+    {
+      Float_t etamax[] = { 0.67,-0.25 };
+      fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+      Float_t etamin[] = { 0.25,-0.67 };
+      fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+      
+      Float_t phimax[] = { 318.8, 318.8 };
+      fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+      Float_t phimin[] = { 261.2, 261.2 };
+      fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+    }
+    else // DCal 3 regions
+    {
+      Float_t etamax[] = { 0.67,-0.25, 0.67 };
+      fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
+      Float_t etamin[] = { 0.25,-0.67,-0.67 };
+      fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
+      
+      Float_t phimax[] = { 318.8, 318.8, 325.8 };
+      fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
+      Float_t phimin[] = { 261.2, 261.2, 321.2 };
+      fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
+    }
   }
   else if ( calorimeter == "PHOS"  )
   {
@@ -129,26 +154,26 @@ void CalorimeterFiducialCut(AliFiducialCut* fidCut, TString calorimeter, Int_t y
     // EMCal, 1 region - DCal 2 regions, remove 1/3 DCal
     if ( year == 2016 )
     {
-      Float_t etamax[] = { 0.67, 0.67,-0.25};
+      Float_t etamax[] = { 0.67, 0.67,-0.25 };
       fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-      Float_t etamin[] = {-0.67, 0.25,-0.67};
+      Float_t etamin[] = {-0.67, 0.25,-0.67 };
       fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
       
-      Float_t phimax[] = { 185.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 318.8*TMath::DegToRad()};
+      Float_t phimax[] = { 185.8, 318.8, 318.8 };
       fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-      Float_t phimin[] = {  81.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 261.2*TMath::DegToRad()};
+      Float_t phimin[] = {  81.2, 261.2, 261.2 };
       fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
     }
     else // EMCal, 1 region - DCal 3 regions
     {
-      Float_t etamax[] = { 0.67, 0.67,-0.25, 0.67};
+      Float_t etamax[] = { 0.67, 0.67,-0.25, 0.67 };
       fidCut->AddEMCALFidCutMaxEtaArray(4,etamax);
-      Float_t etamin[] = {-0.67, 0.25,-0.67,-0.67};
+      Float_t etamin[] = {-0.67, 0.25,-0.67,-0.67 };
       fidCut->AddEMCALFidCutMinEtaArray(4,etamin);
       
-      Float_t phimax[] = { 185.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 325.8*TMath::DegToRad()};
+      Float_t phimax[] = { 185.8, 318.8, 318.8, 325.8 };
       fidCut->AddEMCALFidCutMaxPhiArray(4,phimax);
-      Float_t phimin[] = {  81.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 321.2*TMath::DegToRad()};
+      Float_t phimin[] = {  81.2, 261.2, 261.2, 321.2 };
       fidCut->AddEMCALFidCutMinPhiArray(4,phimin);
     }
   }
@@ -157,7 +182,6 @@ void CalorimeterFiducialCut(AliFiducialCut* fidCut, TString calorimeter, Int_t y
   //  {
   //    if ( calorimeter == "EMCAL" ) fidCut->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
   //  }
-
 }
 
 ///
@@ -185,8 +209,33 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
     }
     else if ( calorimeter == "DCAL"  ) 
     {
-      if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 318.8) ; 
-      else                    fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 325.8) ; 
+//    if ( year == 2016 )     fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 318.8) ;
+//    else                    fidCut->SetSimpleEMCALFiducialCut(0.52, 261.2, 325.8) ;
+      
+      if ( year == 2016 ) // DCal 2 Regions
+      {
+        Float_t etamax[] = { 0.52,-0.25 };
+        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+        Float_t etamin[] = { 0.25,-0.52 };
+        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+        
+        Float_t phimax[] = { 318.8, 318.8 };
+        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+        Float_t phimin[] = { 261.2, 261.2 };
+        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+      }
+      else // DCal 3 regions
+      {
+        Float_t etamax[] = { 0.52,-0.25, 0.52 };
+        fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
+        Float_t etamin[] = { 0.25,-0.52,-0.52 };
+        fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
+        
+        Float_t phimax[] = { 318.8, 318.8, 325.8 };
+        fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
+        Float_t phimin[] = { 261.2, 261.2, 321.2 };
+        fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
+      }
     }
     else if ( calorimeter == "PHOS"  )
     {
@@ -202,30 +251,29 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
       // EMCal, 1 region - DCal 2 regions, remove 1/3 DCal
       if ( year == 2016 )
       {
-        Float_t etamax[] = { 0.52, 0.52,-0.25};
+        Float_t etamax[] = { 0.52, 0.52,-0.25 };
         fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-        Float_t etamin[] = {-0.52, 0.25,-0.52};
+        Float_t etamin[] = {-0.52, 0.25,-0.52 };
         fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
         
-        Float_t phimax[] = { 185.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 318.8*TMath::DegToRad()};
+        Float_t phimax[] = { 185.8, 318.8, 318.8 };
         fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-        Float_t phimin[] = {  81.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 261.2*TMath::DegToRad()};
+        Float_t phimin[] = {  81.2, 261.2, 261.2 };
         fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
       }
       else // EMCal, 1 region - DCal 3 regions
       {
-        Float_t etamax[] = { 0.52, 0.52,-0.25, 0.52};
+        Float_t etamax[] = { 0.52, 0.52,-0.25, 0.52 };
         fidCut->AddEMCALFidCutMaxEtaArray(4,etamax);
-        Float_t etamin[] = {-0.52, 0.25,-0.52,-0.52};
+        Float_t etamin[] = {-0.52, 0.25,-0.52,-0.52 };
         fidCut->AddEMCALFidCutMinEtaArray(4,etamin);
         
-        Float_t phimax[] = { 185.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 318.8*TMath::DegToRad(), 325.8*TMath::DegToRad()};
+        Float_t phimax[] = { 185.8, 318.8, 318.8, 325.8 };
         fidCut->AddEMCALFidCutMaxPhiArray(4,phimax);
-        Float_t phimin[] = {  81.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 261.2*TMath::DegToRad(), 321.2*TMath::DegToRad()};
+        Float_t phimin[] = {  81.2, 261.2, 261.2, 321.2 };
         fidCut->AddEMCALFidCutMinPhiArray(4,phimin);
       }
-      
-    }
+    } // full calo
   } // only charged
   else // neutrals in cone
   { 
@@ -237,8 +285,33 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
     }
     else if ( calorimeter == "DCAL"  ) 
     {
-      if ( year == 2016 ) fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 309.5) ; 
-      else                fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 316.5) ; 
+//    if ( year == 2016 ) fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 309.5) ;
+//    else                fidCut->SetSimpleEMCALFiducialCut(0.52, 270.5, 316.5) ;
+      
+      if ( year == 2016 ) // DCal 2 regions, remove 1/3 DCal
+      {
+        Float_t etamax[] = { 0.52,-0.25 };
+        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+        Float_t etamin[] = { 0.25,-0.52 };
+        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+        
+        Float_t phimax[] = { 309.5, 309.5 };
+        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+        Float_t phimin[] = { 270.5, 270.5 };
+        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+      }
+      else // DCal 2 regions, remove 1/3 for trigger, not for cone content 
+      {
+        Float_t etamax[] = { 0.52,-0.25 };
+        fidCut->AddEMCALFidCutMaxEtaArray(2,etamax);
+        Float_t etamin[] = { 0.25,-0.52 };
+        fidCut->AddEMCALFidCutMinEtaArray(2,etamin);
+        
+        Float_t phimax[] = { 316.5, 316.5 };
+        fidCut->AddEMCALFidCutMaxPhiArray(2,phimax);
+        Float_t phimin[] = { 270.5, 270.5 };
+        fidCut->AddEMCALFidCutMinPhiArray(2,phimin);
+      }
     }
     else if ( calorimeter == "PHOS"  )
     {
@@ -249,31 +322,31 @@ void CalorimeterFiducialCutForIsolationAnalysis( AliFiducialCut* fidCut, TString
     // Acceptance of EMCal+DCal
     if ( kAnaCaloTrackCorr.Contains("FullCalo") ) 
     {
-      fidCut->SetSimpleEMCALFiducialCut(0.67,  90.5, 316.5) ; //20 SM
+      //fidCut->SetSimpleEMCALFiducialCut(0.67, 90.5, 316.5) ; //20 SM
       
       // EMCal, 1 region - DCal 2 regions, remove 1/3 DCal
       if ( year == 2016 )
       {
-        Float_t etamax[] = { 0.52, 0.52,-0.25};
+        Float_t etamax[] = { 0.52, 0.52,-0.25 };
         fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-        Float_t etamin[] = {-0.52, 0.25,-0.52};
+        Float_t etamin[] = {-0.52, 0.25,-0.52 };
         fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
         
-        Float_t phimax[] = { 176.5*TMath::DegToRad(), 309.5*TMath::DegToRad(),309.5*TMath::DegToRad()};
+        Float_t phimax[] = { 176.5, 309.5, 309.5 };
         fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-        Float_t phimin[] = {  90.5*TMath::DegToRad(), 270.5*TMath::DegToRad(),270.5*TMath::DegToRad()};
+        Float_t phimin[] = {  90.5, 270.5, 270.5 };
         fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
       }
       else // EMCal, 1 region - DCal 2 regions but 1/3 in cone
       {
-        Float_t etamax[] = { 0.52, 0.52,-0.25};
+        Float_t etamax[] = { 0.52, 0.52,-0.25 };
         fidCut->AddEMCALFidCutMaxEtaArray(3,etamax);
-        Float_t etamin[] = {-0.52, 0.25,-0.52};
+        Float_t etamin[] = {-0.52, 0.25,-0.52 };
         fidCut->AddEMCALFidCutMinEtaArray(3,etamin);
         
-        Float_t phimax[] = { 176.5*TMath::DegToRad(), 316.5*TMath::DegToRad(),316.5*TMath::DegToRad()};
+        Float_t phimax[] = { 176.5, 316.5, 316.5 };
         fidCut->AddEMCALFidCutMaxPhiArray(3,phimax);
-        Float_t phimin[] = {  90.5*TMath::DegToRad(), 270.5*TMath::DegToRad(),270.5*TMath::DegToRad()};
+        Float_t phimin[] = {  90.5, 270.5, 270.5 };
         fidCut->AddEMCALFidCutMinPhiArray(3,phimin);
       }
     }
