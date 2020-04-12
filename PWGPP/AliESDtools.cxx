@@ -1106,10 +1106,27 @@ Int_t AliESDtools::DumpEventVariables() {
   else {
     AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
   }
-  // Barrel counter histograms (PWGPP-550)
-   if (fMCEvent){
-     FillMCCounters();
-   }
+  // Barrel counter histograms  and pileup (PWGPP-550)
+  TMatrixF *eventInfoMC=0;
+  if (fMCEvent){
+    FillMCCounters();
+    AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+    TList list0;
+    list0.AddLast(fMCEvent->GenEventHeader());
+    TList *lgen = cocktailHeader ?  cocktailHeader->GetHeaders():&list0;
+    TArrayF primVtx(3);
+    if (lgen){
+      Int_t entries =lgen->GetEntries();
+      eventInfoMC=new TMatrixF(lgen->GetEntries(),5);
+      for (Int_t i=0; i<entries; i++){
+        AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(i);
+        (*eventInfoMC)(i,3)=gh->InteractionTime() * 1e9;
+        (*eventInfoMC)(i,4)=gh->NProduced();
+        gh->PrimaryVertex(primVtx);
+        for (Int_t j=0; i<3; j++) (*eventInfoMC)(i,j)=primVtx[j];
+      }
+    }
+  }
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -1180,12 +1197,12 @@ Int_t AliESDtools::DumpEventVariables() {
                      "nCaloClusters="<<nCaloClusters;                     // calorimeter multiplicity estimators
 
                      if (fMCEvent) (*fStreamer)<<"events"<<
-                     "hist2DMCCounter.="      << fHist2DMCCounter<<           // 2D MC Phi x tgl histogram
-                     "hist2DMCSumPt.="        << fHist2DMCSumPt;         // 2D MC Phi x tgl sum pt histogram
-
+                      "hist2DMCCounter.="      << fHist2DMCCounter<<           // 2D MC Phi x tgl histogram
+                      "hist2DMCSumPt.="        << fHist2DMCSumPt<<            // 2D MC Phi x tgl sum pt histogram
+                      "eventInfoMC.="          << eventInfoMC;                // event informatiion matrix colums= (x,y,z,time entries), rows (generators)
                      (*fStreamer)<<"events"<<
                      "\n";
-
+  if ( eventInfoMC) delete eventInfoMC;
   return 0;
 }
 /// Set default tree aliases and corresponding metadata for anotation
