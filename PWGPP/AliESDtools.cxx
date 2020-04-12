@@ -1123,7 +1123,7 @@ Int_t AliESDtools::DumpEventVariables() {
         (*eventInfoMC)(i,3)=gh->InteractionTime() * 1e9;
         (*eventInfoMC)(i,4)=gh->NProduced();
         gh->PrimaryVertex(primVtx);
-        for (Int_t j=0; i<3; j++) (*eventInfoMC)(i,j)=primVtx[j];
+        for (Int_t j=0; j<3; j++) (*eventInfoMC)(i,j)=primVtx[j];
       }
     }
   }
