@@ -4,7 +4,7 @@
 #include <vector>
 #include <TString.h>
 
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
 #if !defined(__CINT__)
 #endif
 
@@ -248,7 +248,7 @@ class AliFJWrapper
   AliFJWrapper& operator = (const AliFJWrapper& wrapper);
 };
 #endif
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
 #endif
 #endif
 
