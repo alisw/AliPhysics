@@ -1087,34 +1087,34 @@ void AliRsnCutSetDaughterParticle::Init()
       
       /* pion cuts */
       if (fPID == AliPID::kPion) {
-	iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+	iCutTPCNSigma->SinglePIDRange(3.0 * fNsigmaTPC);
 	//
-	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.40);  
-	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.40, 1.e6);  
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.40);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.40, 1.e6);  
 	//
-	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
       }
       /* kaon cuts */
       if (fPID == AliPID::kKaon) {
-	iCutTPCNSigma->AddPIDRange(4.00, 0.00, 0.20);
-	iCutTPCNSigma->AddPIDRange(3.00, 0.20, 0.40);
-	iCutTPCNSigma->AddPIDRange(2.00, 0.40, 0.60);
+	iCutTPCNSigma->AddPIDRange(4.00 * fNsigmaTPC, 0.00, 0.20);
+	iCutTPCNSigma->AddPIDRange(3.00 * fNsigmaTPC, 0.20, 0.40);
+	iCutTPCNSigma->AddPIDRange(2.00 * fNsigmaTPC, 0.40, 0.60);
 	//
-	iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.45);  
-	iCutTOFNSigma->AddPIDRange(3.00, 0.45, 1.e6);  
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.45);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.45, 1.e6);  
 	//
-	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
       }
       /* proton cuts */
       if (fPID == AliPID::kProton) {
-	iCutTPCNSigma->AddPIDRange(4.00, 0.00, 0.25);
-	iCutTPCNSigma->AddPIDRange(3.00, 0.25, 0.70);
-	iCutTPCNSigma->AddPIDRange(2.00, 0.70, 1.10);
+	iCutTPCNSigma->AddPIDRange(4.00 * fNsigmaTPC, 0.00, 0.25);
+	iCutTPCNSigma->AddPIDRange(3.00 * fNsigmaTPC, 0.25, 0.70);
+	iCutTPCNSigma->AddPIDRange(2.00 * fNsigmaTPC, 0.70, 1.10);
 	//
-	iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.80);  
-	iCutTOFNSigma->AddPIDRange(3.00, 0.80, 1.e6);
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.80);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.80, 1.e6);
 	//
-	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
       }
       
       AddCut(fCutQuality);
