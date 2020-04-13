@@ -1,10 +1,13 @@
 #ifndef AliFJWrapper_H
 #define AliFJWrapper_H
 
-#if !defined(__CINT__)
-
 #include <vector>
 #include <TString.h>
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#if !defined(__CINT__)
+#endif
+
 #include "AliLog.h"
 #include "FJ_includes.h"
 #include "AliJetShape.h"
@@ -244,6 +247,8 @@ class AliFJWrapper
   AliFJWrapper(const AliFJWrapper& wrapper);
   AliFJWrapper& operator = (const AliFJWrapper& wrapper);
 };
+#endif
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
 #endif
 #endif
 
@@ -1721,13 +1726,4 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
   else return -2;
 
 }
-
-
-
-
-
-
-
-
-
 #endif
