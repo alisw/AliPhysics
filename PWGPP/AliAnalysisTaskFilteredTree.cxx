@@ -1638,6 +1638,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
 {
   //
   // Fill tree for efficiency studies MC only
+  const Float_t kTPCR=250;    // radius of the TPC
   static Int_t downscaleCounter=0;
   AliInfo("we start!");
   if(!mcEvent) {
@@ -1799,14 +1800,12 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
         continue;
 
       // only primary particles
-      Bool_t prim = stack->IsPhysicalPrimary(iMc);
-      if(!prim) continue;
+      Bool_t isPrim = stack->IsPhysicalPrimary(iMc);
+      if (!isPrim &&particle->R()<kTPCR) continue;
 
       // downscale low-pT particles
-      Double_t scalempt= TMath::Min(particle->Pt(),10.);
-      Double_t downscaleF = gRandom->Rndm();
-      downscaleF *= fLowPtTrackDownscaligF;
-      if (downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+      Int_t selectionPtMaskMC=DownsampleTsalisCharged(particle->Pt(), 2./fLowPtTrackDownscaligF, 2./fLowPtTrackDownscaligF, fSqrtS, particle->GetMass());
+      if (selectionPtMaskMC==0) continue;
       // is particle in acceptance
       if(!accCuts->AcceptTrack(particle)) continue;
 
@@ -1866,14 +1865,21 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
       if(mcParticle) {
 	Int_t counter=0;
         tpcTrackLength = mcParticle->GetTPCTrackLength(bz,0.05,counter,3.0);
-      } 
-
+      }
+      if (tpcTrackLength<=0 && !isPrim)  continue;
+      Bool_t isPileUpMC=fESDtool->IsPileup(iMc);
+      TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+      fileName += TString::Format("%d", esdEvent->GetEventNumberInFile());
+      Int_t gid = fileName.Hash();
 
       //
       if(fTreeSRedirector && fFillTree) {
 	downscaleCounter++;
         (*fTreeSRedirector)<<"MCEffTree"<<
           "fileName.="<<&fCurrentFileName<<
+          "gid="<<gid<<                             // global iD to correlate with event properties
+          "isPhysicalPrim="<<isPrim<<               // is Phsycal primary
+          "selectionPtMaskMC="<<   selectionPtMaskMC<< // pt trigger mask
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
           "evtTimeStamp="<<evtTimeStamp<<           // time stamp at event build
@@ -1881,6 +1887,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "evtNumberInFile="<<evtNumberInFile<<     // 
           "Bz="<<bz<<                               // magnetic field
           "vtxESD.="<<vtxESD<<                      // vertex info
+          "isPileUpMC="<<isPileUpMC<<
           //
           "mult="<<mult<<                           // primary vertex 9whatewe found) multiplicity
           "multMCTrueTracks="<<multMCTrueTracks<<   // mC track multiplicities
