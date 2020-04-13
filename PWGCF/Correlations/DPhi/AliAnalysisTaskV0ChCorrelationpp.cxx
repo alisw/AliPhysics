@@ -1922,6 +1922,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if((tr->Pt())>fTrackPtMax) continue;
       if(tr->Charge() == 0.) continue;
       if(!(IsGoodPrimaryTrack(tr))) continue;
+
+
+//Bunch rejection trk by trk
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+
+
+
+
+
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
       Double_t tEta = tr->Eta();
