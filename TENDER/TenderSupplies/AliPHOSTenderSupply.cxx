@@ -505,11 +505,10 @@ void AliPHOSTenderSupply::ProcessEvent()
             clu->AddTracksMatched(arrayTrackMatched);
 	}
       }  
-      
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data      
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -648,11 +647,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
         }
       }  
 
-
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -824,23 +822,134 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
   }
-  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune
-    if(en<=0.) return 0.;   
-    const Double_t x0=5.17 ;
+  
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune for Emin extended down to 100 MeV
+    if(en<=0.) return 0.;
+    const Double_t xMin=0.36; //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17; //Upper part of the param (optimized from pi0 peak)
+    
+    //middle part param    
     const Double_t a= 1.02165   ; 
     const Double_t b=-2.548e-01 ; 
     const Double_t c= 6.483e-01 ;     
-    const Double_t d=-4.775e-01 ;    
-    const Double_t e= 1.205e-01 ;
-    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
-    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
-    if(en<x0){
-      return 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en) ;
+    const Double_t d=-0.4805    ;
+    const Double_t e= 0.1275    ;
+
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t beta = 2.*a*sqrt(xMin)+b-d/(xMin)-2.*e/(xMin*sqrt(xMin));
+       const Double_t alpha = a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*sqrt(xMin) ;
+       ecorr= 1.0312526*(alpha+beta*sqrt(en)) ;  
     }
     else{
-      return 1.02384*(alpha*en+beta*TMath::Sqrt(en)) ;  
+      if(en<xMax){
+         ecorr= 1.0312526*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0312526*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr>0){
+      return ecorr;
+    }
+    else{
+      return 0.;
     }
   }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+
+    const Double_t p0 = 1.031;
+    const Double_t p1 = 0.51786058;
+    const Double_t p2 = 0.13504396;
+    const Double_t p3 = -0.14737537;
+    const Double_t p4 = -0.455062;
+
+    const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
+
+    return en * Nonlin;
+  }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcell"){ //Improved Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcellHighPtFix"){ 
+    //Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    //improved agreement at hight pT>6-10 GeV/c using pPb8 TeV sample (LHC16rs)
+    // modification of parameters xMax and beta wrt. Run2TuneMCNoNcell parameterization
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=4.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= 1.4*(b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax)) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  
+  
 
   return en ;
 }

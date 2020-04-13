@@ -103,7 +103,6 @@ public:
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
 
-AliEventCuts fEventCuts;
 Bool_t nua_mode;
 
   enum {

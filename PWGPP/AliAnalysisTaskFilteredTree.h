@@ -1,14 +1,28 @@
 #ifndef ALIDNDPTTRACKDUMPTASK_H
 #define ALIDNDPTTRACKDUMPTASK_H
 
-//------------------------------------------------------------------------------
-// Task to dump track information 
-// TPC constrained and TPC+ITS combined 
-// for outliers analysis.
-// 
-// Author: J.Otwinowski 19/06/2011 
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+/*
+   Class to process/filter reconstruction information from ESD, ESD friends, MC and provide them for later reprocessing
+   Filtering schema - low pt part is downscaled - to have flat pt spectra of selected topologies (tracks and V0s)
+   Downscaling schema is controlled by downscaling factors
+   Usage:
+     1.) Filtering on Lego train
+     2.) expert QA for tracking (resolution efficiency)
+     3.) pt resolution studies using V0s
+     4.) dEdx calibration using V0s
+     5.) pt resolution and dEdx studies using cosmic
+     +
+     6.) Info used for later raw data OFFLINE triggering  (highPt, V0, laser, cosmic, high dEdx)
+
+   Exported trees (with full objects and derived variables):
+   1.) "highPt"     - filtered trees with esd tracks, derived variables(propagated tracks), optional MC info +optional space points
+   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optional space points
+   3.) "Laser"      - dump laser tracks with space points if exists
+   4.) "CosmicTree" - cosmic track candidate (random or triggered) + esdTracks(up/down)+ optional points
+   5.) "dEdx"       - tree with high dEdx tpc tracks
+*/
 class AliESDEvent;
 class AliMCEvent;
 class AliFilteredTreeEventCuts;
@@ -30,6 +44,7 @@ class TTree;
 class TTreeSRedirector;
 class TParticle;
 class TH3D;
+class AliESDtools;
 #include <string>
 
 #include "AliTriggerAnalysis.h"
@@ -96,6 +111,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   // v0s selection
   Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
   Bool_t IsV0Downscaled(AliESDv0 *const v0);
+  Int_t  V0DownscaledMask(AliESDv0 *const v0);
   Bool_t IsHighDeDxParticle(AliESDtrack * const track);
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
@@ -122,14 +138,17 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);  //TODO- test before enabling
   Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);  // TODO
   static Int_t GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff); //TODO test before enabling
+  /// sqrt s - mass dependent downsampling trigger (pt spectra as parameterized in https://iopscience.iop.org/article/10.1088/2399-6528/aab00f/pdf)
+  static Double_t TsalisCharged(Double_t pt, Double_t mass, Double_t sqrts);
+  static Int_t    DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt,  Double_t sqrts=5020, Double_t mass=0.2);
+  Int_t  PIDSelection(AliESDtrack *track, TParticle *particle = nullptr);
  private:
-
   AliESDEvent *fESD;    //! ESD event
   AliMCEvent *fMC;      //! MC event
   AliESDfriend *fESDfriend; //! ESDfriend event
+  AliESDtools *fESDtool;      /// tools to calculate derived variables from the ESD
   TList* fOutput;       //! list send on output slot 0
-  TIterator *fPitList;  //! iterator over the output objetcs  
-
+  TIterator *fPitList;  //! iterator over the output objetcs
   Bool_t fUseMCInfo;        // use MC information
   Bool_t fUseESDfriends;    // use esd friends
   Bool_t fReducePileUp;     // downscale the information for the pile-up TPC tracks
@@ -149,10 +168,13 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Double_t fLowPtTrackDownscaligF; // low pT track downscaling factor
   Double_t fLowPtV0DownscaligF;    // low pT V0 downscaling factor
   Double_t fFriendDownscaling;     // friend info downscaling )absolute value used), Modes>=1 downscaling in respect to the amount of tracks, Mode<=-1 (downscaling in respect to the data volume)
+  Double_t fSqrtS;                 // sqrt(s) used for downsampling to approximate spectra function
+  Double_t fChargedEffectiveMass;           // mass used for downsampling to approximate spectra function (pion,Kaon,prootn)
+  Double_t fV0EffectiveMass;           // mass used for downsampling to approximate spectra function for V0 (K0s,Lambda)
   Double_t fProcessAll; // Calculate all track properties including MC
   
   Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
-  Bool_t fProcessITSTPCmatchOut;  // swittch to process ITS/TPC standalone tracks
+  Bool_t fProcessITSTPCmatchOut;  // switch to process ITS/TPC standalone tracks
 
   TTree* fHighPtTree;       //! list send on output slot 0
   TTree* fV0Tree;           //! list send on output slot 0
@@ -160,6 +182,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TTree* fLaserTree;        //! list send on output slot 0
   TTree* fMCEffTree;        //! list send on output slot 0
   TTree* fCosmicPairsTree;  //! list send on output slot 0
+  TH1F * fSelectedTracksMask;   //! histogram of the selected tracks
+  TH1F * fSelectedPIDMask;   //! histogram of the selected tracks
+  TH1F * fSelectedV0Mask;   //! histogram of the selected tracks
 
   TH3D* fPtResPhiPtTPC;    //! sigma(pt)/pt vs Phi vs Pt for prim. TPC tracks
   TH3D* fPtResPhiPtTPCc;   //! sigma(pt)/pt vs Phi vs Pt for prim. TPC contrained to vertex tracks

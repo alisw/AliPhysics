@@ -12,10 +12,12 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -39,6 +41,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
+    void ProcessConversionCandidates();
     void ProcessJets();
     void CalculatePi0Candidates();
 
@@ -46,20 +49,22 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
     void ProcessAODMCParticles();
-    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
-    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
+    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessAODSphericityParticles();
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
+    void SetECalibOutput( Bool_t flag ){fDoECalibOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
     void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
     void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
     void SetAllowOverlapHeaders( Bool_t allowOverlapHeader ) {fAllowOverlapHeaders = allowOverlapHeader;}
+    void SetDoPi0Only(Bool_t flag){fDoPi0Only = flag;}
 
     void SetInOutTimingCluster(Double_t min, Double_t max){
       fDoInOutTimingCluster = kTRUE; fMinTimingCluster = min; fMaxTimingCluster = max;
@@ -86,13 +91,14 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // BG HandlerSettings
     void CalculateBackground();
+    void CalculateBackgroundSwapp();
     void CalculateBackgroundRP();
     void RotateParticle(AliAODConversionPhoton *gamma);
     void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
     void FillPhotonBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
     void FillPhotonPlusConversionBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
-    void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
-    void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
+    void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, Double_t clusterM02, Int_t pdgCode);
+    void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, Double_t  clusterM02, Int_t pdgCode);
     void UpdateEventByEventData();
 
     // Additional functions for convenience
@@ -139,6 +145,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fTreeList;                                            // Array of lists with tree for validated MC
     TList**               fClusterTreeList;                                     // Array of lists with tree for EoverP
     TList*                fOutputContainer;                                     // Output container
+    TClonesArray*         fReaderGammas;                                        // Array with conversion photons selected by V0Reader Cut
+    TList*                fGammaCandidates;                                     // current list of photon candidates
     TList*                fClusterCandidates;                                   //! current list of cluster candidates
     TList*                fEventCutArray;                                       // List with Event Cuts
     AliConvEventCuts*     fEventCuts;                                           // EventCutObject
@@ -147,12 +155,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
+    AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     Bool_t                fDoTrueSphericity;                                    // Bool to produce Sphericity correlations
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
     Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
+    Int_t                 fMaxPtNearEMCalPlace;                                 // Place in jet vector of highest pt jet that is near the EMCal
+    Bool_t                fJetNearEMCal;                                        // If a jet is near the EMCal in the current event
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -345,10 +357,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileEtaShift;                                     //! array of profiles with eta shift
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
+    TH2F**                fHistoPtHardJJWeight;                                 //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH1F**                fHistoEventSphericityAxis;                            //! array of histos with phi of the event Sphericity axis
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
     TH2F**                fHistoEventSphericityvsNJets;                         //! array of histos with event Sphericity vs NJets
+    TH2F**                fHistoEventMultiplicityvsNJets;                       //! array of histos with event Multiplicity vs NJets
     TH2F**                fHistoTrueSphericityvsRecSphericity;                  //! array of histos with true sphericity vs rec. sphericity
     TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;              //! array of histos with true multiplicity vs rec. multiplicity
     TH2F**                fHistoEventSphericityvsHighpt;                        //! array of histos with event Sphericity vs highest pt
@@ -357,9 +371,14 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoPionSpectrum;                                   //! array of histos with charged pion spectrum
     TH1F**                fHistoProtonSpectrum;                                 //! array of histos with proton spectrum
     TH1F**                fHistoKaonSpectrum;                                   //! array of histos with charged kaon spectrum
+    TH1F**                fHistoNPionSpectrum;                                  //! array of histos with Neutral pion spectrum
+    TH1F**                fHistoEtaSpectrum;                                    //! array of histos with Eta spectrum
+    TH1F**                fHistoDMesonSpectrum;                                 //! array of histos with D0 meson spectrum
     TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
     Float_t               fRecSph;                                              //! Reconstructed sphericity
     Float_t               fTrueSph;                                             //! True Sphericity
+    Float_t               fPi0Pt;
+    Float_t               fPi0InvMass;
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -376,11 +395,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
     TH2F**                 fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
+    TH2F**                 fHistoJetFragmFuncZInvMass;                           // Histogram of Inv Mass distribution with z
     TH2F**                 fHistoTruevsRecJetPt;                                 // Histogram of true jet pt vs reconstructed jet pt
     TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      // Histogram of true pi0s in an event with a jet
     TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
     TH2F**                 fHistoTruePrimaryPi0JetInvMassPt;                     // Histogram of true primary pi0s in an event with a jet
     TH2F**                 fHistoTruePrimaryPi0inJetInvMassPt;                   // Histogram of true primary pi0s in a jet
+    TH2F**                 fHistoTruePrimaryPi0InJetInvMassTruePt;               // Histogram of true primary pi0s in a jet with their true pt
     TH1F**                 fHistoTrueDoubleCountingPi0Jet;                       // Histogram of when a true pi0 is defined to be in multiple jets
     TH2F**                 fHistoTrueEtaJetMotherInvMassPt;                      // Histogram of true etas in an event with a jet
     TH2F**                 fHistoTrueEtaInJetMotherInvMassPt;                    // Histogram of true etas in a jet
@@ -388,7 +409,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoTruePrimaryEtainJetInvMassPt;                   // Histogram of true primary etas in a jet
     TH1F**                 fHistoTrueDoubleCountingEtaJet;                       // Histogram of when a true eta is defined to be in multiple jets
     TH2F**                 fHistoTruePi0JetFragmFunc;                            // Histogram to determine true pi0 fragmentation function
+    TH2F**                 fHistoTruePi0JetFragmFuncZInvMass;                    // Histogram to determine true pi0 Inv Mass distribution with z
     TH2F**                 fHistoTrueEtaJetFragmFunc;                            // Histogram to determine true eta fragmentation function
+    TH2F**                 fHistoTrueEtaJetFragmFuncZInvMass;                    // Histogram to determine true eta Inv Mass distribution with z
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
@@ -411,12 +434,27 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
     TH1F**                 fNumberOfClusters;                                    // Histogram with total number of clusters
     TH1F**                 fNumberOfClustersinJets;                              // Histogram with number of clusters in jets
-    TH1F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
-    TH1F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
-    TH1F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
-    TH1F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
+    TH2F**                 fEnergyRatio;                                         // Histogram with ratio of energy deposited in cluster
+    TH2F**                 fEnergyRatioinJets;                                   // Histogram with ratio of energy deposited in cluster in jets
+    TH2F**                 fEnergyRatioGamma1;                                   // Histogram with ratio of energy deposited in cluster when first label is a photon
+    TH2F**                 fEnergyRatioGamma1inJets;                             // Histogram with ratio of energy deposited in cluster when first label is a photon in jets
+    TH2F**                 fEnergyRatioGammaAnywhere;                            // Histogram with ratio of energy deposited in cluster when a label is photon
+    TH2F**                 fEnergyRatioGammaAnywhereinJets;                      // Histogram with ratio of energy deposited in cluster when a label is photon in jets
+    TH2F**                 fEnergyDeposit;                                       // Histogram with total energy deposited in cluster
+    TH2F**                 fEnergyDepositinJets;                                 // Histogram with total energy deposited in cluster in jets
+    TH2F**                 fEnergyDepGamma1;                                     // Histogram with total energy deposited when first label is photon
+    TH2F**                 fEnergyDepGamma1inJets;                               // Histogram with total energy deposited when first label is photon in jets
+    TH2F**                 fEnergyDepGammaAnywhere;                              // Histogram with total energy deposited when a label is photon
+    TH2F**                 fEnergyDepGammaAnywhereinJets;                        // Histogram with total energy deposited when a label is photon in jets
     TH1F**                 fEnergyRatioGamma1Helped;                             // Histogram with energy of photon when it is helped by other particles
     TH1F**                 fEnergyRatioGamma1HelpedinJets;                       // Histogram with energy of photon when it is helped by other particles in jets
+    TH2F**                 fClusterEtaPhiJets;                                   // Histogram of phi and eta distribution of clusters in jets
+    TH2F**                 fHistoUnfoldingAsData;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingMissed;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingReject;                                // Histogram to use for jet pi0 unfolding
+    TH2F**                 fHistoUnfoldingAsDataInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
+    TH2F**                 fHistoUnfoldingMissedInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
+    TH2F**                 fHistoUnfoldingRejectInvMassZ;                        // Histogram to use for jet pi0 unfolding for z inmass
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
@@ -470,12 +508,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
     Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
 
-    //tree for Jet-pi0 correlation studies
-    TTree**               tTreeJetPi0Correlations;
-    Float_t               fJetPt;                                               //! pt of pi0-tagged jet
-    Float_t               fTrueJetPt;                                           //! true pt of pi0-tagged jet
-    Float_t               fPi0Pt;                                               //! pt of pi0 inside jet
-    Float_t               fPi0InvMass;                                          //! mass of pi0 inside jet
+    // tree for timing cut effi studies
+    TTree**               tClusterTimingEff;                                    //! array of trees with tree for timing effi studies
+    Float_t               fClusterTimeTag;                                      //! cluster time of tagged photon
+    Float_t               fClusterTimeProbe;                                    //! cluster time of probe photon
+    Float_t               fClusterETag;                                         //! cluster E of tagged photon
+    Float_t               fClusterEProbe;                                       //! cluster E of probe photon
 
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
@@ -488,6 +526,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
     Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t                fDoECalibOutput;                                      // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -508,16 +547,18 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TObjString*           fFileNameBroken;                                      // string object for broken file name
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
+    TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
     Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
     Int_t                 fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
+    Bool_t                fDoPi0Only;                                           // switches ranges of histograms and binnings to pi0 specific analysis
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 62);
+    ClassDef(AliAnalysisTaskGammaCalo, 76);
 };
 
 #endif

@@ -1,6 +1,6 @@
 configurationName: "Default configuration"          # Optional - Simply for user convenience
 pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
-recycleUnusedEmbeddedEventsMode: false              # True if embedded events should be recycled by using the internal event selection of the embedding helper.
+recycleUnusedEmbeddedEventsMode: false              # DEPRECATED! This is handled directly by the embedding helper. True if embedded events should be recycled by using the internal event selection of the embedding helper.
 # Look at the documentation for a full explanation of the input objects!
 inputObjects:                                       # Define all of the input objects for the corrections
     cells:                                          # Configure cells
@@ -59,13 +59,16 @@ sharedParameters:
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    enableRun2TempCalib: false                      # Whether the temperature calibration should be done for Run2
+    enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
+    load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
@@ -75,6 +78,9 @@ CellBadChannel:                                     # Bad channel removal at the
 CellTimeCalib:                                      # Cell Time Calibration component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    doMergedBCs: false                              # Whether the task should use the merged BC histogram
+    doCalibrateLowGain: false                       # Whether the task should calibrate the low gain cells
+    doCalibMergedLG: false                          # Whether the task should calibrate the low gain cells using the all periods merged LG histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEmulateCrosstalk:                               # Component to emulate crosstalk
@@ -156,7 +162,8 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    load1DBadChMap: false                           # Flag to load 1D bad channel map
+    clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
     unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
@@ -188,6 +195,8 @@ ClusterExotics:                                     # Cluster exotics identifica
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
     fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
+    fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV 
+    fMinCellEnNdiffCut: 0                           # Count cells in different T-Card above this value (GeV), for tests, use 0
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction

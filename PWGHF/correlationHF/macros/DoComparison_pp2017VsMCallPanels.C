@@ -9,7 +9,7 @@ Bool_t reflTempl=kTRUE;//***elena****//
 Bool_t skip3to5=kFALSE;//***elena****//
 const Int_t nbinDpt=4;
 const Int_t nbinAssocpt=6;
-const Int_t nSets=7;
+const Int_t nSets=8;
 Int_t firstDpt=0;
 Bool_t isReflectedData=kTRUE;
 Double_t canvasheight=900;
@@ -19,25 +19,26 @@ Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
 Double_t referencePadHeight=0.44; 
 TString strsyst="pp";
-TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG"};
-TString setsBoost[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG"};
+TString sets[nSets]={"pp","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG_LO","EPOS3"};  //LAST IS DUMMY, COULD BE EPOS...
+TString setsNameDir[nSets]={"pp","Perugia2011","PYTHIA8","HERWIG","POWHEG","POW_LO","EPOS3"};
+TString setsBoost[nSets]={"pp","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG_LO","EPOS3"};
 Bool_t includeset[nSets]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-void SetIncludePerugia0(Bool_t incl){
+void SetIncludePerugia2011(Bool_t incl){
   includeset[1]=incl;
 }
-void SetIncludePerugia2010(Bool_t incl){
+void SetIncludePYTHIA8(Bool_t incl){
   includeset[2]=incl;
 }
-void SetIncludePerugia2011(Bool_t incl){
+void SetIncludeHERWIG(Bool_t incl){
   includeset[3]=incl;
 }
-void SetIncludePYTHIA8(Bool_t incl){
+void SetIncludePOWHEG(Bool_t incl){
   includeset[4]=incl;
 }
-void SetIncludeHERWIG(Bool_t incl){
+void SetIncludePOWHEG_LO(Bool_t incl){
   includeset[5]=incl;
 }
-void SetIncludePOWHEG(Bool_t incl){
+void SetIncludeEPOS(Bool_t incl){
   includeset[6]=incl;
 }
 void IncludeModel(Int_t imod,Bool_t incl){
@@ -50,8 +51,8 @@ void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
 }
 const Int_t nmodels=7;// does not matter that they are 6 maximum now; this is used only to define the 2 arrays modelColors and modelMarkerStyle
 Bool_t splitLegendMC=kFALSE;
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kOrange+1,kBlue,kViolet};
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,33};
+Color_t modelColors[nmodels]={kGreen+2,kViolet,kOrange+1,kBlue,kRed,38,kCyan};
+Int_t modelMarkerStyle[nmodels]={kFullSquare,kOpenDiamond,kFullDiamond,kOpenSquare,kOpenCircle,3,4};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0","1.0to99.0","1.0to2.0","2.0to3.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16","16to24"};
 TString strmesonMCpt[nbinDpt]={"3To5","5To8","8To16","16To24"};
@@ -64,7 +65,7 @@ Double_t mesonptcenter[nbinDpt]={4.,6.5,12.,20.};// needed for getting the basel
 TString strPtRangeText[nbinDpt*nbinAssocpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}","3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, 1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 2 < #it{p}_{T}^{assoc} < 3 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 2 < #it{p}_{T}^{assoc} < 3 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 2 < #it{p}_{T}^{assoc} < 3 GeV/#it{c}", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, 2 < #it{p}_{T}^{assoc} < 3 GeV/#it{c}"};
 TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}| < 0.5", "16 < #it{p}_{T}^{D} < 24 GeV/#it{c}, |#it{y}^{D}| < 0.5"};
 
-TString strYText= "|#it{y}^{D}_{cms}| < 0.5, |#Delta#eta| < 1";
+TString strYText= "|#it{y}^{D}_{cms}| < 0.5, |#Delta#it{#eta}| < 1";
 
 TString filenames[nSets][nbinAssocpt][nbinDpt];// [coll syst][ptassoc][ptmes]
 TString pedestalfilenames[nSets][nbinAssocpt];// [coll syst][ptassoc]
@@ -240,7 +241,7 @@ TH1D * GetHistoAndSyst(TString path, Int_t iset,TString hname, TString hnamesyst
 
   if(iset==0){//DATA
      if(TMath::Abs(hUncCorrMin->GetBinContent(1)-hUncCorrMax->GetBinContent(1))<0.001)tUncertainty=new TLatex(0.55,0.46,Form("#bf{%.0f#% scale uncertainty pp}",hUncCorrMin->GetBinContent(1)*100.));
-    else tUncertainty=new TLatex(0.65,0.6,Form("{}^{#plus%.0f%s}_{#minus%.0f%s} scale uncertainty","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
+    else tUncertainty=new TLatex(0.65,0.6,Form("{}^{#scale[1.3]{#plus%.0f%s}}_{#scale[1.3]{#minus%.0f%s}} scale uncertainty","%","%",TMath::Abs(hUncCorrMax->GetBinContent(1))*100.,TMath::Abs(hUncCorrMin->GetBinContent(1)*100.)));
    
   }
 
@@ -364,7 +365,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPed(Int_t binSystem, Int_t binAssoc,Int
   cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
   
   outputhisto->SetXTitle("#Delta#varphi (rad)");
-  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} #minus baseline (rad^{#scale[1.25]{-1}})");
   outputhisto->GetYaxis()->CenterTitle();
   outputhisto->SetMarkerColor(kBlack);
   outputhisto->SetLineColor(kBlack);
@@ -449,7 +450,7 @@ TH1D * GetPedestalHistoAndSystAndSubtractPedMC(Int_t binSystem, Int_t binAssoc,I
   cout<<"sub -> "<<outputhisto->GetBinContent(5)<<endl;
   
   outputhisto->SetXTitle("#Delta#varphi (rad)");
-  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} - baseline (rad^{-1})");
+  outputhisto->SetYTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} #minus baseline (rad^{#scale[1.25]{-1}})");
   //  outputhisto->GetYaxis()->SetTitleOffset(1.5);
   //  outputhisto->GetYaxis()->SetTitleFont(42);
   //  outputhisto->GetXaxis()->SetTitleFont(42);
@@ -508,7 +509,7 @@ void DoComparison_pp2017VsMCallPanels(){
 
 	else{
 	  h=GetHisto(filenames[iset][kassoc][jmes],"hCorrDeltaPhi");
-	  if(reflTempl)histo[iset][kassoc][jmes]=AliHFCorrelationUtils::ReflectHisto(h,0.5);
+	  if(reflTempl && iset!=6)histo[iset][kassoc][jmes]=AliHFCorrelationUtils::ReflectHisto(h,0.5);
 	  else histo[iset][kassoc][jmes]=h;
 
 	    histo[iset][kassoc][jmes]->SetMarkerColor(modelColors[iset-1]);// -1 because first iset is data
@@ -966,16 +967,16 @@ void LoadFileNamesAll(){
 	for(Int_t jmes=0;jmes<nbinDpt;jmes++){
 	  
 	  if(iset==0){
-	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
+	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),setsNameDir[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
 	  }
-          else if(iset>=1 && iset<=5){ //add "wBoost"
-            filenames[iset][kassoc][jmes]=Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsBoost[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//Pythia templates
-          }
-	  else if(iset==6){
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
+    else if(sets[iset]!="POWHEG"){ //add "wBoost"
+      filenames[iset][kassoc][jmes]=Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsNameDir[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//Pythia templates
+    }
+	  else if(iset<=7){
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",setsNameDir[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
 	  }
 	  else{
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),setsNameDir[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
 	  }
 	  cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
 	  cout<<filenames[iset][kassoc][jmes]<<endl;
@@ -1154,7 +1155,7 @@ TLegend *GetLegendData(TH1D *hpp,Int_t identifier){
     legend->SetTextFont(43);
     legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
-    legend->AddEntry(hpp,"pp, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+    legend->AddEntry(hpp,"pp, #sqrt{#it{s}_{NN}} = 5.02 TeV","lp");
     legend->SetName(Form("LegendDataPP_%d",identifier));
     return legend;
   }
@@ -1199,20 +1200,20 @@ printf("in max %f %f\n",ylegMin,ylegMax);
     // Draft 5,6: 22.1
     //   with EPOS: 21.5
 
-    if(nEffectiveModels<6){if(hMC1!=0x0)legend->SetHeader("Simulations, pp, #sqrt{#it{s}} = 5.02 TeV");}
+    if(nEffectiveModels<6){if(hMC1!=0x0)legend->SetHeader("");} //("Simulations, pp, #sqrt{#it{s}} = 5.02 TeV");}
     else {
       TLatex *tlatHeader=new TLatex(0.115,0.71,"Simulations, pp, #sqrt{#it{s}} = 5.02 TeV");// the legend is 0.115, 71 with standard size
       tlatHeader->SetNDC();
       tlatHeader->SetTextFont(43);
       tlatHeader->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);
-      tlatHeader->Draw();
+    //  tlatHeader->Draw();
     }
-    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 0","l");
-    if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
-    if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
-    if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
-    if(hMC5)legend->AddEntry(hMC5,"HERWIG","l");
-    if(hMC6)legend->AddEntry(hMC6,"POWHEG+PYTHIA6","l");
+    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 2011","l");   
+    if(hMC2)legend->AddEntry(hMC2,"PYTHIA8, Tune 4C","l");
+    if(hMC3)legend->AddEntry(hMC3,"HERWIG 7","l");
+    if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
+    if(hMC5)legend->AddEntry(hMC5,"POWHEG LO+PYTHIA6","l");
+    if(hMC6)legend->AddEntry(hMC6,"EPOS 3","l");
     
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
@@ -1254,7 +1255,7 @@ TLegend *GetLegendDataSinglePanel(TH1D *hpp,Int_t identifier){
     legend->SetTextFont(43);
     legend->SetTextSize(21);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
-    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 5.02 TeV","lep");
+    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 5.02 TeV","lp");
     legend->SetName(Form("LegendDataPP_%d",identifier));
     return legend;
   }
@@ -1307,12 +1308,12 @@ printf("in max %f %f\n",ylegMin,ylegMax);
       tlatHeader->SetTextSize(21);
       tlatHeader->Draw();
     }
-    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 0","l");
-    if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
-    if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
-    if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
-    if(hMC5)legend->AddEntry(hMC5,"HERWIG","l");
-    if(hMC6)legend->AddEntry(hMC6,"POWHEG+PYTHIA6","l");
+    if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 2011","l");   
+    if(hMC2)legend->AddEntry(hMC2,"PYTHIA8, Tune 4C","l");
+    if(hMC3)legend->AddEntry(hMC3,"HERWIG 7","l");
+    if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
+    if(hMC5)legend->AddEntry(hMC5,"POWHEG LO+PYTHIA6","l");
+    if(hMC6)legend->AddEntry(hMC6,"EPOS","l");
     
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
@@ -1412,7 +1413,7 @@ void DoComparison_pp2017VsMCSinglePanel(){
 
   else{
     h=GetHisto(filenames[iset][kassoc][jmes],"hCorrDeltaPhi");
-    if(reflTempl)histo[iset][kassoc][jmes]=AliHFCorrelationUtils::ReflectHisto(h,0.5);
+    if(reflTempl && iset!=6)histo[iset][kassoc][jmes]=AliHFCorrelationUtils::ReflectHisto(h,0.5);
     else histo[iset][kassoc][jmes]=h;
 
       histo[iset][kassoc][jmes]->SetMarkerColor(modelColors[iset-1]);// -1 because first iset is data

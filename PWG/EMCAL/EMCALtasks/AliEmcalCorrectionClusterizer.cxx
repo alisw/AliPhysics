@@ -205,6 +205,10 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   if (fClusterCollArray.GetEntries() > 1) {
     AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
   }
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
+  fRecoUtils->SetUse1DBadChannelMap(fLoad1DBadChMap);
   
   return kTRUE;
 }
@@ -589,9 +593,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    if(fSetCellMCLabelFromEdepFrac) {
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
-    }
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:

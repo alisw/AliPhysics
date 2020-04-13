@@ -23,7 +23,7 @@ class AliAnalysisUtils : public TObject {
  public:
 
   AliAnalysisUtils();
-  virtual ~AliAnalysisUtils(){};
+  virtual ~AliAnalysisUtils();
   
   Bool_t IsVertexSelected2013pA(AliVEvent *event);
   Bool_t IsFirstEventInChunk(AliVEvent *event);

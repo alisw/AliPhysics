@@ -7,6 +7,7 @@
 // Tell ROOT where to find AliPhysics headers
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
+
 AliAnalysisTask *AddTask_sscheid_lowmass(Bool_t getFromAlien=kFALSE,
                                              TString cFileName = "Config_sscheid_lowmass_06.C",
                                              int nDie = 0,
@@ -53,7 +54,7 @@ AliAnalysisTask *AddTask_sscheid_lowmass(Bool_t getFromAlien=kFALSE,
   //add dielectron analysis with different cuts to the task
   #if defined(__CLING__)
     TMacro conf_die(gSystem->ExpandPathName(configFilePath.Data())); //ROOT6
-    for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
+    for (Int_t i=0; i<nDie; ++i){ //nDie as argument of add task
       AliDielectron *diel_low = reinterpret_cast<AliDielectron *>(conf_die.Exec(Form("%i",i)));
       if(!diel_low)continue;
       task->AddDielectron(diel_low);
@@ -66,6 +67,9 @@ AliAnalysisTask *AddTask_sscheid_lowmass(Bool_t getFromAlien=kFALSE,
       task->AddDielectron(diel_low);
     }
   #endif
+
+
+  // std::cout << "Mixing is set to: " << diel_low->GetMixing() << syd::endl;
 
 
   //create output container

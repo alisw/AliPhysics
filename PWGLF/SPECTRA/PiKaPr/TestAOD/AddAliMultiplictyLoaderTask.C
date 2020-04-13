@@ -1,3 +1,7 @@
+#if defined(__CLING__)
+#include "AliMultiplictyLoaderTask.h"
+#endif
+
 AliMultiplictyLoaderTask* AddAliMultiplictyLoaderTask(Bool_t useAliPPVsMultUtils=kTRUE, TString cent="V0M")
 {
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

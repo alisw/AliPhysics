@@ -14,7 +14,7 @@ class AliVParticle;
 
 /**
  * @class AliEmcalCorrectionClusterTrackMatcher
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Cluster-track matcher component in the EMCal correction framework.
  *
  * Tracks and clusters are matched using a simple geometrical algorithm. Multiple tracks can be matched to a single cluster; however only one cluster can be matched to a track. The default configuration of the task is such that it will attempt track propagation to the EMCal surface (440 cm) if the track is not already propagated. This means that the OCDB has to be loaded beforehand (e.g. using the CDBConnect task), as well as the geometry (handled automatically by AliEmcalCorrectionTask). This should usually work in both AOD and ESD events.

@@ -29,29 +29,31 @@ ClassImp(AliHFTreeHandlerDplustoKpipi);
 //________________________________________________________________
 AliHFTreeHandlerDplustoKpipi::AliHFTreeHandlerDplustoKpipi():
   AliHFTreeHandler(),
-  fImpParProng(),
-  fSigmaVertex(),
-  fNormd0MeasMinusExp()
+  fSigmaVertex(-9999.),
+  fNormd0MeasMinusExp(-9999.)
 {
   //
   // Default constructor
   //
 
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
 AliHFTreeHandlerDplustoKpipi::AliHFTreeHandlerDplustoKpipi(int PIDopt):
   AliHFTreeHandler(PIDopt),
-  fImpParProng(),
-  fSigmaVertex(),
-  fNormd0MeasMinusExp()
+  fSigmaVertex(-9999.),
+  fNormd0MeasMinusExp(-9999.)
 {
   //
   // Standard constructor
   //
 
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
@@ -69,7 +71,7 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 
   if(fTreeVar) {
     delete fTreeVar;
-    fTreeVar=0x0;
+    fTreeVar=nullptr;
   }
   fTreeVar = new TTree(name.Data(),title.Data());
 
@@ -85,6 +87,7 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
 
   //set PID variables
   if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
@@ -93,36 +96,42 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
+
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandTypeMap&kSignal)) return true;
+    if(!(fCandType&kSignal)) return true;
   }
-  fNCandidates++;
 
-  fCandTypeMap &= ~kRefl; //protection --> D+ ->Kpipi cannot be reflected
+  fPtGen=ptgen;
+  
+  fCandType &= ~kRefl; //protection --> D+ ->Kpipi cannot be reflected
 
   //topological variables
   //common
-  fCandType.push_back(fCandTypeMap);
-  fPt.push_back(cand->Pt());
-  fY.push_back(cand->Y(411));
-  fEta.push_back(cand->Eta());
-  fPhi.push_back(cand->Phi());
-  fDecayLength.push_back(cand->DecayLength());
-  fDecayLengthXY.push_back(cand->DecayLengthXY());
-  fNormDecayLengthXY.push_back(cand->NormalizedDecayLengthXY());
-  fCosP.push_back(cand->CosPointingAngle());
-  fCosPXY.push_back(cand->CosPointingAngleXY());
-  fImpParXY.push_back(cand->ImpParXY());
-  fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
+  fPt=cand->Pt();
+  fY=cand->Y(411);
+  fEta=cand->Eta();
+  fPhi=cand->Phi();
+  fDecayLength=cand->DecayLength();
+  fDecayLengthXY=cand->DecayLengthXY();
+  fNormDecayLengthXY=cand->NormalizedDecayLengthXY();
+  fCosP=cand->CosPointingAngle();
+  fCosPXY=cand->CosPointingAngleXY();
+  fImpParXY=cand->ImpParXY();
+  fDCA=cand->GetDCA();
+  fNormd0MeasMinusExp=ComputeMaxd0MeasMinusExp(cand,bfield);
 
   //D+ -> Kpipi variables
-  fInvMass.push_back(((AliAODRecoDecayHF3Prong*)cand)->InvMassDplus());
-  fSigmaVertex.push_back(((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert());
+  fInvMass=((AliAODRecoDecayHF3Prong*)cand)->InvMassDplus();
+  fSigmaVertex=((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert();
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+    fImpParProng[iProng]=cand->Getd0Prong(iProng);
   }
     
   //single track variables
@@ -138,24 +147,4 @@ bool AliHFTreeHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float b
   if(!setpid) return false;
 
   return true;
-}
-
-//________________________________________________________________
-void AliHFTreeHandlerDplustoKpipi::FillTree() {
-  fTreeVar->Fill();
-  
-  //VERY IMPORTANT: CLEAR ALL VECTORS
-  if(!fIsMCGenTree) {
-    ResetDmesonCommonVarVectors();
-    fSigmaVertex.clear();
-    fNormd0MeasMinusExp.clear();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
-    ResetSingleTrackVarVectors();
-    if(fPidOpt!=kNoPID) ResetPidVarVectors();
-  }
-  else {
-    ResetMCGenVectors();
-  }
-  fCandTypeMap=0;
-  fNCandidates=0;
 }

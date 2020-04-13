@@ -45,7 +45,6 @@
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliStack.h"
 #include "AliCSTrackMaps.h"
 #include "AliCSEventCuts.h"
 #include "AliCSPIDCuts.h"
@@ -57,6 +56,7 @@
 #include "AliMCEventHandler.h"
 #include "AliAODMCHeader.h"
 #include "AliVTrack.h"
+#include "AliVParticle.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliExternalTrackParam.h"
@@ -706,6 +706,7 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
 /// The option string could be one of the following
 /// - trueval   the reconstructed results will use reconstructed tracks but with true data
 /// - primaries   the reconstructed results will use true primary reconstructed tracks
+/// - pritrueval   the reconstructed results will use true primary reconstructed tracks but with true data
 /// It should only be used at initial task configuration
 Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
 {
@@ -808,6 +809,9 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
     }
     else if(fAdditionalMCRecOption.EqualTo("notacc")) {
       fMCRecOption = kRecWithNotAccepted;
+    }
+    else if (fAdditionalMCRecOption.EqualTo("pritrueval")) {
+      fMCRecOption = kRecTruePrimariesWithTrue;
     }
     else {
       AliFatal("Unknown option for additional MC rec results. ABORTING!!!");
@@ -1202,13 +1206,11 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
     return kFALSE;
   }
 
-  fProcessCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data());
-  fProcessTrueCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessPairAnalysis.ConfigureBinning(sztmp.Data());
-  fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data());
-
-  return kTRUE;
+  return (fProcessCorrelations.ConfigureBinning(sztmp.Data()) &&
+          fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data()) &&
+          fProcessTrueCorrelations.ConfigureBinning(sztmp.Data()) &&
+          fProcessPairAnalysis.ConfigureBinning(sztmp.Data()) &&
+          fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data()));
 }
 
 
@@ -1694,16 +1696,28 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
           case kRecWithTrue:
             /* additional results with reconstructed with true values */
             if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->Particle(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
             }
             else {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliAODMCParticle *) arrayMC->At(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
             }
             break;
           case kRecTruePrimaries:
             /* additional results with true primary reconstructed tracks */
             if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
               fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+            }
+            break;
+          case kRecTruePrimariesWithTrue:
+            /* additional results with true primary reconstructed tracks */
+            if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
+              /* but using the true values */
+              if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
+                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
+              }
+              else {
+                fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+              }
             }
             break;
           case kRecWithNotAccepted:
@@ -1819,8 +1833,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
   for(Int_t iTrack = 0; iTrack < ntracks; iTrack++ ){
 
     if (fTrackSelectionCuts->IsTrueTrackAccepted(iTrack)) {
-      TParticle *esdpart = NULL;
-      AliAODMCParticle *aodpart = NULL;
+      AliVParticle *part = NULL;
       Double_t p = 0.0;
       Double_t pt = 0.0;
       Double_t pz = 0.0;
@@ -1831,28 +1844,19 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
 
       /* extract the true particle according to the ESD or AOD format */
       if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
-        esdpart = fMCEvent->Particle(iTrack);
-
-        p = esdpart->P();
-        pt = esdpart->Pt();
-        pz = esdpart->Pz();
-        eta = esdpart->Eta();
-        phi = esdpart->Phi();
-        charge = esdpart->GetPDG()->Charge();
-        species = AliCSPIDCuts::GetTrueSpecies(esdpart);
+        part = fMCEvent->GetTrack(iTrack);
       }
       else {
-        aodpart = (AliAODMCParticle *) arrayMC->At(iTrack);
-
-        p = aodpart->P();
-        pt = aodpart->Pt();
-        pz = aodpart->Pz();
-        eta = aodpart->Eta();
-        phi = aodpart->Phi();
-        charge = aodpart->Charge();
-        species = AliCSPIDCuts::GetTrueSpecies(aodpart);
+        part = (AliAODMCParticle *) arrayMC->At(iTrack);
       }
 
+      p = part->P();
+      pt = part->Pt();
+      pz = part->Pz();
+      eta = part->Eta();
+      phi = part->Phi();
+      charge = part->Charge();
+      species = AliCSPIDCuts::GetTrueSpecies(part);
 
       Double_t filldata[kgTHnDimension] = {pt,eta,phi*180.0/TMath::Pi(),
           (AliPID::kProton < species) ?  AliPID::kSPECIES + 0.5 : species + 0.5};
@@ -1932,21 +1936,11 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         }
         if (fDoProcessPairAnalysis) {
           /* track accepted, process pair analysis function activities */
-          if (aodpart != NULL) {
-            fProcessTruePairAnalysis.ProcessTrack(iTrack, aodpart);
-          }
-          else {
-            fProcessTruePairAnalysis.ProcessTrack(iTrack, esdpart);
-          }
+           fProcessTruePairAnalysis.ProcessTrack(iTrack, part);
         }
         /* track accepted, process correlation function activities */
         if (fDoProcessCorrelations) {
-          if (aodpart != NULL) {
-            fProcessTrueCorrelations.ProcessTrack(iTrack, aodpart);
-          }
-          else {
-            fProcessTrueCorrelations.ProcessTrack(iTrack, esdpart);
-          }
+           fProcessTrueCorrelations.ProcessTrack(iTrack, part);
         }
       }
     }

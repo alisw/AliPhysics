@@ -51,11 +51,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
   void SetMCcorr(Bool_t MCcorr){iMCcorr = MCcorr;};
+  void SetDCApTweight(Bool_t DCApTweight){iDCApTweight = DCApTweight;};
   //void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
   //void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
   void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1;};
   void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2;};
-
+  void SetMCeta(Bool_t MCEtaFull){iMCEtaFull = MCEtaFull;};
+  void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
 
  protected:
   void                        ExecOnce();
@@ -89,6 +91,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fptAssocut;  
     Bool_t fmcData;
     Bool_t iMCcorr;
+    Bool_t iDCApTweight;
+    Bool_t iMCEtaFull;
+    Double_t fPtHardMax;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
@@ -121,6 +126,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistEopIso;
   TH2F                        *fHistEopHFjet;
   TH2F                        *fHistNsigHFjet;
+  TH2F                        *fHistEtaHFjet;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
@@ -160,6 +166,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistULSjet_DCA;
   TH2F                        *fHistLSjet_DCA;
   TH2F                        *fHistHadjet_DCA; 
+  THnSparse                   *fHistHFjet_ridge;
   TH2F                        *fHistHFjetOrder;
   TH2F                        *fHistDiJetPhi; 
   TH2F                        *fHistDiJetMomBalance; 
@@ -195,10 +202,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
+  TH2D                        *HFjetDCA_b_FONLL;
   TH2D                        *HFjetDCA_Dp;
   TH2D                        *HFjetDCA_Dz;
   TH2D                        *HFjetDCA_Ds;
   TH2D                        *HFjetDCA_Lc;
+  TH2D                        *HFjetDCA_Dp_FONLL;
+  TH2D                        *HFjetDCA_Dz_FONLL;
+  TH2D                        *HFjetDCA_Ds_FONLL;
+  TH2D                        *HFjetDCA_Lc_FONLL;
   TH1F                        *fQAHistJetPhi;
   TH1F                        *fQAHistTrPhiJet;
   TH1F                        *fQAHistTrPhi;
@@ -210,13 +222,26 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
+  TH1F                        *fHistBGrandHFEev;
   TH2D                        *fHistJetEnergyReso;
+  TH2D                        *fHistNmatchJet;
+  THnSparse                   *fHistJetEtaCorr0;
+  THnSparse                   *fHistJetEtaCorr1;
+  THnSparse                   *fHistJetEtaCorr2;
+  TH1D                        *fHistDp_POWHEG;
+  TH1D                        *fHistDz_POWHEG;
+  TH1D                        *fHistDs_POWHEG;
+  TH1D                        *fHistLc_POWHEG;
+  TH1D                        *fHistB_POWHEG;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TF1                         *fpythia_b;
   TF1                         *fpowheg_b;
   TF1                         *fpythia_c;
   TF1                         *fpowheg_c;
+  TF1                         *fFONLL_D;
+  TF1                         *fFONLL_Lc;
+  TF1                         *fFONLL_B;
   TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets
@@ -240,7 +265,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
   Double_t CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3);
-
+  void dJetHad(AliAODTrack *asstrack, Double_t jetpT, Double_t phijet, Double_t etajet, Bool_t uls, Bool_t ls);
+ 
  private:
 
 
@@ -256,6 +282,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
+  //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 12) // jet sample analysis task
 };
 #endif

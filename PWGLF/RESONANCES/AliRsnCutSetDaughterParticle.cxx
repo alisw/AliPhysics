@@ -1087,7 +1087,7 @@ void AliRsnCutSetDaughterParticle::Init()
       
       /* pion cuts */
       if (fPID == AliPID::kPion) {
-	iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+	iCutTPCNSigma->SinglePIDRange(3.0 * fNsigmaTPC);
 	//
 	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.40);  
 	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.40, 1.e6);  

@@ -11,7 +11,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   const char *cutType            = "TPCfid",
   Int_t       leadhadtype        = 0,
   const char *suffix             = "",
-  Bool_t     iMC                 = kFALSE
+  Bool_t     iMC                 = kFALSE,
+  Bool_t     iNarrowEta          = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -100,6 +101,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   jetTask->SetNeedEmcalGeom(kFALSE);
 
   Double_t JetEta = 0.9-jetradius;
+  if(iNarrowEta)JetEta = 0.6-jetradius;  // reference eta is EMC acc
+
   cout << "<----------- JetEta =  " << JetEta << endl;
   jetTask->SetJetEtaCut(JetEta);
 

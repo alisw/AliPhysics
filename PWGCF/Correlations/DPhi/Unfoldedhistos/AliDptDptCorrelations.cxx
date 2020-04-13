@@ -401,15 +401,17 @@ AliDptDptCorrelations::~AliDptDptCorrelations() {
 
 /// \brief Establishes the binning configuration
 /// \param confstring string containing the binning configuration parameters
-void AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
+Bool_t AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
+#define DPTDPTCORRBINCONFIGPAR 10
 
   Double_t min_pt = 0.0, max_pt = 0.0, width_pt = 0.0;
   Double_t min_eta = 0.0, max_eta = 0.0, width_eta = 0.0;
+  Int_t    nBins_phi = 0;
 
   /* few sanity checks */
   TString str = confstring;
   if (!str.Contains("halfsymm") || !str.Contains("phishift"))
-    return;
+    return kFALSE;
 
   TObjArray *array = str.Tokenize(";");
   for (Int_t item = 0; item < array->GetEntries(); item++) {
@@ -421,12 +423,19 @@ void AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
       sscanf(stritem.Data(), "phishift:%lf", &fNBinsPhiShift);
     }
     else {
-      sscanf(stritem, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+      TObjArray *a = stritem.Tokenize(",");
+      if (a->GetEntries() != DPTDPTCORRBINCONFIGPAR) {
+        delete a;
+        return kFALSE;
+      }
+      sscanf(stritem, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%d",
           &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
           &min_pt, &max_pt, &width_pt,
-          &min_eta, &max_eta, &width_eta);
+          &min_eta, &max_eta, &width_eta, &nBins_phi);
+      delete a;
     }
   }
+  delete array;
 
   fMin_pt_1 = fMin_pt_2 = min_pt;
   fMax_pt_1 = fMax_pt_2 = max_pt;
@@ -434,9 +443,11 @@ void AliDptDptCorrelations::ConfigureBinning(const char *confstring) {
   fMin_eta_1 = fMin_eta_2 = min_eta;
   fMax_eta_1 = fMax_eta_2 = max_eta;
   fWidth_eta_1 = fWidth_eta_2 = width_eta;
+  fNBins_phi_1 = fNBins_phi_2 = nBins_phi;
   AliInfo("=====================================================");
   AliInfo(Form("Configured binning: %s", GetBinningConfigurationString().Data()));
   AliInfo("=====================================================");
+  return kTRUE;
 }
 
 /// \brief Establishes the resonances rejection configuration
@@ -466,21 +477,22 @@ void AliDptDptCorrelations::ConfigureResonances(const char *confstring) {
 /// \return the configuration string corresponding to the current configuration
 TString AliDptDptCorrelations::GetBinningConfigurationString() const {
   if (fMin_pt_1 != fMin_pt_2 || fMax_pt_2 != fMax_pt_2 || fWidth_pt_1 != fWidth_pt_2 ||
-      fMin_eta_1 != fMin_eta_2 || fMax_eta_1 != fMax_eta_2 || fWidth_eta_1 != fWidth_eta_2) {
-    return TString(Form("WrongAsymmetricBinning:halfsymm:%s;phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f",
+      fMin_eta_1 != fMin_eta_2 || fMax_eta_1 != fMax_eta_2 || fWidth_eta_1 != fWidth_eta_2 ||
+      fNBins_phi_1 != fNBins_phi_2) {
+    return TString(Form("WrongAsymmetricBinning:halfsymm:%s;phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
         (fHalfSymmetrize ? "yes" : "not"),
         fNBinsPhiShift,
         fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
         fMin_pt_1, fMax_pt_1, fWidth_pt_1,
-        fMin_eta_1, fMax_eta_1, fWidth_eta_1));
+        fMin_eta_1, fMax_eta_1, fWidth_eta_1, fNBins_phi_1));
   }
   else {
-    return TString(Form("Binning:halfsymm:%s;phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f",
+    return TString(Form("Binning:halfsymm:%s;phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
         (fHalfSymmetrize ? "yes" : "not"),
         fNBinsPhiShift,
         fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
         fMin_pt_1, fMax_pt_1, fWidth_pt_1,
-        fMin_eta_1, fMax_eta_1, fWidth_eta_1));
+        fMin_eta_1, fMax_eta_1, fWidth_eta_1, fNBins_phi_1));
   }
 }
 
@@ -996,28 +1008,7 @@ Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVTrack *trk) {
 /// \param trkId the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, TParticle *part) {
-
-  if (fUseSimulation) {
-    return kFALSE;
-  }
-  else
-    if (part->GetPDG()->Charge() != 0) {
-      return ProcessTrack(trkId, (part->GetPDG()->Charge() > 0) ? 1 : -1, Float_t(part->Pt()), Float_t(part->Eta()), Float_t(part->Phi()));
-    }
-    else {
-      return kFALSE;
-    }
-}
-
-
-/// \brief process a true particle and store its parameters if feasible
-///
-/// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
-/// \param part the passed particle
-/// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliAODMCParticle *part) {
+Bool_t AliDptDptCorrelations::ProcessTrack(Int_t trkId, AliVParticle *part) {
 
   if (fUseSimulation) {
     return kFALSE;

@@ -83,11 +83,8 @@ const Double_t AliAnalysisTaskPPvsMult::fgkClight = 2.99792458e-2;
 Float_t Magf                    = 1;
 const Int_t nHists              = 4;
 const Int_t nCent               = 11;
-//const Double_t CentMin[nCent] = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0};
-//const Double_t CentMax[nCent] = {5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 const Double_t CentMin[nCent]   = {0.0,1.0,5.0 ,10.0,15.0,20.0,30.0,40.0,50.0,70.0,0.0};
 const Double_t CentMax[nCent]   = {1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0,100.0};
-//const Char_t *centName[11]      = {"0.0-5.0","5.0-10.0","10.0-20.0","20.0-30.0","30.0-40.0","40.0-50.0","50.0-60.0","60.0-70.0","70.0-80.0","80.0-90.0","MB"};
 
 const Double_t aPos[nCent]      = {49.9799,49.9659,0,0,0,0,0,0,0,0,0};
 const Double_t bPos[nCent]      = {2.99619,2.91366,0,0,0,0,0,0,0,0,0};
@@ -133,15 +130,12 @@ ClassImp(AliAnalysisTaskPPvsMult)
 	fTrackFilterGolden(0x0),
 	fTrackFilterTPC(0x0),
 	utils(0x0),
-//	fCentEst("V0M"),
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
 	fAnalysisPbPb(kFALSE),
-//	ftrigBit(0x0),
 	fRandom(0x0),
 	fVtxCut(0x0),
         fNcl(70),
-//	fPileUpRej(kFALSE),
 	fEtaCut(0.9),
 	cent(3),
 	fMinCent(0.0),
@@ -150,7 +144,6 @@ ClassImp(AliAnalysisTaskPPvsMult)
         fDeDxMIPMax(60),
         fdEdxHigh(200),
         fdEdxLow(40),
-//	fStoreMcIn(kFALSE),//
 	fMcProcessType(-999),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
@@ -263,6 +256,10 @@ ClassImp(AliAnalysisTaskPPvsMult)
 			hMcOutNeg[cent][pid] = 0;
 			hMcOutPos[cent][pid] = 0;
 		}
+  			hPiondEdx[cent]=0;
+                        hKaondEdx[cent]=0;
+                        hProtondEdx[cent]=0;
+
 	}
 
 	for(Int_t cent=0;cent<10;++cent){
@@ -298,15 +295,12 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	fTrackFilterGolden(0x0),
 	fTrackFilterTPC(0x0),
 	utils(0x0),
-//	fCentEst("V0M"),
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
 	fAnalysisPbPb(kFALSE),
-//	ftrigBit(0x0),
 	fRandom(0x0),
 	fVtxCut(0x0),
         fNcl(70),
-	//fPileUpRej(kFALSE),
 	fEtaCut(0.9),
 	cent(3),
 	fMinCent(0.0),
@@ -315,7 +309,6 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
         fDeDxMIPMax(60),
         fdEdxHigh(200),
         fdEdxLow(40),
-//	fStoreMcIn(kFALSE),
 	fMcProcessType(-999),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
@@ -424,6 +417,10 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 			hMcOutNeg[cent][pid]=0;
 			hMcOutPos[cent][pid]=0;
 		}
+		
+			hPiondEdx[cent]=0;
+                        hKaondEdx[cent]=0;
+                        hProtondEdx[cent]=0;
 	}
 
 	for(Int_t cent=0;cent<10;++cent){
@@ -486,14 +483,13 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 
 	fEvents = new TH2F( "fEvents", ";Evt. Sel.;Mult. Per.",12,0,12,13,0,13);
         fEvents->GetXaxis()->SetBinLabel(1, "Processed");
-        fEvents->GetXaxis()->SetBinLabel(2, "Trigger");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(3, "IsPileUpFromSPDinMultBins");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(4, "DAQ");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(5, "BG");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(6, "INEL>0");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(7, "Res&Dispersion");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(8, "|VtxTrk-VtxSPD|<0.5cm");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(9, "|Vtz|<10cm");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(2, "PhysSel+Trigger");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(3, "INEL>0");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(4, "BG");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(5, "IsPileUpFromSPDinMultBins");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(6, "Incom DAQ");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(7, "Res&Proximity");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
         fEvents->GetYaxis()->SetBinLabel(2,Form("%.2f-%.2f",CentMin[0],CentMax[0]));
         fEvents->GetYaxis()->SetBinLabel(3,Form("%.2f-%.2f",CentMin[1],CentMax[1]));
         fEvents->GetYaxis()->SetBinLabel(4,Form("%.2f-%.2f",CentMin[2],CentMax[2]));
@@ -507,6 +503,9 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
         fEvents->GetYaxis()->SetBinLabel(12,"0.0-100.0");
         fListOfObjects->Add(fEvents);
 
+	fV0M = new TH1F("fV0M", ";V0M Percentile",100,0,100);
+	fV0M->Sumw2();
+        fListOfObjects->Add(fV0M);
 
 	fcent=new TH1F("fcent","fcent",13,0,13);
 	fcentAfterPrimaries =new TH1F("fcentAfterPrimaries","fcentAfterPrimaries",13,0,13);
@@ -535,6 +534,14 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 
 	};
 
+	/*
+	const Int_t nPtBins = 53;
+	Double_t ptBins[nPtBins+1] = {
+        0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,
+        0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,
+        1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,
+        4.5,5,5.5,6,6.5,7,8,10,13,20,30};
+	*/
 
 	const Int_t nPtBinsV0s = 25;
 	Double_t ptBinsV0s[nPtBinsV0s+1] = { 0.0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0 ,
@@ -563,8 +570,8 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
         fcutDCAxy->SetParameter(1,0.0350);
         fcutDCAxy->SetParameter(2,1.1);
 
-        fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
-        fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
+        fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+TMath::Pi()/18.0-0.025", 0, 50);
+        fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+TMath::Pi()/18.0+0.035", 0, 50);
 
 
 	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol7", -1.0, 0.0);
@@ -650,38 +657,38 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		hPlateauVsPhi[i][j]  = new TH2D(Form("hPlateauVsPhi%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]),  nPhiBins, 0, 2*TMath::Pi(),20, 70, 90);
 		hPlateauVsPhi[i][j]->Sumw2();
 
-			pPlateauVsPhi[i][j] = new TProfile(Form("pPlateauVsPhi%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax, 95);
-			pPlateauVsPhi[i][j]->Sumw2();
+		pPlateauVsPhi[i][j] = new TProfile(Form("pPlateauVsPhi%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), Form("%s; #phi (rad); dE/dx Plateau",LatexEta[j]), nPhiBins, 0, 2*TMath::Pi(),fDeDxMIPMax, 95);
+		pPlateauVsPhi[i][j]->Sumw2();
 
-			hPtPos[i][j] = new TH1D(Form("hPtPos%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
-			hPtPos[i][j]->Sumw2();
+		hPtPos[i][j] = new TH1D(Form("hPtPos%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
+		hPtPos[i][j]->Sumw2();
 
-			hPtNeg[i][j] = new TH1D(Form("hPtNeg%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
-			hPtNeg[i][j]->Sumw2();
+		hPtNeg[i][j] = new TH1D(Form("hPtNeg%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]),";#it{p}_{T};Counts",nPtBins,ptBins);
+		hPtNeg[i][j]->Sumw2();
 
-			hPtVsP[i][j] = new TH2D(Form("hPtVsP%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; #it{p}_{T}", nPtBins, ptBins, nPtBins, ptBins);
-			hPtVsP[i][j]->Sumw2();
+		hPtVsP[i][j] = new TH2D(Form("hPtVsP%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), ";#it{p} [GeV/c]; #it{p}_{T}", nPtBins, ptBins, nPtBins, ptBins);
+		hPtVsP[i][j]->Sumw2();
 
-			histPiV0[i][j]  = new TH2D(Form("hPiV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
-			histPiV0[i][j]->Sumw2();
+		histPiV0[i][j]  = new TH2D(Form("hPiV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+		histPiV0[i][j]->Sumw2();
 
-			histpPiV0[i][j]  = new TH1D(Form("hPiV01D%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
-			histpPiV0[i][j]->Sumw2();
+		histpPiV0[i][j]  = new TH1D(Form("hPiV01D%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Pions id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+		histpPiV0[i][j]->Sumw2();
 
-			histPV0[i][j]   = new TH2D(Form("hPV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
-			histPV0[i][j]->Sumw2();
+		histPV0[i][j]   = new TH2D(Form("hPV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+		histPV0[i][j]->Sumw2();
 
-			histpPV0[i][j]  = new TH1D(Form("hPV01D%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
-			histpPV0[i][j]->Sumw2();
+		histpPV0[i][j]  = new TH1D(Form("hPV01D%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Protons id by V0; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+		histpPV0[i][j]->Sumw2();
 
-			histPiTof[i][j] = new TH2D(Form("hPiTOF%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
-			histPiTof[i][j]->Sumw2();
+		histPiTof[i][j] = new TH2D(Form("hPiTOF%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+		histPiTof[i][j]->Sumw2();
 
-			histpPiTof[i][j]  = new TH1D(Form("hPTOF%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF ; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
-			histpPiTof[i][j]->Sumw2();
+		histpPiTof[i][j]  = new TH1D(Form("hPTOF%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Primary Pions from TOF ; #it{p} (GeV/#it{c}); counts", 200, 0, 20);
+		histpPiTof[i][j]->Sumw2();
 
-			histEV0[i][j]   = new TH2D(Form("hEV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Electrons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
-			histEV0[i][j]->Sumw2();
+		histEV0[i][j]   = new TH2D(Form("hEV0%.2f-%.2f-%s",CentMin[i],CentMax[i],ending[j]), "Electrons id by V0", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+		histEV0[i][j]->Sumw2();
 
 		}// eta loop
 	} // centrality loop
@@ -689,94 +696,80 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 
 	for(Int_t i = 0; i<nHists; ++i ){
 
-	hMIPVsV0M[i] = new TH2D(Form("hMIPVsV0M-%s",ending[i]), Form("%s; V0M mult.; dE/dx MIP",LatexEta[i]), 100, 0, 100, fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
-	hMIPVsV0M[i]->Sumw2();
-
-	pMIPVsV0M[i] = new TProfile(Form("pMIPVsV0M-%s",ending[i]), Form("%s; V0M mult.; dE/dx MIP",LatexEta[i]), 100, 0, 100, fDeDxMIPMin, fDeDxMIPMax);
-	pMIPVsV0M[i]->Sumw2();
-
-	hMIPVsNch[i] = new TH2D(Form("hMIPVsNch-%s",ending[i]),"; TPC track mult. |#eta|<0.8; dE/dx MIP", 100, 1, 101, fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
-	hMIPVsNch[i]->Sumw2();
-
-	pMIPVsNch[i] = new TProfile(Form("pMIPVsNch-%s",ending[i]),"; TPC track mult. |#eta|<0.8; dE/dx MIP", 100, 1, 101, fDeDxMIPMin, fDeDxMIPMax);
-	pMIPVsNch[i]->Sumw2();
+		hMIPVsV0M[i] = new TH2D(Form("hMIPVsV0M-%s",ending[i]), Form("%s; V0M mult.; dE/dx MIP",LatexEta[i]), 100, 0, 100, fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+		hMIPVsV0M[i]->Sumw2();
+		pMIPVsV0M[i] = new TProfile(Form("pMIPVsV0M-%s",ending[i]), Form("%s; V0M mult.; dE/dx MIP",LatexEta[i]), 100, 0, 100, fDeDxMIPMin, fDeDxMIPMax);
+		pMIPVsV0M[i]->Sumw2();
+		hMIPVsNch[i] = new TH2D(Form("hMIPVsNch-%s",ending[i]),"; TPC track mult. |#eta|<0.8; dE/dx MIP", 100, 1, 101, fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
+		hMIPVsNch[i]->Sumw2();
+		pMIPVsNch[i] = new TProfile(Form("pMIPVsNch-%s",ending[i]),"; TPC track mult. |#eta|<0.8; dE/dx MIP", 100, 1, 101, fDeDxMIPMin, fDeDxMIPMax);
+		pMIPVsNch[i]->Sumw2();
 }
 
 
 
-	if(!fAnalysisMC){
-
+		if(!fAnalysisMC){
 		for(Int_t j=0; j<nHists; ++j){
-
 		fListOfObjects->Add(hMIPVsV0M[j]);
 		fListOfObjects->Add(pMIPVsV0M[j]);
-
 		fListOfObjects->Add(hMIPVsNch[j]);
 		fListOfObjects->Add(pMIPVsNch[j]);
-
 		}
 
 		for(Int_t i=0; i<nCent; ++i ){
+		fListOfObjects->Add(hMIPVsEta[i]);
+		fListOfObjects->Add(pMIPVsEta[i]);
+		fListOfObjects->Add(hMIPVsEtaV0s[i]);
+		fListOfObjects->Add(pMIPVsEtaV0s[i]);
+		fListOfObjects->Add(hPlateauVsEta[i]);
+		fListOfObjects->Add(pPlateauVsEta[i]);
+		fListOfObjects->Add(hPhi[i]);
 
-			fListOfObjects->Add(hMIPVsEta[i]);
-			fListOfObjects->Add(pMIPVsEta[i]);
-			fListOfObjects->Add(hMIPVsEtaV0s[i]);
-			fListOfObjects->Add(pMIPVsEtaV0s[i]);
-			fListOfObjects->Add(hPlateauVsEta[i]);
-			fListOfObjects->Add(pPlateauVsEta[i]);
-			fListOfObjects->Add(hPhi[i]);
-
-			for(Int_t j=0; j<nHists; ++j){
-
-				fListOfObjects->Add(hMIPVsPhi[i][j]);
-				fListOfObjects->Add(pMIPVsPhi[i][j]);
-				fListOfObjects->Add(hPlateauVsPhi[i][j]);
-				fListOfObjects->Add(pPlateauVsPhi[i][j]);
-
+		for(Int_t j=0; j<nHists; ++j){
+		fListOfObjects->Add(hMIPVsPhi[i][j]);
+		fListOfObjects->Add(pMIPVsPhi[i][j]);
+		fListOfObjects->Add(hPlateauVsPhi[i][j]);
+		fListOfObjects->Add(pPlateauVsPhi[i][j]);
 			}
 
-			if(fMakePid){
+		if(fMakePid){
+		fListOfObjects->Add(hPtAll[i]);	
+		if(fLowPt){
+		fListOfObjects->Add(hPtAllNeg[i]);
+		fListOfObjects->Add(hPtAllPos[i]);
 
-				fListOfObjects->Add(hPtAll[i]);
-		
-			if(fLowPt){
-				fListOfObjects->Add(hPtAllNeg[i]);
-				fListOfObjects->Add(hPtAllPos[i]);
+		fListOfObjects->Add(hDCAxyVsPtPiNeg[i]);
+		fListOfObjects->Add(hDCAxyVsPtPiPos[i]);
+		fListOfObjects->Add(hDCAxyVsPtPNeg[i]);
+		fListOfObjects->Add(hDCAxyVsPtPPos[i]);
 
-				fListOfObjects->Add(hDCAxyVsPtPiNeg[i]);
-				fListOfObjects->Add(hDCAxyVsPtPiPos[i]);
-				fListOfObjects->Add(hDCAxyVsPtPNeg[i]);
-				fListOfObjects->Add(hDCAxyVsPtPPos[i]);
+		fListOfObjects->Add(hDCAxyVsPtPiNegC[i]);
+		fListOfObjects->Add(hDCAxyVsPtPiPosC[i]);
+		fListOfObjects->Add(hDCAxyVsPtPNegC[i]);
+		fListOfObjects->Add(hDCAxyVsPtPPosC[i]);
+		}
 
-				fListOfObjects->Add(hDCAxyVsPtPiNegC[i]);
-				fListOfObjects->Add(hDCAxyVsPtPiPosC[i]);
-				fListOfObjects->Add(hDCAxyVsPtPNegC[i]);
-				fListOfObjects->Add(hDCAxyVsPtPPosC[i]);
-				}
+		for(Int_t j=0; j<nHists; ++j){
+		if(fLowPt){
+		fListOfObjects->Add(hnSigmaPiPos[i][j]);
+		fListOfObjects->Add(hnSigmaPiNeg[i][j]);	
+		fListOfObjects->Add(hnSigmaKPos[i][j]);
+		fListOfObjects->Add(hnSigmaKNeg[i][j]);
+		fListOfObjects->Add(hnSigmaPPos[i][j]);
+		fListOfObjects->Add(hnSigmaPNeg[i][j]);
+		fListOfObjects->Add(hPtPos[i][j]);
+		fListOfObjects->Add(hPtNeg[i][j]);
+		}
 
-				for(Int_t j=0; j<nHists; ++j){
-
-				
-			if(fLowPt){
-				fListOfObjects->Add(hnSigmaPiPos[i][j]);
-				fListOfObjects->Add(hnSigmaPiNeg[i][j]);	
-				fListOfObjects->Add(hnSigmaKPos[i][j]);
-				fListOfObjects->Add(hnSigmaKNeg[i][j]);
-				fListOfObjects->Add(hnSigmaPPos[i][j]);
-				fListOfObjects->Add(hnSigmaPNeg[i][j]);
-				fListOfObjects->Add(hPtPos[i][j]);
-				fListOfObjects->Add(hPtNeg[i][j]);
-				}
-
-				fListOfObjects->Add(hPtVsP[i][j]);
-				fListOfObjects->Add(histPiV0[i][j]);
-					//					fListOfObjects->Add(histpPiV0[i][j]);
-					//					fListOfObjects->Add(histpPV0[i][j]);
-					//					fListOfObjects->Add(histpPiTof[i][j]);
-				fListOfObjects->Add(histPiTof[i][j]);
-				fListOfObjects->Add(histEV0[i][j]);
-				fListOfObjects->Add(histPV0[i][j]);
-				fListOfObjects->Add(hDeDxVsP[i][j]);
+		fListOfObjects->Add(hPtVsP[i][j]);
+		fListOfObjects->Add(histPiV0[i][j]);
+			//					fListOfObjects->Add(histpPiV0[i][j]);
+			//					fListOfObjects->Add(histpPV0[i][j]);
+			//					fListOfObjects->Add(histpPiTof[i][j]);
+		fListOfObjects->Add(histPiTof[i][j]);
+		fListOfObjects->Add(histEV0[i][j]);
+		fListOfObjects->Add(histPV0[i][j]);
+		fListOfObjects->Add(hDeDxVsP[i][j]);
 				}
 			} //	if(MakePID) 
 		} //	Cent
@@ -784,54 +777,71 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 
 
 	else{
-		for(Int_t cent=0; cent<nCent; cent++) {
-			for(Int_t pid=0; pid<7; pid++) {
-				hMcIn[cent][pid]=new TH1D(Form("hIn_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
-				hMcIn[cent][pid]->Sumw2();
-				hMcInNeg[cent][pid]=new TH1D(Form("hInNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
-				hMcInNeg[cent][pid]->Sumw2();
-				hMcInPos[cent][pid]=new TH1D(Form("hInPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
-				hMcInPos[cent][pid]->Sumw2();
-				hMcOut[cent][pid]=new TH1D(Form("hMcOut_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-				hMcOut[cent][pid]->Sumw2();
-				hMcOutNeg[cent][pid]=new TH1D(Form("hMcOutNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-				hMcOutNeg[cent][pid]->Sumw2();
-				hMcOutPos[cent][pid]=new TH1D(Form("hMcOutPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
-				hMcOutPos[cent][pid]->Sumw2();
+	for(Int_t cent=0; cent<nCent; cent++) {
+	for(Int_t pid=0; pid<7; pid++) {
+	hMcIn[cent][pid]=new TH1D(Form("hIn_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
+	hMcIn[cent][pid]->Sumw2();
+	hMcInNeg[cent][pid]=new TH1D(Form("hInNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcInNeg[cent][pid]->Sumw2();
+	hMcInPos[cent][pid]=new TH1D(Form("hInPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcInPos[cent][pid]->Sumw2();
+	hMcOut[cent][pid]=new TH1D(Form("hMcOut_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOut[cent][pid]->Sumw2();
+	hMcOutNeg[cent][pid]=new TH1D(Form("hMcOutNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOutNeg[cent][pid]->Sumw2();
+	hMcOutPos[cent][pid]=new TH1D(Form("hMcOutPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+	hMcOutPos[cent][pid]->Sumw2();
 
-				fListOfObjects->Add(hMcIn[cent][pid]);
-				fListOfObjects->Add(hMcInNeg[cent][pid]);
-				fListOfObjects->Add(hMcInPos[cent][pid]);
-				fListOfObjects->Add(hMcOut[cent][pid]);
-				fListOfObjects->Add(hMcOutNeg[cent][pid]);
-				fListOfObjects->Add(hMcOutPos[cent][pid]);
+//				fListOfObjects->Add(hMcIn[cent][pid]);
+//				fListOfObjects->Add(hMcInNeg[cent][pid]);
+//				fListOfObjects->Add(hMcInPos[cent][pid]);
+//				fListOfObjects->Add(hMcOut[cent][pid]);
+//				fListOfObjects->Add(hMcOutNeg[cent][pid]);
+//				fListOfObjects->Add(hMcOutPos[cent][pid]);
 
 			}	// pid Eff
+
+	hPiondEdx[cent]=new TH2D(Form("h%s_dEdx_%d",Pid[1],cent),
+	";#it{p}_{T} (GeV/#it{c}); #it{d}E/#it{d}x",
+	nPtBins,ptBins,fdEdxHigh-fdEdxLow,fdEdxLow,fdEdxHigh);
+	hPiondEdx[cent]->Sumw2();
+	hKaondEdx[cent]=new TH2D(Form("h%s_dEdx_%d",Pid[2],cent),
+	";#it{p}_{T} (GeV/#it{c}); #it{d}E/#it{d}x",
+	nPtBins,ptBins,fdEdxHigh-fdEdxLow,fdEdxLow,fdEdxHigh);
+	hKaondEdx[cent]->Sumw2();
+	hProtondEdx[cent]=new TH2D(Form("h%s_dEdx_%d",Pid[3],cent),
+	";#it{p}_{T} (GeV/#it{c}); #it{d}E/#it{d}x",
+	nPtBins,ptBins,fdEdxHigh-fdEdxLow,fdEdxLow,fdEdxHigh);
+	hProtondEdx[cent]->Sumw2();
+	fListOfObjects->Add(hPiondEdx[cent]);
+	fListOfObjects->Add(hKaondEdx[cent]);
+	fListOfObjects->Add(hProtondEdx[cent]);
+
 		}	// cent Eff
 
-		for(Int_t i_cent=0; i_cent<10; ++i_cent){
-			for(Int_t pid=0; pid<7; ++pid){
-				for(Int_t q=0; q<3; ++q){
-					hDCApTPrim[i_cent][pid][q] = 0;
-					hDCApTPrim[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-					hDCApTPrim[i_cent][pid][q]->Sumw2();
-					hDCApTWDec[i_cent][pid][q] = 0;
-					hDCApTWDec[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-					hDCApTWDec[i_cent][pid][q]->Sumw2();
-					hDCApTMate[i_cent][pid][q] = 0;
-					hDCApTMate[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
-					hDCApTMate[i_cent][pid][q]->Sumw2();
+	for(Int_t i_cent=0; i_cent<10; ++i_cent){
+	for(Int_t pid=0; pid<7; ++pid){
+	for(Int_t q=0; q<3; ++q){
+	hDCApTPrim[i_cent][pid][q] = 0;
+	hDCApTPrim[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+	hDCApTPrim[i_cent][pid][q]->Sumw2();
+	hDCApTWDec[i_cent][pid][q] = 0;
+	hDCApTWDec[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+	hDCApTWDec[i_cent][pid][q]->Sumw2();
+	hDCApTMate[i_cent][pid][q] = 0;
+	hDCApTMate[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+	hDCApTMate[i_cent][pid][q]->Sumw2();
 
-					// narrower bin size
-					hDCApTPrim2[i_cent][pid][q] = 0;
-					hDCApTPrim2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
-					hDCApTPrim2[i_cent][pid][q]->Sumw2();
-					hDCApTWDec2[i_cent][pid][q] = 0;
-					hDCApTWDec2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
-					hDCApTWDec2[i_cent][pid][q]->Sumw2();
-					hDCApTMate2[i_cent][pid][q] = 0;
-					hDCApTMate2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
-					hDCApTMate2[i_cent][pid][q]->Sumw2();
+		// narrower bin size
+	hDCApTPrim2[i_cent][pid][q] = 0;
+	hDCApTPrim2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+	hDCApTPrim2[i_cent][pid][q]->Sumw2();
+	hDCApTWDec2[i_cent][pid][q] = 0;
+	hDCApTWDec2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+	hDCApTWDec2[i_cent][pid][q]->Sumw2();
+	hDCApTMate2[i_cent][pid][q] = 0;
+	hDCApTMate2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+	hDCApTMate2[i_cent][pid][q]->Sumw2();
 
 //					fListOfObjects->Add(hDCApTPrim[i_cent][pid][q]);
 //					fListOfObjects->Add(hDCApTPrim2[i_cent][pid][q]);
@@ -924,87 +934,80 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
                 return;
         }
 
-//	fEvents->Fill(0.5);
-
+	fEvents->Fill(0.5,11);
 
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-   	Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
+   	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
 	if(!isINT7selected)
 		return;
-
-//	fEvents->Fill(1.5);
-	//--------------- Event Selection --------------------
-
-/*
- 	fEventCuts.SetupLHC15o();
-        fEventCuts.SetManualMode();
-
-	fEventCuts.fUseStrongVarCorrelationCut = true;
-        fEventCuts.fUseVariablesCorrelationCuts = true;
-
-	if (!fEventCuts.AcceptEvent(fESD)){
-		PostData(1, fListOfObjects);
-		return;
-	}
-
-*/
-
+	fEvents->Fill(1.5,11);
 
       	Float_t V0MPer  = -1;
       	Float_t MultBin = -1;
 
         AliMultSelection *MultSelection = (AliMultSelection*) fESD -> FindListObject("MultSelection");
         if(MultSelection-> IsEventSelected()){
-                V0MPer = MultSelection->GetMultiplicityPercentile("V0M",false);
+                V0MPer = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
         }
 
 	if((V0MPer>100)||(V0MPer<0))return;
 		for(Int_t icent = 0; icent < (nCent-1); ++icent){
 			if(V0MPer > CentMin[icent] && V0MPer <= CentMax[icent]){
 				MultBin = icent+1;
-}
-}
-
-
-
-
-	if( fESD->IsPileupFromSPDInMultBins() )
-		return;
-
-	fEvents->Fill(2.5,MultBin);
-	fEvents->Fill(2.5,11);
-
-	if( fESD->IsIncompleteDAQ()) 
-		return;
-
-	fEvents->Fill(3.5,MultBin);
-	fEvents->Fill(3.5,11);
-
-  	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
-		return;
-
-	fEvents->Fill(4.5,MultBin);
-	fEvents->Fill(4.5,11);
+										}
+								}
 
 	Int_t INEL = -1;
 	      INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
 	if( INEL < 1 )
 		return;
 
+	fEvents->Fill(2.5,MultBin);
+	fEvents->Fill(2.5,11);
+
+  	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
+		return;
+
+	fEvents->Fill(3.5,MultBin);
+	fEvents->Fill(3.5,11);
+
+	if( fESD->IsPileupFromSPDInMultBins() )
+		return;
+
+	fEvents->Fill(4.5,MultBin);
+	fEvents->Fill(4.5,11);
+
+	if( fESD->IsIncompleteDAQ()) 
+		return;
+
 	fEvents->Fill(5.5,MultBin);
 	fEvents->Fill(5.5,11);
 
-	cout << "INEL ============  " << INEL << endl;
+
+ 	if( !selectVertex2015pp(fESD,kTRUE,kFALSE,kTRUE) ){return;}
+        fEvents->Fill(6.5,MultBin);
+        fEvents->Fill(6.5,11);
+
+        if( !IsGoodZvertexPos(fESD) ){return;}
+        fEvents->Fill(7.5,MultBin);
+        fEvents->Fill(7.5,11);
+
+	fV0M->Fill(V0MPer);
+
+//	cout << "INEL ============  " << INEL << endl;
 		
 
-  	const AliESDVertex * trkVertex = fESD->GetPrimaryVertexTracks();
-  	const AliESDVertex * spdVertex = fESD->GetPrimaryVertexSPD();
-  	Bool_t hasSPD = spdVertex->GetStatus();
-  	Bool_t hasTrk = trkVertex->GetStatus();
+//  	const AliESDVertex * trkVertex = fESD->GetPrimaryVertexTracks();
+//  	const AliESDVertex * spdVertex = fESD->GetPrimaryVertexSPD();
+//  	Bool_t hasSPD = spdVertex->GetStatus();
+//  	Bool_t hasTrk = trkVertex->GetStatus();
 
 //   	Double_t cov[6]={0};
 //   	spdVertex->GetCovarianceMatrix(cov);
 //   	Double_t zRes = TMath::Sqrt(cov[5]);
+
+
+/*
 
   	if (!hasTrk){
 	if (!hasSPD){ return; } 
@@ -1040,11 +1043,12 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 
 	fEvents->Fill(8.5,MultBin);
 	fEvents->Fill(8.5,11);
+*/
+
+
 
 	if (fAnalysisType == "ESD")
 		AnalyzeESD(fESD);
-
-
 
 	if (fAnalysisMC) {
 		if (fAnalysisType == "ESD"){
@@ -1565,6 +1569,18 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 
 						hMcOut[10][0]->Fill(esdTrack->Pt());
 						hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+ 
+						if(pidCode == 1){
+                                                hPiondEdx[Cent]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());
+                                                hPiondEdx[10]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());}
+                                                else if(pidCode == 2){
+                                                hKaondEdx[Cent]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());
+                                                hKaondEdx[10]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());}
+                                                else if(pidCode == 3){
+                                                hProtondEdx[Cent]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());
+                                                hProtondEdx[10]->Fill(esdTrack->Pt(),esdTrack->GetTPCsignal());}
+                                                else{
+                                                continue;}
 					}
 
 					hDCApTPrim[Cent][0][0]->Fill(pt,dcaxy);
@@ -2198,17 +2214,63 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 
 }
 
-//-------------------------------------------------------------------------
-
-Bool_t AliAnalysisTaskPPvsMult::IsGoodSPDvertexRes(const AliESDVertex * spdVertex)
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPPvsMult::selectVertex2015pp(AliESDEvent *esd,
+                Bool_t checkSPDres, //enable check on vtx resolution
+                Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
+                Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
 {
-  if (!spdVertex) return kFALSE;
-  if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) return kFALSE;
-  return kTRUE;
-};
 
+        if (!esd) return kFALSE;
 
-//-------------------------------------------------------------------------
+        const AliESDVertex * trkVertex = esd->GetPrimaryVertexTracks();
+        const AliESDVertex * spdVertex = esd->GetPrimaryVertexSPD();
+        Bool_t hasSPD = spdVertex->GetStatus();
+        Bool_t hasTrk = trkVertex->GetStatus();
+
+        //Note that AliVertex::GetStatus checks that N_contributors is > 0
+        //reject events if both are explicitly requested and none is available
+        if (requireSPDandTrk && !(hasSPD && hasTrk)) return kFALSE;
+
+        //reject events if none between the SPD or track verteces are available
+        //if no trk vertex, try to fall back to SPD vertex;
+        if (!hasTrk) {
+                if (!hasSPD) return kFALSE;
+                //on demand check the spd vertex resolution and reject if not satisfied
+                if (checkSPDres && !IsGoodSPDvertexRes(spdVertex)) return kFALSE;
+        } else {
+                if (hasSPD) {
+                        //if enabled check the spd vertex resolution and reject if not satisfied
+                        //if enabled, check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+                        if (checkSPDres && !IsGoodSPDvertexRes(spdVertex)) return kFALSE;
+                        if ((checkProximity && TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
+                }
+        }
+
+        //Cut on the vertex z position
+        //const AliESDVertex * vertex = esd->GetPrimaryVertex();
+        //if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
+        return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPPvsMult::IsGoodSPDvertexRes(const AliESDVertex* spdVertex)
+{
+
+        if( !spdVertex ) return kFALSE;
+        if( spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25) ) return kFALSE;
+        return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPPvsMult::IsGoodZvertexPos(AliESDEvent *esd)
+{
+
+        if( !esd ) return kFALSE;
+        //Cut on the vertex z position
+        const AliESDVertex * vertex = esd->GetPrimaryVertex();
+        if (TMath::Abs(vertex->GetZ())>10) return kFALSE;
+        return kTRUE;
+}
+//________________________________________________________________________
 Bool_t AliAnalysisTaskPPvsMult::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh)
 
 {
@@ -2229,12 +2291,11 @@ Bool_t AliAnalysisTaskPPvsMult::PhiCut(Double_t pt, Double_t phi, Double_t q, Fl
 		return kFALSE; // reject track
 
 	hPhi[cent]->Fill(pt, phi);
+	hPhi[10]->Fill(pt, phi);
 
 	return kTRUE;
 }
-
-//-------------------------------------------------------------------------
-
+//________________________________________________________________________
 Float_t AliAnalysisTaskPPvsMult::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t ptI){
 
 	Double_t maxDCAxy = 10;
@@ -2242,10 +2303,7 @@ Float_t AliAnalysisTaskPPvsMult::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t ptI){
 	return maxDCAxy;
 
 }
-
-
-//-------------------------------------------------------------------------
-
+//________________________________________________________________________
 Double_t AliAnalysisTaskPPvsMult::EtaCalibrationNeg( const Int_t Cent, const Double_t eta){
 
 
@@ -2265,10 +2323,7 @@ Double_t AliAnalysisTaskPPvsMult::EtaCalibrationNeg( const Int_t Cent, const Dou
 
 
 }
-
-
-//-------------------------------------------------------------------------
-
+//________________________________________________________________________
 Double_t AliAnalysisTaskPPvsMult::EtaCalibrationPos( const Int_t Cent, const Double_t eta){
 
 
@@ -2287,11 +2342,7 @@ Double_t AliAnalysisTaskPPvsMult::EtaCalibrationPos( const Int_t Cent, const Dou
 	return fEtaCalibration->Eval(eta);
 
 }
-
-
-
-//-------------------------------------------------------------------------
-
+//________________________________________________________________________
 Double_t AliAnalysisTaskPPvsMult::EtaCalibrationNegEl(const Int_t Cent, const Double_t eta){
 
 
@@ -2309,10 +2360,7 @@ Double_t AliAnalysisTaskPPvsMult::EtaCalibrationNegEl(const Int_t Cent, const Do
 	return felededxfitNeg->Eval(eta);
 
 }
-
-
-//-------------------------------------------------------------------------
-
+//________________________________________________________________________
 Double_t AliAnalysisTaskPPvsMult::EtaCalibrationPosEl(const Int_t Cent, const Double_t eta){
 
 

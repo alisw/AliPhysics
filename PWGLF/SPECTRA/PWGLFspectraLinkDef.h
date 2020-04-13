@@ -1,7 +1,6 @@
 #ifdef __CINT__
 
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
-#pragma link C++ class AliMeanPtAnalysisTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AliAnalysisTaskCutTest+;
 #pragma link C++ class AlidNdPtUnifiedAnalysisTask+;
@@ -20,18 +19,37 @@
 #pragma link C++ class AlidNdPt+;
 #pragma link C++ class AlidNdPtEfficiency+;
 #pragma link C++ class AlidNdPtEventCuts+;
-#pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTask+;
+#pragma link C++ class AlidNdPtHelper+;
+#pragma link C++ class AlidNdPtTools+;
+#pragma link C++ class AliAnalysisTaskMKBase+;
+#pragma link C++ class AliAnalysisTaskBaseWeights+;
+#pragma link C++ class AliAnalysisTaskMKTest+;
+#pragma link C++ class AliAnalysisTaskTPCMatchEff+;
+#pragma link C++ class AliAnalysisTaskDCArStudy+;
+#pragma link C++ class AliAnalysisTaskPtResStudy+;
+#pragma link C++ class AliAnalysisTaskEffContStudy+;
+#pragma link C++ class AliAnalysisTaskUEStudy+;
+#pragma link C++ class AliAnalysisTaskSpectra+;
+#pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
+#pragma link C++ class AliAnalysisTaskSpectraV0M+;
+#pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
+#pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;
 #pragma link C++ class AlimPtAnalysis+;
 #pragma link C++ class AlimPtMatrix+;
 #pragma link C++ class AlimPtMatrixZDC+;
+#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
 #pragma link C++ class AliAnalysisTaskSpherocity+;
+#pragma link C++ class AliAnalysisTaskPPvsRT+;
+#pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
+#pragma link C++ class AliAnalysisTaskSpectraRT+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -40,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskTOFSpectra+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
 #pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
+
 
 #pragma link C++ class AliAnalysisTaskTOFMC+;
 #pragma link C++ class AliAnalysisTaskTOFppSpectra+;
@@ -63,6 +82,7 @@
 #pragma link C++ class AliAnalysisTaskKinkpp5TeVMC+;
 #pragma link C++ class AliAnalysisTaskKinkPbPb+;
 #pragma link C++ class AliAnalysisTaskKinkPbPbMC+;
+#pragma link C++ class AliAnalysisKinkTaskPbPb2018+;
 
 #pragma link C++ class AliAnalysisTaskSpectraBoth+;
 #pragma link C++ class AliSpectraBothEventCuts+;
@@ -72,9 +92,13 @@
 #pragma link C++ class AliMultiplictyLoaderTask+;
 
 #pragma link C++ class AliAnalysisPIDEvent+;
+#pragma link C++ class AliAnalysisPIDCascadeEvent+;
 #pragma link C++ class AliAnalysisPIDParticle+;
+#pragma link C++ class AliAnalysisPIDCascadeParticle+;
 #pragma link C++ class AliAnalysisPIDTrack+;
+#pragma link C++ class AliAnalysisPIDCascadeTrack+;
 #pragma link C++ class AliAnalysisPIDV0+;
+#pragma link C++ class AliAnalysisPIDCascadeV0+;
 #pragma link C++ class AliAnalysisPIDCascade+;
 #pragma link C++ class AliAnalysisTaskTPCTOFPID+;
 #pragma link C++ class AliAnalysisTaskTPCTOFCascade+;
@@ -116,6 +140,7 @@
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
+#pragma link C++ class AliAnalysisSphericityTask+;
 // lightweight class for spherocity estimation, used in 13TeV pp
 #pragma link C++ class AliSpherocityEstimator+;
 #endif

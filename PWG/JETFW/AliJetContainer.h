@@ -179,6 +179,7 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
+  UInt_t                      GetAcceptanceType()                   const    {return fJetAcceptanceType; }
   EJetType_t                  GetJetType()                          const    {return fJetType; }
   EJetAlgo_t                  GetJetAlgorithm()                     const    {return fJetAlgorithm; }
   ERecoScheme_t               GetRecombinationScheme()              const    {return fRecombinationScheme; }

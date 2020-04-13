@@ -64,13 +64,18 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDaughtersDCA(0.5),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
+   fMaxPseudorapidity(1e20),
    fPID(pid),
    fPID2(pid2),
    fPIDCutProton(0),
    fPIDCutPion(0),
    fESDtrackCuts(0x0),
    fCutQuality(Form("%sDaughtersQuality", name)),
-   fAODTestFilterBit(5)
+   fAODTestFilterBit(5),
+   fCustomTrackDCACuts(kFALSE),
+   fMinDCAPositiveTrack(0.001),
+   fMinDCANegativeTrack(0.001),
+   fCheckOOBPileup(kFALSE)
 {
 //
 // Default constructor.
@@ -98,13 +103,18 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
+   fMaxPseudorapidity(copy.fMaxPseudorapidity),
    fPID(copy.fPID),
    fPID2(copy.fPID2),
    fPIDCutProton(copy.fPIDCutProton),
    fPIDCutPion(copy.fPIDCutPion),
    fESDtrackCuts(copy.fESDtrackCuts),
    fCutQuality(copy.fCutQuality),
-   fAODTestFilterBit(copy.fAODTestFilterBit)
+   fAODTestFilterBit(copy.fAODTestFilterBit),
+   fCustomTrackDCACuts(copy.fCustomTrackDCACuts),
+   fMinDCAPositiveTrack(copy.fMinDCAPositiveTrack),
+   fMinDCANegativeTrack(copy.fMinDCANegativeTrack),
+   fCheckOOBPileup(copy.fCheckOOBPileup)
 {
 //
 // Copy constructor.
@@ -146,6 +156,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
+   fMaxPseudorapidity = copy.fMaxPseudorapidity;
    fCutQuality = copy.fCutQuality;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
@@ -154,6 +165,10 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fESDtrackCuts = copy.fESDtrackCuts;
    fCutQuality = copy.fCutQuality;
    fAODTestFilterBit = copy.fAODTestFilterBit;
+   fCustomTrackDCACuts = copy.fCustomTrackDCACuts;
+   fMinDCAPositiveTrack = copy.fMinDCAPositiveTrack;
+   fMinDCANegativeTrack = copy.fMinDCANegativeTrack;
+   fCheckOOBPileup = copy.fCheckOOBPileup;
 
    return (*this);
 }
@@ -227,6 +242,12 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       return kFALSE;
    }
 
+   if (fCheckOOBPileup) {
+      Double_t bfield = lESDEvent->GetMagneticField();
+      if(!TrackPassesOOBPileupCut(pTrack, bfield) &&
+         !TrackPassesOOBPileupCut(nTrack, bfield)) return kFALSE;
+   }
+
   // check quality cuts
    if (fESDtrackCuts) {
       AliDebugClass(2, "Checking quality cuts");
@@ -238,6 +259,29 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
          AliDebugClass(2, "Negative daughter failed quality cuts");
          return kFALSE;
       }
+   }
+
+      // Apply different DCAxy cut for positive and negative V0 daughters
+
+   if (fCustomTrackDCACuts) {
+     Float_t impParPos[2], impParNeg[2];
+     Float_t covMatPos[3], covMatNeg[3];
+     pTrack->GetImpactParameters(impParPos,covMatPos);
+     nTrack->GetImpactParameters(impParNeg,covMatNeg);
+
+     if (covMatPos[0]<=0 || covMatPos[2]<=0) {
+       Printf("Estimated b resolution lower or equal zero!");
+       covMatPos[0]=0; covMatPos[2]=0;
+     }
+
+     if (covMatNeg[0]<=0 || covMatNeg[2]<=0) {
+       Printf("Estimated b resolution lower or equal zero!");
+       covMatNeg[0]=0; covMatNeg[2]=0;
+     }
+     
+     if(TMath::Abs(impParPos[0])<fMinDCAPositiveTrack) return kFALSE;
+     if(TMath::Abs(impParNeg[0])<fMinDCANegativeTrack) return kFALSE;
+     
    }
 
    // topological checks
@@ -256,6 +300,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    }
    if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
       AliDebugClass(2, "Failed check on V0 rapidity");
+      return kFALSE;
+   }
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseudorapidity");
       return kFALSE;
    }
    //
@@ -591,6 +639,11 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
 
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseusorapidity");
+      return kFALSE;
+   }
+
    Double_t radius = v0->RadiusV0();
    if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ){
      AliDebugClass(2, "Failed fiducial volume");
@@ -646,12 +699,18 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
 
 }
 
-
-
 //_________________________________________________________________________________________________
 void AliRsnCutV0::Print(const Option_t *) const
 {
 //
 // Print information on this cut
 //
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutV0::TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b){
+   if (!t) return true;
+   if ((t->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) return true;
+   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
+   return false;
 }

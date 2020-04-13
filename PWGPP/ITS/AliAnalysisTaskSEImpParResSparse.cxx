@@ -119,6 +119,12 @@ fOutput(0),
 fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
+,fUsetrkITSrefit_highMev(kFALSE)
+,fCountTracks(0)
+,fNumTracksperEv(0)
+,fNumContributors(0)
+,fUseOnlyPrimPartMC(kTRUE)
+
 {
     //
     // Default constructor
@@ -185,6 +191,11 @@ fOutput(0),
 fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
+,fUsetrkITSrefit_highMev(kFALSE)
+,fCountTracks(0)
+,fNumTracksperEv(0)
+,fNumContributors(0)
+,fUseOnlyPrimPartMC(kTRUE)
 {
     //
     // Default constructor
@@ -218,6 +229,9 @@ AliAnalysisTaskSEImpParResSparse::~AliAnalysisTaskSEImpParResSparse()
     delete fImpParrphiSparsePtEtaPhi_SPDmod;
     delete fPtDistrib;
     delete fhPtWeights;
+    delete fCountTracks;
+    delete fNumTracksperEv;
+    delete fNumContributors;
     
 }
 //______________________________________________________________________________________________________
@@ -241,6 +255,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse1[5] =       {3000, 50, 4, 2, 2};
         Double_t limitLowImpParSparse1[5] = {-1500., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse1[5] =  {1500., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse1[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse1[2] = 24;
+        }
         TString axTitle1[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -257,6 +275,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse2[5] =       {3000, 50, 4, 2, 10};
         Double_t limitLowImpParSparse2[5] = {-1500., 0.1, 0., 0., -10.};
         Double_t limitUpImpParSparse2[5] =  {1500., 25., 4., 2., +10.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse2[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse2[2] = 24;
+        }
         TString axTitle2[7]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -273,6 +295,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse3[5] =       {1000, 50, 4, 2, 2};
         Double_t limitLowImpParSparse3[5] = {-1500., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse3[5] =  {1500., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse3[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse3[2] = 24;
+        }
         TString axTitle3[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -288,6 +314,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse4[5] =       {1000, 50, 4, 2, 10};
         Double_t limitLowImpParSparse4[5] = {-1500., 0.1, 0., 0., -10.};
         Double_t limitUpImpParSparse4[5] =  {1500., 25., 4., 2., +10.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse4[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse4[2] = 24;
+        } 
         TString axTitle4[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -305,6 +335,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse_pullPtBchargePhi[5] =       {400, 50, 4, 2, 2};
         Double_t limitLowImpParSparse_pullPtBchargePhi[5] = {-10., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse_pullPtBchargePhi[5] =  {10., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse_pullPtBchargePhi[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse_pullPtBchargePhi[2] = 24;
+        } 
         TString axTitle_rphi_pullPtBchargePhi[5]={"rphi pull",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -419,6 +453,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_z[4] =       {1000, 50, 4, 2};
     Double_t limitLowImpParSparse_z[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_z[4] =  {1500., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_z[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_z[2] = 24;
+    }
     TString axTitle_z[4]={"z imp. par. (#mum)",
         "#it{p}_{T} (GeV/c)",
         "#phi",
@@ -434,6 +472,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_pull[4] =       {400, 50, 4, 2};
     Double_t limitLowImpParSparse_pull[4] = {-10., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_pull[4] =  {10., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_pull[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_pull[2] = 24;
+    }
     TString axTitle_rphi_pull[4]={"rphi pull",
         "#it{p}_{T} (GeV/c)",
         "#phi",
@@ -466,11 +508,41 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     ConfigurePtWeights();
     fOutput->Add(fhPtWeights);
     
-    if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
+    if(!fNentries) {
+        fNentries = new TH1F("hNentries", "number of entries;step;counts", 26, 0.5, 26.5);
+        fNentries->GetXaxis()->SetBinLabel(1,"all");
+        fNentries->GetXaxis()->SetBinLabel(2,"trigger");
+        fNentries->GetXaxis()->SetBinLabel(3,"fCheckSDDIsIn");
+        fNentries->GetXaxis()->SetBinLabel(4,"fHasVertex");
+        fNentries->GetXaxis()->SetBinLabel(5,"fStartTrkLoop (ok PIDresp)");
+        
+    }
     if(!fMultiplicity) fMultiplicity = new TH1F("fMultiplicity", "number of hits in SPD layer 1", 100, 0., 10000.);
     
     fOutput->Add(fNentries);
     fOutput->Add(fMultiplicity);
+
+    // debug histogram for track counting (mfaggin)
+        fCountTracks = new TH1D("fCountTracks","number of tracks;step;counts",11,0.5,11.5);
+        fCountTracks->GetXaxis()->SetBinLabel(1,"all");
+        fCountTracks->GetXaxis()->SetBinLabel(2,"ITSrefit");
+        fCountTracks->GetXaxis()->SetBinLabel(3,"#eta acceptance");
+        fCountTracks->GetXaxis()->SetBinLabel(4,"#varphi bin > 0");
+        fCountTracks->GetXaxis()->SetBinLabel(5,"p_{T} weights");
+        fCountTracks->GetXaxis()->SetBinLabel(6,"vtx w/o trk");
+        fCountTracks->GetXaxis()->SetBinLabel(7,"cov. matrix");
+        fCountTracks->GetXaxis()->SetBinLabel(8,"TPCrefit and TPCclst");
+        fCountTracks->GetXaxis()->SetBinLabel(9,"fill TrkType0");
+        fCountTracks->GetXaxis()->SetBinLabel(10,"fill TrkType1");
+        fCountTracks->GetXaxis()->SetBinLabel(11,"fillTrkType2");
+        fOutput->Add(fCountTracks);
+    // debug histogram for counting of number of tracks per event (mfaggin)
+    if(fUsetrkITSrefit_highMev) fNumTracksperEv = new TH1D("fNumTrackperEv","number of tracks per event (ITSrefit satisfied);# tracks;counts",10,0,200);
+    else                        fNumTracksperEv = new TH1D("fNumTrackperEv","number of tracks per event;# tracks;counts",30,0,3000);
+    fOutput->Add(fNumTracksperEv);
+    // debug histogram for counting of number of contributors to the primary vertex (mfaggin)
+    fNumContributors = new TH1D("fNumContributors","number of contributors to the primary vertex;# contributors;counts",100,0,500);
+    fOutput->Add(fNumContributors);
     
     PostData(1, fOutput);
     
@@ -489,7 +561,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         AliError("event not found. Nothing done!");
         return;
     }
-    
+    fNentries->Fill(1);
     // only events in the requested multiplicity range
     TString firedTriggerClasses="";
     Int_t runNumber=0;
@@ -512,6 +584,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(!firedTriggerClasses.Contains(fTriggerClass.Data())) return;
     }
     
+    fNentries->Fill(2);
+
     Bool_t sddIsIn=kTRUE;
     if(fCheckSDDIsIn) {
         if(!fTrigConfig) {
@@ -559,7 +633,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(fCheckSDDIsIn==3) sddIsIn=kFALSE; //for MC without SDD
     }
     
-    fNentries->Fill(1);
+    fNentries->Fill(3);
     if(fIsAOD)fMultiplicity->Fill(((AliVAODHeader*)((AliAODEvent*)event)->GetHeader())->GetNumberOfITSClusters(1));
     else{
         const AliMultiplicity *alimult =((AliESDEvent*)event)->GetMultiplicity();
@@ -570,8 +644,23 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         fMultiplicity->Fill(nclsSPDouter);
     }
     
-    Int_t nTrks = event->GetNumberOfTracks();
-    Bool_t highMult=(nTrks>500 ? kTRUE : kFALSE);
+    const Int_t nTrks = event->GetNumberOfTracks();
+    Bool_t highMult;
+    if(!fUsetrkITSrefit_highMev){
+    highMult = (nTrks>500 ? kTRUE : kFALSE);
+    fNumTracksperEv->Fill(nTrks);
+    }
+    else{    // Consider the number of tracks with ITS refit only, avoiding the TPC pile-up
+        Int_t nTrks_ITSrefit=0;
+        AliVTrack* trk = 0;
+        for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
+            trk = (AliVTrack*)event->GetTrack(it);
+            if(!trk) {continue;}
+            if(trk->GetStatus()&AliESDtrack::kITSrefit)    nTrks_ITSrefit++;
+        }
+        highMult=(nTrks_ITSrefit>500 ? kTRUE : kFALSE);
+        fNumTracksperEv->Fill(nTrks_ITSrefit);
+    }
     //Printf("%d",nTrks);
     
     Double_t vtxTrue[3];
@@ -604,6 +693,9 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         delete vtxVRec; vtxVRec=NULL;
         {/*Printf("VERTEX REC NUMBER OF CONTRIBUTORS < 1");*/return;}
     }
+    Double_t nContributors = vtxVRec->GetNContributors();
+    fNumContributors->Fill(nContributors);
+    fNentries->Fill(4);
     
     if (fReadMC) {
         if (fIsAOD){
@@ -695,19 +787,19 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	return;
       }
     }
-
-    //Printf("\nSTART LOOP OVER TRACKS\n");
-    
+    fNentries->Fill(5);
+   
     for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
         vtrack = (AliVTrack*)event->GetTrack(it);
         if(!vtrack) {/*Printf("TRACK NOT FOUND");*/ continue;}
         
         //Printf("ETA %f",eta);
+        fCountTracks->Fill(1);
         
         npointsITS=0; npointsSPD=0;
         if(fIsAOD){
-            haskITSrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliAODTrack*)vtrack)->GetTPCNcls();
             //Printf("nClsTotTPC %d",nClsTotTPC);
             if(!haskITSrefit) continue;
@@ -718,8 +810,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             //Printf("npointsITS %d",npointsITS);
         }
         else {
-            haskITSrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliESDtrack*)vtrack)->GetTPCNcls();
             if(!haskITSrefit) continue;
             for (Int_t ilayer=0; ilayer<6; ilayer++){
@@ -727,10 +819,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if (((AliESDtrack*)vtrack)->HasPointOnITSLayer(ilayer)) npointsITS++;
             }
         }
-        
+        fCountTracks->Fill(2);
         
         eta = vtrack->Eta();
         if(eta<-0.8 || eta>0.8) continue;
+        fCountTracks->Fill(3);
         if(eta<0.) {
             pullrphi[3]=0.;
             pullz[3]=0.;
@@ -754,15 +847,16 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         //Printf("charge %d",charge);
         
         phi=vtrack->Phi();
-        Int_t phibin=PhiBin(phi);
+        Int_t phibin=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
         if(phibin<0) continue;
+        fCountTracks->Fill(4);
         pullrphi[2]=phibin;
         pullz[2]=phibin;
         pullrphi1[2]=phibin;
         pullz1[2]=phibin;
 
-        //pointrphi[2]=phibin;
-        pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
+        pointrphi[2]=phibin;
+        //pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
 
         pointz[2]=phibin;
         pointrphi1[2]=phibin;
@@ -781,6 +875,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if (pt > 1000.) continue;
         if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
         
+        fCountTracks->Fill(5);
+
         //MC
         if (fReadMC){
             trkLabel = vtrack->GetLabel();
@@ -857,10 +953,10 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         } // else {
         // vtxVSkip = new AliVVertex(); produce error!!!
         // }
-        
+        fCountTracks->Fill(6);
         
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
-        if(fReadMC){
+        if(fReadMC && fUseOnlyPrimPartMC){
             if(fIsAOD){
                 if(AODpart &&
 		   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
@@ -890,14 +986,17 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         covdz[0]=covdzRec[0];
         covdz[1]=covdzRec[1];
         covdz[2]=covdzRec[2];
+        //printf("===\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         // wrt event vertex without this track
         if(!highMult && fSkipTrack) {
+            //printf("!!! !highMult && fSkipTrack\n");
             vtrack->PropagateToDCA(vtxVSkip, event->GetMagneticField(), beampiperadius, dzRecSkip, covdzRecSkip);
             dz[0]=dzRecSkip[0];
             dz[1]=dzRecSkip[1];
             covdz[0]=covdzRecSkip[0];
             covdz[1]=covdzRecSkip[1];
             covdz[2]=covdzRecSkip[2];
+            //printf("\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         } else if(!fSkipTrack) {
             dz[0]=dzRec[0];
             dz[1]=dzRec[1];
@@ -905,11 +1004,13 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             covdz[1]=covdzRec[1];
             covdz[2]=covdzRec[2];
         } else {
+            //printf("!!! else");
             dz[0]=0;
             dz[1]=0;
             covdz[0]=0;
             covdz[1]=0;
             covdz[2]=0;
+            //printf("\ncovdz[0] = %f\ncovdz[1] = %f\ncovdz[2] = %f\n", covdz[0],covdz[1], covdz[2]);
         }
         //delete vtxVSkip; vtxVSkip=NULL; // not needed anymore
         
@@ -922,6 +1023,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             covdz[2]=covdzTrue[2];
         }
         if(covdz[0]<1.e-13 || covdz[2]<1.e-13) continue;
+        fCountTracks->Fill(7);
         pointrphi[0]=10000.*dz[0];
         pointrphi1[0]=10000.*dz[0];
         pointrphi2[0]=10000.*dz[0];
@@ -988,6 +1090,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
         if(fTrackType==0){
             if(!haskTPCrefit || nClsTotTPC<70) continue;
+            fCountTracks->Fill(8);
             if( (sddIsIn && (npointsITS==6)) || (sddIsIn && (npointsITS==5) && (spdreq==npointsSPD)) || (!sddIsIn && (npointsITS==4)) || (!sddIsIn && (npointsITS==3) && (spdreq==npointsSPD)) ){
                 if(fFillSparseForExpert){
                     if(fFillSparse_ImpParrphiSparsePtBchargePhi)        fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
@@ -1003,6 +1106,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
                 if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
                 if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+                
+                fCountTracks->Fill(9);
             }
         }
         // ITS standalone
@@ -1022,6 +1127,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
             if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+        
+            fCountTracks->Fill(10);
         }
         // ESD TRACK CUTS
         else if(fTrackType==2 && IsTrackSelected(vtrack,primaryVtx,fESDtrackCuts,event)){
@@ -1040,6 +1147,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             if(fFillSparse_ImpParzSparsePtEtaPhi)           fImpParzSparsePtEtaPhi->Fill(pointz);
             if(fFillSparse_ImpParPullrphiSparsePtEtaPhi)    fImpParPullrphiSparsePtEtaPhi->Fill(pullrphi);
             if(fFillSparse_ImpParPullzSparsePtEtaPhi)       fImpParPullzSparsePtEtaPhi->Fill(pullz);
+
+            fCountTracks->Fill(11);
         }
         
         
@@ -1105,10 +1214,32 @@ Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi, Bool_t usefinebinsp
     Double_t pi=TMath::Pi();
     
     if (usefinebinsphi) {   // mfaggin
-        if(!fImpParrphiSparsePtEtaPhi){
+        if(!fImpParrphiSparsePtBchargePhi &&
+           !fImpParrphiSparsePtzVtxEtaPhi &&
+           !fImpParrphiSparsePtEtaPhi &&
+           !fImpParPullrphiSparsePtEtaPhi &&
+           !fImpParPullrphiSparsePtBchargePhi &&
+           !fImpParzSparsePtBchargePhi &&
+           !fImpParzSparsePtzVtxEtaPhi &&
+           !fImpParzSparsePtEtaPhi &&
+           !fImpParPullzSparsePtEtaPhi &&
+           !fImpParPullzSparsePtBchargePhi
+          ){
             return 999;
         }
-        UInt_t nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        UInt_t nBins = 1;
+        if(fImpParrphiSparsePtBchargePhi)           nBins = fImpParrphiSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParrphiSparsePtzVtxEtaPhi)      nBins = fImpParrphiSparsePtzVtxEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParrphiSparsePtEtaPhi)          nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullrphiSparsePtEtaPhi)      nBins = fImpParPullrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullrphiSparsePtBchargePhi)  nBins = fImpParPullrphiSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtBchargePhi)         nBins = fImpParzSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtzVtxEtaPhi)         nBins = fImpParzSparsePtzVtxEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtEtaPhi)             nBins = fImpParzSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullzSparsePtEtaPhi)         nBins = fImpParPullzSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullzSparsePtBchargePhi)     nBins = fImpParPullzSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else    return 999;
+        
         Double_t width = 2.*pi/nBins;
         for(UInt_t i = 0; i < nBins; i++)
         {

@@ -16,6 +16,7 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliTPCParamSR;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
@@ -62,11 +63,14 @@ public:
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
+    void FindMotherWboson(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     
     Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
     void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
     
+    Bool_t SetMC_W(Bool_t Wevt) {flagWevt = Wevt;};
+
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -78,6 +82,7 @@ private:
     AliAODMCHeader *fMCheader;
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
+    AliTPCParamSR    *fTPCparam; //!Access to TPC parameters //rh add
     
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -87,6 +92,8 @@ private:
     Bool_t    fDCalDG1;//DCal Threshold DG1
     Bool_t    fDCalDG2;//DCal Threshold DG2
     
+    Bool_t    flagWevt; // MC for W production
+
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
@@ -108,10 +115,11 @@ private:
     Int_t   fBitOption;// filter bit option - Global or ITSconstrained
     
     TString fCentralityEstimator;         // Centrality Estimator
-    
+    //Int_t   fCentBin; //rh add
+      
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
-    TH1F        *fCent;//! centrality
+    TH1F        *fCent;//! centrality    
     TH2F        *fMult;//! track multiplicity vs centrality
     TH2F        *fEvPlaneV0;//! V0 event plane
     TH2F        *fEvPlaneV0A;//! V0A event plane
@@ -154,6 +162,7 @@ private:
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
     TH2F        *fTPCnsigEta2;//!TPC Nsigma
+    TH2F        *fTPCnTrkVsSector[4]; //! #of tracks vs. TPC sector index // rh add
     TH1F        *fHistPtMatch;//!tracks matched to EMCAL
     TH2F        *fEMCTrkMatch;//!Distance of EMC cluster to closest track in phi and z
     TH1F        *fEMCTrkPt;//!tracks with EMCAL cluster
@@ -173,6 +182,7 @@ private:
     TH2F        *fHistNsigEop_Semi;//!pt vs E/p
     TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistMcEopEle;//!pt vs E/p
     TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
@@ -191,6 +201,7 @@ private:
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
+    TH1F        *fHistGeneWboson;//!Invmass of LS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
     TH2F        *fHistRawNits;//!
     TH2F        *fHistRawNtpc;//!
@@ -204,6 +215,8 @@ private:
     TH2F        *fMCcheckDdecay;//!
     TH2F        *fMCcheckHFdecay;//!
     TH2F        *fHFmomCorr;//!
+    TH1F        *fMCphotonic0;
+    TH1F        *fMCphotonic1;
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
@@ -215,6 +228,9 @@ private:
  
     TH2F        *fMCcheckPi0decay;    
     TH2F        *fMCcheckEtadecay;    
+
+    TH1F        *fHistWpos;
+    TH1F        *fHistWele;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

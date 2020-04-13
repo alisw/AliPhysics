@@ -234,7 +234,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
     cutsArrayDstoKKpi[iv]=new Float_t[nptbinsDp];
   }
   //0-4
-  cutsArrayDstoKKpi[0][0]=0.25;  
+  cutsArrayDstoKKpi[0][0]=0.22;
   cutsArrayDstoKKpi[1][0]=0.3;
   cutsArrayDstoKKpi[2][0]=0.3;
   cutsArrayDstoKKpi[3][0]=0.;
@@ -243,7 +243,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsArrayDstoKKpi[6][0]=0.06;
   cutsArrayDstoKKpi[7][0]=0.02;
   cutsArrayDstoKKpi[8][0]=0.;
-  cutsArrayDstoKKpi[9][0]=0.92;
+  cutsArrayDstoKKpi[9][0]=0.94;
   cutsArrayDstoKKpi[10][0]=0.;
   cutsArrayDstoKKpi[11][0]=100000.;
   cutsArrayDstoKKpi[12][0]=0.02;

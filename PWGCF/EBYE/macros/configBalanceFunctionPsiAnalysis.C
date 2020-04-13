@@ -15,13 +15,15 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "MCAOD",   /
 					Double_t deltaEtaMax = 2.0,
 					Bool_t bVertexBinning = kFALSE,
 					Bool_t bMomentumOrdering = kTRUE,
-					Bool_t bCutSameLabelMC = kFALSE) {
+					Bool_t bCutSameLabelMC = kFALSE,
+                    			Bool_t bPhiResonanceCut = kFALSE) {
   //Function to setup the AliBalance object and return it
   AliBalancePsi *gBalance = new AliBalancePsi();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
   gBalance->UseMomentumOrdering(bMomentumOrdering);
   if(bResonancesCut) gBalance->UseResonancesCut();
+  if(bPhiResonanceCut) gBalance->UsePhiResonanceCut();
   if(bHBTCut) gBalance->UseHBTCut(HBTCutValue);
   if(bConversionCut) gBalance->UseConversionCut(invMassForConversionCut);
   if(bMomentumDifferenceCut) gBalance->UseMomentumDifferenceCut(fQCutMin);

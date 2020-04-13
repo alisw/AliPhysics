@@ -6484,7 +6484,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 			Bool_t sigma_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6525,7 +6525,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mccascpart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6537,7 +6537,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 				if(TMath::Abs(mcdau->GetPdgCode())==3312){
 					xi_flag = kTRUE;
 					mccascpart = mcdau;
-					for(Int_t idauxi=mccascpart->GetFirstDaughter();idauxi<mccascpart->GetLastDaughter()+1;idauxi++)
+					for(Int_t idauxi=mccascpart->GetDaughterFirst();idauxi<mccascpart->GetDaughterLast()+1;idauxi++)
 					{
 						if(idauxi<0) break;
 						AliAODMCParticle *mcdauxi = (AliAODMCParticle*) mcArray->At(idauxi);
@@ -6562,7 +6562,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mccascpart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6574,7 +6574,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 				if(TMath::Abs(mcdau->GetPdgCode())==3322){
 					xi_flag = kTRUE;
 					mccascpart = mcdau;
-					for(Int_t idauxi=mccascpart->GetFirstDaughter();idauxi<mccascpart->GetLastDaughter()+1;idauxi++)
+					for(Int_t idauxi=mccascpart->GetDaughterFirst();idauxi<mccascpart->GetDaughterLast()+1;idauxi++)
 					{
 						if(idauxi<0) break;
 						AliAODMCParticle *mcdauxi = (AliAODMCParticle*) mcArray->At(idauxi);
@@ -6598,7 +6598,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mclcpart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6615,7 +6615,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 
 			Bool_t lam_flag = kFALSE;
       if(e_flag && lc_flag){
-        for(Int_t idau=mclcpart->GetFirstDaughter();idau<mclcpart->GetLastDaughter()+1;idau++)
+        for(Int_t idau=mclcpart->GetDaughterFirst();idau<mclcpart->GetDaughterLast()+1;idau++)
         {
           if(idau<0) break;
           AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6649,7 +6649,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mclcpart = 0;
 			AliAODMCParticle *mcv0part = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -6666,7 +6666,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 
 			Bool_t lam_flag = kFALSE;
       if(e_flag && xc_flag){
-        for(Int_t idau=mclcpart->GetFirstDaughter();idau<mclcpart->GetLastDaughter()+1;idau++)
+        for(Int_t idau=mclcpart->GetDaughterFirst();idau<mclcpart->GetDaughterLast()+1;idau++)
         {
           if(idau<0) break;
           AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);

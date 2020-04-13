@@ -184,7 +184,7 @@ void runInteractive(const char* mode = "ESD",
   AliEventTagCuts *evCuts = new AliEventTagCuts();
   
   //grid tags
-  TAlienCollection* coll = TAlienCollection::Open(collectionName);
+  TGridCollection* coll = gGrid->OpenCollection(collectionName);
   TGridResult* TagResult = coll->GetGridResult("",0,0);
   tagAnalysis->ChainGridTags(TagResult);
   TChain* chain = 0x0;

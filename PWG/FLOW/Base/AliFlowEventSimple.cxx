@@ -43,6 +43,7 @@
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliFlowEventSimple.h"
 #include "TRandom.h"
+#include <random>
 
 using std::cout;
 using std::endl;
@@ -440,7 +441,9 @@ void AliFlowEventSimple::ShuffleTracks()
     for (Int_t j=0; j<fNumberOfTracks; j++) { fShuffledIndexes[j]=j; }
   }
   //shuffle
-  std::random_shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks]);
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks],engine);
   Printf("Tracks shuffled! tracks: %i",fNumberOfTracks);
 }
 

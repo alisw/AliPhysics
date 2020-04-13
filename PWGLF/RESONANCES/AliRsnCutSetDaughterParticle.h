@@ -69,6 +69,7 @@ public:
     kTPCTOFpidTunedPbPbTOFneed_2018, // Pb-Pb cuts tuned for Pb-Pb 2010/2011 (TOF needed)
     kTOFTPCpidKstar,         //cuts for Kstar
     kTOFTPCpidDelta,         //cuts for Delta
+    kTOFTPCpidLstar,         //cuts for Lstar
     kTPCTOFvetoPhiXeXe,      // Pb-Pb cuts tuned for Xe-Xe 2017 with TOF veto & mismatch rejection
     kTPCTOFvetoElRejPhiXeXe, // Pb-Pb cuts tuned for Xe-Xe 2017 with electron rejection
     kTPCTOFPhiXeXe,          // Pb-Pb cuts tuned for Xe-Xe 2017 with TOF veto & strict TPC

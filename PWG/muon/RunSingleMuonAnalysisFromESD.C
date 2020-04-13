@@ -32,7 +32,7 @@ void RunSingleMuonAnalysisFromESD(Bool_t local = kFALSE) {
   if (!local) {
     printf("*** Connect to AliEn ***\n");
     TGrid::Connect("alien://");
-    TAlienCollection* coll = TAlienCollection::Open("wn.xml");
+    TGridCollection* coll = gGrid->OpenCollection("wn.xml");
     TGridResult* result = coll->GetGridResult("",0,0);
     for(Int_t i = 0; i < result->GetEntries(); i++) {
       printf("TURL = %s \n",result->GetKey(i,"turl"));

@@ -10,6 +10,7 @@
 ClassImp(AliFemtoDreamPairCleaner)
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
     : fMinimalBooking(false),
+      fCounter(0),
       fParticles(),
       fHists(0) {
 }
@@ -17,6 +18,7 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
     const AliFemtoDreamPairCleaner& cleaner)
     : fMinimalBooking(cleaner.fMinimalBooking),
+      fCounter(0),
       fParticles(),
       fHists(cleaner.fHists) {
 }
@@ -25,11 +27,12 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(int nTrackDecayChecks,
                                                    int nDecayDecayChecks,
                                                    bool MinimalBooking)
     : fMinimalBooking(MinimalBooking),
+      fCounter(0),
       fParticles(),
       fHists(nullptr) {
   if (!fMinimalBooking) {
     fHists = new AliFemtoDreamPairCleanerHists(nTrackDecayChecks,
-                                               nDecayDecayChecks, 2);
+                                               nDecayDecayChecks);
   }
 }
 
@@ -45,6 +48,7 @@ AliFemtoDreamPairCleaner& AliFemtoDreamPairCleaner::operator=(
     return *this;
   }
   this->fMinimalBooking = cleaner.fMinimalBooking;
+  this->fCounter = cleaner.fCounter;
   this->fParticles = cleaner.fParticles;
   this->fHists = cleaner.fHists;
   return *this;
@@ -85,7 +89,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAndDecay(
     if (itDecay1->UseParticle()) {
       for (auto itDecay2 = Decay2->begin(); itDecay2 != Decay2->end();
           ++itDecay2) {
-        if (itDecay1->UseParticle()) {
+        if (itDecay2->UseParticle()) {
           std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
           std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
           for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end();
@@ -158,36 +162,18 @@ void AliFemtoDreamPairCleaner::CleanDecay(
 
 void AliFemtoDreamPairCleaner::StoreParticle(
     std::vector<AliFemtoDreamBasePart> Particles) {
-  int counter = 0;
   std::vector<AliFemtoDreamBasePart> tmpParticles;
   for (auto itPart : Particles) {
     if (itPart.UseParticle()) {
       tmpParticles.push_back(itPart);
-    } else {
-      counter++;
+      fCounter++;
     }
   }
   fParticles.push_back(tmpParticles);
 }
 void AliFemtoDreamPairCleaner::ResetArray() {
+  fCounter = 0;
   fParticles.clear();
-}
-
-void AliFemtoDreamPairCleaner::FillInvMassPair(
-    std::vector<AliFemtoDreamBasePart> &Part1, int PDGCode1,
-    std::vector<AliFemtoDreamBasePart> &Part2, int PDGCode2, int histnumber) {
-  for (const auto &it1 : Part1) {
-    for (const auto &it2 : Part2) {
-      float invMass = InvMassPair(it1.GetMomentum(), PDGCode1,
-                                  it2.GetMomentum(), PDGCode2);
-      fHists->FillPairInvMass(histnumber, invMass);
-      float relMom = RelativePairMomentum(it1.GetMomentum(), PDGCode1,
-                                          it2.GetMomentum(), PDGCode2);
-      if (relMom < 0.5) {
-        fHists->FillPairTuple(histnumber, invMass, relMom);
-      }
-    }
-  }
 }
 
 float AliFemtoDreamPairCleaner::RelativePairMomentum(TVector3 Part1Momentum,

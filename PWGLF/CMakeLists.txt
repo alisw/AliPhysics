@@ -26,6 +26,5 @@ add_subdirectory (totEt)
 add_subdirectory (ppVsMult)
 add_subdirectory (NUCLEX)
 add_subdirectory (CommonUtils)
-add_subdirectory (ML)
 
 message(STATUS "PWGLF enabled")

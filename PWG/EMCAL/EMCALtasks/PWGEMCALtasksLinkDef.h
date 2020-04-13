@@ -60,6 +60,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalCellMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliEmcalFastOrMonitorTask+;
 #pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection+;
+#pragma link C++ class PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization+;
 
 // Unit tests
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODFilterBitCuts+;

@@ -3,10 +3,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                                                TString TMVAweight,
                                                                 Int_t genGroup=0,
                                                                 Bool_t fromAlien,
-                                                                TString date="ddmmyy"
+                                                                TString date="ddmmyy",
+                                                                Int_t wagonnr=0,
+                                                                Bool_t purej=kTRUE
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -32,7 +34,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
   gSystem->Exec(myConfig);
   
-  gSystem->Exec("alien_cp $ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C .");
+  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
 
   configBasePath=Form("%s/",gSystem->pwd());
 
@@ -42,6 +44,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   Bool_t err = kFALSE;
   err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
   err |= gROOT->LoadMacro(configFile.Data());
+//  if (err) { Error("AddTask_slehner_ElectronEfficiency","Config(s) could not be loaded!"); }
+
   // #########################################################
   // #########################################################
   // Creating an instance of the task
@@ -51,14 +55,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
   // task->SetGeneratorName(generatorName);
-  TString generators="";
-  if(genGroup&1<<0) generators+= "Hijing_0;";
-  if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
-  if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
-  TString generatorsPair=generators;
-  task->SetGeneratorMCSignalName(generatorsPair);
-  task->SetGeneratorULSSignalName(generators);
-
+  if(setGens){
+    TString generators="";
+    if(genGroup&1<<0) generators+= "Hijing_0;";
+    if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
+    if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
+    if(genGroup&1<<3) generators+= "Starlight_0;";
+    if(genGroup&1<<4) generators+= "Hijing_1;";
+    cout<<"Efficiency based on MC generators: "<<generators<<endl;
+    TString generatorsPair=generators;
+    task->SetGeneratorMCSignalName(generatorsPair);
+    task->SetGeneratorULSSignalName(generators);
+  }
   // #########################################################
   // #########################################################
 	// Cut lib
@@ -67,7 +75,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 //  task->SetEnablePhysicsSelection(kTRUE);
 //  task->SetTriggerMask(triggerNames);
   task->SelectCollisionCandidates(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax,purej)); // All cut sets have same event cuts
   
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
@@ -187,6 +195,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", 0), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }

@@ -57,7 +57,6 @@
 #include "TError.h"
 #include "TChain.h"
 #include "TGrid.h"
-#include "TAlienCollection.h"
 #include "TGridCollection.h"
 #include "TGridResult.h"
 #include "TGeoGlobalMagField.h"
@@ -225,7 +224,7 @@ TChain* MakeChainXML(const char* xmlfile)
   if(gSystem->Load("libRAliEn")<0) return NULL;
   TGrid::Connect("alien://") ;
 
-  TGridCollection *collection = (TGridCollection*) TAlienCollection::Open(xmlfile);
+  TGridCollection *collection = gGrid->OpenCollection(xmlfile);
   if (!collection) {
     Error("MakeChainXML", Form("No collection found in %s", xmlfile)) ; 
     return NULL;

@@ -36,6 +36,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler() :
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGMCParticleEventCounter(NULL),
 	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
@@ -45,7 +46,8 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler() :
 	fBinLimitsArrayMultiplicity(NULL),
 	fBGEvents(),
 	fBGEventsENeg(),
-	fBGEventsMeson()
+	fBGEventsMeson(),
+	fBGEventsMCParticle()
 {
 	// constructor
 }
@@ -57,6 +59,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t binsZ,Int_t
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGMCParticleEventCounter(NULL),
 	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
@@ -66,7 +69,8 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t binsZ,Int_t
 	fBinLimitsArrayMultiplicity(NULL),
 	fBGEvents(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
 	fBGEventsENeg(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
-	fBGEventsMeson(binsZ,AliGammaConversionMotherMultipicityVector(binsMultiplicity,AliGammaConversionMotherBGEventVector(nEvents)))
+	fBGEventsMeson(binsZ,AliGammaConversionMotherMultipicityVector(binsMultiplicity,AliGammaConversionMotherBGEventVector(nEvents))),
+	fBGEventsMCParticle(binsZ,AliGammaMCParticleMultipicityVector(binsMultiplicity,AliGammaMCParticleBGEventVector(nEvents)))
 {
 	// constructor
 }
@@ -80,6 +84,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
 	fBGEventCounter(NULL),
 	fBGEventENegCounter(NULL),
 	fBGEventMesonCounter(NULL),
+	fBGMCParticleEventCounter(NULL),
 	fBGEventBufferCounter(NULL),
 	fBGProbability(NULL),
 	fBGEventVertex(NULL),
@@ -89,7 +94,8 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
 	fBinLimitsArrayMultiplicity(NULL),
 	fBGEvents(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
 	fBGEventsENeg(binsZ,AliGammaConversionMultipicityVector(binsMultiplicity,AliGammaConversionBGEventVector(nEvents))),
-	fBGEventsMeson(binsZ,AliGammaConversionMotherMultipicityVector(binsMultiplicity,AliGammaConversionMotherBGEventVector(nEvents)))
+	fBGEventsMeson(binsZ,AliGammaConversionMotherMultipicityVector(binsMultiplicity,AliGammaConversionMotherBGEventVector(nEvents))),
+	fBGEventsMCParticle(binsZ,AliGammaMCParticleMultipicityVector(binsMultiplicity,AliGammaMCParticleBGEventVector(nEvents)))
 {
 	// constructor
     if(fNBinsMultiplicity>5) fNBinsMultiplicity = 5;
@@ -245,6 +251,11 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
+              } else if(centMin == 30 && centMax == 50){	// 30-50%
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] =   {1., 5., 11., 17., 200.};
+                  for (Int_t i = 0; i < fNBinsMultiplicity; i++){
+                      fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
+                  }
               } else if(centMin == 40 && centMax == 60){  // 40-60%
                   Double_t fBinLimitsArrayMultiplicityPbPb4060[5] =   {1., 4., 7., 13., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
@@ -322,6 +333,11 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
+              } else if(centMin == 30 && centMax == 50){	// 30-50%
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] = 	{2., 6., 11., 20., 200.};
+                  for (Int_t i = 0; i < fNBinsMultiplicity; i++){
+                      fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
+                  }
               } else if(centMin == 40 && centMax == 60){	// 40-60%
                   Double_t fBinLimitsArrayMultiplicityPbPb4060[5] = 	{2., 3., 4., 7., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
@@ -373,6 +389,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(const AliGammaCon
 	fBGEventCounter(original.fBGEventCounter),
 	fBGEventENegCounter(original.fBGEventENegCounter),
 	fBGEventMesonCounter(original.fBGEventMesonCounter),
+	fBGMCParticleEventCounter(original.fBGMCParticleEventCounter),
 	fBGEventBufferCounter(original.fBGEventBufferCounter),
 	fBGProbability(original.fBGProbability),
 	fBGEventVertex(original.fBGEventVertex),
@@ -382,7 +399,8 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(const AliGammaCon
 	fBinLimitsArrayMultiplicity(original.fBinLimitsArrayMultiplicity),
 	fBGEvents(original.fBGEvents),
 	fBGEventsENeg(original.fBGEventsENeg),
-	fBGEventsMeson(original.fBGEventsMeson)
+	fBGEventsMeson(original.fBGEventsMeson),
+	fBGEventsMCParticle(original.fBGEventsMCParticle)
 {
 	//copy constructor	
 }
@@ -430,6 +448,14 @@ AliGammaConversionAODBGHandler::~AliGammaConversionAODBGHandler(){
 		delete[] fBGEventMesonCounter;
 		fBGEventMesonCounter = NULL;
 	}
+
+        if(fBGMCParticleEventCounter){
+                for(Int_t z=0;z<fNBinsZ;z++){
+                        delete[] fBGMCParticleEventCounter[z];
+                }
+                delete[] fBGMCParticleEventCounter;
+                fBGMCParticleEventCounter = NULL;
+        }
 	
 	if(fBGEventBufferCounter){
 		for(Int_t z=0;z<fNBinsZ;z++){
@@ -525,6 +551,21 @@ void AliGammaConversionAODBGHandler::Initialize(Double_t * const zBinLimitsArray
 			fBGEventENegCounter[z][m] = 0;
 		}
 	}
+
+        if( fBGMCParticleEventCounter == NULL){
+                fBGMCParticleEventCounter = new Int_t*[fNBinsZ];
+        }
+
+        for(Int_t z=0; z < fNBinsZ; z++){
+                fBGMCParticleEventCounter[z] = new Int_t[fNBinsMultiplicity];
+        }
+
+        for(Int_t z=0;z<fNBinsZ;z++){
+                for(Int_t m=0;m<fNBinsMultiplicity; m++){
+                        fBGMCParticleEventCounter[z][m] = 0;
+                }
+        }
+
 
 	if(fBGProbability == NULL){
 		fBGProbability = new Double_t*[fNBinsZ];
@@ -637,9 +678,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	if(fBGEventMesonCounter[z][m] >= fNEvents){
 		fBGEventMesonCounter[z][m]=0;
 	}
-	if(fBGEventBufferCounter[z][m] < fNEvents){
-		fBGEventBufferCounter[z][m]++;
-	}
+
 	Int_t eventCounter=fBGEventMesonCounter[z][m];
 	
 	fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -667,9 +706,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(const std::vector<AliAODConve
   if(fBGEventMesonCounter[z][m] >= fNEvents){
     fBGEventMesonCounter[z][m]=0;
   }
-	if(fBGEventBufferCounter[z][m] < fNEvents){
-		fBGEventBufferCounter[z][m]++;
-	}
+
   Int_t eventCounter=fBGEventMesonCounter[z][m];
 
   fBGEventVertex[z][m][eventCounter].fX = xvalue;
@@ -721,9 +758,46 @@ void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventE
 }
 
 //_____________________________________________________________________________________________________________________________
+void AliGammaConversionAODBGHandler::AddMCParticleEvent(TList* const eventGammas,Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue){
+
+	// see header file for documantation
+
+	//  cout<<"Entering the AddEvent function"<<endl;
+
+	Int_t z = GetZBinIndex(zvalue);
+	Int_t m = GetMultiplicityBinIndex(multiplicity);
+
+	if(fBGMCParticleEventCounter[z][m] >= fNEvents){
+		fBGMCParticleEventCounter[z][m]=0;
+	}
+	Int_t eventCounter=fBGMCParticleEventCounter[z][m];
+
+	fBGEventVertex[z][m][eventCounter].fX = xvalue;
+	fBGEventVertex[z][m][eventCounter].fY = yvalue;
+	fBGEventVertex[z][m][eventCounter].fZ = zvalue;
+	fBGEventVertex[z][m][eventCounter].fEP = epvalue;
+
+        for(UInt_t d=0;d<fBGEventsMCParticle[z][m][eventCounter].size();d++){
+          delete (AliAODMCParticle*)(fBGEventsMCParticle[z][m][eventCounter][d]);
+	}
+	fBGEventsMCParticle[z][m][eventCounter].clear();
+
+	// add the gammas to the vector
+	for(Int_t i=0; i< eventGammas->GetEntries();i++){
+		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		fBGEventsMCParticle[z][m][eventCounter].push_back(new AliAODMCParticle(*(AliAODMCParticle*)(eventGammas->At(i))));
+	}
+	fBGMCParticleEventCounter[z][m]++;
+}
+//_____________________________________________________________________________________________________________________________
 AliGammaConversionAODVector* AliGammaConversionAODBGHandler::GetBGGoodV0s(Int_t zbin, Int_t mbin, Int_t event){
 	//see headerfile for documentation
 	return &(fBGEvents[zbin][mbin][event]);
+}
+//_____________________________________________________________________________________________________________________________
+AliAODMCParticleVector* AliGammaConversionAODBGHandler::GetBGGoodV0sMC(Int_t zbin, Int_t mbin, Int_t event){
+	//see headerfile for documentation
+	return &(fBGEventsMCParticle[zbin][mbin][event]);
 }
 
 //_____________________________________________________________________________________________________________________________

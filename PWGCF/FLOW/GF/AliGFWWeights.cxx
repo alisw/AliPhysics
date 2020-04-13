@@ -7,6 +7,7 @@ AliGFWWeights::AliGFWWeights():
   fW_mcrec(0),
   fW_mcgen(0),
   fEffInt(0),
+  fIntEff(0),
   fAccInt(0),
   fNbinsPt(0),
   fbinsPt(0)
@@ -18,6 +19,7 @@ AliGFWWeights::~AliGFWWeights()
   delete fW_mcrec;
   delete fW_mcgen;
   delete fEffInt;
+  delete fIntEff;
   delete fAccInt;
   if(fbinsPt) delete [] fbinsPt;
 };
@@ -90,6 +92,15 @@ Double_t AliGFWWeights::GetWeight(Double_t phi, Double_t eta, Double_t vz, Doubl
   if(weight!=0) return 1./weight;
   return 1;
 };
+Double_t AliGFWWeights::GetNUA(Double_t phi, Double_t eta, Double_t vz) {
+  if(!fAccInt) CreateNUA();
+  Int_t xind = fAccInt->GetXaxis()->FindBin(phi);
+  Int_t etaind = fAccInt->GetYaxis()->FindBin(eta);
+  Int_t vzind = fAccInt->GetZaxis()->FindBin(vz);
+  Double_t weight = fAccInt->GetBinContent(xind, etaind, vzind);
+  if(weight!=0) return 1./weight;
+  return 1;
+}
 Double_t AliGFWWeights::FindMax(TH3D *inh, Int_t &ix, Int_t &iy, Int_t &iz) {
   Double_t maxv=inh->GetBinContent(1,1,1);
   for(Int_t i=1;i<=inh->GetNbinsX();i++)
@@ -117,6 +128,14 @@ void AliGFWWeights::MCToEfficiency() {
   };
   fW_mcgen->Clear();
 };
+void AliGFWWeights::RebinNUA(Int_t nX, Int_t nY, Int_t nZ) {
+  if(fW_data->GetEntries()<1) return;
+  for(Int_t i=0;i<fW_data->GetEntries();i++) {
+    ((TH3D*)fW_data->At(i))->RebinX(nX);
+    ((TH3D*)fW_data->At(i))->RebinY(nY);
+    ((TH3D*)fW_data->At(i))->RebinZ(nZ);
+  };
+};
 void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
   if(!IntegrateOverCentAndPt) {
     printf("Method is outdated! NUA is integrated over centrality and pT. Quit now, or the behaviour will be bad\n");
@@ -128,20 +147,22 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
   if(IntegrateOverCentAndPt) {
     if(fAccInt) delete fAccInt;
     fAccInt = (TH3D*)fW_data->At(0)->Clone("IntegratedAcceptance");
-    fAccInt->RebinY(2);
-    fAccInt->RebinZ(5);
+    //fAccInt->RebinY(2); this is rebinned already during the postprocessing
+    //fAccInt->RebinZ(5);
     fAccInt->Sumw2();
     for(Int_t etai=1;etai<=fAccInt->GetNbinsY();etai++) {
       fAccInt->GetYaxis()->SetRange(etai,etai);
       if(fAccInt->Integral()<1) continue;
       for(Int_t vzi=1;vzi<=fAccInt->GetNbinsZ();vzi++) {
-	fAccInt->GetZaxis()->SetRange(vzi,vzi);
-	if(fAccInt->Integral()<1) continue;
-	h1 = (TH1D*)fAccInt->Project3D("x");
-	Double_t maxv = h1->GetMaximum();
-	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++)
-	  fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
-	delete h1;
+    	fAccInt->GetZaxis()->SetRange(vzi,vzi);
+    	if(fAccInt->Integral()<1) continue;
+    	h1 = (TH1D*)fAccInt->Project3D("x");
+    	Double_t maxv = h1->GetMaximum();
+    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++) {
+        fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+        fAccInt->SetBinError(phii,etai,vzi,fAccInt->GetBinError(phii,etai,vzi)/maxv);
+      };
+    	delete h1;
       };
       fAccInt->GetZaxis()->SetRange(1,fAccInt->GetNbinsZ());
     };
@@ -233,10 +254,18 @@ void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
       targh = (TH3D*)sourh->Clone(sourh->GetName());
       targh->SetDirectory(0);
       targ->Add(targh);
-    } else 
+    } else
       targh->Add(sourh);
   };
 };
+void AliGFWWeights::OverwriteNUA() {
+  if(!fAccInt) CreateNUA();
+  TString ts(fW_data->At(0)->GetName());
+  TH3D *trash = (TH3D*)fW_data->RemoveAt(0);
+  delete trash;
+  fW_data->Add((TH3D*)fAccInt->Clone(ts.Data()));
+  delete fAccInt;
+}
 Long64_t AliGFWWeights::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   if(!fW_data) {
@@ -264,3 +293,34 @@ Long64_t AliGFWWeights::Merge(TCollection *collist) {
   };
   return nmerged;
 };
+TH1D *AliGFWWeights::GetIntegratedEfficiencyHist() {
+  if(!fW_mcgen) { printf("MCGen array does not exist!\n"); return 0; };
+  if(!fW_mcrec) { printf("MCRec array does not exist!\n"); return 0; };
+  if(!fW_mcgen->GetEntries()) { printf("MCGen array is empty!\n"); return 0; };
+  if(!fW_mcrec->GetEntries()) { printf("MCRec array is empty!\n"); return 0; };
+  TH3D *num = (TH3D*)fW_mcrec->At(0)->Clone("Numerator");
+  for(Int_t i=1;i<fW_mcrec->GetEntries();i++) num->Add((TH3D*)fW_mcrec->At(i));
+  TH3D *den = (TH3D*)fW_mcgen->At(0)->Clone("Denominator");
+  for(Int_t i=1;i<fW_mcgen->GetEntries();i++) den->Add((TH3D*)fW_mcgen->At(i));
+  TH1D *num1d = (TH1D*)num->Project3D("x");
+  num1d->SetName("retHist");
+  num1d->Sumw2();
+  TH1D *den1d = (TH1D*)den->Project3D("x");
+  den1d->Sumw2();
+  num1d->Divide(den1d);
+  delete num;
+  delete den;
+  delete den1d;
+  return num1d;
+}
+Bool_t AliGFWWeights::CalculateIntegratedEff() {
+  if(fIntEff) delete fIntEff;
+  fIntEff = GetIntegratedEfficiencyHist();
+  if(!fIntEff) { return kFALSE; };
+  fIntEff->SetName("IntegratedEfficiency");
+  return kTRUE;
+}
+Double_t AliGFWWeights::GetIntegratedEfficiency(Double_t pt) {
+  if(!fIntEff) if(!CalculateIntegratedEff()) return 0;
+  return fIntEff->GetBinContent(fIntEff->FindBin(pt));
+}

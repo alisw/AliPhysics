@@ -37,6 +37,7 @@ public:
 
   virtual ~AliDielectronTrackCuts();
 
+  // setters
   void SetV0DaughterCut(AliPID::EParticleType type, Bool_t negate=kFALSE);
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
 
@@ -46,15 +47,37 @@ public:
   void SetTPCNclFRobust(Int_t cut) { fTPCNclRobustCut=cut; }
   void SetMinNCrossedRowsOverFindable(Double_t CrossedOverFindable) { fTPCcrossedOverFindable = CrossedOverFindable; }
 
-  Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
-  ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
-
   void SetITSclusterCut(ITSclusterCutType type, UChar_t map) { fITSclusterBitMap=map; fITSclusterCutType=type; }
-
 
   void SetGlobalTracksOnly(Bool_t setter = kTRUE) {fSelectGlobalTrack = setter;}
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
   void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
+
+  void SetRequireTRDUpdate(Bool_t req) { fRequireTRDUpdate=req; }
+
+  void SetRequireCaloClusterMatch(Bool_t req, Short_t caloType) { fRequireCaloClusterMatch=req; fClusterMatchCaloType=caloType; }
+
+  // getters
+  Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
+  ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
+
+  Bool_t GetRequireITSRefit() const { return fRequireITSRefit; }
+  Bool_t GetRequireTPCRefit() const { return fRequireTPCRefit; }
+
+  Int_t GetTPCNclFRobust() const { return fTPCNclRobustCut; }
+  Double_t GetMinNCrossedRowsOverFindable() const { return fTPCcrossedOverFindable; }
+
+  UChar_t GetITSclusterCutMap() const { return fITSclusterBitMap; }
+  ITSclusterCutType GetITSclusterCutType() const { return fITSclusterCutType; }
+
+  Bool_t GetGlobalTracksOnly() const { return fSelectGlobalTrack; }
+  Int_t GetAODFilterBit() const { return fAODFilterBit; }
+  Int_t GetMaxWaivedITSNcls() const { return fWaiveITSNcls; }
+
+  Bool_t GetRequireTRDUpdate() const { return fRequireTRDUpdate; }
+
+  Bool_t  GetRequireCaloClusterMatch() const { return fRequireCaloClusterMatch; }
+  Short_t GetCaloClusterMatchDetector() const { return fClusterMatchCaloType; }
 
   //
   //Analysis cuts interface
@@ -86,10 +109,15 @@ private:
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
   Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit
 
+  Bool_t fRequireTRDUpdate;                            // require TRD update
+
+  Bool_t  fRequireCaloClusterMatch;                    // require calo cluster matched to track
+  Short_t fClusterMatchCaloType;                       // calo type for track match: AliDielectronClusterCuts::Detector
+
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
 
-  ClassDef(AliDielectronTrackCuts,3)         // Dielectron TrackCuts
+  ClassDef(AliDielectronTrackCuts,7)         // Dielectron TrackCuts
 };
 
 

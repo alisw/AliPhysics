@@ -94,6 +94,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
+  Reader->SetDCAglobalTrack(1);
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -167,8 +168,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
@@ -246,7 +247,16 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter]->SetMass(KaonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
 	  
-
+	  //** DCA******
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.3); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.3);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.3); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(0.3);	//DCA Z
+	  
+	  //****** Track quality cuts ******
+	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(70);
+	  
 	  //============PION============
 
 	  //The cut monitor for particles to study the difference between reconstructed and true momentum: 

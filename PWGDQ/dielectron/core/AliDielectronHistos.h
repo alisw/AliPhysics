@@ -87,6 +87,9 @@ public:
   void UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
   void UserSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
 
+  void UserSparse(   const char* histClass, const char *name, const char* title, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW=kNoWeights);
+  void UserSparse(   const char* histClass, const char* name, const char* title, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
+
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, UInt_t valTypeX, Bool_t logBinX=kFALSE,
 		     UInt_t valTypeW=kNoWeights)
@@ -208,7 +211,7 @@ private:
   AliDielectronHistos(const AliDielectronHistos &hist);
   AliDielectronHistos& operator = (const AliDielectronHistos &hist);
 
-  ClassDef(AliDielectronHistos,3)
+  ClassDef(AliDielectronHistos,4)
 };
 
 #endif

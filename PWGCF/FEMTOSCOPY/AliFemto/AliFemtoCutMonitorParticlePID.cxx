@@ -26,7 +26,8 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
 {
   // Default constructor
   fTPCdEdx        = new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
-  fTOFTime        = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFTime        = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.0, 5.0, 400, -4000.0, 4000.0);//to be consistent with dE/dx
+  //fTOFTime        = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
   fTOFNSigma      = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma      = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCTOFNSigma   = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
@@ -50,8 +51,9 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   , fParticleId(nullptr)
 {
   // Normal constructor
-  fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
-  fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 100, 0.1, 5.0, 400, yTOFTimeMin, yTOFTimeMax);
+  fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.0, 4.0, 250, 0.0, 500.0);
+  fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 200, 0.0, 4.0, 400, yTOFTimeMin, yTOFTimeMax);//to be consistent with dE/dx
+  //fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 100, 0.1, 5.0, 400, yTOFTimeMin, yTOFTimeMax);
   fTOFNSigma      = new TH2D(TString::Format("TOFNSigma%s", aName), "TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma      = new TH2D(TString::Format("TPCNSigma%s", aName), "TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCTOFNSigma   = new TH2D(TString::Format("TPCTOFNSigma%s", aName), "TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);

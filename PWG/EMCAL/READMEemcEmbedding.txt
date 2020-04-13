@@ -373,9 +373,9 @@ In addition to the information below, in terms of best practices for the user, a
 are a few additional points which should be checked:
 - Check that all of the embedding helper histograms look reasonable.
 - Check the train number to pt hard bin map provides the correct mapping, as described [below](\ref emcEmbeddingAutoConfigurePtHard).
-- If ]internal event selection](\ref emcEmbeddingEventSelection) is enabled (it is highly recommended), check
+- If [internal event selection](\ref emcEmbeddingEventSelection) is enabled (it is highly recommended), check
   that embedded event recycling is properly enabled for every task. This is easiest to do by looking at the event
-  rejection histogra. If even just one task is missed, it will negate the performance benefits for the entire train.
+  rejection histogram. If even just one task is missed, it will negate the performance benefits for the entire train.
 
 ## Configuring the LEGO Train Wagon                                         {#emcEmbeddingLEGOTrainWagon}
 
@@ -414,7 +414,7 @@ identified. See the example below for an illustrative example:
 embeddingHelper->SetAutoConfigurePtHardBins();
 // Tells it the base path of where to write the auto configuration file.
 // It may be simpler and better to put this file on the test train machine instead.
-embeddingHelper->SetAutoConfigureBasePath("/alice/cern.ch/user/a/alitrain/");
+embeddingHelper->SetAutoConfigureBasePath("/home/alitrain/train-workdir/");
 // Identifies the type of train this train is running on.
 embeddingHelper->SetAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/");
 // This value must be unique for your train run. Probably best to use your name!
@@ -440,10 +440,12 @@ as well as define the base and train type paths, such that all you need to do is
 
 # Optimization of Event Selection and Computing                                 {#emcEmbeddingEventSelection}
 
+It is **highly recommended** to follow the advice of this section. It will often substantially improve performance!
+
 It is important to take care when applying event selection during embedding. For example, if the embedding helper
 is run with `AliVEvent::kAny`, but your task is run with `AliVEvent::kAnyINT`, some good embedded events will be
 missed because the physics selection of your task is more restrictive. There are two parts to solution to this issue.
-First, it is best to have the same collision candidates for the embedding helper and all other tasks.
+As a start, it is best to have the same collision candidates for the embedding helper and all other tasks.
 
 While this is a good start, it is not sufficient in all cases, such as selecting on centrality. To address this
 issue, the embedding helper allows for more complicated internal event selection via AliEventCuts (disabled by default).
@@ -455,11 +457,10 @@ is effectively applied to all other tasks. Thus, be certain that any other event
 is less restrictive than that in the embedding helper to ensure that no good embedded events are lost.
 
 To configure this mode, internal event selection must be enabled in the embedding helper via
-`SetUseInternalEventSelection(true)`, and then selection on the outcome from the embedding helper must be enabled
-in other tasks. In the case of the EMCal Correction Task, this option can be enabled in the %YAML configuration.
-In the case of tasks derived from AliAnalysisTaskEmcal, set the option `task->SetRecycleUnusedEmbeddedEventsMode(true)`.
-If your task does not inherit from AliAnalysisTaskEmcal, it should check `EmbeddedEventUsed()` each event and then
-react as appropriate.
+`SetUseInternalEventSelection(true)`. The embedding helper will then break execution early if the internal event
+is not selected. This will prevent later tasks from executing. This means that the count of the number of rejected
+events is only accurate in the embedding helper (the number of accepted events will be the same in the embedding helper
+and user tasks).
 
 ## Configuring internal event selection (centrality, etc)
 
@@ -469,7 +470,8 @@ calling `%Setup{Period}()` for the event cuts object) and then configure it via 
 notable exception. Additional centrality selection is implemented in the embedding helper. To use it, simply set the
 centrality range ("internalEventSelection:centralityRange" in YAML or via SetCentralityRange(min, max)). Note that if
 a centrality range is set in AliEventCuts (for example, through the automatic setup), that range must be wider than or
-equal to the range in the embedding helper for the embedding helper setting to be meaningful.
+equal to the range in the embedding helper for the embedding helper setting to be meaningful. Physics selection of
+the `AliEventCuts` object can also be configured via YAML.
 
 Alternatively, the user may use manual cuts in AliEventCuts, configure it for a particular period, and then set the
 centrality range in AliEventCuts and disregard the centrality selection capabilities in the embedding helper. In code,
@@ -481,7 +483,7 @@ embeddingHelper->SetUseInternalEventSelection(true);
 // Use manual event cuts
 embeddingHelper->SetUseManualInternalEventCuts(true);
 auto eventCuts = embeddingHelper->GetInternalEventCuts();
-eventCuts->SetupLHC11h();
+eventCuts->SetupRun1PbPb();
 // Use 0-10%
 eventCuts->SetCentralityRange(0, 10);
 ~~~
@@ -489,7 +491,7 @@ eventCuts->SetCentralityRange(0, 10);
 Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
 
 If wanting to run embedding on only a random subset of events, this can be done via SetRandomRejectionFactor(factor),
-where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful 
+where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful
 if only a fraction of events is needed in the analysis and one wishes to reduce the running time.
 
 # Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
@@ -502,7 +504,7 @@ follows:
 
 To apply an artificial efficiency to the embedded input objects, it is best to do so via the jet finder. There
 are two different approaches available: to apply a constant additional tracking efficiency, or to apply a
-pT-dependent additional tracking efficiency. For the constant case, one should use: 
+pT-dependent additional tracking efficiency. For the constant case, one should use:
 
 ~~~{.cxx}
 // Create the finder jet task as usual (called "jetTask")

@@ -67,8 +67,8 @@
 /*//
 //// General class for a Lorentz four-vector
 ///*/
-#ifndef ST_LORENTZ_VECTOR_HH
-#define ST_LORENTZ_VECTOR_HH
+#ifndef ALIFMLORENTZVECTOR_H
+#define ALIFMLORENTZVECTOR_H
 
 #include "AliFmThreeVector.h"
 template<class T> class AliFmLorentzVector {
@@ -674,9 +674,11 @@ template<> ostream& operator<< (ostream& os, const AliFmLorentzVector<float>& v)
 template<> double abs(const AliFmLorentzVector<double>& v);
 template<> float  abs(const AliFmLorentzVector<float>& v);
 #else
+
 //
 //   Non-member operators
 //
+
 template<class T, class X>
 AliFmLorentzVector<T>
 operator+ (const AliFmLorentzVector<T>& v1, const AliFmLorentzVector<X>& v2)
@@ -742,4 +744,5 @@ template<class T>
 T abs(const AliFmLorentzVector<T>& v) {return v.m();}
 
 #endif /*  __CINT__ */
+
 #endif

@@ -29,7 +29,7 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
 
     enum massKKopt {kMassKK,kDeltaMassKKPhi};
 
-    static const int kDplustoKKpi = BIT(6);
+    static const int kDplustoKKpi = BIT(11);
 
     AliHFTreeHandlerDstoKKpi();
     AliHFTreeHandlerDstoKKpi(int PIDopt);
@@ -37,32 +37,31 @@ class AliHFTreeHandlerDstoKKpi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerDstoKKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree();
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
 
     void SetMassKKOption(int opt) {fMassKKOpt=opt;}
     void SetIsDplustoKKpi(bool isDplus) {
-      if(isDplus) fCandTypeMap |= kDplustoKKpi;
-      else fCandTypeMap &= ~kDplustoKKpi;
+      if(isDplus) fCandType |= kDplustoKKpi;
+      else fCandType &= ~kDplustoKKpi;
     }
   
     static bool IsDplustoKKpi(int candtype) {
-      if(candtype>>6&1) return true;
+      if(candtype>>11&1) return true;
       return false;
     }
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fSigmaVertex; /// vector of candidate sigma vertex
-    vector<float> fMassKK; /// vector of candidate massKK
-    vector<float> fCosPiDs; /// vector of candidate cos3piDs
-    vector<float> fCosPiKPhi; /// vector of candidate cospiKphi
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fSigmaVertex; /// candidate sigma vertex
+    float fMassKK; /// candidate massKK
+    float fCosPiDs; /// candidate cos3piDs
+    float fCosPiKPhi; /// candidate cospiKphi
+    float fNormd0MeasMinusExp; ///candidate topomatic variable
     int fMassKKOpt; /// option for massKK variable (mass or delta mass wrt phi)
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerDstoKKpi,1); /// 
+    ClassDef(AliHFTreeHandlerDstoKKpi,2); /// 
     /// \endcond
 };
 #endif

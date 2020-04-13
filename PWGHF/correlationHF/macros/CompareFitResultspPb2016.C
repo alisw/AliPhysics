@@ -120,19 +120,19 @@ void Init3x3Settings(){
   markersizeMC=1.;
 }
 
-TString yaxisTitle[5]={"Associated yield","#sigma_{fit,NS} (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
+TString yaxisTitle[5]={"Associated yield","Peak width (rad)","Baseline (rad^{-1})","Associated yield","Peak width (rad)"};
 Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
 const Int_t nmodels=8;
-Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};
+Bool_t includemodel[nmodels]={kFALSE,kFALSE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};
 TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEGpp","POWHEG","EPOS3"};
 TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09","EPOS 3.117"};
-Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kOrange+1,kBlue,kViolet+2,kYellow+1};
-Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,33};
-Int_t modelMarkerStyleRatio[nmodels]={kFullSquare,kFullCircle,kFullDiamond,34,22,47,43,45};
+Color_t modelColors[nmodels]={kCyan,kYellow+1,kGreen+2,kViolet,kOrange+1,kRed,kBlue,kMagenta+1};
+Bool_t includeinlegend[nmodels]={kFALSE,kFALSE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
+Int_t modelMarkerStyle[nmodels]={4,33,kFullSquare,kOpenDiamond,kFullDiamond,kOpenCircle,kOpenSquare,3};
+Int_t modelMarkerStyleRatio[nmodels]={4,33,kFullSquare,kOpenDiamond,kFullDiamond,kOpenCircle,kOpenSquare,3};
 TString strRefForRatios="POWHEG"; //**model for which doing the division of data and other theaory curves**
 
 TH1D **hMC;
@@ -959,14 +959,14 @@ TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
 
 
   hPP->SetLineColor(colSystem[0]);
-  hPP->SetLineWidth(2);
+  hPP->SetLineWidth(1);
   hPP->SetMarkerColor(colSystem[0]);
   hPP->SetMarkerStyle(markerStyle[0]);
   hPP->SetMarkerSize(markersize);
 
   gr->SetMarkerColor(colSystem[0]);
   gr->SetLineColor(colSystem[0]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[0]);
   gr->SetMarkerSize(markersize);
 
@@ -995,13 +995,13 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr, TGrap
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
 
   hPPb->SetLineColor(colSystem[1]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[1]);
   hPPb->SetMarkerStyle(markerStyle[1]);
   hPPb->SetMarkerSize(markersize);
   gr->SetMarkerColor(colSystem[1]);
   gr->SetLineColor(colSystem[1]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[1]);
   gr->SetMarkerSize(markersize);
 
@@ -1193,14 +1193,14 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
     ConvertTH1ToTGraphAsymmError2016(hPPb,gr_pointCount_PPb,shift);    
   }
   gr_points_PPb->SetLineColor(colSystem[1]);
-  gr_points_PPb->SetLineWidth(2);
+  gr_points_PPb->SetLineWidth(1);
   gr_points_PPb->SetMarkerColor(colSystem[1]);
   gr_points_PPb->SetMarkerStyle(markerStyle[1]);
   gr_points_PPb->SetMarkerSize(markersize);
   gr_points_PPb->Draw("samePZ");
   
   gr_pointCount_PPb->SetLineColor(colSystem[1]);
-  gr_pointCount_PPb->SetLineWidth(2);
+  gr_pointCount_PPb->SetLineWidth(1);
   gr_pointCount_PPb->SetMarkerStyle(25);
   gr_pointCount_PPb->SetMarkerColor(kRed+1);
   gr_pointCount_PPb->SetMarkerSize(markersize);
@@ -1403,6 +1403,15 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 
   }
     
+  printf("binass = %d, quantity = %d\n",binass,quantity);
+  if((binass==5 && quantity==0) || (binass==5 && quantity==1)) { //remove NSy and NSw of ptass>3 in 3-5 and 16-24
+     grData[0]->RemovePoint(0);
+     grDatav2[0]->RemovePoint(0);
+     hData[0]->SetBinContent(2,0);
+     hData[0]->SetBinError(2,0);
+     printf("Removing NSy and NSw of ptass>3 in 3-5 and 16-24\n");
+   }
+
   pd->cd();
   TH2D *hDraw;
   if(style==-1){
@@ -1419,7 +1428,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(system==1)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePPb[binass][quantity]);
     
     hData[0]->SetLineColor(colSystem[system]);
-    hData[0]->SetLineWidth(2);
+    hData[0]->SetLineWidth(1);
     hData[0]->SetMarkerColor(colSystem[system]);
     hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
@@ -1500,7 +1509,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
   hData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetLineColor(colSystem[system]);
-  grData[0]->SetLineWidth(2);
+  grData[0]->SetLineWidth(1);
   grData[0]->SetMarkerStyle(markerStyle[system]);
   grData[0]->SetMarkerSize(markersize);
   grData[0]->Draw("E2");
@@ -1514,13 +1523,13 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(collsystem==-1){    
       hData[1]->Draw("same");
       hData[1]->SetLineColor(colSystem[1]);
-      hData[1]->SetLineWidth(2);
+      hData[1]->SetLineWidth(1);
       hData[1]->SetMarkerColor(colSystem[1]);
       hData[1]->SetMarkerStyle(markerStyle[1]);
       hData[1]->SetMarkerSize(markersize);
       grData[1]->SetMarkerColor(colSystem[1]);
       grData[1]->SetLineColor(colSystem[1]);
-      grData[1]->SetLineWidth(2);
+      grData[1]->SetLineWidth(1);
       grData[1]->SetMarkerStyle(markerStyle[1]);
       grData[1]->SetMarkerSize(markersize);
       grData[1]->Draw("E2");
@@ -1592,7 +1601,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 	hMC[kmc]->Draw("same");
       }
       hMC[kmc]->SetLineColor(modelColors[kmc]);
-      hMC[kmc]->SetLineWidth(2);
+      hMC[kmc]->SetLineWidth(1);
       if(drawMCasLines==1){
 	hMC[kmc]->SetLineStyle(2);
       }
@@ -1601,9 +1610,9 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       hMC[kmc]->SetMarkerSize(markersizeMC);
       grMC[kmc]->SetMarkerColor(modelColors[kmc]);
       grMC[kmc]->SetLineColor(modelColors[kmc]);
-      grMC[kmc]->SetLineWidth(2);
+      grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
-      grMC[kmc]->SetFillStyle(3001+kmc);
+      grMC[kmc]->SetFillStyle(0);
       grMC[kmc]->SetFillColor(modelColors[kmc]);
       grMC[kmc]->SetMarkerSize(markersizeMC);
       if(drawSystMC){
@@ -1686,15 +1695,17 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(collsystem!=-1){
       if(tlCollSystem!=0x0){
 	if(useLegendForData){
-	  TLegend *legData=new TLegend(gPad->GetLeftMargin()+0.02,tlCollSystem->GetY()-0.02,0.95-gPad->GetRightMargin(),tlCollSystem->GetY()+tlCollSystem->GetYsize()-0.02,"");//0.388/gPad->GetHNDC()+gPad->GetBottomMargin());
+	  TLegend *legData=new TLegend(gPad->GetLeftMargin()+0.02,tlCollSystem->GetY()-0.04,0.95-gPad->GetRightMargin(),tlCollSystem->GetY()+tlCollSystem->GetYsize()-0.005,"");//0.388/gPad->GetHNDC()+gPad->GetBottomMargin());
 	  //0.378/gPad->GetHNDC()+gPad->GetBottomMargin()
 	  //tlCollSystem->GetY()+tlCollSystem->GetYsize(),"");
 	  //tlCollSystem->GetX(),tlCollSystem->GetY(),tlCollSystem->GetX()+tlCollSystem->GetXsize(),tlCollSystem->GetY()+tlCollSystem->GetYsize());
 	  legData->AddEntry(hData[0],tlCollSystem->GetTitle(),"lp");
+    if(plotv2unc==kTRUE) legData->AddEntry(grDatav2[0],"syst unc from v_{2}","f");
 	  //gPad->GetWNDC()
 	  legData->SetTextAlign(12);
 	  legData->SetTextFont(43);
-	  legData->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    legData->SetBorderSize(0);
+	  legData->SetTextSize(21*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
 	  legData->Draw();
 	  if(system==1) {
 	  TLegend *legDataSuperimp=new TLegend(gPad->GetLeftMargin()+0.02,tlCollSystem->GetY()-0.02,0.95-gPad->GetRightMargin(),tlCollSystem->GetY()+tlCollSystem->GetYsize()-0.02,"");
@@ -1703,7 +1714,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 	    legDataSuperimp->SetTextAlign(12);
 	    legDataSuperimp->SetTextFont(43);
 	    legDataSuperimp->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-	    legDataSuperimp->Draw("same");
+	 //   legDataSuperimp->Draw("same"); //FAKE LEGEND!
  	  }
 	}
 	else tlCollSystem->Draw();
@@ -3145,8 +3156,8 @@ void CompareFitResults_Ratios_NS_1() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
@@ -3181,7 +3192,7 @@ void CompareFitResults_Ratios_NS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -3255,7 +3266,10 @@ void CompareFitResults_Ratios_NS_2() {
                 Double_t *yvalv2 = grv2unc->GetY();
                 Double_t *eyvalv2L = grv2unc->GetEYlow();                       
                 Double_t *eyvalv2H = grv2unc->GetEYhigh();                    
-
+printf("PAD %d: v2 x = %f, %f, %f, %f\n",i,xvalv2[0],xvalv2[1],xvalv2[2],xvalv2[3]);
+printf("PAD %d: v2 y = %f, %f, %f, %f\n",i,yvalv2[0],yvalv2[1],yvalv2[2],yvalv2[3]);
+printf("PAD %d: v2 eyl = %f, %f, %f, %f\n",i,eyvalv2L[0],eyvalv2L[1],eyvalv2L[2],eyvalv2L[3]);
+printf("PAD %d: v2 eyh = %f, %f, %f, %f\n",i,eyvalv2H[0],eyvalv2H[1],eyvalv2H[2],eyvalv2H[3]);
                 for(int k=0;k<nmodelsOn;k++) {
                         if(k==modRef) continue;
                         TH1D *hMod = (TH1D*)pad->GetListOfPrimitives()->At(5+k*2);
@@ -3288,6 +3302,34 @@ void CompareFitResults_Ratios_NS_2() {
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
 
+                if(xvalDa[0]==4) {
+                    for(int ip=0;ip<grModRef->GetN();ip++) {
+                      Double_t errL = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaL[ip]/yvalDa[ip])*(eyvalDaL[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                      grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
+                      grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
+                      Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                      Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                      grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
+                      grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
+                    }                
+                }
+                else {  //this for ad hoc points removal!
+                    for(int ip=0;ip<grModRef->GetN();ip++) {        
+                      if(xvalDa[ip]>24 || xvalDa[ip]<0.1) continue;
+printf("NELLA PAD %d: x(dati0) = %f, (v20) = %f, x(MC0) = %f\n",i,xvalDa[0],xvalv2[0],xval[0]);          
+                      Double_t errL = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaL[ip]/yvalDa[ip])*(eyvalDaL[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      Double_t errH = yvalDa[ip]/yvalMCref[ip+1]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip+1]/yvalMCref[ip+1])*(eyvalMCref[ip+1]/yvalMCref[ip+1])));
+                      grDataRat->SetPoint(ip,xval[ip+1],yvalDa[ip]/yvalMCref[ip+1]);
+                      grDataRat->SetPointError(ip,exval[ip+1],exval[ip+1],errL,errH);
+                      Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip+1]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                      Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip+1]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+printf("...x = %f, errRatv2L = %f, errRatv2H = %f\n",xvalDa[0],errv2L,errv2H);                      
+                      grv2uncRat->SetPoint(ip,xval[ip+1],yvalv2[ip]/yvalMCref[ip+1]);
+                      grv2uncRat->SetPointError(ip,exval[ip+1],exval[ip+1],errv2L,errv2H);                    
+                    }
+                }
+
                 pad->cd();
                 TH2D *hframe = (TH2D*)l->At(1);
                 if(i==0) hframe->GetYaxis()->SetRangeUser(minRangePP_Ratio[3][0],maxRangePP_Ratio[3][0]);
@@ -3318,7 +3360,7 @@ void CompareFitResults_Ratios_NS_2() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -3419,8 +3461,8 @@ void CompareFitResults_Ratios_AS_1() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
@@ -3455,7 +3497,7 @@ void CompareFitResults_Ratios_AS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }
@@ -3478,7 +3520,7 @@ void CompareFitResults_Ratios_AS_1() {
         cRat->SaveAs("ComparePPbtoMCFitResultsAS_Ratio.pdf");    
 }
 
-void CompareFitResults_Ratios_AS_1() {
+void CompareFitResults_Ratios_AS_2() {
         
         TFile fIn("ComparePPbtoMCFitResultsAS_2.root");
         TCanvas *cRat = (TCanvas*)fIn.Get("cPPbvsMCFitResultsFinalPaperStyleAS");
@@ -3556,8 +3598,8 @@ void CompareFitResults_Ratios_AS_1() {
                     Double_t errH = yvalDa[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalDaH[ip]/yvalDa[ip])*(eyvalDaH[ip]/yvalDa[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
                     grDataRat->SetPoint(ip,xval[ip],yvalDa[ip]/yvalMCref[ip]);
                     grDataRat->SetPointError(ip,exval[ip],exval[ip],errL,errH);
-                    Double_t errv2L = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2L[ip]/yvalv2[ip])*(eyvalv2L[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
-                    Double_t errv2H = yvalv2[ip]/yvalMCref[ip]*(TMath::Sqrt((eyvalv2H[ip]/yvalv2[ip])*(eyvalv2H[ip]/yvalv2[ip])+(eyvalMCref[ip]/yvalMCref[ip])*(eyvalMCref[ip]/yvalMCref[ip])));
+                    Double_t errv2L = eyvalv2L[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
+                    Double_t errv2H = eyvalv2H[ip]/yvalMCref[ip]; //simple propagation of error times constant (ie 1/MC val), since there's no error on MC v2
                     grv2uncRat->SetPoint(ip,xval[ip],yvalv2[ip]/yvalMCref[ip]);
                     grv2uncRat->SetPointError(ip,exval[ip],exval[ip],errv2L,errv2H);
                 }
@@ -3592,7 +3634,7 @@ void CompareFitResults_Ratios_AS_1() {
                   hModRat[k]->SetBinContent(7,-99);
                   hModRat[k]->SetBinError(7,-99);
                   hModRat[k]->DrawCopy("same");
-                  grModRat[k]->SetFillStyle(1);
+                  grModRat[k]->SetFillStyle(0);
                   grModRat[k]->SetMarkerStyle(modelMarkerStyleRatio[k]);
                   grModRat[k]->Draw("E2");
                 }

@@ -100,6 +100,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fTCardCorrMinAmp(0.01), fTCardCorrMinInduced(0) 
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
+, fDoMergedBCs(0x0)
+, fLoad1DRecalibFactors(0)
 
 {
   for(Int_t i = 0; i < 22;    i++)  
@@ -165,6 +167,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fTCardCorrMinAmp(0.01),   fTCardCorrMinInduced(0)
 , fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
+, fDoMergedBCs(0x0)
+, fLoad1DRecalibFactors(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
   {
@@ -343,9 +347,9 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     AliOADBContainer *contRF=new AliOADBContainer("");
     
     if(fOADBFilePath!="")
-      contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePath.Data()),"AliEMCALRecalib");
+      contRF->InitFromFile(Form("%s/EMCALRecalib%s.root",fOADBFilePath.Data(), fLoad1DRecalibFactors ? "_1D" : ""),"AliEMCALRecalib");
     else
-      contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+      contRF->InitFromFile(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"AliEMCALRecalib");
 
     TObjArray *recal=(TObjArray*)contRF->GetObject(fRun); 
     
@@ -360,25 +364,40 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         if(recalib)
         {
           AliInfo("Recalibrate EMCAL");
-          for (Int_t i=0; i<nSM; ++i) 
-          {
-            TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
-            
+
+          if(fLoad1DRecalibFactors){
+            TH1S *h = fRecoUtils->GetEMCALChannelRecalibrationFactors1D();
             if (h)
               delete h;
-            
-            h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-            
-            if (!h) 
+            h=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+              
+            if (!h)
             {
-              AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-              continue;
+              AliError("Can not get EMCALRecalFactors");
             }
-            
             h->SetDirectory(0);
-            
-            fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
-          } // SM loop
+            fRecoUtils->SetEMCALChannelRecalibrationFactors1D(h);
+          }else{
+            for (Int_t i=0; i<nSM; ++i) 
+            {
+              TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+              
+              if (h)
+                delete h;
+              
+              h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+              
+              if (!h) 
+              {
+                AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+                continue;
+              }
+              
+              h->SetDirectory(0);
+              
+              fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+            } // SM loop
+          }
         } else AliInfo("Do NOT recalibrate EMCAL, no params object array"); // array ok
       } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
@@ -476,28 +495,47 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
 
       TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
 
-      if(trecalpass)
-      {
-        AliInfo("Time Recalibrate EMCAL");
-        for (Int_t ibc = 0; ibc < 4; ++ibc) 
+        if(trecalpass)
         {
-          TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
+          AliInfo("Time Recalibrate EMCAL");
+
+          if(fDoMergedBCs){
+
+            TH1S *h = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);
+            
+            if (h)
+              delete h;
           
-          if (h)
-            delete h;
+            h = (TH1S*)trecalpass->FindObject("hAllTimeAv");// High Gain only
           
-          h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+            if (!h) 
+              AliError("Could not load hAllTimeAv");
+            
+            h->SetDirectory(0);
+
+            fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);
+
+          }else{
+            for (Int_t ibc = 0; ibc < 4; ++ibc) 
+            {
+              TH1F *h = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(ibc);
           
-          if (!h) 
-          {
-            AliError(Form("Could not load hAllTimeAvBC%d",ibc));
-            continue;
+              if (h)
+                delete h;
+          
+              h = (TH1F*)trecalpass->FindObject(Form("hAllTimeAvBC%d",ibc));
+          
+              if (!h) 
+              {
+                AliError(Form("Could not load hAllTimeAvBC%d",ibc));
+                continue;
+              }
+          
+              h->SetDirectory(0);
+          
+              fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
+            } // bunch crossing loop
           }
-          
-          h->SetDirectory(0);
-          
-          fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(ibc,h);
-        } // bunch crossing loop
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
     
@@ -558,7 +596,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       {
         if ( DebugLevel()>0 ) arrayBCpass->Print();
         
-        TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+        TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
         if (h) delete h;
         
         h = (TH1C*)arrayBCpass->FindObject(Form("h%d",fRun));
@@ -570,7 +608,34 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         }
         
         h->SetDirectory(0);
-        fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+        fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+	//Now special case for PAR runs
+	fRecoUtils->SwitchOffParRun();
+	//access tree from OADB file
+	TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",fRun));
+	if(tGID){//check whether present = PAR run
+	  fRecoUtils->SwitchOnParRun();
+	  //access tree branch with PARs
+	  ULong64_t parGlobalBCs;
+	  tGID->SetBranchAddress("GID",&parGlobalBCs);
+	  //set number of PARs in run
+	  Short_t nPars = (Short_t) tGID->GetEntries();
+	  fRecoUtils->SetNPars((Short_t)nPars);
+	  //set global ID for each PAR
+	  for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+	    tGID->GetEntry(iParNumber);
+	    fRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+	  }//loop over entries  
+	  
+	  //access GlobalID hiostograms for each PAR
+	  for(Short_t iParNumber=1; iParNumber< fRecoUtils->GetNPars()+1;iParNumber++){
+	    TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",fRun,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	    if (!hPar) AliError( Form("Could not load h%d_%llu",fRun,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+	    hPar->SetDirectory(0);
+	    fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+	  }//loop over PARs
+	}//end if tGID present  
       }
     }
 
@@ -728,6 +793,18 @@ void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
     AliError("Event not available");
     return ;
   }
+
+  //check global id for event in case of PAR in the run
+  Short_t currentParIndex = 0;
+  if(fRecoUtils->IsParRun()) {
+    ULong64_t globalEventID = (ULong64_t)fEvent->GetBunchCrossNumber() + (ULong64_t)fEvent->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEvent->GetPeriodNumber() * (ULong64_t)59793994260;
+    for(Short_t ipar=0;ipar< fRecoUtils->GetNPars();ipar++){
+      if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
+	currentParIndex++;
+      }
+    }
+  }
+  fRecoUtils->SetCurrentParNumber(currentParIndex);
   
   //Recover the pointer to CaloCells container
   if ( fInputCaloCellsName.Length() == 0 ) 
@@ -823,7 +900,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
       if ( fSetCellMCLabelFromEdepFrac && fDebug > 1 )
       {
-        for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+        for(UInt_t imc = 0; imc < clus->GetNLabels(); imc++) 
         {
           printf("\t mc %d) Label %d, E dep frac %1.3f; ",
                  imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
@@ -1146,6 +1223,10 @@ void AliAnalysisTaskEMCALClusterize::ConfigureEMCALRecoUtils
     fRecoUtils->SwitchOnRunDepCorrection();    
   } 
   
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
   // Remove EMCAL hot channels 
   
   if(bBad)
@@ -1492,6 +1573,10 @@ void AliAnalysisTaskEMCALClusterize::Init()
   
   if(!fRecParam)     fRecParam  = new AliEMCALRecParam;
   if(!fRecoUtils)    fRecoUtils = new AliEMCALRecoUtils();  
+
+  // Use one histogram for all BCs
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
   
   if(fMaxEvent          <= 0) fMaxEvent          = 1000000000;
   if(fSelectCellMinE    <= 0) fSelectCellMinE    = 0.005;     
@@ -2193,17 +2278,16 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       //
       Int_t    parentMult = 0;
       Int_t   *parentList   = recPoint->GetParents(parentMult);
-      Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
-      
       clus->SetLabel(parentList, parentMult);
-      if(fSetCellMCLabelFromEdepFrac)
-        clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
       
       //
       // Set the cell energy deposition fraction map:
       //
       if( parentMult > 0 && fSetCellMCLabelFromEdepFrac )
       {
+        Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
+        clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+        
         UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
         
         // Get the digit that originated this cell cluster
@@ -2648,7 +2732,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   }
   
   InitGeometry(); // only once, must be done before OADB, geo OADB accessed here
-  
+
+  //access OADB, before first event because of PAR runs
+  if(fAccessOADB) AccessOADB(); // only once
+
   // Get the event, do some checks and settings
   CheckAndGetEvent() ;
   
@@ -2661,7 +2748,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Init pointers, geometry, clusterizer, ocdb, aodb
   
   if(fAccessOCDB) AccessOCDB();
-  if(fAccessOADB) AccessOADB(); // only once
+  //if(fAccessOADB) AccessOADB(); // only once
   
   InitClusterization();
   

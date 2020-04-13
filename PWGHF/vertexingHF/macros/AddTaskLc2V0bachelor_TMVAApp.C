@@ -1,12 +1,27 @@
-class AliAnalysisTaskSELc2V0bachelorTMVAApp;
+class AliAnalysisTaskSELc2V0bachelorTMVAAppMine;
 
-AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBin = "_6_12", TString finname="Lc2V0bachelorCuts.root",
-								    Float_t ptMin=0, Float_t ptMax=24,
-								    Bool_t theMCon=kTRUE,
-								    Bool_t fillTree=kFALSE,
-								    Bool_t onTheFly=kFALSE,
-								    Bool_t keepingOnlyHIJINGbkd=kFALSE,
-								    TString suffixName=""){
+AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
+									Float_t ptMin=0, Float_t ptMax=24,
+									Bool_t theMCon=kTRUE,
+									Bool_t fillTree=kFALSE,
+									Bool_t onTheFly=kFALSE,
+									Bool_t keepingOnlyHIJINGbkd=kFALSE,
+									TString suffixName="",
+									Bool_t debugFlag = kFALSE,
+									Bool_t useXmlWeightsFile = kTRUE,
+									Bool_t useWeightsLibrary = kFALSE,
+									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml",
+                  Bool_t useMultCorrection = kFALSE,
+                  TString estimatorFilename="",       //  Multicity estimator file
+                  Double_t refMult=9.26,              // refrence multiplcity (period b)
+                  Int_t year = 16,                    // Production year 
+                  Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
+                  Bool_t useMultCut = kFALSE,
+                  Float_t multMin = 0.,    // Minimum is included
+                  Float_t multMax = 99999., // Maximum is excluded
+                  Bool_t useXmlFileFromCVMFS = kFALSE,
+                  TString xmlFileFromCVMFS = ""
+                  ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -48,8 +63,6 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   RDHFCutsLctoV0anal->SetMinPtCandidate(ptMin);
   RDHFCutsLctoV0anal->SetMaxPtCandidate(ptMax);
   RDHFCutsLctoV0anal->SetUseCentrality(1);
-  RDHFCutsLctoV0anal->SetMinCentrality(0.);
-  RDHFCutsLctoV0anal->SetMaxCentrality(80.);
   
   // mm let's see if everything is ok
   if (!RDHFCutsLctoV0anal) {
@@ -57,34 +70,178 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
     return NULL;
   }
   
-  TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+  Int_t nvarsSpectators = 0;
+  TString namesTMVAvars, namesTMVAvarsSpectators;
+  if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
+  else if (nvars == 11) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+    nvarsSpectators = 12;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,bachelorPt,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
+  else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+  else if (nvars == 7) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+    nvarsSpectators = 16;
+    namesTMVAvarsSpectators = "nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,massLc2K0Sp,LcPt,cosPAK0S,V0positivePt,V0negativePt,dcaV0pos,bachelorPt,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+  }
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2V0bachelorTMVAApp *task = new AliAnalysisTaskSELc2V0bachelorTMVAApp("AliAnalysisTaskSELc2V0bachelorTMVAApp", RDHFCutsLctoV0anal, onTheFly);
   //  task->SetMVReader(fBDTReader);
+  task->SetNVars(nvars);
   task->SetNamesTMVAVariables(namesTMVAvars);
   task->SetTMVAlibName("libvertexingHFTMVA.so");
-  task->SetTMVAlibPtBin(ptBin);
+  task->SetTMVAlibPtBin(library);
   task->SetFillTree(fillTree);
+
+  Printf("************* fillTree = %d", (Int_t)fillTree);
   task->SetMC(theMCon);
   task->SetKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
+  task->SetDebugHistograms(debugFlag);
+  // TMVA reader
+  task->SetNVarsSpectators(nvarsSpectators);
+  task->SetNamesTMVAVariablesSpectators(namesTMVAvarsSpectators);
+  task->SetUseXmlWeightsFile(useXmlWeightsFile);
+  task->SetUseWeightsLibrary(useWeightsLibrary);
+  task->SetXmlWeightsFile(TString(gSystem->ExpandPathName(Form("%s", xmlWeightsFile.Data()))));
+  
+  task->SetUseXmlFileFromCVMFS(useXmlFileFromCVMFS);
+  task->SetXmlFileFromCVMFS(xmlFileFromCVMFS);
+
+  if(useMultCorrection){
+
+    task->SetUseMultiplicityCorrection(useMultCorrection);
+    task->SetMultiplicityEstimator(recoEstimator);
+    task->SetUseVZEROParameterizedVertexCorr(1);
+
+    if(estimatorFilename.EqualTo("") ) {
+      printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+    } 
+    else{
+
+      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+      if(!fileEstimator)  {
+        Printf("FATAL: File with multiplicity estimator not found\n");
+        return NULL;
+      }
+
+      task->SetReferenceMultiplcity(refMult); // < FUNCTION NEEDS TO BE ADDED TO AliAnalysisTaskSELc2V0bachelorMultTMVAApp.h
+      const Char_t* profilebasename="SPDmult10";
+      if(recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROA || recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROAEq) profilebasename="VZEROAmult";
+      else if(recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZERO || recoEstimator==AliAnalysisTaskSELc2V0bachelorTMVAApp::kVZEROEq) profilebasename="VZEROMmult";
+      cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+
+      // Only pp data is calibrated
+      if(year == 10){
+        const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+        TProfile* multEstimatorAvg[4];
+        for(Int_t ip=0; ip<4; ip++) {
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+      }
+      else if(year == 16){
+        const Char_t* periodNames[10]={"LHC16d","LHC16e","LHC16g","LHC16h_1", "LHC16h_2","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC16d(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC16e(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC16g(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC16h1(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC16h2(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC16j(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC16k(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC16l(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC16o(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC16p(multEstimatorAvg[9]);
+      }
+      else if(year == 17){
+        const Char_t* periodNames[10]={"LHC17e","LHC17f","LHC17h","LHC17i", "LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC17e(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC17f(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC17h(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC17i(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC17j(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC17k(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC17l(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC17m(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC17o(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC17r(multEstimatorAvg[9]);
+      }
+      else if(year == 18){
+        const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LHC18h","LHC18i","LHC18j","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+        TProfile *multEstimatorAvg[14];
+        for(Int_t ip=0;ip<14; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+            Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+            return NULL;
+          }
+        }
+        task->SetMultiplVsZProfileLHC18b(multEstimatorAvg[0]);
+        task->SetMultiplVsZProfileLHC18d(multEstimatorAvg[1]);
+        task->SetMultiplVsZProfileLHC18e(multEstimatorAvg[2]);
+        task->SetMultiplVsZProfileLHC18f(multEstimatorAvg[3]);
+        task->SetMultiplVsZProfileLHC18g(multEstimatorAvg[4]);
+        task->SetMultiplVsZProfileLHC18h(multEstimatorAvg[5]);
+        task->SetMultiplVsZProfileLHC18i(multEstimatorAvg[6]);
+        task->SetMultiplVsZProfileLHC18j(multEstimatorAvg[7]);
+        task->SetMultiplVsZProfileLHC18k(multEstimatorAvg[8]);
+        task->SetMultiplVsZProfileLHC18l(multEstimatorAvg[9]);
+        task->SetMultiplVsZProfileLHC18m(multEstimatorAvg[10]);
+        task->SetMultiplVsZProfileLHC18n(multEstimatorAvg[11]);
+        task->SetMultiplVsZProfileLHC18o(multEstimatorAvg[12]);
+        task->SetMultiplVsZProfileLHC18p(multEstimatorAvg[13]);
+      }
+    }
+  }
+
+  if(useMultCut){
+    task->SetUseMultiplcityCut(useMultCut);
+    task->SetMinimumMultiplicity(multMin);
+    task->SetMaximumMultiplicity(multMax);
+  }
+  
   mgr->AddTask(task);
   
   // Create and connect containers for input/output  
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   //TString outputfile = Form("Lc2K0Sp_tree_pA%s.root", suffixName.Data());
-  TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
-  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="";
+  //TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
+  TString outputfile = "AnalysisResults.root";
+  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
 
-  output1name = Form("treeList%s", suffixName.Data());
-  output2name = Form("Lc2pK0Scounter%s", suffixName.Data());
-  output3name = Form("Lc2pK0SCuts%s", suffixName.Data());
-  output4name = Form("treeSgn%s", suffixName.Data());
-  output5name = Form("treeBkg%s", suffixName.Data());
-  output6name = Form("listHistoKF%s", suffixName.Data());
+  output1name = Form("treeList%s%s", suffixName.Data(), library.Data());
+  output2name = Form("Lc2pK0Scounter%s%s", suffixName.Data(), library.Data());
+  output3name = Form("Lc2pK0SCuts%s%s", suffixName.Data(), library.Data());
+  output4name = Form("treeSgn%s%s", suffixName.Data(), library.Data());
+  output5name = Form("treeBkg%s%s", suffixName.Data(), library.Data());
+  output6name = Form("listHistoKF%s%s", suffixName.Data(), library.Data());
+  output7name = Form("listWeights%s%s", suffixName.Data(), library.Data());
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
@@ -104,7 +261,10 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   
   AliAnalysisDataContainer *coutput6   = mgr->CreateContainer(output6name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
   mgr->ConnectOutput(task, 6, coutput6);  
-  
+
+  AliAnalysisDataContainer *coutput7   = mgr->CreateContainer(output7name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
+  mgr->ConnectOutput(task, 7, coutput7);  
+
   return task;
   
 }

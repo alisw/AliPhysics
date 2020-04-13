@@ -40,6 +40,7 @@ ClusterExotics:                                     # Cluster exotics identifica
     createHistos: true                             # Whether the task should create output histograms    
 ClusterNonLinearity:                                # Cluster non-linearity correction component
     enabled: true                                  # Whether to enable the task
+    setForceClusterE: true                         #for cluster energy to correct for non-linearity
     createHistos: true                             # Whether the task should create output histograms        
     nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
 ClusterTrackMatcher:                                # Cluster-track matcher component

@@ -43,6 +43,8 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   void SetMC(int mc) {fIsMC = mc;}
   void SetnR(int nR) {fnR = nR;}
   void SetACside(int flag) {fACside = flag;}
+  void SetIncludeFullJets(int full) {fDoFullJets = full;}
+  int GetIncludeFullJets() {return fDoFullJets;}
   int GetnR() {return fnR;}
   void SetConeSize(UInt_t i, double radius) {fConeSizes[i] = radius;}
   double  GetConeSize( UInt_t i ){ return fConeSizes.at( i ); }
@@ -82,6 +84,7 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   Int_t fNJetFinder;
   Int_t debug;
   Int_t fIsMC;
+  Int_t fDoFullJets;
   Int_t fnR;
   Int_t fACside;
   Int_t fnkt;

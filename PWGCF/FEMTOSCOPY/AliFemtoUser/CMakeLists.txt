@@ -48,6 +48,7 @@ set(SRCS
   AliFemtoModelBPLCMSCorrFctnKK.cxx
   AliFemtoModelGausRinvFreezeOutGenerator.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
+  AliFemtoModelCorrFctn3DKKGR.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDEtaDPhiStar.cxx
@@ -59,6 +60,7 @@ set(SRCS
   AliFemtoModelCorrFctnKStar.cxx
   AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctnQinv.cxx
+  AliFemtoModelCorrFctnQinvPtSum.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoModelCorrFctnTrueQ3D.cxx
   AliFemtoModelCorrFctnTrueQ3DByParent.cxx
@@ -66,6 +68,11 @@ set(SRCS
   AliFemtoModelCorrFctnKK.cxx
   AliFemtoModelCorrFctnKpKp.cxx
   AliFemtoNSigmaFilter.cxx
+  AliFemtoCutAttrEvent.cxx
+  AliFemtoCutAttrPairTrack.cxx
+  AliFemtoCutAttrTrack.cxx
+  AliFemtoAnalysisPionPionCuts.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx
@@ -86,12 +93,15 @@ set(SRCS
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
+  AliFemtoCorrFctnDEtaDPhiStar.cxx
   AliFemtoCorrFctnDEtaDPhiTHn.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
   AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnKStar.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
+  AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
+  AliFemtoCorrFctnPtKstar.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
@@ -103,6 +113,7 @@ set(SRCS
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
   AliFemtoAnalysisPionPion.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoPairCutRadialDistanceLM.cxx
   AliFemtoPicoEventRP.cxx
   AliFemtoPairCutRadialDistanceKK.cxx
@@ -139,10 +150,14 @@ set(SRCS
   AliFemtoV0PurityBgdEstimator.cxx
   AliFemtoPairCutRadialDistanceKKdist.cxx
   AliFemtoSphericityEventCutKK.cxx #  Sphericity for KK analysis in pp13TeV
-  AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor 
+  AliFemtoSphericityEventCutKK1.cxx #  3may2019!! Sphericity for KK analysis in pp13TeV
+  AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx
+  AliFemtoCutMonitorPairMomRes.cxx
+  AliFemtoCorrFctnPairsForCorrFit.cxx
+  AliFemtoWRzTrackCut.cxx
   )
 
 

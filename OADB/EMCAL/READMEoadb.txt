@@ -65,5 +65,35 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190118: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC17c,d,f,g + fix for LHC17n
 - 20190124: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC16g, LHC18f, LHC18g
 - 20190129: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18m
+- 20190206: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18e
+- 20190208: Update of EMCALBadChannels.root with new maps for LHC18p and upaded maps for DCal for LHC17h,i,j,k,l,m,o,r
+- 20190212: Update of EMCALBadChannels.root with upaded maps for LHC16h,i,j,k,l,q,t
+- 20190214: Update of EMCALBadChannels.root with upaded maps for LHC16g,o,p and LHC17c
+- 20190215: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18b/c and LHC18n/o
+- 20190301: Update of EMCALBadChannels.root with upaded maps for LHC15o
+- 20190308: Update of EMCALBadChannels.root with new maps for LHC18j,k,l and adjusted range of LHC18m(V6) map
+- 20190320: Update of EMCALBadChannels.root with new maps for LHC18d that cover larger run ranges and LHC18b,e,f with additional bad channels
+- 20190321: Update of EMCALBadChannels.root with additional bad channels for LHC18h,i
+- 20190329: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18j,k,l,p and updates for LHC18m,o
+- 20190410: Update of EMCALBadChannels.root with additional bad channels for LHC18b,e,f,h,i,m as well as updated time calibrations with default 600ns shift for uncalibrated cells in LHC18g,n
+- 20190411: Update of EMCALBadChannels.root with additional bad channels for LHC18o
+- 20190412: Update of EMCALBadChannels.root with new maps for LHC18q and LHC18r
+- 20190415: Update of EMCALBadChannels.root with additional bad channels for LHC18c (low B)
+- 20190417: Update of EMCALBadChannels.root with additional bad channels for LHC18p
+- 20190423: Update of EMCALBadChannels.root with additional bad channels for LHC18d,j,k,l
+- 20190429: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18q,r
+- 20190513: Update of EMCALBadChannels.root with remaining run range for LHC18r bad channels
+- 20190520: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for remaining runs of LHC18r
+- 20190528: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18q,r
+- 20190612: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17n (XeXe)
+- 20190612: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17g, LHC18g and LHC18n (lower thresholds)
+- 20190617: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC15o (with BC maps and good runs)
+- 20190626: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18q and r (second update)
+- 20190716: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC18g (split in three ranges) and LHC18n
+- 20190722: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17f and new calibs for LHC16f_lowB
+- 20190722: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17g and LHC18c
+- 20190830: Update of EMCALTemperatureCalibSM.root and EMCALTemperatureCalibParam.root containing new temperature calibration parameters for full Run1 and Run2
+- 20191030: Update of EMCALTimeL1PhaseCalib.root with 2016 PAR calibrations
+- 20200316: Re-addition of 2016-2018 PAR calibrations in EMCALTimeL1PhaseCalib.root + missing PAR calib for three runs of LHC18q
 
 */

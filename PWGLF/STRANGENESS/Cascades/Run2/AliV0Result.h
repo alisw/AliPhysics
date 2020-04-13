@@ -104,6 +104,7 @@ public:
     void SetCut276TeVLikedEdx ( Bool_t lCut ) { fCut276TeVLikedEdx = lCut; }
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
+    void SetCutITSorTOF ( Bool_t lCut) { fCutITSorTOF = lCut; } 
     
     void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
     
@@ -159,6 +160,7 @@ public:
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+    Bool_t GetCutITSorTOF () const { return fCutITSorTOF; } 
 
     Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     
@@ -274,11 +276,12 @@ private:
     
     //At least one track has TOF signal
     Bool_t fCutAtLeastOneTOF;
+    Bool_t fCutITSorTOF;
     
     //Cowboy/sailor
     Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliV0Result, 22)
+    ClassDef(AliV0Result, 23)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -301,5 +304,6 @@ private:
     //20 - TOF cut: at-least-one type
     //22 - cowboy/sailor check
     //23 - modern track selections: parametric length, crossed rows + cr/L
+    //24 - implementation of ITS||TOF requirement
 };
 #endif

@@ -37,4 +37,21 @@
 #pragma link C++ class AliHFCorrFitter+;
 #pragma link C++ class AliHFCorrFitSystematics+;
 #pragma link C++ class AliDhCorrelationExtraction+;
+
+#if ROOT_VERSION_CODE > ROOT_VERSION(6,4,0)
+#pragma link C++ namespace AliDHFeCorr+;
+#pragma link C++ typedef AliDHFeCorr::AliDMeson+;
+#pragma link C++ typedef AliDHFeCorr::AliElectron+;
+#pragma link C++ typedef AliDHFeCorr::AliEventSelection+;
+#pragma link C++ typedef AliDHFeCorr::AliElectronSelection+;
+#pragma link C++ typedef AliDHFeCorr::AliPhotonSelection+;
+#pragma link C++ typedef AliDHFeCorr::AliDMesonSelection+;
+#pragma link C++ typedef AliDHFeCorr::AliEventQAHistograms+;
+#pragma link C++ typedef AliDHFeCorr::AliElectronQAHistograms+;
+#pragma link C++ typedef AliDHFeCorr::AliDMesonQAHistos+;
+#pragma link C++ typedef AliDHFeCorr::AliConfigureElectronOpt+;
+#pragma link C++ typedef AliDHFeCorr::AliConfigureDMesonOpt+;
+#pragma link C++ class AliAnalysisTaskDHFeCorr+;
+#endif
+
 #endif

@@ -3,8 +3,6 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#if !defined(__CINT__) && !defined(__CLING__)
-
 #include <TROOT.h>
 
 #include <TString.h>
@@ -16,7 +14,32 @@
 
 #include "AliAnalysisTaskFemtoNu.h"
 
-#endif
+
+/// \class MacroCfg
+/// \brief All parameters for this macro
+///
+struct MacroCfg : public TNamed {
+
+  TString macro = "%%/ConfigNuFemtoAnalysisR6.C+",
+          auto_directory = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto",
+          output_filename,
+          output_container = "PWG2FEMTO",
+          subwagon_array = "",
+          subwagon_type = "centrality";
+
+  MacroCfg()
+    : TNamed("cfg", "MacroCfg")
+    , output_filename(AliAnalysisManager::GetAnalysisManager()->GetCommonFileName())
+    {}
+
+  TString GetFilename()
+    {
+      return (output_container == "")
+           ? output_filename
+           : TString::Format("%s:%s", output_filename.Data(), output_container.Data());
+    }
+};
+
 
 /// \brief Adds an AliAnalysisTaskFemtoNu analysis object, constructed
 ///        with parameters provided, to the global AliAnalysisManager.
@@ -66,11 +89,6 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
 {
   std::cout << "\n\n============== AddNuTaskPionPion (ROOT6 Version) ===============\n";
 
-  const TString AUTO_DIRECTORY = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto",
-                DEFAULT_MACRO = "%%/ConfigNuFemtoAnalysisR6.C",
-                DEFAULT_OUTPUT_CONTAINER = "PWG2FEMTO",
-                DEFAULT_SUBWAGON_TYPE = "centrality";
-
   // Get the global analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -78,11 +96,7 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
     return nullptr;
   }
 
-  TString macro = DEFAULT_MACRO,
-          output_filename = mgr->GetCommonFileName(),
-          output_container = DEFAULT_OUTPUT_CONTAINER,
-          subwagon_array = "",
-          subwagon_type = DEFAULT_SUBWAGON_TYPE;
+  MacroCfg cfg;
 
   bool verbose = kFALSE;
 
@@ -90,6 +104,8 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
 
   TIter next_line(lines);
   TObject *line_obj = nullptr;
+
+  gDirectory->Add(&cfg);
 
   while ((line_obj = next_line())) {
     TObjString *s = static_cast<TObjString*>(line_obj);
@@ -99,32 +115,41 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
     }
 
     cmd.ReplaceAll("'", '"');
+
+    cmd = "static_cast<MacroCfg*>(cfg)->" + cmd + ";";
+
     std::cout << "running `" << cmd  << "`\n";
-    gROOT->ProcessLineFast(cmd + ';');
+    gROOT->ProcessLineFast(cmd);
   }
 
+  gDirectory->Remove(&cfg);
+
   // Replace %% with this directory for convenience
-  macro.ReplaceAll("%%", AUTO_DIRECTORY);
+  cfg.macro.ReplaceAll("%%", cfg.auto_directory);
 
   // Dealing with subwagons
   if (!subwagon_suffix.IsWhitespace()) {
     Int_t index = subwagon_suffix.Atoi();
-    TObjArray *values = subwagon_array.Tokenize(",");
+    TObjArray *values = cfg.subwagon_array.Tokenize("~");
     TIter next_value(values);
+    if (values->GetEntries() < index) {
+      std::cerr << "Could not use subwagon-index " << index << " in subwagon_array of only " << values->GetEntries() << " entries\n";
+      return nullptr;
+    }
     for (int i=0; i<index; ++i) {
       next_value();
     }
     TString ss = ((TObjString*)next_value())->String();
-    params += Form("%s = %s;", subwagon_type.Data(), ss.Data());
+    params += ";" + cfg.subwagon_type + " = " + ss;
 
     container += "_" + subwagon_suffix;
   }
 
-  cout << "[AddTaskPionPion]\n"
-          "   container: " << container << "\n"
-          "   output: '" << output_filename << "'\n"
-          "   macro: '" << macro << "'\n"
-          "   params: '" << params << "'\n";
+  std::cout << "[AddTaskPionPion]\n"
+               "   container: " << container << "\n"
+               "   output: '" << cfg.output_filename << "'\n"
+               "   macro: '" << cfg.macro << "'\n"
+               "   params: '" << params << "'\n";
 
   // The analysis config macro for PionPionFemto accepts a single string
   // argument, which it interprets.
@@ -136,23 +161,22 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
                                               .ReplaceAll("\"", "\\\"")
                                               .ReplaceAll("\t", "\\t") + '"';
 
+  std::cout << "   params-normalized: '" << analysis_params << "'\n";
+
   AliAnalysisTaskFemto *femtotask = new AliAnalysisTaskFemtoNu(
     container,
-    macro,
+    cfg.macro,
     analysis_params,
     verbose
   );
 
   mgr->AddTask(femtotask);
 
-  const TString outputfile = (output_container == "")
-                           ? output_filename
-                           : TString::Format("%s:%s", output_filename.Data(), output_container.Data());
-
-  AliAnalysisDataContainer *out_container = mgr->CreateContainer(container,
-                                                                 AliFemtoResultStorage::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputfile);
+  const TString outputfile = cfg.GetFilename();
+  auto *out_container = mgr->CreateContainer(container,
+                                             AliFemtoResultStorage::Class(),
+                                             AliAnalysisManager::kOutputContainer,
+                                             outputfile);
 
   mgr->ConnectInput(femtotask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(femtotask, AliAnalysisTaskFemtoNu::RESULT_STORAGE_OUTPUT_SLOT, out_container);
@@ -168,14 +192,18 @@ AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
   return femtotask;
 }
 
-AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
-                                        TString configuration,
-                                        TString params="")
+
+AliAnalysisTask*
+AddNuTaskPionPionRoot6(TString container,
+                       TString configuration,
+                       TString params="")
 {
   return AddNuTaskPionPionRoot6(container, configuration, params, "");
 }
 
-AliAnalysisTask* AddNuTaskPionPionRoot6(TString container)
+
+AliAnalysisTask*
+AddNuTaskPionPionRoot6(TString container)
 {
   AddNuTaskPionPionRoot6(container, "", "");
   return nullptr;

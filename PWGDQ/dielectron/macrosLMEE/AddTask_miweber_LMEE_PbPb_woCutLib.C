@@ -11,14 +11,23 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 
 AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
-						    TString outputFileName = "AnalysisResult.root",
-						    TString directoryBaseName = "miweber_LMEE_PbPb",
-						    Bool_t isNano = kFALSE,
-						    Bool_t bCutQA = kTRUE,
-						    Bool_t useTPCCorr=kFALSE,
-						    Bool_t useRotation=kFALSE,
-						    Bool_t useMixing=kTRUE,
-						    Bool_t noPairing=kFALSE){
+						      TString outputFileName = "AnalysisResult.root",
+						      TString directoryBaseName = "miweber_LMEE_PbPb",
+						      Bool_t isNano = kFALSE,
+						      Bool_t bCutQA = kTRUE,
+						      Bool_t useTPCCorr=kFALSE,
+						      Bool_t useRotation=kFALSE,
+						      Bool_t useMixing=kTRUE,
+						      Bool_t noPairing=kFALSE,
+						      Bool_t bUsePileUpCutsTPCClusters = kFALSE,
+						      Float_t pileUpCutsTPCClustersMin = 0.,
+						      Float_t pileUpCutsTPCClustersMax = 0.,
+						      
+						      Double_t centMin = -1.,
+						      Double_t centMax = -1.,
+						      Bool_t reqAliEventCuts = kFALSE,
+						      Bool_t reqAliEventCutsCorrelated = kFALSE
+						    ){
 
 
   //get the current analysis manager
@@ -57,37 +66,49 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_miweber_PbPb_woCutLib");
 
-  // for MC no  need for physics selection and for Nano AODs this has been done already  
-  if (!hasMC && !isNano) task->UsePhysicsSelection();
-
-  //Add event filter
-  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias, can be set also from outside
-
-  // for Nano AODs this has been done already  
-  if(!isNano){
-    task->SelectCollisionCandidates(triggerNames);
-    task->SetTriggerMask(triggerNames);
+  // for MC no  need for physics selection and for Nano AODs this has been done already
+  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias
+  if (!hasMC && !isNano){
+    task->UsePhysicsSelection();
+    task->SetTriggerMask(triggerNames); //PbPb Min Bias, can be set also from outside
+    // task->SelectCollisionCandidates(triggerNames); // not needed, since UsePhysicsSelection::UsePhysicsSelection is called; but can be set also from outside
     // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
   }
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-
   //Add event filter
-  task->SetEventFilter( GetEventCuts() );
-
-  // Add the task to the manager
-  mgr->AddTask(task);
+  task->SetEventFilter( GetEventCuts(centMin, centMax, reqAliEventCuts, reqAliEventCutsCorrelated) );
   
   //add dielectron analysis with selected cut to the task
   AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,useRotation,useMixing,noPairing,hasMC);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
+
     // use event plane cuts only for this cut set
     if(cutDefinition==671){
       eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
       eventplaneCuts->Print();
       diel_low->GetEventFilter().AddCuts(eventplaneCuts);
     }
+
+    // use pile-up rejection cuts based on TPC clusters/event
+    if(bUsePileUpCutsTPCClusters){
+
+      Printf("Using TPC cluster based pile-up cuts with parameter 0 from %f to %f",pileUpCutsTPCClustersMin,pileUpCutsTPCClustersMax);
+
+      TF1* fFitMin = new TF1("fFit","pol6",0,90);
+      TF1* fFitMax = new TF1("fFit","pol6",0,90);
+      fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+      fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+      
+      AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
+      pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+      pileUpCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+
+      pileUpCuts->Print();
+      diel_low->GetEventFilter().AddCuts(pileUpCuts);
+    }
+      
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }
@@ -126,6 +147,8 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+  if((AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"))
+    mgr->ConnectInput(task,  1,(AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"));
   mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);

@@ -245,7 +245,49 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TString                 sNucleiTP;  //
   TString           sCentrEstimator;  //
  
+  //   Alex Correction Profiles
+  TProfile          *fpX1X2PosT1;  //! 
+  TProfile          *fpX1X3PosT1;  //! 
+  TProfile          *fpX1X2PosT2;  //! 
+  TProfile          *fpX1X3PosT2;  //! 
+  TProfile          *fpX1X2PosT3;  //! 
+  TProfile          *fpX1X3PosT3;  //! 
+  TProfile          *fpX1X2PosT4;  //! 
+  TProfile          *fpX1X3PosT4;  //!
+  
+  TProfile          *fpX1X2NegT1;  //! 
+  TProfile          *fpX1X3NegT1;  //! 
+  TProfile          *fpX1X2NegT2;  //! 
+  TProfile          *fpX1X3NegT2;  //! 
+  TProfile          *fpX1X2NegT3;  //! 
+  TProfile          *fpX1X3NegT3;  //! 
+  TProfile          *fpX1X2NegT4;  //! 
+  TProfile          *fpX1X3NegT4;  //! 
 
+  TProfile          *fpX1X2OppT1;  //! 
+  TProfile          *fpX1X2OppT2;  //! 
+  TProfile          *fpX1X2OppT3;  //! 
+  TProfile          *fpX1X2OppT4;  //! 
+
+  TProfile          *fpX1X3PosT1EP2;  //! 
+  TProfile          *fpX1X3PosT2EP2;  //! 
+  TProfile          *fpX1X3PosT3EP2;  //! 
+  TProfile          *fpX1X3PosT4EP2;  //!
+  
+  TProfile          *fpX1X3NegT1EP2;  //! 
+  TProfile          *fpX1X3NegT2EP2;  //! 
+  TProfile          *fpX1X3NegT3EP2;  //! 
+  TProfile          *fpX1X3NegT4EP2;  //! 
+
+  TProfile          *fpX1PosCosT1;    //!
+  TProfile          *fpX1NegCosT1;    //!
+  TProfile          *fpX1PosSinT1;    //!
+  TProfile          *fpX1NegSinT1;    //!
+
+  TProfile          *fpX1EventT1EP1;  //!
+  TProfile          *fpX1EventT1EP2;  //!
+  TProfile          *fpY1EventT1EP1;  //!
+  TProfile          *fpY1EventT1EP2;  //!
 
   TH1F            *fHistEventCount;   //!    last in the list
 

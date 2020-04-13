@@ -1,37 +1,50 @@
 #include "TROOT.h"
 #include "TSystem.h"
-AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
-                                     bool isESD = false,
-                                     TString CentEst = "kInt7",
-                                     bool notpp = true,  //1
-                                     bool fineBinning = true,  //2
-                                     bool DCAPlots = false,  //3
-                                     bool CPAPlots = false,  //4
-                                     bool MomReso = false,  //5
-                                     bool etaPhiPlotsAtTPCRadii = false,  //6
-                                     bool CombSigma = false,  //7
-                                     bool PileUpRej = true,  //8
-                                     bool mTkTPlot = false,  //9
-                                     bool kTCentPlot = false,  //10
-                                     bool MultvsCentPlot = false,  //11
-                                     bool dPhidEtaPlots = false,  //12
-                                     bool eventMixing = true,  //13
-                                     bool phiSpin = true,  //14
-                                     bool stravinskyPhiSpin = true,  //15
-                                     bool ContributionSplitting = false,  //16
-                                     bool ContributionSplittingDaug = false,  //17
-                                     bool RunNumberQA = false,  //18
-                                     int FilterBit = 128,  //19
-                                     bool InvMassPairs = false,  //20
-                                     bool DeltaEtaDeltaPhiCut = false,  //21
-                                     int SphericityRange = 0,
-                                     bool excludeUnwantedPairs = false  )  //22
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskFemtoDream.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskPIDResponse.h"
+AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false, bool isESD = false,
+                                     TString CentEst = "kInt7", bool notpp =
+                                         true,  //1
+                                     bool DCAPlots = false,  //2
+                                     bool CPAPlots = false,  //3
+                                     bool MomReso = false,  //4
+                                     bool etaPhiPlotsAtTPCRadii = false,  //5
+                                     bool CombSigma = false,  //6
+                                     bool mTkTPlot = false,  //7
+                                     bool kTCentPlot = false,  //8
+                                     bool MultvsCentPlot = false,  //9
+                                     bool dPhidEtaPlots = false,  //10
+                                     bool phiSpin = true,  //11
+                                     bool stravinskyPhiSpin = true,  //12
+                                     bool ContributionSplitting = false,  //13
+                                     bool ContributionSplittingDaug = false,  //14
+                                     bool RunNumberQA = false,  //15
+                                     int FilterBit = 128,  //16
+                                     bool DeltaEtaDeltaPhiCut = false,  //17
+                                     bool DEtadPhiAllPairs = false,  // 18
+                                     int SphericityRange = 0,  // 19
+                                     bool excludeUnwantedPairs = false,  //20
+                                     bool stricterPileUpRej = false,  //21
+                                     float dPhidEta = 0.01)  //22
                                      {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
+  bool PileUpRej = true;  //8
+  bool fineBinning = true;  //2
+  bool eventMixing = true;  //13
+  bool InvMassPairs = false;  //20
+
+
+  
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   if (!mgr) {
     printf("No analysis manager to connect to!\n");
     return nullptr;
@@ -93,19 +106,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     TrackCuts->SetDCAReCalculation(false);
   } else {
     TrackCuts->SetFilterBit(FilterBit);
+    if (stricterPileUpRej) {
+      TrackCuts->SetCheckPileUp(false);
+      TrackCuts->SetCheckPileUpSPDTOF(true);
+    }
   }
   TrackCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma,
                                              ContributionSplitting);
+  AntiTrackCuts->SetCutCharge(-1);
   if (isESD) {
     AntiTrackCuts->SetCheckFilterBit(false);
     AntiTrackCuts->SetCheckESDFiltering(true);
     AntiTrackCuts->SetDCAReCalculation(false);
   } else {
     AntiTrackCuts->SetFilterBit(FilterBit);
+    if (stricterPileUpRej) {
+      AntiTrackCuts->SetCheckPileUp(false);
+      AntiTrackCuts->SetCheckPileUpSPDTOF(true);
+    }
   }
-  AntiTrackCuts->SetCutCharge(-1);
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
   AliFemtoDreamCascadeCuts *CascadeCuts;
@@ -116,8 +137,16 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
                                            ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    Posv0Daug->SetCheckPileUp(false);
+    Posv0Daug->SetCheckPileUpSPDTOF(true);
+  }
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    Negv0Daug->SetCheckPileUp(false);
+    Negv0Daug->SetCheckPileUpSPDTOF(true);
+  }
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
@@ -128,9 +157,19 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC, PileUpRej, false);
   PosAntiv0Daug->SetCutCharge(1);
+  if (stricterPileUpRej) {
+    PosAntiv0Daug->SetCheckPileUp(false);
+    PosAntiv0Daug->SetCheckPileUpSPDTOF(true);
+  }
+
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
       AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, PileUpRej, false);
   NegAntiv0Daug->SetCutCharge(-1);
+  if (stricterPileUpRej) {
+    NegAntiv0Daug->SetCheckPileUp(false);
+    NegAntiv0Daug->SetCheckPileUpSPDTOF(true);
+  }
+
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
@@ -146,6 +185,18 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
       isMC, PileUpRej, false);
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
       isMC, PileUpRej, false);
+  if (stricterPileUpRej) {
+    XiNegCuts->SetCheckPileUp(false);
+    XiNegCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    XiPosCuts->SetCheckPileUp(false);
+    XiPosCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    XiBachCuts->SetCheckPileUp(false);
+    XiBachCuts->SetCheckPileUpSPDTOF(true);
+  }
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
@@ -167,6 +218,18 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, PileUpRej, false);
   AntiXiBachCuts->SetCutCharge(1);
+  if (stricterPileUpRej) {
+    AntiXiNegCuts->SetCheckPileUp(false);
+    AntiXiNegCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    AntiXiPosCuts->SetCheckPileUp(false);
+    AntiXiPosCuts->SetCheckPileUpSPDTOF(true);
+  }
+  if (stricterPileUpRej) {
+    AntiXiBachCuts->SetCheckPileUp(false);
+    AntiXiBachCuts->SetCheckPileUpSPDTOF(true);
+  }
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
@@ -177,10 +240,24 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   AntiCascadeCuts->SetPDGCodeBach(-211);
 
   if (RunNumberQA) {
-    v0Cuts->SetRunNumberQA(265309, 267167);
-    Antiv0Cuts->SetRunNumberQA(265309, 267167);
-    CascadeCuts->SetRunNumberQA(265309, 267167);
-    AntiCascadeCuts->SetRunNumberQA(265309, 267167);
+    if (notpp) {
+      if (CentEst == "kHM") { //works for pp HM
+        v0Cuts->SetRunNumberQA(252234, 294926);
+        Antiv0Cuts->SetRunNumberQA(252234, 294926);
+        CascadeCuts->SetRunNumberQA(252234, 294926);
+        AntiCascadeCuts->SetRunNumberQA(252234, 294926);
+      } else { //works for pPb
+        v0Cuts->SetRunNumberQA(265309, 267167);
+        Antiv0Cuts->SetRunNumberQA(265309, 267167);
+        CascadeCuts->SetRunNumberQA(265309, 267167);
+        AntiCascadeCuts->SetRunNumberQA(265309, 267167);
+      }
+    } else { // works for pp MB
+      v0Cuts->SetRunNumberQA(252234, 294926);
+      Antiv0Cuts->SetRunNumberQA(252234, 294926);
+      CascadeCuts->SetRunNumberQA(252234, 294926);
+      AntiCascadeCuts->SetRunNumberQA(252234, 294926);
+    }
   }
 
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -207,27 +284,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   ZVtxBins.push_back(10);
   std::vector<int> NBins;
   if (fineBinning) {
-    NBins.push_back(750);  // p p
-    NBins.push_back(750);  // p barp
-    NBins.push_back(750);  // p Lambda
-    NBins.push_back(750);  // p barLambda
-    NBins.push_back(750);  // p Xi
-    NBins.push_back(750);  // p barXi
-    NBins.push_back(750);  // barp barp
-    NBins.push_back(750);  // barp Lambda
-    NBins.push_back(750);  // barp barLambda
-    NBins.push_back(750);  // barp Xi
-    NBins.push_back(750);  // barp barXi
-    NBins.push_back(750);  // Lambda Lambda
-    NBins.push_back(750);  // Lambda barLambda
-    NBins.push_back(750);  // Lambda Xi
-    NBins.push_back(750);  // Lambda barXi
-    NBins.push_back(750);  // barLambda barLambda
-    NBins.push_back(750);  // barLambda Xi
-    NBins.push_back(750);  // barLambda barXi
-    NBins.push_back(750);  // Xi Xi
-    NBins.push_back(750);  // Xi barXi
-    NBins.push_back(750);  // barXi barXi
+    NBins.push_back(1500);  // p p
+    NBins.push_back(150);  // p barp
+    NBins.push_back(1500);  // p Lambda
+    NBins.push_back(150);  // p barLambda
+    NBins.push_back(1500);  // p Xi
+    NBins.push_back(150);  // p barXi
+    NBins.push_back(1500);  // barp barp
+    NBins.push_back(150);  // barp Lambda
+    NBins.push_back(1500);  // barp barLambda
+    NBins.push_back(150);  // barp Xi
+    NBins.push_back(1500);  // barp barXi
+    NBins.push_back(1500);  // Lambda Lambda
+    NBins.push_back(150);  // Lambda barLambda
+    NBins.push_back(150);  // Lambda Xi
+    NBins.push_back(150);  // Lambda barXi
+    NBins.push_back(1500);  // barLambda barLambda
+    NBins.push_back(150);  // barLambda Xi
+    NBins.push_back(150);  // barLambda barXi
+    NBins.push_back(150);  // Xi Xi
+    NBins.push_back(150);  // Xi barXi
+    NBins.push_back(150);  // barXi barXi
   } else {  //standard binning Run1
     NBins.push_back(750);  // p p
     NBins.push_back(750);  // p barp
@@ -274,27 +351,27 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   kMin.push_back(0.);
   kMin.push_back(0.);
   std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
+  kMax.push_back(6.);      // p p
+  kMax.push_back(3.);      // p barp
+  kMax.push_back(6.);      // p Lambda
+  kMax.push_back(3.);      // p barLambda
+  kMax.push_back(6.);      // p Xi
+  kMax.push_back(3.);      // p barXi
+  kMax.push_back(6.);      // barp barp
+  kMax.push_back(3.);      // barp Lambda
+  kMax.push_back(6.);      // barp barLambda
+  kMax.push_back(3.);      // barp Xi
+  kMax.push_back(6.);      // barp barXi
+  kMax.push_back(6.);      // Lambda Lambda
+  kMax.push_back(3.);      // Lambda barLambda
+  kMax.push_back(3.);      // Lambda Xi
+  kMax.push_back(3.);      // Lambda barXi
+  kMax.push_back(6.);      // barLambda barLambda
+  kMax.push_back(3.);      // barLambda Xi
+  kMax.push_back(3.);      // barLambda barXi
+  kMax.push_back(3.);      // Xi Xi
+  kMax.push_back(3.);      // Xi barXi
+  kMax.push_back(3.);      // barXi barXi
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
   if (notpp) {
@@ -353,9 +430,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
-  config->SetInvMassPairs(InvMassPairs);
   if (kTCentPlot) {
-    std::vector<float> centBins;
+    std::vector<int> centBins;
     centBins.push_back(20);
     centBins.push_back(40);
     centBins.push_back(90);
@@ -372,18 +448,24 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   }
   if (etaPhiPlotsAtTPCRadii) {
 //    if (isMC) {
-      config->SetPhiEtaBinnign(true);
+    config->SetPhiEtaBinnign(true);
 //    } else {
 //      std::cout
 //          << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
 //    }
   }
   if (DeltaEtaDeltaPhiCut) {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+    config->SetDeltaEtaMax(dPhidEta);
+    config->SetDeltaPhiMax(dPhidEta);
+    if (!DEtadPhiAllPairs) {
+      config->SetClosePairRejection(config->GetStandardPairRejection());
+    } else {
+      config->SetClosePairRejection(config->GetAllPairRejection());
+    }
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
-  if (dPhidEtaPlots) config->SetmTdEtadPhiBins(config->GetStandardmTBins());
+  if (dPhidEtaPlots)
+    config->SetmTdEtadPhiBins(config->GetStandardmTBins());
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
@@ -392,7 +474,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   config->SetSpinningDepth(10);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
-  config->SetUseStravinskyMethod(stravinskyPhiSpin);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin); 
+  //config->SetUseStravinskyMethod(stravinskyPhiSpin);
   config->SetMinimalBookingME(false);
   config->SetMinimalBookingSample(true);
   if (!notpp) {
@@ -451,13 +534,13 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString addon = "";    
+  TString addon = "";
   if (CentEst == "kInt7") {
     addon += "MB";
   } else if (CentEst == "kHM") {
     addon += "HM";
   }
-  if (SphericityRange != 0 ) {
+  if (SphericityRange != 0) {
     addon += "_Sphericity_";
     addon += SphericityRange;
     addon += "_";
@@ -640,4 +723,3 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   }
   return task;
 }
-

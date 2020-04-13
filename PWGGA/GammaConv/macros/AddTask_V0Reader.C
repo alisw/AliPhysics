@@ -34,7 +34,7 @@
 
 void AddTask_V0Reader(    TString       periodNameV0Reader            = "",
                           Bool_t        enableV0findingEffi           = kFALSE,
-                          Bool_t        runLightOutput                = kFALSE,
+                          Int_t        runLightOutput                = 0,
                           Bool_t        dodEdxSigmaCut                = kTRUE,
                           Int_t         isHeavyIon                    = 0,
                           TString       cutnumberAODBranch            = "800000006008400000001500000",

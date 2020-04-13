@@ -18,10 +18,10 @@ class TH2F;
 
 class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
  public:
-  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi};
+  enum DecChannel {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kLctopKpi,kLctopK0s,kLctopKpiFromSc};
 
   AliAnalysisTaskTrackingSysPropagation();
-  AliAnalysisTaskTrackingSysPropagation(DecChannel ch, AliRDHFCuts* cuts, TH1F *HistMESys, TH1F *HistTrEffSys);
+  AliAnalysisTaskTrackingSysPropagation(DecChannel ch, AliRDHFCuts* cuts, TH1F *HistMESys, TH1F *HistTrEffSys, TH1F *HistMESysPr=0x0);
   virtual ~AliAnalysisTaskTrackingSysPropagation();
     
   virtual void   UserCreateOutputObjects();
@@ -45,6 +45,7 @@ class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
     
   TH1F *fHistNEvents;           //! histo with number of events
   TH1F *fHistMESyst;            /// histo with match. eff. systematics vs pt (need to be passed as input)
+  TH1F *fHistMESystPr;          /// histo with match. eff. systematics vs pt for protons (need to be passed as input)
   TH1F *fHistTrEffSyst;         /// histo with track. eff. systematics vs pt (need to be passed as input)
   TH2F *fhPtDauVsD;             //! histo with Pt daughters vs pt candidate
   TH2F *fhSystMatchEffD;        //! histo with systematic uncertainty on the candidate
@@ -57,7 +58,7 @@ class AliAnalysisTaskTrackingSysPropagation : public AliAnalysisTaskSE {
   Double_t fMaxPt;              /// max pt in the outputs histos
   AliRDHFCuts* fAnalysisCuts;   /// cuts
     
-  ClassDef(AliAnalysisTaskTrackingSysPropagation, 2);
+  ClassDef(AliAnalysisTaskTrackingSysPropagation, 3);
 };
 
 #endif

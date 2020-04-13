@@ -30,7 +30,7 @@
 #include "TH2.h"
 #include "TFile.h"
 #include "TObjArray.h"
-#include "TParticle.h"
+#include "AliVParticle.h"
 #include "TLorentzVector.h"
 #include "TVector3.h"
 #include "TRandom3.h"
@@ -224,7 +224,7 @@ TLorentzVector  AliCocktailSmearing::ApplySmearingOton(const TLorentzVector& vec
   return resvec;
 }
 //_______________________________________________________________________________________________
-TLorentzVector AliCocktailSmearing::Smear(TParticle * part)
+TLorentzVector AliCocktailSmearing::Smear(AliVParticle * part)
 {
   //
   // Smear of |p|: Run 1 method

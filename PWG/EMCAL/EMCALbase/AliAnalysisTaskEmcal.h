@@ -56,6 +56,8 @@ class AliESDInputHandler;
 #include "AliClusterContainer.h"
 #include "AliEmcalList.h"
 #include "AliEventCuts.h"
+#include "AliEmcalStringView.h"
+
 
 #include "AliAnalysisTaskSE.h"
 /**
@@ -65,12 +67,74 @@ class AliESDInputHandler;
  * @author Marta Verweij
  * @author Salvatore Aiola
  *
- * This class is hte base class for Analysis Tasks using the
- * core EMCAL framework, and user tasks should inherit from it.
+ * # Extra features of the AliAnalysisTaskEmcal
+ * 
+ * The AliAnalysisTaskEmcal adds common steps needed in the work flow 
+ * of EMCAL-related or jet analyses. It inherits itself from AliAnalysisTaskSE,
+ * and user tasks can inherit from it in order to profit from the extra 
+ * features - the task is fully compatible with the ALICE Analysis Framework.
+ * 
+ * ## Virtual functions to be implemented in user tasks
+ * 
  * In contrast to the normal AliAnalysisTaskSE, the main event
  * loop function to be implemented by the user is called Run.
  * This function is only called in case the event was selected
  * previously.
+ * 
+ * ~~~{.cxx}
+ * bool MyUserTask::Run() {
+ *   // User code here ...
+ * 
+ *   return kTRUE;
+ * }
+ * ~~~
+ * 
+ * The function is called after the event selection for every event passing the 
+ * event selection. AliAnalysisTaskEmcal offers a second function called for each
+ * event called FillHistograms. The functions focus is on filling histograms and
+ * is only called in case the Run returns true
+ * 
+ * ~~~{.cxx}
+ * bool MyUserTask::FillHistograms() {
+ *   // Fill user histograms
+ *   myEventCounter->Fill(1.);
+ * }
+ * ~~~
+ * 
+ * Implementation of FillHistograms is not mandatory, user histograms can also be
+ * filled in Run. 
+ * 
+ * User output objects are created in UserCreateOutputObjects. As the AliAnalysisTaskEmcal
+ * performs initalizations in this function itsel, the user tasks must call the parent
+ * UserCreateOutputObjects. AliAnalysisTaskEmcal provides a combined output container fOutput
+ * where users can add their histograms to. The main constructor of a user task should construct
+ * the AliAnalysisTaskEmcal using its named constructor with the second argument true.
+ * 
+ * ~~~{.cxx}
+ * void MyUserTask::UserCreateOutputObjects() {
+ *   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+ * 
+ *   // User initialization here
+ *   fEventCounter = new TH1F("fEventCounter", "Event counter", 1, 0.5, 1.5);
+ * 
+ *   // Add histograms to the combined output container
+ *   fOutput->Add(fEventCounter);
+ *   PostData(1, fOutput);
+ * }
+ * ~~~
+ * 
+ * AliAnalysisTaskEmcal provides several optional interface functions which the user
+ * can implement. 
+ * 
+ * | Function name     | Default implementation | Purpose                                            | 
+ * |-------------------| -----------------------|----------------------------------------------------|
+ * | IsEventSelected   | Yes                    | Perform event selection (default: AliEventCuts)    |
+ * | IsTriggerSelected | Yes                    | Perform trigger selection (default: INT7)          |
+ * | RunChanged        | No                     | Initializations when a new run starts (i.e. OADB)  |
+ * | UserExecOnce      | No                     | Initializations which need knowledge about dataset |
+ * | UserFileChanged   | No                     | Tasks to be performed when an input file changes   |
+ * 
+ * ## Connecting EMCAL container
  *
  * A key feature is the handling of EMCAL containers (cluster/
  * particle/track). Users can create containers and attach it
@@ -88,6 +152,77 @@ class AliESDInputHandler;
  * of cluster-, particle- or track-containers are not mixed. Containers
  * provide an easy access to content created by other tasks and
  * attached to the event as a TClonesArray.
+ * 
+ * ## Handling of jet-jet productions in pt-hard bins
+ * 
+ * Productions in pt-hard bins require special treatent. User histogrmas 
+ * need to be weighted by the cross section / number of trials  in order 
+ * to be physically meaningfull. In addition productions can contain outlier
+ * events, where generated tracks/clusters/jets contain a pt much larger
+ * than the hard process of the event. Those events need to be removed,
+ * otherwise they distort the distributions. The AliAnalysisTaskEmcal
+ * provides helper to handle these special cases.
+ * 
+ * ### Automatic weighting of user histograms 
+ * 
+ * User results are stored in the list fOutput (of type AliEmcalList).
+ * When merging the AliEmcalList users can switch on scaled merging.
+ * In this case the AliEmcalList determines automatically when different
+ * pt-hard bins are added and scales the user histograms before. In order
+ * to use the feature the dataset must be declared as a pt-hard production.
+ * In case the pt-hard binning is different from the default pt-hard binning
+ * (10 pt-hard bins) it need to be specified. The following example setup the
+ * AliAnalysisTaskEmcal for a 20-bin sample
+ * 
+ * ~~~{.cxx}
+ * // In dataset configuration
+ * const int knPthardBins=21;
+ * TArrayD kPtHardBinning;
+ * kPtHardBinning.Set(22);
+ * Int_t binning[]={0,5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235,1000};
+ * for(Int_t bin=0;bin<22;bin++){ kPtHardBinning[bin]=binning[bin]; }
+ * 
+ * // In wagon configuration
+ * __R_ADDTASK__->SetIsPythia(kTRUE);              // Mark production as pt-hard production
+ * __R_ADDTASK__->SetMakeGeneralHistograms(kTRUE); // Create weighting histograms
+ * __R_ADDTASK__->SetUsePtHardBinScaling(kTRUE); // Switch on pt-hard bin scaling of the output histograms
+ * // Set the pt-hard binning of the production
+ * __R_ADDTASK__->SetNumberOfPtHardBins(knPthardBins);
+ * if(knPthardBins!=11) __R_ADDTASK__-> SetUserPtHardBinning(kPtHardBinning);
+ * ~~~
+ * 
+ * In case the production is a production which does not yet support the pt-hard
+ * structure (i.e. LHC11a1) but the pt-hard bins are produced as separate samples, 
+ * the production must be marked as old production. In this case the pt-hard bin
+ * cannot be determined automatically, so the cross sections and weights are put
+ * into the first bin for all pt-hard bins. The following example marks the production
+ * as old pt-hard production:
+ * 
+ * ~~~{.cxx}
+ * __R_ADDTASK__->SetIsPythia(kTRUE);
+ * __R_ADDTASK__->SetGetPtHardBinFromPath(kFALSE);
+ * ~~~
+ * 
+ * Note that for these samples the automatic weighting by the EMCAL list does not
+ * work and must be switched off. Users must weight the output manually.
+ * 
+ * ### Rejection of outlierts
+ * 
+ * Outlier events can distort distributions after weighting. The reason is that single
+ * entries with a pt much larger than the pt-hard get a weight which might be an order 
+ * of magnitude or more larger than the weight of entries in the proper pt-hard bin. 
+ * Outlier rejection in the AliAnalysisTaskEmcal is performed rejecting events which have
+ * at least one jet / track / cluster with a pt > event pt-hard * scale factor. In order
+ * to run the outlier rejection it has to be switched on and the scaling factor needs to
+ * be set. The following example enables the outlier rejection with a scaling factor of 3
+ * for jets.
+ * 
+ * ~~~{.cxx}
+ * __R_ADDTASK__->SetMCFilter();
+ * __R_ADDTASK__->SetJetPtFactor(3.);
+ * ~~~
+ * 
+ * This means that the event is rejected if it has at least a jet with a pt > 3 * event pt-hard.
  *
  * For more information refer to \subpage EMCALAnalysisTask
  */
@@ -276,10 +411,44 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
-  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { fRecycleUnusedEmbeddedEventsMode = b                ; }
+  /**
+   * @brief Enables internal event selection in embedding by recycling unused events.
+   * @param[in] b Enables recycled unused embedded events.
+   * @deprecated: This is now handled automatically by the embedding helper, so the option is redundant.
+   */
+  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { AliWarning("Enabling recycling of unused embedded events is deprecated. It is now automatically controlled in the embedding helper. You can remove this call."); }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
+
+  /**
+   * @brief Define production as pythia pt-hard production
+   * 
+   * In this case the scaling histograms (cross section and number of trials) 
+   * are created in case the general histograms are enabled (AliAnalysisTaskEmcal::MakeGeneralHistograms(true)).
+   * The cross section and number of trials are read from the associated cross section file.
+   * 
+   * @param i If true the production is handled as a pt-hard production
+   */
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+
+  /**
+   * @brief Define production as herwig (6) pt-hard production
+   * 
+   * In this case the scaling histograms (cross section and number of trials) 
+   * are created in case the general histograms are enabled (AliAnalysisTaskEmcal::MakeGeneralHistograms(true)).
+   * The cross section and number of trials are read from the associated cross section file.
+   * 
+   * @param i If true the production is handled as a pt-hard production
+   */
   void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
+
+  /**
+   * @brief Enable general histograms
+   * 
+   * Among general histograms are the QA histograms (vertex distribution, rejection reason), normalization
+   * histograms and weighting histograms (in case the production is marked as pt-hard production).
+   * 
+   * @param g If true general histograms of the AliAnalysisTaskEmcal are created and filled.
+   */
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
 
   /**
@@ -384,14 +553,79 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+
+  /**
+   * @brief Switch on pt-hard bin scaling
+   * 
+   * If enabled the output histograms are automatically scaled in the 
+   * merging prodcess. This requires a two step merging:
+   * - 1. All runs merged together (scaling not applied)
+   * - 2. All pt-hard bins are merged (scaling applied)
+   * 
+   * Needs the production to be defined as pt-hard production 
+   * (AliAnalysisTaskEmcal::SetIsPythia(kTRUE)).
+   * 
+   * @param b If true pt-hard bin scaling is enabled.
+   */
   void                        SetUsePtHardBinScaling(Bool_t b)                      { fUsePtHardBinScaling = b                            ; }
+
+  /**
+   * @brief Switch on MC outlier rejection
+   * 
+   * Outlier rejection should be only used for productions in pt-hard
+   * bins. Events are rejected as outliers in case at least one jet / cluster / track
+   * in the event has a pt larger outlier fraction * event pt-hard.
+   * 
+   * The outlier rejection is only performed if at least either of the jet / cluster / track
+   * pt factor is set.
+   */
   void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
+
+  /**
+   * @brief Switch off MC outlier rejection
+   */
   void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
+
+  /**
+   * @brief Set the jet pt factor for the outlier rejection
+   * 
+   * Events are rejected in case they contain at least one jet with pt > event pt-hard * jet pt factor
+   * @param f Jet pt factor
+   */
   void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
+
+  /**
+   * @brief Get the jet pt factor for the outlier rejection
+   * @return Jet pt factor
+   */
   Float_t                     JetPtFactor()                                         { return fPtHardAndJetPtFactor                        ; }
+
+  /**
+   * @brief Set the cluster pt factor for the outlier rejection
+   * 
+   * Events are rejected in case they contain at least one EMCAL cluster with pt > event pt-hard * cluster pt factor
+   * @param f Cluster pt factor
+   */
   void                        SetClusterPtFactor(Float_t f)                         { fPtHardAndClusterPtFactor = f                       ; }
+
+  /**
+   * @brief Get the cluster pt factor for the outlier rejection
+   * @return Cluster pt factor
+   */
   Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
+
+  /**
+   * @brief Set the track pt factor for the outlier rejection
+   * 
+   * Events are rejected in case they contain at least one track with pt > event pt-hard * track pt factor
+   * @param f Track pt factor
+   */
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
+
+  /**
+   * @brief Get the track pt factor for the outlier rejection
+   * @return Track pt factor
+   */
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
   // Static Utilities
@@ -584,7 +818,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * See https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
    * @return kTRUE if it is not a MC outlier
    */
-  Bool_t                      CheckMCOutliers();
+  virtual Bool_t              CheckMCOutliers();
 
   /**
    * @brief Main initialization function on the worker
@@ -848,8 +1082,36 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   static Byte_t               GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2);
 
+  /**
+   * Calculate Delta Phi.
+   * @param[in] phia \f$ \phi \f$ of the first particle
+   * @param[in] phib \f$ \phi \f$ of the second particle
+   * @param[in] rangeMin Minimum \f$ \phi \f$ range
+   * @param[in] rangeMax Maximum \f$ \phi \f$ range
+   * @return Difference in \f$ \phi \f$
+   */
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
+
+  /**
+   * Generate array with fixed binning within min and max with n bins. The array containing the bin
+   * edges set will be created by this function. Attention, this function does not take care about
+   * memory it allocates - the array needs to be deleted outside of this function
+   * @param[in] n Number of bins
+   * @param[in] min Minimum value for the binning
+   * @param[in] max Maximum value for the binning
+   * @return Array containing the bin edges created bu this function
+   */
   static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
+
+  /**
+   * Generate array with fixed binning within min and max with n bins. The parameter array
+   * will contain the bin edges set by this function. Attention, the array needs to be
+   * provided from outside with a size of n+1
+   * @param[in] n Number of bins
+   * @param[in] min Minimum value for the binning
+   * @param[in] max Maximum value for the binning
+   * @param[out] array Array containing the bin edges
+   */
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
 
   /**
@@ -928,7 +1190,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
-  Bool_t                      fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
@@ -1011,18 +1272,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 19) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 20) // EMCAL base analysis task
   /// \endcond
 };
 
-/**
- * Calculate Delta Phi.
- * @param[in] phia \f$ \phi \f$ of the first particle
- * @param[in] phib \f$ \phi \f$ of the second particle
- * @param[in] rangeMin Minimum \f$ \phi \f$ range
- * @param[in] rangeMax Maximum \f$ \phi \f$ range
- * @return Difference in \f$ \phi \f$
- */
 inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax) 
 {
   Double_t dphi = -999;
@@ -1039,15 +1292,6 @@ inline Double_t AliAnalysisTaskEmcal::DeltaPhi(Double_t phia, Double_t phib, Dou
   return dphi;
 }
 
-/**
- * Generate array with fixed binning within min and max with n bins. The parameter array
- * will contain the bin edges set by this function. Attention, the array needs to be
- * provided from outside with a size of n+1
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @param[out] array Array containing the bin edges
- */
 inline void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array)
 {
   Double_t binWidth = (max-min)/n;
@@ -1057,15 +1301,6 @@ inline void AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, D
   }
 }
 
-/**
- * Generate array with fixed binning within min and max with n bins. The array containing the bin
- * edges set will be created by this function. Attention, this function does not take care about
- * memory it allocates - the array needs to be deleted outside of this function
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @return Array containing the bin edges created bu this function
- */
 inline Double_t* AliAnalysisTaskEmcal::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max)
 {
   Double_t *array = new Double_t[n+1];

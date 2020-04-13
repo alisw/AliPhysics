@@ -92,7 +92,9 @@ public:
 
 		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
-		Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex = NULL);
+		Bool_t selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
+                Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
+                Bool_t IsGoodZvertexPos(AliESDEvent *esd);
 		Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
 		Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
 		Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
@@ -163,6 +165,7 @@ public:
 		//
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
+		TH1F*         fV0M;            //! No of accepted events
 		//  TH1I*         fVtx;               //! Event vertex info
 		TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
 		//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
@@ -236,6 +239,10 @@ public:
 		TH1D* hMcInPos[11][7];
 		TH1D* hMcOutNeg[11][7];
 		TH1D* hMcOutPos[11][7];
+
+		TH2D* hPiondEdx[11];
+                TH2D* hKaondEdx[11];
+                TH2D* hProtondEdx[11];
 
 
 		TH2D* hDCAxyVsPtPiNeg[11];

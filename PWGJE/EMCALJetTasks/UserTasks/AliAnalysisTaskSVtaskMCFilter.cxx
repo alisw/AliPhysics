@@ -69,6 +69,7 @@ fMCPartArray(0x0)
 }
 //_______________________________________________________________________________
 AliAnalysisTaskSVtaskMCFilter::AliAnalysisTaskSVtaskMCFilter(const char *name) :
+AliAnalysisTaskEmcal(name),
 fFilteredTracksArray(0x0),
 fFilteredTracksName("mytracks"),
 fInputTracksName("tracks"),

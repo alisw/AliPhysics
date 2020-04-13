@@ -37,6 +37,7 @@
 using namespace std;
 
 #include "AliAnalysisTaskMinijet.h"
+#include "AliNanoAODTrack.h"
 
 // Analysis task for two-particle correlations using all particles over pt threshold
 // pt_trig threshold for trigger particle (event axis) and pt_assoc for possible associated particles.
@@ -69,6 +70,8 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fSelectParticles(1),
     fSelectParticlesAssoc(1),
     fCheckSDD(true),
+    fCheckCorruptedChunks(kTRUE),
+    fRepropagateToDCA(kFALSE),
     fSelOption(1),
     fCorrStrangeness(true),
     fThreeParticleCorr(false),
@@ -105,6 +108,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fChargedPi0(0),
     fVertexCheck(0),
     fPropagateDca(0),
+    fAnalysisUtils(0),
     fCentralityMethod("")
 {
     
@@ -620,7 +624,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
     
     
     if(fDebug){
-        Printf("IsSelected = %d", isSelected);
+        Printf("IsSelected = %d (%x)", isSelected, ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
+        
         Printf("CheckEvent(true)= %d", CheckEvent(true));
         Printf("CheckEvent(false)= %d", CheckEvent(false));
     }
@@ -1221,31 +1226,38 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
     Double_t nAcceptedTracks=0;
     Float_t nAcceptedTracksStrange=0;
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-        AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
-        if(!track) AliFatal("Not a standard AOD");
-        if (!track) {
-            Error("ReadEventAOD", "Could not receive track %d", iTracks);
-            continue;
-        }
-        
-        AliVParticle *vtrack = fAODEvent->GetTrack(iTracks);
+        AliVTrack *track = fAODEvent->GetTrack(iTracks);
         
         //use only tracks from primaries
         if(fAnalysePrimOnly){
-            if(vtrack->GetLabel()<=0)continue;
-            if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
+            if(track->GetLabel()<=0)continue;
+            if(!(static_cast<AliAODMCParticle*>(mcArray->At(track->GetLabel()))->IsPhysicalPrimary()))continue;
         }
         
         Double_t save= track->Pt();
         Double_t d0rphiz[2],covd0[3];
 
-	AliAODTrack* clone = (AliAODTrack*) track->Clone("trk_clone"); //need clone, in order not to change track parameters
-        Bool_t isDca= clone->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
-	delete clone;
-        fPropagateDca->Fill(Int_t(isDca));
-        if(TMath::Abs(save - track->Pt())>1e-6) Printf("Before pt=%f, After pt=%f",save, track->Pt());
+        if (fRepropagateToDCA) {
+          AliVTrack* clone = (AliVTrack*) track->Clone("trk_clone"); //need clone, in order not to change track parameters
+          Bool_t isDca= clone->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+          delete clone;
+          fPropagateDca->Fill(Int_t(isDca));
+          if(TMath::Abs(save - track->Pt())>1e-6) Printf("Before pt=%f, After pt=%f",save, track->Pt());
+        }
         
-        if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut
+        Bool_t filterBitOK = kTRUE;
+        if (fFilterBit != 0) {
+          AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*> (track);
+          AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack*> (track);
+          if(!aodTrack && !nanoTrack) AliFatal("Not a standard AOD");
+          
+          if (aodTrack && !aodTrack->TestFilterBit(fFilterBit))
+            filterBitOK = kFALSE;
+          else if (nanoTrack && !nanoTrack->TestFilterBit(fFilterBit))
+            filterBitOK = kFALSE;
+        }
+          
+        if(filterBitOK && TMath::Abs(track->Eta())<fEtaCut
            && track->Pt()>fPtMin && track->Pt()<fPtMax){
             
             nAcceptedTracks++;
@@ -1262,8 +1274,8 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
             //correction for underestimation of strangeness in Monte Carlos -> underestimation of contamination
             Float_t factor=1.;
             if(fUseMC && fCorrStrangeness && step==7){
-                if(vtrack->GetLabel()>0){
-                    AliAODMCParticle* mcprong =(AliAODMCParticle*)mcArray->At(vtrack->GetLabel());
+                if(track->GetLabel()>0){
+                    AliAODMCParticle* mcprong =(AliAODMCParticle*)mcArray->At(track->GetLabel());
                     if(mcprong){
                         Int_t labmom = mcprong->GetMother();
                         if(labmom>=0){
@@ -1297,10 +1309,12 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
     //tracklet loop
     Int_t ntrackletsAccept=0;
     AliAODTracklets * mult= (AliAODTracklets*)fAODEvent->GetTracklets();
-    for(Int_t i=0;i<mult->GetNumberOfTracklets();++i){
-        if(TMath::Abs(mult->GetDeltaPhi(i))<0.05 && TMath::Abs(TMath::Log(TMath::Tan(0.5 * mult->GetTheta(i))))<fEtaCut){
-            ++ntrackletsAccept;
-        }
+    if (mult) {
+      for(Int_t i=0;i<mult->GetNumberOfTracklets();++i){
+          if(TMath::Abs(mult->GetDeltaPhi(i))<0.05 && TMath::Abs(TMath::Log(TMath::Tan(0.5 * mult->GetTheta(i))))<fEtaCut){
+              ++ntrackletsAccept;
+          }
+      }
     }
     
     
@@ -1968,7 +1982,10 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
         
         //rec
         if(recVertex==true){
-            if(fESDEvent->IsPileupFromSPD(3,0,8))return false;
+            if (fAnalysisUtils && fAnalysisUtils->IsPileUpMV(fESDEvent)) {
+              fEventStat->Fill(9);
+              return false;
+            }
             
             //rec vertex
             const AliESDVertex*	vertexESDg   = fESDEvent->GetPrimaryVertex(); // uses track or SPD vertexer
@@ -2013,7 +2030,11 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
         
         //rec
         if(recVertex==true){
-            //if(fAODEvent->IsPileupFromSPD(3,0.8)) return false;
+            // pile up
+            if (fAnalysisUtils && fAnalysisUtils->IsPileUpMV(fAODEvent)) {
+              fEventStat->Fill(9);
+              return false;
+            }
             
             AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
             if(!vertex) return false;
@@ -2032,48 +2053,51 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
             Double_t vzSPD=vertexSPD->GetZ();
             //if(TMath::Abs(vzSPD)<1e-9) return false;
             if(TMath::Abs(vzSPD)>fVertexZCut) return false;
-            
-            //check TPC reconstruction: check for corrupted chunks
-            //better: check TPCvertex, but this is not available yet in AODs
-            Int_t nAcceptedTracksTPC=0;
-            Int_t nAcceptedTracksITSTPC=0;
-            for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
-                AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
-                if(!track) AliFatal("Not a standard AOD");
-                if (!track) continue;
-                if(track->TestFilterBit(128) && TMath::Abs(track->Eta())<fEtaCut &&
-                   track->Pt()>fPtMin && track->Pt()<fPtMax)
-                    nAcceptedTracksTPC++;
-                if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut &&
-                   track->Pt()>fPtMin && track->Pt()<fPtMax)
-                    nAcceptedTracksITSTPC++;
+
+            if (fCheckCorruptedChunks)
+            {
+              //check TPC reconstruction: check for corrupted chunks
+              //better: check TPCvertex, but this is not available yet in AODs
+              Int_t nAcceptedTracksTPC=0;
+              Int_t nAcceptedTracksITSTPC=0;
+              for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
+                  AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+                  if(!track) AliFatal("Not a standard AOD");
+                  if (!track) continue;
+                  if(track->TestFilterBit(128) && TMath::Abs(track->Eta())<fEtaCut &&
+                    track->Pt()>fPtMin && track->Pt()<fPtMax)
+                      nAcceptedTracksTPC++;
+                  if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut &&
+                    track->Pt()>fPtMin && track->Pt()<fPtMax)
+                      nAcceptedTracksITSTPC++;
+              }
+              fCorruptedChunks->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
+              if(fRejectChunks){
+                  if(nAcceptedTracksTPC>fNTPC && nAcceptedTracksITSTPC==0)
+                      return false;//most likely corrupted chunk. No ITS tracks are reconstructed
+              }
+              fCorruptedChunksAfter->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
+              
+              //control histograms=================
+              //tracklet loop
+              Int_t ntrackletsAccept=0;
+              AliAODTracklets * mult= (AliAODTracklets*)fAODEvent->GetTracklets();
+              for(Int_t i=0;i<mult->GetNumberOfTracklets();++i){
+                  if(TMath::Abs(mult->GetDeltaPhi(i))<0.05 &&
+                    TMath::Abs(TMath::Log(TMath::Tan(0.5 * mult->GetTheta(i))))<fEtaCut) ++ntrackletsAccept;
+              }
+              Int_t nAcceptedTracks=0;
+              for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
+                  AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
+                  if(!track) AliFatal("Not a standard AOD");
+                  if (!track) continue;
+                  if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut
+                    && track->Pt()>fPtMin && track->Pt()<fPtMax) nAcceptedTracks++;
+              }
+              fNContrNtracklets->Fill(ntrackletsAccept,vertexSPD->GetNContributors());
+              fNContrNtracks->Fill(nAcceptedTracks,vertexSPD->GetNContributors());
+              //====================================
             }
-            fCorruptedChunks->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
-            if(fRejectChunks){
-                if(nAcceptedTracksTPC>fNTPC && nAcceptedTracksITSTPC==0)
-                    return false;//most likely corrupted chunk. No ITS tracks are reconstructed
-            }
-            fCorruptedChunksAfter->Fill(nAcceptedTracksTPC,nAcceptedTracksITSTPC);
-            
-            //control histograms=================
-            //tracklet loop
-            Int_t ntrackletsAccept=0;
-            AliAODTracklets * mult= (AliAODTracklets*)fAODEvent->GetTracklets();
-            for(Int_t i=0;i<mult->GetNumberOfTracklets();++i){
-                if(TMath::Abs(mult->GetDeltaPhi(i))<0.05 &&
-                   TMath::Abs(TMath::Log(TMath::Tan(0.5 * mult->GetTheta(i))))<fEtaCut) ++ntrackletsAccept;
-            }
-            Int_t nAcceptedTracks=0;
-            for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
-                AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(iTracks));
-                if(!track) AliFatal("Not a standard AOD");
-                if (!track) continue;
-                if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut
-                   && track->Pt()>fPtMin && track->Pt()<fPtMax) nAcceptedTracks++;
-            }
-            fNContrNtracklets->Fill(ntrackletsAccept,vertexSPD->GetNContributors());
-            fNContrNtracks->Fill(nAcceptedTracks,vertexSPD->GetNContributors());
-            //====================================
         }
         return true;
         

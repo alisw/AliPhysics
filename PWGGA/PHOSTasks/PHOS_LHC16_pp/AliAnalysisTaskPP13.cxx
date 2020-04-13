@@ -58,7 +58,7 @@ AliAnalysisTaskPP13::AliAnalysisTaskPP13(const char * name, TList * selections, 
 //________________________________________________________________
 AliAnalysisTaskPP13::~AliAnalysisTaskPP13()
 {
-	if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fSelections;
+	if (fSelections) delete fSelections;
 	if (fPreviousEvents) delete fPreviousEvents;
 }
 
@@ -134,25 +134,27 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	clusArray.SetOwner(kTRUE);
 	for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 	{
-		// AliVCluster * clus = event->GetCaloCluster(i);	
-		AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
-		if (!c)
+		AliVCluster * clus = event->GetCaloCluster(i);
+
+		// AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
+		if (!clus)
 		{
 			AliWarning("Can't get cluster");
 			return;
 		}
 
-		AliPP13AnalysisCluster * clus = new AliPP13AnalysisCluster(*c);
+		// AliPP13AnalysisCluster * clus = new AliPP13AnalysisCluster(*c);
 
 		if (!clus->IsPHOS())
 			continue;
 
-		triggerProperties.FillTriggerInformation(clus);
+		// triggerProperties.FillTriggerInformation(clus);
 		// Use only with triggerUtils
 		// clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
-		nTriggered += clus->IsTrigger();
-
-		clusArray.Add(clus);
+		// nTriggered += clus->IsTrigger();
+		clusArray.Add(
+			new AliAODCaloCluster(*dynamic_cast<AliAODCaloCluster *>(clus))
+		);
 	}
 	// delete triggerUtils;
 

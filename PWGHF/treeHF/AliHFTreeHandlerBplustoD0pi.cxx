@@ -21,6 +21,9 @@
 #include <TString.h>
 #include "AliHFTreeHandlerBplustoD0pi.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliESDVertex.h"
+#include "AliESDtrackCuts.h"
+#include "AliRDHFCutsD0toKpi.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerBplustoD0pi);
@@ -29,28 +32,26 @@ ClassImp(AliHFTreeHandlerBplustoD0pi);
 //________________________________________________________________
 AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi():
   AliHFTreeHandler(),
-  fImpParProng(),
-  fCosThetaStar(),
-  fImpParProd(),
-  fNormd0MeasMinusExp(),
-  fDCA(),
-  fAngleProngs(),
-  fInvMass_D0(),
-  fPt_D0(),
-  fY_D0(),
-  fEta_D0(),
-  fPhi_D0(),
-  fDecayLength_D0(),
-  fDecayLengthXY_D0(),
-  fNormDecayLengthXY_D0(),
-  fCosP_D0(),
-  fCosPXY_D0(),
-  fImpParXY_D0(),
-  fCosThetaStar_D0(),
-  fImpParProd_D0(),
-  fNormd0MeasMinusExp_D0(),
-  fDCA_D0(),
-  fAngleProngs_D0()
+  fCosThetaStar(-9999.),
+  fImpParProd(-9999.),
+  fNormd0MeasMinusExp(-9999.),
+  fAngleProngs(-9999.),
+  fInvMass_D0(-9999.),
+  fPt_D0(-9999.),
+  fY_D0(-9999.),
+  fEta_D0(-9999.),
+  fPhi_D0(-9999.),
+  fDecayLength_D0(-9999.),
+  fDecayLengthXY_D0(-9999.),
+  fNormDecayLengthXY_D0(-9999.),
+  fCosP_D0(-9999.),
+  fCosPXY_D0(-9999.),
+  fImpParXY_D0(-9999.),
+  fCosThetaStar_D0(-9999.),
+  fImpParProd_D0(-9999.),
+  fNormd0MeasMinusExp_D0(-9999.),
+  fDCA_D0(-9999.),
+  fAngleProngs_D0(-9999.)
 {
   //
   // Default constructor
@@ -58,33 +59,33 @@ AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi():
 
   //Only used in for-loops with a self-made AliAODtrack vector, so "Bplus pion + 2 D0-prongs" is fine
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
 AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi(int PIDopt):
   AliHFTreeHandler(PIDopt),
-  fImpParProng(),
-  fCosThetaStar(),
-  fImpParProd(),
-  fNormd0MeasMinusExp(),
-  fDCA(),
-  fAngleProngs(),
-  fInvMass_D0(),
-  fPt_D0(),
-  fY_D0(),
-  fEta_D0(),
-  fPhi_D0(),
-  fDecayLength_D0(),
-  fDecayLengthXY_D0(),
-  fNormDecayLengthXY_D0(),
-  fCosP_D0(),
-  fCosPXY_D0(),
-  fImpParXY_D0(),
-  fCosThetaStar_D0(),
-  fImpParProd_D0(),
-  fNormd0MeasMinusExp_D0(),
-  fDCA_D0(),
-  fAngleProngs_D0()
+  fCosThetaStar(-9999.),
+  fImpParProd(-9999.),
+  fNormd0MeasMinusExp(-9999.),
+  fAngleProngs(-9999.),
+  fInvMass_D0(-9999.),
+  fPt_D0(-9999.),
+  fY_D0(-9999.),
+  fEta_D0(-9999.),
+  fPhi_D0(-9999.),
+  fDecayLength_D0(-9999.),
+  fDecayLengthXY_D0(-9999.),
+  fNormDecayLengthXY_D0(-9999.),
+  fCosP_D0(-9999.),
+  fCosPXY_D0(-9999.),
+  fImpParXY_D0(-9999.),
+  fCosThetaStar_D0(-9999.),
+  fImpParProd_D0(-9999.),
+  fNormd0MeasMinusExp_D0(-9999.),
+  fDCA_D0(-9999.),
+  fAngleProngs_D0(-9999.)
 {
   //
   // Standard constructor
@@ -92,6 +93,8 @@ AliHFTreeHandlerBplustoD0pi::AliHFTreeHandlerBplustoD0pi(int PIDopt):
     
   //Only used in for-loops with a self-made AliAODtrack vector, so "Bplus pion + 2 D0-prongs" is fine
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
@@ -109,7 +112,7 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
   
   if(fTreeVar) {
     delete fTreeVar;
-    fTreeVar=0x0;
+    fTreeVar=nullptr;
   }
   fTreeVar = new TTree(name.Data(),title.Data());
 
@@ -123,7 +126,6 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
   }
-  fTreeVar->Branch("dca",&fDCA);
   fTreeVar->Branch("angle_prongs",&fAngleProngs);
 
   //set D0 variables
@@ -146,6 +148,7 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
     
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
 
   //set PID variables
   if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
@@ -154,17 +157,22 @@ TTree* AliHFTreeHandlerBplustoD0pi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerBplustoD0pi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse* pidrespo)
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   fIsMCGenTree=false;
 
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandTypeMap&kSignal)) return true;
+    if(!(fCandType&kSignal)) return true;
   }
-  fNCandidates++;
 
-  fCandTypeMap &= ~kRefl; //protection --> Bplus -> D0pi cannot be reflected
+  fPtGen=ptgen;
+  
+  fCandType &= ~kRefl; //protection --> Bplus -> D0pi cannot be reflected
 
   AliAODTrack* cand_pr0 = (AliAODTrack*)cand->GetDaughter(0); //Bplus pion
   AliAODRecoDecayHF2Prong* candD0 = (AliAODRecoDecayHF2Prong*)cand->GetDaughter(1); //D0
@@ -176,62 +184,61 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
     
   //topological variables
   //common (B+ -> D0 pi)
-  fCandType.push_back(fCandTypeMap);
-  fPt.push_back(((AliAODRecoDecayHF2Prong*)cand)->Pt());
-  fY.push_back(((AliAODRecoDecayHF2Prong*)cand)->Y(521));
-  fEta.push_back(((AliAODRecoDecayHF2Prong*)cand)->Eta());
-  fPhi.push_back(((AliAODRecoDecayHF2Prong*)cand)->Phi());
-  fDecayLength.push_back(((AliAODRecoDecayHF2Prong*)cand)->DecayLength());
-  fDecayLengthXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->DecayLengthXY());
-  fNormDecayLengthXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->NormalizedDecayLengthXY());
-  fCosP.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngle());
-  fCosPXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngleXY());
-  fImpParXY.push_back(((AliAODRecoDecayHF2Prong*)cand)->ImpParXY());
+  fPt=((AliAODRecoDecayHF2Prong*)cand)->Pt();
+  fY=((AliAODRecoDecayHF2Prong*)cand)->Y(521);
+  fEta=((AliAODRecoDecayHF2Prong*)cand)->Eta();
+  fPhi=((AliAODRecoDecayHF2Prong*)cand)->Phi();
+  fDecayLength=((AliAODRecoDecayHF2Prong*)cand)->DecayLength();
+  fDecayLengthXY=((AliAODRecoDecayHF2Prong*)cand)->DecayLengthXY();
+  fNormDecayLengthXY=((AliAODRecoDecayHF2Prong*)cand)->NormalizedDecayLengthXY();
+  fCosP=((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngle();
+  fCosPXY=((AliAODRecoDecayHF2Prong*)cand)->CosPointingAngleXY();
+  fImpParXY=((AliAODRecoDecayHF2Prong*)cand)->ImpParXY();
+  fDCA=((AliAODRecoDecayHF2Prong*)cand)->GetDCA();
 
   UInt_t prongs[2];
   prongs[0] = 211; prongs[1] = 421;
-  fInvMass.push_back(((AliAODRecoDecayHF2Prong*)cand)->InvMass(2,prongs));
+  fInvMass=((AliAODRecoDecayHF2Prong*)cand)->InvMass(2,prongs);
     
-  fCosThetaStar.push_back(((AliAODRecoDecayHF2Prong*)cand)->CosThetaStar(0,521,211,421));
-  fImpParProd.push_back(((AliAODRecoDecayHF2Prong*)cand)->Prodd0d0());
-  fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
-  fDCA.push_back(((AliAODRecoDecayHF2Prong*)cand)->GetDCA());
-  fAngleProngs.push_back(angleProngs);
+  fCosThetaStar=((AliAODRecoDecayHF2Prong*)cand)->CosThetaStar(0,521,211,421);
+  fImpParProd=((AliAODRecoDecayHF2Prong*)cand)->Prodd0d0();
+  fNormd0MeasMinusExp=ComputeMaxd0MeasMinusExp(cand,bfield);
+  fAngleProngs=angleProngs;
 
   AliAODTrack* prongtracks[3];
   prongtracks[0] = (AliAODTrack*)cand->GetDaughter(0);
-  fImpParProng[0].push_back(cand->Getd0Prong(0));
+  fImpParProng[0]=cand->Getd0Prong(0);
 
   //D0 -> K pi variables
-  fPt_D0.push_back(candD0->Pt());
-  fY_D0.push_back(candD0->Y(421));
-  fEta_D0.push_back(candD0->Eta());
-  fPhi_D0.push_back(candD0->Phi());
-  fDecayLength_D0.push_back(candD0->DecayLength());
-  fDecayLengthXY_D0.push_back(candD0->DecayLengthXY());
-  fNormDecayLengthXY_D0.push_back(candD0->NormalizedDecayLengthXY());
-  fCosP_D0.push_back(candD0->CosPointingAngle());
-  fCosPXY_D0.push_back(candD0->CosPointingAngleXY());
-  fImpParXY_D0.push_back(candD0->ImpParXY());
-  fImpParProd_D0.push_back(candD0->Prodd0d0());
-  fNormd0MeasMinusExp_D0.push_back(ComputeMaxd0MeasMinusExp(candD0,bfield));
-  fDCA_D0.push_back(candD0->GetDCA());
-  fAngleProngs_D0.push_back(angleProngs_D0);
+  fPt_D0=candD0->Pt();
+  fY_D0=candD0->Y(421);
+  fEta_D0=candD0->Eta();
+  fPhi_D0=candD0->Phi();
+  fDecayLength_D0=candD0->DecayLength();
+  fDecayLengthXY_D0=candD0->DecayLengthXY();
+  fNormDecayLengthXY_D0=candD0->NormalizedDecayLengthXY();
+  fCosP_D0=candD0->CosPointingAngle();
+  fCosPXY_D0=candD0->CosPointingAngleXY();
+  fImpParXY_D0=candD0->ImpParXY();
+  fImpParProd_D0=candD0->Prodd0d0();
+  fNormd0MeasMinusExp_D0=ComputeMaxd0MeasMinusExp(candD0,bfield);
+  fDCA_D0=candD0->GetDCA();
+  fAngleProngs_D0=angleProngs_D0;
     
   if(((AliAODRecoDecayHF2Prong*)cand)->Charge()==-1) {
-    fInvMass_D0.push_back(candD0->InvMassD0());
-    fCosThetaStar_D0.push_back(candD0->CosThetaStarD0());
+    fInvMass_D0=candD0->InvMassD0();
+    fCosThetaStar_D0=candD0->CosThetaStarD0();
       
-    fImpParProng[1].push_back(candD0->Getd0Prong(0));
-    fImpParProng[2].push_back(candD0->Getd0Prong(1));
+    fImpParProng[1]=candD0->Getd0Prong(0);
+    fImpParProng[2]=candD0->Getd0Prong(1);
     prongtracks[1] = (AliAODTrack*)candD0->GetDaughter(0);
     prongtracks[2] = (AliAODTrack*)candD0->GetDaughter(1);
   } else {
-    fInvMass_D0.push_back(candD0->InvMassD0bar());
-    fCosThetaStar_D0.push_back(candD0->CosThetaStarD0bar());
+    fInvMass_D0=candD0->InvMassD0bar();
+    fCosThetaStar_D0=candD0->CosThetaStarD0bar();
 
-    fImpParProng[1].push_back(candD0->Getd0Prong(1));
-    fImpParProng[2].push_back(candD0->Getd0Prong(0));
+    fImpParProng[1]=candD0->Getd0Prong(1);
+    fImpParProng[2]=candD0->Getd0Prong(0);
     prongtracks[1] = (AliAODTrack*)candD0->GetDaughter(1);
     prongtracks[2] = (AliAODTrack*)candD0->GetDaughter(0);
   }
@@ -250,40 +257,30 @@ bool AliHFTreeHandlerBplustoD0pi::SetVariables(AliAODRecoDecayHF* cand, float bf
 }
 
 //________________________________________________________________
-void AliHFTreeHandlerBplustoD0pi::FillTree() {
-  fTreeVar->Fill();
-
-  //VERY IMPORTANT: CLEAR ALL VECTORS
-  if(!fIsMCGenTree) {
-    ResetDmesonCommonVarVectors();
-    fCosThetaStar.clear();
-    fImpParProd.clear();
-    fNormd0MeasMinusExp.clear();
-    fDCA.clear();
-    fAngleProngs.clear();
-    fInvMass_D0.clear();
-    fPt_D0.clear();
-    fY_D0.clear();
-    fEta_D0.clear();
-    fPhi_D0.clear();
-    fDecayLength_D0.clear();
-    fDecayLengthXY_D0.clear();
-    fNormDecayLengthXY_D0.clear();
-    fCosP_D0.clear();
-    fCosPXY_D0.clear();
-    fImpParXY_D0.clear();
-    fCosThetaStar_D0.clear();
-    fImpParProd_D0.clear();
-    fNormd0MeasMinusExp_D0.clear();
-    fDCA_D0.clear();
-    fAngleProngs_D0.clear();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
-    ResetSingleTrackVarVectors();
-    if(fPidOpt!=kNoPID) ResetPidVarVectors();
-  }
+Int_t AliHFTreeHandlerBplustoD0pi::IsBplusPionSelected(TObject* obj, AliRDHFCutsD0toKpi* cutsD0, AliAODPidHF* fPidHFD0, AliAODEvent* aod, AliAODVertex *vtx) {
+  
+  AliAODTrack* candidatePion = (AliAODTrack*)obj;
+  if (!candidatePion){ AliWarning("No pion object. Track rejected."); return 0; }
+  
+  AliESDtrackCuts* fTrackCuts = cutsD0->GetTrackCuts();
+  if (!fTrackCuts){ AliWarning("No fTrackCuts object. Track rejected.");  return 0; }
+  
+  Double_t pos[3],cov[6];
+  vtx->GetXYZ(pos);
+  vtx->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+  
+  if(!cutsD0->IsDaughterSelected(candidatePion,&vESD,fTrackCuts,aod)) return 0;
+  
+  if(!cutsD0->GetIsUsePID()) return 1;
   else {
-    ResetMCGenVectors();
+    
+    if(!fPidHFD0){ AliWarning("AliAODPidHF not created. Track accepted"); return 1; }
+    
+    Int_t isPion=fPidHFD0->MakeRawPid(candidatePion,AliPID::kPion);
+    if(isPion) return 1;
+    else       return 0;
   }
-  fCandTypeMap=0;
-  fNCandidates=0;
+  
+  return 1;
 }

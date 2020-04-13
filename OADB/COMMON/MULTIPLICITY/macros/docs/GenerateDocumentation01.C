@@ -1,9 +1,14 @@
-GenerateDocumentation01() {
+#include "AliMultSelection.h"
+#include "AliMultSelection.h"
+#include "AliMultSelection.h"
+#include "AliMultSelection.h"
+
+void GenerateDocumentation01() {
     //This macro auto-generates documentation (twiki-style)
     //based on all OADBs currently deployed in the AliPhysics
     //directory specified here:
 
-    TString lPathToOADBs = "$HOME/alice/ali-master/AliPhysics/OADB/COMMON/MULTIPLICITY/data/";
+    TString lPathToOADBs = "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/data/";
     cout<<"Expanding path name..."<<endl;
     gSystem->ExpandPathName( lPathToOADBs );
     cout<< "Expanded to: "<<lPathToOADBs.Data()<<endl;

@@ -1,7 +1,7 @@
 #include "src/Common.h"
 #include "src/Utils.h"
 using namespace utils;
-#include "YieldMean.C"
+#include "src/YieldMean.C"
 
 #include <cmath>
 #include <iomanip>
@@ -122,20 +122,20 @@ void YieldsPlot() {
       vector<double> yields;
       float chi2{0.f};
       for (int iF = 0; iF < kNfitFunctions; ++iF) {
-        TH1D* res = (TH1D*)nucleus.Get(Form("%s/result%i",kFitFunctionNames[iF].data(),iC));
-        Requires(res, Form("%s/result%i",kFitFunctionNames[iF].data(),iC));
-        if (res->GetBinContent(kFitRes) > 1.e-10) continue;
-        yields.push_back(res->GetBinContent(kYield));
-        meanpts.push_back(res->GetBinContent(kMean));
+        TH1D* res = (TH1D*)nucleus.Get(Form("%s/%i/result%i",kFitFunctionNames[iF].data(),iC,iC));
+        Requires(res, Form("%s/%i/result%i",kFitFunctionNames[iF].data(),iC,iC));
+        if (res->GetBinContent(yieldmean::kFitRes) > 1.e-10) continue;
+        yields.push_back(res->GetBinContent(yieldmean::kYield));
+        meanpts.push_back(res->GetBinContent(yieldmean::kMean));
         if (iF==0) {
           nucleus_yield[iC] = yields[0];
-          nucleus_yield_stat[iC] = res->GetBinContent(kYieldStat);
-          nucleus_yield_syst[iC] = std::sqrt(Sq(res->GetBinContent(kYieldSysHi)) + Sq(res->GetBinContent(kYieldSysLo)));
+          nucleus_yield_stat[iC] = res->GetBinContent(yieldmean::kYieldStat);
+          nucleus_yield_syst[iC] = std::sqrt(Sq(res->GetBinContent(yieldmean::kYieldSysHi)) + Sq(res->GetBinContent(yieldmean::kYieldSysLo)));
           nucleus_mean_pt[iC] = meanpts[0];
-          nucleus_mean_pt_stat[iC] = res->GetBinContent(kMeanStat);
-          nucleus_mean_pt_syst[iC] = std::sqrt(Sq(res->GetBinContent(kMeanSysHi)) + Sq(res->GetBinContent(kMeanSysLo)));
-          TF1* bw = (TF1*)nucleus.Get(Form("%s/%s%i",kFitFunctionNames[iF].data(),kFitFunctionNames[iF].data(),iC));
-          Requires(bw,Form("%s/%s%i",kFitFunctionNames[iF].data(),kFitFunctionNames[iF].data(),iC));
+          nucleus_mean_pt_stat[iC] = res->GetBinContent(yieldmean::kMeanStat);
+          nucleus_mean_pt_syst[iC] = std::sqrt(Sq(res->GetBinContent(yieldmean::kMeanSysHi)) + Sq(res->GetBinContent(yieldmean::kMeanSysLo)));
+          TF1* bw = (TF1*)nucleus.Get(Form("%s/%i/%s%i",kFitFunctionNames[iF].data(),iC,kFitFunctionNames[iF].data(),iC));
+          Requires(bw,Form("%s/%i/%s%i",kFitFunctionNames[iF].data(),iC,kFitFunctionNames[iF].data(),iC));
           chi2 = bw->GetChisquare() / bw->GetNDF();
         }
       }
@@ -233,7 +233,7 @@ void YieldsPlot() {
   TFile f_prev(Form("%sdoverpPaperProp.root",kBaseOutputDir.data()));
   TCanvas* ratio_cv_input = (TCanvas*)f_prev.Get("c1_n19");
   TPad* pad = (TPad*)ratio_cv_input->GetPrimitive("c1_n19_1");
-  pad->GetListOfPrimitives()->ls();
+  //pad->GetListOfPrimitives()->ls();
   //TLegend* legPrel = (TLegend*)pad->GetPrimitive("legPrel");
   TFile f_doverp(Form("%sfinal_doverp.root",kBaseOutputDir.data()),"recreate");
   TCanvas* ratio_cv = new TCanvas("cDopverp","cDopverp");
@@ -259,7 +259,7 @@ void YieldsPlot() {
   pad->Modified();
   pad->Update();
   printf("************************************************\n");
-  pad->GetListOfPrimitives()->ls();
+  //pad->GetListOfPrimitives()->ls();
   ratio_cv->cd();
   pad->Draw();
   ratio_cv->Write("cDoverp");
@@ -270,55 +270,6 @@ void YieldsPlot() {
   ratio_gr_stat->Draw("apz");
   ratio_gr_syst->Draw("samep2");
   cMio->SaveAs(Form("%smiodoverp.C",kBaseOutputDir.data()));
-  cMio->Write("cicciopasticcio");
-  cMio->GetListOfPrimitives()->ls();
+  cMio->Write("myCanvas");
+  //cMio->GetListOfPrimitives()->ls();
 }
-//
-//   /// Mass
-//   gStyle->SetOptFit(1);
-//   TCanvas* yields_cv = new TCanvas("yields_cv");
-//   yields_cv->DrawFrame(0.72,0.9e-4,3.12,100,";m (GeV/#it{c}^{2});d#it{N}/d#it{y}");
-//   yields_cv->SetLogy();
-//   double mass[3]{9.38271999359130859e-01,1.87561297416687012e+00,2.80923008918762207e+00};
-//   double yields[3]{proton_yields[0] / 2.,deuteron_yields[0],nucleus_yield[0]};
-//   double yields_syst[3]{
-//     std::sqrt(Sq(proton_yields_syst[0]) + Sq(proton_yields_stat[0])) / 2. ,
-//     std::sqrt(Sq(deuteron_yields_syst[0]) + Sq(deuteron_yields_stat[0])),
-//     std::sqrt(Sq(nucleus_yield_syst[0]) + Sq(nucleus_yield_stat[0]))};
-//   double yields_stat[3]{proton_yields_stat[0] / 2. ,deuteron_yields_stat[0],nucleus_yield_stat[0]};
-//   TGraphErrors* yields_gr_stat = new TGraphErrors(3,mass,yields,0x0,yields_stat);
-//   TGraphErrors* yields_gr_syst = new TGraphErrors(3,mass,yields,0x0,yields_syst);
-//   yields_gr_syst->SetMarkerStyle(21);
-//   yields_gr_stat->SetMarkerStyle(21);
-//   yields_gr_syst->SetMarkerColor(kBlue);
-//   yields_gr_stat->SetMarkerColor(kBlue);
-//   yields_gr_syst->SetLineColor(kBlue);
-//   yields_gr_stat->SetLineColor(kBlue);
-//   yields_gr_stat->Draw("p");
-//   yields_gr_syst->Draw("[]");
-//   TF1 *f = new TF1("my_exp","[0]*exp(-x/[1])",0,3.2);
-//   f->SetParNames("A","T");
-//   f->SetParLimits(1,0.1,0.2);
-//   auto ptr = yields_gr_syst->Fit(f,"S");
-//   cout << "Chi2/ndf: " << ptr.Get()->Chi2() / ptr.Get()->Ndf() <<endl;
-//   cout << "Tchem: " << f->GetParameter(1) << " +/- " << f->GetParError(1) <<endl;
-//   f->Draw("same");
-//   TLatex l;
-//   l.SetTextFont(42);
-//   l.DrawLatexNDC(.35,.83,"This work, 0-10% Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV");
-//   l.DrawLatexNDC(.15,.2,Form("#splitline{#it{T} = %3.1f #pm %1.1f MeV/#it{c}}{#chi^{2}/NDF = %1.3f}",f->GetParameter(1)*1000,f->GetParError(1)*1000,ptr.Get()->Chi2() / ptr.Get()->Ndf()));
-//   TLegend *leg = new TLegend(0.6,0.66,0.92,0.79);
-//   leg->SetLineWidth(0);
-//   leg->SetFillStyle(0);
-//   leg->AddEntry(yields_gr_syst, "Data","lp");
-//   leg->AddEntry(f,"Fit function Ae^{-m/#it{T}}","l");
-//   leg->Draw();
-//
-//   /// Ratios over p
-//   double doverp = nucleus_yield[0] / deuteron_yields[0];
-//   double doverp_stat = doverp * std::sqrt(Sq(deuteron_yields_stat[0]/deuteron_yields[0]) + Sq(nucleus_yield_stat[0] / nucleus_yield[0]));
-//   double doverp_syst = doverp * std::sqrt(Sq(deuteron_yields_syst[0]/deuteron_yields[0]) + Sq(nucleus_yield_syst[0] / nucleus_yield[0]));
-//   std::cout << "he3/d " << doverp << " +/- " << doverp_stat << " +/- " << doverp_syst << std::endl;
-//   std::cout << "He3/p " << ratio[0] << " +/- " << ratio_stat[0] << " +/- " << ratio_syst[0] << std::endl;
-//
-// }

@@ -32,7 +32,9 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kPCMv1", AliEMCALRecoUtils::kPCMv1 },
     { "kPCMplusBTCv1", AliEMCALRecoUtils::kPCMplusBTCv1 },
     { "kPCMsysv1", AliEMCALRecoUtils::kPCMsysv1 },
-    { "kBeamTestCorrectedv4", AliEMCALRecoUtils::kBeamTestCorrectedv4 }
+    { "kBeamTestCorrectedv4", AliEMCALRecoUtils::kBeamTestCorrectedv4 },
+    { "kBeamTestNS", AliEMCALRecoUtils::kBeamTestNS },
+    { "kPi0MCNS", AliEMCALRecoUtils::kPi0MCNS }
 };
 
 /**

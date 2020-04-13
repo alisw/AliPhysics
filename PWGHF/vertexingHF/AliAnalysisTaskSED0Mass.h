@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 ///*************************************************************************
 /// \class Class AliAnalysisTaskSED0Mass
@@ -25,6 +25,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliNormalizationCounter.h"
+#include "AliEventCuts.h"
 
 class AliAODEvent;
 
@@ -62,16 +63,31 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillYHistos(Bool_t flag) {fFillYHist=flag;}
   void SetFillImpactParameterHistos(Bool_t flag) {fFillImpParHist=flag;}
   void SetFillSparses(Bool_t flag) {fFillSparses=flag;}
+  void SetUseRejectionMethod(Bool_t flag=kFALSE, Float_t factor=0.01) {fUseRejectionMethod=flag; fRejectionFactor=factor;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
   void SetWriteVariableTree(Bool_t flag) { fWriteVariableTree=flag; }
+  void SetWriteProtosgnVar(Bool_t flag) { fWriteProtosgnVar=flag; }
+  void SetSelectTrueD0(Bool_t flag) { fSelectTrueD0 = flag; }
+  void SetUseMassWindow(Bool_t flag) { fUsedMassWindow=flag; }
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
+  void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
+
+  void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
+    fEnableCentralityCorrCuts=flag;
+    if(year==2018){
+      fEventCuts.SetupPbPb2018();
+      fEventCuts.SetManualMode();
+    }else{
+      fEventCuts.SetupRun2PbPb();
+    }
+  }
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -92,15 +108,17 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
  private:
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
-  AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
+  AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source);
   void	   DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal);
 
   void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  void     FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts);
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
   void CreateImpactParameterHistos();
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Float_t GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const ;
+  Float_t ComputeTopomatic(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part);
 
   TList    *fOutputMass;          //!<! list send on output slot 1
   TList    *fOutputMassPt;        //!<! list send on output slot 6
@@ -111,6 +129,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   THnSparseF *fMCAccBFeed;        //!<!histo for StepMCAcc for D0 FD (pt,y,ptB)
   Bool_t fStepMCAcc;              // flag to activate histos for StepMCAcc
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
+  Bool_t    fEnableCentralityCorrCuts; /// flag to enable centrality correlation event cuts
+  AliEventCuts  fEventCuts;       // Event cut object for centrality correlation event cuts
   THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
   Int_t     fArray;               ///  can be D0 or Like Sign candidates
   Bool_t    fReadMC;              ///  flag for MC array: kTRUE = read it, kFALSE = do not read it
@@ -137,10 +157,15 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
   Double_t *fCandidateVariables;      //!<!  variables to be written to the tree
-  Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
+  Bool_t    fWriteProtosgnVar;        /// flag to decide whether to write the selected candidates variables on a tree for cut optimization
+  Bool_t    fSelectTrueD0;            /// flag to decide whether to write only true D0/D0bar
+  Bool_t    fUsedMassWindow;          /// flag to activate the mass window selection for output size reduction
+  Bool_t	  fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
-  Bool_t fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
-  Bool_t fFillSparses;                  // flag to activate THnSparse 
+  Bool_t    fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
+  Bool_t    fFillSparses;                  // flag to activate THnSparse
+  Bool_t    fUseRejectionMethod;           // flag to activate the Rejection method
+  Float_t   fRejectionFactor;              // rejection factor to be used in the rejection method
   THnSparseF *fhStudyImpParSingleTrackSign; //!<! sparse with imp par residual cuts for MC
   THnSparseF *fhStudyImpParSingleTrackCand;  //!<! sparse with imp par residual cuts for Data
   THnSparseF *fhStudyImpParSingleTrackFd;   //!<! sparse with imp par residual cuts for MC
@@ -148,11 +173,15 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TH2F *fhMultVZEROTPCoutTrackCorrNoCut;  //!<!
   TH2F *fhMultVZEROTPCoutTrackCorr;  //!<!
   Bool_t    fEnablePileupRejVZEROTPCout;
+  TH2F *fhMultVZEROTPCclustersCorrNoCut;  //!<!
+  TH2F *fhMultVZEROTPCclustersCorr;  //!<!
+  Bool_t    fEnablePileupRejVZEROTPCcls;
+  Bool_t    fRejectOutOfBunchPileUp;
+
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,24); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 
 #endif
-

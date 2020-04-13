@@ -621,9 +621,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   //!  Define variables   !//
   //!*********************!//
 
-  Double_t pinTPC=0.,poutTPC=0.,TPCSignal=0.;
-  Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
-  Double_t massTOF=0.,timeTOF=0.,trackLenghtTOF=0.,betaTOF=0.,gamma=0.;
+  Double_t pinTPC=0.,/*poutTPC=0.,*/TPCSignal=0.;
+  // Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
+  Double_t massTOF=0.,timeTOF=0.,/*trackLenghtTOF=0.,*/betaTOF=0.,gamma=0.;
 
   ULong_t  status=0;
   ULong_t  statusPi=0;
@@ -634,9 +634,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
   Float_t nSigma3He=0.;
 
   Double_t cutNSigma = 3;
-  Double_t bbtheoM=0.,bbtheo=0.;
-  Double_t zNathashaNeg=0;
-  Double_t zNathashaPos=0;
+  // Double_t bbtheoM=0.,bbtheo=0.;
+  // Double_t zNathashaNeg=0;
+  // Double_t zNathashaPos=0;
   Double_t fPos[3]={0.,0.,0.};
   Double_t tPhi = -999.;
 
@@ -884,16 +884,16 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     TArrayI HeTPC(TrackNumber);        //helium3
     Int_t nHeTPC=0;
     
-    const Double_t speedOfLight =  TMath::C()*1E2*1E-12; // cm/ps
+    // const Double_t speedOfLight =  TMath::C()*1E2*1E-12; // cm/ps
     
     Float_t impactXY=-999, impactZ=-999;
     Float_t impactXYpi=-999, impactZpi=-999;
 
-    Double_t ptcExp  = -999;
-    Double_t expbeta = -999;
+    // Double_t ptcExp  = -999;
+    // Double_t expbeta = -999;
     Double_t pullTOF = -999; 
 
-    AliESDtrack *track;
+    // AliESDtrack *track;
 
     //*************************************************************
 
@@ -1209,9 +1209,9 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	  uqV0C = TMath::Cos(2*tPhi)*qxEPc+TMath::Sin(2*tPhi)*qyEPc;
 	}
 
-	Int_t  fIdxInt[200]; //dummy array
-	Int_t nClustersTPCHe = HeTrack->GetTPCclusters(fIdxInt);
-	Int_t nClustersTPCPi = PionTrack->GetTPCclusters(fIdxInt);
+	// Int_t  fIdxInt[200]; //dummy array
+	// Int_t nClustersTPCHe = HeTrack->GetTPCclusters(fIdxInt);
+	// Int_t nClustersTPCPi = PionTrack->GetTPCclusters(fIdxInt);
 	
 	//----------------------------------------------------------------------//
 

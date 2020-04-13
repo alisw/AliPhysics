@@ -8,14 +8,12 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 
 #include <TObjArray.h>
-#include <TH1I.h>
+#include <TH1D.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <tuple>
-
-
 
 
 AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn *cf)
@@ -51,11 +49,6 @@ UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
   const auto offset = std::distance(fRanges.begin(), loc);
   const auto cf_insert_loc = std::next(fCFBuffer.begin(), offset);
 
-  // std::cout << "Adding "
-  //           << Form("{%g, %g}", low, high)
-  //           << " to location: " << offset << "/" << fCFBuffer.size()
-  //           << "\n";
-
   fCFBuffer.insert(cf_insert_loc, clone);
 
   return offset;
@@ -84,16 +77,7 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
                       : cf->AddMixedPair(pair);
     };
 
-  // auto add_pair_to = mixed
-  //                  ? [pair] (AliFemtoCorrFctn *cf) { cf->AddMixedPair(pair); }
-  //                  : [pair] (AliFemtoCorrFctn *cf) { cf->AddRealPair(pair); };
-
   const Float_t kt = pair->KT();
-
-  // auto lower = std::lower_bound(fRanges.begin(), fRanges.end(), kt,
-  //                               [](std::pair<Float_t, Float_t> r, float kt) {
-  //                                 return r.first <= kt; });
-  // std::size_t idx = std::distance(fRanges.begin(), lower);
 
   std::size_t idx = 0;
   for (; idx < fRanges.size(); ++idx) {
@@ -126,7 +110,7 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
 }
 
 inline
-TH1I* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
+TH1D* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
 {
   // determinte high and low points
   auto low = ranges.front().first,
@@ -142,7 +126,7 @@ TH1I* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
   // determine best limit
   auto nbins = std::min(small_bins, max_bins);
 
-  auto hist = new TH1I("kTDist", "k_{T} Distribution", nbins, low, high);
+  auto hist = new TH1D("kTDist", "k_{T} Distribution", nbins, low, high);
   return hist;
 }
 
@@ -205,4 +189,20 @@ void AliFemtoKtBinnedCorrFunc::AddOutputObjectsTo(TCollection &olist)
   }
 
   olist.Add(output);
+}
+
+void
+AliFemtoKtBinnedCorrFunc::EventBegin(const AliFemtoEvent* ev)
+{
+  for (auto *cf : fCFBuffer) {
+    cf->EventBegin(ev);
+  }
+}
+
+void
+AliFemtoKtBinnedCorrFunc::EventEnd(const AliFemtoEvent* ev)
+{
+  for (auto *cf : fCFBuffer) {
+    cf->EventEnd(ev);
+  }
 }

@@ -29,12 +29,38 @@
 #pragma link C++ class AliFemtoDreamPartCollection+;
 #pragma link C++ class AliFemtoDreamAnalysis+;
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
-#pragma link C++ class AliAnalysisTaskSigma0Femto+;
+#pragma link C++ class AliAnalysisTaskFemtoDreamDeuteron+;
+#pragma link C++ class AliAnalysisTaskNanoXioton+;
+#pragma link C++ class AliAnalysisTaskAODXioton+;
+#pragma link C++ class AliAnalysisTaskNanoXioton1530+;
+#pragma link C++ class AliAnalysisTaskNanoLoton+;
+#pragma link C++ class AliAnalysisTaskAODLoton+;
+#pragma link C++ class AliAnalysisTaskLeuteronAOD+;
+#pragma link C++ class AliAnalysisTaskLeuteronNanoAOD+;
+#pragma link C++ class AliAnalysisTaskNanoBBar+;
+#pragma link C++ class AliAnalysisTaskFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskFemtoDreamSigPi+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamSigPi+;
+#pragma link C++ class AliAnalysisTaskFemtoDreamPion+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPion+;
+#pragma link C++ class AliAnalysisTaskNanoAODSigma0Femto+;
+#pragma link C++ class AliAnalysisTaskNanoSigmaPlus+;
+#pragma link C++ class AliAnalysisTaskNanoLD+;
 #pragma link C++ class AliAnalysisTaskGrandma+;
 #pragma link C++ class AliAnalysisTaskOtonOmega+;
 #pragma link C++ class AliOtonOmegaAnalysis+;
 #pragma link C++ class AliOtonOmegaCascadeCuts+;
 #pragma link C++ class AliOtonOmegaCascade+;
+#pragma link C++ class AliFemtoDreamHigherPairMath+;
+#pragma link C++ class AliAnalysisTaskNanoLX+;
+#pragma link C++ class AliAnalysisTaskOtonOmegaNanoAOD+;
+#pragma link C++ class AliAnalysisTaskGeorgiosNTuple+;
+#pragma link C++ class AliAnalysisTaskNanoPt+;
+#pragma link C++ class AliAnalysisTaskPOmegaPenne+;
+#pragma link C++ class AliFemtoDreamDump+;
+#pragma link C++ class AliFemtoDreamEventDump+;
+#pragma link C++ class AliFemtoDreamPairDump+;
 
 #endif
 

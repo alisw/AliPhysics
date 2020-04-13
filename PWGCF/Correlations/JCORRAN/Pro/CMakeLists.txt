@@ -49,12 +49,15 @@ set(SRCS
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
 	AliJJetTask.cxx
+	AliAnalysisTaskRidge.cxx
+	AliJPtHardXection.cxx
 )
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
+        AliJCDijetAna.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
@@ -98,7 +101,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

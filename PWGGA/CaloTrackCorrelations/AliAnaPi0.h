@@ -6,7 +6,7 @@
 //_________________________________________________________________________
 /// \class AliAnaPi0
 /// \ingroup CaloTrackCorrelationsAnalysis 
-/// \brief Selected photon clusters invariant mass analysis.
+/// \brief Combine photon cluster pairs for invariant mass analysis.
 ///
 /// Class to collect two-photon invariant mass distributions for
 /// extracting raw pi0 or eta yields.

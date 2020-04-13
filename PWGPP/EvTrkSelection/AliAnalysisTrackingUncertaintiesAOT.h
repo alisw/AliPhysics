@@ -13,11 +13,11 @@ class TList;
 class AliESDEvent;
 class AliMCEvent;
 class AliESDtrack;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 class AliESDpid;
 
-
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
@@ -38,7 +38,22 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   };
   enum ECentrality {kCentOff,kCentV0M,kCentCL1,kCentZNA,kCentV0A,kCentInvalid};
 
-    
+  // list of possible standard ESD track cuts set
+  enum EtrkCuts {
+    kDefault=0,
+    kStdTPConlyTrkCuts=1,
+    kStdITSTPCTrkCuts2009,
+    kStdITSTPCTrkCuts2010,
+    kStdITSTPCTrkCuts2011,
+    kStdITSTPCTrkCuts2015PbPb
+    // to be implemented, if needed
+    //kStdITSSATrkCuts2009,
+    //kStdITSSATrkCuts2010,
+    //kStdITSSATrkCutsPbPb2010,
+    //kStdITSPureSATrackCuts2009,
+    //kStdITSPureSATrackCuts2010
+  };
+
   AliAnalysisTrackingUncertaintiesAOT(const char *name);
   AliAnalysisTrackingUncertaintiesAOT();
   virtual ~AliAnalysisTrackingUncertaintiesAOT();
@@ -47,7 +62,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
     
-  void           ProcessTracks(AliStack *stack);
+  void           ProcessTracks(AliMCEvent *mcEvent);
     
   void           SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;}
   void           InitializeTrackCutHistograms();
@@ -72,8 +87,22 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
   void           SetTPConly(Bool_t tpconly = kTRUE) {fTPConlyFIT = tpconly;}
 
+  // make the pT binning finer by a factor of 2
+  void           SetFinerpTbin(Bool_t flag) {fmakefinerpTbin=flag;}
+  
+  // geometrical cut for tracks in the TPC (copied from AliRDHFCuts, 2019-May-23rd)
+  void SetUseCutGeoNcrNcl(Bool_t opt){fUseCutGeoNcrNcl=opt;}
+  void ConfigureCutGeoNcrNcl(Double_t dz, Double_t len, Double_t onept, Double_t fncr, Double_t fncl){
+    fDeadZoneWidth=dz;  fCutGeoNcrNclLength=len; fCutGeoNcrNclGeom1Pt=onept;
+    fCutGeoNcrNclFractionNcr=fncr; fCutGeoNcrNclFractionNcl=fncl;
+  }
+
+  // possibility to modify the ESD track cuts set
+  void SetStandardESDtrkCuts(UInt_t whichcuts, UInt_t option_TPCclstcut)  {fWhichCuts=whichcuts; fTPCclstCut=option_TPCclstcut;}
+
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
+
  private:
     
   void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
@@ -125,10 +154,26 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
   AliESDVertex    * fVertex;        //! pointer to ESD vertex
     
+  // make the pT binning finer by a factor of 2
+  Bool_t fmakefinerpTbin;
+
+  // parameters for geometrical cut for tracks in the TPC (copied from AliRDHFCuts, 2019-May-23rd)
+  Bool_t fUseCutGeoNcrNcl; /// flag for enabling/disabling geometrical cut on TPC track
+  Double_t fDeadZoneWidth;       /// 1st parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclLength;  /// 2nd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+
+  // possibility to modify the ESD track cuts set
+  UInt_t fWhichCuts;  ///
+  UInt_t fTPCclstCut; /// 0: cut on TPC clusters; 1: cuts on the number of crossed rows and on the ration crossed rows/findable clusters
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 9);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 11);
 };
 
 #endif
+

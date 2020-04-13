@@ -15,9 +15,11 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliDielectronSignalMC.h"
 #include "TString.h"
+#include "THnSparse.h"
 class TH1F;
 class TH2F;
 class TH3D;
+
 
 class AliTriggerAnalysis;
 class AliAnalysisFilter;
@@ -44,7 +46,6 @@ public:
    virtual void UserExec(Option_t* option);
    // called at end of analysis
    virtual void Terminate(Option_t* option);
-
 
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
@@ -74,7 +75,8 @@ public:
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
    void   SetTriggerMask(Int_t triggermask)                 {fTriggerMask = triggermask;}
    void   SetEventFilter(AliAnalysisCuts * const filter)    {fEventFilter = filter;}
-   void   SetCentrality(double cent_min, double cent_max)             {fMinCentrality = cent_min; fMaxCentrality = cent_max;} //For pp and pPb analysis use SetCentrality(-1, -1)
+   void   SetCentrality(double cent_min, double cent_max)   {fMinCentrality = cent_min; fMaxCentrality = cent_max;} // To ignore centrality use SetCentrality(-1, -1)
+   void   SetCentralityEstimator(TString estimator)         {fCentralityEst = estimator;}
 
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
@@ -105,12 +107,33 @@ public:
    void   SetMassBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("mass", min, max, steps);}
    void   SetPairPtBins(std::vector<double> pairptBins){ fPairPtBins = pairptBins;}
    void   SetPairPtBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("pairpt", min, max, steps);}
+   void   SetPhiVBins(std::vector<double> phivBins){fPhiVBins=phivBins;}
+   void   SetPhiVBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("phiv", min, max, steps);}
 
    // Pair related setter
    void   SetDoPairing(Bool_t doPairing) {fDoPairing = doPairing;}
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
+
+   //only temporary solution for LHC19f2 MC productions related to GetCocktailGenerator
+   void   SetLHC19f2MC(Bool_t flag) {fIsLHC19f2MC = flag;}
+
+   // Single leg from Pair related setter
+   void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
+   void   SetPtMinLegsFromPair(const double ptMin){fPtMinLegsFromPair = ptMin;}
+   void   SetPtMaxLegsFromPair(const double ptMax){fPtMaxLegsFromPair = ptMax;}
+   void   SetEtaMinLegsFromPair(const double etaMin){fEtaMinLegsFromPair = etaMin;}
+   void   SetEtaMaxLegsFromPair(const double etaMax){fEtaMaxLegsFromPair = etaMax;}
+   void   SetPhiMinLegsFromPair(const double phiMin){fPhiMinLegsFromPair = phiMin;}
+   void   SetPhiMaxLegsFromPair(const double phiMax){fPhiMaxLegsFromPair = phiMax;}
+   void   SetOpAngleMinLegsFromPair(const double opAngleMin){fOpAngleMinLegsFromPair = opAngleMin;}
+   void   SetOpAngleMaxLegsFromPair(const double opAngleMax){fOpAngleMaxLegsFromPair = opAngleMax;}
+   void   SetPtNBinsLegsFromPair(const int ptNBins){fPtNBinsLegsFromPair = ptNBins;}
+   void   SetEtaNBinsLegsFromPair(const int etaNBins){fEtaNBinsLegsFromPair = etaNBins;}
+   void   SetPhiNBinsLegsFromPair(const int phiNBins){fPhiNBinsLegsFromPair = phiNBins;}
+   void   SetOpAngleNBinsLegsFromPair(const int opAngleNBins){fOpAngleNBinsLegsFromPair = opAngleNBins;}
 
    // Set Cocktail waiting
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
@@ -182,6 +205,7 @@ private:
   Double_t GetSmearing(TObjArray *arr, Double_t x);
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
+  double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -228,6 +252,7 @@ private:
   std::vector<double> fResolutionThetaBins;
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
+  std::vector<double> fPhiVBins;
   bool fDoGenSmearing;
 
   double  fPtMin; // Kinematic cut for pairing
@@ -273,6 +298,7 @@ private:
   TH1F* fHistNTracks;
   Double_t fMinCentrality;
   Double_t fMaxCentrality;
+  TString fCentralityEst; // Which centrality estimator to use.
 
   TFile* fCentralityFile;
   std::string fCentralityFilename;
@@ -288,10 +314,30 @@ private:
 
   std::vector<TH2D*> fHistGenPair;
   std::vector<TH2D*> fHistGenSmearedPair;
-  std::vector<TH2D*> fHistRecPair;
+  std::vector<TObject*> fHistRecPair;
   std::vector<TH2D*> fHistGenPair_ULSandLS;
   std::vector<TH2D*> fHistGenSmearedPair_ULSandLS;
   std::vector<TH2D*> fHistRecPair_ULSandLS;
+
+  bool fWriteLegsFromPair;
+  double fPtMinLegsFromPair;
+  double fPtMaxLegsFromPair;
+  double fEtaMinLegsFromPair;
+  double fEtaMaxLegsFromPair;
+  double fPhiMinLegsFromPair;
+  double fPhiMaxLegsFromPair;
+  double fOpAngleMinLegsFromPair;
+  double fOpAngleMaxLegsFromPair;
+  int fPtNBinsLegsFromPair;
+  int fEtaNBinsLegsFromPair;
+  int fPhiNBinsLegsFromPair;
+  int fOpAngleNBinsLegsFromPair;
+  std::vector<THnSparseF*> fTHnSparseGenSmearedLegsFromPair;
+  std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
+
+  Bool_t fIsLHC19f2MC;
+  TList *fCocktailHeaderList;
+  Bool_t fDoFillPhiV;
 
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
@@ -321,11 +367,13 @@ private:
   TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
 
 
+
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 1);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 3);
 };
 
 
 # endif
+

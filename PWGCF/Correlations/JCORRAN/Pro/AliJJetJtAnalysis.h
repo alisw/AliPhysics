@@ -66,6 +66,7 @@ class AliJJetJtAnalysis{
     } // TODO clean before event
     void SetJTracks(TClonesArray *tracks ){fTracks = tracks ;}
     void SetMCJTracks(TClonesArray *tracks ){fMCTracks = tracks ;}
+    void SetIncludeFullJets(int doFull){fDoFullJets = doFull;}
 
 
     int GetNJets(){ return GetJetList()->GetEntriesFast(); }
@@ -77,6 +78,7 @@ class AliJJetJtAnalysis{
     void SetInputList(TObjArray * ilist){ fInputList = ilist;}
     void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
     void SetLeadingJets(UInt_t i){fLeadingJets = i;}
+    void SetMaxDeltaRCorr(double maxDeltaR){fMaxDeltaRCorr = maxDeltaR;}
     int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
     double  GetConeSize( UInt_t i ){ return fConeSizes.at( i ); }
     //void SetTrackJetMap(std::vector<int> * v){ fTrackJetMap=v;}
@@ -152,6 +154,7 @@ class AliJJetJtAnalysis{
     TClonesArray     fpythiaJets;
     double fJetEtaCut;
     int fLeadingJets;
+    double fMaxDeltaRCorr;
     TRandom3 *frandom; // comment me
 
     TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
@@ -165,6 +168,7 @@ class AliJJetJtAnalysis{
     int nJetContainer; ///< Number of jet finders
     int fnR; ///< Number of jet resolution parameters
     int fnkt; ///< Marks how many kt-algorithms were reconstructed
+    int fDoFullJets; ///< Whether full jets should be included
 
     AliJCard * fCard; // comment needed
     AliJJetAnalysis *fJJetAnalysis;
@@ -187,6 +191,10 @@ class AliJJetJtAnalysis{
     TVector *fConstPt; ///< Store constituent jT values
     TVector *fConstLabels;
     TVector *fJetPt; ///< Store jet pT values
+    TVector *fLeadJetPhi; ///< Store phi of leading jet
+    TVector *fLeadJetEta; ///< Store eta of leading jet
+    TVector *fSubLeadJetPhi; ///< Store phi of subleading jet
+    TVector *fSubLeadJetEta; ///< Store eta of subleading jet
     TVector *fDiJetMjj; ///< Store di-jet invariant mass values
     TVector *fDiJetMjjSubtr; ///< Store di-jet bg-subtracted invariant mass values
     TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks

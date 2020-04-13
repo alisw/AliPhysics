@@ -8,40 +8,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoTPCInnerCorrFctn.h"
-//#include "AliFemtoHisto.hh"
-#include <cstdio>
 
 #ifdef __ROOT__
 ClassImp(AliFemtoTPCInnerCorrFctn)
 #endif
 
+
 //____________________________
 AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
-  fDTPCNumerator(0),
-  fDTPCDenominator(0),
-  fRadDNumerator(0),
-  fRadDDenominator(0),
+  AliFemtoCorrFctn(),
+  fDTPCNumerator(nullptr),
+  fDTPCDenominator(nullptr),
+  fRadDNumerator(nullptr),
+  fRadDDenominator(nullptr),
   fRadius(100)
 {
-  // set up numerator
-  //  title = "Num Qinv (MeV/c)";
-  char tTitNum[101] = "NumDTPC";
-  strncat(tTitNum,title, 100);
-  fDTPCNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,100,0.0,20.0);
-  // set up denominator
-  //title = "Den Qinv (MeV/c)";
-  char tTitDen[101] = "DenDTPC";
-  strncat(tTitDen,title, 100);
-  fDTPCDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,100,0.0,20.0);
+  char *name_num = Form("NumDTPC%s", title);
+  char *title_num = Form("NumDTPC%s; q_{inv} (GeV/c); TPC Separation (cm)", title);
+  fDTPCNumerator = new TH2D(name_num,title_num,nbins,QinvLo,QinvHi,100,0.0,20.0);
 
-  char tTitNumR[101] = "NumRadD";
-  strncat(tTitNumR,title, 100);
-  fRadDNumerator = new TH2D(tTitNumR,title,50,-0.1,0.1,50,-0.1,0.1);
-  // set up denominator
-  //title = "Den Qinv (MeV/c)";
-  char tTitDenR[101] = "DenRadD";
-  strncat(tTitDenR,title, 100);
-  fRadDDenominator = new TH2D(tTitDenR,title,50,-0.1,0.1,50,-0.1,0.1);
+  char *name_den = Form("DenDTPC%s", title);
+  char *title_den = Form("DenDTPC%s; q_{inv} (GeV/c); TPC Separation (cm)", title);
+  fDTPCDenominator = new TH2D(name_den,title_den,nbins,QinvLo,QinvHi,100,0.0,20.0);
+
+  char *name_radnum = Form("NumRadD%s", title);
+  char *title_radnum = Form("Distance at radius (Numerator); #Delta#phi*; #Delta#eta");
+  fRadDNumerator = new TH2D(name_radnum,title_radnum,50,-0.1,0.1,50,-0.1,0.1);
+
+  char *name_radden = Form("DenRadD%s", title);
+  char *title_radden = Form("Distance at radius (Denominator); #Delta#phi*; #Delta#eta");
+  fRadDDenominator = new TH2D(name_radden,title_radden,50,-0.1,0.1,50,-0.1,0.1);
 
   // to enable error bar calculation...
   fDTPCNumerator->Sumw2();
@@ -52,25 +48,22 @@ AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const char* title, const int&
 
 //____________________________
 AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const AliFemtoTPCInnerCorrFctn& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fDTPCNumerator(0),
-  fDTPCDenominator(0),
-  fRadDNumerator(0),
-  fRadDDenominator(0),
-  fRadius(100)
+  AliFemtoCorrFctn(aCorrFctn),
+  fDTPCNumerator(nullptr),
+  fDTPCDenominator(nullptr),
+  fRadDNumerator(nullptr),
+  fRadDDenominator(nullptr),
+  fRadius(aCorrFctn.fRadius)
 {
   // copy constructor
-  if (aCorrFctn.fDTPCNumerator)
-    fDTPCNumerator = new TH2D(*aCorrFctn.fDTPCNumerator);
-  if (aCorrFctn.fDTPCDenominator)
-    fDTPCDenominator = new TH2D(*aCorrFctn.fDTPCDenominator);
-  if (aCorrFctn.fRadDNumerator)
-    fRadDNumerator = new TH2D(*aCorrFctn.fRadDNumerator);
-  if (aCorrFctn.fRadDDenominator)
-    fRadDDenominator = new TH2D(*aCorrFctn.fRadDDenominator);
+  fDTPCNumerator = new TH2D(*aCorrFctn.fDTPCNumerator);
+  fDTPCDenominator = new TH2D(*aCorrFctn.fDTPCDenominator);
+  fRadDNumerator = new TH2D(*aCorrFctn.fRadDNumerator);
+  fRadDDenominator = new TH2D(*aCorrFctn.fRadDDenominator);
 }
 //____________________________
-AliFemtoTPCInnerCorrFctn::~AliFemtoTPCInnerCorrFctn(){
+AliFemtoTPCInnerCorrFctn::~AliFemtoTPCInnerCorrFctn()
+{
   // destructor
   delete fDTPCNumerator;
   delete fDTPCDenominator;
@@ -84,30 +77,18 @@ AliFemtoTPCInnerCorrFctn& AliFemtoTPCInnerCorrFctn::operator=(const AliFemtoTPCI
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fDTPCNumerator)
-    fDTPCNumerator = new TH2D(*aCorrFctn.fDTPCNumerator);
-  else
-    fDTPCNumerator = 0;
-  if (aCorrFctn.fDTPCDenominator)
-    fDTPCDenominator = new TH2D(*aCorrFctn.fDTPCDenominator);
-  else
-    fDTPCDenominator = 0;
-
-  if (aCorrFctn.fRadDNumerator)
-    fRadDNumerator = new TH2D(*aCorrFctn.fRadDNumerator);
-  else
-    fRadDNumerator = 0;
-  if (aCorrFctn.fRadDDenominator)
-    fRadDDenominator = new TH2D(*aCorrFctn.fRadDDenominator);
-  else
-    fRadDDenominator = 0;
+  *fDTPCNumerator = *aCorrFctn.fDTPCNumerator;
+  *fDTPCDenominator = *aCorrFctn.fDTPCDenominator;
+  *fRadDNumerator = *aCorrFctn.fRadDNumerator;
+  *fRadDDenominator = *aCorrFctn.fRadDDenominator;
 
   fRadius = aCorrFctn.fRadius;
 
   return *this;
 }
 //_________________________
-void AliFemtoTPCInnerCorrFctn::Finish(){
+void AliFemtoTPCInnerCorrFctn::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -119,20 +100,19 @@ void AliFemtoTPCInnerCorrFctn::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoTPCInnerCorrFctn::Report(){
+AliFemtoString AliFemtoTPCInnerCorrFctn::Report()
+{
   // create report
-  string stemp = "Entrace TPC distance Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDTPCNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDTPCDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "Entrace TPC distance Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fDTPCNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDTPCDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 //____________________________
-void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
+void AliFemtoTPCInnerCorrFctn::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
@@ -170,7 +150,8 @@ void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
   }
 }
 //____________________________
-void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoTPCInnerCorrFctn::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;

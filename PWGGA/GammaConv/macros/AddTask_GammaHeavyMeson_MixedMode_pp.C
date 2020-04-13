@@ -35,9 +35,9 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
-  Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, separate with ;
@@ -45,6 +45,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   Int_t     doWeightingPart               = 0,        // enable Weighting
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
+  Bool_t    enableElecDeDxPostCalibration = kFALSE,
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -62,6 +63,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
 
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
   TString addTaskName                 = "AddTask_GammaHeavyMeson_MixedMode_pp";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -107,6 +109,39 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   TString strLocalDebugFlag              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "LOCALDEBUGFLAG", "", addTaskName);
   if(strLocalDebugFlag.Atoi()>0)
     localDebugFlag = strLocalDebugFlag.Atoi();
+
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaHeavyMeson_MixedMode_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
+  Bool_t fMinPtHardSet        = kFALSE;
+  Double_t minFacPtHard       = -1;
+  Bool_t fMaxPtHardSet        = kFALSE;
+  Double_t maxFacPtHard       = 100;
+  Bool_t fSingleMaxPtHardSet  = kFALSE;
+  Double_t maxFacPtHardSingle = 100;
+  for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
+    TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
+    TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      minFacPtHard               = strTempSetting.Atof();
+      cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
+      fMinPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+      strTempSetting.Replace(0,10,"");
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+      strTempSetting.Replace(0,16,"");
+      maxFacPtHardSingle         = strTempSetting.Atof();
+      cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
+      fSingleMaxPtHardSet        = kTRUE;
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+      maxFacPtHard               = strTempSetting.Atof();
+      cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
+      fMaxPtHardSet        = kTRUE;
+    }
+  }
 
   Int_t isHeavyIon = 0;
   // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
@@ -377,7 +412,32 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600000013300000","0163103b00000010"); // QA
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600040013300000","0163103b00000010"); // QA, 100ns timing
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","0163103b00000010"); // QA, 100ns timing, TM on with default EMC params
+  } else if (trainConfig == 904){ // for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // PHI7
+  } else if (trainConfig == 905){ // new for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // PHI7
+  } else if (trainConfig == 906){ // new for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // PHI7
 
+
+  // *********************************************************************************************************
+  // 13 TeV  pp Run2 - EDC configurations
+  // *********************************************************************************************************
+  } else if (trainConfig == 1000){ // EMCAL + DCal clusters
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG1
+  } else if (trainConfig == 1001){ // EMCAL + DCal clusters for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG1
+  } else if (trainConfig == 1002){ // EMCAL + DCal clusters for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG1
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -452,7 +512,12 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
-    analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fMinPtHardSet)
+      analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
+    if(fMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    if(fSingleMaxPtHardSet)
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
@@ -465,6 +530,20 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
 
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+      }
+    }
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);

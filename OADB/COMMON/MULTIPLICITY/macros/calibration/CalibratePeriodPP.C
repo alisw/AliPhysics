@@ -1,16 +1,26 @@
+#ifdef __CLING__
+#include "AliMultEstimator.h"
+#include "AliMultSelectionCuts.h"
+#include "AliMultSelection.h"
+#include "AliMultSelectionCalibrator.h"
+#include <TString.h>
+#include <TSystem.h>
+#include <TF1.h>
+#include <TFile.h>
+#endif
+
 ////////////////////////////////////////////////////////////
 //
 // Default macro for calibrating minimum bias pp data.
 //
 ////////////////////////////////////////////////////////////
 
-CalibratePeriodPP(TString lPeriodName = "LHC16k",
+void CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
                   TString lWhichData = "MB",
-                  Long_t lRunToUseAsDefault = 257630 ) {
+                  Long_t lRunToUseAsDefault = 257630, TString lRunIdentifier = "") {
 
     //Load ALICE stuff
-    TString gLibs[] =    {"STEER",
-                            "ANALYSIS", "ANALYSISalice", "ANALYSIScalib","OADB"
+    TString gLibs[] =    {"STEER", "ANALYSIS", "ANALYSISalice", "ANALYSIScalib","OADB"
                            };
     TString thislib = "lib";
     for(Int_t ilib = 0; ilib<5; ilib++) {
@@ -27,7 +37,8 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
 
     lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
-
+    lCalib->SetSelectedTriggerClass(AliVEvent::kINT7 | AliVEvent::kINT7inMUON);
+    
     //============================================================
     // --- Definition of Boundaries ---
     //============================================================
@@ -81,7 +92,7 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
-    //Additional selections for pp: incompleteDAQ and asymmetric vzero 
+    //Additional selections for pp: incompleteDAQ and asymmetric vzero
 
 
 
@@ -152,10 +163,8 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     /* From mail exchange with Cvetan
      -> ZNApp
     "-fZnaFired * fZnaTower + !fZnaFired * 1e6"
-
     -> ZNCpp
     "-fZncFired * fZncTower + !fZncFired * 1e6"
-
     -> ZNACpp
     "-0.89 * fZnaFired * fZnaTower - fZncFired * fZncTower + !fZnaFired * !fZncFired * 1e6"
     */
@@ -192,9 +201,9 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     // --- Definition of Input/Output ---
     //============================================================
 
-    lCalib -> SetInputFile  ( Form("../%s/AnalysisResults.root", lWhichData.Data()) );
-    lCalib -> SetBufferFile ( Form("buffer-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
-    lCalib -> SetOutputFile ( Form("OADB-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
+    lCalib -> SetInputFile  ( Form("%s/AnalysisResults_%s.root", inputDir, lRunIdentifier.Data()) );
+    lCalib -> SetBufferFile ( Form("temp/buffers/buffer-%s-%s%s.root", lPeriodName.Data(), lWhichData.Data(), lRunIdentifier.Data()) );
+    lCalib -> SetOutputFile ( Form("temp/partialOADBs/OADB-%s-%s-%s.root", lPeriodName.Data(), lRunIdentifier.Data(), lWhichData.Data()) );
     lCalib -> Calibrate     ();
 
 }

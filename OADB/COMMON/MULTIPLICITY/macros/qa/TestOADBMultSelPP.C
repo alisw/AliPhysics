@@ -13,7 +13,7 @@ void TestWrite() ;
 void TestRead(Int_t run) ;
 void TestUpdate(Int_t run) ;
 
-void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
+void TestOADBMultSelPP(const Char_t* inputDir, TString lPeriodName = "LHC18f", Int_t run = 287784, const Char_t* chunkName="") {
     //Code to test OADB in Offline Mode
     //Further developments needed!
     //
@@ -53,15 +53,16 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
     AliMultSelection *fSelection = (AliMultSelection*) oadbMultSelection->GetMultSelection();
     
     fSelection->PrintInfo();
-    
+        
     TCanvas *c1 = new TCanvas("c1", "",800,600);
     htesting->Draw(); 
-
     
+    c1->SaveAs(Form("temp/oadbTests/htesting-%s-%d.png", lPeriodName.Data(), run));
     
     //Input file here!
     //TString fInputFileName = "AnalysisTest.root" ;
-    TString fInputFileName = "../MB/AnalysisResults.root"; 
+    TString fInputFileName = Form("%s/AnalysisResults_%d.root", inputDir, run);
+    if(chunkName[0]!='\0') fInputFileName = Form("%s/AnalysisResults_%s.root", inputDir, chunkName);
     
     cout<<" Offline Calibration Test "<<endl;
     cout<<" * Input File.....: "<<fInputFileName.Data()<<endl;
@@ -129,8 +130,7 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
     cout<<"(1) File opened, event count is "<<lNEv<<endl;
     
     Float_t lDeterminedPercentile = -100;
-    TFile *fout = new TFile("fout.root","RECREATE");
-    
+        
     TH1F* hTestPercentile = new TH1F("hTestPercentile", "",100,0,100);
     TH1F* hPos = new TH1F("hPos", "",100,0,100);
     TH1F* hNeg = new TH1F("hNeg", "",100,0,100);
@@ -138,8 +138,6 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
     Int_t lRun = run; //Select by hand
     Long_t lSelected = 0;
     Long_t lAll = 0;
-    
-      
     
     for(Long64_t iEv = 0; iEv<lNEv; iEv++) {
         //for(Long64_t iEv = 0; iEv<10000; iEv++) {
@@ -154,7 +152,7 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
         if ( !fEvSel_INELgtZERO ) continue ;
         if ( !fEvSel_HasNoInconsistentVertices ) continue ; 
         if ( TMath::Abs(fEvSel_VtxZ) > 10. ) continue; 
-        if ( !(fEvSel_TriggerMask & AliVEvent::kINT7) ) continue;
+        if ( !(fEvSel_TriggerMask & (AliVEvent::kINT7 | AliVEvent::kINT7inMUON)) ) continue;
 
 
         lSelected ++;
@@ -166,16 +164,11 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
         if( TMath::Abs( fEvSel_VtxZ )<10 ) hTestPercentile -> Fill ( lDeterminedPercentile );
         if( 7 < fEvSel_VtxZ && fEvSel_VtxZ < 18 ) hPos -> Fill ( lDeterminedPercentile );
         if( -18 < fEvSel_VtxZ && fEvSel_VtxZ < -7 ) hNeg -> Fill ( lDeterminedPercentile );
-
-
-
     }
     
     cout<<"All     : "<<lAll<<endl;
     cout<<"Selected: "<<lSelected<<endl;
-    
-    fout->Write(); 
-    
+        
     gStyle->SetOptStat(0); 
 
     hTestPercentile->Sumw2(); 
@@ -211,19 +204,15 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
     hPos->Draw("same"); 
     hNeg->Draw("same"); 
     
-       TLegend* leg = new TLegend(0.448, 0.7944, 0.928, 0.909);
-       leg->SetTextSize(0.03); 
+    TLegend* leg = new TLegend(0.448, 0.7944, 0.928, 0.909);
+    leg->SetTextSize(0.03); 
 
    leg->AddEntry(hTestPercentile, "Nominal Vertex, |z| < 10 cm", "lp");
    leg->AddEntry(hNeg, "Displaced Vertex, -18 cm < z < -7 cm", "lp");
    leg->AddEntry(hPos, "Displaced Vertex, 7 cm < z < 18 cm", "lp");
    leg->Draw();
-    
+ 
+   c2->SaveAs(Form("temp/oadbTests/percentDistrib-%s-%d.png", lPeriodName.Data(), run));
    //c2->SaveAs("testnewcorrection.pdf"); 
     
 }
-
-    
-
-    
-    

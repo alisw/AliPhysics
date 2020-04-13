@@ -51,6 +51,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
 
   void SetJetTaskName(TString name){ fJetTaskName=name; }
   void SetMCJetTaskName(TString name){ fMCJetTaskName=name; }
+  void SetSelector(TString name) {fSelector =name;}
   void SetJJetJtAnalysis(AliJJetJtAnalysis * jco){ fJJetJtAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
   void SetMC(int mc) {fDoMC = mc;};
@@ -58,6 +59,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
   void SetLeadingJets(int leading){fLeadingJets = leading;}
+  void SetMaxDeltaRCorr(double maxDeltaR){fmaxDeltaRCorr = maxDeltaR;}
   void SetCentCut(double cent){fCentCut = cent;}
   void FindDaughters(AliJJet * jet, AliAODMCParticle * track, AliMCParticleContainer * mcTracksCont);
   void SetSide(int side) {fSide = side;} // 0 = both sides, -1 A side, +1 C side
@@ -69,6 +71,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     AliJJetTask           * fMCJetTask; ///< Pointer to MC jet finder task (obsolete)
     TString                 fJetTaskName; ///< Name of the jet finder task
     TString                 fMCJetTaskName; ///< Name of the MC jet finder task
+    TString                 fSelector; ///< Name of multiplicity selector
     AliJJetJtAnalysis     * fJJetJtAnalysis; ///< Pointer to the jT analysis class
     TClonesArray           *fJMCTracks; ///< List of MC tracks
     TDirectory            * fOutput; 
@@ -81,6 +84,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     int fDoMC; ///< Whether or not MC analysis is performed
     int fSide; ///< Possible to use only one side for analysis, 0: both sides, -1: A side, +1, C side
     int fLeadingJets; ///< Do only leading jets if >0
+    double  fmaxDeltaRCorr; ///<
     double fCentCut; ///<
     double zVert; ///< Vertex position
     bool fDoLog; ///< Whether or not logarithmic histograms should be filled/created

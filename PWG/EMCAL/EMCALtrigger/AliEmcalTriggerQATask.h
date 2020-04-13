@@ -70,7 +70,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)      { return i >= 0 && static_cast<std::size_t>(i) < fEMCALTriggerQA.size() ? fEMCALTriggerQA[i] : 0; }
 
   static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", EBeamType_t beamType = kpp, ETriggerAnalysisType_t anaType=kTriggerOfflineExpertAnalysis, TString subdir = "", TString suffix = "");
-  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
+  static TObjArray AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
 
  protected:
   void                                      UserCreateOutputObjects();

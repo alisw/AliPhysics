@@ -20,6 +20,9 @@
 //
 // --- David Dobrigkeit Chinellato
 //
+// For questions, comments, etc, please write to:
+//      david.dobrigkeit.chinellato@cern.ch
+//
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #ifndef AliAnalysisTaskWeakDecayVertexer_H
@@ -28,6 +31,7 @@
 class TList;
 class TH1F;
 
+class AliV0HypSel;
 class AliESDpid;
 class AliESDEvent;
 class AliPhysicsSelection;
@@ -68,7 +72,9 @@ public:
     }
     void SetDoMaterialCorrections( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
-        fkDoMaterialCorrection = lOpt;
+        //fkDoMaterialCorrection = lOpt;
+        std::cout<<"THIS OPTION DOES NOTHING"<<std::endl; 
+        //NEVER USE THIS
     }
     void SetXYCase1Preoptimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
@@ -132,6 +138,11 @@ public:
     }
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
+    }
+    void SetUseStrictPileupCuts () {
+        //This will enable Ionut's pileup rejection in AliEventCuts
+        fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -205,6 +216,13 @@ public:
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
     }
+    
+    //Modifications for V0 mass window selection (from Ruben) 
+    void SetV0HypSel(TObjArray* selArr);
+    const TObjArray* GetV0HypSelArray() const {return fV0HypSelArray;}
+    void AddV0HypSel(const AliV0HypSel& sel);
+    void AddStandardV0HypSel();
+    
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
     }
@@ -216,6 +234,9 @@ public:
     }
     void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
         fkSkipLargeXYDCA=lOpt;
+    }
+    void SetUseMonteCarloAssociation( Bool_t lOpt = kTRUE) {
+        fkMonteCarlo=lOpt;
     }
 //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding(){
@@ -249,8 +270,19 @@ public:
 //---------------------------------------------------------------------------------------
     //Re-vertex V0s
     Long_t Tracks2V0vertices(AliESDEvent *event);
+
+    //======================================================================
+    //Re-vertex V0s based solely on perfect MC V0s
+    //Warning: this cannot be called in real data without troubles,
+    //         but may be particularly useful for performance studies
+    //         as even very loose cuts will not incur in prohibitive
+    //         performance costs
+    Long_t Tracks2V0verticesMC(AliESDEvent *event);
+    //======================================================================
+    
     //Re-vertex Cascades
     Long_t V0sTracks2CascadeVertices(AliESDEvent *event);
+    Long_t V0sTracks2CascadeVerticesMC(AliESDEvent *event);
     //Re-vertex Cascades without checking bachelor charge - V0 Mass hypo correspondence
     Long_t V0sTracks2CascadeVerticesUncheckedCharges(AliESDEvent *event);
     //Helper functions
@@ -330,6 +362,9 @@ private:
     Bool_t fkPreselectX;
     Bool_t fkSkipLargeXYDCA;
     
+    //Master MC switch
+    Bool_t fkMonteCarlo; //do MC association in vertexing
+    
     //Bool_t to conrtol the use of on-the-fly AliExternalTrackParams
     Bool_t fkUseOptimalTrackParams; //if true, use better track estimates from OTF V0s
     Bool_t fkUseOptimalTrackParamsBachelor; //if true, use better track estimates from OTF V0s
@@ -340,7 +375,10 @@ private:
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
-    //Mass Window around masses of interest
+    //Mass window for V0s
+    TObjArray* fV0HypSelArray; // array of V0 hypothesis to select
+    
+    //Mass Window around masses of interest (cascades)
     Double_t fMassWindowAroundCascade;
     
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test

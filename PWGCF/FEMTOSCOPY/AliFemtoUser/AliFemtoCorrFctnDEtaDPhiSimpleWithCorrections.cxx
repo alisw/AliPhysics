@@ -544,6 +544,10 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
     if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();
     else if(part2==kLambdaMinus) weight *= pair->Track2()->V0()->CorrectionLambdaMinus();
   }
+  if(pair->Track2()->Xi()){
+    if(part2==kXiMinus) weight *= pair->Track2()->Xi()->CorrectionXiMinus();
+    else if(part2==kXiPlus) weight *= pair->Track2()->Xi()->CorrectionXiPlus();
+  }
 
 
   fDPhiDEtaDenominator->Fill(dphi, deta, weight);

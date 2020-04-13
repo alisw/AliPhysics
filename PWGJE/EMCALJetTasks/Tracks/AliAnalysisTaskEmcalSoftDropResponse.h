@@ -29,6 +29,7 @@
 
 #include <vector>
 #include "AliAnalysisTaskEmcalJet.h"
+#include "THistManager.h"
 
 class RooUnfoldResponse;
 class TBinning;
@@ -56,27 +57,39 @@ public:
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
 
-  void SetBinningMode(EBinningMode_t binmode) {}
+  void SetHasResponseMatrixSparse(Bool_t doUse) { fHasResponseMatrixSparse = doUse; }
+  void SetHasResponseMatrixRooUnfold(Bool_t doUse) { fHasResponseMatrixRooUnfold = doUse; }
+  void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
   void SetCustomPartLevelPtBinning(TBinning *binning) { fPartLevelPtBinning = binning; }
   void SetCustomDetLevelPtBinning(TBinning *binning) { fDetLevelPtBinning = binning; }
   void SetFractionResponseClosure(Double_t fracClosure) { fFractionResponseClosure = fracClosure; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
   void SetReclusterizingAlgorithm(EReclusterizer_t reclust) { fReclusterizer = reclust; }
+  void SetSampleFraction(Double_t samplefraction) { fSampleFraction = samplefraction; }
+  void SetMinFractionShared(Double_t minsharedfraction) { fMinFractionShared = minsharedfraction; }
   void SetUseChargedConstituents(bool doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
+  void SetNameMCParticleContainer(const char *name) { fNameMCParticles = name; }
+  void SetNamePartLevelJetContainer(const char *name) { fNamePartLevelJetContainer = name; }
+  void SetNameDetLevelJetContainer(const char *name) { fNameDetLevelJetContainer = name; }
+  void SetNameUnSubLevelJetContainer(const char *name) { fNameUnSubLevelJetContainer = name; }
+  void SetIsEmbeddedEvent(bool isEmbedded) {fIsEmbeddedEvent = isEmbedded; }
 
-  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger);
+  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
+  virtual Bool_t CheckMCOutliers();
   virtual bool Run();
 
   TBinning *GetDefaultPartLevelPtBinning() const;
   TBinning *GetDefaultDetLevelPtBinning() const;
   TBinning *GetZgBinning() const;
+  TBinning *GetRgBinning(double R) const;
 
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+  std::vector<double> GetStatisticsConstituentsPart(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
 
@@ -85,25 +98,36 @@ private:
   Double_t                      fZcut;                      ///< Zcut (softdrop definition)
   Double_t                      fBeta;                      ///< Beta (softdrop definition)
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizing algorithm
+  Double32_t                    fSampleFraction;            ///< Fraction of statistics used for the analysis
+  Float_t                       fMinFractionShared;         ///< only fill histos for jets if shared fraction larger than X  
+
+  Bool_t                        fHasResponseMatrixSparse;   ///< Fill also THnSparse representation of response matrix  
+  Bool_t                        fHasResponseMatrixRooUnfold; /// < Fill RooUnfold response objects
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
+  TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
+  TRandom                       *fSampleTrimmer;            ///< Sample trimmer
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
-  RooUnfoldResponse             *fZgResponse;               //!<! RooUnfold response object
-  RooUnfoldResponse             *fZgResponseClosure;        //!<! RooUnfold response for the closure test
-  TH2                           *fZgPartLevel;              //!<! Zg vs. pt at particle level
-  TH2                           *fZgDetLevel;               //!<! Zg vs. pt at detector level
-  TH2                           *fZgPartLevelTruncated;     //!<! Zg vs. pt at particle level after truncation at
-  TH2                           *fZgPartLevelClosureNoResp; //!<! Zg vs. pt at particle level for closure test (jets not used for response)
-  TH2                           *fZgDetLevelClosureNoResp;  //!<! Zg vs. pt at detector level for closure test (jets not used for response)
-  TH2                           *fZgPartLevelClosureResp;   //!<! Zg vs. pt at particle level for closure test (jets used for response)
-  TH2                           *fZgDetLevelClosureResp;    //!<! Zg vs. pt at detector level for closure test (jets used for response)
+  Bool_t                        fIsEmbeddedEvent;           ///<true if the event is an embedded event       
+  TString                       fNamePartLevelJetContainer; ///< Name of the particle level jet container  
+  TString                       fNameDetLevelJetContainer;  ///< Name of the detector (or hybrid if embedding)  level jet container  
+  TString                       fNameUnSubLevelJetContainer;///< Name of the unsubtracted hybrid level jet container
+  std::vector<RooUnfoldResponse*> fZgResponse;              //!<! RooUnfold response for z_g
+  std::vector<RooUnfoldResponse*> fZgResponseClosure;       //!<! RooUnfold response for z_g for the closure test
+  std::vector<RooUnfoldResponse*> fRgResponse;              //!<! RooUnfold response for r_g
+  std::vector<RooUnfoldResponse*> fRgResponseClosure;       //!<! RooUnfold response for r_g for the closure test
+  std::vector<RooUnfoldResponse*> fNsdResponse;             //!<! RooUnfold response for n_sd
+  std::vector<RooUnfoldResponse*> fNsdResponseClosure;      //!<! RooUnfold response for n_sd for the closure test
+  std::vector<RooUnfoldResponse*> fThetagResponse;          //!<! RooUnfold response for theta_g
+  std::vector<RooUnfoldResponse*> fThetagResponseClosure;   //!<! RooUnfold response for n_sd for the closure test
+  THistManager                  fHistManager;               //!< Histogram manager                                       
 
   AliAnalysisTaskEmcalSoftDropResponse(const AliAnalysisTaskEmcalSoftDropResponse &);
   AliAnalysisTaskEmcalSoftDropResponse &operator=(const AliAnalysisTaskEmcalSoftDropResponse &);
   
-  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 1);
+  ClassDef(AliAnalysisTaskEmcalSoftDropResponse, 3);
 
 };
 

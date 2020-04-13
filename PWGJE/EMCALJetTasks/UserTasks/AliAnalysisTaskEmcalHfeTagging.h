@@ -6,6 +6,7 @@ class TH2;
 class TH3;
 class TH3F;
 class TTree;
+class TList;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
@@ -70,7 +71,7 @@ public:
     void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
     void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
     void SetRMatching(Float_t f)                              { fRMatching = f ;}
-    void SetSelectShapes(Int_t c)                                {fSelectedShapes = c;}
+    void SetSelectShapes(Int_t c)                             {fSelectedShapes = c;}
     void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
     void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
     Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
@@ -84,6 +85,25 @@ public:
     void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth; }
     void SetDerivativeSubtractionOrder(Int_t c)               { fDerivSubtrOrder = c;}
     void SetMCweight(Int_t c)                                 { fMCweight = c;}
+    void SetAssPtCut(Double_t d)                              { fAssPtCut = d;}
+    void SetITSncut(Int_t c)                                  { fITSncut = c;}
+    void SetAssTPCnCut(Int_t c)                               { fAssTPCnCut = c;}
+    void SetTPCnCut(Int_t c)                                  { fTPCnCut = c;}
+    void SetSigmaTOFcut(Double_t d)                           { fSigmaTOFcut = d;}
+    void SetSigmaTPCcutLowPt(Double_t d)                      { fSigmaTPCcutLowPt = d;}
+    void SetSigmaTPCcutHighPt(Double_t d)                     { fSigmaTPCcutHighPt = d;}
+    void SetSigmTPCcutExcElec(Double_t d)                     { fSigmTPCcutExcElec = d;}
+    void SetDcaXYcut(Double_t d)                              { fDcaXYcut = d;}
+    void SetDcaZcut(Double_t d)                               { fDcaZcut = d;}
+    void SetIMcut(Double_t d)                                 { fIMcut = d;}
+    void SetEtaCut(Double_t d)                                { fEtaCut = d;}
+    void SetMinEoPcut(Double_t d)                             { fMinEoPcut = d;}
+    void SetMaxEoPcut(Double_t d)                             { fMaxEoPcut = d;}
+    void SetM20cut(Double_t d)                                { fM20cut = d;}
+    void SetMinPtTPC(Double_t d)                              { fMinPtTPC = d;}
+    void SetMaxPtTPC(Double_t d)                              { fMaxPtTPC = d;}
+    void SetMinPtEMCal(Double_t d)                            { fMinPtEMCal = d;}
+    void SetMaxPtEMCal(Double_t d)                            { fMaxPtEMCal = d;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -91,9 +111,9 @@ protected:
     Bool_t                              FillHistograms();
     
     void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
-    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec);
+    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec, Double_t &ptTrueHFElec);
     void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
-    Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
+    Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[],Int_t decay, Double_t weight);
     Bool_t                              IsFromHFdecay(AliAODMCParticle *particle);
     Bool_t                              IsFromLMdecay(AliAODMCParticle *particle);
     Bool_t                              IsPrimary(AliAODMCParticle *particle);
@@ -162,12 +182,21 @@ protected:
     Int_t                               fAssTPCnCut;             // TPC number of clusters for associated electron
     Int_t                               fTPCnCut;                // TPC number of clusters for tagged electron
     Bool_t                              fAssITSrefitCut;         // ITS refit for associated electron
-    Bool_t                              fUseTender;              // Use tender
     Double_t                            fSigmaTOFcut;            // sigma TOF cut |sigma_TOF|< cut
-    Double_t                            fSigmaTPCcut;            // sigma TPC cut - cut < sigma_TPC < 3
-    Double_t                            fDcaXYcut;               //DCA_xy cut
-    Double_t                            fDcaZcut;                //DCA_xy cut
-    Double_t                            fIMcut;                  //invariant mass cut
+    Double_t                            fSigmaTPCcutLowPt;       // sigma TPC cut for low pt electron identification
+    Double_t                            fSigmaTPCcutHighPt;      // sigma TPC cut for high pt electron identification
+    Double_t                            fSigmTPCcutExcElec;      // sigma TPC for exclusion of electron
+    Double_t                            fDcaXYcut;               // DCA_xy cut
+    Double_t                            fDcaZcut;                // DCA_xy cut
+    Double_t                            fIMcut;                  // invariant mass cut
+    Double_t                            fEtaCut;                 // eta cut of inclusive electrons
+    Double_t                            fMinEoPcut;              // minimum value of the E/p cut
+    Double_t                            fMaxEoPcut;              // maximum value of the E/p cut
+    Double_t                            fM20cut;                 // maximum value of the M20 cut
+    Double_t                            fMinPtTPC;               // minimum pt for the TPC analysis
+    Double_t                            fMaxPtTPC;               // maximum pt for the TPC analysis
+    Double_t                            fMinPtEMCal;             // minimum pt for the EMCal analysis
+    Double_t                            fMaxPtEMCal;             // maximum pt for the EMCal analysis
     
     TH1F                                *fNeventV0;
     TH1F                                *fNeventT0;
@@ -193,7 +222,6 @@ protected:
     TH2F                                *fnTPCcutP;
     TH2F                                *fnTPCcutPt;
     TH1F                                *fnTPCSigma[5][18];
-    TH2F                                *fnTPCTrueParticles[5][18];
     TH2F                                *fnULSmLSpairsPerElectron;
     TH2F                                *fInvmassLS[5];
     TH2F                                *fInvmassULS[5];
@@ -211,8 +239,14 @@ protected:
     TH1F                                *fEtaPtEnh;
     TH1F                                *fGenHfePt;
     TH1F                                *fGenPePt;
-    TH1F                                *fUlsLsElecPt[5];
-    TH1F                                *fTotElecPt[5];
+    TH1F                                *fRecPEAng[5][5];
+    TH1F                                *fTotPEAng[5][5];
+    TH1F                                *fRecPEDisp[5][6];
+    TH1F                                *fTotPEDisp[5][6];
+    TH1F                                *fULSptAng[5][5];
+    TH1F                                *fLSptAng[5][5];
+    TH1F                                *fULSptDisp[5][6];
+    TH1F                                *fLSptDisp[5][6];
     TH2F                                *fPtP;
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
@@ -220,8 +254,11 @@ protected:
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
     TH1F                                *fptTrueHFEeffTPCTOF[5];
+    TH3F                                *fptTrueHFEeffTPCTOFang[2];
+    TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
     TH1F                                *fptTrueHFEeffEMCal[5];
-    TH1F                                *fptWrongPE;
+    TH3F                                *fptTrueHFEeffEMCalang[2];
+    TH3F                                *fptTrueHFEeffEMCaldisp[2];
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;
@@ -235,13 +272,45 @@ protected:
     TH2F                                *fPhiTrueElec;
     TH2F                                *fEtaTrueElec;
     TH2F                                *fEtaPhiTrueElec;
+    TH2F                                *fnEovPelecNoTPCcut;
     TH2F                                *fnEovPelecTPCcut;
     TH2F                                *fnEovPelecTPCEMCalcut;
+    TH2F                                *fnEovPelecTPCsscut[5];
     TH2F                                *fnEovPbackg;
     TH2F                                *fnClsE;
     TH2F                                *fnM20;
     TH2F                                *fnM02;
     TH2F                                *fnClsTime;
+    TH2F                                *fAngULS;
+    TH2F                                *fAngLS;
+    TH2F                                *fAngChargPart;
+    TH2F                                *fAngHadron;
+    TH2F                                *fAngIncElec;
+    TH2F                                *fAngPhotElec;
+    TH2F                                *fAngElecFromD;
+    TH2F                                *fAngElecFromB;
+    TH2F                                *fAngElecFromDFromB;
+    TH2F                                *fAngD;
+    TH2F                                *fAngB;
+    TH2F                                *fAngCharm;
+    TH2F                                *fAngBeauty;
+    TH2F                                *fAngQuark;
+    TH2F                                *fAngGluon;
+    TH2F                                *fDispULS;
+    TH2F                                *fDispLS;
+    TH2F                                *fDispChargPart;
+    TH2F                                *fDispHadron;
+    TH2F                                *fDispIncElec;
+    TH2F                                *fDispPhotElec;
+    TH2F                                *fDispElecFromD;
+    TH2F                                *fDispElecFromB;
+    TH2F                                *fDispElecFromDFromB;
+    TH2F                                *fDispD;
+    TH2F                                *fDispB;
+    TH2F                                *fDispCharm;
+    TH2F                                *fDispBeauty;
+    TH2F                                *fDispQuark;
+    TH2F                                *fDispGluon;
     TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
 private:

@@ -1,4 +1,6 @@
-/**************************************************************************
+
+ /*************************************************************************
+
  * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -23,9 +25,9 @@
 #include "TFile.h"
 #include "TSystem.h"
 #include "TTree.h"
-#include <TRandom3.h>
+#include "TChain.h"
+#include "TRandom3.h"
 #include "TGeoGlobalMagField.h"
-#include "AliAnalysisPseudoRapidityDensity.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliGenEventHeader.h"
@@ -38,8 +40,11 @@
 #include "AliPWG0Helper.h"
 #include "AliMultSelection.h"
 #include "AliESDtrack.h"
-#include "AliGenPythiaPlus.h"
+///#include "AliGenPythiaPlus.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliITSRecPoint.h"
+#include "AliITSgeomTGeo.h"
+#include "AliITSMultReconstructor.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -49,59 +54,15 @@
 #include "AliGRPObject.h"
 #include "AliMultiplicity.h"
 #include "AliVVZERO.h"
+#include "AliAnalysisPseudoRapidityDensity.h"
 const Double_t        pi = TMath::Pi();
-const Int_t kNstable=20;
-const Int_t pdgStable[20] = {
-	22,             // Photon
-	11,             // Electron
-	12,             // Electron Neutrino
-	13,             // Muon
-	14,             // Muon Neutrino
-	15,             // Tau
-	16,             // Tau Neutrino
-	211,            // Pion
-	321,            // Kaon
-	311,            // K0
-	130,            // K0s
-	310,            // K0l
-	2212,           // Proton
-	2112,           // Neutron
-	3122,           // Lambda_0
-	3112,           // Sigma Minus
-	3222,           // Sigma Plus
-	3312,           // Xsi Minus
-	3322,           // Xsi0
-	3334            // Omega
-};
-
-AliAnalysisPseudoRapidityDensityRunTable::AliAnalysisPseudoRapidityDensityRunTable() :
-	fCollisionType(kUnknownCollType)
-{;}
-
-AliAnalysisPseudoRapidityDensityRunTable::AliAnalysisPseudoRapidityDensityRunTable(Int_t runnumber)
-{
-	if (runnumber>=114737 && runnumber<=130850) fCollisionType = kPP; //LHC10bcde
-	else if (runnumber>=144871 && runnumber<=146860) fCollisionType=kPP;//LHC11a
-	else if (runnumber>=136851 && runnumber<=139517) fCollisionType=kAA;//LHC10h
-	else if (runnumber>=167813 && runnumber<=170595) fCollisionType=kAA;//LHC11h
-	else if (runnumber>=188356 && runnumber<=188503) fCollisionType=kPA;//LHC12g
-	else if (runnumber>=189122 && runnumber<=192732) fCollisionType=kPA;//LHC12h
-	else if (runnumber>=195344 && runnumber<=195483) fCollisionType=kPA;//LHC13b
-	else if (runnumber>=195529 && runnumber<=195677) fCollisionType=kPA;//LHC13c
-	else if (runnumber>=195724 && runnumber<=195872) fCollisionType=kPA;//LHC13d
-	else if (runnumber>=195955 && runnumber<=195872) fCollisionType=kPA;//LHC13e
-	else if (runnumber>=197669 && runnumber<=200000) fCollisionType=kPA;//LHC13g
-	else if (runnumber>=244340 && runnumber<=244628) fCollisionType=kPP;//LHC15n
-	else fCollisionType=kUnknownCollType;
-}
-AliAnalysisPseudoRapidityDensityRunTable::~AliAnalysisPseudoRapidityDensityRunTable()
-{;}
-
-//___________________________________________________________________
+//_________________________________________________________________
 AliAnalysisPseudoRapidityDensity::AliAnalysisPseudoRapidityDensity()
 	:AliAnalysisTaskSE("AliAnalysisPseudoRapidityDensity")
 	 , fOption()
 {
+	DefineInput(0, TChain::Class());
+	//DefineOutput (0, TTree::Class());
 	DefineOutput (1, TList::Class());
 }
 //___________________________________________________________________
@@ -113,18 +74,20 @@ AliAnalysisPseudoRapidityDensity::AliAnalysisPseudoRapidityDensity
 	:AliAnalysisTaskSE(name)
 	 , fOption(option)
 {
-	DefineOutput (1, TList::Class());
+	DefineInput(0, TChain::Class());
+	//DefineOutput(1, TTree::Class());
+  DefineOutput (1, TList::Class());
 }
 //___________________________________________________________________
-	AliAnalysisPseudoRapidityDensity::AliAnalysisPseudoRapidityDensity
+AliAnalysisPseudoRapidityDensity::AliAnalysisPseudoRapidityDensity
 (
  const AliAnalysisPseudoRapidityDensity& ap
- )
+)
 : fOption(ap.fOption)
 {
 }
 //___________________________________________________________________
-	AliAnalysisPseudoRapidityDensity& AliAnalysisPseudoRapidityDensity::operator =
+AliAnalysisPseudoRapidityDensity& AliAnalysisPseudoRapidityDensity::operator =
 (
  const AliAnalysisPseudoRapidityDensity& ap
  )
@@ -139,10 +102,8 @@ AliAnalysisPseudoRapidityDensity::AliAnalysisPseudoRapidityDensity
 AliAnalysisPseudoRapidityDensity::~AliAnalysisPseudoRapidityDensity()
 {
 	//delete fHistos;
-	//delete fOutput;
 	delete fTrigger;
 	delete fPIDResponse;
-	delete fRunTable;
 	delete fRandom;
 }
 
@@ -153,8 +114,6 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	fRandom = new TRandom3;
 	fRandom->SetSeed();
 	// Histograms container
-	fOutput = new TList();
-	fOutput->SetOwner(kTRUE);
 
 	// Offline triggers -----------------------------------------------------
 	fTrigger = new AliTriggerAnalysis; // offline trigger
@@ -247,7 +206,7 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	fHistos = new THistManager("dndeta");
 
 	//auto binType = AxisStr("Type",{"PN","PP","NN","Mixing"});
-	Double1D varcentbin = {0,0.001,0.01,0.1,0.5,1,5,10,15,20,30,40,50,70,100};
+	Double1D varcentbin = {0,0.001,0.01,0.05,0.1,0.5,1,5,10,15,20,30,40,50,70,100};
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 	//for (auto i=1; i<=100; i++) varcentbin.push_back(i);
 	auto binCent = AxisVar("Cent", IsAA ? varcentbinHeavy : varcentbin);
@@ -257,7 +216,7 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	auto binCentClass = AxisStr("CentClass"
 		,{"V0M","V0A","V0C","SPDMult"});
 	auto binEventClass   = AxisStr( "EventClass", { "DATA", "INEL","NSD","INELg0" } );
-	auto binTriggClass  = AxisStr("TriggClass",{"MBOR","MBAND","MBORg0","MBANDg0"});
+	auto binTriggClass  = AxisStr("TriggClass",{"MBOR","MBAND","MBORg0","MBANDg0","HighMult","HighMultg0"});
 	auto binParType = AxisStr("ParticleType"
 			,{"Tracks","MotherStrange","Bkg","Pion","Kaon","Proton","Opar"});
 	auto binV0Type = AxisStr("V0Type",{"K0s","Lambda","AntiLambda"});
@@ -277,6 +236,7 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 
 	std::vector<TString> ent ={"All","PS","PSpileup","Goodz","Goodzcut","INEL015","INEL050","INEL100", "INEL200", "Goodzcut7", "INELg010", "MBANDg010","INELg0","PSINELg0", "MBANDg0"};
 	auto h = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
+	fHistos->CreateTH1("quickcheck","",10, 0, 10);
 	for(auto i=0u;i<ent.size();i++) h->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
 	fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
 	fHistos -> CreateTH2("hPhiEtaCut","",180,0,2*pi,40,-2,2);
@@ -317,6 +277,8 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	fHistos -> CreateTH1("hINT7g0Nch","hINT7g0Nch",300,0,300);
 	fHistos -> CreateTH1("hEtTruth","hEtTruth",100,0,100,"s");
 	fHistos -> CreateTH1("hEtMCrec","hEtMCrec",100,0,100,"s");
+	fHistos -> CreateTH2("hMultResponseV0M","hMultResponseV0M", 200,0,200,800,0,800,"s");
+	fHistos -> CreateTH2("hMultResponseSPD","hMultResponseSPD", 200,0,200,200,0,200,"s");
 
 
 	const int nbins=100;
@@ -356,82 +318,18 @@ void AliAnalysisPseudoRapidityDensity::UserCreateOutputObjects()
 	CreateTHnSparse( "hcentGeo","",2,{binCentClass,binCent},"s");
 
 	CreateTHnSparse( "hMult","",2,{binCentClass,AxisFix("Mult",20000,0,2000)},"s");
+	CreateTHnSparse( "hMultHigh","",2,{binCentClass,AxisFix("Mult",20000,0,2000)},"s");
+	
+	CreateTHnSparse( "hMultcent","",3,{binCentClass,binCent,AxisFix("Multcent",20000,0,2000)},"s");
+	CreateTHnSparse( "hMultHighcent","",3,{binCentClass,binCent,AxisFix("highMultcent",20000,0,2000)},"s");
+
 	CreateTHnSparse( "hdNdEtaCent","",3,{binCent,binEta,binCentClass},"s");
 	CreateTHnSparse( "hcent","",2,{binCentClass,binCent},"s");
 
 	CreateTHnSparse("hPhiEtaTracks","",3,{binPtVar
 		,AxisFix("phi",180,0,2*pi),AxisFix("eta",40,-2,2)},"s");
 
-	Double_t xAxis1[26] = {0.01, 0.0154155, 0.0237639, 0.0366333, 0.0564723, 0.0870551, 0.1342, 0.206877, 0.318912, 0.49162, 0.757858, 1.16828, 1.80097, 2.77629, 4.2798, 6.59754, 10.1705, 15.6783, 24.169, 37.2578, 57.4349, 88.539, 136.488, 210.403, 324.348, 500};
 
-	if (fOption.Contains("PYTHIA6")){
-		hdifftuneratio = new TH1D("hdifftuneratio","",25, xAxis1);
-		hdifftuneratio->SetBinContent(12,3.75884);
-		hdifftuneratio->SetBinContent(13,3.19997);
-		hdifftuneratio->SetBinContent(14,2.93173);
-		hdifftuneratio->SetBinContent(15,2.66324);
-		hdifftuneratio->SetBinContent(16,2.2945);
-		hdifftuneratio->SetBinContent(17,1.91926);
-		hdifftuneratio->SetBinContent(18,1.5899);
-		hdifftuneratio->SetBinContent(19,1.34478);
-		hdifftuneratio->SetBinContent(20,1.13256);
-		hdifftuneratio->SetBinContent(21,0.987541);
-		hdifftuneratio->SetBinContent(22,0.912429);
-		hdifftuneratio->SetBinContent(23,0.729638);
-		hdifftuneratio->SetBinContent(26,0.0203626);
-		hdifftuneratio->SetBinError(11,173.644);
-		hdifftuneratio->SetBinError(12,0.00989536);
-		hdifftuneratio->SetBinError(13,0.00704105);
-		hdifftuneratio->SetBinError(14,0.00573786);
-		hdifftuneratio->SetBinError(15,0.00494753);
-		hdifftuneratio->SetBinError(16,0.00406385);
-		hdifftuneratio->SetBinError(17,0.00322783);
-		hdifftuneratio->SetBinError(18,0.0025506);
-		hdifftuneratio->SetBinError(19,0.00206955);
-		hdifftuneratio->SetBinError(20,0.0016738);
-		hdifftuneratio->SetBinError(21,0.0014007);
-		hdifftuneratio->SetBinError(22,0.00123304);
-		hdifftuneratio->SetBinError(23,0.000986329);
-		hdifftuneratio->SetBinError(26,5.42782e-05);
-		hdifftuneratio->SetMinimum(-0.160721);
-		hdifftuneratio->SetMaximum(36.0701);
-		hdifftuneratio->SetEntries(68.1313);}
-	else if (fOption.Contains("PYTHIA8")){
-		hdifftuneratio = new TH1D("hdifftuneratio","",25, xAxis1);
-		hdifftuneratio->SetBinContent(11,1.21413);
-		hdifftuneratio->SetBinContent(12,16.9543);
-		hdifftuneratio->SetBinContent(13,4.21842);
-		hdifftuneratio->SetBinContent(14,4.94138);
-		hdifftuneratio->SetBinContent(15,4.01304);
-		hdifftuneratio->SetBinContent(16,3.20129);
-		hdifftuneratio->SetBinContent(17,2.42212);
-		hdifftuneratio->SetBinContent(18,1.8025);
-		hdifftuneratio->SetBinContent(19,1.40067);
-		hdifftuneratio->SetBinContent(20,1.14064);
-		hdifftuneratio->SetBinContent(21,0.974218);
-		hdifftuneratio->SetBinContent(22,0.869326);
-		hdifftuneratio->SetBinContent(23,0.679536);
-		hdifftuneratio->SetBinContent(26,0.0139975);
-		hdifftuneratio->SetBinError(11,0.00649603);
-		hdifftuneratio->SetBinError(12,0.0729388);
-		hdifftuneratio->SetBinError(13,0.00930043);
-		hdifftuneratio->SetBinError(14,0.0105048);
-		hdifftuneratio->SetBinError(15,0.00778622);
-		hdifftuneratio->SetBinError(16,0.00577356);
-		hdifftuneratio->SetBinError(17,0.00403399);
-		hdifftuneratio->SetBinError(18,0.00279703);
-		hdifftuneratio->SetBinError(19,0.00205687);
-		hdifftuneratio->SetBinError(20,0.00160695);
-		hdifftuneratio->SetBinError(21,0.00131848);
-		hdifftuneratio->SetBinError(22,0.00111824);
-		hdifftuneratio->SetBinError(23,0.000878433);
-		hdifftuneratio->SetBinError(26,3.72086e-05);
-		hdifftuneratio->SetMinimum(0.0001);
-		hdifftuneratio->SetMaximum(1);
-		hdifftuneratio->SetEntries(337781);
-		hdifftuneratio->SetStats(0);
-	}
-	fOutput -> Add(fHistos);
 	PostData(1, fHistos->GetListOfHistograms());
 	//PID Combined
 	fPIDCombined = new AliPIDCombined;
@@ -474,7 +372,6 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 
 	if( IsFirstEvent ) {
 		runnumber = fEvt->GetRunNumber();
-		fRunTable = new AliAnalysisPseudoRapidityDensityRunTable(runnumber);
 		IsFirstEvent = false;
 	}
 
@@ -484,45 +381,41 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 	// centrality
 	Double1D fcent(kCentClassBinEnd,-1);
 	fCent = fcent;
-	if (0){
-		AliCentrality *cent = event->GetCentrality();
-		if( ! cent ) return;
-		fCent[kV0M] = cent->GetCentralityPercentile("V0M");
-		fCent[kV0A] = cent->GetCentralityPercentile("V0A");
-		fCent[kV0C] = cent->GetCentralityPercentile("V0C");
-	} else {
-		//Make sure naming convention is followed!
-		sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
-    //if ( sel->GetEvSelCode() <= 0 ) return;
-		//if (! sel ->	GetThisEventPassesTrackletVsCluster() && !fOption.Contains("MC")) return;
-		//sel->SetThisEventIsNotAsymmetricInVZERO(true);
+	sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
+	//if ( sel->GetEvSelCode() <= 0 ) return;
+	//if (! sel ->	GetThisEventPassesTrackletVsCluster() && !fOption.Contains("MC")) return;
+	//sel->SetThisEventIsNotAsymmetricInVZERO(true);
 
-		if (sel) {
-			fCent[kV0M] = sel->GetMultiplicityPercentile("V0M");
-			fCent[kV0A] = sel->GetMultiplicityPercentile("V0A");
-			fCent[kV0C] = sel->GetMultiplicityPercentile("V0C");
-			fCent[kSPDMult] = sel->GetMultiplicityPercentile("SPDTracklets");
+	if (sel) {
+		fCent[kV0M] = sel->GetMultiplicityPercentile("V0M");
+		fCent[kV0A] = sel->GetMultiplicityPercentile("V0A");
+		fCent[kV0C] = sel->GetMultiplicityPercentile("V0C");
+		fCent[kSPDMult] = sel->GetMultiplicityPercentile("SPDTracklets");
 
-		}
-		if(! sel->IsEventSelected() && !fOption.Contains("MC") && !fOption.Contains("LHC10d")) {
-			fCent[kV0M] = sel->GetEvSelCode();
-			fCent[kV0A] = sel->GetEvSelCode();
-			fCent[kV0C] = sel->GetEvSelCode();
-			fCent[kSPDMult] = sel->GetEvSelCode();
-		} 
-	  	 
-		if(!fOption.Contains("MC") && fOption.Contains("LHC10d")) {
-			if ( !sel->GetThisEventIsNotPileup() 
+	}
+	//if(! sel->IsEventSelected() && !fOption.Contains("MC") && !fOption.Contains("LHC10d")) {
+	//	fCent[kV0M] = sel->GetEvSelCode();
+	//	fCent[kV0A] = sel->GetEvSelCode();
+	//	fCent[kV0C] = sel->GetEvSelCode();
+	//	fCent[kSPDMult] = sel->GetEvSelCode();
+	//} 
+
+	if(!fOption.Contains("MC") ) {
+		fHistos -> FillTH1("quickcheck",1);
+		if ( sel->GetThisEventIsNotPileup()) fHistos -> FillTH1("quickcheck",2); 
+		if ( sel->GetThisEventIsNotPileupInMultBins()) fHistos -> FillTH1("quickcheck",3); 
+		if ( sel->GetThisEventHasNoInconsistentVertices()) fHistos -> FillTH1("quickcheck",4); 
+		if ( sel->GetThisEventPassesTrackletVsCluster()) fHistos -> FillTH1("quickcheck",5); 
+		if ( !sel->GetThisEventIsNotPileup() 
 				|| !sel->GetThisEventIsNotPileupInMultBins()
 				|| !sel->GetThisEventHasNoInconsistentVertices()
-        || !sel->GetThisEventPassesTrackletVsCluster() 
+				|| !sel->GetThisEventPassesTrackletVsCluster() 
 
-			){
+			 ){
 			fCent[kV0M] = -1;
 			fCent[kV0A] = -1;
 			fCent[kV0C] = -1;
 			fCent[kSPDMult] = -1;;
-			}
 		}
 	}
 
@@ -543,6 +436,8 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 	Bool_t issd = 0;
 	Bool_t isdd = 0;
 	Int_t Nch_INELg0_eta1 = 0;
+	Double_t nv0mgeo = 0;
+	Double_t nspdgeo = 0;
 	if (mcEvent) {
 		ismc = true;
 		pythiaGenHeader =
@@ -602,6 +497,8 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 			if (abs(eta)<1) Nch_INELg0_eta1++;
 			fHistos->FillTH1("hdndetamc",eta);
 			fHistos->FillTH1("hkinept",pt,1./pt);
+			if (abs(eta)<2) nspdgeo++;
+			if ( (eta >-3.7 && eta< -1.7) || ( eta >2.8 && eta<5.1 )) nv0mgeo++;
 		}
 		Double1D geocent(kCentClassBinEnd,-1);
 		if ( abs(vtxMC3d[2])<10 && bevtc [kINELg0]) fHistos ->FillTH1("hEtTruth",fCent[kV0M]);
@@ -622,25 +519,22 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 	fHistos -> FillTH1("hEventNumbers","All",1);
 	Bool_1d btrigc(kTrigend,false);
 
-	IsMinimumBias = inputHandler -> IsEventSelected() & AliVEvent::kMB;
+	IsMinimumBias = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
+	btrigc[kMBAND] = IsMinimumBias;
+	btrigc[kMBOR] = false; //let's regard CINT7 as a minimum bias trigger.
+	if (!fOption.Contains("MC"))
+		btrigc[kHighMult] = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
+	else btrigc[kHighMult] = IsMinimumBias; 
 
-	if (fOption.Contains("LHC10d")){
+
+	if (fOption.Contains("LHC10")){ 
+		IsMinimumBias = inputHandler -> IsEventSelected() & AliVEvent::kMB;
 		btrigc[kMBOR] = IsMinimumBias;
 		btrigc[kMBAND] = IsMinimumBias
 			&& fTrigger->IsOfflineTriggerFired(fEvt,AliTriggerAnalysis::kV0A) 
 			&& fTrigger->IsOfflineTriggerFired(fEvt,AliTriggerAnalysis::kV0C);
 	}
-	else {
-		IsMinimumBias = inputHandler -> IsEventSelected() & AliVEvent::kINT7;
-		btrigc[kMBAND] = IsMinimumBias;
-		btrigc[kMBOR] = false; //let's regard CINT7 as a minimum bias trigger.
-	}
 
-	if (fOption.Contains("HighMult")) {
-		IsMinimumBias = inputHandler -> IsEventSelected() & AliVEvent::kHighMultV0;
-		btrigc[kMBAND] = IsMinimumBias;
-		btrigc[kMBOR] = false; //let's regard CINT7 as a minimum bias trigger.
-	}
 
 
 	if (IsMinimumBias)  fHistos -> FillTH1("hEventNumbers","PS",1);
@@ -674,9 +568,8 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 
 
 	if (sel && !sel -> GetThisEventHasNoInconsistentVertices()) IsGoodVertex = false;
-	if (sel && !sel -> GetThisEventHasGoodVertex2016 ()) IsGoodVertex = false;
+	if (sel && !sel -> GetThisEventHasGoodVertex2016 () && !fOption.Contains("LHC10d")) IsGoodVertex = false;
 	
-
 	if (IsMinimumBias && IsGoodVertex) fHistos -> FillTH1("hEventNumbers","Goodz",1);
 	if (IsGoodVertex) fHistos -> FillTH1("zdata",vtxf[2]);
 
@@ -690,7 +583,7 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 
 
 
-	if (IsMinimumBias && IsGoodVertexCut){
+	if (IsGoodVertexCut){
 		fMultiplicity = fEvt -> GetMultiplicity();
 		Double_t eta,pt;
 		Double1D  mul (kCentClassBinEnd,0);
@@ -701,14 +594,19 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 			Double_t phi = fMultiplicity->GetPhi(it);
 			if ( abs(eta) < 1.0 && btrigc[ kMBOR ]) btrigc[ kMBORg0 ] = true;
 			if ( abs(eta) < 1.0 && btrigc[ kMBAND ]) btrigc[ kMBANDg0 ] = true;
+			if ( abs(eta) < 1.0 && btrigc[ kHighMult ]) btrigc[ kHighMultg0 ] = true;
 			if ( abs(eta) < 1.0 ) ntrks_int7g0++;
 			mul.at(kSPDMult)++;
 
 		}
+		//if ( abs(fZ)<10 && btrigc [kMBANDg0] &&  abs(vtxMC3d[2])<10 && bevtc [kINELg0]) fHistos ->FillTH1("hEtMCrec",fCent[kV0M]);
+		
+		//if (btrigc[kMBANDg0] && bevtc[kINELg0] && fOption.Contains("MC") )			fHistos -> FillTH1("hEventNumbers","MBANDg0",1);
 		if (btrigc[kMBANDg0] && abs(fZ) < 10 && bevtc[kINELg0] && fOption.Contains("MC") && bevtc[kINELg0] && abs(vtxMC3d[2])<10) {
 			fHistos -> FillTH1("hEventNumbers","MBANDg010",1);
 			fHistos -> FillTH1("hINT7g0Nch", ntrks_int7g0, 1);
 		}
+		//mul.at(kSPDMult) = fTrackCuts.at(0).GetReferenceMultiplicity((AliESDEvent*)fEvt,  AliESDtrackCuts::kTrackletsITSTPC,2);
 
 		Double_t intensity=0, intensityA=0, intensityC=0;
 		AliVVZERO* lVV0 = fEvt->GetVZEROData();
@@ -722,19 +620,36 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 		mul.at(kV0C)  = intensityC;
 		Bool_t isfilling = false;
 		for (auto i= 0u; i<kCentClassBinEnd; i++){
-			Double_t rand = fRandom->Uniform(0,100);
-			if (fabs(fZ)<10 && btrigc[kMBANDg0] && IsGoodVertex && sel->GetThisEventIsNotPileupInMultBins()){
+			Double_t rand = fRandom->Uniform(0,10);
+			if (fabs(fZ)<10 && btrigc[kMBAND] && IsGoodVertex 
+				&& sel->GetThisEventIsNotPileupInMultBins()
+				&& sel->GetThisEventIsNotPileup() 
+			  && sel->GetThisEventHasNoInconsistentVertices()
+				&& sel->GetThisEventPassesTrackletVsCluster() ){
 				if (i<=kV0C) FillTHnSparse("hMult",{double(i),mul.at(i)});
-				else FillTHnSparse("hMult",{double(i),mul.at(i)+rand*0.01});
+				else FillTHnSparse("hMult",{double(i),mul.at(i)+rand*0.1});
+				if (i == kV0M) fHistos-> FillTH2( "hMultResponseV0M", nv0mgeo, mul.at(i)  );
+				if (i == kSPDMult) fHistos-> FillTH2( "hMultResponseSPD", nspdgeo, mul.at(i)  );
+				FillTHnSparse("hMultcent",{double(i),fCent.at(i),mul.at(i)});
+				//else FillTHnSparse("hMult",{double(i),mul.at(i)+rand*0.01});
 			}
 
-			//if (fOption.Contains("LHC10d") || fOption.Contains("LHC12h")){
-			if (0){
+			if (fabs(fZ)<10 && btrigc[kHighMultg0] && IsGoodVertex && sel->GetThisEventIsNotPileupInMultBins()){
+				if (i<=kV0C) FillTHnSparse("hMultHigh",{double(i),mul.at(i)});
+				FillTHnSparse("hMultHighcent",{double(i),fCent.at(i),mul.at(i)});
+				//else FillTHnSparse("hMult",{double(i),mul.at(i)+rand*0.01});
+			}
+			
+
+			if (fOption.Contains("LHC10d") || fOption.Contains("LHC12h")){
 				if (i<=kV0C) fCent.at(i) = fMult[i].Integral(fMult[i].GetXaxis()->FindBin(mul.at(i)),fMult[i].GetNbinsX())*100.;
-				else fCent.at(i) = fMult[i].Integral(fMult[i].GetXaxis()->FindBin(mul.at(i)+rand*0.01),fMult[i].GetNbinsX())*100.;
+				else fCent.at(i) = fMult[i].Integral(fMult[i].GetXaxis()->FindBin(mul.at(i)+rand*0.1),fMult[i].GetNbinsX())*100.;
 				     //fCent.at(i) = fMult[i].Integral(fMult[i].GetXaxis()->FindBin(mul.at(i)),fMult[i].GetNbinsX())*100.;
 						//else fCent.at(i) = fMult[i].Integral(fMult[i].GetXaxis()->FindBin(mul.at(i)+rand*0.01),fMult[i].GetNbinsX())*100.;
 				if (!sel->GetThisEventIsNotPileupInMultBins() && !fOption.Contains("MC")) fCent.at(i) = -1;
+				if (!sel->GetThisEventIsNotPileup() && !fOption.Contains("MC")) fCent.at(i) = -1;
+				if (!sel->GetThisEventHasNoInconsistentVertices() && !fOption.Contains("MC")) fCent.at(i) = -1;
+				if (!sel->GetThisEventPassesTrackletVsCluster() && !fOption.Contains("MC")) fCent.at(i) = -1; 
 				FillTHnSparse("hcent",{ double(i),fCent.at(i) });
 			}
 		}
@@ -770,7 +685,7 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 		this -> StrangenessMeasure(btrigc);
 	}
 
-	if (IsMinimumBias ){
+	//if (IsMinimumBias ){
 		for (auto itrigc=1u ; itrigc<kTrigend; itrigc++){
 			if (btrigc[itrigc]){
 				for (auto icentc = UInt_t(kCentClassBinBegin); icentc <kCentClassBinEnd; icentc++){
@@ -778,7 +693,7 @@ void AliAnalysisPseudoRapidityDensity::UserExec(Option_t* )
 				}
 			}
 		}
-	}
+	//}
 
 	if (mcEvent) {
 		for (auto ievtc=1u ; ievtc<kECend; ievtc++) {
@@ -866,7 +781,7 @@ void AliAnalysisPseudoRapidityDensity::FillTracklets(Bool_1d bevtc, Bool_1d btri
 		fHistos -> FillTH1 ("hchi2",chi2);
 		if (chi2>1.6) continue ;
 
-		Int_t pid;
+		Int_t pid = 0;
 
 		if (ismc && isbginjection) {
 			pid = kBkg;
@@ -961,18 +876,19 @@ void AliAnalysisPseudoRapidityDensity::FillTracklets(Bool_1d bevtc, Bool_1d btri
 	}
 }
 
-
+//refered from analysis2AliAODForwardMult.cxx
+//refered from analysis2/AliForwardMultiplicityTask.cxx
 
 
 //___________________________________________________________________
-void AliAnalysisPseudoRapidityDensity::FinishTaskOutput()
-{
+//void AliAnalysisPseudoRapidityDensity::FinishTaskOutput()
+//{
 	//OpenFile(1);
 	//TH1D *fForward1d = (TH1D*)fForward2d->ProjectionX("_x",1,-1,"e");
 	//TH1D* norm   = fForward2d->ProjectionX("norm", 0, 1, "");
 	//fForward1d -> Divide(norm);
 	//fForward1d -> Write();
-}
+//}
 //___________________________________________________________________
 void AliAnalysisPseudoRapidityDensity::Terminate(Option_t*)
 {
@@ -1038,6 +954,7 @@ void AliAnalysisPseudoRapidityDensity::StrangenessMeasure( Bool_1d btrigc){
 
 		// Remove like-sign
 		if ( pTrack->GetSign() == nTrack->GetSign()){
+			//cout<< "like sign, continue"<< endl;
 			continue;
 		}
 		// Tracks quality cuts

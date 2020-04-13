@@ -19,14 +19,16 @@
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "TObjArray.h"
+#include "AliTimeRangeCut.h"
 
 class AliAODTrack;
 class AliAODRecoDecayHF;
 class AliESDVertex;
 class TF1;
 class TFormula;
+class AliEventCuts;
 
-class AliRDHFCuts : public AliAnalysisCuts 
+class AliRDHFCuts : public AliAnalysisCuts
 {
  public:
 
@@ -34,13 +36,13 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality,kBadTrackVertex,kBadCentrEstimCorrel,kBadTimeRange};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
-  
+
   virtual ~AliRDHFCuts();
-  
+
   AliRDHFCuts(const AliRDHFCuts& source);
   AliRDHFCuts& operator=(const AliRDHFCuts& source);
 
@@ -52,15 +54,16 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;}
   void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;}
   void SetMultSelectionObjectName(TString str){fMultSelectionObjectName=str;}
-  void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
-  void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
+  void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}
+  void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){
     if(flag) fMinVtxType=1;
     else fMinVtxType=3;
   }
-  void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
-  void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
-  void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
-  void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
+  void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}
+  void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}
+  void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}
+  void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}
+  void SetMinContribPileupMV(Int_t contr=5) {fMinContrPileupMV=contr;}
   void SetMaxVtxChi2PileupMV(Float_t chi2=5.) {fMaxVtxChi2PileupMV=chi2;}
   void SetMinWeightedDzVtxPileupMV(Float_t min=15.) {fMinWDzPileupMV=min;}
   void SetRejectPlpFromDifferentBCMV(Bool_t ok=kTRUE) {fRejectPlpFromDiffBCMV=ok;}
@@ -114,7 +117,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void ResetMaskAndEnableEMCALTrigger(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
-  } 
+  }
   void SetUseEMCALTriggerExclusively(){
     fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
@@ -195,22 +198,30 @@ class AliRDHFCuts : public AliAnalysisCuts
     if(opt>=0 && opt<=3) fCutOnzVertexSPD=opt;
     else AliError("Wrong option for cut on zVertexSPD");
   }
-  void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
+
+  void SetUseCentralityCorrelationCuts(Bool_t opt){fApplyCentralityCorrCuts=opt;}
+  void SetUsePbPbOutOfBunchPileupCut(Int_t opt){fApplyPbPbOutOfBunchPileupCuts=opt;}
+  void SetUseAliEventCuts(){fUseAliEventCuts=kTRUE;}
+  void SetUseTimeRangeCutForPbPb2018(Bool_t opt){fUseTimeRangeCutForPbPb2018=opt;}
+  AliEventCuts* GetAliEventCuts() const { return fAliEventCuts;}
+
+  void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;}
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
   void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
+  void ApplySPDUniformAccPbPbRun2(){fApplySPDUniformAccPbPbRun2=kTRUE;}
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
   void SetGlobalIndex(Int_t nVars,Int_t nptBins){fnVars=nVars; fnPtBins=nptBins; SetGlobalIndex();}
-  void SetVarNames(Int_t nVars,TString *varNames,Bool_t *isUpperCut);  
+  void SetVarNames(Int_t nVars,TString *varNames,Bool_t *isUpperCut);
   void SetPtBins(Int_t nPtBinLimits,Float_t *ptBinLimits);
   void SetCuts(Int_t nVars,Int_t nPtBins,Float_t** cutsRD);
   void SetCuts(Int_t glIndex, Float_t* cutsRDGlob);
-  void AddTrackCuts(const AliESDtrackCuts *cuts) 
+  void AddTrackCuts(const AliESDtrackCuts *cuts)
           {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
   void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
   void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
-  void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){ 
+  void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){
     fUseTrackSelectionWithFilterBits=flag; return;}
   void SetUseCentrality(Int_t flag=1);    /// see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
@@ -225,13 +236,17 @@ class AliRDHFCuts : public AliAnalysisCuts
     /// see enum below
     fOptPileup=opt;
     if (fOptPileup==kRejectMVPileupEvent) {
-      fMinContrPileup=5.;
+      fMinContrPileupMV=5.;
       fMaxVtxChi2PileupMV=5.;
       fMinWDzPileupMV=15.;
       fRejectPlpFromDiffBCMV=kFALSE;
     }
   }
-  void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
+  void ConfigurePileupCuts(Int_t /*minContrib=3*/, Float_t /*minDz=0.6*/){
+    AliError("Obsolete method, call ConfigureSPDPileupCuts or the setters for MV pileup");
+    return;
+  }
+  void ConfigureSPDPileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
     fMinDzPileup=minDz;
   }
@@ -243,19 +258,20 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCrossedRowsTPCPtDep(const char *rows="");
   void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
   void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
+  void SetMinNumTPCClsForPID(Int_t cut=0.) {fCutTPCSignalN = cut;}
   void SetUseTPCtrackCutsOnThisDaughter(Bool_t flag=kTRUE) {fUseTPCtrackCutsOnThisDaughter=flag;}
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
   Int_t   GetNPtBins() const {return fnPtBins;}
-  Int_t   GetNVars() const {return fnVars;} 
-  TString *GetVarNames() const {return fVarNames;} 
-  Bool_t  *GetVarsForOpt() const {return fVarsForOpt;} 
+  Int_t   GetNVars() const {return fnVars;}
+  TString *GetVarNames() const {return fVarNames;}
+  Bool_t  *GetVarsForOpt() const {return fVarsForOpt;}
   Int_t   GetNVarsForOpt() const {return fnVarsForOpt;}
-  const Float_t *GetCuts() const {return fCutsRD;} 
+  const Float_t *GetCuts() const {return fCutsRD;}
   void    GetCuts(Float_t**& cutsRD) const;
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
-  Double_t GetMaxVtxZ() const {return fMaxVtxZ;}  
+  Double_t GetMaxVtxZ() const {return fMaxVtxZ;}
   Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFCuts::ECentrality)fUseCentrality);}
   Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator);
   Float_t GetCentralityOldFramework(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator);
@@ -289,13 +305,17 @@ class AliRDHFCuts : public AliAnalysisCuts
   const char* GetMinCrossedRowsTPCPtDep() const {return fCutMinCrossedRowsTPCPtDep;}
   Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
+  Int_t GetMinNumTPCClsForPID() const {return fCutTPCSignalN;}
   Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
+  Bool_t GetUseTimeRangeCutForPbPb2018() const {return fUseTimeRangeCutForPbPb2018;}
+
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
-  virtual Int_t PreSelect(TObjArray aodtracks){return 3;}
+  virtual Int_t PreSelect(TObjArray /*aodtracks*/){return 3;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
+  Bool_t IsEventSelectedWithAliEventCuts(AliVEvent *event);
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd, const AliAODEvent* aod=0x0) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts, const AliAODEvent* aod=0x0) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
@@ -307,7 +327,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) = 0;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* /*aod*/)
                 {return IsSelected(obj,selectionLevel);}
-  Int_t PtBin(Double_t pt) const;
+  Int_t PtBin(Float_t pt) const {
+    if(pt<fPtBinLimits[0]) return -1;
+    for (Int_t i=0;i<fnPtBins;i++) if(pt<fPtBinLimits[i+1]) return i;
+    return -1;
+  }
   virtual void PrintAll()const;
   void PrintTrigger() const;
 
@@ -343,6 +367,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToTRKV0CentralityCorrel() const {
     return fEvRejectionBits&(1<<kBadTrackV0Correl);
   }
+  Bool_t IsEventRejectedDueToCentralityEstimCorrel() const {
+    return fEvRejectionBits&(1<<kBadCentrEstimCorrel);
+  }
   Bool_t IsEventRejectedDueToBadTrackVertex() const {
     return fEvRejectionBits&(1<<kBadTrackVertex);
   }
@@ -358,6 +385,9 @@ class AliRDHFCuts : public AliAnalysisCuts
       if((fCutOnzVertexSPD>1 || fApplyZcutOnSPDvtx) && IsEventRejectedDueToMissingSPDVertex()) return kTRUE;
     }
     return kFALSE;
+  }
+  Bool_t IsEventRejectedDueToTimeRangeCut(){
+    return fEvRejectionBits&(1<<kBadTimeRange);
   }
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
@@ -380,7 +410,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const;
   void   CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,AliAODVertex *origownvtx) const;
 
-  Bool_t CountEventForNormalization() const 
+  Bool_t CountEventForNormalization() const
   { if(fWhyRejection==0) {return kTRUE;} else {return kFALSE;} }
 
   void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
@@ -401,6 +431,14 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetZcutOnSPDvtx() { fApplyZcutOnSPDvtx=kTRUE; }
 
+  void EnableNsigmaDataDrivenCorrection(Bool_t enableNsigmaCorr, Int_t system) {
+    fEnableNsigmaTPCDataCorr = enableNsigmaCorr;
+    fSystemForNsigmaTPCDataCorr = system;
+  }
+
+  Bool_t GetEnableNsigmaDataDrivenCorrection() const {return fEnableNsigmaTPCDataCorr;};
+  Int_t GetSystemForNsigmaTPCDataCorr() const {return fSystemForNsigmaTPCDataCorr;};
+
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
@@ -415,6 +453,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxRedChi2; /// maximum chi2/ndf
   Float_t fMaxVtxZ; /// maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; /// SPD multiplicity
+  Int_t  fMinContrPileupMV; /// min. n. of tracklets in pileup vertex (multi-vertexer)
   Float_t fMaxVtxChi2PileupMV; /// max chi2 per contributor of the pile-up vertex to consider (multi-vertexer).
   Float_t fMinWDzPileupMV; /// minimum weighted distance in Z between 2 vertices (multi-vertexer)
   Bool_t fRejectPlpFromDiffBCMV; /// flag to reject pileup from different BC (multi-vertexer)
@@ -440,21 +479,21 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fWhyRejection; /// used to code the step at which candidate was rejected
   UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
   Bool_t fRemoveDaughtersFromPrimary; /// flag to switch on the removal of duaghters from the primary vertex computation
-  Bool_t fUseMCVertex; /// use MC primary vertex 
+  Bool_t fUseMCVertex; /// use MC primary vertex
   Bool_t fUsePhysicsSelection; /// use Physics selection criteria
   Int_t  fOptPileup;      /// option for pielup selection
   Int_t  fMinContrPileup; /// min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   /// min deltaz between main and pileup vertices
   Bool_t fUseMultDepPileupCut; /// flag to use a multiplicity dependent pileup selection
   Int_t   fUseCentrality; /// off =0 (default)
-                          /// 1 = V0 
+                          /// 1 = V0
                           /// 2 = Tracks
                           /// 3 = Tracklets
-                          /// 4 = SPD clusters outer 
+                          /// 4 = SPD clusters outer
   Float_t fMinCentrality; /// minimum centrality for selected events
   Float_t fMaxCentrality; /// maximum centrality for selected events
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
-  Bool_t  fFixRefs;       /// fix the daughter track references 
+  Bool_t  fFixRefs;       /// fix the daughter track references
   Int_t  fIsSelectedCuts; /// outcome of cuts selection
   Int_t  fIsSelectedPID;  /// outcome of PID selection
   Double_t fMinPtCand; /// minimum pt of the candidate
@@ -465,6 +504,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMaxPtCandTrackSPDFirst; /// maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
   Bool_t fApplySPDDeadPbPb2011;  /// flag to apply SPD dead module map of PbPb2011
   Bool_t fApplySPDMisalignedPP2012; /// flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
+  Bool_t fApplySPDUniformAccPbPbRun2; /// flag to apply the same SPD acceptance between Pb-Pb 2015 and Pb-Pb 2018 (PbPb Run2 periods)
   Double_t fMaxDiffTRKV0Centr;   /// Max. difference between TRK and V0 centrality (remove TPC pileup for PbPb 2011)
   Bool_t fRemoveTrackletOutliers; /// flag to apply cut on tracklets vs. centrality for 2011 data
   Int_t fCutOnzVertexSPD; /// cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks, 3=cut on nsigma distance between SPD and track vertices
@@ -473,7 +513,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseCentrFlatteningInMC; /// flag for enabling/diabling centrality flattening in MC
   TH1F *fHistCentrDistr;   /// histogram with reference centrality distribution for centrality distribution flattening
   Float_t fCutRatioClsOverCrossRowsTPC; /// min. value ratio NTPCClusters/NTPCCrossedRows, cut if !=0
-  Float_t fCutRatioSignalNOverCrossRowsTPC;   /// min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0 
+  Float_t fCutRatioSignalNOverCrossRowsTPC;   /// min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0
+  Int_t fCutTPCSignalN;   /// min. value of number of TPC clusters for PID, cut if !=0 
   TString fCutMinCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
   TFormula *f1CutMinNCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
   Bool_t fUseCutGeoNcrNcl; /// flag for enabling/disabling geometrical cut on TPC track
@@ -486,8 +527,20 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
   Bool_t fApplyZcutOnSPDvtx; //flag to apply the cut on |Zvtx| > X cm using the z coordinate of the SPD vertex
   Int_t fUsePreselect;  /// flag that defines whether the PreSelect method has to be used: note that it is up to the task user to call it. This flag is mainly for bookkeeping
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,44);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  AliEventCuts* fAliEventCuts;   /// AliEventCuts object used in Pb-Pb for cuts on correlations and out-of-bunch pileup
+  Bool_t fApplyCentralityCorrCuts; /// swicth to enable/disable cuts on centrality correlations
+  Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
+  Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts
+  Bool_t fUseTimeRangeCutForPbPb2018; /// flag to enable the timestamp based selection of good events in the 7 runs of LHC18r with problems in TPC dE/dx
+  AliTimeRangeCut fTimeRangeCut;   /// object to manage time range cut
+  Int_t  fCurrentRun;              /// needed to use the time range cut
+
+
+  Bool_t fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+  Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+
+  /// \cond CLASSIMP
+  ClassDef(AliRDHFCuts,52);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

@@ -1,0 +1,48 @@
+InputFile:
+    FileName: ['AnalysisResults_part1.root', 'AnalysisResults_part2.root']
+    Suffix: '_v2_3050_centralcutsVZERO'
+    Meson: 'Dplus'
+    FlowMethod: 'EvShapeEP'
+
+OutputDir:
+    Analysis: '$HOME/cernbox/ALICE_WORK/AnalysisPbPb2018/Dplusv2/unbiased/V0EP/Result'
+    FitSystematics: '$HOME/cernbox/ALICE_WORK/AnalysisPbPb2018/Dplusv2/unbiased/V0EP/FitSyst'
+
+AnalysisOptions:
+    Harmonic: 2
+    qnMin: 0.
+    qnMax: 100.
+    #each element of the lists corresponds to a pT bin
+    PtMin: [ 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 24 ]
+    PtMax: [ 3, 4, 5, 6, 7, 8, 10, 12, 16, 24, 36 ]
+    MassMin: [ 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70 ]
+    MassMax: [ 2.04, 2.04, 2.04, 2.04, 2.04, 2.04, 2.04, 2.04, 2.04, 2.04, 2.04 ]
+    Rebin: [ 2, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4 ]
+    BkgFunc: [ 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo' ]
+    SgnFunc: [ 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus', 'kGaus' ]
+    VnBkgFunc: [ 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin', 'kLin' ]
+    FixMeanVnVsMassFit: 0 # 0->don't fix, 1->set initial value from prefit, 2->fix value from prefit
+    FixSigmaVnVsMassFit: 2 # 0->don't fix, 1->set initial value from prefit, 2->fix value from prefit
+    UseVarMassBinning: 0 # 0->false, 1->true
+    VnVsMassBins: [1.70,1.75,1.80,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.94,1.99,2.04]
+    IncludeReflections: 0 # 0->false, 1->true
+    ReflFileName: "Refl_Templates.root"
+    ReflOpt: "2gaus"
+    FixMeanSecondPeak: 0 # 0->false, 1->true, used for Ds
+    FixSigmaSecondPeak: 0 # 0->false, 1->true, used for Ds
+    SigmaFileName: "" # file with MC D+ peak width
+    #application of ML selection
+    MLSelection:
+        ApplyML: 0 # 0->false, 1->true, enable only if you applied your ML model in the vn task
+        #each element of the lists corresponds to a pT bin
+        CutValuesMin: [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]
+        CutValuesMax: [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
+
+FitSystematicsOptions: #common for all pT bins
+    Rebin: [ 1, 2, 3, 4, 5 ]
+    MassMin: [ 1.66, 1.68, 1.70, 1.72, 1.74 ]
+    MassMax: [ 1.96, 1.98, 2.00, 2.02, 2.04 ]
+    BkgFunc: [ 'kExpo', 'kLin', 'kPol2' ]
+    SgnFunc: [ 'kGaus' ]
+    VnBkgFunc: [ 'kLin', 'kPol2' ]
+    MaxRedChi2: 2. #only for histos, ntuple filled with all trials

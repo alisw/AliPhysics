@@ -860,6 +860,23 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const U
 //           photon1->Eta(),phi,
 //           photon1->MCStatusCode(),photon1->IsPhysicalPrimary());
   }	
+  else  if ( angle < 0.0143 ) 
+  {
+    // Two contributions not found in cluster, but not normal if too small opening angle and only one photon appears,
+    // still check if opening angle is smaller than an EMCal cell and assign as merged 
+    AliInfo(Form("Opening angle %2.3f rad too small to not be a merged meson (%d): \n"
+           "\t Meson  E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+           "\t Gamma1 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad \n"
+           "\t Gamma2 E %2.2f GeV, Eta %2.3f, Phi %2.3f rad ",
+           angle, mesonPdg, 
+           meson    ->E(), meson    ->Eta(), meson    ->Phi(),
+           fDaughMom .E(), fDaughMom .Eta(), fDaughMom .Phi(),
+           fDaughMom2.E(), fDaughMom2.Eta(), fDaughMom2.Phi()));
+    
+    if ( mesonPdg == 111 ) SetTagBit(tag,kMCPi0);
+    else                   SetTagBit(tag,kMCEta);
+  }
+  
 }
 
 //________________________________________________________________________________________________________
@@ -1084,9 +1101,9 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
     {
       while(pdg != 94)
       {
-        if(tmp->GetFirstDaughter()==-1) return fJetsList;
+        if(tmp->GetDaughterFirst()==-1) return fJetsList;
         
-        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        tmp = mcevent->GetTrack(tmp->GetDaughterFirst());
         pdg = tmp->PdgCode();
       }//while
       
@@ -1097,8 +1114,8 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
       
       fJetsList->Add(jet1);
       
-      //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetFirstDaughter(), tmp->GetLastDaughter());
-      //tmp = stack->Particle(tmp->GetFirstDaughter());
+      //printf("jet 1:  first daughter %d, last daughter %d\n", tmp->GetDaughterFirst(), tmp->GetDaughterLast());
+      //tmp = stack->Particle(tmp->GetDaughterFirst());
       //tmp->Print();
       //jet1->Print();
       AliDebug(1,Form("HERWIG Jet 1: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
@@ -1112,9 +1129,9 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
     {
       while(pdg != 94)
       {
-        if(tmp->GetFirstDaughter()==-1) return fJetsList;
+        if(tmp->GetDaughterFirst()==-1) return fJetsList;
         
-        tmp = mcevent->GetTrack(tmp->GetFirstDaughter());
+        tmp = mcevent->GetTrack(tmp->GetDaughterFirst());
         pdg = tmp->PdgCode();
       }//while
       
@@ -1128,8 +1145,8 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
       //jet2->Print();
       AliDebug(2,Form("HERWIG Jet 2: mother %d, status %d, pt %2.2f,E %2.2f, phi %2.2f, eta %2.2f",
                       jet2->GetFirstMother(),jet2->GetStatusCode(),jet2->Pt(),jet2->Energy(),jet2->Phi()*TMath::RadToDeg(),jet2->Eta()));
-      //Int_t first =  tmp->GetFirstDaughter();
-      //Int_t last  =  tmp->GetLastDaughter();
+      //Int_t first =  tmp->GetDaughterFirst();
+      //Int_t last  =  tmp->GetDaughterLast();
       //printf("jet 2:  first daughter %d, last daughter %d, pdg %d\n",first, last, tmp->GetPdgCode());
       //	for(Int_t d = first ; d < last+1; d++){
       //						tmp = stack->Particle(d);

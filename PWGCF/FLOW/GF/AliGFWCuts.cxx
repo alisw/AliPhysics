@@ -1,6 +1,6 @@
 #include "AliGFWCuts.h"
 const Int_t AliGFWCuts::fNTrackFlags=9;
-const Int_t AliGFWCuts::fNEventFlags=6;
+const Int_t AliGFWCuts::fNEventFlags=8;
 AliGFWCuts::AliGFWCuts():
   fSystFlag(0),
   fFilterBit(96),
@@ -9,15 +9,13 @@ AliGFWCuts::AliGFWCuts():
   fTPCNcls(70),
   fVtxZ(10),
   fEta(0.8),
-  fRequiresExtraWeight(kTRUE)  
+  fRequiresExtraWeight(kTRUE)
 {
 };
 AliGFWCuts::~AliGFWCuts() {
 };
 Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
-  if(l_Tr->Pt()<0.2) return 0;
-  if(l_Tr->Pt()>20) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
     if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
@@ -32,14 +30,13 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift
   else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
   if(l_DCA[1]>DCAxycut*(fDCAxyCut/7.))
     return 0;
-  return 1<<BitShift;  
+  return 1<<BitShift;
 };
 
-Int_t AliGFWCuts::AcceptParticle(AliVParticle *l_Pa, Int_t BitShift) {
+Int_t AliGFWCuts::AcceptParticle(AliVParticle *l_Pa, Int_t BitShift, Double_t ptLow, Double_t ptHigh) {
   if(TMath::Abs(l_Pa->Eta())>fEta) return 0;
-  if(l_Pa->Pt()<0.2) return 0;
-  if(l_Pa->Pt()>20) return 0;
-  // if(!l_Pa->IsMCPrimary()) return 0; //Not sure if I need this one here?
+  if(ptLow>0) if(l_Pa->Pt()<ptLow) return 0;
+  if(ptHigh>0) if(l_Pa->Pt()>ptHigh) return 0;
   return 1<<BitShift;
 };
 Int_t AliGFWCuts::AcceptVertex(AliAODEvent *l_Ev, Int_t BitShift) {
@@ -80,11 +77,11 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
     fRequiresExtraWeight=kTRUE;
     break;
   case 2:
-    fDCAxyCut=8.;
+    fDCAxyCut=10.;
     fRequiresExtraWeight=kTRUE;
     break;
   case 3:
-    fDCAxyCut=6.;
+    fDCAxyCut=4.;
     fRequiresExtraWeight=kTRUE;
     break;
   case 4:
@@ -141,6 +138,14 @@ void AliGFWCuts::SetupEventCuts(Int_t sysflag) {
     printf("Warning! Event flag %i (syst. flag %i), PU cuts: make sure proper PU cuts are used in the task!\n",sysflag, sysflag+fNTrackFlags);
     fRequiresExtraWeight=kTRUE;
     break;
+  case 7:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration ++: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
+  case 8:
+    printf("Warning! Event flag %i (syst. flag %i), magnetic field configuration --: no cuts here, please make sure the proper runlist is used!\n",sysflag,sysflag+fNTrackFlags);
+    fRequiresExtraWeight=kFALSE;
+    break;
   default:
     break;
   };
@@ -159,10 +164,10 @@ TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
     retstr->Append("Filter bit 768");
     break;
   case 2:
-    retstr->Append("DCA_{xy} < 8 sigma");
+    retstr->Append("DCA_{xy} < 10 (old:8) sigma");
     break;
   case 3:
-    retstr->Append("DCA_{xy} < 6 sigma");
+    retstr->Append("DCA_{xy} < 4 (old:6) sigma");
     break;
   case 4:
     retstr->Append("DCA_{z} < 1 cm");
@@ -207,6 +212,13 @@ TString* AliGFWCuts::GetEventFlagDescriptor(Int_t sysflag) {
     break;
   case 6:
     retstr->Append("PU cut 1500");
+    break;
+  case 7:
+    retstr->Append("MF ++");
+    break;
+  case 8:
+    retstr->Append("MF --");
+    break;
   default:
     break;
   };

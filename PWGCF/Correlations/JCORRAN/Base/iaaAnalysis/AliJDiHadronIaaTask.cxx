@@ -114,7 +114,7 @@ void AliJDiHadronIaaTask::UserCreateOutputObjects()
 	fIaaAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
 	fIaaAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
 	fIaaAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
-	fIaaAnalysis->GetCard()->WriteCard(fOutput);
+//	fIaaAnalysis->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
 

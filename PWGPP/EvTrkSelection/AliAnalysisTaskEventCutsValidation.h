@@ -9,6 +9,7 @@
 
 class TList;
 class TH2F;
+class TTree;
 
 class AliAnalysisTaskEventCutsValidation : public AliAnalysisTaskSE {
 public:
@@ -19,14 +20,22 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
+  bool          fFillTree;
   AliEventCuts  fEventCut;    ///<  Event cuts
+
+  struct EventSummary {
+    ULong64_t trigger;
+    float x,y,z,v0m,cl0,fb32,fb32acc,fb32tof,tpc,tpcOut,esd,multvzero;
+  };
 
 private:
   AliAnalysisTaskEventCutsValidation (const AliAnalysisTaskEventCutsValidation &source);
   AliAnalysisTaskEventCutsValidation &operator=(const AliAnalysisTaskEventCutsValidation &source);
 
   TList *fList;            //!<! Output list
+  TTree *fTree;            //!<! Output list
 
+  EventSummary        fCurrentEvent;
   bool                fStoreCuts; ///<  If true the EventCuts object is put in the output
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskEventCutsValidation, 1);

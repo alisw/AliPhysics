@@ -595,12 +595,6 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODEvent *aodEve
       continue;
     }
 
-    Bool_t unsetvtx=kFALSE;
-    if (!lcK0Spr->GetOwnPrimaryVtx()) {
-      lcK0Spr->SetOwnPrimaryVtx(fVtx1);
-      unsetvtx=kTRUE;
-    }
-
     if(!vHF->FillRecoCasc(aodEvent,lcK0Spr,kFALSE)){//Fill the data members of the candidate only if they are empty.
        fCEvents->Fill(18);//monitor how often this fails
     continue;
@@ -696,9 +690,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODEvent *aodEve
 
     FillLc2pK0Sspectrum(lcK0Spr, isLc,
 			nSelectedAnal, cutsAnal,
-			mcArray, originLc);
-
-    if (unsetvtx) lcK0Spr->UnsetOwnPrimaryVtx();
+			mcArray, originLc, aodEvent);
 
   }
 
@@ -714,7 +706,8 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 							   Int_t &nSelectedAnal,
 							   AliRDHFCutsLctoV0 *cutsAnal,
 							   TClonesArray *mcArray,
-							   Int_t originLc)
+							   Int_t originLc,
+                 AliAODEvent *aod)
 {
   //
   /// Fill histos for Lc -> K0S+proton
@@ -730,36 +723,36 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 
   Bool_t areCutsUsingPID = cutsAnal->GetIsUsePID();
   cutsAnal->SetUsePID(kFALSE);
-  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part,AliRDHFCuts::kCandidate,0))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
+  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part,AliRDHFCuts::kCandidate,0,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
   cutsAnal->SetUsePID(areCutsUsingPID);
 
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return;
 
-  if (fAdditionalChecks) CheckCandidatesAtDifferentLevels(part,cutsAnal);
+  if (fAdditionalChecks) CheckCandidatesAtDifferentLevels(part,cutsAnal,aod);
 
   // track rotation
   if (fTrackRotation) {
     if (onFlyV0) {
-      TrackRotation(cutsAnal,part,"");
+      TrackRotation(cutsAnal,part,"",aod);
     }
     else {
-      TrackRotation(cutsAnal,part,"Offline");
+      TrackRotation(cutsAnal,part,"Offline",aod);
     }
     if (fUseMCInfo) {
       if (isLc==1) {
 	if (onFlyV0) {
-	  TrackRotation(cutsAnal,part,"Sgn");
+	  TrackRotation(cutsAnal,part,"Sgn",aod);
 	}
 	else {
-	  TrackRotation(cutsAnal,part,"OfflineSgn");
+	  TrackRotation(cutsAnal,part,"OfflineSgn",aod);
 	}
       }// sgn
       else { // bkg
 	if (onFlyV0) {
-	  TrackRotation(cutsAnal,part,"Bkg");
+	  TrackRotation(cutsAnal,part,"Bkg",aod);
 	}
 	else {
-	  TrackRotation(cutsAnal,part,"OfflineBkg");
+	  TrackRotation(cutsAnal,part,"OfflineBkg",aod);
 	}
       }
     } // if fUseMCInfo
@@ -770,9 +763,9 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122))) ) return;
 
-  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
+  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
 
-  if ( ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) nSelectedAnal++;
+  if ( ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) nSelectedAnal++;
 
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if ( fWriteVariableTree ) {
@@ -789,12 +782,12 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   }
 
   cutsAnal->SetUsePID(kFALSE);
-  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
+  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
   cutsAnal->SetUsePID(areCutsUsingPID);
-  Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
+  Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
 
-  //if (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
-  if (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
+  //if (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
+  if (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) {
     if (fUseMCInfo && isLc && !fWriteVariableTree) {
       Int_t pdgCand1 = 4122;
       Int_t pdgDgLctoV0bachelor1[2]={2212,310};
@@ -828,7 +821,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
     FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
     //if (isCandidateSelectedCuts) {
-    FillAnalysisHistograms(part,cutsAnal,"");
+    FillAnalysisHistograms(part,cutsAnal,"",aod);
     //}
   }
   else {
@@ -839,13 +832,13 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
     fillthis="histArmPodLcOffline";
     FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
-    FillAnalysisHistograms(part,cutsAnal,"Offline");
+    FillAnalysisHistograms(part,cutsAnal,"Offline",aod);
     if (isCandidateSelectedCuts) {
       fillthis="histoprotonBachSigmaVspTOF";
       ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
       fillthis="histoprotonBachSigmaVspTPC";
       ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-      //FillAnalysisHistograms(part,cutsAnal,"Offline");
+      //FillAnalysisHistograms(part,cutsAnal,"Offline",aod);
     }
   }
   if (fUseMCInfo) {
@@ -859,18 +852,18 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
 	//if (isCandidateSelectedCuts) {
-	FillAnalysisHistograms(part,cutsAnal,"Sgn");
+	FillAnalysisHistograms(part,cutsAnal,"Sgn",aod);
 	//}
 	if (fCheckOrigin) {
 	  switch (originLc) {
 	  case 1:
-	    FillAnalysisHistograms(part,cutsAnal,"SgnC");
+	    FillAnalysisHistograms(part,cutsAnal,"SgnC",aod);
 	    break;
 	  case 2:
-	    FillAnalysisHistograms(part,cutsAnal,"SgnB");
+	    FillAnalysisHistograms(part,cutsAnal,"SgnB",aod);
 	    break;
 	  case 3:
-	    FillAnalysisHistograms(part,cutsAnal,"SgnNoQ");
+	    FillAnalysisHistograms(part,cutsAnal,"SgnNoQ",aod);
 	    break;
 	  }
 	}
@@ -888,23 +881,23 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
 	  fillthis="histoprotonBachSigmaVspTPCsgn";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-	  //FillAnalysisHistograms(part,cutsAnal,"OfflineSgn");
+	  //FillAnalysisHistograms(part,cutsAnal,"OfflineSgn",aod);
 	}
 
 	if (fCheckOrigin) {
 	  switch (originLc) {
 	  case 1:
-	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnC");
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnC",aod);
 	    break;
 	  case 2:
-	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnB");
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnB",aod);
 	    break;
 	  case 3:
-	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnNoQ");
+	    FillAnalysisHistograms(part,cutsAnal,"OfflineSgnNoQ",aod);
 	    break;
 	  }
 	}
-	FillAnalysisHistograms(part,cutsAnal,"OfflineSgn");
+	FillAnalysisHistograms(part,cutsAnal,"OfflineSgn",aod);
 
       }
     }// sgn
@@ -918,7 +911,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
 	//if (isCandidateSelectedCuts) {
-	FillAnalysisHistograms(part,cutsAnal,"Bkg");
+	FillAnalysisHistograms(part,cutsAnal,"Bkg",aod);
 	//}
       }
       else {
@@ -929,13 +922,13 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 	fillthis="histArmPodLcOfflineBkg";
 	FillArmPodDistribution(part,fillthis,isCandidateSelectedCuts,isBachelorID);
 
-	FillAnalysisHistograms(part,cutsAnal,"OfflineBkg");
+	FillAnalysisHistograms(part,cutsAnal,"OfflineBkg",aod);
 	if (isCandidateSelectedCuts) {
 	  fillthis="histoprotonBachSigmaVspTOFbkg";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTOFpr);
 	  fillthis="histoprotonBachSigmaVspTPCbkg";
 	  ((TH2F*)(fOutput->FindObject(fillthis)))->Fill(momBach,nSigmaTPCpr);
-	  //FillAnalysisHistograms(part,cutsAnal,"OfflineBkg");
+	  //FillAnalysisHistograms(part,cutsAnal,"OfflineBkg",aod);
 	}
       }
     }
@@ -3347,8 +3340,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
     return indexToBeReturned;
   }
 
-  Int_t index1=searchLc->GetDaughter(0);
-  Int_t index2=searchLc->GetDaughter(1);
+  Int_t index1=searchLc->GetDaughterLabel(0);
+  Int_t index2=searchLc->GetDaughterLabel(1);
   if (index1<=0 || index2<=0) {
     return -999;
   }
@@ -3369,8 +3362,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
   }
 
   if (daughPdg1==pdgK0 || daughPdg1==pdgLambda) {
-    index1=searchLc->GetDaughter(1);
-    index2=searchLc->GetDaughter(0);
+    index1=searchLc->GetDaughterLabel(1);
+    index2=searchLc->GetDaughterLabel(0);
   }
   daugh1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index1));
   daugh2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(index2));
@@ -3387,7 +3380,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
     Int_t nDaughK0 = daugh2->GetNDaughters();
     if (nDaughK0!=1) return -999;
 
-    Int_t indexK0daugh=daugh2->GetDaughter(0);
+    Int_t indexK0daugh=daugh2->GetDaughterLabel(0);
     if (indexK0daugh<=0) return -999;
 
     AliAODMCParticle *daughK0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indexK0daugh));
@@ -3409,8 +3402,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
       return indexToBeReturned;
     }
 
-    index1=daughK0->GetDaughter(0);
-    index2=daughK0->GetDaughter(1);
+    index1=daughK0->GetDaughterLabel(0);
+    index2=daughK0->GetDaughterLabel(1);
     if(index1<=0 || index2<=0) {
       return -999;
     }
@@ -3443,8 +3436,8 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, In
       return indexToBeReturned;
     }
 
-    index1=daugh2->GetDaughter(0);
-    index2=daugh2->GetDaughter(1);
+    index1=daugh2->GetDaughterLabel(0);
+    index2=daugh2->GetDaughterLabel(1);
     if(index1<=0 || index2<=0) {
       return -999;
     }
@@ -3491,7 +3484,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillArmPodDistribution(AliAODRecoDecay *vZe
 }
 
 //-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0* cutsAnal) {
+void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0* cutsAnal, AliAODEvent *aod) {
   //
   /// This is to check candidates at different levels
   //
@@ -3508,24 +3501,24 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 
   if ( cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(4);
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kTracks,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(5);
   cutsAnal->SetUsePID(kFALSE);
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(6);
   cutsAnal->SetUsePID(areCutsUsingPID);
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(7);
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(8);
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) )
     ((TH1F*)(fOutput->FindObject("hCandidateSelection")))->Fill(9);
 
   if ( cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122)) ) {
 
-    if ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 
-      Int_t aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kTracks);
+      Int_t aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kTracks,aod);
       if ( (aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr ) {
 	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0)  ||
 	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
@@ -3535,7 +3528,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
       }
 
       cutsAnal->SetUsePID(kFALSE);
-      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate);
+      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
 	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
 	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
@@ -3545,7 +3538,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
       }
       cutsAnal->SetUsePID(areCutsUsingPID);
 
-      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kPID);
+      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kPID,aod);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
 	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
 	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
@@ -3554,7 +3547,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 	  ((TH1F*)(fOutput->FindObject("hSwitchOnCandidates3")))->Fill( aaa );
       }
 
-      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kAll);
+      aaa = cutsAnal->IsSelected(part,AliRDHFCuts::kAll,aod);
       if ((aaa&AliRDHFCutsLctoV0::kLcToK0Spr)==AliRDHFCutsLctoV0::kLcToK0Spr) {
 	if ( ( (aaa&AliRDHFCutsLctoV0::kLcToLpi)==AliRDHFCutsLctoV0::kLcToLpi && bachelor->Charge()<0) ||
 	     ( (aaa&AliRDHFCutsLctoV0::kLcToLBarpi)==AliRDHFCutsLctoV0::kLcToLBarpi && bachelor->Charge()>0) )
@@ -3994,30 +3987,30 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 	Int_t mcLabel0 = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel0));
 	if(partLc){
-	  AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	  AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	  if(partLcDaug0){
 	    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
 	  }
 	}
       } else if (isLc2LBarpi || isLc2Lpi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isDp2K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel2));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isDs2K0SK) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel3));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isKstar12K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel4));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       } else if (isKstar22K0Spi) {
 	AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel5));
-	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+	AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughterLabel(0)));
 	xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
       }
 
@@ -4360,14 +4353,14 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis) {
+void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TString appendthis, AliAODEvent *aod) {
   //
   // This is to fill analysis histograms
   //
 
   TString fillthis="";
 
-  Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
+  Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID, aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
 
   Bool_t areCutsUsingPID = cutsAnal->GetIsUsePID();
   cutsAnal->SetUsePID(kFALSE);
@@ -4393,7 +4386,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   if (!appendthis.Contains("SgnC") && !appendthis.Contains("SgnB") && !appendthis.Contains("SgnNoQ")) {
     fillthis="histpK0Svsp"+appendthis;
     //cout << fillthis << endl;
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
       if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
     }
@@ -4401,14 +4394,14 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
 
   fillthis="histLcMassByK0S"+appendthis;
   //cout << fillthis << endl;
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
   }
 
   if(fFillSubSampleHist && appendthis=="Offline"){
     fillthis="histLcMassByK0SSubSample"+appendthis;
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       Double_t contsp[3];contsp[0]=invmassLc;contsp[1]=lambdacpt;contsp[2]=(Double_t)(fEventCounter%24);
       if (isBachelorID)((THnSparse*)(fOutputPIDBach->FindObject(fillthis)))->Fill(contsp);
     }
@@ -4418,7 +4411,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
     fillthis="histK0SMass"+appendthis;
     //    cout << fillthis << endl;
     cutsAnal->SetExcludedCut(2);
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
       if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,invmassK0S);
     }
@@ -4428,7 +4421,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histptK0S"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(15);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptK0S);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,ptK0S);
   }
@@ -4436,7 +4429,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histptP"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(4);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptBach);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,ptBach);
   }
@@ -4444,7 +4437,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histptPip"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(5);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptV0pos);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,ptV0pos);
   }
@@ -4452,7 +4445,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histptPim"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(6);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,ptV0neg);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,ptV0neg);
   }
@@ -4461,7 +4454,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
     fillthis="histLambdaMass"+appendthis;
     //    cout << fillthis << endl;
     cutsAnal->SetExcludedCut(13);
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
       if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassLambda());
     }
@@ -4469,7 +4462,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
     fillthis="histLambdaBarMass"+appendthis;
     //    cout << fillthis << endl;
     cutsAnal->SetExcludedCut(13);
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
       if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->MassAntiLambda());
     }
@@ -4477,7 +4470,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
     fillthis="histGammaMass"+appendthis;
     //    cout << fillthis << endl;
     cutsAnal->SetExcludedCut(14);
-    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+    if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
       ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
       if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,v0part->InvMass2Prongs(0,1,11,11));
     }
@@ -4486,7 +4479,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histD0K0S"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(11);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(1));
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(1));
   }
@@ -4494,7 +4487,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histD0P"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(10);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(0));
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,part->Getd0Prong(0));
   }
@@ -4502,7 +4495,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histCosPAK0S"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(9);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,part->CosV0PointingAngle());
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,part->CosV0PointingAngle());
   }
@@ -4510,7 +4503,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histCosThetaProtonCMS"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(16);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetProtonEmissionAngleCMS(part));
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetProtonEmissionAngleCMS(part));
   }
@@ -4518,7 +4511,7 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   fillthis="histResignedD0"+appendthis;
   //cout << fillthis << endl;
   cutsAnal->SetExcludedCut(18);
-  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+  if ( ((cutsAnal->IsSelected(part,AliRDHFCuts::kCandidate,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetReSignedd0(part));
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(lambdacpt,cutsAnal->GetReSignedd0(part));
   }
@@ -4722,12 +4715,12 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
 
   AliAODMCParticle*partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0));
   if (!partLc) return -1;
-  Int_t ndg2 = partLc->GetDaughter(1)-partLc->GetDaughter(0)+1;
+  Int_t ndg2 = partLc->GetDaughterLabel(1)-partLc->GetDaughterLabel(0)+1;
   if (ndg2==2) return -1;
 
   TString stringaCheck = Form(">>>>>>>> %d -> ",partLc->GetPdgCode());
   for(Int_t ii=0; ii<ndg2; ii++) {
-    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
+    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughterLabel(0)+ii));
     stringaCheck.Append(Form("  %d",partDau->GetPdgCode()));
   }
   //printf("%s \n",stringaCheck.Data());
@@ -4835,7 +4828,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
 
 }
 
-void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, AliAODRecoCascadeHF *part, TString appendthis)
+void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, AliAODRecoCascadeHF *part, TString appendthis, AliAODEvent *aod)
 {
 
   AliAODRecoCascadeHF *partCopy = new AliAODRecoCascadeHF(*part);
@@ -4853,7 +4846,7 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
 
   TString fillthis;
 
-  if ( ( ( (cuts->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) {
+  if ( ( ( (cuts->IsSelected(part,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) {
     fillthis="hMassVsPtVsY"+appendthis;
     //cout << fillthis << endl;
     ((TH3F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(mass,pt,rapid);
@@ -4882,7 +4875,7 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
     rapid = partCopy->Y(pdgD);
     //if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     if ( cuts->IsInFiducialAcceptance(pt,partCopy->Y(4122)) ) {
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 
 	fillthis="histLcMassByK0S"+appendthis;
 	//cout << fillthis << endl;
@@ -4913,70 +4906,70 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
       fillthis="histptK0S"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(15);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,TMath::Sqrt(px[1]*px[1]+py[1]*py[1]));
       }
 
       fillthis="histptP"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(4);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,TMath::Sqrt(px[0]*px[0]+py[0]*py[0]));
       }
 
       fillthis="histptPip"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(5);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,(partCopy->Getv0PositiveTrack())->Pt());
       }
 
       fillthis="histptPim"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(6);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,(partCopy->Getv0NegativeTrack())->Pt());
       }
 
       fillthis="histLambdaMass"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(13);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,(partCopy->Getv0())->MassLambda());
       }
 
       fillthis="histLambdaBarMass"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(13);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,(partCopy->Getv0())->MassAntiLambda());
       }
 
       fillthis="histGammaMass"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(14);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,(partCopy->Getv0())->InvMass2Prongs(0,1,11,11));
       }
 
       fillthis="histCosPAK0S"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(9);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
 	((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,partCopy->CosV0PointingAngle());
       }
 
       fillthis="histCosThetaProtonCMS"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(16);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
         ((TH2F*)(fOutputPIDBachTR->FindObject(fillthis)))->Fill(pt,cuts->GetProtonEmissionAngleCMS(partCopy));
       }
 
       fillthis="histResignedD0"+appendthis;
       //cout << fillthis << endl;
       cuts->SetExcludedCut(18);
-      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
+      if ( ((cuts->IsSelected(partCopy,AliRDHFCuts::kAll,aod))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) {
         ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(pt,cuts->GetReSignedd0(partCopy));
       }
       cuts->SetExcludedCut(-1);

@@ -24,6 +24,7 @@ ClassImp(AliAnalysisTaskEventCutsValidation);
 ///
 AliAnalysisTaskEventCutsValidation::AliAnalysisTaskEventCutsValidation(bool storeCuts, TString taskname) :
   AliAnalysisTaskSE(taskname.Data()),
+  fFillTree{false},
   fEventCut(false),
   fList(nullptr),
   fStoreCuts(storeCuts)
@@ -38,6 +39,7 @@ AliAnalysisTaskEventCutsValidation::AliAnalysisTaskEventCutsValidation(bool stor
 ///
 AliAnalysisTaskEventCutsValidation::~AliAnalysisTaskEventCutsValidation() {
   if (fList) delete fList;
+  if (fTree) delete fList;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -49,8 +51,12 @@ void AliAnalysisTaskEventCutsValidation::UserCreateOutputObjects() {
   fList->SetOwner(true);
   fEventCut.AddQAplotsToList(fList,true);
 
+  fTree = new TTree("EventSummary","Event Summary");
+  fTree->Branch("Event",&fCurrentEvent);
+
   PostData(1,fList);
   if (fStoreCuts) PostData(2,&fEventCut);
+  if (fFillTree) PostData(3, fTree);
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -60,9 +66,30 @@ void AliAnalysisTaskEventCutsValidation::UserCreateOutputObjects() {
 ///
 void AliAnalysisTaskEventCutsValidation::UserExec(Option_t *) {
   AliVEvent* ev = InputEvent();
-  fEventCut.AcceptEvent(ev);
+  bool acc = fEventCut.AcceptEvent(ev);
+
+
   PostData(1,fList);
   if (fStoreCuts) PostData(2,&fEventCut);
+  if (acc) {
+    fCurrentEvent.trigger = ev->GetTriggerMask();
+    fCurrentEvent.x = fEventCut.GetPrimaryVertex()->GetX();
+    fCurrentEvent.y = fEventCut.GetPrimaryVertex()->GetY();
+    fCurrentEvent.z = fEventCut.GetPrimaryVertex()->GetZ();
+    fCurrentEvent.v0m = fEventCut.GetCentrality(0);
+    fCurrentEvent.cl0 = fEventCut.GetCentrality(1);
+    fCurrentEvent.esd = fEventCut.fContainer.fMultESD;
+    fCurrentEvent.fb32 = fEventCut.fContainer.fMultTrkFB32;
+    fCurrentEvent.fb32acc = fEventCut.fContainer.fMultTrkFB32Acc;
+    fCurrentEvent.fb32tof = fEventCut.fContainer.fMultTrkFB32TOF;
+    fCurrentEvent.tpc = fEventCut.fContainer.fMultTrkTPC;
+    fCurrentEvent.tpcOut = fEventCut.fContainer.fMultTrkTPCout;
+    fCurrentEvent.multvzero = fEventCut.fContainer.fMultVZERO;
+    if (fFillTree) {
+      fTree->Fill();
+      PostData(3,fTree);
+    }
+  }
   return;
 }
 

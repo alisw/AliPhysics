@@ -1097,11 +1097,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		FillEffHists(kReco3Prong);
 		fNentries->Fill(6);
 
-		Bool_t unsetvtx=kFALSE;
-		if(!d->GetOwnPrimaryVtx()){
-			d->SetOwnPrimaryVtx(vtx1);
-			unsetvtx=kTRUE;
-		}
 
 
 
@@ -1166,7 +1161,6 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if(fFillNtuple) FillNtuple(aod,d,arrayMC,selection);
 		FillEffHists(kIsSelectedNtuple);
 		if(fIsLc>=1 && fIsLc <= 2) fNentries->Fill(16);
-		if(unsetvtx) d->UnsetOwnPrimaryVtx();
 	}
 	fCounter->StoreCandidates(aod,nSelectedloose[0],kTRUE);
 	fCounter->StoreCandidates(aod,nSelectedtight[0],kFALSE);
@@ -1265,21 +1259,21 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 	IsInAcc=kTRUE;
 	if(TMath::Abs(part->GetPdgCode())!=4122) return 0;
 	// Int_t daughTmp[2];
-	// daughTmp[0]=part->GetDaughter(0);
-	// daughTmp[1]=part->GetDaughter(1);
+	// daughTmp[0]=part->GetDaughterLabel(0);
+	// daughTmp[1]=part->GetDaughterLabel(1);
 	Int_t nDaugh = (Int_t)part->GetNDaughters();
 	if(nDaugh<2) return 0;
 	if(nDaugh>3) return 0;
-	AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(0));
+	AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
 	if(!pdaugh1) {return 0;}
 	Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
-	AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(1));
+	AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
 	if(!pdaugh2) {return 0;}
 	Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
 
 	AliDebug(2,"Is non resonant?");
 	if(nDaugh==3){
-		Int_t thirdDaugh=part->GetDaughter(1)-1;
+		Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
 		AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
 		Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
 		if((number1==321 && number2==211 && number3==2212) ||
@@ -1308,8 +1302,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if((number1==2212 && number2==313)){
 			nfiglieK=pdaugh2->GetNDaughters();
 			if(nfiglieK!=2) return 0;
-			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughK1) return 0;
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
@@ -1325,8 +1319,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if((number1==313 && number2==2212)){
 			nfiglieK=pdaugh1->GetNDaughters();
 			if(nfiglieK!=2) return 0;
-			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughK1) return 0;
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
@@ -1344,8 +1338,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==321 && number2==2224){
 			nfiglieDelta=pdaugh2->GetNDaughters();
 			if(nfiglieDelta!=2) return 0;
-			AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughD1) return 0;
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
@@ -1360,8 +1354,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==2224 && number2==321){
 			nfiglieDelta=pdaugh1->GetNDaughters();
 			if(nfiglieDelta!=2) return 0;
-			AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughD1) return 0;
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
@@ -1380,8 +1374,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==3124 && number2==211){
 			nfiglieLa=pdaugh1->GetNDaughters();
 			if(nfiglieLa!=2) return 0;
-			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughL1) return 0;
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
@@ -1396,8 +1390,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==211 && number2==3124){
 			nfiglieLa=pdaugh2->GetNDaughters();
 			if(nfiglieLa!=2) return 0;
-			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughL1) return 0;
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
@@ -1516,15 +1510,15 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 				else if(fIsLc==2) fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp);
 			}
 			else if(selection==3){
-				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp,0.5);
-				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi,0.5);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpiKp);
+				fhPIDmassLcPtSig->Fill(d->Pt(),invMassLcpKpi);
 				if(fIsLc==1) {
-					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp,0.5);
-					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi,0.5);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpiKp);
+					fhPIDmassLcPtSigc->Fill(d->Pt(),invMassLcpKpi);
 				}
 				else if(fIsLc==2) {
-					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp,0.5);
-					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi,0.5);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpiKp);
+					fhPIDmassLcPtSigb->Fill(d->Pt(),invMassLcpKpi);
 				}
 			}
 			//max prob PID
@@ -1574,8 +1568,8 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp);
 		}
 		else if(selection==3){
-			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp,0.5);
-			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi,0.5);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpiKp);
+			fhPIDmassLcPt->Fill(d->Pt(),invMassLcpKpi);
 		}
 		//max prob PID
 		if(selectionProb==1) fhProbmassLcPt->Fill(d->Pt(),invMassLcpKpi);

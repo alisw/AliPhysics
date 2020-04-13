@@ -566,7 +566,7 @@ void AliAnalysisTaskOtonOmega::UserExec(Option_t *) {
     if (!Event) {
       AliWarning("No Input Event");
     } else {
-      fAnalysis->Make(Event);
+      fAnalysis->Make(Event, fOmegaTreeFlag);
     }
   }
   PostData(1, fQA);

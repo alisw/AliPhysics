@@ -21,14 +21,10 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb",
- bool    pidparticle            =  1,   // 0: All Charged Particles;       1: PID particles
- bool    Use_PT_Cut             =  1,   // 0: Use_P_Cut ( only TOF lower boundary );       1: Use_PT_Cut
- int    useRapidity             =  1,   // 0: pseudo-rapadity      1: rapidity
  int    CentralityGroup         =  21,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
  double zMax                    =  6.,  // set vertexZ cut
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
@@ -55,7 +51,9 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double ptCUTupperMax_2         =  2.0, // pt range upper limit cut
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
- int nBinsPhi                   =  36,  // 36 is default value
+ int nBinsPhi                   =  28,  // 36 is default value
+ bool NoResonances              =  0, // only for MCAOD
+ bool   PurePIDinMC             =  0,   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -76,9 +74,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
-  Bool_t NoResonances           = kTRUE; // only for MCAOD
   Bool_t NoElectron             = kTRUE; // only for MCAOD
-  bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
   double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
   double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
   double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
@@ -86,8 +82,13 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   double dcaXYMin_1             = -dcaXYMax_1;
   double dcaZMin_2              = -dcaZMax_2;
   double dcaXYMin_2             = -dcaXYMax_2;
-  
-  
+  double zMin                   = -zMax;  // |zMin| should = zMax due to the design of the code
+  bool   pidparticle            =  1;   // 0: All Charged Particles;       1: PID particles
+  bool   Use_PT_Cut             =  0;   // 0: Use_P_Cut ( only TOF lower boundary );       1: Use_PT_Cut
+  int    useRapidity            =  1;   // 0: pseudo-rapadity      1: rapidity 
+  bool Lambda_Cut               =  0;   // 0: No Lambda_Cut       1: Lambda_Cut
+  bool Lambda_Sideband_Cut_left =  0;   // 0: No Lambda_Sideband_Cut_left       1: Lambda_Sideband_Cut_left
+ 
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "PbPb_2015_kTRUE" )     { centralityMethod = 4; trigger = kTRUE;  }
   else if ( System == "PbPb_2015_kFALSE" )    { centralityMethod = 4; trigger = kTRUE;  }
@@ -281,6 +282,21 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   { minCentrality[0] = 0;       maxCentrality[0]  = 20.;
     minCentrality[1] = 20.;     maxCentrality[1]  = 40.;
     minCentrality[2] = 40.;     maxCentrality[2]  = 90.; }
+  else if ( CentralityGroup == 34 )
+  { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+    minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+    minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+    minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+    minCentrality[4] = 40.;     maxCentrality[4]  = 50.;
+    minCentrality[5] = 50.;     maxCentrality[5]  = 60.;
+    minCentrality[6] = 60.;     maxCentrality[6]  = 90.; }
+  else if ( CentralityGroup == 35 )
+  { minCentrality[0] = 0;       maxCentrality[0]  = 10.;
+    minCentrality[1] = 10.;     maxCentrality[1]  = 20.;
+    minCentrality[2] = 20.;     maxCentrality[2]  = 30.;
+    minCentrality[3] = 30.;     maxCentrality[3]  = 40.;
+    minCentrality[4] = 40.;     maxCentrality[4]  = 60.;
+    minCentrality[5] = 60.;     maxCentrality[5]  = 90.; }
   else    return 0;
   
   double dedxMin                =  0.0;
@@ -421,6 +437,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetSinglesOnly(         singlesOnly     );
     task->SetPIDparticle(         pidparticle     );
     task->SetUse_pT_cut(          Use_PT_Cut      );
+    task->SetVetoLambdaCut(        Lambda_Cut     );
+    task->SetVetoLambdaSidebandLeft( Lambda_Sideband_Cut_left );
     task->SetIfContaminationInMC(   PurePIDinMC   );
     task->SetUseWeights(          useWeights      );
     task->SetUseRapidity(         useRapidity     );

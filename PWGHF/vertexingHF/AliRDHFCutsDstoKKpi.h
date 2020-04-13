@@ -19,7 +19,7 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
   AliRDHFCutsDstoKKpi(const char* name="CutsDstoKKpi");
   
-  virtual ~AliRDHFCutsDstoKKpi(){}
+  virtual ~AliRDHFCutsDstoKKpi();
 
   AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi& source);
   AliRDHFCutsDstoKKpi& operator=(const AliRDHFCutsDstoKKpi& source); 
@@ -55,6 +55,9 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   void EnableK0starChannel(){fCheckK0star=kTRUE;}
   void DisableK0starChannel(){fCheckK0star=kFALSE;}
   Bool_t IsK0starChannelEnabled() const{ return fCheckK0star;}
+
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *Getd0Cut() const {return fMaxd0;} 
 
   virtual Int_t PreSelect(TObjArray aodTracks);
 
@@ -101,6 +104,8 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   }
 
   Double_t ComputeInvMass2(AliAODTrack* track1, AliAODTrack* track2, Int_t pdg1, Int_t pdg2);
+
+  virtual void PrintAll() const;
 
  protected:
  

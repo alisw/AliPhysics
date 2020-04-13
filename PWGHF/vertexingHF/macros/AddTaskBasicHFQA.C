@@ -61,7 +61,6 @@ AliAnalysisTaskSEHFQA* AddTaskBasicHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,
   taskQA->SetPIDOn(kTRUE);
   taskQA->SetCentralityOn(kFALSE);
   taskQA->SetEvSelectionOn(kTRUE);
-  taskQA->SetFlowObsOn(kFALSE);
   taskQA->SetFillDistributionsForTrackEffChecks(kFALSE);
   mgr->AddTask(taskQA);
 

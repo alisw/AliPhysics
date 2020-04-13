@@ -10,24 +10,26 @@
 
 #include "AliVParticle.h"
 #include "AliLog.h"
+#include "TArrayI.h"
 #include "TArrayF.h"
 
-class AliUpcParticle : public AliVParticle, public TArrayF {
+class AliUpcParticle : public AliVParticle {
  public:
-  AliUpcParticle():AliVParticle(),TArrayF(),fPt(0),fEta(0),fPhi(0),fCharge(0),fMask(0)
-  {
-  }
-  AliUpcParticle(Float_t pt, Float_t eta, Float_t phi, Short_t charge, UInt_t mask,UInt_t nData=0)
-  :AliVParticle(),TArrayF(nData),fPt(pt),fEta(eta),fPhi(phi),fCharge(charge),fMask(mask)
-  {
-  }
+  AliUpcParticle():AliVParticle(),fArrayI(),fArrayF(){}
+  AliUpcParticle(Int_t ni, Int_t nf):AliVParticle(),fArrayI(ni),fArrayF(nf){}
+
+  void SetI(Int_t i, Int_t var  ) { fArrayI.SetAt(var,i); }
+  void SetF(Int_t i, Float_t var) { fArrayF.SetAt(var,i); }
+  Int_t   GetI(Int_t i) { return fArrayI.GetAt(i); }
+  Float_t GetF(Int_t i) { return fArrayF.GetAt(i); }
+
   virtual ~AliUpcParticle(){}
 
-  virtual Double_t Pt()    const { return fPt;      }
-  virtual Double_t Phi()   const { return fPhi;     }
-  virtual Double_t Eta()   const { return fEta;     }
-  virtual Short_t Charge() const { return fCharge;  }
-  virtual UInt_t Mask()    const { return fMask;    }
+  virtual Double_t Pt()    const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Phi()   const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t Eta()   const { AliFatal("Not implemented"); return 0; }
+  virtual Short_t Charge() const { AliFatal("Not implemented"); return 0; }
+  virtual UInt_t Mask()    const { AliFatal("Not implemented"); return 0; }
   
   virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
   virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
@@ -49,17 +51,10 @@ class AliUpcParticle : public AliVParticle, public TArrayF {
   
   virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
   virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-
-  virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
-
-  virtual void SetPhi(Double_t phi) { fPhi = phi; }
  protected:
-  Float_t fPt;
-  Float_t fEta;
-  Float_t fPhi;
-  Short_t fCharge;
-  UInt_t  fMask;     // Filter bit mask
-  ClassDef(AliUpcParticle,1);
+  TArrayI fArrayI;
+  TArrayF fArrayF;
+  ClassDef(AliUpcParticle,2);
 };
 
 #endif

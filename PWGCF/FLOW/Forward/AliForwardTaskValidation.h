@@ -8,6 +8,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliForwardSettings.h"
+#include "AliForwardFlowUtil.h"
 
 class TH2;
 
@@ -15,11 +17,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
  public:
   AliForwardTaskValidation();
   /// `is_reconstructed` is used to toggle some event selections
-  AliForwardTaskValidation(const char *name, bool is_reconstructed);
-
+  AliForwardTaskValidation(const char *name);
+  AliForwardTaskValidation(const AliForwardTaskValidation&);
   /// Set up this task. This function acts as the AddTask macro
   /// `is_reconstructed` is passed on to the constructor of this task
-  static AliForwardTaskValidation* ConnectTask(const char *suffix, bool is_reconstructed);
+  static AliForwardTaskValidation* ConnectTask(TString name, TString suffix);
   /// The Exchange container which is to be accessed by other classes
   AliAnalysisDataContainer* GetExchangeContainter();
   virtual ~AliForwardTaskValidation() {};
@@ -28,19 +30,19 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // fEventValidators by the user when configuring their task
   enum EventValidation {
       kNoEventCut,
-      kIsAODEvent,
+      kPassesAliEventCuts,
       kTrigger,
       kHasFMD,
       kHasEntriesFMD,
-      kHasEntriesV0,
-      kPassesAliEventCuts,
-      kPassesFMD_V0CorrelatioCut,
-      kHasValidVertex,
-      kHasMultSelection,
-      kNotOutOfBunchPU,
-      kNotMultiVertexPU,
-      kNotSPDPU,
-      kNotSPDClusterVsTrackletBG
+      kHasValidFMD,
+      kPassesFMD_V0CorrelatioCut
+  };
+
+  enum EventValidationMC {
+    kNoEventCutMC,
+    kHasEntriesFMDMC,
+    kHasValidFMDMC,
+    kHasPrimariesMC
   };
 
   // Enums describing each event validator. These can be pushed into
@@ -80,16 +82,11 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   // Get SPD tracklets. Note that tracklets have no pt resolution; pt is set to 0!
   AliForwardTaskValidation::Tracks GetTracklets() const;
 
-  // Get SPD clusters. Note that closters have no pt resolution; pt is set to 0!
-  AliForwardTaskValidation::Tracks GetSPDclusters() const;
-
   // Get central barrel tracks
   AliForwardTaskValidation::Tracks GetTracks();
 
-  // Get all MC truth track associated with this event. The filtering
-  // of these tracks is done in this function.
-  // This function is `Fatal` if no MC tracks are found
-  AliForwardTaskValidation::Tracks GetMCTruthTracks();
+
+  AliForwardSettings fSettings; 
 
  protected:
   /// The Holy Grail: Is this a valid event? To be read be following tasks
@@ -97,6 +94,7 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// Vector with all the event validators as enums. Can be set by the
   /// user when setting up the task
   std::vector<AliForwardTaskValidation::EventValidation> fEventValidators;
+  std::vector<AliForwardTaskValidation::EventValidationMC> fEventValidatorsMC;
 
   /// Vector with all the _track_ validators as enums. Can be set by the
   /// user when setting up the task
@@ -106,14 +104,15 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   TList *fOutputList;  //!
 
   void UserExec(Option_t *);
-  Bool_t UserNotify();
+  //Bool_t UserNotify();
   /// Create QA histograms based on the set validators
   void CreateQAHistograms(TList* outlist);
   /// Histogram showing why an even got discarded to be read from left to right
-  TH1F *fQA_event_discard_flow;
+  TH1F *fQA_event_discard_flow;   //!
+  TH1F *fQA_event_discard_flow_MC;//!
 
   /// Histogram showing why a _Track_ was discarded to be read from left to right
-  TH1F *fQA_track_discard_flow;
+  TH1F *fQA_track_discard_flow;//!
 
   // A class applying the recommended event cuts
   AliEventCuts fEventCuts;
@@ -123,31 +122,32 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   /// No checks are done on these tracks - thus this is a private helper function.
   TClonesArray* GetAllCentralBarrelTracks();
 
-  /// Get __ALL MC TRUTH TRACKS__.
-  /// No checks are done on these tracks and they could be anywhere in the detector!
-  TClonesArray* GetAllMCTruthTracksAsTClonesArray();
+  /// Extra cut on the FMD, rejects events with hot spots in FMD
+  Bool_t HasValidFMD();
 
   /// Utils class used by some of the cuts
   AliAnalysisUtils fUtils;
+
   /// Returns alwasy true. Used to have the "all event bin" in the qa histograms
   Bool_t NoCut() {return true;};
+  Bool_t HasPrimaries();
+
   // Check if the given event is an aod event
   Bool_t IsAODEvent();
   Bool_t AcceptTrigger(AliVEvent::EOfflineTriggerTypes TriggerType);
   /// Check if the current event has a FMD object
   Bool_t HasFMD();
+  /// Check if the current event has tracklets
+  Bool_t HasTracklets();
   /// Check if the current event has any counts in the FMD
   Bool_t HasEntriesFMD();
   /// Check if there is a least one channel with a signal in the V0
   Bool_t HasEntriesV0();
-  /// A primary vertex exists
-  Bool_t HasValidVertex();
   /// Passes the default cuts in AliEventCuts class
   Bool_t PassesAliEventCuts();
   /// Event is not an outlier in the FMD-V0 correlation
   Bool_t PassesFMDV0CorrelatioCut(Bool_t fill_qa=false);
   /// Event is not an outlier in the FMD-V0C correlation
-  Bool_t HasMultSelection();
   /// Is not out of bunch pileup
   Bool_t NotOutOfBunchPU() {return !fUtils.IsOutOfBunchPileUp(this->InputEvent());};
   /// Is not multi-vertex pileup
@@ -158,12 +158,23 @@ class AliForwardTaskValidation : public AliAnalysisTaskSE {
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
   // Correlation between FMD and V0s
-  TH2 *fFMDV0;  //!
+  TH2 *fFMDV0;       //!
   TH2 *fFMDV0_post;  //!
-  TH2 *fFMDV0A; //!
+  TH2 *fFMDV0A;      //!
   TH2 *fFMDV0A_post; //!
-  TH2 *fFMDV0C; //!
+  TH2 *fFMDV0C;      //!
   TH2 *fFMDV0C_post; //!
+  TH2 *fOutliers;    //!
+
+  TH1D* fCentrality_before;//!
+  TH1D* fCentrality;//!
+  TH1D* fVertex;//!
+
+  TH2D* centralDist;//!
+  TH2D* refDist;    //!
+  TH2D* forwardDist;//!
+
+  AliForwardFlowUtil fUtil;
 
   ClassDef(AliForwardTaskValidation, 1);
 };

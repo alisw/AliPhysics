@@ -22,13 +22,16 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fUseV0AMult(false),
       fUseV0CMult(false),
       fUseRef08Mult(false),
-	  fUseMultPercentileCut(false),
-	  fMultPercentileMax(999.f),
+      fUseMultPercentileCut(false),
+      fMultPercentileMax(999.f),
       fUseAliEvtCuts(false),
       fCentVsMultPlots(false),
       fDoSpherCuts(false),
       fSpherCutsLow(0.f),
-      fSpherCutsUp(1.f)        {
+      fSpherCutsUp(1.f),
+      fDoSpheroCuts(false),
+      fSpheroCutsLow(0.f),
+      fSpheroCutsUp(1.f){
 }
 
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
@@ -47,13 +50,16 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fUseV0AMult(cuts.fUseV0AMult),
       fUseV0CMult(cuts.fUseV0CMult),
       fUseRef08Mult(cuts.fUseRef08Mult),
-	  fUseMultPercentileCut(cuts.fUseMultPercentileCut),
-	  fMultPercentileMax(cuts.fMultPercentileMax),
+      fUseMultPercentileCut(cuts.fUseMultPercentileCut),
+      fMultPercentileMax(cuts.fMultPercentileMax),
       fUseAliEvtCuts(cuts.fUseAliEvtCuts),
       fCentVsMultPlots(cuts.fCentVsMultPlots),
       fDoSpherCuts(cuts.fDoSpherCuts),
       fSpherCutsLow(cuts.fSpherCutsLow),
-      fSpherCutsUp(cuts.fSpherCutsUp) {
+      fSpherCutsUp(cuts.fSpherCutsUp),
+      fDoSpheroCuts(cuts.fDoSpheroCuts),
+      fSpheroCutsLow(cuts.fSpheroCutsLow),
+      fSpheroCutsUp(cuts.fSpheroCutsUp){
 }
 
 AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
@@ -82,6 +88,9 @@ AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
   this->fDoSpherCuts = cuts.fDoSpherCuts;
   this->fSpherCutsLow = cuts.fSpherCutsLow;
   this->fSpherCutsUp = cuts.fSpherCutsUp;
+  this->fDoSpheroCuts = cuts.fDoSpheroCuts;
+  this->fSpheroCutsLow = cuts.fSpheroCutsLow;
+  this->fSpheroCutsUp = cuts.fSpheroCutsUp;
   return *this;
 }
 
@@ -171,7 +180,6 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
       }
     }
   }
-
   if (pass && fDoSpherCuts) {
     if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() >= fSpherCutsUp) {
       pass = false;
@@ -181,7 +189,7 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
     }
   }
 
-  if( pass & fUseMultPercentileCut) {
+  if (pass & fUseMultPercentileCut) {
     if (evt->GetV0MCentrality() > fMultPercentileMax) {
       pass = false;
     } else {
@@ -190,6 +198,15 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
       }
     }
   }
+  if (pass && fDoSpheroCuts) {
+    if (evt->GetSphero() <= fSpheroCutsLow || evt->GetSphero() >= fSpheroCutsUp) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHist->FillEvtCounter(12);
+    }
+  }
+
 
   evt->SetSelectionStatus(pass);
   BookQA(evt);
@@ -231,13 +248,22 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultSPD(i, evt->GetSPDMult());
         fHist->FillMultV0A(i, evt->GetV0AMult());
         fHist->FillMultV0C(i, evt->GetV0CMult());
+        fHist->FillMultV0M(i, evt->GetV0MMult());
         fHist->FillMultRef08(i, evt->GetRefMult08());
-        fHist->FillSPDTrackletsVsCluster(i, evt->GetSPDMult(),
-                                         evt->GetSPDCluster());
+        fHist->FillMultPercentV0(i, evt->GetV0MCentrality());
+        fHist->FillSPDTrackletsVsCluster(
+            i, evt->GetSPDMult(),
+            evt->GetSPDCluster(0) + evt->GetSPDCluster(1));
+        fHist->FillSPDTrackletsLyVsCluster(i, 0, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(0));
+        fHist->FillSPDTrackletsLyVsCluster(i, 1, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(1));
         fHist->FillEvtVtxZTrackvsSPD(i, evt->GetZVertexSPD(),
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());
         fHist->FillEvtSpher(i, evt->GetSpher());
+        fHist->FillEvtSphero(i, evt->GetSphero());
+        fHist->FillVZEROtiming(i, evt->GetV0ATime(), evt->GetV0CTime());
       }
     }
 
@@ -318,6 +344,13 @@ void AliFemtoDreamEventCuts::BookCuts() {
       fHist->FillCuts(13, fMultPercentileMax);
     } else {
       fHist->FillCuts(13, 0);
+    }
+    if (fDoSpheroCuts) {
+      fHist->FillCuts(14, fSpheroCutsLow);
+      fHist->FillCuts(15, fSpheroCutsUp);
+    } else {
+      fHist->FillCuts(14, 0);
+      fHist->FillCuts(15, 0);
     }
   }
 }

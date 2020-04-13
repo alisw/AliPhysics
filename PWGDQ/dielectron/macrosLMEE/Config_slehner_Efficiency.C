@@ -1,9 +1,9 @@
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+//TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
 // TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
  
-TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+//TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 
 
@@ -14,39 +14,32 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=23; ++glcut){
+  for(int glcut = 0; glcut <=30; ++glcut){
+//  for(int glcut = 0; glcut <=0; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<9){
-      trackCut=0;
-      PIDCut=glcut;
-      MVACut=0;   
-    }
-    else if(glcut<13){
-      trackCut=glcut-8;
-      PIDCut=0;
-      MVACut=0;      
-    }
-    else{
-      trackCut=0;
-      PIDCut=0;
-      MVACut=glcut-13;
-    }
-    //////////////////////////////////////////////////
-    std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+    if(glcut>0 && glcut<21) continue;    
+    PIDCut=glcut-10;
+    trackCut=glcut;
+    if(glcut==0) trackCut=-1;
+    if(glcut==0) PIDCut=0;
+    
+    std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<0<<" added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-    task->AddTrackCuts(filter);    
-  }
+    task->AddTrackCuts(filter); 
+    }
 }
+
+Bool_t setGens=kTRUE;  //decides if generator to be used are set (e.g. for LHC18b5a) or not (e.g. LHC16g1)
 
 Bool_t SetTPCCorrection = kTRUE;
 Bool_t SetITSCorrection = kTRUE;
-Bool_t SetTOFCorrection = kTRUE;
+Bool_t SetTOFCorrection = kFALSE;
 
 Bool_t SetGeneratedSmearingHistos = kFALSE;
 
 Bool_t DoPairing    = kTRUE;
 Bool_t DoULSLS      = kTRUE;
-Bool_t DeactivateLS = kTRUE;
+Bool_t DeactivateLS = kFALSE;
 
 // Leave blank to not use resolution files
 std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP.root";
@@ -113,14 +106,11 @@ const Int_t    stepsPairPtBin = 20;
 //varying bin size
 //lmee mass spectrum
 //  double mbinsarr[] = { 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0}; //Carsten's binning
-//  vector<double>mbins;
-//  
 //  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,8};
-//  vector<double>ptbins;
   
 //low ptee
-double mbinsarr[]= { 0.00,0.4,0.5 ,0.6 ,0.7 ,1.0, 1.5,2.0 ,3.0 ,5.0}; // for low ptee
-double ptbinsarr[]= {0.0,0.025,0.05.0.075,0.1,0.15,0.2,0.3,0.4,0.5,0.6,1, 2.0,8};// for low ptee
+double mbinsarr[]= { 0.0,0.1,0.4,0.5 ,0.6 ,0.7 ,1.1, 1.5,2.0 ,2.7,2.9,3.1 ,5.0}; // for low ptee
+double ptbinsarr[]= {0.0, 0.025, 0.05, 0.075, 0.1,0.125, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 1, 2.0, 5.0, 8.0};// for low ptee
 //  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(10,0,100);
 
 // Binning of resolution histograms
@@ -232,7 +222,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MV
 
   LMEECutLib* LMcutlib = new LMEECutLib();
 
-  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, MVACut, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
+  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, MVACut, useAODFilterCuts,TMVAweight));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
   anaFilter->SetName(TString::Format("CutTr%d_PID%d_MVA%d",selTr, selPID,MVACut,TMVAweight));
   anaFilter->Print();
   return anaFilter;
@@ -266,7 +256,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
+  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
   eleFinalState.SetMotherPDGs(22,22,kTRUE,kTRUE); // this line leads to results in agreement with ML tree maker when counting non-conversion electrons
   
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
@@ -337,7 +327,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
     pair_sameMother.SetLegPDGs(11,-11);
     pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-//    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
     pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.

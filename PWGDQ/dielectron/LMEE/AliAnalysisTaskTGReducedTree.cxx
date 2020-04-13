@@ -727,8 +727,8 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 	 rtrack->PdgMother(mcmother->PdgCode());
 	 rtrack->MotherLabel(mcmother->GetLabel());
 
-	 Int_t child1 = mcmother->GetFirstDaughter();
-	 Int_t child2 = mcmother->GetLastDaughter();
+	 Int_t child1 = mcmother->GetDaughterFirst();
+	 Int_t child2 = mcmother->GetDaughterLast();
 
 	 AliMCParticle *mcTrackD[2] = {NULL, NULL};
 	 Int_t index=0;

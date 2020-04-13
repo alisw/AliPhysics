@@ -51,6 +51,7 @@
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoPairCutPt.h"
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
+#include "AliFemtoCorrFctnDEtaDPhiSimple"
 
 #include "AliFemtoV0PairCut.h"
 #include "AliFemtoV0TrackPairCut.h"
@@ -163,8 +164,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
-	double shqmax = 1.0; 
-	int nbinssh = 100;
+	double shqmax = 5.0; 
+	int nbinssh = 500;
 
 	//AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
@@ -227,7 +228,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoQinvCorrFctn		*cqinvtpc[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDirectYlm *cylmetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDirectYlm * cylmkttpc[numOfMultBins*numOfChTypes*numOfkTbins];
-	AliFemtoCorrFctn3DLCMSSym *cq3dlcmskttpc[numOfMultBins*numOfChTypes]; 
+	AliFemtoCorrFctn3DLCMSSym *cq3dlcmskttpc[numOfMultBins*numOfChTypes];
+	AliFemtoCorrFctnDEtaDPhiSimple	*cdedpetaphinocorr[numOfMultBins*numOfChTypes];
 	  
 
 	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[numOfMultBins**numOfkTbins];
@@ -241,7 +243,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	
 	// *** Third QA task - HBT analysis with all pair cuts off, TPC only ***
 	// *** Begin pion-pion (positive) analysis ***
-	int aniter = 0;	
+	int aniter = 0;
+
+
+	
 	for (int imult = 0; imult < numOfMultBins; imult++)
 	{
 		if (runmults[imult])
@@ -412,15 +417,18 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**** Correlation functions *******	
 					cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
 					anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
+
+					 cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
+					 anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
 				
 					//Spherical harmonics (without kT bins)
-					cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
-					anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
+					//cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
+					//anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
 
-					if(run3d){
-					  cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-					  anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
-					}
+					//if(run3d){
+					//cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
+					//anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
+					//}
 
 					if (runktdep) {
 					  int ktm;
@@ -428,9 +436,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    ktm = aniter*6 + ikt;
 					    ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 					    
-					    cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3, nbinssh, 0.0, shqmax, runshlcms);
-					    cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-					    anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
+					    //cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3, nbinssh, 0.0, shqmax, runshlcms);
+					    //cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+					    //anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 					    
 					    cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
 					    cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);

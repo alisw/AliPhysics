@@ -42,6 +42,9 @@ class AliHFInvMassFitter : public TNamed {
     fTypeOfFit4Bkg=fittypeb; fTypeOfFit4Sgn=fittypes;
     SetNumberOfParams();
   }
+  void     SetSigmaLimit(Double_t sigmaVar, Double_t sigmalimit){
+    fSigmaVar=sigmaVar; fParSig=sigmalimit;
+  } 
 
   void SetUseLikelihoodFit(){fFitOption="L,E";}
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
@@ -66,6 +69,12 @@ class AliHFInvMassFitter : public TNamed {
   void SetFixGaussianSigma(Double_t sigma){
     SetInitialGaussianSigma(sigma);
     fFixedSigma=kTRUE;
+  }
+  void SetBoundGaussianSigma(Double_t sigma, Double_t sigmalimit){
+    SetInitialGaussianSigma(sigma);
+    SetSigmaLimit(sigma, sigmalimit);
+    fBoundSigma=kTRUE;
+    fFitOption="L,E,B";
   }
   void SetFixSecondGaussianSigma(Double_t sigma){
     if(fTypeOfFit4Sgn!=k2Gaus) AliFatal("fTypeOfFit4Sgn should be set to k2Gaus to fix ratio between gaussians\n");
@@ -100,6 +109,8 @@ class AliHFInvMassFitter : public TNamed {
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
   }
+  void SetCheckSignalCountsAfterFirstFit(Bool_t opt){fCheckSignalCountsAfterFirstFit=opt;}
+  
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
   Double_t GetMean() const {return fMass;}
@@ -119,6 +130,8 @@ class AliHFInvMassFitter : public TNamed {
   TF1*     GetBkgPlusReflFunc(){return fBkRFunc;}
   TF1*     GetSignalFunc(){return fSigFunc;}
   TF1*     GetMassFunc(){return fTotFunc;}
+  TF1*     GetSecondPeakFunc(){return fSecFunc;}
+  TF1*     GetReflFunc(){return fRflFunc;}
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();
     else return -1;
@@ -137,7 +150,7 @@ class AliHFInvMassFitter : public TNamed {
   }
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
-  Int_t   MassFitter(Bool_t draw=kTRUE);
+  Int_t    MassFitter(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Double_t FitFunction4Refl(Double_t *x,Double_t *par);
@@ -148,10 +161,13 @@ class AliHFInvMassFitter : public TNamed {
   virtual  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const;
   void Background(Double_t nOfSigma, Double_t &background,Double_t &errbackground) const;
   void Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const;
-  void DrawHere(TVirtualPad* c, Double_t nsigma=3,Int_t writeFitInfo=1);
+  void DrawHere(TVirtualPad* c, Double_t nsigma=3,Int_t writeFitInfo=2);
+  void DrawHistoMinusFit(TVirtualPad* c,Int_t writeFitInfo=1);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1);
+  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1, Int_t option=0);
+  TH1F* GetOverBackgroundResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
+  TH1F* GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
   void PrintFunctions();
 
  private:
@@ -159,14 +175,14 @@ class AliHFInvMassFitter : public TNamed {
   AliHFInvMassFitter& operator=(const AliHFInvMassFitter& source); 
 
   void  SetNumberOfParams();
-  Double_t  CheckForSignal(Double_t mean, Double_t sigma);
-  TF1*  CreateBackgroundFitFunction(TString fname, Double_t integral);
-  TF1*  CreateSignalFitFunction(TString fname, Double_t integral);
-  TF1*  CreateSecondPeakFunction(TString fname, Double_t integral);
-  TF1* CreateReflectionFunction(TString fname);
-  TF1* CreateBackgroundPlusReflectionFunction(TString fname);
-  TF1* CreateTotalFitFunction(TString fname);
-  Bool_t PrepareHighPolFit(TF1 *fback);
+  Double_t CheckForSignal(Double_t mean, Double_t sigma);
+  TF1*	   CreateBackgroundFitFunction(TString fname, Double_t integral);
+  TF1*	   CreateSignalFitFunction(TString fname, Double_t integral);
+  TF1*	   CreateSecondPeakFunction(TString fname, Double_t integral);
+  TF1*	   CreateReflectionFunction(TString fname);
+  TF1*	   CreateBackgroundPlusReflectionFunction(TString fname);
+  TF1*	   CreateTotalFitFunction(TString fname);
+  Bool_t   PrepareHighPolFit(TF1 *fback);
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
 
   void DrawFit();
@@ -186,16 +202,20 @@ class AliHFInvMassFitter : public TNamed {
   Double_t  fSigmaSgn2Gaus;        /// signal second gaussian sigma in case of k2Gaus
   Bool_t    fFixedMean;            /// switch for fix mean of gaussian
   Bool_t    fFixedSigma;           /// switch for fix Sigma of gaussian
+  Bool_t    fBoundSigma;           /// switch for bound Sigma of gaussian
+  Double_t  fSigmaVar;             /// value of bound Sigma of gaussian
+  Double_t  fParSig;               /// +/- range variation of bound Sigma of gaussian in %
   Bool_t    fFixedSigma2Gaus;      /// switch for fix Sigma of second gaussian in case of k2Gaus
   Double_t  fFixedRawYield;        /// initialization for wa yield
   Double_t  fFrac2Gaus;            /// initialization for fraction of 2nd gaussian in case of k2Gaus or k2GausSigmaRatioPar
   Bool_t    fFixedFrac2Gaus;       /// switch for fixed fraction of 2nd gaussian in case of k2Gaus or k2GausSigmaRatioPar
-  Double_t  fRatio2GausSigma;       /// initialization for ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
-  Bool_t    fFixedRatio2GausSigma;  /// switch for fixed ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
+  Double_t  fRatio2GausSigma;      /// initialization for ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
+  Bool_t    fFixedRatio2GausSigma; /// switch for fixed ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
   Int_t     fNParsSig;             /// fit parameters in signal fit function
   Int_t     fNParsBkg;             /// fit parameters in background fit function
   Bool_t    fOnlySideBands;        /// kTRUE = only side bands considered
   Double_t  fNSigma4SideBands;     /// number of sigmas to veto the signal peak
+  Bool_t    fCheckSignalCountsAfterFirstFit; /// switch for check after first fit 
   TString   fFitOption;            /// L, LW or Chi2
   Double_t  fRawYield;             /// signal gaussian integral
   Double_t  fRawYieldErr;          /// err on signal gaussian integral
@@ -222,7 +242,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;              /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,5); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,7); /// class for invariant mass fit
   /// \endcond
 };
 

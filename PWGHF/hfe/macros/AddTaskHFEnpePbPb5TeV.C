@@ -7,7 +7,7 @@ Int_t filBIT;
 
 AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    //Bool_t MCthere = kFALSE,                     // DATA
-                                   Bool_t MCthere = kFALSE,                    // MC
+                                   Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
@@ -34,6 +34,8 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    ,Bool_t kTestNewWeights_MBfixedHIJING = kFALSE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays
                                    ,Bool_t kTestNewWeights_MBfixedHIJING_asDefault = kTRUE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays as default
+                                   ,Bool_t kTestCookedWeightsFrom276 = kFALSE    // testing weights from charged pions at 5.02TeV cooked from charged pions at 2.76 TeV
+                                   ,Bool_t kTestWeights_paperAfterCR1 = kTRUE   // testing weights from measured charged pions at 5 TeV (almost final, paper after CR1) (mfaggin, 13-Aug-2019)
                                    )		   
   
 {
@@ -200,6 +202,13 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
     ,k16g1_2_smallercentbins = 73       // 73: PbPb LHC16g1 minimum bias MC using pi charged data spectra in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
 
     ,k18e1_fixedHIJING = 80     // 80: PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay - pi charged data spectra used for weights (11/09/2018)
+
+    // weights from charged pions at 5.02 TeV cooked from charged pions at 2.76 TeV with the ratio of charged particle spectrum at the two energy as follows:
+    //  CHPION(5.02TeV) = CHPIONS(2.76TeV)*CHPART(5.02TeV)/CHPART(2.76TeV)
+    ,k18e1_fixHIJING_weightsFrompiCharged276 = 81
+
+    // weights from measured charged pions ate 5 TeV almost final (paper after CR1)
+    ,k18e1_fixHIJING_weightsPion5TeV_afterCR1 = 82
 
   };
   //Int_t kWeightMC = k16g1;
@@ -617,7 +626,29 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
-        
+
+        // weights from measured charged pions ate 5 TeV almost final (paper after CR1)
+        if(kTestWeights_paperAfterCR1){
+                printf("\n#####\n");
+                printf("##### kTestWeights_paperAfterCR1 case - weights from measured charged pions at 5 TeV, almost final (paper after CR1)");
+                printf("\n#####\n");  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k18e1_fixHIJING_weightsPion5TeV_afterCR1);
+        }
+
+        // testing weights from charged pions at 5.02TeV cooked from charged pions at 2.76 TeV
+        if(kTestCookedWeightsFrom276){
+                printf("\n#####\n");
+                printf("##### kTestCookedWeightsFrom276 case - weights from charged pions cooked from 2.76TeV one tested");
+                printf("\n#####\n");     
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k18e1_fixHIJING_weightsFrompiCharged276);
+        }
+
         if(kTestNewWeights_MBfixedHIJING && !kTestNewWeights_MBfixedHIJING_asDefault){
                 printf("\n#####\n");
                 printf("##### kTestNewWeights_MBfixedHIJING case - fixed HIJING weights tested");
@@ -1417,6 +1448,8 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
         else if(wei==72)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr.root");
         else if(wei==73)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_smallerbins.root");
         else if(wei==80)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr_newMB_fixedHIJING.root");
+        else if(wei==81)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_ScaledFrom276TeV_allCentr_newMB_fixedHIJING.root");
+        else if(wei==82)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_afterCR1_allCentr_newMB_fixedHIJING.root");
         else                        ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 

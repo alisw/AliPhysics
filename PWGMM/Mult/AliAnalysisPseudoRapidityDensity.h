@@ -30,26 +30,8 @@ class AliStack;
 class TRandom3;
 class AliMultSelection;
 class AliMultSelectionTask;
+//class TChain;
 
-class AliAnalysisPseudoRapidityDensityRunTable {
-    public:
-        enum {kPP,kPA,kAA,kUnknownCollType};
-        AliAnalysisPseudoRapidityDensityRunTable();
-        AliAnalysisPseudoRapidityDensityRunTable(Int_t runnumber);
-        ~AliAnalysisPseudoRapidityDensityRunTable();
-
-        Bool_t IsPP(){
-            return fCollisionType==kPP; 
-        }
-        Bool_t IsPA(){
-            return fCollisionType==kPA; 
-        }
-        Bool_t IsAA(){
-            return fCollisionType==kAA; 
-        }
-    private:
-        Int_t  fCollisionType; //! Is proton-proton collisions?
-};
 
 class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
     public:
@@ -57,7 +39,7 @@ class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
         typedef std::vector<Double_t> Double1D;
 
         enum {  kECbegin=1,kDATA=1, kINEL, kNSD, kINELg0, kECend};
-        enum {  kTrigbegin=1, kMBOR=1, kMBAND, kMBORg0, kMBANDg0 , kTrigend};
+        enum {  kTrigbegin=1, kMBOR=1, kMBAND, kMBORg0, kMBANDg0, kHighMult, kHighMultg0, kTrigend};
         enum {  kParTypebegin=1,kParDATA=1,kMotherStrange,kBkg
           ,kPion,kKaon,kProton, kOPar, kParTypeend};
         enum {  kV0Typebegin=1,kK0s=1, kLambda, kAntiLambda, kV0Typeend};
@@ -95,7 +77,6 @@ class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
 
         virtual void    UserCreateOutputObjects();
         virtual void    UserExec(Option_t *);
-        virtual void    FinishTaskOutput();
         virtual void    Terminate(Option_t *);
 
         void SetOption(char * option) {fOption = option;}
@@ -105,6 +86,9 @@ class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
         void FillTracklets(Bool_1d bevtc, Bool_1d btrigc);
         void StrangenessMeasure( Bool_1d btrigc);
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
+        void SetGeoCentHist (std::vector<TH1D> &h){
+            fMultGeo = h;
+        }
         void SetCentHist (std::vector<TH1D> &h){
             fMult = h;
         }
@@ -146,16 +130,14 @@ class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
         typedef std::vector<Double_t> Double_1d;
         
         TString                         fOption;
-        TList*                          fOutput=nullptr; //!
        
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
-        std::vector<AliESDtrackCuts>    fTrackCuts;
+        std::vector<AliESDtrackCuts>         fTrackCuts;
         AliESDtrackCuts                 fTrackCutGC;
         AliVEvent*                      fEvt=nullptr; //!
         UInt_t                          fFilterBit;
         Bool_t                          IsFirstEvent=kTRUE;
-        AliAnalysisPseudoRapidityDensityRunTable*   fRunTable=nullptr; //!
         
         Double_1d                       fCent;
         Double_t                        fZ=-30;
@@ -183,7 +165,8 @@ class AliAnalysisPseudoRapidityDensity : public AliAnalysisTaskSE {
         TRandom3*                       fRandom=nullptr; //!
         TH1D*                           hdifftuneratio=nullptr;//!
         Double_t                        sdweightingfactor=1.;
-        std::vector<TH1D>               fMult ; //[kCentClassBinEnd]
+        std::vector<TH1D>                    fMultGeo ; //[kCentClassBinEnd] 
+        std::vector<TH1D>                    fMult ; //[kCentClassBinEnd]
         TTree*                          fRPTree = nullptr;//! tree of recpoints
         Bool_t                          isbginjection = false;
     

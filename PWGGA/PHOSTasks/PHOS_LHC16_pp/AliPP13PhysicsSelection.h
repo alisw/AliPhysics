@@ -28,9 +28,9 @@ struct SelectionLimits
 		nM = 750;
 		mMin = 0.0;
 		mMax = 1.5;
-		nPt = 400;
+		nPt = 800;
 		ptMin = 0;
-		ptMax = 20;
+		ptMax = 40;
 
 	}
 

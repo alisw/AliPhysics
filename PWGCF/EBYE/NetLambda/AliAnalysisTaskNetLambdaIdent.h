@@ -81,7 +81,6 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   
   AliESDEvent* fESD;
   AliAODEvent* fAOD;
-  AliStack *stack;
   //AliAnalysisUtils* fUtils;   //! analysis utils to detect pileup
   AliPIDResponse* fPIDResponse; // points to class for PID
   AliEventCuts fEventCuts;      /// Event cuts
@@ -183,7 +182,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,11);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,12);
 };
 
 //_____________________________________________________________________________

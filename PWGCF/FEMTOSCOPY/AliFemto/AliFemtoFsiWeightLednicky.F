@@ -1,7 +1,4 @@
-ccc   Updated in October 2016 by Konstantin.Mikhaylov@cern.ch
-ccc   New version was taken from Richard Lednicky
-
-c     1         2         3         4         5         6         7         8
+c         1         2         3         4         5         6         7         8
 c---------|---------|---------|---------|---------|---------|---------|---------|
 *-- Author :    R.Lednicky      20/01/95
       SUBROUTINE FSIW(J,WEIF,WEI,WEIN)
@@ -40,10 +37,15 @@ C-   part. 1: n  p  n  a  pi+ pi0 pi+ n  p pi+ pi+ pi+ pi- K+ K+ K+ K-
 C-   part. 2: n  p  p  a  pi- pi0 pi+ d  d  K-  K+  p   p  K- K+ p  p
 C   NS=1 y/n: +  +  +  +  +   -   -   -  -  -   -   -   -  -  -  -  -
 C----------------------------------------------------------------------
-C-   LL       18 19 20 21 22 23  24 25 26 27 28 29 30 31  32
-C-   part. 1: d  d  t  t  K0 K0  d  p  p  p  n  /\ p  pi+ pi-
-C-   part. 2: d  a  t  a  K0 K0b t  t  a  /\ /\ /\ pb Xi- Xi-
-C   NS=1 y/n: -  -  -  -  -  -   -  -  -  +  +  +  -  -   -
+C-   LL       18 19 20 21 22 23  24 25 26 27 28 29 30 31  32  33  34
+C-   part. 1: d  d  t  t  K0 K0  d  p  p  p  n  /\ p  pi+ pi- p   p
+C-   part. 2: d  a  t  a  K0 K0b t  t  a  /\ /\ /\ pb Xi- Xi- Om- Omb
+C   NS=1 y/n: -  -  -  -  -  -   -  -  -  +  +  +  -  -   -   -   -
+C----------------------------------------------------------------------
+C-   LL       35 
+C-   part. 1: K+ 
+C-   part. 2: K0b 
+C   NS=1 y/n: -  
 C----------------------------------------------------------------------
 C   NS=1  Square well potential,
 C   NS=3  not used
@@ -138,7 +140,6 @@ C==> AC1,2 = "relativistic" Bohr radii for particle-nucleus systems
 C-----------------------------------------------------------
       CALL FSIPN(WEIF) !weight due to particle-nucleus FSI
       JRAT=0
-      call BoostToPrf() !km: adaptation to aliroot (Oct2016)
       CALL FSIWF(WEI)  !weight due to particle-particle-nucleus FSI
       WEIN=WEI
          IF(I3C*J.NE.0) THEN
@@ -240,7 +241,7 @@ C-----------------------------------------------------------------------
       EE=(E12*E1-P112)/AM12
       AKS=EE**2-AM1**2
       AK=DSQRT(AKS)
-CW      WRITE(6,38)'AK ',AK,'K ',PPX,PPY,PPZ,EE
+C      WRITE(6,38)'AK ',AK,'K ',PPX,PPY,PPZ,EE
 38    FORMAT(A7,E11.4,A7,4E11.4)
       RETURN
       END
@@ -256,29 +257,27 @@ C     omitted plane wave factors:  FFij=sqrt[Ac1N*Ac2N]*F(pix1)*F(pjx2)
      1                X2,Y2,Z2,T2,R2
       COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
-      COMMON/FSI_ICH1/ICH1
       COMMON/FSI_ETA/ETA
       COMMON/FSI_FFPN/FF12,FF21
-      COMPLEX*16 FF1,FF12,FF21
+      COMPLEX*16 FF0,FF12,FF21
       FF12=DCMPLX(1.D0,0.D0)
       FF21=DCMPLX(1.D0,0.D0)
-      ACH=1.D0
       WEIF=1.D0
-      IF(I3C.EQ.0)RETURN
+      IF(I3C.EQ.0.OR.CN.EQ.0.D0)RETURN
       ICH1=IDINT(C1)
       IF(ICH1.EQ.0)GOTO 11
       XH=AC1*P1
-      ACH=ACP(XH)
+      ACH=ACP(XH)                 ! 
       ACHR=DSQRT(ACH)
       ETA=0.D0
       IF(XH.NE.0.D0)ETA=1/XH
-      RHOS=P1*R1
-      HS=X1*P1X+Y1*P1Y+Z1*P1Z
-      FF12=FF12*FF1(RHOS,HS)
+      RHOS=P1*R1                  ! p1*r1
+      HS=X1*P1X+Y1*P1Y+Z1*P1Z     ! p1vec*r1vec
+      FF12=FF12*FF0(RHOS+HS)      ! Phi(p1,r1)
       IF(IQS.EQ.0)GOTO 11
       RHOS=P1*R2
       HS=X2*P1X+Y2*P1Y+Z2*P1Z
-      FF21=FF21*FF1(RHOS,HS)
+      FF21=FF21*FF0(RHOS+HS)      ! Phi(p2,r1)
  11   ICH1=IDINT(C2)
       IF(ICH1.EQ.0)GOTO 10
       XH=AC2*P2
@@ -288,14 +287,14 @@ C     omitted plane wave factors:  FFij=sqrt[Ac1N*Ac2N]*F(pix1)*F(pjx2)
       IF(XH.NE.0.D0)ETA=1/XH
       RHOS=P2*R2
       HS=X2*P2X+Y2*P2Y+Z2*P2Z
-      FF12=FF12*FF1(RHOS,HS)
+      FF12=FF12*FF0(RHOS+HS)      ! Phi(p1,r1)Phi(p2,r2)
 CW      WRITE(6,41)'AC2 ',AC2,'ACH ',ACH,'ETA ',ETA,'RHOS ',RHOS,'HS ',HS
 41    FORMAT(5(A5,E11.4))
 CW      WRITE(6,40)'FF12 ',DREAL(FF12),DIMAG(FF12)
       IF(IQS.EQ.0)GOTO 10
       RHOS=P2*R1
       HS=X1*P2X+Y1*P2Y+Z1*P2Z
-      FF21=FF21*FF1(RHOS,HS)
+      FF21=FF21*FF0(RHOS+HS)      ! Phi(p1,r2)Phi(p2,r1)
 CW      WRITE(6,41)'AC1 ',AC1,'ACH ',ACH,'ETA ',ETA,'RHOS ',RHOS,'HS ',HS
 CW      WRITE(6,40)'FF21 ',DREAL(FF21),DIMAG(FF21)
 40    FORMAT(A7,2E12.4)
@@ -309,7 +308,7 @@ C     WEIF = the weight due to the Coulomb particle-nucleus interaction
 
       FUNCTION GPIPI(X,J)
 C---  GPIPI = k*COTG(DELTA), X=k^2
-C--   J=1(2) corresponds to isospin=0(2)
+C--   J=1,2 corresponds to isospin=0,2
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_AAPI/AAPI(20,2)
       COMMON/FSI_C/HELP(20)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
@@ -331,9 +330,42 @@ C---  Nagels (79)
       RETURN
       END
 
+      FUNCTION GPIK(X,J)
+C---  GPIK = k*COTG(DELTA), X=k^2
+C--   J=1,2 corresponds to isospin=1/2,3/2
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_AAPIK/AAPIK(20,2)
+      COMMON/FSI_C/HELP(20)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      DATA AMPI/.13957D0/     ! pi+ mass
+      DATA AMPIS/.0194798D0/  ! pi+ mass squared
+c      OM1=DSQRT(AM1S+AKS)
+c      OM2=DSQRT(AM2S+AKS) 
+c      SQ=OM1+OM2                 ! SQ= sqrt(s) is pi+K- eff. mass
+      XX=X/AMPIS                  ! XX= (k/mpi+)^2
+      XXS=XX*XX
+C---  Buttiker(04) Eur.Phys.J C33 (2004) 409
+C     in this paper, the usual ampl. f= exp(i delta)sin(delta)/k
+C     is substituted by the dimensionless one: sqrt(s)f/2
+      Ref=(AAPIK(1,J)+XX*AAPIK(2,J)
+     +               +XXS*AAPIK(3,J))/AMPI 
+           ! Ref=a+bk^2+ck^4
+           ! AAPIK(I,J)= a m_pi, b m_pi^3, c m_pi^5 are dimensionless
+      H=2*Ref
+      D=1-X*H**2   ! discriminant of eq. Ref=g/(g^2+k^2)
+                   ! g=GPIK
+      GPIK=1.D6
+      IF(H.EQ.0.D0)RETURN
+      IF(D.GE.0.D0)THEN
+       GPIK=(1+DSQRT(D))/H
+      ELSE
+       GPIK=1/H
+      ENDIF
+      RETURN
+      END
+
       FUNCTION GPIN(X,J)
 C---  GPIN = k*COTG(DELTA), X=k^2
-C--   J=1(2) corresponds to piN isospin=1/2(3/2)
+C--   J=1,2 corresponds to piN isospin=1/2,3/2
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_AAPIN/AAPIN(20,2)
       GPIN=1/AAPIN(1,J)+.5D0*AAPIN(2,J)*X
@@ -342,7 +374,7 @@ C--   J=1(2) corresponds to piN isospin=1/2(3/2)
 
       FUNCTION GPIXI(X,J)
 C---  GPIXI = k*COTG(DELTA), X=k^2
-C--   J=1(2) corresponds to piXi isospin=1/2(3/2)
+C--   J=1,2 corresponds to piXi isospin=1/2,3/2
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_AAPIXI/AAPIXI(20,2)
       GPIXI=1/AAPIXI(1,J)+.5D0*AAPIXI(2,J)*X
@@ -351,8 +383,8 @@ C--   J=1(2) corresponds to piXi isospin=1/2(3/2)
 
       FUNCTION GND(X,J)
 C---  GND = k*COTG(DELTA), X=k^2
-C---  J=1(2) corresp. to nd(pd), S=1/2,
-C---  J=3(4) corresp. to nd(pd), S=3/2
+C---  J=1,2 corresp. to nd,pd, S=1/2,
+C---  J=3,4 corresp. to nd,pd, S=3/2
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_AAND/AAND(20,4)
       XX=X
@@ -380,29 +412,29 @@ C---  J=1,2,3 corresp. to S=0,1,2
        TAND=DTAN(GDD)
        IF(TAND.EQ.0.D0)TAND=1.D-10
        GDD=DSQRT(X)/TAND
-      END IF
+      ENDIF
       IF(J.EQ.2)THEN
        GDD=1.D10
-      END IF
+      ENDIF
       IF(J.EQ.3)THEN
        GDD=ER*(AADD(1,3)+AADD(2,3)*E)
        GDD=GDD/DR    ! from degree to radian
        TAND=DTAN(GDD)
        IF(TAND.EQ.0.D0)TAND=1.D-10
        GDD=DSQRT(X)/TAND
-      END IF
+      ENDIF
       RETURN
       END
 
       BLOCK DATA
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER*4 iPhiOff
       COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
+      COMMON/FSI_AAPIK/AAPIK(20,2)
       COMMON/FSI_AADD/AADD(20,3)/FSI_AAPIN/AAPIN(20,2)
       COMMON/FSI_AAPIXI/AAPIXI(20,2)
-      COMMON/FSI_AAKK/AAKK(14)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
-      Common/FSI_Phi/iPhiOff !0->Off, 1->On
-C---  Parameters for GPIPI (I,J), J=1,2 -> isospin=0,2
+      COMMON/FSI_AAKK/AAKK(20)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
+      COMMON/FSI_AAKBN/AAKBNR(20,2),AAKBNI(20,2)
+C---  Parameters AAPI(I,J) for GPIPI(X,J), J=1,2 -> pipi isospin=0,2
 C---  Nagels (79)
 c      DATA AAPI/.2600D00, .2500D00, .3480D00,-.0637D00, 16*0.D0,
 c     1         -.0280D00,-.0820D00, .2795D00,-.0086D00, 16*0.D0/
@@ -410,12 +442,33 @@ C---  Colangelo(01)
       DATA AAPI/.220D0, .268D0,-.139D-1,-.139D-2, 36.77D0, 15*0.D0,
      1         -.444D-1,-.857D-1,-.221D-2,-.129D-3,-21.62D0, 15*0.D0/
 C***
-C---  Parameters for GPIN (I,J), J=1,2 -> piN isospin=1/2,3/2
+C---  Parameters AAPIK(I,J) for GPIK(X,J), J=1,2 -> piK isospin=1/2,3/2
+C     AAPIK(I,J)= a m_pi, b m_pi^3, c m_pi^5, I=1-3, are dimensionless
+C     parameters in eq. Ref=a+bk^2+ck^4 = g/(g^2+k^2)
+C---  Buttiker(04) Eur.Phys.J C33 (2004) 409
+      DATA AAPIK/.224D0, .019D0,   -.045D0, 17*0.D0,
+     1         -.0448D0, .00065D-1, .018D0, 17*0.D0/
+C***
+C---  Parameters AAPIN(I,J) for GPIN(X,J), J=1,2 -> piN isospin=1/2,3/2
 C--   s-wave scattering length and effective radius in 1/GeV
       DATA AAPIN/ .12265D1, .1563D2,     18*0.D0,
      1            -.750D0,  .7688D2,     18*0.D0/
+C***
+C---  Re and Im parts AAKBNR(I,J) and AAKBNI(I,J) of the K-bar N
+C     scattering length and effective radius in 1/GeV, 
+C     J=1,2 -> K-bar N isospin= 0,1
+C---  K-p s-wave scatt. lengths
+c      DCMPLX(-3.29D0,3.55D0)   ! Martin'76
+c      DCMPLX(-2.585D0,4.156D0) ! Borasoy'04
+c      DCMPLX(-3.371D0,3.244D0) ! Martin'81
+      DATA AAKBNR/ 
+     1             -8.616D0,  0.D0,     18*0.D0,
+     2              1.8753D0, 0.D0,     18*0.D0/ ! Martin'81
+      DATA AAKBNI/ 
+     1              3.4465D0, 0.D0,     18*0.D0,
+     2              3.0411D0, 0.D0,     18*0.D0/ ! Martin'81
 C***  
-C---  Parameters for GPIXI (I,J), J=1,2 -> piXi isospin=1/2,3/2
+C---  Parameters AAPIXI(I,J) for GPIXI(X,J), J=1,2 -> piXi isospin=1/2,3/2
 C---  s-wave scatt. length, eff. radius in 1/GeV
 C--   for isospin 1/2 also p-wave Xi* mass, width, 
 C-                         pi+Xi- and pi0Xi0 decay mom. in GeV
@@ -423,98 +476,316 @@ C-                         pi+Xi- and pi0Xi0 decay mom. in GeV
      +                                            .157666D0, 14*0.D0,
      1             .1D-6, .0D0,     18*0.D0/
 C***
-C---  Parameters for GND (I,J), J=1(2) corresp. to nd(pd), S=1/2,
-C---                            J=3(4) corresp. to nd(pd), S=3/2
+C---  Parameters AAND(I,J) for GND(X,J), J=1(2) -> S=1/2 for nd(pd)
+C---                                     J=3(4) -> S=3/2 for nd(pd)
       DATA AAND/-.3295D1,-.8819D3, .4537D4, .28645D5, 16*0.D0,
      1          -.13837D2, .11505D2, .0D0, .10416D2,  16*0.D0,
      2          -.32180D2, .1014D2,  .0D0, .0D0,      16*0.D0,
      3          -.60213D2, .1333D2,  .0D0,-.70309D2,  16*0.D0/
+C***
+C---  Parameters AADD(I,J) for GDD(X,J), J=1,2,3 -> S=0,1,2
       DATA AADD/ .10617D4, .3194D-2, .56849D3, 17*0.D0,
      1           20*0.D0,
      2          -.1085D4, .1987D5, 18*0.D0/
 C***
-C---  AAKK= m_K0^2, m_pi+^2, m_eta^2,
-C---        m_S*^2, m_delta^2, gam(S*-->KK-b),
-C---        gam(S*-->pipi), gam(delta-->KK-b), gam(delta-->pi eta)
+C---  Parameters AAKK(I) for CKPKM
+C---  AAKK(1-9)= m_K0^2, m_pi+^2, m_eta^2,
+C---             m_f0^2, m_a0^2, gam(f0-->KK-b),
+C---             gam(f0-->pipi), gam(a0-->KK-b), gam(a0-->pi eta)
       DATA AAKK/.247620D0,.0194798D0,.300143D0,
-*     1 .9565D0,.9487D0,1D-10,1D-10,.333D00,.222D0, !Martin-test a0 only
-*     1     .9565D0,1.0060D0,.792D0,.199D0,1D-10,1D-10, !Martin-test f0 only
-     1     .9565D0,1.0060D0,.792D0,.199D0,.8365D0,.4580D0, !f0-Martin'77 a0-Achasov2'01,03
-c           m2f0    m2a0   f0-KK f0-pipi a0-KK  a0-pieta
 c     1 .9565D0,.9487D0,.792D0,.199D0,.333D00,.222D0, ! Martin'77
 c     1 .9467D0,.9698D0,2.763D0,.5283D0,.4038D0,.3711D0, ! Antonelli'02
 c     1 .9920D0,.9841D0,1.305D0,.2684D0,.5555D0,.4401D0, ! Achasov1'01,03
-c     1 .9920D0,1.0060D0,1.305D0,.2684D0,.8365D0,.4580D0,! Achasov2'01,03
+     1 .9920D0,1.0060D0,1.305D0,.2684D0,.8365D0,.4580D0,! Achasov2'01,03
+ctest     1 .9920D0,1.0060D0,1.D-6,.2684D0,1.D-6,.4580D0,!test gamKK-bar=0
 C---  AAKK(10-14)= m_Phi,Gam,k(+-),k(00),Gam'     
-     2 1.01946D0,4.26D-3,.126916084761D0,.110476150838D0,.716D-3/
+     2 1.01946D0,4.26D-3,.126916084761D0,.110476150838D0,.716D-3,
+ctest     2 1.01946D0,4.26D-3,.126916084761D0,.110476150838D0,.0D0,!test Gam'=0
+C---  AAKK(15-20)= m_K+^2, m_pi0^2, f_0(T=0), d_0(T=0), f_0(T=1), d_0(T=1);
+C                  f_0, d_0 are potential (non-resonant) scattering parameters
+     3 .24371698D0,.018218683D0,.1D-6,.0D0,.1D-6,.0D0/
 C***
-C---  Parameters for PAP (I,J), j=1,2 -> isospin I=0,2
-C---                            i=1-3 -> a_singlet, a_triplet, d [fm]
-C---    Im a_IS (I=isospin, S=spin) are fixed by atomic data and
+C---  Parameters AAPAPR(I,J) for CPAP, J=1,2 -> isospin T=0,1
+C---                                   I=1-3 -> a_T0, a_T1, d [fm]
+C---    Im a_TS (T=isospin, S=spin) are fixed by atomic data and
 C       n-bar survival time up to one free parameter, e.g. Im a_00
 C---    Batty (89), Kerbikov (93):
 C---    Ima_10=1.96-Ima_00, Ima_01=0.367-Ima_00/3, Ima_11=0.453+Ima_00/3
 C---       In DATA we put Ima_00=0.3.
-C---    Re a_IS are fixed by atomic data up to three free parameters
+C---    Re a_TS are fixed by atomic data up to three free parameters
 C---    Batty (89):
 C---         Rea_aver(pp-bar)=Re[(a_00+a_10)+3(a_01+a_11)]/8=-0.9
-C---       In DATA we used Rea_IS from Paris potential Pignone (94)
-C---       rescaled by 1.67 to satisfy the atomic constraint.
-C---    Effective radius is taken independent of IS from the phase
+C---         In DATA we used Rea_TS from Paris potential Pignone (94)
+C---         rescaled by 1.67 to satisfy the atomic constraint.
+C---    Effective radius d is taken independent of TS from the phase
 C---    shift fit by Pirner et al. (91).
       DATA AAPAPR/-0.94D0, -1.98D0,  .1D0,
      1            -1.40D0,  0.37D0,  .1D0/ ! Re
-      DATA AAPAPI/ 0.3 D0,  .267D0,-.01D0,
+      DATA AAPAPI/ 0.3D0,   .267D0,-.01D0,
      1             1.66D0,  .553D0,-.01D0/ ! Im
-      DATA iPhiOff/1/
       END
 
-      SUBROUTINE CPIPI ! calculates pi+pi- s-wave scattering amplitudes
-                       ! accounting for pi0pi0->pi+pi- transition
+      SUBROUTINE CPIPI ! LL=5: pi+pi- s-wave scattering amplitudes.
+                       !       Accounting for pi0pi0->pi+pi- transition
                        ! C(1)= f_c(pi+pi-->pi+pi-)
                        ! C(2)= f_c(pi+pi-->pi0pi0)
+                       ! DW0(1)= average inner (r*< AA) s-wave SI weight
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
-      DATA AM1_2/.13498D0/  ! pi0 mass
+      DATA AM1_2/.13498D0/     ! pi0 mass
       DATA AM1S_2/.0182196D0/  ! pi0 mass squared
       DATA cas/0.6667D0/,cbs/.3333D0/,cab/0.47140452D0/ ! cab=sqrt(cas*cbs)
       OM1=DSQRT(AM1S+AKS)
-      SQ=2*OM1 ! = M= = eff. mass of channel 1=pi+pi-
+      SQ=2*OM1                 ! = M= eff. mass of channel 1=pi+pi-
+                               !                        or 2=pi0pi0
       S=SQ*SQ
-C--                         here AM1_2+AM2_2 < SM = AM1+AM2
       AMU2_AMU1=1  ! ratio of "relativistic" reduced masses in channels 2 and 1
+                   ! =1 since OM1_2=OM2_2=OM1=OM2 if m1_2=m2_2 and m1=m2
       AK2S=OM1*OM1-AM1S_2 ! here OM1_2=OM1
+                          ! AK2S > 0 since AM1_2+AM2_2 < AM1+AM2
       AK2=DSQRT(AK2S)     ! k2 = momentum in channel 2
       G2=GPIPI(AKS,2)
       G1=GPIPI(AKS,1)
-      RK11=cas*G1+cbs*G2
-      RK22=cas*G2+cbs*G1
-      RK12=-cab*(G1-G2)
-      C(3)=RK11+DCMPLX(-HCP2,-AAK)      ! (1/f)11
-      C(5)=RK22
-      C(5)=C(5)-DCMPLX(0.D0,AK2)        ! (1/f)22
-      C(7)=RK12                         ! (1/f)12
-      C(10)=C(3)*C(5)-C(7)*C(7)
-      C(1)=C(5)/C(10)                   ! f11
-      C(2)=-C(7)/C(10)                  ! f12
+      RK11=cas*G1+cbs*G2  ! Maa
+      RK22=cas*G2+cbs*G1  ! Mbb
+      RK12=-cab*(G1-G2)   ! Mba
+      C(3)=RK11+DCMPLX(-HCP2,-AAK)      ! (1/f_c)11
+      C(5)=RK22+DCMPLX(0.D0,-AK2)       ! (1/f_c)22
+C                                       ! (1/f_c)12 = RK12
+      C(10)=C(3)*C(5)-RK12*RK12         ! Determinant(1/f_c)
+      C(1)=C(5)/C(10)                   ! f_c11
+      C(2)=-RK12/C(10)                  ! f_c12
+C------------- inner (r*< AA) s-wave weight --------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G2H=GPIPI(AKSH,2)
+      G1H=GPIPI(AKSH,1)
+      DMAA=(cas*G1H+cbs*G2H-RK11)/DAKS  ! dMaa/dk^2
+      DMBB=(cas*G2H+cbs*G1H-RK22)/DAKS  ! dMbb/dk^2
+      DMBA=(-cab*(G1H-G2H)-RK12)/DAKS   ! dMba/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+      HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK)
+      HH=HH+HBA*AA  ! * mu2/mu1=1
+      DW0(1)=(3/AA**3)*ACH*HH      ! average inner s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
       RETURN
       END
 
-      SUBROUTINE CPIN  ! calculates pi-p s-wave scattering amplitudes
-                       ! accounting for pi0n->pi-p transition
-                       ! C(1)= f_c(pi-p->pi-p)
-                       ! C(2)= f_c(pi-p->pi0n)
+      SUBROUTINE CPI0PI0 ! LL=6: pi0pi0 s-wave scattering amplitudes.
+                         !       Accounting for pi0pi0->pi+pi- transition
+                         ! C(1)= f_c(pi0pi0->pi0pi0)
+                         ! C(2)= f_c(pi0pi0->pi+pi-)
+                         ! DW0(1)= average inner (r*< AA) s-wave SI weight
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
+      COMPLEX*16 C
+      DATA AM1_2/.13957D0/     ! pi+ mass
+      DATA AM1S_2/.0194798D0/  ! pi+ mass squared
+      DATA cas/.3333D0/,cbs/0.6667D0/,cab/0.47140452D0/ ! cab=sqrt(cas*cbs)
+      OM1=DSQRT(AM1S+AKS)
+      SQ=2*OM1                 ! = M= eff. mass of channel 1=pi0pi0
+                               !                        or 2=pi+pi-
+      S=SQ*SQ
+C------------------------------------------------------------------
+      AC=-2*137.036D0/AM1_2        ! Bohr radius in 2-nd ch. (pi+pi-)
+      D2A=2*AA/AC                  ! 2d/a
+c-------------------------------------------------------------------
+      AMU2_AMU1=1  ! ratio of "relativistic" reduced masses in channels 2 and 1
+                   ! =1 since OM1_2=OM2_2=OM1=OM2 if m1_2=m2_2 and m1=m2
+      AK2S=OM1*OM1-AM1S_2  ! OM1_2=OM1
+      IF(AK2S.GE.0.D0)THEN ! here AK2S >0; 
+                           ! can be <0 since AM1_2+AM2_2 > AM1+AM2
+       AK2=DSQRT(AK2S)     ! k2 = momentum in channel 2 (pure real)
+       XH=AC*AK2
+       ACH=ACP(XH)
+       ACHR=DSQRT(ACH)
+       ETA=0.D0
+       IF(XH.NE.0.D0)ETA=1/XH
+       HCP=HC(XH)    ! HCP=h(eta), HPR needed (e.g. in GST, SEQ) if ICH=1
+       HPR=HCP+.1544313298D0  ! HPR= h(eta)+2C-1
+       AAK=ACH*AK2   ! needed to calculate C(JJ) for charged particles
+       HCP2=2*HCP/AC ! 
+      ELSE                 ! here AK2S < 0
+       ACA=DABS(AC)
+       AK2=DSQRT(-AK2S)    ! kappa2 = Im(k2) > 0; k2= i kappa2 (pure imaginary)
+       XH=ACA*AK2
+       X=1.D6
+       IF(XH.NE.0.D0)X=1/XH
+       AK2C=2*(pi/DTAN(pi*X)+0.5D0/X-DLOG(X)+digamma(X))/ACA ! kappa2_c
+      ENDIF
+      G2=GPIPI(AKS,2)
+      G1=GPIPI(AKS,1)
+      RK11=cas*G1+cbs*G2  ! Maa
+      RK22=cas*G2+cbs*G1  ! Mbb
+      RK12=-cab*(G1-G2)   ! Mba
+C------------------------------------------------------------------     
+      C(3)=RK11+DCMPLX(0.D0,-AK)        ! (1/f_c)11
+      IF(AK2S.GE.0.D0)THEN
+      C(5)=RK22+DCMPLX(-HCP2,-AAK)      ! (1/f_c)22
+      ELSE
+      C(5)=RK22+AK2C
+      ENDIF
+C                                       ! (1/f_c)12 = RK12
+      C(10)=C(3)*C(5)-RK12*RK12         ! Determinant(1/f_c)
+      C(1)=C(5)/C(10)                   ! f_c11
+      C(2)=-RK12/C(10)                  ! f_c12
+C------------- inner (r*< AA) s-wave weight --------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G2H=GPIPI(AKSH,2)
+      G1H=GPIPI(AKSH,1)
+      DMAA=(cas*G1H+cbs*G2H-RK11)/DAKS  ! dMaa/dk^2
+      DMBB=(cas*G2H+cbs*G1H-RK22)/DAKS  ! dMbb/dk^2
+      DMBA=(-cab*(G1H-G2H)-RK12)/DAKS   ! dMba/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H    
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+C     HH=HH+(CS*DREAL(C(1))-SS*DIMAG(C(1)))/AKS
+C------substituting Im(f^aa) by aa and ba terms only,
+C      i.e. removing other a'->a contributions 
+C     (no effect here, since only a=pi0pi0, b=pi+pi- contribute):
+C     HHH= Im(f^aa)= k|f^11|^2 +k_2|f^21|^2 at k2s > 0
+C     HHH= Im(f^aa)= k|f^11|^2              at k2s < 0     
+      HHH=AK*HAA                          ! HHH= k|f^11|^
+      IF(AK2S.GE.0.D0)THEN
+      HHH=HHH+AK2*ACH*HBA                 !     +k_2|f^21|^2
+      RHO2=AA*AK2
+      CS2=DSIN(RHO2)**2
+      H2=DSIN(2*RHO2)/2
+      SS2=RHO2-H2
+      CC2=RHO2+H2
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS2=(1+0.75D0*D2A)*SS2                ! SS=AFF/Ac
+      CC2=(1+D2A*(H-0.5D0))*CC2             ! CC=AGG*Ac
+      HH=HH+(CC2+ACH**2*SS2)*HBA/(2*AK2) ! * mu2/mu1=1
+      ELSE 
+       H2=2*AK2  ! 2kappa
+       HH=HH+HBA*(1-DEXP(-H2*AA))/H2 ! AA -> [1-exp(-2kappa AA)]/(2kappa
+                                     ! to be modified due to Coulomb !!
+      ENDIF
+      HH=HH+HAA*AA                       ! using SS+CC=2AA*k
+      HH=HH+(CS*DREAL(C(1))-SS*HHH)/AKS  ! HHH=Im(f^aa)
+      DW0(1)=(3/AA**3)*HH       ! average inner (r*< AA) s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
+      RETURN
+      END
+
+      SUBROUTINE CPIKM ! LL=10: pi+K- s-wave scattering amplitudes.
+                       !        Accounting for pi0K0^bar->pi+K- transition
+                       ! C(1)= f_c(pi+K-->pi+K-)
+                       ! C(2)= f_c(pi+K-->pi0K0^bar)
+                       ! DW0(1)= average inner (r*< AA) s-wave SI weight
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMPLEX*16 C
+      DATA AM1_2/.13498D0/      ! pi0 mass
+      DATA AM1S_2/.0182196D0/   ! pi0 mass squared
+      DATA AM1_2/.497614D0/     ! K0 mass
+      DATA AM1S_2/.24761969D0/  ! K0 mass squared
+      DATA cas/0.6667D0/,cbs/.3333D0/,cab/0.47140452D0/ ! cab=sqrt(cas*cbs)
+      OM1=DSQRT(AM1S+AKS)
+      OM2=DSQRT(AM2S+AKS) 
+      SQ=OM1+OM2                 ! SQ= M= eff. mass of channel 1=pi+K-
+                                 !                          or 2=pi+K0bar
+      S=SQ*SQ
+      AMU=OM1*OM2/(OM1+OM2)          ! "relativistic" reduced mass in channel 1
+      OM1_2=(S+AM1S_2-AM2S_2)/(2*SQ)
+      OM2_2=(S+AM2S_2-AM1S_2)/(2*SQ)
+      AMU_2=OM1_2*OM2_2/(OM1_2+OM2_2)! "relativistic" reduced mass in channel 2
+      AMU2_AMU1=AMU_2/AMU  !  ratio of "relativistic" reduced masses
+      AK2S=OM1_2*OM1_2-AM1S_2        !  AK2S > 0 since AM1_2+AM2_2<AM1+AM2
+      AK2=DSQRT(AK2S)                !  k2 = momentum in channel 2
+      G2=GPIK(AKS,2)
+      G1=GPIK(AKS,1)
+      RK11=cas*G1+cbs*G2  ! Maa
+      RK22=cas*G2+cbs*G1  ! Mbb
+      RK12=-cab*(G1-G2)   ! Mba
+      C(3)=RK11+DCMPLX(-HCP2,-AAK)      ! (1/f_c)11
+      C(5)=RK22+DCMPLX(0.D0,-AK2)       ! (1/f_c)22
+C                                       ! (1/f_c)12 = RK12
+      C(10)=C(3)*C(5)-RK12*RK12         ! Determinant(1/f_c)
+      C(1)=C(5)/C(10)                   ! f_c11
+      C(2)=-RK12/C(10)                  ! f_c12
+C------------- inner (r*< AA) s-wave weight --------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G2H=GPIPI(AKSH,2)
+      G1H=GPIPI(AKSH,1)
+      DMAA=(cas*G1H+cbs*G2H-RK11)/DAKS  ! dMaa/dk^2
+      DMBB=(cas*G2H+cbs*G1H-RK22)/DAKS  ! dMbb/dk^2
+      DMBA=(-cab*(G1H-G2H)-RK12)/DAKS   ! dMba/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+      HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK)
+      HH=HH+HBA*AA*AMU2_AMU1  !  mu2/mu1 < 1
+      DW0(1)=(3/AA**3)*ACH*HH      ! average inner s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
+      RETURN
+      END
+
+      SUBROUTINE CPIN  ! LL=13: pi-p s-wave scattering amplitudes.
+                       !        Accounting for pi0n->pi-p transition
+                       ! C(1)= f_c(pi-p->pi-p)
+                       ! C(2)= f_c(pi-p->pi0n)
+                       ! DW0(1)= average inner (r*< AA) s-wave SI weight
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
       DATA AM1_2/.13498D0/       ! pi0 mass
       DATA AM2_2/.939565346D0/   ! neutron mass
@@ -523,45 +794,170 @@ C--                         here AM1_2+AM2_2 < SM = AM1+AM2
       DATA cas/0.666667D0/,cbs/.333333D0/,cab/0.47140452D0/ ! cab=sqrt(cas*cbs)
       OM1=DSQRT(AM1S+AKS)
       OM2=DSQRT(AM2S+AKS)
-      SQ=OM1+OM2                 ! SQ= M= eff. mass of channel 1=pi+Xi-
+      SQ=OM1+OM2                 ! = M= eff. mass of channel 1=pi-p
+                                 !                        or 2=pi0n
       S=SQ*SQ
-C--                                here AM1_2+AM2_2 < SM = AM1+AM2
       AMU=OM1*OM2/(OM1+OM2)          ! "relativistic" reduced mass in channel 1
       OM1_2=(S+AM1S_2-AM2S_2)/(2*SQ)
       OM2_2=(S+AM2S_2-AM1S_2)/(2*SQ)
       AMU_2=OM1_2*OM2_2/(OM1_2+OM2_2)! "relativistic" reduced mass in channel 2
-      AMU2_AMU1=AMU_2/AMU            ! ratio of "relativistic" reduced masses
-      AK2S=OM1_2*OM1_2-AM1S_2
+      AMU2_AMU1=AMU_2/AMU  !  ratio of "relativistic" reduced masses
+      AK2S=OM1_2*OM1_2-AM1S_2        !  AK2S > 0 since AM1_2+AM2_2 < AM1+AM2
       AK2=DSQRT(AK2S)                !  k2 = momentum in channel 2
       G2=GPIN(AKS,2)
       G1=GPIN(AKS,1)
-      RK11=cas*G1+cbs*G2
-      RK22=cas*G2+cbs*G1
-      RK12=-cab*(G1-G2)
+      RK11=cas*G1+cbs*G2  ! Maa
+      RK22=cas*G2+cbs*G1  ! Mbb
+      RK12=-cab*(G1-G2)   ! Mba
       C(3)=RK11+DCMPLX(-HCP2,-AAK)      ! (1/f_c)11
-      C(5)=RK22
-      C(5)=C(5)-DCMPLX(0.D0,AK2)        ! (1/f_c)22
-      C(7)=RK12                         ! (1/f_c)12
-      C(10)=C(3)*C(5)-C(7)*C(7)
+      C(5)=RK22+DCMPLX(0.D0,-AK2)       ! (1/f_c)22
+C                                       ! (1/f_c)12 = RK12
+      C(10)=C(3)*C(5)-RK12*RK12         ! Determinant(1/f_c)
       C(1)=C(5)/C(10)                   ! f_c11
-      C(2)=-C(7)/C(10)                  ! f_c12
+      C(2)=-RK12/C(10)                  ! f_c12
+C------------- inner (r*< AA) s-wave weight ---------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G2H=GPIN(AKSH,2)
+      G1H=GPIN(AKSH,1)
+      DMAA=(cas*G1H+cbs*G2H-RK11)/DAKS  ! dMaa/dk^2
+      DMBB=(cas*G2H+cbs*G1H-RK22)/DAKS  ! dMbb/dk^2
+      DMBA=(-cab*(G1H-G2H)-RK12)/DAKS   ! dMba/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+      HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK)
+      HH=HH+HBA*AA*AMU2_AMU1  ! * mu2/mu1
+      DW0(1)=(3/AA**3)*ACH*HH           ! average inner s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
+      RETURN
+      END
+
+      SUBROUTINE CKMP  ! LL=17: K-p s-wave scattering amplitudes.
+                       !        Accounting for K0bar n -> K-p transition
+                       ! C(1)= f_c(K-p->K-p)
+                       ! C(2)= f_c(K-p->K0bar n)
+                       ! DW0(1)= average inner (r*< AA) s-wave SI weight
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_AAKBN/AAKBNR(20,2),AAKBNI(20,2)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMPLEX*16 C
+      DATA AM1_2/.497614D0/       ! K0 mass
+      DATA AM2_2/.939565346D0/    ! neutron mass
+      DATA AM1S_2/.247619693D0/   ! K0 mass squared
+      DATA AM2S_2/.8827830394D0/  ! neutron mass squared
+      DATA cas/0.5D0/,cbs/.5D0/,cab/0.5D0/ ! cab=sqrt(cas*cbs)
+      OM1=DSQRT(AM1S+AKS)
+      OM2=DSQRT(AM2S+AKS)
+      SQ=OM1+OM2                 ! SQ= M= eff. mass of channel 1=K-p
+                                 !                          or 2=K0bar n
+      S=SQ*SQ
+      AMU=OM1*OM2/(OM1+OM2)          ! "relativistic" reduced mass in channel 1
+      OM1_2=(S+AM1S_2-AM2S_2)/(2*SQ)
+      OM2_2=(S+AM2S_2-AM1S_2)/(2*SQ)
+      AMU_2=OM1_2*OM2_2/(OM1_2+OM2_2)! "relativistic" reduced mass in channel 2
+      AMU2_AMU1=AMU_2/AMU  !  ratio of "relativistic" reduced masses
+      AK2S=OM1_2*OM1_2-AM1S_2        
+      IF(AK2S.GE.0.D0)THEN           ! here AK2S>0 
+                                     ! can be < 0 since AM1_2+AM2_2 > AM1+AM2
+       AK2=DSQRT(AK2S)               !  k2 = momentum in channel 2
+      ELSE                           ! here AK2S<0 
+       AK2=DSQRT(-AK2S)              !  kappa2 = Im(k2)
+      ENDIF
+      G1S=AAKBNR(1,1)**2+AAKBNI(1,1)**2
+      G1R=AAKBNR(1,1)/G1S+0.5D0*AAKBNR(2,1)*AKS
+      G1I=-AAKBNI(1,1)/G1S+0.5D0*AAKBNI(2,1)*AKS
+      G2S=AAKBNR(1,2)**2+AAKBNI(1,2)**2
+      G2R=AAKBNR(1,2)/G2S+0.5D0*AAKBNR(2,2)*AKS
+      G2I=-AAKBNI(1,2)/G2S+0.5D0*AAKBNI(2,2)*AKS
+      RK11R=cas*G1R+cbs*G2R  ! Re Maa
+      RK11I=cas*G1I+cbs*G2I  ! Im Maa
+      RK22R=cas*G2R+cbs*G1R  ! Re Mbb
+      RK22I=cas*G2I+cbs*G1I  ! Im Mbb
+      RK12R=-cab*(G1R-G2R)   ! Re Mba
+      RK12I=-cab*(G1I-G2I)   ! Im Mba
+      C(3)=DCMPLX(RK11R-HCP2,RK11I-AAK)      ! (1/f_c)11
+      IF(AK2S.GE.0.D0)THEN
+       C(5)=DCMPLX(RK22R,RK22I-AK2)          ! (1/f_c)22 if Im(k2)=0 
+      ELSE
+       C(5)=DCMPLX(RK22R+AK2,RK22I)          ! (1/f_c)22 if Re(k2)=0
+      ENDIF
+      C(7)=DCMPLX(RK12R,RK12I)               ! (1/f_c)12                    
+      C(10)=C(3)*C(5)-C(7)*C(7)              ! Determinant(1/f_c)
+      C(1)=C(5)/C(10)                        ! f_c11
+      C(2)=-C(7)/C(10)                       ! f_c12
+C------------- inner (r*< AA) s-wave weight ---------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G1RH=AAKBNR(1,1)/G1S+0.5D0*AAKBNR(2,1)*AKSH
+      G2RH=AAKBNR(1,2)/G2S+0.5D0*AAKBNR(2,2)*AKSH
+      DMAA=(cas*G1RH+cbs*G2RH-RK11R)/DAKS  ! dRe(Maa)/dk^2
+      DMBB=(cas*G2RH+cbs*G1RH-RK22R)/DAKS  ! dRe(Mbb)/dk^2
+      DMBA=(-cab*(G1RH-G2RH)-RK12R)/DAKS   ! dRe(Mba)/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+C     HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+C------substituting Im(f^aa)=Ac Im(f_c^aa) by aa and ba terms only,
+C      i.e. removing other a'->a contributions:
+      HHH=AK*ACH**2*HAA                    ! HHH= k|f^11|^2
+      IF(AK2S.GE.0.D0)THEN
+       HHH=HHH+AK2*ACH*HBA                 !     +k_2|f^21|^2
+       HH=HH+HBA*AA*AMU2_AMU1  ! * mu2/mu1
+      ELSE
+       H2=2*AK2  ! 2kappa
+       HH=HH+HBA*(1-DEXP(-H2*AA))/H2 ! AA -> [1-exp(-2kappa AA)]/(2kappa
+      ENDIF
+      HH=HH+(CS*DREAL(C(1))-SS*HHH)/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK) 
+      DW0(1)=(3/AA**3)*ACH*HH         ! average inner s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
       RETURN
       END
 
       SUBROUTINE CPIXI 
-        ! calculates SI pi+Xi- s-wave scattering amplitudes
-        ! and p-wave Xi*(1532) resonance amplitudes
+        ! LL=31: SI pi+Xi- s-wave scattering amplitudes
+        !        and p-wave Xi*(1532) resonance amplitudes
         ! (the Coulomb interaction is neglected in the SI p-waves;
-        !  only Ac factor is taken into account at the end)
-        ! accounting for pi0Xi0->pi+Xi- transition
+        !  only Ac factor is taken into account at the end).
+        ! Accounting for pi0Xi0->pi+Xi- transition
         ! C(1)= f_c(pi+Xi-->pi+Xi-)=f(l=0,J=1/2)11/Ac
         ! C(2)= f_c(pi+Xi-->pi0Xi0)=f(l=0,J=1/2)12/sqrt[Ac]
         ! C(3)= f(l=1,J=3/2)11/Ac
         ! C(4)= f(l=1,J=3/2)12/sqrt{Ac}
         ! C(5)= dC(3)/dk^2
         ! C(6)= dC(4)/dk^2
-        ! calculates DW_INNER= (l=1) inner contribution to the weight 
-        ! calculates DW_APP= (l=1) approximate weight
+        ! DW0(1)= average inner (r*< AA) s-wave SI weight
+        ! DW1= (l=1) inner (r*< AA1) SI weight  
+        ! DW1_APP= (l=1) approximate inner (r*< AA1) SI weight
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
@@ -569,7 +965,7 @@ C--                                here AM1_2+AM2_2 < SM = AM1+AM2
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
       COMMON/FSI_AAPIXI/AAPIXI(20,2)
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
       DATA AM1_2/.13498D0/     ! pi0 mass
       DATA AM2_2/1.31483D0/    ! Xi0 mass
@@ -578,33 +974,59 @@ C--                                here AM1_2+AM2_2 < SM = AM1+AM2
       DATA cas/0.666667D0/,cbs/.333333D0/,cab/0.47140452D0/ ! cab=sqrt(cas*cbs)
       OM1=DSQRT(AM1S+AKS)
       OM2=DSQRT(AM2S+AKS)
-      SQ=OM1+OM2                     ! SQ= M= eff. mass of channel 1=pi+Xi-
+      SQ=OM1+OM2                     !  = M= eff. mass of channel 1=pi+Xi- 
+                                     !                         or 2=pi0Xi0
       S=SQ*SQ
-C--                                    here AM1_2+AM2_2 < SM = AM1+AM2
       AMU=OM1*OM2/(OM1+OM2)          ! "relativistic" reduced mass in channel 1
       OM1_2=(S+AM1S_2-AM2S_2)/(2*SQ)
       OM2_2=(S+AM2S_2-AM1S_2)/(2*SQ)
       AMU_2=OM1_2*OM2_2/(OM1_2+OM2_2)! "relativistic" reduced mass in channel 2
-      AMU2_AMU1=AMU_2/AMU            ! ratio of "relativistic" reduced masses
-      AK2S=OM1_2*OM1_2-AM1S_2
-      AK2=DSQRT(AK2S)                ! k2 = momentum in channel 2
+      AMU2_AMU1=AMU_2/AMU !  ratio of "relativistic" reduced masses
+      AK2S=OM1_2*OM1_2-AM1S_2        !  AK2S > 0 since AM1_2+AM2_2 < AM1+AM2
+      AK2=DSQRT(AK2S)                !  k2 = momentum in channel 2
       G2=GPIXI(AKS,2)
       G1=GPIXI(AKS,1)
-      RK11=cas*G1+cbs*G2
-      RK22=cas*G2+cbs*G1
-      RK12=-cab*(G1-G2)
+      RK11=cas*G1+cbs*G2  ! Maa
+      RK22=cas*G2+cbs*G1  ! Mbb
+      RK12=-cab*(G1-G2)   ! Mba
       C(3)=RK11+DCMPLX(-HCP2,-AAK)      ! (1/f_c)11
-      C(5)=RK22
-      C(5)=C(5)-DCMPLX(0.D0,AK2)        ! (1/f_c)22
-      C(7)=RK12                         ! (1/f_c)12
-      C(10)=C(3)*C(5)-C(7)*C(7)
+      C(5)=RK22+DCMPLX(0.D0,-AK2)       ! (1/f_c)22
+C                                       ! (1/f_c)12 = RK12
+      C(10)=C(3)*C(5)-RK12*RK12         ! Determinant(1/f_c)
       C(1)=C(5)/C(10)                   ! f_c11 l=0
-      C(2)=-C(7)/C(10)                  ! f_c12 l=0
-
-      IF(RP.LT.AA)THEN  ! needed to add the inner SI contribution
-                        ! C(3),C(4) needed also at r* > AA in the case
+      C(2)=-RK12/C(10)                  ! f_c12 l=0
+C------------- inner (r*< AA) s-wave SI weight -------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G2H=GPIXI(AKSH,2)
+      G1H=GPIXI(AKSH,1)
+      DMAA=(cas*G1H+cbs*G2H-RK11)/DAKS  ! dMaa/dk^2
+      DMBB=(cas*G2H+cbs*G1H-RK22)/DAKS  ! dMbb/dk^2
+      DMBA=(-cab*(G1H-G2H)-RK12)/DAKS   ! dMba/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+      HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK)
+      HH=HH+HBA*AA*AMU2_AMU1  ! * mu2/mu1
+      DW0(1)=(3/AA**3)*ACH*HH    ! average inner (r*< AA) s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave weight-------------------------
+C------------- inner (r*< AA1) p-wave resonance weight-------------------
+      IF(RP.LT.AA1)THEN ! (l=1) inner (r*< AA1) SI weight DW1 
+                        ! C(3),C(4) needed also at r* > AA1 in the case
                         ! of exact generalized smoothness approximation
-                        ! (not used; instead DW_APP is used)
+                        ! (not used; instead DW1_APP is used)
       AM0S=AAPIXI(3,1)*AAPIXI(3,1)      ! m0^2
       GG0=AAPIXI(3,1)*AAPIXI(4,1)
       GG0=GG0/(CAS*AAPIXI(5,1)**3+CBS*AAPIXI(6,1)**3)
@@ -622,8 +1044,8 @@ C--                                      k2 = AK2 = channel 2(=b) momentum
       C(3)=(GAM0/AK)*C(9)                   ! f(l=1,J=3/2)11/Ac
       C(4)=DSQRT((GAM0/AK)*(GBM0/AK2))*C(9) ! f(l=1,J=3/2)12/sqrt[Ac]
 c-
-C---  calculating DW_1 = resonance p-wave contribution to the weight for r < AA
-C-test      RHOA=AK*AA
+C---  calculating DW1= resonance p-wave contribution to the weight for r* < AA1
+C-test      RHOA=AK*AA1
 C-test      C_0=DCOS(RHOA)
 C-test      S_0=DSIN(RHOA)
 C-test      C_1=C_0/RHOA+S_0
@@ -631,7 +1053,7 @@ C-test      S_1=S_0/RHOA-C_0
 C-test      AC1S1=RHOA*(C_0*S_0+C_1*S_1)-2*C_0*S_1-C_1*S_0
 C-test      AC1C1=RHOA*(C_0*C_0+C_1*C_1)-3*C_0*C_1
 C-test      AS1S1=RHOA*(S_0*S_0+S_1*S_1)-3*S_0*S_1
-C-test      RHOA2=AK2*AA
+C-test      RHOA2=AK2*AA1
 C-test      C_02=DCOS(RHOA2)
 C-test      S_02=DSIN(RHOA2)
 C-test      C_12=C_02/RHOA2+S_02
@@ -654,102 +1076,142 @@ C--   calculating the derivatives C(5)= dC(3)/dk^2, C(6)= dC(4)/dk^2
       C(9)=1/DCMPLX(AM0S-SH,-GM0H)
       C(7)=(GAM0H/AKH)*C(9)
       C(8)=DSQRT((GAM0H/AKH)*(GBM0H/AK2H))*C(9)
-      C(5)=(C(7)-C(3))/DAKS
-      C(6)=(C(8)-C(4))/DAKS
+      C(5)=(C(7)-C(3))/DAKS         ! dC(3)/dk^2
+      C(6)=(C(8)-C(4))/DAKS         ! dC(4)/dk^2
       FAAR=DREAL(C(3))  
       FBAR=DREAL(C(4)) 
       FAAI=DIMAG(C(3)) 
       FBAI=DIMAG(C(4))
       H=2*AK
       H2=2*AK2
-      HH=6/AA**3
-      DW_APP=HH*(DREAL(C(5))+H*DIMAG(DCONJG(C(3))*C(5))
+      HH=6/AA1**3
+      DW1_APP=HH*(DREAL(C(5)+C(3)/2/AKS)+H*DIMAG(DCONJG(C(3))*C(5)) ! 160316
      +                      +H2*DIMAG(DCONJG(C(4))*C(6)))
-C-test      DW_INNER=DW_APP+HH*((AC1S1*FAAR-AS1S1*FBAI)/AKS +
+C-test      DW1=DW1_APP+HH*(((AC1S1-0.5D0)*FAAR-AS1S1*FBAI)/AKS +!160316 
 C-test     +                    (AC1C1+AS1S1)*(FAAR*FAAR+FAAI*FAAI)/H +
 C-test     +        AMU2_AMU1*(AC1C12+AS1S12)*(FBAR*FBAR+FBAI*FBAI)/H2 )
       ENDIF
+C------------- END inner (r*< AA1) p-wave resonance weight-----------------------
       RETURN
       END
 
       SUBROUTINE CKPKM 
-        ! calculates SI K+K- s-wave scattering amplitudes
-        ! and p-wave Phi(1020) resonance amplitudes
+        ! LL=14: SI K+K- s-wave scattering amplitudes
+        !        and p-wave Phi(1020) resonance amplitudes
         ! (the Coulomb interaction is neglected in the SI p-waves;
-        !  only Ac factor is taken into account at the end)
-        ! accounting for K0K0bar -> K+K- transition
-        ! C(1)= f_c(K+K- -> K+K-) = f(J=0)11/Ac
-        ! C(2)= f_c(K+K- -> pi0Xi0) = f(J=0)12/Ac
+        !  only Ac factor is taken into account at the end).
+        ! Accounting for K0K0bar -> K+K- transition
+        ! C(1)= f_c(K+K- -> K+K-)   = f(J=0)11/Ac
+        ! C(2)= f_c(K+K- -> K0K0-b) = f(J=0)12/Ac
         ! C(3)= f(J=1)11/Ac
         ! C(4)= f(J=1)12/Ac
         ! C(5)= dC(3)/dk^2
         ! C(6)= dC(4)/dk^2
-        ! calculates DW_INNER= (J=1) inner contribution to the weight 
-        ! calculates DW_APP= (J=1) approximate weight
+        ! DW0(1)= average inner (r*< AA) s-wave SI weight
+        ! DW1= (l=1) inner (r*< AA1) SI weight  
+        ! DW1_APP= (l=1) approximate inner (r*< AA1) SI weight
       IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_AAKK/AAKK(14)
+      COMMON/FSI_AAKK/AAKK(20)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
-      DATA AM1_2/.497614D0/  ! K0 mass
+      DATA AM1_2/.497614D0/     ! K0 mass
       DATA AM1S_2/.24761969D0/  ! K0 mass squared
       DATA cas/0.5D0/,cbs/.5D0/,cab/.5D0/ ! cab=sqrt(cas*cbs)
-C++----- add to be able to call several time-------!km: adaptation to aliroot (Oct2016)
-      integer ifirst  !km: adaptation to aliroot (Oct2016)
-      data ifirst/0/  !km: adaptation to aliroot (Oct2016)
-      ifirst=ifirst+1 !km: adaptation to aliroot (Oct2016)
-c---  choose K+K- FSI model parameters ----
-      if(ifirst.le.1) then
-cccccccc         call SetKpKmModel(14)  !!f0-Martin'77 a0-Achasov2'01,03
-c---  test print out ----
-         print *,'AliFemtoFsiWeightLednicky.F FSI: K+K- AAKK: '
-         print *,'m2f0    m2a0   f0-KK   f0-pipi a0-KK  a0-pieta'
-         print *,'aakk(4),aakk(5),aakk(6),aakk(7),aakk(8),aakk(9)'
-         print 101,aakk(4),aakk(5),aakk(6),aakk(7),aakk(8),aakk(9)
-      endif
- 101  format(6D11.4);
       OM1=DSQRT(AM1S+AKS)
-      SQ=2*OM1 ! = M= = eff. mass of channel 1=K+K-
+      SQ=2*OM1             !  = M= eff. mass of channel 1=K+K- 
+                           !                         or 2=K0K0-bar
       S=SQ*SQ
-C--                         here AM1_2+AM2_2 > SM = AM1+AM2
       AMU2_AMU1=1  ! ratio of "relativistic" reduced masses in channels 2 and 1
-      AK2S=OM1*OM1-AM1S_2 ! here OM1_2=OM1
-      IF(AK2S.GE.0.D0)THEN
-       AK2=DSQRT(AK2S)   ! k2 = momentum in channel 2
-      ELSE
-       AK2=DSQRT(-AK2S)  ! kappa2 = imaginary part of the momentum in channel 2
+                   ! =1 since OM1_2=OM2_2=OM1=OM2 if m1_2=m2_2 and m1=m2
+      AK2S=OM1*OM1-AM1S_2  ! OM1_2=OM1
+      IF(AK2S.GE.0.D0)THEN ! here AK2S >0; 
+                           ! can be <0 since AM1_2+AM2_2 > AM1+AM2
+       AK2=DSQRT(AK2S)     ! k2 = momentum in channel 2 (pure real)
+      ELSE                 ! here AK2S < 0
+       AK2=DSQRT(-AK2S)    ! kappa2 = Im(k2) > 0; k2= i kappa2 (pure imaginary)
       ENDIF
       AKPIPI=DSQRT(S/4-AAKK(2))
-      EETAS=(S+AAKK(3)-AAKK(2))**2/4/S
+      EETAS=(S+AAKK(3)-AAKK(16))**2/4/S
       AKPIETA=DSQRT(EETAS-AAKK(3))
-      C(4)=DCMPLX(AAKK(4)-S,-AKPIPI*AAKK(7))/AAKK(6)  ! 1/K0
-      C(6)=DCMPLX(AAKK(5)-S,-AKPIETA*AAKK(9))/AAKK(8) ! 1/K1
+      G2=(AAKK(5)-S)/AAKK(8)
+      G1=(AAKK(4)-S)/AAKK(6)
+C--- if no potential scattering (ie. saturation by f0 and a0)
+C    then H0,H1 -> infinity
+      H0=1/AAKK(17)+AAKK(18)*AKS               ! 1/K0pot
+      C(4)=DCMPLX(G1,-AKPIPI*AAKK(7)/AAKK(6))  ! 1/K0res
+      C(4)=(H0*C(4)-AKS)/(H0+C(4))             ! 1/K0
+      H1=1/AAKK(19)+AAKK(20)*AKS               ! 1/K1pot
+      C(6)=DCMPLX(G2,-AKPIETA*AAKK(9)/AAKK(8)) ! 1/K1res
+      C(6)=(H1*C(6)-AKS)/(H1+C(6))             ! 1/K1
       C(3)=cas*C(4)+cbs*C(6)       ! RK11
       C(5)=C(3)                    ! RK22=RK11 for cas=cbs=1/2
       C(7)=-cab*(C(4)-C(6))        ! RK12=(1/f_c)12 
       C(3)=C(3)+DCMPLX(-HCP2,-AAK)      ! (1/f_c)11
       IF(AK2S.GT.0.D0)THEN
-       C(5)=C(5)-DCMPLX(0.D0,AK2)       ! (1/f_c)22
+       C(5)=C(5)+DCMPLX(0.D0,-AK2)      ! (1/f_c)22
       ELSE
        C(5)=C(5)+DCMPLX(AK2,0.D0)
       ENDIF
-      C(10)=C(3)*C(5)-C(7)*C(7)
+      C(10)=C(3)*C(5)-C(7)*C(7)         ! Determinant(1/f_c)
       C(1)=C(5)/C(10)                   ! f_c11 l=0
       C(2)=-C(7)/C(10)                  ! f_c12 l=0
-
-      IF(RP.LT.AA)THEN  ! needed to add the inner SI contribution
-                        ! C(3),C(4) needed also at r* > AA if the case
+C------------- inner (r*< AA) s-wave SI weight ------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      OM1H=DSQRT(AM1S+AKSH)
+      SQH=2*OM1H ! = M= = eff. mass of channel 1=K+K- at k^2+dk^2
+      SH=SQH*SQH
+      G2H=(AAKK(5)-SH)/AAKK(8)
+      G1H=(AAKK(4)-SH)/AAKK(6)
+      DMAA=(cas*(G1H-G1)+cbs*(G2H-G2))/DAKS  ! dRe(Maa)/dk^2
+      DMBB=(cas*(G2H-G2)+cbs*(G1H-G1))/DAKS  ! dRe(Mbb)/dk^2
+      DMBA=-cab*((G1H-G1)-(G2H-G2))/DAKS     ! dRe(Mba)/dk^2
+      WRITE(6,400)'dMaa dMbb dMba ',DMAA,DMBB,DMBA
+400   FORMAT(A15,3E12.4)
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+      CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+      CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+C     HH=HH+(CS*DREAL(C(1))-ACH*SS*DIMAG(C(1)))/AKS
+C------substituting Im(f^aa)=Ac Im(f_c^aa) by aa and ba terms only,
+C      i.e. removing other a'->a contributions:
+      HHH=AK*ACH**2*HAA                    ! HHH= k|f^11|^2
+      IF(AK2S.GE.0.D0)THEN
+       HHH=HHH+AK2*ACH*HBA                 !     +k_2|f^21|^2
+       HH=HH+HBA*AA  ! * mu2/mu1=1
+      ELSE
+       H2=2*AK2  ! 2kappa
+       HH=HH+HBA*(1-DEXP(-H2*AA))/H2 ! AA -> [1-exp(-2kappa AA)]/(2kappa
+      ENDIF
+      HH=HH+(CS*DREAL(C(1))-SS*HHH)/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK) 
+      DW0(1)=(3/AA**3)*ACH*HH       ! average inner (r*< AA) s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight -----------------------------
+C------------- inner (r*< AA1) p-wave resonance weight-----------------------
+      IF(RP.LT.AA1)THEN ! (l=1) inner (r*< AA1) SI weight DW1
+                        ! C(3),C(4) needed also at r* > AA1 if the case
                         ! of exact generalized smoothness approximation
-                        ! (not used; instead DW_APP is used)
+                        ! (not used; instead DW1_APP is used)
       AM0S=AAKK(10)*AAKK(10)       ! m0^2
       GPM0=AAKK(10)*AAKK(14)       ! g0'*m0
       GG0=AAKK(10)*AAKK(11)-GPM0
       GG0=GG0/(CAS*AAKK(12)**3+CBS*AAKK(13)**3)
-      GAM0=CAS*AK**3*GG0*AAKK(10)/SQ   ! GAM0 ~ (k^3*(M0/M)
+      GAM0=CAS*AK**3*GG0*AAKK(10)/SQ   ! GAM0 ~ k^3*(M0/M)
       IF(AK2S.GT.0.D0)THEN
        GBM0=CBS*AK2**3*GG0*AAKK(10)/SQ ! GBM0 ~ (k2^3*(M0/M)
       ELSE
@@ -771,8 +1233,8 @@ C--                                      k2 = AK2 = channel 2(=b) momentum
        C(4)=DCMPLX(0.D0,0.D0)
        ENDIF
 c-
-C---  calculating DW_1 = resonance p-wave contribution to the weight for r < AA
-C-test      RHOA=AK*AA
+C---  calculating DW1= resonance p-wave contribution to the weight for r*< AA1
+C-test      RHOA=AK*AA1
 C-test      C_0=DCOS(RHOA)
 C-test      S_0=DSIN(RHOA)
 C-test      C_1=C_0/RHOA+S_0
@@ -780,7 +1242,7 @@ C-test      S_1=S_0/RHOA-C_0
 C-test      AC1S1=RHOA*(C_0*S_0+C_1*S_1)-2*C_0*S_1-C_1*S_0
 C-test      AC1C1=RHOA*(C_0*C_0+C_1*C_1)-3*C_0*C_1
 C-test      AS1S1=RHOA*(S_0*S_0+S_1*S_1)-3*S_0*S_1
-C-test      RHOA2=AK2*AA
+C-test      RHOA2=AK2*AA1
 C-test      C_02=DCOS(RHOA2)
 C-test      S_02=DSIN(RHOA2)
 C-test     C_12=C_02/RHOA2+S_02
@@ -823,43 +1285,175 @@ C--   calculating the derivatives C(5)= dC(3)/dk^2, C(6)= dC(4)/dk^2
       FBAI=DIMAG(C(4))
       H=2*AK
       H2=2*AK2
-      HH=9/AA**3
-      DW_APP=HH*(DREAL(C(5))+H*DIMAG(DCONJG(C(3))*C(5))
+      HH=9/AA1**3
+      DW1_APP=HH*(DREAL(C(5)+C(3)/2/AKS)+H*DIMAG(DCONJG(C(3))*C(5)) ! 160316
      +                      +H2*DIMAG(DCONJG(C(4))*C(6)))
-C-test      DW_INNER=DW_APP+HH*((AC1S1*FAAR-AS1S1*FBAI)/AKS +
+C-test      DW1=DW1_APP+HH*(((AC1S1-0.5D0)*FAAR-AS1S1*FBAI)/AKS +!160316
 C-test     +                    (AC1C1+AS1S1)*(FAAR*FAAR+FAAI*FAAI)/H +
 C-test     +        AMU2_AMU1*(AC1C12+AS1S12)*(FBAR*FBAR+FBAI*FBAI)/H2 )
       ENDIF
+C------------- END inner (r*< AA1) p-wave resonance weight-------------------
       RETURN
       END
 
-      SUBROUTINE CKKB  ! calculates KK-b s-wave scattering amplitude,
-                       ! saturated by isospin-0 S*(980) 
-                       !          and isospin-1 delta(982) resonances
+      SUBROUTINE CKKB  ! LL=23: K0K0-b s-wave scattering amplitude,
+                       !        saturated by isospin-0 f0(980) 
+                       !                 and isospin-1 a0(982) resonances
+                       ! Accounting for K0K0bar -> K+K- transition
+                       ! C(1)= f_c(K0K0bar -> K0K0bar)   = f(J=0)11/Ac
+                       ! C(2)= f_c(K0K0bar -> K+K-)      = f(J=0)12/Ac
+                       ! DW0(1)= average inner (r*< AA) s-wave SI weight
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_AAKK/AAKK(20)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMPLEX*16 C
+      DATA AM1_2/.493677D0/     ! K+ mass
+      DATA AM1S_2/.243717D0/  ! K+ mass squared
+      DATA cas/0.5D0/,cbs/.5D0/,cab/.5D0/ ! cab=sqrt(cas*cbs)
+      OM1=DSQRT(AM1S+AKS)
+      SQ=2*OM1             !  = M= eff. mass of channel 1=K0K0bar 
+                           !                         or 2=K+K-
+      S=SQ*SQ
+      AMU2_AMU1=1  ! ratio of "relativistic" reduced masses in channels 2 and 1
+                   ! =1 since OM1_2=OM2_2=OM1=OM2 if m1_2=m2_2 and m1=m2
+      AK2S=OM1*OM1-AM1S_2  ! OM1_2=OM1
+                           ! AK2S > 0 since AM1_2+AM2_2 < AM1+AM2 (m_K+ < m_K0)
+       AK2=DSQRT(AK2S)     ! k2 = momentum in channel 2     
+      AKPIPI=DSQRT(S/4-AAKK(2))
+      EETAS=(S+AAKK(3)-AAKK(16))**2/4/S
+      AKPIETA=DSQRT(EETAS-AAKK(3))
+      G2=(AAKK(5)-S)/AAKK(8)
+      G1=(AAKK(4)-S)/AAKK(6)
+C--- if no potential scattering (ie. saturation by f0 and a0)
+C    then H0,H1 -> infinity
+      H0=1/AAKK(17)+AAKK(18)*AKS               ! 1/K0pot
+      C(4)=DCMPLX(G1,-AKPIPI*AAKK(7)/AAKK(6))  ! 1/K0res
+      C(4)=(H0*C(4)-AKS)/(H0+C(4))             ! 1/K0
+      H1=1/AAKK(19)+AAKK(20)*AKS               ! 1/K1pot
+      C(6)=DCMPLX(G2,-AKPIETA*AAKK(9)/AAKK(8)) ! 1/K1res
+      C(6)=(H1*C(6)-AKS)/(H1+C(6))             ! 1/K1
+      C(3)=cas*C(4)+cbs*C(6)       ! RK11
+      C(5)=C(3)                    ! RK22=RK11 for cas=cbs=1/2
+      C(7)=-cab*(C(4)-C(6))        ! RK12=(1/f_c)12 
+C------------------------------------------------------------------
+      AC=-2*137.036D0/AM1_2        ! Bohr radius in 2-nd ch. (K+K-)
+      D2A=2*AA/AC                  ! 2d/a
+      XH=AC*AK2
+      ACH=ACP(XH)
+      ACHR=DSQRT(ACH)
+      ETA=0.D0
+      IF(XH.NE.0.D0)ETA=1/XH
+      HCP=HC(XH)    ! HCP=h(eta), HPR needed (e.g. in GST, SEQ) if ICH=1
+      HPR=HCP+.1544313298D0  ! HPR= h(eta)+2C-1
+      AAK=ACH*AK2   ! needed to calculate C(JJ) for charged particles
+      HCP2=2*HCP/AC ! 
+      C(3)=C(3)+DCMPLX(0.D0,-AK)        ! (1/f_c)11
+      C(5)=C(5)+DCMPLX(-HCP2,-AAK)      ! (1/f_c)22
+      C(10)=C(3)*C(5)-C(7)*C(7)         ! Determinant(1/f_c)
+      C(1)=C(5)/C(10)                   ! f_c11 l=0
+      C(2)=-C(7)/C(10)                  ! f_c12 l=0
+C------------- inner (r*< AA) s-wave SI weight ------------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      OM1H=DSQRT(AM1S+AKSH)
+      SQH=2*OM1H ! = M= = eff. mass of channel 1=K0K0bar at k^2+dk^2
+      SH=SQH*SQH
+      G2H=(AAKK(5)-SH)/AAKK(8)
+      G1H=(AAKK(4)-SH)/AAKK(6)
+      DMAA=(cas*(G1H-G1)+cbs*(G2H-G2))/DAKS  ! dRe(Maa)/dk^2
+      DMBB=(cas*(G2H-G2)+cbs*(G1H-G1))/DAKS  ! dRe(Mbb)/dk^2
+      DMBA=-cab*((G1H-G1)-(G2H-G2))/DAKS     ! dRe(Mba)/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2
+      H=DSIN(2*RHOA)/2
+      SS=RHOA-H
+      CC=RHOA+H
+      RHO2=AA*AK2
+      CS2=DSIN(RHO2)**2
+      H2=DSIN(2*RHO2)/2
+      SS2=RHO2-H2
+      CC2=RHO2+H2
+      H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+      SS2=(1+0.75D0*D2A)*SS2                ! SS=AFF/Ac
+      CC2=(1+D2A*(H-0.5D0))*CC2             ! CC=AGG*Ac
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(2))**2+DIMAG(C(2))**2     ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(1)*DCONJG(C(2)))*DMBA
+C     HH=HH+(CS*DREAL(C(1))-SS*DIMAG(C(1)))/AKS
+C------substituting Im(f^aa) by aa and ba terms only,
+C      i.e. removing other a'->a contributions:
+      HHH=AK*HAA+AK2*ACH*HBA    ! HHH= k|f^11|^2 +k_2|f^21|^2    
+      HH=HH+HAA*AA              ! using SS+CC=2AA*k
+      HH=HH+(CS*DREAL(C(1))-SS*HHH)/AKS
+      HH=HH+(CC2+ACH**2*SS2)*HBA/(2*AK2) ! * mu2/mu1=1
+      DW0(1)=(3/AA**3)*HH       ! average inner (r*< AA) s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight -------------------------
+      RETURN
+      END
+
+      SUBROUTINE CKPKB  ! LL=35: K+K0-b s-wave scattering amplitude,
+                        !        saturated by isospin-1 a0(982) resonance.
+                        ! DW0(1)= average inner (r*< AA) s-wave SI weight
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_AAKK/AAKK(14)
+      COMMON/FSI_AAKK/AAKK(20)
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
-      S4=AKS+AAKK(1)
-      S=4*S4
-      AKPIPI=DSQRT(S4-AAKK(2))
+      EK0=DSQRT(AKS+AAKK(1))
+      EKP=DSQRT(AKS+AAKK(15))
+      S=(EK0+EKP)**2             !  K+K0 eff. mass squared 
       EETA2=(S+AAKK(3)-AAKK(2))**2/4/S
       AKPIETA=DSQRT(EETA2-AAKK(3))
-      C(1)=AAKK(6)/2/DCMPLX(AAKK(4)-S,
-     ,-AK*AAKK(6)-AKPIPI*AAKK(7))
-      C(1)=C(1)+AAKK(8)/2/DCMPLX(AAKK(5)-S,
-     ,-AK*AAKK(8)-AKPIETA*AAKK(9))
+C--- if no potential scattering (ie. saturation by a0)
+C    then comment out below
+      G2=(AAKK(5)-S)/AAKK(8)
+      H1=1/AAKK(19)+AAKK(20)*AKS               ! 1/K1pot
+      C(6)=DCMPLX(G2,-AKPIETA*AAKK(9)/AAKK(8)) ! 1/K1res
+      C(6)=(H1*C(6)-AKS)/(H1+C(6))             ! 1/K1
+      C(1)=1/(C(6)-DCMPLX(0,AK))
+C--- remove comment out below in case of no potential scattering
+C      C(1)=1/DCMPLX(G2,
+C     ,-AK-AKPIETA*AAKK(9)/AAKK(8))
+C------------- inner (r*< AA) s-wave weight -----------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      EK0H=DSQRT(AKSH+AAKK(1))
+      EKPH=DSQRT(AKSH+AAKK(15))
+      SH=(EK0H+EKPH)**2
+      G2H=(AAKK(5)-SH)/AAKK(8)
+      DMAA=(G2H-G2)/DAKS        ! dRe(Maa)/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2  ! CS=AGF
+      H=DSIN(2*RHOA)/2  
+      SS=RHOA-H         ! SS=AFF
+      CC=RHOA+H         ! CC=AGG
+      HAA=DREAL(C(1))**2+DIMAG(C(1))**2 ! HAA=|f^11|^2
+      HH=-DMAA+CS*G2/AKS    ! removing pi eta contribution to Imf^11
+      HH=HH+(CC-SS)/(2*AK)  ! i.e. putting Imf^11=k|f^11|^2
+      DW0(1)=(3/AA**3)*HAA*HH  ! average inner (r*< AA) s-wave SI weight
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-------------------------
       RETURN
       END
 
-      SUBROUTINE CPAP  ! calculates pp-bar s-wave scattering amplitudes
-                       ! accounting for nn-bar->pp-bar channel 
+      SUBROUTINE CPAP  ! LL=30: pp-bar s-wave scattering amplitudes
+                       !        accounting for nn-bar->pp-bar channel 
                        ! C(1)= f_c(pp-bar->pp-bar,S=0)
                        ! C(2)= f_c(pp-bar->pp-bar,S=1)
                        ! C(3)= f_c(pp-bar->nn-bar,S=0)
                        ! C(4)= f_c(pp-bar->nn-bar,S=1)
+                       ! DW0(1)= average inner (r*< AA) s-wave SI S=0 weight
+                       ! DW0(2)= average inner (r*< AA) s-wave SI S=1 weight
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
@@ -867,42 +1461,98 @@ C-test     +        AMU2_AMU1*(AC1C12+AS1S12)*(FBAR*FBAR+FBAI*FBAI)/H2 )
       COMMON/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMPLEX*16 C
       DATA AM1_2/.939565346D0/    ! neutron mass
       DATA AM1S_2/.8827830394D0/  ! neutron mass squared
       DATA cas/0.5D0/,cbs/.5D0/,cab/.5D0/ ! cab=sqrt(cas*cbs)
+      IF(ISPIN.EQ.1)THEN
       OM1=DSQRT(AM1S+AKS)
-      SQ=2*OM1 ! = M= = eff. mass of channel 1=K+K-
+      SQ=2*OM1     !  = M= eff. mass of channel 1=pp-bar 
+                   !                         or 2=nn-bar
       S=SQ*SQ
-C--                         here AM1_2+AM2_2 > SM = AM1+AM2
       AMU2_AMU1=1  ! ratio of "relativistic" reduced masses in channels 2 and 1
-      AK2S0=AMU2_AMU1*AKS
-      AK2S=OM1*OM1-AM1S_2 ! here OM1_2=OM1
-      IF(AK2S.GE.0.D0)THEN
-       AK2=DSQRT(AK2S)   ! k2 = momentum in channel 2
-      ELSE
-       AK2=DSQRT(-AK2S)  ! kappa2 = imaginary part of the momentum in channel 2
+                   ! =1 since OM1_2=OM2_2=OM1=OM2 if m1_2=m2_2 and m1=m2
+      AK2S=OM1*OM1-AM1S_2  ! OM1_2=OM1
+       IF(AK2S.GE.0.D0)THEN ! here AK2S > 0; 
+                            ! can be < 0 since AM1_2+AM2_2 > AM1+AM2
+       AK2=DSQRT(AK2S)      ! k2 = momentum in channel 2 (pure real)
+       ELSE                 ! here AK2S < 0
+       AK2=DSQRT(-AK2S)     ! kappa2 = Im(k2) > 0; k2= i kappa2 (pure imaginary)
+       ENDIF
       ENDIF
-      C(10)=C(6+(ISPIN-1)*2)+
-     + DCMPLX(AAPAPR(3,ISPIN)*AKS/2-0.016D0-HCP2,
-     ,        AAPAPI(3,ISPIN)*AKS/2-AAK)           ! (1/f_c)11
-      C(5)=C(6+(ISPIN-1)*2)+
-     + DCMPLX(AAPAPR(3,ISPIN)*AK2S0/2,
-     ,        AAPAPI(3,ISPIN)*AK2S0/2)
+      G1S=AAPAPR(ISPIN,1)**2+AAPAPI(ISPIN,1)**2
+      G1R=AAPAPR(ISPIN,1)/G1S+0.5D0*AAPAPR(3,1)*AKS
+      G1I=-AAPAPI(ISPIN,1)/G1S+0.5D0*AAPAPI(3,1)*AKS
+      G2S=AAPAPR(ISPIN,2)**2+AAPAPI(ISPIN,2)**2
+      G2R=AAPAPR(ISPIN,2)/G2S+0.5D0*AAPAPR(3,2)*AKS
+      G2I=-AAPAPI(ISPIN,2)/G2S+0.5D0*AAPAPI(3,2)*AKS
+      RK11R=cas*G1R+cbs*G2R  ! Re Maa
+      RK11I=cas*G1I+cbs*G2I  ! Im Maa
+      RK22R=cas*G2R+cbs*G1R  ! Re Mbb
+      RK22I=cas*G2I+cbs*G1I  ! Im Mbb
+      RK12R=-cab*(G1R-G2R)   ! Re Mba
+      RK12I=-cab*(G1I-G2I)   ! Im Mba
+      C(3)=DCMPLX(RK11R-0.016D0-HCP2,RK11I-AAK)      ! (1/f_c)11
       IF(AK2S.GE.0.D0)THEN
-           C(5)=C(5)-DCMPLX(0.D0,AK2)
+       C(5)=DCMPLX(RK22R,RK22I-AK2)          ! (1/f_c)22 if Im(k2)=0 
+      ELSE
+       C(5)=DCMPLX(RK22R+AK2,RK22I)          ! (1/f_c)22 if Re(k2)=0
+      ENDIF
+      C(7)=DCMPLX(RK12R,RK12I)               ! (1/f_c)12                    
+      C(10)=C(3)*C(5)-C(7)*C(7)              ! Determinant(1/f_c)
+      C(ISPIN)=C(5)/C(10)                    ! f_c11
+      C(ISPIN+2)=-C(7)/C(10)                 ! f_c12
+C------------- inner (r*< AA) s-wave weight ---------------------------
+      IF(RP.LT.AA)THEN
+      DAKS=1.D-7
+      AKSH=AKS+DAKS
+      G1RH=AAPAPR(ISPIN,1)/G1S+0.5D0*AAPAPR(3,1)*AKSH
+      G2RH=AAPAPR(ISPIN,2)/G2S+0.5D0*AAPAPR(3,2)*AKSH
+      DMAA=(cas*G1RH+cbs*G2RH-RK11R)/DAKS  ! dRe(Maa)/dk^2
+      DMBB=(cas*G2RH+cbs*G1RH-RK22R)/DAKS  ! dRe(Mbb)/dk^2
+      DMBA=(-cab*(G1RH-G2RH)-RK12R)/DAKS   ! dRe(Mba)/dk^2
+CW      WRITE(6,400)'dMaa dMbb dMba ',DMAA,DMBB,DMBA
+400   FORMAT(A15,3E12.4)
+       IF(ISPIN.EQ.1)THEN
+       RHOA=AA*AK
+       CS=DSIN(RHOA)**2
+       H=DSIN(2*RHOA)/2
+       SS=RHOA-H
+       CC=RHOA+H
+       H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+       SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+       CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+       CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+       ENDIF
+      HAA=DREAL(C(ISPIN))**2+DIMAG(C(ISPIN))**2     ! HAA=|f_c^11|^2
+      HBA=DREAL(C(ISPIN+2))**2+DIMAG(C(ISPIN+2))**2 ! HBA=|f_c^21|^2
+      HH=-HAA*DMAA-HBA*DMBB-2*DREAL(C(ISPIN)*DCONJG(C(ISPIN+2)))*DMBA
+C     HH=HH+(CS*DREAL(C(ISPIN))-ACH*SS*DIMAG(C(ISPIN)))/AKS
+C------substituting Im(f^aa)=Ac Im(f_c^aa) by aa and ba terms only,
+C      i.e. removing other a'->a contributions:
+      HHH=AK*ACH**2*HAA                    ! HHH= k|f^11|^2
+       IF(AK2S.GE.0.D0)THEN
+       HHH=HHH+AK2*ACH*HBA                 !     +k_2|f^21|^2
+       HH=HH+HBA*AA  ! * mu2/mu1=1
        ELSE
-           C(5)=C(5)+DCMPLX(AK2,0.D0)              ! (1/f_c)22
-        ENDIF
-      C(10)=C(10)*C(5)-C(7+(ISPIN-1)*2)*C(7+(ISPIN-1)*2)
-      C(ISPIN)=C(5)/C(10)                          ! f_c11
-      C(ISPIN+2)=-C(7+(ISPIN-1)*2)/C(10)           ! f_c12
+       H2=2*AK2  ! 2kappa
+       HH=HH+HBA*(1-DEXP(-H2*AA))/H2 ! AA -> [1-exp(-2kappa AA)]/(2kappa)
+       ENDIF
+      HH=HH+(CS*DREAL(C(ISPIN))-SS*HHH)/AKS
+      HH=HH+(CC+ACH**2*SS)*HAA/(2*AK) 
+      DW0(ISPIN)=(3/AA**3)*ACH*HH ! average inner (r*< AA) s-wave SI weight
+CW      WRITE(6,401)'JJ DW0 ',ISPIN,DW0(ISPIN)
+401   FORMAT(A15,I3,E12.4)
+      ENDIF
+C------------- END inner (r*< AA) s-wave SI weight-----------------------
       RETURN
       END
 
-      SUBROUTINE FSIIN(I_ITEST,I_ICH,I_IQS,I_ISI,I_I3C)
-c          SUBROUTINE FSIINI !km: adaptation to aliroot (Oct2016)
-C---Note:
+C          SUBROUTINE FSIINI
+      SUBROUTINE FSIINI(I_ITEST,I_LL,I_NS,I_ICH,I_IQS,I_ISI,I_I3C)
+
+C---  Note:
 C-- ICH= 0 (1) if the Coulomb interaction is absent (present);
 C-- ISPIN= JJ= 1,2,..,MSPIN denote increasing values of the pair
 C-- total spin S.
@@ -939,19 +1589,18 @@ C-----------------------------------------------------------------------
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMMON/FSI_CONS/PI,PI2,SPI,DR,W
       COMPLEX*16 C
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
       COMMON/FSI_AAPIN/AAPIN(20,2)
       COMMON/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
       COMMON/FSI_AAPIXI/AAPIXI(20,2) 
       COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
      1              SBKRB(10),SDKK(10)
-      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
-      COMMON/FSI_RHOH/RHOH(60,10)
-      COMMON/FSI_AMCH/AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
-ckm      DIMENSION FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
-ckm      DIMENSION RHOH(60,10)
-ckm      DIMENSION AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
+      COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
+C---DIMENSION FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
+      COMMON/FSI_FDH/FDH(30,10),RDH(30,10),EBH(30,10),RBH(30,10)
+      DIMENSION RHOH(60,10)
+      DIMENSION AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
 C============= declarations pour l'appel de READ_FILE() ============
       CHARACTER*10 KEY
       CHARACTER*8  CH8
@@ -959,6 +1608,8 @@ C============= declarations pour l'appel de READ_FILE() ============
       REAL*8       REAL8
       INTEGER*4    IERR
 C
+      DATA AMU2_AMU1/0.D0/  ! el. transition if mu2/mu1= 0 
+      DATA DW0/10*0.D0/
 C--- mass of the first and second particle
       DATA AM1H/.939565346D0,.938272013D0,.939565346D0,3.72737978D0,
      C          .13957D0,.13498D0,.13957D0, .939565346D0, .938272013D0,
@@ -966,7 +1617,8 @@ C--- mass of the first and second particle
      C          2*1.87561339D0,2*2.80892165D0,2*.497614D0,
      C          1.87561339D0,3*.938272013D0,.939565346D0,
      C          1.115683D0,.938272013D0,
-     C          .13957D0,.13957D0,28*.0D0/
+     C          .13957D0,.13957D0,2*.938272013D0,
+     C          .493677D0,25*.0D0/
       DATA AM2H/.939565346D0,.938272013D0,.938272013D0,3.72737978D0,
      C          .13957D0,.13498D0,.13957D0, 2*1.87561339D0,
      C          2*.493677D0,2*.938272013D0,
@@ -974,99 +1626,89 @@ C--- mass of the first and second particle
      C          1.87561339D0,3.72737978D0,2.80892165D0,3.72737978D0,
      C          2*.497614D0,2*2.80892165D0,3.72737978D0,
      C          3*1.115683D0,.938272013D0,
-     C          1.32131D0,1.32131D0,28*.0D0/
+     C          1.32131D0,1.32131D0,2*1.67245D0,
+     C          .497614D0,25*.0D0/
 c--------|---------|---------|---------|---------|---------|---------|----------
 C---  charge of the first and second particle
       DATA C1H/0.D0,1.D0,0.D0,2.D0, 1.D0,0.D0,1.D0,0.D0,1.D0,
      C         3*1.D0,-1.D0,3*1.D0,-1.D0,
      C         4*1.D0,2*0.D0,4*1.D0,2*0.D0, 1.D0,
-     C         1.D0,-1.D0,28*.0D0/
+     C         1.D0,-1.D0,2*1.D0,
+     C         1.D0,25*.0D0/
       DATA C2H/0.D0,1.D0,1.D0,2.D0,-1.D0,0.D0,3*1.D0,
      C         -1.D0,3*1.D0,-1.D0,3*1.D0,
      C         1.D0,2.D0,1.D0,2.D0,2*0.D0,2*1.D0,2.D0,3*0.D0,-1.D0,
-     C         -1.D0,-1.D0,28*.0D0/
+     C         -1.D0,-1.D0,-1.D0,1.D0,
+     C         0.D0,25*.0D0/
 C---  MSPIN vs (LL)
       DATA MSPINH/3*2,4*1,2*2,8*1,3,1,2,1,2*1,2*2,1,3*2, 2,
-     C            2*1,28*.0D0/
+     C            2*1,2*2,1,25*.0D0/
 C---  Spin factors RHO vs (LL,ISPIN)
       DATA RHOH/3*.25D0, 4*1.D0, 2*.3333D0, 8*1.D0,
      1          .1111D0,1.D0,.25D0,1.D0,2*1.D0,
      1          .3333D0,.25D0,1.D0,3*.25D0, .25D0,
-     1          2*1.D0,28*0.D0,
+     1          2*1.D0,2*0.375D0,1.D0,25*0.D0,
      2          3*.75D0, 4*0.D0, 2*.6667D0, 8*0.D0,
      2          .3333D0,.0D0,.75D0,.0D0,2*0.D0,
      2          .6667D0,.75D0,0.D0,3*.75D0, .75D0,
-     2          2*0.D0,28*0.D0,
+     2          2*0.D0,2*0.625D0,0.D0,25*0.D0,
      3          17*.0D0,.5556D0,3*0.D0, 8*0.D0,1*0.D0,
-     3          2*0.D0,28*0.D0, 420*0.D0/
+     3          2*0.D0,2*0.D0,0.D0,25*0.D0, 420*0.D0/
 C---  Scattering length FD and effective radius RD in fm vs (LL,ISPIN)
-      DATA FDH/17.0D0,7.8D0,23.7D0,2230.1218D0,.225D0,.081D0,-.063D0,
-     1  -.65D0,-2.73D0,
-     1  .137D0,-.071D0,-.148D0,.112D0,1.D-6,
-     1 -.141D0,    ! Beane'07 (K+K+ from Lattice)
-c     1  -.360D0,   ! Martin'77 (K+p)
-     1  -.330D0,   ! Martin'81 (K+p)
-     1  2*1.D-6,1.344D0,6*1.D-6,-5.628D0,2.18D0,2.40D0,
-     1  2.81D0, ! ND potential lam-lam
-C     1  0.50D0, ! NSC97e potential lam-lam
-     1  1*0.001D0,
-     1  2*.1D-6,28*0.D0,
-cc     2 -10.8D0,2*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
-     2  3*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
-     2  1.93D0,1.84D0,
-     2  0.50D0, ! triplet f0 lam-lam=singlet f0 ND
-                ! not contributing in s-wave FSI approx.
-     2  1*0.001D0,
-     2  2*0.D0,28*0.D0,
-     3  480*0.D0/
+      DATA FDH/17.0D0,7.77D0,23.7D0,2230.1218D0,.225D0,.081D0,-.063D0,
+     1     -.65D0,-2.73D0,
+     1     .137D0,-.071D0,-.148D0,.112D0,2*1.D-6,-.360D0,
+     1     2*1.D-6,1.344D0,6*1.D-6,-5.628D0,2.18D0,2.40D0,
+     1     2.81D0,              ! ND potential
+C     1     0.50D0,              ! NSC97e potential lam-lam
+     1     1*0.001D0,
+C     c     2 -10.8D0,2*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
+     2     3*-5.4D0,4*0.D0,-6.35D0,-11.88D0,8*0.D0,9*0.D0,
+     2     1.93D0,1.84D0,
+     2     0.50D0,              ! triplet f0 lam-lam=singlet f0 ND
+                                ! not contributing in s-wave FSI approx.
+     2     1*0.001D0,
+     3     240*0.D0/
 c--------|---------|---------|---------|---------|---------|---------|----------
-      DATA RDH/2.7D0,2.8D0,2.7D0,1.12139906D0,-44.36D0,64.0D0,784.9D0,
-     1  477.9D0, 2.27D0, 9*0.D0,-69.973D0, 6*0.D0,3.529D0,
-     1  3.19D0,3.15D0,
-     1  2.95D0, ! ND potential lam-lam
+      DATA RDH/2.7D0,2.77D0,2.7D0,1.12139906D0,-44.36D0,64.0D0,784.9D0,
+     1     477.9D0, 2.27D0, 9*0.D0,-69.973D0, 6*0.D0,3.529D0,
+     1     3.19D0,3.15D0,
+     1     2.95D0,              ! ND potential lam-lam
 C     1  10.6D0, ! NSC97e potential lam-lam
-     1  1*0.D0,
-     1  2*0.D0,28*0.D0,
-     2  3*1.7D0,4*0.D0,2.0D0,2.63D0, 17*0.D0,3.35D0,3.37D0,
-     2  2.95D0, ! triplet d0 lam-lam=singlet d0 ND
-                ! not contributing in s-wave approx.
-     2  1*0.D0,
-     2  2*0.D0,28*0.D0,
-     3  480*0.D0/
+     1     1*0.D0,
+     2     3*1.7D0,4*0.D0,2.0D0,2.63D0, 17*0.D0,3.35D0,3.37D0,
+     2     2.95D0,              ! triplet d0 lam-lam=singlet d0 ND
+                                ! not contributing in s-wave approx.
+     2     1*0.D0,
+     3     240*0.D0/
 C---  Corresponding square well parameters RB (width in fm) and
 C--   EB =SQRT(-AM*U) (in GeV/c); U is the well height
       DATA RBH/2.545739D0,   2.779789D0, 2.585795D0, 5.023544D0,
-     1 .124673D0, .3925180D0,.09D0, 2.D0, 4.058058D0, 17*0.D0,
-     1  2.252623D0, 2.278575D0,
-     1  2.234089D0, ! ND potential lam-lam
+     1     .124673D0, .3925180D0,.09D0, 2.D0, 4.058058D0, 17*0.D0,
+     1     2.252623D0, 2.278575D0,
+     1     2.234089D0,          ! ND potential lam-lam
 C     1  3.065796D0, ! NSC97e potential lam-lam
-     1  3*0.001D0,28*0.D0,
-     2  3*2.003144D0,
-     2  4*0.D0, 2.D0, 4.132163D0, 17*0.D0,
-     2  2.272703D0, 2.256355D0,
-     2  2.234089D0, ! triplet potential lam-lam=singlet ND
-                    ! not contributing in s-wave FSI approx.
-     2  3*0.001D0,28*0.D0,
-     3  480*0.D0/
+     1     1*0.001D0,
+     2     3*2.003144D0,
+     2     4*0.D0, 2.D0, 4.132163D0, 17*0.D0,
+     2     2.272703D0, 2.256355D0,
+     2     2.234089D0,          ! triplet potential lam-lam=singlet ND
+                                ! not contributing in s-wave FSI approx.
+     2     1*0.001D0,
+     3     240*0.D0/
       DATA EBH/.1149517D0,    .1046257D0,   .1148757D0, .1186010D0,
-     1    .7947389D0,2.281208D0,8.7D0,.4D0,.1561219D0,17*0.D0,
-     1    .1013293D0, .1020966D0,
-     1    .1080476D0, ! ND potential lam-lam
+     1     .7947389D0,2.281208D0,8.7D0,.4D0,.1561219D0,17*0.D0,
+     1     .1013293D0, .1020966D0,
+     1     .1080476D0,          ! ND potential lam-lam
 C     1    .04115994D0, ! NSC97e potential lam-lam
-     1    3*0.001D0,28*0.D0,
-     2    3*.1847221D0,
-     2    4*0.D0, .4D0, .1150687D0, 17*0.D0,
-     2    .09736083D0, .09708310D0,
-     2    .1080476D0, ! triplet potential lam-lam= singlet ND
-                      ! not contributing in s-wave FSI approx.
-     2    3*0.001D0,28*0.D0,
-     3    480*0.D0/
-
-C++----- add to be able to call several time-------!km: adaptation to aliroot (Oct2016)
-      integer ifirst  !km: adaptation to aliroot (Oct2016)
-      data ifirst/0/  !km: adaptation to aliroot (Oct2016)
-      ifirst=ifirst+1 !km: adaptation to aliroot (Oct2016)
-
+     1     1*0.001D0,
+     2     3*.1847221D0,
+     2     4*0.D0, .4D0, .1150687D0, 17*0.D0,
+     2     .09736083D0, .09708310D0,
+     2     .1080476D0,          ! triplet potential lam-lam= singlet ND
+                                ! not contributing in s-wave FSI approx.
+     2     1*0.001D0,
+     3     240*0.D0/
 C=======< constants >========================
       W=1/.1973D0    ! from fm to 1/GeV
       PI=4*DATAN(1.D0)
@@ -1075,76 +1717,26 @@ C=======< constants >========================
       DR=180.D0/PI   ! from radian to degree
         AC1=1.D10
         AC2=1.D10
-
-c     km: adaptation to aliroot (Oct2016) ------->
-              NUNIT=11 ! for IBM in Nantes
+C=======< condition de calculs >=============
+      NUNIT=11 ! for IBM or HP
 C      NUNIT=4 ! for SUN in Prague
-C++      CALL readint4(NUNIT,'ITEST     ',ITEST)      
-C++      CALL readint4(NUNIT,'NS        ',NS) 
+C     CALL readint4(NUNIT,'ITEST     ',ITEST)
+C      CALL readint4(NUNIT,'LL        ',LL)        ! Two-particle system
+C      CALL readint4(NUNIT,'NS        ',NS)
       ITEST=I_ITEST
-      IF(ITEST.EQ.1)THEN
-C++      CALL readint4(NUNIT,'ICH       ',ICH)
-C++      CALL readint4(NUNIT,'IQS       ',IQS)
-C++      CALL readint4(NUNIT,'ISI       ',ISI)
-C++      CALL readint4(NUNIT,'I3C       ',I3C)
-       ICH=I_ICH
-       IQS=I_IQS
-       ISI=I_ISI
-       I3C=I_I3C
-      ENDIF
-C============================================
-      IF (IFIRST.LE.1) THEN
-         DO 3 J1=1,60   ! 60 since dimension 60,10
-            DO 3 J2=1,10
-               FDH(J1,J2)=FDH(J1,J2)*W
-               RDH(J1,J2)=RDH(J1,J2)*W
- 3             RBH(J1,J2)=RBH(J1,J2)*W   
-C     print *,"FD,RD,EB,RB: ",FDH(J1,J2),RDH(J1,J2),EBH(J1,J2),RBH(J1,J2)
-               
-      ENDIF
-C===================================
-      RETURN
-      END
-C
-      SUBROUTINE LLINI(lll,I_NS,I_ITEST)
-C===> Initialisation for a given LL value.
-C     ===========================================      
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
-      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
-     1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_SPIN/RHO(10)
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
-      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
-      COMMON/FSI_FD/FD(10),RD(10)
-      COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
-      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
-      COMPLEX*16 C
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
-      COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
-      COMMON/FSI_AAPIN/AAPIN(20,2)
-      COMMON/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
-      COMMON/FSI_AAPIXI/AAPIXI(20,2) 
-      COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
-     1              SBKRB(10),SDKK(10)
-      COMMON/FSI_FDH/FDH(60,10),RDH(60,10),EBH(60,10),RBH(60,10)
-      COMMON/FSI_RHOH/RHOH(60,10)
-      COMMON/FSI_AMCH/AM1H(60),AM2H(60),C1H(60),C2H(60),MSPINH(60)
-c....      COMMON/FSI_AAKK/AAKK(9) .... ????
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      
-C===> LL - Initialisation ========================================
+      call LLINI(I_LL,I_NS,I_ITEST)
+c     CALL READ_FILE(NUNIT,'ITEST     ',CHAR,ITEST,REAL8,IERR)
+c      CALL READ_FILE(NUNIT,'LL        ',CHAR,LL,REAL8,IERR)
+c      CALL READ_FILE(NUNIT,'NS        ',CHAR,NS,REAL8,IERR)
+
 C---  setting particle masses and charges
-      LL=lll
-      NS=I_NS
-      
       AM1=AM1H(LL)
       AM2=AM2H(LL)
       C1=C1H(LL)
       C2=C2H(LL)
       AM1S=AM1*AM1
       AM2S=AM2*AM2
-C      print *,"llini: ",AM1,AM2,C1,C2
+
 C-- Switches:
 C   ISI=1(0)  the strong interaction between the two particles ON (OFF)
 C   IQS=1(0)  the quantum statistics ON (OFF);
@@ -1155,15 +1747,39 @@ C   ICH=1(0)  if C1*C2 is different from 0 (is equal to 0)
 C-  to switch off the Coulomb force between the two particles
 C   put ICH=0 and substitute the strong amplitude parameters by
 C   the ones not affected by Coulomb interaction
-C---- --------------------------------------------------------------------
-      IF (I_ITEST.NE.1) THEN
-         ICH=0
-         IF(C1*C2.NE.0.D0) ICH=1
-         IQS=0
-         IF(C1+AM1.EQ.C2+AM2) IQS=1
-         I3S=0                  ! only this option is available
-         ISI=1
-         I3C=1
+
+       ICH=0
+       IF(C1*C2.NE.0.D0) ICH=1
+       IQS=0
+       IF(C1+AM1.EQ.C2+AM2) IQS=1
+       I3S=0  ! only this option is available
+       ISI=1
+       I3C=0
+       IF(CN*ICH.NE.0.D0) I3C=1
+
+      IF(ITEST.EQ.1)THEN
+C       CALL readint4(NUNIT,'ICH       ',ICH)
+C       CALL readint4(NUNIT,'IQS       ',IQS)
+C       CALL readint4(NUNIT,'ISI       ',ISI)
+C       CALL readint4(NUNIT,'I3C       ',I3C)
+c       CALL READ_FILE(NUNIT,'ICH     ',CHAR,ICH,REAL8,IERR)
+c       CALL READ_FILE(NUNIT,'IQS     ',CHAR,IQS,REAL8,IERR)
+c       CALL READ_FILE(NUNIT,'ISI     ',CHAR,ISI,REAL8,IERR)
+c       CALL READ_FILE(NUNIT,'I3C     ',CHAR,I3C,REAL8,IERR)
+      ENDIF
+C==================================================================
+C---  fm to 1/GeV
+      DO 3 J1=1,60
+      DO 3 J2=1,10
+      FDH(J1,J2)=FDH(J1,J2)*W
+      RDH(J1,J2)=RDH(J1,J2)*W
+ 3    RBH(J1,J2)=RBH(J1,J2)*W
+C---  fm to 1/GeV for pp-bar system
+      IF(LL.EQ.30)THEN
+       DO 4 J1=1,3
+       DO 4 J2=1,2
+       AAPAPR(J1,J2)=AAPAPR(J1,J2)*W
+ 4     AAPAPI(J1,J2)=AAPAPI(J1,J2)*W
       ENDIF
 C---  calcul. twice the reduced mass (AM), the relative mass difference
 C--   (DM) and the Bohr radius (AC)
@@ -1180,13 +1796,19 @@ C---  Setting spin factors
       MSP=MSPIN
       DO 91 ISPIN=1,10
   91  RHO(ISPIN)=RHOH(LL,ISPIN)
-C---  Integration limit AA in the spherical wave approximation
+C---  AA= s-wave integration limit in the spherical wave approximation
       AA=0.D0
 cc      IF(NS.EQ.2.OR.NS.EQ.4)AA=.5D0 !!in 1/GeV --> 0.1 fm
 ccc      IF(NS.EQ.2.OR.NS.EQ.4)AA=6.D0 !!in 1/GeV --> 1.2 fm
 ccc      IF(NS.EQ.2.OR.NS.EQ.4)AA=.1D0 !!in 1/GeV --> .02 fm
-      IF(NS.EQ.2.OR.NS.EQ.4)AA=5.D0 !!in 1/GeV --> 1.0 fm !important to K+K-
-C-test      IF(NS.EQ.2.OR.NS.EQ.4)AA=15.D0 !!in 1/GeV --> 3.0 fm
+      IF(NS.EQ.2.OR.NS.EQ.4)AA=5.D0    !!in 1/GeV --> 1.0 fm
+C     -test      IF(NS.EQ.2.OR.NS.EQ.4)AA=10.D0 !!in 1/GeV --> 2.0 fm
+      D2A=2*AA/AC   ! 2d/a
+C---  AA1= p-wave integration limit in the spherical wave approximation
+      AA1=10.D0                        !!in 1/GeV --> 2.0 fm 
+c      AA1=5.D0                         !!in 1/GeV --> 1.0 fm
+
+c!!      AA1=-AA1 !! switch off p-wave narrow resonance FSI 
 C---  Setting scatt. length (FD), effeective radius (RD) and, if possible,
 C--   also the corresp. square well parameters (EB, RB)
       DO 55 JJ=1,MSP
@@ -1255,22 +1877,6 @@ C---  Resets FD and RD for a pion-Xi system (LL=31,32)
        HH=DREAL(1/C(JJ))
        RD(JJ)=2*(HH-H)/DAKS
       ENDIF
-C---  fm to 1/GeV for pp-bar system
-      IF(LL.EQ.30)THEN
-      DO 4 I3=1,3
-      AAPAPR(I3,JJ)=AAPAPR(I3,JJ)*W
- 4    AAPAPI(I3,JJ)=AAPAPI(I3,JJ)*W
-C---  Calculates complex elements at k*=0: M11=M22=C(6), M12=M21=C(7) for I=0 
-C---                                       M11=M22=C(8), M12=M21=C(9) for I=1
-      C(7+(JJ-1)*2)=2*DCMPLX(AAPAPR(1,JJ),AAPAPI(1,JJ))*
-     *                DCMPLX(AAPAPR(2,JJ),AAPAPI(2,JJ)) ! 2a_0Sa_1S
-      C(6+(JJ-1)*2)=DCMPLX(AAPAPR(1,JJ)+AAPAPR(2,JJ),
-     ,                     AAPAPI(1,JJ)+AAPAPI(2,JJ))/
-     /                                  C(7+(JJ-1)*2)   ! M11=M22
-      C(7+(JJ-1)*2)=-DCMPLX(AAPAPR(1,JJ)-AAPAPR(2,JJ),
-     ,                      AAPAPI(1,JJ)-AAPAPI(2,JJ))/
-     /                                   C(7+(JJ-1)*2)  ! M12=M21
-      ENDIF
 C---  Calculation continues for any system (any LL)
  55   CONTINUE
       RETURN
@@ -1278,165 +1884,13 @@ C---  Calculation continues for any system (any LL)
 
 C=========================================================================
 C
-c     ----- start adoptation part ------>
-c++  This routine is used to init mass and charge of the nucleus.
-
-      SUBROUTINE FSINUCL(R_AMN,R_CN)
-
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
-
-      AMN=R_AMN
-      CN=R_CN
-      
-      RETURN
-      END
-      
-C======================================================
-C
-
-      SUBROUTINE FSIMOMENTUM(PP1,PP2)
-      
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  ! particle momenta in NRF
-     1               P2X,P2Y,P2Z,E2,P2 
-
-
-      REAL*8 PP1(3),PP2(3)
-c      Print *,"momentum",pp1,pp2
-      P1X=PP1(1)
-      P1Y=PP1(2)
-      P1Z=PP1(3)
-      P2X=PP2(1)
-      P2Y=PP2(2)
-      P2Z=PP2(3)
-      RETURN
-      END
-      
-
-
-C======================================================
-C
-
-      SUBROUTINE FSIPOSITION(XT1,XT2)
-      
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, !4-coord. of emis. points in NRF
-     1                X2,Y2,Z2,T2,R2
-
-      REAL*8 XT1(4),XT2(4)
-clc      print *,'fsi',xt1,xt2
-      X1=XT1(1)
-      Y1=XT1(2)
-      Z1=XT1(3)
-      T1=XT1(4)
-      X2=XT2(1)
-      Y2=XT2(2)
-      Z2=XT2(3)
-      T2=XT2(4)
-      RETURN
-      END
-      
-
-C======================================================
-C======================================================
-C
-      subroutine BoostToPrf()
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_CVK/V,CVK
-      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  !part. momenta in NRF
-     1               P2X,P2Y,P2Z,E2,P2
-      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
-     1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, ! 4-coord. of emis. points in NRF
-     1                X2,Y2,Z2,T2,R2
-      COMMON/FSI_P12/P12X,P12Y,P12Z,E12,P12,AM12,EPM
-
-      XS=X1-X2
-      YS=Y1-Y2
-      ZS=Z1-Z2
-      TS=T1-T2
-      RS12=XS*P12X+YS*P12Y+ZS*P12Z
-      H1=(RS12/EPM-TS)/AM12
-      X=XS+P12X*H1
-      Y=YS+P12Y*H1
-      Z=ZS+P12Z*H1
-      T=(E12*TS-RS12)/AM12
-      RPS=X*X+Y*Y+Z*Z
-      RP=DSQRT(RPS)
-CW      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
-38    FORMAT(A7,E11.4,A7,4E11.4)
- 
-      CVK=(P12X*PPX+P12Y*PPY+P12Z*PPZ)/(P12*AK)
-      V=P12/E12
-      return 
-      end
- 
-      subroutine SETKPKMMODEL(i_model,i_PhiOffOn)
-c---- set K+K- scttring parameters and switch On/Off phi->K+K- -----
-c---- i_model=jk ---
-      IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER*4 iPhiOff
-      COMMON/FSI_AAKK/AAKK(14)
-      Common/FSI_Phi/IPHIOFF !0->Off, 1->On
-      REAL*8 aFSIKpKm(6,4)
-c         1         2         3         4         5         6         7         8
-c---------|---------|---------|---------|---------|---------|---------|---------|
-c                       m2f0    m2a0   f0-KK   f0-pipi a0-KK  a0-pieta
-      DATA aFSIKpKm/
-     1               .9565D0, .9487D0, .792D0,.199D0, .333D00,.222D0,  ! Martin'77     
-     2               .9467D0, .9698D0,2.763D0,.5283D0,.4038D0,.3711D0, ! Antonelli'02
-     3               .9920D0, .9841D0,1.305D0,.2684D0,.5555D0,.4401D0, ! Achasov1'01,03
-     4               .9920D0,1.0060D0,1.305D0,.2684D0,.8365D0,.4580D0/ ! Achasov2'01,03
-cccc      DATA iPhiOff/0/
-cccc  print*,'=======>i_PhiOffOn=',i_PhiOffOn,' ',iPhiOff
-      if(i_PhiOffOn.lt.0.or.i_PhiOffOn.gt.1) then
-         print *,'++Lednicky FSI K+K-:wrong set off/on PHI ',i_PhiOffOn
-         print *,'++Lednicky FSI K+K-: set to ON !!!!!'
-         i_PhiOffOn=1
-      endif
-      iPhiOff=i_PhiOffOn        !0->Off, 1->On
-      if(iPhiOff.eq.0) print *,'++Lednicky FSI K+K-: Phi meson is Off'
-      if(iPhiOff.eq.1) print *,'++Lednicky FSI K+K-: Phi meson is ON'
-cccc      print*,'=======>i_PhiOffOn=',i_PhiOffOn,' ',iPhiOff,' ',i_model
-c---- combined parameters from i_model definition ----
-      i1=i_model/10             !a0 Model type (Martin-1,Antonelli-2,Achasov1-3,Achasov2-4)
-      i2=i_model-i_model/10*10  !f0 Model type (Martin-1,Antonelli-2,Achasov1-3,Achasov2-4)
-      print *,'++Lednicky FSI K+K-: i_model=',i_model,' type ++'
-      if(i1.lt.1.or.i1.gt.4.or.i2.lt.1.or.i2.gt.4) then
-         print *,'++Lednicky FSI K+K-: Error model number ',i1,i2
-         i1=1
-         i2=1
-         print *,'++Lednicky FSI K+K-: set to Martin-77 !!!!!' 
-      endif
-      if(i1.eq.1)print *,'++Lednicky FSI K+K-: f0 Model: Martin-77'
-      if(i1.eq.2)print *,'++Lednicky FSI K+K-: f0 Model: Antonelli-02'
-      if(i1.eq.3)print *,'++Lednicky FSI K+K-: f0 Model: Achasov1-01,03'
-      if(i1.eq.4)print *,'++Lednicky FSI K+K-: f0 Model: Achasov2-01,03'
-      if(i2.eq.1)print *,'++Lednicky FSI K+K-: a0 Model: Martin-77'
-      if(i2.eq.2)print *,'++Lednicky FSI K+K-: a0 Model: Antonelli-02'
-      if(i2.eq.3)print *,'++Lednicky FSI K+K-: a0 Model: Achasov1-01,03'
-      if(i2.eq.4)print *,'++Lednicky FSI K+K-: a0 Model: Achasov1-02,03'
-         aakk(5)=aFSIKpKm(2,i2)    ! m2a0
-         aakk(8)=aFSIKpKm(5,i2)    ! a0-KK
-         aakk(9)=aFSIKpKm(6,i2)    ! a0-pieta
-         
-         aakk(4)=aFSIKpKm(1,i1)      ! m2f0
-         aakk(6)=aFSIKpKm(3,i1)      ! f0-KK
-         aakk(7)=aFSIKpKm(4,i1)      ! f0-KK
-      
-      return 
-      end
-      
-c     ----- end adoptation part ------<
-
       SUBROUTINE FSIWF(WEI)
 C==>  Prepares necessary quantities, e.g. the SI amplitudes f_c= C(i) 
 C     modified by Coulomb interaction, and calls VZ(WEI) 
 C     to calculate the weight due to FSI
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_CVK/V,CVK
-      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  !part. momenta in NRF
+      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  ! part. momenta in NRF
      1               P2X,P2Y,P2Z,E2,P2
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
@@ -1454,12 +1908,13 @@ C     to calculate the weight due to FSI
       COMMON/FSI_FD/FD(10),RD(10)
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
       COMPLEX*16 C,F
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
-      COMMON/FSI_SHH/SH,CHH
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
+      COMMON/FSI_SHH/SH,SHH,CHH
       COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
       COMMON/FSI_AAPIN/AAPIN(20,2)
       COMMON/FSI_P12/P12X,P12Y,P12Z,E12,P12,AM12,EPM
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1    ! k* (kappa) for 2-nd channel
+      DATA DAKS/1.D-7/
 C***
 C==>  calculating relative 4-coordinates of the particles in PRF
 C-    {T,X,Y,Z} from the relative coordinates {TS,XS,YS,ZS} in NRF
@@ -1475,38 +1930,41 @@ C-    {T,X,Y,Z} from the relative coordinates {TS,XS,YS,ZS} in NRF
       T=(E12*TS-RS12)/AM12
       RPS=X*X+Y*Y+Z*Z
       RP=DSQRT(RPS)
-CW      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
+C      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
 38    FORMAT(A7,E11.4,A7,4E11.4)
 
       CVK=(P12X*PPX+P12Y*PPY+P12Z*PPZ)/(P12*AK)
       V=P12/E12
 
-      ACH=1.D0
-      AAK=AK
-      HCP2=0.D0
+c      ACH=1.D0
+c      AAK=AK
+c      HCP2=0.D0
+
       IF(ICH.EQ.0)GOTO 21
       XH=AC*AK
       ACH=ACP(XH)
       ACHR=DSQRT(ACH)
       ETA=0.D0
       IF(XH.NE.0.D0)ETA=1/XH
-C---  HCP, HPR needed (e.g. in GST) if ICH=1
+C---  HCP, HPR needed (e.g. in GST, SEQ) if ICH=1
       HCP=HC(XH)
-      HPR=HCP+.1544313298D0
+      HPR=HCP+.1544313298D0  ! HPR= h(eta)+2C-1
       AAK=ACH*AK    ! needed to calculate C(JJ) for charged particles
       HCP2=2*HCP/AC !                  - " -
   21  CONTINUE
+      IF(ISI.EQ.0)GOTO 31
+C---------------------------------------------------------------------
       MSP=MSPIN
       DO 30 JJ=1,MSP
       ISPIN=JJ
-      IF(NS.NE.1)GOTO22
+      IF(NS.NE.1)GOTO 22
 C---  Calc. quantities for the square well potential;
 C--   for LL=6-26 the square well potential is not possible or available
       IF(LL.EQ.4)GOTO 22
       BK(JJ)=DSQRT(EB(JJ)**2+AKS)
       XRA=2*RB(JJ)/AC
       HRA=BK(JJ)*RB(JJ)
-      CALL SEQ(XRA,HRA)
+      CALL GST(XRA,HRA)
       SBKRB(JJ)=HRA*B
       HRA=AK*RB(JJ)
       CALL GST(XRA,HRA)
@@ -1518,7 +1976,7 @@ C--   for LL=6-26 the square well potential is not possible or available
   22  CONTINUE
 C-----------------------------------------------------------------------
 C---  Calc. the strong s-wave scattering amplitude = C(JJ)
-C--   divided by Coulomb penetration factor squared (if ICH=1)
+C--   divided by Ac=ACH= Coulomb penetration factor squared (if ICH=1)
       IF(NS.NE.1)GOTO 230
       IF(LL.NE.4)GOTO 230 ! SW scat. amplitude used for alfa-alfa only
       GAK=G(AK)
@@ -1527,103 +1985,168 @@ C--   divided by Coulomb penetration factor squared (if ICH=1)
       C(JJ)=1/DCMPLX(GAK,-AKACH) ! amplitude for the SW-potential
       GOTO 30
  230  CONTINUE 
-      IF(LL.EQ.5)THEN
-       CALL CPIPI  ! pi+pi- C(1)=f_c(pi+pi- -> pi+pi-)
-c                           C(2)=f_c(pi+pi- -> pi0pi0)
+      IF(LL.EQ.5)THEN  ! pi+pi-
+       CALL CPIPI      ! C(1)=f_c(pi+pi- -> pi+pi-)
+                       ! C(2)=f_c(pi+pi- -> pi0pi0)
+                       ! DW0
        GOTO 30
       ENDIF
-      IF(LL.EQ.13)THEN
-       CALL CPIN  ! pi-p    C(1)=f_c(pi-p -> pi-p)
-c                           C(2)=f_c(pi-p -> pi0n)
+      IF(LL.EQ.6)THEN  ! pi0pi0
+       CALL CPIPI      ! C(1)=f_c(pi0pi0 -> pi0pi0)
+                       ! C(2)=f_c(pi0pi0 -> pi+pi-)
+                       ! DW0
        GOTO 30
       ENDIF
-      IF(LL.EQ.31)THEN
+      IF(LL.EQ.10)THEN ! pi+K-
+       CALL CPIKM      ! C(1)=f_c(pi+K- -> pi+K-)
+                       ! C(2)=f_c(pi+K- -> pi0K0^bar)
+                       ! DW0
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.13)THEN ! pi-p 
+       CALL CPIN       ! C(1)=f_c(pi-p -> pi-p)
+                       ! C(2)=f_c(pi-p -> pi0n)
+                       ! DW0
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.14)THEN ! K+K-
+       CALL CKPKM      ! C(1)= f_c(K+K- -> K+K-)=f(J=0)11/Ac
+                       ! C(2)= f_c(K+K-->K0K0^bar)=f(J=0)12/sqrt{Ac}
+                       ! C(3)= f(J=1)11/Ac
+                       ! C(4)= f(J=1)12/sqrt{Ac}
+                       ! DW0, DW1, DW1_APP
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.17)THEN ! K-p 
+       CALL CKMP       ! C(1)=f_c(K-p -> K-p)
+                       ! C(2)=f_c(K-p -> K0^bar n)
+                       ! DW0
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.23)THEN ! K0K0^bar
+       CALL CKKB       ! C(1)=f_c(K0K0^bar -> K0K0^bar)
+                       ! C(2)=f_c(K0K0^bar -> K+K-)    
+                       ! DW0
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.30)THEN ! pp^bar
+       CALL CPAP       ! C(1)= f_c(pp^bar->pp^bar,S=0)
+                       ! C(2)= f_c(pp^bar->pp^bar,S=1)
+                       ! C(3)= f_c(pp^bar->nn^bar,S=0)
+                       ! C(4)= f_c(pp^bar->nn^bar,S=1)
+                       ! DW0 for S=0,1
+       GOTO 30
+      ENDIF
+      IF(LL.EQ.31)THEN ! pi+Xi-
        CALL CPIXI      ! C(1)= f_c(pi+Xi-->pi+Xi-)=f(l=0,J=1/2)11/Ac
                        ! C(2)= f_c(pi+Xi-->pi0Xi0)=f(l=0,J=1/2)12/sqrt{Ac}
                        ! C(3)= f(l=1,J=3/2)11/Ac
                        ! C(4)= f(l=1,J=3/2)12/sqrt{Ac}
-                       ! DW_INNER, DW_APP
+                       ! DW0, DW1, DW1_APP
        GOTO 30
       ENDIF
-      IF(LL.EQ.14)THEN
-       CALL CKPKM      ! C(1)= f_c(K+K- -> K+K-)=f(J=0)11/Ac
-                       ! C(2)= f_c(pi+Xi-->pi0Xi0)=f(J=0)12/sqrt{Ac}
-                       ! C(3)= f(J=1)11/Ac
-                       ! C(4)= f(J=1)12/sqrt{Ac}
-                       ! DW_INNER, DW_APP
+      IF(LL.EQ.35)THEN  ! K+K0^bar
+       CALL CKPKB       ! C(1)=f_c(K+K0-bar -> K+K0-bar)
+                        ! DW0
        GOTO 30
       ENDIF
-      IF(LL.EQ.30)THEN ! pp-bar
-       CALL CPAP       ! C(1)= f_c(pp-bar->pp-bar,S=0)
-                       ! C(2)= f_c(pp-bar->pp-bar,S=1)
-                       ! C(3)= f_c(pp-bar->nn-bar,S=0)
-                       ! C(4)= f_c(pp-bar->nn-bar,S=1)
-       GOTO 30
+      IF(LL.EQ.7.OR.                           ! pi+pi+
+     *   LL.EQ.12.OR.                          ! pi+p
+     *   LL.EQ.32.OR.                          ! pi-Xi-
+     *   LL.EQ.8.OR.LL.EQ.9.OR.LL.EQ.18)THEN   ! nd, pd, dd
+C---  Calc. scatt. ampl. C(JJ) 
+       IF(LL.EQ.8.OR.LL.EQ.9)THEN               ! nd, pd
+        G2=GND(AKS,LL-7+2*JJ-2)
+        IF(RP.LT.AA)G2H=GND(AKS+DAKS,LL-7+2*JJ-2)
+        GOTO 51
+       ENDIF
+       IF(LL.EQ.18)THEN                         ! dd
+        G2=GDD(AKS,JJ) 
+        IF(RP.LT.AA)G2H=GDD(AKS+DAKS,JJ)
+        GOTO 51
+       ENDIF
+       IF(LL.EQ.6.OR.LL.EQ.7)THEN               ! pi0pi0, pi+pi+
+        G2=GPIPI(AKS,2)
+        IF(RP.LT.AA)G2H=GPIPI(AKS+DAKS,JJ)
+        GOTO 51
+       ENDIF
+       IF(LL.EQ.11)THEN                         ! pi+K+ (=pi-K-)
+        G2=GPIK(AKS,2)
+        IF(RP.LT.AA)G2H=GPIK(AKS+DAKS,JJ)
+        GOTO 51
+       ENDIF
+       IF(LL.EQ.12)THEN                         ! pi+p
+        G2=GPIN(AKS,2)
+        IF(RP.LT.AA)G2H=GPIN(AKS+DAKS,JJ)
+        GOTO 51
+       ENDIF
+       IF(LL.EQ.32)THEN                         ! pi-Xi-
+        G2=GPIXI(AKS,2)
+        IF(RP.LT.AA)G2H=GPIN(AKS+DAKS,JJ)
+        GOTO 51
+       ENDIF
+      ELSE
+c-----ampl. f_c= C(JJ) for all other pairs:
+c-    LL=1-4,15,16,19-22,24-29,33,34
+       G2=1/FD(JJ)+.5D0*RD(JJ)*AKS
+       IF(RP.LT.AA)G2H=1/FD(JJ)+.5D0*RD(JJ)*(AKS+DAKS)
       ENDIF
-      IF(LL.EQ.6.OR.LL.EQ.7)GOTO20               ! pi0pi0, pi+pi+
-      IF(LL.EQ.12)GOTO20                         ! pi+p
-      IF(LL.EQ.32)GOTO20                         ! pi-Xi-
-      IF(LL.EQ.8.OR.LL.EQ.9.OR.LL.EQ.18)GOTO20   ! Nd, dd
-      IF(LL.EQ.17.OR.LL.EQ.23)GOTO27             ! K-p, K0K0-b
-      A1=RD(JJ)*FD(JJ)*AKS
-      A2=1+.5D0*A1
-      IF(ICH.EQ.1)A2=A2-2*HCP*FD(JJ)/AC
-      AKF=AK*FD(JJ)
-      IF(ICH.EQ.1)AKF=AKF*ACH
-      C(JJ)=FD(JJ)/DCMPLX(A2,-AKF)
-      GOTO30
- 20   CONTINUE
-C---  Calc. scatt. ampl. C(JJ) for pi0pi0, pi+pi+, pi+p, pi-Xi-, Nd, dd
-      IF(LL.EQ.8.OR.LL.EQ.9)G2=GND(AKS,LL-7+2*JJ-2) ! nd, pd
-      IF(LL.EQ.18)G2=GDD(AKS,JJ)  ! dd
-      IF(LL.EQ.6.OR.LL.EQ.7)G2=GPIPI(AKS,2) ! pi0pi0, pi+pi+
-      IF(LL.EQ.12)G2=GPIN(AKS,2)  ! pi+p
-      IF(LL.EQ.32)G2=GPIXI(AKS,2) ! pi-Xi-
-       C(JJ)=1.D0/DCMPLX(G2,-AK)  !pi+pi+, nd, pd, pi+p, pi-Xi-, dd
-      IF(LL.EQ.6)THEN
-       G1=GPIPI(AKS,1)
-       C(JJ)=.3333D0/DCMPLX(G1,-AK)+.6667D0*C(JJ) ! pi0pi0
+51    IF(ICH.EQ.0)C(JJ)=1/DCMPLX(G2,-AK)   
+      IF(ICH.EQ.1)C(JJ)=1/DCMPLX(G2-HCP2,-AAK) 
+C------------- inner (r*< AA) s-wave weight -----------------------------
+      IF(RP.LT.AA)THEN
+      DMAA=(G2H-G2)/DAKS        ! dRe(Maa)/dk^2
+      RHOA=AA*AK
+      CS=DSIN(RHOA)**2  ! CS=AGF
+      H=DSIN(2*RHOA)/2  
+      SS=RHOA-H         ! SS=AFF
+      CC=RHOA+H         ! CC=AGG
+      IF(ICH.EQ.0)THEN
+       HAA=DREAL(C(JJ))**2+DIMAG(C(JJ))**2 ! HAA=|f^11|^2
+       HH=-DMAA+CS*G2/AKS    ! removing inel. contr. to Imf^11
+       HH=HH+(CC-SS)/(2*AK)  ! i.e. putting Imf^11=k|f^11|^2
+       DW0(JJ)=(3/AA**3)*HAA*HH  ! average inner (r*< AA) s-wave SI weight
+      ELSE
+       H=DLOG(DABS(D2A))+HPR  ! HPR= h(eta)+2C-1
+       SS=(1+0.75D0*D2A)*SS                      ! SS=AFF/Ac
+       CC=(1+D2A*(H-0.5D0))*CC                   ! CC=AGG*Ac
+       CS=(1+0.666667D0*D2A*(H+0.166667D0))*CS   ! CS=AGF
+       HAA=DREAL(C(JJ))**2+DIMAG(C(JJ))**2       ! HAA=|f_c^aa|^2
+       HH=-HAA*DMAA
+C     HH=HH+(CS*DREAL(C(JJ))-ACH*SS*DIMAG(C(JJ)))/AKS
+C------substituting Im(f^aa)=Ac Im(f_c^aa) by aa term only,
+C      i.e. removing inel. contributions:
+       HHH=AK*ACH**2*HAA                    ! HHH= k|f^aa|^2     
+       HH=HH+(CS*DREAL(C(1))-SS*HHH)/AKS
+       HH=HH+(CC+ACH**2*SS)*HAA/(2*AK) 
+       DW0(JJ)=(3/AA**3)*ACH*HH         ! average inner s-wave SI weight
       ENDIF
- 27   CONTINUE
-C---  Calc. K0K0-b or K-p s-wave scatt. ampl.
-      IF(LL.EQ.23)CALL CKKB ! KK-bar
-c      IF(LL.EQ.17)C(JJ)=DCMPLX(-3.29D0,3.55D0)     ! Martin'76 (K-p)
-c      IF(LL.EQ.17)C(JJ)=DCMPLX(-2.585D0,4.156D0)   ! Borasoy'04 (K-p)
-      IF(LL.EQ.17)C(JJ)=DCMPLX(-3.371D0,3.244D0)   ! Martin'81 (K-p)
-      IF(ICH.EQ.1)THEN
-C---  Calc. pi+pi+, pd, pi+p, pi-Xi-, K+K- or K-p s-wave scatt. ampl. f_c      
-       C(JJ)=1/(1/C(JJ)-HCP2+DCMPLX(0.D0,AK-AAK))
       ENDIF
-      GOTO 30
-c-----
+C------------- END inner (r*< AA) s-wave SI weight-------------------------
  30   CONTINUE
 C***********************************************************************
-      CALL VZ(WEI)
+ 31   CALL VZ(WEI)
       RETURN
       END
 
       SUBROUTINE VZ(WEI)
 C==>  Calculates the weight WEI due to FSI
       IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER*4 iPhiOff
       COMMON/FSI_JR/JRAT
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
       COMMON/FSI_SPIN/RHO(10)
       COMMON/FSI_ETA/ETA
-      COMMON/FSI_AA/AA,DW_INNER,DW_APP
+      COMMON/FSI_AA/AA,D2A,DW0(10),AA1,DW1,DW1_APP
       COMMON/FSI_FFF/F12,F21
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
       COMMON/FSI_FD/FD(10),RD(10)
       COMMON/FSI_RR/F(10)
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
-      COMMON/FSI_COULPH/EIDC
-      Common/FSI_Phi/iPhiOff !0->Off, 1->On
-      COMPLEX*16 F,C,G,PSI12,PSI21
+      COMMON/FSI_SHH/SH,SHH,CHH
+      COMPLEX*16 F,C,GH,PSI12,PSI21
       COMPLEX*16 F12,F21
-      COMPLEX*16 EIDC
-      COMPLEX*8 Z8,CGAMMA
       COMMON/FSI_FFPN/FF12,FF21
       COMPLEX*16 FF12,FF21
       COMMON/FSI_2CHA/AK2,AK2S,AMU2_AMU1 ! k* (kappa) for 2-nd channel
@@ -1632,94 +2155,139 @@ c--------------------------------------------------------------------------
       RHOS=AK*RP
       HS=X*PPX+Y*PPY+Z*PPZ
 c---------------------
-      IF(ICH.EQ.1)THEN
-      IF(RHOS.LT.15.D0.AND.RHOS+DABS(HS).LT.20.D0)GOTO 2
-       ! Calc. EIDC=exp(i*Coul.Ph.);
-       ! used in calc. of hypergeom. f-s in SEQA, FAS at k*R > 15, 20
-      Z8=CMPLX(1.,SNGL(ETA))
-      Z8=CGAMMA(Z8)
-      EIDC=Z8/CABS(Z8)
-      ENDIF
-c---------------------
- 2    CALL FF(RHOS,HS) ! calculates F12, F21 ( F12 = sqrt(Ac)*F*plane wave )
+ 20   CALL FF(RHOS,HS) ! calculates F12, F21 
+                       ! F12 = sqrt(Ac)*F*plane wave 
+                       !  -> plane wave if one of the particles is neutral
                        ! FF12, FF21 have been calculated in FSIPN 
                        ! FF12=FF21=1 if I3C=0
       ENDIF
-C--------------------------------------------------------------------------
-      IF(RP.LT.AA)THEN  ! weight to add the inner SI contribution
+c----------------------! the strong interaction OFF (ISI=0)
+      IF(ISI.EQ.0)THEN  
       PSI12=FF12*F12
-      WEI=DREAL(PSI12)**2+DIMAG(PSI12)**2
-      FF12S=DREAL(FF12)**2+DIMAG(FF12)**2
-c---  Account for the contribution of the inner region r < AA 
-C--   to the K+K-, pi+Xi- weights due to the p-wave resonances phi, Xi*
-      IF(LL.EQ.31.OR.LL.EQ.14)THEN
-C-test      IF((LL.EQ.31.OR.LL.EQ.14).AND.ISI.EQ.1)THEN
-         HN1=FF12S*ACH
-         if(iPhiOff.eq.1) then
-            WEI=WEI+HN1*DW_APP  ! comment this line to switch OFF phi
-         endif
-ckm       WEI=WEI+HN1*DW_APP ! comment this line to switch OFF phi
+      IF(IQS.EQ.0)THEN                             ! QS off (IQS=0) 
+       WEI=DREAL(PSI12)**2+DIMAG(PSI12)**2 
+       RETURN
+      ELSE                                         ! QS on  (IQS=1)
+       WEI=0.D0
+       MSP=MSPIN
+       PSI21=FF21*F21
+       JSIGN=-1
+       DO 1 JJ=1,MSP
+       JSIGN=-JSIGN
+       GH=PSI12+JSIGN*PSI21
+ 1     WEI=WEI+RHO(JJ)*(DREAL(GH)**2+DIMAG(GH)**2)
+       WEI=WEI/2
+       RETURN
       ENDIF
-      RETURN
       ENDIF
-c--------------------------------------------------------------------------
-      IF(ISI.EQ.0)THEN  ! the strong interaction OFF (ISI=0)
-      PSI12=FF12*F12
-      IF(IQS.EQ.0)WEI=DREAL(PSI12)**2+DIMAG(PSI12)**2 ! QS off (IQS=0)
-      IF(IQS.EQ.1)THEN                                ! QS on  (IQS=1)
-      WEI=0.D0
-      MSP=MSPIN
-      PSI21=FF21*F21
-      JSIGN=-1
-      DO 3 JJ=1,MSP
-      JSIGN=-JSIGN
-      G=PSI12+JSIGN*PSI21
- 3    WEI=WEI+RHO(JJ)*(DREAL(G)**2+DIMAG(G)**2)
-      WEI=WEI/2
-      ENDIF
-      RETURN
-      ENDIF
-c--------------------------------------------------------------------------
-      IF(JRAT.NE.1) CALL FIRT ! calculation continues for ISI=1
+c-----------------------! the strong interaction ON (ISI=1)
       MSP=MSPIN
       WEI=0.D0
 c----------------------------------------------------------------------
       IF(IQS.EQ.1)THEN        ! the quantum statistics ON (IQS=1)
       JSIGN=-1
-      DO 1 JJ=1,MSP
+      IF(RP.LT.AA)THEN        ! r* < AA
+      PSI12=FF12*F12
+      PSI21=FF21*F21
+      DO 2 JJ=1,MSP
       JSIGN=-JSIGN
-      G=F(JJ)*C(JJ)
-      IF(ICH.EQ.1)G=G*ACHR
-      PSI12=FF12*(F12+G)
-      PSI21=FF21*(F21+G)
-      G=PSI12+JSIGN*PSI21
- 1    WEI=WEI+RHO(JJ)*(DREAL(G)**2+DIMAG(G)**2)
+      GH=PSI12+JSIGN*PSI21   ! psi^S(12) + (-1)^S psi^S(21)
+      H=DREAL(GH)**2+DIMAG(GH)**2
+      GH=FF12+JSIGN*FF21            
+      HH=DREAL(GH)**2+DIMAG(GH)**2  ! 4 or 0 for even or odd S (if FF12=FF21=1)
+ 2    WEI=WEI+RHO(JJ)*(H+HH*DW0(JJ))
       WEI=WEI/2
-      RETURN
+      ELSE                    ! r* > AA
+      IF(JRAT.NE.1) CALL FIRT 
+      DO 3 JJ=1,MSP
+      JSIGN=-JSIGN
+      GH=F(JJ)*C(JJ)   
+      IF(ICH.EQ.1)GH=GH*ACHR
+      PSI12=FF12*(F12+GH)
+      PSI21=FF21*(F21+GH)
+      GH=PSI12+JSIGN*PSI21
+ 3    WEI=WEI+RHO(JJ)*(DREAL(GH)**2+DIMAG(GH)**2)
+      WEI=WEI/2
       ENDIF
-c----------------------------------------------------------------------
-      FF12S=DREAL(FF12)**2+DIMAG(FF12)**2 ! calc. for QS off (IQS.ne.1)
-      DO 6 JJ=1,MSP
-      G=F(JJ)*C(JJ)
-      IF(ICH.EQ.1)G=G*ACHR
+      RETURN      ! only el. transition for id. particles
+      ENDIF
+c-----------------! the quantum statistics OFF (IQS=0)
+      FF12S=DREAL(FF12)**2+DIMAG(FF12)**2
+      IF(RP.LT.AA)THEN        ! r* < AA
+      PSI12=FF12*F12
+      WEI=DREAL(PSI12)**2+DIMAG(PSI12)**2 ! w_coul
+      DO 4 JJ=1,MSP
+      WEI=WEI+RHO(JJ)*FF12S*DW0(JJ)       ! + average inner SI weight 
+C      WRITE(6,38)'JJ ',JJ,'DW0 W ',DW0(JJ),WEI
+ 4    CONTINUE
+      GOTO 10
+      ELSE                    ! r* > AA
+      IF(JRAT.NE.1) CALL FIRT
+      DO 5 JJ=1,MSP
+      GH=F(JJ)*C(JJ)           ! el. scattered s-wave due to SI
+      IF(ICH.EQ.1)GH=GH*ACHR  
+      PSI12=F12+GH
+      H=DREAL(PSI12)**2+DIMAG(PSI12)**2  ! |psi(12->12)|^2
+c      IF(AMU2_AMU1.NE.0.D0)THEN
+c      HH=(DREAL(C(JJ+MSP))**2+DIMAG(C(JJ+MSP))**2)*AMU2_AMU1/RPS
+c      IF(ICH.EQ.1)HH=HH*ACH
+c      IF(AK2S.LT.0.D0)HH=HH*DEXP(-2*RP*AK2)
+c      H=H+HH
+c      ENDIF
+      WEI=WEI+RHO(JJ)*FF12S*H
 CW      WRITE(6,38)'JJ ',JJ,'F ',DREAL(F(JJ)),DIMAG(F(JJ))
 CW      WRITE(6,38)'JJ ',JJ,'C ',DREAL(C(JJ)),DIMAG(C(JJ))
-CW      WRITE(6,38)'JJ ',JJ,'G ',DREAL(G),DIMAG(G)
-CW      WRITE(6,38)'JJ ',JJ,'F12+G ',DREAL(F12+G),DIMAG(F12+G)
-CW      WRITE(6,38)'JJ ',JJ,'F21+G ',DREAL(F21+G),DIMAG(F21+G)
+CW      WRITE(6,38)'JJ ',JJ,'GH ',DREAL(GH),DIMAG(GH)
+CW      WRITE(6,38)'JJ ',JJ,'F12+GH ',DREAL(F12+GH),DIMAG(F12+GH)
+CW      WRITE(6,38)'JJ ',JJ,'F21+GH ',DREAL(F21+GH),DIMAG(F21+GH)
+CW      WRITE(6,38)'JJ ',JJ,'H W ',H,WEI
 38    FORMAT(A7,I3,A7,2E11.4)
-      PSI12=F12+G
- 6    WEI=WEI+RHO(JJ)*FF12S*(DREAL(PSI12)**2+DIMAG(PSI12)**2)
-c-------------------------------------------------------------
-       ! Account for pi0pi0 -> pi+pi- (LL=5)
-       !          or   pi0n -> pi-p   (LL=13)
-       !          or nn-bar -> pp-bar (LL=30)
-      IF(LL.EQ.5.OR.LL.EQ.13.OR.LL.EQ.30)THEN
+ 5    CONTINUE
+      ENDIF
+c-------------------! 2-nd ch. outer s-wave contribution
+       ! Account for pi0pi0 -> pi+pi-  (LL=5)
+       !      or     pi+pi- -> pi0pi0  (LL=6)
+       !      or       pi0n -> pi-p    (LL=13)
+       !      or    K0K0bar -> K+K-    (LL=14)
+       !      or    K0bar n -> K-p     (LL=17)
+       !      or       K+K- -> K0K0bar (LL=23)
+       !      or     nn-bar -> pp-bar  (LL=30)
+       !      or     pi0Xi0 -> pi+Xi-  (LL=31) 
+      IF(LL.EQ.5.OR.LL.EQ.6.OR.LL.EQ.13.OR.LL.EQ.14.OR.LL.EQ.17.OR.
+     *   LL.EQ.23.OR.LL.EQ.30.OR.LL.EQ.31)THEN 
+c-------------------! Coul. in 2-nd ch.
+       IF(ICH.EQ.0.AND.AK2S.GE.0.D0)THEN  
+       X=2*RP/AC
+       H=AK2*RP
+       CALL SEQ(X,H) ! calc. ReG^tilde= CHH, ImG^tilde= SHH
+       GS=CHH**2+SHH**2
+       ENDIF
+c--------------------
       DO 61 JJ=1,MSP
       HH=RHO(JJ)*FF12S*(DREAL(C(JJ+MSP))**2+DIMAG(C(JJ+MSP))**2)*
-     *   AMU2_AMU1*ACH/RPS
-      IF(AK2S.LT.0)HH=HH*DEXP(-2*RP*AK2)
+     *   AMU2_AMU1/RPS
+       IF(ICH.EQ.1)THEN
+        HH=HH*ACH
+        IF(AK2S.LT.0)HH=HH*DEXP(-2*RP*AK2) ! no Coul in 2-nd ch.
+       ELSE
+        IF(AK2S.GE.0)HH=HH*GS              ! *|G^tilde|^2
+        IF(AK2S.LT.0)HH=HH*DEXP(-2*RP*AK2) ! to be modified due to Coul. !!
+       ENDIF
  61   WEI=WEI+HH
+      ENDIF
+ 10   CONTINUE
+C      WRITE(6,380)'WEI ',WEI
+380    FORMAT(A7,E11.4)
+      IF(AA1.LT.0.D0)RETURN !! switch off the narrow p-wave resonance FSI
+C---------------------! approx. account of narrow p-wave resonance FSI
+      IF(RP.GE.AA1)RETURN
+      IF(LL.EQ.14.OR.LL.EQ.31)THEN
+c---  Account for the contribution of the inner region r* < AA1 
+C--   to the K+K-, pi+Xi- weights due to phi, Xi* resonance FSI
+       HN1=FF12S
+       IF(ICH.EQ.1)HN1=FF12S*ACH
+       WEI=WEI+HN1*DW1_APP
+      WRITE(6,380)'WEIres ',WEI
       ENDIF
       RETURN
 c-------------------------------------------------------------
@@ -1731,7 +2299,7 @@ C--   F(JJ)*C(JJ)= DEVIATION OF THE BETHE-SALPETER AMPL. FROM PLANE WAVE
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
      1               X,Y,Z,T,RP,RPS
-      COMMON/FSI_SHH/SH,CHH
+      COMMON/FSI_SHH/SH,SHH,CHH
       COMMON/FSI_BP/B,P
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_C/C(10)/FSI_AM/AM,AMS,DM,SM,AM1S,AM2S
@@ -1745,19 +2313,19 @@ C--   F(JJ)*C(JJ)= DEVIATION OF THE BETHE-SALPETER AMPL. FROM PLANE WAVE
       DO 10 JJ=1,MSP
       IF(JJ.GT.1)GOTO 3
       XRA=2*RSS/AC
-      IF(AK.NE.0.D0)GOTO2
+      IF(AK.NE.0.D0)GOTO 2
       SHK=1.D0
       SHR=.0D0
       SHHR=SHR
       CHHR=1/RSS
-      GOTO3
+      GOTO 3
   2   H=AK*RSS
       CALL GST(XRA,H)
       SHR=SH/RSS
       CHHR=CHH/RSS
       SHHR=SHR
       IF(ICH.EQ.1) SHHR=ACH*SHR
-  3   IF(NS.EQ.2)GOTO1
+  3   IF(NS.EQ.2)GOTO 1
 C---  F= ASYMPTOTIC FORMULA (T= 0 APPROX.); NS= 4
   6   F(JJ)=DCMPLX(CHHR,SHHR)
       IF(NS.NE.1)GOTO 10
@@ -1778,19 +2346,19 @@ C---  F= ASYMPTOTIC FORMULA (T= 0 NOT REQUIRED); NS= 2
       TSSA=DABS(TSS)
       IF(DM.NE.0.D0)GOTO 11
       H=AM*.5D0/TSSA
-      IF(AK.NE.0.D0)GOTO4
+      IF(AK.NE.0.D0)GOTO 4
       HM=H*RPS
-      IF(HM.GE.3.D15)GOTO6
+      IF(HM.GE.3.D15)GOTO 6
       FS1=DFRSIN(HM)
       FC1=DFRCOS(HM)
       FC2=FC1
       FS2=FS1
-      GOTO5
+      GOTO 5
   4   CONTINUE
       H1=AK*TSSA/AM
       HM=H*(RSS-H1)**2
       HP=H*(RSS+H1)**2
-      IF(HP.GE.3.D15)GOTO6
+      IF(HP.GE.3.D15)GOTO 6
       FS1=DFRSIN(HM)
       FC1=DFRCOS(HM)
       FS2=DFRSIN(HP)
@@ -1807,7 +2375,7 @@ C---  F= ASYMPTOTIC FORMULA (T= 0 NOT REQUIRED); NS= 2
       H=AM*.5D0/TSSH
       IF(AK.NE.0.D0)GOTO 12
       HM=H*RPS
-      IF(HM.GE.3.D15)GOTO6
+      IF(HM.GE.3.D15)GOTO 6
       FS1=FS1+DFRSIN(HM)/2
       FC1=FC1+DFRCOS(HM)/2
       IF(I.EQ.1)GOTO 13
@@ -1818,7 +2386,7 @@ C---  F= ASYMPTOTIC FORMULA (T= 0 NOT REQUIRED); NS= 2
       H1=AK*TSSH/AM
       HM=H*(RSS-H1)**2
       HP=H*(RSS+H1)**2
-      IF(HP.GE.3.D15)GOTO6
+      IF(HP.GE.3.D15)GOTO 6
       FS1=FS1+DFRSIN(HM)/2
       FC1=FC1+DFRCOS(HM)/2
       FS2=FS2+DFRSIN(HP)/2
@@ -1839,7 +2407,7 @@ C---  F= ASYMPTOTIC FORMULA (T= 0 NOT REQUIRED); NS= 2
 
       FUNCTION EXF(X)
       IMPLICIT REAL*8 (A-H,O-Z)
-      IF(X.LT.-15.D0) GO TO 1
+      IF(X.LT.-15.D0) GOTO 1
       EXF=DEXP(X)
       RETURN
   1   EXF=.0D0
@@ -1847,12 +2415,20 @@ C---  F= ASYMPTOTIC FORMULA (T= 0 NOT REQUIRED); NS= 2
       END
 
       SUBROUTINE SEQ(X,H)
-C---  CALC. FUNCTIONS B, P (EQS. (17) OF G-K-L-L);
-C--   NEEDED TO CALC. THE CONFLUENT HYPERGEOMETRIC FUNCTION GST.
+C---  CALC. FUNCTIONS B, P (EQS. (17) OF G-K-L-L)
+C--   NEEDED TO CALC. THE HYPERGEOMETRIC FUNCTION 
+C-    GST=CHH+i*SHH=sqrt(Ac)(G0+i*F0)
+C-    X=2r/a_c, H=k*r
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_BP/B,P
+      COMMON/FSI_SHH/SH,SHH,CHH
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       DIMENSION BH(3),PH(3)
-      DATA ERR/1.D-7/
+      DATA ERROR/1.D-7/
+      IF(H.GE.15.D0)THEN   
+      CALL SEQA(X,H)       ! fast approx. calc. of hyperg. f-n 
+                           ! GST= CHH+i*SHH at large H=k*r
+      ELSE
       BH(1)=1.D0
       PH(1)=1.D0
       PH(2)=.0D0
@@ -1867,30 +2443,45 @@ C--   NEEDED TO CALC. THE CONFLUENT HYPERGEOMETRIC FUNCTION GST.
       B=B+BH(3)
       P=P+PH(3)
       Z=DABS(BH(2))+DABS(BH(3))+DABS(PH(2))+DABS(PH(3))
-      IF(Z.LT.ERR)RETURN
+      IF(Z.LT.ERROR)GOTO 3
       BH(1)=BH(2)
       BH(2)=BH(3)
       PH(1)=PH(2)
       PH(2)=PH(3)
       GOTO 2
+  3   CONTINUE
+      SH=H*B        
+      SHH=SH*ACH
+      CHH=P+B*X*(DLOG(DABS(X))+HPR)
+      ENDIF
+      RETURN
       END
 
       SUBROUTINE SEQA(X,H)
-C---  CALC. FUNCTIONS CHH=REAL(GST), SH=IMAG(GST)/ACH, B=SH/H
-C--   IN THE ASYMPTOTIC REGION H=K*R >> 1.
+c-    called by SEQ(X,H) if H >= 15
+C---  CALC. approx. CHH=real(GSTH), SHH=imag(GSTH), SH=SHH/ACH, B=SH/H
+C--   IN THE ASYMPTOTIC REGION H=k*r >= 15
+C-    X=2r/a_c, H=k*r
+C-    GSTH is an aprox. to GST=sqrt(Ac)(G0+i*F0)
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_BP/B,P
-      COMMON/FSI_SHH/SH,CHH
+      COMMON/FSI_SHH/SH,SHH,CHH
       COMMON/FSI_ETA/ETA
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_COULPH/EIDC
-      COMPLEX*16 EIDC,GST
+      COMPLEX*16 EIDC,GSTH
+      COMPLEX*8 Z8,CGAMMA
+      Z8=CMPLX(1.,SNGL(ETA))
+      Z8=CGAMMA(Z8)
+      EIDC=Z8/CABS(Z8)
       ARG=H-ETA*DLOG(2*H)
-      GST=DCMPLX(DCOS(ARG),DSIN(ARG))
-      GST=ACHR*EIDC*GST
-      CHH=DREAL(GST)
-      SH=DIMAG(GST)/ACH
+      GSTH=DCMPLX(DCOS(ARG),DSIN(ARG))
+      GSTH=ACHR*EIDC*GSTH
+      CHH=DREAL(GSTH)
+      SHH=DIMAG(GSTH)
+      SH=SHH/ACH
       B=SH/H
+      P=CHH-B*X*(DLOG(DABS(X))+HPR)
       RETURN
       END
 
@@ -1900,9 +2491,7 @@ C--   F12= FF0* plane wave,  FF0=F*ACHR,
 C---  F is the confluent hypergeometric function,
 C--   ACHR=sqrt(ACH), where ACH is the Coulomb factor
       IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
-      COMMON/FSI_ETA/ETA
       COMMON/FSI_FFF/F12,F21
       COMPLEX*16 FF0,F12,F21
       C=DCOS(H)
@@ -1912,45 +2501,47 @@ C--   ACHR=sqrt(ACH), where ACH is the Coulomb factor
       IF(ICH.EQ.0)RETURN
       RHOP=RHO+H
       RHOM=RHO-H
-      F12=FF0(RHO,H)*F12
-      F21=FF0(RHO,-H)*F21
+      F12=FF0(RHOP)*F12
+      F21=FF0(RHOM)*F21
       RETURN
       END
 
-      FUNCTION FAS(RKS)
+      FUNCTION FAS(RHOP)
+c-    called by FF0(RHOP) if RHOP >= 20
 C--   FAS=F*ACHR
-C---  F is the confluent hypergeometric function at k*r >> 1
+C---  F approx. the confluent hypergeometric function at k*r >> 1
 C--   ACHR=sqrt(ACH), where ACH is the Coulomb factor
       IMPLICIT REAL*8 (A-H,O-Z)
       COMPLEX*16 FAS,EIDC,ZZ1
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_ETA/ETA
       COMMON/FSI_COULPH/EIDC
-      D1=DLOG(RKS)*ETA
-      D2=ETA*ETA/RKS
+      COMPLEX*8 Z8,CGAMMA
+      Z8=CMPLX(1.,SNGL(ETA))
+      Z8=CGAMMA(Z8)
+      EIDC=Z8/CABS(Z8)
+      D1=DLOG(RHOP)*ETA
+      D2=ETA*ETA/RHOP
       ZZ1=DCMPLX(DCOS(D1),DSIN(D1))/EIDC
       FAS=DCMPLX(1.D0,-D2)*ZZ1
-      FAS=FAS-DCMPLX(DCOS(RKS),DSIN(RKS))*ETA/RKS/ZZ1
+      FAS=FAS-DCMPLX(DCOS(RHOP),DSIN(RHOP))*ETA/RHOP/ZZ1
       RETURN
       END
 
-      FUNCTION FF0(RHO,H)
+      FUNCTION FF0(RHOP)
 C--   FF0=F*ACHR
 C--   F is the confluent hypergeometric function
 C--   (Eq. (15) of G-K-L-L), F= 1 at r* << AC
 C--   ACHR=sqrt(ACH), where ACH is the Coulomb factor
       IMPLICIT REAL*8 (A-H,O-Z)
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
-      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
       COMMON/FSI_ETA/ETA
       COMPLEX*16 ALF,ALF1,Z,S,A,FF0,FAS
-      DATA ERR/1.D-5/
+      DATA ERROR/1.D-5/
       S=DCMPLX(1.D0,0.D0)
       FF0=S
-      RHOP=RHO+H
 CC      GOTO 5 ! rejects the approx. calcul. of hyperg. f-ion F
-      IF(RHOP.LT.20.D0)GOTO5
-      FF0=FAS(RHOP) ! approx. calc.
+      IF(RHOP.LT.20.D0)GOTO 5
+      FF0=FAS(RHOP) ! approx. calc. at RHOP >= 20
       RETURN
   5   ALF=DCMPLX(.0D0,-ETA)
       ALF1=ALF-1
@@ -1962,15 +2553,16 @@ CC      GOTO 5 ! rejects the approx. calcul. of hyperg. f-ion F
       FF0=FF0+S
       ZR=DABS(DREAL(S))
       ZI=DABS(DIMAG(S))
-      IF((ZR+ZI).GT.ERR)GOTO3
+      IF((ZR+ZI).GT.ERROR)GOTO 3
       FF0=FF0*ACHR
       RETURN
       END
 
       FUNCTION HC(XA)
-C---  HC = h-function of Landau-Lifshitz: h(x)=Re[psi(1-i/x)]+ln(x)
+C---  HC = h-function of Landau-Lifshitz: h(x)=Re[psi(1-i/x)]+ln|x|
 C--   psi(x) is the digamma function (the logarithmic derivative of
-C--   the gamma function)
+C--   the gamma function); x=1/eta
+C-    Note: Re[psi(1-i/x)=Re[psi(-i/x)=Re[psi(i/x)
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION BN(15)
       DATA BN/.8333333333D-1,.8333333333D-2,.396825396825D-2,
@@ -1980,7 +2572,7 @@ C--   the gamma function)
      4        .5482758333D5, .9749368235D6, .200526958D8/
       X=DABS(XA)
       IF(X.LT..33D0) GOTO 1
-CC      IF(X.GE.3.5D0) GO TO 2
+CC      IF(X.GE.3.5D0) GOTO 2               ! approx. calc. at large x
       S=.0D0
       N=0
    3  N=N+1
@@ -1990,7 +2582,7 @@ CC      IF(X.GE.3.5D0) GO TO 2
 C---  Provides 7 digit accuracy
       HC=S-.5772156649D0+DLOG(X)
       RETURN
-CC   2  HC=1.2D0/X**2+DLOG(X)-.5772156649 D0
+CC   2  HC=1.2D0/X**2+DLOG(X)-.5772156649D0 ! approx. calc. at large x
 CC      RETURN
    1  X2=X*X
       XP=X2
@@ -2006,7 +2598,7 @@ CC      RETURN
       FUNCTION ACP(X)
 C---  ACP = COULOMB PENETRATION FACTOR
       IMPLICIT REAL*8 (A-H,O-Z)
-      IF(X.LT.0.05D0.AND.X.GE.0.D0) GO TO 1
+      IF(X.LT.0.05D0.AND.X.GE.0.D0) GOTO 1
       Y=6.2831853D0/X
       ACP=Y/(EXF(Y)-1)
       RETURN
@@ -2015,55 +2607,24 @@ C---  ACP = COULOMB PENETRATION FACTOR
       END
 
       SUBROUTINE GST(X,H)
-C---  CALC. THE CONFL. HYPERGEOM. F-N: GST = CHH+i*SHH
-C--   AND THE COULOMB F-S B, P (CALLS SEQ OR SEQA).
+C---  calling SEQ (SEQA) calc. CHH, SHH, SH=SHH/ACH, B=SH/H
+C---  related with s-wave Coulomb f-n 
+C-    Gtilde = sqrt{ACH}(G0+i*F0) = CHH+i*SHH,
+C-    X=2r/a_c, H=k*r
       IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
       COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
-      COMMON/FSI_SHH/SH,CHH
+      COMMON/FSI_SHH/SH,SHH,CHH
       COMMON/FSI_BP/B,P
   1   IF(ICH.EQ.1)GOTO 2
-  3   SH=DSIN(H)
+      SH=DSIN(H)
+      SHH=SH
       CHH=DCOS(H)
       B=1.D0
       IF(H.NE.0.D0)B=SH/H
       P=CHH
       RETURN
   2   CONTINUE
-      IF(H.GT.15.D0)GOTO4 ! comment out if you want to reject
-                          ! the approximate calculation of hyperg. f-ion G
-      CALL SEQ(X,H) ! exact calculation
-      SH=H*B        ! = SHH/ACH
-      CHH=P+B*X*(DLOG(DABS(X))+HPR)
-      RETURN
-  4   CALL SEQA(X,H)
-      RETURN
-      END
-
-      FUNCTION FF1(RHO,H)
-C---  FF1=FF0; used for particle-nucleus system
-C--   FF0=F12*ACHR
-C--   F12 is the confluent hypergeometric function
-C--   (Eq. (15) of G-K-L-L), F12= 1 at r* << AC
-C--   ACHR=sqrt(ACH), where ACH is the Coulomb factor
-      IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
-      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
-      COMMON/FSI_ETA/ETA
-      COMMON/FSI_COULPH/EIDC
-      COMMON/FSI_ICH1/ICH1
-      COMPLEX*16 FF0,FF1
-      COMPLEX*16 EIDC
-      COMPLEX*8 Z8,CGAMMA
-      FF1=DCMPLX(1.D0,0.D0)
-      IF(ICH1.EQ.0)GOTO 2
-      IF(RHO.LT.15.D0.AND.RHO+H.LT.20.D0)GOTO 2
-C---  Calc. EIDC=exp(i*Coul.Ph.);
-C--   used in calc. of hypergeom. f-s in SEQA, FAS at k*R > 15, 20
-      Z8=CMPLX(1.,SNGL(ETA))
-      Z8=CGAMMA(Z8)
-      EIDC=Z8/CABS(Z8)
- 2    FF1=FF0(RHO,H)
+      CALL SEQ(X,H) 
       RETURN
       END
 
@@ -2076,14 +2637,14 @@ C---  NOTE THAT SCATT. AMPL.= 1/CMPLX(G(AK),-AK*ACH)
      1              SBKRB(10),SDKK(10)
       COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
       COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,JJ,MSPIN
-      COMMON/FSI_BP/B,P/FSI_DERIV/BPR,PPR/FSI_SHH/SH,CHH
+      COMMON/FSI_BP/B,P/FSI_DERIV/BPR,PPR/FSI_SHH/SH,SHH,CHH
       COMMON/FSI_DAK/DAK,IFUN
       HCP2=.0D0
       ACH=1.D0
       IF(ICH.EQ.0)GOTO 1
       XH=AC*AK
       HCP=HC(XH)
-      HPR=HCP+.1544313298D0
+      HPR=HCP+.1544313298D0       ! HPR= h(eta)+2C-1
       ACH=ACP(XH)
       HCP2=2*HCP/AC
    1  AKS=AK**2
@@ -2196,7 +2757,7 @@ C     ======================================================
         WRITE(9,2) key,rea8,text
   2     FORMAT('      REA8|==> ',a10,'= ',E10.4,2x,a50)
         RETURN
-      END IF
+      ENDIF
  13   call readtest(2,lun,key,type,ierr)
       RETURN
       END
@@ -2214,7 +2775,7 @@ C     ======================================================
         WRITE(9,2) key,rea4,text
   2     FORMAT('      REA4|==> ',a10,'= ',E10.4,2x,a50)
         RETURN
-      END IF
+      ENDIF
  13   call readtest(2,lun,key,type,ierr)
       RETURN
       END
@@ -2232,7 +2793,7 @@ C     ======================================================
         WRITE(9,2) key,int4,text
   2     FORMAT('      INT4|==> ',a10,'= ',I9,2x,a50)
         RETURN
-      END IF
+      ENDIF
  13   call readtest(2,lun,key,type,ierr)
       RETURN
       END
@@ -2252,7 +2813,7 @@ C        READ(lun,FMT='(18X,A50,A12)',ERR=13,END=13) ch50,text
         WRITE(9,2) key,ch50,text
   2     FORMAT('      CH50|==> ',a10,'= ',A50,2x,a12)
         RETURN
-      END IF
+      ENDIF
  13   call readtest(2,lun,key,type,ierr)
       RETURN
       END
@@ -2272,7 +2833,7 @@ C        READ(lun,FMT='(18X,A30,A32)',ERR=13,END=13) ch30,text
         WRITE(9,2) key,ch30,text
   2     FORMAT('      CH30|==> ',a10,'= ',A30,2x,a32)
         RETURN
-      END IF
+      ENDIF
  13   call readtest(2,lun,key,type,ierr)
       RETURN
       END
@@ -2289,7 +2850,7 @@ C     =================================================
         WRITE (9,10) lun
   10    FORMAT(' READ-PAR.|==> Control values from unit (',i2,')',/,
      &         50('='))
-      END IF
+      ENDIF
       IF(mode.eq.1) THEN
       ierr=0
       REWIND(lun)
@@ -2299,7 +2860,7 @@ C     =================================================
           RETURN
         ELSE
           GOTO 1
-        END IF
+        ENDIF
  13   ierr=1
       RETURN
       ELSE
@@ -2307,5 +2868,314 @@ C     =================================================
  14   FORMAT(' *** ReadErr: key,test,type=',
      &       2a10,1x,a4,i9,/' *** STOP')
       STOP
-      END IF
+      ENDIF
+      END
+
+      function digamma (x)
+!*****************************************************************************80
+!
+!! DIGAMMA calculates DIGAMMA ( X ) = d ( LOG ( GAMMA ( X ) ) ) / dX
+!
+!    Original FORTRAN77 version by Jose Bernardo.
+!    FORTRAN90 version by John Burkardt.
+!
+!  Reference:
+!
+!    Jose Bernardo,
+!    Algorithm AS 103:
+!    Psi ( Digamma ) Function,
+!    Applied Statistics,
+!    Volume 25, Number 3, 1976, pages 315-317.
+!
+!  Parameters:
+!
+!    Input, real ( kind = 8 ) X, the argument of the digamma function.
+!    0 < X.
+!    Output, real ( kind = 8 ) DIGAMMA, the value of the digamma function at X.
+!
+      implicit real*8 (a-h,o-z)
+      data c /8.5D+00/, euler_mascheroni/0.57721566490153286060D+00/
+!
+!  Approximation for small argument.
+!
+      if ( x <= 0.000001D+00 ) then
+      digamma = - euler_mascheroni - 1.0D+00 / x 
+     +          + 1.6449340668482264365D+00 * x
+      return
+      endif
+!
+!  Reduce to DIGAMA(X + N).
+!
+      digamma = 0.0D+00
+      x2 = x 
+  1    if(x2.lt.c)goto 2
+!      do while ( x2 < c )
+      digamma = digamma - 1.0D+00 / x2
+      x2 = x2 + 1.0D+00
+      goto 1
+  2   continue
+!      end do
+!
+!  Use Stirling's (actually de Moivre's) expansion.
+!
+      r = 1.0D+00 / x2
+      digamma = digamma + log ( x2 ) - 0.5D+00 * r
+      r = r * r
+      digamma = digamma 
+     -  - r * ( 1.0D+00 / 12.0D+00 
+     -  - r * ( 1.0D+00 / 120.0D+00 
+     -  - r * ( 1.0D+00 / 252.0D+00 
+     -  - r * ( 1.0D+00 / 240.0D+00 
+     -  - r * ( 1.0D+00 / 132.0D+00 ) ) ) ) )
+      return
+      end
+
+
+
+C=======================================================
+C
+
+c++  This routine is used to init mass and charge of the nucleus.
+
+      SUBROUTINE FSINUCL(R_AMN,R_CN)
+
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+
+      AMN=R_AMN
+      CN=R_CN
+
+      RETURN
+      END
+
+C======================================================
+C
+
+      SUBROUTINE FSIMOMENTUM(PP1,PP2)
+
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  ! particle momenta in NRF
+     1               P2X,P2Y,P2Z,E2,P2
+
+
+      REAL*8 PP1(3),PP2(3)
+c      Print *,"momentum",pp1,pp2
+      P1X=PP1(1)
+      P1Y=PP1(2)
+      P1Z=PP1(3)
+      P2X=PP2(1)
+      P2Y=PP2(2)
+      P2Z=PP2(3)
+      RETURN
+      END
+
+
+
+C======================================================
+C
+
+      SUBROUTINE FSIPOSITION(XT1,XT2)
+
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, !4-coord. of emis. points in NRF
+     1                X2,Y2,Z2,T2,R2
+
+      REAL*8 XT1(4),XT2(4)
+clc      print *,'fsi',xt1,xt2
+      X1=XT1(1)
+      Y1=XT1(2)
+      Z1=XT1(3)
+      T1=XT1(4)
+      X2=XT2(1)
+      Y2=XT2(2)
+      Z2=XT2(3)
+      T2=XT2(4)
+      RETURN
+      END
+
+
+C======================================================
+C======================================================
+C
+      subroutine BoostToPrf()
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_CVK/V,CVK
+      COMMON/FSI_MOM/P1X,P1Y,P1Z,E1,P1,  !part. momenta in NRF
+     1               P2X,P2Y,P2Z,E2,P2
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_COOR/X1,Y1,Z1,T1,R1, ! 4-coord. of emis. points in NRF
+     1                X2,Y2,Z2,T2,R2
+      COMMON/FSI_P12/P12X,P12Y,P12Z,E12,P12,AM12,EPM
+
+      XS=X1-X2
+      YS=Y1-Y2
+      ZS=Z1-Z2
+      TS=T1-T2
+      RS12=XS*P12X+YS*P12Y+ZS*P12Z
+      H1=(RS12/EPM-TS)/AM12
+      X=XS+P12X*H1
+      Y=YS+P12Y*H1
+      Z=ZS+P12Z*H1
+      T=(E12*TS-RS12)/AM12
+      RPS=X*X+Y*Y+Z*Z
+      RP=DSQRT(RPS)
+CW      WRITE(6,38)'RP ',RP,'X ',X,Y,Z,T
+38    FORMAT(A7,E11.4,A7,4E11.4)
+
+      CVK=(P12X*PPX+P12Y*PPY+P12Z*PPZ)/(P12*AK)
+      V=P12/E12
+      return
+      end
+      SUBROUTINE LLINI(lll,I_NS,I_ITEST)
+C===> Initialisation for a given LL value.
+C     ===========================================
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/FSI_POC/AMN,AM1,AM2,CN,C1,C2,AC1,AC2
+      COMMON/FSI_SPIN/RHO(10)
+      COMMON/FSI_ACH/HPR,AC,ACH,ACHR,HCP2,AAK,ISPIN,MSPIN
+      COMMON/FSI_NS/LL,NS,ICH,ISI,IQS,I3C,I3S
+      COMMON/FSI_FD/FD(10),RD(10)
+      COMMON/FSI_C/C(10),AM,AMS,DM
+      COMMON/FSI_CONS/PI,PI2,SPI,DR,W
+      COMPLEX*16 C
+      COMMON/FSI_AA/AA
+      COMMON/FSI_PRF/PPX,PPY,PPZ,AK,AKS,
+     1               X,Y,Z,T,RP,RPS
+      COMMON/FSI_AAPI/AAPI(20,2)/FSI_AAND/AAND(20,4)
+      COMMON/FSI_AAPIN/AAPIN(20,2)
+      COMMON/FSI_SW/RB(10),EB(10),BK(10),CDK(10),SDK(10),
+     1              SBKRB(10),SDKK(10)
+      COMMON/FSI_FDH/FDH(30,10),RDH(30,10),EBH(30,10),RBH(30,10)
+      COMMON/FSI_RHOH/RHOH(30,10)
+      COMMON/FSI_AMCH/AM1H(30),AM2H(30),C1H(30),C2H(30),MSPINH(30)
+      COMMON/FSI_AAKK/AAKK(9)/FSI_AAPAP/AAPAPR(3,2),AAPAPI(3,2)
+
+C++----- add to be able to call several time-------
+      integer ifirst
+      data ifirst/0/
+      ifirst=ifirst+1
+
+C===> LL - Initialisation ========================================
+C---- Setting particle masses and charges
+      LL=lll
+      NS=I_NS
+      AM1=AM1H(LL)
+      AM2=AM2H(LL)
+      C1=C1H(LL)
+      C2=C2H(LL)
+C      print *,"llini: ",LL,AM1,AM2,C1,C2
+C---> Switches:
+C     ISI=1(0)  the strong interaction between the two particles ON (OFF)
+C     IQS=1(0)  the quantum statistics ON (OFF);
+C               should be OFF for nonidentical particles
+C     I3C=1(0)  the Coulomb interaction with the nucleus ON (OFF)
+C     I3S=1(0)  the strong interaction with the nucleus ON (OFF)
+C     ICH=1(0)  if C1*C2 is different from 0 (is equal to 0)
+C-    To switch off the Coulomb force between the two particles
+C     put ICH=0 and substitute the strong amplitude parameters by
+C     the ones not affected by Coulomb interaction
+C---- --------------------------------------------------------------------
+      IF (I_ITEST.NE.1) THEN
+         ICH=0
+         IF(C1*C2.NE.0.D0) ICH=1
+         IQS=0
+         IF(C1+AM1.EQ.C2+AM2) IQS=1
+         I3S=0                  ! only this option is available
+         ISI=1
+         I3C=1
+      ENDIF
+C---> Calcul. twice the reduced mass (AM), the relative
+C     mass difference (DM) and the Bohr radius (AC)
+      AM=2*AM1*AM2/(AM1+AM2)
+      AMS=AM*AM
+      DM=(AM1-AM2)/(AM1+AM2)
+      AC=1.D10
+      C12=C1*C2
+      IF(C12.NE.0.D0)AC=2*137.036D0/(C12*AM)
+C---Setting spin factors
+      MSPIN=MSPINH(LL)
+c      print *,"LLINI MSPIN: ",MSPIN
+      MSP=MSPIN
+      DO 91 ISPIN=1,10
+ 91      RHO(ISPIN)=RHOH(LL,ISPIN)
+c         print *,"RHO: ",ISPIN,RHO(ISPIN)
+C---> Integration limit AA in the spherical wave approximation
+      AA=0.D0
+cc      IF(NS.EQ.2.OR.NS.EQ.4)AA=.5D0 !!in 1/GeV --> 0.1 fm
+      IF(NS.EQ.2.OR.NS.EQ.4)AA=6.D0 !!in 1/GeV --> 1.2 fm
+C---> Setting scatt. length (FD), eff. radius (RD) and, if possible,
+C--   also the corresp. square well parameters (EB, RB)
+      DO 55 JJ=1,MSP
+         ISPIN=JJ
+         FD(JJ)=FDH(LL,JJ)
+         RD(JJ)=RDH(LL,JJ)
+         EB(JJ)=EBH(LL,JJ)
+         RB(JJ)=RBH(LL,JJ)
+c         print *,"FD,RD,EB,RB: ",FD(JJ),RD(JJ),EB(JJ),RB(JJ)
+C---Resets FD and RD for a nucleon-deuteron system (LL=8,9)
+      IF(LL.EQ.8.OR.LL.EQ.9)THEN
+       JH=LL-7+2*JJ-2
+       FD(JJ)=AAND(1,JH)
+       RD(JJ)=AAND(2,JH)-2*AAND(3,JH)/AAND(1,JH)
+      ENDIF
+C---Resets FD and RD for a pion-pion system (LL=5,6,7)
+      IF(LL.EQ.5.OR.LL.EQ.6.OR.LL.EQ.7)THEN
+       IF(LL.EQ.7)FD(JJ)=AAPI(1,2)/AM
+       IF(LL.EQ.5)FD(JJ)=(.6667D0*AAPI(1,1)+.3333D0*AAPI(1,2))/AM
+       IF(LL.EQ.6)FD(JJ)=(.3333D0*AAPI(1,1)+.6667D0*AAPI(1,2))/AM
+       AKS=0.D0
+       DAKS=1.D-5
+       AKSH=AKS+DAKS
+       AKH=DSQRT(AKSH)
+       GPI1H=GPIPI(AKSH,1)
+       GPI2H=GPIPI(AKSH,2)
+       H=1/FD(JJ)
+       IF(LL.EQ.7)C(JJ)=1/DCMPLX(GPI2H,-AKH)
+       IF(LL.EQ.5)
+     + C(JJ)=.6667D0/DCMPLX(GPI1H,-AKH)+.3333D0/DCMPLX(GPI2H,-AKH)
+       IF(LL.EQ.6)
+     + C(JJ)=.3333D0/DCMPLX(GPI1H,-AKH)+.6667D0/DCMPLX(GPI2H,-AKH)
+       HH=DREAL(1/C(JJ))
+       RD(JJ)=2*(HH-H)/DAKS
+      ENDIF
+C---Resets FD and RD for a pion-nucleon system (LL=12,13)
+C *** SWITCH OFF SPECIAL PiN ***
+C      IF(LL.EQ.12.OR.LL.EQ.13)THEN
+      IF(LL.EQ.32.OR.LL.EQ.33)THEN
+       IF(LL.EQ.12)FD(JJ)=AAPIN(1,2)
+       IF(LL.EQ.13)FD(JJ)=(.6667D0*AAPIN(1,1)+.3333D0*AAPIN(1,2))
+       AKS=0.D0
+       DAKS=1.D-5
+       AKSH=AKS+DAKS
+       AKH=DSQRT(AKSH)
+       GPI1H=GPIN(AKSH,1)
+       GPI2H=GPIN(AKSH,2)
+       H=1/FD(JJ)
+       IF(LL.EQ.12)C(JJ)=1/DCMPLX(GPI2H,-AKH)
+       IF(LL.EQ.13)
+     + C(JJ)=.6667D0/DCMPLX(GPI1H,-AKH)+.3333D0/DCMPLX(GPI2H,-AKH)
+       HH=DREAL(1/C(JJ))
+       RD(JJ)=2*(HH-H)/DAKS
+c       print *,"FD,RD,EB,RB: ",FD(JJ),RD(JJ),EB(JJ),RB(JJ)
+      ENDIF
+C---fm to 1/GeV for pp-bar system
+      IF(LL.EQ.30)THEN
+      DO 4 I3=1,3
+      AAPAPR(I3,JJ)=AAPAPR(I3,JJ)*W
+ 4    AAPAPI(I3,JJ)=AAPAPI(I3,JJ)*W
+C---Calculates complex elements M11=M22=C(6), M12=M21=C(7) for I=0
+C---   at k*=0                  M11=M22=C(8), M12=M21=C(9) for I=1
+        C(7+(JJ-1)*2)=2*DCMPLX(AAPAPR(1,JJ),AAPAPI(1,JJ))*
+     *                DCMPLX(AAPAPR(2,JJ),AAPAPI(2,JJ)) ! 2a_0Sa_1S
+        C(6+(JJ-1)*2)=DCMPLX(AAPAPR(1,JJ)+AAPAPR(2,JJ),
+     ,                     AAPAPI(1,JJ)+AAPAPI(2,JJ))/
+     /                                  C(7+(JJ-1)*2)   ! M11=M22
+      C(7+(JJ-1)*2)=-DCMPLX(AAPAPR(1,JJ)-AAPAPR(2,JJ),
+     ,                      AAPAPI(1,JJ)-AAPAPI(2,JJ))/
+     /                                   C(7+(JJ-1)*2)  ! M12=M21
+      ENDIF
+C---Calculation continues for any system (any LL)
+ 55   CONTINUE
+      RETURN
       END

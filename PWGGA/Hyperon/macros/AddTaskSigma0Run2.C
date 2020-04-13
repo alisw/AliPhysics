@@ -1,6 +1,7 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
-                                     TString trigger = "kINT7",
-                                     const char *cutVariation = "0") {
+AliAnalysisTaskSE *AddTaskSigma0Run2(bool isRun1 = false, bool isMC = false,
+					bool dcar = false,
+					TString trigger = "kINT7", 
+					const char *cutVariation = "0") {
   TString suffix;
   suffix.Form("%s", cutVariation);
 
@@ -12,20 +13,29 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
-
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400000002280920000";
-  if (suffix == "7") {
-    cutnumberPhoton = "10200008400000002280920000";
-  }
   TString cutnumberEvent = "00000000";
+  if (suffix == "4") {
+    cutnumberPhoton="00200008400000002280f20090";
+    cutnumberEvent = "00000003";
+  }
+  if (suffix == "0" || suffix == "3") {
+    // Borissov cuts
+    cutnumberPhoton = "00200008400020002282020000";
+    cutnumberEvent = "00000003";
+  }
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
+  Bool_t fillHistos = kTRUE;
   Bool_t runLightOutput = kFALSE;
-  TString cutnumberAODBranch = "00000003_06000008400100001000000000";
+  if (suffix != "0" && suffix != "999" && suffix != "3" && suffix != "4") {
+    runLightOutput = kTRUE;
+    fillHistos = kFALSE;
+  }
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName =
@@ -43,7 +53,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
 
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return nullptr;
+      return NULL;
     }
 
     if (cutnumberEvent != "") {
@@ -51,6 +61,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
           new AliConvEventCuts(cutnumberEvent.Data(), cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      fEventCuts->SetLightOutput(runLightOutput);
+      fEventCuts->SetFillCutHistograms("", fillHistos);
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -62,17 +74,15 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
       fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
                                           cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetIsHeavyIon(false);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetFillCutHistograms("", fillHistos);
       if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
         fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("", kTRUE);
       }
     }
-
     fV0ReaderV1->Init();
-
     AliLog::SetGlobalLogLevel(AliLog::kFatal);
 
     // connect input V0Reader
@@ -81,61 +91,103 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   }
 
   //========= Init subtasks and start analyis ============================
+  // Track Cuts
+
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::LambdaCuts();
   v0Cuts->SetIsMC(isMC);
   v0Cuts->SetPID(3122);
   v0Cuts->SetPosPID(AliPID::kProton, 2212);
   v0Cuts->SetNegPID(AliPID::kPion, -211);
+  if (suffix == "4") {
+    v0Cuts->SetEtaMax(0.9);
+    v0Cuts->SetTPCclusterMin(70);
+    v0Cuts->SetDaughterDCAtoPV(0.05);
+    v0Cuts->SetPIDnSigma(5.f);
+    v0Cuts->SetV0OnFlyStatus(false);
+    v0Cuts->SetV0PtMin(0.3);
+    v0Cuts->SetV0DecayVertexMax(100.f);
+    v0Cuts->SetV0RadiusMin(0.2);
+    v0Cuts->SetV0RadiusMax(100.f);
+    v0Cuts->SetDaughterDCAMax(1.5);
+    v0Cuts->SetV0CosPAMin(0.999);
+    v0Cuts->SetK0Rejection(0.492, 0.503);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.006, 1.115683 + 0.006);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+  }
+  if (suffix == "0" || suffix == "3") {
+    // Run1 cuts
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+    v0Cuts->SetV0OnFlyStatus(true);
+    v0Cuts->SetDaughterDCAtoPV(0.06);
+    v0Cuts->SetDaughterDCAMax(1.5);
+    v0Cuts->SetV0CosPAMin(0.993);
+    v0Cuts->SetV0RadiusMax(220.f);
+    v0Cuts->SetV0RadiusMin(0.5);
+    v0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
+    v0Cuts->SetPIDnSigma(100.f);
+    if  (suffix == "3") {
+	v0Cuts->SetV0PtMin(0.);
+    } else {
+	v0Cuts->SetV0PtMin(0.4);
+    }
+    v0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.110, 1.120);
+    v0Cuts->SetTPCclusterMin(0.f);
+    v0Cuts->SetEtaMax(0.9);
+  }
+
   AliSigma0V0Cuts *antiv0Cuts = AliSigma0V0Cuts::LambdaCuts();
   antiv0Cuts->SetIsMC(isMC);
   antiv0Cuts->SetPID(-3122);
   antiv0Cuts->SetPosPID(AliPID::kPion, 211);
   antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
+  if (suffix == "4") {
+    antiv0Cuts->SetEtaMax(0.9);
+    antiv0Cuts->SetTPCclusterMin(70);
+    antiv0Cuts->SetDaughterDCAtoPV(0.05);
+    antiv0Cuts->SetPIDnSigma(5.f);
+    antiv0Cuts->SetV0OnFlyStatus(false);
+    antiv0Cuts->SetV0PtMin(0.3);
+    antiv0Cuts->SetV0DecayVertexMax(100.f);
+    antiv0Cuts->SetV0RadiusMin(0.2);
+    antiv0Cuts->SetV0RadiusMax(100.f);
+    antiv0Cuts->SetDaughterDCAMax(1.5);
+    antiv0Cuts->SetV0CosPAMin(0.999);
+    antiv0Cuts->SetK0Rejection(0.492, 0.503);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.006, 1.115683 + 0.006);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+  }
+  if (suffix == "0" || suffix == "3") {
+    // Run1 cuts
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+    antiv0Cuts->SetV0OnFlyStatus(true);
+    antiv0Cuts->SetDaughterDCAtoPV(0.06);
+    antiv0Cuts->SetDaughterDCAMax(1.5);
+    antiv0Cuts->SetV0CosPAMin(0.993);
+    antiv0Cuts->SetV0RadiusMax(220.f);
+    antiv0Cuts->SetV0RadiusMin(0.5);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.17, 0.2, 0.9);
+    antiv0Cuts->SetPIDnSigma(100.f);
+    if  (suffix == "3") {
+	v0Cuts->SetV0PtMin(0.);
+    } else {
+	v0Cuts->SetV0PtMin(0.4);
+    }
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetLambdaSelection(1.110, 1.120);
+    antiv0Cuts->SetTPCclusterMin(0.f);
+    antiv0Cuts->SetEtaMax(0.9);
+  }
 
-  if (suffix != "0") {
+  if (suffix != "0" && suffix != "1" && suffix != "3") {
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
-  if (suffix == "1") {
-    v0Cuts->SetV0OnFlyStatus(true);
-    antiv0Cuts->SetV0OnFlyStatus(true);
-  }
-  if (suffix == "2") {
-    v0Cuts->SetK0Rejection(0., 0.);
-    antiv0Cuts->SetK0Rejection(0., 0.);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-  }
-  if (suffix == "3") {
-    v0Cuts->SetK0Rejection(0., 0.);
-    antiv0Cuts->SetK0Rejection(0., 0.);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-  }
-
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
     v0Cuts->SetLightweight(false);
     antiv0Cuts->SetLightweight(false);
-  }
-
-  AliSigma0V0Cuts *photonV0Cuts = AliSigma0V0Cuts::PhotonCuts();
-  photonV0Cuts->SetIsMC(isMC);
-  photonV0Cuts->SetPID(22);
-  photonV0Cuts->SetPosPID(AliPID::kElectron, 11);
-  photonV0Cuts->SetNegPID(AliPID::kElectron, -11);
-  if (suffix != "0") photonV0Cuts->SetLightweight(true);
-
-  if (suffix == "999") {
-    photonV0Cuts->SetCheckCutsMC(true);
-    photonV0Cuts->SetLightweight(false);
   }
 
   AliSigma0PhotonMotherCuts *sigmaCuts =
@@ -144,102 +196,84 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetLambdaCuts(v0Cuts);
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix != "0" && suffix != "999") {
-    sigmaCuts->SetLightweight(true);
-  }
   if (suffix == "4") {
-    sigmaCuts->SetPhotonMaxPt(3);
+    sigmaCuts->SetMinPt(1);
   }
-  if (suffix == "5") {
-    sigmaCuts->SetPhotonMaxPt(5);
+  if (suffix == "0" || suffix == "3"){
+    sigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
   }
-  if (suffix == "6") {
-    sigmaCuts->SetPhotonMaxPt(10);
+  if (suffix != "0" && suffix != "999" && suffix != "1" && suffix != "3" && suffix != "4") {
+    sigmaCuts->SetLightweight(true);
+    sigmaCuts->SetIsSpectrum(false);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
-  antiSigmaCuts->SetPDG(3212, 3122, 22);
+  antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
-  if (suffix != "0" && suffix != "999") {
+  if (suffix == "4") {
+    sigmaCuts->SetMinPt(1);
+  }
+  if (suffix == "0" || suffix == "3"){
+  antiSigmaCuts->SetArmenterosCut(0,0.12,-1,-0.6);
+  }
+  if (suffix != "0" && suffix != "999" && suffix != "1" && suffix != "3" && suffix != "4") {
     antiSigmaCuts->SetLightweight(true);
-  }
-  if (suffix == "4") {
-    antiSigmaCuts->SetPhotonMaxPt(3);
-  }
-  if (suffix == "5") {
-    antiSigmaCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    antiSigmaCuts->SetPhotonMaxPt(10);
+    antiSigmaCuts->SetIsSpectrum(false);
   }
 
-  AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
-  sigmaPhotonCuts->SetIsMC(isMC);
-  sigmaPhotonCuts->SetPDG(3212, 3122, 22);
-  sigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
-  sigmaPhotonCuts->SetLambdaCuts(v0Cuts);
-  if (suffix != "0" && suffix != "999") {
-    sigmaPhotonCuts->SetLightweight(true);
-  }
-  if (suffix == "4") {
-    sigmaPhotonCuts->SetPhotonMaxPt(3);
-  }
-  if (suffix == "5") {
-    sigmaPhotonCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    sigmaPhotonCuts->SetPhotonMaxPt(10);
-  }
-
-  AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
-  antiSigmaPhotonCuts->SetIsMC(isMC);
-  antiSigmaPhotonCuts->SetPDG(-3212, -3122, 22);
-  antiSigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
-  antiSigmaPhotonCuts->SetLambdaCuts(antiv0Cuts);
-  if (suffix != "0" && suffix != "999") {
-    antiSigmaPhotonCuts->SetLightweight(true);
-  }
-  if (suffix == "4") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(3);
-  }
-  if (suffix == "5") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(10);
+  if (trigger == "kINT7") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+  } else if (trigger == "kHighMultV0") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+  } else if (trigger == "AliVEvent::kMB") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
   }
 
   AliAnalysisTaskSigma0Run2 *task =
-      new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
+      new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0Run2");
   if (trigger == "kINT7") {
     task->SetTrigger(AliVEvent::kINT7);
+    task->SetMultiplicityMode(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
-    task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    if (isMC) {
+      task->SetTrigger(AliVEvent::kINT7);
+      task->SelectCollisionCandidates(AliVEvent::kINT7);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    } else {
+      task->SetTrigger(AliVEvent::kHighMultV0);
+      task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    }
+  } else if (trigger == "AliVEvent::kMB") {
+    task->SetTrigger(AliVEvent::kMB);
+    task->SelectCollisionCandidates(AliVEvent::kMB);
+    task->SetMultiplicityMode(AliVEvent::kINT7);
   }
   task->SetV0ReaderName(V0ReaderName.Data());
-  task->SetIsHeavyIon(isHeavyIon);
+  task->SetIsRun1(isRun1);
+  task->SetIsHeavyIon(false);
   task->SetIsMC(isMC);
+  task->SetPhotonDCArCut(dcar);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
-  task->SetPhotonV0Cuts(photonV0Cuts);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
-  task->SetSigmaPhotonCuts(sigmaPhotonCuts);
-  task->SetAntiSigmaPhotonCuts(antiSigmaPhotonCuts);
 
-  if (suffix != "0" && suffix != "999") task->SetLightweight(true);
+  if (suffix != "0" && suffix != "999" && suffix != "1" && suffix != "3" && suffix != "4") {
+    task->SetLightweight(true);
+  }
 
   mgr->AddTask(task);
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":AnalysisTaskSigma0_";
+  containerName += ":Sigma0_Femto_";
   if (trigger == "kHighMultV0") containerName += "HighMultV0_";
   containerName += suffix;
 

@@ -23,29 +23,46 @@
 
 #include "AliHFTreeHandler.h"
 
-using std::vector;
-
 class AliHFTreeHandlerD0toKpi : public AliHFTreeHandler
 {
   public:
+    
+    enum isDzeroDzeroBar {
+        kDzeroTopo         = BIT(11),
+        kDzeroBarTopo      = BIT(12),
+        kDzeroPID          = BIT(13),
+        kDzeroBarPID       = BIT(14),
+        kDzeroComb         = BIT(15),
+        kDzeroBarComb      = BIT(16),
+        kDzeroTopoFilt     = BIT(17),
+        kDzeroBarTopoFilt  = BIT(18),
+        kDzeroPIDFilt      = BIT(19),
+        kDzeroBarPIDFilt   = BIT(20),
+        kDzeroCombFilt     = BIT(21),
+        kDzeroBarCombFilt  = BIT(22)
+    };
+    
     AliHFTreeHandlerD0toKpi();
     AliHFTreeHandlerD0toKpi(int PIDopt);
 
     virtual ~AliHFTreeHandlerD0toKpi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree(); //to be called for each event, not each candidate!
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfiled, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
+    
+    void SetIsDzeroDzeroBar(int isSel, int isSelTopo, int isSelPID, int isSelFilt, int isSelTopoFilt, int isSelPIDFilt);
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fCosThetaStar; /// vector of candidate costhetastar
-    vector<float> fImpParProd; /// vector of daughter impact-parameter product
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fCosThetaStar; /// candidate costhetastar
+    float fImpParProd; /// daughter impact-parameter product
+    float fNormd0MeasMinusExp; ///candidate topomatic variable
+    float fImpParErrProng[knMaxProngs]; ///error on prongs rphi impact param [cm]
+    float fNormDecayLength; ///candidate normalised decay length
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerD0toKpi,1); /// 
+    ClassDef(AliHFTreeHandlerD0toKpi,3); /// 
     /// \endcond
 };
 #endif

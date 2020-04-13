@@ -488,7 +488,7 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       Double_t dlen=d->DecayLength()*10000.; //um
       Double_t ndlenxy=d->NormalizedDecayLengthXY();
       Double_t cosp=d->CosPointingAngle();
-      Int_t iDau=partD->GetFirstDaughter();
+      Int_t iDau=partD->GetDaughterFirst();
       AliAODMCParticle *dauD=0x0;
       if(iDau>=0) dauD=(AliAODMCParticle*)arrayMC->At(iDau);
       if(!dauD) continue;

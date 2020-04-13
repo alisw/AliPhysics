@@ -8,13 +8,18 @@
 #include <TList.h>
 #endif
 
+#include <string>
+
 AliAnalysisTaskSpherocity* AddTaskSpherocity(
-		Bool_t AnalysisMC = kFALSE,
-		Int_t system =1, // 0 for pp and 1 for Pb-Pb
-		Bool_t PostCalib = kFALSE,
-		Bool_t LowpT = kFALSE,
-		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		bool AnalysisMC = kFALSE,
+		int system =1, // 0 for pp and 1 for Pb-Pb
+		bool PostCalib = kFALSE,
+		bool MakePid = kFALSE,
+		const int LHC16l = 1,  // 1-LHC16l 0-LHC16k 
+		const int ncl = 70,
+		const bool IsV0M = kFALSE, 
+		const double JettyValue = 0.5,
+		const double IsotrValue = 0.7
 		)   
 {
 
@@ -46,20 +51,20 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
-	//fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
 	fileName += ":Output";      // create a subfolder in the file
-
 
 	// now we create an instance of your task
 	AliAnalysisTaskSpherocity* task = new AliAnalysisTaskSpherocity("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-//	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
-	task->SetAddLowPt(LowpT);
+//	task->SetAddLowPt(LowpT);
 	task->SetPeriod(LHC16l);
+	task->SetEstimator(IsV0M);
+	task->SetJettyCutOff(JettyValue);
+	task->SetIsotrCutOff(IsotrValue);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -70,26 +75,29 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	else
 		task->SetAnalysisPbPb(kFALSE);
 	
-	task->SetNcl(70);
+	task->SetNcl(ncl);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-//	task->SetVtxCut(10.0);
-//	task->SetTrigger(AliVEvent::kINT7);
-//	task->SetPileUpRej(ispileuprej);
-	//Set Filtesr
 	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
-//	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);
+
+	std::string buf("MyOutputContainer");
+
+	if(IsV0M)
+	buf.append("_V0M");
+	else
+	buf.append("_Trks");
+	printf("Name: %s\n",buf.c_str());
 
 	// add your task to the manager
 	mgr->AddTask(task);
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_%d",buf.c_str(),ncl), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;

@@ -30,8 +30,18 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  UeSpectra/AliAnalysisTaskPPvsUE.cxx
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
-)
+  UeSpherocity/AliAnalysisTaskGenUeSpherocity.cxx
+  UeSpherocity/AliAnalysisTaskUeRSpherocity.cxx
+  UePid/AliAnalysisTaskUePid.cxx
+  UeMultDep/AliAnalysisTaskUeMultDep.cxx
+  UeSpectraRT/AliAnalysisTaskUeSpectraRT.cxx
+  UeKNO/AliAnalysisTaskMcKnoUe.cxx
+  UeKNO/AliAnalysisTaskMcKno.cxx
+  UeKNO/AliAnalysisTaskGenUeNchTS.cxx
+  UeMpi/AliAnalysisTaskMpiUE.cxx		
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -39,18 +49,18 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+	generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES)
+	set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools)
 
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+	generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
-add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
+	add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
 
 # Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
@@ -67,28 +77,35 @@ set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_P
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
-set(MODULE_COMPILE_FLAGS)
+	set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
 
 # Additional compilation and linking flags
-set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
+	set(MODULE_COMPILE_FLAGS " ${MODULE_COMPILE_FLAGS}")
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
+	set(MODULE_LINK_FLAGS "-undefined dynamic_lookup ${MODULE_LINK_FLAGS}")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Setting compilation flags for the object
-set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
+	set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPILE_FLAGS}")
 # Setting the linking flags for the library
-set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+	set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
 # Installation
-install(TARGETS ${MODULE}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
+	install(TARGETS ${MODULE}
+			ARCHIVE DESTINATION lib
+			LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
-install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
+	install(DIRECTORY UeSpectra DESTINATION  PWGMM/UE)
+	install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
+	install(DIRECTORY UePid DESTINATION  PWGMM/UE)
+        install(DIRECTORY UeKNO DESTINATION  PWGMM/UE)
+        install(DIRECTORY UeMpi DESTINATION  PWGMM/UE)
+install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)
+install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)
+install(DIRECTORY macros DESTINATION  PWGMM/UE)		

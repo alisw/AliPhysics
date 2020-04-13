@@ -13,9 +13,11 @@ class AliFemtoXiCut;
 class AliFemtoKinkCut;
 
 #include "AliFemtoString.h"
+#include "AliLog.h"
 #include <iostream>
 
 using namespace std;
+
 
 /// \class AliFemtoEventReader
 /// \brief The pure virtual base class for femto event readers.
@@ -116,7 +118,14 @@ protected:
 inline
 int AliFemtoEventReader::WriteHbtEvent(AliFemtoEvent*)
 {
-  cout << "No WriteHbtEvent implemented\n";
+  AliLog::Message(AliLog::kError,
+                  "No WriteHbtEvent implemented",
+                  "PWGCF/FEMTOSCOPY",
+                  "AliFemtoEventReader",
+                  "WriteHbtEvent",
+                  __FILE__,
+                  __LINE__);
+  // Error("AliFemtoEventReader::WriteHbtEvent", "No WriteHbtEvent implemented");
   return 0;
 }
 

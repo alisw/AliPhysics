@@ -10,7 +10,7 @@
 #include "AliLog.h"
 ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
-    : fResults(),
+    : fHigherMath(),
       fNSpecies(0),
       fZVtxMultBuffer(),
       fValuesZVtxBins(),
@@ -20,7 +20,7 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     const AliFemtoDreamPartCollection& coll)
-    : fResults(coll.fResults),
+    : fHigherMath(coll.fHigherMath),
       fNSpecies(coll.fNSpecies),
       fZVtxMultBuffer(coll.fZVtxMultBuffer),
       fValuesZVtxBins(coll.fValuesZVtxBins),
@@ -29,7 +29,7 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
 }
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     AliFemtoDreamCollConfig *conf, bool MinimalBooking)
-    : fResults(new AliFemtoDreamCorrHists(conf, MinimalBooking)),
+    : fHigherMath(new AliFemtoDreamHigherPairMath(conf, MinimalBooking)),
       fNSpecies(conf->GetNParticles()),
       fZVtxMultBuffer(
           conf->GetNZVtxBins(),
@@ -42,7 +42,7 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
 AliFemtoDreamPartCollection& AliFemtoDreamPartCollection::operator=(
     const AliFemtoDreamPartCollection& coll) {
   if (this != &coll) {
-    this->fResults = coll.fResults;
+    this->fHigherMath = coll.fHigherMath;
     this->fNSpecies = coll.fNSpecies;
     this->fZVtxMultBuffer = coll.fZVtxMultBuffer;
     this->fValuesZVtxBins = coll.fValuesZVtxBins;
@@ -70,8 +70,34 @@ void AliFemtoDreamPartCollection::SetEvent(
     itZVtx += bins[0];
     auto itMult = itZVtx->begin();
     itMult += bins[1];
-    itMult->PairParticlesSE(Particles, fResults, bins[1], cent);
-    itMult->PairParticlesME(Particles, fResults, bins[1], cent);
+    itMult->PairParticlesSE(Particles, fHigherMath, bins[1], cent);
+    itMult->PairParticlesME(Particles, fHigherMath, bins[1], cent);
+    itMult->SetEvent(Particles);
+  }
+  return;
+}
+
+void AliFemtoDreamPartCollection::SetEvent(
+    std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+    AliFemtoDreamEvent* evt) {
+  if (Particles.size() != fNSpecies) {
+    TString fatalOut = Form("Too few Species %d for %d", (int) Particles.size(),
+                            (int) fNSpecies);
+    AliFatal(fatalOut.Data());
+  }
+  int bins[2] = { 0, 0 };
+  float ZVtx = evt->GetZVertex();
+  float Mult = evt->GetMultiplicity();
+  float cent = evt->GetV0MCentrality();
+  fHigherMath->SetBField(evt->GetBField());
+  FindBin(ZVtx, Mult, bins);
+  if (!(bins[0] == -99 || bins[1] == -99)) {
+    auto itZVtx = fZVtxMultBuffer.begin();
+    itZVtx += bins[0];
+    auto itMult = itZVtx->begin();
+    itMult += bins[1];
+    itMult->PairParticlesSE(Particles, fHigherMath, bins[1], cent);
+    itMult->PairParticlesME(Particles, fHigherMath, bins[1], cent);
     itMult->SetEvent(Particles);
   }
   return;

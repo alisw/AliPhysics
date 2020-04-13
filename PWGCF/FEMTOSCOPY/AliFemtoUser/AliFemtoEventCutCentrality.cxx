@@ -33,7 +33,7 @@ AliFemtoEventCutCentrality::AliFemtoEventCutCentrality(const Parameters &param):
 AliFemtoConfigObject AliFemtoEventCutCentrality::GetConfigObject() const
 {
   return AliFemtoConfigObject::BuildMap()
-    ("class", "AliFemtoEventCutCentrality")
+    ("_class", "AliFemtoEventCutCentrality")
     ("centrality_type", fCentralityType)
     ("centrality_range", fEventCentrality)
     ("vertex_z_range", fVertZPos)
@@ -99,15 +99,15 @@ TList* AliFemtoEventCutCentrality::AppendSettings(TList *settings,
 {
   settings->AddVector(
 
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.centrality.min=%f", fEventCentrality.first)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.centrality.max=%f", fEventCentrality.second)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.vertex.min=%f", fVertZPos.first)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.vertex.max=%f", fVertZPos.second)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.psiep.min=%f", fPsiEP.first)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.psiep.max=%f", fPsiEP.second)),
-    new TObjString(prefix + TString::Format("AliFemtoEventCutCentrality.trigger=%d", fSelectTrigger)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.centrality.min=%f", fEventCentrality.first)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.centrality.max=%f", fEventCentrality.second)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.vertex.min=%f", fVertZPos.first)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.vertex.max=%f", fVertZPos.second)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.psiep.min=%f", fPsiEP.first)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.psiep.max=%f", fPsiEP.second)),
+    new TObjString(prefix + Form("AliFemtoEventCutCentrality.trigger=%d", fSelectTrigger)),
 
-  NULL);
+  nullptr);
 
   return settings;
 }
@@ -115,11 +115,12 @@ TList* AliFemtoEventCutCentrality::AppendSettings(TList *settings,
 AliFemtoString AliFemtoEventCutCentrality::Report()
 {
   /// Prepare report
-  const TString
-    report = TString::Format("Centraltiy:\t %f - %f\n", fEventCentrality.first, fEventCentrality.second)
-           + TString::Format("Psi Ep:\t %E - %E\n", fPsiEP.first, fPsiEP.second)
-           + TString::Format("Vertex Z-position:\t %E - %E\n", fVertZPos.first, fVertZPos.second)
-           + TString::Format("Number of events which passed:\t%lu  Number which failed:\t%lu\n", fNEventsPassed, fNEventsFailed);
+  AliFemtoString
+    report = std::string("AliFemtoEventCutCentrality Report\n")
+           + Form("Centraltiy:\t %f - %f\n", fEventCentrality.first, fEventCentrality.second)
+           + Form("Psi Ep:\t %E - %E\n", fPsiEP.first, fPsiEP.second)
+           + Form("Vertex Z-position:\t %E - %E\n", fVertZPos.first, fVertZPos.second)
+           + Form("Number of events which passed:\t%lu  Number which failed:\t%lu\n", fNEventsPassed, fNEventsFailed);
 
-  return AliFemtoString((const char *)report);
+  return report;
 }

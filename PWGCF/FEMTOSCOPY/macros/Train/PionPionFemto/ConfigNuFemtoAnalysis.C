@@ -133,7 +133,7 @@ AliFemtoManager*
 ConfigFemtoAnalysis(const AliFemtoConfigObject& cfg)
 {
   AliFemtoConfigObject evreader_cfg = AliFemtoConfigObject::BuildMap()
-    ("class", "AliFemtoEventReaderAODMultSelection")
+    ("_class", "AliFemtoEventReaderAODMultSelection")
     ("filter_bit", 7)
     ("epvzero", true)
     ("dca_globaltrack", true)
@@ -282,7 +282,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        std::cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
         continue;
       }
 
@@ -385,7 +385,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_moco6_cf) {
         AliFemtoModelCorrFctnTrueQ6D *moco6_cf = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        moco6_cf->SetManager(model_manager);
         analysis->AddCorrFctn(moco6_cf);
       }
 
@@ -705,7 +704,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
 }

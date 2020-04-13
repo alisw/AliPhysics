@@ -16,22 +16,22 @@ TLorentzVector AliAnalysisPIDParticle::fgLorentzVector;
 Double_t
 AliAnalysisPIDParticle::GetY() const
 {
-  
+
   fgLorentzVector.SetPtEtaPhiM(fPt, fEta, fPhi, GetMass());
   return fgLorentzVector.Rapidity();
 }
 
 //___________________________________________________________
 
-Float_t
+Int_t
 AliAnalysisPIDParticle::GetSign() const
 {
-  
+
   TDatabasePDG *dbpdg = TDatabasePDG::Instance();
   TParticlePDG *ppdg = dbpdg->GetParticle(fPdgCode);
   if (!ppdg)
-    return 0.;
-  return TMath::Sign(1., ppdg->Charge());
+    return 0;
+  return TMath::Nint(ppdg->Charge());
 }
 
 //___________________________________________________________
@@ -58,7 +58,7 @@ AliAnalysisPIDParticle::GetMass() const
   /*
    * get mass
    */
-  
+
   if (GetPID() == -1)
     return 0.;
   return AliPID::ParticleMass(GetPID());
@@ -141,7 +141,7 @@ AliAnalysisPIDParticle::Reset()
   fPhi = 0.;
   fPdgCode = 0;
   fMotherPdgCode = 0;
-  
+
 }
 
 //___________________________________________________________
@@ -159,6 +159,5 @@ AliAnalysisPIDParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg
   fEta = particle->Eta();
   fPhi = particle->Phi();
   fPdgCode = particle->GetPdgCode();
-  
-}
 
+}

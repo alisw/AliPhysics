@@ -19,6 +19,7 @@
 #include "AliFemtoModelCorrFctn.h"
 #include "AliESDtrack.h"
 #include "AliFemtoCutMonitorEventMult.h"
+#include "AliFemtoCutMonitorV0.h"
 #endif
 
 enum ESys { kPXim, kAPXim ,kPXip, kAPXip , kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
@@ -30,7 +31,7 @@ const int nMult = 10;
 int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
 int multBins[nMult+1] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
-int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+int runSys[nSys] = {0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 bool separationCuts;
 
@@ -81,6 +82,12 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
   
   AliFemtoCutMonitorEventMult   *eventMultMonitorPass[nSys*nMult];
   AliFemtoCutMonitorEventMult   *eventMultMonitorFail[nSys*nMult];
+
+  AliFemtoCutMonitorV0           *cutPass1V0[nSys*nMult];
+  AliFemtoCutMonitorV0           *cutFail1V0[nSys*nMult];
+  AliFemtoCutMonitorV0           *cutPass2V0[nSys*nMult];
+  AliFemtoCutMonitorV0           *cutFail2V0[nSys*nMult];
+  
   
   // setup analysis
   int anIter = 0;
@@ -126,6 +133,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       eventMultMonitorPass[anIter] = new AliFemtoCutMonitorEventMult(Form("Pass%sM%i",sysNames[iSys],imult));
       eventMultMonitorFail[anIter] = new AliFemtoCutMonitorEventMult(Form("Fail%sM%i",sysNames[iSys],imult));
       eventCut[anIter]->AddCutMonitor(eventMultMonitorPass[anIter],eventMultMonitorFail[anIter]);
+
+
       
       // setup anallysis cuts
       femtoAnalysis[anIter]->SetEventCut(eventCut[anIter]);
@@ -135,13 +144,23 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       if(firstXiTrackCut)
 	 femtoAnalysis[anIter]->SetFirstParticleCut(firstXiTrackCut);
       else if(firstV0TrackCut)
-        femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
+	{
+	  cutPass1V0[anIter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", sysNames[iSys], imult));
+	  cutFail1V0[anIter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", sysNames[iSys], imult));
+	  firstV0TrackCut->AddCutMonitor(cutPass1V0[anIter], cutFail1V0[anIter]);
+	  femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
+	}
       else
         femtoAnalysis[anIter]->SetFirstParticleCut(firstMJTrackCut);
       if(secondXiTrackCut)
         femtoAnalysis[anIter]->SetSecondParticleCut(secondXiTrackCut);
       else if(secondV0TrackCut)
-        femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut);
+	{
+	  cutPass2V0[anIter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%i", sysNames[iSys], imult));
+	  cutFail2V0[anIter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%i", sysNames[iSys], imult));
+	  secondV0TrackCut->AddCutMonitor(cutPass2V0[anIter], cutFail2V0[anIter]);
+	  femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut);
+	}
       else
         femtoAnalysis[anIter]->SetSecondParticleCut(secondMJTrackCut);
 
@@ -421,7 +440,8 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
     particleCut->SetPtPosDaughter(0.5, 4.0);
     particleCut->SetPtNegDaughter(0.16, 4.0);
     particleCut->SetMinDaughtersToPrimVertex(0.1, 0.3);
-    particleCut->SetInvariantMassLambda(LambdaMass-0.0038, LambdaMass+0.0043);
+    //particleCut->SetInvariantMassLambda(LambdaMass-0.0038, LambdaMass+0.0043);
+    particleCut->SetInvariantMassLambda(LambdaMass-0.5, LambdaMass+0.5);
   }
   else if(particle == kEAntiLambda)
   {
@@ -429,7 +449,8 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
     particleCut->SetPtPosDaughter(0.16, 4.0);
     particleCut->SetPtNegDaughter(0.3, 4.0);
     particleCut->SetMinDaughtersToPrimVertex(0.3, 0.1);
-    particleCut->SetInvariantMassLambda(LambdaMass-0.0036, LambdaMass+0.0041);
+    //particleCut->SetInvariantMassLambda(LambdaMass-0.0036, LambdaMass+0.0041);
+    particleCut->SetInvariantMassLambda(LambdaMass-0.5, LambdaMass+0.5);
   }
   return particleCut;
 }

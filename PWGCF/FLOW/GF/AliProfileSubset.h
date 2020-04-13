@@ -2,23 +2,17 @@
 #define ALIPROFILESUBSET__H
 //Helper function to select a subrange of a TProfile
 #include "TProfile.h"
-#include "TArrayD.h"
-class AliProfileSubset : public TProfile {
-public:
-  AliProfileSubset();
-  AliProfileSubset(TProfile *inpf);
-  ~AliProfileSubset();
-  Int_t GetNCells() { return fNcells; };
-  TArrayD Get_fBinEntries() { return fBinEntries; };
-  TArrayD Get_fBinSumw2() { return fBinSumw2; };
-  TArrayD Get_fSumw2() { return fSumw2; };
-  Double_t* Get_fArray() { return fArray; };
-  EErrorType GetErrorMode() { return fErrorMode; };
-  Double_t GetSumwy() { return fTsumwy; };
-  Double_t GetSumwy2() { return fTsumwy2; };
-  Double_t GetYMax() { return fYmax; };
-  Double_t GetYMin() { return fYmin; };
-  Bool_t CopyFromProfile(Int_t StartI, Int_t StopI, TProfile *source);
-  ClassDef(AliProfileSubset,1);
+#include "TProfile2D.h"
+#include "TError.h"
+class AliProfileSubset : public TProfile2D {
+  public:
+    AliProfileSubset() {};
+    AliProfileSubset(TProfile2D &inpf);
+    TProfile *GetSubset(Bool_t onx, const char *name, Int_t fb, Int_t lb, Int_t l_nbins=0, Double_t *l_binarray=0);
+    ~AliProfileSubset() {};
+    void OverrideBinContent(Double_t x, Double_t y, Double_t x2, Double_t y2, Double_t val);
+    void OverrideBinContent(Double_t x, Double_t y, Double_t x2, Double_t y2, TProfile2D *sourceProf);
+    Bool_t OverrideBinsWithZero(Int_t xb1, Int_t yb1, Int_t xb2, Int_t yb2);
+    ClassDef(AliProfileSubset,1);
 };
 #endif

@@ -30,6 +30,7 @@
 #pragma link C++ class AliAnalysisTaskDG::ZDC++;
 #pragma link C++ class AliAnalysisTaskDG::SPD_0STG++;
 #pragma link C++ class AliAnalysisTaskDgTree;
+#pragma link C++ class AliSPDTriggerEfficiencyTask;
 #pragma link C++ class AliTOFTriggerEfficiencyTask;
 #pragma link C++ class AliTriggerStudy0STP+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections+;

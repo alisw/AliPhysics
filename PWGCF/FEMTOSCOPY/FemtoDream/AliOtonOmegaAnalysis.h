@@ -188,15 +188,20 @@ class AliOtonOmegaAnalysis {
    return fomegaTTree;
   }
   void InitializeTreeBooking();
+  void InitializeTreeValues();
   Bool_t FillTreeCascade(AliESDEvent *evt, AliESDcascade *casc);
   Bool_t FillTreeTrack(Int_t jj, Int_t idtrack, Int_t V0index, AliESDEvent *evt, AliESDcascade *casc);
+  Bool_t FillProtonTrack( AliESDEvent *evt, Int_t idtrack);
+  Bool_t FillTreeCascadeAOD(AliAODEvent *evt, AliAODcascade *casc);
+  Bool_t FillTreeTrackAOD(Int_t jj, AliAODcascade *casc);
+  Bool_t FillProtonTrackAOD( AliAODTrack *Proton);
 
 
   TString ClassName() {
     return "AliOtonOmegaAnalysis";
   }
   ;
-  void Make(AliAODEvent *evt);
+  void Make(AliAODEvent *evt, bool OmegaTreeFlag);
   void Make(AliESDEvent *evt, AliMCEvent *mcEvent, bool CascadeTreeFlag, bool OmegaTreeFlag, Int_t Cut = 0);
  private:
   void ResetGlobalTrackReference();
@@ -228,69 +233,119 @@ class AliOtonOmegaAnalysis {
 
   
   //more tree stuff:
-  Bool_t FillOmegaTree_tracks;
-  Bool_t FillOmegaTree_lambda;
+  //Bool_t FillOmegaTree_tracks;
+  //Bool_t FillOmegaTree_lambda;
   Bool_t FillOmegaTree_omega;
-  Bool_t FillOmegaTree;
+  Bool_t FillOmegaTree_aomega;
   TTree* fomegaTTree;
   TTree* foTTree;
   Int_t fTRunNumber;
-  Float_t fTV[3];
-  const Int_t MAXCASCADES = 150;
+  Float_t fTVx;
+  Float_t fTVy;
+  Float_t fTVz;
+  Int_t fTMult;
+
+  TRandom3 *frndm;
+
+  const Int_t MAXPROTONS = 150;
+  Int_t fTnProton;
+  //protons:
+  Float_t fTProtonP[150];
+  Float_t fTProtonEta[150];
+  Float_t fTProtonPx[150];
+  Float_t fTProtonPy[150];
+  Float_t fTProtonPz[150];
+  Float_t fTProtonVPx[150];
+  Float_t fTProtonVPy[150];
+  Float_t fTProtonVPz[150];
+  Float_t fTProtonPt[150];
+  Float_t fTProtonmT[150];
+  Float_t fTProtonTPCmom[150];
+  Short_t fTProtonCharge[150];
+  Float_t fTProtonTPCsp[150];
+  Float_t fTProtonTOFsp[150];
+  Float_t fTProtonDCA[150];
+  Int_t fTProtonNcl[150];
+  Float_t fTProtonCrF[150];
+  Int_t fTProtonShared[150];
+  Float_t fTProtonTPCchi2[150];
+  Bool_t fTProtonITStime[150];
+  Bool_t fTProtonTOFtime[150];
+  Bool_t fTProtonTPConly[150];
+  Bool_t fTProtonITScomplementary[150];
+  Bool_t fTProtonITSpure[150];
+  Bool_t fTProtonGLOBAL[150];
+  UInt_t fTProtonFilterBit[150];
+
+
+  const Int_t MAXCASCADES = 300;
   Int_t fTnCascade;
   //cascades:
-  Float_t fTCascadePx[150];
-  Float_t fTCascadePy[150];
-  Float_t fTCascadePz[150];
-  Short_t fTCascadeCharge[150];
-  Float_t fTCascadeDCA[150];
-  Float_t fTCascadeDaughtersDCA[150];
-  Float_t fTCascadeXiMass[150];
-  Float_t fTCascadeOmegaMass[150];
-  Float_t fTCascadeVx[150];
-  Float_t fTCascadeVy[150];
-  Float_t fTCascadeVz[150];
-  Float_t fTCascadePA[150];
+  Bool_t fTCascadeFlag0[300];
+  Bool_t fTCascadeFlag1[300];
+  Bool_t fTCascadeFlag2[300];
+  Float_t fTCascadeP[300];
+  Float_t fTCascadePx[300];
+  Float_t fTCascadePy[300];
+  Float_t fTCascadePz[300];
+  Float_t fTCascadePt[300];
+  Float_t fTCascademT[300];
+  Short_t fTCascadeCharge[300];
+  Float_t fTCascadeDCA[300];
+  Float_t fTCascadeDaughtersDCA[300];
+  Float_t fTCascadeXiMass[300];
+  Float_t fTCascadeOmegaMass[300];
+  Float_t fTCascadeVx[300];
+  Float_t fTCascadeVy[300];
+  Float_t fTCascadeVz[300];
+  Float_t fTCascadeVr[300];
+  Float_t fTCascadePA[300];
   //lambda
-  Float_t fTLambdaPx[150];
-  Float_t fTLambdaPy[150];
-  Float_t fTLambdaPz[150];
-  Float_t fTLambdaDCA[150];
-  Float_t fTLambdaDaughtersDCA[150];
-  Float_t fTLambdaMass[150];
-  Float_t fTLambdaK0Mass[150];
-  Float_t fTLambdaVx[150];
-  Float_t fTLambdaVy[150];
-  Float_t fTLambdaVz[150];
-  Float_t fTLambdaPA[150];
+  Float_t fTLambdaP[300];
+  Float_t fTLambdaPx[300];
+  Float_t fTLambdaPy[300];
+  Float_t fTLambdaPz[300];
+  Float_t fTLambdaPt[300];
+  Float_t fTLambdaDCA[300];
+  Float_t fTLambdaDaughtersDCA[300];
+  Float_t fTLambdaMass[300];
+  Float_t fTLambdaK0Mass[300];
+  Float_t fTLambdaVx[300];
+  Float_t fTLambdaVy[300];
+  Float_t fTLambdaVz[300];
+  Float_t fTLambdaVr[300];
+  Float_t fTLambdaPA[300];
 //tracks: 0 proton, 1 pion, 2 bachelor
-  Float_t fTTrackPx[150][3];
-  Float_t fTTrackPy[150][3];
-  Float_t fTTrackPz[150][3];
-  Float_t fTTrackTPCmom[150][3];
-  Float_t fTTrackEta[150][3];
-  Short_t fTTrackCharge[150][3];
-  Float_t fTTrackDCA[150][3];
-  Float_t fTTrackITSspi[150][3];
-  Float_t fTTrackITSsp[150][3];
-  Float_t fTTrackITSsk[150][3];
-  Float_t fTTrackTPCspi[150][3];
-  Float_t fTTrackTPCsp[150][3];
-  Float_t fTTrackTPCsk[150][3];
-  Float_t fTTrackTOFse[150][3];
-  Float_t fTTrackTOFspi[150][3];
-  Float_t fTTrackTOFsp[150][3];
-  Float_t fTTrackTOFsk[150][3];
-  Int_t fTTrackNcl[150][3];
-  Float_t fTTrackCrF[150][3];
-  Int_t fTTrackShared[150][3];
-  Float_t fTTrackTPCchi2[150][3];
-  Bool_t fTTrackITStime[150][3];
-  Bool_t fTTrackTOFtime[150][3];
-  Bool_t fTTrackTPConly[150][3];
-  Bool_t fTTrackITScomplementary[150][3];
-  Bool_t fTTrackITSpure[150][3];
-  Bool_t fTTrackGLOBAL[150][3];
+  Float_t fTTrackP[300][3];
+  Float_t fTTrackPx[300][3];
+  Float_t fTTrackPy[300][3];
+  Float_t fTTrackPz[300][3];
+  Float_t fTTrackPt[300][3];
+  Float_t fTTrackTPCmom[300][3];
+  Float_t fTTrackEta[300][3];
+  Short_t fTTrackCharge[300][3];
+  Float_t fTTrackDCA[300][3];
+  Float_t fTTrackITSspi[300][3];
+  Float_t fTTrackITSsp[300][3];
+  Float_t fTTrackITSsk[300][3];
+  Float_t fTTrackTPCspi[300][3];
+  Float_t fTTrackTPCsp[300][3];
+  Float_t fTTrackTPCsk[300][3];
+  Float_t fTTrackTOFse[300][3];
+  Float_t fTTrackTOFspi[300][3];
+  Float_t fTTrackTOFsp[300][3];
+  Float_t fTTrackTOFsk[300][3];
+  Int_t fTTrackNcl[300][3];
+  Float_t fTTrackCrF[300][3];
+  Int_t fTTrackShared[300][3];
+  Float_t fTTrackTPCchi2[300][3];
+  Bool_t fTTrackITStime[300][3];
+  Bool_t fTTrackTOFtime[300][3];
+  Bool_t fTTrackTPConly[300][3];
+  Bool_t fTTrackITScomplementary[300][3];
+  Bool_t fTTrackITSpure[300][3];
+  Bool_t fTTrackGLOBAL[300][3];
+  UInt_t fTTrackFilterBit[300][3];
 
 
 ClassDef(AliOtonOmegaAnalysis,3)

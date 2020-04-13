@@ -833,41 +833,15 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
 
   if(fUseOneMEPool) {
     hME_Sign_PtInt_AllPool = (TH2D*)hME_Sign_PtInt[0]->Clone("hME_Sign_PtInt_AllPool");
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[1]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[2]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[3]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[4]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[5]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[6]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[7]);
-    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[8]);
+    for(int iPool=1;iPool<fNpools;iPool++) hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[iPool]);
     hME_Sideb_PtInt_AllPool = (TH2D*)hME_Sideb_PtInt[0]->Clone("hME_Sideb_PtInt_AllPool");
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[1]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[2]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[3]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[4]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[5]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[6]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[7]);
-    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[8]);
-    hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[1]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[2]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[3]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[4]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[5]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[6]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[7]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[8]);
-    hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[1]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[2]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[3]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[4]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[5]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[6]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[7]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[8]);
+    for(int iPool=1;iPool<fNpools;iPool++) hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[iPool]);
+    if(fSubtractSoftPiME) {
+      hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
+      for(int iPool=1;iPool<fNpools;iPool++) hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[iPool]);
+      hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
+      for(int iPool=1;iPool<fNpools;iPool++)  hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[iPool]);
+    }
 
     NormalizeMEplot(hME_Sign_PtInt_AllPool,hME_Sign_SoftPi_PtInt_AllPool);
     NormalizeMEplot(hME_Sideb_PtInt_AllPool,hME_Sideb_SoftPi_PtInt_AllPool);
@@ -885,10 +859,8 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   for(int iPool=0; iPool<fNpools; iPool++) {//new pool lopp
 
     //Normalize ME plots and (if requested) remove the softpion-compatible tracks
-    NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
-    NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
-
-
+    if(!fUseOneMEPool) NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
+    if(!fUseOneMEPool) NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
@@ -1591,6 +1563,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
   } else if (SorSB==kSideb) { //here also the value of fSignSingleBin has influence, due to the fSpeed options:
      if(fSignSingleBin) {  //in this case (fSpeed==2 in the task), also the SB region is automatically compressed in only one bin, the 2nd!
         h3D->GetXaxis()->SetRange(2,2); //...and so we just take bin2!
+        h2D = (TH2D*)h3D->Project3D("yz"); 
      } else { //the standard approach (i.e. either fSpeed==0, meaning all bins for DB, or fSpeed==1, meaning one bin for LSB, one for RSB)
       TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
       if(!fSBSingleBin) {
@@ -2166,8 +2139,8 @@ void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
      if(!check) {
         printf("Error! Signal region passed from outside and not matching mass bin edges! Results will be biased, you shall exit...\n");
         getchar();
+        return;
      }
-     return;
   }
 
   switch(fSBscaling) {

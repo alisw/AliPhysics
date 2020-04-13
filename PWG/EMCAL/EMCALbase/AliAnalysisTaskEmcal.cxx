@@ -110,7 +110,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
-  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -227,7 +226,6 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
-  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
@@ -520,10 +518,10 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
     fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
     fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-    fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
     fHistEventRejection->GetYaxis()->SetTitle("counts");
     fOutput->Add(fHistEventRejection);
-  } else {
+  }
+  else {
     fAliEventCuts.AddQAplotsToList(fOutput);
   }
 
@@ -604,18 +602,6 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  // Recycle embedded events which do not pass the internal event selection in the embedding helper
-  if (fRecycleUnusedEmbeddedEventsMode) {
-    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-    if (embeddingHelper && embeddingHelper->EmbeddedEventUsed() == false) {
-      if (fGeneralHistograms) {
-        fHistEventRejection->Fill("RecycleEmbeddedEvent",1);
-        fHistEventCount->Fill("Rejected",1);
-      }
-      return;
-    }
-  }
-
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
@@ -1044,9 +1030,10 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType() const
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     // All run number ranges taken from the RCT
-    if ((runNumber >= 136833 && runNumber <= 139517) ||  // LHC10h
-        (runNumber >= 167693 && runNumber <= 170593) || // LHC11h
-        (runNumber >= 244824 && runNumber <= 246994)) { // LHC15o
+    if ((runNumber >= 136833 && runNumber <= 139517) ||   // LHC10h
+        (runNumber >= 167693 && runNumber <= 170593) ||   // LHC11h
+        (runNumber >= 244824 && runNumber <= 246994) ||   // LHC15o
+        (runNumber >= 295581 && runNumber <= 297624)) {   // LHC18p-q
       return kAA;
     } else if ((runNumber >= 188356 && runNumber <= 188366) ||   // LHC12g
                (runNumber >= 195164 && runNumber <= 197388) ||  // LHC13b-f
@@ -1324,6 +1311,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
 Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 {
   if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+  AliDebugStream(2) << "Using custom outlier rejection" << std::endl;
 
   // Condition 1: Pythia jet / pT-hard > factor
   if (fPtHardAndJetPtFactor > 0.) {
@@ -1331,7 +1319,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
     Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
 
-    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+    AliDebug(2,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
 
     Float_t tmpjet[]={0,0,0,0};
     for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
@@ -1339,7 +1327,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
       jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
 
-      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+      AliDebug(2,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
 
       //Compare jet pT and pt Hard
       if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
@@ -1443,32 +1431,32 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+        if (MultSelection) {
+          fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
     }
     else { // old centrality estimation < 2015
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliCentrality *aliCent = InputEvent()->GetCentrality();
+        if (aliCent) {
+          fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
-    }
     }
 
     if (fNcentBins==4) {

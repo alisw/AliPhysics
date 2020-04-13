@@ -25,7 +25,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   AliRDHFCutsDplustoKpipi(const char* name="CutsDplustoKpipi");
   
-  virtual ~AliRDHFCutsDplustoKpipi(){};
+  virtual ~AliRDHFCutsDplustoKpipi();
   AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi& source);
   AliRDHFCutsDplustoKpipi& operator=(const AliRDHFCutsDplustoKpipi& source); 
 
@@ -87,6 +87,9 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
   void Setd0Cut(Int_t nPtBins, Float_t *cutval);
   
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *Getd0Cut() const {return fMaxd0;} 
+
   virtual Int_t PreSelect(TObjArray aodTracks);
 
   virtual void PrintAll()const;

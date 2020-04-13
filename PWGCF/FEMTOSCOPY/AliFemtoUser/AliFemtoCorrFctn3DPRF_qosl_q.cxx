@@ -19,13 +19,12 @@ ClassImp(AliFemtoCorrFctn3DPRF_qosl_q)
 AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(const char* title, const int& nbins, const float& QHi)
   :
   AliFemtoCorrFctn(),
-  fNumerator(0),
-  fDenominator(0),
-  fNumeratorW(0),
-  fDenominatorW(0),
-  fNumS(0),
-  fDenS(0)
-
+  fNumerator(nullptr),
+  fDenominator(nullptr),
+  fNumeratorW(nullptr),
+  fDenominatorW(nullptr),
+  fNumS(nullptr),
+  fDenS(nullptr)
 {
   // Basic constructor
 
@@ -63,12 +62,12 @@ AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(const char* title, co
 
 AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(const AliFemtoCorrFctn3DPRF_qosl_q& aCorrFctn) :
   AliFemtoCorrFctn(aCorrFctn),
-  fNumerator(0),
-  fDenominator(0),
-  fNumeratorW(0),
-  fDenominatorW(0),
-  fNumS(0),
-  fDenS(0)
+  fNumerator(nullptr),
+  fDenominator(nullptr),
+  fNumeratorW(nullptr),
+  fDenominatorW(nullptr),
+  fNumS(nullptr),
+  fDenS(nullptr)
 {
   // Copy constructor
   fNumerator = new TH3F(*aCorrFctn.fNumerator);
@@ -79,7 +78,8 @@ AliFemtoCorrFctn3DPRF_qosl_q::AliFemtoCorrFctn3DPRF_qosl_q(const AliFemtoCorrFct
   //fDenS = new THnSparse(*aCorrFctn.fDenS);
 }
 //____________________________
-AliFemtoCorrFctn3DPRF_qosl_q::~AliFemtoCorrFctn3DPRF_qosl_q(){
+AliFemtoCorrFctn3DPRF_qosl_q::~AliFemtoCorrFctn3DPRF_qosl_q()
+{
   // Destructor
   delete fNumerator;
   delete fDenominator;
@@ -111,7 +111,8 @@ AliFemtoCorrFctn3DPRF_qosl_q& AliFemtoCorrFctn3DPRF_qosl_q::operator=(const AliF
 }
 
 //_________________________
-void AliFemtoCorrFctn3DPRF_qosl_q::WriteOutHistos(){
+void AliFemtoCorrFctn3DPRF_qosl_q::WriteOutHistos()
+{
   // Write out all histograms to file
   //fNumerator->Write();
   //fDenominator->Write();
@@ -143,90 +144,72 @@ void AliFemtoCorrFctn3DPRF_qosl_q::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctn3DPRF_qosl_q::Report(){
+AliFemtoString AliFemtoCorrFctn3DPRF_qosl_q::Report()
+{
   // Construct the report
-  string stemp = "PRF 3D Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "PRF 3D Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
 
   if (fPairCut){
-    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
-    stemp += fPairCut->Report();
+    report += Form("Here is the PairCut specific to this CorrFctn\n");
+    report += fPairCut->Report();
   }
   else{
-    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
+    report += Form("No PairCut specific to this CorrFctn\n");
   }
 
-  //
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
 //____________________________
-void AliFemtoCorrFctn3DPRF_qosl_q::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctn3DPRF_qosl_q::AddRealPair(AliFemtoPair* pair)
+{
   // perform operations on real pairs
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
-     Double_t x[4];
-    for (Int_t d = 0; d < 4; ++d) {
-         switch (d) {
-         case 0: x[d] = (pair->KOut()); break;
-         case 1: x[d] = (pair->KSide()); break;
-         case 2:x[d] = (pair->KLong()); break;
-         case 3: x[d] = sqrt(((pair->KOut())*(pair->KOut())) + ((pair->KSide())*(pair->KSide())) +
-			     ((pair->KLong())*(pair->KLong()))); break;
-         default: x[d] = (pair->KOut());
-         }
-      }
-      fNumS->Fill(x);
 
-  double qOut = (pair->KOut());
-  double qSide = (pair->KSide());
-  double qLong = (pair->KLong());
-  double qqinv = (pair->QInv());
+  const double qOut = pair->KOut();
+  const double qSide = pair->KSide();
+  const double qLong = pair->KLong();
+  //const double qqinv = pair->QInv();
 
-    fNumerator->Fill(qOut,qSide,qLong);
-    //fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
+  const double x[4] = {
+    qOut,
+    qSide,
+    qLong,
+    std::sqrt(qOut*qOut + qSide*qSide + qLong*qLong)
+  };
 
+  fNumS->Fill(x);
 
-
+  fNumerator->Fill(qOut,qSide,qLong);
+  //fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
 }
 //____________________________
-void AliFemtoCorrFctn3DPRF_qosl_q::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctn3DPRF_qosl_q::AddMixedPair(AliFemtoPair* pair)
+{
   // perform operations on mixed pairs
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
-     Double_t x[4];
-    for (Int_t d = 0; d < 4; ++d) {
-         switch (d) {
-         case 0: x[d] = (pair->KOut()); break;
-         case 1: x[d] = (pair->KSide()); break;
-         case 2:x[d] = (pair->KLong()); break;
-         case 3: x[d] = sqrt(((pair->KOut())*(pair->KOut())) + ((pair->KSide())*(pair->KSide())) +
-          ((pair->KLong())*(pair->KLong()))); break;
-         default: x[d] = (pair->KOut());
-         }
-      }
-      fDenS->Fill(x);
 
+  const double qOut = pair->KOut();
+  const double qSide = pair->KSide();
+  const double qLong = pair->KLong();
+  //const double qqinv = pair->QInv();
 
-  double qOut = (pair->KOut());
-  double qSide = (pair->KSide());
-  double qLong = (pair->KLong());
-  double qqinv = (pair->QInv());
+  const double x[4] = {
+    qOut,
+    qSide,
+    qLong,
+    std::sqrt(qOut*qOut + qSide*qSide + qLong*qLong)
+  };
 
+  fDenS->Fill(x);
 
-    fDenominator->Fill(qOut,qSide,qLong,1.0);
-    //fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
-
-
-
+  fDenominator->Fill(qOut,qSide,qLong);
+  //fDenominatorW->Fill(qOut,qSide,qLong,qqinv);
 }
 
 

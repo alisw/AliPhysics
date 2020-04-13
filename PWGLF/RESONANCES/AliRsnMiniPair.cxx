@@ -70,6 +70,9 @@ void AliRsnMiniPair::Fill
       if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
       if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
    }
+
+   fPassesOOBPileupCut = kFALSE;
+   if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
 
 //__________________________________________________________________________________________________
@@ -108,6 +111,27 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
    Double_t cosThetaStar = normal.Dot(momentumD) / momentumD.Mag();
 
    return cosThetaStar;
+}
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaStarAbs(Bool_t useMC)
+{
+    TLorentzVector &mother    = fSum[ID(useMC)];
+    TLorentzVector &daughter0 = fP1[ID(useMC)];
+    TVector3 momentumM(mother.Vect());
+    TVector3 normal(mother.Y()/momentumM.Pt(), -mother.X()/momentumM.Pt(), 0.0);
+    
+    // Computes components
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+    
+    // Computes Lorentz transformation of the momentum of the first daughter
+    // into the rest frame of the mother and theta*
+    
+    daughter0.Boost(betaX, betaY, betaZ);
+    TVector3 momentumD = daughter0.Vect();
+    Double_t cosThetaStarAbs = TMath::Abs(normal.Dot(momentumD)/momentumD.Mag());
+    return cosThetaStarAbs;
 }
 
 //__________________________________________________________________________________________________
@@ -412,4 +436,21 @@ Double_t AliRsnMiniPair::PairYRes() const
 //
   if (Y(1) <= 0.0) return 1E20;
   return (Y(0) - Y(1)) / Y(1);
+}
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc) 
+{
+//
+// Return pair asymmetry
+//
+  TLorentzVector &p1 = fP1[ID(mc)];
+  TLorentzVector &p2 = fP2[ID(mc)];
+  
+  TVector3 P1 = p1.Vect();
+  TVector3 P2 = p2.Vect();
+
+  Double_t asym=TMath::Abs(P1.Mag()-P2.Mag())/(P1.Mag()+P2.Mag());
+
+  return asym;
+  
 }

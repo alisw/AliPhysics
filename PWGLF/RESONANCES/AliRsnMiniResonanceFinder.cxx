@@ -204,7 +204,7 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
                r->IndexV0Pos() = p2->IndexV0Pos();
                r->IndexV0Neg() = p2->IndexV0Neg();
                r->IndexBachelor() = p1->Index();
-               r->Charge() = '+';
+               r->Charge() = '-';
             }
          }else if(p1->Charge()=='0'){
             if(p2->Charge()=='-' || p2->Charge()=='+'){

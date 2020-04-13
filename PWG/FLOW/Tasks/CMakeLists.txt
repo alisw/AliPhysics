@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
+		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
   )
 
 # Sources - alphabetical order
@@ -56,6 +57,7 @@ set(SRCS
   AliAnalysisTaskMixedHarmonics.cxx 
   AliAnalysisTaskFlowModes.cxx
   AliAnalysisTaskFlowModesMC.cxx
+  AliAnalysisTaskFlowModes_pPb.cxx
   AliAnalysisTaskNestedLoops.cxx 
   AliAnalysisTaskQAflow.cxx 
   AliAnalysisTaskPIDflowQA.cxx 
@@ -72,14 +74,19 @@ set(SRCS
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
   AliAnalysisTaskZDCGainEq.cxx
-  AliAnalysisTaskZDCEP.cxx
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
   AliAnalysisTaskCMEV0.cxx
   AliAnalysisTaskCMEV0PID.cxx
+  AliAnalysisTaskCMEMC.cxx
   AliAnalysisTaskStudentsCM.cxx
   AliAnalysisTaskStudentsML.cxx
   AliAnalysisTaskTwoMultiCorrelations.cxx
+  AliAnalysisTaskStudentsMW.cxx
+  AliAnalysisTaskCVE.cxx
+  AliAnalysisTaskNBodyFemtoscopy.cxx
+  AliAnalysisTaskCMW.cxx
+  AliAnalysisTaskCVEUNI.cxx
   )
 
 # Headers from sources

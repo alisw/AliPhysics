@@ -34,21 +34,6 @@ using std::cout;
 using std::endl;
 #endif
 
-#define CheckAndWrite(obj)          \
-  if (saveHisto) {                  \
-    trendFile->cd();                \
-    if (obj)                        \
-      obj->Write();                 \
-    else {                          \
-      TNamed miss(#obj, "MISSING"); \
-      miss.Write();                 \
-    }                               \
-  }
-
-#define CheckAndPrint(c, name) \
-  if (savePng)                 \
-    c->Print(Form("%s/%i%s_%s.png", plotDir.Data(), runNumber, dirsuffix.Data(), name));
-
 Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output;
     Int_t runNumber,                                //run number
     const TString dirsuffix = "",                   //suffix for subdirectories
@@ -86,6 +71,18 @@ Int_t GetTDir(TDirectoryFile*& d, TFile*& f, TString name);
 Int_t GetList(TDirectoryFile* d, TList*& l, TString name, TString suffix);
 
 ///
+/// Function to get a TH1F from a TList
+TH1F* GetTH1F(TList* l, TString name);
+
+///
+/// Function to get a TH2F from a TList
+TH2F* GetTH2F(TList* l, TString name);
+
+///
+/// Function to get a Profile from a TH2F
+TProfile* MakeProfile(TH2F* h, TString name, Float_t minY, Float_t maxY, Bool_t xaxis = kTRUE);
+
+///
 ///Function to setup the histogram style
 void MakeUpHisto(TH1* histo, TString titleX = "", TString titleY = "", Int_t marker = 20, Color_t color = kBlue + 2, Int_t lineWidth = 1);
 void MakeUpHisto(TH2* histo, TString titleX = "", TString titleY = "", TString titleZ = "", Int_t marker = 20, Color_t color = kBlue + 2, Int_t lineWidth = 1);
@@ -108,7 +105,30 @@ void AddMissingLabel(const TString histoname);
 
 ///
 ///Function check if the histogram exists and draw it or add a label in a canvas, indicating a missing Plot
-void CheckAndDraw(TH1* h, TProfile* prof, const TString opt);
+
+#define CheckAndWrite(obj)          \
+  if (saveHisto) {                  \
+    trendFile->cd();                \
+    if (obj)                        \
+      obj->Write();                 \
+    else {                          \
+      TNamed miss(#obj, "MISSING"); \
+      miss.Write();                 \
+    }                               \
+  }
+
+#define CheckAndPrint(c, name) \
+  if (savePng)                 \
+    c->Print(Form("%s/%i%s_%s.png", plotDir.Data(), runNumber, dirsuffix.Data(), name));
+
+#define CheckAndDraw(h, prof, opt) \
+  if (h) {                         \
+    h->Draw(opt);                  \
+    TProfile* PProf = prof;        \
+    if (PProf)                     \
+      PProf->Draw("same");         \
+  } else                           \
+    AddMissingLabel(#h);
 
 /********************************************************************************/
 TF1* TOFsignal(Double_t rangeMin, Double_t rangeMax);
@@ -380,7 +400,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   goodChannelsRatioInAcc = GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kTRUE);
 
   //--------------------------------- Multiplicity ----------------------------------//
-  TH1F* hMulti = (TH1F*)generalList->FindObject("hTOFmulti_all");
+  TH1F* hMulti = GetTH1F(generalList, "hTOFmulti_all");
   TH1F* hFractionEventsWhits = new TH1F("hFractionEventsWhits", "hFractionEventsWhits;fraction of events with hits (%)", 200, 0., 100.);
   Float_t fraction = 0.0;
   if (hMulti->GetEntries() > 0.0) {
@@ -394,7 +414,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
 
   //--------------------------------- T0F signal ----------------------------------//
 #define FitForTime(Hname, fun, av, peak, spread, peakErr, spreadErr, col, mar) \
-  TH1F* Hname = (TH1F*)generalList->FindObject(Form("%s_all", #Hname));        \
+  TH1F* Hname = GetTH1F(generalList, Form("%s_all", #Hname));                  \
   Hname->SetDirectory(0);                                                      \
   if ((Hname) && (Hname->GetEntries() > 0)) {                                  \
     av = Hname->GetMean();                                                     \
@@ -425,7 +445,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   //
   TPaveText* tOrphans = GetPave(0.38, 0.63, 0.88, 0.7, kViolet - 3, Form("orphans/matched = %4.2f%%", orphansRatio * 100.));
 
-  TH1F* hL = (TH1F*)generalList->FindObject("hMatchedL_all");
+  TH1F* hL = GetTH1F(generalList, "hMatchedL_all");
   if (hL->GetEntries() > 0) {
     avL = hL->GetMean();
     negLratio = hL->Integral(1, 750) / hL->GetEntries();
@@ -439,8 +459,8 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   CheckAndWrite(hL);
 
   //--------------------------------- residuals -------------------------------------//
-  TH2F* hDxPos4profile = (TH2F*)generalList->FindObject("hMatchedDxVsPt_all");
-  TH2F* hTOFmatchedDzVsStrip = (TH2F*)generalList->FindObject("hMatchedDzVsStrip_all");
+  TH2F* hDxPos4profile = GetTH2F(generalList, "hMatchedDxVsPt_all");
+  TH2F* hTOFmatchedDzVsStrip = GetTH2F(generalList, "hMatchedDzVsStrip_all");
   CheckAndWrite(hDxPos4profile);
   CheckAndWrite(hTOFmatchedDzVsStrip);
 
@@ -456,10 +476,10 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TH1F* hMatchingVsPhiOut = NULL;
   TH1F* hMatchingVsPhi = NULL;
 
-  TH1F* hDenom = (TH1F*)generalList->FindObject("hPrimaryPt_all");
+  TH1F* hDenom = GetTH1F(generalList, "hPrimaryPt_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPt = (TH1F*)((TH1F*)generalList->FindObject("hMatchedPt_all"))->Clone("hMatchingVsPt");
+    hMatchingVsPt = (TH1F*)(GetTH1F(generalList, "hMatchedPt_all"))->Clone("hMatchingVsPt");
     //set underflow bin to the matching efficiency integrated in 1-10 GeV/c
     Int_t imin = hMatchingVsPt->GetXaxis()->FindBin(minPtEff2Fit);
     Int_t imax = hMatchingVsPt->GetXaxis()->FindBin(maxPtEff2Fit);
@@ -489,18 +509,18 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
   MakeUpHisto(hMatchingVsPt, "#it{p}_{T} (GeV/#it{c})", "matching efficiency", 1, kBlue + 2, 2);
 
-  TH2F* hDenom2D = (TH2F*)generalList->FindObject("hPrimaryEtaVsOutPhi_all");
+  TH2F* hDenom2D = GetTH2F(generalList, "hPrimaryEtaVsOutPhi_all");
   if (!hDenom2D) {
     //matching as function of eta
-    hDenom = (TH1F*)generalList->FindObject("hPrimaryEta_all");
+    hDenom = GetTH1F(generalList, "hPrimaryEta_all");
     if (hDenom) {
       hDenom->Sumw2();
-      hMatchingVsEta = (TH1F*)((TH1F*)generalList->FindObject("hMatchedEta_all"))->Clone("hMatchingVsEta");
+      hMatchingVsEta = (TH1F*)(GetTH1F(generalList, "hMatchedEta_all"))->Clone("hMatchingVsEta");
       hMatchingVsEta->Sumw2();
       hMatchingVsEta->Divide(hMatchingVsEta, hDenom, 1., 1., "B");
     }
   } else {
-    hMatchingVsEtaPhiOut = (TH2F*)((TH2F*)generalList->FindObject("hMatchedEtaVsOutPhi_all"))->Clone("hMatchingVsEtaPhiOut");
+    hMatchingVsEtaPhiOut = (TH2F*)(GetTH2F(generalList, "hMatchedEtaVsOutPhi_all"))->Clone("hMatchingVsEtaPhiOut");
     //
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsEta, "hMatchingVsEta", kFALSE);
     Compute2Deff(hMatchingVsEtaPhiOut, hDenom2D, hMatchingVsPhiOut, "hMatchingVsPhiOut", kTRUE);
@@ -525,10 +545,10 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   //matching as function of phi
-  hDenom = (TH1F*)generalList->FindObject("hPrimaryPhi_all");
+  hDenom = GetTH1F(generalList, "hPrimaryPhi_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPhi = (TH1F*)((TH1F*)generalList->FindObject("hMatchedPhi_all"))->Clone("hMatchingVsPhi");
+    hMatchingVsPhi = (TH1F*)(GetTH1F(generalList, "hMatchedPhi_all"))->Clone("hMatchingVsPhi");
     hMatchingVsPhi->Sumw2();
     hMatchingVsPhi->Divide(hMatchingVsPhi, hDenom, 1., 1., "B");
     hMatchingVsPhi->SetTitle("TOF matching efficiency as function of phi");
@@ -543,18 +563,18 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   CheckAndWrite(hMatchingVsEtaPhiOut);
 
   //--------------------------------- t-texp ----------------------------------//
-  TH2F* hBetaP = (TH2F*)pidList->FindObject("hMatchedBetaVsP_all");
+  TH2F* hBetaP = GetTH2F(pidList, "hMatchedBetaVsP_all");
   if (hBetaP)
     hBetaP->GetYaxis()->SetRangeUser(0., 1.2);
 
-  TH1F* hMass = (TH1F*)pidList->FindObject("hMatchedMass_all");
+  TH1F* hMass = GetTH1F(pidList, "hMatchedMass_all");
   MakeUpHisto(hMass, "", "tracks", 1, kBlue + 2, 1);
   // hMass->SetFillColor(kAzure+10);
   // hMass->SetFillStyle(1001);
   hMass->Rebin(2);
 
   //pions
-  TH1F* hPionDiff = (TH1F*)pidList->FindObject("hExpTimePi_all");
+  TH1F* hPionDiff = GetTH1F(pidList, "hExpTimePi_all");
   if ((hPionDiff) && (hPionDiff->GetEntries() > 0)) {
     avPiDiffTime = hPionDiff->GetMean();
     hPionDiff->Fit("gaus", "", "", -1000., 500.);
@@ -576,19 +596,19 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   CheckAndPrint(cTimeCalib, "TOFtime");
 
   //Retrieve plots for t-texp-t0
-  TH1F* hDiffTimeT0fillPion = (TH1F*)pidList->FindObject("hExpTimePiFillSub_all");
-  TH2F* hDiffTimeT0TOFPion1GeV = (TH2F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");
+  TH1F* hDiffTimeT0fillPion = GetTH1F(pidList, "hExpTimePiFillSub_all");
+  TH2F* hDiffTimeT0TOFPion1GeV = GetTH2F(pidList, "hExpTimePiT0Sub1GeV_all");
 
   //Pion
-  TH2F* hDiffTimePi = (TH2F*)pidList->FindObject("hExpTimePiVsP_all");
+  TH2F* hDiffTimePi = GetTH2F(pidList, "hExpTimePiVsP_all");
   hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
 
   //Kaon
-  TH2F* hDiffTimeKa = (TH2F*)pidList->FindObject("hExpTimeKaVsP_all");
+  TH2F* hDiffTimeKa = GetTH2F(pidList, "hExpTimeKaVsP_all");
   hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
 
   //Protons
-  TH2F* hDiffTimePro = (TH2F*)pidList->FindObject("hExpTimeProVsP_all");
+  TH2F* hDiffTimePro = GetTH2F(pidList, "hExpTimeProVsP_all");
   hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
 
   CheckAndWrite(hBetaP);
@@ -631,83 +651,37 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
   TList* ListOfOutput_T0 = new TList(); ///List of output for all plots related to T0
 
-  TH2F* hT0TOFvsNtracks = (TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
-  TProfile* hT0TOFProfile = 0x0;
-  if (!hT0TOFvsNtracks)
-    cout << "Cannot find TH2F hT0TOFvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin1 = hT0TOFvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax1 = hT0TOFvsNtracks->GetYaxis()->FindBin(50.);
-    hT0TOFProfile = (TProfile*)hT0TOFvsNtracks->ProfileX("hT0TOFProfile", binmin1, binmax1);
-    hT0TOFProfile->SetLineWidth(3);
-    hT0TOFProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hT0TOFvsNtracks = GetTH2F(timeZeroList, "hT0TOFvsNtrk");
+  TProfile* hT0TOFProfile = MakeProfile(hT0TOFvsNtracks, "hT0TOFProfile", -50., 50.);
+  if (hT0TOFvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0TOFvsNtracks);
     ListOfOutput_T0->Add(hT0TOFProfile);
   }
 
-  TH2F* hT0ACvsNtracks = (TH2F*)timeZeroList->FindObject("hT0ACvsNtrk");
-  TProfile* hT0ACProfile = 0x0;
-  if (!hT0ACvsNtracks)
-    cout << "Cannot find TH2F hT0ACvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin2 = hT0ACvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax2 = hT0ACvsNtracks->GetYaxis()->FindBin(50.);
-    hT0ACProfile = (TProfile*)hT0ACvsNtracks->ProfileX("hT0ACProfile", binmin2, binmax2);
-    hT0ACProfile->SetLineWidth(3);
-    hT0ACProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hT0ACvsNtracks = GetTH2F(timeZeroList, "hT0ACvsNtrk");
+  TProfile* hT0ACProfile = MakeProfile(hT0ACvsNtracks, "hT0ACProfile", -50., 50.);
+  if (hT0ACvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0ACvsNtracks);
     ListOfOutput_T0->Add(hT0ACProfile);
   }
 
-  TH2F* hT0AvsNtracks = (TH2F*)timeZeroList->FindObject("hT0AvsNtrk");
-  TProfile* hT0AProfile = 0x0;
-  if (!hT0AvsNtracks)
-    cout << "Cannot find TH2F hT0AvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin3 = hT0AvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax3 = hT0AvsNtracks->GetYaxis()->FindBin(50.);
-    hT0AProfile = (TProfile*)hT0AvsNtracks->ProfileX("hT0AProfile", binmin3, binmax3);
-    hT0AProfile->SetLineWidth(3);
-    hT0AProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hT0AvsNtracks = GetTH2F(timeZeroList, "hT0AvsNtrk");
+  TProfile* hT0AProfile = MakeProfile(hT0AvsNtracks, "hT0AProfile", -50., 50.);
+  if (hT0AvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0AvsNtracks);
     ListOfOutput_T0->Add(hT0AProfile);
   }
 
-  TH2F* hT0CvsNtracks = (TH2F*)timeZeroList->FindObject("hT0CvsNtrk");
-  TProfile* hT0CProfile = 0x0;
-  if (!hT0CvsNtracks)
-    cout << "Cannot find TH2F hT0CvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin4 = hT0CvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax4 = hT0CvsNtracks->GetYaxis()->FindBin(50.);
-    hT0CProfile = (TProfile*)hT0CvsNtracks->ProfileX("hT0CProfile", binmin4, binmax4);
-    hT0CProfile->SetLineWidth(3);
-    hT0CProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hT0CvsNtracks = GetTH2F(timeZeroList, "hT0CvsNtrk");
+  TProfile* hT0CProfile = MakeProfile(hT0CvsNtracks, "hT0CProfile", -50., 50.);
+  if (hT0CvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0CvsNtracks);
     ListOfOutput_T0->Add(hT0CProfile);
   }
 
-  TH2F* hStartTime = (TH2F*)timeZeroList->FindObject("hStartTime");
-  TProfile* hStartTimeProfile = 0x0;
-  if (!hStartTime)
-    cout << "Cannot find TH2F hStartTime in the input list" << endl;
-  else {
-    Int_t binminst = hStartTime->GetXaxis()->FindBin(-600.);
-    Int_t binmaxst = hStartTime->GetXaxis()->FindBin(600.);
-    hStartTimeProfile = (TProfile*)hStartTime->ProfileY("hStartTimeProfile", binminst, binmaxst);
-    hStartTimeProfile->SetFillStyle(0);
-    hStartTimeProfile->SetLineWidth(3);
-    hStartTimeProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hStartTime = GetTH2F(timeZeroList, "hStartTime");
+  TProfile* hStartTimeProfile = MakeProfile(hStartTime, "hStartTimeProfile", -600., 600., kFALSE);
+  if (hStartTime) { //Add result to output list
     ListOfOutput_T0->Add(hStartTime);
     ListOfOutput_T0->Add(hStartTimeProfile);
 
@@ -728,26 +702,16 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
 #undef GetT0Info
   }
 
-  TH2F* hStartTimeRes = (TH2F*)timeZeroList->FindObject("hStartTimeRes");
-  TProfile* hStartTimeResProfile = 0x0;
-  if (!hStartTimeRes)
-    cout << "Cannot find TH2F hStartTimeRes in the input list" << endl;
-  else {
-    Int_t binminstRes = hStartTimeRes->GetXaxis()->FindBin(-600.);
-    Int_t binmaxstRes = hStartTimeRes->GetXaxis()->FindBin(600.);
-    hStartTimeResProfile = (TProfile*)hStartTimeRes->ProfileY("hStartTimeResProfile", binminstRes, binmaxstRes);
-    hStartTimeResProfile->SetFillStyle(0);
-    hStartTimeResProfile->SetLineWidth(3);
-    hStartTimeResProfile->SetLineColor(1);
-
-    //Add result to output list
+  TH2F* hStartTimeRes = GetTH2F(timeZeroList, "hStartTimeRes");
+  TProfile* hStartTimeResProfile = MakeProfile(hStartTimeRes, "hStartTimeResProfile", 0, 299., kFALSE);
+  if (hStartTimeRes) { //Add result to output list
     ListOfOutput_T0->Add(hStartTimeRes);
     ListOfOutput_T0->Add(hStartTimeResProfile);
 
-    //Set Start Time Resolution information
+//Set Start Time Resolution information
 #define GetT0Info(Label, Tz)                                                \
-  Tzbin = hStartTime->GetYaxis()->FindBin(Label);                           \
-  if (Tzbin <= 0 || Tzbin > hStartTime->GetNbinsY())                        \
+  Tzbin = hStartTimeRes->GetYaxis()->FindBin(Label);                        \
+  if (Tzbin <= 0 || Tzbin > hStartTimeRes->GetNbinsY())                     \
     ::Error("MakeTrendingTOFQAv2", "cannot find start time bin %s", Label); \
   Tz = hStartTimeResProfile->GetBinContent(Tzbin);
     Int_t Tzbin = -1;
@@ -918,7 +882,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
 
   //--------------------------------- T0 detector ----------------------------------//
 #define FitWithGaus(Hname, av, peak, spread, peakErr, spreadErr, col) \
-  TH1F* Hname = (TH1F*)timeZeroList->FindObject(#Hname);              \
+  TH1F* Hname = GetTH1F(timeZeroList, #Hname);                        \
   Hname->SetDirectory(0);                                             \
   if ((Hname) && (Hname->GetEntries() > 0)) {                         \
     av = Hname->GetMean();                                            \
@@ -945,11 +909,11 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
 
   FitWithGaus(hT0DetRes, avT0res, peakT0res, spreadT0res, peakT0resErr, spreadT0resErr, kMagenta + 1);
 
-  TH1F* hT0fillRes = (TH1F*)timeZeroList->FindObject("hT0fillRes");
+  TH1F* hT0fillRes = GetTH1F(timeZeroList, "hT0fillRes");
   if ((hT0fillRes) && (hT0fillRes->GetEntries() > 0)) {
     avT0fillRes = hT0fillRes->GetMean();
   }
-  TH1F* hT0T0Res = (TH1F*)timeZeroList->FindObject("hT0T0Res");
+  TH1F* hT0T0Res = GetTH1F(timeZeroList, "hT0T0Res");
   if ((hT0T0Res) && (hT0T0Res->GetEntries() > 0)) {
     avT0T0Res = hT0T0Res->GetMean();
   }
@@ -1015,10 +979,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TCanvas* cProfile = new TCanvas("cProfile", "cProfile", 50, 50, 750, 550);
   gPad->SetLogz();
   hTOFmatchedDzVsStrip->Draw("colz");
-  Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
-  Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
-  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile", binmin, binmax);
-  hDzProfile->SetLineWidth(3);
+  TProfile* hDzProfile = MakeProfile(hTOFmatchedDzVsStrip, "hDzProfile", -3, 3);
   hDzProfile->Draw("same");
 
   TCanvas* cMatchingPerformance = new TCanvas("cMatchingPerformance", "summary of matching performance", 1200, 500);
@@ -1194,7 +1155,7 @@ std::pair<Double_t, Double_t> ComputeEff(Double_t num, Double_t den, Double_t nu
     const Double_t ratio = num / den;
     Double_t ratioErr = 0;
     if (num > 0)
-      TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
+      ratioErr = TMath::Sqrt(TMath::Power(numE / num, 2.0) + TMath::Power(denE / den, 2.0));
     //
     ratioErr *= ratio;
     eff.first = ratio;
@@ -1222,6 +1183,72 @@ Int_t GetList(TDirectoryFile* d, TList*& l, TString name, TString suffix)
 }
 
 //----------------------------------------------------------
+TH1F* GetTH1F(TList* l, TString name)
+{
+  if (!l) {
+    ::Error("MakeTrendingTOFQAv2::GetTH1F", "No input TList was given");
+    return 0x0;
+  }
+  TH1F* h = (TH1F*)l->FindObject(name);
+  if (!h) {
+    ::Error("MakeTrendingTOFQAv2::GetTH1F", "Cannot find TH1F %s in TList %s\n\tDir. Content:", name.Data(), l->GetName());
+    l->ls();
+    return 0x0;
+  }
+  return h;
+}
+
+//----------------------------------------------------------
+TH2F* GetTH2F(TList* l, TString name)
+{
+  if (!l) {
+    ::Error("MakeTrendingTOFQAv2::GetTH2F", "No input TList was given");
+    return 0x0;
+  }
+  TH2F* h = (TH2F*)l->FindObject(name);
+  if (!h) {
+    ::Error("MakeTrendingTOFQAv2::GetTH2F", "Cannot find TH2F %s in TList %s\n\tDir. Content:", name.Data(), l->GetName());
+    l->ls();
+    return 0x0;
+  }
+  return h;
+}
+
+//----------------------------------------------------------
+TProfile* MakeProfile(TH2F* h, TString name, Float_t min, Float_t max, Bool_t xaxis)
+{
+  if (!h)
+    return nullptr;
+  TAxis* axis = xaxis ? h->GetYaxis() : h->GetXaxis();
+  TAxis* axislabel = xaxis ? h->GetXaxis() : h->GetYaxis();
+  //
+  const Int_t minbin = axis->FindBin(min);
+  const Int_t maxbin = axis->FindBin(max);
+  if (minbin < 1 || minbin > axis->GetNbins())
+    ::Error("MakeTrendingTOFQAv2::MakeProfile", "Asking a profile larger than the histogram range: Min: %f outside [%f, %f]", min, axis->GetBinLowEdge(1), axis->GetBinLowEdge(axis->GetNbins()));
+  if (maxbin < 1 || maxbin > axis->GetNbins())
+    ::Error("MakeTrendingTOFQAv2::MakeProfile", "Asking a profile larger than the histogram range: Max: %f outside [%f, %f]", max, axis->GetBinLowEdge(1), axis->GetBinLowEdge(axis->GetNbins()));
+
+  TProfile* p = nullptr;
+  if (xaxis)
+    p = h->ProfileX(name, minbin, maxbin);
+  else
+    p = h->ProfileY(name, minbin, maxbin);
+  //
+  p->GetYaxis()->SetTitle(axis->GetTitle());
+  TString label = axislabel->GetBinLabel(1);
+  if (!label.IsNull()) {
+    for (Int_t i = 1; i <= axislabel->GetNbins(); i++) {
+      p->GetXaxis()->SetBinLabel(i, axislabel->GetBinLabel(i));
+    }
+  }
+  p->SetLineWidth(3);
+  p->SetLineColor(1);
+  p->SetFillStyle(0);
+  return p;
+}
+
+//----------------------------------------------------------
 void SetupPad(TString opt)
 {
 #define DoIt(what)         \
@@ -1233,17 +1260,6 @@ void SetupPad(TString opt)
   DoIt(SetGridx);
   DoIt(SetGridy);
 #undef DoIt
-}
-
-//----------------------------------------------------------
-void CheckAndDraw(TH1* h, TProfile* prof, const TString opt)
-{
-  if (h) {
-    h->Draw("colz");
-    if (prof)
-      prof->Draw("same");
-  } else
-    AddMissingLabel(h->GetName());
 }
 
 //----------------------------------------------------------
@@ -1289,7 +1305,7 @@ TF1* TOFsignal(Double_t rangeMin, Double_t rangeMax)
 //----------------------------------------------------------
 TList* FitNSigma(TList* l, TString part, TF1* f, TF1* f2, const TString name, const TString suffix)
 {
-  TH2F* h = (TH2F*)l->FindObject(Form("%s%s%s", name.Data(), part.Data(), suffix.Data()));
+  TH2F* h = GetTH2F(l, Form("%s%s%s", name.Data(), part.Data(), suffix.Data()));
   h->GetYaxis()->SetRangeUser(-5., 5.);
   h->GetXaxis()->SetRangeUser(0.2, 10.);
 
@@ -1447,3 +1463,4 @@ TPaveText* GetPave(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Color_t c
 
 #undef CheckAndWrite
 #undef CheckAndPrint
+#undef CheckAndDraw

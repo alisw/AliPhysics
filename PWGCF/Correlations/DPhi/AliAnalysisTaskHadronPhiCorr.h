@@ -6,6 +6,7 @@
 #include "TObject.h"
 #include "THnSparse.h"
 #include "TH3.h"
+#include "TFile.h"
 
 class TObject;
 class TH1F;
@@ -14,6 +15,7 @@ class AliAODEvent;
 class AliEventPool;
 class AliEventPoolManager;
 class AliCFParticle;
+class AliAODMCParticle;
 class AliMultSelection;
 
 class AliAnalysisTaskHadronPhiCorr : public AliAnalysisTaskSE {
@@ -60,10 +62,22 @@ public:
 
     void SetHH(Bool_t isHH) { IS_HH = isHH; };
 
+    void SetIsMCTrue(Bool_t isMCTrue) {IS_MC_TRUE = isMCTrue; };
+    void SetIsMCKaon(Bool_t isMCKaon) {IS_MC_KAON = isMCKaon; };
+    void SetIsMCKTrack(Bool_t isMCKTrack) {IS_MC_KTRACK = isMCKTrack; };
+    void SetUseAccpt(Bool_t useAccpt) {USE_ACCPT = useAccpt; };
+
     void SetMultLow(Float_t multLow) { MULT_LOW = multLow; };
     void SetMultHigh(Float_t multHigh) { MULT_HIGH = multHigh; };
 
+    void LoadEfficiencies(TFile* filename);
+
 private:
+
+    Bool_t IS_MC_TRUE;
+    Bool_t IS_MC_KAON;
+    Bool_t IS_MC_KTRACK;
+    Bool_t USE_ACCPT;
 
     Bool_t IS_HH;
     Float_t MULT_LOW;
@@ -94,17 +108,23 @@ private:
        
     TObjArray* AddToTracks();
     Bool_t MakeCorrelations(Int_t itrack, AliVParticle *trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx);
+    Bool_t MakeCorrelations(Int_t itrack, AliAODMCParticle *trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx);
     void MakeMixCorrelations(AliPhiContainer* phiVec, THnSparse *fDphiMixed, Float_t mult, Double_t zVtx, AliEventPool* fPool, Bool_t isLS);
     void MakeHHMixCorrelations(AliCFParticle *cfPart, THnSparse *fDphiMixed, Float_t mult, Double_t zVtx);
   
     AliVEvent   *fVevent;  //!event object
     AliEventPoolManager *fPoolMgr; //! Event pool manager for mixed event
+    AliEventPoolManager *fTruePoolMgr; //!
     AliEventPoolManager *fLSPoolMgr; //! Event pool manager for LS mixed event
     AliEventPoolManager *fHHPoolMgr; //! Event pool manager for HH
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
     AliPIDResponse *fpidResponse; //!pid response
     AliMultSelection *fMultSelection; //!mult selection
+
+    TF1         *fphiEff;///> phi Efficiency
+    TF1         *fhEff;///> hadron Efficiency
+    TF1         *ftrigEff;///> trigger Efficiency
     
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
@@ -152,6 +172,9 @@ private:
     TH1D        *fUSpairsPerEvent;//! US pairs per Event in mass range
     
     THnSparseF  **fDphiHPhi;//! delta-phi distribution with unlike sign kaon pairs
+    THnSparseF  **fDphiTrueHPhi;//! delta-phi distribution with true MC phi
+    THnSparseF  **fDphiTrueAcceptanceHPhi;//! delta-phi distribution with true MC phi in acceptance
+    THnSparseF  **fDphiTrueHPhiMixed;//! mixed distribution with true MC phi
     THnSparseF  **fDphiHKK;//! delta-phi distribution with like sign kaon pairs
     THnSparseF  **fDphiHPhiMixed;//! hadron-US mixed correlation
     THnSparseF  **fDphiHKKMixed;//! hadron-LS mixed correlation
@@ -161,7 +184,7 @@ private:
     AliAnalysisTaskHadronPhiCorr(const AliAnalysisTaskHadronPhiCorr&); // not implemented
     AliAnalysisTaskHadronPhiCorr& operator=(const AliAnalysisTaskHadronPhiCorr&); // not implemented
    
-    ClassDef(AliAnalysisTaskHadronPhiCorr, 2); // example of analysis
+    ClassDef(AliAnalysisTaskHadronPhiCorr, 3); // example of analysis
 };
 
 #endif

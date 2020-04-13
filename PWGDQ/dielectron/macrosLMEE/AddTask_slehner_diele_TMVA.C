@@ -3,9 +3,11 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
                                               Bool_t SetPIDCorrection=kFALSE,
                                               Bool_t useAODFilterCuts=kFALSE,
                                               Bool_t hasMC=kFALSE,
-                                              TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                              TString TMVAweight,
                                               Bool_t fromAlien,
-                                              TString date="ddmmyy"        
+                                              TString date="ddmmyy",
+                                              Int_t wagonnr=0,
+                                              Bool_t usePileUpRej=kTRUE
         ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
@@ -29,13 +31,17 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   TString myConfig =TString::Format("alien_cp %s .",configFilePath.Data());
   gSystem->Exec(myConfig);
   
-  TString configBasePathLMEE("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");  
+  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
+//  TString configBasePathLMEE("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");  
+  TString configBasePathLMEE("./");  
   TString configLMEECutLib("LMEECutLib_slehner.C");
   TString configLMEECutLibPath(configBasePathLMEE+configLMEECutLib);
   
   //load dielectron configuration files
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))    gROOT->LoadMacro(configFile.Data());
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLibPath.Data()))    gROOT->LoadMacro(configLMEECutLibPath.Data());
+  Bool_t err=kFALSE;
+  err |= gROOT->LoadMacro(configFile.Data());
+  err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+  if (err) { Error("AddTask_slehner_diele_TMVA","Config(s) could not be loaded!"); return 0x0; }
   
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_slehner_TMVA");
@@ -52,7 +58,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   LMEECutLib* cutlib = new LMEECutLib();
   Bool_t isRun2 = kTRUE;
   
-  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax,usePileUpRej)); // All cut sets have same event cuts
 
   mgr->AddTask(task);
   
@@ -103,26 +109,26 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("%s_tree",directoryBaseName.Data()),
+    mgr->CreateContainer(Form("%s_tree_%d",directoryBaseName.Data(),wagonnr),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("%sData",directoryBaseName.Data()),
+    mgr->CreateContainer(Form("%sData_%d",directoryBaseName.Data(),wagonnr),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("%s_CF",directoryBaseName.Data()),
+    mgr->CreateContainer(Form("%s_CF_%d",directoryBaseName.Data(),wagonnr),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
   //                         "slehner_diele_PbPb_CF.root");
   
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("%s_EventStat",directoryBaseName.Data()),
+    mgr->CreateContainer(Form("%s_EventStat_%d",directoryBaseName.Data(),wagonnr),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());

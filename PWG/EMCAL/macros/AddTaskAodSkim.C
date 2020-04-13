@@ -3,7 +3,7 @@
 AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
                                 const Double_t minpt          = -1,
                                 const Bool_t doBothMinEandPt  = kFALSE,
-                                const Double_t ycutmc         = 0.7,
+                                const Double_t ycutmc         = 0.9,
                                 const char *gammabr           = 0,
                                 const UInt_t trigsel          = AliVEvent::kAny,
                                 const Bool_t doCopyTOF        = kTRUE,
@@ -50,7 +50,7 @@ AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
     output->SetFillAOD(1);
     output->SetFillAODforRun(1);
     output->SetFillExtension(0);
-    output->SetTreeBuffSize(30*1024*1024);
+    output->SetTreeBuffSize(60*1024*1024);
     mgr->SetOutputEventHandler(output);
   }
 
@@ -73,10 +73,10 @@ AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
   task->SetCopyVertices(kTRUE);
   task->SetCopyZDC(kTRUE);
   if (ycutmc>0) {
-    task->SetCutMC(kTRUE);
-    task->SetYCutMC(ycutmc);
+    task->SetRemoveMcParts(kTRUE);
+    task->SetCutMcY(ycutmc);
   } else {
-    task->SetCutMC(kFALSE);
+    task->SetRemoveMcParts(kFALSE);
   }
   task->SetCopyTOF(doCopyTOF);
   task->SetCopyTracklets(doCopyTracklets);

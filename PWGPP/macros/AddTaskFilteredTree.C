@@ -22,9 +22,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   }
 
   // Switch off all AliInfo (too much output!!!)
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  mgr->SetDebugLevel(0);
-
+  AliLog::SetClassDebugLevel("AliAnalysisTaskFilteredTree", AliLog::kError);
   
 
   //
@@ -74,10 +72,10 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   //
   AliAnalysisTaskFilteredTree *task = new AliAnalysisTaskFilteredTree("AliAnalysisTaskFilteredTree");
   //task->SetUseMCInfo(hasMC);
-  //task->SetLowPtTrackDownscaligF(1.e4);
-  //task->SetLowPtV0DownscaligF(1.e2);
-  task->SetLowPtTrackDownscaligF(1.e5);
-  task->SetLowPtV0DownscaligF(2.e3);
+  task->SetLowPtTrackDownscaligF(5.e3);
+  task->SetLowPtV0DownscaligF(5.e2);
+  //task->SetLowPtTrackDownscaligF(1.e5);
+  //task->SetLowPtV0DownscaligF(2.e3);
   task->SetProcessAll(kTRUE);
   task->SetProcessCosmics(kTRUE);
   if (gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF")) {

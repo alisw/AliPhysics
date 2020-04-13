@@ -50,6 +50,12 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   // Generate a simple femtoscopic weight coming only from
   // quantum statistics - symmetrization or anti-symmetrization
   // of the pair wave function
+  {
+    double cached_weight = aPair->LookupFemtoWeightCache(this);
+    if (!std::isnan(cached_weight)) {
+      return cached_weight;
+    }
+  }
 
   // Get hidden information pointers
   //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
@@ -187,12 +193,14 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
                  ? GetPairTypeFromPair(aPair)
                  : fPairType;
 
-  if ((pair_type == PionPlusPionPlus()) || (pair_type == KaonPlusKaonPlus()))
-      return 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-  else if (pair_type == ProtonProton())
-      return 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS));
-  else
-      return 1.0;
+  double weight = ((pair_type == PionPlusPionPlus()) || (pair_type == KaonPlusKaonPlus()))
+                  ? 1.0 + cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS))
+                : pair_type == ProtonProton()
+                  ? 1.0 - 0.5 * cos (2*(fKStarOut * tROS + fKStarSide * tRSS + fKStarLong * tRLS))
+                : 1.0;
+
+  aPair->AddWeightToCache(this, weight);
+  return weight;
 }
 
 //________________________

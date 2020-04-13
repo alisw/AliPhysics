@@ -22,7 +22,7 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
   AliRDHFCutsDStartoKpipi(const char* name="CutsDStartoKpipi");
   
-  virtual ~AliRDHFCutsDStartoKpipi(){}
+  virtual ~AliRDHFCutsDStartoKpipi();
 
   AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi& source);
   AliRDHFCutsDStartoKpipi& operator=(const AliRDHFCutsDStartoKpipi& source); 

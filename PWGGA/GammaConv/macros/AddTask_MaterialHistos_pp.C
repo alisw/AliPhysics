@@ -34,8 +34,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 				TString fileNameExternalInputs        = "",
 				Int_t   doDeDxMaps              =  0,
  				Bool_t  enableElecDeDxPostCalibration = kFALSE,
-				Int_t   doMultiplicityWeighting           = 0,
-				Int_t   doWeightingGamma               = 0,        // enable Weighting
+				Int_t   doMultiplicityWeighting = 0,
+				Int_t   doWeightingGamma        = 0,        // enable Weighting
+				Int_t   enableMatBudWeightsPi0  = 0,        // 1 = three radial bins, 2 = 10 radial bins
 				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                               ){
 
@@ -196,6 +197,28 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "00000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "0c000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "0d000009a27300008250a04120");
+  } else if (trainConfig == 26) {   // new Cuts on Psi pair, chi2
+    cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+  } else if (trainConfig == 27) {  // to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "0700bb09266300008884404000"); 
+    cuts.AddCutPCMMaterial("00010103", "0800bb09266300008850404000");
+
+  } else if (trainConfig == 28) {   // new Cuts on Psi pair, chi2, to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "0800bb0929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dkd0404000");
+
+
+
+ } else if (trainConfig == 76) {   // +50 To be used with MBW
+    cuts.AddCutPCMMaterial("00010103", "0d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "0d00000926630000dkd0404000");
+
+
+
 
    // Offline V0Finder is used
 
@@ -263,6 +286,26 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCutPCMMaterial("00010103", "10000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "1c000009a27300008250a04120");
     cuts.AddCutPCMMaterial("00010103", "1d000009a27300008250a04120");
+
+ } else if (trainConfig == 126) {   // new Cuts on Psi pair, chi2
+    cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dkd0404000");
+ } else if (trainConfig == 127) {  // to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "1700bb09266300008884404000"); 
+    cuts.AddCutPCMMaterial("00010103", "1800bb09266300008850404000");
+
+  } else if (trainConfig == 128) {   // new Cuts on Psi pair, chi2, to calculate MBW for PHOS pi0 region
+    cuts.AddCutPCMMaterial("00010103", "1800bb0929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1800bb0926630000dkd0404000");
+
+
+
+ } else if (trainConfig == 176) {   // +50 To be used with MBW
+    cuts.AddCutPCMMaterial("00010103", "1d00000929730000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dgd0404000");
+    cuts.AddCutPCMMaterial("00010103", "1d00000926630000dkd0404000");
     
   } else  if(trainConfig == 111){
     cuts.AddCutPCMMaterial("00000003", "10000070000000000500004000");
@@ -318,6 +361,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
   cout<<"names"<< periodNameAnchor.Data()<< " " << periodName.Data()<< endl;
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
+
+
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
 
@@ -331,9 +377,19 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 	  periodNameAnchor.CompareTo("LHC17q")==0  ){
 	TString cutNumber = cuts.GetEventCut(i);
 	TString centCut = cutNumber(0,3);  // first three digits of event cut
-	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
-	mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
-	cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	if(doMultiplicityWeighting == 1){
+	  dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}else if(doMultiplicityWeighting == 2){
+	  dataInputMultHisto = Form("V0M_%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("V0M_%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}else{
+	  dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}
        }
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
     }
@@ -361,19 +417,31 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    if (enableElecDeDxPostCalibration>0){
-      if (isMC == 0){
-	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
-	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-	} else {
-	  enableElecDeDxPostCalibration=kFALSE;
-	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-	}
 
+    if (enableMatBudWeightsPi0 > 0){
+      cout<< "Material budget weigthing enabled"<< endl;
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;
+		cout<< "Material budget weigthing enabled, went well"<< endl;
+	    }
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
+
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
-	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
-	enableElecDeDxPostCalibration=kFALSE;
-	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
 
@@ -385,6 +453,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 
   fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);
   fMaterialHistos->SetConversionCutList(numberOfCuts,ConvCutList);
+  if (initializedMatBudWeigths_existing) {
+      fMaterialHistos->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
+
   mgr->AddTask(fMaterialHistos);
 
 

@@ -113,6 +113,17 @@ namespace {
         TParticle* particle;
         int motherId;
     };
+
+    struct CandidateMC {
+        AliESDtrack *track_deu;
+        AliESDtrack *track_p;
+        AliESDtrack *track_pi;
+        TParticle *part1;
+        TParticle *part2;
+        TParticle *part3;
+        TParticle *mother;
+        int motherId;
+    };
 }
 
 ClassImp(AliAnalysisTaskStrEffStudy)
@@ -2177,28 +2188,29 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
 
     //_________________________________________________________
     //Step 1: establish list of tracks coming from des
-    for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
+    for(Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
-        if(!esdTrack)
-            continue;
+        if (!esdTrack) continue;
         /// The minimal TPC/ITS reconstruction criteria must be statisfied
         if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 &&
              (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
             esdTrack->GetKinkIndex(0) > 0)
             continue;
         Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
+        TParticle* lParticle = lMCevent->Particle( lLabel );
+        const int pdgAbs = std::abs(lParticle->GetPdgCode());
 
         Int_t lLabelMother = lParticle->GetFirstMother();
-        if( lLabelMother < 0 ) continue;
+        if (lLabelMother < 0) continue;
 
-        if( !lMCevent->IsPhysicalPrimary(lLabelMother) ) continue;
+        if (!lMCevent->IsPhysicalPrimary(lLabelMother)) continue;
 
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        TParticle *lParticleMother = lMCevent->Particle( lLabelMother );
+
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         if (std::abs(lParticleMotherPDG) != 1010010030) continue;
         int lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
-        if ( lNDaughters!=3 ) continue;
+        if (lNDaughters!=3) continue;
         //If here: this is a daughter of a mother particle of desired type, add
         lTrackOfInterest.push_back({esdTrack, lParticleMother, lParticle, lLabelMother});
     }
@@ -2219,59 +2231,75 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             return a.motherId > b.motherId;
         });
         //____________________________________________________________________________
-        //Step 2: determine findable V0s: look for pairs having shared mother label
-        std::array<std::pair<AliESDtrack*,int>,3> lTrackPDG;
-        for(size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++){
+        //Step 2: determine findable hypertritons
+        std::vector<CandidateMC> candidate;
+        for (size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++) {
+            std::array<std::pair<int,int>,3> index;
+            Int_t pdg1 = lTrackOfInterest[iTrack].particle->GetPdgCode();
+            index[0] = {pdg1, iTrack};
             //Start nested loop from iTrack+1: avoid permutations + combination with self
-            lTrackPDG[0].first = lTrackOfInterest[iTrack].track;
-            lTrackPDG[0].second = lTrackOfInterest[iTrack].particle->GetPdgCode();
-            for(size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++){
-                if( lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId)
-                    continue;
-                lTrackPDG[1].first = lTrackOfInterest[jTrack].track;
-                lTrackPDG[1].second = lTrackOfInterest[jTrack].particle->GetPdgCode();
-                /// Reject pairs of clone tracks, chapter 1
-                if (lTrackPDG[1].second == lTrackPDG[0].second)
-                    continue;
-                for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++){
-                    if( lTrackOfInterest[iTrack].motherId == lTrackOfInterest[zTrack].motherId) {
-                        lTrackPDG[2].first = lTrackOfInterest[zTrack].track;
-                        lTrackPDG[2].second = lTrackOfInterest[zTrack].particle->GetPdgCode();
-                        /// Reject pairs of clone tracks, chapter 2
-                        if (lTrackPDG[2].second == lTrackPDG[0].second ||
-                            lTrackPDG[2].second == lTrackPDG[1].second)
-                            continue;
-
-                        std::sort(lTrackPDG.begin(),lTrackPDG.end(),[](const std::pair<AliESDtrack*,int> & a, const std::pair<AliESDtrack*,int> & b)
-                        {
-                            return std::abs(a.second) > std::abs(b.second);
-                        });
-                        for (size_t iPair{0}; iPair < lTrackPDG.size(); ++iPair) {
-                            fTreeHyp3BodyVarTracks[iPair] = lTrackPDG[iPair].first;
-                            fTreeHyp3BodyVarPDGcodes[iPair] = lTrackPDG[iPair].second;
-                        }
-
-                        TParticle* lHyperTriton = lTrackOfInterest[iTrack].mother;
-
-                        fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
-                        fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
-                        fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
-
-                        TParticle* prong = lTrackOfInterest[iTrack].particle;
-                        fTreeHyp3BodyVarDecayVx = prong->Vx();
-                        fTreeHyp3BodyVarDecayVy = prong->Vy();
-                        fTreeHyp3BodyVarDecayVz = prong->Vz();
-                        fTreeHyp3BodyVarDecayT =  prong->T();
-
-                        fTreeHyp3BodyVarMotherId = lTrackOfInterest[zTrack].motherId;
-                        if (lNewEvent) {
-                          fTreeHyp3BodyVarMotherId *= -1;
-                          lNewEvent = false;
-                        }
-                        fTreeHyperTriton3Body->Fill();
-                    }
+            for (size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++) {
+                if (lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId) continue;
+                Int_t pdg2 = lTrackOfInterest[jTrack].particle->GetPdgCode();
+                index[1] = {pdg2, jTrack};
+                for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++) {
+                    if(lTrackOfInterest[iTrack].motherId != lTrackOfInterest[zTrack].motherId) continue;
+                    /// Reject all the triplets with +++ and ---
+                    if (lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[jTrack].track->GetSign() &&
+                        lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
+                        continue;
+                    Int_t pdg3 = lTrackOfInterest[zTrack].particle->GetPdgCode();
+                    index[2] = {pdg3, zTrack};
+                    std::sort(index.begin(),index.end(),[](const std::pair<int,int> & a, const std::pair<int,int> & b)
+                    {
+                        return std::abs(a.first) > std::abs(b.first);
+                    });
+                    CandidateMC c;
+                    c.track_deu = lTrackOfInterest[index[0].second].track;
+                    c.track_p   = lTrackOfInterest[index[1].second].track;
+                    c.track_pi  = lTrackOfInterest[index[2].second].track;
+                    c.part1     = lTrackOfInterest[index[0].second].particle;
+                    c.part2     = lTrackOfInterest[index[1].second].particle;
+                    c.part3     = lTrackOfInterest[index[2].second].particle;
+                    c.mother    = lTrackOfInterest[index[0].second].mother;
+                    c.motherId  = lTrackOfInterest[index[0].second].motherId;
+                    candidate.push_back(c);
                 }
             }
+        }
+        /// sorting hypertriton candidates respect the motherId
+        std::sort(candidate.begin(), candidate.end(), [](const CandidateMC &a, const CandidateMC &b)
+        { 
+            return a.motherId > b.motherId; 
+        });
+        //____________________________________________________________________________
+        // Step 3: checks on the candidate vector
+        for (size_t iCand = 0; iCand < candidate.size(); iCand++) {
+
+            fTreeHyp3BodyVarTracks[0] = candidate[iCand].track_deu;
+            fTreeHyp3BodyVarTracks[1] = candidate[iCand].track_p;
+            fTreeHyp3BodyVarTracks[2] = candidate[iCand].track_pi;
+            fTreeHyp3BodyVarPDGcodes[0] = candidate[iCand].part1->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[1] = candidate[iCand].part2->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[2] = candidate[iCand].part3->GetPdgCode();
+
+            TParticle* lHyperTriton = candidate[iCand].mother;
+            fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
+            fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
+            fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
+
+            TParticle* prong = candidate[iCand].part1;
+            fTreeHyp3BodyVarDecayVx = prong->Vx();
+            fTreeHyp3BodyVarDecayVy = prong->Vy();
+            fTreeHyp3BodyVarDecayVz = prong->Vz();
+            fTreeHyp3BodyVarDecayT =  prong->T();
+
+            fTreeHyp3BodyVarMotherId = candidate[iCand].motherId;
+            if (lNewEvent) {
+                fTreeHyp3BodyVarMotherId *= -1;
+                lNewEvent = false;
+            }
+            fTreeHyperTriton3Body->Fill();
         }
     }
 

@@ -108,9 +108,11 @@ public TObject
   static void SetCheckFlag(Int_t);
   static void AddCheckFlag(EventFlags_t);
   static void RemoveCheckFlag(EventFlags_t);
-  static Int_t GetCheckFlag() { return fgFlagToCheck; }; 
+  static Int_t GetCheckFlag() { return fgFlagToCheck; };
   Bool_t CheckFlag();
   static void PrintEventSelection();
+  /*** tools ***/
+  static AliTOFPIDResponse fgTOFResponse; // TOF PID response
 
  private:
 
@@ -139,8 +141,6 @@ public TObject
   Int_t fRunNo;
 
 
-  /*** tools ***/
-  static AliTOFPIDResponse fgTOFResponse; // TOF PID response
 
   /*** cuts ***/
   static Float_t fgVertexZ_cuts[2]; // min,max

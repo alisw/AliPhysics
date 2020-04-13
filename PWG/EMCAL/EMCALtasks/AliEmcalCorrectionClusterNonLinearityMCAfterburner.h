@@ -5,7 +5,7 @@
 
 /**
  * @class AliEmcalCorrectionClusterNonLinearityMCAfterburner
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Cluster energy non-linearity correction MC afterburner in the EMCal correction framework.
  *
  * Non-linearity correction to the MC cluster energy is necessary because the current non linearity is done for

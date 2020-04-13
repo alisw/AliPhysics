@@ -127,7 +127,7 @@ void Init3x3Settings(){
   markersizeMC=1.;
 }
 
-TString yaxisTitle[5]={"Associated yield","#sigma_{fit,NS} (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
+TString yaxisTitle[5]={"Associated yield","Peak width (rad)","Baseline (rad^{-1})","Associated yield","Peak width (rad)"};
 Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
@@ -695,7 +695,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   return tlSide;
 }
 
-TH1D *GetAndPreparePPb(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
+TH1D *GetAndPreparePP(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
 
 
   TFile *f1=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[0].Data()),"READ");
@@ -812,6 +812,150 @@ TH1D *GetAndPreparePPb(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors
   return hPPb;
 }
 
+TH1D *GetAndPreparePPb(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr, TGraphAsymmErrors *&grV2tot){
+
+
+  TFile *f1=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[0].Data()),"READ");
+  TFile *f2=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[1].Data()),"READ");
+  TFile *f3=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[2].Data()),"READ");  
+  TCanvas *c1=(TCanvas*)f1->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+  TCanvas *c2=(TCanvas*)f2->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+  TCanvas *c3=(TCanvas*)f3->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *gr1=(TGraphAsymmErrors*)c1->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *gr2=(TGraphAsymmErrors*)c2->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *gr3=(TGraphAsymmErrors*)c3->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *grV1=(TGraphAsymmErrors*)c1->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *grV2=(TGraphAsymmErrors*)c2->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+  TGraphAsymmErrors *grV3=(TGraphAsymmErrors*)c3->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+
+  Double_t x[3] = {0.65,1.5,2.5};
+  Double_t ex[3] = {0.35,0.5,0.5};
+  Double_t y[3];
+  Double_t eyl[3];  
+  Double_t eyh[3];  
+  Double_t *y1 = gr1->GetY();
+  Double_t *y2 = gr2->GetY();
+  Double_t *y3 = gr3->GetY();
+  Double_t yV[3];
+  Double_t eyVl[3];
+  Double_t eyVh[3];
+  Double_t *yV1 = grV1->GetY();
+  Double_t *yV2 = grV2->GetY();
+  Double_t *yV3 = grV3->GetY();
+  if(numsyst==0) {
+    y[0] = y1[binD+1]; y[1] = y2[binD+1]; y[2] = y3[binD+1];
+    eyl[0] = gr1->GetErrorYlow(binD+1); eyl[1] = gr2->GetErrorYlow(binD+1); eyl[2] = gr3->GetErrorYlow(binD+1);
+    eyh[0] = gr1->GetErrorYhigh(binD+1); eyh[1] = gr2->GetErrorYhigh(binD+1); eyh[2] = gr3->GetErrorYhigh(binD+1);
+  }    
+  if(numsyst==1) {
+    y[0] = y1[binD]; y[1] = y2[binD]; y[2] = y3[binD];
+    eyl[0] = gr1->GetErrorYlow(binD); eyl[1] = gr2->GetErrorYlow(binD); eyl[2] = gr3->GetErrorYlow(binD);
+    eyh[0] = gr1->GetErrorYhigh(binD); eyh[1] = gr2->GetErrorYhigh(binD); eyh[2] = gr3->GetErrorYhigh(binD);
+    if(plotv2unc) {
+      yV[0] = yV1[binD]; yV[1] = yV2[binD]; yV[2] = yV3[binD];
+      eyVl[0] = grV1->GetErrorYlow(binD); eyVl[1] = grV2->GetErrorYlow(binD); eyVl[2] = grV3->GetErrorYlow(binD);
+      eyVh[0] = grV1->GetErrorYhigh(binD); eyVh[1] = grV2->GetErrorYhigh(binD); eyVh[2] = grV3->GetErrorYhigh(binD);    
+    }
+  }
+
+  gr = new TGraphAsymmErrors(3,x,y,ex,ex,eyl,eyh); //the real one!
+  gr->SetFillColor(kGreen+2);
+  gr->SetFillStyle(0);
+  gr->SetName(Form("%sPPb",gr->GetName()));
+  gr->SetMarkerColor(colSystem[numsyst]);
+  gr->SetLineColor(colSystem[numsyst]);
+  gr->SetLineWidth(1);
+  gr->SetMarkerStyle(markerStyle[numsyst]);
+  gr->SetMarkerSize(markersize);
+  for(Int_t iPoint=0;iPoint<3;iPoint++) {
+    gr->SetPointError(iPoint,0.3*gr->GetErrorXlow(iPoint),0.3*gr->GetErrorXhigh(iPoint),gr->GetErrorYlow(iPoint),gr->GetErrorYhigh(iPoint));
+  }
+  if(plotv2unc) {
+    grV2tot = new TGraphAsymmErrors(3,x,yV,ex,ex,eyVl,eyVh); //the real one!
+    grV2tot->SetFillColor(grV1->GetFillColor());
+    grV2tot->SetFillStyle(grV1->GetFillStyle());
+    grV2tot->SetName(Form("%sPPb",gr->GetName()));
+    grV2tot->SetMarkerColor(colSystem[numsyst]);
+    grV2tot->SetLineColor(grV1->GetLineColor());
+    grV2tot->SetLineWidth(grV1->GetLineWidth());
+    grV2tot->SetMarkerStyle(markerStyle[numsyst]);
+    grV2tot->SetMarkerSize(markersize);
+    for(Int_t iPoint=0;iPoint<3;iPoint++) {
+      grV2tot->SetPointError(iPoint,0.3*grV2tot->GetErrorXlow(iPoint),0.3*grV2tot->GetErrorXhigh(iPoint),grV2tot->GetErrorYlow(iPoint),grV2tot->GetErrorYhigh(iPoint));
+      printf("vals y and errs %f, %f, %f - %f %f %f\n",yV[0],yV[1],yV[2],eyVh[0],eyVh[1],eyVh[2]);
+    }
+  }
+
+
+  TH1D *hPPbInput1=(TH1D*)c1->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+  TH1D *hPPbInput2=(TH1D*)c2->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+  TH1D *hPPbInput3=(TH1D*)c3->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+  Double_t xaxis[6] = {0.,0.3,1.,2.,3.,4.};
+  TH1D *hPPb=new TH1D(Form("%sPPb",hPPbInput1->GetName()),"Hist_obs_vsPtAss",5,xaxis); //the real one!
+  if(numsyst==1) {
+    hPPb->SetBinContent(1,-1);
+    hPPb->SetBinContent(2,hPPbInput1->GetBinContent(binD+2));
+    hPPb->SetBinContent(3,hPPbInput2->GetBinContent(binD+2));
+    hPPb->SetBinContent(4,hPPbInput3->GetBinContent(binD+2));
+    hPPb->SetBinContent(5,-1);
+    hPPb->SetBinError(1,0);
+    hPPb->SetBinError(2,hPPbInput1->GetBinError(binD+2));
+    hPPb->SetBinError(3,hPPbInput2->GetBinError(binD+2));
+    hPPb->SetBinError(4,hPPbInput3->GetBinError(binD+2));
+    hPPb->SetBinError(5,0);
+    //printf("BinD = %d\n, pPb in 0.3-1 is %f\n",binD,hPPbInput1->GetBinContent(binD+2));
+  } else {  //pp has also additional bin 2-3 to be skipped, so bin 3-5 is #3 (0-2, 2-3, 3-5)
+    hPPb->SetBinContent(1,-1);
+    hPPb->SetBinContent(2,hPPbInput1->GetBinContent(binD+3));
+    hPPb->SetBinContent(3,hPPbInput2->GetBinContent(binD+3));
+    hPPb->SetBinContent(4,hPPbInput3->GetBinContent(binD+3));
+    hPPb->SetBinContent(5,-1);
+    hPPb->SetBinError(1,0);
+    hPPb->SetBinError(2,hPPbInput1->GetBinError(binD+3));
+    hPPb->SetBinError(3,hPPbInput2->GetBinError(binD+3));
+    hPPb->SetBinError(4,hPPbInput3->GetBinError(binD+3));
+    hPPb->SetBinError(5,0);
+    //printf("BinD = %d\n, pp in 0.3-1 is %f\n",binD,hPPbInput1->GetBinContent(binD+3));
+  }
+  hPPb->SetLineColor(colSystem[numsyst]);
+  hPPb->SetLineWidth(1);
+  hPPb->SetMarkerColor(colSystem[numsyst]);
+  hPPb->SetMarkerStyle(markerStyle[numsyst]);
+  hPPb->SetMarkerSize(markersize);
+
+  hPPb->SetXTitle("Associated track #it{p}_{T} (GeV/#it{c})");
+  hPPb->SetYTitle(yaxisTitle[quantity].Data());
+  if(style==-1){
+    hPPb->GetYaxis()->SetTitleSize(0.04);
+    hPPb->GetYaxis()->SetTitleOffset(1.2);
+    hPPb->GetYaxis()->SetLabelSize(0.04);
+    hPPb->GetXaxis()->SetTitleSize(0.04);
+    hPPb->GetXaxis()->SetLabelSize(0.04);
+  }
+  else {
+    hPPb->GetYaxis()->SetTitle("");      
+
+    hPPb->GetXaxis()->SetRangeUser(0,3.4);
+    hPPb->GetYaxis()->SetTitleFont(43);
+    hPPb->GetYaxis()->SetLabelFont(43);
+    hPPb->GetXaxis()->SetTitleFont(43);
+    hPPb->GetXaxis()->CenterTitle();
+    hPPb->GetYaxis()->CenterTitle();
+    hPPb->GetXaxis()->SetLabelFont(43);
+    hPPb->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+  }
+  if(style<=0){
+    hPPb->GetYaxis()->SetRangeUser(0,maxRangePPb[binD][quantity]);
+  }
+
+  return hPPb;
+}
+
 /*
 TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
 
@@ -880,11 +1024,12 @@ TCanvas* Compare(Int_t binD,Int_t quantity,TPad *pd,Int_t textlegendOptions){
 
   printf("Preparing pp... (%d)\n",quantity);
   TGraphAsymmErrors *grPPb_1;
-  TH1D *hPPb_1=GetAndPreparePPb(binD,quantity,0,grPPb_1);
+  TH1D *hPPb_1=GetAndPreparePP(binD,quantity,0,grPPb_1);
 
   printf("Preparing p-Pb...(%d)\n",quantity);
   TGraphAsymmErrors *grPPb_2;
-  TH1D *hPPb_2=GetAndPreparePPb(binD,quantity,1,grPPb_2);
+  TGraphAsymmErrors *grV2tot;
+  TH1D *hPPb_2=GetAndPreparePPb(binD,quantity,1,grPPb_2,grV2tot);
 
   TCanvas *cout=0x0;
   if(!pd){
@@ -1000,6 +1145,7 @@ TCanvas* Compare(Int_t binD,Int_t quantity,TPad *pd,Int_t textlegendOptions){
      printf("Removing NSy and NSw of 0.3-1 in 3-5 and 16-24\n");
    }
 
+  if(plotv2unc) grV2tot->Draw("E2");
   grPPb_1->Draw("E2");
   grPPb_2->Draw("E2");
 
@@ -1077,6 +1223,7 @@ TCanvas* Compare(Int_t binD,Int_t quantity,TPad *pd,Int_t textlegendOptions){
       //legend->AddEntry((TObject*)0,"","");
       legend->AddEntry(hPPb_2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV,","lep");
       legend->AddEntry((TObject*)0,"-0.96 < #it{y}^{D}_{cms} < 0.04","");
+      if(plotv2unc) legend->AddEntry(grV2tot,"Syst uncertainty from v_{2}","f");
       legend->Draw();
 
      /*TLegend *legendSuperimp=GetLegendDataPointsFake(hPP,hPPbSuperimp,10*quantity+binD);

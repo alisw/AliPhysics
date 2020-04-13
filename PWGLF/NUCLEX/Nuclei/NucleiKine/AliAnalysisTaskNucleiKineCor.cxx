@@ -311,13 +311,13 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   hhe = (TH2*)fHists[21];
   if (ptl>fPt) {
     const double phi1 = leadP->Phi();
-    const double eta1 = leadP->Eta();
+    // const double eta1 = leadP->Eta();
     for (Int_t j=0;j<nh;++j) {
       TParticle *part2 = (TParticle*)arrh.At(j);
       if (part2==leadP) 
 	continue;
       const double dphi = DeltaPhi(phi1,part2->Phi());
-      const double deta = part2->Eta()-eta1;
+      // const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
       hhe->Fill(part2->Eta(),part2->Pt());
     }
@@ -339,7 +339,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       if (part2==part1) 
 	continue;
       const double dphi = DeltaPhi(phi1,part2->Phi());
-      const double deta = part2->Eta()-eta1;
+      // const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
       if (TMath::Abs(eta1)<fAcc/2.)
 	hh3->Fill(dphi,part2->Pt());
@@ -350,13 +350,13 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   hh = (TH2*)fHists[15];
   if (ptl>fPt) {
     const double phi1 = leadP->Phi();
-    const double eta1 = leadP->Eta();
+    // const double eta1 = leadP->Eta();
     for (Int_t j=0;j<np;++j) {
       TParticle *part2 = (TParticle*)arrp.At(j);
       if (part2==leadP) 
 	continue;
       const double dphi = DeltaPhi(phi1,part2->Phi());
-      const double deta = part2->Eta()-eta1;
+      // const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
     }
   }
@@ -377,7 +377,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       if (part2==part1) 
 	continue;
       const double dphi = DeltaPhi(phi1,part2->Phi());
-      const double deta = part2->Eta()-eta1;
+      // const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
       hhe->Fill(part2->Eta(),part2->Pt());
       if (TMath::Abs(eta1)<fAcc/2.)
@@ -389,13 +389,13 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   hh = (TH2*)fHists[17];
   if (ptl>fPt) {
     const double phi1 = leadP->Phi();
-    const double eta1 = leadP->Eta();
+    // const double eta1 = leadP->Eta();
     for (Int_t j=0;j<nd;++j) {
       TParticle *part2 = (TParticle*)arrd.At(j);
       if (part2==leadP) 
 	continue;
       const double dphi = DeltaPhi(phi1,part2->Phi());
-      const double deta = part2->Eta()-eta1;
+      // const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
     }
   }

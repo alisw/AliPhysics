@@ -23,7 +23,6 @@ namespace utils {
     return true;
   }
 
-
   template<class T> void Requires(T* obj, string msg = "") {
     if (!obj) {
       std::cout << "Missing object: " << msg.data() << "." << std::endl;
@@ -127,6 +126,17 @@ namespace utils {
       hOriginal->SetBinContent(i+1,content_tmp[i]/count_tmp[i]);
       hOriginal->SetBinError(i+1,TMath::Sqrt(err2_tmp[i])/count_tmp[i]);
     }
+  }
+
+  float zTest(const float mu0, const float sig0, const float mu1, const float sig1) {
+    const float sigma = sqrt(sig0 * sig0 + sig1 * sig1);
+    if (sigma < FLT_MIN * 10.f) return FLT_MAX;
+    else return (mu0 - mu1) / std::abs(sig1-sig0);
+  }
+
+  void SmoothInRange(TH1F* histo, float low_limit, float up_limit, int n_times = 1){
+    histo->GetXaxis()->SetRange(histo->FindBin(low_limit),histo->FindBin(up_limit));
+    histo->Smooth(n_times,"R");
   }
 }
 

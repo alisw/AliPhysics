@@ -95,9 +95,9 @@ void runLocalESE(
   AliAnalysisTaskNanoAODFilter * task = (AliAnalysisTaskNanoAODFilter*) gROOT->ProcessLine(Form(addTaskString, iMCtruth));
 
   // Set Track event and vertex cuts here!
-  //  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr,cstBayesTPCPi,cstBayesTPCKa,cstBayesTPCPr,cstBayesTOFPi,cstBayesTOFKa,cstBayesTOFPr");
-  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr");
-  task->SetVarListHead("cstCentr,cstQVec");
+  //  task->SetVarListTrack("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr,cstBayesTPCPi,cstBayesTPCKa,cstBayesTPCPr,cstBayesTOFPi,cstBayesTOFKa,cstBayesTOFPr");
+  task->SetVarListTrack("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr");
+  task->SetVarListHeader("cstCentr,cstQVec");
   AliESETrkCut * trkCuts = TrkCuts();
   AliESEEvtCut * evtCuts = EvtCuts(iMCtruth);
   evtCuts->SetTrackCuts(trkCuts->GetTrackCuts());
@@ -106,7 +106,7 @@ void runLocalESE(
 
   task->SetTrkCuts(trkCuts);
   task->SetEvtCuts(evtCuts);
-  task->SetSetter(setter);
+  task->AddSetter(setter);
 
   //task->SelectCollisionCandidates(AliVEvent::kMB);// FIXME
   // enable debug printouts

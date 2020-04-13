@@ -27,6 +27,7 @@ ClassImp(AliHFAODMCParticleContainer)
 AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   AliMCParticleContainer(),
   fSpecialPDG(0),
+  fSpecialIndex(-10),
   fRejectedOrigin(0),
   fAcceptedDecay(0),
   fRejectISR(kFALSE),
@@ -41,6 +42,7 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
 AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   AliMCParticleContainer(name),
   fSpecialPDG(0),
+  fSpecialIndex(-10),
   fRejectedOrigin(AliAnalysisTaskDmesonJets::kUnknownQuark | AliAnalysisTaskDmesonJets::kFromBottom),
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay),
   fRejectISR(kFALSE),
@@ -81,12 +83,12 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
 {
   // Return true if vp is accepted.
 
-  if (IsSpecialPDGDaughter(vp)) {
+  if (IsSpecialPDGDaughter(vp)|| IsSpecialIndexDaughter(vp)) {
     rejectionReason |= kHFCut;
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
-  }
+   }
 
-  if (IsSpecialPDG(vp)) {
+  if (IsSpecialPDG(vp) || IsSpecialIndex(vp)) {
     // Special PDG particle, skip regular MC particle cuts and apply kinematic cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
     AliTLorentzVector mom;
@@ -110,13 +112,16 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionR
   // Return true if vp is accepted.
 
   AliAODMCParticle* vp = GetMCParticle(i);
-
-  if (IsSpecialPDGDaughter(vp)) {
-    rejectionReason = kHFCut;
+  
+   if (IsSpecialPDGDaughter(vp) || IsSpecialIndexDaughter(vp)) {
+    
+     rejectionReason = kHFCut;
+    
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
-  }
+   }
 
-  if (IsSpecialPDG(vp, fHistOrigin)) {
+  if (IsSpecialPDG(vp, fHistOrigin) || IsSpecialIndex(vp)) {
+  
     // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
     AliTLorentzVector mom;
@@ -202,5 +207,47 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDGFound() const
   for (auto part : accepted()) {
     if (IsSpecialPDG(part)) return kTRUE;
   }
+  return kFALSE;
+}
+
+/// Check if particle it's a "special" PDG particle: AOD mode
+/// \param part Pointer to a valid AliAODMCParticle object
+///
+/// \result kTRUE if it is a "special" PDG particle, kFALSE otherwise
+Bool_t AliHFAODMCParticleContainer::IsSpecialIndexDaughter(const AliAODMCParticle* part) const
+{
+  if (fSpecialIndex == -10) return kFALSE;
+  
+  const AliAODMCParticle* pm = part;
+  Int_t imo = -1;
+  while (pm != 0) {
+    imo = pm->GetMother();
+    if (imo < 0) break;
+    pm = static_cast<const AliAODMCParticle*>(fClArray->At(imo));
+    if(imo==fSpecialIndex) return kTRUE;
+   
+    }
+  
+  return kFALSE;
+}
+
+/// Check if particle it's a daughter of a "special" PDG particle: AOD mode
+/// \param part Pointer to a valid AliAODMCParticle object
+///
+/// \result kTRUE if it is a daughter of the "special" PDG particle, kFALSE otherwise
+Bool_t AliHFAODMCParticleContainer::IsSpecialIndex(const AliAODMCParticle* part, TH1* histOrigin) const
+{
+  if (fSpecialIndex == -10) return kFALSE;
+  
+  AliAODMCParticle* pmo;
+  pmo=static_cast<AliAODMCParticle*>(fClArray->At(fSpecialIndex));
+  if(pmo==0) return kFALSE;
+  if(pmo==part){
+  
+     return kTRUE;
+  }
+  
+
+  // Special PDG particle
   return kFALSE;
 }

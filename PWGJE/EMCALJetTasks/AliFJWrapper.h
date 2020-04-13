@@ -144,6 +144,7 @@ class AliFJWrapper
   void SetMaxDelR(Double_t r)  {fMaxDelR = r;}
   void SetAlpha(Double_t a)  {fAlpha = a;}
 
+
  protected:
   TString                                fName;               //!
   TString                                fTitle;              //!

@@ -22,6 +22,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCleanTracks(Bool_t b)            {fDoCleanTracks=b;}
     void                  SetClusMinE(Double_t v)             {fClusMinE=v;}
     void                  SetTrackMinPt(Double_t v)           {fTrackMinPt=v;}
+    void                  SetTrackMaxPt(Double_t v)           {fTrackMaxPt=v;}
     void                  SetDoBothMinTrackAndClus(Bool_t b)  {fDoBothMinTrackAndClus=b;}
     void                  SetCopyCascades(Bool_t b)           {fDoCopyCascades=b;}
     void                  SetCopyCells(Bool_t b)              {fDoCopyCells=b;}
@@ -31,6 +32,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyHeader(Bool_t b)             {fDoCopyHeader=b;}
     void                  SetCopyMC(Bool_t b)                 {fDoCopyMC=b;}
     void                  SetCopyMCHeader(Bool_t b)           {fDoCopyMCHeader=b;}
+    void                  SetCopyKinks(Bool_t b)              {fDoCopyKinks=b;}
     void                  SetCopyPCells(Bool_t b)             {fDoCopyPCells=b;}
     void                  SetCopyPTrigger(Bool_t b)           {fDoCopyPTrigger=b;}
     void                  SetCopyTOF(Bool_t b)                {fDoCopyTOF=b;}
@@ -40,31 +42,70 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyTrdTracks(Bool_t b)          {fDoCopyTrdTracks=b;}
     void                  SetCopyTrigger(Bool_t b)            {fDoCopyTrigger=b;}
     void                  SetCopyV0s(Bool_t b)                {fDoCopyV0s=b;}
+    void                  SetCopyUserTree(Bool_t b)           {fDoCopyUserTree=b;}
     void                  SetCopyVZERO(Bool_t b)              {fDoCopyVZERO=b;}
     void                  SetCopyVertices(Bool_t b)           {fDoCopyVertices=b;}
     void                  SetCopyZDC(Bool_t b)                {fDoCopyZDC=b;}
     void                  SetCutFilterBit(UInt_t b)           {fCutFilterBit=b;}
-    void                  SetCutMC(Bool_t b)                  {fCutMC=b;}
+    void                  SetCutMcIsPrimary(Bool_t b)         {fCutMcIsPrimary=b;}
+    void                  SetCutMcIsPhysicalPrimary(Bool_t b) {fCutMcIsPhysPrimary=b;}
+    void                  SetCutMcPt(Double_t pt)             {fCutMcPt=pt;}
+    void                  SetCutMcY(Double_t y)               {fCutMcY=y;}
+    void                  SetCutMcPhos(Bool_t b)              {fCutMcPhos=b;}
+    void                  SetCutMcEmcal(Bool_t b)             {fCutMcEmcal=b;}
     void                  SetDoVertMain(Bool_t b)             {fDoVertMain=b;}
     void                  SetDoVertWoRefs(Bool_t b)           {fDoVertWoRefs=b;}
+    void                  SetDoPhosFilter(Bool_t b)           {fDoPhosFilt=b;}
     void                  SetGammaBrName(TString s)           {fGammaBr=s;}
     void                  SetMinCutPt(Double_t pt)            {fCutMinPt=pt;}
     void                  SetRemCovMat(Bool_t b)              {fDoRemCovMat=b;}
     void                  SetRemPid(Bool_t b)                 {fDoRemPid=b;}
+    void                  SetRemoveMcParts(Bool_t b)          {fDoRemoveMcParts=b;}
     void                  SetRemoveTracks(Bool_t b)           {fDoRemoveTracks=b;}
-    void                  SetYCutMC(Double_t v)               {fYCutMC=v;}
     const char           *Str() const;
   protected:
+    virtual void          CleanTrack(AliAODTrack *t);
+    const char           *GetVersion() const { return "1.6"; }
+    virtual Bool_t        KeepMcPart(AliAODMCParticle *p);
+    Bool_t                IsDcalAcc(Double_t phi, Double_t eta);
+    Bool_t                IsPhosAcc(Double_t phi, Double_t eta);
+    Bool_t                IsEmcalAcc(Double_t phi, Double_t eta);
+    virtual Bool_t        KeepTrack(AliAODTrack *t);
+    Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
+    virtual Bool_t        SelectEvent();
+    void                  Terminate(Option_t* option);
     void                  UserCreateOutputObjects();
     void                  UserExec(Option_t* option);
     Bool_t                UserNotify();
-    void                  Terminate(Option_t* option);
-    Bool_t                PythiaInfoFromFile(const char *currFile, Float_t &xsec, Float_t &trials, Int_t &pthard);
+
+    virtual void          CopyCascades();
+    virtual void          CopyCells();
+    virtual void          CopyCellsP();
+    virtual void          CopyConv();
+    virtual void          CopyClusters();
+    virtual void          CopyDimuons();
+    virtual void          CopyHeader();
+    virtual void          CopyKinks();
+    virtual void          CopyMc();
+    virtual void          CopyMcHeader();
+    virtual void          CopyTof();
+    virtual void          CopyTracklets();
+    virtual void          CopyTracks();
+    virtual void          CopyTrdTracks();
+    virtual void          CopyTrigger();
+    virtual void          CopyTriggerP();
+    virtual void          CopyTZero();
+    virtual void          CopyUserTree();
+    virtual void          CopyVertices();
+    virtual void          CopyV0s();
+    virtual void          CopyVZero();
+    virtual void          CopyZdc();
+    virtual void          CopyMore() {;}
+  
     Double_t              fClusMinE;              //  minimum cluster energy to accept event
     Double_t              fTrackMinPt;            //  minimum track pt to accept event
+    Double_t              fTrackMaxPt;            //  maximum track pt to accept event
     Bool_t                fDoBothMinTrackAndClus; // switch to enable simultaneous filtering for minimum track and cluster cuts
-    Bool_t                fCutMC;                 //  if true cut MC particles with |Y|>fYCutMC
-    Double_t              fYCutMC;                //  cut for MC particles (default = 0.7)
     Double_t              fCutMinPt;              //  minimum pT to keep track
     UInt_t                fCutFilterBit;          //  filter bit(s) to select
     TString               fGammaBr;               //  gamma branch name
@@ -90,11 +131,21 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyCascades;        //  if true copy cascades
     Bool_t                fDoCopyZDC;             //  if true copy zdc
     Bool_t                fDoCopyConv;            //  if true copy conversions
+    Bool_t                fDoCopyKinks;           //  if true copy kinks
     Bool_t                fDoCopyMC;              //  if true copy MC particles
     Bool_t                fDoCopyMCHeader;        //  if true copy MC header
     Bool_t                fDoVertWoRefs;          //  if true then do not copy TRefs in vertices
     Bool_t                fDoVertMain;            //  if true then only copy main vertices
     Bool_t                fDoCleanTracklets;      //  if true then clean tracklets
+    Bool_t                fDoCopyUserTree;        //  if true copy input user tree
+    Bool_t                fDoPhosFilt;            //  if true filter on phos (clusters and min energy cut)
+    Bool_t                fDoRemoveMcParts;       //  if true remove mc particles
+    Bool_t                fCutMcIsPrimary;        //  if true cut on primary mc particles
+    Bool_t                fCutMcIsPhysPrimary;    //  if true cut on physical primary mc particles
+    Bool_t                fCutMcPt;               //  if true cut on mc particles with pT<fCutMcPt
+    Bool_t                fCutMcY;                //  if true cut on mc particles with |y|<fCutMcY
+    Bool_t                fCutMcPhos;             //  if true cut particles not in PHOS
+    Bool_t                fCutMcEmcal;            //  if true cut particles not in Emcal
     UInt_t                fTrials;                //! events seen since last acceptance
     Float_t               fPyxsec;                //! pythia xsection
     Float_t               fPytrials;              //! pythia trials
@@ -105,12 +156,9 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TH1F                 *fHevs;                  //! events processed/accepted
     TH1F                 *fHclus;                 //! cluster distribution
     TH1F                 *fHtrack;                //! track distribution
-    const char           *GetVersion() const { return "1.4"; }
-    virtual Bool_t        KeepTrack(AliAODTrack *t);
-    virtual void          CleanTrack(AliAODTrack *t);
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 6); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 10); // AliAodSkimTask
 };
 #endif

@@ -61,6 +61,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fDebugLevel(0),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
+  fApplyOnlineBadChannelsToSmeared(kFALSE),
   fConfigured(kFALSE),
   fSmearModelMean(nullptr),
   fSmearModelSigma(nullptr),
@@ -458,6 +459,18 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     AliDebugStream(1) << "Trigger Maker: Apply energy smearing" << std::endl;
     for(int icol = 0; icol < fPatchADCSimple->GetNumberOfCols(); icol++){
       for(int irow = 0; irow < fPatchADCSimple->GetNumberOfRows(); irow++){
+        bool doChannel = true;
+        if(fApplyOnlineBadChannelsToSmeared) {
+          int absFastor = -1;
+          fGeometry->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, absFastor);
+          if(absFastor > -1) {
+            if(fBadChannels.find(absFastor) != fBadChannels.end()){
+              AliDebugStream(1) << "In smearing, FastOR " << absFastor << " masked, rejecting." << std::endl;
+              doChannel = false;
+            }
+          }
+        }
+        if(!doChannel) continue;
         double energyorig = (*fPatchADCSimple)(icol, irow) * fADCtoGeV;          // Apply smearing in GeV
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){

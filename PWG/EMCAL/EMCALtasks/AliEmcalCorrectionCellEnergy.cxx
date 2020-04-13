@@ -27,8 +27,10 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fCellEnergyDistAfter(0)
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
-  ,fUseRunDepTempCalibRun2(0)
+  ,fUseNewRunDepTempCalib(0)
+  ,fUseShaperCorrection(0)
   ,fCustomRecalibFilePath("")
+  ,fLoad1DRecalibFactors(0)
 {
 }
 
@@ -52,13 +54,21 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
 
   // check the YAML configuration if the Run2 calibration is requested (default is false)
-  GetProperty("enableRun2TempCalib",fUseRunDepTempCalibRun2);
+  GetProperty("enableNewTempCalib",fUseNewRunDepTempCalib);
+
+  // check the YAML configuration if the shaper nonlinearity correction is requested (default is false)
+  GetProperty("enableShaperCorrection",fUseShaperCorrection);
 
   // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
   GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
 
+  //
+  GetProperty("load1DRecalibFactors",fLoad1DRecalibFactors);
+
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
+
+  fRecoUtils->SetUse1DRecalibration(fLoad1DRecalibFactors);
     
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
@@ -73,9 +83,9 @@ void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistAfter);
   }
 }
@@ -149,10 +159,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   { //if fBasePath specified
     AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
 
-    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read"));
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALRecalib%s.root",fBasePath.Data(), fLoad1DRecalibFactors ? "_1D" : "" ),"read"));
     if (!recalibFile || recalibFile->IsZombie())
     {
-      AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
+      AliFatal(Form("EMCALRecalib%s.root not found in %s", fLoad1DRecalibFactors ? "_1D" : "", fBasePath.Data()));
       return 0;
     }
     
@@ -175,10 +185,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read"));
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALRecalib%s.root", fLoad1DRecalibFactors ? "_1D" : "")).data(),"read"));
     if (!recalibFile || recalibFile->IsZombie())
     {
-      AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALRecalib%s.root was not found", fLoad1DRecalibFactors ? "_1D" : ""));
       return 0;
     }
     
@@ -212,21 +222,36 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   }
   
   //AliDebug(1, recalib->Print());
-  
-  Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i)
-  {
-    TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+ 
+
+  if(fLoad1DRecalibFactors){
+    TH1S *h = fRecoUtils->GetEMCALChannelRecalibrationFactors1D();
     if (h)
       delete h;
-    h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+    h=(TH1S*)recalib->FindObject("EMCALRecalFactors");
+      
     if (!h)
     {
-      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-      continue;
+      AliError("Can not get EMCALRecalFactors");
     }
     h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    fRecoUtils->SetEMCALChannelRecalibrationFactors1D(h);
+  }else{
+    Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i)
+    {
+      TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+      if (h)
+        delete h;
+      h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+      if (!h)
+      {
+        AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+    }
   }
   
   return 1;
@@ -246,16 +271,10 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
     fRecoUtils->InitEMCALRecalibrationFactors();
 
-  // Treat Run2 calibration differently. Loading of two OADB objects required for calibration
-  // Calibration can be turned on or off via: enableRun2TempCalib: true in the YAML configuration
-  if(runRC > 197692){
-
-    AliInfo("Initialising Run2 recalibration factors");
-
-    if(!fUseRunDepTempCalibRun2){
-      AliInfo("Temperature calibration for Run2 not requested");
-      return 0;
-    }
+  // Treat new temp. calibration differently. Loading of two OADB objects required for calibration
+  // Calibration can be turned on or off via: enableNewTempCalib: true in the YAML configuration
+  if(fUseNewRunDepTempCalib){
+    AliInfo("Initialising New recalibration factors");
 
     // two files and two OADB containers are needed for the correction factor
     std::unique_ptr<AliOADBContainer> contTemperature;
@@ -347,8 +366,11 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
   // standard treatment of Run1 data
   } else {
-
-    AliInfo("Initialising recalibration factors");
+    if(runRC > 197692){
+      AliInfo("Temperature calibration could not be loaded. Please use enableNewTempCalib: true in your configuration file for Run2 data!");
+      return 0;
+    }
+    AliInfo("Initialising Run1 recalibration factors");
 
     std::unique_ptr<AliOADBContainer> contRF;
     std::unique_ptr<TFile> runDepRecalibFile;
@@ -470,6 +492,10 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
         AliWarning(Form("No Temperature recalibration available: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
       }
     }
+  }
+  if(fUseShaperCorrection)
+  {
+    fRecoUtils->SetUseTowerShaperNonlinarityCorrection(kTRUE);
   }
   return runChanged;
 }

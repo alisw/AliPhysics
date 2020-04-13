@@ -2,11 +2,15 @@
 fbellini@cern.ch - created on 25/08/2017
 Configuration script for f0(980) analysis
 ****************************************************************************/
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
 
-Bool_t ConfigF0(AliRsnMiniAnalysisTask *task, 
-		Bool_t                 isMC, 
+Bool_t ConfigF0(AliRsnMiniAnalysisTask *task = 0x0, 
+		Bool_t                 isMC = kFALSE, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2
-		AliRsnCutSet           *cutsPair,             //cuts on the pair
+		AliRsnCutSet           *cutsPair = 0x0,             //cuts on the pair
 		Bool_t                 enaMultSel = kTRUE,    //enable multiplicity axis
       		Float_t                masslow = 0.3,         //inv mass axis low edge 
 		Float_t                massup = 1.3,          //inv mass axis upper edge 
@@ -48,9 +52,11 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   //QA plots 
   if (enableMonitor){
     Printf("======== Cut monitoring enabled");
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data());
-    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+#ifdef __CINT__
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+#endif
+    AddMonitorOutput(isMC, cutSetQuality->GetMonitorOutput(), monitorOpt.Data(), 0);
+    AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data(), 0);
   }  
 
   //-----------------------
@@ -98,7 +104,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
   Char_t bgTemplateC1[7] = {'+', '+', '+', '+', '+', '+', '+'};
   Char_t bgTemplateC2[7] = {'-', '-', '-', '-', '-', '-', '-'};
   Int_t bgTemplatePDG[7] = {113, 223, 313, -313, 310, 333, 225};
-  Int_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
+  Double_t bgTemplateM[7]   = {775.26, 8.49, 891.66, 891.66, 497.611, 1019.461, 1275.5};
   RSNPID bgID1[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
   RSNPID bgID2[7] = {AliRsnDaughter::kPion, AliRsnDaughter::kPion,AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion, AliRsnDaughter::kKaon, AliRsnDaughter::kPion};
 
@@ -146,7 +152,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
     outres->SetCutID(0, icut1);
     outres->SetCutID(1, icut2);
     outres->SetCharge(0, charge1[0]);
-    outres->SetCharge(1, charge2[0])
+    outres->SetCharge(1, charge2[0]);
     outres->SetDaughter(0, d1);
     outres->SetDaughter(1, d2);
     outres->SetMotherPDG(pdgCode);
@@ -164,7 +170,7 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
     outrap->SetCutID(0, icut1);
     outrap->SetCutID(1, icut2);
     outrap->SetCharge(0, charge1[0]);
-    outrap->SetCharge(1, charge2[0])
+    outrap->SetCharge(1, charge2[0]);
     outrap->SetDaughter(0, d1);
     outrap->SetDaughter(1, d2);
     outrap->SetMotherPDG(pdgCode);
@@ -198,26 +204,26 @@ Bool_t ConfigF0(AliRsnMiniAnalysisTask *task,
     outmy->AddAxis(etaID, 200, -1., 1.);
 
     //f2 GENERATED PAIRS
-    AliRsnMiniOutput * outm = task->CreateOutput("motherf2", output.Data(),"MOTHER");
-    outm->SetDaughter(0, d1);
-    outm->SetDaughter(1, d2);
-    outm->SetMotherPDG(bgTemplatePDG[6]);
-    outm->SetMotherMass(bgTemplateM[6]);
-    outm->SetPairCuts(cutsPair);
-    outm->AddAxis(imID, nbins, masslow, massup);
-    outm->AddAxis(ptID, 200, 0.0, 20.0);
-    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+    AliRsnMiniOutput * outm2 = task->CreateOutput("motherf2", output.Data(),"MOTHER");
+    outm2->SetDaughter(0, d1);
+    outm2->SetDaughter(1, d2);
+    outm2->SetMotherPDG(bgTemplatePDG[6]);
+    outm2->SetMotherMass(bgTemplateM[6]);
+    outm2->SetPairCuts(cutsPair);
+    outm2->AddAxis(imID, nbins, masslow, massup);
+    outm2->AddAxis(ptID, 200, 0.0, 20.0);
+    if (enaMultSel) outm2->AddAxis(multID, 100, 0.0, 100.0);
 
     //f2 GENERATED PAIRS
-    AliRsnMiniOutput * outmy = task->CreateOutput("motherf2Rap", output.Data(),"MOTHER");
-    outmy->SetDaughter(0, d1);
-    outmy->SetDaughter(1, d2);
-    outmy->SetMotherPDG(bgTemplatePDG[6]);
-    outmy->SetMotherMass(bgTemplateM[6]);
-    outmy->SetPairCuts(cutsPair);
-    outmy->AddAxis(ptID, 160, 0.0, 16.0);
-    outmy->AddAxis(yID,  120, -0.6, 0.6);
-    outmy->AddAxis(etaID, 200, -1., 1.);
+    AliRsnMiniOutput * outmy2 = task->CreateOutput("motherf2Rap", output.Data(),"MOTHER");
+    outmy2->SetDaughter(0, d1);
+    outmy2->SetDaughter(1, d2);
+    outmy2->SetMotherPDG(bgTemplatePDG[6]);
+    outmy2->SetMotherMass(bgTemplateM[6]);
+    outmy2->SetPairCuts(cutsPair);
+    outmy2->AddAxis(ptID, 160, 0.0, 16.0);
+    outmy2->AddAxis(yID,  120, -0.6, 0.6);
+    outmy2->AddAxis(etaID, 200, -1., 1.);
   }
 
   return kTRUE;

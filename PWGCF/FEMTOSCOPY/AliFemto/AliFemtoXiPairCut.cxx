@@ -88,14 +88,11 @@ TList *AliFemtoXiPairCut::ListSettings()
   TList *tListSetttings = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoXiPairCut.%s=%f",
-             ptrnI[] = "AliFemtoXiPairCut.%s=%d",
-             ptrnL[] = "AliFemtoXiPairCut.%s=%ld";
+  const TString prefix = "AliFemtoXiPairCut.";
 
-
-  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+  tListSetttings->Add(new TObjString(prefix + Form("datatype=%d", fDataType)));
+  tListSetttings->Add(new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)));
+  tListSetttings->Add(new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)));
 
   return tListSetttings;
 }

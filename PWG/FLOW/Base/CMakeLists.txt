@@ -18,7 +18,9 @@ set(MODULE PWGflowBase)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -59,6 +61,7 @@ set(SRCS
   AliFlowAnalysisWithNestedLoops.cxx
   AliFlowOnTheFlyEventGenerator.cxx
   AliFlowAnalysisWithMultiparticleCorrelations.cxx
+  AliAnalysisTaskZDCEP.cxx
   )
 
 # Headers from sources
@@ -74,7 +77,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS EG Physics Hist MathCore RIO Tree Core)
+set(LIBDEPS EG Physics Hist MathCore RIO Tree Core ANALYSISalice)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

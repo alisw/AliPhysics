@@ -39,7 +39,6 @@ class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
-class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
@@ -216,36 +215,6 @@ public:
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
     //---------------------------------------------------------------------------------------
     
-    //---------------------------------------------------------------------------------------
-    // A simple struct to handle FMD hits information
-    // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
-    //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
-    //        renamed to 'FMDhit' in order to avoid any confusion.
-    struct FMDhit {
-        Float_t eta;
-        Float_t phi;
-        Float_t weight;
-        //Constructor
-        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
-        :eta(_eta), phi(_phi), weight(_weight) {};
-    };
-    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhit> FMDhits;
-    //---------------------------------------------------------------------------------------
-    AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
-    //---------------------------------------------------------------------------------------
-    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b);
-    //Helper functions
-    Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
-    Double_t Det(Double_t a00,Double_t a01,Double_t a02,
-                 Double_t a10,Double_t a11,Double_t a12,
-                 Double_t a20,Double_t a21,Double_t a22) const;
-    void Evaluate(const Double_t *h, Double_t t,
-                  Double_t r[3],  //radius vector
-                  Double_t g[3],  //first defivatives
-                  Double_t gg[3]); //second derivatives
-    Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
-    //---------------------------------------------------------------------------------------
-    
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
@@ -329,11 +298,6 @@ private:
     Float_t fAmplitudeV0A; //!
     Float_t fAmplitudeV0C; //!
     
-    //FMD info for OOB pileup study
-    Float_t fNHitsFMDA; //!
-    Float_t fNHitsFMDC; //!
-    
-    
     
     //===========================================================================================
     //   Variables for V0 Tree
@@ -383,14 +347,46 @@ private:
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
     
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSClusters0;
+    Bool_t fTreeVariablePosITSClusters1;
+    Bool_t fTreeVariablePosITSClusters2;
+    Bool_t fTreeVariablePosITSClusters3;
+    Bool_t fTreeVariablePosITSClusters4;
+    Bool_t fTreeVariablePosITSClusters5;
+    
+    Bool_t fTreeVariableNegITSClusters0;
+    Bool_t fTreeVariableNegITSClusters1;
+    Bool_t fTreeVariableNegITSClusters2;
+    Bool_t fTreeVariableNegITSClusters3;
+    Bool_t fTreeVariableNegITSClusters4;
+    Bool_t fTreeVariableNegITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSSharedClusters0;
+    Bool_t fTreeVariablePosITSSharedClusters1;
+    Bool_t fTreeVariablePosITSSharedClusters2;
+    Bool_t fTreeVariablePosITSSharedClusters3;
+    Bool_t fTreeVariablePosITSSharedClusters4;
+    Bool_t fTreeVariablePosITSSharedClusters5;
+    
+    Bool_t fTreeVariableNegITSSharedClusters0;
+    Bool_t fTreeVariableNegITSSharedClusters1;
+    Bool_t fTreeVariableNegITSSharedClusters2;
+    Bool_t fTreeVariableNegITSSharedClusters3;
+    Bool_t fTreeVariableNegITSSharedClusters4;
+    Bool_t fTreeVariableNegITSSharedClusters5;
+    
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
     Float_t fTreeVariablePosTOFExpTDiff;      //!
+    Float_t fTreeVariableNegTOFSignal;      //!
+    Float_t fTreeVariablePosTOFSignal;      //!
+    Int_t   fTreeVariableNegTOFBCid; //!
+    Int_t   fTreeVariablePosTOFBCid; //!
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
-    Float_t fTreeVariableNHitsFMDA; //!
-    Float_t fTreeVariableNHitsFMDC; //!
     
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality_V0A; //!
@@ -449,6 +445,10 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //ChiSquares
+    Float_t fTreeCascVarChiSquareV0;
+    Float_t fTreeCascVarChiSquareCascade;
     
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
@@ -539,6 +539,7 @@ private:
     Float_t fTreeCascVarMagField; // for X-checks
     
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
+    Float_t fTreeCascVarV0ChiSquare; //! //V0 chi2 (defined only for on-the-fly or refitted offline)
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
@@ -559,11 +560,15 @@ private:
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
     Float_t fTreeCascVarBachTOFExpTDiff; //!
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
+    Int_t   fTreeCascVarNegTOFBCid; //!
+    Int_t   fTreeCascVarPosTOFBCid; //!
+    Int_t   fTreeCascVarBachTOFBCid; //!
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!
-    Float_t fTreeCascVarNHitsFMDA; //!
-    Float_t fTreeCascVarNHitsFMDC; //!
     
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality_V0A; //!
@@ -594,6 +599,58 @@ private:
     Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
     Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSClusters0;
+    Bool_t fTreeCascVarPosITSClusters1;
+    Bool_t fTreeCascVarPosITSClusters2;
+    Bool_t fTreeCascVarPosITSClusters3;
+    Bool_t fTreeCascVarPosITSClusters4;
+    Bool_t fTreeCascVarPosITSClusters5;
+    
+    Bool_t fTreeCascVarNegITSClusters0;
+    Bool_t fTreeCascVarNegITSClusters1;
+    Bool_t fTreeCascVarNegITSClusters2;
+    Bool_t fTreeCascVarNegITSClusters3;
+    Bool_t fTreeCascVarNegITSClusters4;
+    Bool_t fTreeCascVarNegITSClusters5;
+    
+    Bool_t fTreeCascVarBachITSClusters0;
+    Bool_t fTreeCascVarBachITSClusters1;
+    Bool_t fTreeCascVarBachITSClusters2;
+    Bool_t fTreeCascVarBachITSClusters3;
+    Bool_t fTreeCascVarBachITSClusters4;
+    Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
+    
+    //Uncertainty information on mass (from KF) for testing purposes
+    Float_t fTreeCascVarV0LambdaMassError;
+    Float_t fTreeCascVarV0AntiLambdaMassError;
+    
+    Bool_t fTreeCascVarBachIsKink;
+    Bool_t fTreeCascVarPosIsKink;
+    Bool_t fTreeCascVarNegIsKink;
     
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
@@ -643,7 +700,7 @@ private:
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb&); // not implemented
     
-    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb, 2);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb, 3);
     //1: first implementation
 };
 

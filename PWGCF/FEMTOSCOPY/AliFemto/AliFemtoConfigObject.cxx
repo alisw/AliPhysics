@@ -8,12 +8,15 @@
 #include <TObjArray.h>
 #include <TCollection.h>
 
+#include <TMD5.h>
 #include <TBrowser.h>
 #include <TPad.h>
 #include <TROOT.h>
 
 #include <regex>
+#include <cmath>
 #include <cctype>
+#include <climits>
 #include <sstream>
 #include <iostream>
 #include <exception>
@@ -82,6 +85,90 @@ AliFemtoConfigObject::operator==(const AliFemtoConfigObject &rhs) const
 
 //  const AliFemtoConfigObject::TypeTagEnum_t AliFemtoConfigObject::enum_from_type< AliFemtoConfigObject::BoolValue_t >::value = static_cast<AliFemtoConfigObject::TypeTagEnum_t>(1);
 
+static TString fmt_number(const double f)
+{
+  double int_part = NAN,
+         frac_part = std::modf(f, &int_part);
+
+  // 7-digit auto-exponentiation
+  const char *fmt = "%0.7g";
+
+  if (frac_part == 0.0) {
+    // if 'short' integer, print with trailing '.0' to prevent '%g'
+    // from truncating decimal
+    if (std::log10(std::fabs(int_part) + 0.5) < 10.0) {
+      fmt = "%0.1f";
+    }
+  }
+  return TString::Format(fmt, f);
+}
+
+static TString fmt_range(const AliFemtoConfigObject::RangeValue_t r)
+{
+  const double
+    frac1_part = std::fmod(r.first, 1.0),
+    frac2_part = std::fmod(r.second, 1.0);
+
+  const char *fmt = "%g:%g";
+
+  if (frac1_part == 0 && frac2_part != 0) {
+    fmt = "%0.1f:%g";
+  }
+  else if (frac1_part != 0 && frac2_part == 0) {
+    fmt = "%g:%0.1f";
+  }
+
+  return TString::Format(fmt, r.first, r.second);
+}
+
+static TString fmt_range(const AliFemtoConfigObject::RangeListValue_t &rlist)
+{
+  if (rlist.empty()) {
+    return "()";
+  }
+
+  bool all_integers = true,
+       all_floats = true;
+
+  auto is_int = [] (double f)
+    { return std::fmod(f, 1.0) == 0.0; };
+
+  for (auto &r : rlist) {
+    const bool int_1st = is_int(r.first),
+               int_2nd = is_int(r.second);
+
+    all_integers &= int_1st && int_2nd;
+    all_floats &= !int_1st && !int_2nd;
+  }
+
+  auto fmt = [=] (double x)
+    {
+      if (all_floats || all_integers || !is_int(x)) {
+        return Form("%g", x);
+      }
+      else {
+        return Form("%0.1f", x);
+      }
+    };
+
+  auto it = rlist.cbegin(),
+       end = rlist.cend();
+
+  TString result = TString::Format("(%s:%s", fmt(it->first), fmt(it->second));
+
+  while (++it != end) {
+    if (it->first == std::prev(it)->second) {
+      result += TString::Format(":%s", fmt(it->second));
+    } else {
+      result += TString::Format(", %s:%s", fmt(it->first), fmt(it->second));
+    }
+  }
+
+  result += ')';
+  return result;
+}
+
+
 TString
 AliFemtoConfigObject::Stringify(bool pretty, int deep) const
 {
@@ -90,9 +177,10 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
     case kEMPTY: return "";
     case kBOOL: return fValueBool ? "true" : "false";
     case kINT: return TString::Format("%lld", fValueInt);
-    case kFLOAT: return TString::Format("%g", fValueFloat);
+    case kFLOAT: return fmt_number(fValueFloat);
     case kSTRING: return TString::Format("'%s'", fValueString.c_str());
-    case kRANGE: return TString::Format("%g:%g", fValueRange.first, fValueRange.second);
+    case kRANGE: return fmt_range(fValueRange);
+    case kRANGELIST: return fmt_range(fValueRangeList);
     case kARRAY: {
       TString result = "[";
       auto it = fValueArray.cbegin(),
@@ -104,23 +192,6 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
         result += ", " + it->Stringify(pretty);
       }
       result += ']';
-      return result;
-    }
-    case kRANGELIST: {
-      TString result = '(';
-      auto it = fValueRangeList.cbegin(),
-          end = fValueRangeList.cend();
-      if (it != end) {
-        result += TString::Format("%g:%g", it->first, it->second);
-      }
-      for (++it; it != end; ++it) {
-        if (it->first == std::prev(it)->second) {
-          result += TString::Format(":%g", it->second);
-        } else {
-          result += TString::Format(", %g:%g", it->first, it->second);
-        }
-      }
-      result += ')';
       return result;
     }
     case kMAP: {
@@ -160,7 +231,7 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
           prefix = (pretty)
                  ? ((STRINGIFY_COMPACT) ? "\n" + TString(' ', deep*INDENTSTEP) + ", "
                                         : "," + prefix)
-                 : ", ";
+                 : TString(", ");
           prefix_needs_update = false;
         }
       }
@@ -968,7 +1039,6 @@ AliFemtoConfigObject
 AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
 {
   std::smatch match;
-  // std::cout << "Parsing value:\n";
 
   // skip leading whitespace
   while (it != stop && std::isspace(*it)) {
@@ -1034,22 +1104,36 @@ namespace std {
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
-    ULong_t operator()(ArrayValue_t const& array) const {
-      using Item_t = ArrayValue_t::value_type;
+    ULong_t operator()(ArrayValue_t const& array) const
+      {
+        using Item_t = ArrayValue_t::value_type;
 
-      return std::accumulate(
-        array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
-        [] (ULong_t hash, const Item_t &obj) {
-          return obj.Hash() ^ (hash << 1); });
-    }
+        return std::accumulate(
+          array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
+          [=] (ULong_t hash, const Item_t &obj)
+            {
+              const Int_t
+                lshift = 7,
+                rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+              return obj.Hash() ^ ((hash << lshift) | (hash >> rshift));
+            });
+      }
 
     ULong_t operator()(RangeListValue_t const& list) const {
       using Item_t = RangeListValue_t::value_type;
 
       return std::accumulate(
         list.cbegin(), list.cend(), AliFemtoConfigObject::EMPTY_RANGELIST_HASH,
-        [] (ULong_t hash, const Item_t &pair) {
-          return std::hash<AliFemtoConfigObject>{}(pair) ^ (hash << 1); });
+        [] (ULong_t hash, const Item_t &pair)
+          {
+            const Int_t
+              lshift = 9,
+              rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+            return std::hash<AliFemtoConfigObject>{}(pair)
+                   ^ ((hash << lshift) | (hash >> rshift));
+          });
     }
 
     ULong_t operator()(MapValue_t const& map) const {
@@ -1058,7 +1142,11 @@ namespace std {
       return std::accumulate(
         map.cbegin(), map.cend(), AliFemtoConfigObject::EMPTY_MAP_HASH,
         [] (ULong_t hash, const Item_t &pair) {
-          return hash
+          const Int_t
+            lshift = 9,
+            rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+          return ((hash << lshift) | (hash >> rshift))
                  ^ (std::hash<AliFemtoConfigObject::Key_t>{}(pair.first) << 1)
                  ^ (pair.second.Hash() << 2); });
     }
@@ -1071,6 +1159,21 @@ namespace std {
 ULong_t
 AliFemtoConfigObject::Hash() const
 {
+  const TString as_string = Stringify();
+
+  TMD5 md5;
+
+  auto *data = reinterpret_cast<const UChar_t*>(as_string.Data());
+  md5.Update(data, as_string.Length());
+
+  UChar_t digest[16];
+  md5.Final(digest);
+
+  ULong_t hash = reinterpret_cast<ULong_t&>(digest);
+  return hash;
+
+
+  // below lies the old implementation
   static const ULong_t MAGIC_HASH_NUMBER = 3527539;
 
   ULong_t result = MAGIC_HASH_NUMBER ^ std::hash<int>{}(fTypeTag);

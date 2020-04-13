@@ -33,7 +33,7 @@ public:
   virtual AliFemtoString Report() = 0;    ///< User-written method to return string describing cuts
   virtual TList *ListSettings();          ///< User-written list of settings which is stored in the result file
 
-  double Mass() { return fMass; };        ///< Mass of the particle being selected
+  double Mass() const { return fMass; };  ///< Mass of the particle being selected
   virtual void SetMass(const double &mass) { fMass = mass; };
 
   virtual AliFemtoParticleCut* Clone() { return NULL; }

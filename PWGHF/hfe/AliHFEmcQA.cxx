@@ -532,8 +532,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("pionspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("pionspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
 	}
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==2)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
@@ -552,8 +552,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("etaspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("etaspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
           } 
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==2||(id2-id1)==3)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
@@ -569,8 +569,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("omegaspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("omegaspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
           }
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==1||(id2-id1)==2)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
@@ -586,8 +586,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("phispectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("phispectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
           } 
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==1)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
@@ -603,8 +603,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("etapspectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("etapspectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
           }
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==2||(id2-id1)==3)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
@@ -620,8 +620,8 @@ void AliHFEmcQA::GetMesonKine()
             fMCQACollection->Fill(Form("rhospectraLog_centrbin%i",fCentrality),mctrack0->Pt());
             fMCQACollection->Fill(Form("rhospectraLog2D_centrbin%i",fCentrality),mcsource,mctrack0->Pt());
           }
-          id1=mctrack0->GetFirstDaughter();
-          id2=mctrack0->GetLastDaughter();
+          id1=mctrack0->GetDaughterFirst();
+          id2=mctrack0->GetDaughterLast();
           if(!((id2-id1)==1)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;

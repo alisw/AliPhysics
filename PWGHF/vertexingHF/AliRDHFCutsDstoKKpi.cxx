@@ -200,7 +200,14 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
 
   return *this;
 }
-
+//---------------------------------------------------------------------------
+AliRDHFCutsDstoKKpi::~AliRDHFCutsDstoKKpi(){
+  //
+  // Destructor
+  //
+  if(fMaxd0MeasMinusExp) delete [] fMaxd0MeasMinusExp;
+  if(fMaxd0) delete [] fMaxd0;
+}
 //---------------------------------------------------------------------------
 void AliRDHFCutsDstoKKpi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
@@ -251,11 +258,14 @@ Int_t AliRDHFCutsDstoKKpi::PreSelect(TObjArray aodTracks){
   
   Double_t ptD=TMath::Sqrt(px*px+py*py);
   
-  Int_t pidoptmem = fPidOption;
-  fPidOption=kConservative;
-  retVal=IsSelectedPID(ptD,aodTracks);
-  fPidOption=pidoptmem;
-  
+  if(fUsePID)
+  {  
+    Int_t pidoptmem = fPidOption;
+    fPidOption=kConservative;
+    retVal=IsSelectedPID(ptD,aodTracks);
+    fPidOption=pidoptmem;
+  }
+
   if(fUsePreselect==1) return retVal;
   
   Int_t ptbin=PtBin(ptD);
@@ -291,16 +301,16 @@ Int_t AliRDHFCutsDstoKKpi::PreSelect(TObjArray aodTracks){
     
     Double_t mass01phi2=ComputeInvMass2(track[1],track[2],321,321);
     
-    if(mass01phi2<minmassphi2 || mass01phi2>maxmassphi2) okDsKKpi=kFALSE;
+    if(mass01phi2<minmassphi2 || mass01phi2>maxmassphi2) okDspiKK=kFALSE;
     
-    if(!okDsKKpi && fCheckK0star){
+    if(!okDspiKK && fCheckK0star){
       //compute min and max with 20% tolerance
       Double_t minmassK0s2=(mK0starPDG-fCutsRD[GetGlobalIndex(13,ptbin)]*1.2)*(mK0starPDG-fCutsRD[GetGlobalIndex(13,ptbin)]*1.2);
       Double_t maxmassK0s2=(mK0starPDG+fCutsRD[GetGlobalIndex(13,ptbin)]*1.2)*(mK0starPDG+fCutsRD[GetGlobalIndex(13,ptbin)]*1.2);
       
       Double_t mass12K0s=ComputeInvMass2(track[0],track[1],211,321);
       
-      if(mass12K0s<minmassK0s2 || mass12K0s>maxmassK0s2) okDsKKpi=kFALSE;
+      if(mass12K0s<minmassK0s2 || mass12K0s>maxmassK0s2) okDspiKK=kFALSE;
     }
   }
   
@@ -808,6 +818,22 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
  
+    //sec vert
+    Double_t sigmavert=d->GetSigmaVert(aod);
+    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    // decay length and pointing angle
+    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
+      return 0;
+    }
+
     Double_t mDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
     Double_t mDsKKpi=d->InvMassDsKKpi();
     Double_t mDspiKK=d->InvMassDspiKK();
@@ -817,8 +843,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
-
-
 
     // cuts on resonant decays (via Phi or K0*)
     if(fCutOnResonances){
@@ -893,13 +917,8 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
 
-    // Cuts on candidate triplet
 
 
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx); 
-      return 0;
-    }
      
     if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
        d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
@@ -908,10 +927,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
 
-    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
-    }
 
 
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
@@ -921,12 +936,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     }
 
    
-    //sec vert
-    Double_t sigmavert=d->GetSigmaVert(aod);
-    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
-    }
     
     // decay length XY
     if(d->DecayLengthXY()<fCutsRD[GetGlobalIndex(16,ptbin)]){
@@ -1299,4 +1308,29 @@ Double_t AliRDHFCutsDstoKKpi::ComputeInvMass2(AliAODTrack* track1, AliAODTrack* 
   Double_t E12 = TMath::Sqrt(mass1*mass1+px1*px1+py1*py1+pz1*pz1)+TMath::Sqrt(mass2*mass2+px2*px2+py2*py2+pz2*pz2);
   
   return E12*E12-((px1+px2)*(px1+px2)+(py1+py2)*(py1+py2)+(pz1+pz2)*(pz1+pz2));
+}
+
+void AliRDHFCutsDstoKKpi::PrintAll() const {
+  //
+  // print all cuts values
+  // 
+  AliRDHFCuts::PrintAll();
+  if(fUsed0MeasMinusExpCut){
+    printf("Cuts on d0meas-d0exp:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0MeasMinusExp[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0meas-d0exp:\n");
+  }
+  if(fUsed0Cut){
+    printf("Cuts on d0:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0\n");
+  }
 }

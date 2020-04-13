@@ -206,8 +206,8 @@ class AliAnalysisTaskTriggeredBF : public AliAnalysisTaskSE {
 class AliBFBasicParticle : public AliVParticle
 { 
   public:
- AliBFBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Double_t correction, Int_t label=-1)
-   : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fCorrection(correction), fLabel(label)
+ AliBFBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Double_t correction, Int_t TrigOrAssoc=-1, Int_t label=-1, Int_t motherLabel=-1)
+   : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fCorrection(correction),  fTrigOrAssoc(TrigOrAssoc), fLabel(label), fMotherLabel(motherLabel)
     {
     }
 
@@ -238,7 +238,9 @@ class AliBFBasicParticle : public AliVParticle
     virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
     
     virtual Short_t Charge()      const { return fCharge; }
-    virtual Int_t   GetLabel()    const { return fLabel; }
+    virtual Int_t   GetLabel()    const { return fLabel; } 
+    virtual Int_t   GetMotherLabel()    const { return fMotherLabel; }
+    virtual Int_t   GetTrigOrAssoc()    const { return fTrigOrAssoc; }
 
     virtual Double_t Correction()        const { return fCorrection; } //=============================correction
     
@@ -253,8 +255,10 @@ class AliBFBasicParticle : public AliVParticle
     Short_t fCharge;   // charge
     Double_t fCorrection; //============================correction
     Int_t  fLabel;      //label 
+    Int_t  fMotherLabel; //mother label
+    Int_t  fTrigOrAssoc; //trigger or associated particle
 
-    ClassDef( AliBFBasicParticle, 2); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+    ClassDef( AliBFBasicParticle, 4); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 #endif

@@ -23,8 +23,6 @@
 
 #include "AliHFTreeHandler.h"
 
-using std::vector;
-
 class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
 {
   public:
@@ -34,24 +32,24 @@ class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerDstartoKpipi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree(); //to be called for each event, not each candidate!
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fCosThetaStar; ///vector of candidate cos theta star
-    vector<float> fImpParProd; ///vector of D0 product of impact parameter
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fCosThetaStar; ///candidate cos theta star
+    float fImpParProd; ///D0 product of impact parameter
+    float fNormd0MeasMinusExp; ///candidate topomatic variable
+    float fAngleD0dkpPisoft; ///angle between D0 decay plane and soft pion
 
-    vector<float> fInvMass_D0; ///vector of candidate invariant mass D0
-    vector<float> fPt_D0; ///vector of D0 pt
-    vector<float> fY_D0; ///vector of D0 rapidity
-    vector<float> fEta_D0; ///vector of D0 pseudorapidity
-    vector<float> fPhi_D0; ///vector of D0 azimuthal angle
+    float fInvMass_D0; ///candidate invariant mass D0
+    float fPt_D0; ///D0 pt
+    float fY_D0; ///D0 rapidity
+    float fEta_D0; ///D0 pseudorapidity
+    float fPhi_D0; ///D0 azimuthal angle
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerDstartoKpipi,2); ///
+    ClassDef(AliHFTreeHandlerDstartoKpipi,4); ///
     /// \endcond
 };
 #endif

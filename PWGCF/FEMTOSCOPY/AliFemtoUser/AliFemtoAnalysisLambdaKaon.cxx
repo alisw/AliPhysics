@@ -1782,7 +1782,7 @@ void AliFemtoAnalysisLambdaKaon::SetAnalysis(AliFemtoEventCut* aEventCut, AliFem
   AliFemtoParticleCut* tPartCut2 = aPartCut2->Clone(); 
   AliFemtoPairCut* tPairCut = aPairCut->Clone();
 
-  AddCutMonitors(tEventCut,tPartCut1,tPartCut2,tPairCut);
+  if(fAnalysisParams.addCutMonitors) AddCutMonitors(tEventCut,tPartCut1,tPartCut2,tPairCut);
 
   SetEventCut(tEventCut);
   SetFirstParticleCut(tPartCut1);
@@ -1847,6 +1847,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.removeMisidentifiedMCParticles = false;
   tReturnParams.setV0SharedDaughterCut = true;
 
+  tReturnParams.addCutMonitors = true;
   tReturnParams.monitorEvCutPassOnly = false;
   tReturnParams.monitorPart1CutPassOnly = false;
   tReturnParams.monitorPart2CutPassOnly = false;
@@ -2019,8 +2020,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.v0Type = 2;
 
   tReturnParams.mass = K0ShortMass;
-  tReturnParams.minInvariantMass = K0ShortMass-0.013677;
-  tReturnParams.maxInvariantMass = K0ShortMass+0.020323;
+  tReturnParams.minInvariantMass = K0ShortMass-0.017614; //0.480
+  tReturnParams.maxInvariantMass = K0ShortMass+0.017386; //0.515
 
   tReturnParams.useLooseInvMassCut = true;
   tReturnParams.minLooseInvMass = K0ShortMass-0.070;

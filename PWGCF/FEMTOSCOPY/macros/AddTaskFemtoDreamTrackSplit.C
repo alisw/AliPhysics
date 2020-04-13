@@ -2,12 +2,12 @@
 #include "TSystem.h"
 AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     bool isMC = false, bool isESD = false, TString CentEst = "kInt7",
-    bool notpp = true,                       // 1
+    bool notpp = false,                      // 1
     bool fineBinning = true,                 // 2
     bool DCAPlots = false,                   // 3
     bool CPAPlots = false,                   // 4
     bool MomReso = false,                    // 5
-    bool etaPhiPlotsAtTPCRadii = false,      // 6
+    bool etaPhiPlotsAtTPCRadii = true,       // 6
     bool CombSigma = false,                  // 7
     bool PileUpRej = true,                   // 8
     bool mTkTPlot = false,                   // 9
@@ -15,8 +15,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     bool MultvsCentPlot = false,             // 11
     bool dPhidEtaPlots = false,              // 12
     bool eventMixing = true,                 // 13
-    bool phiSpin = true,                     // 14
-    bool stravinskyPhiSpin = true,           // 15
+    bool phiSpin = false,                    // 14
+    bool stravinskyPhiSpin = false,          // 15
     bool ContributionSplitting = false,      // 16
     bool ContributionSplittingDaug = false,  // 17
     bool RunNumberQA = false,                // 18
@@ -59,7 +59,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   }
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
-  evtCuts->SetMinimalBooking(true);
+  evtCuts->SetMinimalBooking(false);
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(MultvsCentPlot);
   if (SphericityRange != 0) {
@@ -84,16 +84,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     }
   }
   if (suffix == "1") {
-    evtCuts->SetMultiplicityPercentileMax(10.);
+    evtCuts->SetMultiplicityPercentileMax(25.);
   } else if (suffix == "2") {
-    evtCuts->SetMultiplicityPercentileMax(1.);
+    evtCuts->SetMultiplicityPercentileMax(20.);
   } else if (suffix == "3") {
-    evtCuts->SetMultiplicityPercentileMax(0.1);
+    evtCuts->SetMultiplicityPercentileMax(15.);
   } else if (suffix == "4") {
-    evtCuts->SetMultiplicityPercentileMax(0.05);
+    evtCuts->SetMultiplicityPercentileMax(10.);
   } else if (suffix == "5") {
-    evtCuts->SetMultiplicityPercentileMax(0.01);
+    evtCuts->SetMultiplicityPercentileMax(5.);
+  } else if (suffix == "6") {
+    evtCuts->SetMultiplicityPercentileMax(1.);
   }
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, CombSigma, ContributionSplitting);
@@ -105,7 +108,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     TrackCuts->SetFilterBit(FilterBit);
   }
   TrackCuts->SetCutCharge(1);
-  TrackCuts->SetMinimalBooking(true);
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma,
                                              ContributionSplitting);
@@ -117,7 +119,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     AntiTrackCuts->SetFilterBit(FilterBit);
   }
   AntiTrackCuts->SetCutCharge(-1);
-  AntiTrackCuts->SetMinimalBooking(true);
   AliFemtoDreamv0Cuts *v0Cuts;
   AliFemtoDreamv0Cuts *Antiv0Cuts;
   AliFemtoDreamCascadeCuts *CascadeCuts;
@@ -135,7 +136,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   v0Cuts->SetPDGCodePosDaug(2212);  // Proton
   v0Cuts->SetPDGCodeNegDaug(211);   // Pion
   v0Cuts->SetPDGCodev0(3122);       // Lambda
-  v0Cuts->SetMinimalBooking(true);
   Antiv0Cuts =
       AliFemtoDreamv0Cuts::LambdaCuts(isMC, CPAPlots, ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug =
@@ -149,7 +149,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   Antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
-  Antiv0Cuts->SetMinimalBooking(true);
 
   // Cascade Cuts
   CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
@@ -168,7 +167,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-211);
-  CascadeCuts->SetMinimalBooking(true);
 
   AntiCascadeCuts =
       AliFemtoDreamCascadeCuts::XiCuts(isMC, ContributionSplitting);
@@ -190,7 +188,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(-211);
-  AntiCascadeCuts->SetMinimalBooking(true);
 
   // Thanks, CINT - will not compile due to an illegal constructor
   // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -357,7 +354,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
-  config->SetInvMassPairs(InvMassPairs);
   if (kTCentPlot) {
     std::vector<float> centBins;
     centBins.push_back(20);
@@ -365,6 +361,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     centBins.push_back(90);
     config->SetCentBins(centBins);
   }
+  config->SetExtendedQAPairs(config->GetStandardPairs());
   config->SetZBins(ZVtxBins);
   if (MomReso) {
     if (isMC) {
@@ -375,12 +372,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamTrackSplit(
     }
   }
   if (etaPhiPlotsAtTPCRadii) {
-    if (isMC) {
-      config->SetPhiEtaBinnign(true);
-    } else {
-      std::cout << "You are trying to request the Eta Phi Plots without MC "
-                   "Info; fix it wont work! \n";
-    }
+    config->SetPhiEtaBinnign(true);
   }
   if (DeltaEtaDeltaPhiCut) {
     config->SetDeltaEtaMax(0.01);

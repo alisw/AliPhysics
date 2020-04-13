@@ -924,8 +924,8 @@ void AliAnalysisTaskEMCALMesonGGSDMpPb::UserExec(Option_t *)
       }
       
       
-      Int_t d1 = mcP->GetFirstDaughter();
-      Int_t d2 = mcP->GetLastDaughter();
+      Int_t d1 = mcP->GetDaughterFirst();
+      Int_t d2 = mcP->GetDaughterLast();
       
       if (d1<0)  continue;
       if (d2<0)  d2=d1;      

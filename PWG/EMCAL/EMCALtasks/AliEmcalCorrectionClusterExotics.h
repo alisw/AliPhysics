@@ -7,7 +7,7 @@ class TH2F;
 
 /**
  * @class AliEmcalCorrectionClusterExotics
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Exotic cluster removal in the EMCal correction framework.
  *
  * "Exotic" clusters are energetic clusters where most energy deposition is concentrated in one single cell. This clusters are not reproduced in MC simulations and are believed to arise from neutrons showering directly into the APD. These clusters need to be flagged, so that they can be easily rejected during the analysis.
@@ -37,11 +37,17 @@ class AliEmcalCorrectionClusterExotics : public AliEmcalCorrectionComponent {
 protected:
   TH2F                  *fEtaPhiDistBefore;          //!<!eta/phi distribution before
   TH2F                  *fEtaPhiDistAfter;           //!<!eta/phi distribution after
+  TH2F                  *fEtaPhiDistAfterNDiffCut;   //!<!eta/phi distribution after both exo and ndiff cut
   TH1F                  *fEnergyExoticClusters;      //!<!energy of exotic clusters
+  TH1F                  *fEnergyExoticClustersNDiffCut; //!<!energy of exotic clusters, both exo and ndiff cut
+  
   Float_t               fExoticMinCellAmplitude;     ///< Min energy of leading cell in order for exotic cut to be attempted
   Float_t               fMaxFcross;                  ///< Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
   Float_t               fCellCrossMaxTimeDiff;       ///< Max time difference allowed between leading cell and cross cells (in ns)
 
+  Float_t               fHighEnergyNdiffCut;         ///<  Minimum energy for which the cut on n diff T-Card = 0 is applied
+  Float_t               fMinCellEnNdiffCut;          ///<  Minimum energy of cells used counting n diff in T-Card 
+  
  private:
   AliEmcalCorrectionClusterExotics(const AliEmcalCorrectionClusterExotics &);               // Not implemented
   AliEmcalCorrectionClusterExotics &operator=(const AliEmcalCorrectionClusterExotics &);    // Not implemented
@@ -50,7 +56,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterExotics> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterExotics, 2); // EMCal cluster exotics correction component
+  ClassDef(AliEmcalCorrectionClusterExotics, 3); // EMCal cluster exotics correction component
   /// \endcond
 };
 

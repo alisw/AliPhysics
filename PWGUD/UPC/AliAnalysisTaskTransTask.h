@@ -22,13 +22,22 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
+	void 			SetIsMC(Bool_t MC){isMC = MC;}
+
+        virtual void            RunAOD();
+        virtual void            RunESD();
 
     private:
         AliAODEvent*            fAOD;           //! input event
+        AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
+
+       	Int_t fType; // AOD or ESD
+
 	TTree *fAnaTree; //! analysis tree
 	Int_t fRunNum;
 	Int_t fTracklets;
+	Int_t fGoodTracks;
 	Int_t fCtrue;
 	Int_t fC1zed;	
 
@@ -54,12 +63,15 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	Int_t fADCDecision;
   	TBits fIR1Map;
   	TBits fIR2Map;
+	UShort_t fBCrossNum;
 	TH1I *fCounter; //! analysis counter
+	
+	Bool_t isMC;
 	
         AliAnalysisTaskTransTask(const AliAnalysisTaskTransTask&); // not implemented
         AliAnalysisTaskTransTask& operator=(const AliAnalysisTaskTransTask&); // not implemented
 
-        ClassDef(AliAnalysisTaskTransTask, 2);
+        ClassDef(AliAnalysisTaskTransTask, 4);
 };
 
 #endif

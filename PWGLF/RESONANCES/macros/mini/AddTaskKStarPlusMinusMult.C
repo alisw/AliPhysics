@@ -2,6 +2,8 @@
  //            Modified by Kishora Nayak - 14/06/2016
  //            Modified by Enrico Fragiacomo - 15/01/2014
  //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
+ //            Small modification by Giuseppe Mandaglio and Daniele Pistone 31/07/2019
+ //            Modified by Giuseppe Mandaglio 19/12/2019 (check OOB)
  //            Based on AddAnalysisTaskRsnMini
  //            pPb specific settings from AddTaskKStarPPB.C
  //
@@ -47,10 +49,11 @@ enum eventMixConfig { kDisabled = -1,
 };
 
 
-AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
+ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
 (
  Bool_t      isMC,
  Bool_t      isPP,
+ Bool_t      isHiMult = 1, //1 high multiplicity trigger, 0 minimum bias
  Float_t     cutV = 10.0,
  Bool_t      isGT = 0,
  Int_t       evtCutSetID = 0,
@@ -61,15 +64,18 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
  TString     monitorOpt="pp",
  Float_t     piPIDCut = 3.0,
  Int_t       customQualityCutsID=1,
- AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
+ //AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
+AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate =  AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
- Int_t       tol_switch = 1,
+ //Int_t       tol_switch = 1,
+ Int_t       tol_switch = 0,//Standard Selection 
  Double_t    tol_sigma = 4,
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
  Bool_t      Switch = kTRUE,
+ Bool_t      OOBCheck = kFALSE,
  Float_t     k0sDCA = 1000.0,
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
@@ -90,7 +96,13 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
     //-------------------------------------------
     // event cuts
     //-------------------------------------------
-    UInt_t      triggerMask=AliVEvent::kINT7;
+    if(isHiMult){
+      UInt_t      triggerMask=AliVEvent::kHighMultV0;//High Multiplicity: Centrality <= 1
+      }
+    else{
+      UInt_t      triggerMask=AliVEvent::kINT7;//minimumm bias 
+      }
+
     Bool_t      rejectPileUp=kTRUE;
     Double_t    vtxZcut=10.0;//cm, default cut on vtx z
     Int_t       MultBins=aodFilterBit/100;
@@ -256,14 +268,15 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
     PairCutsMix->SetCutScheme(cutY->GetName());
     //
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2.C");
-    //gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
+// We need a new configuration file for the binning of third axis of the parses
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusMultiplicity.C");
+    //gROOT->LoadMacro("./ConfigKStarPlusMinusMultiplicity.C");
     if (isMC) {
         Printf("========================== MC analysis - PID cuts not used");
     } else
         Printf("========================== DATA analysis - PID cuts used");
 
-    if (!ConfigKStarPlusMinusRun2(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusMultiplicity(task, isPP, isMC, isHiMult,isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, OOBCheck, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
 
     //
     // -- CONTAINERS --------------------------------------------------------------------------------

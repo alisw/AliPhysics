@@ -26,13 +26,14 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
   Double_t percjetareacut = -1.,
-  AliAnalysisTaskDJetCorrelationsQA::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelationsQA::kConstituent
+  AliAnalysisTaskDJetCorrelationsQA::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelationsQA::kConstituent,
+  Bool_t isPPData = kTRUE
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskSEDmesonsFilterCJ", "No analysis manager to connect to.");
-    return nullptr;
+    return NULL;
   } 
 
   Bool_t useStdC = kFALSE;
@@ -42,7 +43,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
     useStdC = kTRUE;
   }
 
-  AliRDHFCuts *analysiscuts=nullptr;
+  AliRDHFCuts *analysiscuts=NULL;
   switch (cand) {
   case 0 :
     if(useStdC) {
@@ -64,7 +65,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   if (!analysiscuts) { // mm let's see if everything is ok
     //AliFatal("Specific AliRDHFCuts not found");
      std::cout<<"Specific AliRDHFCuts not found"<<std::endl;
-    return nullptr;
+    return NULL;
   } 
 
   printf("CREATE TASK\n"); //CREATE THE TASK
@@ -88,6 +89,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   taskCorr->SetCorrelationMethod(CorrMethod);
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
+  taskCorr->SetIsPPData(isPPData);
   
   AliParticleContainer *trackCont  = taskCorr->AddParticleContainer(trackArrname);
   

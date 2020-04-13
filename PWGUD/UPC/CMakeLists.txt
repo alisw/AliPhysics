@@ -35,9 +35,20 @@ set(SRCS
     AliAnalysisTaskUpcFilter.cxx
     AliAnalysisTaskUpcK0sK0s.cxx
     AliAnalysisTaskUpcPhi.cxx
-    AliAnalysisTaskUpcPsi2s.cxx
+    AliAnalysisTaskUPCPhiTest.cxx
+		AliAnalysisTaskUpcPsi2s.cxx
     AliAnalysisTaskUpcRho0.cxx
-    AliAnalysisTaskUpcTree.cxx
+		AliAnalysisTaskUpcTree.cxx
+		AliAnalysisTaskADin2018.cxx
+		AliAnalysisTaskForMCpPb.cxx
+		AliAnalysisTaskUPCforward.cxx
+		AliAnalysisTaskUPCforwardMC.cxx
+		AliAnalysisTaskUPCforward2.cxx
+		AliAnalysisTaskUPCforwardpPb.cxx
+		AliAnalysisTaskMatchTriggerForward.cxx
+		AliAnalysisTaskCTrue.cxx
+    AliAnalysisTaskNanoMUON.cxx
+		AliAnalysisTaskUpcEtaCAWP.cxx
     AliUPCEvent.cxx
     AliUPCMuonTrack.cxx
     AliUPCTrack.cxx
@@ -66,7 +77,7 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGmuon TOFbas
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object

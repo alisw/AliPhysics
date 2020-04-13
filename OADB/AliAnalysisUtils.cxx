@@ -40,6 +40,10 @@ AliAnalysisUtils::AliAnalysisUtils():TObject(),
   // Default contructor
 }
 
+AliAnalysisUtils::~AliAnalysisUtils()
+{
+}
+
 //______________________________________________________________________
 Bool_t AliAnalysisUtils::IsVertexSelected2013pA(AliVEvent *event)
 {

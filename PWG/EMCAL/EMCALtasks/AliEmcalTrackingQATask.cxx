@@ -27,6 +27,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
   fUseTRDUpdateFlag(kTRUE),
+  fUseQOverPtShift(kFALSE),
+  fQOverPtShift(0),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -38,6 +40,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   fPtResHistBins(),
   f1OverPtResHistBins(),
   fIntegerHistBins(),
+  fChargeHistBins(),
   fTracks(nullptr),
   fParticlesPhysPrim(nullptr),
   fParticlesMatched(nullptr)
@@ -56,6 +59,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
   fUseTRDUpdateFlag(kTRUE),
+  fUseQOverPtShift(kFALSE),
+  fQOverPtShift(0),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -67,6 +72,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fPtResHistBins(),
   f1OverPtResHistBins(),
   fIntegerHistBins(),
+  fChargeHistBins(),
   fTracks(nullptr),
   fParticlesPhysPrim(nullptr),
   fParticlesMatched(nullptr)
@@ -94,7 +100,8 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
   GenerateFixedBinArray(14,  3.0,  10.0, fPtHistBins, false);
   GenerateFixedBinArray(10, 10.0,  20.0, fPtHistBins, false);
   GenerateFixedBinArray(15, 20.0,  50.0, fPtHistBins, false);
-  GenerateFixedBinArray(20, 50.0, 150.0, fPtHistBins);
+  GenerateFixedBinArray(40, 50.0, 250.0, fPtHistBins, false);
+  GenerateFixedBinArray(10, 250.0, 350.0, fPtHistBins);
 
   GenerateFixedBinArray(100, -1.0, 1.0, fEtaHistBins);
 
@@ -123,6 +130,8 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
   GenerateFixedBinArray( 80, 0.50, 1.50, f1OverPtResHistBins);
 
   GenerateFixedBinArray(10, -0.5, 9.5, fIntegerHistBins);
+  
+  GenerateFixedBinArray(2, -1.1, 1.1, fChargeHistBins, true);
 }
 
 /**
@@ -229,6 +238,7 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   else {
     axis.push_back(std::make_tuple("#sigma(#it{p}_{T}) / #it{p}_{T}", fPtResHistBins.begin(), fPtResHistBins.end()));
   }
+  axis.push_back(std::make_tuple("charge", fChargeHistBins.begin(), fChargeHistBins.end()));
 
   fTracks = GenerateTHnSparse("fTracks", axis);
 
@@ -253,6 +263,7 @@ void AliEmcalTrackingQATask::AllocateGeneratorLevelTHnSparse()
   axis.push_back(std::make_tuple("#phi", fPhiHistBins.begin(), fPhiHistBins.end()));
   axis.push_back(std::make_tuple("MC Generator", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 3));
   axis.push_back(std::make_tuple("Findable", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 3));
+  axis.push_back(std::make_tuple("charge", fChargeHistBins.begin(), fChargeHistBins.end()));
 
   fParticlesPhysPrim = GenerateTHnSparse("fParticlesPhysPrim", axis);
 
@@ -286,6 +297,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   else {
     axis.push_back(std::make_tuple("(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{det}", fPtRelDiffHistBins.begin(), fPtRelDiffHistBins.end()));
   }
+  axis.push_back(std::make_tuple("charge", fChargeHistBins.begin(), fChargeHistBins.end()));
 
   fParticlesMatched = GenerateTHnSparse("fParticlesMatched", axis);
 
@@ -296,7 +308,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
  * Fill THnSparse with tracks
  */
 void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
-    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType)
+    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType, Double_t trackCharge) 
 {
   AliDebugStream(10) << "Filling detector level THnSparse" << std::endl;
   std::vector<Double_t> contents(fTracks->GetNdimensions());
@@ -319,6 +331,8 @@ void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
       contents[i] = mcGen;
     else if (title=="track type")
       contents[i] = trackType;
+    else if (title=="charge")
+      contents[i] = trackCharge;
     else 
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fTracks->GetName()));
   }
@@ -329,7 +343,7 @@ void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
 /**
  * Fill THnSparse with particles
  */
-void AliEmcalTrackingQATask::FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable)
+void AliEmcalTrackingQATask::FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable, Double_t partCharge)
 {
   std::vector<Double_t> contents(fParticlesPhysPrim->GetNdimensions());
 
@@ -347,6 +361,8 @@ void AliEmcalTrackingQATask::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
       contents[i] = mcGen;
     else if (title=="Findable")
       contents[i] = findable;
+    else if (title=="charge")
+      contents[i] = partCharge;
     else 
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesPhysPrim->GetName()));
   }
@@ -358,7 +374,7 @@ void AliEmcalTrackingQATask::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
  * Fill THnSparse with tracks matched to particles
  */
 void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
-    Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType)
+    Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType, Double_t trackCharge)
 {
   std::vector<Double_t> contents(fParticlesMatched->GetNdimensions());
 
@@ -384,6 +400,8 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
       contents[i] = (partPt - trackPt) / trackPt;
     else if (title=="track type")
       contents[i] = (Double_t)trackType;
+    else if (title=="charge")
+      contents[i] = trackCharge;
     else 
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesMatched->GetName()));
   }
@@ -450,7 +468,14 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       // reject particles generated from other generators in the cocktail but keep fake tracks (label == 0)
       if (label == 0 || track->GetGeneratorIndex() <= 0) mcGen = 0;
 
-      FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), track->Pt(), sigma, mcGen, type);
+      double pt = track->Pt();
+      if(fUseQOverPtShift) {
+        double chargeval = track->Charge() > 0 ? 1. : -1.;
+        pt = 1./(fQOverPtShift*chargeval  + 1./pt);
+        AliDebugStream(1) <<  "Applying q/pt shift " << fQOverPtShift << ", before shift: " << track->Pt() << ", after shift: " << pt << std::endl;
+      }
+
+      FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), pt, sigma, mcGen, type, track->Charge());
 
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
@@ -459,7 +484,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
             Int_t pdg = TMath::Abs(part->PdgCode());
             // select charged pions, protons, kaons , electrons, muons
             if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
-              FillMatchedParticlesTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), track->Eta(), track->Phi(), track->Pt(), type);
+              FillMatchedParticlesTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), track->Eta(), track->Phi(), track->Pt(), type, track->Charge());
             }
           }
         }
@@ -477,6 +502,9 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 
       Int_t mcGen = 1;
       Byte_t findable = 0;
+      Double_t partcharge; // translate to +- 1
+      if(part->Charge() > 0) partcharge = 1.;
+      else partcharge = -1.;
 
       if (part->GetGeneratorIndex() <= 0) mcGen = 0;
 
@@ -484,7 +512,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       // select charged pions, protons, kaons , electrons, muons
       if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
 
-      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), mcGen, findable);
+      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), mcGen, findable, partcharge);
     }
   }
 

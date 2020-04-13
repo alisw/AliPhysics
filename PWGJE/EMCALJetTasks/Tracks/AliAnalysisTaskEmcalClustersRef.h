@@ -113,6 +113,12 @@ public:
   void SetEnergyDefinition(EnergyDefinition_t edef) { fEnergyDefinition = edef; }
 
   /**
+   * @brief Add dimensions for Eta-phi to the cluster THnSparse
+   * @param[in] doMonitor If true dimensions for eta-phi are added
+   */
+  void SetMonitorEtaPhi(bool doMonitor) { fMonitorEtaPhi = doMonitor; }
+
+  /**
    * @brief Define cut on the time of the leading cell in the cluster
    * @param[in] mintime Minimum selected time for cluster
    * @param[in] maxtime Maximum selected time for cluster
@@ -268,6 +274,7 @@ protected:
   Bool_t                              fUseFiredTriggers;          ///< Study clusters connected with patches
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   Bool_t                              fFillTriggerClusters;       ///< Fill trigger cluster histograms
+  Bool_t                              fMonitorEtaPhi;             ///< Add dimensions for eta-phi in the THnSparses
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
   std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event
   TObjArray                           fRequiredOverlaps;          ///< Add option to require overlap with certain triggers

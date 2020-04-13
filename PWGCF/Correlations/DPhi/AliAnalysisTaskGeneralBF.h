@@ -52,6 +52,8 @@ public:
   Float_t TPC_EventPlane(AliAODEvent *event);
   Bool_t Is2015PileUpEvent();
   Bool_t StoreEventMultiplicities(AliVEvent *event);
+  Bool_t FromInjectedSignal(AliVTrack *trk) const;
+  Bool_t FromInjectedSignal(AliVParticle *part) const;
   
 private:
   Double_t fnsigmas[4][2]; //nsigma values
@@ -122,6 +124,8 @@ public:
   virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
   virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
   virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
+  virtual     void    SetVetoLambdaCut( bool v )          { veto_Lambda   = v; }
+  virtual     void    SetVetoLambdaSidebandLeft( bool v ) { veto_Lambda_left_sideband   = v; }
   virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
   virtual     void    SetUse_CircularCutPID_1( bool v )   { useCircularCutPID_1 = v; }
   virtual     void    SetUse_CircularCutPID_2( bool v )   { useCircularCutPID_2 = v; }
@@ -190,6 +194,8 @@ public:
   void SetSystemType( const char * systemType )     { fSystemType = systemType; }
   void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
   void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
+  void SetExcludeInjectedSignals(Bool_t yes = true) { fExcludeInjectedSignals = yes; }
+  void SetGenToBeKept(const char *genname)          { fGenToBeKept = genname; }
   
   void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
   void SetNSigmaCut_veto( double nsigma )        { fNSigmaPID_veto = nsigma; }
@@ -226,6 +232,8 @@ protected:
   int      _singlesOnly;
   bool      PIDparticle;
   bool      use_pT_cut;
+  bool      veto_Lambda;
+  bool      veto_Lambda_left_sideband;
   bool      useAliHelperPID;
   bool      useCircularCutPID_1;
   bool      useCircularCutPID_2;
@@ -267,9 +275,12 @@ protected:
   
   TString      fAnalysisType;
   TString      fSystemType;
+  TString      fGenToBeKept;
   
   Bool_t fExcludeResonancesInMC;
   Bool_t fExcludeElectronsInMC;
+  Bool_t fExcludeInjectedSignals;
+  Bool_t fUseMomentumOrder;
   
   TFormula *f2015V0MtoTrkTPCout;
   TFormula *f2015V0MtoTrkTPCout_Upper;
@@ -631,6 +642,37 @@ protected:
   
   ClassDef(AliAnalysisTaskGeneralBF,1)
 };
+
+inline   Bool_t AliAnalysisTaskGeneralBF::FromInjectedSignal(AliVTrack *trk) const {
+  //exclude tracks from injected signals
+  if (fExcludeInjectedSignals){
+    TString generatorName;
+    Int_t label = TMath::Abs(trk->GetLabel());
+    Bool_t hasGenerator = fMCEvent->GetCocktailGenerator(label,generatorName);
+    if (!hasGenerator)
+      return true;
+    if (!generatorName.Contains(fGenToBeKept.Data())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+inline   Bool_t AliAnalysisTaskGeneralBF::FromInjectedSignal(AliVParticle *part) const {
+  //exclude tracks from injected signals
+  if (fExcludeInjectedSignals){
+    TString generatorName;
+    Int_t label = TMath::Abs(part->GetLabel());
+    Bool_t hasGenerator = fMCEvent->GetCocktailGenerator(label,generatorName);
+    if (!hasGenerator)
+      return true;
+    if (!generatorName.Contains(fGenToBeKept.Data())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 
 #endif

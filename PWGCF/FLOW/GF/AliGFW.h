@@ -2,7 +2,7 @@
 #define AliGFW__H
 #include "AliGFWCumulant.h"
 #include <vector>
-#include <utility> 
+#include <utility>
 #include <algorithm>
 #include "TString.h"
 #include "TObjArray.h"
@@ -12,6 +12,7 @@ class AliGFW {
  public:
   struct Region {
     Int_t Nhar, Npar, NpT;
+    vector<Int_t> NparVec;
     Double_t EtaMin=-999;
     Double_t EtaMax=-999;
     Int_t BitMask=1;
@@ -22,6 +23,7 @@ class AliGFW {
     Region operator=(const Region& a) {
       Nhar=a.Nhar;
       Npar=a.Npar;
+      NparVec=a.NparVec;
       NpT =a.NpT;
       EtaMin=a.EtaMin;
       EtaMax=a.EtaMax;
@@ -31,18 +33,28 @@ class AliGFW {
     };
     void PrintStructure() {printf("%s: eta [%f.. %f].",rName.Data(),EtaMin,EtaMax); };
   };
-
+  struct CorrConfig {
+    vector<Int_t> Regs {};
+    vector<Int_t> Hars {};
+    vector<Int_t> Regs2 {};
+    vector<Int_t> Hars2 {};
+    Bool_t pTDif=kFALSE;
+    TString Head="";
+  };
   AliGFW();
   ~AliGFW();
   vector<Region> fRegions;
   vector<AliGFWCumulant> fCumulants;
   vector<Int_t> fEmptyInt;
   void AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
+  void AddRegion(TString refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
   Int_t CreateRegions();
   void Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t mask);
   void Clear();// { for(auto ptr = fCumulants.begin(); ptr!=fCumulants.end(); ++ptr) ptr->ResetQs(); };
   AliGFWCumulant GetCumulant(Int_t index) { return fCumulants.at(index); };
   TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);
+  CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
+  TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
  private:
   Bool_t fInitialized;
   void SplitRegions();
@@ -61,6 +73,7 @@ class AliGFW {
   TComplex Calculate(Int_t poi, vector<Int_t> hars); //For integrated case
   //Process one string (= one region)
   TComplex CalculateSingle(TString config);
+
   Bool_t SetHarmonicsToZero(TString &instr);
 
 };

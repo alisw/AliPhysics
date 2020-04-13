@@ -73,12 +73,12 @@ public:
 
   void SetRequireTOFPion(bool);
   void SetRequireTOFProton(bool);
-  
+
   void SetNsigmaPosDaughter(double);
   void SetNsigmaNegDaughter(double);
   void SetNsigmaPosDaughter(double,double);
   void SetNsigmaNegDaughter(double,double);
-  
+
 
   //----n sigma----
   bool IsKaonTPCdEdxNSigma(float mom, float nsigmaK);
@@ -88,7 +88,7 @@ public:
   bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=true);
 
   //-----The fMinvPurityAidHistoV0 is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the V0 collection
-  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and 
+  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and
                                                                                                                                             //automatically sets flag fBuildPurityAidV0=true
   TH1D* GetMinvPurityAidHistoV0();  // If initiated, fMinvPurityAidHistoV0 will be in the output list after all other V0 cut monitors (pass and fail)
   void SetLooseInvMassCut(bool aUseCut, double aInvMassMin, double aInvMassMax);
@@ -112,11 +112,19 @@ public:
   bool IsMisIDLambda(const AliFemtoV0* aV0);
   bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
 
-  virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 and fK0sMassOfMisIDV0 etc. in the output list 
+  virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 and fK0sMassOfMisIDV0 etc. in the output list
 
   bool GetBuildMisIDHistograms();
 
   void SetIgnoreOnFlyStatus(bool aIgnore);
+  void SetNanoAODAnalysis(bool aNanoAOD);
+
+
+
+  void SetSidebandAnalysis(bool sideband);
+  void SetInvariantMassK0sSideband(double min1, double max1, double min2, double max2);
+  void SetInvariantMassLambdaSideband(double min1, double max1, double min2, double max2);
+  void SetInvariantMassAntiLambdaSideband(double min1, double max1, double min2, double max2);  
 
  protected:   // here are the quantities I want to cut on...
 
@@ -124,7 +132,7 @@ public:
   double fInvMassLambdaMax;        ///< invariant mass Lambda max
   double fInvMassK0sMin;           ///< invariant mass K0s min
   double fInvMassK0sMax;           ///< invariant mass K0s max
-  
+
   double fMinDcaDaughterPosToVert; ///< DCA of positive daughter to primary vertex
   double fMinDcaDaughterNegToVert; ///< DCA of negative daughter to primary vertex
   double fMaxDcaV0Daughters;       ///< Max DCA of v0 daughters at Decay vertex
@@ -132,7 +140,7 @@ public:
   double fMinDcaV0;
   double fMaxDecayLength;
   double fMinTransverseDistancePrimSecVtx;
-  
+
   double fMaxCosPointingAngle;    //obsolete
   double fMinCosPointingAngle;    //correct
   short fParticleType;             ///< 0-lambda
@@ -161,11 +169,11 @@ public:
 
   bool fRequireTOFPion;
   bool fRequireTOFProton;
-  
+
   bool fBuildPurityAidV0;
   TH1D* fMinvPurityAidHistoV0;
 
-  bool fUseLooseInvMassCut;  //Since inv. mass cut must come last in order to calculate the purity, 
+  bool fUseLooseInvMassCut;  //Since inv. mass cut must come last in order to calculate the purity,
                              //this allows a looser cut to be implemented earlier in the process and same some time
   double fLooseInvMassMin;
   double fLooseInvMassMax;
@@ -194,6 +202,22 @@ public:
   bool fIgnoreOnFlyStatus;  //This will accept V0s with aV0->OnFlyStatusV0()==true and aV0->OnFlyStatusV0()==false
                             //NOTE IMPORTANT: If you set this to true, be sure to call AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(true)
                             //otherwise, in many cases, you will receive multiple copies of the same V0.
+  bool fNanoAODAnalysis;  //This will skip  verification od V0's daugters status
+
+
+  bool fSidebandAnalysis;
+  double fInvMassRange1K0sMin;
+  double fInvMassRange1K0sMax;
+  double fInvMassRange2K0sMin;
+  double fInvMassRange2K0sMax;
+  double fInvMassRange1LambdaMin;
+  double fInvMassRange1LambdaMax;
+  double fInvMassRange2LambdaMin;
+  double fInvMassRange2LambdaMax;
+  double fInvMassRange1AntiLambdaMin;
+  double fInvMassRange1AntiLambdaMax;
+  double fInvMassRange2AntiLambdaMin;
+  double fInvMassRange2AntiLambdaMax;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -206,5 +230,6 @@ public:
 inline TH1D* AliFemtoV0TrackCut::GetMinvPurityAidHistoV0() {return fMinvPurityAidHistoV0;}
 inline bool AliFemtoV0TrackCut::GetBuildMisIDHistograms() {return fBuildMisIDHistograms;}
 inline void AliFemtoV0TrackCut::SetIgnoreOnFlyStatus(bool aIgnore) {fIgnoreOnFlyStatus = aIgnore;}
+inline void AliFemtoV0TrackCut::SetNanoAODAnalysis(bool aNanoAOD) {fNanoAODAnalysis = aNanoAOD;}
 
 #endif

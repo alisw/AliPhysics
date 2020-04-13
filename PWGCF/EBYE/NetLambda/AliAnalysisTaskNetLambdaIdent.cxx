@@ -29,7 +29,7 @@
 #include "AliVMultiplicity.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODMCParticle.h"
-#include "AliStack.h"
+#include "AliMCParticle.h"
 #include "AliPIDResponse.h"
 #include "AliMCEventHandler.h"
 #include "AliV0vertexer.h"
@@ -61,7 +61,6 @@ AliAnalysisTaskNetLambdaIdent::AliAnalysisTaskNetLambdaIdent(const char* name) :
 AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
-  stack(0x0),
   fPIDResponse(0x0),
   fEventCuts(0),
   fListOfHistos(0x0),
@@ -355,8 +354,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   if(!(fInputHandler->IsEventSelected() & fEvSel)) return;
   hEventStatistics->Fill("physics selection",1);
 
-  
-  stack = 0x0;
   if(fIsMC)
     {
       if(!fIsAOD) // esd
@@ -370,13 +367,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       
       if(!fMCEvent) return;
       hEventStatistics->Fill("found fMCEvent",1);
-
-      if(!fIsAOD) //esd
-	{
-	  stack = fMCEvent->Stack();
-	  if(!stack) return;
-	  hEventStatistics->Fill("found MC stack",1);
-	}
     }
 
   AliMultSelection *MultSelection = (AliMultSelection*) fInputEvent->FindListObject("MultSelection");
@@ -511,8 +501,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	}
       
       // loop over generated particles to find lambdas
-      if(fIsAOD) nGen = fMCEvent->GetNumberOfTracks(); // aod
-      else nGen = stack->GetNtrack(); // esd
+      nGen = fMCEvent->GetNumberOfTracks();
       for(Int_t iGen = 0; iGen < nGen; iGen++)
 	{
 	  Int_t pid = -999, abspid = -999, nd = -999, fd = -999, ld = -999;
@@ -528,21 +517,21 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      eta = mctrack->Eta();
 	      phi = mctrack->Phi();
 	      nd = mctrack->GetNDaughters();
-	      fd = mctrack->GetFirstDaughter();
-	      ld = mctrack->GetLastDaughter();
+	      fd = mctrack->GetDaughterFirst();
+	      ld = mctrack->GetDaughterLast();
 	    }
 	  else // esd
 	    {
-	      TParticle* mctrack = stack->Particle(iGen);
+	      AliMCParticle* mctrack = (AliMCParticle*)fMCEvent->GetTrack(iGen);
 	      if(!mctrack) continue;
-	      if(!(stack->IsPhysicalPrimary(iGen))) continue;
-	      pid = mctrack->GetPdgCode();
+	      if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
+	      pid = mctrack->PdgCode();
 	      pt = mctrack->Pt();
 	      eta = mctrack->Eta();
 	      phi = mctrack->Phi();
 	      nd = mctrack->GetNDaughters();
-	      fd = mctrack->GetFirstDaughter();
-	      ld = mctrack->GetLastDaughter();
+	      fd = mctrack->GetDaughterFirst();
+	      ld = mctrack->GetDaughterLast();
 	    }
 	  
 	  abspid = TMath::Abs(pid);
@@ -630,8 +619,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      if(!daughtertrack1) continue;
 	      AliAODMCParticle *daughtertrack2 = (AliAODMCParticle*)fMCEvent->GetTrack(ld);
 	      if(!daughtertrack2) continue;
-	      pdg1 = daughtertrack1->GetPdgCode();
-	      pdg2 = daughtertrack2->GetPdgCode();
+	      pdg1 = daughtertrack1->PdgCode();
+	      pdg2 = daughtertrack2->PdgCode();
 	      pt1 = daughtertrack1->Pt();
 	      eta1 = daughtertrack1->Eta();
 	      phi1 = daughtertrack1->Phi();
@@ -641,12 +630,12 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	    }
 	  else // esd
 	    {
-	      TParticle *daughtertrack1 = (TParticle*)stack->Particle(fd);
+	      AliMCParticle *daughtertrack1 = (AliMCParticle*)fMCEvent->GetTrack(fd);
 	      if(!daughtertrack1) continue;
-	      TParticle *daughtertrack2 = (TParticle*)stack->Particle(ld);
+	      AliMCParticle *daughtertrack2 = (AliMCParticle*)fMCEvent->GetTrack(ld);
 	      if(!daughtertrack2) continue;
-	      pdg1 = daughtertrack1->GetPdgCode();
-	      pdg2 = daughtertrack2->GetPdgCode();
+	      pdg1 = daughtertrack1->PdgCode();
+	      pdg2 = daughtertrack2->PdgCode();
 	      pt1 = daughtertrack1->Pt();
 	      eta1 = daughtertrack1->Eta();
 	      phi1 = daughtertrack1->Phi();
@@ -1381,11 +1370,10 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
   cascpt = -999;
   casceta = -999;
 
-  Int_t nGen = 0;
+  Int_t nGen = fMCEvent->GetNumberOfTracks();
   
   if(fIsAOD) // aod
     {
-      nGen = fMCEvent->GetNumberOfTracks();
       if(poslabel >= nGen || neglabel >= nGen) return 0;
       AliAODMCParticle *aodGenTrackPos = (AliAODMCParticle*)fMCEvent->GetTrack(poslabel);
       if(!aodGenTrackPos) return 0;
@@ -1405,8 +1393,8 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
       
       if(m1 == m2) // pair corresponds to the same mother
 	{
-	  pid1 = aodGenTrackPos->GetPdgCode();
-	  pid2 = aodGenTrackNeg->GetPdgCode();
+	  pid1 = aodGenTrackPos->PdgCode();
+	  pid2 = aodGenTrackNeg->PdgCode();
 	  
 	  mpid = aodTestMother1->PdgCode();
 	  mpt = aodTestMother1->Pt();
@@ -1476,38 +1464,37 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
     }
   else // esd
     {
-      nGen = stack->GetNtrack();
       if(poslabel >= nGen || neglabel >= nGen) return 0;
-      TParticle *esdGenTrackPos = (TParticle*)stack->Particle(poslabel);
+      AliMCParticle *esdGenTrackPos = (AliMCParticle*)fMCEvent->GetTrack(poslabel);
       if(!esdGenTrackPos) return 0;
-      TParticle *esdGenTrackNeg = (TParticle*)stack->Particle(neglabel);
+      AliMCParticle *esdGenTrackNeg = (AliMCParticle*)fMCEvent->GetTrack(neglabel);
       if(!esdGenTrackNeg) return 0;
-      Int_t m1 = esdGenTrackPos->GetMother(0);
+      Int_t m1 = esdGenTrackPos->GetMother();
       if(m1 < 0) return 0;
-      TParticle *esdTestMother1 = stack->Particle(m1);
+      AliMCParticle *esdTestMother1 = (AliMCParticle*)fMCEvent->GetTrack(m1);
       if(!esdTestMother1) return 0;
-      Int_t m2 = esdGenTrackNeg->GetMother(0);
+      Int_t m2 = esdGenTrackNeg->GetMother();
       if(m2 < 0) return 0;
-      TParticle *esdTestMother2 = stack->Particle(m2);
+      AliMCParticle *esdTestMother2 = (AliMCParticle*)fMCEvent->GetTrack(m2);
       if(!esdTestMother2) return 0;
 
-      Int_t gm1 = esdTestMother1->GetMother(0);
-      Int_t gm2 = esdTestMother2->GetMother(0);
+      Int_t gm1 = esdTestMother1->GetMother();
+      Int_t gm2 = esdTestMother2->GetMother();
      
       if(m1 == m2)
 	{
-	  pid1 = esdGenTrackPos->GetPdgCode();
-	  pid2 = esdGenTrackNeg->GetPdgCode();
+	  pid1 = esdGenTrackPos->PdgCode();
+	  pid2 = esdGenTrackNeg->PdgCode();
 	  
-	  mpid = esdTestMother1->GetPdgCode();
+	  mpid = esdTestMother1->PdgCode();
 	  mpt = esdTestMother1->Pt();
 	  meta = esdTestMother1->Eta();
 	  
 	  if(mpid == 3122 || mpid == -3122) // if it's a lambda, is it from a cascade decay?
 	    {
-	      isSecFromMaterial = stack->IsSecondaryFromMaterial(m1);
-	      isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(m1);
-	      isPrim = stack->IsPhysicalPrimary(m1);
+	      isSecFromMaterial = fMCEvent->IsSecondaryFromMaterial(m1);
+	      isSecFromWeakDecay = fMCEvent->IsSecondaryFromWeakDecay(m1);
+	      isPrim = fMCEvent->IsPhysicalPrimary(m1);
 	      
 	      if(mpid == 3122)
 		hPtResLambda->Fill(mpt,pt);
@@ -1538,12 +1525,12 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
 		{
 		  if(gm1 >= 0)
 		    {
-		      TParticle *esdGrandmother = stack->Particle(gm1);
+		      AliMCParticle *esdGrandmother = (AliMCParticle*)fMCEvent->GetTrack(gm1);
 		      if(esdGrandmother)
 			{
-			  if(stack->IsPhysicalPrimary(gm1))
+			  if(fMCEvent->IsPhysicalPrimary(gm1))
 			    {
-			      Int_t gmpid = esdGrandmother->GetPdgCode();
+			      Int_t gmpid = esdGrandmother->PdgCode();
 			      if(gmpid == 3322 || gmpid == -3322) // xi0
 				{
 				  cascpt = -1.*esdGrandmother->Pt();
@@ -1568,14 +1555,14 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
 
       if(gm1 == m2) // mismatched cascade
 	{
-	  TParticle *esdGrandmother1 = stack->Particle(gm1);
+	  AliMCParticle *esdGrandmother1 = (AliMCParticle*)fMCEvent->GetTrack(gm1);
 	  if(esdGrandmother1)
 	    {
-	      if(esdGrandmother1->GetPdgCode() == 3312 && esdTestMother1->GetPdgCode() == 3122)
+	      if(esdGrandmother1->PdgCode() == 3312 && esdTestMother1->PdgCode() == 3122)
 		{
 		  return 3312+1;
 		}
-	      if(esdGrandmother1->GetPdgCode() == -3312 && esdTestMother1->GetPdgCode() == -3122)
+	      if(esdGrandmother1->PdgCode() == -3312 && esdTestMother1->PdgCode() == -3122)
 		{
 		  return -3312-1;
 		}
@@ -1583,14 +1570,14 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
 	}
       if(gm2 == m1) // mismatched cascade
 	{
-	  TParticle *esdGrandmother2 = stack->Particle(gm2);
+	  AliMCParticle *esdGrandmother2 = (AliMCParticle*)fMCEvent->GetTrack(gm2);
 	  if(esdGrandmother2)
 	    {
-	      if(esdGrandmother2->GetPdgCode() == 3312 && esdTestMother2->GetPdgCode() == 3122)
+	      if(esdGrandmother2->PdgCode() == 3312 && esdTestMother2->PdgCode() == 3122)
 		{
 		  return 3312+1;
 		}
-	      if(esdGrandmother2->GetPdgCode() == -3312 && esdTestMother2->GetPdgCode() == -3122)
+	      if(esdGrandmother2->PdgCode() == -3312 && esdTestMother2->PdgCode() == -3122)
 		{
 		  return -3312-1;
 		}

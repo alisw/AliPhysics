@@ -1,18 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <TFile.h>
 #include <TF1.h>
 #include <TH1F.h>
@@ -32,13 +43,8 @@
 
 #include "AliAnalysisTaskRhoBaseDev.h"
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskRhoBaseDev);
-/// \endcond
 
-/**
- * Default constructor. Needed by ROOT I/O
- */
 AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev() :
   AliAnalysisTaskJetUE(),
   fOutRhoName(),
@@ -72,12 +78,6 @@ AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev() :
 {
 }
 
-/**
- * Standard constructor. Should be used by the user.
- *
- * @param[in] name  Name of the task
- * @param[in] histo If kTRUE, the task will also produce QA histograms
- */
 AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev(const char *name, Bool_t histo) :
   AliAnalysisTaskJetUE(name, histo),
   fOutRhoName(),
@@ -112,10 +112,6 @@ AliAnalysisTaskRhoBaseDev::AliAnalysisTaskRhoBaseDev(const char *name, Bool_t hi
   SetMakeGeneralHistograms(histo);
 }
 
-/**
- * Performing run-independent initialization.
- * Here the histograms should be instantiated.
- */
 void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
 {
   if (!fCreateHisto) return;
@@ -269,20 +265,12 @@ void AliAnalysisTaskRhoBaseDev::UserCreateOutputObjects()
   }
 }
 
-
-/**
- * Calculates the average background using a given parametrization
- * as a function of centrality.
- */
 void AliAnalysisTaskRhoBaseDev::CalculateRho()
 {
   Double_t rho = GetRhoFactor(fCent);
   fOutRho->SetVal(rho);
 }
 
-/**
- * Run the analysis.
- */
 Bool_t AliAnalysisTaskRhoBaseDev::Run()
 {
   fOutRho->SetVal(0);
@@ -300,9 +288,6 @@ Bool_t AliAnalysisTaskRhoBaseDev::Run()
   return kTRUE;
 }
 
-/**
- * Fill histograms.
- */
 Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
 {
   fHistRhoVsCent->Fill(fCent, fOutRho->GetVal());
@@ -347,9 +332,6 @@ Bool_t AliAnalysisTaskRhoBaseDev::FillHistograms()
   return kTRUE;
 }      
 
-/**
- * Init the analysis.
- */
 void AliAnalysisTaskRhoBaseDev::ExecOnce()
 {
   if (!fOutRho) {
@@ -383,11 +365,6 @@ void AliAnalysisTaskRhoBaseDev::ExecOnce()
   AliAnalysisTaskEmcalJetLight::ExecOnce();
 }
 
-/**
- * Return rho per centrality.
- * @param cent Centrality percentile.
- * @return The average background from the parametrization loaded in memory.
- */
 Double_t AliAnalysisTaskRhoBaseDev::GetRhoFactor(Double_t cent)
 {
   Double_t rho = 0;
@@ -395,11 +372,6 @@ Double_t AliAnalysisTaskRhoBaseDev::GetRhoFactor(Double_t cent)
   return rho;
 }
 
-/**
- * Get scale factor.
- * @param cent Centrality percentile.
- * @return The scale factor (charged -> full) from the parametrization loaded in memory.
- */
 Double_t AliAnalysisTaskRhoBaseDev::GetScaleFactor(Double_t cent)
 {
   Double_t scale = 1;
@@ -407,12 +379,6 @@ Double_t AliAnalysisTaskRhoBaseDev::GetScaleFactor(Double_t cent)
   return scale;
 }
 
-/**
- * Load the scale function from a file.
- * @param path Path to the file
- * @param name Name of the object inside the file
- * @return On success, the pointer to the TF1 object
- */
 TF1* AliAnalysisTaskRhoBaseDev::LoadRhoFunction(const char* path, const char* name)
 {
   TString fname(path);
@@ -445,19 +411,6 @@ TF1* AliAnalysisTaskRhoBaseDev::LoadRhoFunction(const char* path, const char* na
   return fScaleFunction;
 }
 
-/**
- * Create an instance of this class and add it to the analysis manager
- * @param trackName name of the track collection
- * @param clusName name of the calorimeter cluster collection
- * @param nRho name of the output rho object
- * @param jetradius Radius of the kt jets used to calculate the background
- * @param acceptance Fiducial acceptance of the kt jets
- * @param jetType Jet type (full/charged)
- * @param rscheme Recombination scheme
- * @param histo If kTRUE the task will also produce QA histograms
- * @param suffix additional suffix that can be added at the end of the task name
- * @return pointer to the new AliAnalysisTaskRhoDev task
- */
 AliAnalysisTaskRhoBaseDev* AliAnalysisTaskRhoBaseDev::AddTaskRhoBaseDev(TString trackName, TString clusName, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.

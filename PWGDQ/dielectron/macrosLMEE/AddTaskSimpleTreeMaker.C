@@ -5,7 +5,8 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
                                                        Bool_t useTOFcorr   = kFALSE,
                                                        Bool_t isMC         = kFALSE,
                                                        Bool_t runOnGrid    = kTRUE,
-                                                       Bool_t getFromAlien = kFALSE)
+                                                       Bool_t getFromAlien = kFALSE,
+						                                           Bool_t ExtraDCA = kFALSE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -46,7 +47,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
     }
 
 		LMEECutLib* cutLib = new LMEECutLib(hasSDD);
-    AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName);
+		AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName, ExtraDCA);
 		task->analyseMC(isMC);
 		task->GRIDanalysis(runOnGrid);
     // ==========================================================================
@@ -92,7 +93,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName    = "ML
 		}
     //Add event filter
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->SetupEventCuts(cutLib->GetEventCuts(LMEECutLib::kAllSpecies));
+    task->SetupEventCuts(cutLib->GetEventCuts(kFALSE, kFALSE));
 		task->SetupTrackCuts(cutLib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts));
 
     // ==========================================================================

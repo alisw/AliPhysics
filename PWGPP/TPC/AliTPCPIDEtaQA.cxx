@@ -224,7 +224,8 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
     return;
   }
   
-  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
+  if (GetIsPileUp(fESD, kPileUpRejectionSPD))
+    return;
   
   if (!fPIDResponse || !fV0KineCuts)
     return;
@@ -238,6 +239,8 @@ void AliTPCPIDEtaQA::UserExec(Option_t *)
     
   if(primaryVertex->GetNContributors() <= 0) 
     return;
+  
+  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
   Double_t magField = fESD->GetMagneticField();
   

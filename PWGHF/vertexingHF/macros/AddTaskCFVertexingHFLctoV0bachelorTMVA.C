@@ -157,12 +157,12 @@ const Float_t multmax_100_400 = 400;
   const Int_t nbinfake = 3;  //bins in fake
   const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
   const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-  const Int_t nbinmult = 49;  //bins in multiplicity (total number)
   const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
   const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
   const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 80
   const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 80 and 100
   const Int_t nbinmult_100_400 = 3; //bins in multiplicity between 100 and 400
+  Int_t nbinmult = 49;  //bins in multiplicity (total number)
   if(isPPbData) nbinmult += nbinmult_100_400;
 
 

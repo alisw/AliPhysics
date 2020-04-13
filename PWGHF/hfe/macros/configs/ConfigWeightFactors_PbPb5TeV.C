@@ -22,20 +22,20 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   const Char_t *backNameMC[9] = {"pion","eta","omega","phi","etap","rho","kaon","k0s","lambda"};
 
         // GSI version
-/*
-  printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-  printf("collType %d\n",collType);
-  TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-*/
+  //printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+  //printf("collType %d\n",collType);
+  //TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
 //  TFile *weightFile = TFile::Open(Form("%s/PWGHF/hfe/macros/configs/PbPb/%s", gSystem->Getenv("ALICE_PHYSICS"),filename.Data()));
     TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
 
+
   if(weightFile){
-    TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
     if(syst){
+      TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
       if(collType == 1){
         hRelErr[0][0] = (TH1F*)weightFile->Get("hErrorspionLower");
         hRelErr[0][1] = (TH1F*)weightFile->Get("hErrorspionUpper");
@@ -274,6 +274,26 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "     PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay                                             ";
           cout << "\n------------------------------------------------------------------------------------------------------------------\n";
           cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 81: PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay - pi charged spectrum from data cooked from the 2.76TeV one
+        else if(collType == 81){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_18e1_fixedHIJING_chpionsCookedFrom276_%s_%d",backNameMC[iSpecies],iCent));
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "     PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay, BUT pi charged spectrum from data cooked from the 2.76TeV one";
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 82: PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay - pi charged spectra measured, almost final (paper after CR1)
+        else if(collType == 82){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_18e1_fixedHIJING_chpionsAfterCR1_%s_%d",backNameMC[iSpecies],iCent));
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "     PbPb LHC18e1 minimum bias MC with fixed HIJING issue on pi0 decay - pi charged spectra measured, almost final (paper after CR1)";
+          cout << "\n------------------------------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;
         }
 

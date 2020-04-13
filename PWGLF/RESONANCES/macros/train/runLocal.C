@@ -149,7 +149,7 @@ TChain* CreateChainFromXML
    TChain *chain = new TChain(treeName);
 
    // initialize the AliEn collection
-   TAlienCollection *myCollection = TAlienCollection::Open(xmlFileName);
+   TGridCollection *myCollection = gGrid->OpenCollection(xmlFileName);
    if (!myCollection) {
       Error("CreateChainFromXML", "Cannot create an AliEn collection from %s", xmlFileName);
       return 0x0;

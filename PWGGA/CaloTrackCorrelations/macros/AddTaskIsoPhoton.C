@@ -406,7 +406,7 @@ else
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = kTRUE ,Bool_t simu = kFALSE, Bool_t timecut = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
+AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE,Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debug);
@@ -714,7 +714,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
 ///
 /// Configure the task doing charged track selection
 ///
-AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugLevel)
+AliAnaChargedParticles* ConfigureChargedAnalysis(Int_t debugLevel)
 {
   AliAnaChargedParticles *ana = new AliAnaChargedParticles();
   ana->SetDebug(debugLevel); //10 for lots of messages
@@ -922,7 +922,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader   (mgr->GetInputEventHandler()->GetDataType(),useKinematics,simu,
                                          calorimeter,nonlin, timecut, primvtx, notrackcut,tmin,tmax,trackTcut,minCen, maxCen, debug,print,SSsmearing,clustListName));
-  maker->SetCaloUtils(ConfigureCaloUtils(nonlin,exotic,simu,timecut,debug,print));
+  maker->SetCaloUtils(ConfigureCaloUtils(nonlin,simu,debug,print));
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
@@ -943,7 +943,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
     maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,eOpMax,deltaphicut,deltaetacut,disttobad,nlmMax,simu,debug,print), n++); // Photon cluster selection
     
     // Isolation analysis
-    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,leading,kFALSE,simu,debug,print,tmInCone), n++); // Photon isolation
+    maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,eOpMax, leading,kFALSE,simu,debug,print,tmInCone), n++); // Photon isolation
   }
   else
   {
@@ -956,7 +956,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   if(qaan)
   {
     maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,simu,debug,print),n++);
-    maker->AddAnalysis(ConfigureChargedAnalysis(simu,debug), n++); // charged tracks plots
+    maker->AddAnalysis(ConfigureChargedAnalysis(debug), n++); // charged tracks plots
   }
   
   maker->SetAnaDebug(debug)  ;

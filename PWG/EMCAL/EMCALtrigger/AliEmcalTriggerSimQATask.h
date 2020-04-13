@@ -25,6 +25,7 @@
 
 class TClonesArray;
 class THistManager;
+class AliEMCALGeometry;
 //class TH1;
 //class TH2;
 //class TH3;
@@ -36,6 +37,7 @@ class TString;
 
 #include "THistManager.h"
 #include "AliAnalysisTaskEmcal.h"
+#include "AliEMCALGeometry.h"
 
 /**
  * \class AliEmcalTriggerSimQATask
@@ -46,12 +48,17 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
  public:
 
   enum EventEMCALTriggerType_t { // Which bit is set for the event type
-    kNTr = -1, // No Trigger
+    kMB = -1, // Minimum Bias
     kEL0 = 0,
-    kEG1 = 1,
-    kEG2 = 2,
-    kEJ1 = 3,
-    kEJ2 = 4
+    kDL0 = 1,
+    kEG1 = 2,
+    kDG1 = 3,
+    kEG2 = 4,
+    kDG2 = 5,
+    kEJ1 = 6,
+    kDJ1 = 7,
+    kEJ2 = 8,
+    kDJ2 = 9
   };
 
   AliEmcalTriggerSimQATask();
@@ -61,6 +68,7 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   static AliEmcalTriggerSimQATask * AddTaskEmcalTriggerSimQA();
 
   void SetMinAmplitude(Int_t m)             { fMinAmplitude = m; }
+  void SetMinClusterEnergy(Float_t m)       { fMinClusterEnergy = m; }
 
 
  protected:
@@ -70,13 +78,16 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   Bool_t                                    FillHistograms();
   void                                      FillEventQA();
 
-  static const Int_t                        kNTriggerTypes = 6; // No Trigger,L0,EG1,EG2,EJ1,EJ2
-  const TString                             fTriggerNames[kNTriggerTypes] = {"NTr","L0","EG1","EG2","EJ1","EJ2"};
-  EventEMCALTriggerType_t                   fTriggerTypes[kNTriggerTypes]; //!<! Trigger type array
+//  static const Int_t                        kNTriggerTypes = 6; // MB,L0,EG1,EG2,EJ1,EJ2
+  static const Int_t                        kNTriggerTypes = 11; // MB,EL0,DL0,EG1,DG1,EG2,DG2,EJ1,DJ1,EJ2,DJ2
+//  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","L0","EG1","EG2","EJ1","EJ2"};
+  const TString                             fTriggerNames[kNTriggerTypes] = {"MB","EL0","DL0","EG1","DG1","EG2","DG2","EJ1","DJ1","EJ2","DJ2"};
+  EventEMCALTriggerType_t                   fTriggerTypes[kNTriggerTypes]; ///< Trigger type array
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
   TClonesArray                             *fTriggerPatches;             //!<! trigger array in
 
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
+  Float_t                                   fMinClusterEnergy;           ///< Minimum cluster energy
   Float_t                                   fPtBinWidth;                 ///< Histogram pt bin width
   Float_t                                   fMaxPt;                      ///< Histogram pt limit
 
@@ -86,7 +97,10 @@ class AliEmcalTriggerSimQATask : public AliAnalysisTaskEmcal {
   THistManager                              fHistManager;                ///< Histogram Manager
 
   void                                      DoPatchLoop();               // Loop over patches, determine trigger condition
+  void                                      FillPatchHistograms(AliEMCALTriggerPatchInfo * patch,Int_t i);               // Fill histograms with patch information
+  Int_t                                     GeneratePatchTriggerBits(AliEMCALTriggerPatchInfo * patch);               // Generate a trigger bits int for a single patch
   void                                      DoClusterLoop();             // Loop over clusters, fill histograms
+  void                                      MatchClusterToPatches(AliVCluster * cluster); // Match cluster to trigger patches, fill histos
 
  private:
   AliEmcalTriggerSimQATask(const AliEmcalTriggerSimQATask&);            // not implemented

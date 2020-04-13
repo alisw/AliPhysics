@@ -12,6 +12,7 @@
 #include "TArrayI.h"
 #include "AliPIDCombined.h"
 #include "AliESDtrackCuts.h"
+#include "AliTimeRangeCut.h"
 
 class TList;
 class TTree;
@@ -19,6 +20,7 @@ class TH1D;
 class TH2D;
 class TObjString;
 class TClonesArray;
+
 
 class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
  public: 
@@ -30,6 +32,7 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
  protected:
   AliAnalysisTaskDgTree(const  AliAnalysisTaskDgTree &task);
   AliAnalysisTaskDgTree& operator=(const  AliAnalysisTaskDgTree &task);
+  AliTimeRangeCut fTimeRangeCut;
   AliPIDCombined* fPIDCombined;     //
   AliESDtrackCuts* fTrackCutsBit0;  //!
   AliESDtrackCuts* fTrackCutsBit1;  //!
@@ -79,9 +82,13 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
   TArrayI fTOFhits;
   TArrayF fTOFhitTimes;
   TArrayI fTrackIndices;
-  Int_t fNofTOFtrgPads;
+  Float_t fZNAtower0;
+  Float_t fZNCtower0;
+  Float_t fZNATDC[4];
+  Float_t fZNCTDC[4];
+
   
-  ClassDef(AliAnalysisTaskDgTree,2)
+  ClassDef(AliAnalysisTaskDgTree,4)
 };
 
 #endif

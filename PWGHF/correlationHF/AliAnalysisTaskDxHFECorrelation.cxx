@@ -606,7 +606,7 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
 {
   // parse arguments and set internal flags
   TString strArguments(arguments);
-  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  unique_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
   if (!tokens.get()) return 0;
   AliInfo(strArguments);
   TIter next(tokens.get());

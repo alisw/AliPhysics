@@ -4,13 +4,15 @@
 #include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
-#include "AliFemtoESDTrackCut.h"
+#include "AliFemtoMJTrackCut.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoVertexMultAnalysis.h"
+#include "AliFemtoXiTrackPairCut.h"
 #include "AliFemtoV0PairCut.h"
 #include "AliFemtoV0TrackPairCut.h"
 #include "AliFemtoV0TrackCut.h"
+#include "AliFemtoXiTrackCut.h"
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include "AliFemtoAvgSepCorrFctn.h"
@@ -19,16 +21,16 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #endif
 
-enum ESys { kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
-enum EPart { kELambda , kEAntiLambda , kEProton , kEAntiProton };
+enum ESys { kPXim, kAPXim ,kPXip, kAPXip , kLL , kALAL , kLAL , kPL , kAPL , kPAL , kAPAL , kPP , kPAP , kAPAP, nSys };
+enum EPart {kEXi, kEAntiXi, kELambda , kEAntiLambda , kEProton , kEAntiProton };
 
-const char *sysNames[nSys] = { "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
+const char *sysNames[nSys] = {"PXim","APXim" ,"PXip","APXip", "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
 
 const int nMult = 10;
 int runMult[nMult] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
 int multBins[nMult+1] = {0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
-int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+int runSys[nSys] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 bool separationCuts;
 
@@ -36,10 +38,10 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoVertexMultAnalysis* GetAnalysis(double multMin, double multMax);
 AliFemtoBasicEventCut* GetEventCut();
+AliFemtoXiTrackCut* GetXiTrackCut(EPart particle);
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
+AliFemtoMJTrackCut* GetMJTrackCut(EPart particle);
 AliFemtoV0PairCut* GetV0PairCut(ESys system);
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
 AliFemtoV0PairCut* GetV0PairCut(ESys system);
 AliFemtoV0TrackPairCut* GetV0TrackPairCut(ESys system);
 AliFemtoPairCutRadialDistance* GetTracksPairCut(ESys system);
@@ -101,17 +103,20 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       // get particle cuts
       EPart firstParticle, secondParticle;
       GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle);
-      
+
+      AliFemtoXiTrackCut  *firstXiTrackCut    = GetXiTrackCut(firstParticle);
+      AliFemtoXiTrackCut  *secondXiTrackCut   = GetXiTrackCut(secondParticle);  
       AliFemtoV0TrackCut  *firstV0TrackCut    = GetV0TrackCut(firstParticle);
       AliFemtoV0TrackCut  *secondV0TrackCut   = GetV0TrackCut(secondParticle);
-      AliFemtoESDTrackCut *firstESDTrackCut   = GetESDTrackCut(firstParticle);
-      AliFemtoESDTrackCut *secondESDTrackCut  = GetESDTrackCut(secondParticle);
+      AliFemtoMJTrackCut *firstMJTrackCut   = GetMJTrackCut(firstParticle);
+      AliFemtoMJTrackCut *secondMJTrackCut  = GetMJTrackCut(secondParticle);
       
       // get pair cut
       AliFemtoV0PairCut               *V0pairCut      = GetV0PairCut((ESys)iSys);
+      AliFemtoXiTrackPairCut          *XitrackPairCut = GetXiTrackPairCut((ESys)iSys);
       AliFemtoV0TrackPairCut          *V0trackPairCut = GetV0TrackPairCut((ESys)iSys);
       AliFemtoPairCutRadialDistance   *tracksPairCut  = GetTracksPairCut((ESys)iSys);
-      
+
       // create monitors
       if(mcAnalysis)
       {
@@ -126,17 +131,29 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       femtoAnalysis[anIter]->SetEventCut(eventCut[anIter]);
       femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
       femtoAnalysis[anIter]->SetEnablePairMonitors(false);
-      
-      if(firstV0TrackCut)
+
+      if(firstXiTrackCut)
+	 femtoAnalysis[anIter]->SetFirstParticleCut(firstXiTrackCut);
+      else if(firstV0TrackCut)
         femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
       else
-        femtoAnalysis[anIter]->SetFirstParticleCut(firstESDTrackCut);
-      if(secondV0TrackCut)
+        femtoAnalysis[anIter]->SetFirstParticleCut(firstMJTrackCut);
+      if(secondXiTrackCut)
+        femtoAnalysis[anIter]->SetSecondParticleCut(secondXiTrackCut);
+      else if(secondV0TrackCut)
         femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut);
       else
-        femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut);
-      
-      if(V0pairCut){
+        femtoAnalysis[anIter]->SetSecondParticleCut(secondMJTrackCut);
+
+
+
+      if(XitrackPairCut)
+	{
+	  if(mcAnalysis) XitrackPairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
+
+	  femtoAnalysis[anIter]->SetPairCut(XitrackPairCut);
+	}
+      else if(V0pairCut){
         if(mcAnalysis) V0pairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
         femtoAnalysis[anIter]->SetPairCut(V0pairCut);
         
@@ -155,8 +172,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       {
         femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
       }
-      
+            
       // add Average Separation correlation function
+      /*
       avgSepCF[anIter] = new AliFemtoAvgSepCorrFctn(Form("Avgsep%stpcM%iPsi6", sysNames[iSys], imult),5000,0,500);
       
       if(iSys == kLL || iSys == kALAL || iSys == kLAL)
@@ -167,9 +185,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         avgSepCF[anIter]->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
       
       femtoAnalysis[anIter]->AddCorrFctn(avgSepCF[anIter]);
-      
+      */
       // add femtoscopic correlation function (identical or non-identical masses)
-      if(iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL)
+      if(iSys == kPXim || iSys == kAPXim || iSys == kPXip || iSys == kAPXip || iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL)
       {
         // this is in k*
         nonIdenticalCF[anIter] = new AliFemtoCorrFctnNonIdDR(Form("CF_kstar_%sM%i", sysNames[iSys], imult),500,0.0,5.0);
@@ -206,6 +224,12 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetReadCascade(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+
+  Reader->SetUseAliEventCuts(kTRUE);
+  Reader->SetTrackPileUpRemoval(kTRUE);
+  
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
@@ -219,6 +243,8 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetReadCascade(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
@@ -244,6 +270,138 @@ AliFemtoBasicEventCut* GetEventCut()
   return eventCut;
 }
 
+AliFemtoXiTrackCut* GetXiTrackCut(EPart particle)
+{
+  if(particle != kEXi && particle != kEAntiXi) return 0;
+  double XiMass = 1.32171;
+  double LambdaMass = 1.115683;
+  
+  //xi cut
+  //NOTE: the SetMass call actually is important
+  //      This should be set to the mass of the particle of interest, here the Xi
+  //      Be sure to not accidentally set it again in the Lambda cuts (for instance, when copy/pasting the lambda cuts from above!)
+  
+
+  AliFemtoXiTrackCut *tXiCut = new AliFemtoXiTrackCut();
+  // %%%%%%%%%%%%%%%%%%%%%%%% Version 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  if(particle == kEXi)
+    {
+      tXiCut->SetParticleTypeXi(AliFemtoXiTrackCut::kXiMinus);  //kXiMinus = 0 //sprawdza Nsigma<3 czy bachelor jest pionem
+      tXiCut->SetChargeXi(-1);
+    }
+  else if(particle == kEAntiXi)
+    {
+      tXiCut->SetParticleTypeXi(AliFemtoXiTrackCut::kXiPlus); //kXiPlus = 1 //sprawdza Nsigma<3 czy bachelor jest pionem
+      tXiCut->SetChargeXi(1);
+    }
+  
+
+  tXiCut->SetPtXi(0.5,100);
+  tXiCut->SetEtaXi(0.8);
+  tXiCut->SetMass(XiMass);
+  
+  tXiCut->SetInvariantMassXi(XiMass-0.005,XiMass+0.005); //++ bylo 006
+  
+  tXiCut->SetMinCosPointingAngleXi(0.97); //++ bylo 0.99
+  tXiCut->SetMaxDecayLengthXi(100.);
+  tXiCut->SetMaxDcaXi(100);
+  tXiCut->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
+
+  tXiCut->SetIgnoreOnFlyStatus(kTRUE); 
+  
+  //XiDaughters
+  tXiCut->SetMaxDcaXiDaughters(1.6);//++ bylo 0.3 
+  tXiCut->SetRadiusXiMin(0.8); //++ NEW!
+  tXiCut->SetRadiusXiMax(200); //++ NEW!
+
+
+
+  
+  if(particle == kEXi)
+    {
+      //Xi -> Lam Pi-									
+      //Bachelor cuts (here = PiM)
+      tXiCut->SetMinDcaXiBac(0.05); //++ bylo 0.03
+      tXiCut->SetEtaBac(0.8);
+      tXiCut->SetTPCnclsBac(70); //++
+      tXiCut->SetPtBac(0.3,100.);//++
+      tXiCut->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
+      //++ brakuje cut-u z bachelor do V0 (<1.3)!!!!++++++++++
+			        
+					
+      //Lambda cuts (regular V0)
+      tXiCut->SetParticleType(AliFemtoV0TrackCut::kLambda); //0=lambda
+      tXiCut->SetMinDcaV0(0.07); //++ bylo 0.1
+      tXiCut->SetInvariantMassLambda(LambdaMass-0.005,LambdaMass+0.005);
+      tXiCut->SetMinCosPointingAngle(0.97); //++ bylo 0.998
+      tXiCut->SetEta(0.8);
+      tXiCut->SetPt(0.0,100);
+      //tXiCut->SetOnFlyStatus(kFALSE);
+      tXiCut->SetMaxV0DecayLength(100.);
+      tXiCut->SetRadiusV0Min(1.4); //++ NEW!
+      tXiCut->SetRadiusV0Max(200); //++ NEW!
+					
+      //Lambda daughter cuts
+      tXiCut->SetMinDaughtersToPrimVertex(0.04,0.04); //++   pierwsza pos, druga neg, bylio (0.1,0.1); albo  pion 0.04, proton 0.03
+      tXiCut->SetMaxDcaV0Daughters(1.6); //++ bylo 0.8
+      tXiCut->SetEtaDaughters(0.8);    //++
+      tXiCut->SetPtPosDaughter(0.3,99); //++
+      tXiCut->SetPtNegDaughter(0.3,99); //++
+
+      tXiCut->SetTPCnclsDaughters(70); //++
+      tXiCut->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
+      tXiCut->SetNsigmaPosDaughter(5.0); //++
+      tXiCut->SetNsigmaNegDaughter(5.0); //++
+      tXiCut->SetRequireTOFProton(kFALSE); //++
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      tXiCut->SetMinvPurityAidHistoXi("XiPurityAid","XiMinvBeforeFinalCut",100,XiMass-0.035,XiMass+0.035);
+      tXiCut->SetMinvPurityAidHistoV0("LambdaPurityAid","LambdaMinvBeforeFinalCut",100,LambdaMass-0.035,LambdaMass+0.035);	
+    }
+  else if(particle == kEAntiXi)
+    {
+      //AXi -> ALam Pi+
+      //Bachelor cuts (here = PiP)
+      tXiCut->SetMinDcaXiBac(0.05);
+      tXiCut->SetEtaBac(0.8);
+      tXiCut->SetTPCnclsBac(70);
+      tXiCut->SetPtBac(0.3,100);
+      tXiCut->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
+      
+      //AntiLambda cuts (regular V0)
+      tXiCut->SetParticleType(AliFemtoV0TrackCut::kAntiLambda); //1=anti-lambda
+      tXiCut->SetMinDcaV0(0.07);
+      tXiCut->SetInvariantMassLambda(LambdaMass-0.005,LambdaMass+0.005);
+      tXiCut->SetMinCosPointingAngle(0.97);
+      tXiCut->SetEta(0.8);
+      tXiCut->SetPt(0.,100);
+      //tXiCut->SetOnFlyStatus(kFALSE);  //CHECK kTRUE STATUS AS WELL?
+      tXiCut->SetMaxV0DecayLength(100.);
+      tXiCut->SetRadiusV0Min(1.4); //++ NEW!
+      tXiCut->SetRadiusV0Max(200); //++ NEW!
+      //Lambda daughter cuts
+      tXiCut->SetMinDaughtersToPrimVertex(0.04,0.04);
+      tXiCut->SetMaxDcaV0Daughters(1.6);
+      tXiCut->SetEtaDaughters(0.8);
+      tXiCut->SetPtPosDaughter(0.3,99); //0.16 for pions
+      tXiCut->SetPtNegDaughter(0.3,99); //0.5 for anti-protons
+      tXiCut->SetTPCnclsDaughters(70);
+      tXiCut->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
+      tXiCut->SetNsigmaPosDaughter(5.0); //++
+      tXiCut->SetNsigmaNegDaughter(5.0); //++
+      tXiCut->SetRequireTOFProton(kFALSE); //++
+      
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      
+      tXiCut->SetMinvPurityAidHistoXi("AXiPurityAid","AXiMinvBeforeFinalCut",100,XiMass-0.035,XiMass+0.035);
+      tXiCut->SetMinvPurityAidHistoV0("AntiLambdaPurityAid","AntiLambdaMinvBeforeFinalCut",100,LambdaMass-0.035,LambdaMass+0.035);
+    }
+
+
+  return tXiCut;
+}
+
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
 {
   if(particle != kELambda && particle != kEAntiLambda) return 0;
@@ -254,7 +412,7 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
   particleCut->SetEta(0.8);
   particleCut->SetPt(0.5, 5.0);
   particleCut->SetEtaDaughters(0.8);
-  particleCut->SetTPCnclsDaughters(80);
+  //particleCut->SetTPCnclsDaughters(80);
   particleCut->SetNdofDaughters(4.0);
   particleCut->SetStatusDaughters(AliESDtrack::kTPCrefit);
   particleCut->SetOnFlyStatus(kFALSE);
@@ -282,29 +440,45 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
   return particleCut;
 }
 
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle)
+AliFemtoMJTrackCut* GetMJTrackCut(EPart particle)
 {
   if(particle != kEProton && particle != kEAntiProton) return 0;
   
-  AliFemtoESDTrackCut *particleCut = new AliFemtoESDTrackCut();
+  AliFemtoMJTrackCut *particleCut = new AliFemtoMJTrackCut();
+  double ProtonMass = 0.938272013;
   
-  particleCut->SetMostProbableProton();
-  particleCut->SetMass(0.938272013);
+  particleCut->SetMostProbable(18);
+  particleCut->SetMass(ProtonMass);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetStatus(AliESDtrack::kTPCin);
-  particleCut->SetminTPCncls(80);
-  particleCut->SetRemoveKinks(kTRUE);
-  particleCut->SetLabel(kFALSE);
-  particleCut->SetMaxTPCChiNdof(4.0);
-  particleCut->SetMaxImpactXY(2.8);
-  particleCut->SetMaxImpactZ(3.2);
+  //particleCut->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+  //particleCut->SetminTPCncls(80);
+  //particleCut->SetRemoveKinks(kTRUE);
+  //particleCut->SetLabel(kFALSE);
+  //particleCut->SetMaxTPCChiNdof(4.0);
+  //particleCut->SetMaxImpactXY(2.8);
+  //particleCut->SetMaxImpactZ(3.2);
   particleCut->SetNsigma(3.0);
+  particleCut->SetNsigma2(3.0);
   particleCut->SetNsigmaTPCTOF(kTRUE);
+  particleCut->SetElectronRejection(kTRUE);
   particleCut->SetCharge(particle == kEProton ? 1.0 : -1.0);
   particleCut->SetPt(0.7, particle == kEProton ? 4.0 : 5.0);
   
   return particleCut;
 }
+
+AliFemtoXiTrackPairCut* GetXiTrackPairCut(ESys system)
+{
+  AliFemtoXiTrackPairCut *pairCut = 0;
+  
+  if(system == kPXim || system == kAPXim || system == kPXip || system == kAPXip)
+  {
+
+    pairCut = new AliFemtoXiTrackPairCut();
+  }
+  return pairCut;
+}
+
 
 AliFemtoV0PairCut* GetV0PairCut(ESys system)
 {
@@ -419,6 +593,11 @@ void GetParticlesForSystem(ESys system, EPart &firstParticle, EPart &secondParti
   if(system == kPP)   {firstParticle = kEProton;       secondParticle = kEProton;}
   if(system == kPAP)  {firstParticle = kEProton;       secondParticle = kEAntiProton;}
   if(system == kAPAP) {firstParticle = kEAntiProton;   secondParticle = kEAntiProton;}
+  if(system == kPXim) {firstParticle = kEXi; secondParticle = kEProton;}
+  if(system == kAPXim) {firstParticle = kEXi; secondParticle = kEAntiProton;}
+  if(system == kPXip) {firstParticle = kEAntiXi; secondParticle = kEProton;}
+  if(system == kAPXip) {firstParticle = kEAntiXi; secondParticle = kEAntiProton;}
+
 }
 
 

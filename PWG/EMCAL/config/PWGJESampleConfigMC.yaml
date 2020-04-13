@@ -10,7 +10,7 @@ Clusterizer:
     enabled: true
     # Note: These are the same values as in the defualt configuration, but these often need to be set and
     #       included here as a reminder.
-    clusterizer: kClusterizerv2
+    clusterizer: kClusterizerv3
     cellTimeMin: -1
     cellTimeMax: +1
     clusterTimeLength: 1

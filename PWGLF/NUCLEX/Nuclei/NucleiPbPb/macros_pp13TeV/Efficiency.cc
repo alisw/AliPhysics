@@ -17,42 +17,44 @@ int kCentBins[10][2] = {{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,10},{11,13}
 int kNcentBins = 10;
 const char* kLegendLabels[2] = {"Deuterons","Antideuterons"};
 
-TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_labels) {
+TH1* DoEff(TH1* hNum, TH1* hDen, string name, char letter, int iC, TArrayD& cent_labels) {
   float lmin=0., lmax=0.;
-  if(iBx==0){
+  if(iC==0){
     lmin = cent_labels[0];
     lmax = cent_labels[cent_labels.GetSize()-1];
   }
   else{
-    int iC0 = kCentBins[iBx-1][0];
-    int iC1 = kCentBins[iBx-1][1];
+    int iC0 = kCentBins[iC-1][0];
+    int iC1 = kCentBins[iC-1][1];
     lmin = cent_labels[iC0-1];
     lmax = cent_labels[iC1];
   }
-  TH1* efftof = (TH1*)tof->Clone(Form("eff%s%c%i",name.data(),letter,iBx));
-  efftof->SetTitle(Form("%3.0f - %3.0f%%",lmin,lmax));
-  efftof->GetYaxis()->SetRangeUser(0.f,1.1f);
-  efftof->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  efftof->GetYaxis()->SetTitle("Efficiency x Acceptance");
-  efftof->SetMarkerStyle(24);
-  efftof->SetMarkerSize(0.7);
-  efftof->SetLineColor(kBlack);
-  efftof->SetMarkerColor(kBlack);
-  for (int iBin = 1; iBin <= efftof->GetNbinsX(); ++iBin) {
-    double num = tof->GetBinContent(iBin);
-    double den = tot->GetBinContent(iBin);
+  TH1* hEff = (TH1*)hNum->Clone(Form("eff%s%c%i",name.data(),letter,iC));
+  hEff->SetTitle(Form("%3.0f - %3.0f%%",lmin,lmax));
+  hEff->GetYaxis()->SetRangeUser(0.f,1.1f);
+  hEff->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hEff->GetYaxis()->SetTitle("Efficiency x Acceptance");
+  hEff->SetMarkerStyle(24);
+  hEff->SetMarkerSize(0.7);
+  hEff->SetLineColor(kBlack);
+  hEff->SetMarkerColor(kBlack);
+  for (int iBin = 1; iBin <= hEff->GetNbinsX(); ++iBin) {
+    double num = hNum->GetBinContent(iBin);
+    double den = hDen->GetBinContent(iBin);
     if (std::abs(den) < 1.e-24) continue;
     double eff = num/den;
-    efftof->SetBinContent(iBin, eff);
-    efftof->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
+    hEff->SetBinContent(iBin, eff);
+    hEff->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
   }
-  efftof->Write();
-  return efftof;
+  hEff->Write();
+  return hEff;
 }
 
 void Efficiency(bool MBonly = false) {
   /// Taking all the histograms from the MC file
   TFile input_file(kMCfilename.data());
+  const char* file_name_MB = (kUseIntegratedForMB) ? kMCfilename.data() : kMCfilenameMB.data();
+  TFile input_file_MB(file_name_MB);
   TFile output_file(kEfficiencyOutput.data(),"recreate");
 
   gStyle->SetOptStat(0);
@@ -68,13 +70,17 @@ void Efficiency(bool MBonly = false) {
     if (string(list_key->GetName())==Form("%schisquare0",kFilterListNames.data())) continue;
     if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
     if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
+    if (string(list_key->GetName()).find("_sectemplate") != string::npos) continue;
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
     string out_list = list_key->GetName();
+    printf("list name: %s\n",out_list.data());
+    string list_name_MB = out_list;
+    if(!kUseIntegratedForMB) list_name_MB.insert(kFilterListNames.size()-1,"MB");
+    printf("list name MB: %s\n",list_name_MB.data());
+    TTList* listMB = (TTList*)input_file_MB.Get(list_name_MB.data());
     //replace(out_list,"mpuccio","nuclei");
-    output_file.mkdir(out_list.data());
-    output_file.cd(out_list.data());
-    //if (iList) break;
-    iList++;
+    TDirectory* base_dir = output_file.mkdir(out_list.data());
+    base_dir->cd();
     /// Getting all the histograms
     TH2F  *fITS_TPC[2],*fTotal[2],*fITS_TPC_TOF[2];
     for (int iS = 0; iS < 2; ++iS) {
@@ -83,16 +89,17 @@ void Efficiency(bool MBonly = false) {
       fITS_TPC_TOF[iS] = dynamic_cast<TH2F*>(list->Get(Form("f%cITS_TPC_TOF",kLetter[iS])));
     }
 
+    /// Getting all the histograms for the MB
+    TH2F  *fITS_TPC_MB[2],*fTotal_MB[2],*fITS_TPC_TOF_MB[2];
+    for (int iS = 0; iS < 2; ++iS) {
+      fTotal_MB[iS] = dynamic_cast<TH2F*>(listMB->Get(Form("f%cTotal",kLetter[iS])));
+      fITS_TPC_MB[iS] = dynamic_cast<TH2F*>(listMB->Get(Form("f%cITS_TPC",kLetter[iS])));
+      fITS_TPC_TOF_MB[iS] = dynamic_cast<TH2F*>(listMB->Get(Form("f%cITS_TPC_TOF",kLetter[iS])));
+    }
+
     /// Taking information about centrality bins
     auto n_centralities = fTotal[0]->GetNbinsX();
     auto cent_labels = *(fTotal[0]->GetXaxis()->GetXbins());
-
-    /// Writing a reference to file, just to recover the configuration
-    /// number of centrality bins and pT bins later on
-    TH2F hReference("hReference",";Centrality (%);#it{p}_{T} (GeV/#it{c})",
-        n_centralities,cent_labels.GetArray(),fTotal[0]->GetNbinsY(),
-        fTotal[0]->GetYaxis()->GetXbins()->GetArray());
-    hReference.Write();
 
     TCanvas* cEff_MB = new TCanvas("cEff_MB","c_Eff_MB");
     TLegend leg(0.58,0.21,0.93,0.41);
@@ -111,9 +118,16 @@ void Efficiency(bool MBonly = false) {
 
     /// Loop to analyse the centrality bins individually
     for (int iS = 0; iS < 2; ++iS) {
-      TH1D *tpcMB = fITS_TPC[iS]->ProjectionY("tpc0");
-      TH1D *tofMB = fITS_TPC_TOF[iS]->ProjectionY("tof0");
-      TH1D *totMB = fTotal[iS]->ProjectionY("tot0");
+      TDirectory* dir = base_dir->mkdir(kNames[iS].data());
+      dir->cd();
+      TDirectory* MB_dir = dir->mkdir("MB");
+      MB_dir->cd();
+      TH1D *tpcMB_tmp = (TH1D*)fITS_TPC_MB[iS]->ProjectionY("tpc_MB_tmp");
+      TH1D *tpcMB = (TH1D*)tpcMB_tmp->Rebin(kNPtBins,"tpc_MB",kPtBins);
+      TH1D *tofMB_tmp = (TH1D*)fITS_TPC_TOF_MB[iS]->ProjectionY("tof_MB_tmp");
+      TH1D *tofMB = (TH1D*)tofMB_tmp->Rebin(kNPtBins,"tof_MB",kPtBins);
+      TH1D *totMB_tmp = (TH1D*)fTotal_MB[iS]->ProjectionY("tot_MB_tmp");
+      TH1D *totMB = (TH1D*)totMB_tmp->Rebin(kNPtBins,"tot_MB",kPtBins);
 
       effTofMB[iS] = DoEff(tofMB,totMB,"Tof",kLetter[iS],0,cent_labels);
       effTofMB[iS]->SetTitle("");
@@ -143,31 +157,38 @@ void Efficiency(bool MBonly = false) {
       }
 
       if(MBonly) continue;
-      for (int iBx = 1; iBx <= kNcentBins; ++iBx) {
-        TH1D *tpc = fITS_TPC[iS]->ProjectionY(Form("tpc%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
-        TH1D *tof = fITS_TPC_TOF[iS]->ProjectionY(Form("tof%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
-        TH1D *tot = fTotal[iS]->ProjectionY(Form("tot%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
+      for (int iC = 1; iC <= kNcentBins; ++iC) {
+
+        dir->cd();
+        TDirectory* cent_dir = dir->mkdir(Form("C_%d",iC));
+        cent_dir->cd();
+        TH1D *tpc_tmp = (iC==10) ? (TH1D*)fITS_TPC_MB[iS]->ProjectionY(Form("tpc%i_tmp",iC)) : (TH1D*)fITS_TPC[iS]->ProjectionY(Form("tpc%i_tmp",iC),kCentBins[iC-1][0],kCentBins[iC-1][1]);
+        TH1D *tpc = (TH1D*)tpc_tmp->Rebin(kNPtBins,Form("tpc%i",iC),kPtBins);
+        TH1D *tof_tmp = (iC==10) ? (TH1D*)fITS_TPC_TOF_MB[iS]->ProjectionY(Form("tof%i_tmp",iC)) : (TH1D*)fITS_TPC_TOF[iS]->ProjectionY(Form("tof%i_tmp",iC),kCentBins[iC-1][0],kCentBins[iC-1][1]);
+        TH1D *tof = (TH1D*)tof_tmp->Rebin(kNPtBins,Form("tof%i",iC),kPtBins);
+        TH1D *tot_tmp = (iC==10) ?  (TH1D*)fTotal_MB[iS]->ProjectionY(Form("tot%i_tmp",iC)) : (TH1D*)fTotal[iS]->ProjectionY(Form("tot%i_tmp",iC),kCentBins[iC-1][0],kCentBins[iC-1][1]);
+        TH1D *tot = (TH1D*)tot_tmp->Rebin(kNPtBins,Form("tot%i",iC),kPtBins);
 
         int color = (iS==0) ? kBlack : kRed;
-        TH1* effTof = DoEff(tof,tot,"Tof",kLetter[iS],iBx,cent_labels);
+        TH1* effTof = DoEff(tof,tot,"Tof",kLetter[iS],iC,cent_labels);
         plotting::SetHistStyle(effTof,color,20);
-        TH1* effTpc = DoEff(tpc,tot,"Tpc",kLetter[iS],iBx,cent_labels);
+        TH1* effTpc = DoEff(tpc,tot,"Tpc",kLetter[iS],iC,cent_labels);
         plotting::SetHistStyle(effTpc,color,21);
 
         tpc->Sumw2();
         tof->Sumw2();
-        int iC0 = kCentBins[iBx-1][0];
-        int iC1 = kCentBins[iBx-1][1];
-        plotting::SetHistStyle(tpc,plotting::kSpectraColors[iBx-1]);
+        int iC0 = kCentBins[iC-1][0];
+        int iC1 = kCentBins[iC-1][1];
+        plotting::SetHistStyle(tpc,plotting::kSpectraColors[iC-1]);
         tpc->SetTitle(Form("%3.0f - %3.0f%%",cent_labels[iC0-1],cent_labels[iC1]));
         tpc->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         tpc->GetYaxis()->SetTitle("Ratio to MB");
-        plotting::SetHistStyle(tof,plotting::kSpectraColors[iBx-1]);
+        plotting::SetHistStyle(tof,plotting::kSpectraColors[iC-1]);
         tof->SetTitle(Form("%3.0f - %3.0f%%",cent_labels[iC0-1],cent_labels[iC1]));
         tof->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         tof->GetYaxis()->SetTitle("Ratio to MB");
 
-        cEff[iBx-1]->cd();
+        cEff[iC-1]->cd();
         if(iS==0){
           effTof->Draw("PE");
           effTpc->Draw("PESAME");
@@ -176,27 +197,21 @@ void Efficiency(bool MBonly = false) {
           effTof->Draw("PESAME");
           effTpc->Draw("PESAME");
         }
-        legCent[iBx-1]->AddEntry(effTof,Form("%s: TPC +  TOF",kLegendLabels[iS]),"PE");
-        legCent[iBx-1]->AddEntry(effTpc,Form("%s: TPC",kLegendLabels[iS]),"PE");
+        legCent[iC-1]->AddEntry(effTof,Form("%s: TPC +  TOF",kLegendLabels[iS]),"PE");
+        legCent[iC-1]->AddEntry(effTpc,Form("%s: TPC",kLegendLabels[iS]),"PE");
         if(iS==1){
-          legCent[iBx-1]->Draw();
-          cEff[iBx-1]->Write();
+          legCent[iC-1]->Draw();
+          cEff[iC-1]->Write();
         }
 
-        // TH1* ratioTPC = (TH1*)effTpc->Clone(Form("Ratio2MBtpc%c%i",kLetter[iS],iBx));
-        // TH1* ratioTOF = (TH1*)effTof->Clone(Form("Ratio2MBtof%c%i",kLetter[iS],iBx));
-        // ratioTPC->Divide(effTpcMB[iS]);
-        // ratioTOF->Divide(effTofMB[iS]);
-        // ratioTPC->Write();
-        // ratioTOF->Write();
         tpc->Multiply(totMB);
         tpc->Divide(tot);
         tpc->Divide(tpcMB);
-        tpc->Write(Form("Ratio2MBtpc%c%i",kLetter[iS],iBx));
+        tpc->Write(Form("Ratio2MBtpc%c%i",kLetter[iS],iC));
         tof->Multiply(totMB);
         tof->Divide(tot);
         tof->Divide(tofMB);
-        tof->Write(Form("Ratio2MBtof%c%i",kLetter[iS],iBx));
+        tof->Write(Form("Ratio2MBtof%c%i",kLetter[iS],iC));
       }
     }
   }

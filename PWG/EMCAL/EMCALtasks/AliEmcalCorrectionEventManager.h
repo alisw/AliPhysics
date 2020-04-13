@@ -5,7 +5,7 @@
 
 /**
  * @class AliEmcalCorrectionEventManager
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Class to manage the current event for correction components in the EMCal correction framework
  *
  * Manages the input event given to each correction component. The manager is given access to both the

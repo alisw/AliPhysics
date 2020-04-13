@@ -122,9 +122,14 @@ public:
   void   SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
   void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-  void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
+  void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; fCutOnLambdaV = resonances; fCutOnK0sV = resonances; }
+  void   SetCustomCut(Float_t cutOnCustomMass, Float_t cutOnCustomFirst, Float_t cutOnCustomSecond, Float_t cutOnCustomV) { fCutOnCustomMass = cutOnCustomMass; fCutOnCustomFirst = cutOnCustomFirst; fCutOnCustomSecond = cutOnCustomSecond; fCutOnCustomV = cutOnCustomV; }
   void   SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
+  void   SetCutOnPhi(Float_t cutOnPhi) { fCutOnPhiV = cutOnPhi; }
   void   SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
+  void   SetCutOnRho(Float_t cutOnRho) { fCutOnRhoV = cutOnRho; }
+  void   SetCutOnLambda(Float_t cutOnLambda) { fCutOnLambdaV = cutOnLambda; }
+  void   SetCutOnK0s(Float_t cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void   SetFillpT(Bool_t flag) { fFillpT = flag; }
@@ -287,8 +292,16 @@ private:
   Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
   Float_t fCutConversionsV;        // cut on conversions (inv mass)
   Float_t fCutResonancesV;         // cut on resonances (inv mass)
-  Float_t fCutOnPhi;             // cut on Phi as well with the same resonance cut as for the others
-  Float_t fCutOnRho;             // cut on Rho as well with the same resonance cut as for the others
+  Float_t fCutOnLambdaV;          // cut on Lambda (inv mass)
+  Float_t fCutOnK0sV;             // cut on K0s (inv mass)
+  Bool_t fCutOnPhi;               // cut on Phi
+  Float_t fCutOnPhiV;             // cut on Phi (inv mass)
+  Bool_t fCutOnRho;               // cut on Rho
+  Float_t fCutOnRhoV;             // cut on Rho (inv mass)
+  Float_t fCutOnCustomMass;      // user-defined inv mass value
+  Float_t fCutOnCustomFirst;     // user-defined mass of the 1st particle
+  Float_t fCutOnCustomSecond;    // user-defined mass of the 2nd particle
+  Float_t fCutOnCustomV;         // cut on user-defined value (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Bool_t fFillOnlyStep0; 	   // fill only step 0
   Bool_t fSkipStep6;		   // skip step 6 when filling

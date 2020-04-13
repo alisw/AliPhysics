@@ -176,6 +176,14 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 }
 
 //---------------------------------------------------------------------------
+AliRDHFCutsDplustoKpipi::~AliRDHFCutsDplustoKpipi(){
+  //
+  // Destructor
+  //
+  if(fMaxd0MeasMinusExp) delete [] fMaxd0MeasMinusExp;
+  if(fMaxd0) delete [] fMaxd0;
+}
+//---------------------------------------------------------------------------
 void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
   // store the cuts
@@ -537,10 +545,20 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
-    
-    Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
-    Double_t mDplus=d->InvMassDplus();
-    if(TMath::Abs(mDplus-mDplusPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+
+    //sec vert
+    Double_t sigmavert=d->GetSigmaVert(aod);
+    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+
+    // Decay length and pointing angle
+    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    if(fScaleNormDLxyBypOverPt){
+      if(d->NormalizedDecayLengthXY()*d->P()/pt<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }else{
+      if(d->NormalizedDecayLengthXY()<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
+    if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(13,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     //2track cuts
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
@@ -564,19 +582,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     
     if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(2)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
-    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-    if(fScaleNormDLxyBypOverPt){
-      if(d->NormalizedDecayLengthXY()*d->P()/pt<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-    }else{
-      if(d->NormalizedDecayLengthXY()<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-    }
-    if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(13,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-
-    //sec vert
-    Double_t sigmavert=d->GetSigmaVert(aod);
-    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     // d0meas-exp
     if(fUsed0MeasMinusExpCut){
@@ -597,6 +603,10 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       Double_t d0=d->ImpParXY()*10000.;
       if(TMath::Abs(d0)>fMaxd0[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
     }
+
+    Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+    Double_t mDplus=d->InvMassDplus();
+    if(TMath::Abs(mDplus-mDplusPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);

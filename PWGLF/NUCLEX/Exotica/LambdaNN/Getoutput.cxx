@@ -28,13 +28,15 @@ Getoutput::Getoutput(const char *filename,Int_t nsTri, Int_t nsPi) {
 fOutFilename+=filename;
  fOutputList = new TList();
  fOutputList->SetOwner(kTRUE);
- fRejectBkg = kTRUE;
+ fRejectLikesign = kTRUE;
  fInputList= new TList();
  fInputList->SetOwner(kTRUE);
  fIncludePidTOF=kFALSE;//FALSE;
  fUseAODCut=kFALSE;//kTRUE;
+ fCaio=kFALSE;
  fIsMC=kFALSE;
  f3HPcut=3;
+ f3Hcharge=2;
  TFile *grFile = TFile::Open("outAll.root"); // out2.root has 2sigma cut instead of 3 sigma cut for tritons;
  grTriPs =(TGraph*)grFile->Get(Form("tP%is",nsTri)); 
  grTriMs =(TGraph*)grFile->Get(Form("tM%is",nsTri)); 
@@ -59,8 +61,8 @@ void Getoutput::StoreOutputData()
   TObject *obj = fOutputList->At(elem);
   fOutFile->WriteObjectAny(obj,obj->ClassName(),obj->GetName());
  }
-   fOutFile->Write();
-    fOutFile->Close();
+
+   fOutFile->Close();
  //if(fInputList) ClearInputData();
 printf("end storing\n"); 
 }
@@ -163,6 +165,15 @@ void Getoutput::ClearInputData(){
   } else return;
 }
 
+
+bool Getoutput::EventSelectionSimple (Double_t *arr)
+{
+ if(arr[kV0mom] < param[kParMinPv0]) return kFALSE;
+ if (arr[kDcaTriZ] > param[kParDcaTriZ]) return kFALSE;
+ if (arr[kCosP] < param[kParCosP]) return kFALSE;
+ if (arr[kV0Dca] > param[kParV0Dca]) return kFALSE;
+}
+
 bool Getoutput::EventSelectionAOD (Double_t *arr)
 {
  if(arr[kV0mom] < param[kParMinPv0]) return kFALSE;
@@ -195,14 +206,17 @@ Double_t Getoutput::GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Dou
  return v0Sum.M ();
 }
 
-void Getoutput::BookOutputData(){
+void Getoutput::BookOutputData(const char *name){
   printf("initialò filename %s \n",fOutFilename.Data());
  fOutFilename.ReplaceAll(".root","");
  fOutFilename+=Form("3H%i",f3Hcharge);
  if(fUseAODCut)fOutFilename+=".AODcut.";
  if(fIncludePidTOF)fOutFilename+=".3HTOFpid.";
- if(fIsMC) fOutFilename+=Form(".MC.root");
+ if(fCaio) fOutFilename+="CaioCuts.";
+ fOutFilename+=name;
+ if(fIsMC) fOutFilename+=Form("MC.root");
  else fOutFilename+=("root");
+ printf("filename is : %s \n",fOutFilename.Data());
  fOutFile = TFile::Open(fOutFilename.Data(),"recreate"); 
 
  Double_t mRange[2] = { 2.94, 3.1 };
@@ -388,6 +402,7 @@ void Getoutput::BookOutputData(){
  hEv->GetXaxis ()->SetBinLabel (9, "MB Events w/|Vz|<10cm");
  hEv->GetXaxis ()->SetBinLabel (10, "Any Events");
  hEv->GetXaxis ()->SetBinLabel (11, "Any Events w/|Vz|<10cm");
+ hEv->GetXaxis ()->SetBinLabel (12, "other");
  fOutputList->AddLast(hEv);
 
  hMonitorPlot = new TH1I("hMonitorPlot","V0 selected",12,-0.5,11.5);
@@ -402,7 +417,7 @@ void Getoutput::BookOutputData(){
  hMonitorPlot->GetXaxis()->SetBinLabel(9,"TOF m2 cut");
  hMonitorPlot->GetXaxis()->SetBinLabel(10,"!TPC pid CUT (>91)");
   fOutputList->AddLast(hMonitorPlot);
- ntTot = new TNtupleD ("ntTot", "ntTot", "V0Mom:piMom:triMom:v0dca:dcaTriXY:dcaV0d:decayL:decayLxy:CosThetaP:SigIIvtx:invM:bkgMassType:isHele:ptArm:alphaArm:tpcSignal:TriMom:TRDsignal:nITSc");
+ ntTot = new TNtupleD ("ntTot", "ntTot", "V0Mom:piMom:triMom:v0dca:dcaTriXY:dcaV0d:decayL:decayLxy:CosThetaP:invM:bkgMassType:isHele:alphaArm:ptArm:tpcSignal:TriMom:pionMom:TRDsignal:nITSc:nSigmaElTOF");
  fOutputList->AddLast(ntTot);
 
  return;
@@ -442,33 +457,50 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
   hn->GetEntry (iv0);
   Double_t *arr = hn->GetArgs ();
-
+//  printf("sign %i \n",(Int_t)arr[kSign]);
  //check on the V0 daughter sign
-  if (fRejectBkg)
+  if (fRejectLikesign)
   {
-   if (TMath::Abs (arr[kSign]) == 11) continue; 
-   if (Hcharge == 1 && arr[kSign] == -9) continue;
+   if (TMath::Abs (arr[kSign]) == 11) continue; // reject +1(pion charge) + 10(triton charge x 10)  = 11 (or -1 -10 = -11) <=> same charges 
+   if (Hcharge == 1 && arr[kSign] == -9) continue; // if one wants only + tritons => one needs 
    else if (Hcharge == -1 && arr[kSign] == 9) continue;
   } else {
    if (TMath::Abs (arr[kSign]) == 9) continue;
+  //  printf("   Entry %i -> Sign %i = 3H %i \n",iv0,(Int_t)arr[kSign],(Int_t)Hcharge);
    if (Hcharge == 1 && arr[kSign] == -11) continue;
    else if (Hcharge == -1 && arr[kSign] == 11) continue;
   }
+ //printf("ok -> Entry %i -> Sign %i = 3H %i \n",iv0,(Int_t)arr[kSign],(Int_t)Hcharge);
 
-  
   TVector3 pPion (arr[0], arr[1], arr[2]);
   TVector3 pTriton (arr[3], arr[4], arr[5]);
+  if(!fRejectLikesign && Hcharge==1) {
+  // th4e way in which they are filled, needs a switch between pion and triton at this stage
+  pPion.SetXYZ(arr[3],arr[4],arr[5]);
+  pTriton.SetXYZ(arr[0], arr[1], arr[2]);
+ }
   pionMom = pPion.Mag();
   tritonMom = pTriton.Mag();
+  TVector3 sumV0=pPion+pTriton;
+ 
+  //if(tritonMom>arr[kV0mom]) printf("weird triton %f pion %f and sum %f, whereas stored is %f  angle %f \n",tritonMom,pionMom,sumV0.Mag(),arr[kV0mom],pPion.Angle(pTriton)*TMath::RadToDeg()); 
   Double_t pionPt = TMath::Sqrt (arr[0] * arr[0] + arr[1] * arr[1]);
   Double_t tritonPt = TMath::Sqrt (arr[3] * arr[3] + arr[4] * arr[4]);
+   if(!fRejectLikesign && Hcharge==1){
+   pionPt = TMath::Sqrt (arr[3] * arr[3] + arr[4] * arr[4]);
+   tritonPt = TMath::Sqrt (arr[0] * arr[0] + arr[1] * arr[1]);
+   }
+ //printf("ok -> Sign %i = 3H %i (v0 mom %f) pion pt %f, triton pt %f (pi Lim param %f  and parMinP %f) \n",(Int_t)arr[kSign],(Int_t)Hcharge,arr[kV0mom],pionPt,tritonPt,param[kParPiLim],param[kParMinP]);
   hMonitorPlot->Fill(0);
   if (pionPt > param[kParPiLim]) continue;
-   if (pionPt < param[kParMinP]) continue;
+//printf("ok after pion Pt\n");
+   //if (pionMom < param[kParMinP]) continue;
+   if (pionMom < param[kParMinP]) continue;
+//printf("ok after pion min P \n");
    hMonitorPlot->Fill(1);
   if (tritonPt < param[kPar3hLim]) continue;
+  //if (tritonMom < param[kPar3hLim]) continue;
    if (tritonMom > param[kParMaxP3H])  continue;
-   //if (tritonPt > param[kParMaxP3H])  continue;
    hMonitorPlot->Fill(2);
   Double_t nsigmapi = TMath::Abs (arr[kNSPi]);
   Double_t nsigmapiTof = TMath::Abs (arr[kSigPiFromPiTof]);
@@ -484,7 +516,9 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
  hMonitorPlot->Fill(4);
  //if(nsigmatri>2.999) printf("AFTER : nsigmapi %f , nsigmaTri %f, limit %f \n",nsigmapi,nsigmatri,param[kParNsigmaPID]);
-  if (!EventSelectionAOD(arr)) continue;
+  if (fCaio){
+  if(!EventSelectionAOD(arr)) continue;
+  } else if(!EventSelectionSimple(arr)) continue;
   v0Mom = arr[kV0mom];
   hArmPlot->Fill (arr[kAlphaArm], arr[kPtArm]);
   hMonitorPlot->Fill(5);
@@ -577,19 +611,21 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   TDatabasePDG *d; 
   if(fIsMC) d =  TDatabasePDG::Instance ();
   Double_t TRDsig = arr[kTRDsig]; 
-  Double_t tmvaArray[19] = { v0Mom, pionPt, tritonPt, arr[kV0Dca], arr[kDcaTriXY], arr[kV0dcaD], arr[kDecayPath], arr[kDecayPathXY], arr[kCosP], arr[kV0VtxErrSum], LNN, (Double_t)selection, arr[kIsTrdEle],arr[kAlphaArm], arr[kPtArm],arr[kTriTPCsignal],tritonMom,TRDsig,arr[kNclusITS]};
+  Double_t tmvaArray[20] = { v0Mom, pionPt, tritonPt, arr[kV0Dca], arr[kDcaTriXY], arr[kV0dcaD], arr[kDecayPath], arr[kDecayPathXY], arr[kCosP], LNN, (Double_t)selection, arr[kIsTrdEle],arr[kAlphaArm], arr[kPtArm],arr[kTriTPCsignal],tritonMom,pionMom,TRDsig,arr[kNclusITS],arr[kSigElTof]};
   if(!fIsMC) {
    ntTot->Fill(tmvaArray); 
   }
   else {
+   // left shift in the number is a bug
+   printf("Mum Pi %i    Mum Tri  %i   - Pi %i  Tri %i \n", (Int_t)arr[kMumPiPdgCode],(Int_t)arr[kMumTriPdgCode],(Int_t)arr[kPiPdgCode],(Int_t)arr[kTriPdgCode]);
    if (arr[kMumPiPdgCode] == arr[kMumTriPdgCode] && TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) {
-    tmvaArray[17]=arr[kMumTriPdgCode+1]; 
+    //tmvaArray[17]=arr[kMumTriPdgCode]; 
     ntTot->Fill (tmvaArray);      // true LNN inv Mass are in that interval 
-    printf("analyzing MC, please check that TRD is correctly stored in ntTot\n");
-   }
+    printf("analyzing MC, Filling the ntuple (please check that TRD is correctly stored in ntTot) \n");
    // 1010000030 - LNN
    // 1000010030 - 3H
    if(TMath::Abs (arr[kMumPiPdgCode]) == 1010000030) hMassSignal->Fill(LNN);
+   }
    else {
     //printf("mother pi %i, mother triton %i \n",(Int_t) arr[kMumPiPdgCode],(Int_t) arr[kMumTriPdgCode]);  
     Int_t binPi[2] = { nPossible-1,nPossible/2}; //first is mother, second is true particle
@@ -771,6 +807,10 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   cDiff->Divide (2,2);
   for(Int_t iD=1; iD<5;iD++){
     cDiff->cd(iD);
+   if(!hMass[iD]) {
+     printf("no hmass histo, continuing");
+     continue;
+     }
     hMass[iD]->DrawCopy();
     hMassTrd[iD]->SetFillColor(kGreen);
      hMassTrd[iD]->SetFillStyle(3001);

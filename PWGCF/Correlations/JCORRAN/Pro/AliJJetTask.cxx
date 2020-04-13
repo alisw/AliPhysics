@@ -73,6 +73,7 @@ AliJJetTask::AliJJetTask() :
   debug(0),
   fIsMC(0),
   fnR(0),
+  fDoFullJets(0),
   fACside(0),
   fnkt(0)
 
@@ -100,6 +101,7 @@ AliJJetTask::AliJJetTask(const char *name, const int nJetFinder) :
   debug(0),
   fIsMC(0),
   fnR(0),
+  fDoFullJets(0),
   fACside(0),
   fnkt(0)
 {
@@ -123,6 +125,7 @@ AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
   debug(ap.debug),
   fIsMC(ap.fIsMC),
   fnR(ap.fnR),
+  fDoFullJets(ap.fnR),
   fACside(ap.fACside),
   fnkt(ap.fnkt)
 {

@@ -110,10 +110,10 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
     }
   }
 
-  cout << "[AddTaskPionPion]\n"
-          "   output: '" << output_filename << "'\n"
-          "   macro: '" << macro << "'\n"
-          "   params: '" << params << "'\n";
+  std::cout << "[AddTaskPionPion]\n"
+               "   output: '" << output_filename << "'\n"
+               "   macro: '" << macro << "'\n"
+               "   params: '" << params << "'\n";
 
   // The analysis config macro for PionPionFemto accepts a single string
   // argument, which it interprets.

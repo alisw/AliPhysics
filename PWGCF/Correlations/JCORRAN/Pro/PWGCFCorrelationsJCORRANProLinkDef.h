@@ -15,10 +15,13 @@
 #pragma link C++ class AliJJetAnalysis+;
 #pragma link C++ class AliAnalysisTaskBSEmbedding+;
 #pragma link C++ class AliBSDiJetTask+;
+#pragma link C++ class AliAnalysisTaskRidge+;
+#pragma link C++ class AliJPtHardXection+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliJCDijetTask+;
 #pragma link C++ class AliJCDijetHistos+;
+#pragma link C++ class AliJCDijetAna+;
 #endif
 
 #endif /* __CINT__ */

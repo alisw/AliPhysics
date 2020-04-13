@@ -7,7 +7,7 @@
 
 /**
  * @class AliEmcalCorrectionClusterEnergyVariation
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Cluster energy variation component in the EMCal correction framework, for EMCal systematics.
  *
  * This component allows the cluster energy to be scaled by a constant factor and smeared by a random value drawn

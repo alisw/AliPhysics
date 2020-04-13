@@ -55,9 +55,6 @@ class AliCalorimeterUtils;
 #include "AliAnaWeights.h"
 #include "AliMCAnalysisUtils.h"
 
-// Jets
-class AliAODJetEventBackground;
-
 class AliCaloTrackReader : public TObject {
 
 public: 
@@ -170,6 +167,12 @@ public:
   void             SetEMCALNCellsCut(Int_t nc)             { fEMCALNCellsCut = nc         ; }
   void             SetPHOSNCellsCut (Int_t nc)             { fPHOSNCellsCut  = nc         ; }
   
+  Float_t          GetEMCALEnDepNCellsCutEnMin()  const { return fEMCALNCellsCutEnDepEnMin; }
+  Float_t          GetEMCALEnDepNCellsCutConst()  const { return fEMCALNCellsCutEnDepConstant; }
+  Float_t          GetEMCALEnDepNCellsCutSlope()  const { return fEMCALNCellsCutEnDepSlope; }
+  void             SetEMCALEnDepNCellsCut(Float_t emin, Float_t constant, Float_t slope)             
+  { fEMCALNCellsCutEnDepEnMin = emin ;  fEMCALNCellsCutEnDepConstant = constant; fEMCALNCellsCutEnDepSlope = slope ;}
+  
   // Track DCA cut
   
   Bool_t           AcceptDCA(Float_t pt, Float_t dca);
@@ -216,6 +219,12 @@ public:
   void             SwitchOnUseParametrizedTimeCut()        { fUseParamTimeCut = kTRUE      ; }
   void             SwitchOffUseParametrizedTimeCut()       { fUseParamTimeCut = kFALSE     ; }
 
+  Float_t          GetEMCALHighEnergyNdiffCut()     const  { return fEMCALHighEnergyNdiffCut;}
+  void             SetEMCALHighEnergyNdiffCut(Float_t en)  { fEMCALHighEnergyNdiffCut = en ; }
+ 
+  Float_t          GetEMCALMinCellEnNdiffCut()      const  { return fEMCALMinCellEnNdiffCut; }
+  void             SetEMCALMinCellEnNdiffCut(Float_t en)   { fEMCALMinCellEnNdiffCut  = en ; }
+  
   // Fidutial cuts
   
   virtual AliFiducialCut * GetFiducialCut()                { 
@@ -330,11 +339,30 @@ public:
                                                              fRejectEventsWithBit.AddAt(bit,n) ; }
   /// Activate removal of LED events depending on number of cells in SM
   /// \param opt: 1- default, check only SM3, 2- or larger check all SMs
-  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
-  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; }
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
   
+  void             SwitchOnLEDEventsRemoval(Int_t opt = 1) { fRemoveLEDEvents       = opt    ; }
+  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = 0      ; }
+  
+  void             SetLEDHighEnergyCutSM(Float_t e)        { fLEDHighEnergyCutSM         = e ; }   
+  void             SetLEDHighNCellsCutSM(Int_t   n)        { fLEDHighNCellsCutSM         = n ; }   
+  void             SetLEDLowEnergyCutSM3(Float_t e)        { fLEDLowEnergyCutSM3         = e ; }   
+  void             SetLEDLowNCellsCutSM3(Int_t   n)        { fLEDLowNCellsCutSM3         = n ; }   
+  void             SetLEDMinCellEnergy  (Float_t e)        { fLEDMinCellEnergy           = e ; }   
+  void             SetLEDMaxCellEnergy  (Float_t e)        { fLEDMaxCellEnergy           = e ; }  
+  
+  void             SwitchOnLEDStripEventsRemoval()         { fRemoveLEDStripEvents  = kTRUE  ; }
+  void             SwitchOffLEDStripEventsRemoval()        { fRemoveLEDStripEvents  = kFALSE ; }
+  
+  void             SetLEDStripHighEnergyCutSM(Float_t eFull, Float_t eThird)   
+                                                           { fLEDHighEnergyCutStrip[0] = eFull ; fLEDHighEnergyCutStrip[1] = eThird ; }   
+  void             SetLEDStripHighNCellsCutSM(Int_t   nFull, Int_t   nThird) 
+                                                           { fLEDHighNCellsCutStrip[0] = nFull ; fLEDHighNCellsCutStrip[0] = nThird ; }   
+  void             SetLEDStripLowEnergyCutSM3(Float_t e)   { fLEDLowEnergyCutSM3Strip    = e ; }   
+  void             SetLEDStripLowNCellsCutSM3(Int_t   n)   { fLEDLowNCellsCutSM3Strip    = n ; }   
+  void             SetLEDEventMaxNumberOfStrips(Int_t n)   { fLEDEventMaxNumberOfStrips  = n ; }   
+
   void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
@@ -586,6 +614,8 @@ public:
     if(fDataType!=kMC) return (AliMultSelection * ) fInputEvent->FindListObject("MultSelection") ; 
     else               return 0x0                                                                ; } 
 
+  void             SetMultiplicityWithPhysSel( Bool_t ps ) { fMultWithEventSel  = ps             ; }
+  
   virtual void     SwitchOnAliCentrality ()                { fUseAliCentrality  = kTRUE          ; }
   virtual void     SwitchOffAliCentrality()                { fUseAliCentrality  = kFALSE         ; }
   
@@ -763,10 +793,18 @@ public:
   virtual TString GetInputNonStandardJetBranchName()          { return fInputNonStandardJetBranchName   ; }
   
   virtual void FillInputBackgroundJets() ;
-  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  //  virtual AliAODJetEventBackground* GetBackgroundJets() const { return fBackgroundJets                 ; }
+  virtual TClonesArray* GetBackgroundJets() const { return fBackgroundJets                 ; }
   virtual void SetInputBackgroundJetBranchName(TString name) { fInputBackgroundJetBranchName   = name ; }
   virtual TString GetInputBackgroundJetBranchName()          { return fInputBackgroundJetBranchName   ; }
 
+  //------------------
+  // PAR runs
+  //------------------
+  Bool_t IsParRun()                                     const { return fParRun   ; }     
+  void SwitchOnParRun()                                       { fParRun = kTRUE  ; }
+  void SwitchOffParRun()                                      { fParRun = kFALSE ; }
+  
  protected:
   
   Int_t	           fEventNumber;                   ///<  Event number.
@@ -792,7 +830,13 @@ public:
   Float_t          fPHOSBadChMinDist ;             ///<  Minimal distance to bad channel to accept cluster in PHOS, cm
 
   Int_t            fEMCALNCellsCut ;               ///<  Accept for the analysis EMCAL clusters with more than fNCellsCut cells
+  Float_t          fEMCALNCellsCutEnDepEnMin ;     ///<  Minimum cluster energy to apply energy dependent N cell cut in EMCal
+  Float_t          fEMCALNCellsCutEnDepConstant ;  ///<  Constant value of energy dependent N cell cut in EMCal
+  Float_t          fEMCALNCellsCutEnDepSlope ;     ///<  Slope value of energy depedent N cell cut in EMCal
   Int_t            fPHOSNCellsCut ;                ///<  Accept for the analysis PHOS clusters with more than fNCellsCut cells
+  
+  Float_t          fEMCALHighEnergyNdiffCut;       ///<  Minimum energy for which the cut on n diff T-Card = 0 is applied
+  Float_t          fEMCALMinCellEnNdiffCut;        ///<  Minimum energy of cells used counting n diff in T-Card 
   
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
@@ -911,8 +955,24 @@ public:
   
   Float_t          fZvtxCut ;	                     ///<  Cut on vertex position.
   Bool_t           fAcceptFastCluster;             ///<  Accept events from fast cluster, exclude these events for LHC11a.
+ 
+  // LED events
   Int_t            fRemoveLEDEvents;               ///<  Remove events where LED was wrongly firing - only EMCAL LHC11a for this equal to 1, generalized to any SM for larger
-  
+  Float_t          fLEDHighEnergyCutSM;            ///<  SM is too active if energy above this value, likely LED event 
+  Int_t            fLEDHighNCellsCutSM;            ///<  SM is too active if n cells above this value, likely LED event 
+  Float_t          fLEDLowEnergyCutSM3;            ///<  SM3 low activity if energy below this value, check activity on other SM for LED event (Run2)
+  Int_t            fLEDLowNCellsCutSM3;            ///<  SM3 low activity if n cells below this value, check activity on other SM LED event (Run2)
+  Float_t          fLEDMinCellEnergy;              ///<  Count or sum cells energy above this value to determine if event had LEDs
+  Float_t          fLEDMaxCellEnergy;              ///<  Count or sum cells energy below this value to determine if event had LEDs
+
+  Int_t            fRemoveLEDStripEvents;          ///<  Remove events where an LED strip or more was wrongly firing - only EMCAL 
+  Int_t            fLEDEventMaxNumberOfStrips;     ///<  Cut on events with a number of too active strips
+  Float_t          fLEDHighEnergyCutStrip[2];      ///<  SM strip is too active if energy above this value, likely LED event. [0] Full SM, [1] 1/3 SM 
+  Int_t            fLEDHighNCellsCutStrip[2];      ///<  SM strip is too active if n cells above this value, likely LED event. [0] Full SM, [1] 1/3 SM  
+  Float_t          fLEDLowEnergyCutSM3Strip;       ///<  SM3 strip low activity if energy below this value, check activity on other SM for LED event (Run2)
+  Int_t            fLEDLowNCellsCutSM3Strip;       ///<  SM3 strip low activity if n cells below this value, check activity on other SM LED event (Run2)
+ 
+  // Triggered event selection
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -968,6 +1028,7 @@ public:
   
   // Centrality/Event plane
   Bool_t           fUseAliCentrality;              ///<  Select as centrality estimator AliCentrality (Run1) or AliMultSelection (Run1 and Run2)
+  Bool_t           fMultWithEventSel;              ///<  Embedded event selection in multiplicity task activated
   TString          fCentralityClass;               ///<  Name of selected centrality class.     
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
@@ -978,7 +1039,8 @@ public:
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
   TString          fInputNonStandardJetBranchName; ///<  Name of non standard jet branch.
   Bool_t           fFillInputBackgroundJetBranch;  ///<  Flag to use data from background jets.
-  AliAODJetEventBackground * fBackgroundJets;      //!<! Background jets.
+  //  AliAODJetEventBackground * fBackgroundJets;      //!<! Background jets.
+  TClonesArray * fBackgroundJets;      //!<! Background jets.
   TString          fInputBackgroundJetBranchName;  ///<  Name of background jet branch.
 
   TArrayI          fAcceptEventsWithBit;           ///<  Accept events if trigger bit is on.
@@ -987,17 +1049,28 @@ public:
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
-    
+
+  //handle runs affected by PAR
+  Bool_t           fParRun;                        ///<  Flag set true when run affected by PAR
+  Short_t          fCurrentParIndex;               //!<! temporal PAR number based on event global to get L1 phase correction in PAR runs
+  
   // cut control histograms
   
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
   TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
+  TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
  
+  TH2F  *          fhEMCALNSumEnCellsPerSM;        //!<! Control histogram of LED events rejection
+  TH2F  *          fhEMCALNSumEnCellsPerSMAfter;   //!<! Control histogram of LED events rejection, after cut
+  TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
+  TH2F  *          fhEMCALNSumEnCellsPerStrip;     //!<! Control histogram of LED events on strips rejection, after LED SM rejection
+  TH2F  *          fhEMCALNSumEnCellsPerStripAfter;//!<! Control histogram of LED events on strips rejection, after strip LED and SM rejection
+  
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   
@@ -1021,7 +1094,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,81) ;
+  ClassDef(AliCaloTrackReader,86) ;
   /// \endcond
 
 } ;

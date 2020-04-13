@@ -15,6 +15,7 @@
 #include <TH3F.h>
 #include <TProfile2D.h>
 #include <TGraphErrors.h>
+#include <THn.h>
 
 #include <AliReducedPairInfo.h>
 
@@ -24,6 +25,7 @@ class AliReducedEventPlaneInfo;
 class AliReducedBaseTrack;
 class AliReducedTrackInfo;
 class AliReducedCaloClusterInfo;
+class AliReducedCaloClusterTrackMatcher;
 class AliKFParticle;
 
 //_____________________________________________________________________
@@ -256,8 +258,21 @@ class AliReducedVarManager : public TObject {
     kVtxYspd,           // vtx Y from spd
     kVtxZspd,           // vtx Z from spd
     kDeltaVtxZspd,         // vtxZ - vtxZspd
+    kTPCpileupZAC,      // TPC pileup event Z from A&C sides  
+    kTPCpileupZA,       // TPC pileup event Z from A side
+    kTPCpileupZC,       // TPC pileup event Z from C side
+    kTPCpileupContributorsAC,    // TPC pileup event contributors from A&C sides
+    kTPCpileupContributorsA,     // TPC pileup event contributors from A side
+    kTPCpileupContributorsC,     // TPC pileup event contributors from C side
+    kTPCpileupZAC2,      // TPC pileup event Z with larger DCAz selection from A&C sides  
+    kTPCpileupZA2,       // TPC pileup event Z with larger DCAz selection from A side
+    kTPCpileupZC2,       // TPC pileup event Z with larger DCAz selection from C side
+    kTPCpileupContributorsAC2,    // TPC pileup event contributors with larger DCAz selection from A&C sides
+    kTPCpileupContributorsA2,     // TPC pileup event contributors with larger DCAz selection from A side
+    kTPCpileupContributorsC2,     // TPC pileup event contributors with larger DCAz selection from C side
     kNTracksPerTrackingStatus,  // number of tracks with a given tracking flag
-    kNTracksTPCoutVsITSout=kNTracksPerTrackingStatus+kNTrackingStatus,   //  TPCout/ITSout
+    kNTracksTPCoutBeforeClean=kNTracksPerTrackingStatus+kNTrackingStatus,      // TPCout tracks before ESD cleaning
+    kNTracksTPCoutVsITSout,                              //  TPCout/ITSout
     kNTracksTRDoutVsITSout,                              //  TRDout/ITSout
     kNTracksTOFoutVsITSout,                              //  TOFout/ITSout
     kNTracksTRDoutVsTPCout,                              //  TRDout/TPCout
@@ -309,6 +324,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kNTPCclusters,    // number of TPC clusters
+    kNTPCclustersFromPileup,            // number of TPC clusters minus the expected TPC clusters if no pileup is present
+    kNTPCclustersFromPileupRelative,    // number of TPC clusters minus the expected TPC clusters w/o pileup relative to the TPC clusters w/o pileup 
     kMultiplicity,
     kSPDntracklets = kMultiplicity,
     kSPDntracklets08,
@@ -329,12 +346,17 @@ class AliReducedVarManager : public TObject {
     kSPDFiredChips = kCorrectedMultiplicity + kNMultiplicityEstimators * ( 1 + kNCorrections * kNReferenceMultiplicities * kNSmearingMethods), // SPD fired chips in first and second layer
     kITSnClusters=kSPDFiredChips+2,        // number of ITS clusters in each layer
     kSPDnSingleClusters=kITSnClusters+6,   // number of clusters in SPD layer 1 not mached to tracklets from layer 2
+    kSDDandSSDclusters,                    // number of clusters in the SDD and SSD layers
     kEventMixingId,     // Id of the event mixing category 
     // VZERO event plane related variables
+    kVZEROCurrentChannel,         // current VZERO channel
+    kVZEROCurrentChannelMult,     // current VZERO channel multiplicity
+    kVZEROCurrentChannelMultCalib,  // current VZERO channel calibrated multiplicity
     kVZEROAemptyChannels,  // Number of empty VZERO channels in A side          
     kVZEROCemptyChannels,  // Number of empty VZERO channels in C side          
-    kVZEROChannelMult,                        // VZERO multiplicity per channel           
-    kVZEROChannelEta = kVZEROChannelMult+64,  // pseudo-rapidity of a VZERO channel       
+    kVZEROChannelMult,                        // VZERO multiplicity per channel 
+    kVZEROChannelMultCalib=kVZEROChannelMult+64,                   // VZERO multiplicity per channel calibrated
+    kVZEROChannelEta = kVZEROChannelMultCalib+64,  // pseudo-rapidity of a VZERO channel       
     kVZEROQvecX      = kVZEROChannelEta+64,   // Q-vector components for harmonics 1-6 and  
     kVZEROQvecY      = kVZEROQvecX+6*3,        //  6- n-harmonics; 3- A,C and A&C options   
     kVZEROQvecMag    = kVZEROQvecY+6*3,       // magnitude of the Q vector
@@ -355,8 +377,12 @@ class AliReducedVarManager : public TObject {
     kTPCQvecY = kTPCQvecX+6,                                                           
     kTPCRP    = kTPCQvecY+6,                // Event plane using TPC                    
     kTPCRPres = kTPCRP+6,                // Event plane resolution variables sqrt(n*(RPtpc-RPvzeroa)),sqrt(n*(RPtpc-RPvzeroc))
+    kVZEROARPres=kTPCRPres+6,           //event plane resolution using V0A as reference detector 
+    kVZEROCRPres=kVZEROARPres+6,       //event plane resolution using V0C as reference detector
+    kVZEROTPCRPres=kVZEROCRPres+6,    //event plane resolution using tpc as reference detector
+    
     // Correlations between TPC and VZERO event planes
-    kRPXtpcXvzeroa    = kTPCRPres+6*2,          
+    kRPXtpcXvzeroa    = kVZEROTPCRPres+6*2,          
     kRPXtpcXvzeroc    = kRPXtpcXvzeroa+6,       
     kRPYtpcYvzeroa    = kRPXtpcXvzeroc+6,       
     kRPYtpcYvzeroc    = kRPYtpcYvzeroa+6,       
@@ -430,6 +456,8 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileRefMult08,
     kINT7Triggered,
     kHighMultV0Triggered,
+    kEMCEGATriggered,
+    kEMCEGAHighTriggered,
     kEtaBinForSPDtracklets,
     kMCNch,                                  // number of primary charged particles in the MC, in |eta|<1
     kMCNchNegSide,                     // number of primary charged particles in the MC, in -1<eta<0
@@ -484,8 +512,10 @@ class AliReducedVarManager : public TObject {
     kPdgMC,
     kCharge = kPdgMC+4,
     kVZEROFlowVn,                     // v_n using VZERO RP
-    kTPCFlowVn=kVZEROFlowVn+6*3,      // v_n using TPC RP
-    kVZEROFlowSine=kTPCFlowVn+6,      // sin(n*(phi-Psi)) using VZERO RP
+    kVZERODeltaPhiPsiN = kVZEROFlowVn+6*3,   // delta phi = phi - Psi  for VZERO event plane
+    kTPCFlowVn=kVZERODeltaPhiPsiN+6*3,      // v_n using TPC RP
+    kTPCDeltaPhiPsiN=kTPCFlowVn+6,         // delta phi = phi - Psi  for TPC event plane
+    kVZEROFlowSine=kTPCDeltaPhiPsiN+6,      // sin(n*(phi-Psi)) using VZERO RP
     kTPCFlowSine=kVZEROFlowSine+6*3,  // sin(n*(phi-Psi)) using TPC RP
     kVZEROuQ = kTPCFlowSine+6,        // cosine term from the u*Q products from VZERO (harmonics 1-6; VZERO-A and VZERO-C)
     kVZEROuQsine = kVZEROuQ+6*2,      // sine terms from the u*Q products from VZERO (harmonics 1-6; VZERO-A and VZERO-C)
@@ -506,7 +536,15 @@ class AliReducedVarManager : public TObject {
     kPairPhiCS,                    // phi* in Collins-Soper frame
     kPairThetaHE,                // cos (theta*) in helicity frame       
     kPairPhiHE,                    // phi* in helicity frame
-    kPairQualityFlag,
+    kPairVZEROFlowNom,            // Nominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairVZEROFlowDenom=kPairVZEROFlowNom+6*3,  // Denominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairTPCFlowNom=kPairVZEROFlowDenom+6*3,
+    kPairTPCFlowDenom=kPairTPCFlowNom+6,
+    kPairVZEROFlowSPNom=kPairTPCFlowDenom+6,     // Nominator of combinatorial Scalar Product pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairVZEROFlowSPDenom=kPairVZEROFlowSPNom+6*3,  // Denominator of combinatorial pair flow for VZERO, 6 harmonics, 3 VZERO sides (A, C and A&C) 
+    kPairTPCFlowSPNom=kPairVZEROFlowSPDenom+6*3,
+    kPairTPCFlowSPDenom=kPairTPCFlowSPNom+6,
+    kPairQualityFlag=kPairTPCFlowSPDenom+6,
     kPairQualityFlag2,
     kDMA,                        // Distance of minimal approach
     kPairPhiV,                   // angle between pair plane and magnetic field
@@ -521,17 +559,16 @@ class AliReducedVarManager : public TObject {
     kPairEff,                     // pair efficiency
     kOneOverPairEff,             // 1 / pair efficiency (correction factor) 
     kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
-    kAssocHadronEff,                    // associated hadron efficiency
-    kOneOverAssocHadronEff,             // 1 / associated hadron efficiency (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
     kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
     kPairLegPtSum=kPairLegPt+2,                   // sum of the pt of the two legs
     kPairLegPtMC,                                // MC truth pair leg pt
     kPairLegPtMCSum=kPairLegPtMC+2,               // sum of the MC truth leg pt's
+    kPairLegEMCALmatchedEnergy,                   // pair leg EMCal cluster energy
 
     // Track-only variables -------------------------------------
-    kPtTPC,     
+    kPtTPC=kPairLegEMCALmatchedEnergy+2,
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
@@ -564,9 +601,14 @@ class AliReducedVarManager : public TObject {
     //TODO: TPC number of crossed rows over findable clusters has at the moment 2 variables assigned: kTPCcrossedRowsOverFindableClusters and kTPCnclsRatio3
     kTPCcrossedRowsOverFindableClusters,
     kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
+    kTPCActiveLength,
+    kTPCGeomLength,
     kTPCsignal,         
     kTPCsignalN,
-    kTPCnSig,  
+    kTPCdEdxQmax,                 // dEdx info from Qmax (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQtot=kTPCdEdxQmax+4,  // dEdx info from Qtot (IROC, medium OROC, long OROC, all OROC)
+    kTPCdEdxQmaxOverQtot=kTPCdEdxQtot+4,    // Qmax / Qtot
+    kTPCnSig=kTPCdEdxQmaxOverQtot+4,  
     kTPCnSigCorrected=kTPCnSig+4,
     kTOFbeta=kTPCnSigCorrected+4,
     kTOFtime,
@@ -583,7 +625,16 @@ class AliReducedVarManager : public TObject {
     kTRDpidProbabilitiesLQ2D=kTRDpidProbabilitiesLQ1D+2,
     kEMCALmatchedEnergy=kTRDpidProbabilitiesLQ2D+2,         
     kEMCALmatchedClusterId,
-    kEMCALmatchedEOverP,        
+    kEMCALmatchedEOverP,
+    kEMCALmatchedM02,
+    kEMCALmatchedM20,
+    kEMCALmatchedNCells,
+    kEMCALmatchedNMatchedTracks,
+    kEMCALmatchedDeltaPhi,
+    kEMCALmatchedDeltaEta,
+    kEMCALmatchedDistance,
+    kEMCALmatchedNSigmaElectron,
+    kNTrackVars,            // variable to mark end of track vars, introduce new tracks vars before this one
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
     kEMCALclusterDx,            
@@ -592,6 +643,11 @@ class AliReducedVarManager : public TObject {
     kEMCALm20,
     kEMCALm02,
     kEMCALdispersion,
+    kEMCALnCells,
+    kEMCALnMatchedTracks,
+    kEMCALclusterPhi,
+    kEMCALclusterEta,
+    kNEMCALvars,            // variable to mark end of EMCal vars, introduce new EMCal vars before this one
     // Track flags -----------------------------------------------------
     kTrackingFlag,
     kTrackQualityFlag,
@@ -599,17 +655,88 @@ class AliReducedVarManager : public TObject {
     kTrackMCFlag,
     kTrackMCFlag2,
     // Correlation variables ----------------------------------------------
-    kDeltaPhi,      // shifted to [-pi/2, 3/2 * pi]
-    kDeltaPhiSym,   // shifted to [0, pi]
+    kDeltaPhi,        // shifted to [-pi/2, 3/2 * pi]
+    kDeltaPhiBoosted, // after boost of associated track to trigger rest fram
+    kDeltaPhiSym,     // shifted to [0, pi]
+    kDeltaPhiSymBoosted,
     kDeltaTheta,
+    kDeltaThetaBoosted,
     kDeltaEta,
+    kDeltaEtaBoosted,
     kDeltaEtaAbs,
+    kDeltaEtaAbsBoosted,
     kTriggerPt,       // pt of J/psi candidate
     kTriggerRap,      // rapidity of J/psi candidate
     kTriggerRapAbs,   // absolute rapidity of J/psi candidate
-    kAssociatedPt,    // pt of associated track
-    kAssociatedEta,   // eta of associated track
-    kAssociatedPhi,   // phi of associated track
+    kTriggerPseudoProperDecayTime,  // pseudo-proper decay length of J/psi candidate
+    kTriggerPairTypeSPD,            // SPD pair type of J/psi candidate
+    kAssociatedPt,          // pt of associated track
+    kAssociatedPtBoosted,   // pt of associated track, after boost to trigger rest frame
+    kAssociatedPtOverTriggerGammaT, // pt of associated track / transverse gamma of J/psi candidate
+    kTriggerGammaT,                 // transverse gamma of J/psi candidate
+    kAssociatedEta,         // eta of associated track
+    kAssociatedEtaBoosted,
+    kAssociatedPhi,         // phi of associated track
+    kAssociatedPhiBoosted,
+    kTriggerEff,                            // J/psi candidate efficiency
+    kOneOverTriggerEff,                     // 1 / J/psi candidate efficiency
+    kAssocHadronEff,                        // associated hadron efficiency
+    kOneOverAssocHadronEff,                 // 1 / associated hadron efficiency (correction factor)
+    kTriggerEffTimesAssocHadronEff,         // J/psi candidate efficiency x associated hadron efficiency
+    kOneOverTriggerEffTimesAssocHadronEff,  // 1 / (J/psi candidate efficiency x associated hadron efficiency)
+    // vars related to psiprime decay into J/psi + pi+pi- channel
+    kAssociated2Pt,
+    kAssociated2Eta,
+    kAssociated2Phi,
+
+    kOpAngleMotherPosPion,
+    kDeltaRPosPi,
+    kPPosPi,
+    kPtPosPi,
+    kDeltaRPosPiJPsi,
+
+    kOpAngleMotherNegPion,
+    kDeltaRNegPi,
+    kPNegPi,
+    kPtNegPi,
+    kDeltaRNegPiJPsi,
+    
+    kOpAngleMotherJPsi,
+    kDeltaRJPsi,
+    kPJPsi,
+    kPtJPsi,
+    kEtaJPsi,
+    
+    kMassPionPair,
+    kP_PionPair,
+    kPt_PionPair,
+    kPhi_PionPair,
+    kEta_PionPair,
+    kOpAngleMotherDiPion,
+    kDeltaRDiPion,
+    
+    kMassPsiPrime,
+    kPt_PsiPrime, 
+    kPhi_PsiPrime,
+    kEta_PsiPrime,
+
+    kJPsiPosPionOpeningAngle,
+    kJPsiNegPionOpeningAngle,
+    kPionsOpeningAngle,
+    kJPsiDiPionOpeningAngle,
+    
+    kQValue,
+
+    kMassElecPairPosPion,
+    kPt_ElecPairPosPion,
+    kEta_ElecPairPosPion,
+    kPhi_ElecPairPosPion,
+    
+    kMassPsiPrime_II,
+    kPt_PsiPrime_II,
+    kEta_PsiPrime_II,
+    kJPsiPosPion_NegPionOpeningAngle,
+
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -662,11 +789,13 @@ class AliReducedVarManager : public TObject {
   static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
   static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values, Int_t input2=999);
+  static void FillV0Channel(Int_t ich, Float_t* values);
   static void FillTrackingFlag(AliReducedTrackInfo* track, UInt_t flag, Float_t* values);
   static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
+  static void FillClusterMatchedTrackInfo(AliReducedBaseTrack* p, Float_t* values, TList* clusterList=0x0, AliReducedCaloClusterTrackMatcher* matcher=0x0);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillITSsharedLayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
@@ -674,8 +803,10 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* leg1, AliReducedBaseTrack* leg2, Int_t type, Float_t* values);
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
+  static void FillPairMEflow(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values/*, Int_t idx=0*/);
   static void FillCorrelationInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t, Float_t* values);
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
+  static void FillPsiPrimeInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values);//tariq
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
   static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
@@ -695,10 +826,11 @@ class AliReducedVarManager : public TObject {
   static TString GetVarUnit(Int_t var) {return fgVariableUnits[var];} 
 
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
-  static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
-  static void SetAssociatedHadronEfficiencyMap(TH1F* map, Variables varX);
-  static void SetAssociatedHadronEfficiencyMap(TH2F* map, Variables varX, Variables varY);
-  static void SetAssociatedHadronEfficiencyMap(TH3F* map, Variables varX, Variables varY, Variables varZ);
+  static void SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap);
+  static void SetTPCpidCalibDepVars(Variables vars[]);
+  static void SetPairEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
+  static void SetPairEfficiencyMapDependeciesCorrelation(Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
+  static void SetAssociatedHadronEfficiencyMap(TH1* map, Variables varX, Variables varY=kNothing, Variables varZ=kNothing);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetupGRPinformation(const Char_t* filename);
@@ -707,6 +839,8 @@ class AliReducedVarManager : public TObject {
   static void SetVZEROCalibrationPath(const Char_t* path);
   static void SetCalibrateVZEROqVector(Bool_t option);
   static void SetRecenterVZEROqVector(Bool_t option);
+  static void SetRecenterTPCqVector(Bool_t option);
+  static void SetEventResolution(Bool_t option);
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
   
  private:
@@ -732,12 +866,18 @@ class AliReducedVarManager : public TObject {
   static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map
   static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
   static Variables fgVarDependencyY;        // varY in the 2-D electron correction maps
-  static TH2F* fgPairEffMap;       // 2D pair efficiency map
+  static THnF* fgTPCpidCalibCentroid[3];    // TPC calib centroid 4D maps; [0] - electron, [1] - pion, [2] - proton
+  static THnF* fgTPCpidCalibWidth[3];       // TPC calib width 4D map
+  static THnI* fgTPCpidCalibStatus[3];      // TPC calib status 4D map
+  static Variables fgTPCpidCalibVars[4];    // variables used for TPC pid 4D calibration
+  static TH1*      fgPairEffMap;                  // pair efficiency map
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
-  static TH1F* fgAssocHadronEffMap1D;       // 1D pair efficiency map
-  static TH2F* fgAssocHadronEffMap2D;       // 2D pair efficiency map
-  static TH3F* fgAssocHadronEffMap3D;       // 3D pair efficiency map
+  static Variables fgEffMapVarDependencyZ;        // varZ in the pair eff maps
+  static Variables fgEffMapVarDependencyXCorr;        // varX in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyYCorr;        // varY in the pair eff maps, used for correlation
+  static Variables fgEffMapVarDependencyZCorr;        // varZ in the pair eff maps, used for correlation
+  static TH1*      fgAssocHadronEffMap;               // assoc hadron efficiency map
   static Variables fgAssocHadronEffMapVarDependencyX; // varX in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyY; // varY in assoc hadron eff map
   static Variables fgAssocHadronEffMapVarDependencyZ; // varZ in assoc hadron eff map
@@ -765,13 +905,16 @@ class AliReducedVarManager : public TObject {
   static TString fgVZEROCalibrationPath;       // path to the VZERO calibration histograms
   static TProfile2D* fgAvgVZEROChannelMult[64];       // average multiplicity in VZERO channels vs (vtxZ,centSPD)
   static TProfile2D* fgVZEROqVecRecentering[4];       // (vtxZ,centSPD) maps of the VZERO A and C recentering Qvector offsets
-  static Bool_t fgOptionCalibrateVZEROqVec;
-  static Bool_t fgOptionRecenterVZEROqVec;
+  static TProfile2D* fgTPCqVecRecentering[2];       // (vtxZ,centV0) maps of the TPC recentering Qvector offsets
+  static Bool_t fgOptionCalibrateVZEROqVec;         //option to calibrate V0
+  static Bool_t fgOptionRecenterVZEROqVec;         //option to do Q vector recentering for V0
+  static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
+  static Bool_t fgOptionEventRes;                 //option to divide by resolution
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 6);
+  ClassDef(AliReducedVarManager, 17);
 };
 
 #endif

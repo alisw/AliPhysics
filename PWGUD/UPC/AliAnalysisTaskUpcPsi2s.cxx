@@ -595,9 +595,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtrig()
   if(trigger.Contains("CCUP27-B")) fHistCcup27TriggersPerRun->Fill(fRunNum); //CCUP27 triggers
   
   if(fRunNum>=295881){
-	if(trigger.Contains("CCUP29-B-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
-	if(trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
-	if(trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+    if(trigger.Contains("CCUP30-B-SPD2-CENTNOTRD")) fHistCcup30TriggersPerRun->Fill(fRunNum); //CCUP30 triggers
+    if(trigger.Contains("CCUP31-B-SPD2-CENTNOTRD")) fHistCcup31TriggersPerRun->Fill(fRunNum); //CCUP31 triggers
+    if(fRunNum>=296594 && trigger.Contains("CCUP29-U-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
+    if(fRunNum<296594  && trigger.Contains("CCUP29-B-SPD2-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
 	}
   else{ 
 	if(trigger.Contains("CCUP29-B-NOPF-CENTNOTRD")) fHistCcup29TriggersPerRun->Fill(fRunNum); //CCUP29 triggers
@@ -907,22 +908,22 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[1]  = trigger.Contains("CCUP2-B"); // *0VBA *0VBC 0SM2 0OM2
   	fTrigger[2]  = trigger.Contains("CCUP7-B"); // *0VBA *0VBC 0STP 0OMU
   	fTrigger[3]  = trigger.Contains("CINT1-B"); //  0VBA || 0VBC || 0SMB
-  	fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
-  	fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
-  	fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
-  	fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  	fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  	fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-  	fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
-  	fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
-  	fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
-  	fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
-	fTrigger[14]  = trigger.Contains("CCUP25-B");//*0VBA *0VBC 0STG 0OM2
-	fTrigger[15]  = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
-	fTrigger[16]  = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG 
-	fTrigger[17]  = trigger.Contains("CCUP29-B");//*0VBA *0VBC *0UBA *0UBC 0STG
-	fTrigger[18]  = trigger.Contains("CCUP30-B");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
-	fTrigger[19]  = trigger.Contains("CCUP31-B");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+  	fTrigger[4]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  	fTrigger[5]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[6]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[7]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
+  	fTrigger[8]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+  	fTrigger[9]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
+	fTrigger[10]  = trigger.Contains("CCUP25-B");//*0VBA *0VBC 0STG 0OM2
+	fTrigger[11]  = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
+	fTrigger[12]  = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG 
+	fTrigger[13]  = trigger.Contains("CCUP29-U-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[14]  = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[15]  = trigger.Contains("CCUP29-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[16]  = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[17]  = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[18]  = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
+	fTrigger[19]  = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
 	}
   if(fTracking == 1){ 
   	fTrigger[0] = trigger.Contains("CCUP14-B"); 

@@ -9,14 +9,31 @@
 #include <TStyle.h>
 
 namespace plotting {
-  constexpr std::array<int,7> kHighContrastColors{
+  constexpr std::array<int,11> kHighContrastColors{
     kRed,
     kOrange,
     kGreen+1,
     kAzure+1,
     kBlue,
-    kViolet+2,
-    kBlack
+    kViolet+1,
+    kBlack,
+    kGray+1,
+    kOrange-7,
+    kOrange+4,
+    kYellow -2
+  };
+
+  constexpr std::array<int,10> kListColors{
+    kBlack,
+    kRed,
+    kOrange,
+    kGreen+3,
+    kAzure+1,
+    kRed,
+    kOrange,
+    kRed,
+    kOrange+3,
+    kGreen+3
   };
 
   const std::array<int,11> kSpectraColors{
@@ -29,18 +46,19 @@ namespace plotting {
     TColor::GetColor("#00ceff"),
     TColor::GetColor("#009adf"),
     TColor::GetColor("#0067c0"),
-    kBlack,
+    TColor::GetColor("#595959"),
     TColor::GetColor("#0033a1")
   };
 
   const Style_t kChargeMarker[2] = {20,24};
 
-  void SetHistStyle(TH1* h, int color, int marker = 20, int linew = 1, int fillstyle = 0) {
+  void SetHistStyle(TH1* h, int color, int marker = 20, const char* opt = "", int linew = 1, int fillstyle = 0) {
     h->SetMarkerColor(color);
     h->SetLineColor(color);
     h->SetFillStyle(fillstyle);
     h->SetLineWidth(linew);
     h->SetMarkerStyle(marker);
+    h->SetOption(opt);
   }
 
 

@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //***********************************************************
 /// \class Class AliRDHFSystErr
@@ -18,15 +18,15 @@
 #include "TGraphAsymmErrors.h"
 
 
-class AliHFSystErr : public TNamed 
+class AliHFSystErr : public TNamed
 {
  public:
 
   AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
-    
+
   virtual ~AliHFSystErr();
-  
-  void DrawErrors(TGraphAsymmErrors *grErrFeeddown=0) const; 
+
+  void DrawErrors(TGraphAsymmErrors *grErrFeeddown=0) const;
 
   Double_t GetNormErr() const {return (fNorm ? fNorm->GetBinContent(0) : 0.);}
   Double_t GetBRErr() const {return (fBR ? fBR->GetBinContent(0) : 0.);}
@@ -56,15 +56,15 @@ class AliHFSystErr : public TNamed
   }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
-  void SetRunNumber(Int_t number) { 
-    fRunNumber = number; 
+  void SetRunNumber(Int_t number) {
+    fRunNumber = number;
     AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
   }
   Int_t GetRunNumber() const { return fRunNumber; }
   /// Setting the collision type
   ///  0 is pp, 1 is PbPb, 2 is pPb
-  void SetCollisionType(Int_t type) { 
-    fCollisionType = type; 
+  void SetCollisionType(Int_t type) {
+    fCollisionType = type;
     if (fCollisionType==0) { AliInfo(" Settings for p-p collisions"); }
     else if(fCollisionType==1) { AliInfo(" Settings for Pb-Pb collisions"); }
     else if(fCollisionType==2) { AliInfo(" Settings for p-Pb collisions"); }
@@ -72,25 +72,25 @@ class AliHFSystErr : public TNamed
   Int_t GetCollisionType() const { return fCollisionType; }
   /// Setting for the centrality class
   ///  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
-  void SetCentrality(TString centrality) { 
-    fCentralityClass = centrality; 
+  void SetCentrality(TString centrality) {
+    fCentralityClass = centrality;
     AliInfo(Form(" Settings for centrality class %s",fCentralityClass.Data()));
   }
-  void SetIsLowEnergy(Bool_t flag) { 
-    fIsLowEnergy = flag; 
+  void SetIsLowEnergy(Bool_t flag) {
+    fIsLowEnergy = flag;
     if(flag) AliInfo(" Settings for the low energy run");
   }
   void SetIsLowPtAnalysis(Bool_t flag){
     fIsLowPtAnalysis = flag;
-    if(flag) AliInfo("Settings for the low pt analysis");  
+    if(flag) AliInfo("Settings for the low pt analysis");
   }
   void SetIsPass4Analysis(Bool_t flag){
     fIsPass4Analysis = flag;
-    if(flag) AliInfo("Settings for the pass4 analysis");  
+    if(flag) AliInfo("Settings for the pass4 analysis");
   }
   void SetIs5TeVAnalysis(Bool_t flag){
     fIs5TeVAnalysis = flag;
-    if(flag) AliInfo("Settings for the 5TeV analysis");  
+    if(flag) AliInfo("Settings for the 5TeV analysis");
   }
   void SetStandardBins(Bool_t flag){
     fStandardBins= flag;
@@ -98,9 +98,14 @@ class AliHFSystErr : public TNamed
 
   void SetIsBDTAnalysis(Bool_t flag){
     fIsBDTAnalysis = flag;
-    if(flag) AliInfo("Settings for the Lc and Ds BDT analysis");  
+    if(flag) AliInfo("Settings for the Lc and Ds BDT analysis");
   }
-  
+
+  void SetIsMLAnalysis(Bool_t flag){
+    fIsMLAnalysis = flag;
+    if(flag) AliInfo("Settings for the Lc ML analysis");
+  }
+
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
     if(flag) AliInfo(" Settings for the PbPb 2010 energy scan");
@@ -112,7 +117,7 @@ class AliHFSystErr : public TNamed
     AliInfo(Form(" Settings for rapidity interval %s",fRapidityRange.Data()));
   }
   void SetIspPb2011RapidityScan(Bool_t flag){
-    fIsRapidityScan = flag; 
+    fIsRapidityScan = flag;
     if(flag) AliInfo("Settings for the pPb vs y measurement");
   }
 
@@ -178,38 +183,44 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb0100RapScan0101();
   void InitDstartoD0pi2013pPb0100RapScan0104();
   void InitDstartoD0pi2013pPb0100RapScan0408();
-    
+
   void InitD0toKpi2013pPb020V0A();
   void InitD0toKpi2013pPb2040V0A();
   void InitD0toKpi2013pPb4060V0A();
   void InitD0toKpi2013pPb60100V0A();
-  
+
   void InitD0toKpi2013pPb020ZNA();
   void InitD0toKpi2013pPb2040ZNA();
   void InitD0toKpi2013pPb4060ZNA();
   void InitD0toKpi2013pPb60100ZNA();
 
   void InitD0toKpi2016pPb010ZNA();
+  void InitD0toKpi2016pPb1020ZNA();
+  void InitD0toKpi2016pPb2040ZNA();
+  void InitD0toKpi2016pPb4060ZNA();
   void InitD0toKpi2016pPb60100ZNA();
-  
+
   void InitD0toKpi2013pPb020CL1();
   void InitD0toKpi2013pPb2040CL1();
   void InitD0toKpi2013pPb4060CL1();
   void InitD0toKpi2013pPb60100CL1();
-  
+
   void InitDstartoD0pi2013pPb020V0A();
   void InitDstartoD0pi2013pPb2040V0A();
   void InitDstartoD0pi2013pPb4060V0A();
   void InitDstartoD0pi2013pPb60100V0A();
-  
+
   void InitDstartoD0pi2013pPb020ZNA();
   void InitDstartoD0pi2013pPb2040ZNA();
   void InitDstartoD0pi2013pPb4060ZNA();
   void InitDstartoD0pi2013pPb60100ZNA();
 
    void InitDstartoD0pi2016pPb010ZNA();
+   void InitDstartoD0pi2016pPb1020ZNA();
+   void InitDstartoD0pi2016pPb2040ZNA();
+   void InitDstartoD0pi2016pPb4060ZNA();
    void InitDstartoD0pi2016pPb60100ZNA();
- 
+
   void InitDstartoD0pi2013pPb020CL1();
   void InitDstartoD0pi2013pPb2040CL1();
   void InitDstartoD0pi2013pPb4060CL1();
@@ -219,17 +230,17 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2013pPb2040V0A();
   void InitDplustoKpipi2013pPb4060V0A();
   void InitDplustoKpipi2013pPb60100V0A();
-  
+
   void InitDplustoKpipi2013pPb020ZNA();
   void InitDplustoKpipi2013pPb2040ZNA();
   void InitDplustoKpipi2013pPb4060ZNA();
   void InitDplustoKpipi2013pPb60100ZNA();
-  
+
   void InitDplustoKpipi2013pPb020CL1();
   void InitDplustoKpipi2013pPb2040CL1();
   void InitDplustoKpipi2013pPb4060CL1();
   void InitDplustoKpipi2013pPb60100CL1();
-    
+
   void InitDplustoKpipi2016pPb140trkl();
   void InitDplustoKpipi2016pPb4070trkl();
   void InitDplustoKpipi2016pPb70200trkl();
@@ -242,8 +253,8 @@ class AliHFSystErr : public TNamed
  private:
 
   AliHFSystErr(const AliHFSystErr& source);
-  AliHFSystErr& operator=(const AliHFSystErr& source); 
- 
+  AliHFSystErr& operator=(const AliHFSystErr& source);
+
   void InitD0toKpi2010pp();
   void InitD0toKpi2010ppLowEn();
   void InitD0toKpi2010ppLowPtAn();
@@ -254,13 +265,17 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2017pp5TeVLowPtAn();
   void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
+  void InitD0toKpi20161718pp13TeVmb();
+  void InitD0toKpi20161718pp13TeVlm();
+  void InitD0toKpi20161718pp13TeVhm();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
-  void InitD0toKpi2011PbPb3050(); 
+  void InitD0toKpi2011PbPb3050();
   void InitD0toKpi2011PbPb010();
   void InitD0toKpi2013pPb0100();
   void InitD0toKpi2016pPb0100();
+  void InitD0toKpi2016pPb5TeV_finebins();
   void InitD0toKpi2013pPb0100LowPtAn();
   void InitD0toKpi2016pPb0100LowPtAn();
 
@@ -279,6 +294,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2011PbPb010();
   void InitDplustoKpipi2013pPb0100();
   void InitDplustoKpipi2016pPb0100();
+  void InitDplustoKpipi2016pPb5TeV_finebins();
 
   void InitDstartoD0pi2010pp();
   void InitDstartoD0pi2010ppLowEn();
@@ -291,6 +307,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb010();
   void InitDstartoD0pi2013pPb0100();
   void InitDstartoD0pi2016pPb0100();
+  void InitDstartoD0pi2016pPb0100_fb();
   void InitDstartoD0pi2010ppPass4();
   void InitDstartoD0pi2017pp5TeV();
   void InitDstartoD0pi2017pp5TeV_finebins();
@@ -315,6 +332,8 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2013pPb();
   void InitLctopKpi2013pPbBDT();
   void InitLctopKpi2016pPb();
+  void InitLctopKpi2017pp();
+  void InitLctopKpi20161718pp13TeV();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
@@ -323,27 +342,50 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2016pPbBDT();
   void InitLctopK0S2017pp5TeV();
 
+  void InitLctopK0S2018PbPb010BDT();
+  void InitLctopK0S2018PbPb3050BDT();
+  void InitLctopK0S2018PbPb010ML();
+  void InitLctopK0S2018PbPb3050ML();
+  void InitLctopK0S2018PbPb010();
+  void InitLctopK0S2018PbPb3050();
+
   void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
   void InitD0toKpi2015PbPb6080();
-  
+
   void InitDplustoKpipi2015PbPb010();
   void InitDplustoKpipi2015PbPb3050();
   void InitDplustoKpipi2015PbPb6080();
 
+  void InitDplustoKpipi2018PbPb010();
+  void InitDplustoKpipi2018PbPb3050();
+
   void InitDstoKKpi2015PbPb010();
   void InitDstoKKpi2015PbPb3050();
   void InitDstoKKpi2015PbPb6080();
+  void InitDstoKKpi2018PbPb010();
+  void InitDstoKKpi2018PbPb010BDT();
+  void InitDstoKKpi2018PbPb3050();
+  void InitDstoKKpi2018PbPb3050BDT();
 
   void InitDstartoD0pi2015PbPb010();
   void InitDstartoD0pi2015PbPb3050();
   void InitDstartoD0pi2015PbPb6080();
 
+  void InitDstartoD0pi2018PbPb010();
+  void InitDstartoD0pi2018PbPb3050();
+
+  void InitD0toKpi2018PbPb010();
+  void InitD0toKpi2018PbPb3050();
+  void InitD0toKpi2018PbPb010LowPtAn();
+
+  void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
+  void InitScpp13TeV201620172018(); // Sc
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
   TH1F *fNorm;            /// normalization
-  TH1F *fRawYield;        /// raw yield 
+  TH1F *fRawYield;        /// raw yield
   TH1F *fTrackingEff;     /// tracking efficiency
   TH1F *fBR;              /// branching ratio
   TH1F *fCutsEff;         /// cuts efficiency
@@ -355,7 +397,7 @@ class AliHFSystErr : public TNamed
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
   TString fCentralityClass;  /// Centrality class
   /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
-  TString fRapidityRange;  /// Rapidity range fot y measurements 
+  TString fRapidityRange;  /// Rapidity range fot y measurements
 
   Bool_t fIsLowEnergy;     /// flag for the low energy (2.76TeV) run
   Bool_t fIsLowPtAnalysis; /// flag for the low pt analysis (no topological cuts)
@@ -363,11 +405,12 @@ class AliHFSystErr : public TNamed
   Bool_t fIs5TeVAnalysis; /// flag for the pp5TeV analysis
   Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis and Ds BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
-  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV
+  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
+  Bool_t fIsMLAnalysis;   /// flag for the Lc ML analysis
 
-  /// \cond CLASSIMP    
-  ClassDef(AliHFSystErr,10);  /// class for systematic errors of charm hadrons
+  /// \cond CLASSIMP
+  ClassDef(AliHFSystErr,12);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

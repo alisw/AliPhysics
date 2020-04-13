@@ -1,0 +1,50 @@
+InputFiles:
+    DataFile: DataTrains/AnalysisResults18qr_trains1445-1444.root
+    SuffixData: 010V0M_Pt400_SPDany_3SigPIDnSigmaTuned_FidY
+    MCFile: MCtrains/AnalysisResults18qr_LHC19c3a_train1084.root
+    SuffixMC: OnlySig_010V0M_CosThSt_Pt400_SPDany_3SigPID_FidY
+    AcceptanceFile: Acceptance_Toy_D0Kpi_yfidPtDep_etaDau09_ptDau100_FONLL5ptshape.root
+    Meson: Dzero
+
+PtBins:
+    NumOfPtBins: 14
+    BinLimits: [ 0.,0.5,1.,1.5,2.,2.5,3.,3.5,4.,5.,6.,7.,8.,10.,12. ]
+    Rebin: [ 4,4,6,6,6,6,7,8,9,10,10,12,12,12 ]
+    MinFit: [ 1.76,1.76,1.76,1.76,1.76,1.76,1.76,1.76,1.74,1.74,1.72,1.72,1.72,1.72 ]
+    MaxFit: [ 1.94,1.94,1.94,1.94,1.94,1.96,1.96,1.98,1.98,1.98,2.00,2.02,2.04,2.04 ]
+
+SigmaConfiguration:
+    FixSigmaConf: 1
+    FixSigmaPerBin: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+    TuneSigmaOnData: -1.
+    SigmaManual: [ 0.006,0.006,0.006,0.007,0.008,0.008,0.008,0.008,0.009,0.010,0.011,0.012,0.012,0.012 ]
+
+MeanConfiguration:
+    FixMeanConf: 0
+    FixMeanPerBin: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
+    TuneMeanOnData: -1.
+
+BackgroundOptions:
+    NormalizationOption: 1
+    RangeForNormalization: 0.05
+    UseEvMixWithLS: 0
+    UseGeomMeanLS: 1
+    RenormalizeLS: 1
+    SmoothLS: 0
+    TryDirectFit: 1
+    MinSBFit: [ 1.76,1.76,1.76,1.76,1.76,1.74,1.74,1.72,1.72,1.72,1.72,1.72,1.72,1.72 ]
+    MaxSBFit: [ 1.94,1.94,1.94,1.94,1.94,1.96,1.96,1.98,1.98,1.98,2.00,2.00,2.00,2.00 ]
+    PolDegreeSB: [ 4,4,4,4,4,4,4,4,4,4,4,4,4,2 ]
+
+FitConfiguration:
+    FitOption: E
+    BackgroundFunction: 2
+    PolDegreeFit: [ 3,3,2,2,2,2,2,2,2,2,2,2,2,2 ]
+    CorrectForReflections: 1
+    ReflectionOption: 2gaus
+    ReflOverSignalModif: 1.
+    BackgroundFuncOptionForBinCount: 1
+    NumOfSigmaForBinCount: 4.
+    
+Cuts:
+    CosThetaStar: 1.1

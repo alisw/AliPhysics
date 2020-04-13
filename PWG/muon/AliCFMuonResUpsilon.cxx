@@ -491,8 +491,8 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 				if(mctrack->GetPdgCode()!=fPDG) continue;
 				// cuts on resonance
 				if(!(mctrack->Pt()>0 && mctrack->Pt()<1000) || !(Rap(mctrack->E(),mctrack->Pz())>-4 && Rap(mctrack->E(),mctrack->Pz())<-2.4)) continue;
-				Int_t daug0 = mctrack->GetDaughter(0);
-				Int_t daug1 = mctrack->GetDaughter(1);
+				Int_t daug0 = mctrack->GetDaughterLabel(0);
+				Int_t daug1 = mctrack->GetDaughterLabel(1);
 				// daughter1
 				AliAODMCParticle *mcdaug0 = (AliAODMCParticle*) mcArr->At(daug0);
 				Double_t pt0 = mcdaug0->Pt();

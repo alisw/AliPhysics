@@ -235,9 +235,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  
 	  //--- Choose Kaon as Most Probable (switch on all cuts: TPC, TOF)---
 	  dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
+	  //dtc1etaphitpc[aniter]->SetMostProbableKaon();
 	  dtc2etaphitpc[aniter]->SetMass(KaonMass);
-	  dtc2etaphitpc[aniter]->SetMostProbableKaon();
+	  //dtc2etaphitpc[aniter]->SetMostProbableKaon();
 //------------------- November 2013 -----------------------------------< 
          // new cuts to remove electron (do not take into analysis if 400<p<500) 
 	 dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);

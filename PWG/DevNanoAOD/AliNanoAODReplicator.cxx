@@ -28,8 +28,6 @@
 // Author: Michele Floris, michele.floris@cern.ch
 
 
-class AliESDv0;
-class AliESDVertex;
 class AliAODVertex;
 class AliAODRecoDecay;
 
@@ -44,12 +42,10 @@ class AliAODRecoDecay;
 #include "AliAnalysisCuts.h"
 #include "TF1.h"
 #include "AliExternalTrackParam.h"
-#include "AliESDv0.h"
 #include "AliAODv0.h"
 #include "AliPIDResponse.h"
 #include <iostream>
 #include <cassert>
-#include "AliESDtrack.h"
 #include "TObjArray.h"
 #include "AliAnalysisFilter.h"
 #include "AliNanoAODTrack.h"
@@ -64,9 +60,6 @@ class AliAODRecoDecay;
 #include "AliVTrack.h"
 #include "AliVertexerTracks.h"
 #include "AliKFVertex.h"
-#include "AliESDEvent.h"
-#include "AliESDVertex.h"
-#include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisFilter.h"
 
@@ -75,6 +68,8 @@ class AliAODRecoDecay;
 #include "TCanvas.h"
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODCustomSetter.h"
+#include "AliV0ReaderV1.h"
+#include "AliAnalysisNanoAODCuts.h"
 
 using std::cout;
 using std::endl;
@@ -84,7 +79,13 @@ ClassImp(AliNanoAODReplicator)
 //_____________________________________________________________________________
 AliNanoAODReplicator::AliNanoAODReplicator() :
 AliAODBranchReplicator(), 
-  fTrackCut(0), fTracks(0x0), fHeader(0x0), fNTracksVariables(0), // FIXME: Start using cuts, and check if fNTracksVariables is needed
+  fTrackCuts(0), 
+  fV0Cuts(0), 
+  fCascadeCuts(0), 
+  fConversionPhotonCuts(0),
+  fMCParticleCuts(nullptr),
+  fTracks(0x0), 
+  fHeader(0x0), 
   fVertices(0x0), 
   fList(0x0),
   fMCParticles(0x0),
@@ -94,69 +95,73 @@ AliAODBranchReplicator(),
   fParticleSelected(),
   fVarList(""),
   fVarListHeader(""),
-  fCustomSetter(0),
+  fVarListHeader_fTC(""),
+  fCustomSetters(),
   fVzero(0x0),
   fAodZDC(0x0),
-  fNumberOfHeaderParam(0),
-  fNumberOfHeaderParamInt(0),
-  fSaveAODZDC(0),
+  fV0s(0x0),
+  fCascades(0x0),
+  fConversionPhotons(0x0),
+  fSaveZDC(0),
   fSaveVzero(0),
+  fSaveV0s(0),
+  fSaveCascades(kFALSE),
+  fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
-  fVarListHeader_fTC(""){
+  fKeepDaughters(),
+  fClonedVertices()
+  {
   // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file
   }
 
-AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
-					   const char * varlist,
-					   const char * varListHeader,
-					   AliAnalysisCuts* trackCut,
-					   Int_t mcMode
-					     ) :
+AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) :
   AliAODBranchReplicator(name,title), 
-
-  fTrackCut(trackCut), fTracks(0x0), fHeader(0x0), fNTracksVariables(0), // FIXME: Start using cuts, and check if fNTracksVariables is needed
+  fTrackCuts(0), 
+  fV0Cuts(0), 
+  fCascadeCuts(0), 
+  fConversionPhotonCuts(0),
+  fMCParticleCuts(nullptr),
+  fTracks(0x0), 
+  fHeader(0x0), 
   fVertices(0x0), 
   fList(0x0),
   fMCParticles(0x0),
   fMCHeader(0x0),
-  fMCMode(mcMode),
+  fMCMode(0),
   fLabelMap(),
   fParticleSelected(),
-  fVarList(varlist),
-  fVarListHeader(varListHeader),
-  fCustomSetter(0),
+  fVarList(""),
+  fVarListHeader(""),
+  fVarListHeader_fTC(""),
+  fCustomSetters(),
   fVzero(0x0),
   fAodZDC(0x0),
-  fNumberOfHeaderParam(0),
-  fNumberOfHeaderParamInt(0),
-  fSaveAODZDC(0),
+  fV0s(0x0),
+  fCascades(0x0),
+  fConversionPhotons(0x0),
+  fSaveZDC(0),
   fSaveVzero(0),
+  fSaveV0s(0),
+  fSaveCascades(kFALSE),
+  fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
-  fVarListHeader_fTC("")
+  fKeepDaughters(),
+  fClonedVertices()
 {
   // default ctor
-  AliNanoAODTrackMapping * tm =new AliNanoAODTrackMapping(fVarList);
-  fNTracksVariables = tm->GetSize();  
-  //  tm->Print();
-    
-  for (Int_t i=0; i < fVarListHeader.Length(); i++){
-      if (fVarListHeader.Data()[i] == ',') fNumberOfHeaderParam++;
-  }
-  
-  if(fVarListHeader.CompareTo("")==0) fNumberOfHeaderParam=2;
-  else fNumberOfHeaderParam = fNumberOfHeaderParam+1 ;
-
-  fNumberOfHeaderParamInt = AliNanoAODHeader::GetIntParameters(fVarListHeader);
-  fNumberOfHeaderParam -= fNumberOfHeaderParamInt;
 }
 
 //_____________________________________________________________________________
 AliNanoAODReplicator::~AliNanoAODReplicator()
 {
   // dtor
-  delete fTrackCut;
+  delete fTrackCuts;
   delete fList;
 }
 
@@ -224,11 +229,55 @@ Int_t AliNanoAODReplicator::GetNewLabel(Int_t i)
   return fLabelMap.GetValue(TMath::Abs(i));
 }
 
+
+//_____________________________________________________________________________
+void AliNanoAODReplicator::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate) {
+  // taken from PWGGA/GammaConvBase/AliV0ReaderV1.cxx
+
+  // Relabeling For AOD Event
+  // ESDiD -> AODiD
+  // MCLabel -> AODMCLabel
+  Bool_t AODLabelPos = kFALSE;
+  Bool_t AODLabelNeg = kFALSE;
+
+  TIter nextTRACK(fTracks);
+  AliNanoAODTrack* track;
+
+  while ((track = static_cast<AliNanoAODTrack*>(nextTRACK()))) {
+    if (!AODLabelPos) {
+      if (track->GetID() == PhotonCandidate->GetTrackLabelPositive()) {
+        PhotonCandidate->SetMCLabelPositive(TMath::Abs(track->GetLabel()));
+        // PhotonCandidate->SetLabelPositive(i);
+        AODLabelPos = kTRUE;
+      }
+    }
+    if (!AODLabelNeg) {
+      if (track->GetID() == PhotonCandidate->GetTrackLabelNegative()) {
+        PhotonCandidate->SetMCLabelNegative(TMath::Abs(track->GetLabel()));
+        // PhotonCandidate->SetLabelNegative(i);
+        AODLabelNeg = kTRUE;
+      }
+    }
+    if (AODLabelNeg && AODLabelPos) {
+      return;
+    }
+  }
+  if (!AODLabelPos || !AODLabelNeg) {
+    if (!AODLabelNeg) {
+      PhotonCandidate->SetMCLabelNegative(-999999);
+      PhotonCandidate->SetLabelNegative(-999999);
+    }
+    if (!AODLabelPos) {
+      PhotonCandidate->SetMCLabelPositive(-999999);
+      PhotonCandidate->SetLabelPositive(-999999);
+    }
+  }
+}
+
 //_____________________________________________________________________________
 void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
 {
   // Filter MC information
-
 
   AliAODMCHeader* mcHeader(0x0);
   TClonesArray* mcParticles(0x0);
@@ -237,192 +286,272 @@ void AliNanoAODReplicator::FilterMC(const AliAODEvent& source)
 
   //  std::cout << "MC Mode: " << fMCMode << ", Tracks " << fTracks->GetEntries() << std::endl;
   
-  if ( fMCMode>=2 && !fTracks->GetEntries() ) {
-    return;
-  }
-  // for fMCMode==1 we only copy MC information for events where there's at least one muon track
-    
   mcHeader = static_cast<AliAODMCHeader*>(source.FindListObject(AliAODMCHeader::StdBranchName()));
-  
-  if ( mcHeader ) 
-    {
-      *fMCHeader = *mcHeader;
-    }
-  
+  if (mcHeader) 
+    *fMCHeader = *mcHeader;
   
   mcParticles = static_cast<TClonesArray*>(source.FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcParticles)
+    return;
   
-  if ( mcParticles && fMCMode>=2 )
-    {
-      // keep all primaries
-      TIter nextPart(mcParticles);
-      static Int_t iev = -1; // FIXME: remove this (debug)
-      iev ++;
-      AliAODMCParticle * prim = 0;
-      Int_t iprim = 0;  // We need iprim, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
-      // also select all charged primaries 
-      while ((prim = (AliAODMCParticle*) nextPart())) {
-	if(prim->IsPhysicalPrimary() && prim->Charge()) SelectParticle(iprim);
-	// FIXME DEBUG
-	if(iev == 2009) {
-	  // std::cout << "IEV " << iev << std::endl;
-	  // std::cout << " PART " << iprim << " " << prim->IsPhysicalPrimary() <<","<<prim->Charge() << "=" << IsParticleSelected(iprim) <<  std::endl;
-	  if(iprim == 15) {
-	    prim->Print();
-	  }
-	  
-	}
-	iprim++;
-      } 
-
-      // loop on (kept) tracks to find their ancestors
-      TIter nextTRACK(fTracks);
-      AliNanoAODTrack* track;
-    
-      while ( ( track = static_cast<AliNanoAODTrack*>(nextTRACK()) ) )
-	{
-	  Int_t label = TMath::Abs(track->GetLabel()); 
-      
-	  while ( label >= 0 ) 
-	    {
-	      SelectParticle(label);
-	      AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
-	      if (!mother)
-		{
-		  AliError(Form("Got a null mother ! Check that ! (label %d",label)); // FIXME: I think this error is not needed
-		  label = -1;
-		}
-	      else
-		{
-		  label = mother->GetMother();// do not only keep particles which created a track, but all their mothers
-		}
-	    }
-	}
-    
-      CreateLabelMap(source);
-    
-      // Actual filtering and label remapping (shamelessly taken for the implementation of AliAODHandler::StoreMCParticles)
-      TIter nextMC(mcParticles);
-      AliAODMCParticle* p;
-      Int_t nmc(0);  // We need nmc, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
-      Int_t nmcout(0);
-    
-      while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
-	{
-	  AliAODMCParticle c(*p);
-
-	  if ( IsParticleSelected(nmc) )
-	    {
-	      // 
-	      Int_t d0 =  p->GetDaughter(0);
-	      Int_t d1 =  p->GetDaughter(1);
-	      Int_t m =   p->GetMother();
-        
-	      // other than for the track labels, negative values mean
-	      // no daughter/mother so preserve it
-        
-	      if(d0<0 && d1<0)
-		{
-		  // no first daughter -> no second daughter
-		  // nothing to be done
-		  // second condition not needed just for sanity check at the end
-		  c.SetDaughter(0,d0);
-		  c.SetDaughter(1,d1);
-		} else if(d1 < 0 && d0 >= 0) 
-		{
-		  // Only one daughter
-		  // second condition not needed just for sanity check at the end
-		  if(IsParticleSelected(d0))
-		    {
-		      c.SetDaughter(0,GetNewLabel(d0));
-		    } else 
-		    {
-		      c.SetDaughter(0,-1);
-		    }
-		  c.SetDaughter(1,d1);
-		}
-	      else if (d0 > 0 && d1 > 0 )
-		{
-		  // we have two or more daughters loop on the stack to see if they are
-		  // selected
-		  Int_t d0tmp = -1;
-		  Int_t d1tmp = -1;
-		  for (int id = d0; id<=d1;++id)
-		    {
-		      if (IsParticleSelected(id))
-			{
-			  if(d0tmp==-1)
-			    {
-			      // first time
-			      d0tmp = GetNewLabel(id);
-			      d1tmp = d0tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
-			    }
-			  else d1tmp = GetNewLabel(id);
-			}
-		    }
-		  c.SetDaughter(0,d0tmp);
-		  c.SetDaughter(1,d1tmp);
-		} else 
-		{
-		  AliFatal(Form("Unxpected indices %d %d",d0,d1));
-		}
-        
-	      if ( m < 0 )
-		{
-		  c.SetMother(m);
-		} else 
-		{
-		  if (IsParticleSelected(m)) 
-		    {
-		      c.SetMother(GetNewLabel(m));              
-		    }
-		  // else // FIXME: re-enable this checj. Sometimes it gets here. Still to be understood why
-		  //   {
-		  //     //		      AliError(Form("PROBLEM Mother not selected %d", m));              
-		  //   }
-		}
-        
-	      new ((*fMCParticles)[nmcout++]) AliAODMCParticle(c);
-	    }
-      
-	  ++nmc;        
-	} //closes loop over MC particles
-    
-      // now remap the tracks...
-    
-      TIter nextTrack(fTracks);
-      AliNanoAODTrack* t;
-      //      std::cout << "Remapping tracks" << std::endl;
-    
-      while ( ( t = dynamic_cast<AliNanoAODTrack*>(nextTrack()) ) )
-	{
-	  
-	  t->SetLabel(GetNewLabel(t->GetLabel()));
-	}
-    
-    } // closes fMCMode == 1
-  else if ( mcParticles ) 
-    {
-      // simple copy of input MC particles to ouput MC particles
-      TIter nextMC(mcParticles);
-      AliAODMCParticle* p;
-      Int_t nmcout(0);
-    
-      while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
-	{
-	  new ((*fMCParticles)[nmcout++]) AliAODMCParticle(*p);
-	}
+  if (fMCMode == 1)
+  {
+    // simple copy of input MC particles to ouput MC particles
+    TIter nextMC(mcParticles);
+    AliAODMCParticle* p;
+    Int_t nmcout(0);
+  
+    while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
+      new ((*fMCParticles)[nmcout++]) AliAODMCParticle(*p);
+  }
+  else if (fMCMode == 2)
+  {
+    // keep all primaries
+    TIter nextPart(mcParticles);
+    AliAODMCParticle * prim = 0;
+    Int_t iprim = 0;  // We need iprim, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
+    // also select all charged primaries 
+    while ((prim = (AliAODMCParticle*) nextPart())) {
+      if (fMCParticleCuts && fMCParticleCuts->IsSelected(prim)) {
+        SelectParticle(iprim);
+      }
+      iprim++;
     }
+
+    // loop on (kept) tracks to find their ancestors
+    TIter nextTRACK(fTracks);
+    AliNanoAODTrack* track;
+    while ((track = static_cast<AliNanoAODTrack*>(nextTRACK()))) {
+      Int_t label = TMath::Abs(track->GetLabel());
+      while (label >= 0) {
+        SelectParticle(label);
+        AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles
+            ->UncheckedAt(label));
+        if (!mother) {
+          AliError(Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+          label = -1;
+        } else {
+          label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+        }
+      }
+    }
+
+    // loop on (kept) v0 to find their ancestors
+    TIter nextV0(fV0s);
+    AliAODv0* v0;
+    // Get the PDG codes we want to match to from the cut object
+    std::vector<int> pdgCodesV0;
+    if (fMCParticleCuts) {
+      pdgCodesV0 = static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)->GetKeepV0s();
+    }
+    while ((v0 = static_cast<AliAODv0*>(nextV0()))) {
+      // Get the daughter labels
+      for (Int_t i = 0; i < v0->GetNDaughters(); ++i) {
+        AliNanoAODTrack *trk = (AliNanoAODTrack*) v0->GetDaughter(i);
+        SelectParticle(trk->GetLabel());
+      }
+      // loop over all PDG codes we want to match the V0 to
+      for (auto it : pdgCodesV0) {
+        int label = v0->MatchToMC(TMath::Abs(it), mcParticles);
+        while (label >= 0) {
+          SelectParticle(label);
+          AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(mcParticles
+              ->UncheckedAt(label));
+          if (!mother) {
+            AliError(Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+            label = -1;
+          } else {
+            label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+          }
+        }
+      }
+    }
+
+    // loop on (kept) cascades to find their ancestors
+    std::vector<int> pdgCodesV0Cascade;
+    if (fMCParticleCuts) {
+      pdgCodesV0Cascade =
+          static_cast<AliAnalysisNanoAODMCParticleCuts*>(fMCParticleCuts)
+              ->GetKeepV0sCascades();
+    }
+    TIter nextCascade(fCascades);
+    AliAODcascade* casc;
+
+    while ((casc = static_cast<AliAODcascade*>(nextCascade()))) {
+      AliNanoAODTrack *nTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(1));
+      AliNanoAODTrack *pTrackXi = (AliNanoAODTrack*) (casc->GetDaughter(0));
+      AliNanoAODTrack *bachTrackXi =
+          (AliNanoAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
+      SelectParticle(nTrackXi->GetLabel());
+      SelectParticle(pTrackXi->GetLabel());
+      SelectParticle(bachTrackXi->GetLabel());
+      for (auto it : pdgCodesV0Cascade) {
+        // You might think this is wrong, its not ....
+        int MamaLauda = casc->MatchToMC(TMath::Abs(it), mcParticles);
+        auto mamaBachPart = ((AliAODMCParticle*) mcParticles->At(
+            bachTrackXi->GetLabel()));
+        int MamaBach = (mamaBachPart) ? mamaBachPart->GetMother() : -1;
+        // Is it a brother from another mother
+        if (MamaLauda > 0 && MamaLauda == MamaBach) {
+          int label = MamaLauda;
+          while (label >= 0) {
+            SelectParticle (label);
+            AliAODMCParticle* mother =
+                static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+            if (!mother) {
+              AliError(
+                  Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+              label = -1;
+            } else {
+              label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+            }
+          }
+        }
+      }
+    }
+
+    // loop on (kept) photons to find their ancestors
+    TIter nextPhoton(fConversionPhotons);
+    AliAODConversionPhoton* phot;
+
+    while ((phot = static_cast<AliAODConversionPhoton*>(nextPhoton()))) {
+      RelabelAODPhotonCandidates(phot);
+      const int labelPos = phot->GetMCLabelPositive();
+      const int labelNeg = phot->GetMCLabelNegative();
+      AliAODMCParticle * mcPartPos = (AliAODMCParticle*) mcParticles
+          ->UncheckedAt(labelPos);
+      AliAODMCParticle * mcPartNeg = (AliAODMCParticle*) mcParticles
+          ->UncheckedAt(labelNeg);
+      SelectParticle(labelPos);
+      SelectParticle(labelNeg);
+
+      if (mcPartPos && mcPartNeg) {
+        if (mcPartPos->GetMother() > -1
+            && (mcPartNeg->GetMother() == mcPartPos->GetMother())) {
+          int label = mcPartPos->GetMother();
+          while (label >= 0) {
+            SelectParticle(label);
+            AliAODMCParticle* mother =
+                static_cast<AliAODMCParticle*>(mcParticles->UncheckedAt(label));
+            if (!mother) {
+              AliError(
+                  Form("Got a null mother ! Check that ! (label %d", label));  // FIXME: I think this error is not needed
+              label = -1;
+            } else {
+              label = mother->GetMother();  // do not only keep particles which created a track, but all their mothers
+            }
+          }
+        }
+      }
+    }
+
+    // Actual filtering and label remapping (shamelessly taken for the implementation of AliAODHandler::StoreMCParticles)
+    CreateLabelMap(source);
+  
+    TIter nextMC(mcParticles);
+    AliAODMCParticle* p;
+    Int_t nmc(0);  // We need nmc, we cannot rely on part->GetLabel, because some of the original mc particles are not kept in the stack, apparently
+    Int_t nmcout(0);
+  
+    while ( ( p = static_cast<AliAODMCParticle*>(nextMC()) ) )
+    {
+      AliAODMCParticle c(*p);
+
+      if ( IsParticleSelected(nmc) )
+      {
+        // 
+        Int_t d0 =  p->GetDaughterLabel(0);
+        Int_t d1 =  p->GetDaughterLabel(1);
+        Int_t m =   p->GetMother();
+      
+        // other than for the track labels, negative values mean
+        // no daughter/mother so preserve it
+      
+        if(d0<0 && d1<0)
+        {
+          // no first daughter -> no second daughter
+          // nothing to be done
+          // second condition not needed just for sanity check at the end
+          c.SetDaughter(0,d0);
+          c.SetDaughter(1,d1);
+        } 
+        else if(d1 < 0 && d0 >= 0) 
+        {
+          // Only one daughter
+          // second condition not needed just for sanity check at the end
+          if(IsParticleSelected(d0))
+            {
+              c.SetDaughter(0,GetNewLabel(d0));
+            } else 
+            {
+              c.SetDaughter(0,-1);
+            }
+          c.SetDaughter(1,d1);
+        }
+        else if (d0 > 0 && d1 > 0 )
+        {
+          // we have two or more daughters loop on the stack to see if they are
+          // selected
+          Int_t d0tmp = -1;
+          Int_t d1tmp = -1;
+          for (int id = d0; id<=d1;++id)
+            {
+              if (IsParticleSelected(id))
+            {
+              if(d0tmp==-1)
+                {
+                  // first time
+                  d0tmp = GetNewLabel(id);
+                  d1tmp = d0tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
+                }
+              else d1tmp = GetNewLabel(id);
+            }
+            }
+          c.SetDaughter(0,d0tmp);
+          c.SetDaughter(1,d1tmp);
+        } 
+        else 
+        {
+          AliFatal(Form("Unxpected indices %d %d",d0,d1));
+        }
+        
+        if ( m < 0 )
+        {
+          c.SetMother(m);
+        } 
+        else 
+        {
+          if (IsParticleSelected(m)) 
+            {
+              c.SetMother(GetNewLabel(m));              
+            }
+          // else // FIXME: re-enable this checj. Sometimes it gets here. Still to be understood why
+          //   {
+          //     //              AliError(Form("PROBLEM Mother not selected %d", m));              
+          //   }
+        }
+        
+        new ((*fMCParticles)[nmcout++]) AliAODMCParticle(c);
+      }
+      
+      ++nmc;        
+    } //closes loop over MC particles
+    
+    // now remap the tracks...
+  
+    TIter nextTrack(fTracks);
+    AliNanoAODTrack* t;
+    //      std::cout << "Remapping tracks" << std::endl;
+  
+    while ( ( t = dynamic_cast<AliNanoAODTrack*>(nextTrack()) ) )
+    {
+      t->SetLabel(GetNewLabel(t->GetLabel()));
+    }
+  }
   
   AliDebug(1,Form("input mc %d output mc %d",
                   mcParticles ? mcParticles->GetEntries() : 0,
                   fMCParticles ? fMCParticles->GetEntries() : 0));
-  
-  Printf("input mc %d output mc %d",
-                  mcParticles ? mcParticles->GetEntries() : 0,
-                  fMCParticles ? fMCParticles->GetEntries() : 0);
-  
-
 }
 
 // //_____________________________________________________________________________
@@ -432,44 +561,100 @@ TList* AliNanoAODReplicator::GetList() const
   
   if (!fList)
     {
+      // sanity checks
+      if (fSaveConversionPhotons) {
+        // check if id field is in fVarList
+        AliNanoAODTrackMapping::GetInstance(fVarList);
+        if (AliNanoAODTrackMapping::GetInstance()->GetVarIndex("ID") == -1)
+          AliFatal("Conversion Photons requested but field 'id' missing in track variables");
+      }
+      
       fList = new TList;
       fList->SetOwner(kTRUE);
 
       fTracks = new TClonesArray("AliNanoAODTrack");
-      fTracks->SetName(fOutputArrayName.Data()); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      fTracks->SetName(fOutputArrayName.Data());
       fList->Add(fTracks);
 
-      fHeader = new AliNanoAODHeader(fNumberOfHeaderParam, fNumberOfHeaderParamInt);
-      fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      Int_t numberOfHeaderParam = 0;
+      Int_t numberOfHeaderParamInt = 0;
+      for (Int_t i=0; i < fVarListHeader.Length(); i++){
+          if (fVarListHeader.Data()[i] == ',') numberOfHeaderParam++;
+      }
+      
+      if (fVarListHeader.Contains("T0Spread"))
+        numberOfHeaderParam+=3;
+      
+      if (fVarListHeader.CompareTo("")==0) 
+        numberOfHeaderParam = 2;
+      else 
+        numberOfHeaderParam = numberOfHeaderParam+1 ;
+
+      numberOfHeaderParamInt = AliNanoAODHeader::GetIntParameters(fVarListHeader);
+      numberOfHeaderParam -= numberOfHeaderParamInt;
+      fHeader = new AliNanoAODHeader(numberOfHeaderParam, numberOfHeaderParamInt);
+
+      fHeader->SetName("header");
       fList->Add(fHeader);    
         
-      if(fSaveVzero==1){
+      if(fSaveVzero){
           fVzero = new AliAODVZERO();
           fList->Add(fVzero);
       }
         
-      if(fSaveAODZDC==1){
+      if(fSaveZDC){
           fAodZDC = new AliAODZDC();
           fList->Add(fAodZDC);
       }
 
+      if(fSaveV0s){
+          fV0s = new TClonesArray("AliAODv0",2);
+          fV0s->SetName("v0s");
+          fList->Add(fV0s);
+      }
+      
+      if(fSaveCascades){
+          fCascades = new TClonesArray("AliAODcascade",2);
+          fCascades->SetName("cascades");
+          fList->Add(fCascades);
+      }
+      
+      if(fSaveConversionPhotons){
+          fConversionPhotons = new TClonesArray("AliAODConversionPhoton",2);
+          fConversionPhotons->SetName("conversionphotons");
+          fList->Add(fConversionPhotons);
+      }
 
       fVertices = new TClonesArray("AliAODVertex",2);
       fVertices->SetName("vertices");    
-    
-        
       fList->Add(fVertices);
     
       if ( fMCMode > 0 )
-	{
-	  fMCHeader = new AliAODMCHeader;    
-	  fMCParticles = new TClonesArray("AliAODMCParticle",1000);
-	  fMCParticles->SetName(AliAODMCParticle::StdBranchName());
-	  fList->Add(fMCHeader);
-	  fList->Add(fMCParticles);
-	}
+      {
+        fMCHeader = new AliAODMCHeader;    
+        fMCParticles = new TClonesArray("AliAODMCParticle",1000);
+        fMCParticles->SetName(AliAODMCParticle::StdBranchName());
+        fList->Add(fMCHeader);
+        fList->Add(fMCParticles);
+      }
     }
   return fList;
+}
+
+AliAODVertex* AliNanoAODReplicator::CloneAndStoreVertex(AliAODVertex* toClone)
+{
+  // Clone vertex if not yet cloned. Update list of to store daughter objects.
+  
+  if (fClonedVertices.find(toClone) != fClonedVertices.end())
+    return fClonedVertices[toClone];
+  
+  AliAODVertex* copiedVertex = new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*toClone);
+  copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
+  for (int nD = 0; nD<copiedVertex->GetNDaughters(); nD++)
+    fKeepDaughters[copiedVertex].push_back(copiedVertex->GetDaughter(nD));
+  copiedVertex->RemoveDaughters();
+  fClonedVertices[toClone] = copiedVertex;
+  return copiedVertex;
 }
 
 //_____________________________________________________________________________
@@ -477,16 +662,20 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 {
   // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
   
-
-  // assert(fTracks!=0x0);
+  fTracks->Clear("C");
   
-  //*fTZERO = *(source.GetTZEROData());
-  
-  
-
-  fTracks->Clear("C");			
   assert(fVertices!=0x0);
   fVertices->Clear("C");
+  
+  if (fV0s)
+    fV0s->Clear("C");
+    
+  if (fCascades)
+    fCascades->Clear("C");
+  
+  if (fConversionPhotons)
+    fConversionPhotons->Clear("C");
+  
   if (fMCMode > 0){
     if(!fMCHeader) {
       AliFatal(Form("fMCMode = %d, but MC header not found", fMCMode));
@@ -497,18 +686,106 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
     fMCParticles->Clear("C");
   }
-  Int_t ntracks(0);
-  Int_t input(0);
+  
+  fKeepDaughters.clear();
+  fClonedVertices.clear();
 
-  //AliAODVertex *vtx = source.GetPrimaryVertex();
+  fHeader->SetMapFiredTriggerClasses(fVarListHeader_fTC);
 
-  // TODO: implement header!
-  //  *fHeader = *source.GetHeader();
-  if(fCustomSetter){
-    // Set custom variables in the header if the callback is set
-    fHeader->SetMapFiredTriggerClasses(fVarListHeader_fTC);
-    fCustomSetter->SetNanoAODHeader(&source, fHeader,fVarListHeader);
+  // Set custom variables in the header if the callback is set
+  for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
+    (*it)->SetNanoAODHeader(&source, fHeader, fVarListHeader);
+
+  // keep here only *primary* vertices
+  TIter nextV(source.GetVertices());
+  AliAODVertex* v;
+  Int_t nvertices(0);
+  while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
+  {
+    if (v->GetType()!=AliAODVertex::kPrimary && v->GetType()!=AliAODVertex::kMainSPD && 
+      v->GetType()!=AliAODVertex::kPileupSPD && v->GetType()!=AliAODVertex::kMainTPC && v->GetType()!=AliAODVertex::kPrimaryTPC)
+      continue;
+
+    AliAODVertex* tmp = v->CloneWithoutRefs();
+    AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
+    copiedVertex->SetNContributors(v->GetNContributors()); 
+    copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
+    delete tmp;
+    fClonedVertices[v] = copiedVertex;
   }
+  
+  if(fSaveVzero==1){
+      fVzero->Clear("C");
+      AliAODVZERO *vzeroAOD(0x0);
+      vzeroAOD = static_cast<AliAODVZERO*>(source.GetVZEROData());
+      *fVzero = *vzeroAOD;
+  }
+  
+  if(fSaveZDC){
+      fAodZDC->Clear("C");
+      AliAODZDC *aodZDC(0x0);
+      aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
+      *fAodZDC = *aodZDC;
+  }
+  
+  if (fSaveCascades) {
+    TIter nextC(const_cast<AliAODEvent&>(source).GetCascades());
+    AliAODcascade* cascade;
+    Int_t n = 0;
+    while ( ( cascade = static_cast<AliAODcascade*>(nextC()) ) )
+    {
+      if (fCascadeCuts && !fCascadeCuts->IsSelected(cascade))
+        continue;
+  
+      // bachelor track and xi vertex
+      AliAODVertex* copiedXi = CloneAndStoreVertex(cascade->GetDecayVertexXi());
+      // store additional daughter AODVertex if needed
+      for (int nD = 0; nD<cascade->GetDecayVertexXi()->GetNDaughters(); nD++) {
+        auto vertex = dynamic_cast<AliAODVertex*> (cascade->GetDecayVertexXi()->GetDaughter(nD));
+        if (vertex != nullptr)
+          CloneAndStoreVertex(vertex);
+      }
+      
+      // v0 vertex and tracks
+      AliAODVertex* copiedV0Vertex = CloneAndStoreVertex(cascade->GetSecondaryVtx());
+      
+      // NOTE we don't have AliAODcascade::SetDecayVertexXi so have to use copy constructor here
+      //AliAODcascade* nanoCascade = new((*fCascades)[n++]) AliAODcascade(*cascade); 
+      //nanoCascade->SetDecayVertexXi(copiedXi);
+      const Double_t momBach[] = { cascade->MomBachX(), cascade->MomBachY(), cascade->MomBachZ() };
+      AliAODcascade* nanoCascade = new((*fCascades)[n++]) AliAODcascade(copiedXi, cascade->ChargeXi(), cascade->DcaXiDaughters(), cascade->DcaXiToPrimVertex(), 
+                                                                        cascade->DcaBachToPrimVertex(), (const Double_t*) momBach, *cascade);
+      nanoCascade->SetSecondaryVtx(copiedV0Vertex);
+    }
+  }  
+  
+  if(fSaveV0s){
+    TIter nextV(source.GetV0s());
+    AliAODv0* v;
+    Int_t nV0s = 0;
+    while ( ( v = static_cast<AliAODv0*>(nextV()) ) )
+    {
+      if (fV0Cuts && !fV0Cuts->IsSelected(v))
+        continue;
+
+      AliAODv0* nanoV0 = new((*fV0s)[nV0s++]) AliAODv0(*v);
+      AliAODVertex* copiedVertex = CloneAndStoreVertex(v->GetSecondaryVtx());
+      nanoV0->SetSecondaryVtx(copiedVertex);
+    }
+  }
+  
+  // Fix parent association. Not clear if this is needed downstream, though.
+  for (auto it = fClonedVertices.begin(); it != fClonedVertices.end(); it++) {
+    if (it->first->GetParent() == nullptr)
+      continue;
+    auto parent = fClonedVertices.find((AliAODVertex*) (it->first->GetParent()));
+    if (parent != fClonedVertices.end())
+      it->second->SetParent(parent->second);
+    else
+      it->second->SetParent(0x0);
+  }
+
+  // Tracks
   Int_t entries = -1;
   TClonesArray* particleArray = 0x0;
 
@@ -519,189 +796,96 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     entries = source.GetNumberOfTracks();
   }
 
-  if(entries<=0) return;
-
-  for(Int_t j=0; j<entries; j++){
+  // Photons
+  std::list<Int_t> trackIDs; // tracks which should be kept as they are referred to
+  if (fSaveConversionPhotons) {
+    TClonesArray* gammaArray = nullptr;
+    Int_t nConvPhotons = 0;
+    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
+    if (photonReader) {
+      if (photonReader->AreAODsRelabeled() != kFALSE)
+        AliFatal("This requires not relabled tracks");
+      gammaArray = photonReader->GetReconstructedGammas();
+    } else if (fPhotonFromDeltas) {
+      gammaArray = dynamic_cast<TClonesArray*>(source.FindListObject(fDeltaAODBranchName.Data()));
+    } else {
+      AliFatal("No Photon reader and no branch name specified");
+    }
+    for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
+      auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
+      if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))
+        continue;
+      trackIDs.push_back(photonCandidate->GetTrackLabelPositive());
+      trackIDs.push_back(photonCandidate->GetTrackLabelNegative());
+      auto copiedPhoton = new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+      copiedPhoton->SetV0Index(-1); // related V0 is not stored
+    }
+  }
+  
+  std::map<TObject*, AliNanoAODTrack*> trackAssociation;
+  
+  // Tracks
+  Int_t ntracks(0);
+  for(Int_t j=0; j<entries; j++) {
     AliVTrack *track = 0x0;
     if (particleArray) track = (AliVTrack*)particleArray->At(j);
     else track = (AliVTrack*)source.GetTrack(j);
 
-    AliAODTrack *aodtrack =(AliAODTrack*)track;// FIXME DYNAMIC CAST?
-    if(fTrackCut && !fTrackCut->IsSelected(aodtrack)) continue;
+    AliAODTrack *aodtrack = (AliAODTrack*) track;
 
-    AliNanoAODTrack * special = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
-
-    if(fCustomSetter) fCustomSetter->SetNanoAODTrack(aodtrack, special);
-  }  
-  //----------------------------------------------------------
-  
-  TIter nextV(source.GetVertices());
-  AliAODVertex* v;
-  Int_t nvertices(0);
-  
-  while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
-    {
-      AliAODVertex* tmp = v->CloneWithoutRefs();
-      AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
-      
-      copiedVertex->SetNContributors(v->GetNContributors()); 
-      
-      delete tmp;
+    Bool_t selected = kFALSE;
+    if (!fTrackCuts || fTrackCuts->IsSelected(aodtrack)) 
+      selected = kTRUE;
+    
+    // store tracks needed for V0s
+    for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = fKeepDaughters.begin(); it != fKeepDaughters.end(); it++) {
+      if (std::find(it->second.begin(), it->second.end(), aodtrack) != it->second.end())
+        selected = kTRUE;
     }
     
-    if(fSaveVzero==1){
-        fVzero->Clear("C");
-        AliAODVZERO *vzeroAOD(0x0);
-        vzeroAOD = static_cast<AliAODVZERO*>(source.GetVZEROData());
-        *fVzero = *vzeroAOD;
-    }
+    // store tracks needed for conversions
+    if (std::find(trackIDs.begin(), trackIDs.end(), aodtrack->GetID()) != trackIDs.end())
+      selected = kTRUE;
     
-    if(fSaveAODZDC==1){
-        fAodZDC->Clear("C");
-        AliAODZDC *aodZDC(0x0);
-        aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
-        *fAodZDC = *aodZDC;
-        
+    if (!selected)
+      continue;
+
+    AliNanoAODTrack* nanoTrack = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
+
+    for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
+      (*it)->SetNanoAODTrack(aodtrack, nanoTrack);
+    
+    trackAssociation[aodtrack] = nanoTrack;
+  }
+  
+  // Replace references to stored tracks. 
+  // NOTE this has to respect the order in which they were stored (e.g. for a V0 the first daugther needs to be the positive one).
+  for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = fKeepDaughters.begin(); it != fKeepDaughters.end(); it++) {
+    for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+      //Printf("Vertex %p Track %p", it->first, *it2);
+      auto track = dynamic_cast<AliAODTrack*> (*it2);
+      auto vertex = dynamic_cast<AliAODVertex*> (*it2);
+      if (track != nullptr && trackAssociation.find(*it2) != trackAssociation.end())
+        it->first->AddDaughter(trackAssociation[*it2]);
+      else if (vertex != nullptr && fClonedVertices.find(vertex) != fClonedVertices.end())
+        it->first->AddDaughter(fClonedVertices[vertex]);
+      else {
+        Printf("Dumping useful information before abort.");
+        it->first->Dump();
+        (*it2)->Dump();
+        AliFatal("You requested to store an AliAODVertex for which the daughter object is not available. Aborting.");
+      }
     }
+  }
   
-  
-  AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d",
-                  input,fTracks->GetEntries(),fVertices->GetEntries())); 
-  
+  AliDebug(1,Form("tracks=%d vertices=%d", fTracks->GetEntries(),fVertices->GetEntries())); 
   
   // Finally, deal with MC information, if needed
-  
   if ( fMCMode > 0 ) {
     FilterMC(source);      
   }
-  
-
 }
 
-
-
-//-----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-	
-
-//-----------------------------------------------------------------------------
-
-// AliAODVertex* AliNanoAODReplicator::PrimaryVertex(const TObjArray *trkArray,
-// 						   AliAODEvent &event) const
-// {
-//   // Returns primary vertex to be used for this candidate
-//   //AliCodeTimerAuto("",0);
-
-//   AliESDVertex *vertexESD = 0;
-//   AliAODVertex *vertexAOD = 0;
-
-
-//   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) { 
-//     // primary vertex from the input event
-    
-//     vertexESD = new AliESDVertex(*fV1);
-
-//   } else {
-//     // primary vertex specific to this candidate
-
-//     Int_t nTrks = trkArray->GetEntriesFast();
-//     AliVertexerTracks *vertexer = new AliVertexerTracks(event.GetMagneticField());
-
-//     if(fRecoPrimVtxSkippingTrks) { 
-//       // recalculating the vertex
-      
-//       if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraint")) {
-// 	Float_t diamondcovxy[3];
-// 	event.GetDiamondCovXY(diamondcovxy);
-// 	Double_t pos[3]={event.GetDiamondX(),event.GetDiamondY(),0.};
-// 	Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-// 	AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-// 	vertexer->SetVtxStart(diamond);
-// 	delete diamond; diamond=NULL;
-// 	if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraintOnlyFitter")) 
-// 	  vertexer->SetOnlyFitter();
-//       }
-//       Int_t skipped[1000];
-//       Int_t nTrksToSkip=0,id;
-//       AliExternalTrackParam *t = 0;
-//       for(Int_t i=0; i<nTrks; i++) {
-// 	t = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
-// 	id = (Int_t)t->GetID();
-// 	if(id<0) continue;
-// 	skipped[nTrksToSkip++] = id;
-//       }
-//       // TEMPORARY FIX
-//       // For AOD, skip also tracks without covariance matrix
-//       if(fInputAOD) {
-// 	Double_t covtest[21];
-// 	for(Int_t j=0; j<event.GetNumberOfTracks(); j++) {
-// 	  AliVTrack *vtrack = (AliVTrack*)event.GetTrack(j);
-// 	  if(!vtrack->GetCovarianceXYZPxPyPz(covtest)) {
-// 	    id = (Int_t)vtrack->GetID();
-// 	    if(id<0) continue;
-// 	    skipped[nTrksToSkip++] = id;
-// 	  }
-// 	}
-//       }
-//       for(Int_t ijk=nTrksToSkip; ijk<1000; ijk++) skipped[ijk]=-1;
-//       //
-//       vertexer->SetSkipTracks(nTrksToSkip,skipped);
-//       vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
-      
-//     } else if(fRmTrksFromPrimVtx && nTrks>0) { 
-//       // removing the prongs tracks
-      
-//       TObjArray rmArray(nTrks);
-//       UShort_t *rmId = new UShort_t[nTrks];
-//       AliESDtrack *esdTrack = 0;
-//       AliESDtrack *t = 0;
-//       for(Int_t i=0; i<nTrks; i++) {
-// 	t = (AliESDtrack*)trkArray->UncheckedAt(i);
-// 	esdTrack = new AliESDtrack(*t);
-// 	rmArray.AddLast(esdTrack);
-// 	if(esdTrack->GetID()>=0) {
-// 	  rmId[i]=(UShort_t)esdTrack->GetID();
-// 	} else {
-// 	  rmId[i]=9999;
-// 	}
-//       }
-//       Float_t diamondxy[2]={event.GetDiamondX(),event.GetDiamondY()};
-//       vertexESD = vertexer->RemoveTracksFromVertex(fV1,&rmArray,rmId,diamondxy);
-//       delete [] rmId; rmId=NULL;
-//       rmArray.Delete();
-      
-//     }
-
-//     if(!vertexESD) return vertexAOD;
-//     if(vertexESD->GetNContributors()<=0) { 
-//       //AliDebug(2,"vertexing failed"); 
-//       delete vertexESD; vertexESD=NULL;
-//       return vertexAOD;
-//     }
-
-//     delete vertexer; vertexer=NULL;
-
-//   }
-
-//   // convert to AliAODVertex
-//   Double_t pos[3],cov[6],chi2perNDF;
-//   vertexESD->GetXYZ(pos); // position
-//   vertexESD->GetCovMatrix(cov); //covariance matrix
-//   chi2perNDF = vertexESD->GetChi2toNDF();
-//   delete vertexESD; vertexESD=NULL;
-
-//   vertexAOD = new AliAODVertex(pos,cov,chi2perNDF);
-
-//   return vertexAOD;
-// }
-
-//_____________________________________________________________________________
-
-
-
-// //---------------------------------------------------------------------------
-
-void AliNanoAODReplicator::Terminate(){
-
+void AliNanoAODReplicator::Terminate()
+{
 }

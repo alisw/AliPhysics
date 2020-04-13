@@ -54,6 +54,7 @@ set(SRCS
   BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
   BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
+  BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
@@ -75,6 +76,12 @@ set(SRCS
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpp.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPbQA.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucLHC10h.cxx
   NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
   NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
   NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
@@ -106,6 +113,7 @@ set(SRCS
   NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
+  StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
   )
 
 # Headers from sources
@@ -153,3 +161,4 @@ install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuation
 install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
 install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
+install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)

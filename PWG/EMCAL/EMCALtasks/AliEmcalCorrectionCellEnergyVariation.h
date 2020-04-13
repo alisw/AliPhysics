@@ -7,7 +7,7 @@
 
 /**
  * @class AliEmcalCorrectionCellEnergyVariation
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Cell energy variation component in the EMCal correction framework.
  *
  * This component allows the EMCal cell energy to be scaled by a constant factor or as a function of cell E.

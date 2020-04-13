@@ -60,6 +60,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   TNtuple* GetNtupleBinCounting(){return fNtupleBinCount;}
 
   void SetMass(Double_t mass){fMassD=mass;}
+  void SetUpperMassToFix(Double_t mass){fUpperMassToFix=mass;}
+  void SetLowerMassToFix(Double_t mass){fLowerMassToFix=mass;}
   void SetSigmaGaussMC(Double_t sig){fSigmaGausMC=sig;}
   void SetSigmaMCVariation(Double_t varup, Double_t vardw=99999.){
     fSigmaMCVariationUp=varup;
@@ -100,7 +102,12 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   void SetUseFixedMeanFreeS(Bool_t opt=kTRUE) {fUseFixedMeanFreeS=opt;}
   void SetUseFixSigFreeMean(Bool_t opt=kTRUE) {fUseFixSigFreeMean=opt;}
   void SetUseFixSigFixMean(Bool_t opt=kTRUE) {fUseFixSigFixMean=opt;}
-
+  void SetUseFixSigFixMeanUp(Bool_t opt=kTRUE) {fUseFixSigFixMeanUp=opt;}
+  void SetUseFixSigFixMeanDown(Bool_t opt=kTRUE) {fUseFixSigFixMeanDown=opt;}
+  void SetUseFreeSigFixMeanUp(Bool_t opt=kTRUE) {fUseFreeSigFixMeanUp=opt;}
+  void SetUseFreeSigFixMeanDown(Bool_t opt=kTRUE) {fUseFreeSigFixMeanDown=opt;}
+  void SetUseFixSigVarWithFixMean(Bool_t opt=kTRUE) {fUseFixSigVarWithFixMean=opt;}
+  
   void SetSaveBkgValue(Bool_t opt=kTRUE, Double_t nsigma=3) {fSaveBkgVal=opt; fnSigmaForBkgEval=nsigma;}
 
   void SetDrawIndividualFits(Bool_t opt=kTRUE){fDrawIndividualFits=opt;}
@@ -123,7 +130,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
-  enum EFitParamCases{ kFixSigFreeMean, kFixSigUpFreeMean, kFixSigDownFreeMean, kFreeSigFreeMean, kFixSigFixMean, kFreeSigFixMean, kNFitConfCases};
+  enum EGausSigCases{ kFixSig, kFixSigUp, kFixSigDown, kFreeSig, kNGausSigCases};
+  enum EGausMeanCases{ kFixMean, kFixMeanUp, kFixMeanDown, kFreeMean, kNGausMeanCases};
   enum ESigFuncCases{ kGaus, k2Gaus, k2GausSigmaRatioPar, kNSigFuncCases};
 
  private:
@@ -151,6 +159,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Double_t fSigmaMCVariationUp; /// relative variation of the sigma
   Double_t fSigmaMCVariationDw; /// relative variation of the sigma
   Double_t fMassD;       /// mass of D meson
+  Double_t fUpperMassToFix; /// varation of mass (up)
+  Double_t fLowerMassToFix; /// varation of mass (down)
   TString fSuffix;       /// name to characterize analysis case
   Int_t fFitOption;      /// LL or chi2 fit
   Bool_t fUseExpoBkg;    /// switch for exponential background
@@ -166,12 +176,17 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Double_t fFixSecondGausSig;     /// value to fix 2nd gaus sigma
   Double_t fFixSecondGausFrac;    /// value to fix 2nd gaus area
   Double_t fFixSecondGausSigRat;  /// value to fix ratio os sigmas
-  Bool_t fUseFixSigUpFreeMean;    /// switch for FixSigUpFreeMean
-  Bool_t fUseFixSigDownFreeMean;  /// switch for FixSigDownFreeMean
-  Bool_t fUseFreeS;              /// switch for FreeSigma
-  Bool_t fUseFixedMeanFreeS;     ///  switch for FixedMeanFreeS
-  Bool_t fUseFixSigFreeMean;     ///  switch for FixSigFreeMean
-  Bool_t fUseFixSigFixMean;      ///  switch for FixSigFixMean
+  Bool_t fUseFixSigUpFreeMean;     /// switch for FixSigUpFreeMean
+  Bool_t fUseFixSigDownFreeMean;   /// switch for FixSigDownFreeMean
+  Bool_t fUseFreeS;                /// switch for FreeSigma
+  Bool_t fUseFixedMeanFreeS;       ///  switch for FixedMeanFreeS
+  Bool_t fUseFixSigFreeMean;       ///  switch for FixSigFreeMean
+  Bool_t fUseFixSigFixMean;        ///  switch for FixSigFixMean
+  Bool_t fUseFixSigFixMeanUp;      ///  switch for FixSigFixMeanUp
+  Bool_t fUseFixSigFixMeanDown;    ///  switch for FixSigFixMeanDown
+  Bool_t fUseFreeSigFixMeanUp;     ///  switch for FreeSigFixMeanUp
+  Bool_t fUseFreeSigFixMeanDown;   ///  switch for FreeSigFixMeanDown
+  Bool_t fUseFixSigVarWithFixMean; ///  switch for various cases
 
   Bool_t   fUseSecondPeak;      /// switch off/on second peak (for D+->KKpi in Ds)
   Double_t fMassSecondPeak;     /// position of the 2nd peak
@@ -223,7 +238,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,5); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,7); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 

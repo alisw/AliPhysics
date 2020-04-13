@@ -136,6 +136,17 @@ AliAnalysisTaskSE* AddTaskForwardMakeAOD()
 
   std::cout << "______________________________________________________________________________" << std::endl;
 
+
+
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskCentralMult.C");
+
+    AliCentralMCMultiplicityTask* mytask = reinterpret_cast<AliCentralMCMultiplicityTask*>(gROOT->ProcessLine("AddTaskCentralMult(kTRUE,0,0,0,0,\"CentralAODConfig.C\",\"$ALICE_PHYSICS/OADB/PWGLF/FORWARD/CORRECTIONS/data\",0)"));
+    
+
+    std::cout << "______________________________________________________________________________" << std::endl;
+
+
+
   AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
   mgr->AddTask(kinefilter);
 

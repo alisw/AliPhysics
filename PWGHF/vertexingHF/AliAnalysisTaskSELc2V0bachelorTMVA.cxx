@@ -1165,7 +1165,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 
   Int_t nSelectedAnal = 0;
   if (fIsK0sAnalysis) {
-    MakeAnalysisForLc2prK0S(arrayLctopKos, mcArray,
+    MakeAnalysisForLc2prK0S(aodEvent, arrayLctopKos, mcArray,
 			    nSelectedAnal, fAnalCuts,
 			    array3Prong, mcHeader);
   }
@@ -1228,8 +1228,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       continue;
     }
     AliDebug(2, Form("Step 0 ok: MC particle %d is a Lc: its pdg code is %d", iPart, pdg));
-    Int_t labeldaugh0 = mcPart->GetDaughter(0);
-    Int_t labeldaugh1 = mcPart->GetDaughter(1);
+    Int_t labeldaugh0 = mcPart->GetDaughterLabel(0);
+    Int_t labeldaugh1 = mcPart->GetDaughterLabel(1);
     if (labeldaugh0 <= 0 || labeldaugh1 <= 0){
       AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
       continue;
@@ -1261,7 +1261,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	}
 	else { // So far: Lc --> K0 + p, K0 with 1 daughter
 	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
-	  Int_t labelK0daugh = v0MC->GetDaughter(0);
+	  Int_t labelK0daugh = v0MC->GetDaughterLabel(0);
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
 	  if(!partK0S){
 	    AliError("Error while casting particle! returning a NULL array");
@@ -1274,8 +1274,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	    }
 	    else { // So far: Lc --> K0 + p, K0 --> K0S, K0S in 2 bodies
 	      AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
-	      Int_t labelK0Sdaugh0 = partK0S->GetDaughter(0);
-	      Int_t labelK0Sdaugh1 = partK0S->GetDaughter(1);
+	      Int_t labelK0Sdaugh0 = partK0S->GetDaughterLabel(0);
+	      Int_t labelK0Sdaugh1 = partK0S->GetDaughterLabel(1);
 	      AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
 	      AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
 	      if (!daughK0S0 || ! daughK0S1){
@@ -1320,7 +1320,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 }
 
 //-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *arrayLctopKos,
+void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(AliAODEvent *aodEvent,
+                 TClonesArray *arrayLctopKos,
 								 TClonesArray *mcArray,
 								 Int_t &nSelectedAnal,
 								 AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *array3Prong,
@@ -1531,8 +1532,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       }
     }
 
-    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
-    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
+    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s, aodEvent);
+    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel, aodEvent);
 
 
   }
@@ -1545,7 +1546,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 							     Int_t isLc,
 							     Int_t &nSelectedAnal,
 							     AliRDHFCutsLctoV0 *cutsAnal,
-							     TClonesArray *mcArray, Int_t iLctopK0s){
+							     TClonesArray *mcArray, Int_t iLctopK0s, AliAODEvent *aod){
   //
   /// Fill histos for Lc -> K0S+proton
   //
@@ -1600,7 +1601,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     }
   }
 
-  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
+  Int_t isInV0window = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 2, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on V0 invMass
 
   if (isInV0window == 0) {
     AliDebug(2, "No: The candidate has NOT passed the V0 window cuts!");
@@ -1609,7 +1610,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   }
   else AliDebug(2, "Yes: The candidate has passed the mass cuts!");
 
-  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
+  Bool_t isInCascadeWindow = (((cutsAnal->IsSelectedSingleCut(part, AliRDHFCuts::kCandidate, 0, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // cut on Lc->p+K0S invMass
 
   if (!isInCascadeWindow) {
     AliDebug(2, "No: The candidate has NOT passed the cascade window cuts!");
@@ -1618,8 +1619,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   }
   else AliDebug(2, "Yes: The candidate has passed the cascade window cuts!");
 
-  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
-  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
+  Bool_t isCandidateSelectedCuts = (((cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr)); // kinematic/topological cuts
+  AliDebug(2, Form("recoAnalysisCuts = %d", cutsAnal->IsSelected(part, AliRDHFCuts::kCandidate, aod) & (AliRDHFCutsLctoV0::kLcToK0Spr)));
   if (!isCandidateSelectedCuts){
     AliDebug(2, "No: Analysis cuts kCandidate level NOT passed");
     if (isLc) Printf("SIGNAL candidate rejected");
@@ -1635,7 +1636,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     return;
   }
 
-  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
+  //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID, aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
   Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
 
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
@@ -1684,13 +1685,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     return;
   }
 
-  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
+  if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll, aod))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
     nSelectedAnal++;
   }
 
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122))) ) return;
 
-  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
+  if ( !( ( (cutsAnal->IsSelected(part, AliRDHFCuts::kTracks, aod)) & (AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) { // esd track cuts
     if (isLc) Printf("SIGNAL candidate rejected");
     AliDebug(2, "No: Analysis cuts kTracks level NOT passed");
     return;

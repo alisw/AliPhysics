@@ -8,7 +8,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskUniFlow;
 
-AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys, TString sWeigthsFile = "", const char* suffix = "")
+AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys, TString sWeigthsFile = "", Bool_t bIsMC = kFALSE, const char* suffix = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) { return NULL; }
@@ -21,7 +21,7 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   // crate a combined name for the task (required for LEGO trains)
   TString taskName = Form("UniFlow%s",suffix);
 
-  AliAnalysisTaskUniFlow* task = new AliAnalysisTaskUniFlow(taskName.Data(), colSys, bUseWeights); // now we create an instance of your task
+  AliAnalysisTaskUniFlow* task = new AliAnalysisTaskUniFlow(taskName.Data(), colSys, bUseWeights, bIsMC); // now we create an instance of your task
   if(!task) { return NULL; }
 
   // task default settings (ColSystem independent)
@@ -29,7 +29,6 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   task->SetRunMode(AliAnalysisTaskUniFlow::kFull);
   task->SetNumEventsAnalyse(50);
   task->SetTrigger(AliVEvent::kINT7);
-  task->SetMC(kFALSE);
   task->SetFlowFillWeights(kTRUE);
   task->SetUseWeigthsRunByRun(kTRUE);
   task->SetUseWeights3D(kFALSE);
@@ -38,7 +37,7 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   task->SetProcessPID(kTRUE);
   task->SetProcessPhi(kTRUE);
   task->SetProcessV0s(kTRUE);
-  task->SetFlowRFPsPt(0.2,5.0);
+  task->SetFlowRFPsPt(0.2,3.0);
   task->SetFlowPOIsPt(0.0,10.0);
   task->SetFlowEta(0.8);
 
@@ -54,9 +53,9 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
     task->SetChargedTrackFilterBit(96);
     task->SetPIDUseAntiProtonOnly(kFALSE);
     task->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
-    task->SetPIDNumSigmasPionMax(0.0);
-    task->SetPIDNumSigmasKaonMax(0.0);
-    task->SetPIDNumSigmasProtonMax(0.0);
+    task->SetPIDNumSigmasPionMax(3.0);
+    task->SetPIDNumSigmasKaonMax(3.0);
+    task->SetPIDNumSigmasProtonMax(3.0);
     task->SetPIDNumSigmasTPCRejectElectron(0.0);
     task->SetUseBayesPID(kTRUE);
     task->SetPIDBayesProbPionMin(0.95);
@@ -112,21 +111,21 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
     task->SetChargedTrackFilterBit(96);
     task->SetPIDUseAntiProtonOnly(kFALSE);
     task->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
-    task->SetPIDNumSigmasPionMax(0.0);
-    task->SetPIDNumSigmasKaonMax(0.0);
-    task->SetPIDNumSigmasProtonMax(0.0);
+    task->SetPIDNumSigmasPionMax(3.0);
+    task->SetPIDNumSigmasKaonMax(3.0);
+    task->SetPIDNumSigmasProtonMax(3.0);
     task->SetPIDNumSigmasTPCRejectElectron(0.0);
-    task->SetUseBayesPID(kFALSE);
-    task->SetPIDBayesProbPionMin(0.0);
-    task->SetPIDBayesProbKaonMin(0.0);
-    task->SetPIDBayesProbProtonMin(0.0);
+    task->SetUseBayesPID(kTRUE);
+    task->SetPIDBayesProbPionMin(0.8);
+    task->SetPIDBayesProbKaonMin(0.8);
+    task->SetPIDBayesProbProtonMin(0.8);
     task->SetV0sOnFly(kFALSE);
     task->SetV0sTPCRefit(kTRUE);
     task->SetV0sRejectKinks(kTRUE);
-    task->SetV0sDaughterNumTPCClsMin(0);
+    task->SetV0sDaughterNumTPCClsMin(70);
     task->SetV0sDaughterNumTPCrossMin(70);
     task->SetV0sDaughterNumTPCFindMin(1);
-    task->SetV0sDaughterNumTPCClsPIDMin(0);
+    task->SetV0sDaughterNumTPCClsPIDMin(70);
     task->SetV0sDaughterRatioCrossFindMin(0.8);
     task->SetV0sUseCrossMassRejection(kTRUE);
     task->SetV0sCrossMassCutK0s(0.005);
@@ -149,8 +148,8 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
     task->SetV0sLambdaInvMassMax(1.16);
     task->SetV0sK0sCPAMin(0.97);
     task->SetV0sLambdaCPAMin(0.995);
-    task->SetV0sK0sNumTauMax(7.46);
-    task->SetV0sLambdaNumTauMax(3.8);
+    task->SetV0sK0sNumTauMax(0);
+    task->SetV0sLambdaNumTauMax(0);
     task->SetV0sK0sArmenterosAlphaMin(0.2);
     task->SetV0sLambdaArmenterosAlphaMax(0.0);
     task->SetV0sK0sPionNumTPCSigmaMax(5.0);
@@ -200,18 +199,38 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   mgr->ConnectOutput(task,14,cOutput14);
 
   if(bUseWeights) {
-    // in case of non-local run, establish connection to ALiEn for loading the weights
-    if(sWeigthsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+    TObjArray* taskContainers = mgr->GetContainers();
+    if(!taskContainers) { printf("E-AddTaskUniFlow: Task containers does not exists!\n"); return NULL; }
 
-    TFile* weights_file = TFile::Open(sWeigthsFile.Data(),"READ");
-    if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+    // check if the input weights are already loaded (e.g. in different subwagon)
+    AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
+    if(!weights) {
+      // if it does not exists create it
 
-    TList* weights_list = (TList*) weights_file->Get("weights");
-    if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+      // in case of non-local run, establish connection to ALiEn for loading the weights
+      if(sWeigthsFile.Contains("alien://")) { gGrid->Connect("alien://"); }
 
-    AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
-    cInputWeights->SetData(weights_list);
-    mgr->ConnectInput(task,1,cInputWeights);
+      TFile* weights_file = TFile::Open(sWeigthsFile.Data(),"READ");
+      if(!weights_file) { printf("E-AddTaskUniFlow: Input file with weights not found!\n"); return NULL; }
+
+      TList* weights_list = (TList*) weights_file->Get("weights");
+      if(!weights_list) { printf("E-AddTaskUniFlow: Input list with weights not found!\n"); weights_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer("inputWeights",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInputWeights->SetData(weights_list);
+      mgr->ConnectInput(task,1,cInputWeights);
+    }
+    else {
+      // connect existing container
+      mgr->ConnectInput(task,1,weights);
+    }
+  }
+
+  // Monte Carlo
+  if(bIsMC) {
+    AliAnalysisDataContainer* cOutMC = mgr->CreateContainer(TString("MC_")+taskName, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+    mgr->ConnectOutput(task,15,cOutMC);
+
   }
 
   return task;

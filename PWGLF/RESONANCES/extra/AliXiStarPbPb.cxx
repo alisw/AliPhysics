@@ -121,10 +121,10 @@ fCutList(0)
         CutVar[cv].fXiPlusPiPlus=0x0;
         CutVar[cv].fXiPlusPiMinus=0x0;
         //
-        CutVar[cv].fXiMinusPiPlusbkg=0x0;
-        CutVar[cv].fXiMinusPiMinusbkg=0x0;
-        CutVar[cv].fXiPlusPiPlusbkg=0x0;
-        CutVar[cv].fXiPlusPiMinusbkg=0x0;
+        //CutVar[cv].fXiMinusPiPlusbkg=0x0;
+        //CutVar[cv].fXiMinusPiMinusbkg=0x0;
+        //CutVar[cv].fXiPlusPiPlusbkg=0x0;
+        //CutVar[cv].fXiPlusPiMinusbkg=0x0;
         //
         CutVar[cv].fMCrecXi=0x0;
         CutVar[cv].fMCrecXibar=0x0;
@@ -187,10 +187,10 @@ fCutList(CutListOption)
         CutVar[cv].fXiPlusPiPlus=0x0;
         CutVar[cv].fXiPlusPiMinus=0x0;
         //
-        CutVar[cv].fXiMinusPiPlusbkg=0x0;
-        CutVar[cv].fXiMinusPiMinusbkg=0x0;
-        CutVar[cv].fXiPlusPiPlusbkg=0x0;
-        CutVar[cv].fXiPlusPiMinusbkg=0x0;
+        //CutVar[cv].fXiMinusPiPlusbkg=0x0;
+        //CutVar[cv].fXiMinusPiMinusbkg=0x0;
+        //CutVar[cv].fXiPlusPiPlusbkg=0x0;
+        //CutVar[cv].fXiPlusPiMinusbkg=0x0;
         //
         CutVar[cv].fMCrecXi=0x0;
         CutVar[cv].fMCrecXibar=0x0;
@@ -348,10 +348,10 @@ AliXiStarPbPb::~AliXiStarPbPb()
         if(CutVar[cv].fXiPlusPiPlus) delete CutVar[cv].fXiPlusPiPlus;
         if(CutVar[cv].fXiPlusPiMinus) delete CutVar[cv].fXiPlusPiMinus;
         //
-        if(CutVar[cv].fXiMinusPiPlusbkg) delete CutVar[cv].fXiMinusPiPlusbkg;
-        if(CutVar[cv].fXiMinusPiMinusbkg) delete CutVar[cv].fXiMinusPiMinusbkg;
-        if(CutVar[cv].fXiPlusPiPlusbkg) delete CutVar[cv].fXiPlusPiPlusbkg;
-        if(CutVar[cv].fXiPlusPiMinusbkg) delete CutVar[cv].fXiPlusPiMinusbkg;
+        //if(CutVar[cv].fXiMinusPiPlusbkg) delete CutVar[cv].fXiMinusPiPlusbkg;
+        //if(CutVar[cv].fXiMinusPiMinusbkg) delete CutVar[cv].fXiMinusPiMinusbkg;
+        //if(CutVar[cv].fXiPlusPiPlusbkg) delete CutVar[cv].fXiPlusPiPlusbkg;
+        //if(CutVar[cv].fXiPlusPiMinusbkg) delete CutVar[cv].fXiPlusPiMinusbkg;
         //
         if(CutVar[cv].fMCrecXi) delete CutVar[cv].fMCrecXi;
         if(CutVar[cv].fMCrecXibar) delete CutVar[cv].fMCrecXibar;
@@ -385,7 +385,7 @@ void AliXiStarPbPb::XiStarInit()
     fMultBins = 10;
     
     
-    if(fMCcase) fEventsToMix = 2;
+    if(fMCcase) fEventsToMix = 0;
     else fEventsToMix = 0; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
@@ -429,10 +429,10 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][6] = 0.035;
     fCutValues[0][7] = 0.06;
     fCutValues[0][8] = 2.5;
-    fCutValues[0][9] = 0.95;
-    fCutValues[0][10] = 0.275;
-    fCutValues[0][11] = 0.95; //tight selection of CPA L (0.998)
-    fCutValues[0][12] = 0.95; //tight selection of CPA Xi (0.9992)
+    fCutValues[0][9] = 0.8; // tight selection of DCA p-pi less then 0.95 (0.1) loose (1.5)
+    fCutValues[0][10] = 0.6; // tight selection of DCA L-pi less then 0.275 (0.3) loose (1.5)
+    fCutValues[0][11] = 0.995; //tight selection of CPA L (0.998) loose (0.95)
+    fCutValues[0][12] = 0.998; //tight selection of CPA Xi (0.9992) loose (0.95)
     
     
     
@@ -442,32 +442,9 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
+
     
-    // Open CPA L only
-    fCutValues[1][0] = 70; fCutValues[1][1] = 70; fCutValues[1][2] = 70; fCutValues[1][3] = 70;
-    fCutValues[2][4] = 0.05; //checking for loose PV-DCA
-    fCutValues[3][5] = 0.05; //checking for loose PV-DCA
-    fCutValues[4][6] = 0.035;
-    fCutValues[5][7] = 0.06;
-    fCutValues[6][8] = 2.5;
-    fCutValues[7][9] = 0.95;
-    fCutValues[8][10] = 0.275;
-    fCutValues[9][11] = 0.998; //checking for tight CPA V0
-    fCutValues[10][12] = 0.95;
     
-    // Open CPA L and Xi
-    fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
-    fCutValues[12][4] = 0.11;
-    fCutValues[13][5] = 0.11;
-    fCutValues[14][6] = 0.035;
-    fCutValues[15][7] = 0.06;
-    fCutValues[16][8] = 2.5;
-    fCutValues[17][9] = 0.96;
-    fCutValues[18][10] = 0.275;
-    fCutValues[19][11] = 0.95;
-    fCutValues[20][12] = 0.9992; //checking for tight CPA Xi
-    
-    /*
      //systematic variation// Loose
      fCutValues[1][0] = 63; fCutValues[1][1] = 63; fCutValues[1][2] = 63; fCutValues[1][3] = 63;// 80
      fCutValues[2][4] = 0.1;
@@ -475,10 +452,10 @@ void AliXiStarPbPb::XiStarInit()
      fCutValues[4][6] = 0.03;
      fCutValues[5][7] = 0.05;
      fCutValues[6][8] = 3.0;
-     fCutValues[7][9] = 1.0;
-     fCutValues[8][10] = 0.3;
-     fCutValues[9][11] = 0.95; //Open CPA L
-     fCutValues[10][12] = 0.9992;
+     fCutValues[7][9] = 0.9;
+     fCutValues[8][10] = 0.8;
+     fCutValues[9][11] = 0.993; //Open CPA L
+     fCutValues[10][12] = 0.997;
      
      //systematic variation// tight
      fCutValues[11][0] = 77; fCutValues[11][1] = 77; fCutValues[11][2] = 77; fCutValues[11][3] = 77;// 80
@@ -487,11 +464,11 @@ void AliXiStarPbPb::XiStarInit()
      fCutValues[14][6] = 0.04;
      fCutValues[15][7] = 0.07;
      fCutValues[16][8] = 2.0;
-     fCutValues[17][9] = 0.9;
-     fCutValues[18][10] = 0.25;
-     fCutValues[19][11] = 0.95;
-     fCutValues[20][12] = 0.95; //Open CPA L and Xi
-     */
+     fCutValues[17][9] = 0.7;
+     fCutValues[18][10] = 0.7;
+     fCutValues[19][11] = 0.998;
+     fCutValues[20][12] = 0.999; //Open CPA L and Xi
+     
     
     
     
@@ -777,7 +754,6 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     TH1F *hXiEtaDist = new TH1F("hXiEtaDist","Xi Eta distribution",200,-2,2);
     fOutputList->Add(hXiEtaDist);
 
-    
     TH1F *hQAXiInvMass = new TH1F("hQAXiInvMass","Xi invariant mass distribution after mass window selection : cent 0 - 10",200,1.2,1.4);
     fOutputList->Add(hQAXiInvMass);
     
@@ -839,17 +815,18 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     //
     
-    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10,100,0,100, 300,1.4,2.0);
-    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution",100,0,10,100,0,100, 300,1.4,2.0);
+    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
     fOutputList->Add(fMCinputTotalXiStar1);
     fOutputList->Add(fMCinputTotalXiStarbar1);
     
-    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
-    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
+    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi1);
     fOutputList->Add(fMCinputTotalXibar1);
     
     
+    // Cut study for CPA
     TH2F *fXiMCCosPA_lambda = new TH2F("fXiMCCosPA_lambda","MC : Cosine pointing angle Lambda vs Xi pT",100,0,10,500,0.9,1.0);
     fOutputList->Add(fXiMCCosPA_lambda);
     
@@ -862,27 +839,37 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     TH2F *fXiStarMCCosPA_Xi = new TH2F("fXiStarMCCosPA_Xi","MC : Cosine pointing angle Xi vs Xi pT",100,0,10,500,0.9,1.0);
     fOutputList->Add(fXiStarMCCosPA_Xi);
     
+    // Cut study for DCA
+    TH2F *fXiMCDCA_lambda = new TH2F("fXiMCDCA_lambda","MC : DCA Lambda vs Xi pT",100,0,10,200,0,2.0);
+    fOutputList->Add(fXiMCDCA_lambda);
     
+    TH2F *fXiMCDCA_Xi = new TH2F("fXiMCDCA_Xi","MC : DCA Xi vs Xi pT",100,0,10,200,0,2.0);
+    fOutputList->Add(fXiMCDCA_Xi);
     
+    TH2F *fXiStarMCDCA_lambda = new TH2F("fXiStarMCDCA_lambda","MC : DCA Lambda vs XiStar pT",100,0,10,200,0,2.0);
+    fOutputList->Add(fXiStarMCDCA_lambda);
+    
+    TH2F *fXiStarMCDCA_Xi = new TH2F("fXiStarMCDCA_Xi","MC : DCA Xi vs XiStar pT",100,0,10,200,0,2.0);
+    fOutputList->Add(fXiStarMCDCA_Xi);
     
     
     //
     
-    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10,100,0,100, 300,1.4,2.0);
-    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10,100,0,100, 300,1.4,2.0);
+    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
     fOutputList->Add(fMCinputTotalXiStar3);
     fOutputList->Add(fMCinputTotalXiStarbar3);
     
-    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
-    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
+    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi3);
     fOutputList->Add(fMCinputTotalXibar3);
     
     //QA for CPA L and Xi
-    TH3F *fXi_CPAL = new TH3F("fXi_CPAL","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
-    TH3F *fXi_CPAXi = new TH3F("fXi_CPAXi","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
-    fOutputList->Add(fXi_CPAL);
-    fOutputList->Add(fXi_CPAXi);
+    //TH3F *fXi_CPAL = new TH3F("fXi_CPAL","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    //TH3F *fXi_CPAXi = new TH3F("fXi_CPAXi","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    //fOutputList->Add(fXi_CPAL);
+    //fOutputList->Add(fXi_CPAXi);
     
     
     for(Int_t cv=0; cv<kNCutVariations; cv++){
@@ -901,8 +888,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
             TString *nameMCrecXibar = new TString("fMCrecXibar_");
             *nameMCrecXi += cv;
             *nameMCrecXibar += cv;
-            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
-            CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
+            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+            CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
             fOutputList->Add(CutVar[cv].fMCrecXi);
             fOutputList->Add(CutVar[cv].fMCrecXibar);
         }
@@ -911,35 +898,35 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         TString *nameXiMinusPiMinus = new TString("fXiMinusPiMinus_");
         TString *nameXiPlusPiPlus = new TString("fXiPlusPiPlus_");
         TString *nameXiPlusPiMinus = new TString("fXiPlusPiMinus_");
-        TString *nameXiMinusPiPlusbkg = new TString("fXiMinusPiPlusbkg_");
-        TString *nameXiMinusPiMinusbkg = new TString("fXiMinusPiMinusbkg_");
-        TString *nameXiPlusPiPlusbkg = new TString("fXiPlusPiPlusbkg_");
-        TString *nameXiPlusPiMinusbkg = new TString("fXiPlusPiMinusbkg_");
+        //TString *nameXiMinusPiPlusbkg = new TString("fXiMinusPiPlusbkg_");
+        //TString *nameXiMinusPiMinusbkg = new TString("fXiMinusPiMinusbkg_");
+        //TString *nameXiPlusPiPlusbkg = new TString("fXiPlusPiPlusbkg_");
+        //TString *nameXiPlusPiMinusbkg = new TString("fXiPlusPiMinusbkg_");
         *nameXiMinusPiPlus += cv;
         *nameXiMinusPiMinus += cv;
         *nameXiPlusPiPlus += cv;
         *nameXiPlusPiMinus += cv;
-        *nameXiMinusPiPlusbkg += cv;
-        *nameXiMinusPiMinusbkg += cv;
-        *nameXiPlusPiPlusbkg += cv;
-        *nameXiPlusPiMinusbkg += cv;
-        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 150,1.4,2.0);
-        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,10,0,100, 150,1.4,2.0);
+        //*nameXiMinusPiPlusbkg += cv;
+        //*nameXiMinusPiMinusbkg += cv;
+        //*nameXiPlusPiPlusbkg += cv;
+        //*nameXiPlusPiMinusbkg += cv;
+        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        //CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
         
         fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
         fOutputList->Add(CutVar[cv].fXiPlusPiPlus);
         fOutputList->Add(CutVar[cv].fXiPlusPiMinus);
-        fOutputList->Add(CutVar[cv].fXiMinusPiPlusbkg);
-        fOutputList->Add(CutVar[cv].fXiMinusPiMinusbkg);
-        fOutputList->Add(CutVar[cv].fXiPlusPiPlusbkg);
-        fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
+        //fOutputList->Add(CutVar[cv].fXiMinusPiPlusbkg);
+        //fOutputList->Add(CutVar[cv].fXiMinusPiMinusbkg);
+        //fOutputList->Add(CutVar[cv].fXiPlusPiPlusbkg);
+        //fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
         //
         
         //cent bin 10 to 100 April 7 on MC
@@ -947,8 +934,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
         *nameMCrecXiMinusPiPlus += cv;
         *nameMCrecXiPlusPiMinus += cv;
-        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 300,1.4,2.0);
-        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 300,1.4,2.0);
+        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
         fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
         //
@@ -1211,8 +1198,6 @@ void AliXiStarPbPb::Exec(Option_t *)
         
         //=========selecting 3rd pion using PID=========//
         /* TPC OFF */           if(nsigpi>nSigTPCPID) continue;
-        
-        
         ((TH2F*)fOutputList->FindObject("hQANSig3rdPion"))->Fill(fTPCPIDmom,fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
         
         
@@ -1227,9 +1212,6 @@ void AliXiStarPbPb::Exec(Option_t *)
         ((TH1F*)fOutputList->FindObject("fPtDist"))->Fill(esdtrack->Pt());
         ((TH1F*)fOutputList->FindObject("fPhiDist"))->Fill(esdtrack->Phi());
         ((TH1F*)fOutputList->FindObject("fEtaDist"))->Fill(esdtrack->Eta());
-        
-        
-        
         
         
         fTempStruct[myTracks].fStatus = status;
@@ -1254,8 +1236,9 @@ void AliXiStarPbPb::Exec(Option_t *)
         else negativeTracks++;
         
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
+        if(fTempStruct[myTracks].fDCAZ > 2.) continue;
+       // if(fTempStruct[myTracks].fEta > 0.8) continue;
         myTracks++;
-        
     }
     
     
@@ -1577,12 +1560,12 @@ void AliXiStarPbPb::Exec(Option_t *)
         }
         
         
-        if(StandardXi){
+     /*   if(StandardXi){
             if(fDecayParameters[11] < fCutValues[9][11]) ((TH3F*)fOutputList->FindObject("fXi_CPAL"))->Fill(xiPt, centralityV0M, xiMass); //QA CPA L
             if(fDecayParameters[11] < fCutValues[20][12]) ((TH3F*)fOutputList->FindObject("fXi_CPAXi"))->Fill(xiPt, centralityV0M, xiMass);//QA CPA Xi
             
         }
-    
+    */
         
         // MC associaton
         mcXiFilled = kFALSE;
@@ -1619,9 +1602,13 @@ void AliXiStarPbPb::Exec(Option_t *)
                                         mcXiFilled = kTRUE;
                                         
                                         if(StandardXi){
-                                            
+                                            ((TH2F*)fOutputList->FindObject("fXiMCDCA_lambda"))->Fill(xiPt,fDecayParameters[9]);
+                                            ((TH2F*)fOutputList->FindObject("fXiMCDCA_Xi"))->Fill(xiPt,fDecayParameters[10]);
                                             ((TH2F*)fOutputList->FindObject("fXiMCCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
                                             ((TH2F*)fOutputList->FindObject("fXiMCCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
+                                            
+                                            
+                                            
                                             
                                             
                                             if(Xicandidate->Charge() == -1){
@@ -1676,7 +1663,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                 
                 
                 
-                if((fEvt+EN)->fTracks[l].fDCAZ > 2) continue;
+                if((fEvt+EN)->fTracks[l].fDCAZ > 2.) continue;
                 if( (((fEvt+EN)->fTracks[l].fStatus)&AliESDtrack::kITSrefit)==0) continue;// Require itsrefit
                 // no Chi^2 cut applied for ESDs.  Info not available in my track structure.
                 
@@ -1776,7 +1763,6 @@ void AliXiStarPbPb::Exec(Option_t *)
                         ((TH1F*)fOutputList->FindObject("fQACosPA_lambda"))->Fill(fDecayParameters[11]);
                         ((TH1F*)fOutputList->FindObject("fQACosPA_Xi"))->Fill(fDecayParameters[12]);
                     }
-                    
                     if(EN==0 && cv==1){
                         ((TH1F*)fOutputList->FindObject("fQATPCNcls_p_L"))->Fill(fDecayParameters[0]);
                         ((TH1F*)fOutputList->FindObject("fQATPCNcls_pi1_L"))->Fill(fDecayParameters[1]);
@@ -1823,8 +1809,6 @@ void AliXiStarPbPb::Exec(Option_t *)
                     
                     
                     if(EN==0){
-                        
-                        
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
                             
@@ -1835,17 +1819,14 @@ void AliXiStarPbPb::Exec(Option_t *)
                         }
                         else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiPlusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
-                    }else {
-                        
-                        
+                    }
+                    /*else {
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
                         else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1){
                             CutVar[cv].fXiMinusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
@@ -1855,9 +1836,8 @@ void AliXiStarPbPb::Exec(Option_t *)
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
-                    }
+                    }*/
                     
                     
                     
@@ -1873,8 +1853,10 @@ void AliXiStarPbPb::Exec(Option_t *)
                                 MCXiStaresd = ((AliMCParticle*)mcstack->GetTrack(abs(MCXiesd->GetMother(0))))->Particle();
                                 
                                 if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
-                                    ((TH1F*)fOutputList->FindObject("fXiStarYDistMCout"))->Fill(xiStarY);
                                     
+                                    ((TH1F*)fOutputList->FindObject("fXiStarYDistMCout"))->Fill(xiStarY);
+                                    ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_lambda"))->Fill(xiStarPt,fDecayParameters[9]);
+                                    ((TH2F*)fOutputList->FindObject("fXiStarMCDCA_Xi"))->Fill(xiStarPt,fDecayParameters[10]);
                                     ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_lambda"))->Fill(xiStarPt,fDecayParameters[11]);
                                     ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_Xi"))->Fill(xiStarPt,fDecayParameters[12]);
                                     

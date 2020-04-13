@@ -40,6 +40,9 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "AliRDHFCutsLctoV0.h"
+#include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsXictopKpi.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliAODRecoDecay.h"
@@ -60,6 +63,7 @@ AliAnalysisTaskSE("taskTrackingSysProp"),
   fAnalysisCuts(0),
   fHistNEvents(0x0),
   fHistMESyst(0x0),
+  fHistMESystPr(0x0),
   fHistTrEffSyst(0x0),
   fhPtDauVsD(0x0),
   fhSystMatchEffD(0x0),
@@ -73,13 +77,14 @@ AliAnalysisTaskSE("taskTrackingSysProp"),
 }
 
 //________________________________________________________________________
-AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation(AliAnalysisTaskTrackingSysPropagation::DecChannel ch, AliRDHFCuts* cuts, TH1F *HistMESys, TH1F *HistTrEffSys):
+AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation(AliAnalysisTaskTrackingSysPropagation::DecChannel ch, AliRDHFCuts* cuts, TH1F *HistMESys, TH1F *HistTrEffSys, TH1F *HistMESysPr):
   AliAnalysisTaskSE("taskTrackingSysProp"),
   fPartName(""),
   fOutput(0x0),
   fAnalysisCuts(cuts),
   fHistNEvents(0x0),
   fHistMESyst(0x0),
+  fHistMESystPr(0x0),
   fHistTrEffSyst(0x0),
   fhPtDauVsD(0x0),
   fhSystMatchEffD(0x0),
@@ -89,6 +94,7 @@ AliAnalysisTaskTrackingSysPropagation::AliAnalysisTaskTrackingSysPropagation(Ali
   fMaxPt(60.)
 {
   fHistMESyst = new TH1F(*(static_cast<TH1F*>(HistMESys)));
+  if (HistMESysPr) fHistMESystPr = new TH1F(*(static_cast<TH1F*>(HistMESysPr)));
   fHistTrEffSyst = new TH1F(*(static_cast<TH1F*>(HistTrEffSys)));
     
   DefineInput(0, TChain::Class());
@@ -101,6 +107,7 @@ AliAnalysisTaskTrackingSysPropagation::~AliAnalysisTaskTrackingSysPropagation(){
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistMESyst;
+    delete fHistMESystPr;
     delete fHistTrEffSyst;
     delete fhPtDauVsD;
     delete fhSystMatchEffD;
@@ -145,6 +152,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserCreateOutputObjects(){
   fhPtDauVsD      = new TH2F("fhPtDauVsD","Pt Dau vs D; p_{T} D; p_{T} daugh",nbins,0.,fMaxPt,nbins,0.,fMaxPt);
     
   fOutput->Add(fHistMESyst);
+  if (fHistMESystPr) fOutput->Add(fHistMESystPr);
   fOutput->Add(fHistTrEffSyst);
   fOutput->Add(fhSystMatchEffD);
   fOutput->Add(fhPtDauVsD);
@@ -166,13 +174,21 @@ void AliAnalysisTaskTrackingSysPropagation::Init(){
   else if(fDecayChannel == kDstartoKpipi) {
     fAnalysisCuts = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fAnalysisCuts)));
   }
+  else if(fDecayChannel == kLctopKpi) {
+      fAnalysisCuts = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fAnalysisCuts)));
+  }
+  else if(fDecayChannel == kLctopK0s) {
+      fAnalysisCuts = new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fAnalysisCuts)));
+  }
+  else if(fDecayChannel == kLctopKpiFromSc){
+      fAnalysisCuts = new AliRDHFCutsXictopKpi(*(static_cast<AliRDHFCutsXictopKpi*>(fAnalysisCuts)));
+  }
   else {
     AliFatal("The decay channel MUST be defined according to AliCFVertexing::DecayChannel - Exiting...");
   }
 }
 //________________________________________________________________________
 void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
-    
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fInputEvent);
   fHistNEvents->Fill(0); // all events
     
@@ -200,21 +216,25 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     if(aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-      if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
+      if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc)
 	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       else if(fDecayChannel == kD0toKpi)
 	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
       else if(fDecayChannel == kDstartoKpipi)
 	arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+      else if(fDecayChannel == kLctopK0s)
+  arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
     }
   }
   else {
-    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc)
       arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     else if(fDecayChannel == kD0toKpi)
       arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
     else if(fDecayChannel == kDstartoKpipi)
       arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+    else if(fDecayChannel == kLctopK0s)
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
   }
     
   if (!arrayBranch) {
@@ -238,6 +258,8 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     fPDGcode = 421;
   }else if(fDecayChannel == kDstartoKpipi){
     fPDGcode = 413;
+  }else if(fDecayChannel == kLctopKpi || fDecayChannel == kLctopK0s || fDecayChannel == kLctopKpiFromSc){
+    fPDGcode = 4122;
   }
   Bool_t isEvSel  = fAnalysisCuts->IsEventSelected(aod);
   Float_t ntracks = aod->GetNumberOfTracks();
@@ -320,6 +342,21 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
     pdgDaughter[1]=211;
     pdg2Daughter[0]=321;
     pdg2Daughter[1]=211;
+  }else if((fDecayChannel == kLctopKpi) || (fDecayChannel == kLctopKpiFromSc)){
+      fPDGcode = 4122;
+      nprongs  = 3;
+      fPartName="LctopKpi";
+      if(fDecayChannel == kLctopKpiFromSc)  fPartName="LctopKpiFromSc";
+      pdgDaughter[0]=2212;
+      pdgDaughter[1]=321;
+      pdgDaughter[2]=211;
+  }else if(fDecayChannel == kLctopK0s){
+      fPDGcode = 4122;
+      nprongs  = 3;
+      fPartName="LctopK0s";
+      pdgDaughter[0]=2212;
+      pdgDaughter[1]=211;
+      pdgDaughter[2]=211;
   }else{
     AliError("WRONG DECAY SETTING");
     PostData(1,fOutput);
@@ -335,7 +372,7 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
         
     AliAODRecoDecayHF* d = 0x0;
         
-    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi) {
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi || fDecayChannel == kLctopKpi || fDecayChannel == kLctopKpiFromSc) {
       d = (AliAODRecoDecayHF3Prong*)arrayBranch->UncheckedAt(iCand);
       if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d)) {
 	fHistNEvents->Fill(14);
@@ -359,7 +396,20 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
       }
       if(!d->GetSecondaryVtx()) continue;
     }
-        
+    else if(fDecayChannel == kLctopK0s) {
+      d = (AliAODRecoCascadeHF*)arrayBranch->At(iCand);
+      if(!d) continue;
+      AliAODv0 * v0part = (AliAODv0*) dynamic_cast<AliAODRecoCascadeHF*>(d)->Getv0();
+      Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
+      if (onFlyV0) continue;
+      Bool_t isLctopK0sCand =kTRUE;
+      if(!vHF->FillRecoCasc(aod,(AliAODRecoCascadeHF*)d,isLctopK0sCand)) {
+	fHistNEvents->Fill(14);
+	continue;
+      }
+      if(!d->GetSecondaryVtx()) continue;
+    }
+
     fHistNEvents->Fill(11);
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
@@ -391,62 +441,148 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
 	Int_t mcLabel=-1;
 	int nbinsME = fHistMESyst->GetNbinsX();
 	int bin = 0;
-	if(!(fDecayChannel == kDstartoKpipi)) {
-	  mcLabel = d->MatchToMC(fPDGcode,arrayMC,nprongs,pdgDaughter);
-	  if (mcLabel < 0) continue;
-	  for(Int_t iDau=0; iDau < nDau; iDau++){
-	    track = (AliAODTrack*)d->GetDaughter(iDau);
-	    if(!track){
-	      AliError("Daughter particle track not found");
-	      PostData(1,fOutput);
-	      return;
-	    }
-	    Int_t labDau = track->GetLabel();
-	    AliAODMCParticle* p = (AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
-	    double ptdau = track->Pt();
-               
-	    bin = fHistMESyst->FindBin(ptdau);
-	    if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
-	    else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
-	    else if(bin == 0) {
-	      AliError("Check input histo at low pt!");
-	      PostData(1,fOutput);
-	      return;
-	    }
-	    fhPtDauVsD->Fill(ptD,ptdau);
-	  }
-	}
-	else {  //D*
-	  mcLabel = ((AliAODRecoCascadeHF*)d)->MatchToMC(413,421,pdgDaughter,pdg2Daughter,arrayMC,kFALSE);
-	  if (mcLabel < 0) continue;
-                    
-	  //soft pion
-	  //Update 17/07/18: Soft pion not prolonged from TPC to ITS, so matching should not be applied
 
-	  //D0
-	  AliAODRecoDecayHF2Prong *D0 = ((AliAODRecoCascadeHF*)d)->Get2Prong();
-	  for(Int_t iDau=0; iDau < 2; iDau++){
-	    track = 0x0;
-	    track = (AliAODTrack*)D0->GetDaughter(iDau);
-	    if(!track) {
-	      PostData(1,fOutput);
-	      return;
-	    }
-	    Int_t labDau = track->GetLabel();
-	    AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
-	    double ptdau = track->Pt();
-                        
-	    bin = fHistMESyst->FindBin(ptdau);
-	    if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
-	    else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
-	    else if(bin == 0) {
-	      AliError("Check input histo at low pt!");
-	      PostData(1,fOutput);
-	      return;
-	    }
-	    fhPtDauVsD->Fill(ptD,ptdau);
+  if(!(fDecayChannel == kLctopK0s) && !(fDecayChannel == kLctopKpi) && !(fDecayChannel == kLctopKpiFromSc)) {
+    if(!(fDecayChannel == kDstartoKpipi)) {
+      mcLabel = d->MatchToMC(fPDGcode,arrayMC,nprongs,pdgDaughter);
+      if (mcLabel < 0) continue;
+      for(Int_t iDau=0; iDau < nDau; iDau++){
+        track = (AliAODTrack*)d->GetDaughter(iDau);
+        if(!track){
+          AliError("Daughter particle track not found");
+          PostData(1,fOutput);
+          return;
+        }
+        Int_t labDau = track->GetLabel();
+        AliAODMCParticle* p = (AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
+        double ptdau = track->Pt();
+                
+        bin = fHistMESyst->FindBin(ptdau);
+        if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
+        else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
+        else if(bin == 0) {
+          AliError("Check input histo at low pt!");
+          PostData(1,fOutput);
+          return;
+        }
+        fhPtDauVsD->Fill(ptD,ptdau);
+      }
+    }
+    else {  //D*
+      mcLabel = ((AliAODRecoCascadeHF*)d)->MatchToMC(413,421,pdgDaughter,pdg2Daughter,arrayMC,kFALSE);
+      if (mcLabel < 0) continue;
+                      
+      //soft pion
+      //Update 17/07/18: Soft pion not prolonged from TPC to ITS, so matching should not be applied
+
+      //D0
+      AliAODRecoDecayHF2Prong *D0 = ((AliAODRecoCascadeHF*)d)->Get2Prong();
+      for(Int_t iDau=0; iDau < 2; iDau++){
+        track = 0x0;
+        track = (AliAODTrack*)D0->GetDaughter(iDau);
+        if(!track) {
+          PostData(1,fOutput);
+          return;
+        }
+        Int_t labDau = track->GetLabel();
+        AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
+        double ptdau = track->Pt();
+                          
+        bin = fHistMESyst->FindBin(ptdau);
+        if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
+        else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
+        else if(bin == 0) {
+          AliError("Check input histo at low pt!");
+          PostData(1,fOutput);
+          return;
+        }
+        fhPtDauVsD->Fill(ptD,ptdau);
+      }
+    }
+  }
+  else if (fDecayChannel == kLctopK0s) {  //Lc->pK0S
+	  Int_t pdgDgLctoV0bachelor[2]={2212,310}; // always 1st bachelor, 2nd V0
+	  Int_t pdgDgV0toDaughters[2]={211,211};
+	  mcLabel = ((AliAODRecoCascadeHF*)d)->MatchToMC(fPDGcode,pdgDgLctoV0bachelor[1],pdgDgLctoV0bachelor,pdgDgV0toDaughters,arrayMC,kTRUE);
+	  if (mcLabel < 0) continue;
+	  /*
+	  //K0S
+	  --> no ITS-TPC matching efficiency since no ITS requirement for the daughter pions.
+	  */
+	
+	  //proton
+	  track = (AliAODTrack*)(((AliAODRecoCascadeHF*)d)->GetBachelor());
+	  if(!track) {
+	    PostData(1,fOutput);
+	    return;
 	  }
-	}
+	  Int_t labDau = track->GetLabel();
+	  AliAODMCParticle* p = (AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
+	  double ptdau = track->Pt();
+	  
+	  bin = fHistMESyst->FindBin(ptdau);
+	  if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
+	  else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
+	  else if(bin == 0) {
+	    AliError("Check input histo at low pt!");
+	    PostData(1,fOutput);
+	    return;
+	  }
+	  fhPtDauVsD->Fill(ptD,ptdau);
+
+   } 
+  else /*if (fDecayChannel == kLctopKpi)*/ { // Lc->pKpi case
+
+    if(fDecayChannel == kLctopKpiFromSc){ // Lc->pKpi from Sc case
+      // get the MC particle for the Lc->pKpi
+      mcLabel = d->MatchToMC(fPDGcode,arrayMC,nprongs,pdgDaughter);
+      if (mcLabel < 0) continue;
+      AliAODMCParticle* partLc = (AliAODMCParticle*) arrayMC->At(mcLabel);
+
+      // get the mother and look if it is a SigmaC0 or SigmaC++
+      Int_t mcLabelMother = partLc->GetMother();
+      if(mcLabelMother>0){
+        AliAODMCParticle* partSc = (AliAODMCParticle*) arrayMC->At(mcLabelMother);
+        Int_t pdgMother = partSc->GetPdgCode();
+        if((pdgMother != 4112) && (pdgMother != 4222))  continue; // skip this Lc, because it does not come from a SigmaC
+      }
+      else  continue; // skip this Lc, because it does not come from a SigmaC
+    }
+
+    for (Int_t ii=0; ii<3; ii++) {
+      track = (AliAODTrack*)(((AliAODRecoDecayHF3Prong*)d)->GetDaughter(ii));
+      if(!track) {
+        PostData(1,fOutput);
+        return;
+      }
+      Int_t labDau = track->GetLabel();
+      AliAODMCParticle* p = (AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
+      double ptdau = track->Pt();
+      if (abs(p->GetPdgCode())==2212) {
+        bin = fHistMESystPr->FindBin(ptdau);
+        Int_t nbinsMEpr = fHistMESystPr->GetNbinsX();
+        if(bin > 0 && bin <= nbinsMEpr) syst += fHistMESystPr->GetBinContent(bin);
+        else if(bin > nbinsMEpr) syst += fHistMESystPr->GetBinContent(nbinsMEpr);
+        else if(bin == 0) {
+          AliError("Check input histo at low pt!");
+          PostData(1,fOutput);
+          return;
+        }
+      } 
+      else {
+        bin = fHistMESyst->FindBin(ptdau);
+        if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
+        else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
+        else if(bin == 0) {
+          AliError("Check input histo at low pt!");
+          PostData(1,fOutput);
+          return;
+        }
+      }
+      fhPtDauVsD->Fill(ptD,ptdau);
+    }
+  }
+  
 	int nbinsTE = fHistTrEffSyst->GetNbinsX();
 	bin = fHistTrEffSyst->FindBin(ptD);
 	double trackEffSys = 0.;

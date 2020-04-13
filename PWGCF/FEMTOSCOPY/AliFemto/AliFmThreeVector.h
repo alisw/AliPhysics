@@ -10,8 +10,8 @@
 ///
 
 
-#ifndef ST_THREE_VECTOR_HH
-#define ST_THREE_VECTOR_HH
+#ifndef ALIFMTHREEVECTOR_H
+#define ALIFMTHREEVECTOR_H
 
 #ifdef __ROOT__
 #include "Rtypes.h"
@@ -786,9 +786,11 @@ template<> istream  &operator>>(istream &is, const AliFmThreeVector<float> &v);
 template<> ostream  &operator<<(ostream &os, const AliFmThreeVector<double> &v);
 template<> ostream  &operator<<(ostream &os, const AliFmThreeVector<float> &v);
 #else
+
 //
 //        Non-member functions
 //
+
 template<class T>
 inline T abs(const AliFmThreeVector<T> &v)
 {
@@ -860,7 +862,8 @@ istream  &operator>>(istream &is, AliFmThreeVector<T> &v)
   v.SetZ(z);
   return is;
 }
+
+
 #endif /* ! __CINT__ */
 
-#endif /* ST_THREE_VECTOR_HH */
-
+#endif /* ALIFMTHREEVECTOR_H */

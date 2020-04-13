@@ -23,8 +23,6 @@
 
 #include "AliHFTreeHandler.h"
 
-using std::vector;
-
 class AliHFTreeHandlerDplustoKpipi : public AliHFTreeHandler
 {
   public:
@@ -34,18 +32,16 @@ class AliHFTreeHandlerDplustoKpipi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerDplustoKpipi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree();
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=nullptr);
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fSigmaVertex; /// vector of candidate sigma vertex
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fSigmaVertex; /// candidate sigma vertex
+    float fNormd0MeasMinusExp; ///candidate topomatic variable
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerDplustoKpipi,1); /// 
+    ClassDef(AliHFTreeHandlerDplustoKpipi,2); /// 
     /// \endcond
 };
-
 #endif

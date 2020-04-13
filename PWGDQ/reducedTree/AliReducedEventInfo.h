@@ -48,6 +48,12 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   VertexCovMatrix(Int_t iCov = 0)   const {return (iCov>=0 && iCov<6 ? fVtxCovMatrix[iCov] : 0.0);}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
+  // For the next two member functions:
+  //  side:  0- A&C combined; 1- A-side; 2- C-side
+  Float_t   TPCpileupZ(Int_t side = 0)        const {return (side<0 || side>2 ? -999. : (side==0 ? 0.5*(fTPCpileupZ[0]+fTPCpileupZ[1]) : fTPCpileupZ[side-1]));}
+  Int_t     TPCpileupContributors(Int_t side = 0) const {return (side<0 || side>2 ? -999 : (side==0 ? fTPCpileupContributors[0]+fTPCpileupContributors[1] : fTPCpileupContributors[side-1]));}
+  Float_t   TPCpileupZ2(Int_t side = 0)       const {return (side<0 || side>2 ? -999. : (side==0 ? 0.5*(fTPCpileupZ2[0]+fTPCpileupZ2[1]) : fTPCpileupZ2[side-1]));}
+  Int_t     TPCpileupContributors2(Int_t side = 0) const {return (side<0 || side>2 ? -999 : (side==0 ? fTPCpileupContributors2[0]+fTPCpileupContributors2[1] : fTPCpileupContributors2[side-1]));}
   Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
   Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
   Float_t   VertexMC(Int_t axis)              const {return (axis>=0 && axis<=2 ? fVtxMC[axis] : 0);}
@@ -114,6 +120,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   EventTZEROStartTimeTOFbest(Int_t side)  const {return (side>=0 && side<3 ? fT0TOFbest[side] : -999.);}
   Bool_t    IsPileupTZERO()                         const {return fT0pileup;}
   Bool_t    IsSatteliteCollisionTZERO()             const {return fT0sattelite;}
+  Float_t   DiamondX()                              const {return fDiamondDim[0];} 
+  Float_t   DiamondY()                              const {return fDiamondDim[1];}
+  Float_t   DiamondZ()                              const {return fDiamondDim[2];}
+  Float_t   DiamondCov(Int_t i)                     const {return (i>=0 && i<=2 ? fDiamondCov[i] : -999.);}
   
   Float_t   EnergyZDCnTree(UShort_t channel)  const {return (channel<10 ? fZDCnEnergy[channel] : -999.);};
   Float_t   EnergyZDCpTree(UShort_t channel)  const {return (channel<10 ? fZDCpEnergy[channel] : -999.);};
@@ -133,6 +143,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t GetNCaloClusters() const {return fNCaloClusters;}
   AliReducedCaloClusterInfo* GetCaloCluster(Int_t i) const 
     {return (i>=0 && i<fNCaloClusters ? (AliReducedCaloClusterInfo*)fCaloClusters->At(i) : 0x0);}
+  AliReducedCaloClusterInfo* GetCaloClusterFromID(Int_t clusterID) const;
   
   void  GetQvector(Double_t Qvec[][2], Int_t det, Float_t etaMin=-0.8, Float_t etaMax=+0.8, Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
   Int_t GetTPCQvector(Double_t Qvec[][2], Int_t det, Float_t etaMin=-0.8, Float_t etaMax=+0.8, Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
@@ -177,6 +188,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   fVtxCovMatrix[6];       // Covariance matrix of the event vertex
   Float_t   fVtxTPC[3];             // TPC only event vertex       
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
+  Float_t   fTPCpileupZ[2];         // TPC pileup event Z position; [0]: A-side; [1]: C-side 
+  Int_t     fTPCpileupContributors[2]; // TPC pileup event contributors; [0]: A-side; [1]: C-side
+  Float_t   fTPCpileupZ2[2];         // TPC pileup event Z position computed with larger DCA cut; [0]: A-side; [1]: C-side 
+  Int_t     fTPCpileupContributors2[2]; // TPC pileup event contributors computed with larger DCA cut; [0]: A-side; [1]: C-side
   Float_t   fVtxSPD[3];             // SPD only event vertex
   Int_t     fNVtxSPDContributors;  // SPD only event vertex contributors
   Float_t   fVtxMC[3];              // MC event vertex
@@ -207,6 +222,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   fT0start;                // T0 timing
   Bool_t    fT0pileup;               // TZERO pileup flag
   Bool_t    fT0sattelite;            // TZERO flag for collisions from sattelite bunches
+  Float_t   fDiamondDim[3];          // Diamond size (x,y,z) 
+  Float_t   fDiamondCov[3];          // Diamond covariance matrix
     
   Int_t     fNCaloClusters;         // number of calorimeter clusters  
   TClonesArray* fCaloClusters;        //->   array containing calorimeter clusters
@@ -220,7 +237,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 12);
+  ClassDef(AliReducedEventInfo, 15);
 };
 
 #endif

@@ -36,6 +36,7 @@ namespace PWG {
 
 namespace EMCAL {
 
+class AliEmcalTriggerAlias;
 class AliEmcalTriggerSelectionCuts;
 
 /**
@@ -147,6 +148,13 @@ public:
    */
   virtual ~AliEmcalTriggerDecision();
 
+
+  /**
+   * @brief Get the trigger alias
+   * @return corresponding trigger alias (nullptr if not set)
+   */
+  const AliEmcalTriggerAlias *GetTriggerAlias() const { return fTriggerAlias; }
+
   /**
    * @brief Get the highest energetic trigger patch of the event firing the trigger
    * 
@@ -199,6 +207,12 @@ public:
   Bool_t IsSelected() const { return fMainPatch != NULL; }
 
   /**
+   * @brief Set trigger alias (names of trigger classes corresponding to the trigger condintion)
+   * @param alias Trigger alias object
+   */
+  void SetTriggerAlias(const AliEmcalTriggerAlias *alias) { fTriggerAlias = alias; }
+
+  /**
    * @brief Set the selection cuts used in the trigger selection
    * 
    * Selection cuts specify the trigger patch selection configuration for the
@@ -241,6 +255,7 @@ public:
 protected:
   const AliEMCALTriggerPatchInfo          *fMainPatch;         ///< Main trigger patch which fires the decision
   const AliEmcalTriggerSelectionCuts      *fSelectionCuts;     ///< Pointer to the cuts used for the trigger selection
+  const AliEmcalTriggerAlias              *fTriggerAlias;      ///< Pointer to trigger alias object with names of corresponding classes
   TList                                    fAcceptedPatches;   ///< All trigger patches which are accepted as well
 
   /// \cond CLASSIMP

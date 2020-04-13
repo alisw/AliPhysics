@@ -39,7 +39,9 @@
         scans are taking (confusingly, also known as van der Meer scan)
         consists, at least in ALICE during Run 2 at the LHC,&nbsp; of
         two full scans and on ocasions an offset scan. In all cases,
-        there is also a so-called length-scale calibration run. <br>
+    there is also a so-called length-scale calibration run. <br>
+    (Note that in 2018 we also had diagonal scans, these are not taken
+    into account yet in the macros described below.)<br>
       </p>
     </blockquote>
     <div style="margin-left: 40px;">The basic formula for the luminosity
@@ -115,8 +117,9 @@
           </li>
           <li>In the work directory there should be a directory
             containing the souce files mentioned below. These files are
-            obtained from <font color="red">ideally in ALICE official
-              software, this is to be updated</font><br>
+            obtained from:<br>
+            <a
+              href="https://github.com/alisw/AliPhysics/tree/master/PWGMM/Lumi">https://github.com/alisw/AliPhysics/tree/master/PWGMM/Lumi</a><br>
           </li>
         </ul>
         <li>At the beginning of the analysis, the user has to write a
@@ -140,7 +143,7 @@
       <li>Create basic files<br>
         The strategy is to create independent root files at each step
         with a specific naming convention so that the cross section can
-        be computed for any convination of intensities, separations and
+        be computed for any combination of intensities, separations and
         rates.<br>
       </li>
       <ol type="a">
@@ -228,10 +231,17 @@
           type of fit. At this moment, one has only the nominal (Nom)
           separations; later on there will be orbit-drift and
           beam-beam-deflection corrected separations. The type of fit is
-          define in <font color="blue">FitUtils.h</font>. At this
-          moment there is GP2 and GP6, but it is easy to include other
-          models. The type is given by an integer corresponding to the
-          entry in the arrays defined in FitUtils.h.</li>
+	defined in <font color="blue">FitUtils.h</font>. <br>
+	(One should
+	use the numeric integration to produce the files
+	needed for the correction for beam-beam deflection; this is
+	so, because this always works, while a fit may not converge in
+	some cases. Of course one could/should also use fits, but not
+	to produced the files needed by Ivan, see below.) <br> The type is given by an integer corresponding to the
+          entry in the arrays defined in FitUtils.h. Note that the
+          initial conditions for a fit may have to be fine-tuned by
+          hand.<br>
+        </li>
         <li>Compile and run <font color="blue">Create_xs_file.C</font>
           to create the file with the reference cross sections. As
           arguments one has to provide the fill run, the name of the
@@ -239,168 +249,50 @@
           ("Raw","IntensityCorrFBCT",...), the type of separation,
           ("Raw")&nbsp; the type of fit, and the correction factors for
           LSC, ghost, satellite and non-factorisation.</li>
-      </ol>
+	</ol>
+	<li> Corrections for separations </li>
+	<ol type="a">
+	  <li> Orbit-drift corrections: <br>
+	  Martino provides a file with
+	  the orbit drift. Using the information in this file
+	  corresponding to timestamps outside the scan itself on fits
+	  some function that describes the data.<br>
+	  This function is programed into <font
+	  color="blue">Create_ODC_separation_file.C</font>. Then this
+	  macro is ran, followed by (with numerical
+	  integration!) Create_hxhy_file.C and
+	  Create_xs_file.C. This produces cross sections with
+	  orbit-drift corrected separations. </li>
+	  <li> Beam-beam deflection: <br>
+	  One runs the macro <font
+	  color="blue">Create_bbd_file.C</font> to create input files
+	  with numerical integration and two types of separations:
+	  nominal and orbit-drift corrected. The output of this
+	  program is sent to Ivan Kralik. He uses the information to
+	  compute the correction for beam-beam deflection. <br>
+	  (Note: the beta values and the tunes are needed for each new
+	  fill; see the Init_parameters function in Create_bbd_file.C)
+	  </li>
+	  <li> Once that Ivan sends back the corrections, one runs
+	  <font color="blue">Create_BBD_separation_file.C</font>
+	  followed by
+	  Create_hxhy_file.C and
+	  Create_xs_file.C. <br>
+	  (Note: if the fill has not been implemented, you will need
+	  to modify the source file to add the correct paths.) </li>
+	</ol>
+	<li> Quality assurance. <br> There are a series of macros to
+	check the output at each stage. See example below. </li>
+	<li> The whole procedure has to be repeated for systematic
+	studies. </li>
     </ol>
     <hr size="2" width="100%">
     <h2><a name="Example"></a>Example</h2>
-    <blockquote>
-      <p>All intructions below assume that you have downloaded the input
-        files for fill 5533 (pPb, 2016) and that you have compiled and
-        each loaded&nbsp; program before you issue the instructions in
-        the example&nbsp; inside root. All the created files are in
-        ../Fill-5533.<br>
+      <blockquote>
+      <p> An example of the instructions performed for the analysis of
+    fill 7483 (second vdM scan in Pb-Pb 2018) is <a
+href="Readme_V0M_7483.txt">here</a> <br>
       </p>
-    </blockquote>
-    <ol>
-      <li>Create_nominal_separation_file(5533)<br>
-        Files produced: <br>
-        NomSep_x_Scan_0.root<br>
-        NomSep_x_Scan_1.root<br>
-        NomSep_y_Scan_0.root<br>
-        NomSep_y_Scan_1.root<br>
-      </li>
-      <li>Create_beam_intensity_file(5533,0)<br>
-        Files produced: <br>
-        FBCT_Scan_0.root<br>
-        FBCT_Scan_1.root</li>
-      <li>Create_beam_intensity_file(5533,1)<br>
-        Files produced: <br>
-        BPTX_Scan_0.root<br>
-        BPTX_Scan_1.root</li>
-      <li>Create_raw_rate_file(5533,"TVX")<br>
-        Files produced: <br>
-        RawRate_TVX_x_Scan_0.root<br>
-        RawRate_TVX_y_Scan_0.root<br>
-        RawRate_TVX_x_Scan_1.root<br>
-        RawRate_TVX_y_Scan_1.root<br>
-      </li>
-      <li>Create_raw_rate_file(5533,"VBAandVBC")<br>
-        Files produced: <br>
-        RawRate_VBAandVBC_x_Scan_0.root<br>
-        RawRate_VBAandVBC_y_Scan_0.root<br>
-        RawRate_VBAandVBC_x_Scan_1.root<br>
-        RawRate_VBAandVBC_y_Scan_1.root</li>
-      <li>Create_bkgd_correction_file_V0T0(5533,1)<br>
-        Files produced: <br>
-        BkgdCorr_V0_x_Scan_0.root<br>
-        BkgdCorr_V0_y_Scan_0.root<br>
-        BkgdCorr_V0_x_Scan_1.root<br>
-        BkgdCorr_V0_y_Scan_1.root<br>
-      </li>
-      <li>Create_bkgd_correction_file_V0T0(5533,2)<br>
-        Files produced: <br>
-        BkgdCorr_T0_x_Scan_0.root<br>
-        BkgdCorr_T0_y_Scan_0.root<br>
-        BkgdCorr_T0_x_Scan_1.root<br>
-        BkgdCorr_T0_y_Scan_1.root</li>
-      <li>Create_bkgd_corrected_rate_file(5533,"TVX","T0")<br>
-        Files produced: <br>
-        BkgdCorrRate_TVX_x_Scan_0.root<br>
-        BkgdCorrRate_TVX_y_Scan_0.root<br>
-        BkgdCorrRate_TVX_x_Scan_1.root<br>
-        BkgdCorrRate_TVX_y_Scan_1.root</li>
-      <li>Create_bkgd_corrected_rate_file(5533,"VBAandVBC","V0")<br>
-        Files produced: <br>
-        BkgdCorrRate_VBAandVBC_x_Scan_0.root<br>
-        BkgdCorrRate_VBAandVBC_y_Scan_0.root<br>
-        BkgdCorrRate_VBAandVBC_x_Scan_1.root<br>
-        BkgdCorrRate_VBAandVBC_y_Scan_1.root</li>
-      <li>Create_pileup_corrected_rate_file(5533,"VBAandVBC",0.,0.)<br>
-        (there were no single-arm pile-up rates used in the 5533
-        analysis)<br>
-        Files produced:<br>
-        PileupCorrRate_VBAandVBC_x_Scan_0.root<br>
-        PileupCorrRate_VBAandVBC_y_Scan_0.root<br>
-        PileupCorrRate_VBAandVBC_x_Scan_1.root<br>
-        PileupCorrRate_VBAandVBC_y_Scan_1.root<br>
-      </li>
-      <li>Create_pileup_corrected_rate_file(5533,"TVX",0.,0.)<br>
-        (there were no single-arm pile-up rates used in the 5533
-        analysis)<br>
-        Files produced:<br>
-        PileupCorrRate_TVX_x_Scan_0.root<br>
-        PileupCorrRate_TVX_y_Scan_0.root<br>
-        PileupCorrRate_TVX_x_Scan_1.root<br>
-        PileupCorrRate_TVX_y_Scan_1.root</li>
-      <li>Create_intensity_correction_file(5533,1)<br>
-        Files produced:<br>
-        BPTXCorr_x_Scan_0.root<br>
-        BPTXCorr_y_Scan_0.root<br>
-        BPTXCorr_x_Scan_1.root<br>
-        BPTXCorr_y_Scan_1.root<br>
-      </li>
-      <li>Create_intensity_correction_file(5533,2)<br>
-        Files produced:<br>
-        FBCTCorr_x_Scan_0.root<br>
-        FBCTCorr_y_Scan_0.root<br>
-        FBCTCorr_x_Scan_1.root<br>
-        FBCTCorr_y_Scan_1.root</li>
-      <li>Create_intensity_corrected_rate_file(5533,"TVX","BPTX")<br>
-        Files produced:<br>
-        IntensityCorrBPTXRate_TVX_x_Scan_0.root<br>
-        IntensityCorrBPTXRate_TVX_y_Scan_0.root<br>
-        IntensityCorrBPTXRate_TVX_x_Scan_1.root<br>
-        IntensityCorrBPTXRate_TVX_y_Scan_1.root</li>
-      <li>Create_intensity_corrected_rate_file(5533,"TVX","FBCT")<br>
-        Files produced:<br>
-        IntensityCorrFBCTRate_TVX_x_Scan_0.root<br>
-        IntensityCorrFBCTRate_TVX_y_Scan_0.root<br>
-        IntensityCorrFBCTRate_TVX_x_Scan_1.root<br>
-        IntensityCorrFBCTRate_TVX_y_Scan_1.root</li>
-      <li>Create_intensity_corrected_rate_file(5533,"VBAandVBC","BPTX")<br>
-        Files produced:<br>
-        IntensityCorrBPTXRate_VBAandVBC_x_Scan_0.root<br>
-        IntensityCorrBPTXRate_VBAandVBC_y_Scan_0.root<br>
-        IntensityCorrBPTXRate_VBAandVBC_x_Scan_1.root<br>
-        IntensityCorrBPTXRate_VBAandVBC_y_Scan_1.root</li>
-      <li>Create_intensity_corrected_rate_file(5533,"VBAandVBC","FBCT")<br>
-        Files produced:<br>
-        IntensityCorrFBCTRate_VBAandVBC_x_Scan_0.root<br>
-        IntensityCorrFBCTRate_VBAandVBC_y_Scan_0.root<br>
-        IntensityCorrFBCTRate_VBAandVBC_x_Scan_1.root<br>
-        IntensityCorrFBCTRate_VBAandVBC_y_Scan_1.root</li>
-      <li>Create_hxhy_file(5533,"TVX","IntensityCorrBPTX","Nom",0)<br>
-        Files produced:<br>
-        hxy_IntensityCorrBPTXRate_TVX_NomSep_x_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_TVX_NomSep_y_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_TVX_NomSep_x_Scan_1_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_TVX_NomSep_y_Scan_1_Fit_GP2.root</li>
-      <li>Create_hxhy_file(5533,"TVX","IntensityCorrFBCT","Nom",0)<br>
-        Files produced:<br>
-        hxy_IntensityCorrFBCTRate_TVX_NomSep_x_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_TVX_NomSep_y_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_TVX_NomSep_x_Scan_1_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_TVX_NomSep_y_Scan_1_Fit_GP2.root</li>
-      <li>Create_hxhy_file(5533,"VBAandVBC","IntensityCorrBPTX","Nom",0)<br>
-        Files produced:<br>
-        hxy_IntensityCorrBPTXRate_VBAandVBC_NomSep_x_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_VBAandVBC_NomSep_y_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_VBAandVBC_NomSep_x_Scan_1_Fit_GP2.root<br>
-        hxy_IntensityCorrBPTXRate_VBAandVBC_NomSep_y_Scan_1_Fit_GP2.root</li>
-      <li>Create_hxhy_file(5533,"VBAandVBC","IntensityCorrFBCT","Nom",0)<br>
-        Files produced:<br>
-        hxy_IntensityCorrFBCTRate_VBAandVBC_NomSep_x_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_VBAandVBC_NomSep_y_Scan_0_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_VBAandVBC_NomSep_x_Scan_1_Fit_GP2.root<br>
-        hxy_IntensityCorrFBCTRate_VBAandVBC_NomSep_y_Scan_1_Fit_GP2.root</li>
-      <li>Create_xs_file(5533,"TVX","IntensityCorrBPTX","Nom","BPTX",0,1,1,1,1)<br>
-        (no corrections used for lsc, ghost,satellite,non-factorisation)<br>
-        Files produced:<br>
-        xs_IntensityCorrBPTXRate_TVX_NomSep_BPTX_Scan_0_Fit_GP2.root<br>
-        xs_IntensityCorrBPTXRate_TVX_NomSep_BPTX_Scan_1_Fit_GP2.root</li>
-      <li>Create_xs_file(5533,"TVX","IntensityCorrFBCT","Nom","FBCT",0,1,1,1,1)<br>
-        Files produced:<br>
-        xs_IntensityCorrFBCTRate_TVX_NomSep_FBCT_Scan_0_Fit_GP2.root<br>
-        xs_IntensityCorrFBCTRate_TVX_NomSep_FBCT_Scan_1_Fit_GP2.root</li>
-      <li>Create_xs_file(5533,"VBAandVBC","IntensityCorrBPTX","Nom","BPTX",0,1,1,1,1)<br>
-        Files produced:<br>
-xs_IntensityCorrBPTXRate_VBAandVBC_NomSep_BPTX_Scan_0_Fit_GP2.root<br>
-xs_IntensityCorrBPTXRate_VBAandVBC_NomSep_BPTX_Scan_1_Fit_GP2.root</li>
-      <li>Create_xs_file(5533,"VBAandVBC","IntensityCorrFBCT","Nom","FBCT",0,1,1,1,1)<br>
-        Files produced:<br>
-xs_IntensityCorrFBCTRate_VBAandVBC_NomSep_FBCT_Scan_0_Fit_GP2.root<br>
-xs_IntensityCorrFBCTRate_VBAandVBC_NomSep_FBCT_Scan_1_Fit_GP2.root<br>
-      </li>
-    </ol>
-  </body>
+    </blockquote>  
+   </body>
 </html>

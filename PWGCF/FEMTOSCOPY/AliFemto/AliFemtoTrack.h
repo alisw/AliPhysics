@@ -12,6 +12,8 @@
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
 
+#include <algorithm>
+
 
 /// \class AliFemtoTrack
 /// \brief Main class holding track information (before identification)
@@ -35,7 +37,7 @@ public:
   float PidProbProton() const;
   float PidProbMuon() const;
 
-  AliFemtoThreeVector P() const;
+  const AliFemtoThreeVector& P() const;
   float Pt() const;
   float InnerMomentum() const;
 
@@ -54,9 +56,16 @@ public:
   float Cdz() const;
   float Czz() const;
 
+  float ITSchi2perNDF() const;
   float ITSchi2() const;
   int   ITSncls() const;
   float TPCchi2() const;
+
+  /// Calculate reduced chi-squared (χ²/NDoF) for TPC
+  ///
+  /// Calculation comes from AliAODTrack::GetTPCchi2perNDF
+  ///
+  float TPCchi2perNDF() const;
   int   TPCncls() const;
   short TPCnclsF() const;
   float TPCsignal() const;
@@ -79,6 +88,7 @@ public:
   /***********************/
 
   float VTOF() const;
+  float TOFsignal() const;
   float NSigmaTOFPi() const;
   float NSigmaTOFK() const;
   float NSigmaTOFP() const;
@@ -178,6 +188,7 @@ public:
   void SetNSigmaTPCP(const float& x);
   void SetNSigmaTPCE(const float& x);
   void SetVTOF(const float& x);
+  void SetTOFsignal(const float& x);
   void SetNSigmaTOFPi(const float& x);
   void SetNSigmaTOFK(const float& x);
   void SetNSigmaTOFP(const float& x);
@@ -221,6 +232,7 @@ public:
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
 
+  void SetNominalTPCPoints(const AliFemtoThreeVector * const);
   void SetNominalTPCPoints(double **aXTPC);
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
@@ -267,17 +279,17 @@ public:
   void SetMass(Double_t aMass);
 
   AliFemtoThreeVector   *GetTrueMomentum() const;
-  AliFemtoLorentzVector *GetEmissionPoint() const;
+  const AliFemtoLorentzVector *GetEmissionPoint() const;
   Int_t                  GetPDGPid() const;
   Double_t               GetMass() const;
 
-  AliFemtoThreeVector   *GetGlobalEmissionPoint() const;
+  const AliFemtoThreeVector   *GetGlobalEmissionPoint() const;
   void                   SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos);
   void                   SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz);
 
 
   void SetPrimaryVertex(const double *vertex);
-  void GetPrimaryVertex(double *fisvertex);
+  void GetPrimaryVertex(double *fisvertex) const;
 
   int Multiplicity() const;
   double Zvtx() const;
@@ -348,9 +360,10 @@ public:
   short fTPCnclsF;        ///< number of findable clusters in the TPC
   float fTPCsignal;       ///< dEdx TPC value
   short fTPCsignalN;      ///< number of points used for dEdx
-  float fTPCsignalS;      ///< RMS of dEdx measurement
+  float fTPCsignalS;      ///< RMS of dEdx measurement (not used in AOD files)
 
   float fVTOF;            ///< v=length/TOF
+  float fTOFsignal;            ///< TOF signal
   float fNSigmaTPCPi;     ///< nsigma TPC for pion
   float fNSigmaTPCK;      ///< nsigma TPC for K
   float fNSigmaTPCP;      ///< nsigma TPC for P
@@ -428,15 +441,426 @@ public:
 };
 
 //inline const float* AliFemtoTrack::NSigma() const
-//{return &mNSigmaElectron;} // Fab private
-inline float AliFemtoTrack::PidProbElectron() const {return fPidProbElectron;}
-inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
-inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
-inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
-inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
-inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
+//{ return &mNSigmaElectron; } // Fab private
+inline float AliFemtoTrack::PidProbElectron() const { return fPidProbElectron; }
+inline float AliFemtoTrack::PidProbPion() const { return fPidProbPion; }
+inline float AliFemtoTrack::PidProbKaon() const { return fPidProbKaon; }
+inline float AliFemtoTrack::PidProbProton() const { return fPidProbProton; }
+inline float AliFemtoTrack::PidProbMuon() const { return fPidProbMuon; }
+
+inline void AliFemtoTrack::SetPidProbElectron(const float& x) { fPidProbElectron = x; }
+inline void AliFemtoTrack::SetPidProbPion(const float& x) { fPidProbPion = x; }
+inline void AliFemtoTrack::SetPidProbKaon(const float& x) { fPidProbKaon = x; }
+inline void AliFemtoTrack::SetPidProbProton(const float& x) { fPidProbProton = x; }
+inline void AliFemtoTrack::SetPidProbMuon(const float& x) { fPidProbMuon = x; }
+
+inline void AliFemtoTrack::SetMultiplicity(int mult) { fMultiplicity = mult; }
+inline int AliFemtoTrack::Multiplicity() const { return fMultiplicity; }
+
+inline void AliFemtoTrack::SetZvtx(double vtx) { fZvtx=vtx; }
+inline double AliFemtoTrack::Zvtx() const { return fZvtx; }
+
+inline float AliFemtoTrack::TPCchi2perNDF() const
+{
+  Int_t ndof = 2 * fTPCncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fTPCchi2 / ndof : 9999;
+}
+
+inline float AliFemtoTrack::ITSchi2perNDF() const
+{
+  Int_t ndof = 2 * fITSncls - 5;
+  return __builtin_expect(ndof > 0, 1) ? fITSchi2 / ndof : 9999;
+}
+
+inline void AliFemtoTrack::SetCharge(const short& ch) { fCharge = ch; }
+inline short AliFemtoTrack::Charge() const { return fCharge; }
+
+inline void AliFemtoTrack::SetP(const AliFemtoThreeVector& p) { fP = p; }
+inline const AliFemtoThreeVector& AliFemtoTrack::P() const { return fP; }
+
+inline void AliFemtoTrack::SetPt(const float& pt) { fPt = pt; }
+inline float AliFemtoTrack::Pt() const { return fPt; }
+
+inline void AliFemtoTrack::SetInnerMomentum(const float& x) { fInnerMomentum = x; }
+inline float AliFemtoTrack::InnerMomentum() const { return fInnerMomentum; }
+
+inline void AliFemtoTrack::SetHelix(const AliFmPhysicalHelixD& h) { fHelix = h; }
+inline const AliFmPhysicalHelixD& AliFemtoTrack::Helix() const { return fHelix; }
+
+inline void AliFemtoTrack::SetTrackId(const int & id) { fTrackId = id;}
+inline int AliFemtoTrack::TrackId() const { return fTrackId; }
+
+inline void AliFemtoTrack::SetFlags(const long int &flags) { fFlags = flags; }
+inline long int AliFemtoTrack::Flags() const { return fFlags; }
+
+inline void AliFemtoTrack::SetLabel(const int &label) { fLabel = label; }
+inline int AliFemtoTrack::Label() const { return fLabel; }
+
+inline void AliFemtoTrack::SetImpactD(const float& aImpactD) { fImpactD = aImpactD; }
+inline float AliFemtoTrack::ImpactD() const { return fImpactD; }
+
+inline void AliFemtoTrack::SetImpactDprim(const float& aImpactDprim) { fImpactDprim = aImpactDprim; }
+inline float AliFemtoTrack::ImpactDprim() const { return fImpactDprim; }
+
+inline void AliFemtoTrack::SetImpactDweak(const float& aImpactDweak) { fImpactDweak = aImpactDweak; }
+inline float AliFemtoTrack::ImpactDweak() const { return fImpactDweak; }
+
+inline void AliFemtoTrack::SetImpactDmat(const float& aImpactDmat) { fImpactDmat = aImpactDmat; }
+inline float AliFemtoTrack::ImpactDmat() const { return fImpactDmat; }
+
+inline void AliFemtoTrack::SetImpactZ(const float& aImpactZ) { fImpactZ = aImpactZ; }
+inline void AliFemtoTrack::SetCdd(const float& aCdd) { fCdd = aCdd; }
+inline void AliFemtoTrack::SetCdz(const float& aCdz) { fCdz = aCdz; }
+inline void AliFemtoTrack::SetCzz(const float& aCzz) { fCzz = aCzz; }
+inline void AliFemtoTrack::SetITSchi2(const float& aITSchi2) { fITSchi2 = aITSchi2; }
+inline void AliFemtoTrack::SetITSncls(const int& aITSncls) { fITSncls = aITSncls; }
+inline void AliFemtoTrack::SetTPCchi2(const float& aTPCchi2) { fTPCchi2 = aTPCchi2; }
+inline void AliFemtoTrack::SetTPCncls(const int& aTPCncls) { fTPCncls = aTPCncls; }
+inline void AliFemtoTrack::SetTPCnclsF(const short& aTPCnclsF) { fTPCnclsF = aTPCnclsF; }
+inline void AliFemtoTrack::SetTPCsignal(const float& aTPCsig) { fTPCsignal = aTPCsig; }
+inline void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN) { fTPCsignalN = aTPCsignalN; }
+inline void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS) { fTPCsignalS = aTPCsignalS; }
+inline void AliFemtoTrack::SetVTOF(const float& aVTOF) { fVTOF = aVTOF; }
+inline void AliFemtoTrack::SetTOFsignal(const float& aTOFsignal) { fTOFsignal = aTOFsignal; }
+inline void AliFemtoTrack::SetNSigmaTPCPi(const float& aNSigmaTPCPi) { fNSigmaTPCPi = aNSigmaTPCPi; }
+inline void AliFemtoTrack::SetNSigmaTPCK(const float& aNSigmaTPCK) { fNSigmaTPCK = aNSigmaTPCK; }
+inline void AliFemtoTrack::SetNSigmaTPCP(const float& aNSigmaTPCP) { fNSigmaTPCP = aNSigmaTPCP; }
+inline void AliFemtoTrack::SetNSigmaTPCE(const float& aNSigmaTPCE) { fNSigmaTPCE = aNSigmaTPCE; }
+inline void AliFemtoTrack::SetNSigmaTPCD(const float& aNSigmaTPCD) { fNSigmaTPCD = aNSigmaTPCD; }
+inline void AliFemtoTrack::SetNSigmaTPCT(const float& aNSigmaTPCT) { fNSigmaTPCT = aNSigmaTPCT; }
+inline void AliFemtoTrack::SetNSigmaTPCH(const float& aNSigmaTPCH) { fNSigmaTPCH = aNSigmaTPCH; }
+inline void AliFemtoTrack::SetNSigmaTPCA(const float& aNSigmaTPCA) { fNSigmaTPCA = aNSigmaTPCA; }
+inline void AliFemtoTrack::SetMassTOF(const float& aMassTOF) { fMassTOF = aMassTOF; }
+
+inline void AliFemtoTrack::SetNSigmaTOFPi(const float& aNSigmaTOFPi) { fNSigmaTOFPi = aNSigmaTOFPi; }
+inline void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK) { fNSigmaTOFK = aNSigmaTOFK; }
+inline void AliFemtoTrack::SetNSigmaTOFP(const float& aNSigmaTOFP) { fNSigmaTOFP = aNSigmaTOFP; }
+inline void AliFemtoTrack::SetNSigmaTOFE(const float& aNSigmaTOFE) { fNSigmaTOFE = aNSigmaTOFE; }
+inline void AliFemtoTrack::SetNSigmaTOFD(const float& aNSigmaTOFD) { fNSigmaTOFD = aNSigmaTOFD; }
+inline void AliFemtoTrack::SetNSigmaTOFT(const float& aNSigmaTOFT) { fNSigmaTOFT = aNSigmaTOFT; }
+inline void AliFemtoTrack::SetNSigmaTOFH(const float& aNSigmaTOFH) { fNSigmaTOFH = aNSigmaTOFH; }
+inline void AliFemtoTrack::SetNSigmaTOFA(const float& aNSigmaTOFA) { fNSigmaTOFA = aNSigmaTOFA; }
+inline void AliFemtoTrack::SetSigmaToVertex(const float& aSigma) { fSigmaToVertex = aSigma; }
+
+inline void AliFemtoTrack::SetXatDCA(const double& x) { fXatDCA = x; }
+inline void AliFemtoTrack::SetYatDCA(const double& x) { fYatDCA = x; }
+inline void AliFemtoTrack::SetZatDCA(const double& x) { fZatDCA = x; }
 
 
+inline void AliFemtoTrack::SetCorrectionPion(const double& x) { fCorrPi = x; }
+inline void AliFemtoTrack::SetCorrectionKaon(const double& x) { fCorrK = x; }
+inline void AliFemtoTrack::SetCorrectionProton(const double& x) { fCorrP = x; }
+inline void AliFemtoTrack::SetCorrectionDeuteron(const double& x) { fCorrD = x; }
+inline void AliFemtoTrack::SetCorrectionTriton(const double& x) { fCorrT = x; }
+inline void AliFemtoTrack::SetCorrectionHe3(const double& x) { fCorrH = x; }
+inline void AliFemtoTrack::SetCorrectionAlpha(const double& x) { fCorrA = x; }
+inline void AliFemtoTrack::SetCorrectionPionMinus(const double& x) { fCorrPiMinus = x; }
+inline void AliFemtoTrack::SetCorrectionKaonMinus(const double& x) { fCorrKMinus = x; }
+inline void AliFemtoTrack::SetCorrectionProtonMinus(const double& x) { fCorrPMinus = x; }
+inline void AliFemtoTrack::SetCorrectionDeuteronMinus(const double& x) { fCorrDMinus = x; }
+inline void AliFemtoTrack::SetCorrectionTritonMinus(const double& x) { fCorrTMinus = x; }
+inline void AliFemtoTrack::SetCorrectionHe3Minus(const double& x) { fCorrHMinus = x; }
+inline void AliFemtoTrack::SetCorrectionAlphaMinus(const double& x) { fCorrAMinus = x; }
+inline void AliFemtoTrack::SetCorrectionAll(const double& x) { fCorrAll = x; }
+
+inline float AliFemtoTrack::ImpactZ() const { return fImpactZ; }
+inline float AliFemtoTrack::Cdd() const { return fCdd; }
+inline float AliFemtoTrack::Cdz() const { return fCdz; }
+inline float AliFemtoTrack::Czz() const { return fCzz; }
+inline float AliFemtoTrack::ITSchi2() const { return fITSchi2; }
+inline int   AliFemtoTrack::ITSncls() const { return fITSncls; }
+inline float AliFemtoTrack::TPCchi2() const { return fTPCchi2; }
+inline int   AliFemtoTrack::TPCncls() const { return fTPCncls; }
+inline short AliFemtoTrack::TPCnclsF() const { return fTPCnclsF; }
+inline float AliFemtoTrack::TPCsignal() const { return fTPCsignal; }
+inline short AliFemtoTrack::TPCsignalN() const { return fTPCsignalN; }
+inline float AliFemtoTrack::TPCsignalS() const { return fTPCsignalS; }
+inline float AliFemtoTrack::VTOF() const { return fVTOF; }
+inline float AliFemtoTrack::TOFsignal() const { return fTOFsignal; }
+inline float AliFemtoTrack::NSigmaTPCPi() const { return fNSigmaTPCPi; }
+inline float AliFemtoTrack::NSigmaTPCK() const { return fNSigmaTPCK; }
+inline float AliFemtoTrack::NSigmaTPCP() const { return fNSigmaTPCP; }
+inline float AliFemtoTrack::NSigmaTPCE() const { return fNSigmaTPCE; }
+inline float AliFemtoTrack::NSigmaTPCD() const { return fNSigmaTPCD; }
+inline float AliFemtoTrack::NSigmaTPCT() const { return fNSigmaTPCT; }
+inline float AliFemtoTrack::NSigmaTPCH() const { return fNSigmaTPCH; }
+inline float AliFemtoTrack::NSigmaTPCA() const { return fNSigmaTPCA; }
+inline float AliFemtoTrack::NSigmaTOFPi() const { return fNSigmaTOFPi; }
+inline float AliFemtoTrack::NSigmaTOFK() const { return fNSigmaTOFK; }
+inline float AliFemtoTrack::NSigmaTOFP() const { return fNSigmaTOFP; }
+inline float AliFemtoTrack::NSigmaTOFE() const { return fNSigmaTOFE; }
+inline float AliFemtoTrack::NSigmaTOFD() const { return fNSigmaTOFD; }
+inline float AliFemtoTrack::NSigmaTOFT() const { return fNSigmaTOFT; }
+inline float AliFemtoTrack::NSigmaTOFH() const { return fNSigmaTOFH; }
+inline float AliFemtoTrack::NSigmaTOFA() const { return fNSigmaTOFA; }
+inline float AliFemtoTrack::MassTOF() const { return fMassTOF; }
+inline float AliFemtoTrack::SigmaToVertex() const { return fSigmaToVertex; }
+inline float AliFemtoTrack::TOFpionTime() const { return fTofPionTime; }
+inline float AliFemtoTrack::TOFkaonTime() const { return fTofKaonTime; }
+inline float AliFemtoTrack::TOFprotonTime() const { return fTofProtonTime; }
+inline float AliFemtoTrack::TOFdeuteronTime() const { return fTofDeuteronTime; }
+inline float AliFemtoTrack::TOFtritonTime() const { return fTofTritonTime; }
+inline float AliFemtoTrack::TOFhe3Time() const { return fTofHe3Time; }
+inline float AliFemtoTrack::TOFalphaTime() const { return fTofAlphaTime; }
+
+//corrections
+inline float AliFemtoTrack::CorrectionPion() const { return fCorrPi; }
+inline float AliFemtoTrack::CorrectionKaon() const { return fCorrK; }
+inline float AliFemtoTrack::CorrectionProton() const { return fCorrP; }
+inline float AliFemtoTrack::CorrectionDeuteron() const { return fCorrD; }
+inline float AliFemtoTrack::CorrectionTriton() const { return fCorrT; }
+inline float AliFemtoTrack::CorrectionHe3() const { return fCorrH; }
+inline float AliFemtoTrack::CorrectionAlpha() const { return fCorrA; }
+inline float AliFemtoTrack::CorrectionPionMinus() const { return fCorrPiMinus; }
+inline float AliFemtoTrack::CorrectionKaonMinus() const { return fCorrKMinus; }
+inline float AliFemtoTrack::CorrectionProtonMinus() const { return fCorrPMinus; }
+inline float AliFemtoTrack::CorrectionDeuteronMinus() const { return fCorrDMinus; }
+inline float AliFemtoTrack::CorrectionTritonMinus() const { return fCorrTMinus; }
+inline float AliFemtoTrack::CorrectionHe3Minus() const { return fCorrHMinus; }
+inline float AliFemtoTrack::CorrectionAlphaMinus() const { return fCorrAMinus; }
+inline float AliFemtoTrack::CorrectionAll() const { return fCorrAll; }
+
+inline double AliFemtoTrack::XatDCA() const { return fXatDCA; }
+inline double AliFemtoTrack::YatDCA() const { return fYatDCA; }
+inline double AliFemtoTrack::ZatDCA() const { return fZatDCA; }
+
+inline void AliFemtoTrack::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
+inline bool AliFemtoTrack::ValidHiddenInfo() const { return (fHiddenInfo != NULL); }
+inline AliFemtoHiddenInfo* AliFemtoTrack::GetHiddenInfo() const { return fHiddenInfo; }
+
+inline AliFemtoThreeVector* AliFemtoTrack::GetTrueMomentum() const { return fTrueMomentum; }
+inline const AliFemtoLorentzVector* AliFemtoTrack::GetEmissionPoint() const { return fEmissionPoint; }
+inline const AliFemtoThreeVector* AliFemtoTrack::GetGlobalEmissionPoint() const { return fGlobalEmissionPoint; }
+
+inline void AliFemtoTrack::SetPDGPid(Int_t aPid) { fPDGPid = aPid; }
+inline Int_t AliFemtoTrack::GetPDGPid() const { return fPDGPid; }
+
+inline void AliFemtoTrack::SetMass(Double_t aMass) { fMass = aMass; }
+inline Double_t AliFemtoTrack::GetMass() const { return fMass; }
+
+
+inline void AliFemtoTrack::SetPrimaryVertex(const double* vertex)
+{
+  fVertex[0] = vertex[0];
+  fVertex[1] = vertex[1];
+  fVertex[2] = vertex[2];
+}
+
+
+inline void AliFemtoTrack::GetPrimaryVertex(double* vertex) const
+{
+  vertex[0] = fVertex[0];
+  vertex[1] = fVertex[1];
+  vertex[2] = fVertex[2];
+}
+
+inline void AliFemtoTrack::SetKinkIndexes(const int points[3])
+{
+  // Transfer the Kink indices
+  fKinkIndexes[0] = points[0];
+  fKinkIndexes[1] = points[1];
+  fKinkIndexes[2] = points[2];
+}
+
+inline int AliFemtoTrack::KinkIndex(int aIndex) const
+{
+  // Return Kink index
+  if ((aIndex < 3) && (aIndex >= 0))
+    return fKinkIndexes[aIndex];
+  else
+    return 0;
+}
+
+inline const AliFemtoThreeVector& AliFemtoTrack::NominalTpcExitPoint() const { return fNominalTpcExitPoint; }
+inline const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPointShifted() const { return fNominalTpcPointShifted; }
+inline const AliFemtoThreeVector& AliFemtoTrack::NominalTpcEntrancePoint() const { return fNominalTpcEntrancePoint; }
+
+inline const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPoint(int i) const
+{
+  if(i<0)
+    return fNominalTpcPoints[0];
+  if(i>8)
+    return fNominalTpcPoints[8];
+  return fNominalTpcPoints[i];
+}
+
+inline const TBits& AliFemtoTrack::TPCclusters() const {return fClusters;}
+inline const TBits& AliFemtoTrack::TPCsharing()  const {return fShared;}
+
+inline void AliFemtoTrack::SetTPCcluster(const short& aNBit, const Bool_t& aValue) { fClusters.SetBitNumber(aNBit, aValue); }
+inline void AliFemtoTrack::SetTPCshared(const short& aNBit, const Bool_t& aValue) { fShared.SetBitNumber(aNBit, aValue); }
+
+inline void AliFemtoTrack::SetTPCClusterMap(const TBits& aBits) { fClusters = aBits; }
+inline void AliFemtoTrack::SetTPCSharedMap(const TBits& aBits) { fShared = aBits; }
+
+
+inline void AliFemtoTrack::SetITSHitOnLayer(int i, bool val)
+{
+  // Transfer ITS hit
+  fHasPointOnITS[i] = val;
+}
+
+
+inline bool AliFemtoTrack::HasPointOnITSLayer(int aIndex) const
+{
+  // Return if i-th ITS layer had a hit for this track
+  if ((aIndex < 6) && (aIndex >= 0))
+    return fHasPointOnITS[aIndex];
+  else
+    return false;
+}
+
+inline void AliFemtoTrack::SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC) { fNominalTpcEntrancePoint = aXTPC; }
+inline void AliFemtoTrack::SetNominalTPCEntrancePoint(double *aXTPC)
+{
+  // Store the nominal TPC entrance point
+  fNominalTpcEntrancePoint.SetX(aXTPC[0]);
+  fNominalTpcEntrancePoint.SetY(aXTPC[1]);
+  fNominalTpcEntrancePoint.SetZ(aXTPC[2]);
+}
+
+inline void AliFemtoTrack::SetNominalTPCPoints(const AliFemtoThreeVector* const points)
+{
+  std::copy_n(points, 9, fNominalTpcPoints);
+}
+inline void AliFemtoTrack::SetNominalTPCPoints(double **aXTPC)
+{
+  // Store the nominal TPC points
+  for(int i=0;i<9;i++)
+    {
+      fNominalTpcPoints[i].SetX(aXTPC[i][0]);
+      fNominalTpcPoints[i].SetY(aXTPC[i][1]);
+      fNominalTpcPoints[i].SetZ(aXTPC[i][2]);
+    }
+}
+
+inline void AliFemtoTrack::SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcExitPoint = aXTPC;
+}
+inline void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
+{
+  // Store the nominal TPC exit point
+  fNominalTpcExitPoint.SetX(aXTPC[0]);
+  fNominalTpcExitPoint.SetY(aXTPC[1]);
+  fNominalTpcExitPoint.SetZ(aXTPC[2]);
+}
+
+inline void AliFemtoTrack::SetNominalTPCPointShifted(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcPointShifted = aXTPC;
+}
+
+inline void AliFemtoTrack::SetNominalTPCPointShifted(double *aXTPC)
+{
+  fNominalTpcPointShifted.SetX(aXTPC[0]);
+  fNominalTpcPointShifted.SetY(aXTPC[1]);
+  fNominalTpcPointShifted.SetZ(aXTPC[2]);
+}
+
+inline void AliFemtoTrack::SetTrueMomentum(AliFemtoThreeVector *aMom)
+{
+  // Set momentum from vector
+  if (fTrueMomentum) {
+    *fTrueMomentum = *aMom;
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector(*aMom);
+  }
+}
+
+inline void AliFemtoTrack::SetTrueMomentum(const AliFemtoThreeVector& aMom)
+{
+  // Set momentum from vector
+  if (fTrueMomentum) {
+    *fTrueMomentum = aMom;
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector(aMom);
+  }
+}
+
+inline void AliFemtoTrack::SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz)
+{
+  // Set momentum from components
+  if (fTrueMomentum) {
+    fTrueMomentum->SetX(aPx);
+    fTrueMomentum->SetY(aPy);
+    fTrueMomentum->SetZ(aPz);
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector(aPx, aPy, aPz);
+  }
+}
+
+inline void AliFemtoTrack::SetEmissionPoint(AliFemtoLorentzVector *aPos)
+{
+  // Set position from vector
+  if (fEmissionPoint) {
+    *fEmissionPoint = *aPos;
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(*aPos);
+  }
+}
+
+inline void AliFemtoTrack::SetEmissionPoint(const AliFemtoLorentzVector& aPos)
+{
+  // Set position from vector
+  if (fEmissionPoint) {
+    *fEmissionPoint = aPos;
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(aPos);
+  }
+}
+
+inline void AliFemtoTrack::SetEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz, Double_t aT)
+{
+  // Set position from components
+  if (fEmissionPoint) {
+    fEmissionPoint->SetX(aRx);
+    fEmissionPoint->SetY(aRy);
+    fEmissionPoint->SetZ(aRz);
+    fEmissionPoint->SetT(aT);
+  }
+  else {
+    fEmissionPoint = new AliFemtoLorentzVector(aRx, aRy, aRz, aT);
+  }
+}
+
+inline void AliFemtoTrack::SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos)
+{
+  // set position from vector
+  if (fGlobalEmissionPoint) {
+    *fGlobalEmissionPoint = aPos;
+  } else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aPos);
+  }
+}
+
+inline void AliFemtoTrack::SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz)
+{
+  // Set position from components
+  if (fGlobalEmissionPoint) {
+    fGlobalEmissionPoint->SetX(aRx);
+    fGlobalEmissionPoint->SetY(aRy);
+    fGlobalEmissionPoint->SetZ(aRz);
+  }
+  else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aRx, aRy, aRz);
+  }
+}
+
+inline void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof)
+{
+  fTofPionTime = tpi;
+  fTofKaonTime = tkn;
+  fTofProtonTime = tpr;
+  fTofDeuteronTime = ttof;
+  fTofTritonTime = ttof;
+  fTofHe3Time = ttof;
+  fTofAlphaTime = ttof;
+}
 
 #endif

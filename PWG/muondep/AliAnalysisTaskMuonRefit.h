@@ -44,7 +44,10 @@ public:
   
   // Set OCDB path + version/subversion to find the alignment file used in the reco (if not set use default storage)
   void SetAlignStorage(const char* ocdbPath, Int_t version = -1, Int_t subVersion = -1);
-  
+
+  // re-align using default storages
+  void ReAlignFromDefaultStorage();
+
   // Re-align clusters before refitting and set OCDB paths + versions/subversions to find the old/new alignment files
   void ReAlign(const char* oldAlignStorage = 0x0, Int_t oldVersion = -1, Int_t oldSubVersion = -1,
                const char* newAlignStorage = "", Int_t newVersion = -1, Int_t newSubVersion = -1);
@@ -75,7 +78,10 @@ private:
   void CheckPads(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
   void CheckPadsBelow(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
   Bool_t SetMagField() const;
-  
+
+  /// load Align storage version from ESD
+  Bool_t GetAlignStorageFromESD();
+
 private:
   
   Double_t fClusterResNB[10]; ///< cluster resolution in non-bending direction
@@ -86,6 +92,7 @@ private:
   Double_t fSigmaCut;           ///< sigma cut for track improvement
   Double_t fSigmaCutForTrigger; ///< sigma cut for tracker/trigger track matching
   Bool_t   fReAlign;            ///< flag telling wether to re-align the spectrometer or not before refitting
+  Bool_t   fUseDefaultAlignStorage; ///< flag telling wether to use default alignment storage for refitting. Old is set to what was used for the ESD. New is latest in the default storage
   TString  fOldAlignStorage;    ///< location of the OCDB storage where to find old MUON/Align/Data (use the default one if empty)
   Int_t    fOldAlignVersion;    ///< specific version of the old MUON/Align/Data/object to load
   Int_t    fOldAlignSubVersion; ///< specific subversion of the old MUON/Align/Data/object to load
@@ -143,6 +150,13 @@ inline void AliAnalysisTaskMuonRefit::SetAlignStorage(const char* ocdbPath, Int_
     fNewAlignVersion = -1;
     fNewAlignSubVersion = -1;
   }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonRefit::ReAlignFromDefaultStorage()
+{
+  fUseDefaultAlignStorage = kTRUE;
+  fReAlign = kTRUE;
 }
 
 //________________________________________________________________________

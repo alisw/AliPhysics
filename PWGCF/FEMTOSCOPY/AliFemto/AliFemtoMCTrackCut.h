@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-// AliFemtoMCTrackCut: A basic track cut that used information from     //
-// ALICE MC to accept or reject the track.                              //
+// AliFemtoMCTrackCut: A basic track cut that used information from      //
+// ALICE MC to accept or reject the track.                               //
 // Enables the selection on charge, transverse momentum, rapidity,       //
-// and PDG of the particle										         //
-// Authors: Malgorzata Janik (WUT)    majanik@cern.ch 					//
-//			Lukasz Graczykowski (WUT) lgraczyk@cern.ch					 //
+// and PDG of the particle                                               //
+// Authors: Malgorzata Janik (WUT)    majanik@cern.ch                    //
+//          Lukasz Graczykowski (WUT) lgraczyk@cern.ch                   //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -47,8 +47,6 @@ class AliFemtoMCTrackCut : public AliFemtoTrackCut
 
   long              fNTracksPassed;      // passed tracks count
   long              fNTracksFailed;      // failed tracks count
-
-
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

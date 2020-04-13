@@ -6,7 +6,8 @@
  */
 
 #include "AliFemtoDreamCascadeHist.h"
-
+#include "TMath.h"
+#include <iostream>
 ClassImp(AliFemtoDreamCascadeHist)
 
 AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
@@ -135,8 +136,17 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,
     fCascadeQA[i]->Add(fInvMassv0[i]);
 
     TString XiPtName = Form("XiPt_%s", sName[i].Data());
-    fXiPt[i] = new TH1F(XiPtName.Data(), XiPtName.Data(), 13, -0.2, 6.3);
+    fXiPt[i] = new TH1F(XiPtName.Data(), XiPtName.Data(), 150, 0, 15);
     fCascadeQA[i]->Add(fXiPt[i]);
+
+    TString XiEtaName = Form("XiEta_%s", sName[i].Data());
+    fXiEta[i] = new TH1F(XiEtaName.Data(), XiEtaName.Data(), 200, -1.5, 1.5);
+    fCascadeQA[i]->Add(fXiEta[i]);
+
+    TString XiPhiName = Form("XiPhi_%s", sName[i].Data());
+    fXiPhi[i] = new TH1F(XiPhiName.Data(), XiPhiName.Data(), 200, 0.,
+                         2 * TMath::Pi());
+    fCascadeQA[i]->Add(fXiPhi[i]);
 
     TString P_Y_XiName = Form("Xi_P_Y_%s", sName[i].Data());
     fP_Y_Xi[i] = new TH2F(P_Y_XiName.Data(), P_Y_XiName.Data(), 50, -3., 3., 50,
@@ -200,8 +210,17 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,
     fCascadeQA[i]->Add(fCPAv0Xi[i]);
 
     TString v0PtName = Form("v0Pt_%s", sName[i].Data());
-    fv0Pt[i] = new TH1F(v0PtName.Data(), v0PtName.Data(), 100, 0, 10);
+    fv0Pt[i] = new TH1F(v0PtName.Data(), v0PtName.Data(), 150, 0, 15);
     fCascadeQA[i]->Add(fv0Pt[i]);
+
+    TString v0EtaName = Form("v0Eta_%s", sName[i].Data());
+    fv0Eta[i] = new TH1F(v0EtaName.Data(), v0EtaName.Data(), 200, -1.5, 1.5);
+    fCascadeQA[i]->Add(fv0Eta[i]);
+
+    TString v0PhiName = Form("v0Phi_%s", sName[i].Data());
+    fv0Phi[i] = new TH1F(v0PhiName.Data(), v0PhiName.Data(), 200, 0.,
+                         2 * TMath::Pi());
+    fCascadeQA[i]->Add(fv0Phi[i]);
 
     TString TransRadiusv0Name = Form("TransRadiusv0_%s", sName[i].Data());
     fTransRadiusv0[i] = new TH1F(TransRadiusv0Name.Data(),
@@ -234,10 +253,15 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,
   }
   if (perRunnumber) {
     int nBins = iRunMax - iRunMin;
+    if (nBins > 2000) {
+      std::cout <<
+          "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots\n";
+      nBins /= 10;
+    }
     TString InvMassRunNumbName = "InvMassPerRunnumber";
     fInvMassPerRunNumber = new TH2F(InvMassRunNumbName.Data(),
                                     InvMassRunNumbName.Data(), nBins, iRunMin,
-                                    iRunMax, 500, mass * 0.9, mass * 1.3);
+                                    iRunMax, 200, mass/1.039, mass*1.034);
     fHistList->Add(fInvMassPerRunNumber);
   } else {
     fInvMassPerRunNumber = nullptr;

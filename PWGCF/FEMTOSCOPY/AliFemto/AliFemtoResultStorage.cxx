@@ -86,13 +86,13 @@ AliFemtoResultStorage::Write(const char *name, Int_t option, Int_t bufsize) cons
   gDirectory->mkdir(path);
   TDirectory *outdir = gDirectory->GetDirectory(path);
   if (!outdir) {
-    Error("Could not create path %s", path);
+    Error("AliFemtoResultStorage::Write", "Could not create path %s", path.Data());
     return 0;
   }
 
   Int_t result = 0;
   for (TObject *obj : *fObjects) {
-    auto output_object_list = dynamic_cast<TList*>(obj);
+    auto *output_object_list = dynamic_cast<TList*>(obj);
     if (!output_object_list) {
       AliWarning(Form("Unexpected type '%s' in output list (name: '%s'). Skipping.",
                       obj->ClassName(), obj->GetName()));

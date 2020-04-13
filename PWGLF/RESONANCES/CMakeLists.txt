@@ -25,7 +25,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
-		                ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
   )
@@ -45,6 +47,7 @@ set(SRCS
   AliRsnValuePair.cxx
   AliRsnValueEvent.cxx
   AliRsnCutEventUtils.cxx
+  AliRsnEventCuts.cxx
   AliRsnCutPrimaryVertex.cxx
   AliRsnCutTrackQuality.cxx
   AliRsnCutTrue.cxx
@@ -70,6 +73,7 @@ set(SRCS
   AliRsnCutPhiRAA.cxx
   AliRsnCutDaughterD0.cxx
   AliRsnCutV0.cxx 
+  AliRsnCutCascade.cxx 
   AliRsnCutSet.cxx
   AliRsnExpression.cxx
   AliRsnVariableExpression.cxx
@@ -97,6 +101,12 @@ set(SRCS
   AliRsnMiniResonanceFinder.cxx
   AliRsnTrainManager.cxx
   AliRsnMiniTaskPhiVn.cxx
+  AliRsnCutPIDkink.cxx
+  PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
+  PostProcessing/Xi1530/NanoCheck/AliAnalysisTaskNanoCheck.cxx
+  PostProcessing/Sigma1385/AliAnalysisTaskSigma1385PM.cxx
+  PostProcessing/Sigma1385/AliAnalysisTaskTrackMixer.cxx
+  PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   )
 
 # Headers from sources
@@ -112,7 +122,13 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CORRFW EventMixing PWGPPevcharQnInterface)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(ROOT_DEPENDENCIES PyROOT)
+else()
+    set(ROOT_DEPENDENCIES)
+endif()
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW EventMixing PWGPPevcharQnInterface PWGTools PWGDevNanoAOD)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -137,3 +153,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
 install(DIRECTORY macros DESTINATION PWGLF/RESONANCES)
+install(DIRECTORY PostProcessing DESTINATION PWGLF/RESONANCES)

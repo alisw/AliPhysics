@@ -70,21 +70,14 @@
 #include "AliRDHFCutsLctopKpi.h"
 
 #include "AliEventplane.h"
-#include "AliFlowTrack.h"
-#include "AliFlowVector.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"
 
 #include "AliAnalysisVertexingHF.h"
-#include "AliEventplane.h"
-#include "AliFlowTrack.h"
-#include "AliFlowVector.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"
 #include "AliMultSelection.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 #include "AliAnalysisTaskZDCEP.h"
+#include "AliFlowEventSimple.h"
+#include "AliFlowVector.h"
 
 #include "AliAnalysisTaskHFv1.h"
 
@@ -492,7 +485,11 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
             Double_t xmin[6] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.,0.};
             Double_t xmax[6] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.,2.};
             
-            
+            if(fDecChannel==kDstartoKpipi) {
+              nBins[1] = 400;
+              xmin[1] = 0.14;
+              xmax[1] = 0.16;
+            }
             if(fDecChannel==kDplustoKpipi) {
               nBins[4] = 1;
               nBins[5] = 3;
@@ -783,7 +780,7 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
             AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
             if (fZDCEPTask != NULL) {
                 // get ZDC Q-vectors
-                AliFlowEvent* anEvent = dynamic_cast<AliFlowEvent*>(GetInputData(1));
+                AliFlowEventSimple* anEvent = dynamic_cast<AliFlowEventSimple*>(GetInputData(1));
                 if(anEvent) {
                     // Get Q vectors for the subevents
                     AliFlowVector vQarray[2];
@@ -1112,10 +1109,15 @@ void AliAnalysisTaskHFv1::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& mass
         masses[1]=d->InvMass(ndght,(UInt_t*)pdgdaughtersD0bar); //D0bar
     }
     if(fDecChannel==2){
-        //D* -- Robert,Yifei, Alessandro
-        nmasses=1;
+        //D* -- Robert,Yifei, Alessandro, Olaf
+        nmasses=2;
         masses=new Float_t[nmasses];
-        masses[0]=((AliAODRecoCascadeHF*)d)->DeltaInvMass();
+	    if(((AliAODRecoCascadeHF*)d)->GetBachelor()->Charge() > 0){
+	     masses[0]=((AliAODRecoCascadeHF*)d)->DeltaInvMass();
+	    }
+        if(((AliAODRecoCascadeHF*)d)->GetBachelor()->Charge() < 0){
+    	 masses[1]=((AliAODRecoCascadeHF*)d)->DeltaInvMass();
+    	}	    
     }
     if(fDecChannel==3){
         //Ds -- Anastasia
@@ -1355,28 +1357,58 @@ void AliAnalysisTaskHFv1::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
     Float_t deltaphi1 = deltaphi;
     if(deltaphi1 > TMath::PiOver2()) deltaphi1 = TMath::Pi() - deltaphi1;
     Int_t icentrmin=icentr-fCentBinSizePerMil;
-    if(fFlowMethod==kSP) {
-        Double_t scalprod[2]={-2.,-2.};
-        scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-        Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,0.5};
-        ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
-        scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
-        sparsearray[0] = scalprod[1];
-        ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
-        // store odd and even components of v1
-        sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
-        ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
-        sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
-        ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    Int_t massDstar_or_Dstarbar = kmassDstar;
+    if(((AliAODRecoCascadeHF*)d)->GetBachelor()->Charge() > 0){
+      if(fFlowMethod==kSP) {
+	    massDstar_or_Dstarbar = kmassDstar;
+	    Double_t scalprod[2]={-2.,-2.};
+	    scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+	    Double_t sparsearray[6] = {scalprod[0],masses[0],ptD,etaD,0.5,static_cast<double>(massDstar_or_Dstarbar)};
+	    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+	    scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+	    sparsearray[0] = scalprod[1];
+	    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+	    // store odd and even components of v1
+	    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+	    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+	    sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+	    ((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      }
+      else {
+	    ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
+	    ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
+	    ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi1,masses[0]);
+	    ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
+	    ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
+      }
+      ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
     }
-    else {
-        ((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[0]);
-        ((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[0]);
-        ((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi1,masses[0]);
-        ((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[0]);
-        ((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[0]);
-    }
-    ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[0]);
+
+    if(((AliAODRecoCascadeHF*)d)->GetBachelor()->Charge() < 0){
+      if(fFlowMethod==kSP) {
+    	massDstar_or_Dstarbar = kmassDstarbar;
+     	Double_t scalprod[2]={-2.,-2.};
+      	scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
+        Double_t sparsearray[6] = {scalprod[0],masses[1],ptD,etaD,1.5,static_cast<double>(massDstar_or_Dstarbar)};
+     	((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+     	scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
+    	sparsearray[0] = scalprod[1];
+     	((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQC_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    	// store odd and even components of v1
+    	sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]-QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]-QA[1]);
+    	((THnSparseD*)fOutput->FindObject(Form("hMassScalProdOdd_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+    	sparsearray[0] = TMath::Cos(fHarmonic*phiD)*(QB[0]+QA[0])+TMath::Sin(fHarmonic*phiD)*(QB[1]+QA[1]);
+    	((THnSparseD*)fOutput->FindObject(Form("hMassScalProdEven_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
+      }
+      else {
+    	((TH2F*)fOutput->FindObject(Form("hMc2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*deltaphi),masses[1]);
+    	((TH2F*)fOutput->FindObject(Form("hMs2deltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*deltaphi),masses[1]);
+    	((TH2F*)fOutput->FindObject(Form("hMdeltaphi_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi1,masses[1]);
+    	((TH2F*)fOutput->FindObject(Form("hCos2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(fHarmonic*phiD),masses[1]);
+    	((TH2F*)fOutput->FindObject(Form("hSin2phiMass_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Sin(fHarmonic*phiD),masses[1]);
+      }
+      ((TH2F*)fOutput->FindObject(Form("hMPtCandcentr%d_%d",icentrmin,icentr)))->Fill(d->Pt(),masses[1]);
+  }
     
     Int_t pdgDgDStartoD0pi[2]={421,211};
     Int_t pdgDgD0toKpi[2]={321,211};
@@ -1978,7 +2010,7 @@ Float_t AliAnalysisTaskHFv1::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, Ali
 //   dummy->SetEvent(aodEvent,MCEvent());
 
 //   //////////////// construct the flow event container ////////////
-//   AliFlowEvent flowEvent(cutsRP,dummy);
+//   AliFlowEventSimple flowEvent(cutsRP,dummy);
 //   flowEvent.SetReferenceMultiplicity( 64 );
 //   for(Int_t i=0;i<64&&binx>0;i++){
 //     AliFlowTrack *flowTrack=flowEvent.GetTrack(i);

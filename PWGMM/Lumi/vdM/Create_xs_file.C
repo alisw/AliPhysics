@@ -8,8 +8,8 @@
 //-------------------------------------------------------
 // Computes the cross section file for a scan
 //-------------------------------------------------------
-void Compute_xs(Int_t scan, char *rate_name, char *rate_type,
-		char *sep_type, char *intensity_type, Int_t fit_type,
+void Compute_xs(Int_t scan, const char *rate_name, const char *rate_type,
+		const char *sep_type, const char *intensity_type, Int_t fit_type,
 		Double_t lsc, Double_t ghost,
 		Double_t satellite, Double_t non_fact)
 {
@@ -49,7 +49,8 @@ void Compute_xs(Int_t scan, char *rate_name, char *rate_type,
   hx_tree->SetBranchAddress("chi2_dof",&chi2_dof_x);
   hy_tree->SetBranchAddress("chi2_dof",&chi2_dof_y);    
   hx_tree->SetBranchAddress("area",area_x);
-  hy_tree->SetBranchAddress("area",area_y);    hx_tree->SetBranchAddress("rate_zero",rate_zero_x);
+  hy_tree->SetBranchAddress("area",area_y);
+  hx_tree->SetBranchAddress("rate_zero",rate_zero_x);
   hy_tree->SetBranchAddress("rate_zero",rate_zero_y);
 
   // Next step: get intensity related information
@@ -94,22 +95,23 @@ void Compute_xs(Int_t scan, char *rate_name, char *rate_type,
   // Next step: loop over the interacting bunch crossings (entries in the trees)
   // and compute the cross section
   for(Int_t k=0;k<nIBC;k++) { // loop over bunches
-    xs = 0;
-    xs_error = 0;
+    xs = -1;
+    xs_error = -1;
     // get info
     hx_tree->GetEntry(k);
     hy_tree->GetEntry(k);
     // check a valid fit
-    if (chi2_dof_x<0 || chi2_dof_y<0) continue;
-    // compute cross section
-    xs = GetXS(area_x[0], area_y[0], rate_zero_x[0], rate_zero_y[0], bunch_intensity_1[k], bunch_intensity_2[k]);
-    xs_error = GetXSerr(area_x[0], area_x[1],area_y[0], area_y[1],
-		   rate_zero_x[0], rate_zero_x[1],rate_zero_y[0], rate_zero_y[1], 
-			    bunch_intensity_1[k], bunch_intensity_2[k]);
-    // correct cross section
-    xs *= total_correction;
-    xs_error *= total_correction;    
+    if (chi2_dof_x>0 && chi2_dof_y>0) {
+      // compute cross section
+      xs = GetXS(area_x[0], area_y[0], rate_zero_x[0], rate_zero_y[0], bunch_intensity_1[k], bunch_intensity_2[k]);
+      xs_error = GetXSerr(area_x[0], area_x[1],area_y[0], area_y[1],
+			  rate_zero_x[0], rate_zero_x[1],rate_zero_y[0], rate_zero_y[1], 
+			  bunch_intensity_1[k], bunch_intensity_2[k]);
+      // correct cross section
+      xs *= total_correction;
+      xs_error *= total_correction;    
     //    cout << " scan " << scan << " bc " << k << " xs " << xs << " +/- " << xs_error << endl;
+    }
     // save output
     xs_tree->Fill();
   } // end loop over bunches
@@ -139,8 +141,8 @@ void Compute_xs(Int_t scan, char *rate_name, char *rate_type,
 // Prepare the cross section file for a fill
 //-------------------------------------------------------
 
-void Create_xs_file(Int_t Fill, char *rate_name, char *rate_type,
-		    char *sep_type, char *intensity_type, Int_t fit_type,
+void Create_xs_file(Int_t Fill, const char *rate_name, const char *rate_type,
+		    const char *sep_type, const char *intensity_type, Int_t fit_type,
 		    Double_t lsc, Double_t ghost,
 		    Double_t satellite, Double_t non_fact)
 {

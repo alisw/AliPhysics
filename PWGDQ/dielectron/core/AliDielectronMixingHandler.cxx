@@ -51,7 +51,7 @@ AliDielectronMixingHandler::AliDielectronMixingHandler() :
   fMoveToSameVertex(kFALSE),
   fSkipFirstEvt(kFALSE),
   fPID(0x0),
-  fPIDobjectCount(0)
+  fPIDobjectCount(1)
 {
   //
   // Default Constructor
@@ -73,7 +73,7 @@ AliDielectronMixingHandler::AliDielectronMixingHandler(const char* name, const c
   fMoveToSameVertex(kFALSE),
   fSkipFirstEvt(kFALSE),
   fPID(0x0),
-  fPIDobjectCount(0)
+  fPIDobjectCount(1)
 {
   //
   // Named Constructor
@@ -191,8 +191,8 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
       fPIDobjectCount = TProcessID::GetObjectCount();
     }
     else{
-      AliWarning("TProcessID::GetObjectCount() >= UINT_MAX [0xffffffff]; set fPIDobjectCount = 0");
-      fPIDobjectCount = 0;
+      AliWarning("TProcessID::GetObjectCount() >= UINT_MAX [0xffffffff]; set fPIDobjectCount = 1");
+      fPIDobjectCount = 1;
     }
   }
 

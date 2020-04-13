@@ -50,5 +50,5 @@ Double_t gBeamB = 0;
 // The reference bunch intensities are not taken at one
 // point in time but are the average of intensities in a
 // range of half width given by
-const Int_t gk_half_range = 90; // seconds
+const Int_t gk_half_range = 0; // seconds
 

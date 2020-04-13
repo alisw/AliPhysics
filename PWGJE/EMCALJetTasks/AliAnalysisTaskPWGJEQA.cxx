@@ -848,7 +848,8 @@ Bool_t AliAnalysisTaskPWGJEQA::IsEventSelected()
     }
   }
   else {
-    AliAnalysisTaskEmcal::IsEventSelected();
+    Bool_t answer = AliAnalysisTaskEmcal::IsEventSelected();
+    return answer;
   }
   return kTRUE;
 }

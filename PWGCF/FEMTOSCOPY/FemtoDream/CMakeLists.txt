@@ -19,8 +19,9 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon)
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -56,12 +57,37 @@ set(SRCS
   AliFemtoDreamPartCollection.cxx 
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
-  AliAnalysisTaskSigma0Femto.cxx
+  AliAnalysisTaskFemtoDreamDeuteron.cxx
+  AliAnalysisTaskNanoPt.cxx
+  AliAnalysisTaskNanoXioton.cxx
+  AliAnalysisTaskAODXioton.cxx
+  AliAnalysisTaskNanoXioton1530.cxx
+  AliAnalysisTaskNanoLoton.cxx
+  AliAnalysisTaskLeuteronAOD.cxx
+  AliAnalysisTaskLeuteronNanoAOD.cxx
+  AliAnalysisTaskAODLoton.cxx
+  AliAnalysisTaskNanoBBar.cxx  
+  AliAnalysisTaskFemtoDreamPhi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
+  AliAnalysisTaskFemtoDreamSigPi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
+  AliAnalysisTaskFemtoDreamPion.cxx
+  AliAnalysisTaskNanoAODFemtoDreamPion.cxx
+  AliAnalysisTaskNanoAODSigma0Femto.cxx
+  AliAnalysisTaskNanoSigmaPlus.cxx
+  AliAnalysisTaskNanoLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx
   AliOtonOmegaCascadeCuts.cxx
   AliOtonOmegaCascade.cxx
+  AliFemtoDreamHigherPairMath.cxx
+  AliAnalysisTaskNanoLX.cxx
+  AliAnalysisTaskOtonOmegaNanoAOD.cxx
+  AliAnalysisTaskGeorgiosNTuple.cxx
+  AliAnalysisTaskPOmegaPenne.cxx
+  AliFemtoDreamBaseDump.cxx
+  
   )
 
 
@@ -74,7 +100,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConv PWGGAHyperon)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHyperon)
 
 # Generate the ROOT map
 # Dependecies

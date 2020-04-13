@@ -32,6 +32,7 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
       fcutXiMass(false),
       fXiMass(0),
       fXiMassWidth(0),
+      fXiMassWidthExcl(0),
       fcutXiCharge(false),
       fXiCharge(0),
       fcutDCAXiDaug(false),
@@ -60,6 +61,9 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
       fRejOmega(false),
       fRejOmegaMass(0),
       fRejOmegaWidth(0),
+      fRejXi(false),
+      fRejXiMass(0),
+      fRejXiWidth(0),
       fPDGCasc(0),
       fPDGv0(0),
       fPDGPosDaug(0),
@@ -91,6 +95,7 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts(
       fcutXiMass(cuts.fcutXiMass),
       fXiMass(cuts.fXiMass),
       fXiMassWidth(cuts.fXiMassWidth),
+      fXiMassWidthExcl(cuts.fXiMassWidthExcl),
       fcutXiCharge(cuts.fcutXiCharge),
       fXiCharge(cuts.fXiCharge),
       fcutDCAXiDaug(cuts.fcutDCAXiDaug),
@@ -119,6 +124,9 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts(
       fRejOmega(cuts.fRejOmega),
       fRejOmegaMass(cuts.fRejOmegaMass),
       fRejOmegaWidth(cuts.fRejOmegaWidth),
+      fRejXi(cuts.fRejXi),
+      fRejXiMass(cuts.fRejXiMass),
+      fRejXiWidth(cuts.fRejXiWidth),
       fPDGCasc(cuts.fPDGCasc),
       fPDGv0(cuts.fPDGv0),
       fPDGPosDaug(cuts.fPDGPosDaug),
@@ -154,6 +162,7 @@ AliFemtoDreamCascadeCuts& AliFemtoDreamCascadeCuts::operator=(
   this->fcutXiMass = cuts.fcutXiMass;
   this->fXiMass = cuts.fXiMass;
   this->fXiMassWidth = cuts.fXiMassWidth;
+  this->fXiMassWidthExcl = cuts.fXiMassWidthExcl;
   this->fcutXiCharge = cuts.fcutXiCharge;
   this->fXiCharge = cuts.fXiCharge;
   this->fcutDCAXiDaug = cuts.fcutDCAXiDaug;
@@ -182,6 +191,9 @@ AliFemtoDreamCascadeCuts& AliFemtoDreamCascadeCuts::operator=(
   this->fRejOmega = cuts.fRejOmega;
   this->fRejOmegaMass = cuts.fRejOmegaMass;
   this->fRejOmegaWidth = cuts.fRejOmegaWidth;
+  this->fRejXi = cuts.fRejXi;
+  this->fRejXiMass = cuts.fRejXiMass;
+  this->fRejXiWidth = cuts.fRejXiWidth;
   this->fPDGCasc = cuts.fPDGCasc;
   this->fPDGv0 = cuts.fPDGv0;
   this->fPDGPosDaug = cuts.fPDGPosDaug;
@@ -225,6 +237,24 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   return XiCuts;
 }
 
+AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiFor1530Cuts(
+    bool isMC, bool contribSplitting) {
+  AliFemtoDreamCascadeCuts *XiCuts = new AliFemtoDreamCascadeCuts();
+  XiCuts->SetIsMonteCarlo(isMC);
+  XiCuts->SetContributionSplitting(contribSplitting);
+  XiCuts->SetXiMassRange(1.322, 0.007);
+  XiCuts->SetCutXiDaughterDCA(1.9);
+  XiCuts->SetCutXiMinDistBachToPrimVtx(0.015);
+  XiCuts->SetCutXiCPA(0.981);
+  XiCuts->SetCutXiTransverseRadius(0., 100);
+
+  XiCuts->SetCutv0MaxDaughterDCA(1.4);
+  XiCuts->SetCutv0CPA(0.875);
+  XiCuts->SetCutv0MinDistToPrimVtx(0.015);
+  XiCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
+  return XiCuts;
+}
+
 AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
     bool isMC, bool contribSplitting) {
   AliFemtoDreamCascadeCuts *OmegaCuts = new AliFemtoDreamCascadeCuts();
@@ -242,7 +272,8 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
   OmegaCuts->SetCutv0TransverseRadius(1.1, 200);
   OmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
   OmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
-  OmegaCuts->SetRejectOmegas(1.322, 0.005);
+  //OmegaCuts->SetRejectXis(1.322, 0.005);
+  OmegaCuts->SetRejectXis(1.322, 0.008);
   OmegaCuts->SetPtRangeXi(0.3, 999.9);
   return OmegaCuts;
 }
@@ -349,7 +380,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
     if (pass) {
       if (!fMinimalBooking)
-        fHist->FillInvMassPtv0(casc->GetPt(), casc->Getv0Mass());
+        fHist->FillInvMassPtv0(casc->Getv0Pt(), casc->Getv0Mass());
     }
     if (pass && fcutv0Mass) {
       if ((casc->Getv0Mass() < (fv0Mass - fv0Width))
@@ -410,6 +441,15 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
           fHist->FillCutCounter(19);
       }
     }
+    if (pass && fRejXi) {
+      if ((casc->GetXiMass() > (fRejXiMass - fRejXiWidth))
+          && (casc->GetXiMass() < (fRejXiMass + fRejXiWidth))) {
+        pass = false;
+      } else {
+        if (!fMinimalBooking)
+          fHist->FillCutCounter(19);
+      }
+    }
     if (pass && fCutPt) {
       if ((casc->GetPt() < fPtMin) || (fPtMax < casc->GetPt())) {
         pass = false;
@@ -425,8 +465,11 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       }
     }
     if (pass && fcutXiMass) {
-      if ((casc->GetMass() < (fXiMass - fXiMassWidth))
-          || (casc->GetMass() > (fXiMass + fXiMassWidth))) {
+      if ((fXiMassWidthExcl < 0.
+          && fabs(casc->GetMass() - fXiMass) > fXiMassWidth)
+          || (fXiMassWidthExcl > -1.
+              && (fabs(casc->GetMass() - fXiMass) > fXiMassWidth
+                  || fabs(casc->GetMass() - fXiMass) < fXiMassWidthExcl))) {
         pass = false;
       } else {
         if (!fMinimalBooking)
@@ -513,6 +556,8 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillInvMass(i, casc->GetMass());
         fHist->FillInvMassLambda(i, casc->Getv0Mass());
         fHist->FillXiPt(i, casc->GetMomentum().Pt());
+        fHist->FillXiEta(i, casc->GetMomentum().Eta());
+        fHist->FillXiPhi(i, TVector2::Phi_0_2pi(casc->GetMomentum().Phi()));
         fHist->FillMomRapXi(i, casc->GetXiRapidity(),
                             casc->GetMomentum().Mag());
         fHist->FillMomRapOmega(i, casc->GetOmegaRapidity(),
@@ -528,6 +573,8 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
         fHist->FillCPAv0(i, casc->Getv0CPA());
         fHist->FillCPAv0Xi(i, casc->Getv0XiPointingAngle());
         fHist->Fillv0Pt(i, casc->Getv0Pt());
+        fHist->Fillv0Eta(i, casc->Getv0P().Eta());
+        fHist->Fillv0Phi(i, TVector2::Phi_0_2pi(casc->Getv0P().Phi()));
         fHist->FillTransverseRadiusv0(i, casc->Getv0TransverseRadius());
         fHist->FillMinDistPrimVtxv0(i, casc->Getv0DCAPrimVtx());
         fHist->FillMinDistPrimVtxv0DaugPos(i, casc->Getv0PosToPrimVtx());
@@ -704,6 +751,10 @@ void AliFemtoDreamCascadeCuts::BookCuts() {
   if (fRejOmega) {
     fHist->FillConfig(20, fRejOmegaMass);
     fHist->FillConfig(21, fRejOmegaWidth);
+  }
+  if (fRejXi) {
+    fHist->FillConfig(20, fRejXiMass);
+    fHist->FillConfig(21, fRejXiWidth);
   }
 }
 

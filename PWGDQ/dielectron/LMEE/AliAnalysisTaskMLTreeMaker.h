@@ -59,6 +59,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetupEventCuts(AliDielectronEventCuts* f);
   void SetupTMVAReader(TString TMVAweight);
   
+  Bool_t Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter);
+  Bool_t IsTriggered(AliESDEvent *esd);
+  
   void isMC(Bool_t isMC){hasMC=isMC;}
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
@@ -177,11 +180,29 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t runn;
   Int_t n;
   Double_t cent;
+  Double_t ZDCepA;
+  Double_t ZDCepC;
+  Double_t TPCep;
+  Double_t TPCepA;
+  Double_t TPCepC;
+  Double_t NTPCclsEv;
   
-  Double_t IsEventAccepted(AliVEvent *event);
+  TList* fQnList;
+  AliAnalysisManager *man;
+
+  // SPD effi
+  Bool_t isUsingEffi;
+  TString fEfficiencyFileName;
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;  
+  TString fTriggerName;  
+  
+//  Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
-  
+  Bool_t FillZDCEventPlane(Double_t* ZDCevArr);
+  void FillQnEventplanes(TList* qnlist);
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented

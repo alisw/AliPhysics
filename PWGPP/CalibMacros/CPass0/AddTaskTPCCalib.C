@@ -22,6 +22,8 @@ AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL");
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
+Float_t lowtrunc = 0.02;
+Float_t hightrunc = 0.6;
 
 //_____________________________________________________________________________
 Bool_t isOptionSelected(const char* optionstr, const char* optionsstr, const char* allstr="ALL")
@@ -168,6 +170,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name
     ::Error("AddCalibTimeGain","Cannot get AliGRPObject");
     return;
   }
+
   time_t sTime = grpData->GetTimeStart(); 
   time_t eTime = grpData->GetTimeEnd(); 
   TTimeStamp startRunTime(sTime);
@@ -192,8 +195,8 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name
   calibTimeGain->SetDebugLevel(0);
   calibTimeGain->SetStreamLevel(0);
   calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibTimeGain->SetLowerTrunc(0.02);
-  calibTimeGain->SetUpperTrunc(0.6);
+  calibTimeGain->SetLowerTrunc(lowtrunc);
+  calibTimeGain->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibTimeGain);
 
@@ -202,8 +205,8 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name
   calibGainMult->SetDebugLevel(0);
   calibGainMult->SetStreamLevel(0);
   calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibGainMult->SetLowerTrunc(0.02);
-  calibGainMult->SetUpperTrunc(0.6);
+  calibGainMult->SetLowerTrunc(lowtrunc);
+  calibGainMult->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibGainMult);
 
@@ -447,6 +450,8 @@ int ConfigOCDB(){
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
   ::Info("AddTaskTPCCalib", "Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   if (print_info) tpcRecoParam->Print();
+  lowtrunc = tpcRecoParam->GetMinFraction();
+  hightrunc = tpcRecoParam->GetMaxFraction();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
 

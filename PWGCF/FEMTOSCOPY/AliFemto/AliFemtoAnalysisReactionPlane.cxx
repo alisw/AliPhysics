@@ -202,25 +202,18 @@ AliFemtoString AliFemtoAnalysisReactionPlane::Report()
 {
   // Prepare a report of the execution
   cout << "AliFemtoAnalysisReactionPlane - constructing Report..."<<endl;
-  char ctemp[200];
-  AliFemtoString temp = "-----------\nHbt AliFemtoAnalysisReactionPlane Report:\n";
-  snprintf(ctemp , 200, "Events are mixed in %d VertexZ bins in the range %E cm to %E cm.\n",fVertexZBins,fVertexZ[0],fVertexZ[1]);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Events underflowing: %d\n",fUnderFlowVertexZ);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Events overflowing: %d\n",fOverFlowVertexZ);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Events are mixed in %d Mult bins in the range %E cm to %E cm.\n",fMultBins,fMult[0],fMult[1]);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Events underflowing: %d\n",fUnderFlowMult);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Events overflowing: %d\n",fOverFlowMult);
-  temp += ctemp;
-  snprintf(ctemp , 200, "Now adding AliFemtoSimpleAnalysis(base) Report\n");
-  temp += ctemp;
-  temp += AliFemtoSimpleAnalysis::Report();
-  AliFemtoString returnThis=temp;
-  return returnThis;
+
+  AliFemtoString report = "-----------\nHbt AliFemtoAnalysisReactionPlane Report:\n";
+  report += Form("Events are mixed in %d VertexZ bins in the range %E cm to %E cm.\n",fVertexZBins,fVertexZ[0],fVertexZ[1]);
+  report += Form("Events underflowing: %d\n",fUnderFlowVertexZ);
+  report += Form("Events overflowing: %d\n",fOverFlowVertexZ);
+  report += Form("Events are mixed in %d Mult bins in the range %E cm to %E cm.\n",fMultBins,fMult[0],fMult[1]);
+  report += Form("Events underflowing: %d\n",fUnderFlowMult);
+  report += Form("Events overflowing: %d\n",fOverFlowMult);
+  report += Form("Now adding AliFemtoSimpleAnalysis(base) Report\n");
+  report += AliFemtoSimpleAnalysis::Report();
+
+  return report;
 }
 //_________________________
 void AliFemtoAnalysisReactionPlane::ProcessEvent(const AliFemtoEvent* hbtEvent) {

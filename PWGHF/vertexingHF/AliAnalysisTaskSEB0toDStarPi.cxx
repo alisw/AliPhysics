@@ -2195,19 +2195,19 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
       if(nDaughterB0==2){
         for(Int_t iDaughterB0=0; iDaughterB0<2; iDaughterB0++){
 
-          AliAODMCParticle* daughterB0 = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughter(iDaughterB0));
+          AliAODMCParticle* daughterB0 = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughterLabel(iDaughterB0));
           if(!daughterB0) break;
           Int_t pdgCodeDaughterB0=TMath::Abs(daughterB0->GetPdgCode());
 
           if (pdgCodeDaughterB0==211){ //if the track is a pion we save its monte carlo label
-            mcLabelPionB0 = mcTrackParticle->GetDaughter(iDaughterB0);
+            mcLabelPionB0 = mcTrackParticle->GetDaughterLabel(iDaughterB0);
             mcPionB0Present = kTRUE;
             ptMC[1] = daughterB0->Pt();
             yMC[1] = daughterB0->Y();
             pseudoYMC[1] = daughterB0->Eta();
 
           } else if (pdgCodeDaughterB0==413){ //if the track is a DStar we look at its daughters
-            mcLabelDStar = mcTrackParticle->GetDaughter(iDaughterB0);
+            mcLabelDStar = mcTrackParticle->GetDaughterLabel(iDaughterB0);
             Int_t nDaughterDStar = daughterB0->GetNDaughters();
             ptMC[2] = daughterB0->Pt();
             yMC[2] = daughterB0->Y();
@@ -2216,19 +2216,19 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
             if(nDaughterDStar==2){
               for(Int_t iDaughterDStar=0; iDaughterDStar<2; iDaughterDStar++){
 
-                AliAODMCParticle* daughterDStar = (AliAODMCParticle*)mcTrackArray->At(daughterB0->GetDaughter(iDaughterDStar));
+                AliAODMCParticle* daughterDStar = (AliAODMCParticle*)mcTrackArray->At(daughterB0->GetDaughterLabel(iDaughterDStar));
                 if(!daughterDStar) break;
                 Int_t pdgCodeDaughterDStar=TMath::Abs(daughterDStar->GetPdgCode());
 
                 if (pdgCodeDaughterDStar==211){ //if the track is a pion we save its monte carlo label
-                  mcLabelPionDStar = daughterB0->GetDaughter(iDaughterDStar);
+                  mcLabelPionDStar = daughterB0->GetDaughterLabel(iDaughterDStar);
                   mcPionDStarPresent = kTRUE;
                   ptMC[3] = daughterDStar->Pt();
                   yMC[3] = daughterDStar->Y();
                   pseudoYMC[3] = daughterDStar->Eta();
 
                 } else if (pdgCodeDaughterDStar==421){ //if the track is a D0 we look at its daughters
-                  mcLabelD0 = daughterB0->GetDaughter(iDaughterDStar);
+                  mcLabelD0 = daughterB0->GetDaughterLabel(iDaughterDStar);
                   Int_t nDaughterD0 = daughterDStar->GetNDaughters();
                   ptMC[4] = daughterDStar->Pt();
                   yMC[4] = daughterDStar->Y();
@@ -2237,19 +2237,19 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
                   if(nDaughterD0==2){
                     for(Int_t iDaughterD0=0; iDaughterD0<2; iDaughterD0++){
 
-                      AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterDStar->GetDaughter(iDaughterD0));
+                      AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterDStar->GetDaughterLabel(iDaughterD0));
                       if(!daughterD0) break;
                       Int_t pdgCodeDaughterD0=TMath::Abs(daughterD0->GetPdgCode());
 
                       if (pdgCodeDaughterD0==211){ //if the track is a pion we save its monte carlo label
-                        mcLabelPionD0 = daughterDStar->GetDaughter(iDaughterD0);
+                        mcLabelPionD0 = daughterDStar->GetDaughterLabel(iDaughterD0);
                         ptMC[5] = daughterD0->Pt();
                         yMC[5] = daughterD0->Y();
                         pseudoYMC[5] = daughterD0->Eta();
                         mcPionD0Present = kTRUE;
 
                       } else if (pdgCodeDaughterD0==321){ //if the track is a kaon we save its monte carlo label
-                        mcLabelKaon = daughterDStar->GetDaughter(iDaughterD0);;
+                        mcLabelKaon = daughterDStar->GetDaughterLabel(iDaughterD0);;
                         mcKaonPresent = kTRUE;
                         ptMC[6] = daughterD0->Pt();
                         yMC[6] = daughterD0->Y();
@@ -4308,19 +4308,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4330,19 +4330,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4366,13 +4366,13 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep511a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep511a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4389,13 +4389,13 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep521a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep521a";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4419,13 +4419,13 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep511b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep511b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4435,13 +4435,13 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep521b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgOneStep521b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4474,19 +4474,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground511 = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4496,19 +4496,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521b";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4533,19 +4533,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep511c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -4555,19 +4555,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                       bIsCorrelatedBackground = kTRUE;
                       for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
                       }
                       for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
                       {
-                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                        AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughterLabel(0)+iDaughter);
                         fillthis="particle_daughterPdgTwoStep521c";
                         ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
                       }
@@ -5852,13 +5852,13 @@ Double_t AliAnalysisTaskSEB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2
   return invMassDStar - invMassD0; 
 }
 //-------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskSEB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const 
+Double_t AliAnalysisTaskSEB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const 
 {
   ///
   /// 4 prong invariant mass of the D0 daughters, the soft pion, and the B0 pion
   ///
 
-  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)B0->GetDaughter(1);
+  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)Bzero->GetDaughter(1);
   Int_t chargeDStar = DStar->Charge();
 
   Double_t e[4];
@@ -5882,10 +5882,10 @@ Double_t AliAnalysisTaskSEB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2P
     return 0;
   }
   e[0]=DStar->EProng(0,211);
-  e[3]=B0->EProng(0,211);
+  e[3]=Bzero->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2]+e[3];
-  Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P2());
+  Double_t invMassB0 = TMath::Sqrt(esum*esum-Bzero->P2());
 
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 

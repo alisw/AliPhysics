@@ -116,6 +116,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPtRatio:      return "PtRatio";
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
+      case kCosThetaStarAbs:    return "CosThetaStarAbs";
       case kCosThetaJackson:    return "CosThetaJackson";
       case kCosThetaTransversity:    return "CosThetaTransversity";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
@@ -131,6 +132,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPairPtRes:        return "PairPtResolution";
       case kPairYRes:         return "PairYResolution";
       case kPhiV:         return "PhiV";
+      case kAsym:         return "PairAsymmetry";
       default:            return "Undefined";
    }
 }
@@ -172,7 +174,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kPlaneAngle:
          return event->Angle();
       case kLeadingPt:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             return v.Pt();
@@ -200,6 +202,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DipAngle(fUseMCInfo);
       case kCosThetaStar:
          return pair->CosThetaStar(fUseMCInfo);
+      case kCosThetaStarAbs:
+          return pair->CosThetaStarAbs(fUseMCInfo);           
       case kCosThetaJackson:
          return pair->CosThetaJackson(fUseMCInfo);
       case kCosThetaTransversity:
@@ -207,7 +211,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kCosThetaToEventPlane:
          return pair->CosThetaToEventPlane(event, fUseMCInfo);
       case kAngleLeading:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
@@ -243,6 +247,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->PairYRes();     
       case kPhiV:
          return pair->PhiV(fUseMCInfo);
+      case kAsym:
+         return pair->PairAsymmetry(fUseMCInfo);
       default:
          AliError("Invalid value type");
          return 1E20;

@@ -624,8 +624,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
        // new parametrisation function of the electron mean (18.September 2018)
     cutmodel="min(pol1(0),pol0(2))";
     Double_t params[3];
-    params[0] = 0.008 + paramsTPCdEdxcutlow[0];
-    params[1] = 0.078;
+    params[0] = 0.017 + paramsTPCdEdxcutlow[0];
+    params[1] = 0.071;
     params[2] = 0.12 + paramsTPCdEdxcutlow[0];
     pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
 

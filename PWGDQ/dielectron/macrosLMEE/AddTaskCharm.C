@@ -1,4 +1,4 @@
-AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="")
+AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE)
 {
   AliAnalysisTaskCharm* task = new  AliAnalysisTaskCharm("");
   task->SetProcessType(processtype);
@@ -8,9 +8,11 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   task->SetApplyEventw(applyeventw);
   task->Selectoneccbar(selectoneccbar);
   task->Selectcleanhistory(selectcleanhistory);
+  task->TakeptOfDCNM(takeptofDCNM);
 
   // Smearing
-  TFile f(file_momentum_smear.Data());
+  gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
+  TFile f("smearingfile.root");
   if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
     task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
   }
@@ -18,9 +20,12 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     task->ReadResoFile(&f);
   }
   // CNM
-  TFile fcnm(file_cnm.Data());
-  if (fcnm.IsOpen() && ((TGraph*)fcnm.Get(cnm.Data()))!=0x0) { // apply cnm scaling.
-    task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+  gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
+  TFile fcnm("cnmfile.root");
+  if (fcnm.IsOpen()){
+    if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
+      task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+    }
   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -46,6 +51,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   if(applyweight) listname += "weight";
   if(selectoneccbar) listname += "oneccbar";
   if(selectcleanhistory) listname += "cleanhistory";
+  if(takeptofDCNM) listname += "takeptDCNM";
   listname += versionsmearing;
   listname += cnm;
 

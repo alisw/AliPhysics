@@ -9,8 +9,13 @@ void AddTask_PhotonQA(
   TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
   Bool_t    runBasicQAWithStandardOutput  = kTRUE,
   Bool_t    doEtaShiftV0Reader            = kFALSE,
-  Bool_t    enableV0findingEffi           = kFALSE              // enables V0finding efficiency histograms
+  Bool_t    enableV0findingEffi           = kFALSE,              // enables V0finding efficiency histograms
+  TString   fileNameExternalInputs        = "",
+  Bool_t    enableElecDeDxPostCalibration = kFALSE
   ){
+ 
+  AliCutHandlerPCM cuts;
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -46,6 +51,20 @@ void AddTask_PhotonQA(
 
   AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
   analysisCuts->SetV0ReaderName(V0ReaderName);
+  if (enableElecDeDxPostCalibration){
+    if (isMC == 0){
+      if(fileNamedEdxPostCalib.CompareTo("") != 0){
+        analysisCuts->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+        cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+     }
+      analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      cout << "Enabled TPC dEdx recalibration." << endl;
+    } else{
+      cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+      enableElecDeDxPostCalibration=kFALSE;
+      analysisCuts->SetDoElecDeDxPostCalibration(kFALSE);
+    }
+  }
   analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetFillCutHistograms("",kFALSE);
 

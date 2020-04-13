@@ -28,6 +28,7 @@ AliReducedTrackCut::AliReducedTrackCut() :
   fCutOnTrackFilterMap(0),
   fUseANDonTrackFilterMap(kTRUE),
   fRejectPureMC(kFALSE),
+  fReweightMCpt(kTRUE),
   fCutOnMCFilterMap(0),
   fUseANDonMCFilterMap(kTRUE),
   fRequestITSrefit(kFALSE),
@@ -58,6 +59,7 @@ AliReducedTrackCut::AliReducedTrackCut(const Char_t* name, const Char_t* title) 
   fCutOnTrackFilterMap(0),
   fUseANDonTrackFilterMap(kTRUE),
   fRejectPureMC(kFALSE),
+  fReweightMCpt(kTRUE),
   fCutOnMCFilterMap(0),
   fUseANDonMCFilterMap(kTRUE),
   fRequestITSrefit(kFALSE),
@@ -93,7 +95,8 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj) {
   //Fill values
   Float_t values[AliReducedVarManager::kNVars];
   AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
-  
+  AliReducedVarManager::FillClusterMatchedTrackInfo((AliReducedBaseTrack*)obj, values);
+
   return IsSelected(obj, values);
 }
 

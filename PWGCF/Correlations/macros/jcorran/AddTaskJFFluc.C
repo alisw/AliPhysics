@@ -26,7 +26,6 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", UInt_t flags = 0, In
     //==== JCORRAN TASK
     AliJFFlucTask *FFtask = new AliJFFlucTask(combinedName.Data());
    
-   	//TODO: test flags for call()
 	FFtask->SetFFlucTaskName( combinedName.Data() ) ;
 	FFtask->AddFlags(flags);
 	FFtask->SetTestFilterBit( FilterBit ) ;

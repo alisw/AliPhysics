@@ -49,12 +49,12 @@ struct mother_struct{
 AliAnalysisTaskPsEfficiency::AliAnalysisTaskPsEfficiency(const char* taskname) : AliAnalysisTaskSE(taskname),
   fEventCut(false),
   fList(),
-  fProduction(),
-  fReconstructed(),
-  fTotal(),
   fRequireYmin(-0.5f),
   fRequireYmax(0.5f),
-  fPID()
+  fPID(),
+  fProduction(),
+  fReconstructed(),
+  fTotal()
 {
   fFilterBit = BIT(8);
   DefineInput(0, TChain::Class());
@@ -133,34 +133,34 @@ void AliAnalysisTaskPsEfficiency::UserExec(Option_t *){
 
   /// Making the list of the pentaquarks we want to measure
   //std::cout << "LISTING ALL THE MOTHERS: "<<std::endl<<std::endl;
-  int numero=0;
+  // int numero=0;
   for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
     AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
     const int pdg = TMath::Abs(part->GetPdgCode());
     const int iC = part->Charge() > 0 ? 1 : 0;
-    const int mult = -1 + 2 * iC;
+    // const int mult = -1 + 2 * iC;
     const int iS = pdg == 9322134 ? 0 : pdg == 9322136 ? 1 : -1;
     if (iS == -1) continue;
     FourVector_t moth_vec = {0.f,0.f,0.f,0.f},tmp_vec = {0.f,0.f,0.f,0.f};
     bool visible_decay = false;
-    const int phi_id = part->GetDaughter(0); //Phi meson
+    const int phi_id = part->GetDaughterLabel(0); //Phi meson
     AliAODMCParticle *phi_part = (AliAODMCParticle*)stack->At(TMath::Abs(phi_id));
-    int phi_pdg = phi_part->GetPdgCode();
-    int phi_dah_n = phi_part->GetNDaughters();
-    const int kaon1_id = phi_part->GetDaughter(0);
+    // int phi_pdg = phi_part->GetPdgCode();
+    // int phi_dah_n = phi_part->GetNDaughters();
+    const int kaon1_id = phi_part->GetDaughterLabel(0);
     AliAODMCParticle *kaon1_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon1_id));
     int kaon1_pdg = TMath::Abs(kaon1_part->GetPdgCode());
     if(kaon1_pdg==321) visible_decay = true;
     tmp_vec.SetCoordinates(kaon1_part->Pt(),kaon1_part->Eta(),kaon1_part->Phi(),kaon1_part->M());
     moth_vec+=tmp_vec;
-    const int kaon2_id = phi_part->GetDaughter(1);
+    const int kaon2_id = phi_part->GetDaughterLabel(1);
     AliAODMCParticle *kaon2_part = (AliAODMCParticle*)stack->At(TMath::Abs(kaon2_id));
-    int kaon2_pdg = TMath::Abs(kaon2_part->GetPdgCode());
+    // int kaon2_pdg = TMath::Abs(kaon2_part->GetPdgCode());
     tmp_vec.SetCoordinates(kaon2_part->Pt(),kaon2_part->Eta(),kaon2_part->Phi(),kaon2_part->M());
     moth_vec+=tmp_vec;
-    const int proton_id = part->GetDaughter(1); // Proton
+    const int proton_id = part->GetDaughterLabel(1); // Proton
     AliAODMCParticle *proton_part = (AliAODMCParticle*)stack->At(TMath::Abs(proton_id));
-    int proton_pdg = TMath::Abs(proton_part->GetPdgCode());
+    // int proton_pdg = TMath::Abs(proton_part->GetPdgCode());
     tmp_vec.SetCoordinates(proton_part->Pt(),proton_part->Eta(),proton_part->Phi(),proton_part->M());
     moth_vec+=tmp_vec;
 

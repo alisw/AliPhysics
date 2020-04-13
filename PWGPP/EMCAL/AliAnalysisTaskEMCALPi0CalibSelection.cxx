@@ -77,6 +77,7 @@ fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0),
 fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
+fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
 {
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++)

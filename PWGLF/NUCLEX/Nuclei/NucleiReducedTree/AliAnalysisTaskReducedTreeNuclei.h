@@ -46,7 +46,8 @@ private:
    AliPIDResponse *fPIDResponse;//!
    AliEventCuts   fAODeventCuts;// Event cuts
    AliAnalysisUtils *fUtils;//!
-   
+
+   AliAODVZERO* fAODVZERO;//!
    // globle varibles
    Bool_t fFillTri;
    Bool_t fFillHypTri;
@@ -60,6 +61,10 @@ private:
    // Event histograms
    TH2D *histoEventSelection; //!
    TH2D *histoEventMultiplicity; //!
+
+   TH1D *histoEventMultV0M_MB; //!
+   TH1D *histoEventMultV0M_HM; //!
+   
    //Reduced Trees
    TTree *reducedTree_Helium;//!
    TTree *reducedTree_Triton;//!
@@ -72,7 +77,7 @@ private:
 //    Long64_t triggerMask;
    Int_t magFieldSign;//
    
-//    Int_t SelectionStep;//
+   Int_t SelectionStep;//
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
    Double_t multPercentile_V0A;//

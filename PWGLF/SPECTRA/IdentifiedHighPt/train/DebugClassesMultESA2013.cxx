@@ -26,9 +26,6 @@ TObject(),
   pid(-999),
   primary(-999),
   order(-1),
-//filterset1(0),
-// filterset2(0),
-//filterset3(0),
   tpcnclS(0)
 
 {
@@ -112,6 +109,7 @@ TObject(),
   dcadaughters(999),
   pdg(0),
   pdgmother(0),
+  oobPileupFlag(-1),
   primary(-1),  
   status(),  
   ptrack(),
@@ -149,6 +147,7 @@ void DeDxV0::Copy(TObject& object) const
   v0->dcadaughters = dcadaughters;	 
   v0->pdg	    = pdg;		 
   v0->pdgmother	    = pdgmother;
+  v0->oobPileupFlag = oobPileupFlag;
   v0->primary       = primary;  	 
   v0->status  	    = status;  	 
 
@@ -217,7 +216,10 @@ TObject(),
   trackmultMC(-1), // MC track mult (primary tracks)
   nMC(-1),         // MC number of added tracks 
   process(-2),     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
-  trig(-1)         // Was the event triggered
+  trig(-1),        // Was the event triggered
+  triggerInt(-1),     // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  v0Finder(-1),    // 0 = oldFinder, 1 = newFinder
+  centFramework(-1)// 0 = AliCentrality, 1 = AliMultSelection 
 
 {
   // default constructor
@@ -249,4 +251,7 @@ void DeDxEvent::Copy(TObject& object) const
   eventIn->nMC           = nMC         ; 
   eventIn->process       = process     ; 
   eventIn->trig          = trig        ; 
- }
+  eventIn->triggerInt    = triggerInt  ; 
+  eventIn->v0Finder      = v0Finder    ;
+  eventIn->centFramework = centFramework;
+}

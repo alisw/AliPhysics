@@ -20,8 +20,11 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang OR CMAKE_COMPILER_IS_GNUCXX)
   endif()
 endif()
 
+
+
 #Module
 set (MODULE PWGCFFlowForward)
+
 
 # Module include folder
 include_directories(
@@ -43,16 +46,31 @@ set(SRCS
   AliForwardSettings.cxx
   AliForwardTaskValidation.cxx
   AliForwardFlowUtil.cxx
+  AliForwardWeights.cxx
   AliForwardNUATask.cxx
   AliForwardNUETask.cxx
   AliForwardGenericFramework.cxx
-  AliForwardQCumulantRun2.cxx
   AliForwardFlowRun2Task.cxx
   AliForwardSecondariesTask.cxx
+  AliForwardFlowResultStorage.cxx
   )
 
 # Headers from sources
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+# string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set(HDRS
+  AliForwardSettings.h
+  AliForwardTaskValidation.h
+  AliForwardFlowUtil.h
+  AliForwardWeights.h
+  AliForwardNUATask.h
+  AliForwardNUETask.h
+  AliForwardGenericFramework.h
+  AliForwardFlowRun2Task.h
+  AliForwardSecondariesTask.h
+  AliForwardFlowResultStorage.h
+  )
+
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

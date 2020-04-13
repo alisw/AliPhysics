@@ -28,7 +28,6 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes  
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
  double zMax                    =  6.,  // set vertexZ cut   
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
@@ -54,10 +53,10 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  bool   PurePIDinMC             = 0,   // 0: MisID in MCAODreco;       1: No MisID in MCAODreco
  bool   PureNoWeakinMC          = 0,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
  bool   PureNoWeakMaterialinMC  = 0,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
- bool   NoWeakinMC              = 0,   // 0: Secondaries from weak decays in MCAODreco;       1: No Secondaries from weak decays in MCAODreco
- bool   NoMaterialinMC          = 0,   // 0: Secondaries from material in MCAODreco;          1: No Secondaries from material in MCAODreco
+ bool   NoMisIDWeakMaterialInClosure = 0,   // 0: allow MisID and No Secondaries from weak decays and material in MC Closure test       1: No MisID and Secondaries from weak decays and material in MC Closure test
+ double SharedFractionPairCut   = 0.2, // check track splitting
  const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
+ TString inputHistogramFileName = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
 {
   // Set Default Configuration of this analysis
@@ -80,8 +79,8 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
   double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
   double dcaZMin                = -dcaZMax;
-  double dcaXYMin               = -dcaXYMax;	
-
+  double dcaXYMin               = -dcaXYMax;
+  double zMin                   = -zMax;  // |zMin| should = zMax due to the design of the code
 	
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "PbPb_2015_kTRUE" )     { centralityMethod = 4; trigger = kTRUE;  }
@@ -396,7 +395,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 	  if (!inputFile)
             {
 	      //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
-	      return;
+	      return 0;
             }
 	  TString nameHistoBase = "correction_";
 	  TString nameHisto;
@@ -452,8 +451,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetIfContaminationInMC(   PurePIDinMC   );
       task->SetIfContaminationWeakInMC( PureNoWeakinMC );
       task->SetIfContaminationWeakMaterialInMC( PureNoWeakMaterialinMC );
-      task->SetIfWeakInMC( NoWeakinMC );
-      task->SetIfMaterialInMC( NoMaterialinMC );
+      task->SetIfMisIDWeakMaterialInMCClosure( NoMisIDWeakMaterialInClosure );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
       task->SetEventPlane(         useEventPlane     );
@@ -498,6 +496,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetSystemType(          System          );
       task->SetResonancesCut(       NoResonances    );
       task->SetElectronCut(         NoElectron      );
+      task->SetSharedFractionPairCut( SharedFractionPairCut );
       task->SetNSigmaCut( nSigmaCut );
       task->SetNSigmaCut_veto( nSigmaCut_veto );
       task->SetPtCutUpperLimit( ptCUTupperMax );
@@ -510,7 +509,7 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       // assign initial values to AliHelperPID object
       AliHelperPID* helperpid = new AliHelperPID();
       helperpid -> SetNSigmaCut( nSigmaCut );
-      helperpid -> SetPIDType( pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+      helperpid -> SetPIDType( (PIDType_t)pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
       helperpid -> SetfRequestTOFPID( requestTOFPID );
       helperpid -> SetfPtTOFPID( ptTOFlowerMin );
       helperpid -> SetisMC( isMC );

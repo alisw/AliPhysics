@@ -7,7 +7,7 @@
  *
  */
 
-AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
+AliAnalysisTaskSE* AddTaskForwardNUE(TString name1)
 {
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,20 +17,18 @@ AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
   const char* name = Form("ForwardNUE_filled");
 
   TString resName = "NUE_filled";
-  if (nua_mode){
-    resName = "NUE_extrapolated";
-    name = "ForwardNUE";
-  }
   AliForwardNUETask* task = new AliForwardNUETask(name);
-  task->nua_mode = nua_mode;
   std::cout << resName << std::endl;
+
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
 
     AliAnalysisDataContainer *coutput_recon =
     mgr->CreateContainer(resName,
      TList::Class(),
      AliAnalysisManager::kOutputContainer,
      mgr->GetCommonFileName());
-    task->fSettings.fDataType = task->fSettings.kRECON;
+
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 1, coutput_recon);

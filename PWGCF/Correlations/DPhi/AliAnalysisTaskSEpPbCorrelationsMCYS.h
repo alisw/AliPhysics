@@ -1,7 +1,7 @@
 /*
  *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPPBCORRELATIONS
-#define ALIANALYSISTASKSEPPBCORRELATIONS
+#ifndef ALIANALYSISTASKSEPPBCORRELATIONSMCYS
+#define ALIANALYSISTASKSEPPBCORRELATIONSMCYS
 
 #include "AliAnalysisTask.h"
 #include "AliLog.h"
@@ -13,6 +13,7 @@
 #include "TH3.h"
 #include "THnSparse.h"
 #include "TString.h"
+#include "AliEventCuts.h"
 
 class TList;
 class AliCFContainer;
@@ -27,11 +28,11 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
-class TProfile;
 
-#ifndef ALIANALYSISTASKSEH
+
+//#ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
-#endif
+//#endif
 
 //---------------------------------------------------------------------------------------
 class AliAnalysisTaskSEpPbCorrelationsMCYS : public AliAnalysisTaskSE {
@@ -52,13 +53,25 @@ public:
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
   virtual void SetPID(Bool_t mode) { fPID = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
+  virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
-  virtual void SetIsAOD(Bool_t mode){fIsAOD=mode;}
-
+  virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
+  virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
+  virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
+  virtual void SetExtractSec(Bool_t mode){fextractsec=mode;}
+  virtual void SetPtMax(Float_t mode){fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode){fPtMin=mode;}
+  
+  
+  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
-
+  virtual void SetMCclosure(Bool_t mode) { fMCclosure = mode; }
+  virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
+  virtual void Setmcprim(Bool_t mode){fprim=mode;}
+  virtual void SetQAmode(Bool_t mode){fQA=mode;}
+  
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
@@ -76,7 +89,9 @@ public:
       fCentBins[ix] = CentBins[ix];
     }
   }
+  void DumpTObjTable(const char* note);
 
+  
 private:
   AliAnalysisTaskSEpPbCorrelationsMCYS(
       const AliAnalysisTaskSEpPbCorrelationsMCYS &det);
@@ -88,25 +103,27 @@ private:
   void DefineCorrOutput();
   void DefinedQAHistos();
 
-  TObjArray *GetAcceptedTracksLeading(AliAODEvent *fevent,Bool_t leading);
+  TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading,TObjArray*tracks);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
-  TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
+  TObjArray *GetAcceptedCascadeTracks(AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
+  void  CalculateSP();
   TObjArray* GetFMDhitsYS(Bool_t Aside);
   Bool_t IsAcceptedDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedPhiDaughterTrack(const AliAODTrack *itrack);
   Bool_t IsAcceptedTrack(const AliAODTrack *aodTrack);
-  Bool_t IsAcceptedTrackLeading(const AliVTrack *fTrack);
   Bool_t IsAcceptedDecayLength(const AliAODv0 *aodv0,Double_t mass,Double_t maxctau);
   Bool_t IsAcceptedV0(const AliAODv0 *aodv0);
   Bool_t IsAcceptedCascade(const AliAODcascade *casc);
   Bool_t IsAcceptedCascadeOmega(const AliAODcascade *casc);
 
+  TObjArray* CloneTrack(TObjArray* track);
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
+ Int_t      ConvertRunNumber(Int_t run);
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -116,9 +133,7 @@ private:
 
 */
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray,
-                             TObjArray *selectedTrackArray, AliTHn *triggerHist,
-                             AliTHn *associateHist, Bool_t, Float_t, Float_t,
-                             Float_t, Int_t);
+                             TObjArray *selectedTrackArray, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step);
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
                                    Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
@@ -132,16 +147,25 @@ private:
 
   TString fcollisiontype;
   Bool_t fDataType;
+  Bool_t fcentcalib;
   Bool_t frun2;
   Bool_t fQA;
-  Bool_t fIsAOD;
+  Bool_t fMCclosure;
+  Bool_t fFMDcut;
+  Int_t fFMDcutmode;
+  Bool_t fptdiff;
+  Bool_t fextractsec;
+  Bool_t fmakehole;
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
   Bool_t fPID;
 
   TString fCentType;
-
+  Bool_t ffillcorrelation;
+  Bool_t fprim;
+  Int_t fNEntries;
+  
   Double_t lCentrality;
   Float_t bSign;
   Double_t fZVertex;
@@ -151,10 +175,11 @@ private:
   TList *fOutputList2; // Output list
 
   AliPIDResponse *fPIDResponse; // PID Response
-  AliMultSelection *multSelection;
+  TH3D* fhcorreffi[10];
 
   Int_t ffilterbit;
   Double_t fPtMin;
+  Double_t fPtMax;
   Double_t fEtaMax;
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
@@ -199,19 +224,13 @@ private:
 
   THnSparseF *fHistMass_Lambda_MC;
 
-  //	Double_t fPtMinDaughter;
-  Double_t fNEntries;
-  AliVEvent* inputEvent;
+  //	Double_t fPtMinDaughter
+
+  AliEventCuts fEventCuts; 
+  AliAnalysisUtils* fUtils;
   AliAODEvent *fEvent; //  AOD Event
-  AliESDEvent *fESD; //  AOD Even
-
-  AliMCEventHandler* mctruth;
   AliMCEvent* mcEvent;
-  //  AliESDtrackCuts*fTrackCuts;
-  //AliAODVertex *lPrimaryBestVtx;
-  const AliVVertex *lPrimaryBestVtx;
-
-
+  AliAODVertex *lPrimaryBestVtx;
   Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
 
@@ -235,20 +254,23 @@ private:
   // Global Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
-  TH1F *fHistCentrality_aftercut;
-
+  TH1F *fHistCentrality_beforecut;
+  TH2F* fHistCentzvertex;
+  TH2F* mixedDist;
+  TH2F* mixedDist2;
+  
+  
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
-  TH1F* fhistitsdeltaphi[4];
-  TH2F* fhistitsrefdeltaphi[4];
-  TH2F* fhistitsrefdeltaphicorr[4];
-  TH2F* fhistitsrefdeltaphiaftercut[4];
-  TH2F* fhistitsrefdeltaphicorraftercut[4];
-  TH2F* fhistitsrefdeltaetaaftercut[4];
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
+  TH2D* fNTrackCorrMC;
   TH2D*fhmcprimvzeta;
+
+  TH1F*frefvz;
+  TH1D*fhcorr[10];
+
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
@@ -256,9 +278,23 @@ private:
   TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
+  TH2D*  fh2_ITS_acceptance;
+  TH2F*  fh2_SPD_multcorr;
+  TH2F*  fh2_SPDV0_multcorr;
+  TH2F*  fh2_SPDtrack_multcorr;
+  TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
-  AliTHn* fhistfmd;
+  TH1F* fHist_NeventRun;
+  TH1F* fHist_V0AMultRun;
+  TH1F* fHist_V0CMultRun;
+  TH1F* fHist_FMDAMultRun;
+  TH1F* fHist_FMDCMultRun;
 
+  TH2D*  fhistfmdphiacc;
+  AliTHn* fhistfmd;
+  THnSparseF* fhistits;
+  AliTHn* fhSecFMD;
+  //  const TH2D& d2Ndetadphi;
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
   TH2F*fFMDV0A;
@@ -266,6 +302,14 @@ private:
   TH2F*fFMDV0C;
   TH2F*fFMDV0C_post;
 
+  TH1F*fV0Amultprim;
+  TH1F*fV0Amultmodi;
+  TH2F*fh2_V0A;
+  TH2F*fh2_V0A_all;
+  TH2F*fh2_V0C;
+  TH2F*fh2_V0A_comp;
+  TH2F*fh2_V0A_comp_prim;
+  
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
@@ -286,6 +330,43 @@ private:
   AliTHn *fHistReconstTrack;
   AliTHn *fHistTriggerTrackMix;
   AliTHn *fHistReconstTrackMix;
+
+  TH2D* fHistQna;
+  TH2D* fHistQnc;
+  TH2D* fHistCorrQna[4];
+  TH2D* fHistCorrQnc[4];
+  TH2D* fHistQn;
+  TH2D* fHistQna_VZERO;
+  TH2D* fHistQnc_VZERO;
+  TH2D* fHistQn_VZERO;
+  TH1D* fHistVn;
+  TH1D* fHistQAQB[4];
+  TH1D* fHistQAQB_VZERO[4];
+  TProfile* SP_TPCATPCC;
+  TProfile* SP_TPCATPCC_default;
+  TProfile* SP_V0AV0C_default;
+  TProfile* SP_V0ATPC_default;
+  TProfile* SP_V0CTPC_default;
+  TH1F* fHist_V0AV0C;
+  TH1F* fHist_V0ATPC;
+  TH1F* fHist_V0CTPC;
+  TProfile* SP_uTPCA;
+  TProfile* SP_uTPCC;
+  TProfile* SP_uTPC_PP[8];
+  TProfile* SP_uTPC[8];
+  TProfile* SP_uTPC1[8];
+  TProfile* SP_uTPC2[8];
+  TProfile* SP_uTPC3[8];
+  TProfile* SP_uVZEROA_PP[8];
+  TProfile* SP_uVZEROA[8];
+  TProfile* SP_uVZEROA1[8];
+  TProfile* SP_uVZEROA2[8];
+  TProfile* SP_uVZEROA3[8];
+  TProfile* SP_uVZEROC_PP[8];
+  TProfile* SP_uVZEROC[8];
+  TProfile* SP_uVZEROC1[8];
+  TProfile* SP_uVZEROC2[8];
+  TProfile* SP_uVZEROC3[8];
 
   ClassDef(AliAnalysisTaskSEpPbCorrelationsMCYS, 2);
 };
@@ -319,14 +400,14 @@ Float_t AliAnalysisTaskSEpPbCorrelationsMCYS::GetDPhiStar(
   return dphistar;
 }
 
-class AliAssociatedTrackYS : public AliVParticle {
+class AliAssociatedTrackYSMC : public AliVParticle {
 public:
-  AliAssociatedTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
+  AliAssociatedTrackYSMC(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
                        Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate,
                        Double_t multiplicity)
       : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fID(ID), fID1(ID1),
         fID2(ID2), fCandidate(candidate), fMultiplicity(multiplicity) {}
-  virtual ~AliAssociatedTrackYS() {}
+  virtual ~AliAssociatedTrackYSMC() {}
 
   virtual Double_t Px() const {
     AliFatal("Not implemented");
@@ -416,18 +497,18 @@ private:
   Double_t fMultiplicity;
   Int_t fID1;
   Int_t fID2;
-  ClassDef(AliAssociatedTrackYS, 1);
+  ClassDef(AliAssociatedTrackYSMC, 1);
 };
 
-class AliMixTrackYS : public AliVParticle {
+class AliMixTrackYSMC : public AliVParticle {
 public:
-  AliMixTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
+  AliMixTrackYSMC(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
                 Float_t px, Float_t py, Float_t pz
 
                 )
       : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fpx(px), fpy(py),
         fpz(pz) {}
-  virtual ~AliMixTrackYS() {}
+  virtual ~AliMixTrackYSMC() {}
 
   virtual Double_t Px() const { return fpx; }
   virtual Double_t Py() const { return fpy; }
@@ -522,13 +603,13 @@ private:
   Float_t fpy;
   Float_t fpz;
 
-  ClassDef(AliMixTrackYS, 1);
+  ClassDef(AliMixTrackYSMC, 1);
 };
 //---------------------------------------------------------------------------------------
 
-class AliAssociatedVZEROYS : public AliVParticle {
+class AliAssociatedVZEROYSMC : public AliVParticle {
 public:
-  AliAssociatedVZEROYS(Float_t multiplicity,
+  AliAssociatedVZEROYSMC(Float_t multiplicity,
                        //		  Double_t multiplicity,
                        Float_t eta,
                        // Float_t phi,
@@ -537,7 +618,7 @@ public:
 
         fMultiplicity(multiplicity),
         fEta(eta), fPhi(phi), fpT(pt), fID(ID), fCandidate(candidate) {}
-  virtual ~AliAssociatedVZEROYS() {}
+  virtual ~AliAssociatedVZEROYSMC() {}
 
   virtual Double_t Px() const {
     AliFatal("Not implemented");
@@ -628,7 +709,7 @@ private:
   Int_t fID;          // ID
   Short_t fCandidate; // 1-pi,2-K,3-p
 
-  ClassDef(AliAssociatedVZEROYS, 1);
+  ClassDef(AliAssociatedVZEROYSMC, 1);
 };
 
 #endif

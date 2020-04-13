@@ -201,6 +201,12 @@ public:
     /// \brief 2018 periods
     ///@{
     kLHC18q,          ///< PbPb 5 TeV
+    kLHC18r,          ///< PbPb 5 TeV
+    ///@}
+    /// \name 2018MC
+    /// \brief MC's corresponding to 2018 data
+    ///@{
+    kLHC18l8,          ///< anchored to LHC18q/r Pb-Pb 5.02 TeV general purpose
     ///@}
     /// \name fast MC productions
     ///@{

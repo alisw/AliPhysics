@@ -47,7 +47,7 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
       }
     }
 
-  AliAnalysisTaskParticleEff(const Char_t *partName); // default constructor
+  AliAnalysisTaskParticleEff(TString name, int pidMethod=-1, int filterbit=96); // default constructor
   virtual ~AliAnalysisTaskParticleEff(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
@@ -55,6 +55,8 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
 
   void SetFB(int fb);
   void SetPidMethod(PidMethod method);
+  void SetPidMethod(int method);
+  int GetPidMethod();
   void SetMultMethod(EstEventMult method);
   void SetAliEventCuts(Bool_t ec);
   void SetIfXiAnalysis(Bool_t xi);

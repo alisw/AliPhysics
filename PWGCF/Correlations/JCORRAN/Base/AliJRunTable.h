@@ -11,9 +11,9 @@
 class AliJRunTable {
 public:
   enum { kUnknownPeriod, kLHC10b, kLHC10c, kLHC10d, kLHC10e,
-    kLHC10h, kLHC11a,kLHC11b , kLHC11c , kLHC11d, kLHC11e, kLHC11h, kLHC12g,kLHC12h,
-    kLHC13b, kLHC13c, kLHC13d, kLHC13e, kLHC13g, kLHC15o, kLHC18q_uncalib, kLHC16g1, kLHC16q, kLHC17f,
-    kLHC17p, kLHC17q,
+    kLHC10h, kLHC11a, kLHC11b, kLHC11c, kLHC11d, kLHC11e, kLHC11h, kLHC12g, kLHC12h,
+    kLHC13b, kLHC13c, kLHC13d, kLHC13e, kLHC13g, kLHC15o, kLHC15n, kLHC16g1, kLHC16q,
+    kLHC16r, kLHC16t, kLHC17f, kLHC17p, kLHC17q, kLHC18q, kLHC18r,
     kJNPeriod};
   enum { kRE, kMC };
   enum { kPP, kPbPb, kPA };

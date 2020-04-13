@@ -48,8 +48,9 @@ class AliAnalysisTaskDJetCorrelationsQA : public AliAnalysisTaskEmcalJet
 
 public:
 
-   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
-   enum ECorrelationMethod{ kConstituent, kAngular, kResponseMatrix };
+   enum ECandidateType{ kD0toKpi=0, kDstartoKpipi=1 };
+   enum ECorrelationMethod{ kConstituent=0, kAngular=1, kResponseMatrix=2 };
+   enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; /// multiplicity estimators
 
    AliAnalysisTaskDJetCorrelationsQA();
    AliAnalysisTaskDJetCorrelationsQA(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
@@ -86,6 +87,12 @@ public:
    void SetUseSBArray(Bool_t b) {fUseSBArray=b;}
    Bool_t GetUseSBArray() const {return fUseSBArray;}
 
+   void SetIsPPData(Bool_t b){fIsPPData=b;}
+   void SetIsPbPbData(Bool_t b){fIsPbPbData=b;}
+
+   void SetMultiplicityEstimator(Int_t c){fMultiplicityEstimator=c;}
+   Int_t GetMultiplicityEstimator() const {return fMultiplicityEstimator;}
+
    // Array of D0 width for the Dstar
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
    void ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
@@ -94,7 +101,7 @@ public:
    void CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent);
    void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg,Double_t JetPhiRec,Double_t JetNTracksRec);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg,Double_t JetPhi,Double_t JetNTracks,Double_t JetY,Double_t JetArea);
    void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FindMCJet(AliEmcalJet*& mcjet);
@@ -123,8 +130,11 @@ private:
 
 
    Bool_t fUseMCInfo;               // Use MC info
+   Bool_t fIsPPData;                // is pp data (don't check centrality)
+   Bool_t fIsPbPbData;                // is Pb-Pb data (for mult binning)
+   Int_t  fMultiplicityEstimator;   // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
    Bool_t fUseReco;                 // use reconstructed tracks when running on MC
-   Bool_t fUsePythia;		    // Use Pythia info only for MC
+   Bool_t fUsePythia;               // Use Pythia info only for MC
    Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
    Bool_t fBuildRMEff;              // flag to switch on/off the Response Matrix with efficiencies (Needs MC)
 
@@ -145,13 +155,14 @@ private:
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
 
 
-   Int_t fNAxesBigSparse;           // number of axis
+   Int_t  fNAxesBigSparse;           // number of axis
    Bool_t fUseCandArray;            //! Use D meson candidates array
    Bool_t fUseSBArray;              //! Use D meson SB array
 
    // Histograms
    TH1I* fhstat;                    //!
    TH1F* fhCentDjet;                //!
+   TH1F* fhMultiplicity;            //!
    //generic jet and jet track distributions
    TH1F* fhPtJetTrks;		    //!
    TH1F* fhPhiJetTrks;              //!
@@ -171,24 +182,33 @@ private:
    THnSparse* fResponseMatrix;      //!
 
    //Added for QA
-   TH2F* fhPhiJetPtJetMC;           //!
-   TH2F* fhPhiJetTrksPtJetMC;       //!
-   TH2F* fhEtaJetTrksPtJetMC;       //!
-   TH2F* fhEtaJetPtJetMC;           //!
-   TH2F* fhAreaJetPtJetMC;          //!
-   TH2F* fhJetTrksPtJetMC;          //!
-   TH2F* fhPhiJetPtJetreco;         //!
-   TH2F* fhPhiJetTrksPtJetreco;     //!
-   TH2F* fhEtaJetTrksPtJetreco;     //!
-   TH2F* fhEtaJetPtJetreco;         //!
-   TH2F* fhAreaJetPtJetreco;        //!
-   TH2F* fhJetTrksPtJetreco;        //!
-   TH2F* fhPhiJetPtJetD;            //!
-   TH2F* fhPhiJetTrksPtJetD;        //!
-   TH2F* fhAreaJetPtJetD;           //!
-   TH2F* fhJetTrksPtJetD;           //!
+   TH2F* fhPhiJetPtJet_incl_MC;           //!
+   TH2F* fhPhiJetTrksPtJet_incl_MC;       //!
+   TH2F* fhEtaJetTrksPtJet_incl_MC;       //!
+   TH2F* fhEtaJetPtJet_incl_MC;           //!
+   TH2F* fhAreaJetPtJet_incl_MC;          //!
+   TH2F* fhJetTrksPtJet_incl_MC;          //!
+   TH2F* fhPhiJetPtJet_incl_Reco;         //!
+   TH2F* fhPhiJetTrksPtJet_incl_Reco;     //!
+   TH2F* fhEtaJetTrksPtJet_incl_Reco;     //!
+   TH2F* fhEtaJetPtJet_incl_Reco;         //!
+   TH2F* fhAreaJetPtJet_incl_Reco;        //!
+   TH2F* fhJetTrksPtJet_incl_Reco;        //!
+   TH2F* fhPhiJetPtJet_Djet_MC;           //!
+   TH2F* fhPhiJetTrksPtJet_Djet_MC;       //!
+   TH2F* fhEtaJetTrksPtJet_Djet_MC;       //!
+   TH2F* fhEtaJetPtJet_Djet_MC;           //!
+   TH2F* fhAreaJetPtJet_Djet_MC;          //!
+   TH2F* fhJetTrksPtJet_Djet_MC;          //!
+   TH2F* fhPhiJetPtJet_Djet_Reco;         //!
+   TH2F* fhPhiJetTrksPtJet_Djet_Reco;     //!
+   TH2F* fhEtaJetTrksPtJet_Djet_Reco;     //!
+   TH2F* fhEtaJetPtJet_Djet_Reco;         //!
+   TH2F* fhAreaJetPtJet_Djet_Reco;        //!
+   TH2F* fhJetTrksPtJet_Djet_Reco;        //!
 
-   ClassDef(AliAnalysisTaskDJetCorrelationsQA,1); // class for charm-jet CorrelationsExch
+
+   ClassDef(AliAnalysisTaskDJetCorrelationsQA,3); // class for charm-jet CorrelationsExch
 };
 
 #endif

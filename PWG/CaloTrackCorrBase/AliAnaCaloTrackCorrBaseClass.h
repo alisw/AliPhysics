@@ -55,7 +55,7 @@ class AliEventplane;
 #include "AliLog.h"
 
 // Jets
-class AliAODJetEventBackground;
+//class AliAODJetEventBackground;
 
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	
@@ -152,7 +152,7 @@ public:
   // Jets
   
   virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
-  virtual AliAODJetEventBackground*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
+  virtual TClonesArray*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
 
   // Common analysis switchs 
   
@@ -448,7 +448,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,29) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,30) ;
   /// \endcond
 
 } ;

@@ -1072,6 +1072,10 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   
   // Set the AODB calibration, bad channels etc. parameters at least once
   fCaloUtils->AccessOADB(fReader->GetInputEvent());
+
+  //Check PAR run
+  if(fCaloUtils->IsParRun()) fReader->SwitchOnParRun();
+  else fReader->SwitchOffParRun();
   
   // Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);

@@ -76,6 +76,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
+  fDoAreaIterative(kTRUE),
   fPhiCutValue(0.02),
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
@@ -98,7 +99,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fTreeObservableTagging(0)
 
 {
-   for(Int_t i=0;i<8;i++){
+   for(Int_t i=0;i<12;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -132,6 +133,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
+  fDoAreaIterative(kTRUE),
   fPhiCutValue(0.02),
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
@@ -155,7 +157,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   
 {
   // Standard constructor.
-  for(Int_t i=0;i<8;i++){
+  for(Int_t i=0;i<12;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   
@@ -252,7 +254,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 8;
+  const Int_t nVar = 12;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -263,10 +265,14 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[1] = "ptJet"; 
   fShapesVarNames[2] = "ktAv"; 
   fShapesVarNames[3] = "thetaAv";
-  fShapesVarNames[4] = "ptJetMatch"; 
-  fShapesVarNames[5] = "ktAvMatch"; 
-  fShapesVarNames[6] = "thetaAvMatch";
-  fShapesVarNames[7]="weightPythia";
+  fShapesVarNames[4] = "zg";
+  fShapesVarNames[5] = "deltaR";
+  fShapesVarNames[6] = "ptJetMatch"; 
+  fShapesVarNames[7] = "ktAvMatch"; 
+  fShapesVarNames[8] = "thetaAvMatch";
+   fShapesVarNames[9] = "zgMatch"; 
+  fShapesVarNames[10] = "deltaRMatch";
+  fShapesVarNames[11]="weightPythia";
 
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -591,16 +597,22 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Int_t kMatched = 0;
       Double_t ktAvMatch=0;;
       Double_t thetaAvMatch=0;
+      Double_t zgMatch=0;
+      Double_t deltaRMatch=0;
       Double_t aver1=0;
       Double_t aver2=0;
+      Double_t aver3=0;
+      Double_t aver4=0;
        if (fJetShapeType==kPythiaDef) {
          kMatched =1;
          if(fJetShapeSub==kConstSub) kMatched = 3;
         
          ptMatch=jet3->Pt();
-	 RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2);
+	 RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2,aver3,aver4);
 	 ktAvMatch=aver1;
 	 thetaAvMatch=aver2;
+	 zgMatch=aver3;
+	 deltaRMatch=aver4;
       
        }
       
@@ -609,9 +621,11 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
 
-        RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2);
+        RecursiveParentsMCAverage(jet3,kMatched, aver1, aver2,aver3,aver4);
 	 ktAvMatch=aver1;
 	 thetaAvMatch=aver2;
+	 zgMatch=aver3;
+	 deltaRMatch=aver4;
         
       }
 
@@ -622,16 +636,20 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         ptMatch=0.;
         ktAvMatch=0.;
         thetaAvMatch=0.;
+	zgMatch=0;
+	deltaRMatch=0;
 	
         
       }
       
     
 
-      fShapesVar[4] = ptMatch;
-      fShapesVar[5] = ktAvMatch;
-      fShapesVar[6] = thetaAvMatch;
-      fShapesVar[7] = kWeight;
+      fShapesVar[6] = ptMatch;
+      fShapesVar[7] = ktAvMatch;
+      fShapesVar[8] = thetaAvMatch;
+      fShapesVar[9] = zgMatch;
+      fShapesVar[10]=deltaRMatch;
+      fShapesVar[11] = kWeight;
       fTreeObservableTagging->Fill();
       
 
@@ -1152,13 +1170,13 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
      
     }
     fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-
+     fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
    
   
   fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-
+  fastjet::AreaDefinition fAreaDef(fastjet::passive_area,ghost_spec); 
   try {
-    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
     std::vector<fastjet::PseudoJet>   fOutputJets;
     fOutputJets.clear();
     fOutputJets=fClustSeqSA.inclusive_jets(0);
@@ -1167,32 +1185,59 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-   double ktaverage=0;
-   double thetaverage=0;
+   double ktaverage=-20;
+   double thetaverage=-20;
    double nall=0;
    double flagSubjet=0;
-    while(jj.has_parents(j1,j2)){
+   double z=0.;
+   double delta_R=-20;
+   double area1=0;
+   double area2=0;
+    while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
-    if(j1.perp() < j2.perp()) swap(j1,j2);
+  
     flagSubjet=0;
-    double delta_R=j1.delta_R(j2);
-    double z=j2.perp()/(j1.perp()+j2.perp());
+      area1 = j1.area();
+      area2 = j2.area();
+      if(fJetShapeSub!=kNoSub) if(j1.perp() < j2.perp()) swap(j1,j2);
+      
+      if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE){
+	
+	if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
+        area1 = j1.area();
+        area2 = j2.area();
+        if(j1.perp()-area1*GetRhoVal(0)<0 && j2.perp()-area2*GetRhoVal(0)<0) break;
+       
+      }
+
+      
+      if(j2.perp()-area2*GetRhoVal(0)>0){
+       
+    
+     delta_R=j1.delta_R(j2);
+   
+     if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) {z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
+      }
+     if(fJetShapeSub!=kNoSub) z=j2.perp()/(j1.perp()+j2.perp());
+  
     double y =log(1.0/delta_R);
     double lnpt_rel=log(j2.perp()*delta_R);
     double yh=j1.e()+j2.e();
-     vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-     if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
-    if(z>fHardCutoff){
+    vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+    if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
+    
       ktaverage=ktaverage+lnpt_rel;
       thetaverage=thetaverage+delta_R;
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};  
     fHLundIterative->Fill(LundEntries);}
-    jj=j1;} 
+      
+      jj=j1;} 
 
-   
+    cout<<"a z"<<z<<endl;
      fShapesVar[2]=ktaverage/nall;
      fShapesVar[3]=thetaverage/nall;
- 
+     fShapesVar[4]=z;
+     fShapesVar[5]=delta_R;
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -1207,7 +1252,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   
 }
 //_________________________________________________________________________
-void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &average1, Double_t &average2){
+void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &average1, Double_t &average2, Double_t &average3, Double_t &average4){
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
@@ -1243,12 +1288,18 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
    double ktaverage=0;
    double thetaverage=0;
    double nall=0;
-   double flagSubjet=0;
-    while(jj.has_parents(j1,j2)){
+ 
+   double z=0;
+   double delta_R=0;
+    while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
-    if(j1.perp() < j2.perp()) swap(j1,j2);
+ 
+
+      if(j1.perp() < j2.perp()) swap(j1,j2);
+    
    
-    double delta_R=j1.delta_R(j2);
+    z=j2.perp()/(j1.perp()+j2.perp());
+    delta_R=j1.delta_R(j2);
    
     double lnpt_rel=log(j2.perp()*delta_R);
       
@@ -1256,11 +1307,12 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
       thetaverage=thetaverage+delta_R;
    
     jj=j1;} 
-
+     
    
      average1=ktaverage/nall;
      average2=thetaverage/nall;
- 
+     average3=z;
+     average4=delta_R;
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");

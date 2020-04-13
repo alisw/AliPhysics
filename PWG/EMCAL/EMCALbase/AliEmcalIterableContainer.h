@@ -123,6 +123,7 @@ public:
     ~iterator(){}
 
     bool operator!=(const iterator &ref) const;
+    bool operator==(const iterator &ret) const;
 
     iterator &operator++();
     iterator operator++(int);
@@ -406,6 +407,16 @@ typename AliEmcalIterableContainerT<T, STAR>::iterator &AliEmcalIterableContaine
 template <typename T, typename STAR>
 bool AliEmcalIterableContainerT<T, STAR>::iterator::operator!=(const AliEmcalIterableContainerT<T, STAR>::iterator &ref) const{
   return fCurrent != ref.fCurrent;
+}
+
+/**
+ * Comparison operator for equalness. Comparison is performed based on the position inside the container
+ * @param[in] ref Reference for comparison
+ * @return True if the position does not match, false otherwise
+ */
+template <typename T, typename STAR>
+bool AliEmcalIterableContainerT<T, STAR>::iterator::operator==(const AliEmcalIterableContainerT<T, STAR>::iterator &ref) const{
+  return fCurrent == ref.fCurrent;
 }
 
 /**

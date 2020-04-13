@@ -83,9 +83,20 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fCutArray(NULL),
   fMesonCutArray(NULL),
   fClusterCutArray(NULL),
+  fConvJetReader(NULL),
+  fDoJetAnalysis(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
+  fDoJetQA(kFALSE),
+  fJetHistograms(NULL),
+  fTrueJetHistograms(NULL),
+  fMaxPtNearEMCalPlace(0),
+  fJetNearEMCal(kFALSE),
   fHistoCaloGammaPt(NULL),
   fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
+  fHistoConvGammaPtwithHighPtHadron(NULL),
+  fHistoConvGammaPtwithoutHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -100,6 +111,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   iCatPhoton(0),
   iPhotonMCInfo(0),
   fHistoMotherInvMassPt(NULL),
+  fHistoMotherInvMassPtIso(NULL),
+  fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
+  fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
+  fHistoMotherEisoPt(NULL),
+  fHistoMotherRisoPt(NULL),
+  fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   sESDMotherBackInvMassPtZM(NULL),
@@ -224,15 +242,83 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoCentralityVsPrimaryTracks(NULL),
   fHistoNGammaCandidates(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
+  fHistoPtJet(NULL),
+  fHistoJetEta(NULL),
+  fHistoJetPhi(NULL),
+  fHistoJetArea(NULL),
+  fHistoNJets(NULL),
+  fHistoEventwJets(NULL),
+  fHistoJetPi0PtRatio(NULL),
+  fHistoDoubleCounting(NULL),
+  fHistoJetMotherInvMassPt(NULL),
+  fHistoPi0InJetMotherInvMassPt(NULL),
+  fHistoMotherBackJetInvMassPt(NULL),
+  fHistoRJetPi0Cand(NULL),
+  fHistoEtaPhiJetPi0Cand(NULL),
+  fHistoEtaPhiJetWithPi0Cand(NULL),
+  fHistoJetFragmFunc(NULL),
+  fHistoJetFragmFuncZInvMass(NULL),
+  fHistoTruevsRecJetPt(NULL),
+  fHistoTrueJetMotherInvMassPt(NULL),
+  fHistoTrueInJetMotherInvMassPt(NULL),
+  fHistoTruePrimaryJetInvMassPt(NULL),
+  fHistoTruePrimaryinJetInvMassPt(NULL),
+  fHistoTruePrimaryInJetInvMassTruePt(NULL),
+  fHistoTrueDoubleCountingJet(NULL),
+  fHistoTrueJetFragmFunc(NULL),
+  fHistoTrueJetFragmFuncZInvMass(NULL),
+  fHistoMCPi0JetInAccPt(NULL),
+  fHistoMCPi0inJetInAccPt(NULL),
+  fHistoMCEtaJetInAccPt(NULL),
+  fHistoMCEtainJetInAccPt(NULL),
+  fHistoMCPi0JetEventGenerated(NULL),
+  fHistoMCPi0inJetGenerated(NULL),
+  fHistoMCEtaJetEventGenerated(NULL),
+  fHistoMCEtainJetGenerated(NULL),
+  fHistoTrueSecondaryFromK0sJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0sinJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromLambdaJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromLambdainJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0lJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0linJetInvMassPt(NULL),
+  fHistoTrueSecondaryInvJetMassPt(NULL),
+  fHistoTrueSecondaryInvinJetMassPt(NULL),
+  fHistoUnfoldingAsData(NULL),
+  fHistoUnfoldingMissed(NULL),
+  fHistoUnfoldingReject(NULL),
+  fHistoUnfoldingAsDataInvMassZ(NULL),
+  fHistoUnfoldingMissedInvMassZ(NULL),
+  fHistoUnfoldingRejectInvMassZ(NULL),
+  fVectorJetPt(0),
+  fVectorJetPx(0),
+  fVectorJetPy(0),
+  fVectorJetPz(0),
+  fVectorJetEta(0),
+  fVectorJetPhi(0),
+  fVectorJetArea(0),
+  fTrueVectorJetPt(0),
+  fTrueVectorJetPx(0),
+  fTrueVectorJetPy(0),
+  fTrueVectorJetPz(0),
+  fTrueVectorJetEta(0),
+  fTrueVectorJetPhi(0),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoBDToutput(NULL),
+  fHistoBDToutputPt(NULL),
+  fHistoBDToutputMCTrue(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fhJetJetNTrials(NULL),
+  fHistoEventSphericity(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
+  fBDTvariable(NULL),
+  fBDTreader(NULL),
+  fFileNameBDT(0),
+  fEnableBDT(0),
   fPt(0),
   fDCAzGammaMin(0),
   fDCAzGammaMax(0),
@@ -260,7 +346,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fDoPlotVsCentrality(kFALSE),
   fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
-  fDoTHnSparse(kTRUE),
+  fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
@@ -295,9 +381,20 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fCutArray(NULL),
   fMesonCutArray(NULL),
   fClusterCutArray(NULL),
+  fConvJetReader(NULL),
+  fDoJetAnalysis(kFALSE),
+  fDoIsolatedAnalysis(kFALSE),
+  fDoHighPtHadronAnalysis(kFALSE),
+  fDoJetQA(kFALSE),
+  fJetHistograms(NULL),
+  fTrueJetHistograms(NULL),
+  fMaxPtNearEMCalPlace(0),
+  fJetNearEMCal(kFALSE),
   fHistoCaloGammaPt(NULL),
   fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
+  fHistoConvGammaPtwithHighPtHadron(NULL),
+  fHistoConvGammaPtwithoutHighPtHadron(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
   fHistoConvGammaPhi(NULL),
@@ -312,6 +409,13 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   iCatPhoton(0),
   iPhotonMCInfo(0),
   fHistoMotherInvMassPt(NULL),
+  fHistoMotherInvMassPtIso(NULL),
+  fHistoMotherInvMassPtNonIso(NULL),
+  fHistoMotherInvMassPtMCRecIsoTrueNonIso(NULL),
+  fHistoMotherInvMassPtMCRecNonIsoTrueIso(NULL),
+  fHistoMotherEisoPt(NULL),
+  fHistoMotherRisoPt(NULL),
+  fHistoMotherNtracksIsoPt(NULL),
   sESDMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   sESDMotherBackInvMassPtZM(NULL),
@@ -436,15 +540,83 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoCentralityVsPrimaryTracks(NULL),
   fHistoNGammaCandidates(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
+  fHistoPtJet(NULL),
+  fHistoJetEta(NULL),
+  fHistoJetPhi(NULL),
+  fHistoJetArea(NULL),
+  fHistoNJets(NULL),
+  fHistoEventwJets(NULL),
+  fHistoJetPi0PtRatio(NULL),
+  fHistoDoubleCounting(NULL),
+  fHistoJetMotherInvMassPt(NULL),
+  fHistoPi0InJetMotherInvMassPt(NULL),
+  fHistoMotherBackJetInvMassPt(NULL),
+  fHistoRJetPi0Cand(NULL),
+  fHistoEtaPhiJetPi0Cand(NULL),
+  fHistoEtaPhiJetWithPi0Cand(NULL),
+  fHistoJetFragmFunc(NULL),
+  fHistoJetFragmFuncZInvMass(NULL),
+  fHistoTruevsRecJetPt(NULL),
+  fHistoTrueJetMotherInvMassPt(NULL),
+  fHistoTrueInJetMotherInvMassPt(NULL),
+  fHistoTruePrimaryJetInvMassPt(NULL),
+  fHistoTruePrimaryinJetInvMassPt(NULL),
+  fHistoTruePrimaryInJetInvMassTruePt(NULL),
+  fHistoTrueDoubleCountingJet(NULL),
+  fHistoTrueJetFragmFunc(NULL),
+  fHistoTrueJetFragmFuncZInvMass(NULL),
+  fHistoMCPi0JetInAccPt(NULL),
+  fHistoMCPi0inJetInAccPt(NULL),
+  fHistoMCEtaJetInAccPt(NULL),
+  fHistoMCEtainJetInAccPt(NULL),
+  fHistoMCPi0JetEventGenerated(NULL),
+  fHistoMCPi0inJetGenerated(NULL),
+  fHistoMCEtaJetEventGenerated(NULL),
+  fHistoMCEtainJetGenerated(NULL),
+  fHistoTrueSecondaryFromK0sJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0sinJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromLambdaJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromLambdainJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0lJetInvMassPt(NULL),
+  fHistoTrueSecondaryFromK0linJetInvMassPt(NULL),
+  fHistoTrueSecondaryInvJetMassPt(NULL),
+  fHistoTrueSecondaryInvinJetMassPt(NULL),
+  fHistoUnfoldingAsData(NULL),
+  fHistoUnfoldingMissed(NULL),
+  fHistoUnfoldingReject(NULL),
+  fHistoUnfoldingAsDataInvMassZ(NULL),
+  fHistoUnfoldingMissedInvMassZ(NULL),
+  fHistoUnfoldingRejectInvMassZ(NULL),
+  fVectorJetPt(0),
+  fVectorJetPx(0),
+  fVectorJetPy(0),
+  fVectorJetPz(0),
+  fVectorJetEta(0),
+  fVectorJetPhi(0),
+  fVectorJetArea(0),
+  fTrueVectorJetPt(0),
+  fTrueVectorJetPx(0),
+  fTrueVectorJetPy(0),
+  fTrueVectorJetPz(0),
+  fTrueVectorJetEta(0),
+  fTrueVectorJetPhi(0),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoBDToutput(NULL),
+  fHistoBDToutputPt(NULL),
+  fHistoBDToutputMCTrue(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fhJetJetNTrials(NULL),
+  fHistoEventSphericity(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
+  fBDTvariable(NULL),
+  fBDTreader(NULL),
+  fFileNameBDT(0),
+  fEnableBDT(0),
   fPt(0),
   fDCAzGammaMin(0),
   fDCAzGammaMax(0),
@@ -472,7 +644,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fDoPlotVsCentrality(kFALSE),
   fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
-  fDoTHnSparse(kTRUE),
+  fDoTHnSparse(kFALSE),
   fWeightJetJetMC(1),
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
@@ -588,7 +760,7 @@ void AliAnalysisTaskGammaConvV1::InitBack(){
                                   ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
                                   0,8,5);
         fBGHandlerRP[iCut] = NULL;
-      } else {
+      } else if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() != 2){
         fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
                                   ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsHeavyIon(),
                                   ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity(),
@@ -605,6 +777,23 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
+
+  if( ((AliConversionPhotonCuts*)fCutArray->At(0))->GetUseBDTPhotonCuts()){
+      fEnableBDT  = kTRUE;
+      InitializeBDT(); //
+  }
+
+  if(fDoMesonAnalysis){ //Same Jet Finder MUST be used within same trainconfig
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetAnalysis())          fDoJetAnalysis = kTRUE;
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetQA())                fDoJetQA       = kTRUE;
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoIsolatedAnalysis())     fDoIsolatedAnalysis = kTRUE;
+  }
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoHighPtHadronAnalysis()) fDoHighPtHadronAnalysis = kTRUE;
+
+  if(fDoJetAnalysis){
+    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
+    if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+  }
 
   // Set dimenstions for THnSparse
   const Int_t nDim2 = 4;
@@ -645,80 +834,73 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
 
-  // Set special pt binning for pPb 5TeV, pPb 8TeV
-  if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
-      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
-      ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-//    binWidthPt                = 0.05;
-    nBinsPt                   = 186;
-    minPt                     = 0;
-    maxPt                     = 40;
-    for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.25*i;
-      else if(i<56) arrPtBinning[i]           = 0.25+0.05*(i-1);
-      else if(i<126) arrPtBinning[i]          = 3.+0.1*(i-56);
-      else if(i<166) arrPtBinning[i]          = 10.+0.25*(i-126);
-      else if(i<186) arrPtBinning[i]          = 20.+1.0*(i-166);
-      else arrPtBinning[i]                    = maxPt;
-    }
-    nBinsQAPt                 = 190;
-    maxQAPt                   = 40;
-    for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<190) arrQAPtBinning[i]        = 20.+1.0*(i-170);
-      else arrQAPtBinning[i]                  = maxQAPt;
-    }
-    nBinsClusterPt            = 301;
-    minClusterPt              = 0;
-    maxClusterPt              = 100;
-    for(Int_t i=0; i<nBinsClusterPt+1;i++){
-      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
-      else arrClusPtBinning[i]                = maxClusterPt;
-    }
+
   // Set special pt binning for pp 13TeV and 5TeV
-  } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
-//    binWidthPt                = 0.05;
-    nBinsPt                   = 199;
+  if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
+       ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
+    // binWidthPt                = 0.05;
+    nBinsPt                   = 169;
     minPt                     = 0;
     maxPt                     = 50;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.10*i;
-      else if(i<59) arrPtBinning[i]           = 0.10+0.05*(i-1);
-      else if(i<129) arrPtBinning[i]          = 3.+0.1*(i-59);
-      else if(i<169) arrPtBinning[i]          = 10.+0.25*(i-129);
-      else if(i<199) arrPtBinning[i]          = 20.+1.0*(i-169);
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<170) arrPtBinning[i]          = 20.+1.00*(i-140);
       else arrPtBinning[i]                    = maxPt;
     }
-    nBinsQAPt                 = 200;
+    nBinsQAPt                 = 170;
     maxQAPt                   = 50;
     for(Int_t i=0; i<nBinsQAPt+1;i++){
-      if(i<60) arrQAPtBinning[i]              = 0.05*i;
-      else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-      else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-      else if(i<200) arrQAPtBinning[i]        = 20.+1.0*(i-170);
+      if(i<100) arrQAPtBinning[i]             = 0.1*i;
+      else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
+      else if(i<170) arrQAPtBinning[i]        = 20.+1.0*(i-140);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
-    nBinsClusterPt            = 301;
+    nBinsClusterPt            = 274;
     minClusterPt              = 0;
     maxClusterPt              = 100;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
       if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<128) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<184) arrClusPtBinning[i]      = 16.+0.25*(i-128);
+      else if(i<224) arrClusPtBinning[i]      = 30.+0.5*(i-184);
+      else if(i<274) arrClusPtBinning[i]      = 50.+1.0*(i-224);
+      else arrClusPtBinning[i]                = maxClusterPt;
+    }
+  // Set special pt binning for pp 13TeV and 5TeV
+  } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV  ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV  ){
+    nBinsPt                   = 159;
+    minPt                     = 0;
+    maxPt                     = 40;
+    for(Int_t i=0; i<nBinsPt+1;i++){
+      if (i < 100) arrPtBinning[i]            = 0.10*i;
+      else if(i<140) arrPtBinning[i]          = 10.+0.25*(i-100);
+      else if(i<160) arrPtBinning[i]          = 20.+1.0*(i-140);
+      else arrPtBinning[i]                    = maxPt;
+    }
+    nBinsQAPt                 = 159;
+    maxQAPt                   = 40;
+    for(Int_t i=0; i<nBinsQAPt+1;i++){
+      if(i<100) arrQAPtBinning[i]             = 0.1*i;
+      else if(i<140) arrQAPtBinning[i]        = 10.+0.25*(i-100);
+      else if(i<160) arrQAPtBinning[i]        = 20.+1.0*(i-140);
+      else arrQAPtBinning[i]                  = maxQAPt;
+    }
+    nBinsClusterPt            = 274;
+    minClusterPt              = 0;
+    maxClusterPt              = 100;
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
+      if (i < 1) arrClusPtBinning[i]          = 0.3*i;
+      else if(i<98) arrClusPtBinning[i]       = 0.3+0.1*(i-1);
+      else if(i<128) arrClusPtBinning[i]      = 10.+0.2*(i-98);
+      else if(i<184) arrClusPtBinning[i]      = 16.+0.25*(i-128);
+      else if(i<224) arrClusPtBinning[i]      = 30.+0.5*(i-184);
+      else if(i<274) arrClusPtBinning[i]      = 50.+1.0*(i-224);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   // Set special pt binning for XeXe 5.44TeV
@@ -801,6 +983,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else arrQAPtBinning[i]                  = maxQAPt;
     }
   }
+  Double_t* arrLogBinning = new Double_t[51]{1.00e-03, 1.20e-03, 1.45e-03, 1.74e-03, 2.01e-03, 2.51e-03, 3.02e-03, 3.63e-03, 4.37e-03, 5.25e-03, 6.31e-03, 7.60e-03,
+                                     9.12e-03, 1.01e-02, 1.32e-02, 1.58e-02, 1.91e-02, 2.29e-02, 2.75e-02, 3.31e-02, 3.98e-02, 4.79e-02, 5.75e-02, 6.91e-02,
+                                     8.32e-02, 1.00e-01, 1.20e-01, 1.45e-01, 1.74e-01, 2.09e-01, 2.51e-01, 3.02e-01, 3.63e-01, 4.37e-01, 5.25e-01, 6.31e-01,
+                                     7.59e-01, 9.12e-01, 1.10e+00, 1.32e+00, 1.58e+00, 1.91e+00, 2.29e+00, 2.75e+00, 3.31e+00, 3.98e+00, 4.79e+00, 5.75e+00,
+                                     6.92e+00, 8.32e+00, 1.00e+01};
 
 
   if (fIsMC == 2){
@@ -840,6 +1027,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   }
   fHistoNGoodESDTracks      = new TH1F*[fnCuts];
   fHistoVertexZ             = new TH1F*[fnCuts];
+  fHistoEventSphericity     = new TH1F*[fnCuts];
   if(fDoPlotVsCentrality){
     fHistoCentrality        = new TH1F*[fnCuts];
     fHistoCentralityVsPrimaryTracks = new TH2F*[fnCuts];
@@ -862,10 +1050,22 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNV0Tracks                            = new TH1F*[fnCuts];
   }
 
+  if(fEnableBDT){
+    fHistoBDToutput = new TH1F*[fnCuts];
+    fHistoBDToutputPt = new TH1F*[fnCuts];
+    if (fIsMC > 0){
+      fHistoBDToutputMCTrue = new TH1F*[fnCuts];
+    }
+  }
+
   fHistoEtaShift                             = new TProfile*[fnCuts];
 
   // gamma histos:
   fHistoConvGammaPt                          = new TH1F*[fnCuts];
+  if(fDoHighPtHadronAnalysis){
+    fHistoConvGammaPtwithHighPtHadron        = new TH2F*[fnCuts];
+    fHistoConvGammaPtwithoutHighPtHadron     = new TH2F*[fnCuts];
+  }
   if (fDoPhotonQA > 0 && fIsMC < 2 ){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
     fHistoConvGammaR            = new TH1F*[fnCuts];
@@ -900,7 +1100,39 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       sPtRDeltaROpenAngle       = new THnSparseF*[fnCuts];
     }
   }
+  if(fDoIsolatedAnalysis){
+    fHistoMotherInvMassPtIso        = new TH2F*[fnCuts];
+    fHistoMotherInvMassPtNonIso     = new TH2F*[fnCuts];
+    fHistoMotherEisoPt              = new TH2F*[fnCuts];
+    fHistoMotherRisoPt              = new TH2F*[fnCuts];
+    fHistoMotherNtracksIsoPt        = new TH2F*[fnCuts];
+    if (fIsMC > 0){
+      fHistoMotherInvMassPtMCRecIsoTrueNonIso     = new TH2F*[fnCuts];
+      fHistoMotherInvMassPtMCRecNonIsoTrueIso     = new TH2F*[fnCuts];
+    }
+  }
+  if(fDoJetAnalysis){
+    fJetHistograms            = new TList*[fnCuts];
 
+    fHistoPtJet               = new TH1F*[fnCuts];
+    fHistoJetEta              = new TH1F*[fnCuts];
+    fHistoJetPhi              = new TH1F*[fnCuts];
+    fHistoJetArea             = new TH1F*[fnCuts];
+    fHistoNJets               = new TH1F*[fnCuts];
+    fHistoEventwJets          = new TH1F*[fnCuts];
+    if(!fDoLightOutput){
+      fHistoJetPi0PtRatio       = new TH1F*[fnCuts];
+      fHistoDoubleCounting      = new TH1F*[fnCuts];
+      fHistoJetMotherInvMassPt                  = new TH2F*[fnCuts];
+      fHistoPi0InJetMotherInvMassPt             = new TH2F*[fnCuts];
+      fHistoMotherBackJetInvMassPt              = new TH2F*[fnCuts];
+      fHistoRJetPi0Cand                         = new TH2F*[fnCuts];
+      fHistoEtaPhiJetPi0Cand                    = new TH2F*[fnCuts];
+      fHistoEtaPhiJetWithPi0Cand                = new TH2F*[fnCuts];
+      fHistoJetFragmFunc                        = new TH2F*[fnCuts];
+      fHistoJetFragmFuncZInvMass                = new TH2F*[fnCuts];
+    }
+  }
   if (fEnableClusterCutsForTrigger){
     fHistoCaloGammaPt           = new TH1F*[fnCuts];
     fHistoCaloGammaE            = new TH1F*[fnCuts];
@@ -1025,6 +1257,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoVertexZ[iCut]);
     }
 
+    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+      fHistoEventSphericity[iCut]     = new TH1F("EventSphericity", "EventSphericity", 100, 0, 1);
+      fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
+      fESDList[iCut]->Add(fHistoEventSphericity[iCut]);
+      fV0Reader->SetCalcSphericity(kTRUE);
+    }
+
     if(fDoPlotVsCentrality){
       fHistoCentrality[iCut]                 = new TH1F("Centrality", "Centrality", 100, -0.5, 99.5);
       fESDList[iCut]->Add(fHistoCentrality[iCut]);
@@ -1069,15 +1308,33 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
     }
 
+    if(fEnableBDT){
+      fHistoBDToutput[iCut] = new TH1F("BDT_output", "BDT_output", 200, -1, 1);
+      fESDList[iCut]->Add(fHistoBDToutput[iCut]);
+
+      fHistoBDToutputPt[iCut] = new TH1F("BDT_ConvGamma_Pt", "BDT_ESD_ConvGamma_Pt", nBinsPt, arrPtBinning);
+      fESDList[iCut]->Add(fHistoBDToutputPt[iCut]);
+    }
+
     fHistoEtaShift[iCut]               = new TProfile("Eta Shift", "Eta Shift", 1, -0.5, 0.5);
     fESDList[iCut]->Add(fHistoEtaShift[iCut]);
 
     fHistoConvGammaPt[iCut]         = new TH1F("ESD_ConvGamma_Pt", "ESD_ConvGamma_Pt", nBinsPt, arrPtBinning);
     if(fDoCentralityFlat > 0 ) fHistoConvGammaPt[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
+    if(fDoHighPtHadronAnalysis){
+      fHistoConvGammaPtwithHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withHighPtHadron", "ESD_ConvGamma_Pt_withHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
+      fESDList[iCut]->Add(fHistoConvGammaPtwithHighPtHadron[iCut]);
+      fHistoConvGammaPtwithoutHighPtHadron[iCut]         = new TH2F("ESD_ConvGamma_Pt_withoutHighPtHadron", "ESD_ConvGamma_Pt_withoutHighPtHadron", nBinsPt, arrPtBinning, nTracks, 0, nTracks);
+      fESDList[iCut]->Add(fHistoConvGammaPtwithoutHighPtHadron[iCut]);
+    }
 
     if (  (fIsMC > 1) || (fIsMC>0 && fDoMaterialBudgetWeightingOfGammasForTrueMesons) ) {
       fHistoConvGammaPt[iCut]->Sumw2();
+      if(fDoHighPtHadronAnalysis){
+        fHistoConvGammaPtwithHighPtHadron[iCut]->Sumw2();
+        fHistoConvGammaPtwithoutHighPtHadron[iCut]->Sumw2();
+      }
     }
 
     if (fIsMC > 1){
@@ -1087,6 +1344,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoEtaShift[iCut]->Sumw2();
       if(fDoPlotVsCentrality){
         fHistoCentrality[iCut]->Sumw2();
+      }
+      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+        fHistoEventSphericity[iCut]->Sumw2();
       }
     }
 
@@ -1102,7 +1362,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
 
     if ((fDoPhotonQA == 2)||(fDoPhotonQA == 5)){
-      tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      if(fDoMaterialBudgetWeightingOfGammasForTrueMesons && fIsMC > 0){
+	tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s MBW Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+       }else {
+	tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      }
       tESDConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("cat",&iCatPhoton,"iCatPhoton/b");
@@ -1153,8 +1417,41 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMotherInvMassEalpha[iCut]->Sumw2();
       }
 
+      if(fDoIsolatedAnalysis){
+        fHistoMotherInvMassPtIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_Iso", "ESD_Mother_InvMass_Pt_Iso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtIso[iCut]);
+        fHistoMotherInvMassPtNonIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_NonIso", "ESD_Mother_InvMass_Pt_NonIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtNonIso[iCut]);
+        fHistoMotherEisoPt[iCut]   = new TH2F("ESD_Mother_EIso_Pt", "ESD_Mother_EIso_Pt", 400, 0, 40, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherEisoPt[iCut]);
+        fHistoMotherRisoPt[iCut]   = new TH2F("ESD_Mother_RIso_Pt", "ESD_Mother_RIso_Pt", 800, 0, 8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherRisoPt[iCut]);
+        fHistoMotherNtracksIsoPt[iCut]   = new TH2F("ESD_Mother_NTracksIso_Pt", "ESD_Mother_NTracksIso_Pt", 100, 0, 100, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherNtracksIsoPt[iCut]);
+        if (fIsMC > 0 ){
+          fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", "ESD_Mother_InvMass_Pt_MCRecIsoTrueNonIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fESDList[iCut]->Add(fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]);
+          fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", "ESD_Mother_InvMass_Pt_MCRecNonIsoTrueIso", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fESDList[iCut]->Add(fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]);
+        }
+        if (fIsMC > 1 ){
+          fHistoMotherInvMassPtIso[iCut]->Sumw2();
+          fHistoMotherInvMassPtNonIso[iCut]->Sumw2();
+          fHistoMotherEisoPt[iCut]->Sumw2();
+          fHistoMotherRisoPt[iCut]->Sumw2();
+          fHistoMotherNtracksIsoPt[iCut]->Sumw2();
+          fHistoMotherInvMassPtMCRecIsoTrueNonIso[iCut]->Sumw2();
+          fHistoMotherInvMassPtMCRecNonIsoTrueIso[iCut]->Sumw2();
+        }
+      }
+
       if(fDoMesonQA == 2){
-        tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	if(fDoMaterialBudgetWeightingOfGammasForTrueMesons && fIsMC > 0){
+	  tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s MBW Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	}else {
+	  tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+	}
+
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("InvMass",&fInvMass,"fInvMass/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("Pt",&fPt,"fPt/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("DcaZMin",&fDCAzGammaMin,"fDCAzGammaMin/F");
@@ -1188,6 +1485,47 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fDoMesonQA == 3){
         sPtRDeltaROpenAngle[iCut]   = new THnSparseF("PhotonPair_Pt_R_DeltaR_OpenAngle", "PhotonPair_Pt_R_DeltaR_OpenAngle", nDim2, nBins2, xMin2, xMax2);
         fESDList[iCut]->Add(sPtRDeltaROpenAngle[iCut]);
+      }
+    }
+    if(fDoJetAnalysis){
+
+      fJetHistograms[iCut] = new TList();
+      fJetHistograms[iCut]->SetOwner(kTRUE);
+      fJetHistograms[iCut]->SetName(Form("%s_%s_%s Jet histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+
+      fHistoPtJet[iCut] = new TH1F("JetPt", "JetPt", 150, 0, 150);
+      fJetHistograms[iCut]->Add(fHistoPtJet[iCut]);
+      fHistoJetEta[iCut] = new TH1F("JetEta", "JetEta", 100, -1, 1);
+      fJetHistograms[iCut]->Add(fHistoJetEta[iCut]);
+      fHistoJetPhi[iCut] = new TH1F("JetPhi", "JetPhi", 70, 0, 7);
+      fJetHistograms[iCut]->Add(fHistoJetPhi[iCut]);
+      fHistoJetArea[iCut] = new TH1F("JetArea", "JetArea", 50, 0, 1);
+      fJetHistograms[iCut]->Add(fHistoJetArea[iCut]);
+      fHistoNJets[iCut] = new TH1F("NJets", "NJets", 10, 0, 10);
+      fJetHistograms[iCut]->Add(fHistoNJets[iCut]);
+      fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 5, 0, 5);
+      fJetHistograms[iCut]->Add(fHistoEventwJets[iCut]);
+      if(!fDoLightOutput){
+        fHistoJetPi0PtRatio[iCut] = new TH1F("Ratio_Pt_Pi0_Jet", "Ratio_Pt_Pi0_Jet", 20, 0, 1.5);
+        fJetHistograms[iCut]->Add(fHistoJetPi0PtRatio[iCut]);
+        fHistoJetMotherInvMassPt[iCut] = new TH2F("ESD_Pi0Jet_Mother_InvMass_Pt", "ESD_Pi0Jet_Mother_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fJetHistograms[iCut]->Add(fHistoJetMotherInvMassPt[iCut]);
+        fHistoEtaPhiJetPi0Cand[iCut] = new TH2F("Eta_Phi_Distr_Pi0Jet", "Eta_Phi_Distr_Pi0Jet", 20, 0, M_PI, 20, -1, 1);
+        fJetHistograms[iCut]->Add(fHistoEtaPhiJetPi0Cand[iCut]);
+        fHistoRJetPi0Cand[iCut] = new TH2F("ESD_RPi0Jet_Pt", "ESD_RPi0Jet_Pt", 35, 0, 3.5, nBinsPt, arrPtBinning);
+        fJetHistograms[iCut]->Add(fHistoRJetPi0Cand[iCut]);
+        fHistoPi0InJetMotherInvMassPt[iCut] = new TH2F("ESD_Pi0inJet_Mother_InvMass_Pt", "ESD_Pi0inJet_Mother_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fJetHistograms[iCut]->Add(fHistoPi0InJetMotherInvMassPt[iCut]);
+        fHistoMotherBackJetInvMassPt[iCut] = new TH2F("ESD_Jet_Background_InvMass_Pt", "ESD_Jet_Background_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fJetHistograms[iCut]->Add(fHistoMotherBackJetInvMassPt[iCut]);
+        fHistoEtaPhiJetWithPi0Cand[iCut] = new TH2F("Eta_Phi_Distr_Pi0inJet", "Eta_Phi_Distr_Pi0inJet", 15, 0, 0.4, 15, -0.4, 0.4);
+        fJetHistograms[iCut]->Add(fHistoEtaPhiJetWithPi0Cand[iCut]);
+        fHistoDoubleCounting[iCut] = new TH1F("Double_Counting_Mesons_Jets", "Double_Counting_Mesons_Jets", 6, 0, 6);
+        fJetHistograms[iCut]->Add(fHistoDoubleCounting[iCut]);
+        fHistoJetFragmFunc[iCut] = new TH2F("ESD_Pi0inJetPt_FragmentationFunc", "ESD_Pi0inJetPt_FragmentationFunc", 50, arrLogBinning, 150, 0., 150.);
+        fJetHistograms[iCut]->Add(fHistoJetFragmFunc[iCut]);
+        fHistoJetFragmFuncZInvMass[iCut] = new TH2F("ESD_Pi0inJetPt_Fragm_Z_InvMass", "ESD_Pi0inJetPt_Fragm_Z_InvMass", 800, 0, 0.8, 50, arrLogBinning);
+        fJetHistograms[iCut]->Add(fHistoJetFragmFuncZInvMass[iCut]);
       }
     }
 
@@ -1325,6 +1663,46 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
       }
     }
+    if(fDoJetAnalysis && !fDoLightOutput) {
+      fTrueJetHistograms                          = new TList*[fnCuts];
+      fHistoTruevsRecJetPt                        = new TH2F*[fnCuts];
+      fHistoTrueJetMotherInvMassPt                = new TH2F*[fnCuts];
+      fHistoTrueInJetMotherInvMassPt              = new TH2F*[fnCuts];
+      fHistoTruePrimaryJetInvMassPt               = new TH2F*[fnCuts];
+      fHistoTruePrimaryinJetInvMassPt             = new TH2F*[fnCuts];
+      fHistoTruePrimaryInJetInvMassTruePt         = new TH2F*[fnCuts];
+      fHistoTrueDoubleCountingJet                 = new TH1F*[fnCuts];
+      fHistoTrueJetFragmFunc                      = new TH2F*[fnCuts];
+      fHistoTrueJetFragmFuncZInvMass              = new TH2F*[fnCuts];
+      fHistoMCPi0JetInAccPt                       = new TH1F*[fnCuts];
+      fHistoMCPi0inJetInAccPt                     = new TH1F*[fnCuts];
+      fHistoMCPi0JetEventGenerated                = new TH1F*[fnCuts];
+      fHistoMCPi0inJetGenerated                   = new TH1F*[fnCuts];
+      fHistoTrueSecondaryFromK0sJetInvMassPt      = new TH2F*[fnCuts];
+      fHistoTrueSecondaryFromK0sinJetInvMassPt    = new TH2F*[fnCuts];
+      fHistoTrueSecondaryFromLambdaJetInvMassPt   = new TH2F*[fnCuts];
+      fHistoTrueSecondaryFromLambdainJetInvMassPt = new TH2F*[fnCuts];
+      fHistoTrueSecondaryFromK0lJetInvMassPt      = new TH2F*[fnCuts];
+      fHistoTrueSecondaryFromK0linJetInvMassPt    = new TH2F*[fnCuts];
+      fHistoTrueSecondaryInvJetMassPt             = new TH2F*[fnCuts];
+      fHistoTrueSecondaryInvinJetMassPt           = new TH2F*[fnCuts];
+      fHistoMCEtaJetInAccPt                       = new TH1F*[fnCuts];
+      fHistoMCEtainJetInAccPt                     = new TH1F*[fnCuts];
+      fHistoMCEtaJetEventGenerated                = new TH1F*[fnCuts];
+      fHistoMCEtainJetGenerated                   = new TH1F*[fnCuts];
+    }
+     if(fDoJetQA){
+        if(fDoLightOutput){
+          fTrueJetHistograms                           = new TList*[fnCuts];
+          fHistoTruevsRecJetPt                        = new TH2F*[fnCuts];
+        }
+        fHistoUnfoldingAsData                          = new TH2F*[fnCuts];
+        fHistoUnfoldingMissed                          = new TH2F*[fnCuts];
+        fHistoUnfoldingReject                          = new TH2F*[fnCuts];
+        fHistoUnfoldingAsDataInvMassZ                  = new TH2F*[fnCuts];
+        fHistoUnfoldingMissedInvMassZ                  = new TH2F*[fnCuts];
+        fHistoUnfoldingRejectInvMassZ                  = new TH2F*[fnCuts];
+      }
 
     for(Int_t iCut = 0; iCut<fnCuts;iCut++){
       TString cutstringEvent          = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -1507,6 +1885,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoMultipleCountTrueConvGamma[iCut]   = new TH1F("ESD_TrueMultipleCountConvGamma", "ESD_TrueMultipleCountConvGamma", 10, 1, 11);
       fTrueList[iCut]->Add(fHistoMultipleCountTrueConvGamma[iCut]);
 
+      if(fEnableBDT){
+        fHistoBDToutputMCTrue[iCut] = new TH1F("BDT_output_MCTrue", "BDT_output_MCTrue", 200, -1, 1);
+        fTrueList[iCut]->Add(fHistoBDToutputMCTrue[iCut]);
+      }
+
       fHistoCombinatorialPt[iCut]           = new TH2F("ESD_TrueCombinatorial_Pt", "ESD_TrueCombinatorial_Pt", nBinsPt, arrPtBinning, 16, -0.5, 15.5);
       fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 1,"Elec+Elec");
       fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 2,"Elec+Pion");
@@ -1613,6 +1996,84 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt[iCut]->Sumw2();
         fHistoTrueDalitzPsiPairDeltaPhi[iCut]->Sumw2();
         fHistoTrueGammaPsiPairDeltaPhi[iCut]->Sumw2();
+      }
+
+      if(fDoJetAnalysis && !fDoLightOutput){
+        fTrueJetHistograms[iCut] = new TList();
+        fTrueJetHistograms[iCut]->SetName(Form("%s_%s_%s True Jet histograms", cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+        fTrueJetHistograms[iCut]->SetOwner(kTRUE);
+        fCutFolder[iCut]->Add(fTrueJetHistograms[iCut]);
+        fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", 150, 0, 150, 150, 0, 150);
+        fTrueJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
+        fHistoTrueJetMotherInvMassPt[iCut] = new TH2F("ESD_True_Jet_InvMass_Pt", "ESD_True_Jet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueJetMotherInvMassPt[iCut]);
+        fHistoTruePrimaryJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryJet_InvMass_Pt", "ESD_TruePrimaryJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryJetInvMassPt[iCut]);
+        fHistoTrueInJetMotherInvMassPt[iCut] = new TH2F("ESD_True_inJet_InvMass_Pt", "ESD_True_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueInJetMotherInvMassPt[iCut]);
+        fHistoTruePrimaryinJetInvMassPt[iCut] = new TH2F("ESD_TruePrimaryinJet_InvMass_Pt", "ESD_TruePrimaryinJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTruePrimaryinJetInvMassPt[iCut]);
+        fHistoTrueDoubleCountingJet[iCut] = new TH1F("Double_Counting_True_inJet", "Double_Counting_True_inJet", 6, 0, 6);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueDoubleCountingJet[iCut]);
+        fHistoTrueJetFragmFunc[iCut] = new TH2F("ESD_TrueinJetPt_FragmentationFunc", "ESD_TrueinJetPt_FragmentationFunc", 50, arrLogBinning, 150, 0., 150.);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueJetFragmFunc[iCut]);
+        fHistoTrueJetFragmFuncZInvMass[iCut] = new TH2F("ESD_TrueinJetPt_Fragm_Z_InvMass", "ESD_TrueinJetPt_Fragm_Z_InvMass", 800, 0, 0.8, 50, arrLogBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueJetFragmFuncZInvMass[iCut]);
+        fHistoMCPi0JetInAccPt[iCut]      = new TH1F("MC_Pi0JetInAcc_Pt", "MC_Pi0JetInAcc_Pt", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetInAccPt[iCut]);
+        fHistoMCPi0inJetInAccPt[iCut]      = new TH1F("MC_Pi0inJetInAcc_Pt", "MC_Pi0inJetInAcc_Pt", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetInAccPt[iCut]);
+        fHistoMCPi0JetEventGenerated[iCut]    = new TH1F("MC_Pi0_JetEvent_Generated", "MC_Pi0_JetEvent_Generated", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetEventGenerated[iCut]);
+        fHistoMCPi0inJetGenerated[iCut]    = new TH1F("MC_Pi0_inJet_Generated", "MC_Pi0_inJet_Generated", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetGenerated[iCut]);
+        fHistoTrueSecondaryFromK0sJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromK0sJet_InvMass_Pt", "ESD_TrueSecondaryFromK0sJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromK0sJetInvMassPt[iCut]);
+        fHistoTrueSecondaryFromK0sinJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromK0s_inJet_InvMass_Pt", "ESD_TrueSecondaryFromK0s_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromK0sinJetInvMassPt[iCut]);
+        fHistoTrueSecondaryFromLambdaJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromLambdaJet_InvMass_Pt", "ESD_TrueSecondaryFromLambdaJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromLambdaJetInvMassPt[iCut]);
+        fHistoTrueSecondaryFromLambdainJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromLambda_inJet_InvMass_Pt", "ESD_TrueSecondaryFromLambda_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromLambdainJetInvMassPt[iCut]);
+        fHistoTrueSecondaryFromK0lJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromK0lJet_InvMass_Pt", "ESD_TrueSecondaryFromK0lJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromK0lJetInvMassPt[iCut]);
+        fHistoTrueSecondaryFromK0linJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryFromK0l_inJet_InvMass_Pt", "ESD_TrueSecondaryFromK0l_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryFromK0linJetInvMassPt[iCut]);
+        fHistoTrueSecondaryInvJetMassPt[iCut] = new TH2F("ESD_TrueSecondaryJet_InvMass_Pt", "ESD_TrueSecondaryJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryInvJetMassPt[iCut]);
+        fHistoTrueSecondaryInvinJetMassPt[iCut] = new TH2F("ESD_TrueSecondary_inJet_InvMass_Pt", "ESD_TrueSecondary_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryInvinJetMassPt[iCut]);
+        fHistoMCEtaJetInAccPt[iCut]      = new TH1F("MC_EtaJetInAcc_Pt", "MC_EtaJetInAcc_Pt", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetInAccPt[iCut]);
+        fHistoMCEtainJetInAccPt[iCut]      = new TH1F("MC_EtainJetInAcc_Pt", "MC_EtainJetInAcc_Pt", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetInAccPt[iCut]);
+        fHistoMCEtaJetEventGenerated[iCut]    = new TH1F("MC_Eta_JetEvent_Generated", "MC_Eta_JetEvent_Generated", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetEventGenerated[iCut]);
+        fHistoMCEtainJetGenerated[iCut]    = new TH1F("MC_Eta_inJet_Generated", "MC_Eta_inJet_Generated", nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetGenerated[iCut]);
+      }
+      if(fDoJetQA){
+        if(fDoLightOutput){
+          fTrueJetHistograms[iCut] = new TList();
+          fTrueJetHistograms[iCut]->SetName(Form("%s_%s_%s True Jet histograms", cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+          fTrueJetHistograms[iCut]->SetOwner(kTRUE);
+          fCutFolder[iCut]->Add(fTrueJetHistograms[iCut]);
+
+          fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", 150, 0, 150, 150, 0, 150);
+          fTrueJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
+        }
+        fHistoUnfoldingAsData[iCut]      = new TH2F("Unfolding_AsData", "Unfolding_AsData", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingAsData[iCut]);
+        fHistoUnfoldingMissed[iCut]      = new TH2F("Unfolding_Missed", "Unfolding_Missed", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingMissed[iCut]);
+        fHistoUnfoldingReject[iCut]      = new TH2F("Unfolding_Reject", "Unfolding_Reject", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingReject[iCut]);
+        fHistoUnfoldingAsDataInvMassZ[iCut]      = new TH2F("Unfolding_AsData_InvMass_Z", "Unfolding_AsData_InvMass_Z", 800, 0, 0.8, 50, arrLogBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingAsDataInvMassZ[iCut]);
+        fHistoUnfoldingMissedInvMassZ[iCut]      = new TH2F("Unfolding_Missed_InvMass_Z", "Unfolding_Missed_InvMass_Z", 800, 0, 0.8, 50, arrLogBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingMissedInvMassZ[iCut]);
+        fHistoUnfoldingRejectInvMassZ[iCut]      = new TH2F("Unfolding_Reject_InvMass_Z", "Unfolding_Reject_InvMass_Z", 800, 0, 0.8, 50, arrLogBinning);
+        fTrueJetHistograms[iCut]->Add(fHistoUnfoldingRejectInvMassZ[iCut]);
       }
 
       if (fDoPhotonQA > 0 ){
@@ -1769,6 +2230,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
       }
     }
+    if(fDoJetAnalysis){
+      fCutFolder[iCut]->Add(fJetHistograms[iCut]);
+    }
     if (fEnableClusterCutsForTrigger){
       if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms()){
@@ -1898,7 +2362,8 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
     if( fIsMC > 0 ){
       fWeightJetJetMC       = 1;
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , fInputEvent);
+      Float_t pthard = -1;
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC , pthard, fInputEvent);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
@@ -1928,38 +2393,48 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       continue;
     }
 
-    fHistoNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC); // Should be 0 here
-    if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
-    if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC); // Should be 0 here
+    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+        if(fV0Reader->GetSphericity() != -1 && fV0Reader->GetSphericity() != 0){
+          fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
+          fHistoNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC); // Should be 0 here
+          if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
+          fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fWeightJetJetMC);
+          fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(),fWeightJetJetMC);
+        }
+    } else {
+      fHistoNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC); // Should be 0 here
+      if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
+      if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC); // Should be 0 here
 
-    fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fWeightJetJetMC);
-    if(fDoCentralityFlat > 0) fHistoNGoodESDTracksWeighted[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
+      fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoNGoodESDTracksWeighted[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-    fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(),fWeightJetJetMC);
-    if(fDoCentralityFlat > 0) fHistoVertexZWeighted[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightCentrality[iCut]*fWeightJetJetMC);
+      fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(),fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoVertexZWeighted[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-    if(fDoPlotVsCentrality) fHistoCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fWeightJetJetMC);
-    if(fDoCentralityFlat > 0) fHistoCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
+      if(fDoPlotVsCentrality) fHistoCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
 
-    if(fDoCentralityFlat > 0) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
-    else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+      if(fDoCentralityFlat > 0) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
+      else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
 
-    if(!fDoLightOutput){
-      if( fIsMC < 2 ){
-	if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
-	else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
-      }
+      if(!fDoLightOutput){
+        if( fIsMC < 2 ){
+          if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
+          else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
+        }
 
-      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2){
-	fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A());
-      } else {
-	fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
-      }
-      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
-      else if(fDoCentralityFlat > 0){
-	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightCentrality[iCut]*fWeightJetJetMC);
-      } else {
-	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightJetJetMC);
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2){
+          fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A());
+        } else {
+          fHistoV0MultVsNumberTPCoutTracks[iCut]->Fill(fV0Reader->GetNumberOfTPCoutTracks(), fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+        }
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2) fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(),fWeightJetJetMC);
+        else if(fDoCentralityFlat > 0){
+          fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightCentrality[iCut]*fWeightJetJetMC);
+        } else {
+          fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightJetJetMC);
+        }
       }
     }
 
@@ -2003,6 +2478,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     }
 
     ProcessPhotonCandidates(); // Process this cuts gammas
+    if(fEnableBDT) ProcessPhotonBDT(); //
+    if(fDoJetAnalysis)   ProcessJets(); //Process jets
+    if(fDoHighPtHadronAnalysis) ProcessPhotonsHighPtHadronAnalysis();
 
     if(!fDoLightOutput){
       if(fDoCentralityFlat > 0){
@@ -2035,6 +2513,8 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
         if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
           CalculateBackground(); // Combinatorial Background
           UpdateEventByEventData(); // Store Event for mixed Events
+        } else if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 2){
+          CalculateBackgroundSwapp();
         } else {
           CalculateBackgroundRP(); // Combinatorial Background
           fBGHandlerRP[iCut]->AddEvent(fGammaCandidates,fInputEvent); // Store Event for mixed Events
@@ -2092,7 +2572,11 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
       weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
     }
-
+    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetDoElecDeDxPostCalibration()){
+      if(!(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber()))){
+        AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
+      }
+    }
 
     if( fIsMC > 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
       Int_t isPosFromMBHeader
@@ -2342,6 +2826,185 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   GammaCandidatesStepTwo = 0x0;
 
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::ProcessJets()
+{
+  fHistoNJets[fiCut]->Fill(fConvJetReader->GetNJets());
+  if(fConvJetReader->GetNJets()>0){
+    fVectorJetPt  = fConvJetReader->GetVectorJetPt();
+    fVectorJetPx  = fConvJetReader->GetVectorJetPx();
+    fVectorJetPy  = fConvJetReader->GetVectorJetPy();
+    fVectorJetPz  = fConvJetReader->GetVectorJetPz();
+    fVectorJetEta = fConvJetReader->GetVectorJetEta();
+    fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
+    fVectorJetArea = fConvJetReader->GetVectorJetArea();
+    if(fIsMC > 0 && fConvJetReader->GetTrueNJets()>0){
+      fTrueVectorJetPt = fConvJetReader->GetTrueVectorJetPt();
+      fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+      fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+    }
+    if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
+      for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
+        fHistoPtJet[fiCut]->Fill(fVectorJetPt.at(i));
+        fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i));
+        fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i));
+        fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i));
+        if(!fDoJetQA) fHistoEventwJets[fiCut]->Fill(0);
+        if(fIsMC > 0 && fConvJetReader->GetNJets()>0 && fConvJetReader->GetTrueNJets()>0){
+          Double_t min = 100;
+          Int_t match = 0;
+          for(Int_t j = 0; j<fConvJetReader->GetTrueNJets(); j++){
+            Double_t R_jetjet;
+            Double_t DeltaEta = fVectorJetEta.at(i)-fTrueVectorJetEta.at(j);
+            Double_t DeltaPhi = abs(fVectorJetPhi.at(i)-fTrueVectorJetPhi.at(j));
+            if(DeltaPhi > M_PI) {
+              DeltaPhi = 2*M_PI - DeltaPhi;
+            }
+            R_jetjet = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+            if(R_jetjet < min){
+              min = R_jetjet;
+              match = j;
+            }
+          }
+          if(!fDoLightOutput || (fDoLightOutput && fDoJetQA)) fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
+          if(fDoJetQA){
+            if(fVectorJetPt.at(i) >= 10) fHistoEventwJets[fiCut]->Fill(0);
+            if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) >= 10) fHistoEventwJets[fiCut]->Fill(1);
+            if(fVectorJetPt.at(i) >= 10 && fTrueVectorJetPt.at(match) < 10) fHistoEventwJets[fiCut]->Fill(2);
+          }
+        }
+      }
+    }
+    fVectorJetPt.clear();
+    fVectorJetPx.clear();
+    fVectorJetPy.clear();
+    fVectorJetPz.clear();
+    fVectorJetEta.clear();
+    fVectorJetPhi.clear();
+    fVectorJetArea.clear();
+    if(fIsMC > 0 && fConvJetReader->GetTrueNJets()>0){
+      fTrueVectorJetPt.clear();
+      fTrueVectorJetEta.clear();
+      fTrueVectorJetPhi.clear();
+    }
+  }
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::ProcessPhotonsHighPtHadronAnalysis()
+{
+  Bool_t DoesEventContainHighPtHadron = kFALSE;
+  Double_t NTotalTracks = fInputEvent->GetNumberOfTracks();
+  Int_t NTracks = 0;
+  for(Int_t iTracks = 0; iTracks<NTotalTracks; iTracks++){
+    AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+    if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+    if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+    if(TMath::Abs(curTrack->Eta())>0.8) continue;
+    if(curTrack->Pt()<0.15) continue;
+    if(curTrack->Pt()>10) DoesEventContainHighPtHadron = kTRUE;
+    NTracks++;
+  }
+  if(fGammaCandidates->GetEntries()>1){
+    for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+      AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+      if(gamma==NULL) continue;
+      if(DoesEventContainHighPtHadron){
+        fHistoConvGammaPtwithHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
+      } else {
+        fHistoConvGammaPtwithoutHighPtHadron[fiCut]->Fill(gamma->Pt(),NTracks);
+      }
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::InitializeBDT()
+{
+
+    // This loads the library
+   TMVA::Tools::Instance();
+   fBDTreader = new TMVA::Reader( "!Color:!Silent" );
+
+   fBDTvariable  = new Float_t[18];
+   for(Int_t i=0; i<18; i++){
+     fBDTvariable[i] = 0;
+   }
+
+   // add variables
+   fBDTreader->AddVariable( "dEdxElectronITS + dEdxPositronITS" , &fBDTvariable[0] );
+   fBDTreader->AddVariable( "photonQt"                          , &fBDTvariable[1] );
+   fBDTreader->AddVariable( "photonInvMass"                     , &fBDTvariable[2] );
+   fBDTreader->AddVariable( "photonR"                           , &fBDTvariable[3] );
+   fBDTreader->AddVariable( "photonAlpha"                       , &fBDTvariable[4] );
+   fBDTreader->AddVariable( "photonPsiPair"                     , &fBDTvariable[5] );
+   fBDTreader->AddVariable( "photonCosPoint"                    , &fBDTvariable[6] );
+   fBDTreader->AddVariable( "fracClsTPCPositron"                , &fBDTvariable[7] );
+   fBDTreader->AddVariable( "fracClsTPCElectron"                , &fBDTvariable[8] );
+   fBDTreader->AddVariable( "clsITSPositron"                    , &fBDTvariable[9] );
+   fBDTreader->AddVariable( "clsITSElectron"                    , &fBDTvariable[10] );
+   fBDTreader->AddVariable( "nSigmaTPCElectron"                 , &fBDTvariable[11] );
+   fBDTreader->AddVariable( "nSigmaTPCPositron"                 , &fBDTvariable[12] );
+   // add spectators like in the training
+   fBDTreader->AddSpectator( "photonPt", &fBDTvariable[13] );
+   fBDTreader->AddSpectator( "kind", &fBDTvariable[14] );
+   fBDTreader->AddSpectator( "photonEta", &fBDTvariable[15] );
+   fBDTreader->AddSpectator( "photonP", &fBDTvariable[16] );
+   fBDTreader->AddSpectator( "photonPhi", &fBDTvariable[17] );
+
+   fBDTreader->BookMVA( "BDT method", fFileNameBDT.Data());
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
+{
+  // Loop over Photon Candidates allocated by ReaderV1
+  for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
+    AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
+    if(!PhotonCandidate) continue;
+
+    Float_t SingleTrackBDTVariableValues[7];
+    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetBDTVariableValues(PhotonCandidate,fInputEvent, SingleTrackBDTVariableValues)){
+      fBDTvariable[0] = SingleTrackBDTVariableValues[0]; //"dEdxElectronITS + dEdxPositronITS"
+      fBDTvariable[1] = PhotonCandidate->GetArmenterosQt(); //"photonQt"
+      fBDTvariable[2] = GetOriginalInvMass(PhotonCandidate,fInputEvent); //"photonInvMass"
+      fBDTvariable[3] = PhotonCandidate->GetConversionRadius(); //"photonR"
+      fBDTvariable[4] = PhotonCandidate->GetArmenterosAlpha(); //"photonAlpha"
+      fBDTvariable[5] = PhotonCandidate->GetPsiPair(); //"photonPsiPair"
+      fBDTvariable[6] = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCosineOfPointingAngle(PhotonCandidate,fInputEvent); //"photonCosPoint"
+      fBDTvariable[7] = SingleTrackBDTVariableValues[1]; //"fracClsTPCPositron"
+      fBDTvariable[8] = SingleTrackBDTVariableValues[2]; //"fracClsTPCElectron"
+      fBDTvariable[9] = SingleTrackBDTVariableValues[3]; //"clsITSPositron"
+      fBDTvariable[10] = SingleTrackBDTVariableValues[4]; //"clsITSElectron"
+      fBDTvariable[11] = SingleTrackBDTVariableValues[5]; //"nSigmaTPCElectron"
+      fBDTvariable[12] = SingleTrackBDTVariableValues[6]; //"nSigmaTPCPositron"
+
+      //Here we want to see the BDT output value
+      Float_t BDToutput = fBDTreader->EvaluateMVA("BDT method");
+      fHistoBDToutput[fiCut]->Fill( BDToutput );
+      if(BDToutput > 0.) fHistoBDToutputPt[fiCut]->Fill( PhotonCandidate->Pt() );
+
+      //going to check the BDT output if the current photon is a true conversion
+      if(fIsMC > 0){
+        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (AODMCTrackArray != NULL && PhotonCandidate != NULL){
+          AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelPositive());
+          AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelNegative());
+          if(posDaughter != NULL && negDaughter != NULL){
+              Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
+              if(posDaughter->GetMother() == negDaughter->GetMother()){
+                if((pdgCode[0]==11 && pdgCode[1]==11)&&  posDaughter->GetPdgCode()!=negDaughter->GetPdgCode()){
+                  AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+                  if(Photon->GetPdgCode() == 22) fHistoBDToutputMCTrue[fiCut]->Fill( BDToutput );
+                }
+              }
+          }
+        }
+      }
+
+    }
+  }
+}
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
 {
@@ -2514,7 +3177,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversion
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate)
 {
-
   Double_t magField = fInputEvent->GetMagneticField();
   if( magField  < 0.0 ){
     magField =  1.0;
@@ -2730,7 +3392,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
         }
         if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kTRUE)){
           Double_t rConv = 0;
-          for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
+          for(Int_t daughterIndex=particle->GetDaughterLabel(0);daughterIndex<=particle->GetDaughterLabel(1);daughterIndex++){
             AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
             if(!tmpDaughter) continue;
             if(TMath::Abs(tmpDaughter->GetPdgCode()) == 11){
@@ -2755,7 +3417,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
           }
 
-          if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+          if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
             } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -2780,8 +3442,8 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
           }
 
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
             Float_t weighted= 1;
 	    if (particle->Pt()>0.005){
 	      weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(i, 0x0, fInputEvent);
@@ -2805,7 +3467,31 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
             }
 
             if(particle->GetPdgCode() == 111){
-              fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoMCPi0inJetGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                        else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
               fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
               if ( fIsMC > 1 ) fHistoMCPi0WOEvtWeightPt[fiCut]->Fill(particle->Pt());
               if (fDoMesonQA > 0){
@@ -2814,7 +3500,31 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
                 if ( fIsMC == 2 ) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
               }
             } else if(particle->GetPdgCode() == 221){
-              fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                        else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
               fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
               if ( fIsMC > 1 ) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
               if (fDoMesonQA > 0){
@@ -2833,11 +3543,59 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
               if(particle->GetPdgCode() == 111){
                 if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
                 fHistoMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
-                fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                if(fDoJetAnalysis){
+                  if(fConvJetReader->GetTrueNJets()>0){
+                    if(!fDoLightOutput) fHistoMCPi0JetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                    fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                    fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                    Double_t RJetPi0Cand;
+                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                      if(DeltaPhi > M_PI) {
+                        DeltaPhi = 2*M_PI - DeltaPhi;
+                      }
+                      RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                      if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                          if(!fDoLightOutput) fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                          else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                        }
+                      }
+                    }
+                    fTrueVectorJetEta.clear();
+                    fTrueVectorJetPhi.clear();
+                  }
+                }
               } else if(particle->GetPdgCode() == 221){
                 if(fIsMC > 1) fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
                 fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
-                fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+                if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+                if(fDoJetAnalysis){
+                  if(fConvJetReader->GetTrueNJets()>0){
+                    if(!fDoLightOutput) fHistoMCEtaJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                    fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                    fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                    Double_t RJetPi0Cand;
+                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                      if(DeltaPhi > M_PI) {
+                        DeltaPhi = 2*M_PI - DeltaPhi;
+                      }
+                      RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                      if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                          if(!fDoLightOutput) fHistoMCEtainJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                          else fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                        }
+                      }
+                    }
+                    fTrueVectorJetEta.clear();
+                    fTrueVectorJetPhi.clear();
+                  }
+                }
               }
             }
           }
@@ -2901,8 +3659,8 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 
         if(fDoMesonAnalysis){
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+            AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+            AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
             AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
             Int_t pdgCode         = mother->GetPdgCode();
             if(particle->GetPdgCode() == 111){
@@ -3002,7 +3760,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
           }
 
-          if (TMath::Abs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+          if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
             } else if ( particle->GetPdgCode() == -211 ){  // negative pions
@@ -3053,7 +3811,31 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
           }
 
           if(particle->GetPdgCode() == 111){
-            fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      if(!fDoLightOutput) fHistoMCPi0inJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                      else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCPi0WOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
@@ -3062,7 +3844,31 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
               if (fIsMC == 2) fHistoMCPi0PtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
             }
           } else if(particle->GetPdgCode() == 221){
-            fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      if(!fDoLightOutput) fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                      else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
@@ -3085,11 +3891,59 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             if(particle->GetPdgCode() == 111){
               if(fIsMC > 1) fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
               fHistoMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
-              fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
+                if(fDoJetAnalysis){
+                  if(fConvJetReader->GetTrueNJets()>0){
+                    if(!fDoLightOutput) fHistoMCPi0JetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                    fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                    fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                    Double_t RJetPi0Cand;
+                    for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+                      if(DeltaPhi > M_PI) {
+                        DeltaPhi = 2*M_PI - DeltaPhi;
+                      }
+                      RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                      if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                          if(!fDoLightOutput) fHistoMCPi0inJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                          else fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                        }
+                      }
+                    }
+                    fTrueVectorJetEta.clear();
+                    fTrueVectorJetPhi.clear();
+                  }
+                }
             } else if(particle->GetPdgCode() == 221){
               if(fIsMC > 1) fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
               fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
-              fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoMCEtaJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoMCEtainJetInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                        else fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
             }
           }
         }
@@ -3181,7 +4035,6 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
-
   // Conversion Gammas
   if(fGammaCandidates->GetEntries()>1){
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
@@ -3205,8 +4058,169 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           } else {
-            fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(),fWeightJetJetMC);
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+            if(fDoIsolatedAnalysis){
+              //Check if the pi0 is isolated
+              Double_t Iso_E_Pi0 = 0;
+              Double_t Iso_R_Pi0 = 0;
+              Int_t Iso_counter = 0;
+              //loop over all charged tracks
+              for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+                AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+                if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+                if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+                if(TMath::Abs(curTrack->Eta())>0.8) continue;
+                if(curTrack->Pt()<0.15) continue;
+                Double_t Iso_DeltaEta = curTrack->Eta()-pi0cand->Eta();
+                Double_t Iso_DeltaPhi = abs(curTrack->Phi()-pi0cand->Phi());
+                if(Iso_DeltaPhi > M_PI) {
+                  Iso_DeltaPhi = 2*M_PI - Iso_DeltaPhi;
+                }
+                Iso_R_Pi0 = TMath::Sqrt(pow((Iso_DeltaEta),2)+pow((Iso_DeltaPhi),2));
+                fHistoMotherRisoPt[fiCut]->Fill(Iso_R_Pi0,pi0cand->Pt());
+                if(Iso_R_Pi0 < 0.4){
+                  Iso_counter++;
+                  Iso_E_Pi0 += curTrack->E();
+                }
+              }
+              fHistoMotherEisoPt[fiCut]->Fill(Iso_E_Pi0,pi0cand->Pt());
+              if(Iso_E_Pi0 < 2){
+                //pi0 is isolated
+                fHistoMotherInvMassPtIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                fHistoMotherNtracksIsoPt[fiCut]->Fill(Iso_counter,pi0cand->Pt());
+              }else{
+                //pi0 is not isolated
+                fHistoMotherInvMassPtNonIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+              }
+              if(fIsMC>0){
+                //Check for MC true if the pi0 should be isolated or not
+                Double_t Iso_E_Pi0_True = 0;
+                Iso_R_Pi0 = 0;
+                //loop over all charged tracks
+                TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+                if (AODMCTrackArray == NULL) continue;
+                for(Long_t iTracks = 0; iTracks < AODMCTrackArray->GetEntriesFast(); iTracks++) {
+                  AliAODMCParticle* curTrack = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTracks));
+                  if (!curTrack) continue;
+                  if (!curTrack->IsPhysicalPrimary()) continue;
+                  if (!curTrack->Pt()) continue;
+                  if(curTrack->Charge()==0) continue;
+                  if(curTrack->Pt()<0.15) continue;
+                  if(TMath::Abs(curTrack->Eta())>0.8) continue;
+                  Double_t Iso_DeltaEta = curTrack->Eta()-pi0cand->Eta();
+                  Double_t Iso_DeltaPhi = abs(curTrack->Phi()-pi0cand->Phi());
+                  if(Iso_DeltaPhi > M_PI) {
+                    Iso_DeltaPhi = 2*M_PI - Iso_DeltaPhi;
+                  }
+                  Iso_R_Pi0 = TMath::Sqrt(pow((Iso_DeltaEta),2)+pow((Iso_DeltaPhi),2));
+                  if(Iso_R_Pi0 < 0.4){
+                    Iso_E_Pi0_True += curTrack->E();
+                  }
+                }
+                if(Iso_E_Pi0 < 2 && Iso_E_Pi0_True > 2){
+                  //pi0 rec is isolated, but using true particles not
+                  fHistoMotherInvMassPtMCRecIsoTrueNonIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                }else if(Iso_E_Pi0 > 2 && Iso_E_Pi0_True < 2){
+                  //pi0 rec is not isolated, but using true particles it is
+                  fHistoMotherInvMassPtMCRecNonIsoTrueIso[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                }
+              }
+            }
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetNJets()>0){
+                fVectorJetPt = fConvJetReader->GetVectorJetPt();
+                fVectorJetPx = fConvJetReader->GetVectorJetPx();
+                fVectorJetPy = fConvJetReader->GetVectorJetPy();
+                fVectorJetPz = fConvJetReader->GetVectorJetPz();
+                fVectorJetEta = fConvJetReader->GetVectorJetEta();
+                fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
+                if(!fDoLightOutput)  fHistoJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                Double_t RJetPi0Cand = 0;
+                if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets()){
+                  Int_t counter = 0;
+                  for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
+                    Double_t DeltaEta = fVectorJetEta.at(i)-pi0cand->Eta();
+                    Double_t DeltaPhi = abs(fVectorJetPhi.at(i)-pi0cand->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(!fDoLightOutput){
+                      fHistoEtaPhiJetPi0Cand[fiCut]->Fill(DeltaPhi,DeltaEta,fWeightJetJetMC);
+                      fHistoRJetPi0Cand[fiCut]->Fill(RJetPi0Cand,pi0cand->Pt(),fWeightJetJetMC);
+                    }
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        counter ++;
+                        if(!fDoLightOutput){
+                          fHistoPi0InJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                          fHistoEtaPhiJetWithPi0Cand[fiCut]->Fill(DeltaPhi, DeltaEta,fWeightJetJetMC);
+                          Double_t PtRatio = pi0cand->Pt()/(fVectorJetPt.at(i));
+                          fHistoJetPi0PtRatio[fiCut]->Fill(PtRatio);
+                          Double_t dotproduct = fVectorJetPx.at(i)*pi0cand->Px() + fVectorJetPy.at(i)*pi0cand->Py() + fVectorJetPz.at(i)*pi0cand->Pz();
+                          Double_t magn = pow(fVectorJetPx.at(i),2) + pow(fVectorJetPy.at(i),2) + pow(fVectorJetPz.at(i),2);
+                          Double_t z = dotproduct/magn;
+                          fHistoJetFragmFunc[fiCut]->Fill(z,fVectorJetPt.at(i), fWeightJetJetMC);
+                          fHistoJetFragmFuncZInvMass[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
+                        }
+                        else fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+
+                        if(fDoJetQA){
+                          if(fIsMC > 0 && fConvJetReader->GetTrueNJets()>0){
+                            fTrueVectorJetPt = fConvJetReader->GetTrueVectorJetPt();
+                            fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                            fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                            Double_t min = 100;
+                            Int_t match = 0;
+                            for(Int_t j = 0; j<fConvJetReader->GetTrueNJets(); j++){
+                              Double_t R_jetjet;
+                              DeltaEta = fVectorJetEta.at(i)-fTrueVectorJetEta.at(j);
+                              DeltaPhi = abs(fVectorJetPhi.at(i)-fTrueVectorJetPhi.at(j));
+                              if(DeltaPhi > M_PI) {
+                                DeltaPhi = 2*M_PI - DeltaPhi;
+                              }
+                              R_jetjet = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                              if(R_jetjet < min){
+                                min = R_jetjet;
+                                match = j;
+                              }
+                            }
+                            if(min < 0.3){
+                              Double_t dotproduct = fVectorJetPx.at(i)*pi0cand->Px() + fVectorJetPy.at(i)*pi0cand->Py() + fVectorJetPz.at(i)*pi0cand->Pz();
+                              Double_t magn = pow(fVectorJetPx.at(i),2) + pow(fVectorJetPy.at(i),2) + pow(fVectorJetPz.at(i),2);
+                              Double_t z = dotproduct/magn;
+                              if(fVectorJetPt.at(i) > 5){
+                                fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                                fHistoUnfoldingAsDataInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
+                              }
+                              if(fVectorJetPt.at(i) < 5 && fTrueVectorJetPt.at(match) > 5){
+                                fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                                fHistoUnfoldingMissedInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
+                              }
+                              if(fVectorJetPt.at(i) > 5 && fTrueVectorJetPt.at(match) < 5){
+                                fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+                                fHistoUnfoldingRejectInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
+                              }
+                            }
+                            fTrueVectorJetPt.clear();
+                            fTrueVectorJetEta.clear();
+                            fTrueVectorJetPhi.clear();
+                          }
+                        }
+                      }
+                    }
+                  }
+                  if(!fDoLightOutput) fHistoDoubleCounting[fiCut]->Fill(counter);
+                }
+              }
+              fVectorJetPt.clear();
+              fVectorJetPx.clear();
+              fVectorJetPy.clear();
+              fVectorJetPz.clear();
+              fVectorJetEta.clear();
+              fVectorJetPhi.clear();
+            }
           }
 
           if (fDoMesonQA > 0){
@@ -3249,7 +4263,7 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               sparesFill[1] = pi0cand->Pt();
               sparesFill[2] = (Double_t)zbin;
               sparesFill[3] = (Double_t)mbin;
-            } else {
+            } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() != 2){
               psibin = fBGHandlerRP[fiCut]->GetRPBinIndex(TMath::Abs(fEventPlaneAngle));
               zbin = fBGHandlerRP[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
 //               if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
@@ -3407,6 +4421,32 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
         }
 
         fHistoTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightMatBudget*fWeightJetJetMC);
+        if(fDoJetAnalysis && !fDoLightOutput){
+          if(fConvJetReader->GetTrueNJets()>0){
+            fHistoTrueJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC*weightMatBudget);
+            fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+            fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+            Double_t RJetPi0Cand;
+            Int_t counter = 0;
+            for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+              Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+              Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+              if(DeltaPhi > M_PI) {
+                DeltaPhi = 2*M_PI - DeltaPhi;
+              }
+              RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+              if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                  counter ++;
+                  fHistoTrueInJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+                }
+              }
+              fHistoTrueDoubleCountingJet[fiCut]->Fill(counter);
+            }
+            fTrueVectorJetEta.clear();
+            fTrueVectorJetPhi.clear();
+          }
+        }
         if (fDoMesonQA > 0){
           if (isTruePi0){
             if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
@@ -3437,17 +4477,89 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
             weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCEvent, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
             //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
           }
-          fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+          if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoTrueSecondaryInvJetMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoTrueSecondaryInvinJetMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                        else fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      }
+                    }
+                  }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
           iMesonMCInfo = 2;
           if (secMotherLabel >-1){
             if(fMCEvent->Particle(secMotherLabel)->GetPdgCode()==310){
               iMesonMCInfo = 4;
-              fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoTrueSecondaryFromK0sJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                      if(DeltaPhi > M_PI) {
+                        DeltaPhi = 2*M_PI - DeltaPhi;
+                      }
+                      RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                      if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                        if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                          if(!fDoLightOutput) fHistoTrueSecondaryFromK0sinJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                          else fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                        }
+                      }
+                    }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
               if (fDoMesonQA > 0 && fIsMC < 2 )fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(fMCEvent->Particle(secMotherLabel)->Pt());
             }
             if(fMCEvent->Particle(secMotherLabel)->GetPdgCode()==130){
               iMesonMCInfo = 8;
-              fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoTrueSecondaryFromK0lJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoTrueSecondaryFromK0linJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                        else fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
               if (fDoMesonQA > 0 && fIsMC < 2 )fHistoTrueK0lWithPi0DaughterMCPt[fiCut]->Fill(fMCEvent->Particle(secMotherLabel)->Pt());
             }
             if(fMCEvent->Particle(secMotherLabel)->GetPdgCode()==221){
@@ -3457,7 +4569,31 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
             }
             if(fMCEvent->Particle(secMotherLabel)->GetPdgCode()==3122){
               iMesonMCInfo = 7;
-              fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+              if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoTrueSecondaryFromLambdaJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoTrueSecondaryFromLambdainJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                        else fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
               if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(fMCEvent->Particle(secMotherLabel)->Pt());
             }
           }
@@ -3469,9 +4605,48 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidates(AliAODConversionMoth
 	    //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
 	  }
 
-          fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget*fWeightJetJetMC);
           fHistoTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
           pESDTruePrimaryMotherWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget*fWeightJetJetMC);
+          if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoTruePrimaryJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                fTrueVectorJetPt  = fConvJetReader->GetTrueVectorJetPt();
+                fTrueVectorJetPx  = fConvJetReader->GetTrueVectorJetPx();
+                fTrueVectorJetPy  = fConvJetReader->GetTrueVectorJetPy();
+                fTrueVectorJetPz  = fConvJetReader->GetTrueVectorJetPz();
+                Double_t RJetPi0Cand;
+                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      if(!fDoLightOutput){
+                        fHistoTruePrimaryinJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+                        Double_t dotproduct = fTrueVectorJetPx.at(i)*Pi0Candidate->Px() + fTrueVectorJetPy.at(i)*Pi0Candidate->Py() + fTrueVectorJetPz.at(i)*Pi0Candidate->Pz();
+                        Double_t magn = pow(fTrueVectorJetPx.at(i),2) + pow(fTrueVectorJetPy.at(i),2) + pow(fTrueVectorJetPz.at(i),2);
+                        Double_t z = dotproduct/magn;
+                        fHistoTrueJetFragmFunc[fiCut]->Fill(z,fTrueVectorJetPt.at(i), weighted*fWeightJetJetMC*weightMatBudget);
+                        fHistoTrueJetFragmFuncZInvMass[fiCut]->Fill(Pi0Candidate->M(), z, weighted*fWeightJetJetMC*weightMatBudget);
+                      }
+                      else fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+                fTrueVectorJetPt.clear();
+                fTrueVectorJetPx.clear();
+                fTrueVectorJetPy.clear();
+                fTrueVectorJetPz.clear();
+              }
+            }
 
 
           if (fDoMesonQA > 0 && fIsMC < 2){
@@ -3621,6 +4796,32 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       }
 
       fHistoTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightMatBudget*fWeightJetJetMC);
+      if(fDoJetAnalysis && !fDoLightOutput){
+        if(fConvJetReader->GetTrueNJets()>0){
+          fHistoTrueJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC*weightMatBudget);
+          fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+          fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+          Double_t RJetPi0Cand;
+          Int_t counter = 0;
+          for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+            Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+            Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+            if(DeltaPhi > M_PI) {
+              DeltaPhi = 2*M_PI - DeltaPhi;
+            }
+            RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+            if(fConvJetReader->Get_Jet_Radius() > 0 ){
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                counter ++;
+                fHistoTrueInJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC*weightMatBudget);
+              }
+            }
+            fHistoTrueDoubleCountingJet[fiCut]->Fill(counter);
+          }
+          fTrueVectorJetEta.clear();
+          fTrueVectorJetPhi.clear();
+        }
+      }
       if (fDoMesonQA > 0){
         if (isTruePi0){
           if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
@@ -3649,17 +4850,89 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
           weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
           //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
         }
-        fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+        if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+        if(fDoJetAnalysis){
+          if(fConvJetReader->GetTrueNJets()>0){
+            if(!fDoLightOutput) fHistoTrueSecondaryInvJetMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+            fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+            fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+            Double_t RJetPi0Cand;
+            for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+              Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+              Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+              if(DeltaPhi > M_PI) {
+                DeltaPhi = 2*M_PI - DeltaPhi;
+              }
+              RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+              if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                  if(!fDoLightOutput) fHistoTrueSecondaryInvinJetMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                  else fHistoTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                }
+              }
+            }
+            fTrueVectorJetEta.clear();
+            fTrueVectorJetPhi.clear();
+          }
+        }
         iMesonMCInfo = 2;
         if (secMotherLabel >-1){
           if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
             iMesonMCInfo = 4;
-            fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoTrueSecondaryFromK0sJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      if(!fDoLightOutput) fHistoTrueSecondaryFromK0sinJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      else fHistoTrueSecondaryMotherFromK0sInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0sWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
           }
           if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==130){
             iMesonMCInfo = 8;
-            fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                if(!fDoLightOutput) fHistoTrueSecondaryFromK0lJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      if(!fDoLightOutput) fHistoTrueSecondaryFromK0linJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      else fHistoTrueSecondaryMotherFromK0lInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueK0lWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
           }
           if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==221){
@@ -3669,7 +4942,31 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
           }
           if(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==3122){
             iMesonMCInfo = 7;
-            fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget*fWeightJetJetMC);
+            if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
+                  if(!fDoLightOutput) fHistoTrueSecondaryFromLambdaJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                  fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                  fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                  Double_t RJetPi0Cand;
+                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+                    if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                    }
+                    RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                    if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                      if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                        if(!fDoLightOutput) fHistoTrueSecondaryFromLambdainJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                        else fHistoTrueSecondaryMotherFromLambdaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*fWeightJetJetMC*weightMatBudget);
+                      }
+                    }
+                  }
+                  fTrueVectorJetEta.clear();
+                  fTrueVectorJetPhi.clear();
+                }
+              }
             if (fDoMesonQA > 0 && fIsMC < 2)fHistoTrueLambdaWithPi0DaughterMCPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->Pt());
           }
         }
@@ -3680,7 +4977,46 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
 	  weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, 0x0, fInputEvent);
           //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
 	}
-        fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget*fWeightJetJetMC);
+        if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+        if(fDoJetAnalysis){
+          if(fConvJetReader->GetTrueNJets()>0){
+            if(!fDoLightOutput) fHistoTruePrimaryJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+            fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+            fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+            fTrueVectorJetPt  = fConvJetReader->GetTrueVectorJetPt();
+            fTrueVectorJetPx  = fConvJetReader->GetTrueVectorJetPx();
+            fTrueVectorJetPy  = fConvJetReader->GetTrueVectorJetPy();
+            fTrueVectorJetPz  = fConvJetReader->GetTrueVectorJetPz();
+            Double_t RJetPi0Cand;
+            for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+              Double_t DeltaEta = fTrueVectorJetEta.at(i)-Pi0Candidate->Eta();
+              Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-Pi0Candidate->Phi());
+              if(DeltaPhi > M_PI) {
+                DeltaPhi = 2*M_PI - DeltaPhi;
+              }
+              RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+              if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                  if(!fDoLightOutput){
+                    fHistoTruePrimaryinJetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+                    Double_t dotproduct = fTrueVectorJetPx.at(i)*Pi0Candidate->Px() + fTrueVectorJetPy.at(i)*Pi0Candidate->Py() + fTrueVectorJetPz.at(i)*Pi0Candidate->Pz();
+                    Double_t magn = pow(fTrueVectorJetPx.at(i),2) + pow(fTrueVectorJetPy.at(i),2) + pow(fTrueVectorJetPz.at(i),2);
+                    Double_t z = dotproduct/magn;
+                    fHistoTrueJetFragmFunc[fiCut]->Fill(z,fTrueVectorJetPt.at(i), weighted*fWeightJetJetMC*weightMatBudget);
+                    fHistoTrueJetFragmFuncZInvMass[fiCut]->Fill(Pi0Candidate->M(), z, weighted*fWeightJetJetMC*weightMatBudget);
+                  }
+                  else fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
+                }
+              }
+            }
+            fTrueVectorJetEta.clear();
+            fTrueVectorJetPhi.clear();
+            fTrueVectorJetPt.clear();
+            fTrueVectorJetPx.clear();
+            fTrueVectorJetPy.clear();
+            fTrueVectorJetPz.clear();
+          }
+        }
         fHistoTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
         pESDTruePrimaryMotherWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget*fWeightJetJetMC);
 
@@ -3718,7 +5054,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculateBackground(){
-
   Int_t zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
   Int_t mbin = 0;
 
@@ -3831,7 +5166,15 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
             if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
               ->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
               if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
-              else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+              else{
+                  if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+                  if(fDoJetAnalysis){
+                  if(fConvJetReader->GetNJets() > 0){
+                    if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+                    else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+                  }
+                }
+              }
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                 if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, fWeightCentrality[fiCut]*fWeightJetJetMC); //instead of weight 1
@@ -3847,6 +5190,94 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
     }
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::CalculateBackgroundSwapp(){
+
+  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
+
+    Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
+
+    TLorentzVector lvRotationPhoton1;   // photon candidates which get rotated
+    TLorentzVector lvRotationPhoton2;   // photon candidates which get rotated
+    TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
+
+    std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
+    std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
+    vSwappingInvMassPT.clear();
+    vSwappingInvMassPTAlphaCut.clear();
+    vSwappingInvMassPT.resize(0);
+    vSwappingInvMassPTAlphaCut.resize(0);
+    Double_t tempMultWeightSwapping = 1; // weight taking multiplicity of event into account
+
+    // curcial requierment is that the event has at least 3 cluster candidates
+    if(fGammaCandidates->GetEntries() > 2 ){
+      for(Int_t iCurrent1=0;iCurrent1<fGammaCandidates->GetEntries();iCurrent1++){
+        AliAODConversionPhoton* currentEventGoodV0Temp1 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent1));
+        if(!currentEventGoodV0Temp1) continue;
+        for(Int_t iCurrent2=iCurrent1+1; iCurrent2 < fGammaCandidates->GetEntries();iCurrent2++){
+          AliAODConversionPhoton* currentEventGoodV0Temp2 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent2));
+          if(!currentEventGoodV0Temp2) continue;
+          for(int iSwapp = 0; iSwapp < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfSwappsForBg(); ++iSwapp){
+
+            lvRotationPhoton1.SetX(currentEventGoodV0Temp1->Px());
+            lvRotationPhoton1.SetY(currentEventGoodV0Temp1->Py());
+            lvRotationPhoton1.SetZ(currentEventGoodV0Temp1->Pz());
+            lvRotationPhoton1.SetE(currentEventGoodV0Temp1->E());
+
+            lvRotationPhoton2.SetX(currentEventGoodV0Temp2->Px());
+            lvRotationPhoton2.SetY(currentEventGoodV0Temp2->Py());
+            lvRotationPhoton2.SetZ(currentEventGoodV0Temp2->Pz());
+            lvRotationPhoton2.SetE(currentEventGoodV0Temp2->E());
+            lvRotationPion = (lvRotationPhoton1 + lvRotationPhoton2).Vect();
+
+            // rotate both photons around the momentum vector of their hypothetical mother particle
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
+              if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
+              else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
+                 Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
+                 rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
+              }
+              lvRotationPhoton1.Rotate(rotationAngle, lvRotationPion);
+              lvRotationPhoton2.Rotate(rotationAngle, lvRotationPion);
+            }
+            std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
+            std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
+            for(auto kCurrentGammaCandidates  : *fGammaCandidates){
+              if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentGammaCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentGammaCandidates)) continue;
+
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
+              std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
+              if( fabs(currentEventGoodV0Temp1->Eta()) <= ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetEtaCut())
+              {
+                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+                {
+                  vSwappingInvMassPT.push_back({backgroundCandidate1->M(),backgroundCandidate1->Pt()});
+                }
+              }
+              if( fabs(currentEventGoodV0Temp2->Eta()) <= ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetEtaCut())
+              {
+                if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+                {
+                  vSwappingInvMassPT.push_back({backgroundCandidate2->M(),backgroundCandidate2->Pt()});
+                }
+              }
+            }
+          }
+        }
+      }
+      // Fill the histograms
+      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPT.size() > 0){
+        tempMultWeightSwapping = (0.5*(fGammaCandidates->GetEntries()*fGammaCandidates->GetEntries() - fGammaCandidates->GetEntries()))/(vSwappingInvMassPT.size());
+      }
+      for(Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++){
+        if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightCentrality[fiCut]*fWeightJetJetMC);
+        else fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightJetJetMC);
+      }
+    }
+  }
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
@@ -3912,26 +5343,24 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
 
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
 
-                    AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
+          AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
 
-                    for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
-
-                        AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
-
-                        AliAODConversionMother backgroundCandidate(gamma0,gamma1);
-                        backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-                        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
-                            ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-                            if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+          for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
+            AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
+            AliAODConversionMother backgroundCandidate(gamma0,gamma1);
+            backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
+                ->MesonIsSelected(&backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+              if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
-                            if(fDoTHnSparse){
+              if(fDoTHnSparse){
 //                              Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
-                                Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)psibin};
-                                if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*fWeightCentrality[fiCut]*fWeightJetJetMC);
-                                else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*fWeightJetJetMC);
-                            }
-                        }
-                    }
+                  Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)psibin};
+                  if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*fWeightCentrality[fiCut]*fWeightJetJetMC);
+                  else sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,weight*fWeightJetJetMC);
+              }
+            }
+          }
         }
       }
     }
@@ -3970,7 +5399,8 @@ void AliAnalysisTaskGammaConvV1::MoveParticleAccordingToVertex(AliAODConversionP
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::UpdateEventByEventData(){
   //see header file for documentation
-  if(fGammaCandidates->GetEntries() >0 ){
+  if(fDoJetAnalysis && fConvJetReader->GetNJets() == 0) return;
+  if(fGammaCandidates->GetEntries() >1 ){
     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
     }
@@ -4415,7 +5845,7 @@ void AliAnalysisTaskGammaConvV1::ProcessClusters(){
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 
     // Flag Photon as CaloPhoton
-    PhotonCandidate->SetIsCaloPhoton();
+    PhotonCandidate->SetIsCaloPhoton(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType());
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
 
     fHistoCaloGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);

@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <TObject.h>
+#include "AliEmcalStringView.h"
 
 namespace PWG {
 
@@ -69,7 +70,7 @@ public:
    * @return true Trigger class matches
    * @return false Trigger class does not match
    */
-  bool IsTriggerClass(const std::string &triggerclass) const;
+  bool IsTriggerClass(EMCAL_STRINGVIEW triggerclass) const;
 
   const std::string &Triggerclass() const { return fTriggerClass; }
   const std::string &BunchCrossing() const { return fBunchCrossing; }
@@ -87,7 +88,7 @@ public:
    * @param triggerstring Valid trigger class string
    * @return std::vector<Triggerinfo> Trigger info objects for all trigger classes found in the trigger string
    */
-  static std::vector<PWG::EMCAL::Triggerinfo> DecodeTriggerString(const std::string &triggerstring);
+  static std::vector<PWG::EMCAL::Triggerinfo> DecodeTriggerString(EMCAL_STRINGVIEW triggerstring);
 private:
   std::string fTriggerClass;              ///< Trigger class
   std::string fBunchCrossing;             ///< Bunch crossing type

@@ -34,7 +34,6 @@
 #include <TProfile.h>
 
 class TH1I;
-class TParticle ;
 class TFile ;
 class TClonesArray ;
 class AliCFManager;
@@ -233,6 +232,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL8overLHC15l2a2();
   void SetPtWeightsFromFONLL13overLHC17c3a12();
 
+  void SetPtWeightsFDFromFONLL5anddataoverLHC19c3a();
+  void SetPtWeightsFDFromFONLL5anddataoverLHC19c3b();
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5andLBToverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC16i2abc();
@@ -273,9 +274,11 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t GetFillMinimumSteps() const {return fFillMinimumSteps;}
 
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
-  Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+  Float_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
   Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
+ 
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
@@ -339,9 +342,11 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
   Bool_t fFillMinimumSteps;   /// Skip filling the unneed steps for most of the analyses to save disk space
   Float_t fCutOnMomConservation; /// cut on momentum conservation
+  Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
+                                /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,26); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,27); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

@@ -20,13 +20,14 @@ class AliRsnMiniEvent;
 class AliRsnMiniPair : public TObject {
 public:
 
- AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
+ AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE), fPassesOOBPileupCut(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
    Long_t         &MotherPDG() {return fMotherPDG;}
    Bool_t         &IsFromB()      {return fIsFromB;}
    Bool_t         &IsQuarkFound() {return fIsQuarkFound;}
    Bool_t         &ContainsV0Daughter() {return fContainsV0Daughter;}
+   Bool_t         &PassesOOBPileupCut() {return fPassesOOBPileupCut;}
    Float_t        &PmotherX()  {return fPmother[0];}
    Float_t        &PmotherY()  {return fPmother[1];}
    Float_t        &PmotherZ()  {return fPmother[2];} 
@@ -53,6 +54,7 @@ public:
    Double_t        DipAngle(Bool_t mc)       const;
    Double_t        DeltaCos(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
+   Double_t        CosThetaStarAbs(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
    Double_t        CosThetaTransversity(Bool_t mc);
    Double_t        CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t mc);
@@ -64,6 +66,7 @@ public:
    Short_t         NSisters()  {return fNSisters;}
    Double_t        PairPtRes()              const;
    Double_t        PairYRes()               const;
+   Double_t        PairAsymmetry(Bool_t mc); 
 
  private:
    
@@ -82,6 +85,7 @@ public:
    Bool_t         fIsQuarkFound;      // is the particle from a quark flag (used to reject or accept Hijing event)
    Float_t        fPmother[3];// MC momentum of the pair corresponding mother
    Bool_t         fContainsV0Daughter; // Flag if one of particle is part of V0's daughter
+   Bool_t         fPassesOOBPileupCut; // At least one daughter passes the out-of-bunch pileup cut
    
    ClassDef(AliRsnMiniPair, 6)
      };

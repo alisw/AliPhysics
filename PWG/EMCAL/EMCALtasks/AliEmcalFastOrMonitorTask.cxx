@@ -55,9 +55,8 @@ ClassImp(PWG::EMCAL::AliEmcalFastOrMonitorTask)
 using namespace PWG::EMCAL;
 
 AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
-  AliAnalysisTaskSE(),
-  fHistos(nullptr),
-  fGeom(nullptr),
+  AliAnalysisTaskEmcal(),
+  fHistosQA(nullptr),
   fLocalInitialized(false),
   fOldRun(-1),
   fRequestTrigger(AliVEvent::kAny),
@@ -70,13 +69,12 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr)
 {
-
+  SetNeedEmcalGeom(kTRUE);
 }
 
 AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
-  AliAnalysisTaskSE(name),
-  fHistos(nullptr),
-  fGeom(nullptr),
+  AliAnalysisTaskEmcal(name, kTRUE),
+  fHistosQA(nullptr),
   fLocalInitialized(false),
   fOldRun(-1),
   fRequestTrigger(AliVEvent::kAny),
@@ -88,6 +86,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   fMaskedFastorOADB(nullptr),
   fMaskedCellOADB(nullptr)
 {
+  SetNeedEmcalGeom(kTRUE);
   DefineOutput(1, TList::Class());
 }
 
@@ -97,25 +96,29 @@ AliEmcalFastOrMonitorTask::~AliEmcalFastOrMonitorTask() {
 }
 
 void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
-  fHistos = new THistManager("fastOrHistos");
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  fHistosQA = new THistManager("fastOrHistos");
 
   const int kMaxCol = 48, kMaxRow = 104, kMaxFastOr = kMaxRow * kMaxCol;
 
-  fHistos->CreateTH1("hEvents", "Number of events", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hFastOrFrequencyL0", "FastOr frequency at Level0", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
-  fHistos->CreateTH1("hFastOrFrequencyL1", "FastOr frequency at Level1", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
-  fHistos->CreateTH2("hFastOrAmplitude", "FastOr amplitudes; FastOR Abs ID; Amplitude", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 513, -0.5, 512.5);
-  fHistos->CreateTH2("hFastOrTimeSum", "FastOr time sum; FastOR Abs ID; L0 time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
-  fHistos->CreateTH2("hFastOrTransverseTimeSum", "FastOr transverse time sum; FastOR Abs ID; L0 transverse time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
-  fHistos->CreateTH2("hFastOrNL0Times", "FastOr Number of L0 times; FastOR AbsID; Number of L0 times", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 16, -0.5, 15.5);
-  fHistos->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level0; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
-  fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level1; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
-  fHistos->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
+  fHistosQA->CreateTH1("hEvents", "Number of events", 1, 0.5, 1.5);
+  fHistosQA->CreateTH1("hFastOrFrequencyL0", "FastOr frequency at Level0", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
+  fHistosQA->CreateTH1("hFastOrFrequencyL1", "FastOr frequency at Level1", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
+  fHistosQA->CreateTH2("hFastOrAmplitude", "FastOr amplitudes; FastOR Abs ID; Amplitude", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 513, -0.5, 512.5);
+  fHistosQA->CreateTH2("hFastOrTimeSum", "FastOr time sum; FastOR Abs ID; L0 time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
+  fHistosQA->CreateTH2("hFastOrTransverseTimeSum", "FastOr transverse time sum; FastOR Abs ID; L0 transverse time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
+  fHistosQA->CreateTH2("hFastOrNL0Times", "FastOr Number of L0 times; FastOR AbsID; Number of L0 times", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 16, -0.5, 15.5);
+  fHistosQA->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level0; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
+  fHistosQA->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level1; col; row", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
+  fHistosQA->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
+  fHistosQA->CreateTH2("hEnergyFastorCellL0", "Sum of cell energy vs. fastor Energy (L0)", 1000, 0., 20., 1000 , 0., 20.);
+  fHistosQA->CreateTH2("hEnergyFastorCellL0Amp", "Sum of cell energy vs. fastor Amplitude (L0)", 1000, 0., 20., 1000 , 0., 1000.);
 
   // Helper histograms checking the mask status of cells and FastORs
-  fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
-  fHistos->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
-  fHistos->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
+  fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
+  fHistosQA->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
+  fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
 
   // THnSparse for fastor-by-fastor energy decalibration
   TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.), cellmaskaxis(5, -0.5, 4.5);
@@ -124,14 +127,21 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   offlineaxis.SetNameTitle("offlinenergy", "E_{2x2 cells} (GeV)");
   onlineaxis.SetNameTitle("onlineenergy", "E_{FastOR} (GeV)");
   cellmaskaxis.SetNameTitle("maskedcells", "Number of masked cells");
-  fHistos->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 4, sparseaxis);
+  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 4, sparseaxis);
+  fHistosQA->CreateTHnSparse("hFastOrEnergyOfflineOnlineL0", "FastOr Offline vs Online energy (L0)", 4, sparseaxis);
 
-  PostData(1, fHistos->GetListOfHistograms());
+  TAxis adcAxisL0(2101, -0.5, 2100.5), adcAxisL1(2101, -0.5, 2100.5);
+  const TAxis *adcaxes[3] = {&fastorIDAxis, &adcAxisL0, &adcAxisL1};
+  adcAxisL0.SetNameTitle("adcL0", "L0 ADC amplitude");
+  adcAxisL1.SetNameTitle("adcL1", "L1 ADC amplitude");
+  fHistosQA->CreateTHnSparse("hFastOrADCL0L1", "FastOR ADC in L0 and L1", 3, adcaxes);
+  
+
+  for(auto h : *(fHistosQA->GetListOfHistograms())) fOutput->Add(h);
+  PostData(1, fOutput);
 }
 
-void AliEmcalFastOrMonitorTask::ExecOnce(){
-  fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
-
+void AliEmcalFastOrMonitorTask::UserExecOnce(){
   int nrow = fGeom->GetTriggerMappingVersion() == 2 ? 104 : 64;
   fCellData.Allocate(48, nrow);
 
@@ -156,7 +166,7 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
       for(auto masked : *maskedfastors){
         TParameter<int> *fastOrAbsID = static_cast<TParameter<int> *>(masked);
         fMaskedFastors.push_back(fastOrAbsID->GetVal());
-        fHistos->FillTH1("hMaskedFastors", fastOrAbsID->GetVal());
+        fHistosQA->FillTH1("hMaskedFastors", fastOrAbsID->GetVal());
       }
       std::sort(fMaskedFastors.begin(), fMaskedFastors.end(), std::less<int>());
     }
@@ -179,7 +189,7 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
             if(modhist->GetBinContent(icol, irow) > 0.){
               int cellindex = fGeom->GetAbsCellIdFromCellIndexes(modid, irow, icol);
               fMaskedCells.push_back(cellindex);
-              fHistos->FillTH1("hMaskedCells", cellindex);
+              fHistosQA->FillTH1("hMaskedCells", cellindex);
             }
           }
         }
@@ -189,32 +199,19 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
   }
 }
 
-void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
-  if(!fLocalInitialized){
-    ExecOnce();
-    fLocalInitialized = true;
-  }
-
-  // Run change
-  if(InputEvent()->GetRunNumber() != fOldRun){
-    RunChanged(InputEvent()->GetRunNumber());
-    fOldRun = InputEvent()->GetRunNumber();
-  }
-
+bool AliEmcalFastOrMonitorTask::IsEventSelected() {
   // Check trigger
-  if(!(fInputHandler->IsEventSelected() & fRequestTrigger)) return;
+  if(!(fInputHandler->IsEventSelected() & fRequestTrigger)) return false;
   if(fTriggerPattern.Length()){
-    if(!TString(InputEvent()->GetFiredTriggerClasses()).Contains(fTriggerPattern)) return;
+    if(!TString(InputEvent()->GetFiredTriggerClasses()).Contains(fTriggerPattern)) return false;
   }
+  return true;
+}
 
-  const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
-  Double_t vtxpos[3];
-  vtx->GetXYZ(vtxpos);
-
+bool AliEmcalFastOrMonitorTask::Run() {
+  const Double_t kEMCL0ADCtoGeV = 0.018970588*4;
   LoadEventCellData();
-
-  fHistos->FillTH1("hEvents", 1);
-
+  fHistosQA->FillTH1("hEvents", 1);
   AliVCaloTrigger *triggerdata = InputEvent()->GetCaloTrigger("EMCAL");
   triggerdata->Reset();
   Int_t nl0times, l1timesum, fastOrID, globCol, globRow;
@@ -226,19 +223,21 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
     triggerdata->GetPosition(globCol, globRow);
     fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, fastOrID);
     if(amp > 1e-5){
-      fHistos->FillTH2("hFastOrColRowFrequencyL0", globCol, globRow);
-      fHistos->FillTH1("hFastOrFrequencyL0", fastOrID);
+      fHistosQA->FillTH2("hFastOrColRowFrequencyL0", globCol, globRow);
+      fHistosQA->FillTH1("hFastOrFrequencyL0", fastOrID);
     }
     if(l1timesum){
-      fHistos->FillTH2("hFastOrColRowFrequencyL1", globCol, globRow);
-      fHistos->FillTH1("hFastOrFrequencyL1", fastOrID);
+      fHistosQA->FillTH2("hFastOrColRowFrequencyL1", globCol, globRow);
+      fHistosQA->FillTH1("hFastOrFrequencyL1", fastOrID);
     }
     if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastOrID) == fMaskedFastors.end()){
-      fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
-      fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
-      fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
-      fHistos->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, vtxpos));
-      fHistos->FillTH2("hEnergyFastorCell", fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV);
+      fHistosQA->FillTH2("hFastOrAmplitude", fastOrID, amp);
+      fHistosQA->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
+      fHistosQA->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+      fHistosQA->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, fVertex));
+      fHistosQA->FillTH2("hEnergyFastorCell", fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV);
+      fHistosQA->FillTH2("hEnergyFastorCellL0", fCellData(globCol, globRow), amp * kEMCL0ADCtoGeV);
+      fHistosQA->FillTH2("hEnergyFastorCellL0Amp", fCellData(globCol, globRow), amp);
       int ncellmasked = 0;
       int fastorCells[4];
       fGeom->GetTriggerMapping()->GetCellIndexFromFastORIndex(fastOrID, fastorCells);
@@ -248,14 +247,21 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
       double energydata[4] = {
             static_cast<double>(fastOrID),
             fCellData(globCol, globRow),
-            l1timesum * EMCALTrigger::kEMCL1ADCtoGeV,
+            static_cast<double>(l1timesum) * EMCALTrigger::kEMCL1ADCtoGeV,
             static_cast<double>(ncellmasked)
       };
-      fHistos->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
+      fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
+      energydata[2] = amp * kEMCL0ADCtoGeV;
+      fHistosQA->FillTHnSparse("hFastOrEnergyOfflineOnlineL0", energydata);
+      double adcdata[3] = {
+            static_cast<double>(fastOrID),
+            amp * 4.,         // correction for the bit shift
+            static_cast<double>(l1timesum)
+      };
+      fHistosQA->FillTHnSparse("hFastOrADCL0L1", adcdata);
     }
   }
-
-  PostData(1, fHistos->GetListOfHistograms());
+  return true;
 }
 
 void AliEmcalFastOrMonitorTask::LoadEventCellData(){
@@ -265,7 +271,7 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
      int position = emccells->GetCellNumber(icell);
      double amplitude = emccells->GetAmplitude(icell);
      if(amplitude > 0){
-       fHistos->FillTH1("hCellEnergyCount", position);
+       fHistosQA->FillTH1("hCellEnergyCount", position);
        if(std::find(fMaskedCells.begin(), fMaskedCells.end(), position) != fMaskedCells.end()){
          AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
        }

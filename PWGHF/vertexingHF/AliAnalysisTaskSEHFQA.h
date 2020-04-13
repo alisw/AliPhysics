@@ -25,8 +25,6 @@
 class AliRDHFCuts;
 class TH1F;
 class AliAODEvent;
-class AliFlowEvent;
-class AliFlowTrackCuts;
 
 class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
 {
@@ -53,7 +51,6 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetPIDOn(Bool_t pidon=kTRUE){fOnOff[1]=pidon;}
   void SetCentralityOn(Bool_t centron=kTRUE){fOnOff[2]=centron;}
   void SetEvSelectionOn(Bool_t evselon=kTRUE){fOnOff[3]=evselon;}
-  void SetFlowObsOn(Bool_t flowobson=kTRUE){fOnOff[4]=flowobson;}
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
   void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
@@ -66,7 +63,6 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   Bool_t GetPIDStatus() const {return fOnOff[1];}
   Bool_t GetCentralityStatus() const {return fOnOff[2];}
   Bool_t GetEvSelStatus() const {return fOnOff[3];}
-  Bool_t GetFlowObsStatus() const {return fOnOff[4];}
   Bool_t GetUseSelectionBit() const {return fUseSelectionBit;}
   AliRDHFCuts::ECentrality GetSecondCentralityEstimator()const {return fEstimator;}
   Bool_t GetFillDistributionsForTrackEffChecks()const {return fFillDistrTrackEffChecks;}
@@ -74,7 +70,6 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
   AliAnalysisTaskSEHFQA operator=(const AliAnalysisTaskSEHFQA &source);
-  void FillFlowObs(AliAODEvent *aod);
 
  TList* fOutputEntries;    //!<! list sent on output slot 1
  TList* fOutputPID;        //!<! list sent on output slot 2
@@ -82,16 +77,13 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TList* fOutputCounters;   //!<! list sent on output slot 5
  TList* fOutputCheckCentrality;   //!<! list sent on output slot 6
  TList* fOutputEvSelection; //!<! list sent on output slot 7
- TList* fOutputFlowObs;    //!<! list sent on output slot 8
  DecChannel fDecayChannel; //identify the decay channel
  AliRDHFCuts* fCuts;       // object containing cuts 
- AliFlowEvent *fFlowEvent; //!<! to handle the reusage of the flowEvent object
- AliFlowTrackCuts *fRFPcuts; //!<! reference flow particle cuts
  AliRDHFCuts::ECentrality fEstimator; //2nd estimator for centrality
  Bool_t fReadMC;           /// flag to read MC
  Bool_t fSimpleMode;       /// if true, don't do candidates (much faster in PbPb)
  Bool_t fUseSelectionBit;  /// flag to use or not the selection bit
- Bool_t fOnOff[5];         /// on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
+ Bool_t fOnOff[4];         /// on-off the QA on tracks (0), PID (1), centrality (2), event selection (3) -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
  Bool_t fFillDistrTrackEffChecks;
  Int_t fAODProtection;     /// flag to activate protection against AOD-dAOD mismatch.
                            /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
@@ -243,15 +235,9 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHiszvtxvsSPDzvtx;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSel;                 //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHiszvtxvsSPDzvtxSelWithD;            //!<!  Histo. of output slot #7 (fOutputEvSelection)
- TH2F* fHisFEvents;                          //!<!  Histo. of output slot #8 (fOutputFlowObs)
- TH3F* fHisTPCVZE_AngleQ;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
- TH2F* fHisCentVsMultRPS;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
- TH2F* fHisAngleQ[3];                        //!<!  Histo. of output slot #8 (fOutputFlowObs)
- TH3F* fHisPhiEta[3];                        //!<!  Histo. of output slot #8 (fOutputFlowObs)
- TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,18); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,19); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

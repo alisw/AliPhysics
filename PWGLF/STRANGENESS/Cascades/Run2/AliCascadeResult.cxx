@@ -103,6 +103,7 @@ fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
 fCutIsCascadeCowboy(0)
 {
@@ -212,6 +213,7 @@ fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
 fCutIsCascadeCowboy(0)
 {
@@ -321,6 +323,7 @@ fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
 fCutIsCascadeCowboy(0)
 {
@@ -430,6 +433,7 @@ fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
 fCutAtLeastOneTOF(kFALSE),
+fCutITSorTOF(kFALSE),
 fCutIsCowboy(0),
 fCutIsCascadeCowboy(0)
 {
@@ -541,6 +545,7 @@ fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
 fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
 fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted),
 fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF),
+fCutITSorTOF(lCopyMe.fCutITSorTOF),
 fCutIsCowboy(lCopyMe.fCutIsCowboy),
 fCutIsCascadeCowboy(lCopyMe.fCutIsCascadeCowboy)
 
@@ -681,6 +686,7 @@ fHisto(0), fProtonProfile(0)
     fCutDCABachToPVWeighted = lCopyMe -> GetCutDCABachToPVWeighted();
     
     fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe -> GetCutITSorTOF(); 
     
     fCutIsCowboy = lCopyMe -> GetCutIsCowboy();
     fCutIsCascadeCowboy = lCopyMe -> GetCutIsCascadeCowboy();
@@ -838,6 +844,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutDCABachToPVWeighted = lCopyMe.GetCutDCABachToPVWeighted();
     
     fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    fCutITSorTOF = lCopyMe.GetCutITSorTOF(); 
     
     fCutIsCowboy = lCopyMe.GetCutIsCowboy();
     fCutIsCascadeCowboy = lCopyMe.GetCutIsCascadeCowboy();
@@ -1016,6 +1023,7 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutDCABachToPVWeighted  - lCompareCascade->GetCutDCABachToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     
     if ( TMath::Abs(fCutAtLeastOneTOF - lCompareCascade->GetCutAtLeastOneTOF()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutITSorTOF - lCompareCascade->GetCutITSorTOF()) > 1e-6 ) lReturnValue = kFALSE;
     
     if ( TMath::Abs(fCutIsCowboy - lCompareCascade->GetCutIsCowboy()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutIsCascadeCowboy - lCompareCascade->GetCutIsCascadeCowboy()) > 1e-6 ) lReturnValue = kFALSE;
@@ -1127,6 +1135,7 @@ void AliCascadeResult::Print()
     cout<<" wDCA Pos to PV.....: "<<fCutDCAPosToPVWeighted<<endl;
     cout<<" wDCA Bach to PV....: "<<fCutDCABachToPVWeighted<<endl;
     cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
+    cout<<" ITS||TOF...........: "<<fCutITSorTOF<<endl; 
     
     cout<<" Is cowboy..........: "<<fCutIsCowboy<<endl;
     cout<<" Is cascade cowboy..: "<<fCutIsCascadeCowboy<<endl;

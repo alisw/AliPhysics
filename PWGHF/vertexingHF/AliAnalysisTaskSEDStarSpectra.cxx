@@ -345,8 +345,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	AliAODMCParticle *partDSt = (AliAODMCParticle*)mcArray->At(mcLabel);
 	Int_t checkOrigin = CheckOrigin(mcArray,partDSt);
        	if(checkOrigin==5) isPrimary=kFALSE;
-	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughter(0));
-	//	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
+	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughterLabel(0));
+	//	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughterLabel(0));
 	pdgCode=TMath::Abs(partDSt->GetPdgCode());
 	if(!isPrimary){
 	  trueImpParXY=GetTrueImpactParameterD0(mcHeader,mcArray,dg0)*1000.;
@@ -609,6 +609,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
   PostData(1,fOutput);
   PostData(2,fOutputAll);
   PostData(3,fOutputPID);
+  PostData(5,fCounter);
 
   return;
 }
@@ -1171,7 +1172,7 @@ Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(const AliAODMCHe
   partDp->XvYvZv(origD);	  
   Short_t charge=partDp->Charge();
   Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
-  Int_t labelFirstDau = partDp->GetDaughter(0); 
+  Int_t labelFirstDau = partDp->GetDaughterLabel(0); 
 
   Int_t nDau=partDp->GetNDaughters();
 

@@ -28,6 +28,7 @@
 #pragma link C++ class AliAnalysisTaskMixedHarmonics+;
 #pragma link C++ class AliAnalysisTaskFlowModes+;
 #pragma link C++ class AliAnalysisTaskFlowModesMC+;
+#pragma link C++ class AliAnalysisTaskFlowModes_pPb+;
 #pragma link C++ class AliAnalysisTaskNestedLoops+;
 #pragma link C++ class AliAnalysisTaskQAflow+;
 #pragma link C++ class AliAnalysisTaskPIDflowQA+;
@@ -45,13 +46,18 @@
 #pragma link C++ class AliAnalysisTaskMultiparticleFemtoscopy+;
 #pragma link C++ class AliAnalysisTaskForStudents+;
 #pragma link C++ class AliAnalysisTaskZDCGainEq+;
-#pragma link C++ class AliAnalysisTaskZDCEP+;
 #pragma link C++ class AliAnalysisTaskPiKpK0Lamba+;
 #pragma link C++ class AliAnalysisTaskCmeEse+;
 #pragma link C++ class AliAnalysisTaskCMEV0+;
 #pragma link C++ class AliAnalysisTaskCMEV0PID+;
+#pragma link C++ class AliAnalysisTaskCMEMC+;
 #pragma link C++ class AliAnalysisTaskStudentsCM+;
 #pragma link C++ class AliAnalysisTaskStudentsML+;
 #pragma link C++ class AliAnalysisTaskTwoMultiCorrelations+;
+#pragma link C++ class AliAnalysisTaskStudentsMW+;
+#pragma link C++ class AliAnalysisTaskCVE+;
+#pragma link C++ class AliAnalysisTaskNBodyFemtoscopy+;
+#pragma link C++ class AliAnalysisTaskCMW+;
+#pragma link C++ class AliAnalysisTaskCVEUNI+;
 #endif
 

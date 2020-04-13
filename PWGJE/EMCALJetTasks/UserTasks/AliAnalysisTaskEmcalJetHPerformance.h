@@ -13,7 +13,8 @@
 
 class AliJetContainer;
 class AliEmcalJet;
-#include "AliEventCuts.h"
+class AliVCaloCells;
+class AliQnCorrectionsManager;
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -24,7 +25,7 @@ class AliEmcalJet;
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
 namespace PWGJE { namespace EMCALJetTasks { class AliAnalysisTaskEmcalJetHPerformance; } }
 std::ostream & operator<< (std::ostream &in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance &myTask);
-void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second); 
+void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second);
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -49,7 +50,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Additional constructors
   AliAnalysisTaskEmcalJetHPerformance(const AliAnalysisTaskEmcalJetHPerformance & other);
   AliAnalysisTaskEmcalJetHPerformance& operator=(AliAnalysisTaskEmcalJetHPerformance other);
-  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second); 
+  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second);
   // Avoid implementing move since c++11 is not allowed in the header
 
   void UserCreateOutputObjects();
@@ -70,40 +71,62 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
  private:
 
-  Bool_t IsEventSelected();
   Bool_t Run();
+
+  // Helper functions
+  double DetermineTrackingEfficiency(double trackPt, double trackEta);
 
   // Configuration
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
+  void SetupParticleContainersFromYAMLConfig();
+  void SetupClusterContainersFromYAMLConfig();
 
   // QA histograms
   void SetupQAHists();
   void QAHists();
   void FillQAHists();
+  // Cell QA
+  void SetupCellQAHistsWithPrefix(const std::string & prefix);
+  void SetupCellQAHists();
+  void FillCellQAHists(const std::string & prefix, AliVCaloCells * cells);
+  void FillCellQAHists();
+
+  // Jet matching
+  void SetupJetMatchingQA();
+  void ResetMatching(const AliJetContainer & jetCont) const;
+  bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist) const;
+  void FillJetMatchingQA(AliJetContainer& contBase, AliJetContainer& contTag, const std::string& prefix);
 
   // Response matrix functions
   void SetupResponseMatrixHists();
   void ResponseMatrix();
-  void FillResponseMatrix(AliEmcalJet * jet1, AliEmcalJet * jet2);
-  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
+  void FillResponseMatrix(AliEmcalJet* jet1, AliEmcalJet* jet2, const double jet1Rho);
+  ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet, const double rho) const;
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
   bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
-  AliEventCuts fEventCuts;            ///<  AliEventCuts to handle event selection.
 
   // Histograms
   THistManager fHistManager;          ///<  Histogram manager.
   AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fUseAliEventCuts;              ///<  If true, use AliEventCuts for event selection instead of IsEventSelected.
   bool fCreateQAHists;                ///<  If true, create QA histograms.
+  bool fCreateCellQAHists;            ///<  If true, create the Cell QA histograms. It doesn't gracefully turn off when not configured like the containers, so we have a switch.
+  bool fPerformJetMatching;           ///<  If true, enables jet matching.
   bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
 
   // QA variables
-  std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
+  std::string fEmbeddedCellsName;                 ///<  Set the embedded cells collection name
+  UInt_t fPreviousEventTrigger;                   ///<  Physics selection (offline trigger) of the previous event for determine why a small number of embedded event are double counted.
+  bool fPreviousEmbeddedEventSelected;            ///<  True if the previous embedded event was selected. Used to determine why a small number of embedded event are double counted.
+  AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIdentifier_t fEfficiencyPeriodIdentifier;  ///<  Identifies the period for determining the efficiency correction to apply
+  AliQnCorrectionsManager *fFlowQnVectorManager;  //!<! Qn corrections framework manager.
+
+  // Jet matching
+  double fMaxJetMatchingDistance;                 ///<  Matx jet matching distance.
 
   // Response matrix variables
   // Response matrix fill map
@@ -118,7 +141,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 2);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 7);
 };
 
 } /* namespace EMCALJetTasks */

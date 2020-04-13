@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#############################################################
-//#                                                           # 
+//#                                                           #
 //#                  AliDielectronPair                        #
 //#               Class to store pair information             #
 //#                                                           #
@@ -39,7 +39,7 @@ class AliDielectronPair : public AliVParticle {
 public:
   AliDielectronPair();
   virtual ~AliDielectronPair();
-  
+
   AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
                     AliVTrack * const particle2, Int_t pid2, Char_t type);
 
@@ -48,9 +48,9 @@ public:
                     AliVTrack * const refParticle1,
                     AliVTrack * const refParticle2,
                     Char_t type);
-  
+
 //TODO:  copy constructor + assignment operator
-  
+
   void SetTracks(AliVTrack * const particle1, Int_t pid1,
                  AliVTrack * const particle2, Int_t pid2);
 
@@ -73,26 +73,26 @@ public:
   virtual Double_t Pt() const { return fPair.GetPt(); }
   virtual Double_t P() const  { return fPair.GetP();  }
   virtual Bool_t   PxPyPz(Double_t p[3]) const { p[0]=Px(); p[1]=Py(); p[2]=Pz(); return kTRUE; }
-  
+
   virtual Double_t Xv() const { return fPair.GetX(); }
   virtual Double_t Yv() const { return fPair.GetY(); }
   virtual Double_t Zv() const { return fPair.GetZ(); }
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0]=Xv(); x[1]=Yv(); x[2]=Zv(); return kTRUE; }
-  
+
   virtual Double_t OneOverPt() const { return Pt()>0.?1./Pt():0.; }  //TODO: check
   virtual Double_t Phi()       const { return fPair.GetPhi();}
   virtual Double_t Theta()     const { return Pz()!=0?TMath::ATan(Pt()/Pz()):0.; } //TODO: check
-  
-  
+
+
   virtual Double_t E() const { return fPair.GetE();    }
   virtual Double_t M() const { return fPair.GetMass(); }
-  
+
   virtual Double_t Eta() const { return fPair.GetEta();}
-  virtual Double_t Y()  const  { 
+  virtual Double_t Y()  const  {
     if((E()*E()-Px()*Px()-Py()*Py()-Pz()*Pz())>0.) return TLorentzVector(Px(),Py(),Pz(),E()).Rapidity();
     else return -1111.;
   }
-  
+
   virtual Short_t Charge() const    { return fPair.GetQ();}
   virtual Int_t   GetLabel() const  { return fLabel;      }
   // PID
@@ -113,7 +113,7 @@ public:
   Int_t PdgCode() const {return fPdgCode;}
 
   void SetProductionVertex(const AliKFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
-  
+
   //inter leg information
   Double_t GetKFChi2()            const { return fPair.GetChi2();                               }
   Int_t    GetKFNdf()             const { return fPair.GetNDF();                                }
@@ -132,10 +132,10 @@ public:
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;
-  
+
 
   Double_t ThetaPhiCM(Bool_t isHE, Bool_t isTheta) const;
-  static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2, 
+  static Double_t ThetaPhiCM(const AliVParticle* d1, const AliVParticle* d2,
 			                       Bool_t isHE, Bool_t isTheta);
 
   Double_t PsiPair(Double_t MagField)const; //Angle cut w.r.t. to magnetic field
@@ -157,11 +157,11 @@ public:
   const AliKFParticle& GetKFParticle()       const { return fPair; }
   const AliKFParticle& GetKFFirstDaughter()  const { return fD1;   }
   const AliKFParticle& GetKFSecondDaughter() const { return fD2;   }
-  
+
   // daughter references
   void SetRefFirstDaughter(AliVParticle * const track)  {fRefD1 = track;}
   void SetRefSecondDaughter(AliVParticle * const track) {fRefD2 = track;}
-  
+
   AliVParticle* GetFirstDaughterP()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
   AliVParticle* GetSecondDaughterP()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
 
@@ -169,27 +169,26 @@ public:
   Bool_t GetKFUsage() const {return fKFUsage;}
 
 
-  
+
 private:
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see AliDielectron
   Int_t    fLabel;        // MC label
   Int_t    fPdgCode;      // pdg code in case it is a MC particle
   static Double_t fBeamEnergy; //!beam energy
-  
+
   AliKFParticle fPair;   // KF particle internally used for pair calculation
   AliKFParticle fD1;     // KF particle first daughter
   AliKFParticle fD2;     // KF particle1 second daughter
-  
+
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
 
   Bool_t fKFUsage;       // Use KF for vertexing
-  
+
   static Bool_t   fRandomizeDaughters;
   static TRandom3 fRandom3;
-  
+
   ClassDef(AliDielectronPair,5)
 };
 
 #endif
-

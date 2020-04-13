@@ -167,8 +167,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(5);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 2, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(3);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
@@ -237,7 +237,16 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(ProtonMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableProton();
+
+
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy 
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
+	  dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4); 	//DCA xy
+	  dtc2etaphitpc[aniter]->SetMaxImpactZ(3.2);	//DCA Z
 	  
+	  //****** Track quality cuts ******
+	  dtc1etaphitpc[aniter]->SetminTPCncls(70);
+	  dtc2etaphitpc[aniter]->SetminTPCncls(70);	  
 
 	  //============PION============
 

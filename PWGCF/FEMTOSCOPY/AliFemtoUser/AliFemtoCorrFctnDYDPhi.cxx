@@ -263,7 +263,8 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const AliFemtoCorrFctnDYDPhi& aCo
 
 }
 //____________________________
-AliFemtoCorrFctnDYDPhi::~AliFemtoCorrFctnDYDPhi(){
+AliFemtoCorrFctnDYDPhi::~AliFemtoCorrFctnDYDPhi()
+{
   // destructor
   delete fDPhiDYNumerator;
   delete fDPhiDYDenominator;
@@ -387,7 +388,8 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnDYDPhi::Finish(){
+void AliFemtoCorrFctnDYDPhi::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -399,20 +401,19 @@ void AliFemtoCorrFctnDYDPhi::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDYDPhi::Report(){
+AliFemtoString AliFemtoCorrFctnDYDPhi::Report()
+{
   // create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiDYNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDYDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "TPC Ncls Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fDPhiDYNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDPhiDYDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 //____________________________
-void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDYDPhi::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
@@ -482,12 +483,11 @@ void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
 	Double_t val[] = {y1,y2,dphi,dy};
 	fYCorrectionsNum->Fill(val);
       }
-
     }
-
 }
 //____________________________
-void AliFemtoCorrFctnDYDPhi::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDYDPhi::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
@@ -578,11 +578,13 @@ void AliFemtoCorrFctnDYDPhi::WriteHistos()
 
   if(fIfCorrectionHist){
     if(fIfCorrectionHist==kPt){
-    fPtCorrectionsNum->Write();
-    fPtCorrectionsDen->Write();}
+      fPtCorrectionsNum->Write();
+      fPtCorrectionsDen->Write();
+    }
     if(fIfCorrectionHist==kY){
-    fYCorrectionsNum->Write();
-    fYCorrectionsDen->Write();}
+      fYCorrectionsNum->Write();
+      fYCorrectionsDen->Write();
+    }
   }
 }
 
@@ -619,8 +621,8 @@ TList* AliFemtoCorrFctnDYDPhi::GetOutputList()
       tOutputList->Add(fYCorrectionsDen);
     }
   }
-  return tOutputList;
 
+  return tOutputList;
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
@@ -652,7 +654,6 @@ void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
   fDPhiPtDenominator->Sumw2();
   fDCosPtNumerator->Sumw2();
   fDCosPtDenominator->Sumw2();
-
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDo4DCorrectionHist(CorrectionType doCorr)

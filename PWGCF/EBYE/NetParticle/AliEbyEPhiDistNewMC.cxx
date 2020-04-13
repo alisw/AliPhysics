@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/01/23)                      //
+//                         (Last Modified 2019/03/06)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -84,7 +84,7 @@ AliEbyEPhiDistNewMC::AliEbyEPhiDistNewMC()
   fVzMax(10.), 
   fPtMin(0.15),   
   fPtMax(3.15),
-  fPhiMin(3.14),
+  fPhiMin(0.0),
   fPhiMax(6.28),
   fEtaMin(-1.),
   fEtaMax(1.),
@@ -187,7 +187,7 @@ AliEbyEPhiDistNewMC::AliEbyEPhiDistNewMC( const char *name )
     fVzMax(10.), 
     fPtMin(0.15),   
     fPtMax(3.15),
-    fPhiMin(3.14),
+    fPhiMin(0.0),
     fPhiMax(6.28),
     fEtaMin(-1.),
     fEtaMax(1.),
@@ -332,7 +332,7 @@ void AliEbyEPhiDistNewMC::UserCreateOutputObjects(){
     
 }
   
-  CreatePhiHist();
+  CreatePhiHistMC();
   
   fHistCent = new TH1F("fHistCentPid","Centrality", 100, -0.5, 99.5);			 
   fThnList->Add(fHistCent);
@@ -345,7 +345,7 @@ void AliEbyEPhiDistNewMC::UserCreateOutputObjects(){
 }
 
 //----------------------------------------------------------------------------------
-void AliEbyEPhiDistNewMC::CreatePhiHist() {
+void AliEbyEPhiDistNewMC::CreatePhiHistMC() {
 
   if(fIsQA && fPidType != 0){
     
@@ -398,7 +398,7 @@ void AliEbyEPhiDistNewMC::CreatePhiHist() {
   const Char_t *fgkHistCharge[2] = {"Minus", "Plus"};
   
   Int_t ybins[3] = {30, 32, 18};
-  Double_t yaxis[2][3] = {{0.15,-0.8,3.14}, {3.15,0.8,6.6}};
+  Double_t yaxis[2][3] = {{0.15,-0.8,0.0}, {3.15,0.8,6.6}};
   
   const Int_t xNbins = 100;
   Double_t xBinEdge[xNbins+1];
@@ -413,7 +413,7 @@ void AliEbyEPhiDistNewMC::CreatePhiHist() {
     
     //fphiarray
     
-    Double_t pidPhiBins[19] = {3.14,3.31444,3.48889,3.66333,3.83778,4.01222,4.18667,4.36111,4.53556,4.71,4.88444,5.05889,5.23333,5.40778,5.58222,5.75667,5.93111,6.10556,6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
   
   //if( fPidType == 0) fPtArray = chPtBins;
   //else fPtArray = pidPtBins;
@@ -424,8 +424,8 @@ void AliEbyEPhiDistNewMC::CreatePhiHist() {
   const Char_t *PidCut[4] = {
     "ChHad",
     "TPC", // 0 only TPC
-    "TPC+TOF",
-    "TPC+ITS+TOF"
+    "TPC",
+    "TPC"
   };
   
   
@@ -1104,7 +1104,7 @@ Int_t AliEbyEPhiDistNewMC::GetPhiBin(Double_t Phi){
     
     Int_t phibin = -1;
     
-    Double_t pidPhiBins[19] = {3.14,3.31444,3.48889,3.66333,3.83778,4.01222,4.18667,4.36111,4.53556,4.71,4.88444,5.05889,5.23333,5.40778,5.58222,5.75667,5.93111,6.10556,6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
     
     for (Int_t pBin = 0; pBin < fNphiBins; pBin++){
         
@@ -1189,17 +1189,17 @@ Bool_t AliEbyEPhiDistNewMC::IsPidPassed(AliVTrack * track) {
   
   //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
     //ITS--------------
-    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
-    Double_t ptHighITS[5]      = { 0., 0., 0.2,  0.2,  1.1  };
+    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.2  };
+    Double_t ptHighITS[5]      = { 0., 0., 0.2,  0.2,  0.2  };
     //TPC---------------
     Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.3, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   2.0  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   1.55  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.2,  1.1  };
-    Double_t ptHighTOF[5]      = { 0., 0., 0.2,  0.2,    2.0  };
+    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.2,  0.2  };
+    Double_t ptHighTOF[5]      = { 0., 0., 0.2,  0.2,    0.2  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
-    Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   2.0  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.69  };
+    Double_t ptHighTPCTOF[5]   = { 0., 0., 0.65,  0.69,   0.69  };
     
   
 
@@ -1307,22 +1307,7 @@ Bool_t AliEbyEPhiDistNewMC::IsPidPassed(AliVTrack * track) {
   
   if( fParticleSpecies == 4){//for proton
     
-    if(fPidStrategy == 0){
-      //ITS+TPC and TPC+TOF
-      if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else isAccepted = isAcceptedTPC && isAcceptedTOF;
-    }
-    else if( fPidStrategy == 1){
-      //ITS+TPC, TPC , TPC+TOF
-      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-      else isAccepted =  isAcceptedTPC;
-    }
-    else if( fPidStrategy == 2){
-      //ITS+TPC
-      isAccepted = isAcceptedITS && isAcceptedTPC;
-    }
-    
+    isAccepted = isAcceptedTPC;
   }//for proton
   
   

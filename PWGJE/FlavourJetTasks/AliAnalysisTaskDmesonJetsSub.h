@@ -8,6 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+//  \author  adapted for Substructure measurements by Leticia Cunqueiro
 /// \date Oct 13, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETSSUB_H
@@ -797,6 +798,10 @@ class AliAnalysisTaskDmesonJetsSub : public AliAnalysisTaskEmcalLight
 
     Bool_t              ExtractRecoDecayAttributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
+    Bool_t              ExtractEfficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i);
+    Bool_t              GetEfficiencyDenominator(AliHFJetDefinition& jetDef);
+    Bool_t              GetEfficiencyDenominatorOneByOne(AliHFJetDefinition& jetDef);
+      Bool_t              ExtractD0Efficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i);
     Bool_t              ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef, Int_t numcand);
     void                IterativeDeclustering(Int_t jetnum,Double_t type, AliHFJetDefinition& jetDef,Double_t invm); 

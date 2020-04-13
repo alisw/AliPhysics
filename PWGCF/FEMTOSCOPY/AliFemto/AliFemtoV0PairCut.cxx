@@ -26,7 +26,8 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
   fMinAvgSepPosPos(0),
   fMinAvgSepPosNeg(0),
   fMinAvgSepNegPos(0),
-  fMinAvgSepNegNeg(0)
+  fMinAvgSepNegNeg(0),
+  fNanoAODAnalysis(false)
 {
   /* no-op */
 }
@@ -55,41 +56,8 @@ AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
   fMinAvgSepPosNeg = cut.fMinAvgSepPosNeg;
   fMinAvgSepNegPos = cut.fMinAvgSepNegPos;
   fMinAvgSepNegNeg = cut.fMinAvgSepNegNeg;
-
+  fNanoAODAnalysis = cut.fNanoAODAnalysis;
   return *this;
-}
-
-inline
-bool is_unset_vector(const AliFemtoThreeVector& v)
-{
-  return v.x() <= -9999.0 || v.y() <= -9999.0 ||  v.z() <= -9999.0;
-}
-
-inline
-double calculate_avg_separation_daughters(const AliFemtoV0* V1,
-                                          const bool use_pos_daughter_1,
-                                          const AliFemtoV0* V2,
-                                          const bool use_pos_daughter_2)
-{
-  int counter = 0;
-  double avgSep = 0.0;
-
-  for (int i = 0; i < 8; i++) {
-    const AliFemtoThreeVector p1 = use_pos_daughter_1
-      ? V1->NominalTpcPointPos(i)
-      : V1->NominalTpcPointNeg(i),
-
-      p2 = use_pos_daughter_2
-      ? V2->NominalTpcPointPos(i)
-      : V2->NominalTpcPointNeg(i);
-    if (is_unset_vector(p1) || is_unset_vector(p2)) {
-      continue;
-    }
-    avgSep += (p1 - p2).Mag();
-    counter++;
-  }
-  if(counter==0) return 0;
-  return avgSep / counter;
 }
 
 //__________________
@@ -99,7 +67,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
                    *V0_2 = pair->Track2()->V0();
 
   // Assert pair is of two V0 particles
-  if (V0_1 == NULL || V0_2 == NULL) {
+  if (V0_1 == nullptr || V0_2 == nullptr) {
     return false;
   }
 
@@ -109,6 +77,7 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
   }
 
   // Test separation between track daughters' entrance and exit points
+  if(!fNanoAODAnalysis){
   if (fDataType == kESD || fDataType == kAOD) {
     const AliFemtoThreeVector diffPosEntrance = V0_1->NominalTpcEntrancePointPos() - V0_2->NominalTpcEntrancePointPos(),
                                   diffPosExit = V0_1->NominalTpcExitPointPos() - V0_2->NominalTpcExitPointPos(),
@@ -123,40 +92,45 @@ bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
-
+}
   // Find average separations between tracks
-  double avgSep = 0.0;
+  double avgSep_pp = 0.0,
+         avgSep_pn = 0.0,
+         avgSep_np = 0.0,
+         avgSep_nn = 0.0;
 
-  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, true);
-
-  if (avgSep < fMinAvgSepPosPos) {
+  AliFemtoPair::CalcAvgSepV0V0(*V0_1, *V0_2,
+                               avgSep_nn,
+                               avgSep_np,
+                               avgSep_pn,
+                               avgSep_pp);
+if(!fNanoAODAnalysis){
+  if (avgSep_pp < fMinAvgSepPosPos) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, true, V0_2, false);
-  if (avgSep < fMinAvgSepPosNeg) {
+  if (avgSep_pn < fMinAvgSepPosNeg) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, true);
-  if (avgSep < fMinAvgSepNegPos) {
+  if (avgSep_np < fMinAvgSepNegPos) {
     return false;
   }
 
-  avgSep = calculate_avg_separation_daughters(V0_1, false, V0_2, false);
-  if (avgSep < fMinAvgSepNegNeg) {
+  if (avgSep_nn < fMinAvgSepNegNeg) {
     return false;
   }
+}
 
   return true;
 }
 //__________________
 AliFemtoString AliFemtoV0PairCut::Report()
 {
-  TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
-  report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
+  AliFemtoString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
+  report += Form("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString((const char *)report);
+  return report;
 }
 //__________________
 
@@ -176,23 +150,24 @@ TList *AliFemtoV0PairCut::ListSettings()
   TList *tListSetttings = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoV0PairCut.%s=%f",
-             ptrnI[] = "AliFemtoV0PairCut.%s=%d",
-             ptrnL[] = "AliFemtoV0PairCut.%s=%ld";
+  TString prefix = "AliFemtoV0PairCut.";
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "V0max", fV0Max)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCmin", fDTPCMin)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCexitmin", fDTPCExitMin)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
+  tListSetttings->AddVector(
+    new TObjString(prefix + Form("V0max=%g", fV0Max)),
+    new TObjString(prefix + Form("sharefractionmax=%g", fShareFractionMax)),
+    new TObjString(prefix + Form("TPCmin=%g", fDTPCMin)),
+    new TObjString(prefix + Form("TPCexitmin=%g", fDTPCExitMin)),
+    new TObjString(prefix + Form("datatype=%d", fDataType)),
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosPos", fMinAvgSepPosPos)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosNeg", fMinAvgSepPosNeg)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegPos", fMinAvgSepNegPos)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegNeg", fMinAvgSepNegNeg)));
+    new TObjString(prefix + Form("minAvgSepPosPos=%g", fMinAvgSepPosPos)),
+    new TObjString(prefix + Form("minAvgSepPosNeg=%g", fMinAvgSepPosNeg)),
+    new TObjString(prefix + Form("minAvgSepNegPos=%g", fMinAvgSepNegPos)),
+    new TObjString(prefix + Form("minAvgSepNegNeg=%g", fMinAvgSepNegNeg)),
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+    new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)),
+    new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)),
+
+    nullptr);
 
   return tListSetttings;
 }

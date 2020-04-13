@@ -44,12 +44,14 @@ class AliFemtoDreamPairCleaner {
   void ResetArray();
   float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
                              TVector3 Part2Momentum, int PDGPart2);
+  int GetCounter() const {return fCounter;};
  private:
   double InvMassPair(TVector3 Part1, int PDG1, TVector3 Part2, int PDG2);
   double E2(int pdgCode, double Ptot2);
   bool fMinimalBooking;
+  int fCounter;
   std::vector<std::vector<AliFemtoDreamBasePart>> fParticles;
-  AliFemtoDreamPairCleanerHists *fHists;ClassDef(AliFemtoDreamPairCleaner,2)
+  AliFemtoDreamPairCleanerHists *fHists;ClassDef(AliFemtoDreamPairCleaner,3)
 };
 
 inline double AliFemtoDreamPairCleaner::E2(int pdgCode, double Ptot2) {

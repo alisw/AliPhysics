@@ -124,7 +124,7 @@ void  AliCaloTrackMCReader::CheckOverlap(Float_t anglethres, Int_t imom,
   
   AliVParticle *meson = GetMC()->GetTrack(imom);
   Int_t mepdg  = meson->PdgCode();
-  Int_t idaug1 = meson->GetFirstDaughter();
+  Int_t idaug1 = meson->GetDaughterFirst();
   if((mepdg == 111 || mepdg == 221 ) && meson->GetNDaughters() == 2)
   { //Check only decay in 2 photons
     AliVParticle * d1 = GetMC()->GetTrack(idaug1  );

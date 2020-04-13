@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist")
+AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist",int method=3, int filterbit=96)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,7 +41,9 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist")
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask");
+  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask",method,filterbit);
+  taskEfficiency->SetPidMethod(method);
+  taskEfficiency->SetFB(filterbit);
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -60,6 +62,11 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist")
    mgr->ConnectInput(taskEfficiency, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskEfficiency, 1, cout_femto);
 
+   // std::ofstream ofile;
+   // ofile.open("test.txt", std::ofstream::app);
+   // ofile<<"AddTask:" <<method<<" "<<taskEfficiency->GetPidMethod()<<std::endl;								 
+   // ofile.close();
+   
    // Return task pointer at the end
    return taskEfficiency;
 }

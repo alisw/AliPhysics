@@ -37,6 +37,7 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHF(Int_t collisionSystem,TString l
       configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C";
       if(runnumber>=295424)configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C";
       if(ConfigMode.Contains("Run3")) configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/upgrade/ConfigVertexingHF_Pb_Upgrade2018.C";
+      if(ConfigMode.Contains("ITS3")) configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/upgrade/ConfigVertexingHF_Pb_ITS3.C";
     }
     else if(collisionSystem!=0){
       ::Error("AddTaskVertexingHF","Value of collision system not valid");

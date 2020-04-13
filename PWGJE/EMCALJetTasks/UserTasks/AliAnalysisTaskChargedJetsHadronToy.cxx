@@ -197,7 +197,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   // ################# 2. Add event tracks
   if(fAddTracksFromInputEvent)
   {
-    for(Int_t i=0; i<fEventTracksArray->GetEntries(); i++)
+    for(Int_t i=0; i<fEventTracksArray->GetEntriesFast(); i++)
     {
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_InputEvent < 1.0)
@@ -251,7 +251,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   if(fAddTracksFromMixedEvent) // get underlying event from mixed event files
   {
     // if input tree not loaded or index at the end, get next tree file
-    if( !fMixedEvent_Tree || (fMixedEvent_CurrentEventID >= fMixedEvent_Tree->GetEntries()) )
+    if( !fMixedEvent_Tree || (fMixedEvent_CurrentEventID >= fMixedEvent_Tree->GetEntriesFast()) )
     {
       fMixedEvent_Tree = GetNextMixedEventTree();
       if (!fMixedEvent_Tree)
@@ -338,7 +338,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   // ################# 5. Add further external tracks: Picotracks (from old embedding framework)
   if(fAddTracksFromPicoTracks)
   {
-    for(Int_t i=0; i<fPicoTracksArray->GetEntries(); i++)
+    for(Int_t i=0; i<fPicoTracksArray->GetEntriesFast(); i++)
     {
       // Discard tracks due to lowered tracking efficiency
       if (fTrackEfficiency_PicoTracks < 1.0)
@@ -374,7 +374,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 void AliAnalysisTaskChargedJetsHadronToy::CreateQAPlots()
 {
   Int_t hybridMult = 0;
-  for(Int_t iTrack=0; iTrack<fOutputArray->GetEntries(); iTrack++)
+  for(Int_t iTrack=0; iTrack<fOutputArray->GetEntriesFast(); iTrack++)
   {
     AliAODTrack* track = static_cast<AliAODTrack*>(fOutputArray->At(iTrack));
     if(!track->IsHybridGlobalConstrainedGlobal())

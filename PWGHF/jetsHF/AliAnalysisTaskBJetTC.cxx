@@ -60,6 +60,11 @@ fDoDeltaPtWithSignal(kFALSE),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
+fDoCharmFractions(kFALSE),
+fUsePartonDef(kTRUE),
+fUseIPs(kFALSE),
+fDoJetMass(kFALSE),
+fDoSVEnergyFraction(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
 //Bjet Cuts
@@ -312,6 +317,54 @@ fh2dJetSignedImpParXYSignificancec_Class4(0x0),
 fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 fh2dJetSignedImpParXYZ_Class4(0x0),
 fh2dJetSignedImpParXYZSignificance_Class4(0x0),
+//Jet Mass
+fhistJetMass(0x0),
+fhistJetMass_Unidentified(0x0),
+fhistJetMass_udsg(0x0),
+fhistJetMass_c(0x0),
+fhistJetMass_b(0x0),
+fhistJetMassFirst(0x0),
+fhistJetMassSecond(0x0),
+fhistJetMassThird(0x0),
+fhistJetMass_UnidentifiedFirst(0x0),
+fhistJetMass_udsgFirst(0x0),
+fhistJetMass_cFirst(0x0),
+fhistJetMass_bFirst(0x0),
+fhistJetMass_UnidentifiedSecond(0x0),
+fhistJetMass_udsgSecond(0x0),
+fhistJetMass_cSecond(0x0),
+fhistJetMass_bSecond(0x0),
+fhistJetMass_UnidentifiedThird(0x0),
+fhistJetMass_udsgThird(0x0),
+fhistJetMass_cThird(0x0),
+fhistJetMass_bThird(0x0),
+//Secondary vertex energy fraction
+fhistSVEnergyFraction(0x0),
+fhistSVEnergyFraction_Unidentified(0x0),
+fhistSVEnergyFraction_udsg(0x0),
+fhistSVEnergyFraction_c(0x0),
+fhistSVEnergyFraction_b(0x0),
+fhistSVEnergyFractionFirst(0x0),
+fhistSVEnergyFraction_UnidentifiedFirst(0x0),
+fhistSVEnergyFraction_udsgFirst(0x0),
+fhistSVEnergyFraction_cFirst(0x0),
+fhistSVEnergyFraction_bFirst(0x0),
+fhistSVEnergyFractionSecond(0x0),
+fhistSVEnergyFraction_UnidentifiedSecond(0x0),
+fhistSVEnergyFraction_udsgSecond(0x0),
+fhistSVEnergyFraction_cSecond(0x0),
+fhistSVEnergyFraction_bSecond(0x0),
+fhistSVEnergyFractionThird(0x0),
+fhistSVEnergyFraction_UnidentifiedThird(0x0),
+fhistSVEnergyFraction_udsgThird(0x0),
+fhistSVEnergyFraction_cThird(0x0),
+fhistSVEnergyFraction_bThird(0x0),
+fhistSVnProngs(0x0),
+fhistSVnProngs_Unidentified(0x0),
+fhistSVnProngs_udsg(0x0),
+fhistSVnProngs_c(0x0),
+fhistSVnProngs_b(0x0),
+//Jet Probability
 fhistJetProbability(0x0),
 fhistJetProbability_Unidentified(0x0),
 fhistJetProbability_udsg(0x0),
@@ -321,21 +374,37 @@ fhistJetProbabilityLog(0x0),
 fhistJetProbability_UnidentifiedLog(0x0),
 fhistJetProbability_udsgLog(0x0),
 fhistJetProbability_cLog(0x0),
+fhistJetProbability_cLog_D0(0x0),
+fhistJetProbability_cLog_Dp(0x0),
+fhistJetProbability_cLog_Ds(0x0),
+fhistJetProbability_cLog_Lc(0x0),
 fhistJetProbability_bLog(0x0),
 fhistJetProbabilityLogFirst(0x0),
 fhistJetProbability_UnidentifiedLogFirst(0x0),
 fhistJetProbability_udsgLogFirst(0x0),
 fhistJetProbability_cLogFirst(0x0),
+fhistJetProbability_cLogFirst_D0(0x0),
+fhistJetProbability_cLogFirst_Dp(0x0),
+fhistJetProbability_cLogFirst_Ds(0x0),
+fhistJetProbability_cLogFirst_Lc(0x0),
 fhistJetProbability_bLogFirst(0x0),
 fhistJetProbabilityLogSecond(0x0),
 fhistJetProbability_UnidentifiedLogSecond(0x0),
 fhistJetProbability_udsgLogSecond(0x0),
 fhistJetProbability_cLogSecond(0x0),
+fhistJetProbability_cLogSecond_D0(0x0),
+fhistJetProbability_cLogSecond_Dp(0x0),
+fhistJetProbability_cLogSecond_Ds(0x0),
+fhistJetProbability_cLogSecond_Lc(0x0),
 fhistJetProbability_bLogSecond(0x0),
 fhistJetProbabilityLogThird(0x0),
 fhistJetProbability_UnidentifiedLogThird(0x0),
 fhistJetProbability_udsgLogThird(0x0),
 fhistJetProbability_cLogThird(0x0),
+fhistJetProbability_cLogThird_D0(0x0),
+fhistJetProbability_cLogThird_Dp(0x0),
+fhistJetProbability_cLogThird_Ds(0x0),
+fhistJetProbability_cLogThird_Lc(0x0),
 fhistJetProbability_bLogThird(0x0),
 fhistJetProbabilityLogSVHE(0x0),
 fhistJetProbability_UnidentifiedLogSVHE(0x0),
@@ -394,6 +463,10 @@ fDoSVAnalysis(kFALSE),
 fDoTrackCountingAnalysis(kTRUE),
 fVtxTagger3Prong(0x0),
 fVtxTagger2Prong(0x0),
+fjetCuts3Prong(0x0),
+fjetCuts2Prong(0x0),
+fTrackArray(0x0),
+fEsdTrackCuts(0x0),
 fInvariantMass(0.),
 fJetMass(0.),
 fDispersion(0.),
@@ -484,6 +557,11 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhnV0InJetLambda(0x0),
 		fhnV0InJetALambda(0x0),
 		fDoJetProbabilityAnalysis(kFALSE),
+		fDoCharmFractions(kFALSE),
+		fUsePartonDef(kTRUE),
+		fUseIPs(kFALSE),
+		fDoJetMass(kFALSE),
+		fDoSVEnergyFraction(kFALSE),
 		fDoPtRelAnalysis(0),
 		fDoSelectionPtRel(0),
 		fh1dEventRejectionRDHFCuts(0x0),
@@ -673,7 +751,54 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fh2dJetSignedImpParXYSignificanceudsgForth(0x0),
 		fh2dJetSignedImpParXYSignificancebForth(0x0),
 		fh2dJetSignedImpParXYSignificancecForth(0x0),
-		//Jet Probabilty
+		//Jet Mass
+		fhistJetMass(0x0),
+		fhistJetMass_Unidentified(0x0),
+		fhistJetMass_udsg(0x0),
+		fhistJetMass_c(0x0),
+		fhistJetMass_b(0x0),
+		fhistJetMassFirst(0x0),
+		fhistJetMassSecond(0x0),
+		fhistJetMassThird(0x0),
+		fhistJetMass_UnidentifiedFirst(0x0),
+		fhistJetMass_udsgFirst(0x0),
+		fhistJetMass_cFirst(0x0),
+		fhistJetMass_bFirst(0x0),
+		fhistJetMass_UnidentifiedSecond(0x0),
+		fhistJetMass_udsgSecond(0x0),
+		fhistJetMass_cSecond(0x0),
+		fhistJetMass_bSecond(0x0),
+		fhistJetMass_UnidentifiedThird(0x0),
+		fhistJetMass_udsgThird(0x0),
+		fhistJetMass_cThird(0x0),
+		fhistJetMass_bThird(0x0),
+		//Secondary vertex energy fraction
+		fhistSVEnergyFraction(0x0),
+		fhistSVEnergyFraction_Unidentified(0x0),
+		fhistSVEnergyFraction_udsg(0x0),
+		fhistSVEnergyFraction_c(0x0),
+		fhistSVEnergyFraction_b(0x0),
+		fhistSVEnergyFractionFirst(0x0),
+		fhistSVEnergyFraction_UnidentifiedFirst(0x0),
+		fhistSVEnergyFraction_udsgFirst(0x0),
+		fhistSVEnergyFraction_cFirst(0x0),
+		fhistSVEnergyFraction_bFirst(0x0),
+		fhistSVEnergyFractionSecond(0x0),
+		fhistSVEnergyFraction_UnidentifiedSecond(0x0),
+		fhistSVEnergyFraction_udsgSecond(0x0),
+		fhistSVEnergyFraction_cSecond(0x0),
+		fhistSVEnergyFraction_bSecond(0x0),
+		fhistSVEnergyFractionThird(0x0),
+		fhistSVEnergyFraction_UnidentifiedThird(0x0),
+		fhistSVEnergyFraction_udsgThird(0x0),
+		fhistSVEnergyFraction_cThird(0x0),
+		fhistSVEnergyFraction_bThird(0x0),
+		fhistSVnProngs(0x0),
+		fhistSVnProngs_Unidentified(0x0),
+		fhistSVnProngs_udsg(0x0),
+		fhistSVnProngs_c(0x0),
+		fhistSVnProngs_b(0x0),
+		//Jet Probability
 		fh2dJetSignedImpParXY_Class1(0x0),
 		fh2dJetSignedImpParXYSignificance_Class1(0x0),
 		fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
@@ -711,21 +836,37 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhistJetProbability_UnidentifiedLog(0x0),
 		fhistJetProbability_udsgLog(0x0),
 		fhistJetProbability_cLog(0x0),
+		fhistJetProbability_cLog_D0(0x0),
+		fhistJetProbability_cLog_Dp(0x0),
+		fhistJetProbability_cLog_Ds(0x0),
+		fhistJetProbability_cLog_Lc(0x0),
 		fhistJetProbability_bLog(0x0),
 		fhistJetProbabilityLogFirst(0x0),
 		fhistJetProbability_UnidentifiedLogFirst(0x0),
 		fhistJetProbability_udsgLogFirst(0x0),
 		fhistJetProbability_cLogFirst(0x0),
+		fhistJetProbability_cLogFirst_D0(0x0),
+		fhistJetProbability_cLogFirst_Dp(0x0),
+		fhistJetProbability_cLogFirst_Ds(0x0),
+		fhistJetProbability_cLogFirst_Lc(0x0),
 		fhistJetProbability_bLogFirst(0x0),
 		fhistJetProbabilityLogSecond(0x0),
 		fhistJetProbability_UnidentifiedLogSecond(0x0),
 		fhistJetProbability_udsgLogSecond(0x0),
 		fhistJetProbability_cLogSecond(0x0),
+		fhistJetProbability_cLogSecond_D0(0x0),
+		fhistJetProbability_cLogSecond_Dp(0x0),
+		fhistJetProbability_cLogSecond_Ds(0x0),
+		fhistJetProbability_cLogSecond_Lc(0x0),
 		fhistJetProbability_bLogSecond(0x0),
 		fhistJetProbabilityLogThird(0x0),
 		fhistJetProbability_UnidentifiedLogThird(0x0),
 		fhistJetProbability_udsgLogThird(0x0),
 		fhistJetProbability_cLogThird(0x0),
+		fhistJetProbability_cLogThird_D0(0x0),
+		fhistJetProbability_cLogThird_Dp(0x0),
+		fhistJetProbability_cLogThird_Ds(0x0),
+		fhistJetProbability_cLogThird_Lc(0x0),
 		fhistJetProbability_bLogThird(0x0),
 		fhistJetProbabilityLogSVHE(0x0),
 		fhistJetProbability_UnidentifiedLogSVHE(0x0),
@@ -783,6 +924,10 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fDoTrackCountingAnalysis(kTRUE),
 		fVtxTagger3Prong(0x0),
 		fVtxTagger2Prong(0x0),
+		fjetCuts3Prong(0x0),
+		fjetCuts2Prong(0x0),
+		fTrackArray(0x0),
+		fEsdTrackCuts(0x0),
 		fInvariantMass(0.),
 		fJetMass(0.),
 		fDispersion(0.),
@@ -841,6 +986,10 @@ AliAnalysisTaskBJetTC::~AliAnalysisTaskBJetTC()
 	delete fDecayVertex;
 	delete fVtxTagger3Prong;
 	delete fVtxTagger2Prong;
+	delete fjetCuts3Prong;
+	delete fjetCuts2Prong;
+  	delete fTrackArray;
+	delete fEsdTrackCuts;
 	delete fHFJetUtils;
 	delete fRespoPID;
 	delete fUtils;
@@ -1119,14 +1268,26 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			Int_t MCJetflavour =0;
 			Int_t partonpdg=0;
 			
-			partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
-			if(!(partonAOD)) MCJetflavour =0;
-			else
-			{
+			if(fUsePartonDef){
+			  partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
+			  if(!(partonAOD)) MCJetflavour =0;
+			  else
+			  {
 				partonpdg = abs(partonAOD->PdgCode());
 				if(partonpdg==1||partonpdg==2||partonpdg==3||partonpdg==21 )MCJetflavour=1;
 				else if(partonpdg==4)MCJetflavour=2;
 				else if(partonpdg==5)MCJetflavour=3;
+			  }
+			}else {
+			  partonAOD = fHFJetUtils->IsMCJetMeson(fMCArray, jetgen, 0.4);
+			  if(!(partonAOD)) MCJetflavour =0;
+			  else
+			  {
+				partonpdg = abs(partonAOD->PdgCode());
+				if(fHFJetUtils->IsBMeson(partonpdg)) MCJetflavour=3;
+				else if(fHFJetUtils->IsDMeson(partonpdg)) MCJetflavour=2;
+				else MCJetflavour=1;
+			  }
 			}
 
 			double genpt = jetgen->Pt();
@@ -1251,6 +1412,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			jetmatched =jetrec->MatchedJet();
 
 			if(jetmatched){
+			  if(fUsePartonDef){
 				partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetmatched, 0.4);
 
 				if((!partonAOD)) fJetFlavor =0;
@@ -1260,6 +1422,17 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					else if(partonpdg==4)fJetFlavor=2;
 					else if(partonpdg==5)fJetFlavor=3;
 				}
+			  }else {
+				partonAOD = fHFJetUtils->IsMCJetMeson(fMCArray, jetmatched, 0.4);
+				if(!(partonAOD)) fJetFlavor =0;
+				else
+				{
+					partonpdg = abs(partonAOD->PdgCode());
+					if(fHFJetUtils->IsBMeson(partonpdg)) fJetFlavor=3;
+					else if(fHFJetUtils->IsDMeson(partonpdg)) fJetFlavor=2;
+					else fJetFlavor=1;
+				}
+			}
 			}
 		}
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
@@ -1299,8 +1472,37 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}
 			
 
+			Double_t Mass = jetrec->M();
+
+			if(fDoJetMass){
+
+			      	fhistJetMass->Fill(fJetPt,Mass ,fPythiaEventWeight);
+			    		
+			  	if(fIsPythia){
+			      	    switch(fJetFlavor)
+					{
+					case 0:
+						fhistJetMass_Unidentified->Fill(fJetPt,jetrec->M(),fPythiaEventWeight);
+						break;
+					case 1:
+						fhistJetMass_udsg->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 2:
+						fhistJetMass_c->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 3:
+						fhistJetMass_b->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					default:
+						break;
+					}
+			    	}
+			}
+
+
 			fValJetProb = -1.;
 			fLogJetProb = -1.;
+
 
 			if(fDoJetProbabilityAnalysis && fResolutionFunction[0]){
 
@@ -1325,6 +1527,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		        			case 2:
 		          				fhistJetProbability_c->Fill(fJetPt,fValJetProb,fPythiaEventWeight);
 		          				fhistJetProbability_cLog->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							if(fDoCharmFractions){
+							  switch(TMath::Abs(partonpdg)){
+							    case 421:
+							      fhistJetProbability_cLog_D0->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 411:
+							      fhistJetProbability_cLog_Dp->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 431:
+							      fhistJetProbability_cLog_Ds->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    case 4122:
+							      fhistJetProbability_cLog_Lc->Fill(fJetPt,fLogJetProb,fPythiaEventWeight);
+							      break;
+							    default:
+							      break;
+							  }
+							}
 		          				break;
 		        			case 3:
 				  			fhistJetProbability_b->Fill(fJetPt,fValJetProb,fPythiaEventWeight);
@@ -1337,6 +1557,426 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
         		}
 
+
+			Double_t SVEnergy=0.;
+			Double_t TracksEnergy=0.;
+			Double_t EnergyFraction=-1;
+
+			if(fDoSVEnergyFraction){
+
+			  Double_t vtxPos[3]   = {fPrimaryVertex->GetX(), fPrimaryVertex->GetY(), fPrimaryVertex->GetZ()};
+			  Double_t covMatrix[6] = {0};
+			  fPrimaryVertex->GetCovarianceMatrix(covMatrix);
+			  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, fPrimaryVertex->GetChi2(), fPrimaryVertex->GetNContributors());
+
+			  // 3 Prong Vertex
+			  TClonesArray* secVertexArrProng = 0;
+			  vector<pair <Double_t, Int_t>> arrDispersionProng;
+			  arrDispersionProng.reserve(5);
+
+			  secVertexArrProng = new TClonesArray("AliAODVertex");
+			  Int_t nDauRejCountProng = 0;
+			  Int_t nVtx6Prong = FindVertices6Prong(jetrec,
+						                 static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+						                 fAODIn,
+						                 esdVtx,
+						                 fAODIn->GetMagneticField(),
+						                 secVertexArrProng,
+						                 nDauRejCountProng);
+
+			  if(nVtx6Prong > 0)
+			  {
+
+				  Int_t MaxSVindex=-1;
+				  Double_t MaxSVLxy=0.;
+				  Double_t MaxSVLxyS=0.;
+
+				  for(Int_t iv=0; iv<secVertexArrProng->GetEntriesFast(); iv++)
+				  {
+				    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(iv));
+
+				    // Calculate vtx distance
+				    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+				    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+				    // signed length
+				    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+				    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+				    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+				    if (signLxy < 0.) decLenXY *= -1.;
+
+				    Double_t errdecLenXY = fPrimaryVertex->ErrorDistanceXYToVertex(secVtx);
+
+				    if(decLenXY > MaxSVLxy){
+					MaxSVLxy = decLenXY;
+					MaxSVindex = iv;
+					MaxSVLxyS = decLenXY / errdecLenXY;
+				     }
+   
+				  }
+
+				  if(MaxSVindex>=0){
+				    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(MaxSVindex));
+
+					for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+						AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+						SVEnergy+= Daught->E();
+					}
+
+					fhistSVnProngs->Fill(fJetPt, 6);
+
+		  			if(fIsPythia){
+		      			    switch(fJetFlavor)
+		        			{
+		        			case 0:
+		          				fhistSVnProngs_Unidentified->Fill(fJetPt,6);
+		          				break;
+		        			case 1:
+		          				fhistSVnProngs_udsg->Fill(fJetPt,6);
+		          				break;
+		        			case 2:
+		          				fhistSVnProngs_c->Fill(fJetPt,6);
+		          				break;
+		        			case 3:
+				  			fhistSVnProngs_b->Fill(fJetPt,6);
+				  			break;
+		        			default:
+		          				break;
+		        			}
+		    			}
+				  }
+
+				    secVertexArrProng->Clear();
+			  	    delete secVertexArrProng;
+			  }else{
+				    secVertexArrProng->Clear();
+				    delete secVertexArrProng;
+
+				  secVertexArrProng = new TClonesArray("AliAODVertex");
+				  Int_t nDauRejCountProng = 0;
+				  Int_t nVtx5Prong = FindVertices5Prong(jetrec,
+								         static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+								         fAODIn,
+								         esdVtx,
+								         fAODIn->GetMagneticField(),
+								         secVertexArrProng,
+								         nDauRejCountProng);
+
+				  if(nVtx5Prong > 0)
+				  {
+
+					  Int_t MaxSVindex=-1;
+					  Double_t MaxSVLxy=0.;
+					  Double_t MaxSVLxyS=0.;
+
+					  for(Int_t iv=0; iv<secVertexArrProng->GetEntriesFast(); iv++)
+					  {
+					    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(iv));
+
+					    // Calculate vtx distance
+					    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+					    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+					    // signed length
+					    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+					    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+					    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+					    if (signLxy < 0.) decLenXY *= -1.;
+
+					    Double_t errdecLenXY = fPrimaryVertex->ErrorDistanceXYToVertex(secVtx);
+
+					    if(decLenXY > MaxSVLxy){
+						MaxSVLxy = decLenXY;
+						MaxSVindex = iv;
+						MaxSVLxyS = decLenXY / errdecLenXY;
+					     }
+	   
+					  }
+
+					  if(MaxSVindex>=0){
+					    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(MaxSVindex));
+
+						for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+							AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+							SVEnergy+= Daught->E();
+						}
+
+						fhistSVnProngs->Fill(fJetPt, 5);
+
+			  			if(fIsPythia){
+			      			    switch(fJetFlavor)
+							{
+							case 0:
+				  				fhistSVnProngs_Unidentified->Fill(fJetPt,5);
+				  				break;
+							case 1:
+				  				fhistSVnProngs_udsg->Fill(fJetPt,5);
+				  				break;
+							case 2:
+				  				fhistSVnProngs_c->Fill(fJetPt,5);
+				  				break;
+							case 3:
+					  			fhistSVnProngs_b->Fill(fJetPt,5);
+					  			break;
+							default:
+				  				break;
+							}
+			    			}
+					  }
+
+					    secVertexArrProng->Clear();
+				  	    delete secVertexArrProng;
+				  }else{
+					    secVertexArrProng->Clear();
+					    delete secVertexArrProng;
+
+					    secVertexArrProng = new TClonesArray("AliAODVertex");
+					    Int_t nDauRejCountProng = 0;
+					    Int_t nVtx4Prong = FindVertices4Prong(jetrec,
+											 static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+											 fAODIn,
+											 esdVtx,
+											 fAODIn->GetMagneticField(),
+											 secVertexArrProng,
+											 nDauRejCountProng);
+
+					  if(nVtx4Prong > 0)
+					  {
+
+						  Int_t MaxSVindex=-1;
+						  Double_t MaxSVLxy=0.;
+						  Double_t MaxSVLxyS=0.;
+
+						  for(Int_t iv=0; iv<secVertexArrProng->GetEntriesFast(); iv++)
+						  {
+						    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(iv));
+
+						    // Calculate vtx distance
+						    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+						    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+						    // signed length
+						    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+						    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+						    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+						    if (signLxy < 0.) decLenXY *= -1.;
+
+						    Double_t errdecLenXY = fPrimaryVertex->ErrorDistanceXYToVertex(secVtx);
+
+						    if(decLenXY > MaxSVLxy){
+							MaxSVLxy = decLenXY;
+							MaxSVindex = iv;
+							MaxSVLxyS = decLenXY / errdecLenXY;
+						     }
+		   
+						  }
+
+						  if(MaxSVindex>=0){
+						    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(MaxSVindex));
+
+							for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+								AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+								SVEnergy+= Daught->E();
+							}
+							fhistSVnProngs->Fill(fJetPt, 4);
+
+				  			if(fIsPythia){
+				      			    switch(fJetFlavor)
+								{
+								case 0:
+					  				fhistSVnProngs_Unidentified->Fill(fJetPt,4);
+					  				break;
+								case 1:
+					  				fhistSVnProngs_udsg->Fill(fJetPt,4);
+					  				break;
+								case 2:
+					  				fhistSVnProngs_c->Fill(fJetPt,4);
+					  				break;
+								case 3:
+						  			fhistSVnProngs_b->Fill(fJetPt,4);
+						  			break;
+								default:
+					  				break;
+								}
+				    			}
+						  }
+
+						    secVertexArrProng->Clear();
+					  	    delete secVertexArrProng;
+					  }else{
+						    secVertexArrProng->Clear();
+					  	    delete secVertexArrProng;
+
+						    secVertexArrProng = new TClonesArray("AliAODVertex");
+						    Int_t nDauRejCountProng = 0;
+
+						    Int_t nVtx3Prong = fVtxTagger3Prong->FindVertices(jetrec,
+											 static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+											 fAODIn,
+											 esdVtx,
+											 fAODIn->GetMagneticField(),
+											 secVertexArrProng,
+											 0,
+											 arrDispersionProng,
+											 nDauRejCountProng);
+
+						  if(nVtx3Prong > 0)
+						  {
+
+							  Int_t MaxSVindex=-1;
+							  Double_t MaxSVLxy=0.;
+							  Double_t MaxSVLxyS=0.;
+
+							  for(Int_t iv=0; iv<secVertexArrProng->GetEntriesFast(); iv++)
+							  {
+							    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(iv));
+
+							    // Calculate vtx distance
+							    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+							    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+							    // signed length
+							    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+							    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+							    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+							    if (signLxy < 0.) decLenXY *= -1.;
+
+							    Double_t errdecLenXY = fPrimaryVertex->ErrorDistanceXYToVertex(secVtx);
+
+							    if(decLenXY > MaxSVLxy){
+								MaxSVLxy = decLenXY;
+								MaxSVindex = iv;
+								MaxSVLxyS = decLenXY / errdecLenXY;
+							     }
+			   
+							  }
+
+							  if(MaxSVindex>=0){
+							    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(MaxSVindex));
+
+								for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+									AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+									SVEnergy+= Daught->E();
+								}
+
+								fhistSVnProngs->Fill(fJetPt, 3);
+
+					  			if(fIsPythia){
+					      			    switch(fJetFlavor)
+									{
+									case 0:
+						  				fhistSVnProngs_Unidentified->Fill(fJetPt,3);
+						  				break;
+									case 1:
+						  				fhistSVnProngs_udsg->Fill(fJetPt,3);
+						  				break;
+									case 2:
+						  				fhistSVnProngs_c->Fill(fJetPt,3);
+						  				break;
+									case 3:
+							  			fhistSVnProngs_b->Fill(fJetPt,3);
+							  			break;
+									default:
+						  				break;
+									}
+					    			}
+							  }
+
+							    secVertexArrProng->Clear();
+						  	    delete secVertexArrProng;
+						}else{
+							    secVertexArrProng->Clear();
+						  	    delete secVertexArrProng;
+
+							    secVertexArrProng = new TClonesArray("AliAODVertex");
+							    Int_t nDauRejCountProng = 0;
+
+							    Int_t nVtx2Prong = fVtxTagger2Prong->FindVertices(jetrec,
+												 static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+												 fAODIn,
+												 esdVtx,
+												 fAODIn->GetMagneticField(),
+												 secVertexArrProng,
+												 0,
+												 arrDispersionProng,
+												 nDauRejCountProng);
+
+							  if(nVtx2Prong > 0)
+							  {
+
+								  Int_t MaxSVindex=-1;
+								  Double_t MaxSVLxy=0.;
+								  Double_t MaxSVLxyS=0.;
+
+								  for(Int_t iv=0; iv<secVertexArrProng->GetEntriesFast(); iv++)
+								  {
+								    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(iv));
+
+								    // Calculate vtx distance
+								    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+								    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+								    // signed length
+								    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+								    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+								    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+								    if (signLxy < 0.) decLenXY *= -1.;
+
+								    Double_t errdecLenXY = fPrimaryVertex->ErrorDistanceXYToVertex(secVtx);
+
+								    if(decLenXY > MaxSVLxy){
+									MaxSVLxy = decLenXY;
+									MaxSVindex = iv;
+									MaxSVLxyS = decLenXY / errdecLenXY;
+								     }
+				   
+								  }
+
+								  if(MaxSVindex>=0){
+								    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArrProng->UncheckedAt(MaxSVindex));
+
+									for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+										AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+										SVEnergy+= Daught->E();
+									}
+
+									fhistSVnProngs->Fill(fJetPt, 2);
+
+						  			if(fIsPythia){
+						      			    switch(fJetFlavor)
+										{
+										case 0:
+							  				fhistSVnProngs_Unidentified->Fill(fJetPt,2);
+							  				break;
+										case 1:
+							  				fhistSVnProngs_udsg->Fill(fJetPt,2);
+							  				break;
+										case 2:
+							  				fhistSVnProngs_c->Fill(fJetPt,2);
+							  				break;
+										case 3:
+								  			fhistSVnProngs_b->Fill(fJetPt,2);
+								  			break;
+										default:
+							  				break;
+										}
+						    			}
+
+							 	  }		
+
+							    secVertexArrProng->Clear();
+						  	    delete secVertexArrProng;
+							}else{
+							    secVertexArrProng->Clear();
+						  	    delete secVertexArrProng;
+							} // 2 prong
+						} // 3 prong
+					  }// 4 prong
+				  }// 5 prong
+			     }// 6 prong
+
+			}//SV fE
+
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
 			{
 				double dcatrackjet =999;
@@ -1347,7 +1987,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				
 				if(!trackAOD) 	continue;
 
-				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
+				TracksEnergy+=trackAOD->E();
+
+				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) 
+					FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
 
 				if(fDoPtRelAnalysis && PtRelSample){
 					Double_t PtRel=0;
@@ -1491,24 +2134,58 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					sImpParXYZSig.push_back(cursImParXYZSig);
 			}// end of track loop
 
+		EnergyFraction=SVEnergy/TracksEnergy;
+
+		if(fDoSVEnergyFraction && EnergyFraction>0){
+
+		      	fhistSVEnergyFraction->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+		    		
+		  	if(fIsPythia){
+		      	    switch(fJetFlavor)
+				{
+				case 0:
+					fhistSVEnergyFraction_Unidentified->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 1:
+					fhistSVEnergyFraction_udsg->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 2:
+					fhistSVEnergyFraction_c->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 3:
+					fhistSVEnergyFraction_b->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				default:
+					break;
+				}
+		    	}
+		}
+
 		if(fDoTrackCountingAnalysis){
 
 			std::sort(sImpParXY.begin(),sImpParXY.end(), std::greater<double>());
 			std::sort(sImpParXYZ.begin(),sImpParXYZ.end(), std::greater<double>());
 			std::sort(sImpParXYSig.begin(),sImpParXYSig.end(), std::greater<double>());
-			std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(), std::greater<double>());
+			std::sort(sImpParXYZSig.begin(),sImpParXYZSig.end(), std::greater<double>());	
+
+			std::vector<double> DefaultDiscriminator;
+
+			if(fUseIPs)
+				DefaultDiscriminator = sImpParXYSig;
+			else
+				DefaultDiscriminator = sImpParXY;
 
 			//Ordered n=1,2,3 sip
-			if (sImpParXY.size()>0){
+			if (DefaultDiscriminator.size()>0){
 				fh2dJetSignedImpParXYFirst->Fill(fJetPt,sImpParXY.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZFirst->Fill(fJetPt,sImpParXYZ.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceFirst->Fill(fJetPt,sImpParXYSig.at(0),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceFirst->Fill(fJetPt,sImpParXYZSig.at(0),fPythiaEventWeight);
 
-				if(sImpParXY.at(0) > fThresholdIP)
+				if(DefaultDiscriminator.at(0) > fThresholdIP)
 					TaggedFirst = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(0) > fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(0) > fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedFirst->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -1534,7 +2211,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(0) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(0) >= fThresholdIP){
 					   fhistJetProbabilityLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -1545,12 +2222,74 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogFirst_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogFirst_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogFirst_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogFirst_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogFirst->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 						}
 					   }
 				}
+
+				if(fDoJetMass && DefaultDiscriminator.at(0) >= fThresholdIP){
+					   fhistJetMassFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(0) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionFirst->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
+				}
+
 
 
 				if(fIsPythia){
@@ -1583,7 +2322,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}//N=1
 
 			//Second largest
-			if (sImpParXY.size()>1)
+			if (DefaultDiscriminator.size()>1)
 			{
 
 				fh2dJetSignedImpParXYSecond->Fill(fJetPt,sImpParXY.at(1),fPythiaEventWeight);
@@ -1591,10 +2330,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYSignificanceSecond->Fill(fJetPt,sImpParXYSig.at(1),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceSecond->Fill(fJetPt,sImpParXYZSig.at(1),fPythiaEventWeight);
 
-				if(sImpParXY.at(1) > fThresholdIP)
+				if(DefaultDiscriminator.at(1) > fThresholdIP)
 					TaggedSecond = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(1) >= fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(1) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedSecond->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -1620,7 +2359,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(1) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(1) >= fThresholdIP){
 					   fhistJetProbabilityLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -1631,6 +2370,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogSecond_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogSecond_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogSecond_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogSecond_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogSecond->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
@@ -1638,6 +2395,49 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
+
+				if(fDoJetMass && DefaultDiscriminator.at(1) >= fThresholdIP){
+					   fhistJetMassSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(1) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionSecond->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
+				}
 
 				if(fIsPythia){
 					
@@ -1670,17 +2470,17 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}//N=2
 			//Third largest
 
-			if (sImpParXY.size()>2)
+			if (DefaultDiscriminator.size()>2)
 			{
 				fh2dJetSignedImpParXYThird->Fill(fJetPt,sImpParXY.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZThird->Fill(fJetPt,sImpParXYZ.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceThird->Fill(fJetPt,sImpParXYSig.at(2),fPythiaEventWeight);
 				fh2dJetSignedImpParXYZSignificanceThird->Fill(fJetPt,sImpParXYZSig.at(2),fPythiaEventWeight);
 
-				if(sImpParXY.at(2) > fThresholdIP)
+				if(DefaultDiscriminator.at(2) > fThresholdIP)
 					TaggedThird = kTRUE;
 
-				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(2) >= fThresholdIP){
+				if(fDoPtRelAnalysis && PtRelSample && DefaultDiscriminator.at(2) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
 					   if(ElePtRel[e]==0) break;
 					   fhistPtRelVsJetPtTaggedThird->Fill(fJetPt, ElePtRel[e],fPythiaEventWeight);
@@ -1706,7 +2506,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					}
 				}
 
-				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && sImpParXY.at(2) >= fThresholdIP){
+				if(fDoJetProbabilityAnalysis && fResolutionFunction[0] && fValJetProb >= 0 && DefaultDiscriminator.at(2) >= fThresholdIP){
 					   fhistJetProbabilityLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 					   if(fIsPythia){
 						if(fJetFlavor ==0){
@@ -1717,11 +2517,72 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==2){
 							   fhistJetProbability_cLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+							   if(fDoCharmFractions){
+							     switch(TMath::Abs(partonpdg)){
+							       case 421:
+							         fhistJetProbability_cLogThird_D0->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 411:
+							         fhistJetProbability_cLogThird_Dp->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 431:
+							         fhistJetProbability_cLogThird_Ds->Fill(fJetPt,fLogJetProb);
+							         break;
+							       case 4122:
+							         fhistJetProbability_cLogThird_Lc->Fill(fJetPt,fLogJetProb);
+							         break;
+							       default:
+							         break;
+							     }
+							   }
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 						}
 					   }
+				}
+
+				if(fDoJetMass && DefaultDiscriminator.at(2) >= fThresholdIP){
+					   fhistJetMassThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && DefaultDiscriminator.at(2) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionThird->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
 				}
 
 				if(fIsPythia){
@@ -1756,7 +2617,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 			//Forth largest
 
-			if (sImpParXY.size()>3 && fDoForthIP)
+			if (DefaultDiscriminator.size()>3 && fDoForthIP)
 			{
 				fh2dJetSignedImpParXYForth->Fill(fJetPt,sImpParXY.at(3),fPythiaEventWeight);
 				fh2dJetSignedImpParXYSignificanceForth->Fill(fJetPt,sImpParXYSig.at(3),fPythiaEventWeight);
@@ -1786,16 +2647,16 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						genpt = genpt - fJetContainerMC->GetRhoVal() * jetrec->MatchedJet()->Area();
 					  }
 
-					if (sImpParXY.size()>0){
-					  if(sImpParXY.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>0){
+					  if(DefaultDiscriminator.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 
-					if (sImpParXY.size()>1){
-					  if(sImpParXY.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>1){
+					  if(DefaultDiscriminator.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 
-					if (sImpParXY.size()>2){
-					  if(sImpParXY.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					if (DefaultDiscriminator.size()>2){
+					  if(DefaultDiscriminator.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
 					}
 				}
 			}
@@ -1804,6 +2665,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			sImpParXYZ.clear();
 			sImpParXYSig.clear();
 			sImpParXYZSig.clear();
+			DefaultDiscriminator.clear();
 		}//end track counting
 
 		// Secondary Vertex Tagger, for testing the DATA driven approach
@@ -2046,8 +2908,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		delete trackAOD;
 
 	}//End jet loop
-	partonAOD=NULL;
-	delete partonAOD;
 	jetrec = 0x0; jetmatched=0x0;
 	delete jetmatched; delete jetrec;
 
@@ -2546,38 +3406,36 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
     "+IP_{xy}"/*14*/
   };
 
-  if(fDoSVAnalysis){
-	  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
-	  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-	  esdTrackCuts->SetMinNClustersTPC(90);
-	  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-	  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-	  esdTrackCuts->SetRequireITSRefit(kTRUE);
-	  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-	  esdTrackCuts->SetMinDCAToVertexXY(0.);
-	  esdTrackCuts->SetEtaRange(-0.9, 0.9);
-	  esdTrackCuts->SetPtRange(1., 1.e10);
+  if(fDoSVAnalysis || fDoSVEnergyFraction){
+	  fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+	  fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+	  fEsdTrackCuts->SetMinNClustersTPC(80);
+	  fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+	  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+	  fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+	  fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	  fEsdTrackCuts->SetMinDCAToVertexXY(0.008);
+	  fEsdTrackCuts->SetEtaRange(-0.9, 0.9);
+	  fEsdTrackCuts->SetPtRange(1., 1.e10);
 
 
-	  AliRDHFJetsCutsVertex* jetCuts3Prong = new AliRDHFJetsCutsVertex("jetCuts3Prong");
-	  jetCuts3Prong->AddTrackCuts(esdTrackCuts);
-	  jetCuts3Prong->SetNprongs(3);
-	  jetCuts3Prong->SetMinPtHardestTrack(1.);
+	  fjetCuts3Prong = new AliRDHFJetsCutsVertex("jetCuts3Prong");
+	  fjetCuts3Prong->AddTrackCuts(fEsdTrackCuts);
+	  fjetCuts3Prong->SetNprongs(3);
+	  fjetCuts3Prong->SetMinPtHardestTrack(1.);
 
-	  AliRDHFJetsCutsVertex* jetCuts2Prong = new AliRDHFJetsCutsVertex("jetCuts2Prong");
-	  jetCuts2Prong->AddTrackCuts(esdTrackCuts);
-	  jetCuts2Prong->SetNprongs(2);
-	  jetCuts2Prong->SetMinPtHardestTrack(1.);
+	  fjetCuts2Prong = new AliRDHFJetsCutsVertex("jetCuts2Prong");
+	  fjetCuts2Prong->AddTrackCuts(fEsdTrackCuts);
+	  fjetCuts2Prong->SetNprongs(2);
+	  fjetCuts2Prong->SetMinPtHardestTrack(1.);
 
 	  fVtxTagger3Prong = new AliHFJetsTaggingVertex();
-	  fVtxTagger3Prong->SetCuts(jetCuts3Prong);
+	  fVtxTagger3Prong->SetCuts(fjetCuts3Prong);
 
 	  fVtxTagger2Prong = new AliHFJetsTaggingVertex();
-	  fVtxTagger2Prong->SetCuts(jetCuts2Prong);
+	  fVtxTagger2Prong->SetCuts(fjetCuts2Prong);
 
-	  delete esdTrackCuts;
-	  delete jetCuts3Prong;
-	  delete jetCuts2Prong;
+  	  fTrackArray = new TObjArray();
   }
 
   if(fDoImprovedDCACut){
@@ -2642,7 +3500,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
           fV0CandidateArray->Delete();//Reset the TClonesArray
   }
 
-	const Int_t nBins2dSignificance =250;
+	const Int_t nBins2dSignificance =400;
 	const Int_t nBins3dSignificance =250;
 	const Int_t nBins2d=500;
 	const Int_t nBins3d =250;
@@ -2782,11 +3640,11 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 		fh1dAnLamdaPtMC = new TH1D("fh1dAnLamdaPtMC","Anti Lamda Pt MC;p_{T} (GeV/c)",200,0,50);
 
-		fh2dKshortPtVsJetPtMC = new TH2D("fh2dKshortPtVsJetPtMC","KShort Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);p_{T,Jet} (GeV/c)",200,0,50,200,0, 200);
+		fh2dKshortPtVsJetPtMC = new TH2D("fh2dKshortPtVsJetPtMC","KShort Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);#it{p}_{T,jet} (GeV/#it{c})",200,0,50,200,0, 200);
 
-		fh2dLamdaPtVsJetPtMC = new TH2D("fh2dLamdaPtVsJetPtMC","Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);p_{T,Jet} (GeV/c)",200,0,50,200,0,200);
+		fh2dLamdaPtVsJetPtMC = new TH2D("fh2dLamdaPtVsJetPtMC","Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);#it{p}_{T,jet} (GeV/#it{c})",200,0,50,200,0,200);
 
-		fh2dAnLamdaPtVsJetPtMC = new TH2D("fh2dAnLamdaPtVsJetPtMC","Anti Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);p_{T,Jet} (GeV/c)",200,0,50,200,0,200);
+		fh2dAnLamdaPtVsJetPtMC = new TH2D("fh2dAnLamdaPtVsJetPtMC","Anti Lamda Pt Vs Jet Pt MC;p_{T,V0} (GeV/c);#it{p}_{T,jet} (GeV/#it{c})",200,0,50,200,0,200);
 	}
 
 
@@ -2812,106 +3670,215 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	fh1dJetRecEtaPhiAccepted = new TH2D("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",200,-1.0,1.0,200,0.,TMath::TwoPi());
 
+	//Jet Mass
+	if (fDoJetMass){
+		fhistJetMass = new TH2D("fhistJetMass","fJetMass;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		if(fDoTrackCountingAnalysis){
+			fhistJetMassFirst = new TH2D("fhistJetMassFirst","fJetMass N=1;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassSecond = new TH2D("fhistJetMassSecond","fJetMass N=2;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassThird = new TH2D("fhistJetMassThird","fJetMass N=3;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		}
+
+		if(fIsPythia){
+			fhistJetMass_Unidentified = new TH2D("fhistJetMass_Unidentified","fhistJetMass_Unidentified;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_udsg = new TH2D("fhistJetMass_udsg","fhistJetMass_udsg;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_c = new TH2D("fhistJetMass_c","fhistJetMass_c;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_b = new TH2D("fhistJetMass_b","fhistJetMass_b;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			if(fDoTrackCountingAnalysis){
+
+				fhistJetMass_UnidentifiedFirst = new TH2D("fhistJetMass_UnidentifiedFirst","fhistJetMass_UnidentifiedFirst;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgFirst = new TH2D("fhistJetMass_udsgFirst","fhistJetMass_udsgFirst;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cFirst = new TH2D("fhistJetMass_cFirst","fhistJetMass_cFirst;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bFirst = new TH2D("fhistJetMass_bFirst","fhistJetMass_bFirst;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedSecond = new TH2D("fhistJetMass_UnidentifiedSecond","fhistJetMass_UnidentifiedSecond;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgSecond = new TH2D("fhistJetMass_udsgSecond","fhistJetMass_udsgSecond;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cSecond = new TH2D("fhistJetMass_cSecond","fhistJetMass_cSecond;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bSecond = new TH2D("fhistJetMass_bSecond","fhistJetMass_bSecond;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedThird = new TH2D("fhistJetMass_UnidentifiedThird","fhistJetMass_UnidentifiedThird;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgThird = new TH2D("fhistJetMass_udsgThird","fhistJetMass_udsgThird;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cThird = new TH2D("fhistJetMass_cThird","fhistJetMass_cThird;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bThird = new TH2D("fhistJetMass_bThird","fhistJetMass_bThird;#it{p}_{T,jet} (GeV/#it{c});Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			}
+		}
+
+	}
+
+	//Secondary vertex energy fraction
+	if(fDoSVEnergyFraction){
+		fhistSVEnergyFraction = new TH2D("fhistSVEnergyFraction","SV Energy Fraction;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+
+		fhistSVnProngs = new TH2D("fhistSVnProngs", "number of tracks in the SV;#it{p}_{T,jet} (GeV/#it{c});nTracks SV", 250,0,250,5,2,7);
+
+		if(fDoTrackCountingAnalysis){
+			fhistSVEnergyFractionFirst = new TH2D("fhistSVEnergyFractionFirst","SV Energy Fraction N=1;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFractionSecond = new TH2D("fhistSVEnergyFractionSecond","SV Energy Fraction N=2;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFractionThird = new TH2D("fhistSVEnergyFractionThird","SV Energy Fraction N=3;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+		}
+
+		if(fIsPythia){
+			fhistSVEnergyFraction_Unidentified = new TH2D("fhistSVEnergyFraction_Unidentified","SV Energy Fraction Undef;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_udsg = new TH2D("fhistSVEnergyFraction_udsg","SV Energy Fraction lf-jet;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_c    = new TH2D("fhistSVEnergyFraction_c","SV Energy Fraction c-jet;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_b   = new TH2D("fhistSVEnergyFraction_b","SV Energy Fraction b-jet;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+
+			fhistSVnProngs_Unidentified = new TH2D("fhistSVnProngs_Unidentified", "number of tracks in the SV Unidentified;#it{p}_{T,jet} (GeV/#it{c});nTracks SV", 250,0,250,5,2,7);
+			fhistSVnProngs_udsg = new TH2D("fhistSVnProngs_udsg", "number of tracks in the SV lf-jet;#it{p}_{T,jet} (GeV/#it{c});nTracks SV", 250,0,250,5,2,7);
+
+			fhistSVnProngs_b = new TH2D("fhistSVnProngs_b", "number of tracks in the SV b-jet;#it{p}_{T,jet} (GeV/#it{c});nTracks SV", 250,0,250,5,2,7);
+
+			fhistSVnProngs_c = new TH2D("fhistSVnProngs_c", "number of tracks in the SV c-jet;#it{p}_{T,jet} (GeV/#it{c});nTracks SV", 250,0,250,5,2,7);
+
+
+			if(fDoTrackCountingAnalysis){
+
+				fhistSVEnergyFraction_UnidentifiedFirst = new TH2D("fhistSVEnergyFraction_UnidentifiedFirst","SV Energy Fraction Undef N=1;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgFirst = new TH2D("fhistSVEnergyFraction_udsgFirst","SV Energy Fraction lf-jet N=1;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cFirst    = new TH2D("fhistSVEnergyFraction_cFirst","SV Energy Fraction c-jet N=1;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bFirst   = new TH2D("fhistSVEnergyFraction_bFirst","SV Energy Fraction b-jet N=1;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+
+				fhistSVEnergyFraction_UnidentifiedSecond = new TH2D("fhistSVEnergyFraction_UnidentifiedSecond","SV Energy Fraction Undef N=2;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgSecond = new TH2D("fhistSVEnergyFraction_udsgSecond","SV Energy Fraction lf-jet N=2;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cSecond    = new TH2D("fhistSVEnergyFraction_cSecond","SV Energy Fraction c-jet N=2;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bSecond   = new TH2D("fhistSVEnergyFraction_bSecond","SV Energy Fraction b-jet N=2;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+
+				fhistSVEnergyFraction_UnidentifiedThird = new TH2D("fhistSVEnergyFraction_UnidentifiedThird","SV Energy Fraction Undef N=3;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgThird = new TH2D("fhistSVEnergyFraction_udsgThird","SV Energy Fraction lf-jet N=3;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cThird    = new TH2D("fhistSVEnergyFraction_cThird","SV Energy Fraction c-jet N=3;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bThird   = new TH2D("fhistSVEnergyFraction_bThird","SV Energy Fraction b-jet N=3;#it{p}_{T,jet} (GeV/#it{c}); f_{E}",250,0,250,500,0,1);
+
+			}
+
+		}
+
+	}
 
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
-			fh2dJetSignedImpParXY_Class1 = new TH2D("fh2dJetSignedImpParXY_Class1","Tracks with chi2/NDF>2 IP_{xy};pt (GeV/c); IP_{xy} (cm)",200,0,100,2000,-1,1);
-			fh2dJetSignedImpParXYSignificance_Class1 = new TH2D("fh2dJetSignedImpParXYSignificance_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-			fh2dJetSignedImpParXYZ_Class1 = new TH2D("fh2dJetSignedImpParXYZ_Class1","Tracks with chi2/NDF>2 IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
-			fh2dJetSignedImpParXYZSignificance_Class1 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class1","Tracks with chi2/NDF>2 sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXY_Class1 = new TH2D("fh2dJetSignedImpParXY_Class1","Tracks with chi2/NDF>2 IP_{xy};#it{p}_{T} (GeV/#it{c}); IP_{xy} (cm)",200,0,100,2000,-1,1);
+			fh2dJetSignedImpParXYSignificance_Class1 = new TH2D("fh2dJetSignedImpParXYSignificance_Class1","Tracks with chi2/NDF>2 sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXYZ_Class1 = new TH2D("fh2dJetSignedImpParXYZ_Class1","Tracks with chi2/NDF>2 IP_{xyz};#it{p}_{T} (GeV/#it{c}); IP3D (cm)",200,0,100,2000,-2,2);
+			fh2dJetSignedImpParXYZSignificance_Class1 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class1","Tracks with chi2/NDF>2 sIP_{xyz};#it{p}_{T} (GeV/#it{c}); sIP3D",200,0,100,2000,-100,100);
 
-			fh2dJetSignedImpParXY_Class2 = new TH2D("fh2dJetSignedImpParXY_Class2","Tracks with chi2/NDF<2 and 2 ITS hits IP_{xy};pt (GeV/c); IP_{xy} (cm)",200,0,100,2000,-1,1);
-			fh2dJetSignedImpParXYSignificance_Class2 = new TH2D("fh2dJetSignedImpParXYSignificance_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-			fh2dJetSignedImpParXYZ_Class2 = new TH2D("fh2dJetSignedImpParXYZ_Class2","Tracks with chi2/NDF<2 and 2 ITS hits IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
-			fh2dJetSignedImpParXYZSignificance_Class2 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXY_Class2 = new TH2D("fh2dJetSignedImpParXY_Class2","Tracks with chi2/NDF<2 and 2 ITS hits IP_{xy};#it{p}_{T} (GeV/#it{c}); IP_{xy} (cm)",200,0,100,2000,-1,1);
+			fh2dJetSignedImpParXYSignificance_Class2 = new TH2D("fh2dJetSignedImpParXYSignificance_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXYZ_Class2 = new TH2D("fh2dJetSignedImpParXYZ_Class2","Tracks with chi2/NDF<2 and 2 ITS hits IP_{xyz};#it{p}_{T} (GeV/#it{c}); IP3D (cm)",200,0,100,2000,-2,2);
+			fh2dJetSignedImpParXYZSignificance_Class2 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xyz};#it{p}_{T} (GeV/#it{c}); sIP3D",200,0,100,2000,-100,100);
 
-			fh2dJetSignedImpParXY_Class3 = new TH2D("fh2dJetSignedImpParXY_Class3","Tracks with chi2/NDF<2 and 3 ITS hits IP_{xy};pt (GeV/c); IP_{xy} (cm)",200,0,100,2000,-1,1);
-			fh2dJetSignedImpParXYSignificance_Class3 = new TH2D("fh2dJetSignedImpParXYSignificance_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-			fh2dJetSignedImpParXYZ_Class3 = new TH2D("fh2dJetSignedImpParXYZ_Class3","Tracks with chi2/NDF<2 and 3 ITS hits IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
-			fh2dJetSignedImpParXYZSignificance_Class3 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXY_Class3 = new TH2D("fh2dJetSignedImpParXY_Class3","Tracks with chi2/NDF<2 and 3 ITS hits IP_{xy};#it{p}_{T} (GeV/#it{c}); IP_{xy} (cm)",200,0,100,2000,-1,1);
+			fh2dJetSignedImpParXYSignificance_Class3 = new TH2D("fh2dJetSignedImpParXYSignificance_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXYZ_Class3 = new TH2D("fh2dJetSignedImpParXYZ_Class3","Tracks with chi2/NDF<2 and 3 ITS hits IP_{xyz};#it{p}_{T} (GeV/#it{c}); IP3D (cm)",200,0,100,2000,-2,2);
+			fh2dJetSignedImpParXYZSignificance_Class3 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xyz};#it{p}_{T} (GeV/#it{c}); sIP3D",200,0,100,2000,-100,100);
 
-			fh2dJetSignedImpParXY_Class4 = new TH2D("fh2dJetSignedImpParXY_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xy};pt (GeV/c); IP_{xy} (cm)",200,0,100,2000,-1,1);
-			fh2dJetSignedImpParXYSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYSignificance_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-			fh2dJetSignedImpParXYZ_Class4 = new TH2D("fh2dJetSignedImpParXYZ_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xyz};pt (GeV/c); IP3D (cm)",200,0,100,2000,-2,2);
-			fh2dJetSignedImpParXYZSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class4","Tracks with chi2/NDF<2.5 and 4 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXY_Class4 = new TH2D("fh2dJetSignedImpParXY_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xy};#it{p}_{T} (GeV/#it{c}); IP_{xy} (cm)",200,0,100,2000,-1,1);
+			fh2dJetSignedImpParXYSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYSignificance_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+			fh2dJetSignedImpParXYZ_Class4 = new TH2D("fh2dJetSignedImpParXYZ_Class4","Tracks with chi2/NDF<2 and 4 ITS hits IP_{xyz};#it{p}_{T} (GeV/#it{c}); IP3D (cm)",200,0,100,2000,-2,2);
+			fh2dJetSignedImpParXYZSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class4","Tracks with chi2/NDF<2.5 and 4 ITS hits sIP_{xyz};#it{p}_{T} (GeV/#it{c}); sIP3D",200,0,100,2000,-100,100);
 
 			if(fIsPythia){
 
-				fh2dJetSignedImpParXYSignificanceb_Class1 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancec_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancelf_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class1","Tracks with chi2/NDF>2 sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificanceb_Class1 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class1","Tracks with chi2/NDF>2 sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class1","Tracks with chi2/NDF>2 sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class1 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class1","Tracks with chi2/NDF>2 sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
 
-				fh2dJetSignedImpParXYSignificanceb_Class2 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancec_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancelf_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificanceb_Class2 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class2 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class2","Tracks with chi2/NDF<2 and 2 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
 
-				fh2dJetSignedImpParXYSignificanceb_Class3 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancec_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancelf_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificanceb_Class3 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class3 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class3","Tracks with chi2/NDF<2 and 3 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
 
-				fh2dJetSignedImpParXYSignificanceb_Class4 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancec_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
-				fh2dJetSignedImpParXYSignificancelf_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};pt (GeV/c); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificanceb_Class4 = new TH2D("fh2dJetSignedImpParXYSignificanceb_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancec_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancec_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
+				fh2dJetSignedImpParXYSignificancelf_Class4 = new TH2D("fh2dJetSignedImpParXYSignificancelf_Class4","Tracks with chi2/NDF<2 and 4 ITS hits sIP_{xy};#it{p}_{T} (GeV/#it{c}); sIP_{xy}",200,0,100,2000,-100,100);
 
 			}
 
 		}else{	
-			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
-			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;#it{p}_{T,jet} (GeV/#it{c});JP",250,0,250,1000,0,1);
+			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
 			if(fDoTrackCountingAnalysis){
-				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbabilityLogThird = new TH2D("fhistJetProbabilityLogThird","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbabilityLogThird = new TH2D("fhistJetProbabilityLogThird","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 			}
 			if(fDoSVAnalysis){
-				fhistJetProbabilityLogSVHE = new TH2D("fhistJetProbabilityLogSVHE","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbabilityLogSVHP = new TH2D("fhistJetProbabilityLogSVHP","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbabilityLogSVHE = new TH2D("fhistJetProbabilityLogSVHE","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbabilityLogSVHP = new TH2D("fhistJetProbabilityLogSVHP","JetProbability Logarithmic;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 			}
 
 			if(fIsPythia){
-				fhistJetProbability_Unidentified = new TH2D("fhistJetProbability_Unidentified","JetProbability_Unidentified;p_{T,jet};JP",250,0,250,1000,0,1);
-				fhistJetProbability_udsg = new TH2D("fhistJetProbability_udsg","JetProbability_udsg;p_{T,jet};JP",250,0,250,1000,0,1);
-				fhistJetProbability_c = new TH2D("fhistJetProbability_c","JetProbability_c;p_{T,jet};JP",250,0,250,1000,0,1);
-				fhistJetProbability_b = new TH2D("fhistJetProbability_b","JetProbability_b;p_{T,jet};JP",250,0,250,1000,0,1);
+				fhistJetProbability_Unidentified = new TH2D("fhistJetProbability_Unidentified","JetProbability_Unidentified;#it{p}_{T,jet} (GeV/#it{c});JP",250,0,250,1000,0,1);
+				fhistJetProbability_udsg = new TH2D("fhistJetProbability_udsg","JetProbability_udsg;#it{p}_{T,jet} (GeV/#it{c});JP",250,0,250,1000,0,1);
+				fhistJetProbability_c = new TH2D("fhistJetProbability_c","JetProbability_c;#it{p}_{T,jet} (GeV/#it{c});JP",250,0,250,1000,0,1);
+				fhistJetProbability_b = new TH2D("fhistJetProbability_b","JetProbability_b;#it{p}_{T,jet} (GeV/#it{c});JP",250,0,250,1000,0,1);
 
-				fhistJetProbability_UnidentifiedLog = new TH2D("fhistJetProbability_UnidentifiedLog","JetProbability_Unidentified;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbability_udsgLog = new TH2D("fhistJetProbability_udsgLog","JetProbability_udsg;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbability_cLog = new TH2D("fhistJetProbability_cLog","JetProbability_c;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-				fhistJetProbability_bLog = new TH2D("fhistJetProbability_bLog","JetProbability_b;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbability_UnidentifiedLog = new TH2D("fhistJetProbability_UnidentifiedLog","JetProbability_Unidentified;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbability_udsgLog = new TH2D("fhistJetProbability_udsgLog","JetProbability_udsg;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbability_cLog = new TH2D("fhistJetProbability_cLog","JetProbability_c;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+				fhistJetProbability_bLog = new TH2D("fhistJetProbability_bLog","JetProbability_b;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 
 				if(fDoTrackCountingAnalysis){
-					fhistJetProbability_UnidentifiedLogFirst = new TH2D("fhistJetProbability_UnidentifiedLogFirst","JetProbability_Unidentified N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_udsgLogFirst = new TH2D("fhistJetProbability_udsgLogFirst","JetProbability_udsg N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_cLogFirst = new TH2D("fhistJetProbability_cLogFirst","JetProbability_c N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_bLogFirst = new TH2D("fhistJetProbability_bLogFirst","JetProbability_b N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_UnidentifiedLogFirst = new TH2D("fhistJetProbability_UnidentifiedLogFirst","JetProbability_Unidentified N=1 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_udsgLogFirst = new TH2D("fhistJetProbability_udsgLogFirst","JetProbability_udsg N=1 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_cLogFirst = new TH2D("fhistJetProbability_cLogFirst","JetProbability_c N=1 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_bLogFirst = new TH2D("fhistJetProbability_bLogFirst","JetProbability_b N=1 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 
-					fhistJetProbability_UnidentifiedLogSecond = new TH2D("fhistJetProbability_UnidentifiedLogSecond","JetProbability_Unidentified N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_udsgLogSecond = new TH2D("fhistJetProbability_udsgLogSecond","JetProbability_udsg N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_cLogSecond = new TH2D("fhistJetProbability_cLogSecond","JetProbability_c N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_bLogSecond = new TH2D("fhistJetProbability_bLogSecond","JetProbability_b N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_UnidentifiedLogSecond = new TH2D("fhistJetProbability_UnidentifiedLogSecond","JetProbability_Unidentified N=2 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_udsgLogSecond = new TH2D("fhistJetProbability_udsgLogSecond","JetProbability_udsg N=2 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_cLogSecond = new TH2D("fhistJetProbability_cLogSecond","JetProbability_c N=2 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_bLogSecond = new TH2D("fhistJetProbability_bLogSecond","JetProbability_b N=2 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 
-					fhistJetProbability_UnidentifiedLogThird = new TH2D("fhistJetProbability_UnidentifiedLogThird","JetProbability_Unidentified N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_udsgLogThird = new TH2D("fhistJetProbability_udsgLogThird","JetProbability_udsg N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_cLogThird = new TH2D("fhistJetProbability_cLogThird","JetProbability_c N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_bLogThird = new TH2D("fhistJetProbability_bLogThird","JetProbability_b N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_UnidentifiedLogThird = new TH2D("fhistJetProbability_UnidentifiedLogThird","JetProbability_Unidentified N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_udsgLogThird = new TH2D("fhistJetProbability_udsgLogThird","JetProbability_udsg N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_cLogThird = new TH2D("fhistJetProbability_cLogThird","JetProbability_c N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_bLogThird = new TH2D("fhistJetProbability_bLogThird","JetProbability_b N=3 Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					if(fDoCharmFractions){
+
+					  fhistJetProbability_cLog_D0 = new TH2D("fhistJetProbability_cLog_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Dp = new TH2D("fhistJetProbability_cLog_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Ds = new TH2D("fhistJetProbability_cLog_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLog_Lc = new TH2D("fhistJetProbability_cLog_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogFirst_D0 = new TH2D("fhistJetProbability_cLogFirst_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Dp = new TH2D("fhistJetProbability_cLogFirst_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Ds = new TH2D("fhistJetProbability_cLogFirst_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogFirst_Lc = new TH2D("fhistJetProbability_cLogFirst_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogSecond_D0 = new TH2D("fhistJetProbability_cLogSecond_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Dp = new TH2D("fhistJetProbability_cLogSecond_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Ds = new TH2D("fhistJetProbability_cLogSecond_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogSecond_Lc = new TH2D("fhistJetProbability_cLogSecond_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+
+					  fhistJetProbability_cLogThird_D0 = new TH2D("fhistJetProbability_cLogThird_D0","JetProbability_c D0;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Dp = new TH2D("fhistJetProbability_cLogThird_Dp","JetProbability_c Dp;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Ds = new TH2D("fhistJetProbability_cLogThird_Ds","JetProbability_c Ds;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					  fhistJetProbability_cLogThird_Lc = new TH2D("fhistJetProbability_cLogThird_Lc","JetProbability_c Lc;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					}
 				}
 				if(fDoSVAnalysis){
-					fhistJetProbability_UnidentifiedLogSVHE = new TH2D("fhistJetProbability_UnidentifiedLogSVHE","JetProbability_Unidentified SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_udsgLogSVHE = new TH2D("fhistJetProbability_udsgLogSVHE","JetProbability_udsg SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_cLogSVHE = new TH2D("fhistJetProbability_cLogSVHE","JetProbability_c SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_bLogSVHE = new TH2D("fhistJetProbability_bLogSVHE","JetProbability_b SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_UnidentifiedLogSVHE = new TH2D("fhistJetProbability_UnidentifiedLogSVHE","JetProbability_Unidentified SVHE Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_udsgLogSVHE = new TH2D("fhistJetProbability_udsgLogSVHE","JetProbability_udsg SVHE Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_cLogSVHE = new TH2D("fhistJetProbability_cLogSVHE","JetProbability_c SVHE Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_bLogSVHE = new TH2D("fhistJetProbability_bLogSVHE","JetProbability_b SVHE Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 
-					fhistJetProbability_UnidentifiedLogSVHP = new TH2D("fhistJetProbability_UnidentifiedLogSVHP","JetProbability_Unidentified SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_udsgLogSVHP = new TH2D("fhistJetProbability_udsgLogSVHP","JetProbability_udsg SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_cLogSVHP = new TH2D("fhistJetProbability_cLogSVHP","JetProbability_c SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
-					fhistJetProbability_bLogSVHP = new TH2D("fhistJetProbability_bLogSVHP","JetProbability_b SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_UnidentifiedLogSVHP = new TH2D("fhistJetProbability_UnidentifiedLogSVHP","JetProbability_Unidentified SVHP Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_udsgLogSVHP = new TH2D("fhistJetProbability_udsgLogSVHP","JetProbability_udsg SVHP Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_cLogSVHP = new TH2D("fhistJetProbability_cLogSVHP","JetProbability_c SVHP Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
+					fhistJetProbability_bLogSVHP = new TH2D("fhistJetProbability_bLogSVHP","JetProbability_b SVHP Tagged;#it{p}_{T,jet} (GeV/#it{c});-ln(JP)",250,0,250,375,0,30);
 				}
 			}
 		}
 	}
 
 
-	fh1dJetRecPtAcceptedunCorr = new TH1D("fh1dJetRecPtAcceptedunCorr","Rec Jet Pt uncorrected;P_{T,Jet} (Gev/c)",250 ,0, 250);
+	fh1dJetRecPtAcceptedunCorr = new TH1D("fh1dJetRecPtAcceptedunCorr","Rec Jet Pt uncorrected;#it{p}_{T,jet} (GeV/#it{c})",250 ,0, 250);
 
 
 	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
@@ -2935,11 +3902,11 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fh1dTracksImpParXYZTruth = new TH1D("fh1dTracksImpParXYZTruth","True: 3d imp. parameter ;impact parameter 3d (cm);a.u.",nBins3d,0,1.);
 		fh1dTracksImpParXYResidualTruth  = new TH1D ("fh1dTracksImpParXYResidualTruth","Residual 2D Impact Paramter; #frac{|DCA_{xy}| - |DCA^{Truth}_{xy}|}{#sigma_{xy}} (N#sigma);a.u.",1000,-5,5);
 		fh1dTracksImpParXYZResidualTruth  = new TH1D ("fh1dTracksImpParXYZResidualTruth","Residual 3d imp. parameter; #frac{|DCA_{xyz}| - |DCA^{Truth}_{xyz}|}{#sigma_{xyz}} (N#sigma);a.u.",1000,-5,5);
-		fh1dJetGenPt = new TH1D("fh1dJetGenPt","generator level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetGenPtUnidentified = new TH1D("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",500,0,250);
-		fh1dJetGenPtudsg = new TH1D("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",500,0,250);
-		fh1dJetGenPtc = new TH1D("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",500,0,250);
-		fh1dJetGenPtb = new TH1D("fh1dJetGenPtb","generator level b jets;pt (GeV/c); count",500,0,250);
+		fh1dJetGenPt = new TH1D("fh1dJetGenPt","generator level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetGenPtUnidentified = new TH1D("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetGenPtudsg = new TH1D("fh1dJetGenPtudsg","generator level udsg jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetGenPtc = new TH1D("fh1dJetGenPtc","generator level c jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetGenPtb = new TH1D("fh1dJetGenPtb","generator level b jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
 
 		fh2dJetGenPtVsJetRecPt = new TH2D("fh2dJetGenPtVsJetRecPt","detector momentum response;rec pt;gen pt",500,0,250,500,0,250);
 
@@ -2960,99 +3927,99 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		//Track Counting Analysis
 		if(fDoTrackCountingAnalysis){
 
-			fh2dJetSignedImpParXYUnidentified = new TH2D("fh2dJetSignedImpParXYUnidentified","fh2dJetSignedImpParXYUnidentified;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZUnidentified = new TH2D("fh2dJetSignedImpParXYZUnidentified","fh2dJetSignedImpParXYZUnidentified;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceUnidentified = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentified","fh2dJetSignedImpParXYSignificanceUnidentified;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceUnidentified = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentified","fh2dJetSignedImpParXYZSignificanceUnidentified;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYUnidentified = new TH2D("fh2dJetSignedImpParXYUnidentified","fh2dJetSignedImpParXYUnidentified;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZUnidentified = new TH2D("fh2dJetSignedImpParXYZUnidentified","fh2dJetSignedImpParXYZUnidentified;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceUnidentified = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentified","fh2dJetSignedImpParXYSignificanceUnidentified;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceUnidentified = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentified","fh2dJetSignedImpParXYZSignificanceUnidentified;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYudsg = new TH2D("fh2dJetSignedImpParXYudsg","fh2dJetSignedImpParXYudsg;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZudsg  = new TH2D("fh2dJetSignedImpParXYZudsg","fh2dJetSignedImpParXYZudsg;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceudsg  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg","fh2dJetSignedImpParXYSignificanceudsg;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceudsg  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg","fh2dJetSignedImpParXYZSignificanceudsg;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYudsg = new TH2D("fh2dJetSignedImpParXYudsg","fh2dJetSignedImpParXYudsg;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZudsg  = new TH2D("fh2dJetSignedImpParXYZudsg","fh2dJetSignedImpParXYZudsg;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceudsg  = new TH2D("fh2dJetSignedImpParXYSignificanceudsg","fh2dJetSignedImpParXYSignificanceudsg;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceudsg  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsg","fh2dJetSignedImpParXYZSignificanceudsg;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYc= new TH2D("fh2dJetSignedImpParXYc","fh2dJetSignedImpParXYc;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZc  = new TH2D("fh2dJetSignedImpParXYZc","fh2dJetSignedImpParXYZc;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancec  = new TH2D("fh2dJetSignedImpParXYSignificancec","fh2dJetSignedImpParXYSignificancec;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancec  = new TH2D("fh2dJetSignedImpParXYZSignificancec","fh2dJetSignedImpParXYZSignificancec;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYc= new TH2D("fh2dJetSignedImpParXYc","fh2dJetSignedImpParXYc;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZc  = new TH2D("fh2dJetSignedImpParXYZc","fh2dJetSignedImpParXYZc;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancec  = new TH2D("fh2dJetSignedImpParXYSignificancec","fh2dJetSignedImpParXYSignificancec;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancec  = new TH2D("fh2dJetSignedImpParXYZSignificancec","fh2dJetSignedImpParXYZSignificancec;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYb= new TH2D("fh2dJetSignedImpParXYb","fh2dJetSignedImpParXYb;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZb  = new TH2D("fh2dJetSignedImpParXYZb","fh2dJetSignedImpParXYZb;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceb  = new TH2D("fh2dJetSignedImpParXYSignificanceb","fh2dJetSignedImpParXYSignificanceb;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceb  = new TH2D("fh2dJetSignedImpParXYZSignificanceb","fh2dJetSignedImpParXYZSignificanceb;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYb= new TH2D("fh2dJetSignedImpParXYb","fh2dJetSignedImpParXYb;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZb  = new TH2D("fh2dJetSignedImpParXYZb","fh2dJetSignedImpParXYZb;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceb  = new TH2D("fh2dJetSignedImpParXYSignificanceb","fh2dJetSignedImpParXYSignificanceb;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceb  = new TH2D("fh2dJetSignedImpParXYZSignificanceb","fh2dJetSignedImpParXYZSignificanceb;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 			//N=1
-			fh2dJetSignedImpParXYUnidentifiedFirst= new TH2D("fh2dJetSignedImpParXYUnidentifiedFirst","fh2dJetSignedImpParXYUnidentifiedFirst;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYZUnidentifiedFirst","fh2dJetSignedImpParXYZUnidentifiedFirst;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedFirst","fh2dJetSignedImpParXYSignificanceUnidentifiedFirst;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYUnidentifiedFirst= new TH2D("fh2dJetSignedImpParXYUnidentifiedFirst","fh2dJetSignedImpParXYUnidentifiedFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYZUnidentifiedFirst","fh2dJetSignedImpParXYZUnidentifiedFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedFirst","fh2dJetSignedImpParXYSignificanceUnidentifiedFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst","fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYudsgFirst = new TH2D("fh2dJetSignedImpParXYudsgFirst","fh2dJetSignedImpParXYudsgFirst;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZudsgFirst  = new TH2D("fh2dJetSignedImpParXYZudsgFirst","fh2dJetSignedImpParXYZudsgFirst;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceudsgFirst  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst","fh2dJetSignedImpParXYSignificanceudsgFirst;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceudsgFirst  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst","fh2dJetSignedImpParXYZSignificanceudsgFirst;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYudsgFirst = new TH2D("fh2dJetSignedImpParXYudsgFirst","fh2dJetSignedImpParXYudsgFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZudsgFirst  = new TH2D("fh2dJetSignedImpParXYZudsgFirst","fh2dJetSignedImpParXYZudsgFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceudsgFirst  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgFirst","fh2dJetSignedImpParXYSignificanceudsgFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceudsgFirst  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgFirst","fh2dJetSignedImpParXYZSignificanceudsgFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYcFirst= new TH2D("fh2dJetSignedImpParXYcFirst","fh2dJetSignedImpParXYcFirst;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZcFirst  = new TH2D("fh2dJetSignedImpParXYZcFirst","fh2dJetSignedImpParXYZcFirst;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancecFirst  = new TH2D("fh2dJetSignedImpParXYSignificancecFirst","fh2dJetSignedImpParXYSignificancecFirst;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancecFirst  = new TH2D("fh2dJetSignedImpParXYZSignificancecFirst","fh2dJetSignedImpParXYZSignificancecFirst;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYcFirst= new TH2D("fh2dJetSignedImpParXYcFirst","fh2dJetSignedImpParXYcFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZcFirst  = new TH2D("fh2dJetSignedImpParXYZcFirst","fh2dJetSignedImpParXYZcFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancecFirst  = new TH2D("fh2dJetSignedImpParXYSignificancecFirst","fh2dJetSignedImpParXYSignificancecFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancecFirst  = new TH2D("fh2dJetSignedImpParXYZSignificancecFirst","fh2dJetSignedImpParXYZSignificancecFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYbFirst= new TH2D("fh2dJetSignedImpParXYbFirst","fh2dJetSignedImpParXYbFirst;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZbFirst  = new TH2D("fh2dJetSignedImpParXYZbFirst","fh2dJetSignedImpParXYZbFirst;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancebFirst  = new TH2D("fh2dJetSignedImpParXYSignificancebFirst","fh2dJetSignedImpParXYSignificancebFirst;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancebFirst  = new TH2D("fh2dJetSignedImpParXYZSignificancebFirst","fh2dJetSignedImpParXYZSignificancebFirst;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYbFirst= new TH2D("fh2dJetSignedImpParXYbFirst","fh2dJetSignedImpParXYbFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZbFirst  = new TH2D("fh2dJetSignedImpParXYZbFirst","fh2dJetSignedImpParXYZbFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancebFirst  = new TH2D("fh2dJetSignedImpParXYSignificancebFirst","fh2dJetSignedImpParXYSignificancebFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancebFirst  = new TH2D("fh2dJetSignedImpParXYZSignificancebFirst","fh2dJetSignedImpParXYZSignificancebFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 			//N=2
-			fh2dJetSignedImpParXYUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond","fh2dJetSignedImpParXYUnidentifiedSecond;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond","fh2dJetSignedImpParXYZUnidentifiedSecond;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYUnidentifiedSecond","fh2dJetSignedImpParXYUnidentifiedSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYZUnidentifiedSecond","fh2dJetSignedImpParXYZUnidentifiedSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedSecond","fh2dJetSignedImpParXYSignificanceUnidentifiedSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond","fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYudsgSecond = new TH2D("fh2dJetSignedImpParXYudsgSecond","fh2dJetSignedImpParXYudsgSecond;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZudsgSecond  = new TH2D("fh2dJetSignedImpParXYZudsgSecond","fh2dJetSignedImpParXYZudsgSecond;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceudsgSecond  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgSecond","fh2dJetSignedImpParXYSignificanceudsgSecond;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceudsgSecond  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgSecond","fh2dJetSignedImpParXYZSignificanceudsgSecond;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYudsgSecond = new TH2D("fh2dJetSignedImpParXYudsgSecond","fh2dJetSignedImpParXYudsgSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZudsgSecond  = new TH2D("fh2dJetSignedImpParXYZudsgSecond","fh2dJetSignedImpParXYZudsgSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceudsgSecond  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgSecond","fh2dJetSignedImpParXYSignificanceudsgSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceudsgSecond  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgSecond","fh2dJetSignedImpParXYZSignificanceudsgSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYcSecond= new TH2D("fh2dJetSignedImpParXYcSecond","fh2dJetSignedImpParXYcSecond;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZcSecond  = new TH2D("fh2dJetSignedImpParXYZcSecond","fh2dJetSignedImpParXYZcSecond;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancecSecond  = new TH2D("fh2dJetSignedImpParXYSignificancecSecond","fh2dJetSignedImpParXYSignificancecSecond;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancecSecond  = new TH2D("fh2dJetSignedImpParXYZSignificancecSecond","fh2dJetSignedImpParXYZSignificancecSecond;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYcSecond= new TH2D("fh2dJetSignedImpParXYcSecond","fh2dJetSignedImpParXYcSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZcSecond  = new TH2D("fh2dJetSignedImpParXYZcSecond","fh2dJetSignedImpParXYZcSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancecSecond  = new TH2D("fh2dJetSignedImpParXYSignificancecSecond","fh2dJetSignedImpParXYSignificancecSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancecSecond  = new TH2D("fh2dJetSignedImpParXYZSignificancecSecond","fh2dJetSignedImpParXYZSignificancecSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYbSecond= new TH2D("fh2dJetSignedImpParXYbSecond","fh2dJetSignedImpParXYbSecond;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZbSecond  = new TH2D("fh2dJetSignedImpParXYZbSecond","fh2dJetSignedImpParXYZbSecond;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancebSecond  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond","fh2dJetSignedImpParXYSignificancebSecond;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancebSecond  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond","fh2dJetSignedImpParXYZSignificancebSecond;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYbSecond= new TH2D("fh2dJetSignedImpParXYbSecond","fh2dJetSignedImpParXYbSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZbSecond  = new TH2D("fh2dJetSignedImpParXYZbSecond","fh2dJetSignedImpParXYZbSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancebSecond  = new TH2D("fh2dJetSignedImpParXYSignificancebSecond","fh2dJetSignedImpParXYSignificancebSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancebSecond  = new TH2D("fh2dJetSignedImpParXYZSignificancebSecond","fh2dJetSignedImpParXYZSignificancebSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 			//N=3
-			fh2dJetSignedImpParXYUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYUnidentifiedThird","fh2dJetSignedImpParXYUnidentifiedThird;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZUnidentifiedThird","fh2dJetSignedImpParXYZUnidentifiedThird;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedThird","fh2dJetSignedImpParXYSignificanceUnidentifiedThird;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedThird","fh2dJetSignedImpParXYZSignificanceUnidentifiedThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYUnidentifiedThird","fh2dJetSignedImpParXYUnidentifiedThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZUnidentifiedThird","fh2dJetSignedImpParXYZUnidentifiedThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYSignificanceUnidentifiedThird","fh2dJetSignedImpParXYSignificanceUnidentifiedThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceUnidentifiedThird = new TH2D("fh2dJetSignedImpParXYZSignificanceUnidentifiedThird","fh2dJetSignedImpParXYZSignificanceUnidentifiedThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYudsgThird","fh2dJetSignedImpParXYudsgThird;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZudsgThird  = new TH2D("fh2dJetSignedImpParXYZudsgThird","fh2dJetSignedImpParXYZudsgThird;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgThird","fh2dJetSignedImpParXYSignificanceudsgThird;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgThird","fh2dJetSignedImpParXYZSignificanceudsgThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYudsgThird = new TH2D("fh2dJetSignedImpParXYudsgThird","fh2dJetSignedImpParXYudsgThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZudsgThird  = new TH2D("fh2dJetSignedImpParXYZudsgThird","fh2dJetSignedImpParXYZudsgThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgThird","fh2dJetSignedImpParXYSignificanceudsgThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificanceudsgThird  = new TH2D("fh2dJetSignedImpParXYZSignificanceudsgThird","fh2dJetSignedImpParXYZSignificanceudsgThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYcThird= new TH2D("fh2dJetSignedImpParXYcThird","fh2dJetSignedImpParXYcThird;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZcThird  = new TH2D("fh2dJetSignedImpParXYZcThird","fh2dJetSignedImpParXYZcThird;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancecThird  = new TH2D("fh2dJetSignedImpParXYSignificancecThird","fh2dJetSignedImpParXYSignificancecThird;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancecThird  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird","fh2dJetSignedImpParXYZSignificancecThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYcThird= new TH2D("fh2dJetSignedImpParXYcThird","fh2dJetSignedImpParXYcThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZcThird  = new TH2D("fh2dJetSignedImpParXYZcThird","fh2dJetSignedImpParXYZcThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancecThird  = new TH2D("fh2dJetSignedImpParXYSignificancecThird","fh2dJetSignedImpParXYSignificancecThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancecThird  = new TH2D("fh2dJetSignedImpParXYZSignificancecThird","fh2dJetSignedImpParXYZSignificancecThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
-			fh2dJetSignedImpParXYbThird= new TH2D("fh2dJetSignedImpParXYbThird","fh2dJetSignedImpParXYbThird;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fh2dJetSignedImpParXYZbThird  = new TH2D("fh2dJetSignedImpParXYZbThird","fh2dJetSignedImpParXYZbThird;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-			fh2dJetSignedImpParXYSignificancebThird  = new TH2D("fh2dJetSignedImpParXYSignificancebThird","fh2dJetSignedImpParXYSignificancebThird;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-			fh2dJetSignedImpParXYZSignificancebThird  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird","fh2dJetSignedImpParXYZSignificancebThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+			fh2dJetSignedImpParXYbThird= new TH2D("fh2dJetSignedImpParXYbThird","fh2dJetSignedImpParXYbThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fh2dJetSignedImpParXYZbThird  = new TH2D("fh2dJetSignedImpParXYZbThird","fh2dJetSignedImpParXYZbThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+			fh2dJetSignedImpParXYSignificancebThird  = new TH2D("fh2dJetSignedImpParXYSignificancebThird","fh2dJetSignedImpParXYSignificancebThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYZSignificancebThird  = new TH2D("fh2dJetSignedImpParXYZSignificancebThird","fh2dJetSignedImpParXYZSignificancebThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 
 			//N=4 Optional
 			if(fDoForthIP){		
 
-				fh2dJetSignedImpParXYudsgForth = new TH2D("fh2dJetSignedImpParXYudsgForth","fh2dJetSignedImpParXYudsgForth;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-				fh2dJetSignedImpParXYSignificanceudsgForth  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgForth","fh2dJetSignedImpParXYSignificanceudsgForth;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+				fh2dJetSignedImpParXYudsgForth = new TH2D("fh2dJetSignedImpParXYudsgForth","fh2dJetSignedImpParXYudsgForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+				fh2dJetSignedImpParXYSignificanceudsgForth  = new TH2D("fh2dJetSignedImpParXYSignificanceudsgForth","fh2dJetSignedImpParXYSignificanceudsgForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 			
-				fh2dJetSignedImpParXYcForth= new TH2D("fh2dJetSignedImpParXYcForth","fh2dJetSignedImpParXYcForth;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-				fh2dJetSignedImpParXYSignificancecForth  = new TH2D("fh2dJetSignedImpParXYSignificancecForth","fh2dJetSignedImpParXYSignificancecForth;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+				fh2dJetSignedImpParXYcForth= new TH2D("fh2dJetSignedImpParXYcForth","fh2dJetSignedImpParXYcForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+				fh2dJetSignedImpParXYSignificancecForth  = new TH2D("fh2dJetSignedImpParXYSignificancecForth","fh2dJetSignedImpParXYSignificancecForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 			
-				fh2dJetSignedImpParXYbForth= new TH2D("fh2dJetSignedImpParXYbForth","fh2dJetSignedImpParXYbForth;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-				fh2dJetSignedImpParXYSignificancebForth  = new TH2D("fh2dJetSignedImpParXYSignificancebForth","fh2dJetSignedImpParXYSignificancebForth;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+				fh2dJetSignedImpParXYbForth= new TH2D("fh2dJetSignedImpParXYbForth","fh2dJetSignedImpParXYbForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+				fh2dJetSignedImpParXYSignificancebForth  = new TH2D("fh2dJetSignedImpParXYSignificancebForth","fh2dJetSignedImpParXYSignificancebForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 					
 			}
 		}
@@ -3060,150 +4027,150 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	}
 	// Jet histograms
-	fh1dJetRecPt = new TH1D("fh1dJetRecPt","detector level jets;pt (GeV/c); count",500,0,250);
-	fh1dJetRecPtAccepted = new TH1D("fh1dJetRecPtAccepted","accepted detector level jets;pt (GeV/c); count",500,0,250);
+	fh1dJetRecPt = new TH1D("fh1dJetRecPt","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+	fh1dJetRecPtAccepted = new TH1D("fh1dJetRecPtAccepted","accepted detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
 
 	if(fIsPythia){
-		fh1dJetRecPtUnidentified = new TH1D("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtudsg = new TH1D("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtc = new TH1D("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtb = new TH1D("fh1dJetRecPtb","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtUnidentifiedAccepted = new TH1D("fh1dJetRecPtUnidentifiedAccepted","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtudsgAccepted = new TH1D("fh1dJetRecPtudsgAccepted","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtcAccepted= new TH1D("fh1dJetRecPtcAccepted","detector level jets;pt (GeV/c); count",500,0,250);
-		fh1dJetRecPtbAccepted = new TH1D("fh1dJetRecPtbAccepted","detector level jets;pt (GeV/c); count",500,0,250);
+		fh1dJetRecPtUnidentified = new TH1D("fh1dJetRecPtUnidentified","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtudsg = new TH1D("fh1dJetRecPtudsg","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtc = new TH1D("fh1dJetRecPtc","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtb = new TH1D("fh1dJetRecPtb","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtUnidentifiedAccepted = new TH1D("fh1dJetRecPtUnidentifiedAccepted","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtudsgAccepted = new TH1D("fh1dJetRecPtudsgAccepted","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtcAccepted= new TH1D("fh1dJetRecPtcAccepted","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
+		fh1dJetRecPtbAccepted = new TH1D("fh1dJetRecPtbAccepted","detector level jets;#it{p}_{T} (GeV/#it{c}); count",500,0,250);
 	}
 
 	//PtRel
 	if(fDoPtRelAnalysis){
 
 		fhistPtRelEvents = new TH1D("fhistPtRelEvents","Number of PtRel Events", 1,0,1);
-		fhistPtRelVsJetPt = new TH2D("fhistPtRelVsJetPt","Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-		fhistLepIPVsJetPt = new TH2D("fhistLepIPVsJetPt","Electron 2D IP Vs Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fhistPtRelVsJetPt = new TH2D("fhistPtRelVsJetPt","Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		fhistLepIPVsJetPt = new TH2D("fhistLepIPVsJetPt","Electron 2D IP Vs Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		fHistMcEopEle = new TH2D("fHistMcEopEle","Real Electrons E/P Vs Track p_{T};p_{T,track} (GeV/c); E/P;a.u.",200,0.,50,200,0.4,2);
 		fHistMcEopHad = new TH2D("fHistMcEopHad","Hadrons E/P Vs Track p_{T};p_{T,track} (GeV/c); E/P;a.u.",200,0.,50,200,0.4,2);
 		fTPCnsigMcEle = new TH2D("fTPCnsigMcEle","Real Electrons NsigmaTPC Vs Track p_{T};p_{T,track} (GeV/c); N#sigma_{TPC};a.u.",200,0.,50,200,-10,6);
 		fTPCnsigMcHad = new TH2D("fTPCnsigMcHad","Hadrons NsigmaTPC Vs Track p_{T};p_{T,track} (GeV/c); N#sigma_{TPC};a.u.",200,0.,50,200,-10,6);
 
 		if(fDoTrackCountingAnalysis){
-			fhistPtRelVsJetPtTaggedFirst = new TH2D("fhistPtRelVsJetPtTaggedFirst","N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			fhistLepIPVsJetPtTaggedFirst = new TH2D("fhistLepIPVsJetPtTaggedFirst","Electron 2D IP Vs N=1 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fhistPtRelVsJetPtTaggedSecond = new TH2D("fhistPtRelVsJetPtTaggedSecond","N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			fhistLepIPVsJetPtTaggedSecond  = new TH2D("fhistLepIPVsJetPtTaggedSecond","Electron 2D IP Vs N=2 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			fhistPtRelVsJetPtTaggedThird = new TH2D("fhistPtRelVsJetPtTaggedThird","N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			fhistLepIPVsJetPtTaggedThird  = new TH2D("fhistLepIPVsJetPtTaggedThird","Electron 2D IP Vs N=3 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fhistPtRelVsJetPtTaggedFirst = new TH2D("fhistPtRelVsJetPtTaggedFirst","N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			fhistLepIPVsJetPtTaggedFirst = new TH2D("fhistLepIPVsJetPtTaggedFirst","Electron 2D IP Vs N=1 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fhistPtRelVsJetPtTaggedSecond = new TH2D("fhistPtRelVsJetPtTaggedSecond","N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			fhistLepIPVsJetPtTaggedSecond  = new TH2D("fhistLepIPVsJetPtTaggedSecond","Electron 2D IP Vs N=2 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			fhistPtRelVsJetPtTaggedThird = new TH2D("fhistPtRelVsJetPtTaggedThird","N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			fhistLepIPVsJetPtTaggedThird  = new TH2D("fhistLepIPVsJetPtTaggedThird","Electron 2D IP Vs N=3 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		}
 
 		if(fIsPythia){
-		   fhistPtRelVsJetPtUnidentified = new TH2D("fhistPtRelVsJetPtUnidentified","Unidentified Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-		   fhistPtRelVsJetPtudsg = new TH2D("fhistPtRelVsJetPtudsg","lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-		   fhistPtRelVsJetPtc = new TH2D("fhistPtRelVsJetPtc","c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-		   fhistPtRelVsJetPtb = new TH2D("fhistPtRelVsJetPtb","b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-		   fhistLepIPVsJetPtUnidentified = new TH2D("fhistLepIPVsJetPtUnidentified","Electron 2D IP Vs Unidentified Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistLepIPVsJetPtudsg = new TH2D("fhistLepIPVsJetPtudsg","Electron 2D IP Vs lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistLepIPVsJetPtc = new TH2D("fhistLepIPVsJetPtc","Electron 2D IP Vs c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-		   fhistLepIPVsJetPtb = new TH2D("fhistLepIPVsJetPtb","Electron 2D IP Vs b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		   fhistPtRelVsJetPtUnidentified = new TH2D("fhistPtRelVsJetPtUnidentified","Unidentified Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtudsg = new TH2D("fhistPtRelVsJetPtudsg","lf-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtc = new TH2D("fhistPtRelVsJetPtc","c-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistPtRelVsJetPtb = new TH2D("fhistPtRelVsJetPtb","b-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+		   fhistLepIPVsJetPtUnidentified = new TH2D("fhistLepIPVsJetPtUnidentified","Electron 2D IP Vs Unidentified Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		   fhistLepIPVsJetPtudsg = new TH2D("fhistLepIPVsJetPtudsg","Electron 2D IP Vs lf Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		   fhistLepIPVsJetPtc = new TH2D("fhistLepIPVsJetPtc","Electron 2D IP Vs c-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		   fhistLepIPVsJetPtb = new TH2D("fhistLepIPVsJetPtb","Electron 2D IP Vs b-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 
 		   if(fDoTrackCountingAnalysis){
 			   //N=1
-			   fhistPtRelVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedFirst","Unidentified N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedFirst","Electron 2D IP Vs Unidentified N=1 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedudsgFirst = new TH2D("fhistPtRelVsJetPtTaggedudsgFirst","N=1 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedudsgFirst = new TH2D("fhistLepIPVsJetPtTaggedudsgFirst","Electron 2D IP Vs N=1 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedcFirst = new TH2D("fhistPtRelVsJetPtTaggedcFirst","N=1 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedcFirst = new TH2D("fhistLepIPVsJetPtTaggedcFirst","Electron 2D IP Vs N=1 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedbFirst = new TH2D("fhistPtRelVsJetPtTaggedbFirst","N=1 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedbFirst = new TH2D("fhistLepIPVsJetPtTaggedbFirst","Electron 2D IP Vs N=1 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedFirst","Unidentified N=1 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedUnidentifiedFirst = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedFirst","Electron 2D IP Vs Unidentified N=1 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedudsgFirst = new TH2D("fhistPtRelVsJetPtTaggedudsgFirst","N=1 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedudsgFirst = new TH2D("fhistLepIPVsJetPtTaggedudsgFirst","Electron 2D IP Vs N=1 Tagged lf Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedcFirst = new TH2D("fhistPtRelVsJetPtTaggedcFirst","N=1 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedcFirst = new TH2D("fhistLepIPVsJetPtTaggedcFirst","Electron 2D IP Vs N=1 Tagged c-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedbFirst = new TH2D("fhistPtRelVsJetPtTaggedbFirst","N=1 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedbFirst = new TH2D("fhistLepIPVsJetPtTaggedbFirst","Electron 2D IP Vs N=1 Tagged b-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 			   //N=2
-			   fhistPtRelVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedSecond","Unidentified N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedSecond","Electron 2D IP Vs Unidentified N=2 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedudsgSecond = new TH2D("fhistPtRelVsJetPtTaggedudsgSecond","N=2 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedudsgSecond = new TH2D("fhistLepIPVsJetPtTaggedudsgSecond","Electron 2D IP Vs N=2 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedcSecond = new TH2D("fhistPtRelVsJetPtTaggedcSecond","N=2 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedcSecond = new TH2D("fhistLepIPVsJetPtTaggedcSecond","Electron 2D IP Vs N=2 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedbSecond = new TH2D("fhistPtRelVsJetPtTaggedbSecond","N=2 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedbSecond = new TH2D("fhistLepIPVsJetPtTaggedbSecond","Electron 2D IP Vs N=2 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedSecond","Unidentified N=2 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedUnidentifiedSecond = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedSecond","Electron 2D IP Vs Unidentified N=2 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedudsgSecond = new TH2D("fhistPtRelVsJetPtTaggedudsgSecond","N=2 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedudsgSecond = new TH2D("fhistLepIPVsJetPtTaggedudsgSecond","Electron 2D IP Vs N=2 Tagged lf Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedcSecond = new TH2D("fhistPtRelVsJetPtTaggedcSecond","N=2 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedcSecond = new TH2D("fhistLepIPVsJetPtTaggedcSecond","Electron 2D IP Vs N=2 Tagged c-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedbSecond = new TH2D("fhistPtRelVsJetPtTaggedbSecond","N=2 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedbSecond = new TH2D("fhistLepIPVsJetPtTaggedbSecond","Electron 2D IP Vs N=2 Tagged b-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 			   //N=3
-			   fhistPtRelVsJetPtTaggedUnidentifiedThird = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedThird","Unidentified N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedUnidentifiedThird = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedThird","Electron 2D IP Vs Unidentified N=3 Tagged Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedudsgThird = new TH2D("fhistPtRelVsJetPtTaggedudsgThird","N=3 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedudsgThird = new TH2D("fhistLepIPVsJetPtTaggedudsgThird","Electron 2D IP Vs N=3 Tagged lf Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedcThird = new TH2D("fhistPtRelVsJetPtTaggedcThird","N=3 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedcThird = new TH2D("fhistLepIPVsJetPtTaggedcThird","Electron 2D IP Vs N=3 Tagged c-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-			   fhistPtRelVsJetPtTaggedbThird = new TH2D("fhistPtRelVsJetPtTaggedbThird","N=3 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};p_{T,jet} (GeV/c); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
-			   fhistLepIPVsJetPtTaggedbThird = new TH2D("fhistLepIPVsJetPtTaggedbThird","Electron 2D IP Vs N=3 Tagged b-Jet Pt;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedUnidentifiedThird = new TH2D("fhistPtRelVsJetPtTaggedUnidentifiedThird","Unidentified N=3 Tagged Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedUnidentifiedThird = new TH2D("fhistLepIPVsJetPtTaggedUnidentifiedThird","Electron 2D IP Vs Unidentified N=3 Tagged Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedudsgThird = new TH2D("fhistPtRelVsJetPtTaggedudsgThird","N=3 Tagged lf-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedudsgThird = new TH2D("fhistLepIPVsJetPtTaggedudsgThird","Electron 2D IP Vs N=3 Tagged lf Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedcThird = new TH2D("fhistPtRelVsJetPtTaggedcThird","N=3 Tagged c-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedcThird = new TH2D("fhistLepIPVsJetPtTaggedcThird","Electron 2D IP Vs N=3 Tagged c-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+			   fhistPtRelVsJetPtTaggedbThird = new TH2D("fhistPtRelVsJetPtTaggedbThird","N=3 Tagged b-Jet p_{T} Vs Electron p_{T}^{Rel};#it{p}_{T,jet} (GeV/#it{c}); p_{T}^{Rel} (GeV/c);a.u.",500,0.,250,100,0,2);
+			   fhistLepIPVsJetPtTaggedbThird = new TH2D("fhistLepIPVsJetPtTaggedbThird","Electron 2D IP Vs N=3 Tagged b-Jet Pt;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 		   }
 		}
 	}
 
-	fh2dJetSignedImpParXY = new TH2D("fh2dJetSignedImpParXY","fh2dJetSignedImpParXY;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
-	fh2dJetSignedImpParXYZ = new TH2D("fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZ;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-	fh2dJetSignedImpParXYSignificance = new TH2D("fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYSignificance;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-	fh2dJetSignedImpParXYZSignificance = new TH2D("fh2dJetSignedImpParXYZSignificance","fh2dJetSignedImpParXYZSignificance;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+	fh2dJetSignedImpParXY = new TH2D("fh2dJetSignedImpParXY","fh2dJetSignedImpParXY;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+	fh2dJetSignedImpParXYZ = new TH2D("fh2dJetSignedImpParXYZ","fh2dJetSignedImpParXYZ;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+	fh2dJetSignedImpParXYSignificance = new TH2D("fh2dJetSignedImpParXYSignificance","fh2dJetSignedImpParXYSignificance;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+	fh2dJetSignedImpParXYZSignificance = new TH2D("fh2dJetSignedImpParXYZSignificance","fh2dJetSignedImpParXYZSignificance;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 	if(fDoTrackCountingAnalysis){
 		//N=1
-		fh2dJetSignedImpParXYFirst = new TH2D("fh2dJetSignedImpParXYFirst","fh2dJetSignedImpParXYFirst;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYFirst = new TH2D("fh2dJetSignedImpParXYFirst","fh2dJetSignedImpParXYFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 
 
-		fh2dJetSignedImpParXYZFirst = new TH2D("fh2dJetSignedImpParXYZFirst","fh2dJetSignedImpParXYZFirst;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceFirst = new TH2D("fh2dJetSignedImpParXYSignificanceFirst","fh2dJetSignedImpParXYSignificanceFirst;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-		fh2dJetSignedImpParXYZSignificanceFirst = new TH2D("fh2dJetSignedImpParXYZSignificanceFirst","fh2dJetSignedImpParXYZSignificanceFirst;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZFirst = new TH2D("fh2dJetSignedImpParXYZFirst","fh2dJetSignedImpParXYZFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYSignificanceFirst = new TH2D("fh2dJetSignedImpParXYSignificanceFirst","fh2dJetSignedImpParXYSignificanceFirst;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificanceFirst = new TH2D("fh2dJetSignedImpParXYZSignificanceFirst","fh2dJetSignedImpParXYZSignificanceFirst;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 		//N=2
-		fh2dJetSignedImpParXYSecond = new TH2D("fh2dJetSignedImpParXYSecond","fh2dJetSignedImpParXYSecond;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
+		fh2dJetSignedImpParXYSecond = new TH2D("fh2dJetSignedImpParXYSecond","fh2dJetSignedImpParXYSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);
 
 
-		fh2dJetSignedImpParXYZSecond = new TH2D("fh2dJetSignedImpParXYZSecond","fh2dJetSignedImpParXYZSecond;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceSecond = new TH2D("fh2dJetSignedImpParXYSignificanceSecond","fh2dJetSignedImpParXYSignificanceSecond;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-		fh2dJetSignedImpParXYZSignificanceSecond = new TH2D("fh2dJetSignedImpParXYZSignificanceSecond","fh2dJetSignedImpParXYZSignificanceThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSecond = new TH2D("fh2dJetSignedImpParXYZSecond","fh2dJetSignedImpParXYZSecond;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYSignificanceSecond = new TH2D("fh2dJetSignedImpParXYSignificanceSecond","fh2dJetSignedImpParXYSignificanceSecond;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificanceSecond = new TH2D("fh2dJetSignedImpParXYZSignificanceSecond","fh2dJetSignedImpParXYZSignificanceThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 		//N=3
 
-		fh2dJetSignedImpParXYThird = new TH2D("fh2dJetSignedImpParXYThird","fh2dJetSignedImpParXYThird;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);	
+		fh2dJetSignedImpParXYThird = new TH2D("fh2dJetSignedImpParXYThird","fh2dJetSignedImpParXYThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);	
 
-		fh2dJetSignedImpParXYZThird = new TH2D("fh2dJetSignedImpParXYZThird","fh2dJetSignedImpParXYZThird;p_{T,jet} (GeV/c); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
-		fh2dJetSignedImpParXYSignificanceThird = new TH2D("fh2dJetSignedImpParXYSignificanceThird","fh2dJetSignedImpParXYSignificanceThird;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
-		fh2dJetSignedImpParXYZSignificanceThird = new TH2D("fh2dJetSignedImpParXYZSignificanceThird","fh2dJetSignedImpParXYZSignificanceThird;p_{T,jet} (GeV/c); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
+		fh2dJetSignedImpParXYZThird = new TH2D("fh2dJetSignedImpParXYZThird","fh2dJetSignedImpParXYZThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter (cm);a.u.",500,0.,250,nBins3d,-1,1);
+		fh2dJetSignedImpParXYSignificanceThird = new TH2D("fh2dJetSignedImpParXYSignificanceThird","fh2dJetSignedImpParXYSignificanceThird;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+		fh2dJetSignedImpParXYZSignificanceThird = new TH2D("fh2dJetSignedImpParXYZSignificanceThird","fh2dJetSignedImpParXYZSignificanceThird;#it{p}_{T,jet} (GeV/#it{c}); 3d imp. parameter significance;a.u.",500,0.,250,nBins3dSignificance,-100,100);
 
 		if(fDoForthIP){
-			fh2dJetSignedImpParXYForth = new TH2D("fh2dJetSignedImpParXYForth","fh2dJetSignedImpParXYForth;p_{T,jet} (GeV/c); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);	
-			fh2dJetSignedImpParXYSignificanceForth = new TH2D("fh2dJetSignedImpParXYSignificanceForth","fh2dJetSignedImpParXYSignificanceForth;p_{T,jet} (GeV/c); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
+			fh2dJetSignedImpParXYForth = new TH2D("fh2dJetSignedImpParXYForth","fh2dJetSignedImpParXYForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter (cm);a.u.",500,0.,250,nBins2d,-1,1);	
+			fh2dJetSignedImpParXYSignificanceForth = new TH2D("fh2dJetSignedImpParXYSignificanceForth","fh2dJetSignedImpParXYSignificanceForth;#it{p}_{T,jet} (GeV/#it{c}); 2D Impact Paramter significance;a.u.",500,0.,250,nBins2dSignificance,-100,100);
 		}
 	
 
 	}
 
 	if(fDoSVAnalysis){
-		fHistSV2Prong = new TH3D("fHistSV2Prong","Secondary vertex 2Prong;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
-		fHistSV3Prong = new TH3D("fHistSV3Prong","Secondary vertex 3Prong;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+		fHistSV2Prong = new TH3D("fHistSV2Prong","Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+		fHistSV3Prong = new TH3D("fHistSV3Prong","Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
 
-		fHistDispersion2Prong = new TH2D("fHistDispersion2Prong","Secondary vertex Dispersion 2Prong;p_{T,jet} (GeV/c);Vtx Dispersion",80,0.,250., 100,0,0.5);
-		fHistDispersion3Prong = new TH2D("fHistDispersion3Prong","Secondary vertex Dispersion 3Prong;p_{T,jet} (GeV/c);Vtx Dispersion",80,0.,250., 100,0,0.5);
+		fHistDispersion2Prong = new TH2D("fHistDispersion2Prong","Secondary vertex Dispersion 2Prong;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",80,0.,250., 100,0,0.5);
+		fHistDispersion3Prong = new TH2D("fHistDispersion3Prong","Secondary vertex Dispersion 3Prong;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",80,0.,250., 100,0,0.5);
 
 		if(fIsPythia){
 
-			fHistSV2ProngUnidentified = new TH3D("fHistSV2ProngUnidentified","Secondary vertex 2Prong Unidentified;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 400,0,80, 100,0,10);
-			fHistSV3ProngUnidentified = new TH3D("fHistSV3ProngUnidentified","Secondary vertex 3Prong Unidentified;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 400,0,80, 100,0,10);
+			fHistSV2ProngUnidentified = new TH3D("fHistSV2ProngUnidentified","Secondary vertex 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 400,0,80, 100,0,10);
+			fHistSV3ProngUnidentified = new TH3D("fHistSV3ProngUnidentified","Secondary vertex 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 400,0,80, 100,0,10);
 
-			fHistSV2Prongb = new TH3D("fHistSV2Prongb","Secondary vertex 2Prong b-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
-			fHistSV3Prongb = new TH3D("fHistSV3Prongb","Secondary vertex 3Prong b-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV2Prongb = new TH3D("fHistSV2Prongb","Secondary vertex 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV3Prongb = new TH3D("fHistSV3Prongb","Secondary vertex 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
 
-			fHistSV2Prongc = new TH3D("fHistSV2Prongc","Secondary vertex 2Prong c-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
-			fHistSV3Prongc = new TH3D("fHistSV3Prongc","Secondary vertex 3Prong c-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV2Prongc = new TH3D("fHistSV2Prongc","Secondary vertex 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV3Prongc = new TH3D("fHistSV3Prongc","Secondary vertex 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
 
-			fHistSV2Pronglf = new TH3D("fHistSV2Pronglf","Secondary vertex 2Prong lf-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
-			fHistSV3Pronglf = new TH3D("fHistSV3Pronglf","Secondary vertex 3Prong lf-jet;p_{T,jet} (GeV/c);L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV2Pronglf = new TH3D("fHistSV2Pronglf","Secondary vertex 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
+			fHistSV3Pronglf = new TH3D("fHistSV3Pronglf","Secondary vertex 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)",500,0.,250., 160,0,80, 100,0,10);
 
-			fHistDispersion2ProngUnidentified = new TH2D("fHistDispersion2ProngUnidentified","Secondary vertex Dispersion 2Prong Unidentified;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
-			fHistDispersion3ProngUnidentified = new TH2D("fHistDispersion3ProngUnidentified","Secondary vertex Dispersion 3Prong Unidentified;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion2ProngUnidentified = new TH2D("fHistDispersion2ProngUnidentified","Secondary vertex Dispersion 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion3ProngUnidentified = new TH2D("fHistDispersion3ProngUnidentified","Secondary vertex Dispersion 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
 
-			fHistDispersion2Prongb = new TH2D("fHistDispersion2Prongb","Secondary vertex Dispersion 2Prong b-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
-			fHistDispersion3Prongb = new TH2D("fHistDispersion3Prongb","Secondary vertex Dispersion 3Prong b-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion2Prongb = new TH2D("fHistDispersion2Prongb","Secondary vertex Dispersion 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion3Prongb = new TH2D("fHistDispersion3Prongb","Secondary vertex Dispersion 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
 
-			fHistDispersion2Prongc = new TH2D("fHistDispersion2Prongc","Secondary vertex Dispersion 2Prong c-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
-			fHistDispersion3Prongc = new TH2D("fHistDispersion3Prongc","Secondary vertex Dispersion 3Prong c-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion2Prongc = new TH2D("fHistDispersion2Prongc","Secondary vertex Dispersion 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion3Prongc = new TH2D("fHistDispersion3Prongc","Secondary vertex Dispersion 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
 
-			fHistDispersion2Pronglf = new TH2D("fHistDispersion2Pronglf","Secondary vertex Dispersion 2Prong lf-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
-			fHistDispersion3Pronglf = new TH2D("fHistDispersion3Pronglf","Secondary vertex Dispersion 3Prong lf-jet;p_{T,jet} (GeV/c);Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion2Pronglf = new TH2D("fHistDispersion2Pronglf","Secondary vertex Dispersion 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
+			fHistDispersion3Pronglf = new TH2D("fHistDispersion3Pronglf","Secondary vertex Dispersion 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion",500,0.,250., 100,0,0.5);
 		}
 	}
 
@@ -3334,6 +4301,77 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(f2histRhoVsDeltaPtWithSignalThird);
 	}
 
+	//Jet Mass
+	if(fDoJetMass){
+		fOutput->Add(fhistJetMass);
+		if(fDoTrackCountingAnalysis){
+			fOutput->Add(fhistJetMassFirst);
+			fOutput->Add(fhistJetMassSecond);
+			fOutput->Add(fhistJetMassThird);
+		}
+		if(fIsPythia){
+			fOutput->Add(fhistJetMass_Unidentified);
+			fOutput->Add(fhistJetMass_udsg);
+			fOutput->Add(fhistJetMass_c);
+			fOutput->Add(fhistJetMass_b);
+
+			if(fDoTrackCountingAnalysis){
+				fOutput->Add(fhistJetMass_UnidentifiedFirst);
+				fOutput->Add(fhistJetMass_udsgFirst);
+				fOutput->Add(fhistJetMass_cFirst);
+				fOutput->Add(fhistJetMass_bFirst);
+				fOutput->Add(fhistJetMass_UnidentifiedSecond);
+				fOutput->Add(fhistJetMass_udsgSecond);
+				fOutput->Add(fhistJetMass_cSecond);
+				fOutput->Add(fhistJetMass_bSecond);
+				fOutput->Add(fhistJetMass_UnidentifiedThird);
+				fOutput->Add(fhistJetMass_udsgThird);
+				fOutput->Add(fhistJetMass_cThird);
+				fOutput->Add(fhistJetMass_bThird);
+			}
+		}
+	}
+	
+	//Energy Fraction carried by the SV
+	if(fDoSVEnergyFraction){
+		fOutput->Add(fhistSVEnergyFraction);
+
+		fOutput->Add(fhistSVnProngs);
+
+		if(fDoTrackCountingAnalysis){
+			fOutput->Add(fhistSVEnergyFractionFirst);
+			fOutput->Add(fhistSVEnergyFractionSecond);
+			fOutput->Add(fhistSVEnergyFractionThird);
+		}
+		if(fIsPythia){
+			fOutput->Add(fhistSVEnergyFraction_Unidentified);
+			fOutput->Add(fhistSVEnergyFraction_udsg);
+			fOutput->Add(fhistSVEnergyFraction_c);
+			fOutput->Add(fhistSVEnergyFraction_b);
+
+			fOutput->Add(fhistSVnProngs_Unidentified);
+			fOutput->Add(fhistSVnProngs_udsg);
+			fOutput->Add(fhistSVnProngs_c);
+			fOutput->Add(fhistSVnProngs_b);
+
+			if(fDoTrackCountingAnalysis){
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedFirst);
+				fOutput->Add(fhistSVEnergyFraction_udsgFirst);
+				fOutput->Add(fhistSVEnergyFraction_cFirst);
+				fOutput->Add(fhistSVEnergyFraction_bFirst);
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedSecond);
+				fOutput->Add(fhistSVEnergyFraction_udsgSecond);
+				fOutput->Add(fhistSVEnergyFraction_cSecond);
+				fOutput->Add(fhistSVEnergyFraction_bSecond);
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedThird);
+				fOutput->Add(fhistSVEnergyFraction_udsgThird);
+				fOutput->Add(fhistSVEnergyFraction_cThird);
+				fOutput->Add(fhistSVEnergyFraction_bThird);
+			}
+		}
+	}
+
+
 	//JetProbability
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -3374,6 +4412,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		}else{
 			fOutput->Add(fhistJetProbability);
 			fOutput->Add(fhistJetProbabilityLog);
+
 			if(fDoTrackCountingAnalysis){
 				fOutput->Add(fhistJetProbabilityLogFirst);
 				fOutput->Add(fhistJetProbabilityLogSecond);
@@ -3393,22 +4432,46 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 				fOutput->Add(fhistJetProbability_UnidentifiedLog);
 				fOutput->Add(fhistJetProbability_udsgLog);
 				fOutput->Add(fhistJetProbability_cLog);
+				if(fDoCharmFractions){
+				  fOutput->Add(fhistJetProbability_cLog_D0);
+				  fOutput->Add(fhistJetProbability_cLog_Dp);
+				  fOutput->Add(fhistJetProbability_cLog_Ds);
+				  fOutput->Add(fhistJetProbability_cLog_Lc);
+				}
 				fOutput->Add(fhistJetProbability_bLog);
 
 				if(fDoTrackCountingAnalysis){
 					fOutput->Add(fhistJetProbability_UnidentifiedLogFirst);
 					fOutput->Add(fhistJetProbability_udsgLogFirst);
 					fOutput->Add(fhistJetProbability_cLogFirst);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogFirst_D0);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Dp);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Ds);
+					  fOutput->Add(fhistJetProbability_cLogFirst_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogFirst);
 
 					fOutput->Add(fhistJetProbability_UnidentifiedLogSecond);
 					fOutput->Add(fhistJetProbability_udsgLogSecond);
 					fOutput->Add(fhistJetProbability_cLogSecond);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogSecond_D0);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Dp);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Ds);
+					  fOutput->Add(fhistJetProbability_cLogSecond_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogSecond);
 
 					fOutput->Add(fhistJetProbability_UnidentifiedLogThird);
 					fOutput->Add(fhistJetProbability_udsgLogThird);
 					fOutput->Add(fhistJetProbability_cLogThird);
+					if(fDoCharmFractions){
+					  fOutput->Add(fhistJetProbability_cLogThird_D0);
+					  fOutput->Add(fhistJetProbability_cLogThird_Dp);
+					  fOutput->Add(fhistJetProbability_cLogThird_Ds);
+					  fOutput->Add(fhistJetProbability_cLogThird_Lc);
+					}
 					fOutput->Add(fhistJetProbability_bLogThird);
 				}
 				if(fDoSVAnalysis){
@@ -5075,6 +6138,409 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomConeWithSignal()
 		return deltaPt;
 	}
 	return deltaPt;
+}
+//_____________________________________________________________________________________
+Int_t AliAnalysisTaskBJetTC::FindVertices6Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount)
+{
+
+  Int_t nSecndVxtHF = 0;
+
+  arrayVtxHF->Clear();
+
+  Double_t vtxRes = 0.;
+
+  Int_t nTrksInJet = jet->GetNumberOfTracks();
+  AliDebugF(6, MSGINFO("nTrksInJet = %d \n"), nTrksInJet);
+  if (nTrksInJet < 6) {
+    AliDebug(2, MSGWARNING("Cannot find vertices w/ only one track"));
+    return -3;
+  }
+
+  //make array of ESD tracks, then needed for fTrackArray
+  vctr_pair_int_esdTrk vecESDTrks;
+  vecESDTrks.reserve(nTrksInJet);
+ 
+  for (Int_t j = 0; j < nTrksInJet; ++j) {
+    AliAODTrack* jTrk   = ((AliAODTrack*)jet->TrackAt(j, fTrackArrayIn));
+    if (!jTrk) {
+      AliWarningF(MSGWARNING("Track in Jet with index %d/%d not found. Total number of AODtracks %d"),
+                  j, nTrksInJet, fTrackArrayIn->GetEntries());
+      continue;
+    }
+    //utilize dynamic cast and then check pointer
+    Int_t jTrkID = jTrk->GetID();
+    if (jTrkID < 0) {
+      AliDebugF(6, MSGINFO("Track with index < 0 %d"), jTrkID);
+      continue;
+    }
+
+    if (!fjetCuts3Prong->IsDaughterSelected(jTrk, primaryESDVertex, fEsdTrackCuts)){
+      nDauRejCount++;
+      continue;
+    }
+    
+    AliESDtrack* tmpESDtrk = new AliESDtrack(jTrk);
+    vecESDTrks.push_back(make_pair(j, tmpESDtrk));
+  }
+
+  Int_t nGoodTrks = (Int_t)vecESDTrks.size();
+  if (nGoodTrks < 6) {
+    AliDebugF(6, MSGDEBUG("Number of good tracks = %d"), nGoodTrks);
+    return -4;
+  }
+
+  Int_t up = nGoodTrks - 5;
+  Int_t nVtxContributorsBelongToV0 = 0;
+  for (Int_t it1 = 0; it1 < up; ++it1) {
+
+    Int_t        jTrkID_1 = (vecESDTrks.at(it1)).first;
+    AliESDtrack* esdTrk_1 = (vecESDTrks.at(it1)).second;
+
+    fTrackArray->Clear();
+    fTrackArray->AddAt(esdTrk_1, 0);
+
+    for (Int_t it2 = it1 + 1; it2 < up + 1; ++it2) {
+
+      Int_t        jTrkID_2 = (vecESDTrks.at(it2)).first;
+      AliESDtrack* esdTrk_2 = (vecESDTrks.at(it2)).second;
+
+      fTrackArray->AddAt(esdTrk_2, 1);
+
+
+        for (Int_t it3 = it2 + 1; it3 < up + 2; ++it3) {
+
+          Int_t        jTrkID_3 = (vecESDTrks.at(it3)).first;
+          AliESDtrack* esdTrk_3 = (vecESDTrks.at(it3)).second;
+
+          fTrackArray->AddAt(esdTrk_3, 2);
+
+	  for(Int_t it4= it3 + 1; it4 < up+3; ++it4){
+
+		  Int_t        jTrkID_4 = (vecESDTrks.at(it4)).first;
+		  AliESDtrack* esdTrk_4 = (vecESDTrks.at(it4)).second;
+
+		  fTrackArray->AddAt(esdTrk_4, 3);
+
+		  for(Int_t it5= it4 + 1; it5 < nGoodTrks; ++it5){
+
+			  Int_t        jTrkID_5 = (vecESDTrks.at(it5)).first;
+			  AliESDtrack* esdTrk_5 = (vecESDTrks.at(it5)).second;
+
+			  fTrackArray->AddAt(esdTrk_5, 4);
+
+			  for(Int_t it6= it5 + 1; it6 < nGoodTrks; ++it6){
+
+				  Int_t        jTrkID_6 = (vecESDTrks.at(it6)).first;
+				  AliESDtrack* esdTrk_6 = (vecESDTrks.at(it6)).second;
+
+				  fTrackArray->AddAt(esdTrk_6, 5);
+
+				  AliAODVertex* secAODVertex = fVtxTagger3Prong->ReconstructSecondaryVertex(fTrackArray, primaryESDVertex, magZkG, vtxRes); 
+
+				  if (secAODVertex) {
+				    AliAODTrack* aodTrk_1 = (AliAODTrack*)jet->TrackAt(jTrkID_1, fTrackArrayIn);
+				    AliAODTrack* aodTrk_2 = (AliAODTrack*)jet->TrackAt(jTrkID_2, fTrackArrayIn);
+				    AliAODTrack* aodTrk_3 = (AliAODTrack*)jet->TrackAt(jTrkID_3, fTrackArrayIn);
+				    AliAODTrack* aodTrk_4 = (AliAODTrack*)jet->TrackAt(jTrkID_4, fTrackArrayIn);
+				    AliAODTrack* aodTrk_5 = (AliAODTrack*)jet->TrackAt(jTrkID_5, fTrackArrayIn);
+				    AliAODTrack* aodTrk_6 = (AliAODTrack*)jet->TrackAt(jTrkID_6, fTrackArrayIn);
+
+				    secAODVertex->AddDaughter(aodTrk_1);
+				    secAODVertex->AddDaughter(aodTrk_2);
+				    secAODVertex->AddDaughter(aodTrk_3);
+				    secAODVertex->AddDaughter(aodTrk_4);
+				    secAODVertex->AddDaughter(aodTrk_5);
+				    secAODVertex->AddDaughter(aodTrk_6);
+
+				    if (!fjetCuts3Prong->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
+				      continue;
+
+				    new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
+				    nSecndVxtHF++;
+				  } // end if (vert)
+			}// end for it6
+		} //end for it5
+	   } //end for it4
+        } // end for it3
+    } // end for it2
+  } // end for it1
+
+    //cout<<"This is a 6prong SV\n";
+
+  fTrackArray->Clear();
+
+  for (vctr_pair_int_esdTrk::iterator it = vecESDTrks.begin(); it != vecESDTrks.end(); ++it) {
+      AliESDtrack* lESDtrk = (* it).second;
+      if (lESDtrk)
+        delete lESDtrk;
+  }
+
+  return nSecndVxtHF;
+}
+//_____________________________________________________________________________________
+Int_t AliAnalysisTaskBJetTC::FindVertices5Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount)
+{
+
+  Int_t nSecndVxtHF = 0;
+
+  arrayVtxHF->Clear();
+
+  Double_t vtxRes = 0.;
+
+  Int_t nTrksInJet = jet->GetNumberOfTracks();
+  AliDebugF(6, MSGINFO("nTrksInJet = %d \n"), nTrksInJet);
+  if (nTrksInJet < 5) {
+    AliDebug(2, MSGWARNING("Cannot find vertices w/ only one track"));
+    return -3;
+  }
+
+  //make array of ESD tracks, then needed for fTrackArray
+  vctr_pair_int_esdTrk vecESDTrks;
+  vecESDTrks.reserve(nTrksInJet);
+ 
+  for (Int_t j = 0; j < nTrksInJet; ++j) {
+    AliAODTrack* jTrk   = ((AliAODTrack*)jet->TrackAt(j, fTrackArrayIn));
+    if (!jTrk) {
+      AliWarningF(MSGWARNING("Track in Jet with index %d/%d not found. Total number of AODtracks %d"),
+                  j, nTrksInJet, fTrackArrayIn->GetEntries());
+      continue;
+    }
+    //utilize dynamic cast and then check pointer
+    Int_t jTrkID = jTrk->GetID();
+    if (jTrkID < 0) {
+      AliDebugF(6, MSGINFO("Track with index < 0 %d"), jTrkID);
+      continue;
+    }
+
+    if (!fjetCuts3Prong->IsDaughterSelected(jTrk, primaryESDVertex, fEsdTrackCuts)){
+      nDauRejCount++;
+      continue;
+    }
+    
+    AliESDtrack* tmpESDtrk = new AliESDtrack(jTrk);
+    vecESDTrks.push_back(make_pair(j, tmpESDtrk));
+  }
+
+  Int_t nGoodTrks = (Int_t)vecESDTrks.size();
+  if (nGoodTrks < 5) {
+    AliDebugF(6, MSGDEBUG("Number of good tracks = %d"), nGoodTrks);
+    return -4;
+  }
+
+  Int_t up = nGoodTrks - 4;
+  Int_t nVtxContributorsBelongToV0 = 0;
+  for (Int_t it1 = 0; it1 < up; ++it1) {
+
+    Int_t        jTrkID_1 = (vecESDTrks.at(it1)).first;
+    AliESDtrack* esdTrk_1 = (vecESDTrks.at(it1)).second;
+
+    fTrackArray->Clear();
+    fTrackArray->AddAt(esdTrk_1, 0);
+
+    for (Int_t it2 = it1 + 1; it2 < up + 1; ++it2) {
+
+      Int_t        jTrkID_2 = (vecESDTrks.at(it2)).first;
+      AliESDtrack* esdTrk_2 = (vecESDTrks.at(it2)).second;
+
+      fTrackArray->AddAt(esdTrk_2, 1);
+
+
+        for (Int_t it3 = it2 + 1; it3 < up + 2; ++it3) {
+
+          Int_t        jTrkID_3 = (vecESDTrks.at(it3)).first;
+          AliESDtrack* esdTrk_3 = (vecESDTrks.at(it3)).second;
+
+          fTrackArray->AddAt(esdTrk_3, 2);
+
+	  for(Int_t it4= it3 + 1; it4 < up+3; ++it4){
+
+		  Int_t        jTrkID_4 = (vecESDTrks.at(it4)).first;
+		  AliESDtrack* esdTrk_4 = (vecESDTrks.at(it4)).second;
+
+		  fTrackArray->AddAt(esdTrk_4, 3);
+
+		  for(Int_t it5= it4 + 1; it5 < nGoodTrks; ++it5){
+
+			  Int_t        jTrkID_5 = (vecESDTrks.at(it5)).first;
+			  AliESDtrack* esdTrk_5 = (vecESDTrks.at(it5)).second;
+
+			  fTrackArray->AddAt(esdTrk_5, 4);
+
+			  AliAODVertex* secAODVertex = fVtxTagger3Prong->ReconstructSecondaryVertex(fTrackArray, primaryESDVertex, magZkG, vtxRes); 
+
+			  if (secAODVertex) {
+			    AliAODTrack* aodTrk_1 = (AliAODTrack*)jet->TrackAt(jTrkID_1, fTrackArrayIn);
+			    AliAODTrack* aodTrk_2 = (AliAODTrack*)jet->TrackAt(jTrkID_2, fTrackArrayIn);
+			    AliAODTrack* aodTrk_3 = (AliAODTrack*)jet->TrackAt(jTrkID_3, fTrackArrayIn);
+			    AliAODTrack* aodTrk_4 = (AliAODTrack*)jet->TrackAt(jTrkID_4, fTrackArrayIn);
+			    AliAODTrack* aodTrk_5 = (AliAODTrack*)jet->TrackAt(jTrkID_5, fTrackArrayIn);
+
+			    secAODVertex->AddDaughter(aodTrk_1);
+			    secAODVertex->AddDaughter(aodTrk_2);
+			    secAODVertex->AddDaughter(aodTrk_3);
+			    secAODVertex->AddDaughter(aodTrk_4);
+			    secAODVertex->AddDaughter(aodTrk_5);
+
+			    if (!fjetCuts3Prong->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
+			      continue;
+
+			    new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
+			    nSecndVxtHF++;
+			  } // end if (vert)
+		} //end for it5
+	   } //end for it4
+        } // end for it3
+    } // end for it2
+  } // end for it1
+
+    //cout<<"This is a 5prong SV\n";
+
+  fTrackArray->Clear();
+
+  for (vctr_pair_int_esdTrk::iterator it = vecESDTrks.begin(); it != vecESDTrks.end(); ++it) {
+      AliESDtrack* lESDtrk = (* it).second;
+      if (lESDtrk)
+        delete lESDtrk;
+  }
+
+  return nSecndVxtHF;
+}
+//_____________________________________________________________________________________
+Int_t AliAnalysisTaskBJetTC::FindVertices4Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount)
+{
+
+  Int_t nSecndVxtHF = 0;
+
+  arrayVtxHF->Clear();
+
+  Double_t vtxRes = 0.;
+
+  Int_t nTrksInJet = jet->GetNumberOfTracks();
+  AliDebugF(6, MSGINFO("nTrksInJet = %d \n"), nTrksInJet);
+  if (nTrksInJet < 4) {
+    AliDebug(2, MSGWARNING("Cannot find vertices w/ only one track"));
+    return -3;
+  }
+
+  //make array of ESD tracks, then needed for fTrackArray
+
+  vctr_pair_int_esdTrk vecESDTrks;
+  vecESDTrks.reserve(nTrksInJet);
+ 
+  for (Int_t j = 0; j < nTrksInJet; ++j) {
+    AliAODTrack* jTrk   = ((AliAODTrack*)jet->TrackAt(j, fTrackArrayIn));
+    if (!jTrk) {
+      AliWarningF(MSGWARNING("Track in Jet with index %d/%d not found. Total number of AODtracks %d"),
+                  j, nTrksInJet, fTrackArrayIn->GetEntries());
+      continue;
+    }
+    //utilize dynamic cast and then check pointer
+    Int_t jTrkID = jTrk->GetID();
+    if (jTrkID < 0) {
+      AliDebugF(6, MSGINFO("Track with index < 0 %d"), jTrkID);
+      continue;
+    }
+
+    if (!fjetCuts3Prong->IsDaughterSelected(jTrk, primaryESDVertex, fEsdTrackCuts)){
+      nDauRejCount++;
+      continue;
+    }
+    
+    AliESDtrack* tmpESDtrk = new AliESDtrack(jTrk);
+    vecESDTrks.push_back(make_pair(j, tmpESDtrk));
+  }
+
+  Int_t nGoodTrks = (Int_t)vecESDTrks.size();
+  if (nGoodTrks < 4) {
+    AliDebugF(6, MSGDEBUG("Number of good tracks = %d"), nGoodTrks);
+    return -4;
+  }
+
+  Int_t up = nGoodTrks - 3;
+  Int_t nVtxContributorsBelongToV0 = 0;
+  for (Int_t it1 = 0; it1 < up; ++it1) {
+
+    Int_t        jTrkID_1 = (vecESDTrks.at(it1)).first;
+    AliESDtrack* esdTrk_1 = (vecESDTrks.at(it1)).second;
+
+    fTrackArray->Clear();
+    fTrackArray->AddAt(esdTrk_1, 0);
+
+    for (Int_t it2 = it1 + 1; it2 < up + 1; ++it2) {
+
+      Int_t        jTrkID_2 = (vecESDTrks.at(it2)).first;
+      AliESDtrack* esdTrk_2 = (vecESDTrks.at(it2)).second;
+
+      fTrackArray->AddAt(esdTrk_2, 1);
+
+
+        for (Int_t it3 = it2 + 1; it3 < up + 2; ++it3) {
+
+          Int_t        jTrkID_3 = (vecESDTrks.at(it3)).first;
+          AliESDtrack* esdTrk_3 = (vecESDTrks.at(it3)).second;
+
+          fTrackArray->AddAt(esdTrk_3, 2);
+
+	  for(Int_t it4= it3 + 1; it4 < up+3; ++it4){
+
+		  Int_t        jTrkID_4 = (vecESDTrks.at(it4)).first;
+		  AliESDtrack* esdTrk_4 = (vecESDTrks.at(it4)).second;
+
+		  fTrackArray->AddAt(esdTrk_4, 3);
+
+		  AliAODVertex* secAODVertex = fVtxTagger3Prong->ReconstructSecondaryVertex(fTrackArray, primaryESDVertex, magZkG, vtxRes); 
+
+		  if (secAODVertex) {
+		    AliAODTrack* aodTrk_1 = (AliAODTrack*)jet->TrackAt(jTrkID_1, fTrackArrayIn);
+		    AliAODTrack* aodTrk_2 = (AliAODTrack*)jet->TrackAt(jTrkID_2, fTrackArrayIn);
+		    AliAODTrack* aodTrk_3 = (AliAODTrack*)jet->TrackAt(jTrkID_3, fTrackArrayIn);
+		    AliAODTrack* aodTrk_4 = (AliAODTrack*)jet->TrackAt(jTrkID_4, fTrackArrayIn);
+
+		    secAODVertex->AddDaughter(aodTrk_1);
+		    secAODVertex->AddDaughter(aodTrk_2);
+		    secAODVertex->AddDaughter(aodTrk_3);
+		    secAODVertex->AddDaughter(aodTrk_4);
+
+		    if (!fjetCuts3Prong->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
+		      continue;
+
+		    new ((* arrayVtxHF)[nSecndVxtHF]) AliAODVertex(* secAODVertex);
+		    nSecndVxtHF++;
+		  } // end if (vert)
+	   } //end for it4
+        } // end for it3
+    } // end for it2
+  } // end for it1
+
+    //cout<<"This is a 4prong SV\n";
+
+  fTrackArray->Clear();
+
+  for (vctr_pair_int_esdTrk::iterator it = vecESDTrks.begin(); it != vecESDTrks.end(); ++it) {
+      AliESDtrack* lESDtrk = (* it).second;
+      if (lESDtrk)
+        delete lESDtrk;
+  }
+
+  return nSecndVxtHF;
 }
 //_________________________________________________________________________
 void AliAnalysisTaskBJetTC::Terminate(Option_t *)

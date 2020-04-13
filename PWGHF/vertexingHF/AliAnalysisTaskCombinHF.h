@@ -38,7 +38,14 @@ public:
   virtual void FinishTaskOutput();
   
   void SetReadMC(Bool_t read){fReadMC=read;}
+  void UseOnlySignalInMC(Bool_t opt){fSignalOnlyMC=opt;}
+  void UseMBTrigMaskInMC(){fEnforceMBTrigMaskInMC=kTRUE;}
+  void UseTrigMaskFromCutFileInMC(){fEnforceMBTrigMaskInMC=kFALSE;}
+  void SetPtHardRange(double pmin, double pmax){
+    fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
+  }
 
+  
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -62,6 +69,15 @@ public:
     if(fTrackCutsKaon) delete fTrackCutsKaon;
     fTrackCutsKaon=new AliESDtrackCuts(*cuts);
   }
+  void SetMinNumTPCClsForPID(Int_t cut=0.) {fCutTPCSignalN = cut;}
+  void SetCutOnCosThetaStar(Double_t cut){
+    if(cut>0 && cut<1) fApplyCutCosThetaStar=kTRUE;
+    else fApplyCutCosThetaStar=kFALSE;
+    fCutCosThetaStar=cut;
+  }
+  void EnableHistosVsCosThetaStar(Bool_t opt){
+    fFillHistosVsCosThetaStar=opt;
+  }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
   }
@@ -71,10 +87,7 @@ public:
   void SetCutCosPiDsLabFrame(Double_t cut){
     fCutCosPiDsLabFrame=cut;
   }
-  void SetPIDHF(AliAODPidHF* pid){
-    if(fPidHF) delete fPidHF;
-    fPidHF=new AliAODPidHF(*pid);
-  }
+
   void SetRDHFCuts(AliRDHFCuts* cuts){
     fAnalysisCuts=cuts;
   }
@@ -95,9 +108,10 @@ public:
   void SetPtBinWidth(Double_t binw){fPtBinWidth=binw;}
   void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
   void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
-  void SetMultiplicityRange(Double_t mmin=-0.5, Double_t mmax=199.5){
+  void SetMultiplicityRange(Double_t mmin=-0.5, Double_t mmax=199.5, Int_t nbins=200){
     fMinMultiplicity=mmin;
     fMaxMultiplicity=mmax;
+    fNumOfMultBins=nbins;
   }
 
   void SetPIDstrategy(Int_t strat){fPIDstrategy=strat;}
@@ -114,11 +128,11 @@ public:
   Bool_t IsPion(AliAODTrack* track);
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   
-  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
+  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
-  void FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel);
+  void FillGenHistos(TClonesArray* arrayMC, AliAODMCHeader *mcHeader, Bool_t isEvSel);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
   void ResetPool(Int_t poolIndex);
@@ -138,27 +152,40 @@ private:
   Double_t CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
   Double_t CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
 
-  TList   *fOutput; //!<! list send on output slot 0
-  TH1F *fHistNEvents;         //!<!hist. for No. of events
-  TH2F *fHistEventMultZv;       //!<!hist. of evnt Mult vs. Zv for all events
-  TH2F *fHistEventMultZvEvSel;  //!<!hist. of evnt Mult vs. Zv for selected ev
-  TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
-  TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
-  TH1F *fHistCheckOrigin;     //!<!hist. of origin (c/b) of D meson
-  TH1F *fHistCheckDecChan;    //!<!hist. of decay channel of D meson
-  TH1F *fHistCheckDecChanAcc; //!<!hist. of decay channel of D meson in acc.
-  TH3F *fPtVsYVsMultGenPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
-  TH3F *fPtVsYVsMultGenLargeAccPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
-  TH3F *fPtVsYVsMultGenLimAccPrompt;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
-  TH3F *fPtVsYVsMultGenAccPrompt;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
-  TH3F *fPtVsYVsMultGenAccEvSelPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsMultRecoPrompt;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
-  TH3F *fPtVsYVsMultGenFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
-  TH3F *fPtVsYVsMultGenLargeAccFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
-  TH3F *fPtVsYVsMultGenLimAccFeeddw;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
-  TH3F *fPtVsYVsMultGenAccFeeddw;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
-  TH3F *fPtVsYVsMultGenAccEvSelFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsMultRecoFeeddw;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TList *fOutput;                       //!<! list with output histograms
+  TList *fListCuts;                     //!<! list with cut values 
+  TH1F *fHistNEvents;                   //!<!hist. for No. of events
+  TH2F *fHistEventMultCent;             //!<!hist. for evnt Mult vs. centrality (all)
+  TH2F *fHistEventMultCentEvSel;        //!<!hist. for evnt Mult vs. centrality (sel)
+  TH2F *fHistEventMultZv;               //!<!hist. of evnt Mult vs. Zv for all events
+  TH2F *fHistEventMultZvEvSel;          //!<!hist. of evnt Mult vs. Zv for selected ev
+  TH1F *fHistXsecVsPtHard;              //!<!hist. of xsec vs pthard (MC)
+  TH1F *fHistTrackStatus;               //!<!hist. of status of tracks
+  TH3F *fHistTrackEtaMultZv;            // track distribution vs. eta z vertex and mult
+  TH2F *fHistSelTrackPhiPt;                // track distribution vs. phi and pt
+  TH2F *fHistCheckOrigin;               //!<!hist. of origin (c/b) of D meson (gen)
+  TH2F *fHistCheckOriginRecoD;          //!<!hist. of origin (c/b) of D meson (reco)
+  TH2F *fHistCheckOriginRecoVsGen;      //!<!hist. of origin (c/b) of D meson
+  TH1F *fHistCheckDecChan;              //!<!hist. of decay channel of D meson
+  TH1F *fHistCheckDecChanAcc;           //!<!hist. of decay channel of D meson in acc.
+  TH3F *fPtVsYVsMultGenPrompt;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccPrompt;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsMultGenFeeddw;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccFeeddw;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccFeeddw;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsPtBGenFeeddw;           //!<! hist. of Y vs. Pt vs. PtB generated (all D)
+  TH3F *fPtVsYVsPtBGenLargeAccFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.9)
+  TH3F *fPtVsYVsPtBGenLimAccFeeddw;     //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.5)
+  TH3F *fPtVsYVsPtBGenAccFeeddw;        //!<! hist. of Y vs. Pt vs. PtB generated (D in acc)
+  TH3F *fPtVsYVsPtBGenAccEvSelFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsPtBRecoFeeddw;          //!<! hist. of Y vs. Pt vs. PtB generated (Reco D)
   TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
@@ -166,6 +193,7 @@ private:
   TH3F *fMassVsPtVsYSig;   //!<! hist. of Y vs. Pt vs. Mass (signal)
   TH3F *fMassVsPtVsYRefl;  //!<! hist. of Y vs. Pt vs. Mass (reflections)
   TH3F *fMassVsPtVsYBkg;   //!<! hist. of Y vs. Pt vs. Mass (background)
+  TH1F *fBMohterPtGen;     //!<! hist. of beauty mother pt
   TH1F *fNSelected;        //!<! hist. of n. of selected D+
   TH1F *fNormRotated;      //!<! hist. rotated/selected D+
   TH1F *fDeltaMass;        //!<! hist. mass difference after rotations
@@ -174,11 +202,33 @@ private:
   TH3F *fMassVsPtVsYMELSpp;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH3F *fMassVsPtVsYMELSmm;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH2F* fEventsPerPool;   //!<! hist with number of events per pool  
-  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool  
+  TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool
+  TH3F *fMassVsPtVsCosthSt;         //!<! hist. of Pt vs. Mass vs. cos(th*) (all cand)
+  TH3F *fMassVsPtVsCosthStRot;      //!<! hist. of Pt vs. Mass vs. cos(th*) (rotations)
+  TH3F *fMassVsPtVsCosthStLSpp;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign ++)
+  TH3F *fMassVsPtVsCosthStLSmm;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign --)
+  TH3F *fMassVsPtVsCosthStSig;      //!<! hist. of Pt vs. Mass vs. cos(th*) (signal)
+  TH3F *fMassVsPtVsCosthStRefl;     //!<! hist. of Pt vs. Mass vs. cos(th*) (reflections)
+  TH3F *fMassVsPtVsCosthStBkg;      //!<! hist. of Pt vs. Mass vs. cos(th*) (background)
+  TH3F *fMassVsPtVsCosthStME;       //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH2F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTPCPionGoodTOF; //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion
+  TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
+  TH3F *fHistoPtKPtPiPtD;           //!<! hist. for propagation of tracking unc
+  TH3F *fHistoPtKPtPiPtDSig;        //!<! hist. for propagation of tracking unc
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
+  Int_t fCutTPCSignalN;   /// min. value of number of TPC clusters for PID, cut if !=0 
+  Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
+  Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
+  Double_t fCutCosThetaStar;    /// cos(theta*) cut
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
   Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
   Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
@@ -201,41 +251,48 @@ private:
   
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   
-  Int_t fMeson;          /// mesonSpecies (see enum)
-  Bool_t  fReadMC;       ///  flag for access to MC
-  Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
-  Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
+  Int_t fMeson;                    /// mesonSpecies (see enum)
+  Bool_t  fReadMC;                 ///  flag for access to MC
+  Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
+  Bool_t fGoUpToQuark;             /// flag for definition of c,b origin
+  Int_t fFullAnalysis;             /// flag to set analysis level (0 is the fastest)
+  Bool_t fSignalOnlyMC;            /// flag to speed up the MC 
+  Bool_t   fSelectPtHardRange;     /// flag to select specific phard range in MC
+  Double_t fMinPtHard;             /// minimum pthard
+  Double_t fMaxPtHard;             /// maximum pthard
   
-  Int_t    fPIDstrategy;   /// knSigma, kBayesianMaxProb, kBayesianThres
-  Double_t fmaxPforIDPion; /// flag for upper p limit for id band for pion
-  Double_t fmaxPforIDKaon; /// flag for upper p limit for id band for kaon
-  Bool_t   fKeepNegID;    /// flag to keep also track with negative ID (default kFALSE, change it only if you know what you are doing)
-  Int_t    fPIDselCaseZero;  /// flag to change PID strategy
-  Double_t fBayesThresKaon;  /// threshold for kaon identification via Bayesian PID
-  Double_t fBayesThresPion;  /// threshold for pion identification via Bayesian PID
+  Int_t    fPIDstrategy;           /// knSigma, kBayesianMaxProb, kBayesianThres
+  Double_t fmaxPforIDPion;         /// flag for upper p limit for id band for pion
+  Double_t fmaxPforIDKaon;         /// flag for upper p limit for id band for kaon
+  Bool_t   fKeepNegID;             /// flag to keep also track with negative ID (default kFALSE, change it only if you know what you are doing)
+  Int_t    fPIDselCaseZero;        /// flag to change PID strategy
+  Double_t fBayesThresKaon;        /// threshold for kaon identification via Bayesian PID
+  Double_t fBayesThresPion;        /// threshold for pion identification via Bayesian PID
+  Int_t  fOrigContainer[200000];   /// container for checks
 
-  Int_t fDoEventMixing; /// flag for event mixing
+  Int_t fDoEventMixing;            /// flag for event mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
-  Double_t fMaxzVertDistForMix; /// cut on zvertex distance for event mixing with cuts
-  Double_t fMaxMultDiffForMix; /// cut on multiplicity difference for event mixing with cuts
-  Int_t fNzVertPools; /// number of pools in z vertex for event mixing
-  Int_t fNzVertPoolsLimSize; /// number of pools in z vertex for event mixing +1
-  Double_t* fzVertPoolLims; //[fNzVertPoolsLimSize] limits of the pools in zVertex
-  Int_t fNMultPools; /// number of pools in multiplicity for event mixing
-  Int_t fNMultPoolsLimSize; /// number of pools in multiplicity for event mixing +1
-  Double_t* fMultPoolLims; //[fNMultPoolsLimSize] limits of the pools in multiplicity
-  Int_t  fNOfPools; /// number of pools
-  TTree** fEventBuffer;   //!<! structure for event mixing
-  TObjString* fEventInfo;  /// unique event Id for event mixing checks
-  Double_t fVtxZ;         /// zVertex
-  Double_t fMultiplicity; /// multiplicity
-  Double_t fMinMultiplicity;  /// lower limit for multiplcities in MC histos
-  Double_t fMaxMultiplicity; /// upper limit for multiplcities in MC histos
-  TObjArray* fKaonTracks; /// array of kaon-compatible tracks (TLorentzVectors)
-  TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
-
+  Double_t fMaxzVertDistForMix;    /// cut on zvertex distance for event mixing with cuts
+  Double_t fMaxMultDiffForMix;     /// cut on multiplicity difference for event mixing with cuts
+  Int_t fNzVertPools;              /// number of pools in z vertex for event mixing
+  Int_t fNzVertPoolsLimSize;       /// number of pools in z vertex for event mixing +1
+  Double_t* fzVertPoolLims;        //[fNzVertPoolsLimSize] limits of the pools in zVertex
+  Int_t fNMultPools;               /// number of pools in multiplicity for event mixing
+  Int_t fNMultPoolsLimSize;        /// number of pools in multiplicity for event mixing +1
+  Double_t* fMultPoolLims;         //[fNMultPoolsLimSize] limits of the pools in multiplicity
+  Int_t  fNOfPools;                /// number of pools
+  TTree** fEventBuffer;            //!<! structure for event mixing
+  TObjString* fEventInfo;          /// unique event Id for event mixing checks
+  Double_t fVtxZ;                  /// zVertex
+  Double_t fMultiplicity;          /// multiplicity
+  Int_t fNumOfMultBins;            /// number of bins for multiplcities in MC histos
+  Double_t fMinMultiplicity;       /// lower limit for multiplcities in MC histos
+  Double_t fMaxMultiplicity;       /// upper limit for multiplcities in MC histos
+  TObjArray* fKaonTracks;          /// array of kaon-compatible tracks (TLorentzVectors)
+  TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
+    
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,14); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,31); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

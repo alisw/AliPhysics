@@ -24,7 +24,6 @@
 #include <TAxis.h>
 #include <THashList.h>
 #include <TFileCollection.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 
@@ -933,7 +932,7 @@ TChain* CreateChainFromCollection(const char *xmlfile)
   // Create a chain from the collection of tags.
   if (!TGrid::Connect("alien://")) return NULL;
   
-  TGridCollection* coll = TAlienCollection::Open(xmlfile);
+  TGridCollection* coll = gGrid->OpenCollection(xmlfile);
   if (!coll) {
     Error("CreateChainFromCollection", "Cannot create the AliEn collection");
     return NULL;

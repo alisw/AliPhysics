@@ -530,6 +530,10 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	    if (!IsPionNSigmaRejection(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi(), track->TOFpionTime()) && !IsKaonNSigmaRejection(track->Pt(), !track->NSigmaTPCK(), track->NSigmaTOFK(), track->TOFkaonTime()) && IsProtonNSigmaAccept(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP(), track->TOFprotonTime()))
 	      imost = 21;
 	  }
+	  else if(fMostProbable == 30) { //DEUTERONs
+	    if(IsDeuteronTPCNSigma(track->Pt(),track->TPCsignal()))
+	      imost = 30;	    
+	  }
 	}
 
 
@@ -1397,3 +1401,11 @@ bool AliFemtoMJTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float ns
    else
      return true;
 }
+
+ bool AliFemtoMJTrackCut::IsDeuteronTPCNSigma(float mom, float nsigmaTPC)
+ {   
+   if(TMath::Abs(nsigmaTPC)<fNsigma)
+     return true;
+   else
+     return false;
+ }

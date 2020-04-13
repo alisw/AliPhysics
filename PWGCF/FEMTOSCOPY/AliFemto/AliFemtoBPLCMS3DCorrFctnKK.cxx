@@ -307,25 +307,23 @@ void AliFemtoBPLCMS3DCorrFctnKK::Finish()
 AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report()
 {
   /// Construct the report
-  TString report("LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n");
+  AliFemtoString report("LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n");
 
-  report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries())
-            + TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries())
-            + TString::Format("Number of entries in ratio:\t%E\n", fRatio->GetEntries())
-            + TString::Format("Normalization region in Qinv was:\t%E\t%E\n", fQinvNormLo, fQinvNormHi)
-            + TString::Format("Number of pairs in Normalization region was:\n")
-            + TString::Format("In numerator:\t%lu\t In denominator:\t%lu\n", fNumRealsNorm, fNumMixedNorm);
+  report += Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+  report += Form("Number of entries in ratio:\t%E\n", fRatio->GetEntries());
+  report += Form("Normalization region in Qinv was:\t%E\t%E\n", fQinvNormLo, fQinvNormHi);
+  report += Form("Number of pairs in Normalization region was:\n");
+  report += Form("In numerator:\t%lu\t In denominator:\t%lu\n", fNumRealsNorm, fNumMixedNorm);
 
   /*  if (fCorrection)
       {
-      float radius = fCorrection->GetRadius();
-      snprintf(ctemp , 100, "Coulomb correction used radius of\t%E\n",radius);
+      report += Form("Coulomb correction used radius of\t%E\n",fCorrection->GetRadius());
       }
       else
       {
-      snprintf(ctemp , 100, "No Coulomb Correction applied to this CorrFctn\n");
+      report += "No Coulomb Correction applied to this CorrFctn\n";
       }
-      stemp += ctemp;
   */
 
   if (fPairCut) {
@@ -335,7 +333,7 @@ AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString((const char *)report);
+  return report;
 }
 //____________________________
 void AliFemtoBPLCMS3DCorrFctnKK::AddRealPair( AliFemtoPair* pair)

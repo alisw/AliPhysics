@@ -16,7 +16,7 @@
 #include "AliStack.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
-#include "TParticle.h"
+#include "AliVParticle.h"
 #include "AliCSTrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -299,7 +299,7 @@ Bool_t AliCSTrackCuts::IsTrueTrackAccepted(Int_t itrk) {
       return kFALSE;
 
     /* get the associated particle */
-    TParticle *particle = fgMCHandler->MCEvent()->Particle(itrk);
+    AliVParticle *particle = fgMCHandler->MCEvent()->GetTrack(itrk);
 
     /* just to be sure */
     if (particle == NULL) return kFALSE;
@@ -523,19 +523,19 @@ Bool_t AliCSTrackCuts::IsPhysicalPrimary(Int_t itrk) {
         if (!mcEvent->IsPhysicalPrimary(itrk))
           return kFALSE;
 
-        TParticle* particle = mcEvent->Particle(itrk);
+        AliVParticle* particle = mcEvent->GetTrack(itrk);
 
         if (particle != NULL) {
-          Int_t motherix = particle->GetFirstMother();
+          Int_t motherix = particle->GetMother();
 
           if (motherix < 0) {
             return kTRUE;
           }
           else {
-            TParticle* motherparticle = mcEvent->Particle(motherix);
+            AliVParticle* motherparticle = mcEvent->GetTrack(motherix);
 
             if (motherparticle != NULL) {
-              Int_t pdgcode = TMath::Abs(motherparticle->GetPdgCode());
+              Int_t pdgcode = TMath::Abs(motherparticle->PdgCode());
 
               for (Int_t j=0; j != kNWeakParticles; ++j) {
                 if (kWeakParticles[j] == pdgcode) {
@@ -836,6 +836,12 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     basename = "2011";
     system = "Pb-Pb";
     period = "2018q";
+    break;
+  case kLHC18r:
+    fBaseSystem = k2011based;
+    basename = "2011";
+    system = "Pb-Pb";
+    period = "2018r";
     break;
   default:
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();

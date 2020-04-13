@@ -18,7 +18,7 @@
 class AliFemtoDreamTrackHist {
  public:
   AliFemtoDreamTrackHist();
-  AliFemtoDreamTrackHist(bool DCADist, bool CombSig);
+  AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin = 0.5, float pTmax = 4.05);
   AliFemtoDreamTrackHist(TString MinimalBooking);
   virtual ~AliFemtoDreamTrackHist();
   void FillConfig(int iBin, float val) {
@@ -34,6 +34,11 @@ class AliFemtoDreamTrackHist {
   void FillpTCut(int i, float pT) {
     if ((!fMinimalBooking) || (i == 1))
       fpTDist[i]->Fill(pT);
+  }
+  ;
+  void FillpCut(int i, float p) {
+    if (!fMinimalBooking)
+      fpDist[i]->Fill(p);
   }
   ;
   void FillpTPCCut(int i, float pTPC) {
@@ -66,6 +71,16 @@ class AliFemtoDreamTrackHist {
       fDCAz[i]->Fill(pT, dcaz);
   }
   ;
+  void FillDCAxyPropCut(int i, float pT, float dcaxy) {
+    if (!fMinimalBooking)
+      fDCAxyProp[i]->Fill(pT, dcaxy);
+  }
+  ;
+  void FillDCAzPropCut(int i, float pT, float dcaz) {
+    if (!fMinimalBooking)
+      fDCAzProp[i]->Fill(pT, dcaz);
+  }
+  ;
   void FillTPCCrossedRowCut(int i, float Crossed) {
     if (!fMinimalBooking)
       fTPCCrossedRows[i]->Fill(Crossed);
@@ -86,6 +101,11 @@ class AliFemtoDreamTrackHist {
       fShrdClsITS[i]->Fill(layer, yesno);
   }
   ;
+  void FillITSdedx(int i, float mom, float dedx) {
+    if (!fMinimalBooking)
+      fITSdedx[i]->Fill(mom, dedx);
+  }
+  ;
   void FillTPCdedx(int i, float mom, float dedx) {
     if (!fMinimalBooking)
       fTPCdedx[i]->Fill(mom, dedx);
@@ -94,6 +114,16 @@ class AliFemtoDreamTrackHist {
   void FillTOFbeta(int i, float mom, float beta) {
     if (!fMinimalBooking)
       fTOFbeta[i]->Fill(mom, beta);
+  }
+  ;
+  void FillNSigITS(int i, float mom, float nSigITS) {
+    if (!fMinimalBooking)
+      fNSigITS[i]->Fill(mom, nSigITS);
+  }
+  ;
+  void FillNSigITSMod(int i, float mom,float nSigITS){
+    if (!fMinimalBooking)
+      fNSigITSMod[i]->Fill(mom, TMath::Abs(nSigITS));
   }
   ;
   void FillNSigTPC(int i, float mom, float nSigTPC) {
@@ -111,6 +141,11 @@ class AliFemtoDreamTrackHist {
       fNSigTOF[i]->Fill(mom, nSigTOF);
   }
   ;
+  void FillITSStatus(int i, AliPIDResponse::EDetPidStatus statusITS) {
+    if (!fMinimalBooking)
+      fITSStatus[i]->Fill(statusITS);
+  }
+  ;
   void FillTPCStatus(int i, AliPIDResponse::EDetPidStatus statusTPC) {
     if (!fMinimalBooking)
       fTPCStatus[i]->Fill(statusTPC);
@@ -123,6 +158,11 @@ class AliFemtoDreamTrackHist {
   ;
   void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
 
+  void FillNSigComITSTPC(int i, float mom,float nSigITS, float nSigTPC){
+    if (!fMinimalBooking)
+      fNSigComITSTPC[i]->Fill(mom, TMath::Sqrt(nSigITS*nSigITS+nSigTPC*nSigTPC));
+  }
+  ;
   void FillNSigComTPCTOF(int i, float mom,float nSigTPC, float nSigTOF){
     if (!fMinimalBooking)
       fNSigComTPCTOF[i]->Fill(mom, TMath::Sqrt(nSigTPC*nSigTPC+nSigTOF*nSigTOF));
@@ -131,6 +171,17 @@ class AliFemtoDreamTrackHist {
 
 
   void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
+
+  void FillTOFMass(float mom, float beta) {
+    if (fTOFMass) {
+      if (beta > 0 && beta <= 1) {
+        fTOFMass->Fill(mom, mom / beta * TMath::Sqrt(1 - beta * beta));
+      } else {
+        fTOFMass->Fill(0., -999.);
+      }
+    }
+  }
+
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {
     if (!fMinimalBooking)
       fTPCClsCPiluUp[i]->Fill(iCrit, TPCClsC);
@@ -165,11 +216,14 @@ class AliFemtoDreamTrackHist {
   bool fMinimalBooking;     //!
   int fMultRangeLow;		//!
   int fMultRangeHigh;		//!
+  float fpTmin;              //!
+  float fpTmax;              //!
   TList *fHistList;         //!
   TList *fTrackCutQA[2];    //!
   TProfile *fConfig;        //!
   TH1F *fCutCounter;        //!
   TH1F *fpTDist[2];         //!
+  TH1F *fpDist[2];          //!
   TH1F *fpTPCDist[2];       //!
   TH1F *fetaDist[2];        //!
   TH1F *fphiDist[2];        //!
@@ -177,24 +231,32 @@ class AliFemtoDreamTrackHist {
   TH2F *fShrdClsITS[2];     //!
   TH2F *fDCAxy[2];          //!
   TH2F *fDCAz[2];           //!
+  TH2F *fDCAxyProp[2];      //!
+  TH2F *fDCAzProp[2];       //!
   TH2F *fDCAXYPtBins;       //!
-  TH2F *fDCAXYPtBinsMult[3];  //!
-  TH1F *fTPCCrossedRows[2];  //!
+  TH2F *fTOFMass;           //!
+  TH2F *fDCAXYPtBinsMult[3];//!
+  TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
-  TH2F *fTrackChi2[2];        //!
+  TH2F *fTrackChi2[2];      //!
+  TH2F *fITSdedx[2];        //!
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
+  TH2F *fNSigITS[2];        //!
+  TH2F *fNSigITSMod[2];     //!
   TH2F *fNSigTPC[2];        //!
   TH2F *fNSigTPCMod[2];     //!
   TH2F *fNSigTOF[2];        //!
+  TH1F *fITSStatus[2];      //!
   TH1F *fTPCStatus[2];      //!
   TH1F *fTOFStatus[2];      //!
   TH3F *fNSigCom;           //!
+  TH2F  *fNSigComITSTPC[2];   //!
   TH2F  *fNSigComTPCTOF[2];   //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];  //!
-ClassDef(AliFemtoDreamTrackHist,4)
+ClassDef(AliFemtoDreamTrackHist,5)
   ;
 };
 

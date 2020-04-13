@@ -211,7 +211,7 @@ class AliResonanceFits : public TObject {
   TH1* GetSplusB() const {return (fMatchingIsDone ? fSplusB : 0x0);}
   TH1* GetBkg() const {return (fMatchingIsDone ? fBkg : 0x0);}
   TH1* GetSignal() const {return (fMatchingIsDone ? fSig : 0x0);}
-  TH1* GetSoverB() const {return (fMatchingIsDone ? fSoverB : 0x0);}
+  TH1* GetSoverB(Bool_t fromMCshape=kFALSE) const {return (fMatchingIsDone ? (fromMCshape ? fSoverBfromMCshape : fSoverB) : 0x0);}
   TH1* GetSplusResidualBkg() const {return (fMatchingIsDone ? fSplusResidualBkg : 0x0);}
   TH1* GetBkgCombinatorial() const {return (fMatchingIsDone ? fBkgCombinatorial : 0x0);}
   TH1* GetResidualBkg() const {return (fMatchingIsDone ? fBkgResidual : 0x0);}
@@ -304,6 +304,7 @@ class AliResonanceFits : public TObject {
    ////////////////////////////////
    
    TH1* fSoverB;              // S/B projection
+   TH1* fSoverBfromMCshape;   // S/B projection using the scaled MC shape for the signal
    static TH1* fSignalMCshape;    // MC truth signal shape
    Double_t fFitValues[kNFitValues];       // array used to store information on the signal fit
    Bool_t fMatchingIsDone;                  // set to true if the matching procedure was succesfully run; false if the object is in any other state
@@ -331,7 +332,7 @@ class AliResonanceFits : public TObject {
    void FitResidualBkg();
    static Double_t GlobalFitFunction(Double_t *x, Double_t* par);
 
-   ClassDef(AliResonanceFits, 5);
+   ClassDef(AliResonanceFits, 6);
 };
 
 #endif

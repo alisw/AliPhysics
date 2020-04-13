@@ -45,6 +45,7 @@ public:
   //
   virtual void Init();
   virtual Bool_t IsSelected(TObject* track);
+  virtual Bool_t IsSelected(TObject* track, Double_t* values);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
   
   void AddCut(AliAnalysisCuts* fCut);
@@ -58,7 +59,7 @@ private:
   TList  fCutGroupList;  //for saving the different cuts
   Bool_t fCompOperator;  //determines whether the cuts are AND/OR compared
   
-  ClassDef(AliDielectronCutGroup,1) //Group of cuts
+  ClassDef(AliDielectronCutGroup,2) //Group of cuts
 };
 
 #endif

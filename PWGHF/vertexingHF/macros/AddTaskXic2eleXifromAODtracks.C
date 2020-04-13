@@ -1,12 +1,12 @@
 AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-									 Int_t iscoltype= 0,
+								   Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kTRUE,
-									 Bool_t domixing=kFALSE,
-									 Bool_t reconstructPrimVert=kFALSE,
+								   Bool_t domixing=kFALSE,
+								   Bool_t reconstructPrimVert=kFALSE,
 								   Bool_t writeEachVariableTree=kFALSE,
 								   Bool_t writeMCVariableTree=kFALSE,
-                   TString estimatorFilename="",
+				                   TString estimatorFilename="",
 								   Int_t nTour=0
 								   )
 
@@ -129,7 +129,43 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     }
   }
 
-  mgr->AddTask(task);
+	//=================== for 5 TeV reweighting==========
+	TF1 * weightfit = new TF1("weightfit","expo");
+	weightfit -> SetParameter(0,8.66109e-01);
+	weightfit -> SetParameter(1,-2.59812e-01);
+    task -> SetFunction(weightfit);
+	//=================== for 13 TeV reweighting===========
+	TF1 * weightfit13 = new TF1("weightfit13","expo");
+	weightfit13 -> SetParameter(0,1.04603e+00);
+	weightfit13 -> SetParameter(1,-2.46920e-01);
+    task -> SetFunction13(weightfit13);
+
+
+	//============== weight process for the acceptance phi distribution
+	// =========== electron =================================
+	  TF1 * AccWeight = new TF1("AccWeight","expo+pol4(2)");
+      AccWeight -> SetParameter(0,7.25182e+00);
+      AccWeight -> SetParameter(1,-1.59753e+01);
+      AccWeight -> SetParameter(2,1.48939e-01);
+      AccWeight -> SetParameter(3,-2.29063e-01);
+      AccWeight -> SetParameter(4,1.78563e-01);
+      AccWeight -> SetParameter(5,-5.70464e-02);
+      AccWeight -> SetParameter(6,6.25614e-03);
+      task -> SetFunctionElectron(AccWeight);
+   // ============== positron ================================
+      TF1 * AccWeightPositron = new TF1("AccWeightPositron","expo+pol4(2)");
+      AccWeightPositron -> SetParameter(0,7.23466e+00);
+      AccWeightPositron -> SetParameter(1,-1.59978e+01);
+      AccWeightPositron -> SetParameter(2,1.25472e-01);
+      AccWeightPositron -> SetParameter(3,-1.80599e-01);
+      AccWeightPositron -> SetParameter(4,1.43474e-01);
+      AccWeightPositron -> SetParameter(5,-4.66011e-02);
+      AccWeightPositron -> SetParameter(6,5.17285e-03);
+ 
+      task -> SetFunctionPositron(AccWeightPositron);
+
+
+	mgr->AddTask(task);
 
   // Create and connect containers for input/output  
   TString outputfile = AliAnalysisManager::GetCommonFileName();

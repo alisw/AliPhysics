@@ -14,8 +14,17 @@
 #include "AliConversionMesonCuts.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "TProfile2D.h"
+#include "TH3F.h"
 #include <vector>
+#include <memory>
+using  std::unique_ptr;
+#include "AliDalitzAODESD.h"
+#include "AliDalitzData.h"
+#include "AliDalitzAODESDMC.h"
+#include "AliDalitzEventMC.h"
 
+class AliVEvent;
+class AliVTrack;
 class AliESDInputHandler;
 class AliMCEventHandler;
 class AliESDEvent;
@@ -25,6 +34,11 @@ class AliESDpidCuts;
 class AliV0Reader;
 class AliGammaConversionHistograms;
 class AliTriggerAnalysis;
+class AliAODEvent;
+class AliAODtrack;
+class AliAODtrackCuts;
+class AliAODpidCuts;
+
 
 class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
   public:
@@ -47,7 +61,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
       fIsHeavyIon = flag;
     }
 
-    void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+    void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fCutEventArray = CutArray;
@@ -85,10 +99,11 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void CalculateBackground();
     void UpdateEventByEventData();
     void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
-    Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
-    Double_t GetPsiPairMC(const TParticle *fMCPosParticle, const TParticle *fMCNegParticle) const;
+    Double_t GetPsiPair(AliDalitzAODESD *trackPos, AliDalitzAODESD *trackNeg ) const;
+    Double_t GetPsiPairMC( AliDalitzAODESDMC *fMCPosParticle, AliDalitzAODESDMC *fMCNegParticle) const;
+    Double_t GetdeltaPhi(AliDalitzAODESD *trackelectronVgamma, AliDalitzAODESD *trackpositronVgamma ) const;
 
-    Bool_t IsDalitz(TParticle *fMCMother) const;
+    Bool_t IsDalitz(AliDalitzAODESDMC *fMCMother) const;
     Bool_t IsPi0DalitzDaughter( Int_t label ) const;
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
@@ -96,8 +111,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TString                           fV0ReaderName;
     AliDalitzElectronSelector         *fElecSelector;
     AliGammaConversionAODBGHandler    **fBGHandler;
+    AliVEvent                         *fDataEvent;
+    AliDalitzData                     *fAODESDEvent;
     AliESDEvent                       *fESDEvent;
     AliMCEvent                        *fMCEvent;
+    AliAODEvent                       *fAODEvent;
+    AliDalitzEventMC                  *fAODESDEventMC;
     TList                             **fCutFolder;
     TList                             **fESDList;
     TList                             **fBackList;
@@ -203,12 +222,14 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hMCPi0WOWeightPt;
     TH1F                              **hMCPi0GGPt;
     TH1F                              **hMCEtaPt;
+    TH1F                              **hMCEtaWOWeightPt;
     TH1F                              **hMCEtaGGPt;
     TH1F                              **hMCPi0InAccPt;
     TH1F                              **hMCPi0WOWeightInAccPt;
     TH1F                              **hMCPi0InAccOpeningAngleGammaElectron;
     THnSparseF                        **sMCPi0DalitzPlot;
     TH1F                              **hMCEtaInAccPt;
+    TH1F                              **hMCEtaWOWeightInAccPt;
     TH1F                              **hMCChiCPt;
     TH1F                              **hMCChiCInAccPt;
     TH2F                              **hMCPi0EposEnegInvMassPt;
@@ -268,16 +289,20 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH1F                              **hESDTruePi0DalitzSecConvGammaPt;
     TH1F                              **hESDTruePi0DalitzSecPositronPt;
     TH1F                              **hESDTruePi0DalitzSecElectronPt;
-    TH1I                              **hNEvents;
+    TH1F                              **hNEvents;
+    TH1F                              **hNEventsWOWeight;
     TH1I                              **hNGoodESDTracks;
     TH2F                              **hNGoodESDTracksVsNGoodGammas;
     TH2F                              **hNGoodESDTracksVsNGoodVGammas;
     TH2F                              **fHistoSPDClusterTrackletBackground;        //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1I                              **hNV0Tracks;
+    //TH3F                              **hESDEposEnegPsiPairpTleptonsDPhi;
     TProfile                          **hEtaShift;
     TH2F                              **fHistoDoubleCountTruePi0InvMassPt;      //! array of histos with double counted pi0s, invMass, pT
     TH2F                              **fHistoDoubleCountTrueEtaInvMassPt;      //! array of histos with double counted etas, invMass, pT
     TH2F                              **fHistoDoubleCountTrueConvGammaRPt;        //! array of histos with double counted photons, R, pT
+    TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
+    TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
     vector<Int_t>                     fVectorDoubleCountTruePi0s;            //! vector containing labels of validated pi0
     vector<Int_t>                     fVectorDoubleCountTrueEtas;            //! vector containing labels of validated eta
     vector<Int_t>                     fVectorDoubleCountTrueConvGammas;          //! vector containing labels of validated photons
@@ -305,8 +330,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     Int_t                             fDoMesonQA;
     Bool_t                            fSetProductionVertextoVGamma;
     Bool_t                            fIsFromMBHeader;
-    Bool_t                            fIsMC;
+    Int_t                             fIsMC;
     Bool_t                            fDoTHnSparse;
+    Double_t                          fWeightJetJetMC;
     Bool_t                            fDoHistoDalitzMassLog;
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
 

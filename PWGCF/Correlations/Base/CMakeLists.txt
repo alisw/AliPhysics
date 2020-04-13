@@ -38,6 +38,7 @@ set(SRCS
   AliCFTreeMapping.cxx
   AliAnalysisTaskCFTree.cxx
   AliTwoPlusOneContainer.cxx
+  AliAnalysisTaskNtuplizer.cxx
   )
 
 # Headers from sources

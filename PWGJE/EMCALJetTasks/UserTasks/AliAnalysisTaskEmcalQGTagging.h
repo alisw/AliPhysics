@@ -70,8 +70,10 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
    void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
    void SetCheckResolution(Bool_t t)                       {fCheckResolution = t;} 
    void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
+   void SetMinPtConst(Float_t t)                              {fMinPtConst = t;}
    void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
-   void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;} 
+   void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;}
+   void SetDoAreaIterative(Bool_t t)                        {fDoAreaIterative =t;}
    void SetMagFieldPol(Float_t t)                           {fMagFieldPolarity=t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
@@ -102,7 +104,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
   void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);
-  void                                RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &aver1, Double_t &aver2);
+  void                                RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &aver1, Double_t &aver2, Double_t &aver3, Double_t &aver4);
   void                               CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont, AliEmcalJet *fJetM,AliJetContainer *fJetContM);
   Bool_t                              CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrack, AliParticleContainer *fTrackCont);
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
@@ -110,7 +112,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[8];                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[12];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -129,7 +131,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
   Float_t                             fMinPtConst;                   //constituent pt cutoff   
   Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
-  Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects 
+  Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects
+  Bool_t                              fDoAreaIterative;               //subtract the area in the declustering
   Float_t                             fPhiCutValue;                  //cuts from HBT
   Float_t                             fEtaCutValue;                  //cuts from HBT
   Float_t                             fMagFieldPolarity;             //polarity, to calculate phimin 

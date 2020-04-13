@@ -6,6 +6,8 @@
 #define AliAnalysisTaskDeuteronAbsorption_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 #include "AliPID.h"
 #include <string>
 
@@ -15,6 +17,8 @@ class TH1F;
 class TH2F;
 class TH3F;
 class AliESDtrackCuts;
+
+#define kNabsSpecies 5
 
 class AliAnalysisTaskDeuteronAbsorption : public AliAnalysisTaskSE
 {
@@ -27,41 +31,66 @@ public:
   virtual void Terminate(Option_t *option) {}
 
   double GetMindEdx() const { return fMindEdx; }
-  void SetMindEdx(double dedx = 100.) { fMindEdx = dedx; }
+  void SetMindEdx(double opt) { fMindEdx = opt; }
+  void SetTreeFlag(Bool_t tmode) {fTreemode = tmode;};
 
   double GetMinTPCsignalN() const { return fMinTPCsignalN; }
   void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
 
-  void SetESDtrackCuts(AliESDtrackCuts * cuts) { fESDtrackCuts = cuts; }
+  void SetESDtrackCuts(const AliESDtrackCuts& cuts) { fESDtrackCuts = cuts; }
 
-  static const AliPID::EParticleType fgkSpecies[4];
-  static const std::string fgkParticleNames[4];
+  static const AliPID::EParticleType fgkSpecies[kNabsSpecies];
+  static const std::string fgkParticleNames[kNabsSpecies];
   static const double fgkPhiParamPos[4][4];
   static const double fgkPhiParamNeg[4][4];
 
+  bool fUseTRDboundariesCut;
+  float fNtpcSigmas;
+  AliEventCuts fEventCuts;
+
 private:
-  double fMindEdx; /// Cut on the minimum dE/dx in TPC
-  int    fMinTPCsignalN; /// Minimum number of PID clusters in the TPC
+  double fMindEdx = 100.0; /// Cut on the minimum dE/dx in TPC
+  int    fMinTPCsignalN = 50; /// Minimum number of PID clusters in the TPC
+  Bool_t fTreemode = kFALSE;    // Flag for filling the tree mode
 
   AliPIDResponse *fPIDResponse;   //! pid response
-  AliESDtrackCuts *fESDtrackCuts; //-> input track cuts
+  AliESDtrackCuts fESDtrackCuts;  // input track cuts
                                   //
   TList *fOutputList;             //! output list
+
+  TTree *fTreeTrack;  //! tree for some track parameters
+  
+  // Variables for the tree
+  //Double_t tP;
+  Double_t tPt;           // pt of the track (at inner wall of the TPC)
+  Double_t tEta;          // eta of the track (at inner wall of the TPC)
+  Double_t tPhi;          // phi of the track (at inner wall of the TPC)
+  Double_t tnsigTPC;      // nSigma PID to 3He in the TPC
+  Double_t tnsigTOF;      // nSigma PID to 3He in the TOF
+  Double_t tmass2;        // m^2/z^2 of the track based on the TOF
+  Int_t tnPIDclsTPC;      // number of clusters used for PID in the TPC
+  Double_t tTOFsigDx;     // track-to-hit residual in TOF (x-direction)
+  Double_t tTOFsigDz;     // track-to-hit residual in TOF (z-direction)
+  Double_t tTOFchi2;      // chi2 of the hit in the TOF
+  Int_t tTOFclsN;         // number of cluster candidates in TOF
+  Int_t tTRDclsN;         // number of TRD clusters attached to the track
+  Int_t tID;              // identification number of the track
+  
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
-  TH3F *fHist3TPCpid[4];  //! QA TPC dE/dx per species
+  TH3F *fHist3TPCpid[kNabsSpecies];  //! QA TPC dE/dx per species
   TH3F *fHist3TPCpidAll;  //! QA TPC dE/dx no species selection
-  TH3F *fHist3TOFpid[4];  //! QA TOF beta per species
+  TH3F *fHist3TOFpid[kNabsSpecies];  //! QA TOF beta per species
   TH3F *fHist3TOFpidAll;  //! QA TOF beta no species selection
-  TH3F *fHist3TOFmass[4]; //! QA TOF mass per species
+  TH3F *fHist3TOFmass[kNabsSpecies]; //! QA TOF mass per species
   TH3F *fHist3TOFmassAll; //! QA TOF mass no species selection
 
   TH1F *fHist1AcceptanceAll[2][2][2]; //! Number of tracks vs p, negative (0) and positive (1), without(0) and with (1) TRD, without (0) and with (1) TOF matching
-  TH2F *fHist2Matching[4][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
+  TH2F *fHist2Matching[kNabsSpecies][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
   TH2F *fHist2Phi[2][2]; //! phi vs pt, negative (0) and positive (1), without(0) and with (1) TRD
-  TH2F *fHist2TPCnSigma[4][2][2]; //! Number of tracks per species vs p, negative (0) and positive (1), without(0) and with (1) TRD
+  TH2F *fHist2TPCnSigma[kNabsSpecies][2][2]; //! Number of tracks per species vs p, negative (0) and positive (1), without(0) and with (1) TRD
 
-  TH2F *fHist2MatchingMC[4][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
+  TH2F *fHist2MatchingMC[kNabsSpecies][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
 
   TF1 *fTRDboundariesPos[4]; //! Function with the phi limits of TRD boundaries as a function of pt
   TF1 *fTRDboundariesNeg[4]; //! Function with the phi limits of TRD boundaries as a function of pt

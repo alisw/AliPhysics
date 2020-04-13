@@ -38,7 +38,6 @@ class MiniV0 {
   Double32_t GetPosProngTPCnsigmaProton() const {return fNsigmaProtonPos;}
   Double32_t GetNegProngEta() const { return fEtaNeg;}
   Double32_t GetPosProngEta() const { return fEtaPos;}
-  Double32_t GetCentrality() const {return fCentrality;}
   bool IsCowboy() const { return fFlags & kCowboySailor; }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
@@ -70,10 +69,9 @@ class MiniV0 {
   void SetITSinformation(bool, bool, bool, bool, int);
   void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kCowboySailor), cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
-  void SetCentrality(float centrality) {fCentrality=centrality;}
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
   static MiniV0 FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
-,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3],bool fake,float centrality);
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3],bool fake);
 
  private:
   enum Flags {
@@ -104,7 +102,6 @@ class MiniV0 {
   Double32_t fNsigmaProtonNeg;          //[0.0,8.0,4] # sigma TPC proton for the negative prong
   Double32_t fEtaPos;                   //[-1.0,1.0,7] Pseudorapidity of the positive prong. MSB is the TOF bit.
   Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
-  Double32_t fCentrality;                //[0,127,7]
   unsigned char fITSInfo;               // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
   unsigned char fFlags;                 // Cowboy&Saylor, TOF bits for neg and pos, optimal tracking parameters
 };
@@ -148,7 +145,7 @@ inline void MiniV0::SetTOFbits(bool pTOF, bool nTOF) {
 }
 
 inline MiniV0 MiniV0::FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
-,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake,float centrality){
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3], bool fake){
 
 MiniV0 miniV0;
 double decayVtx[3];
@@ -232,7 +229,6 @@ miniV0.SetProngsTPCnsigmas(nsigmapospion, nsigmaposproton,
 miniV0.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
 miniV0.SetTOFbits(posTOF, negTOF);
 miniV0.SetCowboyAndSailor(isCowboy);
-miniV0.SetCentrality(centrality);
 return miniV0;
 
 }

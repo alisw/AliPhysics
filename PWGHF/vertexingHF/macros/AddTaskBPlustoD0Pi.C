@@ -4,17 +4,14 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
                                 TString usercomment = "doremalen",
                                 Bool_t bUseMCInfo=kFALSE,
                                 Int_t  nUseQuickSignalAnalysis=0,
-                                Bool_t bGetCutInfo=kTRUE, 
                                 Bool_t bShowRejection=kFALSE, 
                                 Bool_t bShowMask=kFALSE,
-                                Bool_t bUse3DHistograms=kFALSE, 
-                                Bool_t bCheckBackground=kFALSE, 
                                 Int_t nDebugLevel=0,
-                                Int_t nUpgradeSetting=0,
                                 Int_t nDegreePerRotation=3,
                                 Int_t nNumberOfRotations=0,
                                 Double_t fHistMassWindow=0.125,
-                                Bool_t bPerformCutOptimization=kFALSE
+                                Bool_t bPerformCutOptimization=kFALSE,
+                                Bool_t bRemoveInjected=kFALSE
                                 )
 {
   
@@ -54,8 +51,6 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
 
   RDHFBPlustoD0Pi->SetName("BPlustoD0PiCuts");
 
-  RDHFBPlustoD0Pi->SetGetCutInfo(bGetCutInfo);
-
   //CREATE THE TASK
   printf("CREATE TASK\n");
 
@@ -64,17 +59,14 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
 
   task->SetMC(bUseMCInfo);
   task->SetQuickSignalAnalysis(nUseQuickSignalAnalysis);
-  task->SetGetCutInfo(bGetCutInfo);
   task->SetDebugLevel(nDebugLevel);
   task->SetShowRejection(bShowRejection);
   task->SetShowMask(bShowMask);
-  // task->SetUse3DHistograms(bUse3DHistograms); // not used
-  task->SetCheckBackground(bCheckBackground);
-  // task->SetUpgradeSetting(nUpgradeSetting); // not used
   task->SetHistMassWindow(fHistMassWindow);
   task->SetDegreePerRotation(nDegreePerRotation);
   task->SetNumberOfRotations(nNumberOfRotations);
   task->SetPerformCutOptimization(bPerformCutOptimization);
+  task->SetRemoveInjected(bRemoveInjected);
 
   mgr->AddTask(task);
 
@@ -89,7 +81,7 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   // ------ input data ------
   TString input = "input";
   input += usercomment;
-  TString output1 = "chist1";
+  TString output1 = "GeneralInfo";
   output1 += usercomment;
   TString output2 = "cuts";
   output2 += usercomment;
@@ -105,7 +97,7 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   output7 += usercomment;
   TString output8 = "D0_D0Pt";
   output8 += usercomment;
-  TString output9 = "BPlusMC";
+  TString output9 = "BPlusResults";
   output9 += usercomment;
 
 
@@ -120,7 +112,7 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   AliAnalysisDataContainer *coutputD0 =                   mgr->CreateContainer(output6,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputBPlus =                   mgr->CreateContainer(output7,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputD0_D0Pt =              mgr->CreateContainer(output8,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputBPlusMC =                 mgr->CreateContainer(output9,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputBPlusResults =                 mgr->CreateContainer(output9,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -132,7 +124,7 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   mgr->ConnectOutput(task,6,coutputD0);
   mgr->ConnectOutput(task,7,coutputBPlus);
   mgr->ConnectOutput(task,8,coutputD0_D0Pt);
-  mgr->ConnectOutput(task,9,coutputBPlusMC);
+  mgr->ConnectOutput(task,9,coutputBPlusResults);
 
 
   return task;

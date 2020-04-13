@@ -1,3 +1,7 @@
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C>
+#endif
 /***************************************************************************
               Anders Knospe
 
@@ -24,8 +28,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kNoPileUpCut, //=1
 		   kDefaultVtx12,//=2
 		   kDefaultVtx8, //=3
-		   kDefaultVtx5, //=4                    
-		   kMCEvtDefault, //=5                   
+		   kDefaultVtx5, //=4
+		   kMCEvtDefault, //=5
 		   kTriggered, //=6
 		   kNoVzCut, //=7
 		   kNoEvtSel, //=8
@@ -61,15 +65,16 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
  TString     polarizationOpt="" /* J - Jackson,T - Transversity */
 )
-{  
+{
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
+  bool isAOD=(evtCutSetID>=1000);
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if(evtCutSetID>=100){
+  if(evtCutSetID%1000>=100){
     triggerMask=AliVEvent::kHighMultV0;
-    evtCutSetID=evtCutSetID%100;
   }
+  evtCutSetID=evtCutSetID%100;
 
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
@@ -121,8 +126,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   TString taskName=Form("phi%s%s_%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10 && evtCutSetID!=eventCutSet::kIGZ){
-    task->UseESDTriggerMask(triggerMask); //ESD
-    //task->SelectCollisionCandidates(triggerMask); //AOD
+    if(!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
+    else task->SelectCollisionCandidates(triggerMask); //AOD
   }
 
   if(isPP){
@@ -138,7 +143,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetNMix(nmix);
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
-  ::Info("AddTaskPhiPP13TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  ::Info("AddTaskPhiPP13TeV_PID", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
   //task->SaveRsnTreeInFile(kTRUE);
 
   mgr->AddTask(task);
@@ -180,7 +185,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   if(isPP && (!isMC) && cutVertex){
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup
-    ::Info("AddTaskPhiPP13TeV_PID", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+    ::Info("AddTaskPhiPP13TeV_PID", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 
   // define and fill cut set for event cut
@@ -225,7 +230,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
   nmult--;
   TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
-  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
+  task->SetEventQAHist("eventsvsmulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
 
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
@@ -233,8 +238,10 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   double ybins[500];
   for(j=0;j<=401;j++) ybins[j]=j-0.5;
 
-  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
-  hmc->GetYaxis()->SetTitle("QUALITY");
+  //TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
+  //hmc->GetYaxis()->SetTitle("QUALITY");
+  TH2F* hmc=new TH2F("TrackletsVsCent","", nmult,multbins, 401,ybins);
+  hmc->GetYaxis()->SetTitle("TRACKLETS");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
@@ -249,9 +256,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetCheckDecay(CheckDecay);
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
-  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
+  #ifdef __CINT__
+  gROOT->LoadMacro(
+      "$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
+  #endif
+  if(customQualityCutsID>=0 && !ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 

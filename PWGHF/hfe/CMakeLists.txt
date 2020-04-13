@@ -32,7 +32,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
-		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/charmFlow)
 
 # Sources - alphabetical order
 set(SRCS
@@ -87,6 +88,7 @@ set(SRCS
   AliHFEpidObject.cxx
   AliAnalysisTaskEHCorrel.cxx
   AliAnalysisTaskFlowTPCEMCalEP.cxx
+  AliAnalysisTaskFlowTPCEMCalRun2.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 
   AliAnalysisTaskHFEpACorrelation.cxx
@@ -118,6 +120,8 @@ set(SRCS
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEIPDistribution.cxx
   AliAnalysisTaskHFEBeautyMCTemplates.cxx
+  AliAnalysisTaskHFEBeautyMCTemplatesRun2.cxx
+  AliAnalysisTaskHFEIPCorrection.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
@@ -127,10 +131,16 @@ set(SRCS
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
   AliAnalysisHFETPCTOFBeauty.cxx
-  AliAnalysisHFEppTPCTOFBeauty.cxx	
+  AliAnalysisHFEppTPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty5TeVNew.cxx	
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx
+  AliAnalysisTaskHFEBESpectraEMC.cxx
+  AliAnalysisTaskHFETPCTOFMultiplicity.cxx
+  AliAnalysisTaskQAHFE.cxx
+  AliAnalysisTask_QA_EMCALElectrons.cxx
+  AliAnalysisTaskHFEmultTPCEMCAL.cxx
   )
 
 # Headers from sources

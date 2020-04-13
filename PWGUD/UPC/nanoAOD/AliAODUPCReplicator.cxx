@@ -199,6 +199,16 @@ Bool_t AliAODUPCReplicator::IsGoodGlobalTrack(const AliAODTrack *trk)
 Bool_t AliAODUPCReplicator::IsGoodITSsaTrack(const AliAODTrack *trk)
 {
 
+  if(fReplicateMuonTracks){
+    Bool_t goodMuonCaloTrack = kTRUE;
+    if(!(trk->GetStatus() & AliAODTrack::kITSrefit)) goodMuonCaloTrack=kFALSE;
+    if(trk->GetITSNcls() < 4)goodMuonCaloTrack=kFALSE;
+    if(trk->Chi2perNDF() > 2.5)goodMuonCaloTrack=kFALSE;
+    if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1)))goodMuonCaloTrack=kFALSE;
+    
+    if(goodMuonCaloTrack)return kTRUE;
+    }
+
   if(!(trk->TestFilterBit(1<<1))) return kFALSE;
   return kTRUE;
 } 

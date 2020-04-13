@@ -12,6 +12,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include <TH1D.h>
+#include <TH2F.h>
 #include <TF1.h>
 #include <TMath.h>
 #include <TGraphErrors.h>
@@ -288,10 +289,49 @@ static void ScaleBinBySize(TH1D* h)
   {
     Double_t width   = h->GetBinWidth(ibin);
     Double_t content = h->GetBinContent(ibin);
+    Double_t error   = h->GetBinError(ibin);
+    
     //printf("bin %d, width %f, content %e\n",ibin,width,content);
     h->SetBinContent(ibin,content/width);
+    h->SetBinError  (ibin,  error/width);
   }
 }
+
+//-----------------------------------------------------------------------------
+/// Scale 2D histogram X bins by its integral
+//-----------------------------------------------------------------------------
+void ScaleXaxis2D(TH2F* h2D)
+{
+  Int_t nbinsy = h2D->GetNbinsY();
+  
+  for(Int_t j = 1; j <= h2D->GetNbinsX(); j++)
+  {
+    TH1D* temp1 = h2D->ProjectionY(Form("Bin%d",j),j,j);
+    
+    Float_t scale1 = temp1 -> Integral(-1,-1);
+    
+    for(Int_t i = 1; i <= nbinsy; i++)
+    {
+      //printf("i %d, j %d;  content %f / scale %f = %f\n",
+      //i,j,h2D->GetBinContent(j,i),scale2,h2D->GetBinContent(j,i)/scale2);
+      
+      if ( scale1 > 0 )
+      {
+        h2D->SetBinContent(j,i, h2D->GetBinContent(j,i)/scale1);
+        h2D->SetBinError  (j,i, h2D->GetBinError  (j,i)/scale1);
+      }
+      else
+      {
+        h2D->SetBinContent(j,i, 0);
+        h2D->SetBinError  (j,i, 0);       
+      }
+      
+    } // y bin loop 
+  } // x bin loop
+  
+  h2D->SetZTitle("x bin norm. to integral");
+}
+
 
 //-----------------------------------------------------------------------------
 /// When more than 1 frame pad in a canvas, define the number of 

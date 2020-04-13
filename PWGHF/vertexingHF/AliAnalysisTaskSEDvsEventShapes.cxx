@@ -1604,7 +1604,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
             
             if(fRecomputeSpherocity && isGoodDecay){
                 for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
-                    Int_t indexDau = TMath::Abs(mcGenPart->GetDaughter(iDau));  //index of daughter i.e. label
+                    Int_t indexDau = TMath::Abs(mcGenPart->GetDaughterLabel(iDau));  //index of daughter i.e. label
                     idToSkip[iDau] = trkToSkip[indexDau];
                 }
                 AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);

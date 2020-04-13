@@ -49,7 +49,9 @@ set(SRCS
       AliReducedBaseEvent.cxx
       AliReducedBaseTrackCut.cxx
       AliReducedBaseTrack.cxx
+      AliReducedCaloClusterCut.cxx
       AliReducedCaloClusterInfo.cxx
+      AliReducedCaloClusterTrackMatcher.cxx
       AliReducedCompositeCut.cxx
       AliReducedEventCut.cxx
       AliReducedEventInfo.cxx
@@ -65,6 +67,12 @@ set(SRCS
       AliResonanceFits.cxx
       AliSignalMC.cxx
    )
+# fastjet for Jpsi in jets analysis
+if(FASTJET_FOUND)
+  include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+  link_directories(${FASTJET_LIBS_DIR})
+  add_definitions(${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -72,7 +80,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase PWGLFforward2 PWGDQdielectron PWGPPevcharQnInterface)
@@ -90,7 +98,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

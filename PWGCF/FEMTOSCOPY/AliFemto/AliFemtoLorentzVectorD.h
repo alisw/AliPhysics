@@ -13,8 +13,8 @@
  *
 
 ****************************************************************************/
-#ifndef ALIFM_LORENTZ_VECTOR_D_HH
-#define ALIFM_LORENTZ_VECTOR_D_HH
+#ifndef ALIFEMTO_LORENTZ_VECTOR_D_HH
+#define ALIFEMTO_LORENTZ_VECTOR_D_HH
 //#include "AliFemtoThreeVectorF.hh"
 #include "AliFmThreeVectorD.h"
 #include "AliFmLorentzVector.h"

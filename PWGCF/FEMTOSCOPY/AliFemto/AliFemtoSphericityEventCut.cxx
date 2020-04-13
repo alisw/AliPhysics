@@ -19,8 +19,8 @@ AliFemtoSphericityEventCut::AliFemtoSphericityEventCut() :
   AliFemtoEventCut(),
   fEventMult(),
   fVertZPos(),
-  fAcceptBadVertex(false), 
-  fNEventsPassed(0), 
+  fAcceptBadVertex(false),
+  fNEventsPassed(0),
   fNEventsFailed(0),
   fAcceptOnlyPhysics(0),
   fStCutMin(0.0),
@@ -36,14 +36,15 @@ AliFemtoSphericityEventCut::AliFemtoSphericityEventCut() :
   fPsiEP[1] = 100.0;
   fStCutMin = 0.0;
   fStCutMax = 1.0;
-} 
+}
 //------------------------------
-AliFemtoSphericityEventCut::~AliFemtoSphericityEventCut(){
+AliFemtoSphericityEventCut::~AliFemtoSphericityEventCut()
+{
   // Default destructor
 }
 //------------------------------
-bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event){
-
+bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event)
+{
   // Pass events if they fall within the multiplicity, z-vertex position range
   // and transverse sphericity. Fail otherwise
   //  int mult =  event->NumberOfTracks();
@@ -68,73 +69,75 @@ bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event){
 
   Int_t ParticleNumber = 0;
   Double_t SumPt = 0;
-  Double_t S00=0; 
+  Double_t S00=0;
   Double_t S11=0;
   Double_t S10=0;
   Double_t Lambda1 = 0;
   Double_t Lambda2 = 0;
-  Double_t St = 0;	 
+  Double_t St = 0;
 
-   AliFemtoTrackCollection * tracks = event->TrackCollection(); 
-   
-   
+  AliFemtoTrackCollection *tracks = event->TrackCollection();
+
+
   for (AliFemtoTrackIterator iter=tracks->begin();iter!=tracks->end();iter++){
-  
-  
+
     Double_t NewPhi = (*iter)->P().Phi();
     Double_t NewPt =  (*iter)->Pt();
     Double_t NewEta = (*iter)->P().PseudoRapidity();
-   
-    
+
+
     if(TMath::Abs(NewEta)>0.8 || NewPt<0.5){continue;}
-    
+
     Double_t Px;
     Double_t Py;
-    
+
     Px= NewPt * TMath::Cos(NewPhi);
     Py= NewPt * TMath::Sin(NewPhi);
-    
+
     S00 = S00 + Px*Px/(NewPt);  // matrix elements of the transverse shpericity matrix S(i,j)
     S11 = S11 + Py*Py/(NewPt);  // i,j /in [0,1]
     S10 = S10 + Px*Py/(NewPt);
     SumPt = SumPt + NewPt;
     ParticleNumber++;
-    
+
   }  	// end of track loop
 
-    if(SumPt==0){return kFALSE;}
-      
+  if(SumPt==0){
+    return kFALSE;
+  }
+
   S00 = S00/SumPt; // normalize
   S11 = S11/SumPt;
   S10 = S10/SumPt;
-  
+
   Lambda1 = (S00 + S11 + TMath::Sqrt((S00+S11)*(S00+S11)-4.0*(S00*S11-S10*S10)))/2.0;
   Lambda2 = (S00 + S11 - TMath::Sqrt((S00+S11)*(S00+S11)-4.0*(S00*S11-S10*S10)))/2.0;
-  
+
      if(Lambda1+Lambda2!=0 && ParticleNumber>2)
 	{
 		St = 2*Lambda2/(Lambda1+Lambda2);
 	}
      else{return kFALSE;};
-  
-  
+
+
   //cout<<"St  = "<<St<<endl;
-  
+
   if(St>fStCutMax || St<fStCutMin){
 	//cout<<"Event kicked out !"<<"StCutMax= "<<fStCutMax<<"  StCutMin= "<<fStCutMin<<endl;
-	//cout<<"St = "<<St<<endl;		  
-  return kFALSE;}  
+	//cout<<"St = "<<St<<endl;
+    return kFALSE;
+  }
 
   bool goodEvent =
-    ((mult >= fEventMult[0]) && 
-     (mult <= fEventMult[1]) && 
+    ((mult >= fEventMult[0]) &&
+     (mult <= fEventMult[1]) &&
      (vertexZPos > fVertZPos[0]) &&
      (vertexZPos < fVertZPos[1]) &&
      (epvzero > fPsiEP[0]) &&
      (epvzero < fPsiEP[1]) &&
      ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
       ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger))
-);
+    );
 
   // cout << "AliFemtoSphericityEventCut:: goodEvent" <<goodEvent << endl;
 
@@ -142,21 +145,18 @@ bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event){
   //  cout << "AliFemtoSphericityEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
 
-  return (goodEvent);
+  return goodEvent;
 }
 //------------------------------
-AliFemtoString AliFemtoSphericityEventCut::Report(){
+AliFemtoString AliFemtoSphericityEventCut::Report()
+{
   // Prepare report
-  string stemp;
-  char ctemp[100];
-  snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
-  stemp = ctemp;
-  snprintf(ctemp , 100, "\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report("AliFemtoSphericityEventCut Report:");
+  report += Form("\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
+  report += Form("\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
+  report += Form("\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
+
+  return report;
 }
 void AliFemtoSphericityEventCut::SetAcceptBadVertex(bool b)
 {
@@ -166,4 +166,3 @@ bool AliFemtoSphericityEventCut::GetAcceptBadVertex()
 {
   return fAcceptBadVertex;
 }
-

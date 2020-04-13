@@ -30,6 +30,7 @@ AliFemtoPairCutAntiGamma(),
   fMinRad(0.8),
   fMaxRad(2.5),
   fMagSign(1),
+  fMagFieldVal(0.5),
   fPhistarmin(kTRUE)
 {
 }
@@ -41,6 +42,7 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairC
   fMinRad(0.8),
   fMaxRad(2.5),
   fMagSign(1),
+  fMagFieldVal(0.5),
   fPhistarmin(kTRUE)
 {
   fDPhiStarMin = c.fDPhiStarMin;
@@ -48,6 +50,7 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairC
   fMinRad = c.fMinRad;
   fMaxRad = c.fMaxRad;
   fMagSign = c.fMagSign;
+  fMagFieldVal = c.fMagFieldVal;
   fPhistarmin = c.fPhistarmin;
 }
 
@@ -63,6 +66,7 @@ AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const Al
     fMinRad = c.fMinRad;
     fMaxRad = c.fMaxRad;
     fMagSign = c.fMagSign;
+    fMagFieldVal = c.fMagFieldVal;
     fPhistarmin = c.fPhistarmin;
 
   }
@@ -118,7 +122,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
 
   if (fPhistarmin) {
     for (rad = fMinRad; rad < fMaxRad; rad += 0.01) {
-      Double_t dps = (phi2-phi1+(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2))-(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1)));
+      Double_t dps = (phi2-phi1+(TMath::ASin(-0.15*fMagFieldVal*chg2*fMagSign*rad/ptv2))-(TMath::ASin(-0.15*fMagFieldVal*chg1*fMagSign*rad/ptv1)));
       dps = TVector2::Phi_mpi_pi(dps);
       Double_t etad = eta2 - eta1;
       if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
@@ -130,8 +134,8 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   }
   else {
 
-    double afsi0b = 0.07510020733*chg1*fMagSign*rad/ptv1;
-    double afsi1b = 0.07510020733*chg2*fMagSign*rad/ptv2;
+    double afsi0b = 0.15*fMagFieldVal*chg1*fMagSign*rad/ptv1;
+    double afsi1b = 0.15*fMagFieldVal*chg2*fMagSign*rad/ptv2;
 
     if (fabs(afsi0b) >=1.) return kTRUE;
     if (fabs(afsi1b) >=1.) return kTRUE;
@@ -204,6 +208,11 @@ void AliFemtoPairCutRadialDistance::SetMagneticFieldSign(int magsign)
   if(magsign>1) fMagSign = 1;
   else if(magsign<1) fMagSign = -1;
   else fMagSign = magsign;
+}
+
+void AliFemtoPairCutRadialDistance::SetMagneticFieldValue(double magval)
+{
+  fMagFieldVal = magval;
 }
 
 void AliFemtoPairCutRadialDistance::SetPhiStarMin(Bool_t phistarmin)

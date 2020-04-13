@@ -69,11 +69,14 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
   fCheckBothChargesGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
   fCheckMotherGrandmother(kFALSE),
+  fCheckMotherGrandmotherDiffPair(kFALSE),
   fMotherIsGrandmother(kFALSE),
+  fMotherIsGrandmotherDiffPair(kFALSE),
   fMothersRelation(kUndefined),
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
+  fCheckCorrelatedHF(kFALSE),
   fCheckStackForPDG(kFALSE),
   fFillPureMCStep(kFALSE)
 {
@@ -116,11 +119,14 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fCheckBothChargesGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
   fCheckMotherGrandmother(kFALSE),
+  fCheckMotherGrandmotherDiffPair(kFALSE),
   fMotherIsGrandmother(kFALSE),
+  fMotherIsGrandmotherDiffPair(kFALSE),
   fMothersRelation(kUndefined),
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
+  fCheckCorrelatedHF(kFALSE),
   fCheckStackForPDG(kFALSE),
   fFillPureMCStep(kFALSE)
 {

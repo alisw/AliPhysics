@@ -11,7 +11,8 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont(TString  centralityEstimator="V0
 						AliPID::EParticleType particleType = AliPID::kPion,
 						Bool_t usePIDstrategy=kFALSE,
 						Bool_t usePIDnSigmaComb=kTRUE,
-						Double_t BayesThr = 0.8
+						Double_t BayesThr = 0.8,
+						TString extraString = ""
 						) {
 
     // Creates a balance function analysis task and adds it to the analysis manager.
@@ -86,8 +87,8 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont(TString  centralityEstimator="V0
     //==============================================================================
     //TString outputFileName = AliAnalysisManager::GetCommonFileName();
     outputFileName += ":PWGCFEbyE.outputBalanceFunctionEffContAnalysis";
-    AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_FB%i_%s_%s_%s",AODfilterBit,centralityEstimator.Data(),centralityName.Data(), pidsuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-    AliAnalysisDataContainer *coutEffContBF = mgr->CreateContainer(Form("listEffContBF_FB%i_%s_%s_%s",AODfilterBit,centralityEstimator.Data(),centralityName.Data(), pidsuffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+    AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_FB%i_%s_%s_%s_%s",AODfilterBit,centralityEstimator.Data(),centralityName.Data(), pidsuffix.Data(), extraString.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+    AliAnalysisDataContainer *coutEffContBF = mgr->CreateContainer(Form("listEffContBF_FB%i_%s_%s_%s_%s",AODfilterBit,centralityEstimator.Data(),centralityName.Data(), pidsuffix.Data(), extraString.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
     mgr->ConnectInput(taskEffContBF, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskEffContBF, 1, coutQA);

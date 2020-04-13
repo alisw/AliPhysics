@@ -26,9 +26,11 @@
 #include <AliESDtrackCuts.h>
 #include <AliPIDResponse.h>
 #include "AliTPCPIDResponse.h"
-#include <AliSpherocityUtils.h>
+//#include <AliSpherocityUtils.h>
 #include <AliEventCuts.h>
 #include "AliVTrack.h"
+#include <vector>
+using namespace std;
 
 
 
@@ -60,36 +62,41 @@ public:
 		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
 		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
-		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+//		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
 		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
+		virtual void  SetEstimator(const Bool_t isV0M) { fisV0Mestimator = isV0M; }
+		virtual void  SetJettyCutOff(const Double_t JettyCutOff) { fJettyCutOff = JettyCutOff; }
+		virtual void  SetIsotrCutOff(const Double_t IsotrCutOff) { fIsotrCutOff = IsotrCutOff; }
 
 	private:
-//		virtual Float_t GetVertex(const AliVEvent* event) const;
-//		virtual void AnalyzeESD(AliESDEvent* esd); 
+
 		virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity);
 		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent, const Int_t sperocity );
-		Short_t   GetPidCode(Int_t pdgCode) const;
-		void      ProcessMCTruthESD( const Int_t cent );
-
-		Short_t   GetPythiaEventProcessType(Int_t pythiaType);
-		Short_t   GetDPMjetEventProcessType(Int_t dpmJetType);
-		ULong64_t GetEventIdAsLong(AliVHeader* header) const;
+ 		Int_t   GetCentralityClass(Float_t percentile);
+ 		void    PtRecVsPtTruth(AliESDEvent* event, const Bool_t isjetty);
+		Int_t   GetMultiplicityParticles(Double_t etaCut);
+		Short_t GetPidCode(Int_t pdgCode) const;
+		void    ProcessMCTruthESD( const Int_t cent, const Int_t so );
 
 		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
 
 
 		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
-		Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
-		Bool_t selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
-		Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
-		Bool_t IsGoodZvertexPos(AliESDEvent *esd);
-		Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
-		Float_t GetMaxDCApTDep(TF1* fcut, Double_t pt );
-		Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
+		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
+		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
+		bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
+		bool IsGoodZvertexPos(AliESDEvent *esd);
+		bool PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
+		float GetMaxDCApTDep(TF1* fcut, Double_t pt );
+                float GetSpherocity( TH1D * hphi, TH1D *heta );
+                int ReadESDEvent( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, vector<Float_t> &phiArray, TH1D * hphi, TH1D *heta );
+                float AnalyseGetSpherocity( const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi );
+		bool TOFPID(AliESDtrack* track);
+		double EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
+		double EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
 
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
@@ -106,10 +113,11 @@ public:
 		AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
 		AliAnalysisFilter* fTrackFilter;
 		AliAnalysisUtils* utils;
-		AliSpherocityUtils* fSpheroUtils;
+//		AliSpherocityUtils* fSpheroUtils;
 		TString       fAnalysisType;        //  "ESD" or "AOD"
 		Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
 		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
+		Bool_t        fisV0Mestimator; 
 		TRandom*      fRandom;              //! random number generator
 
 		//
@@ -118,14 +126,19 @@ public:
 
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
-		Int_t        fCent; //minimum centrality
+		Int_t        fCentClass; //minimum centrality
 		Int_t        fSpherocity;
 		Float_t      fMinCent; //minimum centrality
 		Float_t      fMaxCent; //maximum centrality
                 const Double_t fDeDxMIPMin;
                 const Double_t fDeDxMIPMax;
-                const Double_t fdEdxHigh;
-                const Double_t fdEdxLow;
+                int fdEdxHigh;
+                int fdEdxLow;
+                Double_t fJettyCutOff;
+                Double_t fIsotrCutOff;
+		int fMinMult;
+		int fNrec;
+		float fSizeStep;
 
 		//
 		// Help variables
@@ -143,10 +156,11 @@ public:
 		//
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
-		TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
+		TH1F* 	hMult;
+		TH2F*  fTrcksVsTrklets;
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
-		Bool_t       fLowPt;
+//		Bool_t       fLowPt;
 		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
@@ -157,7 +171,19 @@ public:
 
 		TH1D *hphiso;
 		TH1D *hetaso;
-		TH1D *hSo[11];
+		TH2D *hPtTruthVsPtRec;
+		TH2D *hPtTruthVsPtRecJetty;
+		TH2D *hPtTruthVsPtRecIsotr;
+		TH1D *hTruthPhiSo;
+		TH1D *hTruthEtaSo;
+		TH2D *hSOtVsSOm[11];
+		TH2D *hSOtvsTrks;
+		TH2D *hSOtvsTrkst;
+		TH2D *hSOtvsV0M;
+		TH2D *hSOrvsV0M;
+		TH2D *hSOrvsTrks;
+		TH2D *hRefMultVsRefMultPer;
+
 
 		// Histograms for PreCalibration
 
@@ -174,47 +200,52 @@ public:
 		TH2D *hMIPVsNch[4];
 		TProfile *pMIPVsNch[4];
 
-		TH2D     *hMIPVsPhi[11][4];
-		TProfile *pMIPVsPhi[11][4];
-		TH2D     *hPlateauVsPhi[11][4];
-		TProfile *pPlateauVsPhi[11][4];
+		TH2D     *hMIPVsPhi[11][4][3];
+		TProfile *pMIPVsPhi[11][4][3];
+		TH2D     *hPlateauVsPhi[11][4][3];
+		TProfile *pPlateauVsPhi[11][4][3];
 
 
 		// Histograms for PostCalibration
 
 
 		TH1D *hPtAll[11][3];
-		TH1D *hPtAllPos[11];
-		TH1D *hPtAllNeg[11];
-		TH2D *hPtVsP[11][4];
+		TH2D *hPtVsP[11][4][3];
 
-		TH2D *hDeDxVsP[11][4];
+		TH2D *hDeDxVsP[11][4][3];
 
-		TH2D *hnSigmaPiPos[11][4];
-		TH2D *hnSigmaKPos[11][4];
-		TH2D *hnSigmaPPos[11][4];
+		TH2D *hnSigmaPiPos[11][4][3];
+		TH2D *hnSigmaKPos[11][4][3];
+		TH2D *hnSigmaPPos[11][4][3];
+		TH2D *hnSigmaPiNeg[11][4][3];
+		TH2D *hnSigmaKNeg[11][4][3];
+		TH2D *hnSigmaPNeg[11][4][3];
 
-		TH2D *hnSigmaPiNeg[11][4];
-		TH2D *hnSigmaKNeg[11][4];
-		TH2D *hnSigmaPNeg[11][4];
+		TH2D *hBetavsPneg[11][4][3];
+		TH2D *hBetavsPpos[11][4][3];
 
-		TH2D* histPiV0[11][4];
-		TH1D* histpPiV0[11][4];
+		TH1D *hPtneg_TPC_Eta[11][4][3];
+		TH1D *hPtpos_TPC_Eta[11][4][3];
+		TH1D *hPtneg_TPC[11][3];
+		TH1D *hPtpos_TPC[11][3];
+		TH1D *hPtneg_TOF_Eta[11][4][3];
+		TH1D *hPtpos_TOF_Eta[11][4][3];
+		TH1D *hPneg_TOF_Eta[11][4][3];
+		TH1D *hPpos_TOF_Eta[11][4][3];
+		TH1D *hPtneg_TOF[11][3];
+		TH1D *hPtpos_TOF[11][3];
 
-		TH2D* histPV0[11][4];
-		TH1D* histpPV0[11][4];
+		TH2D* histPiV0[11][4][3];
+		TH2D* histPV0[11][4][3];
+		TH2D* histPiTof[11][4][3];
+		TH2D* histEV0[11][4][3];
 
-		TH2D* histPiTof[11][4];
-		TH1D* histpPiTof[11][4];
-
-		TH2D* histEV0[11][4];
-
-		TH1D* hMcIn[11][7];
-		TH1D* hMcOut[11][7];
-		TH1D* hMcInNeg[11][7];
-		TH1D* hMcInPos[11][7];
-		TH1D* hMcOutNeg[11][7];
-		TH1D* hMcOutPos[11][7];
+		TH1D* hMcIn[11][7][3];
+		TH1D* hMcOut[11][7][3];
+		TH1D* hMcInNeg[11][7][3];
+		TH1D* hMcInPos[11][7][3];
+		TH1D* hMcOutNeg[11][7][3];
+		TH1D* hMcOutPos[11][7][3];
 
 		TF1* fEtaCalibrationNeg;
 		TF1* fEtaCalibration;

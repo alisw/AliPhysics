@@ -127,7 +127,7 @@ void Init3x3Settings(){
   markersizeMC=1.;
 }
 
-TString yaxisTitle[5]={"Associated yield","#sigma_{fit,NS} (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
+TString yaxisTitle[5]={"Associated yield","Peak width (rad)","Baseline (rad^{#scale[1.25]{-1}})","Associated yield","Peak width (rad)"};
 Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
@@ -428,11 +428,11 @@ TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
   if(collSystem==0)str="";//"|#it{y}^{D}_{cms}| < 0.5";
   if(collSystem==1)str="";//"-0.96 < #it{y}^{D}_{cms} < 0.04";
   if(includeDEta==1){
-    str.Append("|#Delta#eta| < 1");
+    str.Append("|#Delta#it{#eta}| < 1");
   }
   if(style==-1){
     if(collSystem==0)tlrap=new TLatex(0.24,0.75,"|#it{y}^{D}_{cms}| < 0.5");
-    else if(collSystem==1)tlrap=new TLatex(0.24,0.75,"-0.96 < #it{y}^{D}_{cms} < 0.04");
+    else if(collSystem==1)tlrap=new TLatex(0.24,0.75,"#minus0.96 < #it{y}^{D}_{cms} < 0.04");
     else return 0x0;
     tlrap->SetNDC();
     tlrap->SetTextFont(42);
@@ -464,7 +464,7 @@ TLatex *GetDEtaD(Int_t identifier){
     y=0.28;
   }
   
-  tlDEta=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"|#Delta#eta| < 1"); 
+  tlDEta=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"|#Delta#it{#eta}| < 1"); 
 
   tlDEta->SetNDC();
   tlDEta->SetTextFont(43);
@@ -498,7 +498,7 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
   TLatex *tlsystem;
   if(style==-1){
     if(collSystem==0)tlsystem=new TLatex(0.24,0.8,"pp, #sqrt{#it{s}} = 5.02 TeV");
-    else if(collSystem==1)tlsystem=new TLatex(0.24,0.8,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+    else if(collSystem==1)tlsystem=new TLatex(0.24,0.8,"p#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
     else return 0x0;
     tlsystem->SetNDC();
     tlsystem->SetTextFont(42);
@@ -507,7 +507,7 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
   }
   else{
     if(collSystem==0)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"pp, #sqrt{#it{s}} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5"); 
-    else if(collSystem==1)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04"); 
+    else if(collSystem==1)tlsystem=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"p#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV, #minus0.96 < #it{y}^{D}_{cms} < 0.04"); 
     tlsystem->SetNDC();
     tlsystem->SetTextFont(43);
     tlsystem->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
@@ -573,14 +573,14 @@ TLatex* GetAssocPtText(Int_t binassoc,Int_t identifier,Int_t addDEta=1){
   }
 
   if(style==-1){
-    tlasspt=new TLatex(0.25,0.78,Form("%s, |#Delta#eta| < 1",strPtAssCanvas[binassoc].Data()));
+    tlasspt=new TLatex(0.25,0.78,Form("%s, |#Delta#it{#eta}| < 1",strPtAssCanvas[binassoc].Data()));
     tlasspt->SetNDC();
     tlasspt->SetTextFont(42);
     tlasspt->SetTextSize(0.03);
   }
   else{
     TString strTot=strPtAssCanvas[binassoc];
-    if(addDEta==1)strTot.Append(", |#Delta#eta| < 1");
+    if(addDEta==1)strTot.Append(", |#Delta#it{#eta}| < 1");
     tlasspt= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),0.345/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
     tlasspt->SetNDC();
     tlasspt->SetTextFont(43);
@@ -612,35 +612,36 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   else if(variable==0 || variable ==1)
     {
       if(style==-1){
-        tlSide=new TLatex(0.25,0.85,"Near side");
-        tlSide->SetNDC();
-        tlSide->SetTextFont(42);
-        tlSide->SetTextAlign(12);
-        tlSide->SetTextSize(0.03*resizeTextFactor);
+  tlSide=new TLatex(0.23,0.85,"Near side");
+  tlSide->SetNDC();
+  tlSide->SetTextFont(42);
+  tlSide->SetTextAlign(12);
+  tlSide->SetTextSize(0.034*resizeTextFactor);
       }
       else{
-        tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
-        tlSide->SetNDC();
-        tlSide->SetTextAlign(11);
-        tlSide->SetTextFont(43);
-        tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+  tlSide=new TLatex(0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+  tlSide->SetNDC();
+  tlSide->SetTextAlign(11);
+  tlSide->SetTextFont(43);
+  tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
     if(style==-1){
-      tlSide=new TLatex(0.25,0.85,"Away side");
+      tlSide=new TLatex(0.23,0.85,"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(42);
       tlSide->SetTextAlign(12);
-      tlSide->SetTextSize(0.03*resizeTextFactor);
+      tlSide->SetTextSize(0.034*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
+    
     
 
   }
@@ -649,7 +650,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   return tlSide;
 }
 
-TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
+TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr){
 
 
   TFile *f=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
@@ -661,6 +662,7 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
     double xx,yy; gr->GetPoint(iPoint,xx,yy);
     printf("syst %d; point %d; x = %f, y = %f\n",numsyst,iPoint,xx,yy);
   }
+
   if(numsyst==1) gr->RemovePoint(4);
 
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
@@ -676,7 +678,77 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   gr->SetMarkerStyle(markerStyle[numsyst]);
   gr->SetMarkerSize(markersize);
 
-  hPPb->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
+  hPPb->SetXTitle("D-meson #it{p}_{T} (GeV/#it{c})");
+  hPPb->SetYTitle(yaxisTitle[quantity].Data());
+  if(style==-1){
+    hPPb->GetYaxis()->SetTitleSize(0.04);
+    hPPb->GetYaxis()->SetTitleOffset(1.2);
+    hPPb->GetYaxis()->SetLabelSize(0.04);
+    hPPb->GetXaxis()->SetTitleSize(0.04);
+    hPPb->GetXaxis()->SetLabelSize(0.04);
+  }
+  else {
+    hPPb->GetYaxis()->SetTitle("");      
+
+    hPPb->GetXaxis()->SetRangeUser(0,24.2);
+    hPPb->GetYaxis()->SetTitleFont(43);
+    hPPb->GetYaxis()->SetLabelFont(43);
+    hPPb->GetXaxis()->SetTitleFont(43);
+    hPPb->GetXaxis()->CenterTitle();
+    hPPb->GetYaxis()->CenterTitle();
+    hPPb->GetXaxis()->SetLabelFont(43);
+    hPPb->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetYaxis()->SetTitleOffset(ytitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleOffset(xtitleoffset*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
+    hPPb->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hPPb->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+  }
+  if(style<=0){
+    hPPb->GetYaxis()->SetRangeUser(0,maxRangePPb[binass][quantity]);
+  }
+
+  AdaptRangeHist(hPPb,minptData,maxptData);
+  AdaptRangeTGraph(gr,minptData,maxptData);
+
+  return hPPb;
+}
+
+TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErrors *&gr,TGraphAsymmErrors *&grV2){
+
+
+  TFile *f=TFile::Open(Form("%s/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb[numsyst].Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
+  TCanvas *c=(TCanvas*)f->Get(Form("CanvasFinalTrend%s",strquantityFile[quantity].Data()));
+  gr=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
+  gr->SetName(Form("%sPPb",gr->GetName()));
+  for(Int_t iPoint=0;iPoint<5;iPoint++) {
+    gr->SetPointError(iPoint,0.7*gr->GetErrorXlow(iPoint),0.7*gr->GetErrorXhigh(iPoint),gr->GetErrorYlow(iPoint),gr->GetErrorYhigh(iPoint));
+    double xx,yy; gr->GetPoint(iPoint,xx,yy);
+    printf("syst %d; point %d; x = %f, y = %f\n",numsyst,iPoint,xx,yy);
+  }
+
+  if(numsyst==1 && plotv2unc==kTRUE) {
+      grV2=(TGraphAsymmErrors*)c->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+      //grV2->SetName(Form("%sPPb",grV2->GetName()));
+      for(Int_t iPoint=0;iPoint<5;iPoint++) grV2->SetPointError(iPoint,0.7*grV2->GetErrorXlow(iPoint),0.7*grV2->GetErrorXhigh(iPoint),grV2->GetErrorYlow(iPoint),grV2->GetErrorYhigh(iPoint));
+  }
+
+  if(numsyst==1) gr->RemovePoint(4);
+
+  TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
+  hPPb->SetName(Form("%sPPb",hPPb->GetName()));
+  hPPb->SetLineColor(colSystem[numsyst]);
+  hPPb->SetLineWidth(1);
+  hPPb->SetMarkerColor(colSystem[numsyst]);
+  hPPb->SetMarkerStyle(markerStyle[numsyst]);
+  hPPb->SetMarkerSize(markersize);
+  gr->SetMarkerColor(colSystem[numsyst]);
+  gr->SetLineColor(colSystem[numsyst]);
+  gr->SetLineWidth(1);
+  gr->SetMarkerStyle(markerStyle[numsyst]);
+  gr->SetMarkerSize(markersize);
+
+  hPPb->SetXTitle("D-meson #it{p}_{T} (GeV/#it{c})");
   hPPb->SetYTitle(yaxisTitle[quantity].Data());
   if(style==-1){
     hPPb->GetYaxis()->SetTitleSize(0.04);
@@ -716,11 +788,12 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
 
   printf("Preparing pp... (%d)\n",quantity);
   TGraphAsymmErrors *grPPb_1;
-  TH1D *hPPb_1=GetAndPreparePPb(binass,quantity,0,grPPb_1);
-
+  TH1D *hPPb_1=GetAndPreparePP(binass,quantity,0,grPPb_1);
+  
   printf("Preparing p-Pb...(%d)\n",quantity);
   TGraphAsymmErrors *grPPb_2;
-  TH1D *hPPb_2=GetAndPreparePPb(binass,quantity,1,grPPb_2);
+  TGraphAsymmErrors *grV2;
+  TH1D *hPPb_2=GetAndPreparePPb(binass,quantity,1,grPPb_2,grV2);
 
   TCanvas *cout=0x0;
   if(!pd){
@@ -769,7 +842,7 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
       hDraw->GetYaxis()->SetLabelSize(0);
     }
     if(textlegendOptions%10==1||textlegendOptions%10==3){
-      hDraw->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
+      hDraw->SetXTitle("D-meson #it{p}_{T} (GeV/#it{c})");
     }
     else {
       hDraw->GetXaxis()->SetLabelSize(0);
@@ -834,6 +907,10 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
      printf("Removing NSy and NSw of 0.3-1 in 3-5 and 16-24\n");
    }
 */
+
+  if(plotv2unc) {
+    grV2->Draw("E2");
+  }
   grPPb_1->Draw("E2");
   grPPb_2->Draw("E2");
 
@@ -901,13 +978,15 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
     }
     if(textlegendOptions%1000>=100){
       TLegend * legend;
-      legend = new TLegend(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.215/gPad->GetHNDC()+gPad->GetBottomMargin(),0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.312/gPad->GetHNDC()+gPad->GetBottomMargin());// draft 2 (2 lines only, rapidity on the same line also for p-Pb): 0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin()
+      legend = new TLegend(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.175/gPad->GetHNDC()+gPad->GetBottomMargin(),0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.312/gPad->GetHNDC()+gPad->GetBottomMargin());// draft 2 (2 lines only, rapidity on the same line also for p-Pb): 0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin()
       legend->SetTextFont(43);
       legend->SetTextAlign(12);
       legend->SetLineColor(kWhite);
-      legend->SetTextSize(17*innerPadHeight/referencePadHeight*resizeTextFactor);
-      legend->AddEntry(hPPb_1,"pp, #sqrt{s} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lep");
-      legend->AddEntry(hPPb_2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
+      legend->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
+      legend->AddEntry(hPPb_1,"pp, #sqrt{#it{s}} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lp");
+      legend->AddEntry(hPPb_2,"p#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV,","lp");
+      legend->AddEntry((TObject*)0,"#minus0.96 < #it{y}^{D}_{cms} < 0.04","");
+      if(plotv2unc) legend->AddEntry(grV2,"Syst uncertainty from v_{2}","f");
       legend->Draw();
 
      /*TLegend *legendSuperimp=GetLegendDataPointsFake(hPP,hPPbSuperimp,10*quantity+binass);

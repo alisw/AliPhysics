@@ -22,8 +22,7 @@
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
-
-using std::vector;
+#include "AliRDHFCutsD0toKpi.h"
 
 class AliHFTreeHandlerBplustoD0pi : public AliHFTreeHandler
 {
@@ -34,38 +33,38 @@ class AliHFTreeHandlerBplustoD0pi : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerBplustoD0pi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
-    virtual void FillTree(); //to be called for each event, not each candidate!
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    Int_t IsBplusPionSelected(TObject* obj, AliRDHFCutsD0toKpi* cutsD0, AliAODPidHF* fPidHFD0, AliAODEvent* aod, AliAODVertex *vtx);
 
   private:
 
-    vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fCosThetaStar; ///vector of candidate cos theta star
-    vector<float> fImpParProd; ///vector of candidate product of impact parameter
-    vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
-    vector<float> fDCA; ///vector of candidate DCA variable
-    vector<float> fAngleProngs; ///vector of angle between candidates prongs
-    
-    vector<float> fInvMass_D0; ///vector of candidate invariant mass D0
-    vector<float> fPt_D0; ///vector of D0 pt
-    //We save Y, Eta and Phi in common framework only for the Bplus and the 3 prongs, so missing D0 candidate. Added as Bplus specific variables. (Could be deleted if output size grows to big?)
-    vector<float> fY_D0; ///vector of D0 rapidity
-    vector<float> fEta_D0; ///vector of D0 pseudorapidity
-    vector<float> fPhi_D0; ///vector of D0 azimuthal angle
-    vector<float> fDecayLength_D0; ///vector of D0 decay length
-    vector<float> fDecayLengthXY_D0; ///vector of D0 decay length in the transverse plane
-    vector<float> fNormDecayLengthXY_D0; ///vector of D0 normalised decay length in the transverse plane
-    vector<float> fCosP_D0; ///vector of D0 cosine of pointing angle
-    vector<float> fCosPXY_D0; ///vector of D0 cosine of pointing angle in the transcverse plane
-    vector<float> fImpParXY_D0; ///vector of D0 impact parameter in the transverse plane
-    vector<float> fCosThetaStar_D0; ///vector of D0 cos theta star
-    vector<float> fImpParProd_D0; ///vector of D0 product of impact parameter
-    vector<float> fNormd0MeasMinusExp_D0; ///vector of D0 topomatic variable
-    vector<float> fDCA_D0; ///vector of D0 DCA variable
-    vector<float> fAngleProngs_D0; ///vector of angle between D0's prongs
+    //Variables for B+->D0pi
+    float fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
+    float fCosThetaStar; ///vector of candidate cos theta star
+    float fImpParProd; ///vector of candidate product of impact parameter
+    float fNormd0MeasMinusExp; ///vector of candidate topomatic variable
+    float fAngleProngs; ///vector of angle between candidates prongs
+  
+    //Variables for D0->Kpi
+    float fInvMass_D0; ///vector of candidate invariant mass D0
+    float fPt_D0; ///vector of D0 pt
+    float fY_D0; ///vector of D0 rapidity
+    float fEta_D0; ///vector of D0 pseudorapidity
+    float fPhi_D0; ///vector of D0 azimuthal angle
+    float fDecayLength_D0; ///vector of D0 decay length
+    float fDecayLengthXY_D0; ///vector of D0 decay length in the transverse plane
+    float fNormDecayLengthXY_D0; ///vector of D0 normalised decay length in the transverse plane
+    float fCosP_D0; ///vector of D0 cosine of pointing angle
+    float fCosPXY_D0; ///vector of D0 cosine of pointing angle in the transcverse plane
+    float fImpParXY_D0; ///vector of D0 impact parameter in the transverse plane
+    float fCosThetaStar_D0; ///vector of D0 cos theta star
+    float fImpParProd_D0; ///vector of D0 product of impact parameter
+    float fNormd0MeasMinusExp_D0; ///vector of D0 topomatic variable
+    float fDCA_D0; ///vector of D0 DCA variable
+    float fAngleProngs_D0; ///vector of angle between D0's prongs
     
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerBplustoD0pi,1); /// 
+    ClassDef(AliHFTreeHandlerBplustoD0pi,3); /// 
     /// \endcond
 };
 #endif

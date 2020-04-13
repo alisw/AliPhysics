@@ -15,9 +15,16 @@
 
 class AliFemtoDreamCollConfig : public TNamed {
  public:
+  enum UncorrelatedMode {
+    kNone = 0,
+    kPhiSpin = 1,
+    kStravinsky = 2,
+    kCorrelatedPhi = 3
+  };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
-  AliFemtoDreamCollConfig(const char *name, const char *title);
+  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts =
+                              false);
   AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt) {
@@ -36,6 +43,16 @@ class AliFemtoDreamCollConfig : public TNamed {
     fmTBinning = doIt;
   }
   ;
+  void SetkTandMultBinning(bool doIt) {
+    fkTandMultBinning = doIt;
+  }
+  ;
+  void SetPtQA(bool doIt) {
+    fPtQA = doIt;
+  }
+  void SetMassQA(bool doIt) {
+    fMassQA = doIt;
+  }
   void SetMomentumResolution(bool doIt) {
     fMomentumResolution = doIt;
   }
@@ -52,6 +69,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
   }
+  void SetdPhidEtaPlotsSmallK(bool doIt) {
+    fdPhidEtaPlotsSmallK = doIt;
+  }
   ;
   void SetUseEventMixing(bool use) {
     fMixedEventStatistics = use;
@@ -61,19 +81,32 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
-  void SetUseStravinskyMethod(bool use) {
-    fStravinsky = use;
+  void SetControlMethod(AliFemtoDreamCollConfig::UncorrelatedMode mode) {
+    fMode = mode;
   }
   ;
+  void SetAncestors(bool doIt) {
+    fAncestors = doIt;
+  }
+  void SetDomTMultBinning(bool doIt) {
+    fmTMultBinning = doIt; 
+  };
+  void SetDomTdEtadPhiBinning(bool doIt) {
+    fmTdEtadPhi = doIt; 
+  }
+    ;
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
   void SetNBinsHist(std::vector<int> NBins);
   void SetMinKRel(std::vector<float> minKRel);
   void SetMaxKRel(std::vector<float> maxKRel);
-  void SetCentBins(std::vector<float> CentBins);
-  void SetmTdEtadPhiBins(std::vector<float> mTBins);
+  void SetCentBins(std::vector<int> CentBins);
+  void SetmTBins(std::vector<float> mTBins);
+  //TODO: should be renamed since besides the QA it also specifies the
+  // number of tracks to compare when doing the CPR cut
   void SetExtendedQAPairs(std::vector<int> whichPairs);
+  void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {
     fMixingDepth = MixingDepth;
   }
@@ -82,10 +115,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fSpinningDepth = SpinningDepth;
   }
   ;
-  void SetInvMassPairs(bool doIt) {
-    fInvMassPairs = doIt;
+  void SetCorrelationRange(float CorrRange) {
+    fCorrelationRange = CorrRange;
   }
-  ;
   void SetMinimalBookingME(bool doIt) {
     fMinimalBookingME = doIt;
   }
@@ -114,6 +146,16 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fmTBinning;
   }
   ;
+  bool GetDokTandMultBinning() {
+    return fkTandMultBinning;
+  }
+  ;
+  bool GetDoPtQA() {
+    return fPtQA;
+  }
+  bool GetDoMassQA() {
+    return fMassQA;
+  }
   bool GetDoMomResolution() {
     return fMomentumResolution;
   }
@@ -134,21 +176,28 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
-  bool GetDoStravinsky() {
-    return fStravinsky;
+  bool GetDoAncestorsPlots() {
+    return fAncestors;
+  }
+  ;
+  AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
+    return fMode;
   }
   ;
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
+  bool GetdPhidEtaPlotsSmallK() {
+    return fdPhidEtaPlotsSmallK;
+  }
   ;
   bool GetdPhidEtamTPlots() {
-    return (fdPhidEtaPlots&&fmTdEtadPhi);
+    return (fdPhidEtaPlots && fmTdEtadPhi);
   }
-  bool GetInvMassPairs() {
-    return fInvMassPairs;
+  bool GetmTMultBinning() {
+    return fmTMultBinning;
   }
-  ;
+  ;  
   bool GetMinimalBookingME() {
     return fMinimalBookingME;
   }
@@ -166,28 +215,32 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins() {
-    return (fZVtxBins->GetEntries() - 1);
+    return ((int) fZVtxBins.size() - 1);
   }
   ;
   std::vector<int> GetMultBins();
   int GetNMultBins() {
-    return fMultBins->GetEntries();
+    return (int) fMultBins.size();
   }
   ;
   std::vector<int> GetPDGCodes();
   int GetNParticles() {
-    return fPDGParticleSpecies->GetEntries();
+//    return fPDGParticleSpecies->GetEntries();
+    return (int) fPDGParticleSpecies.size();
   }
   ;
   int GetNParticleCombinations();
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
-  std::vector<float> GetCentBins();
+  std::vector<int> GetCentBins();
   std::vector<float> GetmTBins();
   std::vector<unsigned int> GetWhichPairs();
+  std::vector<bool> GetClosePairRej();
   std::vector<float> GetStandardmTBins();
   std::vector<int> GetStandardPairs();
+  std::vector<bool> GetStandardPairRejection();
+  std::vector<bool> GetAllPairRejection();
   int GetMixingDepth() {
     return fMixingDepth;
   }
@@ -196,57 +249,76 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
-
+  float GetCorrelationRange() {
+    return fCorrelationRange;
+  }
+  ;
   void SetDeltaEtaMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaEtaMax = delta;
   }
-  float GetDeltaEtaMax() const { return fDeltaEtaMax; }
+  float GetDeltaEtaMax() const {
+    return fDeltaEtaMax;
+  }
 
   void SetDeltaPhiMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaPhiMax = delta;
   }
-  float GetDeltaPhiMax() const { return fDeltaPhiMax; }
-
-  void DoDeltaEtaDeltaPhiCut(bool doIt) { fDoDeltaEtaDeltaPhiCut = doIt; }
-  float GetDoDeltaEtaDeltaPhiCut() const { return fDoDeltaEtaDeltaPhiCut; }
-
+  float GetDeltaPhiMax() const {
+    return fDeltaPhiMax;
+  }
+  float GetSqDeltaPhiEtaMax() const {
+    return fDeltaEtaMax * fDeltaEtaMax + fDeltaPhiMax * fDeltaPhiMax;
+  }
+  ;
+  void DoDeltaEtaDeltaPhiCut(bool doIt) {
+    fDoDeltaEtaDeltaPhiCut = doIt;
+  }
+  bool GetDoDeltaEtaDeltaPhiCut() const {
+    return fDoDeltaEtaDeltaPhiCut;
+  }
  private:
   bool fMultBinning;            //
   bool fCentBinning;            //
   bool fkTBinning;              //
   bool fmTBinning;              //
+  bool fkTandMultBinning;	//
+  bool fPtQA;                   //
+  bool fMassQA;                 //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
+  bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
-  bool fStravinsky;             //
-  bool fInvMassPairs;           //
+  AliFemtoDreamCollConfig::UncorrelatedMode fMode;  //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //
-  TNtuple *fZVtxBins;           //
-  TNtuple *fMultBins;           //
-  TNtuple *fPDGParticleSpecies;  //
-  TNtuple *fNBinsHists;         //
-  TNtuple *fMinK_rel;           //
-  TNtuple *fMaxK_rel;           //
-  TNtuple *fCentBins;           //
-  TNtuple *fmTBins;             //
-  TNtuple *fWhichPairs;         //
+  std::vector<float> fZVtxBins;           //
+  std::vector<int> fMultBins;           //
+  std::vector<int> fPDGParticleSpecies;  //
+  std::vector<int> fNBinsHists;         //
+  std::vector<float> fMinK_rel;           //
+  std::vector<float> fMaxK_rel;           //
+  std::vector<int> fCentBins;           //
+  std::vector<float> fmTBins;             //
+  std::vector<unsigned int> fWhichQAPairs;       //
+  std::vector<bool> fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
+  float fCorrelationRange;	      //
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
+  bool fmTMultBinning; //
   AliFemtoDreamEvent::MultEstimator fEst;  //
+  bool fAncestors;              //
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-
-ClassDef(AliFemtoDreamCollConfig,9)
-  ;
+  bool fCoutVariables;
+  ClassDef(AliFemtoDreamCollConfig,17);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

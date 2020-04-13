@@ -18,21 +18,24 @@
 #include <TH2F.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include "AliVParticle.h"
 #include "TDatabasePDG.h"
 
-// --- Analysis system ---
+// --- AliRoot/Analysis system ---
+#include "AliVParticle.h"
+#include "AliVCluster.h"
+#include "AliMixedEvent.h"
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+
+// --- CaloTrackCorr system ---
 #include "AliAnaPhoton.h"
 #include "AliCaloTrackReader.h"
 #include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
-#include "AliVCluster.h"
-#include "AliMixedEvent.h"
-#include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
 
 // --- Detectors ---
 #include "AliPHOSGeoUtils.h"
@@ -59,7 +62,7 @@ fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
-fPrimaryMom(),                fProdVertex(),
+fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
 fStudyActivityNearCluster(0), 
 // Histograms
@@ -177,8 +180,6 @@ fhDistance2Hijing(0)
     fhMCEDispersion [i]                  = 0;
     fhMCNCellsE     [i]                  = 0;
     fhMCMaxCellDiffClusterE[i]           = 0;
-    fhLambda0DispEta[i]                  = 0;
-    fhLambda0DispPhi[i]                  = 0;
     
     for(Int_t iover = 0 ; iover < 3; iover++)
       fhMCPtLambda0Overlaps[i][iover] = 0;
@@ -852,9 +853,11 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \param mcbin   : particle tag for MC histogram
 /// \param egen    : main MC particle generated energy
 /// \param noverlaps: number of extra MC particles contributing 
+/// \param weightPt: histogram weight depending on particle generated
 //_____________________________________________________________________
-Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, 
-                                      Int_t nMaxima, Bool_t matched, Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps)
+Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, Bool_t matched, 
+                                      Int_t mctag, Float_t mcbin, Float_t egen, 
+                                      Int_t noverlaps, Float_t weightPt)
 {
   Float_t ptcluster  = fMomentum.Pt();
   Float_t ecluster   = fMomentum.E();
@@ -867,10 +870,10 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
            GetReader()->GetEventNumber(),
            ecluster,ptcluster, phicluster*TMath::RadToDeg(),etacluster));
     
-  fhClusterCutsE [1]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [1]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[1]->Fill(ptcluster, GetEventWeight()*weightPt);
   
-  if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight());
+  if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
   
   if ( sm < fFirstModule || sm > fLastModule  || sm >= fNModules || sm < 0 ) 
   {
@@ -879,8 +882,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
     return kFALSE;
   }
   
-  fhEClusterSM ->Fill(ecluster , sm, GetEventWeight());
-  fhPtClusterSM->Fill(ptcluster, sm, GetEventWeight());
+  fhEClusterSM ->Fill(ecluster , sm, GetEventWeight()*weightPt);
+  fhPtClusterSM->Fill(ptcluster, sm, GetEventWeight()*weightPt);
   
   //.......................................
   //If too small or big energy, skip it
@@ -888,8 +891,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
   
   AliDebug(2,Form("\t Cluster %d Pass E Cut",calo->GetID()));
   
-  fhClusterCutsE [2]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[2]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [2]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[2]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
@@ -900,22 +903,22 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
   
   AliDebug(2,Form("\t Cluster %d Pass Time Cut",calo->GetID()));
   
-  fhClusterCutsE [3]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[3]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [3]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[3]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
   
   AliDebug(2,Form("\t Cluster %d Pass NCell Cut",calo->GetID()));
   
-  fhClusterCutsE [4]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[4]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [4]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[4]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   if(nMaxima < fNLMCutMin || nMaxima > fNLMCutMax) return kFALSE ;
   AliDebug(2,Form("\t Cluster %d pass NLM %d of out of range",calo->GetID(), nMaxima));
   
-  fhClusterCutsE [5]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[5]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [5]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[5]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   //.......................................
   //Check acceptance selection
@@ -927,8 +930,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
   
   AliDebug(2,Form("\t Fiducial cut passed"));
   
-  fhClusterCutsE [6]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[6]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [6]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[6]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   //.......................................
   //Skip matched clusters with tracks
@@ -936,20 +939,20 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
   if ( IsDataMC() )
   {
     // Fill selected cluster histograms in MC before TM
-    fhMCParticle[1]->Fill(ecluster, mcbin, GetEventWeight());
+    fhMCParticle[1]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
     
     if ( egen > 0.1 )
-      fhMCParticleVsErecEgen[1]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight());
+      fhMCParticleVsErecEgen[1]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight()*weightPt);
     
     if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
-      fhMCParticleConverted[1]->Fill(ecluster, mcbin, GetEventWeight());
+      fhMCParticleConverted[1]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
     
-    fhMCParticleVsNOverlaps[1]->Fill(ecluster, mcbin, noverlaps, GetEventWeight());
+    fhMCParticleVsNOverlaps[1]->Fill(ecluster, mcbin, noverlaps, GetEventWeight()*weightPt);
   }
   
   // Fill matching residual histograms before PID cuts
   if ( fFillTMHisto ) 
-    FillTrackMatchingResidualHistograms(calo, 0, sm, matched, mctag, mcbin, egen, noverlaps);
+    FillTrackMatchingResidualHistograms(calo, 0, sm, matched, mctag, mcbin, egen, noverlaps, weightPt);
   
   if(fRejectTrackMatch)
   {
@@ -962,21 +965,21 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
       AliDebug(2,"\t Track-matching cut passed");
   }// reject matched clusters
   
-  fhClusterCutsE [7]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[7]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [7]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[7]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   if ( IsDataMC() )
   {
     // Fill selected cluster histograms in MC before TM
-    fhMCParticle[2]->Fill(ecluster, mcbin, GetEventWeight());
+    fhMCParticle[2]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
     
     if ( egen > 0.1 )
-      fhMCParticleVsErecEgen[2]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight());
+      fhMCParticleVsErecEgen[2]->Fill(ecluster, mcbin, ecluster/egen, GetEventWeight()*weightPt);
     
     if  ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCConversion) )
-      fhMCParticleConverted[2]->Fill(ecluster, mcbin, GetEventWeight());
+      fhMCParticleConverted[2]->Fill(ecluster, mcbin, GetEventWeight()*weightPt);
     
-    fhMCParticleVsNOverlaps[2]->Fill(ecluster, mcbin, noverlaps, GetEventWeight());
+    fhMCParticleVsNOverlaps[2]->Fill(ecluster, mcbin, noverlaps, GetEventWeight()*weightPt);
   }
   
   //.......................................
@@ -989,8 +992,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm,
   }
   else AliDebug(2,Form("\t Bad channel cut passed %4.2f > %2.2f",distBad, fMinDist));
   
-  fhClusterCutsE [8]->Fill( ecluster, GetEventWeight());
-  fhClusterCutsPt[8]->Fill(ptcluster, GetEventWeight());
+  fhClusterCutsE [8]->Fill( ecluster, GetEventWeight()*weightPt);
+  fhClusterCutsPt[8]->Fill(ptcluster, GetEventWeight()*weightPt);
   
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
@@ -1028,9 +1031,20 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   Int_t    nprim     =  GetMC()->GetNumberOfTracks();
   Bool_t   inacceptance = kFALSE ;
   
+  Bool_t   ok        = kFALSE;
+  Int_t    momLabel  = -1;
+  
+  TString genName    = "";
+
   AliVParticle * primary = 0;
   
-  for(Int_t i=0 ; i < nprim; i++)
+  Int_t firstParticle = 0;
+  
+  // Loop only over likely final particles not partons
+  if ( GetReader()->GetGenPythiaEventHeader() ) 
+    firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
+  
+  for(Int_t i = firstParticle ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
@@ -1108,6 +1122,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     // to not consider this.
     if(status > 1) continue ; // Avoid "partonic" photons
     
+    /// Particle ID and pT dependent Weight
+    Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    ///
+    
     Bool_t takeIt  = kFALSE ;
     if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) takeIt = kTRUE ;
 
@@ -1129,10 +1148,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
     {
       mcIndex = kmcPPi0Decay;
+      fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
     {
       mcIndex = kmcPEtaDecay;
+      fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
     {
@@ -1144,48 +1167,65 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       mcIndex = kmcPOtherDecay;
     } // Other origin
     
-    if(!takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay)) takeIt = kTRUE ;
+    if ( !takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay) ) takeIt = kTRUE ;
 
-    if(!takeIt) continue ;
-      
-    // Fill histograms for all photons
-    fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()) ;
-    if(TMath::Abs(photonY) < 1.0)
+    if ( !takeIt ) continue ;
+    
+    // Fill rapidity histograms
+    fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    if ( mcIndex < fNPrimaryHistograms )
+         fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
+    
+    // Not interested in large rapidity, cut those
+    if ( TMath::Abs(photonY) > 1.0 ) continue;
+    
+    // Avoid too large pT particle in pT hard binned productions
+    if ( GetReader()->GetGenPythiaEventHeader() ) 
     {
-      fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()) ;
-      fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()) ;
-      fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()) ;
-      fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()) ;
+      Float_t pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
+      
+      if ( pTHard / photonPt < 0.5 ) 
+      {
+        AliInfo(Form("Reject primary particle pdg %d mcTag %d, pT %f larger than pT hard %f, ratio %f",
+                     pdg, mcIndex, photonPt, pTHard, pTHard/photonPt));
+    
+        //GetMCAnalysisUtils()->PrintAncestry(GetMC(),i);
+        continue;
+      }
     }
     
-    if(inacceptance)
+    // Fill histograms for all photons
+    //
+    fhEPrimMC  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
+    fhPtPrimMC [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+    fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+    fhEtaPrimMC[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
+    
+    if ( inacceptance )
     {
-      fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()) ;
-      fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()) ;
-      fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()) ;
-      fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()) ;
-      fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY  , GetEventWeight()) ;
+      fhEPrimMCAcc  [kmcPPhoton]->Fill(photonE , GetEventWeight()*weightPt) ;
+      fhPtPrimMCAcc [kmcPPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+      fhEtaPrimMCAcc[kmcPPhoton]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
+      fhYPrimMCAcc  [kmcPPhoton]->Fill(photonE , photonY  , GetEventWeight()*weightPt) ;
     } // Accepted
     
     // Fill histograms for photons origin
-    if(mcIndex < fNPrimaryHistograms)
+    //
+    if ( mcIndex < fNPrimaryHistograms )
     {
-      fhYPrimMC[mcIndex]->Fill(photonPt, photonY, GetEventWeight()) ;
-      if(TMath::Abs(photonY) < 1.0)
-      {
-        fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()) ;
-        fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()) ;
-        fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()) ;
-        fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta, GetEventWeight()) ;
-      }
+      fhEPrimMC  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
+      fhPtPrimMC [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
+      fhPhiPrimMC[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+      fhEtaPrimMC[mcIndex]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
       
-      if(inacceptance)
+      if ( inacceptance )
       {
-        fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()) ;
-        fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()) ;
-        fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()) ;
-        fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta, GetEventWeight()) ;
-        fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY  , GetEventWeight()) ;
+        fhEPrimMCAcc  [mcIndex]->Fill(photonE , GetEventWeight()*weightPt) ;
+        fhPtPrimMCAcc [mcIndex]->Fill(photonPt, GetEventWeight()*weightPt) ;
+        fhPhiPrimMCAcc[mcIndex]->Fill(photonE , photonPhi, GetEventWeight()*weightPt) ;
+        fhEtaPrimMCAcc[mcIndex]->Fill(photonE , photonEta, GetEventWeight()*weightPt) ;
+        fhYPrimMCAcc  [mcIndex]->Fill(photonE , photonY  , GetEventWeight()*weightPt) ;
       } // Accepted
     }
   } // loop on primaries
@@ -1427,8 +1467,18 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 
 //_________________________________________________________________________________
 /// Fill cluster Shower Shape histograms.
+///
+/// \param cluster : cluster pointer.
+/// \param sm      : cluster super module number.
+/// \param mctag   : tag containing MC origin of cluster.
+/// \param weightPt: histogram weight depending on particle generated
+/// \param nlm     : number of local maxima.
+/// \param matched : is cluster matched to a track
+/// \param maxCellFraction: max cell energy fraction in cluster
+/// \param largeTime: number of cell with large time
 //_________________________________________________________________________________
-void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, Int_t mcTag, 
+void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, 
+                                              Int_t mcTag, Float_t weightPt,
                                               Int_t nlm, Bool_t matched,
                                               Float_t maxCellFraction, Int_t & largeTime)
 {
@@ -1444,45 +1494,45 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
   Float_t eta = fMomentum.Eta();
   Float_t phi = GetPhi(fMomentum.Phi());
   
-  fhLam0E ->Fill(energy, lambda0, GetEventWeight());
-  fhLam0Pt->Fill(pt    , lambda0, GetEventWeight());
-  fhLam1E ->Fill(energy, lambda1, GetEventWeight());
-  fhLam1Pt->Fill(pt    , lambda1, GetEventWeight());
+  fhLam0E ->Fill(energy, lambda0, GetEventWeight()*weightPt);
+  fhLam0Pt->Fill(pt    , lambda0, GetEventWeight()*weightPt);
+  fhLam1E ->Fill(energy, lambda1, GetEventWeight()*weightPt);
+  fhLam1Pt->Fill(pt    , lambda1, GetEventWeight()*weightPt);
   
   if(fFillSSPerSMHistograms)
   {
-    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight());
-    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight());
+    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight()*weightPt);
   }
   
   if(!fFillOnlySimpleSSHisto)
   {
-    fhDispE ->Fill(energy, disp   , GetEventWeight());
-    fhDispPt->Fill(pt    , disp   , GetEventWeight());
+    fhDispE ->Fill(energy, disp   , GetEventWeight()*weightPt);
+    fhDispPt->Fill(pt    , disp   , GetEventWeight()*weightPt);
   }
   
   if(fFillSSNLocMaxHisto)
   {
     if(nlm==1) 
     {
-      fhLam0PtNLM1->Fill(pt, lambda0, GetEventWeight());
-      fhLam1PtNLM1->Fill(pt, lambda1, GetEventWeight());
+      fhLam0PtNLM1->Fill(pt, lambda0, GetEventWeight()*weightPt);
+      fhLam1PtNLM1->Fill(pt, lambda1, GetEventWeight()*weightPt);
     }
     else if(nlm==2)
     {
-      fhLam0PtNLM2->Fill(pt, lambda0, GetEventWeight());
-      fhLam1PtNLM2->Fill(pt, lambda1, GetEventWeight());
+      fhLam0PtNLM2->Fill(pt, lambda0, GetEventWeight()*weightPt);
+      fhLam1PtNLM2->Fill(pt, lambda1, GetEventWeight()*weightPt);
     }
   }
   
   if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
      sm >= GetFirstSMCoveredByTRD()  )
   {
-    fhLam0ETRD ->Fill(energy, lambda0, GetEventWeight());
-    fhLam0PtTRD->Fill(pt    , lambda0, GetEventWeight());
-    fhLam1ETRD ->Fill(energy, lambda1, GetEventWeight());
+    fhLam0ETRD ->Fill(energy, lambda0, GetEventWeight()*weightPt);
+    fhLam0PtTRD->Fill(pt    , lambda0, GetEventWeight()*weightPt);
+    fhLam1ETRD ->Fill(energy, lambda1, GetEventWeight()*weightPt);
     if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
-      fhDispETRD ->Fill(energy, disp,    GetEventWeight());
+      fhDispETRD ->Fill(energy, disp,    GetEventWeight()*weightPt);
   }
   
   //
@@ -1493,8 +1543,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
 //    Bool_t shared = GetCaloUtils()->IsClusterSharedByTwoSuperModules(GetEMCALGeometry(),cluster);
 //    if(GetReader()->IsPileUpFromSPD())
 //    {
-//      fhLam0PerSMSPDPileUp[sm]->Fill(pt, lambda0, GetEventWeight());
-//      fhLam1PerSMSPDPileUp[sm]->Fill(pt, lambda1, GetEventWeight());      
+//      fhLam0PerSMSPDPileUp[sm]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+//      fhLam1PerSMSPDPileUp[sm]->Fill(pt, lambda1, GetEventWeight()*weightPt);      
 //    }
 
     Int_t etaRegion = -1, phiRegion = -1;
@@ -1502,20 +1552,20 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
     {
       
-      //      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight());
+      //      fhLam0EMCALRegion[etaRegion][phiRegion]->Fill(pt,lambda0, GetEventWeight()*weightPt);
       //      
       //      if(GetFirstSMCoveredByTRD() >= 0 && sm >= GetFirstSMCoveredByTRD()  )
       //      {
-      //        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight());
+      //        fhLam0EMCALRegionTRD[etaRegion][phiRegion]->Fill(pt, lambda0, GetEventWeight()*weightPt);
       //      }
       
-      fhLam0EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda0, GetEventWeight());
-      fhLam1EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda1, GetEventWeight());
+      fhLam0EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda0, GetEventWeight()*weightPt);
+      fhLam1EMCALRegionPerSM[etaRegion][phiRegion][sm]->Fill(pt,lambda1, GetEventWeight()*weightPt);
       
 //      if(shared)
 //      {
-//        fhLam0PerSMShared[sm]->Fill(pt,lambda0, GetEventWeight());
-//        fhLam1PerSMShared[sm]->Fill(pt,lambda1, GetEventWeight());
+//        fhLam0PerSMShared[sm]->Fill(pt,lambda0, GetEventWeight()*weightPt);
+//        fhLam1PerSMShared[sm]->Fill(pt,lambda1, GetEventWeight()*weightPt);
 //      }
     }
     
@@ -1541,8 +1591,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       
       if(ptbin >= 0) 
       {
-        fhEtaPhiLam0BinPtBin[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
-//        if(shared) fhEtaPhiLam0BinPtBinSMShared[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
+        fhEtaPhiLam0BinPtBin[l0bin][ptbin]->Fill(eta, phi, GetEventWeight()*weightPt);
+//        if(shared) fhEtaPhiLam0BinPtBinSMShared[l0bin][ptbin]->Fill(eta, phi, GetEventWeight()*weightPt);
       }
     }
     
@@ -1615,33 +1665,33 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       }
       if ( l0bin == -1 ) continue;
           
-      fhTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTime,        GetEventWeight());
-      fhTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTime, weight*GetEventWeight());
+      fhTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTime,        GetEventWeight()*weightPt);
+      fhTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTime, weight*GetEventWeight()*weightPt);
       
-      fhDTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTimeMax-cellTime,        GetEventWeight());
-      fhDTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTimeMax-cellTime, weight*GetEventWeight());
+      fhDTimeLam0BinPerSM        [l0bin][sm]->Fill(pt, cellTimeMax-cellTime,        GetEventWeight()*weightPt);
+      fhDTimeLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellTimeMax-cellTime, weight*GetEventWeight()*weightPt);
       
-      fhCellClusterEFracLam0BinPerSM        [l0bin][sm]->Fill(pt, cellE/cluster->E(),        GetEventWeight());
-//      fhCellClusterEFracLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE/cluster->E(), weight*GetEventWeight());        
+      fhCellClusterEFracLam0BinPerSM        [l0bin][sm]->Fill(pt, cellE/cluster->E(),        GetEventWeight()*weightPt);
+//      fhCellClusterEFracLam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE/cluster->E(), weight*GetEventWeight()*weightPt);        
       
-      fhCellClusterELam0BinPerSM        [l0bin][sm]->Fill(pt, cellE,        GetEventWeight());
-      fhCellClusterELam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE, weight*GetEventWeight());
+      fhCellClusterELam0BinPerSM        [l0bin][sm]->Fill(pt, cellE,        GetEventWeight()*weightPt);
+      fhCellClusterELam0BinPerSMWeighted[l0bin][sm]->Fill(pt, cellE, weight*GetEventWeight()*weightPt);
       
       if(ptbin >= 0) 
       {
-        fhCellClusterIndexEAndTime[l0bin][ptbin] ->Fill(cellTime, icell             , GetEventWeight());
-        fhCellClusterEAndTime     [l0bin][ptbin] ->Fill(cellTime, cellE             , GetEventWeight());
-        fhCellClusterEFracAndTime [l0bin][ptbin] ->Fill(cellTime, cellE/cluster->E(), GetEventWeight());
+        fhCellClusterIndexEAndTime[l0bin][ptbin] ->Fill(cellTime, icell             , GetEventWeight()*weightPt);
+        fhCellClusterEAndTime     [l0bin][ptbin] ->Fill(cellTime, cellE             , GetEventWeight()*weightPt);
+        fhCellClusterEFracAndTime [l0bin][ptbin] ->Fill(cellTime, cellE/cluster->E(), GetEventWeight()*weightPt);
       }
       
       if ( TMath::Abs(cellTime) > 50 )
       {        
-        fhCellClusterEFracLam0BinPerSMLargeTime [l0bin][sm]->Fill(pt, cellE/cluster->E(), GetEventWeight());
-        fhCellClusterELam0BinPerSMLargeTime     [l0bin][sm]->Fill(pt, cellE             , GetEventWeight());
-        fhCellClusterIndexELam0BinPerSMLargeTime[l0bin][sm]->Fill(pt, icell             , GetEventWeight());        
+        fhCellClusterEFracLam0BinPerSMLargeTime [l0bin][sm]->Fill(pt, cellE/cluster->E(), GetEventWeight()*weightPt);
+        fhCellClusterELam0BinPerSMLargeTime     [l0bin][sm]->Fill(pt, cellE             , GetEventWeight()*weightPt);
+        fhCellClusterIndexELam0BinPerSMLargeTime[l0bin][sm]->Fill(pt, icell             , GetEventWeight()*weightPt);        
       }
 //      if(shared)
-//        fhTimeLam0BinPerSMShared[l0bin][sm]->Fill(pt, cellTime, GetEventWeight());
+//        fhTimeLam0BinPerSMShared[l0bin][sm]->Fill(pt, cellTime, GetEventWeight()*weightPt);
       
       if(ptbin >= 0) 
       {
@@ -1650,13 +1700,13 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
         Int_t   iRCU     = -1;
         GetModuleNumberCellIndexesAbsCaloMap(absId,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
         
-        fhColRowLam0BinPtBin        [l0bin][ptbin]->Fill(icolAbs, irowAbs,        GetEventWeight());
-        fhColRowLam0BinPtBinWeighted[l0bin][ptbin]->Fill(icolAbs, irowAbs, weight*GetEventWeight());
+        fhColRowLam0BinPtBin        [l0bin][ptbin]->Fill(icolAbs, irowAbs,        GetEventWeight()*weightPt);
+        fhColRowLam0BinPtBinWeighted[l0bin][ptbin]->Fill(icolAbs, irowAbs, weight*GetEventWeight()*weightPt);
         
         if ( TMath::Abs(cellTime) > 50 )
-          fhColRowLam0BinPtBinLargeTime[l0bin][ptbin]->Fill(icolAbs, irowAbs, GetEventWeight());
+          fhColRowLam0BinPtBinLargeTime[l0bin][ptbin]->Fill(icolAbs, irowAbs, GetEventWeight()*weightPt);
         
-//        if(shared)  fhColRowLam0BinPtBinSMShared[l0bin][ptbin]->Fill(icolAbs, irowAbs, GetEventWeight());
+//        if(shared)  fhColRowLam0BinPtBinSMShared[l0bin][ptbin]->Fill(icolAbs, irowAbs, GetEventWeight()*weightPt);
       }
       
       
@@ -1668,19 +1718,19 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       if ( l0bin != -1 ) 
       {
         if ( ptbin > 0 ) 
-          fhEtaPhiLargeTimeInClusterCell[l0bin][ptbin]->Fill(eta, phi, GetEventWeight());
+          fhEtaPhiLargeTimeInClusterCell[l0bin][ptbin]->Fill(eta, phi, GetEventWeight()*weightPt);
         
-        fhCellClusterEFracLam0BinPerSMLargeTimeTotal[l0bin][sm]->Fill(pt, largeTimeE/cluster->E(), GetEventWeight());
-        fhNCellsWithLargeTimeInCluster              [l0bin][sm]->Fill(pt, largeTime              , GetEventWeight());
+        fhCellClusterEFracLam0BinPerSMLargeTimeTotal[l0bin][sm]->Fill(pt, largeTimeE/cluster->E(), GetEventWeight()*weightPt);
+        fhNCellsWithLargeTimeInCluster              [l0bin][sm]->Fill(pt, largeTime              , GetEventWeight()*weightPt);
       }
       
-      fhLam0PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda0, GetEventWeight());
-      fhLam1PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda1, GetEventWeight());
+      fhLam0PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+      fhLam1PerSMLargeTimeInClusterCell[sm]->Fill(pt, lambda1, GetEventWeight()*weightPt);
       
       if(largeTime < 6)
       {
-        fhLam0PerNLargeTimeInClusterCell[largeTime-1]->Fill(pt, lambda0, GetEventWeight());
-        fhLam1PerNLargeTimeInClusterCell[largeTime-1]->Fill(pt, lambda1, GetEventWeight());
+        fhLam0PerNLargeTimeInClusterCell[largeTime-1]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+        fhLam1PerNLargeTimeInClusterCell[largeTime-1]->Fill(pt, lambda1, GetEventWeight()*weightPt);
       }
     }
     
@@ -1701,16 +1751,16 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     //       l0, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi );
     //printf("AliAnaPhoton::FillShowerShapeHistogram - dispersion %f, dispersion eta+phi %f \n",
     //       disp, dPhi+dEta );
-    fhDispEtaE        -> Fill(energy, dEta     , GetEventWeight());
-    fhDispPhiE        -> Fill(energy, dPhi     , GetEventWeight());
-    fhSumEtaE         -> Fill(energy, sEta     , GetEventWeight());
-    fhSumPhiE         -> Fill(energy, sPhi     , GetEventWeight());
-    fhSumEtaPhiE      -> Fill(energy, sEtaPhi  , GetEventWeight());
-    fhDispEtaPhiDiffE -> Fill(energy, dPhi-dEta, GetEventWeight());
+    fhDispEtaE        -> Fill(energy, dEta     , GetEventWeight()*weightPt);
+    fhDispPhiE        -> Fill(energy, dPhi     , GetEventWeight()*weightPt);
+    fhSumEtaE         -> Fill(energy, sEta     , GetEventWeight()*weightPt);
+    fhSumPhiE         -> Fill(energy, sPhi     , GetEventWeight()*weightPt);
+    fhSumEtaPhiE      -> Fill(energy, sEtaPhi  , GetEventWeight()*weightPt);
+    fhDispEtaPhiDiffE -> Fill(energy, dPhi-dEta, GetEventWeight()*weightPt);
       
-    if(dEta+dPhi>0)fhSphericityE     -> Fill(energy,(dPhi-dEta)/(dEta+dPhi)     , GetEventWeight());
-    if(dEta+sEta>0)fhDispSumEtaDiffE -> Fill(energy,(dEta-sEta)/((dEta+sEta)/2.), GetEventWeight());
-    if(dPhi+sPhi>0)fhDispSumPhiDiffE -> Fill(energy,(dPhi-sPhi)/((dPhi+sPhi)/2.), GetEventWeight());
+    if(dEta+dPhi>0)fhSphericityE     -> Fill(energy,(dPhi-dEta)/(dEta+dPhi)     , GetEventWeight()*weightPt);
+    if(dEta+sEta>0)fhDispSumEtaDiffE -> Fill(energy,(dEta-sEta)/((dEta+sEta)/2.), GetEventWeight()*weightPt);
+    if(dPhi+sPhi>0)fhDispSumPhiDiffE -> Fill(energy,(dPhi-sPhi)/((dPhi+sPhi)/2.), GetEventWeight()*weightPt);
     
     Int_t ebin = -1;
     if      (energy < 2 ) ebin = 0;
@@ -1721,29 +1771,29 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     else if (energy < 20) ebin = 5;
     else                  ebin = 6;
     
-    fhDispEtaDispPhi[ebin]->Fill(dEta   , dPhi, GetEventWeight());
-    fhLambda0DispEta[ebin]->Fill(lambda0, dEta, GetEventWeight());
-    fhLambda0DispPhi[ebin]->Fill(lambda0, dPhi, GetEventWeight());
+    fhDispEtaDispPhi[ebin]->Fill(dEta   , dPhi, GetEventWeight()*weightPt);
+    fhLambda0DispEta[ebin]->Fill(lambda0, dEta, GetEventWeight()*weightPt);
+    fhLambda0DispPhi[ebin]->Fill(lambda0, dPhi, GetEventWeight()*weightPt);
   }
   
   // If track-matching was off, check effect of track-matching cut
   //
   if ( !fRejectTrackMatch && matched )
   {
-    fhLam0ETM ->Fill(energy, lambda0, GetEventWeight());
-    fhLam0PtTM->Fill(pt    , lambda0, GetEventWeight());
-    fhLam1ETM ->Fill(energy, lambda1, GetEventWeight());
+    fhLam0ETM ->Fill(energy, lambda0, GetEventWeight()*weightPt);
+    fhLam0PtTM->Fill(pt    , lambda0, GetEventWeight()*weightPt);
+    fhLam1ETM ->Fill(energy, lambda1, GetEventWeight()*weightPt);
     if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
-      fhDispETM ->Fill(energy, disp   , GetEventWeight());
+      fhDispETM ->Fill(energy, disp   , GetEventWeight()*weightPt);
     
     if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
        sm >= GetFirstSMCoveredByTRD()  )
     {
-      fhLam0ETMTRD ->Fill(energy, lambda0, GetEventWeight());
-      fhLam0PtTMTRD->Fill(pt    , lambda0, GetEventWeight());
-      fhLam1ETMTRD ->Fill(energy, lambda1, GetEventWeight());
+      fhLam0ETMTRD ->Fill(energy, lambda0, GetEventWeight()*weightPt);
+      fhLam0PtTMTRD->Fill(pt    , lambda0, GetEventWeight()*weightPt);
+      fhLam1ETMTRD ->Fill(energy, lambda1, GetEventWeight()*weightPt);
       if(!fFillOnlySimpleSSHisto && fFillSSHistograms)
-        fhDispETMTRD ->Fill(energy, disp   , GetEventWeight());
+        fhDispETMTRD ->Fill(energy, disp   , GetEventWeight()*weightPt);
     }
     
   } // If track-matching was off, check effect of matching residual cut
@@ -1752,27 +1802,27 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
   {
     if(energy < 2)
     {
-      fhNCellsLam0LowE ->Fill(ncells, lambda0, GetEventWeight());
-      fhNCellsLam1LowE ->Fill(ncells, lambda1, GetEventWeight());
-      fhNCellsDispLowE ->Fill(ncells, disp   , GetEventWeight());
+      fhNCellsLam0LowE ->Fill(ncells, lambda0, GetEventWeight()*weightPt);
+      fhNCellsLam1LowE ->Fill(ncells, lambda1, GetEventWeight()*weightPt);
+      fhNCellsDispLowE ->Fill(ncells, disp   , GetEventWeight()*weightPt);
       
-      fhLam1Lam0LowE  ->Fill(lambda1, lambda0, GetEventWeight());
-      fhLam0DispLowE  ->Fill(lambda0, disp   , GetEventWeight());
-      fhDispLam1LowE  ->Fill(disp   , lambda1, GetEventWeight());
-      fhEtaLam0LowE   ->Fill(eta    , lambda0, GetEventWeight());
-      fhPhiLam0LowE   ->Fill(phi    , lambda0, GetEventWeight());
+      fhLam1Lam0LowE  ->Fill(lambda1, lambda0, GetEventWeight()*weightPt);
+      fhLam0DispLowE  ->Fill(lambda0, disp   , GetEventWeight()*weightPt);
+      fhDispLam1LowE  ->Fill(disp   , lambda1, GetEventWeight()*weightPt);
+      fhEtaLam0LowE   ->Fill(eta    , lambda0, GetEventWeight()*weightPt);
+      fhPhiLam0LowE   ->Fill(phi    , lambda0, GetEventWeight()*weightPt);
     }
     else
     {
-      fhNCellsLam0HighE ->Fill(ncells, lambda0, GetEventWeight());
-      fhNCellsLam1HighE ->Fill(ncells, lambda1, GetEventWeight());
-      fhNCellsDispHighE ->Fill(ncells, disp   , GetEventWeight());
+      fhNCellsLam0HighE ->Fill(ncells, lambda0, GetEventWeight()*weightPt);
+      fhNCellsLam1HighE ->Fill(ncells, lambda1, GetEventWeight()*weightPt);
+      fhNCellsDispHighE ->Fill(ncells, disp   , GetEventWeight()*weightPt);
       
-      fhLam1Lam0HighE  ->Fill(lambda1, lambda0, GetEventWeight());
-      fhLam0DispHighE  ->Fill(lambda0, disp   , GetEventWeight());
-      fhDispLam1HighE  ->Fill(disp   , lambda1, GetEventWeight());
-      fhEtaLam0HighE   ->Fill(eta    , lambda0, GetEventWeight());
-      fhPhiLam0HighE   ->Fill(phi    , lambda0, GetEventWeight());
+      fhLam1Lam0HighE  ->Fill(lambda1, lambda0, GetEventWeight()*weightPt);
+      fhLam0DispHighE  ->Fill(lambda0, disp   , GetEventWeight()*weightPt);
+      fhDispLam1HighE  ->Fill(disp   , lambda1, GetEventWeight()*weightPt);
+      fhEtaLam0HighE   ->Fill(eta    , lambda0, GetEventWeight()*weightPt);
+      fhPhiLam0HighE   ->Fill(phi    , lambda0, GetEventWeight()*weightPt);
     }
   }
   
@@ -1805,7 +1855,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       
       AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f",fraction, clusterE));
       
-      fhEmbeddedSignalFractionEnergy->Fill(clusterE, fraction, GetEventWeight());
+      fhEmbeddedSignalFractionEnergy->Fill(clusterE, fraction, GetEventWeight()*weightPt);
     }  // embedded fraction
       
     //
@@ -1825,19 +1875,19 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       {
         if     (fraction > 0.9)
         {
-          fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else if(fraction > 0.5)
         {
-          fhEmbedPhotonELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPhotonELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else if(fraction > 0.1)
         {
-          fhEmbedPhotonELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPhotonELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else
         {
-          fhEmbedPhotonELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPhotonELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
       } // embedded
     } // photon no conversion
@@ -1855,19 +1905,19 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       {
         if     (fraction > 0.9)
         {
-          fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else if(fraction > 0.5)
         {
-          fhEmbedPi0ELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPi0ELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else if(fraction > 0.1)
         {
-          fhEmbedPi0ELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPi0ELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
         else
         {
-          fhEmbedPi0ELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight());
+          fhEmbedPi0ELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight()*weightPt);
         }
       } // embedded
       
@@ -1886,15 +1936,15 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     //
     // Fill histograms
     //
-    fhMCELambda0 [mcIndex]->Fill(energy, lambda0, GetEventWeight());
-    fhMCPtLambda0[mcIndex]->Fill(pt    , lambda0, GetEventWeight());
-    fhMCELambda1 [mcIndex]->Fill(energy, lambda1, GetEventWeight());
-    fhMCNCellsE  [mcIndex]->Fill(energy, ncells , GetEventWeight());
+    fhMCELambda0 [mcIndex]->Fill(energy, lambda0, GetEventWeight()*weightPt);
+    fhMCPtLambda0[mcIndex]->Fill(pt    , lambda0, GetEventWeight()*weightPt);
+    fhMCELambda1 [mcIndex]->Fill(energy, lambda1, GetEventWeight()*weightPt);
+    fhMCNCellsE  [mcIndex]->Fill(energy, ncells , GetEventWeight()*weightPt);
 
     if(!fFillOnlySimpleSSHisto) 
     {
-      fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight());
-      fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight());
+      fhMCMaxCellDiffClusterE[mcIndex]->Fill(energy, maxCellFraction, GetEventWeight()*weightPt);
+      fhMCEDispersion        [mcIndex]->Fill(energy, disp   , GetEventWeight()*weightPt);
     }
     
     //
@@ -1912,11 +1962,11 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
       //printf("N overlaps %d \n",noverlaps);
 
       if(noverlaps == 0)
-        fhMCPtLambda0Overlaps[mcIndex][0]->Fill(pt, lambda0, GetEventWeight());
+        fhMCPtLambda0Overlaps[mcIndex][0]->Fill(pt, lambda0, GetEventWeight()*weightPt);
       else if(noverlaps == 1)
-        fhMCPtLambda0Overlaps[mcIndex][1]->Fill(pt, lambda0, GetEventWeight());
+        fhMCPtLambda0Overlaps[mcIndex][1]->Fill(pt, lambda0, GetEventWeight()*weightPt);
       else if(noverlaps > 1)
-        fhMCPtLambda0Overlaps[mcIndex][2]->Fill(pt, lambda0, GetEventWeight());
+        fhMCPtLambda0Overlaps[mcIndex][2]->Fill(pt, lambda0, GetEventWeight()*weightPt);
       else
         AliWarning(Form("n overlaps = %d!!", noverlaps));
     }
@@ -1925,28 +1975,28 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     {
       if     (energy < 2.)
       {
-        fhMCLambda0vsClusterMaxCellDiffE0[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight());
-        fhMCNCellsvsClusterMaxCellDiffE0 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight());
+        fhMCLambda0vsClusterMaxCellDiffE0[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight()*weightPt);
+        fhMCNCellsvsClusterMaxCellDiffE0 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight()*weightPt);
       }
       else if(energy < 6.)
       {
-        fhMCLambda0vsClusterMaxCellDiffE2[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight());
-        fhMCNCellsvsClusterMaxCellDiffE2 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight());
+        fhMCLambda0vsClusterMaxCellDiffE2[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight()*weightPt);
+        fhMCNCellsvsClusterMaxCellDiffE2 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight()*weightPt);
       }
       else
       {
-        fhMCLambda0vsClusterMaxCellDiffE6[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight());
-        fhMCNCellsvsClusterMaxCellDiffE6 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight());
+        fhMCLambda0vsClusterMaxCellDiffE6[mcIndex]->Fill(lambda0, maxCellFraction, GetEventWeight()*weightPt);
+        fhMCNCellsvsClusterMaxCellDiffE6 [mcIndex]->Fill(ncells,  maxCellFraction, GetEventWeight()*weightPt);
       }
       
       if(GetCalorimeter() == kEMCAL)
       {
-        fhMCEDispEta        [mcIndex]-> Fill(energy, dEta     , GetEventWeight());
-        fhMCEDispPhi        [mcIndex]-> Fill(energy, dPhi     , GetEventWeight());
-        fhMCESumEtaPhi      [mcIndex]-> Fill(energy, sEtaPhi  , GetEventWeight());
-        fhMCEDispEtaPhiDiff [mcIndex]-> Fill(energy, dPhi-dEta, GetEventWeight());
+        fhMCEDispEta        [mcIndex]-> Fill(energy, dEta     , GetEventWeight()*weightPt);
+        fhMCEDispPhi        [mcIndex]-> Fill(energy, dPhi     , GetEventWeight()*weightPt);
+        fhMCESumEtaPhi      [mcIndex]-> Fill(energy, sEtaPhi  , GetEventWeight()*weightPt);
+        fhMCEDispEtaPhiDiff [mcIndex]-> Fill(energy, dPhi-dEta, GetEventWeight()*weightPt);
           
-        if( dEta+dPhi > 0 ) fhMCESphericity[mcIndex]-> Fill(energy, (dPhi-dEta)/(dEta+dPhi), GetEventWeight());
+        if( dEta+dPhi > 0 ) fhMCESphericity[mcIndex]-> Fill(energy, (dPhi-dEta)/(dEta+dPhi), GetEventWeight()*weightPt);
         
         Int_t ebin = -1;
         if      (energy < 2 ) ebin = 0;
@@ -1957,9 +2007,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
         else if (energy < 20) ebin = 5;
         else                  ebin = 6;
         
-        fhMCDispEtaDispPhi[ebin][mcIndex]->Fill(dEta   , dPhi, GetEventWeight());
-        fhMCLambda0DispEta[ebin][mcIndex]->Fill(lambda0, dEta, GetEventWeight());
-        fhMCLambda0DispPhi[ebin][mcIndex]->Fill(lambda0, dPhi, GetEventWeight());
+        fhMCDispEtaDispPhi[ebin][mcIndex]->Fill(dEta   , dPhi, GetEventWeight()*weightPt);
+        fhMCLambda0DispEta[ebin][mcIndex]->Fill(lambda0, dEta, GetEventWeight()*weightPt);
+        fhMCLambda0DispPhi[ebin][mcIndex]->Fill(lambda0, dPhi, GetEventWeight()*weightPt);
       }
     }
   }// MC data
@@ -1977,10 +2027,12 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
 /// \param mcbin   : particle tag for MC histogram
 /// \param egen    : main MC particle generated energy
 /// \param noverlaps: number of extra MC particles contributing 
+/// \param weightPt: histogram weight depending on particle generated
 //__________________________________________________________________________
 void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
                                                        Int_t cut, Int_t nSMod, Bool_t matched, 
-                                                       Int_t tag, Float_t mcbin, Float_t egen, Int_t noverlaps)
+                                                       Int_t tag, Float_t mcbin, Float_t egen,
+                                                       Int_t noverlaps, Float_t weightPt)
 {
   Float_t dEta = cluster->GetTrackDz();
   Float_t dPhi = cluster->GetTrackDx();
@@ -1998,28 +2050,28 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
   Bool_t positive = (track->Charge()>0);
   if ( positive )
   {
-    fhTrackMatchedDEtaPos[cut]->Fill(ener, dEta, GetEventWeight());
-    fhTrackMatchedDPhiPos[cut]->Fill(ener, dPhi, GetEventWeight());
-    if(ener > 0.5) fhTrackMatchedDEtaDPhiPos[cut]->Fill(dEta,dPhi, GetEventWeight());
+    fhTrackMatchedDEtaPos[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+    fhTrackMatchedDPhiPos[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
+    if(ener > 0.5) fhTrackMatchedDEtaDPhiPos[cut]->Fill(dEta,dPhi, GetEventWeight()*weightPt);
     
     if ( fFillTMHistoTrackPt )
     {
-      fhTrackMatchedDEtaPosTrackPt[cut]->Fill(track->Pt(), dEta, GetEventWeight());
-      fhTrackMatchedDPhiPosTrackPt[cut]->Fill(track->Pt(), dPhi, GetEventWeight());
-      if(track->Pt() > 0.5) fhTrackMatchedDEtaDPhiPosTrackPt[cut]->Fill(dEta,dPhi, GetEventWeight());
+      fhTrackMatchedDEtaPosTrackPt[cut]->Fill(track->Pt(), dEta, GetEventWeight()*weightPt);
+      fhTrackMatchedDPhiPosTrackPt[cut]->Fill(track->Pt(), dPhi, GetEventWeight()*weightPt);
+      if(track->Pt() > 0.5) fhTrackMatchedDEtaDPhiPosTrackPt[cut]->Fill(dEta,dPhi, GetEventWeight()*weightPt);
     }
   }
   else
   {
-    fhTrackMatchedDEtaNeg[cut]->Fill(ener, dEta, GetEventWeight());
-    fhTrackMatchedDPhiNeg[cut]->Fill(ener, dPhi, GetEventWeight());
-    if(ener > 0.5) fhTrackMatchedDEtaDPhiNeg[cut]->Fill(dEta, dPhi, GetEventWeight());
+    fhTrackMatchedDEtaNeg[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+    fhTrackMatchedDPhiNeg[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
+    if(ener > 0.5) fhTrackMatchedDEtaDPhiNeg[cut]->Fill(dEta, dPhi, GetEventWeight()*weightPt);
     
     if ( fFillTMHistoTrackPt )
     {
-      fhTrackMatchedDEtaNegTrackPt[cut]->Fill(track->Pt(), dEta, GetEventWeight());
-      fhTrackMatchedDPhiNegTrackPt[cut]->Fill(track->Pt(), dPhi, GetEventWeight());
-      if(track->Pt() > 0.5) fhTrackMatchedDEtaDPhiNegTrackPt[cut]->Fill(dEta, dPhi, GetEventWeight());
+      fhTrackMatchedDEtaNegTrackPt[cut]->Fill(track->Pt(), dEta, GetEventWeight()*weightPt);
+      fhTrackMatchedDPhiNegTrackPt[cut]->Fill(track->Pt(), dPhi, GetEventWeight()*weightPt);
+      if(track->Pt() > 0.5) fhTrackMatchedDEtaDPhiNegTrackPt[cut]->Fill(dEta, dPhi, GetEventWeight()*weightPt);
     }
   }
     
@@ -2027,16 +2079,16 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
   if( GetCalorimeter() == kEMCAL &&   GetFirstSMCoveredByTRD() >= 0 &&
      nSMod >= GetFirstSMCoveredByTRD()   )
   {
-    fhTrackMatchedDEtaTRD[cut]->Fill(ener, dEta, GetEventWeight());
-    fhTrackMatchedDPhiTRD[cut]->Fill(ener, dPhi, GetEventWeight());
+    fhTrackMatchedDEtaTRD[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+    fhTrackMatchedDPhiTRD[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
   }
     
   // Check dEdx and E/p and MC origin of matched/unmatched clusters
   //
   if ( IsDataMC() )
   {
-    fhTrackMatchedMCParticleBeforeTM       [cut]->Fill(ener       , mcbin, GetEventWeight());
-    fhTrackMatchedMCParticleTrackPtBeforeTM[cut]->Fill(track->Pt(), mcbin, GetEventWeight());
+    fhTrackMatchedMCParticleBeforeTM       [cut]->Fill(ener       , mcbin, GetEventWeight()*weightPt);
+    fhTrackMatchedMCParticleTrackPtBeforeTM[cut]->Fill(track->Pt(), mcbin, GetEventWeight()*weightPt);
   }
   
   if ( (matched && !cut) || (!matched && cut) )
@@ -2049,52 +2101,52 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     //          printf("matched %d and cut %d: E %2.2f, track p %2.2f, track pt %2.2f, dEta %2.2f, dPhi %2.2f, dEdx %2.2f, E/p %2.2f\n",
     //                 matched,cut,ener,track->P(),track->Pt(),dEta,dPhi,dEdx,eOverp);
     
-    fhdEdx  [cut]->Fill(ener, dEdx  , GetEventWeight());
-    fhEOverP[cut]->Fill(ener, eOverp, GetEventWeight());
+    fhdEdx  [cut]->Fill(ener, dEdx  , GetEventWeight()*weightPt);
+    fhEOverP[cut]->Fill(ener, eOverp, GetEventWeight()*weightPt);
     
     if ( fFillTMHistoTrackPt )
     {
-      fhdEdxTrackPt  [cut]->Fill(track->Pt(), dEdx  , GetEventWeight());
-      fhEOverPTrackPt[cut]->Fill(track->Pt(), eOverp, GetEventWeight());
+      fhdEdxTrackPt  [cut]->Fill(track->Pt(), dEdx  , GetEventWeight()*weightPt);
+      fhEOverPTrackPt[cut]->Fill(track->Pt(), eOverp, GetEventWeight()*weightPt);
     }
     
     if(GetCalorimeter()==kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
        nSMod >= GetFirstSMCoveredByTRD()  )
-      fhEOverPTRD[cut]->Fill(ener, eOverp, GetEventWeight());
+      fhEOverPTRD[cut]->Fill(ener, eOverp, GetEventWeight()*weightPt);
     
     if ( IsDataMC() )
     {
-      fhTrackMatchedMCParticle        [cut]->Fill(ener, mcbin, GetEventWeight());
-      fhTrackMatchedMCParticleTrackPt [cut]->Fill(track->Pt(), mcbin, GetEventWeight());
-      fhTrackMatchedMCParticleVsEOverP[cut]->Fill(ener, mcbin, eOverp, GetEventWeight());
+      fhTrackMatchedMCParticle        [cut]->Fill(ener, mcbin, GetEventWeight()*weightPt);
+      fhTrackMatchedMCParticleTrackPt [cut]->Fill(track->Pt(), mcbin, GetEventWeight()*weightPt);
+      fhTrackMatchedMCParticleVsEOverP[cut]->Fill(ener, mcbin, eOverp, GetEventWeight()*weightPt);
       
       if ( egen > 0.1 )
-        fhTrackMatchedMCParticleVsErecEgen[cut]->Fill(ener, mcbin, ener/egen, GetEventWeight());
+        fhTrackMatchedMCParticleVsErecEgen[cut]->Fill(ener, mcbin, ener/egen, GetEventWeight()*weightPt);
       
       Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
       if  ( conversion  )
-        fhTrackMatchedMCParticleConverted[cut]->Fill(ener, mcbin, GetEventWeight());
+        fhTrackMatchedMCParticleConverted[cut]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       
-      fhTrackMatchedMCParticleVsNOverlaps[cut]->Fill(ener, mcbin, noverlaps, GetEventWeight());
+      fhTrackMatchedMCParticleVsNOverlaps[cut]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
       
       if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
          !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta))
       {
         if ( noverlaps )
         {
-          fhTrackMatchedDEtaMCNoOverlap[cut]->Fill(ener, dEta, GetEventWeight());
-          fhTrackMatchedDPhiMCNoOverlap[cut]->Fill(ener, dPhi, GetEventWeight());
+          fhTrackMatchedDEtaMCNoOverlap[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+          fhTrackMatchedDPhiMCNoOverlap[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
         }
         else
         {
-          fhTrackMatchedDEtaMCOverlap[cut]->Fill(ener, dEta, GetEventWeight());
-          fhTrackMatchedDPhiMCOverlap[cut]->Fill(ener, dPhi, GetEventWeight());
+          fhTrackMatchedDEtaMCOverlap[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+          fhTrackMatchedDPhiMCOverlap[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
         }
         
         if( conversion )
         {
-          fhTrackMatchedDEtaMCConversion[cut]->Fill(ener, dEta, GetEventWeight());
-          fhTrackMatchedDPhiMCConversion[cut]->Fill(ener, dPhi, GetEventWeight());
+          fhTrackMatchedDEtaMCConversion[cut]->Fill(ener, dEta, GetEventWeight()*weightPt);
+          fhTrackMatchedDPhiMCConversion[cut]->Fill(ener, dPhi, GetEventWeight()*weightPt);
         }
         
       }// Check overlaps
@@ -4621,6 +4673,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     return;
   }
   
+  TString genName = ""; 
+  
   // Loop on raw clusters before filtering in the reader and fill control histogram
   if((GetReader()->GetEMCALClusterListName()=="" && GetCalorimeter()==kEMCAL) || GetCalorimeter()==kPHOS)
   {
@@ -4639,7 +4693,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       {
         clus->GetMomentum(fMomentum,GetVertex(0)) ;
           
-        fhClusterCutsE [0]->Fill(fMomentum.E(), GetEventWeight());
+        fhClusterCutsE [0]->Fill(fMomentum.E(),  GetEventWeight());
         fhClusterCutsPt[0]->Fill(fMomentum.Pt(), GetEventWeight());
       }
     }
@@ -4723,6 +4777,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     const Int_t nlabels = calo->GetNLabels();
     Float_t ener        = calo->E();
     
+    Int_t   index    = 0;
+    Float_t weightPt = 1 ; 
+    
     if ( IsDataMC() && mcLabel >= 0 )
     {
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),
@@ -4758,6 +4815,35 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron)) mcbin = 9.5;
       else                                                                                  mcbin = 10.5 ;
       
+      /// Generated mother kine, ID and pT dependent Weight
+      index    = GetReader()->GetCocktailGeneratorAndIndex(mcLabel, genName);
+      
+      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ||
+           GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) 
+          )
+      {
+        fPrimaryMom2 = fPrimaryMom;
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+          fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);        
+        
+        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
+      }
+      
+      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ||
+                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) 
+               )
+      {
+        fPrimaryMom2 = fPrimaryMom;
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+          fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        
+        
+        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
+      }
+      else
+      {
+        weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index) ; 
+      }
+      
       // Check if several particles contributed to cluster and discard overlapped mesons
       // Compare the primary depositing more energy with the rest,
       // if no photon/electron as comon ancestor (conversions), count as other particle
@@ -4766,16 +4852,16 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,tag,-1,GetMC(),overpdg,overlab);
       
       // Fill first raw histograms
-      fhMCParticle[0]->Fill(ener, mcbin, GetEventWeight());
+      fhMCParticle[0]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       
       egen = fPrimaryMom.E();      
       if ( egen > 0.1 )
-        fhMCParticleVsErecEgen[0]->Fill(ener, mcbin, ener/egen, GetEventWeight());
+        fhMCParticleVsErecEgen[0]->Fill(ener, mcbin, ener/egen, GetEventWeight()*weightPt);
       
       if  ( conversion  )
-        fhMCParticleConverted[0]->Fill(ener, mcbin, GetEventWeight());
+        fhMCParticleConverted[0]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       
-      fhMCParticleVsNOverlaps[0]->Fill(ener, mcbin, noverlaps, GetEventWeight());
+      fhMCParticleVsNOverlaps[0]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
     }
     
     //-----------------------------
@@ -4785,7 +4871,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t  nSM     = GetModuleNumber(calo);    
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
 
-    if ( !ClusterSelected(calo, nSM, nMaxima, matched, tag, mcbin, egen, noverlaps) ) continue;
+    if ( !ClusterSelected(calo, nSM, nMaxima, matched, tag, mcbin, egen, noverlaps, weightPt) ) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -4796,6 +4882,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Set the indeces of the original caloclusters (MC, ID), and calorimeter
     Int_t label = calo->GetLabel();
     aodph.SetLabel(label);
+    aodph.SetWeight(weightPt);
     aodph.SetCaloLabel(calo->GetID(),-1);
     aodph.SetTag(tag);
     aodph.SetDetectorTag(GetCalorimeter());
@@ -4818,7 +4905,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if( absIdMax < 0 ) AliFatal("Wrong absID");
     
     Int_t largeTimeInCellCluster = kFALSE;
-    FillShowerShapeHistograms(calo, nSM, tag, nMaxima, matched, 
+    FillShowerShapeHistograms(calo, nSM, tag, weightPt, nMaxima, matched, 
                               maxCellFraction, largeTimeInCellCluster);
     
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
@@ -4858,9 +4945,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       if(ebin>=0 && ebin < fNEBinCuts) 
       {
-        fhEBinClusterEtaPhi[ebin]->Fill(eta,phi,GetEventWeight()) ;
+        fhEBinClusterEtaPhi[ebin]->Fill(eta,phi,GetEventWeight()*weightPt) ;
         
-        fhEBinClusterColRow[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+        fhEBinClusterColRow[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()*weightPt) ;
       }
     }
 
@@ -4897,21 +4984,21 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",aodph.Pt(),aodph.GetIdentifiedParticleType()));
     
-    fhClusterCutsE [9]->Fill(en, GetEventWeight());
-    fhClusterCutsPt[9]->Fill(pt, GetEventWeight());
+    fhClusterCutsE [9]->Fill(en, GetEventWeight()*weightPt);
+    fhClusterCutsPt[9]->Fill(pt, GetEventWeight()*weightPt);
     
     if ( IsDataMC() )
     {
       // Fill final selected photon histograms in MC
-      fhMCParticle[3]->Fill(ener, mcbin, GetEventWeight());
+      fhMCParticle[3]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       
       if ( egen > 0.1 )
-        fhMCParticleVsErecEgen[3]->Fill(ener, mcbin, ener/egen, GetEventWeight());
+        fhMCParticleVsErecEgen[3]->Fill(ener, mcbin, ener/egen, GetEventWeight()*weightPt);
       
       if  ( conversion  )
-        fhMCParticleConverted[3]->Fill(ener, mcbin, GetEventWeight());
+        fhMCParticleConverted[3]->Fill(ener, mcbin, GetEventWeight()*weightPt);
       
-      fhMCParticleVsNOverlaps[3]->Fill(ener, mcbin, noverlaps, GetEventWeight());
+      fhMCParticleVsNOverlaps[3]->Fill(ener, mcbin, noverlaps, GetEventWeight()*weightPt);
     }
     
     //
@@ -4931,35 +5018,35 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     {  
       if(ebin>=0 && ebin < fNEBinCuts) 
       {
-        fhEBinClusterEtaPhiPID[ebin]->Fill(eta,phi,GetEventWeight()) ;
+        fhEBinClusterEtaPhiPID[ebin]->Fill(eta,phi,GetEventWeight()*weightPt) ;
         
-        fhEBinClusterColRowPID[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+        fhEBinClusterColRowPID[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()*weightPt) ;
       }
     }
     
     if(nSM < fNModules && nSM >=0)
     {
-      fhEPhotonSM ->Fill(en, nSM, GetEventWeight());
-      fhPtPhotonSM->Fill(pt, nSM, GetEventWeight());
+      fhEPhotonSM ->Fill(en, nSM, GetEventWeight()*weightPt);
+      fhPtPhotonSM->Fill(pt, nSM, GetEventWeight()*weightPt);
     }
     
     // Few more control histograms for selected clusters
-    fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight());
-    fhTimePt             ->Fill(pt, time               , GetEventWeight());
-    fhNLocMax            ->Fill(en, nMaxima            , GetEventWeight());
+    fhNCellsE            ->Fill(en, calo->GetNCells()  , GetEventWeight()*weightPt);
+    fhTimePt             ->Fill(pt, time               , GetEventWeight()*weightPt);
+    fhNLocMax            ->Fill(en, nMaxima            , GetEventWeight()*weightPt);
 
     if(!fFillOnlySimpleSSHisto)
-      fhMaxCellDiffClusterE->Fill(en, maxCellFraction, GetEventWeight());
+      fhMaxCellDiffClusterE->Fill(en, maxCellFraction, GetEventWeight()*weightPt);
     
     if ( cells )
     {
       for(Int_t icell = 0; icell <  calo->GetNCells(); icell++)
-        fhCellsE->Fill(en, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), GetEventWeight());
+        fhCellsE->Fill(en, cells->GetCellAmplitude(calo->GetCellsAbsId()[icell]), GetEventWeight()*weightPt);
     }
     
     // Matching after cuts
     if ( fFillTMHisto )         
-      FillTrackMatchingResidualHistograms(calo, 1, nSM, matched, tag, mcbin, egen, noverlaps);
+      FillTrackMatchingResidualHistograms(calo, 1, nSM, matched, tag, mcbin, egen, noverlaps, weightPt);
     
     // Fill histograms to undertand pile-up before other cuts applied
     // Remember to relax time cuts in the reader
@@ -5016,12 +5103,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     Float_t phicluster = ph->Phi();
     Float_t etacluster = ph->Eta();
     Float_t ecluster   = ph->E();
+    Float_t weightPt   = ph->GetWeight();
     
-    fhEPhoton   ->Fill(ecluster , GetEventWeight());
-    fhPtPhoton  ->Fill(ptcluster, GetEventWeight());
+    fhEPhoton   ->Fill(ecluster , GetEventWeight()*weightPt);
+    fhPtPhoton  ->Fill(ptcluster, GetEventWeight()*weightPt);
       
-    fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight());
-    fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight());
+    fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
+    fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
       
     // Fill event track multiplicity and sum pT histograms vs track pT
     // Calculated in the reader to be used everywhere, so not redone here.
@@ -5029,18 +5117,18 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     {
       for(Int_t icut = 0; icut < GetReader()->GetTrackMultiplicityNPtCut(); icut++)
       {
-        fhPtPhotonNTracks    [icut]->Fill(ptcluster, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()) ;
-        fhPtPhotonSumPtTracks[icut]->Fill(ptcluster, GetReader()->GetTrackSumPt       (icut), GetEventWeight()) ;
+        fhPtPhotonNTracks    [icut]->Fill(ptcluster, GetReader()->GetTrackMultiplicity(icut), GetEventWeight()*weightPt) ;
+        fhPtPhotonSumPtTracks[icut]->Fill(ptcluster, GetReader()->GetTrackSumPt       (icut), GetEventWeight()*weightPt) ;
       }
     }
     
-    if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight());
-    else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight());
+    if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+    else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
     
     if(IsHighMultiplicityAnalysisOn())
     {
-      fhPtCentralityPhoton ->Fill(ptcluster,cen, GetEventWeight()) ;
-      fhPtEventPlanePhoton ->Fill(ptcluster,ep , GetEventWeight()) ;
+      fhPtCentralityPhoton ->Fill(ptcluster,cen, GetEventWeight()*weightPt) ;
+      fhPtEventPlanePhoton ->Fill(ptcluster,ep , GetEventWeight()*weightPt) ;
     }
   
 //    Comment this part, not needed but in case to know how to do it in the future
@@ -5094,32 +5182,32 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Int_t mcParticleTag = -1;
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[kmcPhoton])
       {
-        fhMCE  [kmcPhoton] ->Fill(ecluster , GetEventWeight());
-        fhMCPt [kmcPhoton] ->Fill(ptcluster, GetEventWeight());
+        fhMCE  [kmcPhoton] ->Fill(ecluster , GetEventWeight()*weightPt);
+        fhMCPt [kmcPhoton] ->Fill(ptcluster, GetEventWeight()*weightPt);
           
-        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight());
-        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight());
+        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
+        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
         
-        fhMC2E     [kmcPhoton] ->Fill(ecluster , eprim , GetEventWeight());
-        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight());
+        fhMC2E     [kmcPhoton] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
           
-        fhMCDeltaE [kmcPhoton] ->Fill(ecluster , eprim-ecluster  , GetEventWeight());
-        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight());
+        fhMCDeltaE [kmcPhoton] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) &&
            fhMCE[kmcConversion])
         {
-          fhMCE  [kmcConversion] ->Fill(ecluster , GetEventWeight());
-          fhMCPt [kmcConversion] ->Fill(ptcluster, GetEventWeight());
+          fhMCE  [kmcConversion] ->Fill(ecluster , GetEventWeight()*weightPt);
+          fhMCPt [kmcConversion] ->Fill(ptcluster, GetEventWeight()*weightPt);
             
-          fhMCPhi[kmcConversion] ->Fill(ecluster, phicluster, GetEventWeight());
-          fhMCEta[kmcConversion] ->Fill(ecluster, etacluster, GetEventWeight());
+          fhMCPhi[kmcConversion] ->Fill(ecluster, phicluster, GetEventWeight()*weightPt);
+          fhMCEta[kmcConversion] ->Fill(ecluster, etacluster, GetEventWeight()*weightPt);
           
-          fhMC2E     [kmcConversion] ->Fill(ecluster , eprim , GetEventWeight());
-          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight());
+          fhMC2E     [kmcConversion] ->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
             
-          fhMCDeltaE [kmcConversion] ->Fill(ecluster , eprim-ecluster  , GetEventWeight());
-          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight());
+          fhMCDeltaE [kmcConversion] ->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
                     
           Int_t pdgD = 0, statusD = 0, daugLabel = -1;
           Bool_t okD = kFALSE;
@@ -5137,10 +5225,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             if(fFillConversionVertexHisto)
             {
               
-              fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight());
+              fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
               
               if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
-                fhMCConversionVertexTRD->Fill(ptcluster,prodR,GetEventWeight());
+                fhMCConversionVertexTRD->Fill(ptcluster,prodR,GetEventWeight()*weightPt);
             }
             
             if ( fFillSSHistograms )
@@ -5161,13 +5249,13 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
                 
                 if ( convR >= 0 )
                 {
-                  fhMCConversionLambda0Rcut[convR]->Fill(ptcluster,m02,GetEventWeight());
-                  fhMCConversionLambda1Rcut[convR]->Fill(ptcluster,m20,GetEventWeight());
+                  fhMCConversionLambda0Rcut[convR]->Fill(ptcluster,m02,GetEventWeight()*weightPt);
+                  fhMCConversionLambda1Rcut[convR]->Fill(ptcluster,m20,GetEventWeight()*weightPt);
                   
                   if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD() )
                   {
-                    fhMCConversionLambda0RcutTRD[convR]->Fill(ptcluster,m02,GetEventWeight());
-                    fhMCConversionLambda1RcutTRD[convR]->Fill(ptcluster,m20,GetEventWeight());
+                    fhMCConversionLambda0RcutTRD[convR]->Fill(ptcluster,m02,GetEventWeight()*weightPt);
+                    fhMCConversionLambda1RcutTRD[convR]->Fill(ptcluster,m20,GetEventWeight()*weightPt);
                   }
                   //                //
                   //                // EMCAL SM regions
@@ -5185,10 +5273,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
                   //                  
                   //                  if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
                   //                  {
-                  //                    fhLam0EMCALRegionMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster,m02, GetEventWeight());
+                  //                    fhLam0EMCALRegionMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster,m02, GetEventWeight()*weightPt);
                   //                    
                   //                    if ( GetFirstSMCoveredByTRD() >= 0 && ph->GetSModNumber() >= GetFirstSMCoveredByTRD()  )
-                  //                      fhLam0EMCALRegionTRDMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster, m02, GetEventWeight());
+                  //                      fhLam0EMCALRegionTRDMCConvRcut[etaRegion][phiRegion][convR]->Fill(ptcluster, m02, GetEventWeight()*weightPt);
                   //                    
                   //                  } // region found
                   //                } // check region
@@ -5214,10 +5302,12 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
         {
           mcParticleTag = kmcPi0;
+
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) )
         {
           mcParticleTag = kmcEta;
+
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
         {
@@ -5270,17 +5360,17 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       
       if(mcParticleTag >= 0 && fhMCE[mcParticleTag])
       {
-        fhMCE      [mcParticleTag]->Fill(ecluster , GetEventWeight());
-        fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight());
+        fhMCE      [mcParticleTag]->Fill(ecluster , GetEventWeight()*weightPt);
+        fhMCPt     [mcParticleTag]->Fill(ptcluster, GetEventWeight()*weightPt);
           
-        fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight());
-        fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight());
+        fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
+        fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
         
-        fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight());
-        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight());
+        fhMC2E     [mcParticleTag]->Fill(ecluster , eprim , GetEventWeight()*weightPt);
+        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
           
-        fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight());
-        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight());
+        fhMCDeltaE [mcParticleTag]->Fill(ecluster , eprim-ecluster  , GetEventWeight()*weightPt);
+        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
       }
     }// Histograms with MC
   }// aod loop

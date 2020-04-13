@@ -136,8 +136,8 @@ AliAnalysisTaskSE(),
   fFillNtuple(kFALSE),
   fReadMC(kFALSE),
   fMCPid(kFALSE),
-  fRealPid(kFALSE),
-  fResPid(kTRUE),
+  fRealPid(kTRUE),
+  fResPid(kFALSE),
   fUseKF(kFALSE),
   fAnalysis(kFALSE),
   fVHF(0),
@@ -597,7 +597,7 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   fhRap3ProngProd	= new TH2F("hRap3ProngProd","hRap3ProngProd;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
   fhRap3ProngAn	    = new TH2F("hRap3ProngAn","hRap3ProngAn;3-Prong p_{T} GeV/c;3-Prong y",75,0.,15.,50,-2.0,2.0);
     
-  fhSelectBit			= new TH1F("hSelectBit","hSelectBit",5,-0.5,5.5);
+  fhSelectBit			= new TH1F("hSelectBit","hSelectBit",6,-0.5,5.5);
   fhSelectBit->GetXaxis()->SetBinLabel(2,"All");
   fhSelectBit->GetXaxis()->SetBinLabel(3,"SelectionMap");
   fhSelectBit->GetXaxis()->SetBinLabel(4,"!LcCut");
@@ -692,7 +692,7 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
 
   //  const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
 
-  fNentries=new TH1F("fNentries", "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of Lc selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 12,-0.5,14.5);
+  fNentries=new TH1F("fNentries", "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of Lc selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 17,-0.5,16.5);
 
   //ROS: qui il bin assignment e' modellato su D0 ma sicuramente iv arie
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -1476,12 +1476,6 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       fNentries->Fill(15); //monitor how often this fails 
       continue;
     }
-     Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()){
-      d->SetOwnPrimaryVtx(vtx1);
-      unsetvtx=kTRUE;
-    }
-
 
     Int_t isSelectedTracks = fRDCutsProduction->IsSelected(d,AliRDHFCuts::kTracks,aod);
     if(!isSelectedTracks) continue;
@@ -1513,7 +1507,6 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
     fHistOS->Fill(d->InvMassDplus());
     */
 
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
   fCounter->StoreCandidates(aod,nSelectedloose[0],kTRUE);
   fCounter->StoreCandidates(aod,nSelectedtight[0],kFALSE);
@@ -1648,20 +1641,20 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
   Int_t numberOfLambdac=0;
   if(TMath::Abs(part->GetPdgCode())!=4122) return kFALSE;
   // Int_t daughTmp[2];
-  // daughTmp[0]=part->GetDaughter(0);
-  // daughTmp[1]=part->GetDaughter(1);
+  // daughTmp[0]=part->GetDaughterLabel(0);
+  // daughTmp[1]=part->GetDaughterLabel(1);
   Int_t nDaugh = (Int_t)part->GetNDaughters();
   if(nDaugh<2) return kFALSE;
   if(nDaugh>3) return kFALSE;
-  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(0));
+  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
   if(!pdaugh1) {return kFALSE;}
   Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
-  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(1));
+  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
   if(!pdaugh2) {return kFALSE;}
   Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
 
   if(nDaugh==3){
-    Int_t thirdDaugh=part->GetDaughter(1)-1;
+    Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
     AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
     Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
     if((number1==321 && number2==211 && number3==2212) ||
@@ -1685,8 +1678,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if((number1==2212 && number2==313)){
       nfiglieK=pdaugh2->GetNDaughters();
       if(nfiglieK!=2) return kFALSE;
-      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughK1) return kFALSE;
       if(!pdaughK2) return kFALSE;
       if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1695,8 +1688,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if((number1==313 && number2==2212)){
       nfiglieK=pdaugh1->GetNDaughters();
       if(nfiglieK!=2) return kFALSE;
-      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughK1) return kFALSE;
       if(!pdaughK2) return kFALSE;
       if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1707,8 +1700,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==321 && number2==2224){
       nfiglieDelta=pdaugh2->GetNDaughters();
       if(nfiglieDelta!=2) return kFALSE;
-      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughD1) return kFALSE;
       if(!pdaughD2) return kFALSE;
       if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1716,8 +1709,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==2224 && number2==321){
       nfiglieDelta=pdaugh1->GetNDaughters();
       if(nfiglieDelta!=2) return kFALSE;
-      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughD1) return kFALSE;
       if(!pdaughD2) return kFALSE;
       if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1729,8 +1722,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==3124 && number2==211){
       nfiglieLa=pdaugh1->GetNDaughters();
       if(nfiglieLa!=2) return kFALSE;
-      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughL1) return kFALSE;
       if(!pdaughL2) return kFALSE;
       if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
@@ -1738,8 +1731,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==211 && number2==3124){
       nfiglieLa=pdaugh2->GetNDaughters();
       if(nfiglieLa!=2) return kFALSE;
-      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughL1) return kFALSE;
       if(!pdaughL2) return kFALSE;
       if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
@@ -1908,8 +1901,8 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       if(labDp>=0){
 	IsLc = 1;
 	AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
-	AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(1));
+	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughterLabel(0));
+	AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughterLabel(1));
 	deltaPx=partDp->Px()-part->Px();
 	deltaPy=partDp->Py()-part->Py();
 	deltaPz=partDp->Pz()-part->Pz();
@@ -2030,15 +2023,15 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       fhEta3ProngAn->Fill(part->Pt(),part->Eta());
       fhRap3ProngAn->Fill(part->Pt(),part->Y(4122));
       if(invMasspiKp>0. && invMasspKpi>0.){
-        fhMassLcPt->Fill(part->Pt(),invMasspKpi,0.5);
-        fhMassLcPt->Fill(part->Pt(),invMasspiKp,0.5);
+        fhMassLcPt->Fill(part->Pt(),invMasspKpi);
+        fhMassLcPt->Fill(part->Pt(),invMasspiKp);
 		if(part->Charge()==1){
-		  fhMassLcplusPt->Fill(part->Pt(),invMasspKpi,0.5);
-          fhMassLcplusPt->Fill(part->Pt(),invMasspiKp,0.5);
+		  fhMassLcplusPt->Fill(part->Pt(),invMasspKpi);
+          fhMassLcplusPt->Fill(part->Pt(),invMasspiKp);
 		}
 		else if(part->Charge()==-1){
-		  fhMassLcminusPt->Fill(part->Pt(),invMasspKpi,0.5);
-          fhMassLcminusPt->Fill(part->Pt(),invMasspiKp,0.5);
+		  fhMassLcminusPt->Fill(part->Pt(),invMasspKpi);
+          fhMassLcminusPt->Fill(part->Pt(),invMasspiKp);
 		}
       }
       else if(invMasspiKp>0.){
@@ -2089,36 +2082,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     
     if(part->Pt()>3.&& part->Pt()<=6.){
       if(invMasspiKp>0. && invMasspKpi>0.){
-	if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp,0.5);
-	if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi,0.5);
+	if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp);
+	if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi);
       }else{
 	if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp);
 	if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi);
       }
       if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	if(invMasspiKpLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspiKpLpi,0.5);
-	if(invMasspKpiLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspKpiLpi,0.5);
+	if(invMasspiKpLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspiKpLpi);
+	if(invMasspKpiLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspKpiLpi);
       }else{
 	if(invMasspiKpLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspiKpLpi);
 	if(invMasspKpiLpi>0.) fhMassPtGreater3Lpi->Fill(invMasspKpiLpi);
       }
       if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	if(invMasspiKpKp>0.) fhMassPtGreater3Kp->Fill(invMasspiKpKp,0.5);
-	if(invMasspKpiKp>0.) fhMassPtGreater3Kp->Fill(invMasspKpiKp,0.5);
+	if(invMasspiKpKp>0.) fhMassPtGreater3Kp->Fill(invMasspiKpKp);
+	if(invMasspKpiKp>0.) fhMassPtGreater3Kp->Fill(invMasspKpiKp);
       }else{
 	if(invMasspiKpKp>0.) fhMassPtGreater3Kp->Fill(invMasspiKpKp);
 	if(invMasspKpiKp>0.) fhMassPtGreater3Kp->Fill(invMasspKpiKp);
       }
       if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-       if(invMasspiKpDk>0.) fhMassPtGreater3Dk->Fill(invMasspiKpDk,0.5);
-       if(invMasspKpiDk>0.) fhMassPtGreater3Dk->Fill(invMasspKpiDk,0.5);
+       if(invMasspiKpDk>0.) fhMassPtGreater3Dk->Fill(invMasspiKpDk);
+       if(invMasspKpiDk>0.) fhMassPtGreater3Dk->Fill(invMasspKpiDk);
       }else{
        if(invMasspiKpDk>0.) fhMassPtGreater3Dk->Fill(invMasspiKpDk);
        if(invMasspKpiDk>0.) fhMassPtGreater3Dk->Fill(invMasspKpiDk);
       }
       if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-        if(invMasspiKp3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspiKp3Pr,0.5);
-        if(invMasspKpi3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspKpi3Pr,0.5);
+        if(invMasspiKp3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspiKp3Pr);
+        if(invMasspKpi3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspKpi3Pr);
       }else{
         if(invMasspiKp3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspiKp3Pr);
         if(invMasspKpi3Pr>0.) fhMassPtGreater33Pr->Fill(invMasspKpi3Pr);
@@ -2126,37 +2119,37 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 
       if(passTightCuts>0){
 	if(invMasspiKp>0. && invMasspKpi>0.){
-	  if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp,0.5);
-	  if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi,0.5);
+	  if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp);
+	  if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi);
 	}else{
 	  if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp);
 	  if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi);
 	}
 	if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	  if(invMasspiKpLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspiKpLpi,0.5);
-	  if(invMasspKpiLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspKpiLpi,0.5);
+	  if(invMasspiKpLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspiKpLpi);
+	  if(invMasspKpiLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspKpiLpi);
 	}else{
 	  if(invMasspiKpLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspiKpLpi);
 	  if(invMasspKpiLpi>0.) fhMassPtGreater3LpiTC->Fill(invMasspKpiLpi);
 	}
 	if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	  if(invMasspiKpKp>0.) fhMassPtGreater3KpTC->Fill(invMasspiKpKp,0.5);
-	  if(invMasspKpiKp>0.) fhMassPtGreater3KpTC->Fill(invMasspKpiKp,0.5);
+	  if(invMasspiKpKp>0.) fhMassPtGreater3KpTC->Fill(invMasspiKpKp);
+	  if(invMasspKpiKp>0.) fhMassPtGreater3KpTC->Fill(invMasspKpiKp);
 	}else{
 	  if(invMasspiKpKp>0.) fhMassPtGreater3KpTC->Fill(invMasspiKpKp);
 	  if(invMasspKpiKp>0.) fhMassPtGreater3KpTC->Fill(invMasspKpiKp);
 	}
        
        if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-        if(invMasspiKpDk>0.) fhMassPtGreater3DkTC->Fill(invMasspiKpDk,0.5);
-        if(invMasspKpiDk>0.) fhMassPtGreater3DkTC->Fill(invMasspKpiDk,0.5);
+        if(invMasspiKpDk>0.) fhMassPtGreater3DkTC->Fill(invMasspiKpDk);
+        if(invMasspKpiDk>0.) fhMassPtGreater3DkTC->Fill(invMasspKpiDk);
        }else{
         if(invMasspiKpDk>0.) fhMassPtGreater3DkTC->Fill(invMasspiKpDk);
         if(invMasspKpiDk>0.) fhMassPtGreater3DkTC->Fill(invMasspKpiDk);
        }
       if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-       if(invMasspiKp3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspiKp3Pr,0.5);
-       if(invMasspKpi3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspKpi3Pr,0.5);
+       if(invMasspiKp3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspiKp3Pr);
+       if(invMasspKpi3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspKpi3Pr);
       }else{
        if(invMasspiKp3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspiKp3Pr);
        if(invMasspKpi3Pr>0.) fhMassPtGreater33PrTC->Fill(invMasspKpi3Pr);
@@ -2166,36 +2159,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     }
     if(part->Pt()>2.&& part->Pt()<=6.){
       if(invMasspiKp>0. && invMasspKpi>0.){
-	if(invMasspiKp>0.) fhMassPtGreater2->Fill(invMasspiKp,0.5);
-	if(invMasspKpi>0.) fhMassPtGreater2->Fill(invMasspKpi,0.5);
+	if(invMasspiKp>0.) fhMassPtGreater2->Fill(invMasspiKp);
+	if(invMasspKpi>0.) fhMassPtGreater2->Fill(invMasspKpi);
       }else{
 	if(invMasspiKp>0.) fhMassPtGreater2->Fill(invMasspiKp);
 	if(invMasspKpi>0.) fhMassPtGreater2->Fill(invMasspKpi);
       }
       if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	if(invMasspiKpLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspiKpLpi,0.5);
-	if(invMasspKpiLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspKpiLpi,0.5);
+	if(invMasspiKpLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspiKpLpi);
+	if(invMasspKpiLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspKpiLpi);
       }else{
 	if(invMasspiKpLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspiKpLpi);
 	if(invMasspKpiLpi>0.) fhMassPtGreater2Lpi->Fill(invMasspKpiLpi);
       }
       if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	if(invMasspiKpKp>0.) fhMassPtGreater2Kp->Fill(invMasspiKpKp,0.5);
-	if(invMasspKpiKp>0.) fhMassPtGreater2Kp->Fill(invMasspKpiKp,0.5);
+	if(invMasspiKpKp>0.) fhMassPtGreater2Kp->Fill(invMasspiKpKp);
+	if(invMasspKpiKp>0.) fhMassPtGreater2Kp->Fill(invMasspKpiKp);
       }else{
 	if(invMasspiKpKp>0.) fhMassPtGreater2Kp->Fill(invMasspiKpKp);
 	if(invMasspKpiKp>0.) fhMassPtGreater2Kp->Fill(invMasspKpiKp);
       }
       if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-       if(invMasspiKpDk>0.) fhMassPtGreater2Dk->Fill(invMasspiKpDk,0.5);
-       if(invMasspKpiDk>0.) fhMassPtGreater2Dk->Fill(invMasspKpiDk,0.5);
+       if(invMasspiKpDk>0.) fhMassPtGreater2Dk->Fill(invMasspiKpDk);
+       if(invMasspKpiDk>0.) fhMassPtGreater2Dk->Fill(invMasspKpiDk);
       }else{
        if(invMasspiKpDk>0.) fhMassPtGreater2Dk->Fill(invMasspiKpDk);
        if(invMasspKpiDk>0.) fhMassPtGreater2Dk->Fill(invMasspKpiDk);
       }
      if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-      if(invMasspiKp3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspiKp3Pr,0.5);
-      if(invMasspKpi3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspKpi3Pr,0.5);
+      if(invMasspiKp3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspiKp3Pr);
+      if(invMasspKpi3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspKpi3Pr);
      }else{
       if(invMasspiKp3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspiKp3Pr);
       if(invMasspKpi3Pr>0.) fhMassPtGreater23Pr->Fill(invMasspKpi3Pr);
@@ -2203,36 +2196,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 
       if(passTightCuts>0){
 	if(invMasspiKp>0. && invMasspKpi>0.){
-	  if(invMasspiKp>0.) fhMassPtGreater2TC->Fill(invMasspiKp,0.5);
-	  if(invMasspKpi>0.) fhMassPtGreater2TC->Fill(invMasspKpi,0.5);
+	  if(invMasspiKp>0.) fhMassPtGreater2TC->Fill(invMasspiKp);
+	  if(invMasspKpi>0.) fhMassPtGreater2TC->Fill(invMasspKpi);
 	}else{
 	  if(invMasspiKp>0.) fhMassPtGreater2TC->Fill(invMasspiKp);
 	  if(invMasspKpi>0.) fhMassPtGreater2TC->Fill(invMasspKpi);
 	}
 	if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	  if(invMasspiKpLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspiKpLpi,0.5);
-	  if(invMasspKpiLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspKpiLpi,0.5);
+	  if(invMasspiKpLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspiKpLpi);
+	  if(invMasspKpiLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspKpiLpi);
 	}else{
 	  if(invMasspiKpLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspiKpLpi);
 	  if(invMasspKpiLpi>0.) fhMassPtGreater2LpiTC->Fill(invMasspKpiLpi);
 	}
 	if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	  if(invMasspiKpKp>0.) fhMassPtGreater2KpTC->Fill(invMasspiKpKp,0.5);
-	  if(invMasspKpiKp>0.) fhMassPtGreater2KpTC->Fill(invMasspKpiKp,0.5);
+	  if(invMasspiKpKp>0.) fhMassPtGreater2KpTC->Fill(invMasspiKpKp);
+	  if(invMasspKpiKp>0.) fhMassPtGreater2KpTC->Fill(invMasspKpiKp);
 	}else{
 	  if(invMasspiKpKp>0.) fhMassPtGreater2KpTC->Fill(invMasspiKpKp);
 	  if(invMasspKpiKp>0.) fhMassPtGreater2KpTC->Fill(invMasspKpiKp);
 	}
        if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-        if(invMasspiKpDk>0.) fhMassPtGreater2DkTC->Fill(invMasspiKpDk,0.5);
-        if(invMasspKpiDk>0.) fhMassPtGreater2DkTC->Fill(invMasspKpiDk,0.5);
+        if(invMasspiKpDk>0.) fhMassPtGreater2DkTC->Fill(invMasspiKpDk);
+        if(invMasspKpiDk>0.) fhMassPtGreater2DkTC->Fill(invMasspKpiDk);
        }else{
         if(invMasspiKpDk>0.) fhMassPtGreater2DkTC->Fill(invMasspiKpDk);
         if(invMasspKpiDk>0.) fhMassPtGreater2DkTC->Fill(invMasspKpiDk);
        }
        if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-        if(invMasspiKp3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspiKp3Pr,0.5);
-        if(invMasspKpi3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspKpi3Pr,0.5);
+        if(invMasspiKp3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspiKp3Pr);
+        if(invMasspKpi3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspKpi3Pr);
       }else{
        if(invMasspiKp3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspiKp3Pr);
        if(invMasspKpi3Pr>0.) fhMassPtGreater23PrTC->Fill(invMasspKpi3Pr);
@@ -2244,36 +2237,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
     if(iPtBin>=0){
       index=GetHistoIndex(iPtBin);
       if(invMasspiKp>0. && invMasspKpi>0.){
-	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
-	if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi,0.5);
+	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
+	if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
       }else{
 	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 	if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
       }
       if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi,0.5);
-	if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi,0.5);
+	if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
+	if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
       }else{
 	if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
 	if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
       }
       if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp,0.5);
-	if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp,0.5);
+	if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
+	if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
       }else{
 	if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
 	if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
       }
       if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-       if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk,0.5);
-       if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk,0.5);
+       if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
+       if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
       }else{
        if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
        if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
       }
       if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-       if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr,0.5);
-       if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr,0.5);
+       if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
+       if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr);
       }else{
        if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
        if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr);
@@ -2281,36 +2274,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 
       if(passTightCuts>0){
 	if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-	  if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
-	  if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
+	  if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
+	  if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
 	}else{
 	  if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
 	  if(invMasspKpi>0. && passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
 	}
 	if(invMasspiKpLpi>0. && invMasspKpiLpi>0. && passTightCuts==3){
-	  if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi,0.5);
-	  if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi,0.5);
+	  if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
+	  if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	}else{
 	  if(invMasspiKpLpi>0. && passTightCuts==2) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
 	  if(invMasspKpiLpi>0.&& passTightCuts==1) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	}
 	if(invMasspiKpKp>0. && invMasspKpiKp>0. && passTightCuts==3){
-	  if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp,0.5);
-	  if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp,0.5);
+	  if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp);
+	  if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	}else{
 	  if(invMasspiKpKp>0. && passTightCuts==2) fMassHistKpTC[index]->Fill(invMasspiKpKp);
 	  if(invMasspKpiKp>0.&& passTightCuts==1) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	}
        if(invMasspiKpDk>0. && invMasspKpiDk>0. && passTightCuts==3){
-        if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk,0.5);
-        if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk,0.5);
+        if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk);
+        if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk);
        }else{
         if(invMasspiKpDk>0. && passTightCuts==2) fMassHistDkTC[index]->Fill(invMasspiKpDk);
         if(invMasspKpiDk>0.&& passTightCuts==1) fMassHistDkTC[index]->Fill(invMasspKpiDk);
        }
        if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0. && passTightCuts==3){
-        if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr,0.5);
-        if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr,0.5);
+        if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
+        if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);
        }else{
         if(invMasspiKp3Pr>0. && passTightCuts==2) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
         if(invMasspKpi3Pr>0.&& passTightCuts==1) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);
@@ -2322,36 +2315,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 	if(labDp>=0) {
 	  index=GetSignalHistoIndex(iPtBin);
 	  if(invMasspiKp>0. && invMasspKpi>0.){
-	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
-	    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi,0.5);
+	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
+	    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	  }else{
 	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 	    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	  }
 	  if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi,0.5);
-	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi,0.5);
+	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
+	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
 	  }else{
 	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
 	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
 	  }
 	  if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp,0.5);
-	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp,0.5);
+	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
+	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
 	  }else{
 	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
 	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
 	  }
 	  if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk,0.5);
-	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk,0.5);
+	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
+	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
 	  }else{
 	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
 	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
 	  }
 	  if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr,0.5);
-	    if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr,0.5);
+	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
+	    if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr);
 	  }else{
 	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
 	    if(invMasspKpi3Pr>0.) fMassHistDk[index]->Fill(invMasspKpi3Pr);
@@ -2359,36 +2352,36 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 
 	  if(passTightCuts>0){
 	    if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-	      if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
-	      if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
+	      if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
+	      if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
 	    }else{
 	      if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
 	      if(invMasspKpi>0.&& passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
 	    }
 	    if(invMasspiKpLpi>0. && invMasspKpiLpi>0. && passTightCuts==3){
-	      if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi,0.5);
-	      if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi,0.5);
+	      if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
+	      if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	    }else{
 	      if(invMasspiKpLpi>0. && passTightCuts==2) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
 	      if(invMasspKpiLpi>0.&& passTightCuts==1) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	    } 
 	    if(invMasspiKpKp>0. && invMasspKpiKp>0. && passTightCuts==3){
-	      if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp,0.5);
-	      if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp,0.5);
+	      if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp);
+	      if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	    }else{
 	      if(invMasspiKpKp>0. && passTightCuts==2) fMassHistKpTC[index]->Fill(invMasspiKpKp);
 	      if(invMasspKpiKp>0.&& passTightCuts==1) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	    }
 	    if(invMasspiKpDk>0. && invMasspKpiDk>0. && passTightCuts==3){
-	      if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk,0.5);
-	      if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk,0.5);
+	      if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk);
+	      if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk);
 	    }else{
 	      if(invMasspiKpDk>0. && passTightCuts==2) fMassHistDkTC[index]->Fill(invMasspiKpDk);
 	      if(invMasspKpiDk>0.&& passTightCuts==1) fMassHistDkTC[index]->Fill(invMasspKpiDk);
 	    }
 	    if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0. && passTightCuts==3){
-	      if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr,0.5);
-	      if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr,0.5);
+	      if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
+	      if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);
 	    }else{
 	      if(invMasspiKp3Pr>0. && passTightCuts==2) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
 	      if(invMasspKpi3Pr>0.&& passTightCuts==1) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);
@@ -2398,16 +2391,16 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
          if(IsLc && IsLcfromLb){
           index=GetLbHistoIndex(iPtBin);
           if(invMasspiKp>0. && invMasspKpi>0.){
-	    	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
-	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi,0.5);
+	    	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
+	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	  }else{
 	        if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	  } 
           if(passTightCuts>0){ 	
                 if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-        		if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
-       			if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
+        		if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
+       			if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
 	    	}else{
 	       	       	if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp); 
                         if(invMasspKpi>0.&& passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
@@ -2417,16 +2410,16 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
         if(IsLc && !IsLcfromLb && IsLcfromc)  {
            index=GetcOnlyHistoIndex(iPtBin);
            if(invMasspiKp>0. && invMasspKpi>0.){
-	         	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
-	   	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi,0.5);
+	         	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
+	   	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	   }else{
 	         	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 			    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	   } 
            if(passTightCuts>0){
 	       if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-	       if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
-	       if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
+	       if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
+	       if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
 	    }else{
 	       	if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
 	    	if(invMasspKpi>0.&& passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
@@ -2438,16 +2431,16 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
          if(IsLc && !IsLcFromq)  {
            index=GetNoQuarkHistoIndex(iPtBin);
            if(invMasspiKp>0. && invMasspKpi>0.){
-	         	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
-	   	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi,0.5);
+	         	if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
+	   	        if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	   }else{
 	         	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 			    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	   } 
            if(passTightCuts>0){
 	       if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-	       if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
-	       if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
+	       if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp);
+	       if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi);
 	    }else{
 	       	if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
 	    	if(invMasspKpi>0.&& passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
@@ -2459,71 +2452,71 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
 	}else{
 	  index=GetBackgroundHistoIndex(iPtBin);
 	  if(invMasspiKp>0. && invMasspKpi>0.){
-	    fMassHist[index]->Fill(invMasspiKp,0.5);
-	    fMassHist[index]->Fill(invMasspKpi,0.5);
+	    fMassHist[index]->Fill(invMasspiKp);
+	    fMassHist[index]->Fill(invMasspKpi);
 	  }else{
 	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp);
 	    if(invMasspKpi>0.) fMassHist[index]->Fill(invMasspKpi);
 	  }
 	  if(invMasspiKpLpi>0. && invMasspKpiLpi>0.){
-	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi,0.5);
-	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi,0.5);
+	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
+	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
 	  }else{
 	    if(invMasspiKpLpi>0.) fMassHistLpi[index]->Fill(invMasspiKpLpi);
 	    if(invMasspKpiLpi>0.) fMassHistLpi[index]->Fill(invMasspKpiLpi);
 	  }
 	  if(invMasspiKpKp>0. && invMasspKpiKp>0.){
-	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp,0.5);
-	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp,0.5);
+	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
+	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
 	  }else{
 	    if(invMasspiKpKp>0.) fMassHistKp[index]->Fill(invMasspiKpKp);
 	    if(invMasspKpiKp>0.) fMassHistKp[index]->Fill(invMasspKpiKp);
 	  }
 	  if(invMasspiKpDk>0. && invMasspKpiDk>0.){
-	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk,0.5);
-	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk,0.5);
+	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
+	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
 	  }else{
 	    if(invMasspiKpDk>0.) fMassHistDk[index]->Fill(invMasspiKpDk);
 	    if(invMasspKpiDk>0.) fMassHistDk[index]->Fill(invMasspKpiDk);
 	  }
 	  if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0.){
-	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr,0.5);
-	    if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr,0.5);
+	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
+	    if(invMasspKpi3Pr>0.) fMassHist3Pr[index]->Fill(invMasspKpi3Pr);
 	  }else{
 	    if(invMasspiKp3Pr>0.) fMassHist3Pr[index]->Fill(invMasspiKp3Pr);
 	    if(invMasspKpi3Pr>0.) fMassHistDk[index]->Fill(invMasspKpi3Pr);
 	  }
 	  if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
-	    fMassHistTC[index]->Fill(invMasspiKp,0.5);
-	    fMassHistTC[index]->Fill(invMasspKpi,0.5);
+	    fMassHistTC[index]->Fill(invMasspiKp);
+	    fMassHistTC[index]->Fill(invMasspKpi);
 	  }else{
 	    if(invMasspiKp>0. && passTightCuts==2) fMassHistTC[index]->Fill(invMasspiKp);
 	    if(invMasspKpi>0. && passTightCuts==1) fMassHistTC[index]->Fill(invMasspKpi);
 	  }
 	  if(invMasspiKpLpi>0. && invMasspKpiLpi>0. && passTightCuts==3){
-	    if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi,0.5);
-	    if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi,0.5);
+	    if(invMasspiKpLpi>0.) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
+	    if(invMasspKpiLpi>0.) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	  }else{
 	    if(invMasspiKpLpi>0. && passTightCuts==2) fMassHistLpiTC[index]->Fill(invMasspiKpLpi);
 	    if(invMasspKpiLpi>0.&& passTightCuts==1) fMassHistLpiTC[index]->Fill(invMasspKpiLpi);
 	  } 
 	  if(invMasspiKpKp>0. && invMasspKpiKp>0. && passTightCuts==3){
-	    if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp,0.5);
-	    if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp,0.5);
+	    if(invMasspiKpKp>0.) fMassHistKpTC[index]->Fill(invMasspiKpKp);
+	    if(invMasspKpiKp>0.) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	  }else{
 	    if(invMasspiKpKp>0. && passTightCuts==2) fMassHistKpTC[index]->Fill(invMasspiKpKp);
 	    if(invMasspKpiKp>0.&& passTightCuts==1) fMassHistKpTC[index]->Fill(invMasspKpiKp);
 	  }
 	  if(invMasspiKpDk>0. && invMasspKpiDk>0. && passTightCuts==3){
-	    if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk,0.5);
-	    if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk,0.5);
+	    if(invMasspiKpDk>0.) fMassHistDkTC[index]->Fill(invMasspiKpDk);
+	    if(invMasspKpiDk>0.) fMassHistDkTC[index]->Fill(invMasspKpiDk);
 	  }else{
 	    if(invMasspiKpDk>0. && passTightCuts==2) fMassHistDkTC[index]->Fill(invMasspiKpDk);
 	    if(invMasspKpiDk>0.&& passTightCuts==1) fMassHistDkTC[index]->Fill(invMasspKpiDk);
 	   }
 	   if(invMasspiKp3Pr>0. && invMasspKpi3Pr>0. && passTightCuts==3){
-	    if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr,0.5);
-	    if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr,0.5);
+	    if(invMasspiKp3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
+	    if(invMasspKpi3Pr>0.) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);
 	   }else{
 	    if(invMasspiKp3Pr>0. && passTightCuts==2) fMassHist3PrTC[index]->Fill(invMasspiKp3Pr);
 	    if(invMasspKpi3Pr>0.&& passTightCuts==1) fMassHist3PrTC[index]->Fill(invMasspKpi3Pr);

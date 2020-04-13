@@ -38,6 +38,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                    )
 
 # Sources in alphabetical order
@@ -46,12 +47,16 @@ set(SRCS
     AliAnaConvCorrPhoton.cxx
     AliAnaConvCorrPion.cxx
     AliAnaConvIsolation.cxx
+    AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
+    AliAnalysisTaskConversionTree.cxx
     AliAnalysisTaskConvJet.cxx
+    AliAnalysisTaskJetOutlierRemoval.cxx
     AliAnalysisTaskClusterQA.cxx
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
+    AliAnalysisTaskGammaCaloMix.cxx
     AliAnalysisTaskGammaCaloIso.cxx
     AliAnalysisTaskGammaCaloMerged.cxx
     AliAnalysisTaskGammaConvCalo.cxx
@@ -69,36 +74,25 @@ set(SRCS
     AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
+    AliAnalysisTaskTrackQA.cxx
+    AliAnalysisTRDEfficiency.cxx
+    AliIdentifiedPrimaryCuts.cxx
+    AliIdentifiedPrimarySelector.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskOmegaMCStudies.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
-    AliAODConversionMother.cxx
-    AliAODConversionParticle.cxx
-    AliAODConversionPhoton.cxx
-    AliCaloPhotonCuts.cxx
-    AliCaloTrackMatcher.cxx
-    AliConversionAODBGHandlerRP.cxx
-    AliConversionCuts.cxx
-    AliConversionMesonCuts.cxx
-    AliConversionPhotonBase.cxx
-    AliConversionPhotonCuts.cxx
-    AliConversionSelection.cxx
-    AliConversionTrackCuts.cxx
-    AliConvEventCuts.cxx
-    AliDalitzElectronCuts.cxx
-    AliDalitzElectronSelector.cxx
+    AliAnalysisTaskQA.cxx
     AliGammaConversionAODBGHandler.cxx
-    AliKFConversionMother.cxx
-    AliKFConversionPhoton.cxx
-    AliPhotonIsolation.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
-    AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
     AliCutHandlerPCM.cxx
+    AliConversionAodSkimTask.cxx
+    AliAnalysisTaskSigmaPlToProtonPiZero.cxx
    )
 
 # Headers from sources
@@ -109,13 +103,13 @@ set(HDRS ${HDRS})
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
+set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree TMVA)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
-set(ALIPHYSICS_DECPENDENCIES PWGCocktail)
+set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DECPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -126,7 +120,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIPHYSICS_DEPENDENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

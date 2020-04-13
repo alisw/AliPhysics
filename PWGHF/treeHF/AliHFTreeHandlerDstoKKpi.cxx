@@ -30,12 +30,11 @@ ClassImp(AliHFTreeHandlerDstoKKpi);
 //________________________________________________________________
 AliHFTreeHandlerDstoKKpi::AliHFTreeHandlerDstoKKpi():
   AliHFTreeHandler(),
-  fImpParProng(),
-  fSigmaVertex(),
-  fMassKK(),
-  fCosPiDs(),
-  fCosPiKPhi(),
-  fNormd0MeasMinusExp(),
+  fSigmaVertex(-9999.),
+  fMassKK(-9999.),
+  fCosPiDs(-9999.),
+  fCosPiKPhi(-9999.),
+  fNormd0MeasMinusExp(-9999.),
   fMassKKOpt(kMassKK)
 {
   //
@@ -43,17 +42,18 @@ AliHFTreeHandlerDstoKKpi::AliHFTreeHandlerDstoKKpi():
   //
 
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
 AliHFTreeHandlerDstoKKpi::AliHFTreeHandlerDstoKKpi(int PIDopt):
   AliHFTreeHandler(PIDopt),
-  fImpParProng(),
-  fSigmaVertex(),
-  fMassKK(),
-  fCosPiDs(),
-  fCosPiKPhi(),
-  fNormd0MeasMinusExp(),
+  fSigmaVertex(-9999.),
+  fMassKK(-9999.),
+  fCosPiDs(-9999.),
+  fCosPiKPhi(-9999.),
+  fNormd0MeasMinusExp(-9999.),
   fMassKKOpt(kMassKK)
 {
   //
@@ -61,6 +61,8 @@ AliHFTreeHandlerDstoKKpi::AliHFTreeHandlerDstoKKpi(int PIDopt):
   //
 
   fNProngs=3; // --> cannot be changed
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+    fImpParProng[iProng] = -9999.;
 }
 
 //________________________________________________________________
@@ -78,7 +80,7 @@ TTree* AliHFTreeHandlerDstoKKpi::BuildTree(TString name, TString title)
 
   if(fTreeVar) {
     delete fTreeVar;
-    fTreeVar=0x0;
+    fTreeVar=nullptr;
   }
   fTreeVar = new TTree(name.Data(),title.Data());
 
@@ -100,6 +102,7 @@ TTree* AliHFTreeHandlerDstoKKpi::BuildTree(TString name, TString title)
     
   //set single-track variables
   AddSingleTrackBranches();
+  if (fFillJets) AddJetBranches();
   
   //sed pid variables
   if(fPidOpt!=kNoPID) AddPidBranches(true,true,false,true,true);
@@ -108,49 +111,53 @@ TTree* AliHFTreeHandlerDstoKKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDstoKKpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandTypeMap&kSignal || fCandTypeMap&kRefl)) return true;
+    if(!(fCandType&kSignal || fCandType&kRefl)) return true;
   }
-  fNCandidates++;
-
+  fPtGen=ptgen;
+  
   //topological variables
   //common
-  fCandType.push_back(fCandTypeMap);
-  fPt.push_back(cand->Pt());
-  fY.push_back(cand->Y(431));
-  fEta.push_back(cand->Eta());
-  fPhi.push_back(cand->Phi());
-  fDecayLength.push_back(cand->DecayLength());
-  fDecayLengthXY.push_back(cand->DecayLengthXY());
-  fNormDecayLengthXY.push_back(cand->NormalizedDecayLengthXY());
-  fCosP.push_back(cand->CosPointingAngle());
-  fCosPXY.push_back(cand->CosPointingAngleXY());
-  fImpParXY.push_back(cand->ImpParXY());
-  fNormd0MeasMinusExp.push_back(ComputeMaxd0MeasMinusExp(cand,bfield));
+  fPt=cand->Pt();
+  fY=cand->Y(431);
+  fEta=cand->Eta();
+  fPhi=cand->Phi();
+  fDecayLength=cand->DecayLength();
+  fDecayLengthXY=cand->DecayLengthXY();
+  fNormDecayLengthXY=cand->NormalizedDecayLengthXY();
+  fCosP=cand->CosPointingAngle();
+  fCosPXY=cand->CosPointingAngleXY();
+  fImpParXY=cand->ImpParXY();
+  fDCA=cand->GetDCA();
+  fNormd0MeasMinusExp=ComputeMaxd0MeasMinusExp(cand,bfield);
 
   //Ds+ -> KKpi variables
-  fSigmaVertex.push_back(((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert());
+  fSigmaVertex=((AliAODRecoDecayHF3Prong*)cand)->GetSigmaVert();
   float massPhi = 0;
   float cospikphi=-2;
   if(fMassKKOpt==kDeltaMassKKPhi) massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
   if(masshypo==0){ //phiKKpi
-    fInvMass.push_back(((AliAODRecoDecayHF3Prong*)cand)->InvMassDsKKpi());
-    fMassKK.push_back(TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(0,1,321,321)-massPhi));
-    fCosPiDs.push_back(((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFrameKKpi());
+    fInvMass=((AliAODRecoDecayHF3Prong*)cand)->InvMassDsKKpi();
+    fMassKK=TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(0,1,321,321)-massPhi);
+    fCosPiDs=((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFrameKKpi();
     cospikphi = ((AliAODRecoDecayHF3Prong*)cand)->CosPiKPhiRFrameKKpi();
   }
   else if(masshypo==1){ //phipiKK
-    fInvMass.push_back(((AliAODRecoDecayHF3Prong*)cand)->InvMassDspiKK());
-    fMassKK.push_back(TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(1,2,321,321)-massPhi));
-    fCosPiDs.push_back(((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFramepiKK());
+    fInvMass=((AliAODRecoDecayHF3Prong*)cand)->InvMassDspiKK();
+    fMassKK=TMath::Abs(((AliAODRecoDecayHF3Prong*)cand)->InvMass2Prongs(1,2,321,321)-massPhi);
+    fCosPiDs=((AliAODRecoDecayHF3Prong*)cand)->CosPiDsLabFramepiKK();
     cospikphi = ((AliAODRecoDecayHF3Prong*)cand)->CosPiKPhiRFramepiKK();
   }
-  fCosPiKPhi.push_back(cospikphi*cospikphi*cospikphi);
+  fCosPiKPhi=cospikphi*cospikphi*cospikphi;
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    fImpParProng[iProng].push_back(cand->Getd0Prong(iProng));
+    fImpParProng[iProng]=cand->Getd0Prong(iProng);
   }
     
   //single-track variables
@@ -166,27 +173,4 @@ bool AliHFTreeHandlerDstoKKpi::SetVariables(AliAODRecoDecayHF* cand, float bfiel
   if(!setpid) return false;
 
   return true;
-}
-
-//________________________________________________________________
-void AliHFTreeHandlerDstoKKpi::FillTree() {
-  fTreeVar->Fill();
-  
-  //VERY IMPORTANT: CLEAR ALL VECTORS
-  if(!fIsMCGenTree) {
-    ResetDmesonCommonVarVectors();
-    fSigmaVertex.clear();
-    fMassKK.clear();
-    fCosPiDs.clear();
-    fCosPiKPhi.clear();
-    fNormd0MeasMinusExp.clear();
-    for(unsigned int iProng=0; iProng<fNProngs; iProng++) fImpParProng[iProng].clear();
-    ResetSingleTrackVarVectors();
-    if(fPidOpt!=kNoPID) ResetPidVarVectors();
-  }
-  else {
-    ResetMCGenVectors();
-  }
-  fCandTypeMap=0;
-  fNCandidates=0;
 }

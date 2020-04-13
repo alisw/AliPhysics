@@ -130,11 +130,11 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kNITSclusters:               return "SingleTrackNITSclusters";
       case kNTPCclusters:               return "SingleTrackNTPCclusters";
       case kNTPCcrossedRows:            return "SingleTrackNTPCcrossedRows";
-      case kNTPCcrossedRowsFclusters:   return "SingleTrackNTPCcrossedRowsFclusters";  
-      case kITSchi2:                    return "SingleTrackITSchi2"; 
-      case kTPCchi2:                    return "SingleTrackTPCchi2"; 
-      case kDCAXY:                      return "SingleTrackDCAz"; 
-      case kDCAZ:                       return "SingleTrackDCAz";       
+      case kNTPCcrossedRowsFclusters:   return "SingleTrackNTPCcrossedRowsFclusters";
+      case kITSchi2:                    return "SingleTrackITSchi2";
+      case kTPCchi2:                    return "SingleTrackTPCchi2";
+      case kDCAXY:                      return "SingleTrackDCAz";
+      case kDCAZ:                       return "SingleTrackDCAz";
       case kCharge:                     return "SingleTrackCharge";
       case kPhi:                        return "SingleTrackPhi";
       case kPhiOuterTPC:                return "SingleTrackPhiOuterTPC";
@@ -153,6 +153,19 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kAntiLambdaAntiProtonPIDCut: return "V0AntiLambdaAntiProtonNsigma";
       case kLambdaPionPIDCut:           return "V0LambdaPionNsigma";
       case kAntiLambdaAntiPionPIDCut:   return "V0AntiLambdaPionNsigma";
+      case kK0SMass:                    return "K0SMass";
+      case kLambdaMass:                 return "LambdaMass";
+      case kAntiLambdaMass:             return "AntiLambdaMass";
+      case kXiMass:                     return "XiMass";
+      case kOmegaMass:                  return "OmegaMass";
+      case kCascadeDCA:                 return "CascadeDCA";
+      case kCascadeRadius:              return "CascadeRadius";
+      case kCascadeDaughterDCA:         return "CascadeDaughterDCA";
+      case kCascadeCosPointAng:         return "CascadeCosPointAng";
+      case kCascadeV0CosPointAng:       return "CascadeV0CosPointAng";
+      case kBachelorPt:                 return "CascadeBachelorPt";
+      case kBachelorPionTPCnsigma:      return "CascadeBachelorPionTPCnsigma";
+      case kBachelorKaonTPCnsigma:      return "CascadeBachelorKaonTPCnsigma";
       default:                          return "Undefined";
    }
 }
@@ -179,18 +192,23 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    AliVTrack      *track = fDaughter->Ref2Vtrack();
    AliESDv0       *v0esd = fDaughter->Ref2ESDv0();
    AliAODv0       *v0aod = fDaughter->Ref2AODv0();
+   AliESDcascade  *caesd = fDaughter->Ref2ESDcascade();
+   AliAODcascade  *caaod = fDaughter->Ref2AODcascade();
    AliESDEvent    *lESDEvent = fEvent->GetRefESD();
+   AliAODEvent    *lAODEvent = fEvent->GetRefAOD();
    
    Double_t xPrimaryVertex = -999.9;
    Double_t yPrimaryVertex = -999.9;
    Double_t zPrimaryVertex = -999.9;
    
    if(lESDEvent){
-   
-   xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
-   yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
-   zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
-   
+      xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
+      yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
+      zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
+   }else if(lAODEvent){
+      xPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetX();
+      yPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetY();
+      zPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetZ();
    }
    
    if (fUseMCInfo && !refMC) {
@@ -222,7 +240,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 
    case kY:
      fComputedValue = (fUseMCInfo ? refMC->Y() : ref->Y());
-     return kTRUE;   
+     return kTRUE;
  
    case kMass:
      fComputedValue = (fUseMCInfo ? refMC->M() : ref->M());
@@ -417,7 +435,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        AliESDtrack *trackESD = dynamic_cast<AliESDtrack *>(track);
        fComputedValue = 1.0;
        if (trackESD) {
-	 if (trackESD->GetTPCNclsF()>0) fComputedValue = trackESD->GetTPCCrossedRows() / trackESD->GetTPCNclsF();   
+	 if (trackESD->GetTPCNclsF()>0) fComputedValue = trackESD->GetTPCCrossedRows() / trackESD->GetTPCNclsF();
        } else {
 	 Float_t nCrossedRows = ((AliAODTrack*) track)->GetTPCNCrossedRows();
 	 Float_t nFcls = ((AliAODTrack*) track)->GetTPCNclsF();
@@ -512,11 +530,11 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      fComputedValue = (fUseMCInfo ? refMC->Charge() : ref->Charge());
      return kTRUE;
    
-   case kPhi:         
-     fComputedValue = (fUseMCInfo ? (refMC->Phi()*TMath::RadToDeg()) : (ref->Phi()*TMath::RadToDeg()));      
+   case kPhi:
+     fComputedValue = (fUseMCInfo ? (refMC->Phi()*TMath::RadToDeg()) : (ref->Phi()*TMath::RadToDeg()));
      return kTRUE;
 
-   case kPhiOuterTPC:    
+   case kPhiOuterTPC:
      if (track) {
        Double_t pos[3]={0.,0.,0.};
        Double_t phiOut = -999.0;
@@ -527,7 +545,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 	 phiOut=TMath::ATan2(pos[1],pos[0])*TMath::RadToDeg();
 	 if (phiOut<0) phiOut+= (2*TMath::Pi()*TMath::RadToDeg());
        }
-       fComputedValue = phiOut;      
+       fComputedValue = phiOut;
      } else {
        AliWarning("Cannot get phi at outer TPC radius for non-track object");
        fComputedValue = -99.0;
@@ -549,7 +567,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
+     }
 
    case kV0Radius:
      if(v0esd) {
@@ -567,11 +585,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	
-           
-           
-           
-           
+     }
 
    case kV0Mass:
      if(v0esd) {
@@ -579,15 +593,28 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        fComputedValue = v0ESD->GetEffMass();
        return kTRUE;
      }
-     if(v0aod) {
+     if(v0aod) {//returns the mass for the best hypothesis
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
-       fComputedValue = v0AOD->MassLambda();
+       Double_t mass[3], dmass[3];
+       mass[0] = v0AOD->MassK0Short();
+       dmass[0] = TMath::Abs(mass[0] - 0.497611);
+       mass[1] = v0AOD->MassLambda();
+       dmass[1] = TMath::Abs(mass[1] - 1.115683);
+       mass[2] = v0AOD->MassAntiLambda();
+       dmass[2] = TMath::Abs(mass[2] - 1.115683);
+       Int_t jmin=0;
+       Double_t dmass_min = dmass[0];
+       for(Int_t j=1; j<3; j++) if(dmass[j] < dmass_min){
+         dmass_min = dmass[j];
+         jmin = j;
+       }
+       fComputedValue = mass[jmin];
        return kTRUE;
      }
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 
+     }
 	 
    case kV0P:
      if(v0esd) {
@@ -597,13 +624,13 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
-       fComputedValue = v0AOD->Ptot2V0();
+       fComputedValue = TMath::Sqrt(v0AOD->Ptot2V0());
        return kTRUE;
      }
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
+     }
 
    case kV0Pt:
      if(v0esd) {
@@ -613,13 +640,13 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
-       fComputedValue = v0AOD->Pt2V0();
+       fComputedValue = TMath::Sqrt(v0AOD->Pt2V0());
        return kTRUE;
      }
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
+     }
 
    case kV0NPt:
      if(v0esd) {
@@ -629,14 +656,17 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        fComputedValue = TMath::Sqrt(px*px+py*py);
        return kTRUE;
      }
-     if(v0aod) {// NOTE. Not implemented for AOD
+     if(v0aod) {
        fComputedValue = -999;
-       return kFALSE;
-     }	 	 
+       AliAODTrack *nTrack = (AliAODTrack *) (v0aod->GetDaughter(1));
+       if(!nTrack) return kFALSE;
+       fComputedValue=nTrack->Pt();
+       return kTRUE;
+     }
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
+     }
 
    case kV0PPt:
      if(v0esd) {
@@ -646,88 +676,94 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        fComputedValue = TMath::Sqrt(px*px+py*py);
        return kTRUE;
      }
-     if(v0aod) {// NOTE. Not implemented for AOD
+     if(v0aod) {
+       fComputedValue = -999;
+       AliAODTrack *pTrack = (AliAODTrack *) (v0aod->GetDaughter(0));
+       if(!pTrack) return kFALSE;
+       fComputedValue=pTrack->Pt();
+       return kTRUE;
+     }
+     else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
-     else { 
-       fComputedValue = -999;
-       return kFALSE;
-     }	 	 
+     }
 
-          
    case kV0DCAXY:
      if(v0esd){
-        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
-        UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
-        AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-         if(!nTrack) return kFALSE;
-         
-         Float_t b[2], bCov[3];
-         nTrack->GetImpactParameters(b, bCov);
-         fComputedValue =  b[0];
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
+       AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
+       if(!nTrack) return kFALSE;
+
+       Float_t b[2], bCov[3];
+       nTrack->GetImpactParameters(b, bCov);
+       fComputedValue =  b[0];
        return kTRUE;
-     }	 	 
-       if(v0aod) {// NOTE. Not implemented for AOD
+     }
+     if(v0aod){
+       fComputedValue = -999;
+       AliAODTrack *nTrack = (AliAODTrack *) (v0aod->GetDaughter(1));
+       if(!nTrack) return kFALSE;
+	   Double_t b[2]= {-999,-999}, cov[3];
+	   AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+       if(!vertex) return kFALSE;
+       nTrack->PropagateToDCA(vertex, fEvent->GetRefAOD()->GetMagneticField(),kVeryBig, b, cov);
+       fComputedValue = b[0];
+       return kTRUE;
+     }
+     else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
-     else { 
-       fComputedValue = -999;
-       return kFALSE;
-     }	     
-           
-           
-      
+     }
+
    case kV0Lifetime:
      if(v0esd){
-         AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
-         Double_t lMass = v0ESD->GetEffMass();   //Mass of V0 particle
-         
-         Double_t tV0mom[3];
-         v0ESD->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-         Double_t lV0TotalMomentum = TMath::Sqrt(
-                                        tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );  //Total Momentum of V0 particle
-         
-         Double_t v0Position[3]; 
-         v0ESD->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
-                  
-         
-         AliESDEvent    *lESDEvent = fEvent->GetRefESD();
-   
-   Double_t xPrimaryVertex = -999.9;
-   Double_t yPrimaryVertex = -999.9;
-   Double_t zPrimaryVertex = -999.9;
-   
-   
-   xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
-   yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
-   zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
-   
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       Double_t lMass = v0ESD->GetEffMass(); //Mass of V0 particle
 
-         
-         
-         Double_t lLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));     //Distance of V0 from primary vertex
-         
-         fComputedValue= TMath::Abs(lMass*lLength/lV0TotalMomentum);
-         return kTRUE;
-         }
-           if(v0aod) {// NOTE. Not implemented for AOD
+       Double_t tV0mom[3];
+       v0ESD->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
+       Double_t lV0TotalMomentum = TMath::Sqrt(
+                                        tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );  //Total Momentum of V0 particle
+
+       Double_t v0Position[3];
+       v0ESD->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
+
+       Double_t lLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));     //Distance of V0 from primary vertex
+
+       fComputedValue = TMath::Abs(lMass*lLength/lV0TotalMomentum);
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+
+       Double_t mass[3], dmass[3];
+       mass[0] = v0AOD->MassK0Short();
+       dmass[0] = TMath::Abs(mass[0] - 0.497611);
+       mass[1] = v0AOD->MassLambda();
+       dmass[1] = TMath::Abs(mass[1] - 1.115683);
+       mass[2] = v0AOD->MassAntiLambda();
+       dmass[2] = TMath::Abs(mass[2] - 1.115683);
+       Int_t jmin=0;
+       Double_t dmass_min = dmass[0];
+       for(Int_t j=1; j<3; j++) if(dmass[j] < dmass_min){
+         dmass_min = dmass[j];
+         jmin = j;
+       }
+       Double_t lMass = mass[jmin];
+
+       Double_t lV0TotalMomentum = TMath::Sqrt(v0AOD->Ptot2V0());
+       Double_t v0Position[3] = {v0AOD->DecayVertexV0X(), v0AOD->DecayVertexV0Y(), v0AOD->DecayVertexV0Z()};
+       Double_t lLength = TMath::Sqrt(TMath::Power(v0Position[0] - xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2] - zPrimaryVertex,2)); //Distance of V0 from primary vertex
+
+       fComputedValue = TMath::Abs(lMass*lLength/lV0TotalMomentum);
+       return kTRUE;
+     }
+     else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
-     else { 
-       fComputedValue = -999;
-       return kFALSE;
-     }	     
-                
-           
-           
-           
-           
-           
-           
-           
+     }
+
    case kDaughterDCA:
      if(v0esd) {
        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
@@ -748,7 +784,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      if(v0esd) {
        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
        fComputedValue = v0ESD->GetV0CosineOfPointingAngle();
-       return kTRUE;	 
+       return kTRUE;
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
@@ -767,14 +803,14 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        // retrieve the V0 daughters
        UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
        AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kProton));
-       return kTRUE;	 
+       return kTRUE;
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
        AliAODTrack *pTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(0));
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kProton));
        return kTRUE;
      }
@@ -789,14 +825,14 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        // retrieve the V0 daughters
        UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
        AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kProton));
-       return kTRUE;	 
+       return kTRUE;
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
        AliAODTrack *nTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(1));
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kProton));
        return kTRUE;
      }
@@ -811,14 +847,14 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        // retrieve the V0 daughters
        UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
        AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kPion));
-       return kTRUE;	 
+       return kTRUE;
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
        AliAODTrack *nTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(1));
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, AliPID::kPion));
        return kTRUE;
      }
@@ -833,14 +869,14 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        // retrieve the V0 daughters
        UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0ESD->GetPindex());
        AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-       return kTRUE;	 
+       return kTRUE;
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
        AliAODTrack *pTrack = (AliAODTrack *) (v0AOD->GetSecondaryVtx()->GetDaughter(0));
-       AliPIDResponse *pid = fEvent->GetPIDResponse(); 
+       AliPIDResponse *pid = fEvent->GetPIDResponse();
        fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, AliPID::kPion));
        return kTRUE;
      }
@@ -848,7 +884,259 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        fComputedValue = -999;
        return kFALSE;
      }
-	     
+
+   case kK0SMass://V0 mass for K0S hypothesis
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->GetEffMass(2,2);
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->MassK0Short();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kLambdaMass://V0 mass for Lambda hypothesis
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->GetEffMass(4,2);
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->MassLambda();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kAntiLambdaMass://V0 mass for anti-Lambda hypothesis
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->GetEffMass(2,4);
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->MassAntiLambda();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kXiMass://cascade mass for Xi hypothesis
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Int_t code = caESD->GetPdgCodeXi();
+       Double_t v0q=0;
+       if(code == kOmegaMinus) caESD->ChangeMassHypothesis(v0q, kXiMinus);
+       if(code == kOmegaPlusBar) caESD->ChangeMassHypothesis(v0q, kXiPlusBar);
+       fComputedValue = caESD->M();
+       if(code == kOmegaMinus) caESD->ChangeMassHypothesis(v0q, kOmegaMinus);
+       if(code == kOmegaPlusBar) caESD->ChangeMassHypothesis(v0q, kOmegaPlusBar);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = caAOD->MassXi();
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kOmegaMass://cascade mass for Omega hypothesis
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Int_t code = caESD->GetPdgCodeXi();
+       Double_t v0q=0;
+       if(code == kXiMinus) caESD->ChangeMassHypothesis(v0q, kOmegaMinus);
+       if(code == kXiPlusBar) caESD->ChangeMassHypothesis(v0q, kOmegaPlusBar);
+       fComputedValue = caESD->M();
+       if(code == kXiMinus) caESD->ChangeMassHypothesis(v0q, kXiMinus);
+       if(code == kXiPlusBar) caESD->ChangeMassHypothesis(v0q, kXiPlusBar);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = caAOD->MassOmega();
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+           
+   case kCascadeDCA:
+     if(caesd && lESDEvent) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       fComputedValue = caESD->GetDcascade(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = caAOD->DcaXiToPrimVertex();
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kCascadeRadius:
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Double_t XiPosition[3];
+       caESD->GetXYZcascade(XiPosition[0],XiPosition[1],XiPosition[2]);
+       fComputedValue = TMath::Sqrt(TMath::Power(XiPosition[0],2) + TMath::Power(XiPosition[1],2));
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = TMath::Sqrt(TMath::Power(caAOD->DecayVertexXiX(),2) + TMath::Power(caAOD->DecayVertexXiY(),2));
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kCascadeDaughterDCA:
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       fComputedValue = caESD->GetDcaXiDaughters();
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = caAOD->DcaXiDaughters();
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kCascadeCosPointAng:
+     if(caesd && lESDEvent) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       fComputedValue = caESD->GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+       return kTRUE;
+     } else if(caaod && lAODEvent){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = caAOD->CosPointingAngleXi(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kCascadeV0CosPointAng:
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Double_t XiPosition[3];
+       caESD->GetXYZcascade(XiPosition[0],XiPosition[1],XiPosition[2]);
+       fComputedValue = caESD->GetV0CosineOfPointingAngle(XiPosition[0],XiPosition[1],XiPosition[2]);
+       return kTRUE;
+     } else if(caaod && lAODEvent){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       Double_t XiPosition[3];
+       XiPosition[0] = caAOD->DecayVertexXiX();
+       XiPosition[1] = caAOD->DecayVertexXiY();
+       XiPosition[2] = caAOD->DecayVertexXiZ();
+       fComputedValue = caAOD->CosPointingAngle(XiPosition);
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kCascadeV0Pt:
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Double_t ppx, ppy, ppz, npx, npy, npz;
+       caESD->GetPPxPyPz(ppx, ppy, ppz);
+       caESD->GetNPxPyPz(npx, npy, npz);
+       fComputedValue = TMath::Sqrt(TMath::Power(ppx+npx,2) + TMath::Power(ppy+npy,2));
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = -999;
+       AliAODTrack *pTrack = (AliAODTrack *) (caAOD->GetDaughter(0));
+       AliAODTrack *nTrack = (AliAODTrack *) (caAOD->GetDaughter(1));
+       if(!pTrack || !nTrack) return kFALSE;
+       fComputedValue=TMath::Sqrt(TMath::Power(pTrack->Px()+nTrack->Px(),2) + TMath::Power(pTrack->Py()+nTrack->Py(),2));
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kBachelorPt:
+     if(caesd) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       Double_t px, py, pz;
+       caESD->GetBPxPyPz(px, py, pz);
+       fComputedValue = TMath::Sqrt(px*px+py*py);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = -999;
+       AliAODTrack* bTrack = (AliAODTrack *) (caAOD->GetDecayVertexXi()->GetDaughter(0));
+       if(!bTrack) return kFALSE;
+       fComputedValue=bTrack->Pt();
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kBachelorPionTPCnsigma:
+     if(caesd && lESDEvent) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       fComputedValue = -999;
+       UInt_t lIdxBach     = (UInt_t) TMath::Abs(caESD->GetBindex());
+       AliESDtrack* bTrack = lESDEvent->GetTrack(lIdxBach);
+       if(!bTrack) return kFALSE;
+       AliPIDResponse* pid = fEvent->GetPIDResponse();
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kPion);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = -999;
+       AliAODTrack* bTrack = (AliAODTrack *) (caAOD->GetDecayVertexXi()->GetDaughter(0));
+       if(!bTrack) return kFALSE;
+       AliPIDResponse* pid = fEvent->GetPIDResponse();
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kPion);
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
+   case kBachelorKaonTPCnsigma:
+     if(caesd && lESDEvent) {
+       AliESDcascade* caESD = dynamic_cast<AliESDcascade *>(caesd);
+       fComputedValue = -999;
+       UInt_t lIdxBach     = (UInt_t) TMath::Abs(caESD->GetBindex());
+       AliESDtrack * bTrack = lESDEvent->GetTrack(lIdxBach);
+       if(!bTrack) return kFALSE;
+       AliPIDResponse* pid = fEvent->GetPIDResponse();
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon);
+       return kTRUE;
+     } else if(caaod){
+       AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
+       fComputedValue = -999;
+       AliAODTrack* bTrack = (AliAODTrack *) (caAOD->GetDecayVertexXi()->GetDaughter(0));
+       if(!bTrack) return kFALSE;
+       AliPIDResponse* pid = fEvent->GetPIDResponse();
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon);
+       return kTRUE;
+     } else {
+       fComputedValue = -999;
+       return kFALSE;
+     }
+
    default:
      AliError(Form("[%s] Invalid value type for this computation", GetName()));
      return kFALSE;

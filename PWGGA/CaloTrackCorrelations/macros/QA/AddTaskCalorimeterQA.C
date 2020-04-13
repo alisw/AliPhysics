@@ -98,6 +98,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
+  reader->SetMultiplicityWithPhysSel(kFALSE); // Do not rely on Physics selection in case calibration not done yet.
+  
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   

@@ -1,6 +1,7 @@
 #include "AliAnalysisTaskNucleiPIDqa.h"
 #include "AliAnalysisTaskNucleiYield.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 using std::string;
@@ -56,6 +57,7 @@ void BinLogAxis(TH1 *h) {
 ///
 AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliAnalysisTaskSE(taskname.Data()),
   fEventCut{false},
+  fFilterBit{BIT(4)},
   fNsigmaITS{3.5f},
   fNsigmaTPC{3.5f},
   fNsigmaTOF{3.5f},
@@ -71,7 +73,11 @@ AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliA
   fTOFsignalSelected{{{nullptr}}},
   fITSnSigmaSelected{{{nullptr}}},
   fTPCnSigmaSelected{{{nullptr}}},
-  fTOFnSigmaSelected{{{nullptr}}} {
+  fTOFnSigmaSelected{{{nullptr}}},
+  fUseCustomBethe{false,false,false,false},
+  fCustomBethe{},
+  fCustomResolution{}
+  {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
 }
@@ -161,7 +167,7 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
     if (track->GetID() <= 0) continue;
-    if (!track->TestFilterBit(4)) continue;
+    if (!track->TestFilterBit(fFilterBit)) continue;
     if (track->GetTPCsignalN() < fTPCsignalN) continue;
     const float beta = AliAnalysisTaskNucleiYield::HasTOF(track,fPID);
     const int hasTOF = beta > 1.e-24 ? 1 : 0;
@@ -182,7 +188,13 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
 
     for (int iS = 0; iS < 4; ++iS) {
       const float nSigmaITS = fPID->NumberOfSigmasITS(track,kSpecies[iS]);
-      const float nSigmaTPC = fPID->NumberOfSigmasTPC(track,kSpecies[iS]);
+      float nSigmaTPC = fPID->NumberOfSigmasTPC(track,kSpecies[iS]);
+      if (fUseCustomBethe[iS]) {
+        const float betaGamma = track->GetTPCmomentum() / AliPID::ParticleMass(kSpecies[iS]);
+        const float* pars = fCustomBethe[iS];
+        const float expSignal = AliExternalTrackParam::BetheBlochAleph(betaGamma, pars[0], pars[1], pars[2], pars[3], pars[4]);
+        nSigmaTPC  = (track->GetTPCsignal() - expSignal) / (fCustomResolution[iS] * expSignal);
+      }
       const float nSigmaTOF = fPID->NumberOfSigmasTOF(track,kSpecies[iS]);
 
       const bool pidITS = std::abs(nSigmaITS) < fNsigmaITS;
@@ -213,4 +225,10 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
 ///
 void AliAnalysisTaskNucleiPIDqa::Terminate(Option_t *) {
   return;
+}
+
+void AliAnalysisTaskNucleiPIDqa::SetCustomBetheBloch(int iSpecies, float res, const float* bethe) {
+  fUseCustomBethe[iSpecies] = true;
+  fCustomResolution[iSpecies] = res;
+  std::copy(bethe, bethe+5, fCustomBethe[iSpecies]);
 }

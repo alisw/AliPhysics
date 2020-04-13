@@ -50,12 +50,12 @@ private:
   AliFemtoEventReader*        fEventReader;              ///< Event reader
   AliFemtoEventWriterCollection* fEventWriterCollection; ///< Event writer collection
 
+  AliFemtoManager(const AliFemtoManager& aManager);
+  AliFemtoManager& operator=(const AliFemtoManager& aManager);
+
 public:
   AliFemtoManager();
-  AliFemtoManager(const AliFemtoManager& aManager);
   virtual ~AliFemtoManager();
-
-  AliFemtoManager& operator=(const AliFemtoManager& aManager);
 
   // Gets and Sets...
   AliFemtoAnalysisCollection* AnalysisCollection();

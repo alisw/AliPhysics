@@ -11,7 +11,6 @@
 #include <TGrid.h>
 #include <TList.h>
 #include <TMethodCall.h>
-#include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
 #include <TGeoGlobalMagField.h>
@@ -68,7 +67,8 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   // *******************  PID response  ******************
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   if(!mc) AddTaskPIDResponse();
-  else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
+  // else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
+  else AddTaskPIDResponse(kTRUE);
 
   // *******************  Tenders  ***********************
   AliTender *aliTender(NULL);
@@ -80,7 +80,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
     aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
   }
   aliTender->SetHandleOCDB(kTRUE);
-  //aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
+  // aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
   // aliTender->SetDefaultCDBStorage(Form("local://%s/local/alice/data/2010/OCDB", gSystem->ExpandPathName("$HOME")));
 
 // *******************  Physics Selection  *************

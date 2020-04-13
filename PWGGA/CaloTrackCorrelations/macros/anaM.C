@@ -300,8 +300,7 @@ void CreateChain(const anaModes mode, TChain * chain){//, TChain * chainxs){
     TGrid::Connect("alien://") ;
     
     //Feed Grid with collection file
-    //TGridCollection * collection =  (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\", 0)", kXML));
-    TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
+    TGridCollection * collection = gGrid->OpenCollection(kXML);
     if (! collection) {
       AliError(Form("%s not found", kXML)) ; 
       return kFALSE ; 

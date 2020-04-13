@@ -190,7 +190,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        std::cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
         continue;
       }
 
@@ -476,7 +476,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
 }

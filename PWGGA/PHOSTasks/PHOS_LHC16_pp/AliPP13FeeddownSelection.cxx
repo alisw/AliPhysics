@@ -78,22 +78,22 @@ void AliPP13FeeddownSelection::ConsiderPair(const AliVCluster * c1, const AliVCl
 //________________________________________________________________
 void AliPP13FeeddownSelection::InitSelectionHistograms()
 {
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	Int_t nM       = fLimits.nM;
+	Double_t mMin  = fLimits.mMin;
+	Double_t mMax  = fLimits.mMax;
+	Int_t nPt      = fLimits.nPt;
+	Double_t ptMin = fLimits.ptMin;
+	Double_t ptMax = fLimits.ptMax;
 
 	for (Int_t i = 0; i < 2; ++i)
 	{
-		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fListOfHistos->Add(fInvMass[i]);
 	}
-	fFeedownK0s[0] = new TH2F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+	fFeedownK0s[0] = new TH2F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 	fListOfHistos->Add(fFeedownK0s[0]);
 
-	fFeedownK0s[1] = new TH1F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}_generated", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nPt, ptMin, ptMax);
+	fFeedownK0s[1] = new TH1F("hMassPt_#pi^{0}_feeddown_K^{s}_{0}_generated", "(M,p_{T})_{#gamma#gamma} originating form K^{s}_{0}; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nPt, ptMin, ptMax);
 	fListOfHistos->Add(fFeedownK0s[1]);
 
 	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
@@ -147,4 +147,3 @@ AliAODMCParticle * AliPP13FeeddownSelection::GetMother(const AliAODMCParticle * 
 	AliAODMCParticle * parent = dynamic_cast<AliAODMCParticle * >(particles->At(plabel));
 	return parent;
 }
-

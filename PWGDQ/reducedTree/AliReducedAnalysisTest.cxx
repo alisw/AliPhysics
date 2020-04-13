@@ -339,8 +339,13 @@ void AliReducedAnalysisTest::Process() {
     }  // end loop over pairs
   }  // end if(pairList)
     
-  if(fFillEventHistograms)
+  if(fFillEventHistograms) {
       fHistosManager->FillHistClass("Event_AfterCuts", fValues);
+      for(UShort_t ich=0; ich<64; ++ich) {
+         AliReducedVarManager::FillV0Channel(ich, fValues);
+         fHistosManager->FillHistClass("V0Channels", fValues);
+      }
+  }
 }
 
 //___________________________________________________________________________
@@ -361,11 +366,12 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
          track = (AliReducedBaseTrack*)nextTrack();
          if(!track) continue;
          // reset track variables
-         for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedEOverP; ++i) fValues[i]=-9999.;
+         for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
          
           
             if(fProcessMCInfo && track->IsMCKineParticle()) {
                AliReducedVarManager::FillTrackInfo(track,fValues);
+               AliReducedVarManager::FillClusterMatchedTrackInfo(track,fValues);
                /*if(TMath::Abs(track->Eta())>1.0 || TMath::Abs(track->Eta())<0.0001 || track->Charge()==0) continue;
                fValues[AliReducedVarManager::kMCNch] += 1.0;
                if(track->Eta()<0.0) fValues[AliReducedVarManager::kMCNchNegSide] += 1.0;
@@ -396,6 +402,7 @@ void AliReducedAnalysisTest::FillTrackHistograms(TClonesArray* trackList) {
          
          if(!IsTrackSelected(track)) continue;
          AliReducedVarManager::FillTrackInfo(track,fValues);
+         AliReducedVarManager::FillClusterMatchedTrackInfo(track,fValues);
          if(fFillTrackHistograms)
             fHistosManager->FillHistClass("TrackQA_AllTracks", fValues);
          

@@ -185,7 +185,6 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   const Int_t nRuns = ttree->GetEntries();
   TList lista;
   //Parameters for histogram creation
-  TString drawOpt = "E1";
   Int_t lineWidth = 1;
   Int_t lineStyle = 0;
   Int_t markerStyle = 20;
@@ -193,7 +192,6 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   //Macro to create histos
 #define HCreate(H, t)                          \
   TH1F* H = new TH1F(#H, t, nRuns, 0., nRuns); \
-  H->SetDrawOption(drawOpt);                   \
   H->SetMarkerStyle(markerStyle);              \
   H->SetMarkerColor(markerColor);              \
   H->SetLineColor(markerColor);                \
@@ -229,8 +227,6 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   HCreate(hPeakTotVsRun, "<ToT> (gaussian fit);;ToT_{peak} (ns)");
   HCreate(hSpreadTotVsRun, "#sigma(ToT) (gaussian fit);#sigma(ToT) (ns)");
 
-  //~~~~~~~~~~~~~~~~~~~~~//
-  drawOpt = "E";
   //~~~~~~~~~~~~~~~~~~~~~//
 
   HCreate(hNegTimeRatioVsRun, "Ratio of tracks with t^{TOF}<12.5 ns; ; ratio of tracks with t^{TOF}<12.5 ns (%)");
@@ -276,7 +272,6 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   HCreate(hT0fillResVsRun, "t0_fill spread;;t0_spread (ps)");
 
   //~~~~~~~~~~~~~~~~~~~~~//
-  drawOpt = "E1";
   markerStyle = 20;
   markerColor = kOrange;
   lineWidth = 2;
@@ -321,7 +316,6 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   HCreate(hT0T0CVsRunRes, "T0C_t0;; #sigma t0 T0C (ps)");
 
   //~~~~~~~~~~~~~~~~~~~~~//
-  drawOpt = "E";
   markerStyle = 1;
   markerColor = kCyan - 1;
   lineWidth = 2;

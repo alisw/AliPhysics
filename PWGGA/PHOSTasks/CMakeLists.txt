@@ -43,6 +43,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCorrectionFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -55,6 +56,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
 		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
@@ -72,6 +74,7 @@ set(SRCS
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
     PHOSCalib/AliAnalysisTaskPHOSTimeCalib.cxx
+    PHOSCorrectionFW/AliPHOSCorrectionFW.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
@@ -103,6 +106,7 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13SpectrumSelectionSimple.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_LHC16_pp/AliPP13TriggerEfficiency.cxx
     PHOS_LHC16_pp/AliPP13TriggerProperties.cxx
@@ -156,7 +160,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils PWGGAGammaConvBase STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface)
 
 # Generate the ROOT map
 # Dependecies

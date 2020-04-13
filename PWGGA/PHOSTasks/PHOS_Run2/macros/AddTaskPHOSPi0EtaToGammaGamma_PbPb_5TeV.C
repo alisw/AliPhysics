@@ -191,7 +191,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
       //f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
       TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
-      f1trg->SetParameters(0.218,8.02,0.588,0.236,10.3,0.883);//from MB //acc x trigger efficiency 5-40GeV
+      //f1trg->SetParameters(0.218,8.02,0.588,0.236,10.3,0.883);//from MB //acc x trigger efficiency 5-40GeV
+      f1trg->SetParameters(0.180,7.89,0.544,0.270,9.84,0.875);//from MB //acc x trigger efficiency 5-40GeV
       f1trg->SetNpx(1000);
       task->SetTriggerEfficiency(f1trg);
     }
@@ -200,7 +201,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
       //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
       //f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
       TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
-      f1trg->SetParameters(0.220,3.87,0.334,0.230,5.32,0.523);//from MB //acc x trigger efficiency 2-40GeV
+      //f1trg->SetParameters(0.220,3.87,0.334,0.230,5.32,0.523);//from MB //acc x trigger efficiency 2-40GeV
+      f1trg->SetParameters(0.230,3.87,0.339,0.220,5.22,0.496);//from MB //acc x trigger efficiency 2-40GeV
       f1trg->SetNpx(1000);
       task->SetTriggerEfficiency(f1trg);
     }

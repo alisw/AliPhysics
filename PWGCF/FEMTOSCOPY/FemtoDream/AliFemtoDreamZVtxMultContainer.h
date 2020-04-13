@@ -13,6 +13,8 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"
 #include "AliFemtoDreamPartContainer.h"
+#include "AliFemtoDreamHigherPairMath.h"
+
 //Class containing the array buffer of the different particle species for one
 //Multiplicity bin
 class AliFemtoDreamZVtxMultContainer {
@@ -22,10 +24,10 @@ class AliFemtoDreamZVtxMultContainer {
   virtual ~AliFemtoDreamZVtxMultContainer();
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamCorrHists *ResultsHist, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME,
                         AliFemtoDreamCorrHists *ResultsHist, float relk);
@@ -39,20 +41,17 @@ class AliFemtoDreamZVtxMultContainer {
   }
   ;
  private:
-  float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
-                             TVector3 Part2Momentum, int PDGPart2);
-  float RelativePairkT(TVector3 Part1Momentum, int PDGPart1,
-                       TVector3 Part2Momentum, int PDGPart2);
-  float RelativePairmT(TVector3 Part1Momentum, int PDGPart1,
-                       TVector3 Part2Momentum, int PDGPart2);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;
-  float fDeltaEtaMax;
-  float fDeltaPhiMax;
-  bool fDoDeltaEtaDeltaPhiCut;
+//  std::vector<bool> fRejPairs;
+//  bool fDoDeltaEtaDeltaPhiCut;
+//  float fDeltaEtaMax;
+//  float fDeltaPhiMax;
+//  float fDeltaPhiEtaMax;
 
-  ClassDef(AliFemtoDreamZVtxMultContainer, 4);
+ClassDef(AliFemtoDreamZVtxMultContainer, 4)
+  ;
 };
 
 #endif /* ALIFEMTODREAMZVTXMULTCONTAINER_H_ */
