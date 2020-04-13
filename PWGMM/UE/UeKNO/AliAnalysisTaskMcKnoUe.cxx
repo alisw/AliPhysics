@@ -1039,7 +1039,7 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 		const Int_t label = TMath::Abs(track->GetLabel());
 
 		// Fill Id MC spectra 
-		if( fMCStack->IsPhysicalPrimary(label) )
+		if( fMC->IsPhysicalPrimary(label) )
 		{
 			TParticle *mcPart = fMC->GetTrack(label)->Particle();
 
@@ -1059,10 +1059,10 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 				hPtOutPrimPart[5]->Fill(track->Pt());
 		}
 
-		if( fMCStack->IsPhysicalPrimary(label) ){
+		if( fMC->IsPhysicalPrimary(label) ){
 			hPtOutPrim->Fill(track->Pt());
 		}
-		if( fMCStack->IsSecondaryFromWeakDecay(label) || fMCStack->IsSecondaryFromMaterial(label)){
+		if( fMC->IsSecondaryFromWeakDecay(label) || fMC->IsSecondaryFromMaterial(label)){
 			hPtOutSec->Fill(track->Pt());
 		}
 	}
@@ -1086,11 +1086,11 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 		track->GetImpactParameters(fDCAxy,fDCAz);
 		hPtDCAall->Fill(track->Pt(),fDCAxy);
 
-		if (!(fMCStack->IsPhysicalPrimary(mcLabel))) 
+		if (!(fMC->IsPhysicalPrimary(mcLabel)))
 		{          
-			if (fMCStack->IsSecondaryFromWeakDecay(mcLabel))
+			if (fMC->IsSecondaryFromWeakDecay(mcLabel))
 				hPtDCAWeak->Fill(track->Pt(),fDCAxy);
-			if (fMCStack->IsSecondaryFromMaterial(mcLabel))
+			if (fMC->IsSecondaryFromMaterial(mcLabel))
 				hPtDCAMat->Fill(track->Pt(),fDCAxy);		
 		}
 		else
