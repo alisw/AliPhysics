@@ -60,7 +60,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -384,7 +384,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 	  //Spherical harmonics (without kT bins)
 	  if(runSHCorrFctn == 1) {
-	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),1,nbinssh,0.0,shqmax,runshlcms);
+	    cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),lmax,nbinssh,0.0,shqmax,runshlcms);
 	    anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
 	  }
 
