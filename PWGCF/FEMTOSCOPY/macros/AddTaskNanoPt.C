@@ -1,4 +1,4 @@
-//PT for beginning of ProtonDeuteron
+
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -6,15 +6,15 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoPt.h"
-
 AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
-                                   TString trigger = "kINT7",
+                                   TString trigger = "kInt7",//2
                                    bool DCAPlots = false,//3
                                    bool CombSigma = false,//4
-                                   bool ContributionSplitting = false,
-                                   bool Systematic = false,
-                                   bool DumpPdApAd = true,
-                                   bool DumpRest = false,
+                                   bool ContributionSplitting = false,//5,
+                                   bool DumpPdApAd = true,//6
+                                   bool DumpRest = false,//7
+                                   bool fullBlastQA = true,
+                                   bool RefMult08 = true,
                                    const char *cutVariation = "0") {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -75,7 +75,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
       CombSigma, ContributionSplitting);
   TrackCutsDeuteronNoTOF->SetMinimalBooking(false);
   TrackCutsDeuteronNoTOF->SetCutCharge(1);
-  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999., 3.);
+  TrackCutsDeuteronNoTOF->SetPID(AliPID::kDeuteron, 999.);
   //Antideuteron track cuts----------------------------------------------------------------------------
   AliFemtoDreamTrackCuts *AntiTrackCutsDeuteronNoTOF = AliFemtoDreamTrackCuts::PrimDeuteronCuts( isMC, true,
       CombSigma, ContributionSplitting);
@@ -90,6 +90,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   PDGParticles.push_back(1000010020);
 
   std::vector<bool> closeRejection;
+  std::vector<float> mTBins = {1.14, 1.26, 999.};
   std::vector<int> pairQA;
   //pairs:
   // pp             0
@@ -195,7 +196,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   kMax.push_back(3.);
   kMax.push_back(3.);
 
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -211,6 +212,20 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   //Here we set the mixing depth.
   config->SetMixingDepth(10);
 
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
+  config->SetmTBinning(true);
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
+  if (fullBlastQA) {
+    config->SetkTBinning(true);
+    config->SetPtQA(true);
+  }
+  if (RefMult08) {
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  }
   AliAnalysisTaskNanoPt *task =
     new AliAnalysisTaskNanoPt("AliAnalysisTaskNanoPt", isMC);
 
