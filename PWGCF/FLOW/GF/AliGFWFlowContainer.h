@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIGFWFLOWCONTAINER__H
 #define ALIGFWFLOWCONTAINER__H
 #include "TH3F.h"
