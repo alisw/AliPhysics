@@ -202,6 +202,8 @@ private:
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
     TH1F        *fHistGeneWboson;//!Invmass of LS
+    TH1F        *fHistGeneWboson_pos;//!Invmass of LS
+    TH1F        *fHistGeneWboson_ele;//!Invmass of LS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
     TH2F        *fHistRawNits;//!
     TH2F        *fHistRawNtpc;//!
