@@ -183,6 +183,8 @@ fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
 fHistGeneWboson(0),
+fHistGeneWboson_pos(0),
+fHistGeneWboson_ele(0),
 fInvmassPi0Dalitz(0),
 fHistRawNits(0), 
 fHistRawNtpc(0), 
@@ -338,6 +340,8 @@ fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
 fHistGeneWboson(0),
+fHistGeneWboson_pos(0),
+fHistGeneWboson_ele(0),
 fInvmassPi0Dalitz(0),
 fHistRawNits(0), 
 fHistRawNtpc(0), 
@@ -685,9 +689,15 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fInvmassULS_MCtrue = new TH2F("fInvmassULS_MCtrue", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 6,-0.5,5.5,1000,0,1.0);
     fOutputList->Add(fInvmassULS_MCtrue);
-    
+ 
     fHistGeneWboson = new TH1F("fHistGeneWboson","W production",100,0,100);
     fOutputList->Add(fHistGeneWboson);
+   
+    fHistGeneWboson_pos = new TH1F("fHistGeneWboson_pos","W production",100,0,100);
+    fOutputList->Add(fHistGeneWboson_pos);
+
+    fHistGeneWboson_ele = new TH1F("fHistGeneWboson_ele","W production",100,0,100);
+    fOutputList->Add(fHistGeneWboson_ele);
 
     fHistRawNits = new TH2F("fHistRawNits","Raw its hits; p_{T}(GeV/c); counts",40,0,40,7,0,7);
     fOutputList->Add(fHistRawNits);
@@ -1722,7 +1732,27 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &Npure
             } 
         }
         
-      if(pdgGen==24 && fMCparticle->GetMother()<0)fHistGeneWboson->Fill(fMCparticle->Pt());
+      if(pdgGen==24 && fMCparticle->GetMother()<0)
+          {
+
+           fHistGeneWboson->Fill(fMCparticle->Pt());
+
+           for(int ich = fMCparticle->GetDaughterFirst(); ich<=fMCparticle->GetDaughterLast(); ich++)
+              {
+               AliAODMCParticle* Cparticle = (AliAODMCParticle*) fMCarray->At(ich);
+               if(TMath::Abs(Cparticle->GetPdgCode())!=11)continue;
+   
+               if(fMCparticle->GetPdgCode()==-24)
+                  {
+                   fHistGeneWboson_pos->Fill(Cparticle->Pt());
+                  }
+
+               if(fMCparticle->GetPdgCode()==24)
+                  { 
+                   fHistGeneWboson_ele->Fill(Cparticle->Pt());
+                  }
+              }
+          }
 
     } // loop
     
