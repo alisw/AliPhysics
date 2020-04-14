@@ -91,6 +91,17 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
  Int_t       Sys= 0,
  UInt_t      triggerMask=AliVEvent::kMB,
  Int_t       nmix=10
+ /*
+ Int_t    Multbin=100,
+ Int_t    lMultbin=0,
+ Int_t    hMultbin=100
+ Int_t      Ptbin=100,
+ Int_t      lPtbin=0,
+ Int_t      hPtbin=10,
+ Int_t     Costhetabin=10,
+ Int_t     lCosthetabin=0,
+ Int_t     hCosthetabin=10
+ */
  )
 {
     //-------------------------------------------
@@ -129,20 +140,22 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
         ::Error("AddTaskKStarPlusMinus", "No analysis manager to connect to.");
         return NULL;
     }
-    
-    // create the task and configure
+       // create the task and configure
     TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
     AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-    //     task->SelectCollisionCandidates(AliVEvent::kMB);
-       task->SelectCollisionCandidates(triggerMask);
+    // task->SelectCollisionCandidates(AliVEvent::kMB);
+     task->SelectCollisionCandidates(triggerMask);
     
        if(isPP){
 	 if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
 	 else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
-	 else task->UseMultiplicity("QUALITY");
+	 else
+	   task->UseMultiplicity("QUALITY");
        }//else task->UseCentrality("V0M");
-       else 
-      task->UseCentrality("V0M");
+
+       else
+       task->UseCentrality("V0M");
+
      // set event mixing options
      task->UseContinuousMix();
     //task->UseBinnedMix();
@@ -225,9 +238,10 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
     //        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2.C");
     // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
     //gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun1.C");   
+    // gROOT->LoadMacro("ConfigKStarPlusMinusPbPbRun1.C");
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun1.C");
-    //gROOT->LoadMacro("ConfigKStarPlusMinusPbPbRun1.C");
+
 
      if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
@@ -235,15 +249,12 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
        Printf("========================== DATA analysis - PID cuts used");
     
      if(!ConfigKStarPlusMinusPbPbRun1(task, isMC, isPP,isGT,isRotate,piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
-    
      //
      // -- CONTAINERS --------------------------------------------------------------------------------
      //
      TString outputFileName = AliAnalysisManager::GetCommonFileName();
      //  outputFileName += ":Rsn";
      Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );
-     
-     
      AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f_%.3f_%.1f_%.2f", outNameSuffix.Data(),piPIDCut,nsigmaTOF,customQualityCutsID,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow, k0sDCA,k0sCosPoinAn,k0sDaughDCA, DCAxy, Sys), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
     
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
