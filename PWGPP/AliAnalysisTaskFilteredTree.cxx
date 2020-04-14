@@ -2499,12 +2499,14 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   // Special treatment of the gamma conversion pt spectra is softer
   const Double_t cutGammaMass=0.1;
   const Double_t cutAlpha=1.1;
+  const Double_t upsampleGammaPt=4;
+  const Double_t upsampleGamma1Pt=2;
   if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
   Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass);
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtV0DownscaligF, 10./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), upsampleGammaPt/fLowPtV0DownscaligF, upsampleGamma1Pt/fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
