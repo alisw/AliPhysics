@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIPROFILESUBSET__H
 #define ALIPROFILESUBSET__H
 //Helper function to select a subrange of a TProfile

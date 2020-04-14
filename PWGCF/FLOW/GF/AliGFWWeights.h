@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIGFWWEIGHTS__H
 #define ALIGFWWEIGHTS__H
 #include "TObjArray.h"

@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #include "AliProfileSubset.h"
 AliProfileSubset::AliProfileSubset(TProfile2D &inpf):
   TProfile2D(inpf) {

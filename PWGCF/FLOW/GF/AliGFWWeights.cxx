@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #include "AliGFWWeights.h"
 #include "TMath.h"
 AliGFWWeights::AliGFWWeights():
