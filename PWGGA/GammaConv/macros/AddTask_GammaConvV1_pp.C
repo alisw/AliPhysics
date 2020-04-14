@@ -1675,6 +1675,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000age0404000", "0152103500000000"); // qT max 0.040, qtptmax 0.11
     cuts.AddCutPCM("00010113", "0dm00009f9730000ege0404000", "0152103500000000"); // qT max 0.060, qtptmax 0.14
     cuts.AddCutPCM("00010113", "0dm00009f9730000fge0404000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152101500000000"); // alpha meson pT dependent
 
 
 
