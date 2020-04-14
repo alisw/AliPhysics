@@ -863,23 +863,24 @@ void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLight
     snucl.flag = SLightNucleus::kSecondaryMaterial;
 }
 
+
 /// This function checks whether a track has or has not a prolongation in TOF.
 ///
 /// \param track Track that has to be checked
 /// \return \f$\beta\f$ of the particle, -1 means that there is no correct prolongation in TOF.
 ///
-float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid) {
+float AliAnalysisTaskNucleiYield::HasTOF(AliVTrack *track, AliPIDResponse *pid) {
   bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const float len = track->GetIntegratedLength();
   bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
+
 
   if (!hasTOF) return -1.;
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
   const float beta = len / (tim * LIGHT_SPEED);
   return beta;
 }
-
 /// This function checks whether a track has or has not a prolongation in TOF.
 ///
 /// \param track Track that has to be checked

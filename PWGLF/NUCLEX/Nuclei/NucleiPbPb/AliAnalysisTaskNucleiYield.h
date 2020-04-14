@@ -152,7 +152,7 @@ public:
   void SaveTrees(bool save=true) { fSaveTrees = save; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
-  static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
+  static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
   static float  HasTOF(AliNanoAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();

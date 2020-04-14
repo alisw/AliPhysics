@@ -41,6 +41,9 @@ void filterESD_Nuclex()
 
   // PID response
   AliAnalysisTaskSE* pidRespTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+
+  // V0 Hypertriton vertexer
+  AliAnalysisTaskHypV0s* hypV0sTask = AliAnalysisTaskHypV0s::AddTask();
   
   AliAnalysisTaskNanoAODskimming* mySkimmingTask = AliAnalysisTaskNanoAODskimming::AddTask();
   AliNanoSkimmingPID* mySkimmingCuts = new AliNanoSkimmingPID;
