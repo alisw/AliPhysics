@@ -3941,7 +3941,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         }
         if(isnan(weight) || weight == 0){
           TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
-          TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: ", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
+          TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: %s", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
           AliFatal(debugMessage.Data());
         }
         if (weight == -1) return kFALSE;
@@ -4127,7 +4127,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC12P2JJ ){
-        Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+        Double_t ptHardBinRanges[21]  = { 4 /*5*/,  7,  9, 12, 16,
                                           21, 28, 36, 45, 57,
                                           70, 85, 99, 115, 132,
                                           150, 169, 190, 212, 235,
@@ -4262,7 +4262,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else if ( fPeriodEnum == kLHC16rP1JJ ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+        Double_t ptHardBinRanges[21]  = { 4 /*5*/, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
         Double_t weightsBins[20]      = {2.723740E+01, 8.127540E+00, 3.934400E+00, 1.492720E+00, 5.268010E-01, 2.033790E-01, 6.361520E-02, 2.256080E-02, 9.638840E-03, 3.372890E-03, 1.381980E-03, 5.121390E-04, 2.613120E-04, 1.260940E-04, 6.393150E-05, 3.386080E-05, 1.926040E-05, 1.046950E-05, 5.895950E-06, 8.658420E-06};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4272,7 +4272,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
     } else if ( fPeriodEnum == kLHC16sP1JJ ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+        Double_t ptHardBinRanges[21]  = { 4 /*5*/, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
         Double_t weightsBins[20]      = {2.716550E+01, 8.121430E+00, 3.932100E+00, 1.492830E+00, 5.272190E-01, 2.023090E-01, 6.371860E-02, 2.245360E-02, 9.590340E-03, 3.369300E-03, 1.384470E-03, 5.119390E-04, 2.606910E-04, 1.259110E-04, 6.408650E-05, 3.396290E-05, 1.917340E-05, 1.044610E-05, 5.882680E-06, 8.672390E-06};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4490,7 +4490,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
         }
       } else if ( fPeriodEnum == kLHC17g5b ){ // preliminary weights obtained from local running
-          Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+          Double_t ptHardBinRanges[7]  = { 4 /*5*/, 7, 9, 12, 16, 21, 10000};
           Double_t weightsBins[6]  = { 0.0235115, 0.0186173, 0.0182963, 0.0135686, 0.00874758, 0.0115796};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4500,7 +4500,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
         }
       } else if ( fPeriodEnum == kLHC17g5c ){ // preliminary weights obtained from local running
-          Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+          Double_t ptHardBinRanges[9]  = { 7 /*8*/, 10, 14, 19, 26, 35, 48, 66, 10000};
           Double_t weightsBins[8]  = { 0.00039861, 0.000868597, 0.000939155, 0.000917328, 0.00068357, 0.000475878, 0.000266069, 0.000203764};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4510,7 +4510,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
         }
       } else if ( fPeriodEnum == kLHC17g6b2a ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t ptHardBinRanges[7]  = { 4 /*5*/, 7, 9, 12, 16, 21, 10000};
         Double_t weightsBins[6]  = { 0.0267755, 0.0206222, 0.0199551, 0.0149312, 0.00936012, 0.0124922};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4520,7 +4520,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC17g6b2b ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[7]  = { 5, 7, 9, 12, 16, 21, 10000};
+        Double_t ptHardBinRanges[7]  = { 4 /*5*/, 7, 9, 12, 16, 21, 10000};
         Double_t weightsBins[6]  = { 0.0186043, 0.0144098, 0.0145382, 0.0106785, 0.00688777, 0.00923482};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4530,7 +4530,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC17g6b3a ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t ptHardBinRanges[9]  = { 7 /*8*/, 10, 14, 19, 26, 35, 48, 66, 10000};
         Double_t weightsBins[8]  = { 0.000460503, 0.000942402, 0.00101341, 0.00103905, 0.000734619, 0.000520764, 0.000297075, 0.000217233};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4540,7 +4540,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
       } else if ( fPeriodEnum == kLHC17g6b3b ){ // preliminary weights obtained from local running
-        Double_t ptHardBinRanges[9]  = { 8, 10, 14, 19, 26, 35, 48, 66, 10000};
+        Double_t ptHardBinRanges[9]  = { 7 /*8*/, 10, 14, 19, 26, 35, 48, 66, 10000};
         Double_t weightsBins[8]  = { 0.000305143, 0.000672797, 0.000737654, 0.0007214, 0.000543925, 0.000377044, 0.000214699, 0.00015541};
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
@@ -4554,7 +4554,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     }
     if(isnan(weight) || weight == 0){
       TString fFileNameBroken =  ((TString)((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetCurrentFileName()).Data();
-      TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: ", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
+      TString debugMessage=Form("JJ weight = %.05f for file: %s \n event Nr in File: %i \n CutNr: %s", weight, fFileNameBroken.Data(), mcEvent->GetEventNumberInFile(), fCutStringRead.Data());
       AliFatal(debugMessage.Data());
     }
     if (weight == -1) return kFALSE;
