@@ -95,5 +95,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190830: Update of EMCALTemperatureCalibSM.root and EMCALTemperatureCalibParam.root containing new temperature calibration parameters for full Run1 and Run2
 - 20191030: Update of EMCALTimeL1PhaseCalib.root with 2016 PAR calibrations
 - 20200316: Re-addition of 2016-2018 PAR calibrations in EMCALTimeL1PhaseCalib.root + missing PAR calib for three runs of LHC18q
+- 20200414: Update of EMCALTimeL1PhaseCalib.root with additional 2016 and 2018 PAR calibrations
 
 */
