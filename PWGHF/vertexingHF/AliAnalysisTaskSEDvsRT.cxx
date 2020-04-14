@@ -301,7 +301,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    //THnSparse notation
    //axes: pt, mass, rtval, candidate phi
    Double_t phimin = -TMath::PiOver2(); Double_t phimax = 3*TMath::PiOver2();
-   Int_t nPhibins  = 200;
+   Int_t nPhibins  = 100;
    
    static const Int_t sparsendim = 4;
    Double_t sparsemin[sparsendim] = {ptmin, fLowmasslimit, firstRTbin, phimin};

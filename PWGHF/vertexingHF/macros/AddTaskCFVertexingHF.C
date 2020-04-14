@@ -81,6 +81,9 @@ const Float_t multmax_100_400 = 400; // Only for pPb
   else if (configuration == AliCFTaskVertexingHF::kESE){
     printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
   }
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    printf("The configuration is set to be for RT analysis --> using pt, y, multiplicity, RT, delta-phi leading to fill the CF\n");
+  }  
 	else{
 		printf("The configuration is not defined! returning\n");
 		return NULL;

@@ -54,6 +54,7 @@ const Float_t multmin_80_100 = 80;
 const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100;
 const Float_t multmax_100_400 = 400;
+
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -66,6 +67,9 @@ const Float_t multmax_100_400 = 400;
 	}
   else if (configuration == AliCFTaskVertexingHF::kESE){
     printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    printf("The configuration is set to be for RT analysis --> using pt, y, multiplicity, RT, delta-phi leading to fill the CF\n");
   }
 	else{
 		printf("The configuration is not defined! returning\n");
@@ -528,7 +532,48 @@ const Float_t multmax_100_400 = 400;
     container -> SetVarTitle(ilocalmultESE, "local multiplicity");
     container -> SetVarTitle(iq2ESE, "q2");
   }
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    //arrays for number of bins in each dimension
+    const Int_t nvar = 5;
 
+    const UInt_t ipTRT = 0;
+    const UInt_t iyRT = 1;
+    const UInt_t imultRT = 2;
+    const UInt_t iRT = 3;
+    const UInt_t idelphiRT = 4;
+
+    const Int_t iBinRT[nvar] = {iBin[ipT], iBin[iy], iBin[imult], 100, 100};
+
+    Double_t binLimRT[iBinRT[iRT]+1];
+    for (Int_t jRT = 0; jRT < iBinRT[iRT]+1; jRT++) {
+       binLiRT[jRT] = jRT / 10.;
+    }
+    
+    Double_t binLimDeltaPhi[iBinRT[idelphiRT]+1];
+    for (Int_t jDelPhi =0; jDelPhi < iBinRT[idelphiRT]+1; jDelPhi++) {
+       binLimdeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
+    }
+    
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinRT);
+    
+    container -> SetBinLimits(ipTRT,binLimpT);
+    printf("pt\n");
+    container -> SetBinLimits(iyRT,binLimRT);
+    printf("y\n");
+    container -> SetBinLimits(imultRT,binLimmult);
+    printf("multiplicity\n");
+    container -> SetBinLimits(iRT,binLimRT);
+    printf("RT\n");
+    container -> SetBinLimits(idelphiRT,binLimDeltaPhi);
+    printf("delta phi leading\n");
+    
+    container -> SetVarTitle(ipTRT,"pt");
+    container -> SetVarTitle(iyRT,"y");
+    container -> SetVarTitle(imultRT,"multiplicity");
+    container -> SetVarTitle(iRT,"rt");
+    container -> SetVarTitle(idelphiRT,"deltaphileading");
+    
+  }
   
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
