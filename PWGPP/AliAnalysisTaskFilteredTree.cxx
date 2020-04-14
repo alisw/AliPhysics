@@ -2499,12 +2499,14 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   // Special treatment of the gamma conversion pt spectra is softer
   const Double_t cutGammaMass=0.1;
   const Double_t cutAlpha=1.1;
+  const Double_t upsampleGammaPt=4;
+  const Double_t upsampleGamma1Pt=2;
   if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
   Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtV0DownscaligF, 1./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass);
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtV0DownscaligF, 10./fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), upsampleGammaPt/fLowPtV0DownscaligF, upsampleGamma1Pt/fLowPtV0DownscaligF, fSqrtS, fV0EffectiveMass)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
@@ -2522,8 +2524,10 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * particle){
   ///
   Int_t mcTrigger=0;
-  const Float_t dcaCut=15;  // dca cut 15 cm
+  const Float_t dcaCut=10;  // dca cut 10 cm
   const Float_t mcDownsample=0.05;
+  const Float_t kdEdxCut=11.3;
+  const Float_t kdEdxCutH2=10.5;
   if (particle!= nullptr){
     // hack - we do not have particle id for nuclei available - trigger PDG code >proton
     if (TMath::Abs(particle->GetPdgCode())>kProton && TMath::Abs(particle->R())<dcaCut && TMath::Abs(particle->Vz())<dcaCut)  {
@@ -2543,9 +2547,10 @@ Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track, TParticle * 
   if (track->GetITSNcls()>3&&track->GetITSsignal()>0&&track->P()>0.5){
     //cacheTree->SetAlias("pidCutITS","log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massProton))>11.2&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massPion))>11.5&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massKaon))>11.2");
     Int_t isOK=1;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>11.2;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[3]))>11.2;
-    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[2]))>11.3;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/(2.*mass[4])))>kdEdxCutH2;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>kdEdxCut;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[3]))>kdEdxCut;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[2]))>kdEdxCut;
     isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[2])))>60.0;
     //isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[4])))>60.0;
     triggerMask|=isOK;

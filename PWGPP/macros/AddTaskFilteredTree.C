@@ -72,8 +72,8 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   //
   AliAnalysisTaskFilteredTree *task = new AliAnalysisTaskFilteredTree("AliAnalysisTaskFilteredTree");
   //task->SetUseMCInfo(hasMC);
-  task->SetLowPtTrackDownscaligF(5.e3);
-  task->SetLowPtV0DownscaligF(5.e2);
+  task->SetLowPtTrackDownscaligF(2.e4);
+  task->SetLowPtV0DownscaligF(2.e3);
   //task->SetLowPtTrackDownscaligF(1.e5);
   //task->SetLowPtV0DownscaligF(2.e3);
   task->SetProcessAll(kTRUE);
