@@ -546,12 +546,12 @@ const Float_t multmax_100_400 = 400;
 
     Double_t binLimRT[iBinRT[iRT]+1];
     for (Int_t jRT = 0; jRT < iBinRT[iRT]+1; jRT++) {
-       binLiRT[jRT] = jRT / 10.;
+       binLimRT[jRT] = jRT / 10.;
     }
     
     Double_t binLimDeltaPhi[iBinRT[idelphiRT]+1];
     for (Int_t jDelPhi =0; jDelPhi < iBinRT[idelphiRT]+1; jDelPhi++) {
-       binLimdeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
+       binLimDeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
     }
     
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinRT);
