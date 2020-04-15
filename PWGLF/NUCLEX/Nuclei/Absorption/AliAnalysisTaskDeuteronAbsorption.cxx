@@ -72,6 +72,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tTOFclsN{0},
                                                                                          tTRDclsN{0},
                                                                                          tID{0},
+                                                                                         tPdgCodeMc{0},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
                                                                                          fHist3TPCpidAll{nullptr},
@@ -199,6 +200,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
     fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
     fTreeTrack->Branch("tID", &tID, "tID/I");
+    fTreeTrack->Branch("tPdgCodeMc", &tPdgCodeMc, "tPdgCodeMc/I");
   }
   fEventCuts.AddQAplotsToList(fOutputList);
 
@@ -293,6 +295,12 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
     }
 
+    Int_t pdgCodeTrackMc = 0;
+    if (isMC) {
+      AliVParticle *mcParticle = mcEvent->GetTrack(TMath::Abs(track->GetLabel()));
+      pdgCodeTrackMc = TMath::Abs(mcParticle->PdgCode());
+    }
+
     if (fTreemode && track->GetTPCsignal() > fMindEdx && std::abs(fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4])) < 6)
     {
       //tP = track->GetInnerParam()->GetP();
@@ -309,6 +317,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tID = track->GetID();
       tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
       tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
+      tPdgCodeMc = pdgCodeTrackMc;
       fTreeTrack->Fill();
     }
 

@@ -75,6 +75,7 @@ private:
   Int_t tTOFclsN;         // number of cluster candidates in TOF
   Int_t tTRDclsN;         // number of TRD clusters attached to the track
   Int_t tID;              // identification number of the track
+  Int_t tPdgCodeMc;       // pdg code of the track if MC information is available
   
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
