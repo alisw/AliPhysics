@@ -70,7 +70,8 @@ public:
   void     Print(const Option_t*) const;
 
   /// Non linearity enum list of possible parametrizations. 
-  /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
+  /// Recomended for data kTestBeamShaper and for simulation kTestBeamFinalMC
+  /// (this also requires enableShaperCorrection: true in the .yaml configuration for data)
   enum     NonlinearityFunctions
   { 
     kPi0MC   = 0, kPi0GammaGamma = 1,
@@ -86,7 +87,9 @@ public:
     kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
     kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
     kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
-    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
+    kPi0MCNS = 19,             // Custom fit of all avail. TB points and E>100 GeV MC
+    kTestBeamShaper = 20,      // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL
+    kTestBeamFinalMC = 21      // Final/official fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms

@@ -1278,7 +1278,34 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
       break;
     }  
+    case kTestBeamShaper:
+    {
+      // THIS PARAMETRIZATION HAS TO BE USED TOGETHER WITH THE SHAPER NONLINEARITY: 
+      // Final parametrization of testbeam data points, 
+      // includes also points for E>100 GeV and determined on shaper corrected data.
 
+    //  fNonLinearityParams[0] = 1.91897;
+    //  fNonLinearityParams[1] = 0.0264988;
+    //  fNonLinearityParams[2] = 0.965663;
+    //  fNonLinearityParams[3] = -187.501;
+    //  fNonLinearityParams[4] = 2762.51;
+      energy /= ( 1.0505 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+      
+      break;
+    }
+    case kTestBeamFinalMC:
+    {
+      // Final parametrization of testbeam MC points, 
+      // includes also points for E>100 GeV
+
+    //  fNonLinearityParams[0] = 1.09357;
+    //  fNonLinearityParams[1] = 0.0192266;
+    //  fNonLinearityParams[2] = 0.291993;
+    //  fNonLinearityParams[3] = 370.927;
+    //  fNonLinearityParams[4] = 694.656;
+      energy /= ( 1.00 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+      break;
+    }
     
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
@@ -1479,7 +1506,7 @@ if (fNonLinearityFunction == kPCMv1) {
     fNonLinearityParams[4] = 0.;
     fNonLinearityParams[5] = 0.;
     fNonLinearityParams[6] = 0.;
-  }
+}
 
  if (fNonLinearityFunction == kPCMplusBTCv1) {
    // test beam corrected values convoluted with symmetric meson decays values
@@ -1510,6 +1537,21 @@ if (fNonLinearityFunction == kPCMv1) {
    fNonLinearityParams[4] =  1.0;
    fNonLinearityParams[5] =  0.0;
    fNonLinearityParams[6] =  0.0;
+ }
+
+ if (fNonLinearityFunction == kTestBeamShaper) {
+   fNonLinearityParams[0] =  1.91897;
+   fNonLinearityParams[1] =  0.0264988;
+   fNonLinearityParams[2] =  0.965663;
+   fNonLinearityParams[3] =  -187.501;
+   fNonLinearityParams[4] =  2762.51;
+ }
+ if (fNonLinearityFunction == kTestBeamFinalMC) {
+   fNonLinearityParams[0] =  1.09357;
+   fNonLinearityParams[1] =  0.0192266;
+   fNonLinearityParams[2] =  0.291993;
+   fNonLinearityParams[3] =  370.927;
+   fNonLinearityParams[4] =  694.656;
  }
 }
 

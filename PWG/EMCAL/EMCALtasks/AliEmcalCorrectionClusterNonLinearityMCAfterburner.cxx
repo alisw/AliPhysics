@@ -186,11 +186,13 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 //________________________________________________________________________
 TString AliEmcalCorrectionClusterNonLinearityMCAfterburner::SummarizeMCProductions(TString namePeriod)
 {
+  // Globally valid testbeam fine tuning (separate values for Run1 and Run2)
+  if ( namePeriod.CompareTo("kTestBeamFinalMCRun2") == 0  )    return "kTestBeamFinalMCRun2";
+  else if ( namePeriod.CompareTo("kTestBeamFinalMCRun1") == 0  )    return "kTestBeamFinalMCRun1";
   //...MC anchored to 2015 Data...
-  //
   // pp 13 TeV
   // - 2015 MB pass 2
-  if ( namePeriod.CompareTo("LHC15P2Pyt8") == 0 ||
+  else if ( namePeriod.CompareTo("LHC15P2Pyt8") == 0 ||
       namePeriod.CompareTo("LHC17i4") == 0 ||
       namePeriod.CompareTo("LHC17i4_2") == 0 ||
       namePeriod.CompareTo("LHC17g7") == 0 )              return "kPP13T15P2Pyt8";
@@ -367,6 +369,31 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     //These are the standard parameters extracted from the PCM method (one hit in EMCal + one converted gamma)
     case kPCM_EMCal:
+      // globally valid Run2 fine tuning for the testbeam+shaper corrected clusters
+      if( namePeriod=="kTestBeamFinalMCRun2") {
+        fNonLinearityAfterburnerFunction = 1;
+        //There are no extracted parameters yet
+        //Iteration-1 paramters
+        fNLAfterburnerPara[0] = 0.987912;
+        fNLAfterburnerPara[1] = -2.94105;
+        fNLAfterburnerPara[2] = -0.273207;
+        //Iteration-2 parameters
+        fNLAfterburnerPara[3] = 0;
+        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[5] = 0;
+      }
+      if( namePeriod=="kTestBeamFinalMCRun1") {
+        fNonLinearityAfterburnerFunction = 1;
+        //There are no extracted parameters yet
+        //Iteration-1 paramters
+        fNLAfterburnerPara[0] = 0.987912;
+        fNLAfterburnerPara[1] = -2.94105;
+        fNLAfterburnerPara[2] = -0.273207;
+        //Iteration-2 parameters
+        fNLAfterburnerPara[3] = -0.0125; // Run1 additional correction factor of 1.25%
+        fNLAfterburnerPara[4] = 0;
+        fNLAfterburnerPara[5] = 0;
+      }
       // pp 5.02 TeV (2015) - LHC15n
       if( namePeriod=="k16h3" ||  namePeriod=="k17e2" || namePeriod == "k18j3") {
         fNonLinearityAfterburnerFunction = 1;
