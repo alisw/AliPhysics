@@ -1244,45 +1244,48 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
 
-  if(fAODEvent){
-
-    if(fConversionGammas == NULL){
-      fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
-    }
-    fConversionGammas->Delete();//Reset the TClonesArray
-
-    //Get Gammas from satellite AOD gamma branch
-
-    AliAODConversionPhoton *gamma=0x0;
-
-    TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-
-    if(!fInputGammas){
-      FindDeltaAODBranchName();
-      fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
-    if(!fInputGammas){AliError("No Gamma Satellites found");return kFALSE;}
-    // Apply Selection Cuts to Gammas and create local working copy
-    if(fInputGammas){
-      Bool_t relabelingWorkedForAll = kTRUE;
-      for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
-        gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
-        if(gamma){
-          if(fRelabelAODs) {
-            relabelingWorkedForAll &= RelabelAODPhotonCandidates(gamma);}
-          if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
-            new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
-        }
-      }
-      if (!relabelingWorkedForAll){
-        AliError("For one ore more photon candidate the AOD daughters could not be found. The labels of those were set to -999999 and the event will get rejected.");
-        return kFALSE;
-      }
-    }
+  if(!fAODEvent){
+    AliFatal("fInputEvent was not a AliAODEvent but we are in an AOD function.");
+    return kFALSE;
   }
 
-  if(fConversionGammas->GetEntries()){return kTRUE;}
+  if(fConversionGammas == NULL){
+    fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
+  }
+  fConversionGammas->Delete();//Reset the TClonesArray
 
-  return kFALSE;
+  //Get Gammas from satellite AOD gamma branch
+
+  AliAODConversionPhoton *gamma=0x0;
+
+  TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
+
+  if(!fInputGammas){
+    FindDeltaAODBranchName();
+    fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
+  if(!fInputGammas){
+    AliError("No Gamma Satellites found");
+    return kFALSE;}
+
+  // Apply Selection Cuts to Gammas and create local working copy
+  Bool_t relabelingWorkedForAll = kTRUE;
+  for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
+    gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
+    if(!gamma){
+      AliError("Non AliAODConversionPhoton type entry in fInputGammas. This event will get rejected.");
+      return kFALSE;          
+    }
+    if(fRelabelAODs){
+      relabelingWorkedForAll &= RelabelAODPhotonCandidates(gamma);}
+    if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
+      new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
+  }
+  if(!relabelingWorkedForAll){
+    AliError("For one or more photon candidate the AOD daughters could not be found. The labels of those were set to -999999 and the event will get rejected.");
+    return kFALSE;
+  }
+    
+  return kTRUE;
 }
 
 //________________________________________________________________________
