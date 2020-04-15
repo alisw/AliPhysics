@@ -206,7 +206,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
         fHistBgGap[bCent][bPVz]->Fill(eta1, phi1);
         nAcc+=1.0;
         mpT+= track1->Pt();
-        for(Int_t j(i+1); j < nTracks; j++) {
+        for(Int_t j(0); j < nTracks; j++) {
             AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
             if(!track2 || !track2->TestFilterBit(fFB)) continue;
             if(fabs(track2->Eta()) > fEta) continue;//eta cut
@@ -251,7 +251,7 @@ void AliAnalysisTaskLongFluctuations2PC::UserExec(Option_t *)
                  fHistBgGapMC[bCent]->Fill(eta1, phi1);
                  nAccMC+=1.0;
                  mpT+= p1->Pt();
-                 for (Int_t j(i+1); j < nMCTracks; j++) {
+                 for (Int_t j(0); j < nMCTracks; j++) {
                        AliAODMCParticle *p2=(AliAODMCParticle*)stack->UncheckedAt(j);
                        if (!p2) continue;
                        if(p2->Charge()!=-3 && p2->Charge()!=+3) continue;// x3 by convention
