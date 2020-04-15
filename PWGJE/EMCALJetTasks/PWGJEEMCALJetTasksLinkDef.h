@@ -251,6 +251,9 @@
 #ifdef HAVE_FASTJET
 // Classes which need direct access only to Fastjet objects (not
 // needed if wrapped into ALICE objects)
+#ifdef __CLING__
+#pragma link C++ class AliFJWrapper;
+#endif
 #pragma link C++ class AliEmcalJetUtility+;
 #pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
