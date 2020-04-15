@@ -140,9 +140,9 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void FillQAPlotsMC(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
       AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
 
-    void PhotonSelectionCalo(std::set<UInt_t>* dropOutGammas_CALO);
-    void PhotonSelectionPCM(std::set<UInt_t>* dropOutGammas_PCM);
-    void PhotonSelectionMixed(std::set<UInt_t>* dropOutGammas_CALO, std::set<UInt_t>* dropOutGammas_PCM);
+    void PhotonSelectionCalo();
+    void PhotonSelectionPCM();
+    void PhotonSelectionMixed();
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
@@ -353,12 +353,14 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TRandom3                fRandom;                                            // random
     TGenPhaseSpace          fGenPhaseSpace;                                     // For generation of decays into pi0n and photon
     Int_t                   fPhotonSelectionMode;                               // mode for the photon selection: 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
+    std::set<UInt_t>        dropOutGammas_CALO;                                 // Container to keep track of calo gamma candidates that are already used in a pi0 reco
+    std::set<UInt_t>        dropOutGammas_PCM;                                  // Container to keep track of PCM gamma candidates that are already used in a pi0 reco
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 18);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 19);
 };
 
 #endif
