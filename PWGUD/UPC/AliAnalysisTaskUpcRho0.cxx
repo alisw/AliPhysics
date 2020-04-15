@@ -37,6 +37,7 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 // #include "AliESDMuonTrack.h"
 // #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
@@ -352,6 +353,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
+    // geometrical cut
+    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+	if (fOption.Contains("GeoCut")) esdTrackCuts->SetCutGeoNcrNcl(3.,130.,1.5,0.85,0.7);
+
     if( !trk ) continue;
  	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
