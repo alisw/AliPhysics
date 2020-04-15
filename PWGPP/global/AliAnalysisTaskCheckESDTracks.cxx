@@ -89,6 +89,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistDeltaPtTPCInwVsPhiTPCselHighPt{nullptr},
   fHistPtTPCInwVsPtTPCselITSref{nullptr},
   fHistPtTPCInwVsPtTPCselSPDany{nullptr},
+  fHistPtTPCInwVsPtVsPtTrueTPCsel{nullptr},
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref{nullptr},
   fHistEtaPhiPtInnerTPCsel{nullptr},
   fHistEtaPhiPtInnerTPCselITSref{nullptr},
   fHistEtaPhiPtInnerTPCselSPDany{nullptr},
@@ -260,6 +262,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistDeltaPtTPCInwVsPhiTPCselHighPt;
     delete fHistPtTPCInwVsPtTPCselITSref;
     delete fHistPtTPCInwVsPtTPCselSPDany;
+    delete fHistPtTPCInwVsPtVsPtTrueTPCsel;
+    delete fHistPtTPCInwVsPtVsPtTrueTPCselITSref;
     delete fHistEtaPhiPtInnerTPCsel;
     delete fHistEtaPhiPtInnerTPCselITSref;
     delete fHistEtaPhiPtInnerTPCselSPDany;
@@ -570,7 +574,13 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistDeltaPtTPCInwVsPhiTPCselHighPt);
   fOutput->Add(fHistPtTPCInwVsPtTPCselITSref);
   fOutput->Add(fHistPtTPCInwVsPtTPCselSPDany);
+
+  fHistPtTPCInwVsPtVsPtTrueTPCsel = new TH3F("hPtTPCInwVsPtVsPtTrueTPCsel"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c) ; p_{T}^{true} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new TH3F("hPtTPCInwVsPtVsPtTrueTPCselITSref"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c) ; p_{T}^{true} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
+  fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCsel);
+  fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCselITSref);
   
+
   
   fHistEtaPhiPtInnerTPCsel = new TH3F("hEtaPhiPtInnerTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtInnerTPCselITSref = new TH3F("hEtaPhiPtInnerTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -1069,8 +1079,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(pttrack<1) fHistDeltaPtTPCInwVsPhiTPCselLowPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>1 && pttrack<3) fHistDeltaPtTPCInwVsPhiTPCselMidPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>3) fHistDeltaPtTPCInwVsPhiTPCselHighPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
+      if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(pttrack,pttrack0tpc,ptgen);
       if(itsRefit){
 	fHistPtTPCInwVsPtTPCselITSref->Fill(pttrack,pttrack0tpc);
+	if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(pttrack,pttrack0tpc,ptgen);
 	if(spdAny) fHistPtTPCInwVsPtTPCselSPDany->Fill(pttrack,pttrack0tpc);
       }
     }
