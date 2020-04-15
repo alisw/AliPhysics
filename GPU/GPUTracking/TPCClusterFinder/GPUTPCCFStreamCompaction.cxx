@@ -20,6 +20,8 @@
 #include "GPUTPCCFStreamCompaction.h"
 #include "GPUCommonAlgorithm.h"
 
+#include "ChargePos.h"
+
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
@@ -34,10 +36,10 @@ GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::nativeS
   nativeScanUpStartImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, clusterer.mPisPeak, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, clusterer.mPbuf + iBuf * clusterer.mBufSize, nElems);
 }
 
-GPUd() void GPUTPCCFStreamCompaction::nativeScanUpStartImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
-                                                            const uchar* predicate,
-                                                            int* sums,
-                                                            int* incr, int nElems)
+GPUdii() void GPUTPCCFStreamCompaction::nativeScanUpStartImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
+                                                              const uchar* predicate,
+                                                              int* sums,
+                                                              int* incr, int nElems)
 {
   int idx = get_global_id(0);
   int pred = predicate[idx];
@@ -65,9 +67,9 @@ GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::nativeS
   nativeScanUpImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, clusterer.mPbuf + iBuf * clusterer.mBufSize, nElems);
 }
 
-GPUd() void GPUTPCCFStreamCompaction::nativeScanUpImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
-                                                       int* sums,
-                                                       int* incr, int nElems)
+GPUdii() void GPUTPCCFStreamCompaction::nativeScanUpImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
+                                                         int* sums,
+                                                         int* incr, int nElems)
 {
   int idx = get_global_id(0);
   int scanRes = work_group_scan_inclusive_add((idx < nElems) ? sums[idx] : 0);
@@ -93,7 +95,7 @@ GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::nativeS
   nativeScanTopImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, nElems);
 }
 
-GPUd() void GPUTPCCFStreamCompaction::nativeScanTopImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, int* incr, int nElems)
+GPUdii() void GPUTPCCFStreamCompaction::nativeScanTopImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, int* incr, int nElems)
 {
   int idx = get_global_id(0);
 
@@ -109,10 +111,10 @@ GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::nativeS
   nativeScanDownImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, clusterer.mPbuf + iBuf * clusterer.mBufSize, offset, nElems);
 }
 
-GPUd() void GPUTPCCFStreamCompaction::nativeScanDownImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
-                                                         int* sums,
-                                                         const int* incr,
-                                                         unsigned int offset, int nElems)
+GPUdii() void GPUTPCCFStreamCompaction::nativeScanDownImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
+                                                           int* sums,
+                                                           const int* incr,
+                                                           unsigned int offset, int nElems)
 {
   int gid = get_group_id(0);
   int idx = get_global_id(0) + offset;
@@ -125,11 +127,11 @@ GPUd() void GPUTPCCFStreamCompaction::nativeScanDownImpl(int nBlocks, int nThrea
 }
 
 template <>
-GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::compactDigit>(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer, int iBuf, int stage, deprecated::PackedDigit* in, deprecated::PackedDigit* out)
+GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::compact>(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer, int iBuf, int stage, ChargePos* in, ChargePos* out)
 {
   unsigned int nElems = compactionElems(clusterer, stage);
   size_t bufferSize = (stage) ? clusterer.mNMaxClusters : clusterer.mNMaxPeaks;
-  compactDigitImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, in, out, clusterer.mPisPeak, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, clusterer.mPbuf + iBuf * clusterer.mBufSize, nElems, bufferSize);
+  compactImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, in, out, clusterer.mPisPeak, clusterer.mPbuf + (iBuf - 1) * clusterer.mBufSize, clusterer.mPbuf + iBuf * clusterer.mBufSize, nElems, bufferSize);
   unsigned int lastId = get_global_size(0) - 1;
   if ((unsigned int)get_global_id(0) == lastId) {
     if (stage) {
@@ -140,14 +142,14 @@ GPUdii() void GPUTPCCFStreamCompaction::Thread<GPUTPCCFStreamCompaction::compact
   }
 }
 
-GPUd() void GPUTPCCFStreamCompaction::compactDigitImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
-                                                       const Digit* in,
-                                                       Digit* out,
-                                                       const uchar* predicate,
-                                                       int* newIdx,
-                                                       const int* incr,
-                                                       int nElems,
-                                                       size_t bufferSize)
+GPUdii() void GPUTPCCFStreamCompaction::compactImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
+                                                    const ChargePos* in,
+                                                    ChargePos* out,
+                                                    const uchar* predicate,
+                                                    int* newIdx,
+                                                    const int* incr,
+                                                    int nElems,
+                                                    size_t bufferSize)
 {
   int gid = get_group_id(0);
   int idx = get_global_id(0);
@@ -174,7 +176,7 @@ GPUd() void GPUTPCCFStreamCompaction::compactDigitImpl(int nBlocks, int nThreads
   }
 }
 
-GPUd() int GPUTPCCFStreamCompaction::compactionElems(processorType& clusterer, int stage)
+GPUdii() int GPUTPCCFStreamCompaction::compactionElems(processorType& clusterer, int stage)
 {
   return (stage) ? clusterer.mPmemory->counters.nPeaks : clusterer.mPmemory->counters.nDigits;
 }

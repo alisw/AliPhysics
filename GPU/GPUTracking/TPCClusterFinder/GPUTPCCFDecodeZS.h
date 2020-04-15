@@ -35,7 +35,7 @@ class GPUTPCClusterFinder;
 class GPUTPCCFDecodeZS : public GPUKernelTemplate
 {
  public:
-  struct GPUSharedMemory {
+  struct GPUSharedMemory /*: public GPUKernelTemplate::GPUSharedMemoryScan64<int, GPUCA_WARP_SIZE>*/ {
     CA_SHARED_STORAGE(unsigned int ZSPage[o2::tpc::TPCZSHDR::TPC_ZS_PAGE_SIZE / sizeof(unsigned int)]);
     unsigned int RowClusterOffset[o2::tpc::TPCZSHDR::TPC_MAX_ZS_ROW_IN_ENDPOINT];
     unsigned int nRowsRegion;
@@ -43,6 +43,7 @@ class GPUTPCCFDecodeZS : public GPUKernelTemplate
     unsigned int nThreadsPerRow;
     unsigned int rowStride;
     unsigned int decodeBits;
+    GPUAtomic(unsigned int) rowOffsetCounter;
     float decodeBitsFactor;
   };
 
@@ -50,7 +51,7 @@ class GPUTPCCFDecodeZS : public GPUKernelTemplate
     decodeZS,
   };
 
-  static GPUd() void decode(GPUTPCClusterFinder& clusterer, GPUSharedMemory& s, int nBlocks, int nThreads, int iBlock, int iThread);
+  static GPUd() void decode(GPUTPCClusterFinder& clusterer, GPUSharedMemory& s, int nBlocks, int nThreads, int iBlock, int iThread, int bcShiftInFirstHBF);
 
 #ifdef HAVE_O2HEADERS
   typedef GPUTPCClusterFinder processorType;

@@ -371,7 +371,7 @@ int GPUTPCTrackerComponent::Configure(const char* cdbEntry, const char* chainId,
   return iResult1 ? iResult1 : (iResult2 ? iResult2 : iResult3);
 }
 
-void GPUTPCTrackerComponent::ConfigureSlices()
+int GPUTPCTrackerComponent::ConfigureSlices()
 {
   // Initialize the tracker slices
   GPUSettingsRec rec;
@@ -404,7 +404,7 @@ void GPUTPCTrackerComponent::ConfigureSlices()
 
   fRec->SetSettings(&ev, &rec, &devProc, &steps);
   fChain->LoadClusterErrors();
-  fRec->Init();
+  return fRec->Init();
 }
 
 void* GPUTPCTrackerComponent::TrackerInit(void* par)
@@ -416,7 +416,9 @@ void* GPUTPCTrackerComponent::TrackerInit(void* par)
   }
   fChain = fRec->AddChain<GPUChainTracking>();
 
-  ConfigureSlices();
+  if (ConfigureSlices()) {
+    return ((void*)-1);
+  }
   return (nullptr);
 }
 

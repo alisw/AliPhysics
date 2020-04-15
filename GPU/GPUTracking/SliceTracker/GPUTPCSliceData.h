@@ -130,6 +130,7 @@ class GPUTPCSliceData
  */
   MEM_TEMPLATE()
   GPUhd() int ClusterDataIndex(const MEM_TYPE(GPUTPCRow) & row, unsigned int hitIndex) const;
+  GPUd() GPUglobalref() const int* ClusterDataIndex() const { return mClusterDataIndex; }
 
   /**
  * Return the row object for the given row index.
@@ -154,6 +155,7 @@ class GPUTPCSliceData
   int PackHitData(GPUTPCRow* row, const GPUTPCHit* binSortedHits);
 #endif
   friend class GPUTPCNeighboursFinder;
+  friend class GPUTPCStartHitsFinder;
 
   int mNumberOfHits; // the number of hits in this slice
   int mNumberOfHitsPlusAlign;

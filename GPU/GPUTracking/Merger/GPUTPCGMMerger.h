@@ -27,6 +27,7 @@
 #include "GPUTPCGMSliceTrack.h"
 #include "GPUCommonDef.h"
 #include "GPUProcessor.h"
+#include "GPUTPCGMMergerTypes.h"
 
 #if !defined(GPUCA_GPUCODE)
 #include <cmath>
@@ -103,16 +104,10 @@ class GPUTPCGMMerger : public GPUProcessor
   GPUhd() unsigned int* TrackOrderProcess() const { return mTrackOrderProcess; }
   GPUd() unsigned int NSlowTracks() const { return mNSlowTracks; }
 
-  enum attachTypes { attachAttached = 0x40000000,
-                     attachGood = 0x20000000,
-                     attachGoodLeg = 0x10000000,
-                     attachTube = 0x08000000,
-                     attachHighIncl = 0x04000000,
-                     attachTrackMask = 0x03FFFFFF,
-                     attachFlagMask = 0xFC000000 };
-
   short MemoryResMerger() { return mMemoryResMerger; }
   short MemoryResRefit() { return mMemoryResRefit; }
+
+  int RefitSliceTrack(GPUTPCGMSliceTrack& sliceTrack, const GPUTPCSliceOutTrack* inTrack, float alpha, int slice);
 
   void UnpackSlices();
   void MergeCEInit();

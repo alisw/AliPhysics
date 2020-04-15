@@ -114,7 +114,7 @@
     #define GPUsharedref() GPUshared()
     #define GPUglobalref() GPUglobal()
   #endif
-  #if (!defined(__OPENCLCPP__) || !defined(GPUCA_OPENCLCPP_NO_CONSTANT_MEMORY))
+  #if (!defined(__OPENCLCPP__) || !defined(GPUCA_NO_CONSTANT_MEMORY))
     #define GPUconstantref() GPUconstant()
   #endif
 #elif defined(__HIPCC__) //Defines for HIP
@@ -138,7 +138,7 @@
   #else
     #define GPUglobal()
   #endif
-  #define GPUconstant()
+  #define GPUconstant() __constant__
   #define GPUconstexpr() __constant__
   #define GPUprivate()
   #define GPUgeneric()
@@ -157,7 +157,7 @@
   #define GPUg() __global__
   #define GPUshared() __shared__
   #define GPUglobal()
-  #define GPUconstant()
+  #define GPUconstant() __constant__
   #define GPUconstexpr() __constant__
   #define GPUprivate()
   #define GPUgeneric()
@@ -165,7 +165,10 @@
   #define GPUAtomic(type) type
 #endif
 
-#if (defined(__CUDACC__) && defined(GPUCA_CUDA_NO_CONSTANT_MEMORY)) || (defined(__HIPCC__) && defined(GPUCA_HIP_NO_CONSTANT_MEMORY)) || (defined(__OPENCL__) && !defined(__OPENCLCPP__) && defined(GPUCA_OPENCL_NO_CONSTANT_MEMORY)) || (defined(__OPENCLCPP__) && defined(GPUCA_OPENCLCPP_NO_CONSTANT_MEMORY))
+#ifdef GPUCA_CONSTANT_AS_ARGUMENT
+  #undef GPUconstant
+  #define GPUconstant()
+#elif defined(GPUCA_NO_CONSTANT_MEMORY)
   #undef GPUconstant
   #define GPUconstant() GPUglobal()
 #endif

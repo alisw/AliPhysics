@@ -42,7 +42,7 @@ extern "C" int gl3wInit();
 #include "DebugGUI/imgui.h"
 #include "DebugGUI/imgui_impl_glfw_gl3.h"
 #endif
-#include "Framework/DebugGUI.h"
+#include <DebugGUI/DebugGUI.h>
 #endif
 
 using namespace GPUCA_NAMESPACE::gpu;

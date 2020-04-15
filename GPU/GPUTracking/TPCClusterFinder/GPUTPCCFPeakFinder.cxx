@@ -32,10 +32,10 @@ GPUdii() void GPUTPCCFPeakFinder::Thread<GPUTPCCFPeakFinder::findPeaks>(int nBlo
 {
   Array2D<PackedCharge> chargeMap(reinterpret_cast<PackedCharge*>(clusterer.mPchargeMap));
   Array2D<uchar> isPeakMap(clusterer.mPpeakMap);
-  findPeaksImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, chargeMap, clusterer.mPdigits, clusterer.mPmemory->counters.nDigits, clusterer.mPisPeak, isPeakMap);
+  findPeaksImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, chargeMap, clusterer.mPpositions, clusterer.mPmemory->counters.nDigits, clusterer.mPisPeak, isPeakMap);
 }
 
-GPUd() bool GPUTPCCFPeakFinder::isPeakScratchPad(
+GPUdii() bool GPUTPCCFPeakFinder::isPeakScratchPad(
   GPUSharedMemory& smem,
   Charge q,
   const ChargePos& pos,
@@ -94,7 +94,7 @@ GPUd() bool GPUTPCCFPeakFinder::isPeakScratchPad(
   return peak;
 }
 
-GPUd() bool GPUTPCCFPeakFinder::isPeak(
+GPUdii() bool GPUTPCCFPeakFinder::isPeak(
   Charge myCharge,
   const ChargePos& pos,
   const Array2D<PackedCharge>& chargeMap)
@@ -158,7 +158,7 @@ GPUd() bool GPUTPCCFPeakFinder::isPeak(
 
 GPUd() void GPUTPCCFPeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem,
                                               const Array2D<PackedCharge>& chargeMap,
-                                              const Digit* digits,
+                                              const ChargePos* positions,
                                               uint digitnum,
                                               uchar* isPeakPredicate,
                                               Array2D<uchar>& peakMap)
@@ -168,15 +168,14 @@ GPUd() void GPUTPCCFPeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBl
   // For certain configurations dummy work items are added, so the total
   // number of work items is dividable by 64.
   // These dummy items also compute the last digit but discard the result.
-  Digit myDigit = digits[CAMath::Min(idx, (size_t)(digitnum - 1))];
-
-  ChargePos pos(myDigit);
+  ChargePos pos = positions[CAMath::Min(idx, (size_t)(digitnum - 1))];
+  Charge charge = chargeMap[pos].unpack();
 
   uchar peak;
 #if defined(BUILD_CLUSTER_SCRATCH_PAD)
-  peak = isPeakScratchPad(smem, myDigit.charge, pos, SCRATCH_PAD_SEARCH_N, chargeMap, smem.posBcast, smem.buf);
+  peak = isPeakScratchPad(smem, charge, pos, SCRATCH_PAD_SEARCH_N, chargeMap, smem.posBcast, smem.buf);
 #else
-  peak = isPeak(myDigit.charge, pos, chargeMap);
+  peak = isPeak(charge, pos, chargeMap);
 #endif
 
   // Exit early if dummy. See comment above.
@@ -187,5 +186,5 @@ GPUd() void GPUTPCCFPeakFinder::findPeaksImpl(int nBlocks, int nThreads, int iBl
 
   isPeakPredicate[idx] = peak;
 
-  peakMap[pos] = (uchar(myDigit.charge > CHARGE_THRESHOLD) << 1) | peak;
+  peakMap[pos] = (uchar(charge > CHARGE_THRESHOLD) << 1) | peak;
 }

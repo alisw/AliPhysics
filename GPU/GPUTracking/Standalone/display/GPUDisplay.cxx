@@ -103,7 +103,7 @@ GPUDisplay::GPUDisplay(GPUDisplayBackend* backend, GPUChainTracking* rec, GPUQA*
 
 const GPUParam& GPUDisplay::param() { return mChain->GetParam(); }
 const GPUTPCTracker& GPUDisplay::sliceTracker(int iSlice) { return mChain->GetTPCSliceTrackers()[iSlice]; }
-const GPUTRDTracker& GPUDisplay::trdTracker() { return *mChain->GetTRDTracker(); }
+const GPUTRDTrackerGPU& GPUDisplay::trdTracker() { return *mChain->GetTRDTracker(); }
 const GPUTrackingInOutPointers GPUDisplay::ioptrs() { return mChain->mIOPtrs; }
 
 inline void GPUDisplay::drawVertices(const vboList& v, const GLenum t)
@@ -722,14 +722,14 @@ GPUDisplay::vboList GPUDisplay::DrawClusters(const GPUTPCTracker& tracker, int s
           if (mQA && mQA->clusterRemovable(cid, mMarkAdjacentClusters == 17)) {
             draw = select == tMARKED;
           }
-        } else if ((mMarkAdjacentClusters & 2) && (attach & GPUTPCGMMerger::attachTube)) {
+        } else if ((mMarkAdjacentClusters & 2) && (attach & GPUTPCGMMergerTypes::attachTube)) {
           draw = select == tMARKED;
-        } else if ((mMarkAdjacentClusters & 1) && (attach & (GPUTPCGMMerger::attachGood | GPUTPCGMMerger::attachTube)) == 0) {
+        } else if ((mMarkAdjacentClusters & 1) && (attach & (GPUTPCGMMergerTypes::attachGood | GPUTPCGMMergerTypes::attachTube)) == 0) {
           draw = select == tMARKED;
-        } else if ((mMarkAdjacentClusters & 4) && (attach & GPUTPCGMMerger::attachGoodLeg) == 0) {
+        } else if ((mMarkAdjacentClusters & 4) && (attach & GPUTPCGMMergerTypes::attachGoodLeg) == 0) {
           draw = select == tMARKED;
         } else if (mMarkAdjacentClusters & 8) {
-          if (fabsf(mMerger.OutputTracks()[attach & GPUTPCGMMerger::attachTrackMask].GetParam().GetQPt()) > 20.f) {
+          if (fabsf(mMerger.OutputTracks()[attach & GPUTPCGMMergerTypes::attachTrackMask].GetParam().GetQPt()) > 20.f) {
             draw = select == tMARKED;
           }
         }
@@ -801,7 +801,7 @@ GPUDisplay::vboList GPUDisplay::DrawSeeds(const GPUTPCTracker& tracker)
     return (vboList(0, 0, iSlice));
   }
   size_t startCount = mVertexBufferStart[iSlice].size();
-  for (unsigned int i = 0; i < *tracker.NTracklets(); i++) {
+  for (unsigned int i = 0; i < *tracker.NStartHits(); i++) {
     const GPUTPCHitId& hit = tracker.TrackletStartHit(i);
     size_t startCountInner = mVertexBuffer[iSlice].size();
     int ir = hit.RowIndex();
@@ -833,11 +833,7 @@ GPUDisplay::vboList GPUDisplay::DrawTracklets(const GPUTPCTracker& tracker)
     size_t startCountInner = mVertexBuffer[iSlice].size();
     float4 oldpos;
     for (int j = tracklet.FirstRow(); j <= tracklet.LastRow(); j++) {
-#ifdef GPUCA_EXTERN_ROW_HITS
-      const calink rowHit = tracker.TrackletRowHits()[j * *tracker.NTracklets() + i];
-#else
-      const calink rowHit = tracklet.RowHit(j);
-#endif
+      const calink rowHit = tracker.TrackletRowHits()[tracklet.FirstHit() + (j - tracklet.FirstRow())];
       if (rowHit != CALINK_INVAL) {
         const GPUTPCRow& row = tracker.Data().Row(j);
         const int cid = GET_CID(iSlice, tracker.Data().ClusterDataIndex(row, rowHit));
@@ -961,14 +957,15 @@ void GPUDisplay::DrawFinal(int iSlice, int /*iCol*/, GPUTPCGMPropagator* prop, s
         float alpha = param().Alpha(slice);
         if (iMC == 0) {
           trkParam.Set(track->GetParam());
-          ZOffset = track->GetParam().GetZOffset();
           auto cl = mMerger.Clusters()[track->FirstClusterRef() + lastCluster];
           if (mMerger.Param().earlyTpcTransform) {
             x = cl.x;
+            ZOffset = track->GetParam().GetTZOffset();
           } else {
             const auto& cln = mMerger.GetConstantMem()->ioPtrs.clustersNative->clustersLinear[cl.num];
             float y, z;
             GPUTPCConvertImpl::convert(*mMerger.GetConstantMem(), cl.slice, cl.row, cln.getPad(), cln.getTime(), x, y, z);
+            ZOffset = mMerger.GetConstantMem()->calibObjects.fastTransform->convTimeToZinTimeFrame(slice, track->GetParam().GetTZOffset(), mMerger.Param().continuousMaxTimeBin);
           }
         } else {
           const GPUTPCMCInfo& mc = ioptrs().mcInfosTPC[i];

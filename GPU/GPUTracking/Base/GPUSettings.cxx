@@ -32,7 +32,7 @@ void GPUSettingsRec::SetDefaults()
   ClusterError2CorrectionZ = 1.f;
   MinNTrackClusters = -1;
   MaxTrackQPt = 1.f / GPUCA_MIN_TRACK_PT_DEFAULT;
-  NWays = 1;
+  NWays = 3;
   NWaysOuter = false;
   RejectMode = 5;
   GlobalTracking = true;
@@ -53,6 +53,10 @@ void GPUSettingsRec::SetDefaults()
   fwdTPCDigitsAsClusters = 0;
   bz0Pt = 60;
   dropLoopers = false;
+  mergerCovSource = 2;
+  mergerInterpolateErrors = 1;
+  fitInProjections = -1;
+  fitPropagateBzOnly = -1;
 }
 
 void GPUSettingsEvent::SetDefaults()
@@ -68,6 +72,7 @@ void GPUSettingsProcessing::SetDefaults()
 {
   deviceType = GPUDataTypes::DeviceType::CPU;
   forceDeviceType = true;
+  master = nullptr;
 }
 
 void GPUSettingsDeviceProcessing::SetDefaults()
@@ -99,4 +104,5 @@ void GPUSettingsDeviceProcessing::SetDefaults()
   tpcCompressionGatherMode = 1;
   mergerSortTracks = 1;
   runMC = false;
+  memoryScalingFactor = 1.f;
 }

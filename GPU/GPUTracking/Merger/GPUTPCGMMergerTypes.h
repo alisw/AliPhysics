@@ -14,50 +14,41 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file ClusterAccumulator.h
-/// \author Felix Weiglhofer
+/// \file GPUTPCGMMergerTypes.h
+/// \author David Rohr
 
-#ifndef O2_GPU_CLUSTER_ACCUMULATOR_H
-#define O2_GPU_CLUSTER_ACCUMULATOR_H
+#ifndef GPUTPCGMMERGERTYPES_H
+#define GPUTPCGMMERGERTYPES_H
 
-#include "clusterFinderDefs.h"
-#include "PackedCharge.h"
+#include "GPUTPCDef.h"
 
 namespace GPUCA_NAMESPACE
 {
-
-namespace tpc
-{
-struct ClusterNative;
-}
-
 namespace gpu
 {
-
-struct ChargePos;
-
-class ClusterAccumulator
+namespace GPUTPCGMMergerTypes
 {
 
- public:
-  GPUd() Charge updateInner(PackedCharge, Delta2);
-  GPUd() Charge updateOuter(PackedCharge, Delta2);
+enum attachTypes { attachAttached = 0x40000000,
+                   attachGood = 0x20000000,
+                   attachGoodLeg = 0x10000000,
+                   attachTube = 0x08000000,
+                   attachHighIncl = 0x04000000,
+                   attachTrackMask = 0x03FFFFFF,
+                   attachFlagMask = 0xFC000000 };
 
-  GPUd() void finalize(const ChargePos&, Charge);
-  GPUd() void toNative(const ChargePos&, Charge, tpc::ClusterNative&) const;
-
- private:
-  float mQtot = 0;
-  float mPadMean = 0;
-  float mPadSigma = 0;
-  float mTimeMean = 0;
-  float mTimeSigma = 0;
-  uchar mSplitInTime = 0;
-  uchar mSplitInPad = 0;
-
-  GPUd() void update(Charge, Delta2);
+struct InterpolationErrorHit {
+  float posY;
+  float errorY;
+  float posZ;
+  float errorZ;
 };
 
+struct InterpolationErrors {
+  InterpolationErrorHit hit[GPUCA_MERGER_MAX_TRACK_CLUSTERS];
+};
+
+} // namespace GPUTPCGMMergerTypes
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 
