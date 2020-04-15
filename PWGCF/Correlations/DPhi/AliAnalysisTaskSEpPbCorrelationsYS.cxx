@@ -695,10 +695,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
    Int_t nspdtracks;
    if(fcollisiontype.Contains("HMPP")|| fcollisiontype.Contains("MBPP")|| fcollisiontype.Contains("pPb")) nspdtracks=200;
-   else nspdtracks=nspdtracks=3500;
-
-   fHistCentV0vsTracklets=new TH2F("fHistCentV0vsTracklets","fHistCentV0vsTracklets",100,0,100,nspdtracks,0,nspdtracks);
-   fOutputList->Add(fHistCentV0vsTracklets);
+   else nspdtracks=3500;
+   
+   
+   fHistCentV0vsTracklets=new TH2F("fHistCentV0vsTracklets","fHistCentV0vsTracklets",fmaxcent,0,fmaxcent,nspdtracks,0,nspdtracks);
+   if(fAnaMode!="FMDFMD") fOutputList->Add(fHistCentV0vsTracklets);
 
    //   fHistCentV0vsTrackletsbefore=new TH2F("fHistCentV0vsTrackletsbefore","fHistCentV0vsTrackletsbefore",100,0,100,nspdtracks,0,nspdtracks);
    //fOutputList->Add(fHistCentV0vsTrackletsbefore);
@@ -707,7 +708,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    if(fcollisiontype=="PbPb") nv0mult=10000;
    else nv0mult=5000;
    fHistV0vsTracks=new TH2F("fHistV0vsTracks","fHistV0vsTracks",nv0mult/2,0,nv0mult,nspdtracks,0,nspdtracks);
-   fOutputList->Add(fHistV0vsTracks);
+    if(fAnaMode!="FMDFMD") fOutputList->Add(fHistV0vsTracks);
    
    TTree *settingsTree = new TTree("UEAnalysisSettings", "Analysis Settings in UE estimation");
    settingsTree->Branch("fZVertex", &fZVertex, "fZVertex/D");
@@ -1934,7 +1935,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      UInt_t maskIsSelected = inEvMain->IsEventSelected();
      Bool_t isSelected     = kFALSE;
      if(fCentType=="V0M")  isSelected = ((maskIsSelected & AliVEvent::kHighMultV0)== AliVEvent::kHighMultV0);
-     //	 else if(fCentType=="Manual") isSelected = ((maskIsSelected & AliVEvent::kHighMultSPD)== AliVEvent::kHighMultSPD);
      else  isSelected = ((maskIsSelected & AliVEvent::kHighMultSPD)== AliVEvent::kHighMultSPD);
      if (!isSelected) {
        PostData(1, fOutputList);
@@ -1987,7 +1987,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    */
    //Pile up
    if(fcollisiontype.Contains("MBPP") || fcollisiontype.Contains("HMPP")){
-     Bool_t IsNotPileup = kTRUE;
+     Bool_t IsNotPileup = kFALSE;
      if( !fEvent->IsPileupFromSPDInMultBins() ) IsNotPileup = kTRUE;
      if(!IsNotPileup){
        PostData(1, fOutputList);
@@ -2061,16 +2061,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    // Multiplicity Object
    //if(fcollisiontype=="pPb" || fcollisiontype=="PP"){
      if(fCentType=="Manual"){
-       //       AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
+       AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
        //    if (!tracklets) return;
-       //       Int_t nTracklets = tracklets->GetNumberOfTracklets();
-       /*
+       Int_t nTracklets = tracklets->GetNumberOfTracklets();
        Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
        Int_t nTracks = fEvent->GetNumberOfTracks();
        fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
        fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
        lCentrality=nTracklets;
-       */
+       /*
        TObjArray *selectedTracksLeading = new TObjArray;
        selectedTracksLeading->SetOwner(kTRUE);
        selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
@@ -2078,6 +2077,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        lCentrality=nTracks;
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
+       */
      }else{
        lCentrality = multSelection->GetMultiplicityPercentile(fCentType);
        Int_t qual = multSelection->GetEvSelCode();
@@ -2341,6 +2341,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=2.25453;
        FMDcutcpar1=139.921;
        break;
+     case 11://pp 2 sigma cut
+       FMDcutapar0=1.2031;
+       FMDcutapar1=48.7486;
+       FMDcutcpar0=2.25453;
+       FMDcutcpar1=69.9606;
+       break;
      default: break;
      }
      
@@ -2447,10 +2453,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      
      Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
      Int_t nTracks = fEvent->GetNumberOfTracks();
-       fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
-       fh2_SPDV0_multcorr->Fill(nTracklets,fvzero->GetMTotV0A());
-       fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
-       
+
+     //     fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
+     //     fh2_SPDV0_multcorr->Fill(nTracklets,fvzero->GetMTotV0A()+fvzero->GetMTotV0C());
+     
+     fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
+     
        for (Int_t i = 0; i < nTracklets; i++) {
 	 Double_t dphi  = tracklets->GetDeltaPhi(i);
 	 
@@ -2488,10 +2496,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 
 
      Int_t nTracks;
-     if(fAnaMode!="FMDFMD")   nTracks=selectedTracksLeading->GetEntriesFast();
-     else  nTracks= fEvent->GetNumberOfTracks();
-     fHistCentV0vsTracklets->Fill(lCentrality,nTracks);
-     fHistV0vsTracks->Fill(nV0C_hits+nV0A_hits,nTracks);
+     if(fAnaMode!="FMDFMD") {  nTracks=selectedTracksLeading->GetEntriesFast();
+     //    else  nTracks= fEvent->GetNumberOfTracks();
+       fHistCentV0vsTracklets->Fill(lCentrality,nTracks);
+       fHistV0vsTracks->Fill(nV0C_hits+nV0A_hits,nTracks);
+     }
      
      DumpTObjTable("End of TPC/ITS track fill");
    
@@ -3995,6 +4004,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
 	  binscont[3] = centrality;
 	  binscont[4] = RangePhi(triggerPhi - associate->Phi());
 	  binscont[5] = fPrimaryZVtx;
+
 	  Float_t efficiency1=999.;
 	  if(fefficalib){
 	  Int_t iPt1=fhcorr[ivzbin-1]->GetXaxis()->FindBin(associate->Pt());
@@ -4002,7 +4012,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
 	  Int_t iPhi1=fhcorr[ivzbin-1]->GetZaxis()->FindBin(associate->Phi());
 	  efficiency1=fhcorr[ivzbin-1]->GetBinContent(iPt1,iEta1,iPhi1);
 	  }else  efficiency1=1.;
-	  if(efficiency==0.) continue;
+	  if(efficiency1==0.) continue;
 	  Int_t SpAsso = associate->WhichCandidate();
 	  if (fasso == "V0" || fasso == "Phi" || fasso == "Cascade" ||  (fasso == "PID")) {
 	    if (SpAsso < 0)          continue;
