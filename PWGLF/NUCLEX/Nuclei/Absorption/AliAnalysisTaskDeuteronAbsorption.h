@@ -100,7 +100,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 1);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 2);
 };
 
 #endif
