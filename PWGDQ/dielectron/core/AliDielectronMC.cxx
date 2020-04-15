@@ -3151,7 +3151,7 @@ Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair) const
 Bool_t AliDielectronMC::HaveSameGrandMother(const AliDielectronPair * pair) const
 {
   //
-  // Check whether two particles have the same mother
+  // Check whether two particles have the same grand mother
   //
 
   const AliVParticle * daughter1 = pair->GetFirstDaughterP();

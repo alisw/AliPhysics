@@ -104,8 +104,10 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetPhotonMass(photonMass);
   task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
   task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
-  task->SetUpperPreFilterMass(upperPreFilterMass);
-  task->SetLowerPreFilterMass(lowerPreFilterMass);
+  task->SetUpperPrimSecPreFilterMass(upperPrimSecPreFilterMass);
+  task->SetLowerPrimSecPreFilterMass(lowerPrimSecPreFilterMass);
+  task->SetUpperSecSecPreFilterMass(upperSecSecPreFilterMass);
+  task->SetLowerSecSecPreFilterMass(lowerSecSecPreFilterMass);
   task->SetMassCutSecondaries(massCutSecondaries);
 
 
@@ -161,6 +163,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
   // task->SetULSandLS(DoULSLS);
+  task->SetV0FinderStatus(V0OnFlyStatus); // used to define 'OnFlyStatus' of V0's
   task->SetUsePreFilter(UsePreFilter);
   task->SetUseSecPreFilter(UseSecPreFilter);
 
@@ -206,6 +209,17 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
     TString cutDefinition(arrNames_prim->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts_primary_PreFilter(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding PreFilter secondary electron track cutsettings
+  TObjArray*  arrNames_sec=names_Sec_Track_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_secondary_PreFilter(filter);
     DoAdditionalWork(task);
   }
 
