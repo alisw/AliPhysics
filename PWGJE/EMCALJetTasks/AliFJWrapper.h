@@ -4,14 +4,11 @@
 #include <vector>
 #include <TString.h>
 
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
 #if !defined(__CINT__)
-#endif
 
 #include "AliLog.h"
 #include "FJ_includes.h"
 #include "AliJetShape.h"
-
 
 class AliFJWrapper
 {
@@ -247,10 +244,8 @@ class AliFJWrapper
   AliFJWrapper(const AliFJWrapper& wrapper);
   AliFJWrapper& operator = (const AliFJWrapper& wrapper);
 };
-#endif
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
-#endif
-#endif
+#endif /*__CINT__*/
+#endif /*AliFJWrapper_H*/
 
 #ifdef AliFJWrapper_CXX
 #undef AliFJWrapper_CXX

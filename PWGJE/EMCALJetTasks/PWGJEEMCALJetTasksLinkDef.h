@@ -251,7 +251,7 @@
 #ifdef HAVE_FASTJET
 // Classes which need direct access only to Fastjet objects (not
 // needed if wrapped into ALICE objects)
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#ifdef __CLING__
 #pragma link C++ class AliFJWrapper;
 #endif
 #pragma link C++ class AliEmcalJetUtility+;
