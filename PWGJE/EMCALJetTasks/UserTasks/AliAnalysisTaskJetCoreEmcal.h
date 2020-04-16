@@ -53,6 +53,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
 	virtual void     SetMoreTreeVars(Bool_t more){fMoreTreeVars=more;} 
 
+	virtual void     SetRhoShiftSignal(Double_t shift){fRhoShiftSignal=shift;} 
+	virtual void     SetRhoShiftReference(Double_t shift){fRhoShiftReference=shift;} 
+
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal( //      const char *ntracks            = "usedefault", //      const char *nclusters          = "usedefault", //      const char* ncells             = "usedefault",
 //      const char *suffix             = "");
 
@@ -118,6 +121,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
 	Bool_t fMoreTreeVars; ///< add more variables to the output tree
+  Double_t fRhoShiftSignal; ///< shift rho in signal events by this much
+  Double_t fRhoShiftReference; ///< shift rho in reference events by this much
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
 	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
@@ -183,7 +188,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 12);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 13);
   /// \endcond
 };
 #endif

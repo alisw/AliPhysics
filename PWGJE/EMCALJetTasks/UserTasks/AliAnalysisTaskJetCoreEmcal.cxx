@@ -76,6 +76,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fMoreTreeVars(kFALSE),
+	fRhoShiftSignal(0.),
+	fRhoShiftReference(0.),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -161,6 +163,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fMoreTreeVars(kFALSE),
+	fRhoShiftSignal(0.),
+	fRhoShiftReference(0.),
 	fPtHardBin(0.),
 	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
@@ -856,10 +860,12 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 	if(nT<0) return;
 
 	if(isSignal) {
+    rho += fRhoShiftSignal;
     fh1TrigSig->Fill(number);
     fhRhoCentSig->Fill(rho,fCent);
   }
   else         {
+    rho += fRhoShiftReference;
     fh1TrigRef->Fill(number);
     fhRhoCentRef->Fill(rho,fCent);
   }
