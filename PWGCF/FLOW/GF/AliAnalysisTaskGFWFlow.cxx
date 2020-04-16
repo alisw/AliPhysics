@@ -258,19 +258,21 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     //Powers per harmonic:
     Int_t NoGap[] = {9,0,8,4,7,2,6,0,5};
     Int_t WithGap[] = {5,0,2,2,3,2,4,0,5};
+    Int_t POIPowers[] = {2,0,2,2,2,2}; //POIs will always be with weight of 1 (or 0, for what matters)
+
     fGFW = new AliGFW();
     //Full regions
-    fGFW->AddRegion("poiMid",9,NoGap,-0.8,0.8,1+fPtAxis->GetNbins(),1);
+    fGFW->AddRegion("poiMid",6,POIPowers,-0.8,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refMid",9,NoGap,-0.8,0.8,1,2);
     //2 subevets:
-    fGFW->AddRegion("poiSENeg",9,WithGap,-0.8,0.,1+fPtAxis->GetNbins(),1);
+    fGFW->AddRegion("poiSENeg",6,POIPowers,-0.8,0.,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refSENeg",9,WithGap,-0.8,0.,1,2);
-    fGFW->AddRegion("poiSEPos",9,WithGap,0.,0.8,1+fPtAxis->GetNbins(),1);
+    fGFW->AddRegion("poiSEPos",6,POIPowers,0.,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refSEPos",9,WithGap,0.,0.8,1,2);
     //With gap
-    fGFW->AddRegion("poiGapNeg",9,WithGap,-0.8,-0.5,1+fPtAxis->GetNbins(),1);
+    fGFW->AddRegion("poiGapNeg",6,POIPowers,-0.8,-0.5,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapNeg",9,WithGap,-0.8,-0.5,1,2);
-    fGFW->AddRegion("poiGapPos",9,WithGap,0.5,0.8,1+fPtAxis->GetNbins(),1);
+    fGFW->AddRegion("poiGapPos",6,POIPowers,0.5,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapPos",9,WithGap,0.5,0.8,1,2);
     //Overlap:
     fGFW->AddRegion("olMid",9,NoGap,-0.8,0.8,1+fPtAxis->GetNbins(),4);
