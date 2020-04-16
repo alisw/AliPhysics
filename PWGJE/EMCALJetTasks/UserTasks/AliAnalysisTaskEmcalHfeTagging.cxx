@@ -38,6 +38,7 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 #include "AliEmcalPythiaInfo.h"
 #include "TRandom3.h"
 #include "AliAODInputHandler.h"
@@ -1467,12 +1468,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
+            AliVCluster* cluster=0x0;
             
-            AliVCluster *cluster=0x0;
+            AliClusterContainer* clusterCont = GetClusterContainer(0);
             
-            if (clsId>=0){
+            if (clsId>=0 && clusterCont){
                 
-                cluster = (AliVCluster*)fVevent->GetCaloCluster(clsId);
+                cluster = clusterCont->GetCluster(clsId);
                 
                 if(cluster && cluster->IsEMCAL()){
                     
@@ -1484,7 +1486,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                     if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                     
                     if (emcphi>emcphimim && emcphi<emcphimax){
-                        clsE = cluster->E();
+                        clsE = cluster->GetNonLinCorrEnergy();
                         m20 = cluster->GetM20();
                         m02 = cluster->GetM02();
                         clsTime = cluster->GetTOF()*1e+9; // ns
@@ -1609,12 +1611,17 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             Double_t emcphimax = 3.265;
             
             Int_t clsId = track->GetEMCALcluster();
-            if (clsId>0){
-                AliVCluster *cluster=0x0;
-                cluster = (AliVCluster*)fVevent->GetCaloCluster(clsId);
+            
+            AliVCluster* cluster=0x0;
+            
+            AliClusterContainer* clusterCont = GetClusterContainer(0);
+            
+            if (clsId>=0 && clusterCont){
+
+                cluster = clusterCont->GetCluster(clsId);
                 
                 if(cluster && cluster->IsEMCAL() && phi > emcphimim && phi < emcphimax){
-                    clsE = cluster->E();
+                    clsE = cluster->GetNonLinCorrEnergy();
                     m20 = cluster->GetM20();
                 }
             }
