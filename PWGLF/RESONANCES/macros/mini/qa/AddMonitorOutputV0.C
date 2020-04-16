@@ -75,41 +75,41 @@ void AddMonitorOutputV0(Bool_t useMCMon, TObjArray *mon=0, TString v0name="K0S",
   else axisAntiLambdaMass->SetBins(1.,2.,0.005);//misidentified
   //DCA
   AliRsnValueDaughter* axisDCA = new AliRsnValueDaughter("DCAtoVertex",AliRsnValueDaughter::kV0DCA);
-  axisDCA->SetBins(0,4,0.001);
+  axisDCA->SetBins(0.0,4.0,0.001);
   //Radius
   AliRsnValueDaughter* axisRadius = new AliRsnValueDaughter("Radius",AliRsnValueDaughter::kV0Radius);
-  axisRadius->SetBins(0.0,200,0.1);
+  axisRadius->SetBins(0.0,200.0,0.1);
   //Lifetime
   AliRsnValueDaughter* axisLifetime = new AliRsnValueDaughter("Lifetime",AliRsnValueDaughter::kV0Lifetime);
-  axisLifetime->SetBins(0.0,200,0.1);
+  axisLifetime->SetBins(0.0,200.0,0.1);
   //Daughter DCA
   AliRsnValueDaughter* axisDDCA = new AliRsnValueDaughter("DaughtersDCA",AliRsnValueDaughter::kDaughterDCA);
-  axisDDCA->SetBins(0,2,0.001);
+  axisDDCA->SetBins(0.0,2.0,0.001);
   //Cosine of Pointing Angle
   AliRsnValueDaughter* axisCPA = new AliRsnValueDaughter("CosPointAng",AliRsnValueDaughter::kCosPointAng);
-  axisCPA->SetBins(0.96,1.,0.0002);
+  axisCPA->SetBins(0.96,1.0,0.0002);
 
   //Negative Daughter pT
   AliRsnValueDaughter* axisNpt = new AliRsnValueDaughter("NegDaughterPt",AliRsnValueDaughter::kV0NPt);
-  axisNpt->SetBins(0.,10.0,0.05);
+  axisNpt->SetBins(0.0,10.0,0.05);
   //Positive Daughter pT
   AliRsnValueDaughter* axisPpt = new AliRsnValueDaughter("PosDaughterPt",AliRsnValueDaughter::kV0PPt);
-  axisPpt->SetBins(0.,10.0,0.05);
+  axisPpt->SetBins(0.0,10.0,0.05);
   //DCA of Daughters to Primary Vertex
   AliRsnValueDaughter* axisDCA2T = new AliRsnValueDaughter("DaughtersDCAPrimVtx",AliRsnValueDaughter::kV0DCAXY);
-  axisDCA2T->SetBins(-10.,10.,0.01);
+  axisDCA2T->SetBins(-10.0,10.0,0.01);
   //pi- TPC PID
   AliRsnValueDaughter* axisPimPID = new AliRsnValueDaughter("V0PimTPC",AliRsnValueDaughter::kLambdaPionPIDCut);
-  axisPimPID->SetBins(0.,10.,0.05);
+  axisPimPID->SetBins(0.0,10.0,0.05);
   //pi+ TPC PID
   AliRsnValueDaughter* axisPipPID = new AliRsnValueDaughter("V0PipTPC",AliRsnValueDaughter::kAntiLambdaAntiPionPIDCut);
-  axisPimPID->SetBins(0.,10.,0.05);
+  axisPimPID->SetBins(0.0,10.0,0.05);
   //Proton TPC PID
   AliRsnValueDaughter* axisProtonPID = new AliRsnValueDaughter("V0ProtonPID",AliRsnValueDaughter::kLambdaProtonPIDCut);
-  axisProtonPID->SetBins(0.,10.,0.05);
+  axisProtonPID->SetBins(0.0,10.0,0.05);
   //Antiproton TPC PID
   AliRsnValueDaughter* axisAntiprotonPID = new AliRsnValueDaughter("V0AntiprotonPID",AliRsnValueDaughter::kAntiLambdaAntiProtonPIDCut);
-  axisAntiprotonPID->SetBins(0.,10.,0.05);
+  axisAntiprotonPID->SetBins(0.0,10.0,0.05);
 
   /****************************************************************/
   /***************         KINEMATICS          ********************/

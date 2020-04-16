@@ -3077,7 +3077,7 @@ Bool_t Config_XiPi(
     cutXi->SetV0MaxDCAVertex(1e5); // not using
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXi->SetCascadeMinDCAVertex(0); // not using
+    cutXi->SetCascadeMinDCAVertex(-1e5); // not using
     cutXi->SetV0LowRadius(0); // not using
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0); // not using
@@ -3100,7 +3100,7 @@ Bool_t Config_XiPi(
     cutXibar->SetV0MaxDCAVertex(1e5); // not using
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXibar->SetCascadeMinDCAVertex(0); // not using
+    cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
     cutXibar->SetV0LowRadius(0); // not using
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0); // not using
@@ -3394,7 +3394,7 @@ Bool_t Config_Xikx(
     cutXi->SetV0MaxDCAVertex(1e5); // not using
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXi->SetCascadeMinDCAVertex(0); // not using
+    cutXi->SetCascadeMinDCAVertex(-1e5); // not using
     cutXi->SetV0LowRadius(0); // not using
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0); // not using
@@ -3417,7 +3417,7 @@ Bool_t Config_Xikx(
     cutXibar->SetV0MaxDCAVertex(1e5); // not using
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXibar->SetCascadeMinDCAVertex(0); // not using
+    cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
     cutXibar->SetV0LowRadius(0); // not using
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0); // not using
@@ -3746,7 +3746,7 @@ Bool_t Config_Xik0(
     cutXi->SetV0MaxDCAVertex(1e5); // not using
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXi->SetCascadeMinDCAVertex(0); // not using
+    cutXi->SetCascadeMinDCAVertex(-1e5); // not using
     cutXi->SetV0LowRadius(0); // not using
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0); // not using
@@ -3769,7 +3769,7 @@ Bool_t Config_Xik0(
     cutXibar->SetV0MaxDCAVertex(1e5); // not using
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXibar->SetCascadeMinDCAVertex(0); // not using
+    cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
     cutXibar->SetV0LowRadius(0); // not using
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0); // not using
@@ -4058,7 +4058,7 @@ Bool_t Config_XiP(
     cutXi->SetV0MaxDCAVertex(1e5); // not using
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXi->SetCascadeMinDCAVertex(0); // not using
+    cutXi->SetCascadeMinDCAVertex(-1e5); // not using
     cutXi->SetV0LowRadius(0); // not using
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0); // not using
@@ -4081,7 +4081,7 @@ Bool_t Config_XiP(
     cutXibar->SetV0MaxDCAVertex(1e5); // not using
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXibar->SetCascadeMinDCAVertex(0); // not using
+    cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
     cutXibar->SetV0LowRadius(0); // not using
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0); // not using
@@ -4427,7 +4427,7 @@ Bool_t Config_XiLambda(
     cutXi->SetV0MaxDCAVertex(1e5); // not using
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXi->SetCascadeMinDCAVertex(0); // not using
+    cutXi->SetCascadeMinDCAVertex(-1e5); // not using
     cutXi->SetV0LowRadius(0); // not using
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0); // not using
@@ -4450,7 +4450,7 @@ Bool_t Config_XiLambda(
     cutXibar->SetV0MaxDCAVertex(1e5); // not using
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
-    cutXibar->SetCascadeMinDCAVertex(0); // not using
+    cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
     cutXibar->SetV0LowRadius(0); // not using
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0); // not using
