@@ -1376,7 +1376,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // DoRecTwoPairing(fRecNegPart_secondary, fRecPosPart_secondary, fSecondaryPairMCSignal, !PrimaryPair, centralityWeight);
     DoRecTwoPairingV0(fSecondaryPairMCSignal);
 
-                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors, " << std::endl <<
+                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after TwoPairing, " << std::endl <<
                                                                                 " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
                                                                                 " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
                                                                                 /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */" fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
@@ -1400,7 +1400,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   /*  ------ \/ ------ Four Pairing ------ \/ ------  */
   if (fDoFourPairing){
     //##########################################################
-    //############### Unlike Signe Pairing #####################
+    //################### Four Pairing #########################
     //##########################################################
                                                                                 if(fdebug) std::cout << "Doing four pairing..." << std::endl;
     Bool_t SmearedPair  = kTRUE;
@@ -1419,8 +1419,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
       DoFourPairing(fGenSmearedPairVec_primary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, centralityWeight);
     }
 
-
-    // ################################
+    // #############################################
+    // #     DoFourPairing Reconstructed           #
+    // #############################################
     // #      Apply PreFitlers        #
     // ################################
                                                                                 if(fdebug) std::cout << __LINE__ << " Start Four PreFilter " << std::endl;
@@ -1428,7 +1429,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     if(fUsePreFilter)DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
     if(fUseSecPreFilter)DoFourPreFilter(&fRecV0Pair, &fRecV0Pair);
 
-                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors, " << std::endl <<
+                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after applying PreFilters, " << std::endl <<
                                                                                 " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
                                                                                 " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
                                                                                 /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */" fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
@@ -1436,7 +1437,13 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     // Clear Primary Part Vector and do TwoPairing again with pos/neg particle vectors reduced by PreFilter
     fRecPairVec_primary.clear();
-    DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PrimaryPair, centralityWeight);
+    DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PairPrimary, centralityWeight);
+
+                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after the second primary pairing, " << std::endl <<
+                                                                                " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */" fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */" fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
 
     // ################################
     // #      Apply Standard Cut      #
@@ -1447,6 +1454,9 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard,  TrackCuts, !PairPrimary, centralityWeight); // track cuts on secondaries not implemented yet
     ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard, !TrackCuts, !PairPrimary, centralityWeight);
 
+    // ################################
+    // #      Do actual pairing       #
+    // ################################
                                                                                 // if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
     DoFourPairing(fRecPairVec_primary, fRecV0Pair, ReconstructedPair, !SmearedPair, centralityWeight);
     // DoFourPairing(fRecPairVec_primary, fRecPairVec_secondary, ReconstructedPair, !SmearedPair, centralityWeight);
