@@ -1004,7 +1004,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   fLaddSegCommonVol[16]= bottomBeam2Vol; fLaddSegCommonTr[16]= bottomBeamTransf3;
   fLaddSegCommonVol[17]= bottomBeam3Vol; fLaddSegCommonTr[17]= bottomBeamTransf4;
   fLaddSegCommonVol[18]= bottomBeam3Vol; fLaddSegCommonTr[18]= bottomBeamTransf5;
-  fLaddSegCommonVol[19]= groundWireVol;  fLaddSegCommonTr[19]= trGroundWire;
+//  fLaddSegCommonVol[19]= groundWireVol;  fLaddSegCommonTr[19]= trGroundWire;
 
  
   //********************************************************************

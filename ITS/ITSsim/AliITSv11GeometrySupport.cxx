@@ -331,7 +331,8 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 
   // Finally the actual shape
   TGeoCompositeShape *centralshape = new TGeoCompositeShape("centralTS",
-    "upTS+lwTS+omTS-mhTS:m1p-mhTS:m1n-mhTS:m2p-mhTS:m2n-mhTS:m3p-mhTS:m3n-mhTS:m4p-mhTS:m4n-mhTS:m5p-mhTS:m5n-shTS:s1p-shTS:s1n-shTS:s2p-shTS:s2n-shTS:s3p-shTS:s3n-shTS:s4p-shTS:s4n-shTS:s5p-shTS:s5n");
+    "upTS+lwTS-mhTS:m1p-mhTS:m1n-mhTS:m2p-mhTS:m2n-mhTS:m3p-mhTS:m3n-mhTS:m4p-mhTS:m4n-mhTS:m5p-mhTS:m5n-shTS:s1p-shTS:s1n-shTS:s2p-shTS:s2n-shTS:s3p-shTS:s3n-shTS:s4p-shTS:s4n-shTS:s5p-shTS:s5n");
+//    "upTS+lwTS+omTS-mhTS:m1p-mhTS:m1n-mhTS:m2p-mhTS:m2n-mhTS:m3p-mhTS:m3n-mhTS:m4p-mhTS:m4n-mhTS:m5p-mhTS:m5n-shTS:s1p-shTS:s1n-shTS:s2p-shTS:s2n-shTS:s3p-shTS:s3n-shTS:s4p-shTS:s4n-shTS:s5p-shTS:s5n");
 
   // The end cap half shield: a Composite Shape of carbon fiber.
   // We need Composite Shapes because we have elements partially
@@ -820,6 +821,14 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   centralshield->SetFillColor(centralshield->GetLineColor());
   centralshield->SetFillStyle(4090); // 90% transparent
 
+  TGeoVolume *omegashield = new TGeoVolume("SPDomegashield",
+					     omegashape,medSPDcf);
+  omegashield->SetVisibility(kTRUE);
+  omegashield->SetLineColor(3);
+  omegashield->SetLineWidth(1);
+  omegashield->SetFillColor(omegashield->GetLineColor());
+  omegashield->SetFillStyle(4090); // 90% transparent
+
   TGeoVolume *endcapshield = new TGeoVolume("SPDendcapshield",
 					     endcapshape,medSPDcf);
   endcapshield->SetVisibility(kTRUE);
@@ -1007,6 +1016,9 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
   const Double_t kLittleZTrans = 0.1*fgkmm;
   vM->AddNode(centralshield,1,new TGeoTranslation(0,0,-kLittleZTrans));
   vM->AddNode(centralshield,2,new TGeoCombiTrans( 0,0,-kLittleZTrans,
+				  new TGeoRotation("",180,0,0)));
+  vM->AddNode(omegashield,1,new TGeoTranslation(0,0,-kLittleZTrans));
+  vM->AddNode(omegashield,2,new TGeoCombiTrans( 0,0,-kLittleZTrans,
 				  new TGeoRotation("",180,0,0)));
 
   zpos = kHalfLengthCentral+kHalfLengthEndCap;

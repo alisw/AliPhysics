@@ -417,7 +417,9 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     //TGeoMedium *medSPDal      = 0;//SPD support cone SDD mounting bracket Al
     TGeoMedium *medSPDcf     = GetMedium("SPD C (M55J)$", mgr);
     TGeoMedium *medSPDss     = GetMedium("INOX$", mgr);
-    TGeoMedium *medSPDcoolfl = GetMedium("Freon$", mgr); //ITSspdCoolingFluid
+    TGeoMedium *medSPDsp     = GetMedium("PHYNOX$", mgr);
+//    TGeoMedium *medSPDcoolfl = GetMedium("Freon$", mgr); //ITSspdCoolingFluid
+    TGeoMedium *medSPDcoolfl = GetMedium("GASEOUS FREON$", mgr); //ITSspdCoolingFluid
     //
     const Double_t ksecDz           =  0.5 * 500.0 * fgkmm;
     //const Double_t ksecLen        = 30.0 * fgkmm;
@@ -922,6 +924,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     if(GetDebug(3)) {
         if(medSPDcf) medSPDcf->Dump(); else AliInfo("medSPDcf = 0");
         if(medSPDss) medSPDss->Dump(); else AliInfo("medSPDss = 0");
+        if(medSPDsp) medSPDsp->Dump(); else AliInfo("medSPDsp = 0");
         if(medSPDcoolfl) medSPDcoolfl->Dump();else AliInfo("medSPDcoolfl = 0");
         sA0->InspectShape();
         sA1->InspectShape();
@@ -942,7 +945,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     vA0->SetLineWidth(1);
     vA0->SetFillColor(vA0->GetLineColor());
     vA0->SetFillStyle(4010); // 10% transparent
-    TGeoVolume *vTA0 = new TGeoVolume("ITSSPDCoolingTubeTA0", sTA0, medSPDss);
+    TGeoVolume *vTA0 = new TGeoVolume("ITSSPDCoolingTubeTA0", sTA0, medSPDsp);
     vTA0->SetVisibility(kTRUE);
     vTA0->SetLineColor(15); // gray
     vTA0->SetLineWidth(1);
@@ -997,7 +1000,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     vN3->SetLineWidth(1);
     vN3->SetFillColor(vN3->GetLineColor());
     vN3->SetFillStyle(4000); // 0% transparent
-    TGeoVolume *vTB0 = new TGeoVolume("ITSSPDCoolingTubeEndTB0",sTB0,medSPDss);
+    TGeoVolume *vTB0 = new TGeoVolume("ITSSPDCoolingTubeEndTB0",sTB0,medSPDsp);
     vTB0->SetVisibility(kTRUE);
     vTB0->SetLineColor(15); // gray
     vTB0->SetLineWidth(1);
