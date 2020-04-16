@@ -114,6 +114,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fHistoMotherRestPi0CosAnglePt(NULL),
   fHistoMotherDalitzPlot(NULL),
   fHistoGammaFromMotherPt(NULL),
+  fHistoRecoArmenterosPodolanskiPlot(NULL),
   fHistoDiffPi0SameGammaBackInvMassPt(NULL),
   fHistoSamePi0DiffGammaBackInvMassPt(NULL),
   fHistoMotherSwappingBackInvMassPt(NULL),
@@ -180,6 +181,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fHistoTrueDalitzPlot(NULL),
   fHistoTrueOmegaPtGammaPt(NULL),
   fHistoTrueGammaFromOmegaPt(NULL),
+  fHistoTrueArmenterosPodolanskiPlot(NULL),
   fVectorRecTruePi0s(0),
   fVectorDoubleCountTruePi0s(0),
   fHistoMultipleCountTruePi0(NULL),
@@ -289,6 +291,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fHistoMotherRestPi0CosAnglePt(NULL),
   fHistoMotherDalitzPlot(NULL),
   fHistoGammaFromMotherPt(NULL),
+  fHistoRecoArmenterosPodolanskiPlot(NULL),
   fHistoDiffPi0SameGammaBackInvMassPt(NULL),
   fHistoSamePi0DiffGammaBackInvMassPt(NULL),
   fHistoMotherSwappingBackInvMassPt(NULL),
@@ -355,6 +358,7 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fHistoTrueDalitzPlot(NULL),
   fHistoTrueOmegaPtGammaPt(NULL),
   fHistoTrueGammaFromOmegaPt(NULL),
+  fHistoTrueArmenterosPodolanskiPlot(NULL),
   fVectorRecTruePi0s(0),
   fVectorDoubleCountTruePi0s(0),
   fHistoMultipleCountTruePi0(NULL),
@@ -578,6 +582,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
     fHistoPhotonPairAlphaPt             = new TH2F*[fnCuts];
     fHistoPhotonPairOpenAnglePt         = new TH2F*[fnCuts];
     fHistoPhotonPairEtaPhi              = new TH2F*[fnCuts];
+    fHistoRecoArmenterosPodolanskiPlot  = new TH2F*[fnCuts];
     if(fReconMethod!=2 && fReconMethod!=5)
       fHistoMotherConvPhotonEtaPhi      = new TH2F*[fnCuts];
     fHistoMotherYPt                     = new TH2F*[fnCuts];
@@ -887,6 +892,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoPhotonPairEtaPhi[iCut]->SetYTitle("#eta_{#pi^{0}cand}");
       fESDList[iCut]->Add(fHistoPhotonPairEtaPhi[iCut]);
 
+      fHistoRecoArmenterosPodolanskiPlot[iCut] = new TH2F("ESD_Armenteros_Podolanski_Plot", "ESD_Armenteros_Podolanski_Plot", 200, -1.0, 1.0, 100, 0.0, 1.0);
+      fHistoRecoArmenterosPodolanskiPlot[iCut]->SetXTitle("#alpha");
+      fHistoRecoArmenterosPodolanskiPlot[iCut]->SetYTitle("q_{T} (GeV/#it{c})");
+      fESDList[iCut]->Add(fHistoRecoArmenterosPodolanskiPlot[iCut]);
+
       if(fReconMethod!=2 && fReconMethod!=5){
         fHistoMotherConvPhotonEtaPhi[iCut] = new TH2F("ESD_MotherConvPhoton_Eta_Phi","ConvPhoton under #omega peak",600,0,2*TMath::Pi(),200,-1,1);
         fHistoMotherConvPhotonEtaPhi[iCut]->SetXTitle("#phi_{#gamma_{conv}}(rad)");
@@ -945,6 +955,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoPhotonPairAlphaPt[iCut]->Sumw2();
         fHistoPhotonPairOpenAnglePt[iCut]->Sumw2();
         fHistoPhotonPairEtaPhi[iCut]->Sumw2();
+        fHistoRecoArmenterosPodolanskiPlot[iCut]->Sumw2();
         if(fReconMethod!=2 && fReconMethod!=5) fHistoMotherConvPhotonEtaPhi[iCut]->Sumw2();
         fHistoMotherYPt[iCut]->Sumw2();
         fHistoMotherPi0AnglePt[iCut]->Sumw2();
@@ -1041,6 +1052,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoTrueOmegaRestPi0CosAnglePt              = new TH2F*[fnCuts];
       fHistoTrueDalitzPlot                          = new TH2F*[fnCuts];
       fHistoTrueOmegaPtGammaPt                      = new TH2F*[fnCuts];
+      fHistoTrueArmenterosPodolanskiPlot            = new TH2F*[fnCuts];
     }
 
     fHistoMultipleCountTruePi0                    = new TH1F*[fnCuts];
@@ -1392,6 +1404,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTrueOmegaPtGammaPt[iCut]->SetYTitle("#gamma p_{T}(GeV/c)");
         fTrueList[iCut]->Add(fHistoTrueOmegaPtGammaPt[iCut]);
 
+        fHistoTrueArmenterosPodolanskiPlot[iCut] = new TH2F("True_Armenteros_Podolanski_Plot", "True_Armenteros_Podolanski_Plot", 200, -1.0, 1.0, 100, 0.0, 1.0);
+        fHistoTrueArmenterosPodolanskiPlot[iCut]->SetXTitle("#alpha");
+        fHistoTrueArmenterosPodolanskiPlot[iCut]->SetYTitle("q_{T} (GeV/#it{c})");
+        fTrueList[iCut]->Add(fHistoTrueArmenterosPodolanskiPlot[iCut]);
+
         if (fIsMC > 1){
           fHistoTruePi0FromOmegaAlphaPt[iCut]->Sumw2();
           fHistoTruePi0FromOmegaYPt[iCut]->Sumw2();
@@ -1409,6 +1426,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fHistoTrueDalitzPlot[iCut]->Sumw2();
           fHistoTrueOmegaPtGammaPt[iCut]->Sumw2();
           fHistoTrueOmegaYPt[iCut]->Sumw2();
+          fHistoTrueArmenterosPodolanskiPlot[iCut]->Sumw2();
         }
       }
 
@@ -4604,6 +4622,21 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillMultipleCountHistoAndClear(map<Int_t
 }
 
 //_________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaToPiZeroGamma::GetPodAlpha(AliAODConversionMother* motherPart, AliAODConversionMother* daughter1, AliAODConversionPhoton* daughter2){
+  return (cos(motherPart->Angle(daughter1->Vect())) * daughter1->P() - cos(motherPart->Angle(daughter2->Vect())) * daughter2->P()) / (cos(motherPart->Angle(daughter1->Vect())) * daughter1->P() + cos(motherPart->Angle(daughter2->Vect())) * daughter2->P());
+}
+
+//_________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaToPiZeroGamma::GetQTPi0(AliAODConversionMother* motherPart, AliAODConversionMother* daughter){
+  return  sin(motherPart->Angle(daughter->Vect())) * daughter->P();
+}
+
+//_________________________________________________________________________________
+Double_t AliAnalysisTaskOmegaToPiZeroGamma::GetQTGamma(AliAODConversionMother* motherPart, AliAODConversionPhoton* daughter){
+  return  sin(motherPart->Angle(daughter->Vect())) * daughter->P();
+}
+
+//_________________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlots(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
   AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
     TVector3 Boost = omegacand->BoostVector();
@@ -4659,8 +4692,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlots(AliAODConversionMother *omeg
     fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+    fHistoRecoArmenterosPodolanskiPlot[fiCut]->Fill(GetPodAlpha(omegacand, pi0cand, gamma2), GetQTPi0(omegacand, pi0cand));
+    fHistoRecoArmenterosPodolanskiPlot[fiCut]->Fill(GetPodAlpha(omegacand, pi0cand, gamma2), GetQTGamma(omegacand, gamma2));
   return;
 }
+
 
 //_________________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlotsMC(AliAODConversionMother *omegacand, AliAODConversionMother *pi0cand,
@@ -4694,6 +4730,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::FillQAPlotsMC(AliAODConversionMother *om
     fHistoMotherRestGammaCosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(GammaInRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherRestPi0CosAnglePt[fiCut]->Fill(omegacand->Pt(), cos(omegacand->Angle(Pi0InRestFrame.Vect()) ),fWeightJetJetMC);
     fHistoMotherDalitzPlot[fiCut]->Fill( (gamma0LV + gamma1LV).M2(), (gamma1LV + gamma2LV).M2(),fWeightJetJetMC);
+    fHistoTrueArmenterosPodolanskiPlot[fiCut]->Fill(GetPodAlpha(omegacand, pi0cand, gamma2), GetQTPi0(omegacand, pi0cand));
+    fHistoTrueArmenterosPodolanskiPlot[fiCut]->Fill(GetPodAlpha(omegacand, pi0cand, gamma2), GetQTGamma(omegacand, gamma2));
   return;
 }
 
