@@ -610,6 +610,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
 ///       * Strip: Consider also removing LED flashing single strips
+///    *CheckTriggerPeriod: Activate configuration of analysis if trigger existed in a given period
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -652,6 +653,18 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     return NULL;
   }
   
+  // Activate checking of trigger?
+  Bool_t checkTriggerPeriod = kFALSE;
+  if ( cutsString.Contains("CheckTriggerPeriod") )
+  {
+    checkTriggerPeriod = kTRUE;
+    
+    // Remove from string, not relevant for list name
+    cutsString.ReplaceAll("CheckTriggerPeriod_","");
+    cutsString.ReplaceAll("_CheckTriggerPeriod","");
+    cutsString.ReplaceAll("CheckTriggerPeriod" ,"");
+  }
+    
   // Name for containers
   
   TString anaCaloTrackCorrBase = Form("CTC_%s_Trig_%s",calorimeter.Data(),trigger.Data());
@@ -711,20 +724,25 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
+  // If train is tested on a period without a trigger and it runs
+  // on many periods, it can skip a trigger that was expected. Use with care.
   //
-#if defined(__CINT__)
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
-#endif
-
-  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
-  
-  if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
-  
-  if ( !doAnalysis ) 
+  if ( checkTriggerPeriod )
   {
-    maker->SwitchOffProcessEvent();
-    return task;
-  }
+#if defined(__CINT__)
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+#endif
+    
+    Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
+    
+    if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
+    
+    if ( !doAnalysis ) 
+    {
+      maker->SwitchOffProcessEvent();
+      return task;
+    }
+  }  // Check trigger period
   
   // #### Start analysis configuration ####
   // Print settings
