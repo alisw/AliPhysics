@@ -59,6 +59,7 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fPIDEff(0),
   fMCPtShape(0),
   fPartAntipart(0),
+  fDataDrivenFD(0),
   fRunNumber(10),
   fCollisionType(0),
   fCentralityClass("0100"),
@@ -71,7 +72,8 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fIsCentScan(false),
   fStandardBins(false),
   fIsRapidityScan(false),
-  fIsMLAnalysis(false)
+  fIsMLAnalysis(false),
+  fIsDataDrivenFDAnalysis(false)
 {
   //
   /// Default Constructor
@@ -227,24 +229,28 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
         else if(fIs5TeVAnalysis){
-	  if(fRunNumber==17){
-            if(fStandardBins) InitDplustoKpipi2017pp5TeV();
-            else InitDplustoKpipi2017pp5TeV_finebins();
-	  }
+	        if(fRunNumber==17 || fRunNumber==2017){
+            if(!fIsDataDrivenFDAnalysis) {
+              if(fStandardBins) InitDplustoKpipi2017pp5TeV();
+              else InitDplustoKpipi2017pp5TeV_finebins();
+            }
+            else
+              InitNonPromptDplustoKpipi2017pp5TeVML();
+	        }
           else InitDplustoKpipi2015pp5TeV();
         }
-        else if(fRunNumber == 10){
+        else if(fRunNumber==10 || fRunNumber==2010){
           if(fIsPass4Analysis) InitDplustoKpipi2010ppPass4();
           else InitDplustoKpipi2010pp();
-        } else if(fRunNumber == 12){
+        } else if(fRunNumber==12 || fRunNumber==2012){
           InitDplustoKpipi2012pp();
-        } else if(fRunNumber == 16 || fRunNumber == 2016){
+        } else if(fRunNumber==16 || fRunNumber==2016){
           InitDplustoKpipi2016pp13TeV();
         } else AliFatal("Not yet implemented");
       }
       else if (fCollisionType==1) {
         if(fIsLowPtAnalysis) AliFatal("Not yet implemented");
-        if (fRunNumber == 10){
+        if (fRunNumber==10 || fRunNumber==2010){
           if (fCentralityClass=="010") InitDplustoKpipi2010PbPb010CentScan();
           else if (fCentralityClass=="1020") InitDplustoKpipi2010PbPb1020CentScan();
           else if (fCentralityClass=="020") InitDplustoKpipi2010PbPb020();
@@ -254,7 +260,7 @@ void AliHFSystErr::Init(Int_t decay){
           else if (fCentralityClass=="4080") InitDplustoKpipi2010PbPb4080();
           else AliFatal("Not yet implemented");
         }
-        if(fRunNumber == 11){
+        if(fRunNumber==11 || fRunNumber==2011){
           if (fCentralityClass=="07half") InitDplustoKpipi2011PbPb07half();
           else if (fCentralityClass=="010") InitDplustoKpipi2011PbPb010();
           else if (fCentralityClass=="010" && fIsCentScan) InitDplustoKpipi2011PbPb010CentScan();
@@ -426,11 +432,15 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if(fIsPass4Analysis) InitDstoKKpi2010ppPass4();
         else if (fRunNumber==16 || fRunNumber==2016) InitDstoKKpi2016pp13TeV();
-        else if (fRunNumber==17 || fRunNumber==2017){
-          if(fIsBDTAnalysis)
-            InitDstoKKpi2017pp5TeVBDT();
+        else if (fRunNumber==17 || fRunNumber==2017){	     
+          if(!fIsDataDrivenFDAnalysis) {
+            if(fIsBDTAnalysis)
+              InitDstoKKpi2017pp5TeVBDT();
+            else
+              InitDstoKKpi2017pp5TeV();
+          }
           else
-            InitDstoKKpi2017pp5TeV();
+            InitNonPromptDstoKKpi2017pp5TeVML();
         }
         else InitDstoKKpi2010pp();
       }
@@ -2510,6 +2520,68 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV_finebins(){
   return;
 }
 //--------------------------------------------------------------------------
+void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
+  //
+  // Non-prompt D+ systematics in MB pp 5 TeV (2017) with BDT multi-class selections
+  // Responsible F. Grosa
+
+  AliInfo(" Settings for non-prompt D+ --> K pi pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT multi-class selections");
+  SetNameTitle("AliHFSystErr","SystErrNonPromptDplustoKpipi2017pp5TeVML");
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",16,0,16);
+  for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",16,0,16);
+  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.031); //PDG2018
+
+  // Tracking efficiency (from prompt analysis)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
+  fTrackingEff->SetBinContent(1,1.00);
+  fTrackingEff->SetBinContent(2,0.035);
+  fTrackingEff->SetBinContent(3,0.045);
+  fTrackingEff->SetBinContent(4,0.05);
+  fTrackingEff->SetBinContent(5,0.06);
+  fTrackingEff->SetBinContent(6,0.06);
+  fTrackingEff->SetBinContent(7,0.065);
+  fTrackingEff->SetBinContent(8,0.065);
+  fTrackingEff->SetBinContent(9,0.065);
+  fTrackingEff->SetBinContent(10,0.065);
+  for(Int_t i=11;i<=16;i++) fTrackingEff->SetBinContent(i,0.07);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",16,0,16);
+  fRawYield->SetBinContent(1,1.00);
+  fRawYield->SetBinContent(2,1.00);
+  fRawYield->SetBinContent(3,0.04);
+  fRawYield->SetBinContent(4,0.03);
+  fRawYield->SetBinContent(5,0.03);
+  fRawYield->SetBinContent(6,0.03);
+  for(Int_t i=7;i<=16;i++) fRawYield->SetBinContent(i,0.05);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
+  fCutsEff->SetBinContent(1,1.00);
+  fCutsEff->SetBinContent(2,1.00);
+  fCutsEff->SetBinContent(3,0.10);
+  fCutsEff->SetBinContent(4,0.08);
+  for(Int_t i=5;i<=16;i++) fCutsEff->SetBinContent(i,0.03);
+
+  // PID efficiency (from prompt analysis)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
+  for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+
+  // MC dN/dpt (dummy for the moment)
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+
+  // FD (dummy for the moment)
+  fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD",16,0,16);
+  for(Int_t i=1;i<=16;i++) fDataDrivenFD->SetBinContent(i,0);
+
+  return;
+}
+//--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2016pp13TeV(){
   //
   // D+->Kpipi syst errors
@@ -2783,6 +2855,59 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
   for(Int_t i=3; i<=3; i++) fMCPtShape->SetBinContent(i,0.01);
   for(Int_t i=4; i<=16; i++) fMCPtShape->SetBinContent(i,0.00);
   for(Int_t i=17; i<=24; i++) fMCPtShape->SetBinContent(i,0.00);
+
+  return;
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
+  //
+  // Non-prompt Ds systematics in MB pp 5 TeV (2017) with BDT multi-class selections
+  // Responsible: F. Catalano
+
+  AliInfo(" Settings for non-prompt Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT multi-class selections");
+  SetNameTitle("AliHFSystErr","SystErrNonPromptDstoKKpi2017pp5TeVML");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",12,0,12);
+  for(Int_t i=1; i<=12; i++) fNorm->SetBinContent(i, 0.021); // from V0
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1; i<=12; i++) fBR->SetBinContent(i, 0.035); // PDG 2018: BR = 2.27 +/- 0.08
+
+  // Tracking efficiency (from prompt analysis)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
+  for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 0.045); // [0-2]
+  for(Int_t i=3;  i<=3;  i++) fTrackingEff->SetBinContent(i, 0.045); // [2-3]
+  for(Int_t i=4;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.055); // [3-4]
+  for(Int_t i=5;  i<=5; i++) fTrackingEff->SetBinContent(i, 0.06); // [4-5]
+  for(Int_t i=6;  i<=6; i++) fTrackingEff->SetBinContent(i, 0.065); // [5-6]
+  for(Int_t i=7;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.07); // [6-12]
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
+  for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
+  for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.04); // [2-4]
+  for(Int_t i=5; i<=12; i++) fRawYield->SetBinContent(i, 0.03); // [16-24]
+
+  // Cuts efficiency
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
+  for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 1.00); // [0-2]
+  for(Int_t i=3;  i<=4;  i++) fCutsEff->SetBinContent(i, 0.07); // [2-3]
+  for(Int_t i=5;  i<=12;  i++) fCutsEff->SetBinContent(i, 0.05); // [4-12]
+
+  // PID efficiency (from prompt analysis)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
+  for(Int_t i=1;  i<=12;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-2]
+
+  // MC dN/dpt (dummy for the moment)
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
+  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,0.);
+
+  // FD (dummy for the moment)
+  fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD",12,0,12);
+  for(Int_t i=1;i<=16;i++) fDataDrivenFD->SetBinContent(i,0.);
 
   return;
 }
@@ -10693,6 +10818,28 @@ Double_t AliHFSystErr::GetPartAntipartErr(Double_t pt) const {
   return fPartAntipart->GetBinContent(bin);
 }
 //--------------------------------------------------------------------------
+Double_t AliHFSystErr::GetDataDrivenFDErr(Double_t pt) const {
+  //
+  // Get error
+  //
+
+  Int_t bin = -1;
+  Double_t err = 0;
+
+  if(fIsDataDrivenFDAnalysis)
+  {
+    if(fDataDrivenFD) {
+        bin = fDataDrivenFD->FindBin(pt);
+        err = fPartAntipart->GetBinContent(bin);
+    }
+    else {
+        AliWarning("Histo for data-driven FD histo not found! Setting data-driven FD uncertainty to 0");
+    }
+  }
+
+  return err;
+}
+//--------------------------------------------------------------------------
 Double_t AliHFSystErr::GetTotalSystErr(Double_t pt,Double_t feeddownErr) const {
   //
   // Get total syst error (except norm. error)
@@ -10708,7 +10855,10 @@ Double_t AliHFSystErr::GetTotalSystErr(Double_t pt,Double_t feeddownErr) const {
   if(fMCPtShape) err += GetMCPtShapeErr(pt)*GetMCPtShapeErr(pt);
   if(fPartAntipart) err += GetPartAntipartErr(pt)*GetPartAntipartErr(pt);
 
-  err += feeddownErr*feeddownErr;
+  if(fIsDataDrivenFDAnalysis)
+    err += GetDataDrivenFDErr(pt)*GetDataDrivenFDErr(pt);
+  else
+    err += feeddownErr*feeddownErr;
 
   return TMath::Sqrt(err);
 }
