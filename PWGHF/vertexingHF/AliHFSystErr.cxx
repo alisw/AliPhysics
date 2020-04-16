@@ -230,7 +230,7 @@ void AliHFSystErr::Init(Int_t decay){
         if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
         else if(fIs5TeVAnalysis){
 	        if(fRunNumber==17 || fRunNumber==2017){
-            if(!fDataDrivenFD) {
+            if(!fIsDataDrivenFDAnalysis) {
               if(fStandardBins) InitDplustoKpipi2017pp5TeV();
               else InitDplustoKpipi2017pp5TeV_finebins();
             }
@@ -432,8 +432,8 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if(fIsPass4Analysis) InitDstoKKpi2010ppPass4();
         else if (fRunNumber==16 || fRunNumber==2016) InitDstoKKpi2016pp13TeV();
-        else if (fRunNumber==17 || fRunNumber==2017){	        
-          if(!fDataDrivenFD) {
+        else if (fRunNumber==17 || fRunNumber==2017){	     
+          if(!fIsDataDrivenFDAnalysis) {
             if(fIsBDTAnalysis)
               InitDstoKKpi2017pp5TeVBDT();
             else
