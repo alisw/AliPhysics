@@ -40,7 +40,6 @@ public:
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
     kTracks,
-    kSPDtracklets,
     kCalo,
     kCaloTrigger,
     kMuon,
@@ -77,7 +76,7 @@ public:
     kGenerators
   };
   static const TClass* Generator[kGenerators]; // Generators
-
+  
   TTree* CreateTree(TreeIndex t);
   void PostTree(TreeIndex t);
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
@@ -155,6 +154,8 @@ private:
     // Int_t   fTOFclsIndex;     /// The index of the associated TOF cluster
     // Int_t   fNTOFcls;         /// The number of TOF clusters
 
+    UChar_t fType = 0u;     /// Track type, 0 Global tracks, 1 Run2 SPD tracklets (obsolete for Run3)
+
     // Coordinate system parameters
     Float_t fX = -999.f;     /// X coordinate for the point of parametrisation
     Float_t fAlpha = -999.f; /// Local <--> global coor.system rotation angle
@@ -208,20 +209,15 @@ private:
     Float_t fTRDsignal = -999.f; /// dE/dX TRD
     Float_t fTOFsignal = -999.f; /// TOFsignal
     Float_t fLength = -999.f;    /// Int.Lenght @ TOF
+
+    // Run2 SPD tracklets (obsolete for Run3)
+    Int_t fSPDntracklets;      /// Number of SPD tracklets
+    Float_t fSPDdist = -999.f;     /// elliptical distance
+    Float_t fSPDth = -999.f;       /// theta values
+    Float_t fSPDphi = -999.f;      /// phi values
+    Float_t fSPDdeltTh = -999.f;   /// delta theta values
+    Float_t fSPDdeltPhi = -999.f;  /// delta phi values
   } tracks;                      //! structure to keep track information
-
-  struct {
-    // SPD tracklets
-    Int_t fNtracklets;  /// Number and tracklets
-
-    Float_t fDist = -999.f;     /// elliptical distance
-
-    Float_t fTh = -999.f;       /// theta values
-    Float_t fPhi = -999.f;      /// phi values
-    Float_t fDeltTh = -999.f;   /// delta theta values
-    Float_t fDeltPhi = -999.f;  /// delta phi values
-  } SPDtracklets;               //! structure for SPD tracklets
-
 
   struct {
     // MC information on the event
