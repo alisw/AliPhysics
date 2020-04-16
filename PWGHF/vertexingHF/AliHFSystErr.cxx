@@ -10830,7 +10830,7 @@ Double_t AliHFSystErr::GetDataDrivenFDErr(Double_t pt) const {
   {
     if(fDataDrivenFD) {
         bin = fDataDrivenFD->FindBin(pt);
-        err = fPartAntipart->GetBinContent(bin);
+        err = fDataDrivenFD->GetBinContent(bin);
     }
     else {
         AliWarning("Histo for data-driven FD histo not found! Setting data-driven FD uncertainty to 0");
