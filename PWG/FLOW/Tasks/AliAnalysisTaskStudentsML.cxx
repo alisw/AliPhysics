@@ -63,34 +63,6 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fPhiHistBeforeTrackSeletion(NULL),
- fEtaHistBeforeTrackSeletion(NULL),
- fPTHistBeforeTrackSeletction(NULL),
- fPhiHistBeforeTrackSeletionSecond(NULL),
- fEtaHistBeforeTrackSeletionSecond(NULL),
- fPTHistBeforeTrackSeletctionSecond(NULL),
- fTotalMultBeforeTrackSeletion(NULL),
- fMultiHistoBeforeTrackSeletion(NULL),
- fPhiHistAfterTrackSeletion(NULL),
- fEtaHistAfterTrackSeletion(NULL),
- fPTHistAfterTrackSeletction(NULL),
- fPhiHistAfterTrackSeletionSecond(NULL),
- fEtaHistAfterTrackSeletionSecond(NULL),
- fPTHistAfterTrackSeletctionSecond(NULL),
- fTotalMultAfterTrackSeletion(NULL),
- fMultiHistoAfterTrackSeletion(NULL),
- fMultiHistoAfterTrackSeletion_Second(NULL),
- fMultiHistoBeforeMultCut(NULL),
- fTPCClustersBeforeCut(NULL),
- fTPCClustersAfterCut(NULL),
- fITSClustersBeforeCut(NULL),
- fITSClustersAfterCut(NULL),
- fChiSquareTPCBeforeCut(NULL),
- fChiSquareTPCAfterCut(NULL),
- fDCAzBeforeCut(NULL),
- fDCAzAfterCut(NULL),
- fDCAxyBeforeCut(NULL),
- fDCAxyAfterCut(NULL),
  //SelectionCuts
  bDoAnalysis(kTRUE),
  bUseRecoKineTable(kTRUE),
@@ -113,12 +85,6 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
-  fVertexXBefore(NULL),
- fVertexXAfter(NULL),
- fVertexYBefore(NULL),
- fVertexYAfter(NULL),
- fVertexZBefore(NULL),
- fVertexZAfter(NULL),
  fCentralityfromVZero(kTRUE),
  //Physics
  bCutOnEta(kTRUE),
@@ -143,8 +109,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bUsePtWeights(kFALSE),
  bUsePhiWeights(kFALSE), 
  bUseEtaWeights(kFALSE),
- bGridWeights(kTRUE),
- fPeriodUsedForWeight(""),
+ fNumberRuns(90),
  //Variables for the correlation
  fMaxCorrelator(12),
  fNumber(6),  //number of correlation first correlator
@@ -213,34 +178,6 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fPhiHistBeforeTrackSeletion(NULL),
- fEtaHistBeforeTrackSeletion(NULL),
- fPTHistBeforeTrackSeletction(NULL),
- fPhiHistBeforeTrackSeletionSecond(NULL),
- fEtaHistBeforeTrackSeletionSecond(NULL),
- fPTHistBeforeTrackSeletctionSecond(NULL),
- fTotalMultBeforeTrackSeletion(NULL),
- fMultiHistoBeforeTrackSeletion(NULL),
- fPhiHistAfterTrackSeletion(NULL),
- fEtaHistAfterTrackSeletion(NULL),
- fPTHistAfterTrackSeletction(NULL),
- fPhiHistAfterTrackSeletionSecond(NULL),
- fEtaHistAfterTrackSeletionSecond(NULL),
- fPTHistAfterTrackSeletctionSecond(NULL),
- fTotalMultAfterTrackSeletion(NULL),
- fMultiHistoAfterTrackSeletion(NULL),
- fMultiHistoAfterTrackSeletion_Second(NULL),
- fMultiHistoBeforeMultCut(NULL),
- fTPCClustersBeforeCut(NULL),
- fTPCClustersAfterCut(NULL),
- fITSClustersBeforeCut(NULL),
- fITSClustersAfterCut(NULL),
- fChiSquareTPCBeforeCut(NULL),
- fChiSquareTPCAfterCut(NULL),
- fDCAzBeforeCut(NULL),
- fDCAzAfterCut(NULL),
- fDCAxyBeforeCut(NULL),
- fDCAxyAfterCut(NULL),
  //SelectionCuts
  bDoAnalysis(kTRUE),
  bUseRecoKineTable(kTRUE),
@@ -263,12 +200,6 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
- fVertexXBefore(NULL),
- fVertexXAfter(NULL),
- fVertexYBefore(NULL),
- fVertexYAfter(NULL),
- fVertexZBefore(NULL),
- fVertexZAfter(NULL),
  fCentralityfromVZero(kTRUE),
  //Physics
  bCutOnEta(kTRUE),
@@ -293,8 +224,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bUsePtWeights(kFALSE),
  bUsePhiWeights(kFALSE), 
  bUseEtaWeights(kFALSE),
- bGridWeights(kTRUE),
- fPeriodUsedForWeight(""),
+ fNumberRuns(90),
  //Variables for the correlation
  fMaxCorrelator(12),
  fNumber(6),  //number of correlation first correlator
@@ -413,9 +343,9 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  AliAODVertex *avtx = (AliAODVertex*)aAODEvent->GetPrimaryVertex();
 	
- fVertexXAfter->Fill(avtx->GetX());
- fVertexYAfter->Fill(avtx->GetY());
- fVertexZAfter->Fill(avtx->GetZ());
+ fVertexXHistogram[1]->Fill(avtx->GetX());
+ fVertexYHistogram[1]->Fill(avtx->GetY());
+ fVertexZHistogram[1]->Fill(avtx->GetZ());
  
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -436,8 +366,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  Int_t CounterSameCharge = 0.; //used if bDifferentCharge = kTRUE
 
- if(nTracks>0){fMultiHistoBeforeTrackSeletion->Fill(nTracks);} //multiplicity distribution before track selection
- for(Int_t u=0;u<nTracks;u++){fTotalMultBeforeTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class before track sel.
+ if(nTracks>0){fMultHistogram[1]->Fill(nTracks);} //multiplicity distribution before track selection
 
  //b.1) Frist Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
  //	Starting first loop over tracks: Used to fill Histograms + Determination of Multiplicity (after Trackselection)
@@ -467,34 +396,34 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 	if(!bDoMixed)
 	{
-          fPhiHistBeforeTrackSeletion->Fill(phi); 
-          fEtaHistBeforeTrackSeletion->Fill(eta);
-          fPTHistBeforeTrackSeletction->Fill(pt);
+          fPhiHistogram[0]->Fill(phi); 
+          fEtaHistogram[0]->Fill(eta);
+          fPTHistogram[0]->Fill(pt);
 	}//if(!bDoMixed)
 
         if(bDoMixed)
 	{
           if(charge>0.)
 	  {
-	    fPhiHistBeforeTrackSeletion->Fill(phi); 
-            fEtaHistBeforeTrackSeletion->Fill(eta);
-            fPTHistBeforeTrackSeletction->Fill(pt);
+	    fPhiHistogram[0]->Fill(phi); 
+            fEtaHistogram[0]->Fill(eta);
+            fPTHistogram[0]->Fill(pt);
           }//if(charge>0.)
 
 	  if(charge<0.)
 	  {
-	    fPhiHistBeforeTrackSeletionSecond->Fill(phi); 
-            fEtaHistBeforeTrackSeletionSecond->Fill(eta);
-            fPTHistBeforeTrackSeletctionSecond->Fill(pt);
+	    fPhiHistogram[2]->Fill(phi); 
+            fEtaHistogram[2]->Fill(eta);
+            fPTHistogram[2]->Fill(pt);
 	  } //if(charge<0.)
 	} //if(bDoMixed)
     
 
-     	fTPCClustersBeforeCut->Fill(NumberOfTPCClusters);
-     	fITSClustersBeforeCut->Fill(NumberOfITSClusters);
-    	fChiSquareTPCBeforeCut->Fill(ChiSquareInTPC);
-     	fDCAzBeforeCut->Fill(ValueDCAz);
-	fDCAxyBeforeCut->Fill(ValueDCAxy);
+     	fTPCClustersHistogram[0]->Fill(NumberOfTPCClusters);
+     	fITSClustersHistogram[0]->Fill(NumberOfITSClusters);
+    	fChiSquareTPCHistogram[0]->Fill(ChiSquareInTPC);
+     	fDCAzHistogram[0]->Fill(ValueDCAz);
+	fDCAxyHistogram[0]->Fill(ValueDCAxy);
 
 	//............................................................................................
 	//Track did not pass physics selection 
@@ -505,32 +434,32 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 	if(!bDoMixed)
 	{
-        fPhiHistAfterTrackSeletion->Fill(phi); 
-        fEtaHistAfterTrackSeletion->Fill(eta);
-        fPTHistAfterTrackSeletction->Fill(pt);
+        fPhiHistogram[1]->Fill(phi); 
+        fEtaHistogram[1]->Fill(eta);
+        fPTHistogram[1]->Fill(pt);
 	}//if(!bDoMixed)
 
         if(bDoMixed)
 	{
           if(charge>0.)
 	  {
-	    fPhiHistAfterTrackSeletion->Fill(phi); 
-            fEtaHistAfterTrackSeletion->Fill(eta);
-            fPTHistAfterTrackSeletction->Fill(pt);
+	    fPhiHistogram[1]->Fill(phi); 
+            fEtaHistogram[1]->Fill(eta);
+            fPTHistogram[1]->Fill(pt);
           }//if(charge>0.)
 	  if(charge<0.)
 	  {
-	    fPhiHistAfterTrackSeletionSecond->Fill(phi); 
-            fEtaHistAfterTrackSeletionSecond->Fill(eta);
-            fPTHistAfterTrackSeletctionSecond->Fill(pt);
+	    fPhiHistogram[3]->Fill(phi); 
+            fEtaHistogram[3]->Fill(eta);
+            fPTHistogram[3]->Fill(pt);
 	  }//if(charge<0.)
         }//if(bDoMixed)
 
-     	fTPCClustersAfterCut->Fill(NumberOfTPCClusters);
-     	fITSClustersAfterCut->Fill(NumberOfITSClusters);
-     	fChiSquareTPCAfterCut->Fill(ChiSquareInTPC);
-     	fDCAzAfterCut->Fill(ValueDCAz);
-     	fDCAxyAfterCut->Fill(ValueDCAxy);
+     	fTPCClustersHistogram[1]->Fill(NumberOfTPCClusters);
+     	fITSClustersHistogram[1]->Fill(NumberOfITSClusters);
+     	fChiSquareTPCHistogram[1]->Fill(ChiSquareInTPC);
+     	fDCAzHistogram[1]->Fill(ValueDCAz);
+     	fDCAxyHistogram[1]->Fill(ValueDCAxy);
 
 	//............................................................................................
 
@@ -654,21 +583,15 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  
  if(!bDoMixed)
  {
-   if(Multi_Ang_A>0){fMultiHistoAfterTrackSeletion->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
-   for(Int_t u=0;u<Multi_Ang_A;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
-
+   if(Multi_Ang_A>0){fMultHistogram[2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
    this->MainTask(Multi_Ang_A, angles_A,weights_A); //Actual Multi-Particle Correlation
-
  }//if(!bDoMixed)
  
  if(bDoMixed)
  {
-   if(Multi_Ang_A>0){fMultiHistoAfterTrackSeletion->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
-   for(Int_t u=0;u<Multi_Ang_A+Multi_Ang_B;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
-   if(Multi_Ang_B>0){fMultiHistoAfterTrackSeletion_Second->Fill(Multi_Ang_B);}
-
+   if(Multi_Ang_A>0){fMultHistogram[2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
+   if(Multi_Ang_B>0){fMultHistogram[3]->Fill(Multi_Ang_B);}
    this->MixedParticle(fMixedHarmonic, Multi_Ang_A, angles_A, Multi_Ang_B, angles_B);
-
  }//if(bDoMixed)
  
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -702,9 +625,9 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
  
  AliMCVertex *avtx = (AliMCVertex*)aMCEve->GetPrimaryVertex();
 	
- fVertexXAfter->Fill(avtx->GetX());
- fVertexYAfter->Fill(avtx->GetY());
- fVertexZAfter->Fill(avtx->GetZ());
+ fVertexXHistogram[1]->Fill(avtx->GetX());
+ fVertexYHistogram[1]->Fill(avtx->GetY());
+ fVertexZHistogram[1]->Fill(avtx->GetZ());
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //b)Run over Reco + Generate Table 
@@ -767,9 +690,9 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
 	if(charge == 0){continue;}
 	if(!isPrimary && !isWeakSecondary){continue;}
 
-	fPhiHistBeforeTrackSeletion->Fill(phi); 
-        fEtaHistBeforeTrackSeletion->Fill(eta);
-        fPTHistBeforeTrackSeletction->Fill(pt);
+	fPhiHistogram[0]->Fill(phi); 
+        fEtaHistogram[0]->Fill(eta);
+        fPTHistogram[0]->Fill(pt);
 
 	//........................................................................
 	//Track did not pass physics selection 
@@ -782,16 +705,16 @@ void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aM
 		else
 		{	// GetValue = 0: the kine track has been lost in ALICE --> Included in the pT distribution.
         		// GetValue = 1: the reco track has been selected.
-			fPhiHistAfterTrackSeletion->Fill(phi); 
-        		fEtaHistAfterTrackSeletion->Fill(eta);
-        		fPTHistAfterTrackSeletction->Fill(pt);
+			fPhiHistogram[1]->Fill(phi); 
+        		fEtaHistogram[1]->Fill(eta);
+        		fPTHistogram[1]->Fill(pt);
 		} //else
 	} //if(bUseRecoKineTable)
 	else
 	{
- 		fPhiHistAfterTrackSeletion->Fill(phi); 
-        	fEtaHistAfterTrackSeletion->Fill(eta);
-        	fPTHistAfterTrackSeletction->Fill(pt);
+ 		fPhiHistogram[1]->Fill(phi); 
+        	fEtaHistogram[1]->Fill(eta);
+        	fPTHistogram[1]->Fill(pt);
 	}
 
  } // Loop over Kine Tracks with Histogram Filling
@@ -823,15 +746,15 @@ void AliAnalysisTaskStudentsML::Terminate(Option_t *)
 
 void AliAnalysisTaskStudentsML::InitializeArrays()
 {
- // Initialize all data members which are arrays in this method.
+  // Initialize all data members which are arrays in this method.
 
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //Multiparticle-Correlations
    for(Int_t cs=0;cs<2;cs++) 
    {
      for(Int_t c=0;c<fMaxCorrelator;c++)
      {
-   
       fRecursion[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
-   
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
 
@@ -839,18 +762,44 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
    {
      for(Int_t j=0;j<13;j++)
      {
-   
       fQvector[js][j] = TComplex(0.,0.); //! 
-   
      } 
    } 
 
-
-  for(Int_t i=0; i<3; i++)
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Run-by-Run List and Weight-Histograms
+  for (Int_t iRun = 0; iRun < 90; iRun++)
   {
-	fWeightsHist[i] = NULL;
+    fListRuns[iRun] = 0;
+    fHistoPtWeight[iRun] = NULL;
+    fHistoEtaWeight[iRun] = NULL;
+    fHistoPhiWeight[iRun] = NULL;
   }
-   
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //QC-Histograms
+  for(Int_t i=0; i<2; i++)
+  {
+	fVertexXHistogram[i] = NULL;
+	fVertexYHistogram[i] = NULL;
+	fVertexZHistogram[i] = NULL;
+	fTPCClustersHistogram[i] = NULL;
+	fITSClustersHistogram[i] = NULL;
+	fChiSquareTPCHistogram[i] = NULL;
+	fDCAzHistogram[i] = NULL;
+	fDCAxyHistogram[i] = NULL;
+	fCentralityHistogram[i] = NULL;
+  }
+
+  for(Int_t i=0; i<4; i++)
+  {
+	fPTHistogram[i] = NULL;
+	fPhiHistogram[i] = NULL;
+	fEtaHistogram[i] = NULL;
+	fMultHistogram[i] = NULL;
+  }   
+
+
 } // void AliAnalysisTaskStudentsML::InitializeArrays()
 
 //==========================================================================================================================================================================
@@ -887,200 +836,178 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // Book all control histograms.
 
  // a) Book histogram to hold pt spectra
- // b) Book histogram to hold phi distribution before track selection
- // c) Book histogram to hold eta distribution before track selection
- // d) Book Mult. Histo before before track selection
- // e) Book histogam to hold multiplicty distribution before track selection
- // f) Book histogram to hold phi distribution after track selection
- // g) Book histogram to hold eta distribution after track selection:
- // h) Book Mult. Histo before after track selection
- // i) Book histogam to hold multiplicty distribution after track selection:
- // j) Book histogam to hold multiplicty distribution before high multiplicity outlier cut:
- // k) Book histogam for Vertex X before Cut
- // l) Book histogam for Vertex X after Cut
- // m) Book histogam for Vertex Y before Cut
- // n) Book histogam for Vertex Y after Cut
- // o) Book histogam for Vertex Z before Cut
- // p) Book histogam for Vertex Z after Cut
- // q) Book histogram to debug
- // r) Book histogram for number of TPC clustes before cut
- // s) Book histogram for number of TPC clustes after cut
- // t) Book histogram for number of ITC clusters before the cut
- // u) Book histogram for number of ITC clusters after the cut
- // v) Book histogram for chi square TPC before cut
- // w) Book histogram for chi square TPC after cut
- // x) Book histogram for DCAz before + after cut
- // y) Book histogram for DCAxy before + after cut
-
+ // b) Book histogram to hold phi spectra
+ // c) Book histogram to hold eta spectra
+ // d) Book histogam to hold multiplicty distributions 
+ // e) Book histogam for Vertex X 
+ // f) Book histogam for Vertex Y 
+ // g) Book histogam for Vertex Z 
+ // h) Book histogram to debug
+ // i) Book histogram for number of TPC clustes 
+ // j) Book histogram for number of ITC clusters 
+ // k) Book histogram for chi square TPC 
+ // l) Book histogram for DCAz 
+ // m) Book histogram for DCAxy 
+ // n) Book histogram Centrality 
 
 
  // a) Book histogram to hold pt spectra:
- fPTHistBeforeTrackSeletction = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
- fPTHistBeforeTrackSeletction->GetXaxis()->SetTitle("P_t");
- fPTHistBeforeTrackSeletction->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistBeforeTrackSeletction);
+ fPTHistogram[0] = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
+ fPTHistogram[0]->GetXaxis()->SetTitle("P_t");
+ fPTHistogram[0]->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistogram[0]);
 
- fPTHistBeforeTrackSeletctionSecond = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
- fPTHistBeforeTrackSeletctionSecond->GetXaxis()->SetTitle("P_t");
- fPTHistBeforeTrackSeletctionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistBeforeTrackSeletctionSecond);
+ fPTHistogram[1] = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
+ fPTHistogram[1]->GetXaxis()->SetTitle("P_t");
+ fPTHistogram[1]->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistogram[1]);
 
- fPTHistAfterTrackSeletction = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
- fPTHistAfterTrackSeletction->GetXaxis()->SetTitle("P_t");
- fPTHistAfterTrackSeletction->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistAfterTrackSeletction);
+ fPTHistogram[2] = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+ fPTHistogram[2]->GetXaxis()->SetTitle("P_t");
+ fPTHistogram[2]->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistogram[2]);
 
- fPTHistAfterTrackSeletctionSecond = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
- fPTHistAfterTrackSeletctionSecond->GetXaxis()->SetTitle("P_t");
- fPTHistAfterTrackSeletctionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fPTHistAfterTrackSeletctionSecond);
+ fPTHistogram[3] = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+ fPTHistogram[3]->GetXaxis()->SetTitle("P_t");
+ fPTHistogram[3]->SetLineColor(4);
+ fControlHistogramsList->Add(fPTHistogram[3]);
 
+ 
+ // b) Book histogram to hold phi spectra
+ fPhiHistogram[0] = new TH1F("fPhiHistBeforeTrackSelection","Phi Distribution",1000,0.,6.3);
+ fPhiHistogram[0]->GetXaxis()->SetTitle("Phi");
+ fPhiHistogram[0]->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistogram[0]);
 
- // b) Book histogram to hold phi distribution before track selection:
- fPhiHistBeforeTrackSeletion = new TH1F("fPhiHistBeforeTrackSeletion","Phi Distribution",1000,0.,6.3);
- fPhiHistBeforeTrackSeletion->GetXaxis()->SetTitle("Phi");
- fPhiHistBeforeTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistBeforeTrackSeletion);
+ fPhiHistogram[1] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,6.3);
+ fPhiHistogram[1]->GetXaxis()->SetTitle("Phi");
+ fPhiHistogram[1]->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistogram[1]);
 
- fPhiHistBeforeTrackSeletionSecond = new TH1F("fPhiHistBeforeTrackSeletionSecond","Phi Distribution",1000,0.,6.3);
- fPhiHistBeforeTrackSeletionSecond->GetXaxis()->SetTitle("Phi");
- fPhiHistBeforeTrackSeletionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistBeforeTrackSeletionSecond);
+ fPhiHistogram[2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+ fPhiHistogram[2]->GetXaxis()->SetTitle("Phi");
+ fPhiHistogram[2]->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistogram[2]);
+
+ fPhiHistogram[3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+ fPhiHistogram[3]->GetXaxis()->SetTitle("Phi");
+ fPhiHistogram[3]->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistogram[3]);
 
  // c) Book histogram to hold eta distribution before track selection:
- fEtaHistBeforeTrackSeletion = new TH1F("fEtaHistBeforeTrackSeletion","Eta Distribution",1000,-1.,1.);
- fEtaHistBeforeTrackSeletion->GetXaxis()->SetTitle("Eta");
- fEtaHistBeforeTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistBeforeTrackSeletion);
+ fEtaHistogram[0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.);
+ fEtaHistogram[0]->GetXaxis()->SetTitle("Eta");
+ fEtaHistogram[0]->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistogram[0]);
 
- fEtaHistBeforeTrackSeletionSecond = new TH1F("fEtaHistBeforeTrackSeletionSecond","Eta Distribution",1000,-1.,1.);
- fEtaHistBeforeTrackSeletionSecond->GetXaxis()->SetTitle("Eta");
- fEtaHistBeforeTrackSeletionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistBeforeTrackSeletionSecond);
+ fEtaHistogram[2] = new TH1F("fEtaHistBeforeTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
+ fEtaHistogram[2]->GetXaxis()->SetTitle("Eta");
+ fEtaHistogram[2]->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistogram[2]);
 
- // d) Book Mult. Histo before before track selection
- fTotalMultBeforeTrackSeletion = new TH1F("fTotalMultBeforeTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
- fTotalMultBeforeTrackSeletion->GetYaxis()->SetTitle("Counts");
- fTotalMultBeforeTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fTotalMultBeforeTrackSeletion);
+ fEtaHistogram[1] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution",1000,-1.,1.);
+ fEtaHistogram[1]->GetXaxis()->SetTitle("Eta");
+ fEtaHistogram[1]->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistogram[1]);
+
+ fEtaHistogram[3] = new TH1F("fEtaHistAfterTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
+ fEtaHistogram[3]->GetXaxis()->SetTitle("Eta");
+ fEtaHistogram[3]->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistogram[3]);
+
+ // d) Book histogam to hold multiplicty distributions 
+ fMultHistogram[0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
+ fMultHistogram[0]->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultHistogram[0]);
  
- // e) Book histogam to hold multiplicty distribution before track selection:
- fMultiHistoBeforeTrackSeletion = new TH1F("fMultiHistoBeforeTrackSeletion","Multiplicity",5000,0.,5000.); 
- fMultiHistoBeforeTrackSeletion->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHistoBeforeTrackSeletion);
+ fMultHistogram[1] = new TH1F("fMultiHistoBeforeTrackSelection","Multiplicity",5000,0.,5000.); 
+ fMultHistogram[1]->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultHistogram[1]);
 
- // f) Book histogram to hold phi distribution after track selection:
- fPhiHistAfterTrackSeletion = new TH1F("fPhiHistAfterTrackSeletion","Phi Distribution",1000,0.,6.3);
- fPhiHistAfterTrackSeletion->GetXaxis()->SetTitle("Phi");
- fPhiHistAfterTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistAfterTrackSeletion);
+ fMultHistogram[2] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity",5000,0.,5000.);
+ fMultHistogram[2]->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultHistogram[2]);
 
- fPhiHistAfterTrackSeletionSecond = new TH1F("fPhiHistAfterTrackSeletionSecond","Phi Distribution",1000,0.,6.3);
- fPhiHistAfterTrackSeletionSecond->GetXaxis()->SetTitle("Phi");
- fPhiHistAfterTrackSeletionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHistAfterTrackSeletionSecond);
+ fMultHistogram[3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",5000,0.,5000.);
+ fMultHistogram[3]->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultHistogram[3]);
 
- // g) Book histogram to hold eta distribution after track selection:
- fEtaHistAfterTrackSeletion = new TH1F("fEtaHistAfterTrackSeletion","Eta Distribution",1000,-1.,1.);
- fEtaHistAfterTrackSeletion->GetXaxis()->SetTitle("Eta");
- fEtaHistAfterTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistAfterTrackSeletion);
+ // e) Book histogam for Vertex X 
+ fVertexXHistogram[0] = new TH1F("fVertexXBefore","VertexXBefore",1000,-20.,20.); 
+ fVertexXHistogram[0]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexXHistogram[0]);
 
- fEtaHistAfterTrackSeletionSecond = new TH1F("fEtaHistAfterTrackSeletionSecond","Eta Distribution",1000,-1.,1.);
- fEtaHistAfterTrackSeletionSecond->GetXaxis()->SetTitle("Eta");
- fEtaHistAfterTrackSeletionSecond->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHistAfterTrackSeletionSecond);
+ fVertexXHistogram[1] = new TH1F("fVertexXAfter","VertexXAfter",1000,-20.,20.); 
+ fVertexXHistogram[1]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexXHistogram[1]);
 
- // h) Book Mult. Histo before after track selection
-  fTotalMultAfterTrackSeletion = new TH1F("fTotalMultAfterTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
- fTotalMultAfterTrackSeletion->GetYaxis()->SetTitle("Counts");
- fTotalMultAfterTrackSeletion->SetLineColor(4);
- fControlHistogramsList->Add(fTotalMultAfterTrackSeletion);
- 
- // i) Book histogam to hold multiplicty distribution after track selection:
- fMultiHistoAfterTrackSeletion = new TH1F("fMultiHistoAfterTrackSeletion","Multiplicity",5000,0.,5000.);
- fMultiHistoAfterTrackSeletion->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHistoAfterTrackSeletion);
+ // f) Book histogam for Vertex Y 
+ fVertexYHistogram[0] = new TH1F("fVertexYBefore","VertexYBefore",1000,-20.,20.); 
+ fVertexYHistogram[0]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexYHistogram[0]);
 
- fMultiHistoAfterTrackSeletion_Second = new TH1F("fMultiHistoAfterTrackSeletion_Second","Multiplicity",5000,0.,5000.);
- fMultiHistoAfterTrackSeletion_Second->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHistoAfterTrackSeletion_Second);
+ fVertexYHistogram[1] = new TH1F("fVertexYAfter","VertexYAfter",1000,-20.,20.); 
+ fVertexYHistogram[1]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexYHistogram[1]);
 
- // j) Book histogam to hold multiplicty distribution before high multiplicity outlier cut:
- fMultiHistoBeforeMultCut = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
- fMultiHistoBeforeMultCut->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHistoBeforeMultCut);
+ // g) Book histogam for Vertex Z 
+ fVertexZHistogram[0] = new TH1F("fVertexZBefore","VertexZBefore",1000,-20.,20.); 
+ fVertexZHistogram[0]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexZHistogram[0]);
 
- // k) Book histogam for Vertex X before Cut
- fVertexXBefore = new TH1F("fVertexXBefore","fVertexXBefore",1000,-20.,20.); 
- fVertexXBefore->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexXBefore);
+ fVertexZHistogram[1] = new TH1F("fVertexZAfter","VertexZAfter",1000,-20.,20.); 
+ fVertexZHistogram[1]->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexZHistogram[1]);
 
-  // l) Book histogam for Vertex X after Cut
- fVertexXAfter = new TH1F("fVertexXAfter","fVertexXAfter",1000,-20.,20.); 
- fVertexXAfter->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexXAfter);
-
- // m) Book histogam for Vertex Y before Cut
- fVertexYBefore = new TH1F("fVertexYBefore","fVertexYBefore",1000,-20.,20.); 
- fVertexYBefore->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexYBefore);
-
- // n) Book histogam for Vertex Y after Cut
- fVertexYAfter = new TH1F("fVertexYAfter","fVertexYAfter",1000,-20.,20.); 
- fVertexYAfter->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexYAfter);
-
-  // o) Book histogam for Vertex Y after Cut
- fVertexZBefore = new TH1F("fVertexZBefore","fVertexZBefore",1000,-20.,20.); 
- fVertexZBefore->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexZBefore);
-
-  // p) Book histogam for Vertex Y after Cut
- fVertexZAfter = new TH1F("fVertexZAfter","fVertexZAfter",1000,-20.,20.); 
- fVertexZAfter->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexZAfter);
-
- // q) Book histogram to debug
+ // h) Book histogram to debug
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
  fControlHistogramsList->Add(fCounterHistogram);
 
- // r) Book histogram for number of TPC clustes before cut
- fTPCClustersBeforeCut = new TH1F("fTPCClustersBeforeCut","fTPCClustersBeforeCut",170,0.,170.); 
- fControlHistogramsList->Add(fTPCClustersBeforeCut);
+ // i) Book histogram for number of TPC clustes 
+ fTPCClustersHistogram[0] = new TH1F("fTPCClustersBeforeCut","TPCClustersBeforeCut",170,0.,170.); 
+ fControlHistogramsList->Add(fTPCClustersHistogram[0]);
 
- // s) Book histogram for number of TPC clustes after cut
- fTPCClustersAfterCut = new TH1F("fTPCClustersAfterCut","fTPCClustersAfterCut",170,0.,170.); 
- fControlHistogramsList->Add(fTPCClustersAfterCut);
+ fTPCClustersHistogram[1] = new TH1F("fTPCClustersAfterCut","TPCClustersAfterCut",170,0.,170.); 
+ fControlHistogramsList->Add(fTPCClustersHistogram[1]);
 
- // t) Book histogram for number of ITC clusters before the cut
- fITSClustersBeforeCut = new TH1F("fITSClustersBeforeCut","fITSClustersBeforeCut",10,0.,10.); 
- fControlHistogramsList->Add(fITSClustersBeforeCut);
+ //j) Book histogram for number of ITC clusters 
+ fITSClustersHistogram[0] = new TH1F("fITSClustersBeforeCut","ITSClustersBeforeCut",10,0.,10.); 
+ fControlHistogramsList->Add(fITSClustersHistogram[0]);
 
- // u) Book histogram for number of ITC clusters after the cut
- fITSClustersAfterCut = new TH1F("fITSClustersAfterCut","fITSClustersAfterCut",10,0.,10.); 
- fControlHistogramsList->Add(fITSClustersAfterCut);
+ fITSClustersHistogram[1] = new TH1F("fITSClustersAfterCut","ITSClustersAfterCut",10,0.,10.); 
+ fControlHistogramsList->Add(fITSClustersHistogram[1]);
 
- // v) Book histogram for chi square TPC before cut
- fChiSquareTPCBeforeCut = new TH1F("fChiSquareTPCBeforeCut","fChiSquareTPCBeforeCut",1000,0.,20.); 
- fControlHistogramsList->Add(fChiSquareTPCBeforeCut);
+ // k) Book histogram for chi square TPC 
+ fChiSquareTPCHistogram[0] = new TH1F("fChiSquareTPCBeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
+ fControlHistogramsList->Add(fChiSquareTPCHistogram[0]);
 
- // w) Book histogram for chi square TPC after cut
- fChiSquareTPCAfterCut = new TH1F("fChiSquareTPCAfterCut","fChiSquareTPCAfterCut",1000,0.,20.); 
- fControlHistogramsList->Add(fChiSquareTPCAfterCut);
+ fChiSquareTPCHistogram[1] = new TH1F("fChiSquareTPCAfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
+ fControlHistogramsList->Add(fChiSquareTPCHistogram[1]);
 
- // x) Book histogram for DCAz before + after cut
- fDCAzBeforeCut = new TH1F("fDCAzBeforeCut","fDCAzBeforeCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAzBeforeCut);
+  // l) Book histogram for DCAz
+ fDCAzHistogram[0] = new TH1F("fDCAzBeforeCut","DCAzBeforeCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAzHistogram[0]);
 
- fDCAzAfterCut = new TH1F("fDCAzAfterCut","fDCAzAfterCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAzAfterCut);
- // y) Book histogram for DCAxy before + after cut
- fDCAxyBeforeCut = new TH1F("fDCAxyBeforeCut","fDCAxyBeforeCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAxyBeforeCut);
+ fDCAzHistogram[1] = new TH1F("fDCAzAfterCut","DCAzAfterCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAzHistogram[1]);
+ 
+ // m) Book histogram for DCAxy
+ fDCAxyHistogram[0] = new TH1F("fDCAxyBeforeCut","DCAxyBeforeCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAxyHistogram[0]);
 
- fDCAxyAfterCut = new TH1F("fDCAxyAfterCut","fDCAxyAfterCut",1000,0.,10.); 
- fControlHistogramsList->Add(fDCAxyAfterCut);
+ fDCAxyHistogram[1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,0.,10.); 
+ fControlHistogramsList->Add(fDCAxyHistogram[1]);
+
+ // n) Book histogram Centrality 
+ fCentralityHistogram[0]= new TH1F("fCentralityHistogramBefore","CentralityHistogramBefore",22,0.,110.);
+ fCentralityHistogram[0]->GetXaxis()->SetTitle("Centrality");
+ fCentralityHistogram[0]->SetLineColor(4);
+ fControlHistogramsList->Add(fCentralityHistogram[0]);
+
+ fCentralityHistogram[1]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.);
+ fCentralityHistogram[1]->GetXaxis()->SetTitle("Centrality");
+ fCentralityHistogram[1]->SetLineColor(4);
+ fControlHistogramsList->Add(fCentralityHistogram[1]);
 
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
 
@@ -1167,14 +1094,14 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   fCounterHistogram->Fill(2.5); // counter hist 3rd bin
  
   if(fCentralityfromVZero)
-  {
-  	if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality){ }
+  {     fCentralityHistogram[0]->Fill(ams->GetMultiplicityPercentile("V0M"));
+  	if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality){fCentralityHistogram[1]->Fill(ams->GetMultiplicityPercentile("V0M")); }
   	else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
   }
 
   if(!fCentralityfromVZero)
-  {
-  	if(ams->GetMultiplicityPercentile("CL1") >= fMinCentrality && ams->GetMultiplicityPercentile("CL1") < fMaxCentrality){ }
+  {	fCentralityHistogram[0]->Fill(ams->GetMultiplicityPercentile("CL1"));
+  	if(ams->GetMultiplicityPercentile("CL1") >= fMinCentrality && ams->GetMultiplicityPercentile("CL1") < fMaxCentrality){ fCentralityHistogram[1]->Fill(ams->GetMultiplicityPercentile("CL1")); }
   	else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
   }
  
@@ -1182,9 +1109,9 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   // c) Cuts on AliAODVertex:
   AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();
  
-  fVertexXBefore->Fill(avtx->GetX());
-  fVertexYBefore->Fill(avtx->GetY());
-  fVertexZBefore->Fill(avtx->GetZ());
+  fVertexXHistogram[0]->Fill(avtx->GetX());
+  fVertexYHistogram[0]->Fill(avtx->GetY());
+  fVertexZHistogram[0]->Fill(avtx->GetZ());
 
 
   if(bCutOnVertexX)
@@ -1211,7 +1138,7 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   	Int_t nCounterMainFilter=0; //Counter for MainFilter
   	Int_t nCounterSecondFilter=0; //Counter for SecondFilter
 
-	fMultiHistoBeforeMultCut->Fill(nTracks); //multiplicity distribution before high multiplicity outlier removal
+	fMultHistogram[0]->Fill(nTracks); //multiplicity distribution before high multiplicity outlier removal
   	for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  	{
   	  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack)); 
@@ -1312,10 +1239,10 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   //a) Reset Histo's (are already filled in QA for AOD)
   fCounterHistogram->SetBinContent(2,0);
   fCounterHistogram->SetBinContent(3,0);
-  fVertexXBefore->Reset();
-  fVertexYBefore->Reset();
-  fVertexZBefore->Reset();
-  fMultiHistoBeforeMultCut->Reset();
+  fVertexXHistogram[0]->Reset();
+  fVertexYHistogram[0]->Reset();
+  fVertexZHistogram[0]->Reset();
+  fMultHistogram[0]->Reset();
 
   //b) Protection against NULL-Pointers
   if(!aMCKineEvent){return kFALSE;}
@@ -1324,9 +1251,9 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
   // c) Cuts on AliAODVertex:
   AliMCVertex *avtx = (AliMCVertex*)aMCKineEvent->GetPrimaryVertex();
  
-  fVertexXBefore->Fill(avtx->GetX());
-  fVertexYBefore->Fill(avtx->GetY());
-  fVertexZBefore->Fill(avtx->GetZ());
+  fVertexXHistogram[0]->Fill(avtx->GetX());
+  fVertexYHistogram[0]->Fill(avtx->GetY());
+  fVertexZHistogram[0]->Fill(avtx->GetZ());
 
   if(bCutOnVertexX)
   {
@@ -1376,86 +1303,148 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 
 void AliAnalysisTaskStudentsML::CalculateWeight(Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
 {
-  //GetHistograms
+  //a) Get Array-Index of the Run
+  Int_t RunIndex = GetRunIndex(RunNumber);
 
-  if(bUsePhiWeights){fWeightsHist[0] = GetHistogramWithWeights(RunNumber, "phi");}
-  if(bUsePtWeights){fWeightsHist[1] = GetHistogramWithWeights(RunNumber, "pt");}
-  if(bUseEtaWeights){fWeightsHist[2] =GetHistogramWithWeights(RunNumber, "eta");}
-
+  //b) Loop over all particles in the event and asign weights
   for(Int_t i=0; i<Multi; i++)
   {
+    //First, by default, we have unit weights
     Double_t weight_phi = 1.;
     Double_t weight_pt = 1.;
     Double_t weight_eta = 1.;
     Int_t iBin = 0;
 
-    if(bUsePhiWeights){ iBin = fWeightsHist[0]->FindBin(angles[i]); weight_phi = fWeightsHist[0]->GetBinContent(iBin); }
-    if(bUsePtWeights){ iBin = fWeightsHist[1]->FindBin(pt[i]); weight_pt = fWeightsHist[1]->GetBinContent(iBin); }
-    if(bUseEtaWeights){ iBin = fWeightsHist[2]->FindBin(eta[i]); weight_eta = fWeightsHist[2]->GetBinContent(iBin); }
-
+    if(bUsePhiWeights)
+    { 
+      iBin = fHistoPhiWeight[RunIndex]->FindBin(angles[i]); 
+      weight_phi = fHistoPhiWeight[RunIndex]->GetBinContent(iBin); 
+    }
+    if(bUsePtWeights)
+    {
+      iBin = fHistoPtWeight[RunIndex]->FindBin(pt[i]); 
+      weight_pt = fHistoPtWeight[RunIndex]->GetBinContent(iBin); 
+    }
+    if(bUseEtaWeights)
+    { 
+      iBin = fHistoEtaWeight[RunIndex]->FindBin(eta[i]); 
+      weight_eta = fHistoEtaWeight[RunIndex]->GetBinContent(iBin); 
+    }
+   
+    //Final overall weight
     weights[i] = weight_phi*weight_pt*weight_eta;
-  }
+
+  }//for(Int_t i=0; i<Multi; i++)
 
 } //void AliAnalysisTaskStudentsML::CalculateWeight(Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
 
 //==========================================================================================================================================================================
 
-TH1F* AliAnalysisTaskStudentsML::GetHistogramWithWeights(Int_t RunNumber, const char *variable)
+Int_t AliAnalysisTaskStudentsML::GetRunIndex(Int_t runNumber)
 {
- // Access from external ROOT file the desired histogram with weights.
+/* Return for the given run the index in the run-by-run arrays.                              */
+  TString sMethod = "Int_t AliAnalysisTaskStudentsML::GetRunIndex()";
+  Int_t cRun = -1; // Current index in the loop.
 
- // a) Return value;
- // b) Basic protection for arguments;
- // c) Check if the external ROOT file exists at specified path;
- // d) Access the external ROOT file and fetch the desired histogram with weights;
- // e) Close the external ROOT file.
+// Find the position of the given run into the list of runs.
+  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
+  {
+    if (fListRuns[iRun] == runNumber)
+    {
+      cRun = iRun;
+      break;
+    } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
+  } // End: iRun.
 
- TH1F* hist = NULL;
- TString sMethod = "void AliAnalysisTaskStudentsML::GetHistogramWithWeights()";
-
- // b) Basic protection for some arguments:
- if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")))
- {
-  // bail out with your favorite error message
-   Fatal(sMethod.Data(), "ERROR: not the correct variable");
- }
-
- // d) Access the external ROOT file and fetch the desired histogram with weights:
- TFile *weightsFile = NULL;
- if(bGridWeights){weightsFile = TFile::Open(Form("/alice/cern.ch/user/m/mlesch/Weights/%s/%d/Weights.root",fPeriodUsedForWeight.Data(),RunNumber),"READ");}
- if(!bGridWeights) {weightsFile = TFile::Open(Form("%s/Weights.root",fPeriodUsedForWeight.Data()),"READ");}
- if(!weightsFile){ Fatal(sMethod.Data(), "ERROR 404 File not found"); } 
- 
- TDirectoryFile *directoryFile = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%s_Weights", variable)));
- if(!directoryFile){Fatal(sMethod.Data(), "Directory not found");} //checking if pointer is set correctly
-
- TList *List= dynamic_cast<TList*>(directoryFile->Get(Form("%s_Weight=>%.1f-%.1f",variable, fMinCentrality,fMaxCentrality))); 
- if(!List){Fatal(sMethod.Data(), "ERROR: List not found");} 
-
-
- // Finally, access the desired histogram:
- hist = dynamic_cast<TH1F*>(List->FindObject(Form("%s_Weight",variable)));
- if(!hist)
- {
-  // bail out with your favorite error message
-  Fatal(sMethod.Data(), "ERROR: Hist not found");
- } 
- else 
- { 
-  hist->SetDirectory(0); // kill the default ownership
- }
-
- // e) Close the external ROOT file:
- weightsFile->Close(); delete weightsFile;
-
- return hist;
-} // TH1F* AliAnalysisTaskStudentsML::GetHistogramWithWeights( const char *variable, const char *dataset)
+  return cRun;
+} // End: Int_t GetRunIndex(Int_t).
 
 //==========================================================================================================================================================================
+
+void AliAnalysisTaskStudentsML::SetListOfRuns(TString dataPeriod) //Called in Constructor
+{
+/* Set the list of runs to use according to the chosen data-taking period................... */
+  TString sMethod = "void AliAnalysisTaskStudentsML::SetListOfRuns()";
+
+  if (dataPeriod == "LHC10h")
+  {
+    fNumberRuns = 90;
+    Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+    for (Int_t i = 0; i < fNumberRuns; i++) {fListRuns[i] = listRuns[i];}
+  } // End: if (dataPeriod == "LHC10h").
+  else {Fatal(sMethod.Data(), "FATAL: not a valid data period!");}
+
+} // End: void SetListOfRuns(TString).
+
+//==========================================================================================================================================================================
+
+void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
+{
+// Setter to open the external file with the particle weights and import them in the task....
+// a.)  Open the external file.                                                                  
+// b.)  Parse the runs.                                                                          
+// b.1) Open the TDirectoryFile for the current run.                                            
+// b.2) Open the list for the current centrality range.                                         
+// b.3) Fill the pT-weight histogram if needed.                                                 
+// b.4) Fill the eta-weight histogram if needed.                                                
+// b.5) Fill the phi-weight histogram if needed.                                                
+// c.)  Close the external file.                                                               
+
+  TString sMethod = "void AliAnalysisTaskStudentsML::SetInputParticleWeights()";
+
+  // a.) Open the external file.
+  TFile *weightsFile = TFile::Open(Form("%s", fileWeight.Data()), "READ");
+  if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
+
+  // b.) Parse the runs.
+  for (Int_t iRun = 0; iRun < fNumberRuns; iRun++)
+  {
+    // b.1) Open the TDirectoryFile for the current run.
+    Int_t runNumber = fListRuns[iRun];
+    //printf("Run number: %d\n", runNumber);
+    TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
+    if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
+
+    // b.2) Open the list for the current centrality range.
+    TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fMinCentrality, fMaxCentrality)));
+    if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+
+    // b.3) Fill the pT-weight histogram if needed.
+    if (bUsePtWeights)
+    {
+      fHistoPtWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("pt-weight"));
+      if (!fHistoPtWeight[iRun]) {Fatal(sMethod.Data(), "ERROR: pt-weight histogram not found");}
+      else {fHistoPtWeight[iRun]->SetDirectory(0);} // Kill the default ownership.
+    } // End: if (fUsePtWeights).
+
+    // b.4) Fill the eta-weight histogram if needed.
+    if (bUseEtaWeights)
+    {
+      fHistoEtaWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("eta-weight"));
+      if (!fHistoEtaWeight[iRun]) { Fatal(sMethod.Data(), "ERROR: eta-weight histogram not found"); }
+      else {fHistoEtaWeight[iRun]->SetDirectory(0);}  // Kill the default ownership.
+    } // End: if (fUseEtaWeights).
+
+    // b.5) Fill the phi-weight histogram if needed.
+    if (bUsePhiWeights)
+    {
+      fHistoPhiWeight[iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
+      if (!fHistoPhiWeight[iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
+      else {fHistoPhiWeight[iRun]->SetDirectory(0);}  // Kill the default ownership.
+    } // End: if (fUseEtaWeights).
+  } // End: iRun.
+
+  // c.) Close the external file.
+  weightsFile->Close();
+  delete weightsFile;
+
+} // void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
+
+//==========================================================================================================================================================================
+
 void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParticles, Double_t* CalculateQvectors_angles, Double_t* CalculateQvectors_weights)
 {
  // Calculate Q-vectors.
-
  // a) Make sure all Q-vectors are initially zero;
  // b) Calculate Q-vectors for available angles and weights. 
 
@@ -1515,8 +1504,7 @@ TComplex AliAnalysisTaskStudentsML::CalculateMixedQVectors(Double_t Harm, Int_t 
 
     return v_AB;
 
- }
-
+ } //TComplex AliAnalysisTaskStudentsML::CalculateMixedQVectors(Double_t Harm, Int_t M_A, Int_t M_B, Double_t* Ang_A, Double_t* Ang_B)
 
 //==========================================================================================================================================================================
 
