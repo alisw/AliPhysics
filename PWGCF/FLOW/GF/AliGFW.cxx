@@ -109,6 +109,8 @@ TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGF
   if(pows.size()==0) //if powers are not initialized, initialize them to 1
     for(Int_t i=0; i<(Int_t)hars.size(); i++)
       pows.push_back(1);
+  if((pows.at(0)!=1) && qol) qpoi=qol; //if the power of POI is not unity, then always use overlap (if defined).
+  //Only valid for 1 particle of interest though!
   if(hars.size()<2) return qpoi->Vec(hars.at(0),pows.at(0),ptbin);
   if(hars.size()<3) return TwoRec(hars.at(0), hars.at(1),pows.at(0),pows.at(1), ptbin, qpoi, qref, qol);
   Int_t harlast=hars.at(hars.size()-1);
@@ -124,6 +126,7 @@ TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGF
     //The issue is here. In principle, if i=0 (dif), then the overlap is only qpoi (0, if no overlap);
     //Otherwise, if we are not working with the 1st entry (dif.), then overlap will always be from qref
     //One should thus (probably) make a check if i=0, then qovl=qpoi, otherwise qovl=qref. But need to think more
+    //-- This is not aplicable anymore, since the overlap is explicitly specified
     formula-=RecursiveCorr(qpoi, qref, qol, ptbin, lhars, lpows);
   };
   return formula;
