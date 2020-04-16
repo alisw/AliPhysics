@@ -955,6 +955,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoPhotonPairAlphaPt[iCut]->Sumw2();
         fHistoPhotonPairOpenAnglePt[iCut]->Sumw2();
         fHistoPhotonPairEtaPhi[iCut]->Sumw2();
+        fHistoRecoArmenterosPodolanskiPlot[iCut]->Sumw2();
         if(fReconMethod!=2 && fReconMethod!=5) fHistoMotherConvPhotonEtaPhi[iCut]->Sumw2();
         fHistoMotherYPt[iCut]->Sumw2();
         fHistoMotherPi0AnglePt[iCut]->Sumw2();
@@ -1425,6 +1426,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fHistoTrueDalitzPlot[iCut]->Sumw2();
           fHistoTrueOmegaPtGammaPt[iCut]->Sumw2();
           fHistoTrueOmegaYPt[iCut]->Sumw2();
+          fHistoTrueArmenterosPodolanskiPlot[iCut]->Sumw2();
         }
       }
 
