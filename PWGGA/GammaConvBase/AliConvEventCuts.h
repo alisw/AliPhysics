@@ -389,6 +389,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+      void    SetEventQuality(Int_t value)                                          { if (fEventQuality) {
+                                                                                        AliWarning(Form("Changing fEventQuality from %i to %i", fEventQuality, value));
+                                                                                      }
+                                                                                      fEventQuality = value                                     ; }  
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
