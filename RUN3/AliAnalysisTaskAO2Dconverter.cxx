@@ -688,11 +688,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   AliMultiplicity *mlt = fESD->GetMultiplicity();
   Int_t Ntracklets = mlt->GetNumberOfTracklets();
   tracks.fSPDntracklets = Ntracklets;
- 
-  std::cout<< "Ntracklets "<<Ntracklets<<std::endl;
 
   Float_t theta, phi, dtheta, dphi, dist;
- // Int_t nspdtracklets_filled = 0; // total number of SPD tracklets filled per event
   for (Int_t itr = Ntracklets; itr--;) {
 
     theta  = mlt->GetTheta(itr);
