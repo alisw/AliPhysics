@@ -16,9 +16,10 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Int_t itsNCls = 3,
                                  Bool_t IsPPAnalysis=kFALSE,
                                  Bool_t SwitchEMCTrig = kFALSE,
-                                 Bool_t hasTwoEMCTrigThres=kFALSE, Int_t thEG1ADC=140, Int_t thEG2ADC=89,
+                                 Bool_t hasTwoEMCTrigThres=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
                                  Bool_t IsPbPb2018 = kFALSE,
+                                 Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString centrality="V0M")
 {
     //get the current analysis manager
