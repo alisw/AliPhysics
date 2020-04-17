@@ -73,13 +73,13 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = true;
+bool debug = false;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = false;
+bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 

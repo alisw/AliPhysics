@@ -104,7 +104,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fVecSecSecPrefilter()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
-                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksIDs_primary(), fPreFilter_BadTracksIDs_secondary()
+                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -140,7 +140,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fVecSecSecPrefilter()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
-                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksIDs_primary(), fPreFilter_BadTracksIDs_secondary()
+                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -797,7 +797,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   fRecPairVec_secondary.clear();  // not in use at the moment (used in DoRecTwoPairing for secondary case)
   fRecV0Pair.clear();
 
-  fPreFilter_BadTracksIDs_primary.clear();
+  fPreFilter_BadTracksLabel_primary.clear();
 
   // ##########################################################
   // Set MC event
@@ -3159,11 +3159,12 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
         Int_t labelD2 = -1;
         labelD1 = track1->GetLabel();
         labelD2 = track2->GetLabel();
-        fPreFilter_BadTracksIDs_primary.push_back(labelD1);
-        fPreFilter_BadTracksIDs_primary.push_back(labelD2);
+        fPreFilter_BadTracksLabel_primary.push_back(labelD1);
+        fPreFilter_BadTracksLabel_primary.push_back(labelD2);
 
 
-                                                                                if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: PreFilter: erasing pair from primary and secondary vector. mass = " << mass << std::endl;
+                                                                                if(fdebug && (fPairVec_primary != fPairVec_secondary)) std::cout << __LINE__ << " DEBUG_AnalysisTask: PreFilter: erasing pair from primary and secondary vector. mass = " << mass << std::endl;
+                                                                                if(fdebug && (fPairVec_primary == fPairVec_secondary)) std::cout << __LINE__ << " DEBUG_AnalysisTask: PreFilter: erasing V0's from secondary vector. mass = " << mass << std::endl;
         fPairVec_primary->erase(fPairVec_primary->begin()+prim_i);
         fPairVec_secondary->erase(fPairVec_secondary->begin()+sec_i);
         prim_i--;
@@ -3178,12 +3179,12 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
     for (unsigned int iNeg = 0; iNeg < fRecNegPart_primary.size(); iNeg++) {
         AliVParticle* track = fEvent->GetTrack(fRecNegPart_primary[iNeg].GetTrackID());
         Int_t tracklabel = track->GetLabel();
-        if (std::find(fPreFilter_BadTracksIDs_primary.begin(), fPreFilter_BadTracksIDs_primary.end(), tracklabel) != fPreFilter_BadTracksIDs_primary.end()) fRecNegPart_primary.erase(fRecNegPart_primary.begin()+iNeg);
+        if (std::find(fPreFilter_BadTracksLabel_primary.begin(), fPreFilter_BadTracksLabel_primary.end(), tracklabel) != fPreFilter_BadTracksLabel_primary.end()) fRecNegPart_primary.erase(fRecNegPart_primary.begin()+iNeg);
     }
     for (unsigned int iPos = 0; iPos < fRecPosPart_primary.size(); iPos++) {
         AliVParticle* track = fEvent->GetTrack(fRecPosPart_primary[iPos].GetTrackID());
         Int_t tracklabel = track->GetLabel();
-        if (std::find(fPreFilter_BadTracksIDs_primary.begin(), fPreFilter_BadTracksIDs_primary.end(), tracklabel) != fPreFilter_BadTracksIDs_primary.end()) fRecPosPart_primary.erase(fRecPosPart_primary.begin()+iPos);
+        if (std::find(fPreFilter_BadTracksLabel_primary.begin(), fPreFilter_BadTracksLabel_primary.end(), tracklabel) != fPreFilter_BadTracksLabel_primary.end()) fRecPosPart_primary.erase(fRecPosPart_primary.begin()+iPos);
     }
   }
 }
