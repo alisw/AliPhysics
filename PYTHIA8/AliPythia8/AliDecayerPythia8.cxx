@@ -706,6 +706,7 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
     fPythia8->ReadString("411:oneChannel = 1 0.0752 0 -321 211 211");
     fPythia8->ReadString("411:addChannel = 1 0.0104 0 -313 211");
     fPythia8->ReadString("411:addChannel = 1 0.0156 0 311 211");
+    fPythia8->ReadString("411:addChannel = 1 0.00276 0 333 211");
     //add Lc decays absent in PYTHIA8 decay table and set BRs from PDG for other
     fPythia8->ReadString("4122:oneChannel = 1 0.0196 100 2212 -313");
     fPythia8->ReadString("4122:addChannel = 1 0.0108 100 2224 -321");
@@ -756,6 +757,8 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
     fPythia8->ReadString("411:onIfMatch = 321 211 211");
     // D+/- -> K* pi
     fPythia8->ReadString("411:onIfMatch = 313 211");
+    // D+/- -> phi pi
+    fPythia8->ReadString("411:onIfMatch = 333 211");
     // D0 -> K pi
     fPythia8->ReadString("421:onIfMatch = 321 211");
 
