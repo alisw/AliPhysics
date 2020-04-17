@@ -79,6 +79,8 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCAConversion;
   TH2D * fDCADalitz;
   TH2D * fDCACharmNew;
+  TH2D * fDCACharmNewVar1;
+  TH2D * fDCACharmNewVar2;
   TH3D * fDCACharmNewDPlus;
   TH3D * fDCACharmNewDZero;
   TH3D * fDCACharmNewDS;
@@ -91,6 +93,8 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH3D * fDCACharmWeightedNew3050IP;
   TH3D * fDCACharmWeightedNew3050OOP;
   TH2D * fDCABeautyNew;
+  TH2D * fDCABeautyNewVar1;
+  TH2D * fDCABeautyNewVar2;
   TH3D * fDCABeautyNewBZero;
   TH3D * fDCABeautyNewBPlus;
   TH3D * fDCABeautyNewBS;
@@ -107,7 +111,11 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCABeautyNewRAAOOP;
   TH2D * fDCAConversionNew;
   TH3D * fDCAConversionNewCent;
+  TH3D * fDCAConversionNewCentVar1;
+  TH3D * fDCAConversionNewCentVar2;
   TH2D * fDCADalitzNew;
+  TH2D * fDCADalitzNewVar1;
+  TH2D * fDCADalitzNewVar2;
   TH2D * fDCADalitzCharm; // c -> x -> e
   TH2D * fDCADalitzBeauty;
   TH2D * fDCAConversionCharm; // c -> gamma  -> e
@@ -135,7 +143,7 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
   
-  ClassDef(AliAnalysisTaskHFEBeautyMCTemplatesRun2, 2); // example of analysis
+  ClassDef(AliAnalysisTaskHFEBeautyMCTemplatesRun2, 3); // example of analysis
 };
 
 #endif
