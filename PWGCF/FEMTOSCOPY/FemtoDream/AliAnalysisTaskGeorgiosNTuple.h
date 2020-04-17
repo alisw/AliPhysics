@@ -129,11 +129,11 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   Float_t fTv0DaughtersDCA[300];
   Float_t fTv0LambdaMass[300];
   //Float_t fTv0SigmaMass[300];
+  Float_t fTv0LambdaVr[300];
+  Float_t fTv0LambdaPA[300];
   Float_t fTv0Vx[300];
   Float_t fTv0Vy[300];
   Float_t fTv0Vz[300];
-  Float_t fTv0Vr[300];
-  Float_t fTv0PA[300];
 
 //tracks from v0: 0 proton, 1 pion
   Float_t fTTrackv0P[300][2];
