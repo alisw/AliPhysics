@@ -50,6 +50,7 @@ public:
 	void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
 	void       SetIspPb(Bool_t pPb = kFALSE)    {fIspPb = pPb;}
+	void       SetNchTScut(Bool_t TPConly = kTRUE)    {fIsTPConly = TPConly;}
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
@@ -65,6 +66,7 @@ private:
 	Bool_t       fUseMC;                // analyze MC events
 	Bool_t       fIsMCclosure;
 	Bool_t       fIspPb;
+	Bool_t       fIsTPConly;
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilter;
 	AliAnalysisFilter*  fTrackFilterwoDCA;
