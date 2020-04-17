@@ -379,15 +379,24 @@ private:
     Bool_t                  fTriggerOnlineINT7;                    /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerOnlineHighMultSPD;             /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerOnlineHighMultV0;              /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerOnlineEMCALEJ1;                /// Flag explicitly whether bitmap kEMCEJ1
+    Bool_t                  fTriggerOnlineEMCALEJ2;                /// Flag explicitly whether bitmap kEMCEJ2
+    Bool_t                  fTriggerOnlineDCALDJ1;                 /// Flag explicitly whether bitmap DCALDJ1
+    Bool_t                  fTriggerOnlineDCALDJ2;                 /// Flag explicitly whether bitmap DCALDJ2
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
     Bool_t                  fTriggerBitCentral;                    /// Flag explicitly whether bitmap contains kCentral
     Bool_t                  fTriggerBitSemiCentral;                /// Flag explicitly whether bitmap contains kSemiCentral
+    Bool_t                  fTriggerBitEMCEJE;                     /// Flag explicitly whether bitmap contains kEMCEJE
     TString                 fTriggerClasses;                       /// Collect all trigger classes
     Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
     Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
     Bool_t                  fTriggerClassHighMultV0m;              /// Flag explicitly whether classes contain HighMultV0
+    Bool_t                  fTriggerClassEMCALEJ1;                 /// Flag explicitly whether classes contain EMCALEJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassEMCALEJ2;                 /// Flag explicitly whether classes contain EMCALEJ2 (conatined in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ1;                  /// Flag explicitly whether classes contain DCALDJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ2;                  /// Flag explicitly whether classes contain DCALDJ2 (conatined in AliVEvent::kEMCEJE)
     Int_t                   fnV0M;                                 /// V0M multiplicity
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
