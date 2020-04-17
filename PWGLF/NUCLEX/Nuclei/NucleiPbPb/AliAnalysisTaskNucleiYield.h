@@ -60,7 +60,7 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
-  float phi;
+  char  centrality;
   int   pdg;
   int   flag;
 };

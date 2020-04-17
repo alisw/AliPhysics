@@ -853,7 +853,7 @@ int AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(AliVTrack *track,
 void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl) {
   snucl.pt = part->Pt();
   snucl.eta = part->Eta();
-  snucl.phi = part->Phi();
+  snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
   if (part->IsPhysicalPrimary())
     snucl.flag = SLightNucleus::kPrimary;
