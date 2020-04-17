@@ -209,9 +209,11 @@ fIsEvRej(0),
 fIsEvRej_INT7(0),
 fIsEvRej_HighMultSPD(0),
 fIsEvRej_HighMultV0(0),
+fIsEvRej_EMCEJE(0),
 fIsEvSel_INT7(false),
 fIsEvSel_HighMultSPD(false),
 fIsEvSel_HighMultV0(false),
+fIsEvSel_EMCEJE(false),
 fRunNumber(0),
 fRunNumberCDB(0),
 fBC(0),
@@ -618,6 +620,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_rej_INT7", &fIsEvRej_INT7);
   fTreeEvChar->Branch("is_ev_rej_HighMultSPD", &fIsEvRej_HighMultSPD);
   fTreeEvChar->Branch("is_ev_rej_HighMultV0", &fIsEvRej_HighMultV0);
+  fTreeEvChar->Branch("is_ev_rej_EMCEJE", &fIsEvRej_EMCEJE);
   fTreeEvChar->Branch("run_number", &fRunNumber);
   fTreeEvChar->Branch("ev_id", &fEventID);
   fTreeEvChar->Branch("ev_id_ext", &fEventIDExt);
@@ -661,6 +664,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_sel_int7", &fIsEvSel_INT7);
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
+  fTreeEvChar->Branch("is_ev_sel_EMCEJE", &fIsEvSel_EMCEJE);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1406,6 +1410,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fIsEvSel_HighMultV0 = fEvSelectionCuts->IsEventSelected(aod);
   fIsEvRej_HighMultV0 = fEvSelectionCuts->GetEventRejectionBitMap();
     
+  fEvSelectionCuts->SetTriggerMask(AliVEvent::kEMCEJE);
+  fIsEvSel_EMCEJE = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvRej_EMCEJE = fEvSelectionCuts->GetEventRejectionBitMap();
+
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
   //V0 multiplicities

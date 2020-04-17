@@ -353,9 +353,11 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_EMCEJE;                       /// flag with information about rejection of the event
     Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
     Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
     Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
+    Bool_t                  fIsEvSel_EMCEJE;                       /// boolean whether event accept for EMCEJE
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UShort_t                fBC;                                   /// bunch crossing number
@@ -509,7 +511,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,28);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,29);
     /// \endcond
 };
 
