@@ -428,14 +428,6 @@ void SetNSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, 
 
     TH2F* histMean2D;
     TH2F* histWidth2D;
-    if (isTPC){
-      histMean2D = new TH2F("histMean2D","histMean2D", 13, 0.2, 1.5, 16, -0.8, 0.8);
-      histWidth2D = new TH2F("histWidth2D","histWidth2D", 13, 0.2, 1.5, 16, -0.8, 0.8);
-    }
-    else{
-      histMean2D = new TH2F("histMean2DTOF","histMean2DTOF", 11, 0.4, 1.5, 16, -0.8, 0.8);
-      histWidth2D = new TH2F("histWidth2DTOF","histWidth2DTOF", 11, 0.4, 1.5, 16, -0.8, 0.8);
-    }
 
     if (!GetCorrectionsHisto(&histMean2D, &histWidth2D, period, isTPC)){
         printf("#  File with corrections could not be accessed!\n");
@@ -451,12 +443,7 @@ void SetNSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, 
       die->SetCentroidCorrFunctionTOF(histMean2D, corrXdim, corrYdim);
       die->SetWidthCorrFunctionTOF(histWidth2D, corrXdim, corrYdim);
     }
-    if (test){
-      printf("mean: ");
-      print(histMean2D);
-      printf("width: ");
-      print(histWidth2D);
-    }
+    
     printf(">> %s PID eta correction loaded!\n", isTPC?"TPC":"TOF");
 }
 
@@ -480,17 +467,18 @@ Bool_t GetCorrectionsHisto(TH2F **mean, TH2F **width, char *period, Bool_t isTPC
 	char rootFile[100];
     sprintf(rootFile,"alien://alice/cern.ch/user/h/hfranzde/TPCnTOFcor/calMaps1%c.root",period[1]);
     
-    if (copyCorr){
-		TGrid::Connect("alien://");
-		gSystem->Exec(Form("alien_cp %s .",rootFile));
-	}
-	
     TFile *f;
     char fileName[100];
     sprintf(fileName,"calMaps1%c.root",period[1]);
-  	f = TFile::Open(fileName);
-  	if (!f) return kFALSE;
-
+    f = TFile::Open(fileName);
+  	
+    if (copyCorr && !f){
+		TGrid::Connect("alien://");
+		gSystem->Exec(Form("alien_cp %s .",rootFile));
+		f = TFile::Open(fileName);
+		if (!f) return kFALSE;
+	}
+	
   	char *p = GetCorPeriodMap(period);
 
   	char hNameM[100]; //Mean histo name
@@ -515,40 +503,29 @@ Bool_t GetCorrectionsHisto(TH2F **mean, TH2F **width, char *period, Bool_t isTPC
 
     *mean = m->Clone();
     *width = w->Clone();
-    //print(*mean);
-    //print(*width);
+    
     return kTRUE;
 }
 
-void print(TH2F *histo){
-  Int_t nBinsX = histo->GetNbinsX();
-  Int_t nBinsY = histo->GetNbinsY();
-  const int tam = nBinsX*nBinsY;
-  Float_t vector[tam];
-
-  printf("{");
-  for (int binX = 1; binX <= nBinsX; binX++){
-    for (int binY = 1; binY <= nBinsY; binY++){
-      vector[(binY-1)+nBinsY*(binX-1)] = histo->GetBinContent(binX,binY);
-      if (binX == nBinsX && binY == nBinsY) printf(" %f", histo->GetBinContent(binX,binY));
-      else printf(" %f,", histo->GetBinContent(binX,binY));
-    }
-  }
-  printf("};\n\n");
-
-  histo->DrawCopy("colz");
-}
-
 char *GetCorPeriodMap(char *p){ //If low stat period, use the maps for all periods
-		 if (p == "16d") return "16ALL";
-	else if (p == "16g") return "16ALL";
-	else if (p == "16i") return "16ALL";
-	else if (p == "16p") return "16ALL";
-	else if (p == "17c") return "17ALL";
-	else if (p == "17e") return "17ALL";
-	else if (p == "17f") return "17ALL";
-	else if (p == "17j") return "17ALL";
-	else if (p == "17r") return "17ALL";
+		 if (p[1] == '6') return "16ALL";
+	else if (p[1] == '7') return "17ALL";
+	else if (p == "18spl")   return "18ALLsplines";
+	else if (p == "18noSpl") return "18ALLnoSplines";
+	else if (p == "18b") return "18ALLsplines";
+	else if (p == "18d") return "18ALLsplines";
+	else if (p == "18e") return "18ALLsplines";
+	else if (p == "18f") return "18ALLnoSplines";
+	else if (p == "18h") return "18ALLnoSplines";
+	else if (p == "18j") return "18ALLnoSplines";
+	else if (p == "18l") return "18ALLnoSplines";
+	else if (p == "18g") return "18ALLnoSplines";
+	else if (p == "18i") return "18ALLsplines";
+	else if (p == "18k") return "18ALLnoSplines";
+	else if (p == "18m") return "18ALLsplines";
+	else if (p == "18n") return "18ALLnoSplines";
+	else if (p == "18o") return "18ALLnoSplines";
+	else if (p == "18p") return "18ALLnoSplines";
 	else return p;
 }
 
