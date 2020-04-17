@@ -191,6 +191,7 @@ fkDebugZDCInfo (kTRUE),
 fTrigType(AliVEvent::kMB),
 
 //---> Variables for fTreeEvent
+fRun(0),
 fCentrality(0),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
@@ -207,6 +208,7 @@ fZPApp(-1.),
 fZPCpp(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableRun(0),
 fTreeVariableChi2V0(0),
 fTreeVariableDcaV0Daughters(0),
 fTreeVariableDcaV0ToPrimVertex(0),
@@ -356,6 +358,7 @@ fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
 //---> Variables for fTreeCascade
+fTreeCascVarRun(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -743,6 +746,7 @@ fkDebugZDCInfo (kTRUE),
 fTrigType(AliVEvent::kMB),
 
 //---> Variables for fTreeEvent
+fRun(0),
 fCentrality(0),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
@@ -759,6 +763,7 @@ fZPApp(-1.),
 fZPCpp(-1.),
 
 //---> Variables for fTreeV0
+fTreeVariableRun(0),
 fTreeVariableChi2V0(0),
 fTreeVariableDcaV0Daughters(0),
 fTreeVariableDcaV0ToPrimVertex(0),
@@ -908,6 +913,7 @@ fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
 //---> Variables for fTreeCascade
+fTreeCascVarRun(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -1370,6 +1376,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
 			fTreeEvent->Branch("fZPApp", &fZPApp,"fZPApp/F");
 			fTreeEvent->Branch("fZPCpp", &fZPCpp,"fZPCpp/F");
 		}
+	fTreeEvent->Branch("fRun",&fRun,"fRun/I");
         //
         if ( fkDebugOOBPileup ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
@@ -1390,6 +1397,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
         //Create Basic V0 Output Tree
         fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
         //-----------BASIC-INFO---------------------------
+        fTreeV0->Branch("fTreeVariableRun",&fTreeVariableRun,"fTreeVariableRun/I");
         fTreeV0->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
         fTreeV0->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
         fTreeV0->Branch("fTreeVariableDcaV0ToPrimVertex",&fTreeVariableDcaV0ToPrimVertex,"fTreeVariableDcaV0ToPrimVertex/F");
@@ -1428,7 +1436,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
 			fTreeV0->Branch("fTreeVariableZPCpp", &fTreeVariableZPCpp,"fTreeVariableZPCpp/F");		}
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
-        fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
         if ( fkDebugWrongPIDForTracking ){
             fTreeV0->Branch("fTreeVariablePosPIDForTracking",&fTreeVariablePosPIDForTracking,"fTreeVariablePosPIDForTracking/I");
             fTreeV0->Branch("fTreeVariableNegPIDForTracking",&fTreeVariableNegPIDForTracking,"fTreeVariableNegPIDForTracking/I");
@@ -1553,6 +1560,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserCreateOutputObjects()
         //Create Cascade output tree
         fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
         //-----------BASIC-INFO---------------------------
+        fTreeCascade->Branch("fTreeCascVarRun",&fTreeCascVarRun,"fTreeCascVarRun/I");
         fTreeCascade->Branch("fTreeCascVarCharge",&fTreeCascVarCharge,"fTreeCascVarCharge/I");
         fTreeCascade->Branch("fTreeCascVarMassAsXi",&fTreeCascVarMassAsXi,"fTreeCascVarMassAsXi/F");
         fTreeCascade->Branch("fTreeCascVarMassAsOmega",&fTreeCascVarMassAsOmega,"fTreeCascVarMassAsOmega/F");
@@ -2137,7 +2145,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
     fTreeCascVarMagField = lMagneticField;
-    
+
     //------------------------------------------------
     // Event Selection ---
     //  --- Performed entirely via AliPPVsMultUtils
@@ -2296,8 +2304,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
     
     //Bookkeep event number for debugging
     //Run number
-    fTreeVariableRunNumber = lESDevent->GetRunNumber();
-    
+    fRun = lESDevent->GetRunNumber();
+      
     //--- Acquisition of exact event ID
     fTreeCascVarEventNumber =
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
@@ -2729,7 +2737,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         fTreeVariableMVPileupFlag = fMVPileupFlag;
-        
+
+        fTreeVariableRun = lESDevent->GetRunNumber();
         fTreeVariablePt = v0->Pt();
         fTreeVariableChi2V0 = lChi2V0;
         fTreeVariableDcaV0ToPrimVertex = lDcaV0ToPrimVertex;
@@ -4950,7 +4959,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2::UserExec(Option_t *)
             fTreeCascVarMassAsXi    = lInvMassXiPlus;
             fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
         }
-        
+      
+   	fTreeCascVarRun = lESDevent->GetRunNumber();
         fTreeCascVarMVPileupFlag = fMVPileupFlag;
         fTreeCascVarPID = lPDGCodeCascade;
         fTreeCascVarSwappedPID = lPDGCodeCascadeSwapped;
