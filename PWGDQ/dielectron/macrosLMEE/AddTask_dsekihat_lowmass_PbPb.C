@@ -12,7 +12,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     const Float_t EtaMin = -0.8,
     const Float_t EtaMax = +0.8,
 		const TString outname = "LMEE.root",
-		const Bool_t isMC = kFALSE
+		const Bool_t isMC = kFALSE,
+		const TString suffix=""
     )
 {
   //get the current analysis manager
@@ -46,7 +47,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
   //create task and add it to the manager (MB)
-  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()));
+  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()));
   task->UsePhysicsSelection(kTRUE);
   task->SetTriggerMask(trigger);
 
@@ -134,25 +135,25 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("Tree_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Tree_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("Histos_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Histos_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("CF_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("CF_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("EventStat_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("EventStat_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));
