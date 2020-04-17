@@ -8,7 +8,6 @@ class TList;
 class TTree;
 
 #include <TObjString.h>
-#include <unordered_map>
 #include <TString.h>
 #include <string>
 #include <vector>
@@ -19,7 +18,6 @@ class TTree;
 
 class TSpline3;
 class AliPIDResponse;
-class AliESDtrack;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
@@ -150,8 +148,8 @@ public:
   void SetCustomBetheBloch(float resolution, const float bethe[5]);
   double customNsigma(double mom, double sig);
 
-  template <class T>
-  void FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, std::unordered_map<int, int> mcMap, double *pP,
+  template <class T, class M>
+  void FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
                           double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index);
 
   void SetMaxTPCsigmas(float pi, float he3)

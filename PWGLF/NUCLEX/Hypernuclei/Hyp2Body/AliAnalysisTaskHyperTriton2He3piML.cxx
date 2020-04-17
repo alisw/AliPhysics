@@ -506,9 +506,9 @@ double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
   const float expS = AliExternalTrackParam::BetheBlochAleph(bg, p[0], p[1], p[2], p[3], p[4]);
   return (sig - expS) / (fCustomResolution * expS);
 }
-template <class T>
+template <class T, class M>
 
-void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, std::unordered_map<int, int> mcMap,
+void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
                                                             double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index)
 {
   if (!v0)
@@ -518,8 +518,8 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   if (fUseOnTheFly && v0->GetOnFlyStatus() == 0)
     return;
 
-  AliVTrack *pTrack = dynamic_cast<AliVTrack*>(event->GetTrack(lKeyPos));
-  AliVTrack *nTrack = dynamic_cast<AliVTrack*>(event->GetTrack(lKeyNeg));
+  AliVTrack *pTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyPos));
+  AliVTrack *nTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyNeg));
 
   // Remove like-sign (will not affect offline V0 candidates!)
   if (fEnableLikeSign)
