@@ -829,7 +829,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
 
     maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
-
+    
+    // When analyzing L1 trigger, reject events with L1 and L2 trigger
+    if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
+      maker->GetReader()->SwitchOnEMCALEventRejectionWith2Thresholds();
+    
     // For mixing with AliAnaParticleHadronCorrelation switch it off
     if ( mixOn )
     {
