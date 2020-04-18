@@ -10,6 +10,7 @@ init(){
 "List of functions:"
 dumpCSV
 printSummary
+examleUsage
 exampleCase
 HELP_USAGE
 }
@@ -35,14 +36,31 @@ printSummary(){
   "makeDirs"
   Input:
         $1 - production csv
-        $2 - query
+        $2 - selection
+        $3 - where sort statements
   Output:
        JIRA print
   Example usage:
-     printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table
+     printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table "where input_events>10000"
 HELP_USAGE
-    [[ $# -ne 2 ]] &&return
-    csvsql --query "select $1 from '$2'" $2.csv | csvlook -l
+    [[ $# -lt 2 ]] &&return
+    echo csvsql --query "select $1 from '$2' '${3}' " $2.csv
+    csvsql --query "select $1 from '$2' ${3} " $2.csv | csvlook -l
+
+}
+
+exampleUsage(){
+    helpCat<<HELP_USAGE
+    exampleUsage
+    This is example usage of the pcalimonitorCSV.sh
+HELP_USAGE
+    source $AliPhysics_SRC/PWGPP/macros/pcalimonitorCSV.sh
+    dumpCSV https://alimonitor.cern.ch/prod/jobs.jsp?t=20831 table.csv
+    printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table
+    #
+    dumpCSV https://alimonitor.cern.ch/prod/jobs.jsp?t=20831 table.csv
+    printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table "where input_events>40000 ORDER BY input_events DESC"
+
 }
 
 exampleCase(){
