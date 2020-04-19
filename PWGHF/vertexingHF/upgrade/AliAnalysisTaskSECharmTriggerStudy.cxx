@@ -685,7 +685,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             Bplus.SetProngIDs(2, id);
 
-                            FillBeauty3Prong(&Bplus, d, true);
+                            FillBeauty3Prong(&Bplus, d, true, fCharm2Prong[fCharm2Prong.size()-1].fCandType);
 
                             delete vertexBplus;
                             vertexBplus = nullptr;
@@ -859,7 +859,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             B.SetProngIDs(2, id);
 
-                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
+                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc, fCharm3Prong[fCharm3Prong.size()-1].fCandType);
 
                             delete vertexB;
                             vertexB = nullptr;
@@ -1428,7 +1428,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharmCascade(AliAODRecoCascadeHF *c
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, unsigned short flagsDau)
 {
     Beauty3Prong b3Prong;
     unsigned int pdgDgBplustoD0pi[2] = {211, 421};
@@ -1488,13 +1488,22 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
 
         if (IsInFiducialAcceptance(b3Prong.fPt, b3Prong.fY))
             b3Prong.fSelBit |= kBplustoD0piFidAcc;
+
+        if(flagsDau >> kSignal & 1)
+            b3Prong.fCandType |= kSignalD;
+        if(flagsDau >> kBackground & 1)
+            b3Prong.fCandType |= kBackgroundD;
+        if(flagsDau >> kPrompt & 1)
+            b3Prong.fCandType |= kPromptD;
+        if(flagsDau >> kFeedDown & 1)
+            b3Prong.fCandType |= kFeedDownD;
     }
 
     fBeauty3Prong.push_back(b3Prong);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, unsigned short flagsDau)
 {
     Beauty4Prong b4Prong;
     unsigned int pdgDgB0toDminuspi[2] = {211, 411};
@@ -1620,6 +1629,15 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
             b4Prong.fSelBit |= kBstoDsminuspiFidAcc;
         if (IsInFiducialAcceptance(b4Prong.fPt, b4Prong.fYLb))
             b4Prong.fSelBit |= kLbtoLcpluspiFidAcc;
+
+        if(flagsDau >> kSignal & 1)
+            b4Prong.fCandType |= kSignalD;
+        if(flagsDau >> kBackground & 1)
+            b4Prong.fCandType |= kBackgroundD;
+        if(flagsDau >> kPrompt & 1)
+            b4Prong.fCandType |= kPromptD;
+        if(flagsDau >> kFeedDown & 1)
+            b4Prong.fCandType |= kFeedDownD;
     }
 
     fBeauty4Prong.push_back(b4Prong);
