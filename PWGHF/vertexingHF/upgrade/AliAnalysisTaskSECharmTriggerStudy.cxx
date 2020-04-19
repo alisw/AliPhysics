@@ -1457,7 +1457,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
     else
         b3Prong.fInvMassD0 = dau->InvMassD0();
 
-    double ptDau[2] = {dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->Pt()};
+    double ptDau[2] = {dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->Pt()};
     double absd0Dau[2] = {TMath::Abs(dau->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(1))};
     b3Prong.fPtMinDauD0 = *std::min_element(ptDau, ptDau+2);
     b3Prong.fd0MinDauD0 = *std::min_element(absd0Dau, absd0Dau+2);
