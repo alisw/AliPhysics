@@ -775,9 +775,9 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
 
             if (fEnableBeauty4Prongs)
             {
-                if(((fEnableBeauty4Prongs >> 0 & 1) && !isselDplus) || 
-                ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) || 
-                ((fEnableBeauty4Prongs >> 2 & 1) && !isselLc))
+                if( (!(fEnableBeauty4Prongs >> 0 & 1) || ((fEnableBeauty4Prongs >> 0 & 1) && !isselDplus)) &&
+                (!(fEnableBeauty4Prongs >> 1 & 1) || ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) ) && 
+                (!(fEnableBeauty4Prongs >> 2 & 1) || ((fEnableBeauty4Prongs >> 2 & 1) && !isselLc)))
                 {
                     if (isvtxrecalc)
                     {
@@ -1457,6 +1457,11 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
     else
         b3Prong.fInvMassD0 = dau->InvMassD0();
 
+    double ptDau[2] = {dynamic_cast<AliAODTrack*>(cand->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(cand->GetDaughter(1))->Pt()};
+    double absd0Dau[2] = {TMath::Abs(dau->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(1))};
+    b3Prong.fPtMinDauD0 = *std::min_element(ptDau, ptDau+2);
+    b3Prong.fd0MinDauD0 = *std::min_element(absd0Dau, absd0Dau+2);
+
     b3Prong.fSelBit = 0;
     if (issel)
         b3Prong.fSelBit |= kBplustoD0piCuts;
@@ -1542,6 +1547,11 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     b4Prong.fDecayLengthD = dau->DecayLength();
     b4Prong.fNormDecayLengthXYD = dau->NormalizedDecayLengthXY();
     b4Prong.fSigmaVtxD = dau->GetSigmaVert();
+
+    double ptDau[3] = {dynamic_cast<AliAODTrack*>(dau->GetDaughter(0))->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(1))->Pt(), dynamic_cast<AliAODTrack*>(dau->GetDaughter(2))->Pt()};
+    double absd0Dau[3] = {TMath::Abs(dau->Getd0Prong(0)), TMath::Abs(dau->Getd0Prong(1)), TMath::Abs(dau->Getd0Prong(2))};
+    b4Prong.fd0MinDauD = *std::min_element(absd0Dau, absd0Dau+3);
+    b4Prong.fPtMinDauD = *std::min_element(ptDau, ptDau+3);
 
     b4Prong.fInvMassDplus = dau->InvMassDplus();
     b4Prong.fInvMassDs = -1.;

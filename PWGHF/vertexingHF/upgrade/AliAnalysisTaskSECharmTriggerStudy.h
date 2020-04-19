@@ -140,6 +140,8 @@ struct Beauty3Prong
     Double32_t fDecayLengthD0;          //[0.0,6.5536,16]
     Double32_t fNormDecayLengthXYD0;    //[0.0,102.4,10]
     Double32_t fImpParProdD0;           //[-0.32768,0.32768,16]
+    Double32_t fPtMinDauD0;             //[0.0,65.535,16]
+    Double32_t fd0MinDauD0;             //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
@@ -169,6 +171,8 @@ struct Beauty4Prong
     Double32_t fDecayLengthD;           //[0.0,6.5536,16]
     Double32_t fNormDecayLengthXYD;     //[0.0,102.4,10]
     Double32_t fSigmaVtxD;              //[0.0,0.08190,12]
+    Double32_t fPtMinDauD;              //[0.0,65.535,16]
+    Double32_t fd0MinDauD;              //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
     unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
     unsigned char fDecay;               /// flag for decay channel
