@@ -1800,6 +1800,7 @@ Int_t AliTreePlayer::nextPad(){
   /// used for Tree draw queries
   static int counter=0;
   if (!gPad) return kFALSE;
+  gPad->Update();
   counter++;
   gPad->GetMother()->cd(counter);
   if (gPad->GetNumber()<counter) counter=0;
