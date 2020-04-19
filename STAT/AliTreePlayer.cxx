@@ -1580,8 +1580,8 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 /// \param selection    - tree selection
 /// \param firstEntry   - first entry to export
 /// \param nEntries     - number of nEntries to export
-void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection, Int_t nEntries, Int_t firstEntry){
-  TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,"recreate");
+void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection, Int_t nEntries, Int_t firstEntry, const char *fileMode){
+  TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,fileMode);
   if (tree->GetEstimate()<tree->GetEntries()) tree->SetEstimate(tree->GetEntries());
   Int_t estimate=tree->GetEstimate();
   Int_t entries=0;
@@ -1791,4 +1791,18 @@ TNamed* AliTreePlayer::GetMetadata(TTree* tree, const char *varTagName, TString 
   named = (TNamed*)metaData->FindObject(metaName.Data());
   return named;
 
+}
+/// change to next pad in canvas - used in TTree::Draw()
+/// Example:
+///   draw histogram fulfilling criteria
+///   tree->Draw("histCM.Draw(\"colz\"):histCM.GetXaxis()->SetRangeUser(130,170)","!T0_isOK&&abs(peakPosition-150)<20&&AliTreePlayer::nextPad()","goffpara",100,0);
+Int_t AliTreePlayer::nextPad(){
+  /// used for Tree draw queries
+  static int counter=0;
+  if (!gPad) return kFALSE;
+  counter++;
+  gPad->GetMother()->cd(counter);
+  if (gPad->GetNumber()<counter) counter=0;
+  gPad->Update();
+  return counter;
 }

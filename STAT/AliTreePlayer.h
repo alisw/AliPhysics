@@ -101,7 +101,8 @@ public:
   static TString  printSelectedTreeInfo(TTree*tree, TString infoType,  TString regExpFriend, TString regExpTag, Int_t verbose);
   static TObjArray  * MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize=-1, Int_t verbose=1);
   static TPad *  DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, TObjArray *keepArray=0, Int_t verbose=0);
-  static void MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection,   Int_t nEntries=-1, Int_t firstEntry=0);
+  static void MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection,   Int_t nEntries=-1, Int_t firstEntry=0, const char *fileMode="recreate");
+  static Int_t nextPad();
 
   template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
   enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight,kMax,kMin};
