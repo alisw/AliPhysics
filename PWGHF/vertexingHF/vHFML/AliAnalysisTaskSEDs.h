@@ -221,7 +221,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fCreateMLtree = kFALSE;
   AliHFMLVarHandlerDstoKKpi* fMLhandler = nullptr;  //!<! object to handle ML tree creation and filling
   TTree* fMLtree = nullptr;                     //!<! tree with candidates for ML
-  int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID;  /// option for PID variables
+  int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID; /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;           /// option to store single track variables
   Bool_t fFillOnlySignal = kFALSE;              /// option to store only signal when using MC
   Bool_t fEnableEvtSampling = kFALSE;           /// flag to apply event sampling
