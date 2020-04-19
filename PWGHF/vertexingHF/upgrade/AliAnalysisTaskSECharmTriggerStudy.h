@@ -47,8 +47,8 @@ struct Charm2Prong
     int fGenLabel;                      /// label to match with MC
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -76,8 +76,8 @@ struct Charm3Prong
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
     int fProngIdx2;                     /// prong index 2
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -97,8 +97,8 @@ struct Dstar
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
     int fProngIdx2;                     /// prong index 2
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -118,8 +118,8 @@ struct CharmCascade
     int fProngIdx0;                     /// prong index 0
     int fProngIdx1;                     /// prong index 1
     int fProngIdx2;                     /// prong index 2
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -143,8 +143,8 @@ struct Beauty3Prong
     Double32_t fPtMinDauD0;             //[0.0,65.535,16]
     Double32_t fd0MinDauD0;             //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -174,8 +174,8 @@ struct Beauty4Prong
     Double32_t fPtMinDauD;              //[0.0,65.535,16]
     Double32_t fd0MinDauD;              //[0.0,0.065536,16]
     int fGenLabel;                      /// label to match with MC
-    unsigned char fCandType;            /// flag for cand type (signal, bkg, reflected, prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (signal, bkg, reflected, prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
     int fSelBit;                        /// selection bit
 };
 
@@ -184,8 +184,8 @@ struct GenHadron
     float fPt;
     float fY;
     int fGenLabel;                      /// label to match with MC
-    unsigned char fCandType;            /// flag for cand type (prompt, FD)
-    unsigned char fDecay;               /// flag for decay channel
+    unsigned short fCandType;           /// flag for cand type (prompt, FD)
+    unsigned short fDecay;              /// flag for decay channel
 };
 
 class AliAnalysisTaskSECharmTriggerStudy : public AliAnalysisTaskSE
@@ -198,7 +198,12 @@ public:
         kPrompt      = BIT(2),
         kFeedDown    = BIT(3),
         kHasDauInAcc = BIT(4),
-        kIsInFidAcc  = BIT(5)
+        kIsInFidAcc  = BIT(5),
+        kReflected   = BIT(6),
+        kSignalD     = BIT(7), //only for B hadrons below
+        kPromptD     = BIT(8),
+        kBackgroundD = BIT(9),
+        kFeedDownD   = BIT(10)
     };
 
     enum kDecay
@@ -296,8 +301,8 @@ private:
     void FillCharm3Prong(AliAODRecoDecayHF3Prong* cand, bool isselDplus, int isselDs, int isselLc);
     void FillDstar(AliAODRecoCascadeHF* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
     void FillCharmCascade(AliAODRecoCascadeHF* cand, AliAODv0* dau, int issel);
-    void FillBeauty3Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
-    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc);
+    void FillBeauty3Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF2Prong* dau, bool issel, unsigned short flagsDau);
+    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, unsigned short flagsDau);
     void FillGenerated(AliAODMCParticle* part, int origin, int decay, bool aredauinacc);
     bool RecalcOwnPrimaryVertex(AliAODRecoDecayHF* cand);
     void CleanOwnPrimaryVertex(AliAODRecoDecayHF* cand, AliAODVertex* origvtx);
