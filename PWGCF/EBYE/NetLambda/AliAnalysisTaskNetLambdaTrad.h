@@ -39,25 +39,35 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-
+    TH1D*  hpVz;
+    TH2F*  hlmasseta;
+    TH2F*  hamasseta;
+ 
+ 
+    TH2F*  hpxy;
+    TH2F*  hprow;
+    TH2F*  hnrow;
+    TH2F*  hposp;
+    TH2F*  hnegp;
+    TH2F*  hpospi;
+    TH2F*  hnegpi;
+    TH2F*  hpostpc;
+    TH2F*  hnegtpc;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH2F*  lhDCAd;
+    TH2F*  ahDCAd;
+    TH2F*  lhV0rad;
+    TH2F*  ahV0rad;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0nsigtight;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0nsigtight;
+    TH2F*  lhCosp;
+    TH2F*  ahCosp;
+    TH2F*  lhV0tPV;
+    TH2F*  ahV0tPV;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0negloose;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negloose;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0negtight;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negtight;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0posloose;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0posloose;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0postight;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0postight;
+    TH2F*  lhntPV;
+    TH2F*  ahntPV;
+    TH2F*  lhptPV;
+    TH2F*  ahptPV;
 
     
     Float_t fCentrality;
@@ -66,14 +76,7 @@ protected:
     
     UInt_t fEvSel;
     Int_t  fNptBins;
-    
-    THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChnsigtight;
-    THnSparse *fPtBinNplusNminusChnegloose;
-    THnSparse *fPtBinNplusNminusChnegtight;
-    THnSparse *fPtBinNplusNminusChposloose;
-    THnSparse *fPtBinNplusNminusChpostight;
-    
+ 
     Int_t    GetPtBin(Double_t pt);
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
