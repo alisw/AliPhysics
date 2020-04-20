@@ -91,7 +91,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
 {
   // Standard constructor.
   for (Int_t i = 0; i < 18; i++) {
-    fShapesVar[i] = 0;
+    fShapesVar[i] = -1;
   }
   fShapesVar[18]  =  -1;
   fShapesVar[19]  =  -1;
@@ -191,7 +191,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fShapesVarNames[9] = "rgMatch";
   fShapesVarNames[10] = "LeadingTrackPt";
   fShapesVarNames[11] = "LeadingTrackPtMatch";
-  if (fDoSubJet) fStoreDetLevelJets = true;
+  //  if (fDoSubJet) fStoreDetLevelJets = true;
   if (fStoreDetLevelJets) {
     fShapesVarNames[12] = "ptJetDet";
     fShapesVarNames[13] = "ktgDet";
@@ -201,8 +201,16 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     fShapesVarNames[17] = "LeadingTrackPtDet";
   }
   if (fDoSubJet){
-    fShapesVarNames[18] = "subjet1";
-    fShapesVarNames[19] = "subjet2";
+    if (fJetShapeType == kDetEmbPartPythia)
+      {
+	fShapesVarNames[18] = "subjet1";
+	fShapesVarNames[19] = "subjet2";
+      }
+    if (fJetShapeType == kPythiaDef)
+      {
+	fShapesVarNames[12] = "subjet1";
+        fShapesVarNames[13] = "subjet2";
+      }
   }
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
@@ -472,8 +480,8 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           kMatched = 3;
 
         ptMatch = jet3->Pt();
-        leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Hyb, const2Hyb);
+	leadTrackMatch = jet3->MaxTrackPt();
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Det, const2Det);
         ktgMatch = aver1;
         nsdMatch = aver2;
         zgMatch = aver3;
@@ -524,9 +532,13 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         fShapesVar[16] = rgDet;
         fShapesVar[17] = leadTrackDet;
       }
+
       if (fDoSubJet)
 	{
-	  if ((nsdDet != 0) && (fShapesVar[2] != 0))
+	  int nSDsub = -1;
+	  if (fJetShapeType == kDetEmbPartPythia) nSDsub = nsdDet;	  	  
+	  else if(fJetShapeType == kPythiaDef) nSDsub = nsdMatch;
+	  if ((nSDsub != 0) && (fShapesVar[2] != 0))
 	    {
 	      if (CompareSubjets(sub1Det, sub1Hyb, const1Det, const1Hyb)) sub1 = 1;
 	      else if (CompareSubjets(sub1Det, sub2Hyb, const1Det, const2Hyb)) sub1 = 2;
@@ -536,8 +548,16 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 	      else sub2 = 3;
 	    }
 	  else if (fShapesVar[2]  != 0) {sub1 = 0; sub2 = 0;}	      
-	  fShapesVar[18] = sub1;
-	  fShapesVar[19] = sub2;
+	  if (fJetShapeType == kDetEmbPartPythia) 
+	    {
+	      fShapesVar[18] = sub1;
+	      fShapesVar[19] = sub2;
+	    }
+	  else if(fJetShapeType == kPythiaDef)
+	    {
+	      fShapesVar[12] = sub1;
+              fShapesVar[13] = sub2;
+	    }   
 	}
 
       fTreeSubstructure->Fill();
