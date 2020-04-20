@@ -249,6 +249,11 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTa
 		hPtVsUEData[i]=0;
 	}
 
+    for(Int_t i=0;i<6;++i){
+        hPtInPrimPart[i]=0;
+        hPtOutPrimPart[i]=0;
+    }
+    
 	// constructor
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
 	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
@@ -317,30 +322,30 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	// fCuts for DCA studies
 	if (!fTrackFilterForDCA){
 		fTrackFilterForDCA = new AliAnalysisFilter("trackFilterForDCA2015");
-		AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
+		AliESDtrackCuts * fCuts3 = new AliESDtrackCuts();
 
 		//     fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
 		//     fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
 
 		// TPC    
-		fCuts1->SetRequireTPCRefit(kTRUE);//
-		fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
-		fCuts1->SetMaxChi2PerClusterTPC(4);//
-		fCuts1->SetMaxFractionSharedTPCClusters(0.4);//
+		fCuts3->SetRequireTPCRefit(kTRUE);//
+		fCuts3->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
+		fCuts3->SetMaxChi2PerClusterTPC(4);//
+		fCuts3->SetMaxFractionSharedTPCClusters(0.4);//
 
 		// ITS
-		fCuts1->SetRequireITSRefit(kTRUE);//
-		fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
-		fCuts1->SetMaxChi2PerClusterITS(36);//
+		fCuts3->SetRequireITSRefit(kTRUE);//
+		fCuts3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
+		fCuts3->SetMaxChi2PerClusterITS(36);//
 
 		// Selection of primaries
-		fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
-		fCuts1->SetAcceptKinkDaughters(kFALSE);//
-		fCuts1->SetMaxDCAToVertexZ(2);//
-		fCuts1->SetDCAToVertex2D(kFALSE);//
-		fCuts1->SetRequireSigmaToVertex(kFALSE);//
+		fCuts3->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
+		fCuts3->SetAcceptKinkDaughters(kFALSE);//
+		fCuts3->SetMaxDCAToVertexZ(2);//
+		fCuts3->SetDCAToVertex2D(kFALSE);//
+		fCuts3->SetRequireSigmaToVertex(kFALSE);//
 
-		fTrackFilterForDCA->AddCuts(fCuts1);
+		fTrackFilterForDCA->AddCuts(fCuts3);
 	}
 
 
@@ -590,15 +595,16 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	hPtLeadingRecGood = new TH1D("hPtLeadingRecGood","rec pTleading after physics selection + vtx",ptNbinsL,ptbins1L); 
 	fOutputList->Add(hPtLeadingRecGood);
-
+    //      DCA histos for secondary estimation
+    
+    hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
+    fOutputList->Add(hPTVsDCAData);
+    
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
 
 
-	//      DCA histos for secondary estimation
-
-	hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1,numbinDCAxy,binsDcaXY);
-	fOutputList->Add(hPTVsDCAData);
+	
 
 
 }
