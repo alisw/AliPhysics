@@ -4428,8 +4428,9 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUseTimeDiff) printf("\t %6.2f ns < time difference < %6.2f ns\n", fMinTimeDiff*1e9, fMaxTimeDiff*1e9 );
   if ((fUseTimeDiff)&&(fUseTimingEfficiencyMCSimCluster==2)) printf("\t %6.2f ns < time difference HighPt < %6.2f ns\n", fMinTimeDiffHighPt*1e9, fMaxTimeDiffHighPt*1e9 );
   if (fUseDistTrackToCluster) printf("\tmin distance to track in eta > %3.2f, min phi < %3.2f and max phi > %3.2f\n", fMaxDistTrackToClusterEta, fMinDistTrackToClusterPhi, fMaxDistTrackToClusterPhi );
-  if (fUseExoticCluster)printf("\t exotic cluster: %3.2f\n", fExoticEnergyFracCluster );
+  if (fUseExoticCluster && fUseExoticCluster != 3)printf("\t exotic cluster: %3.2f\n", fExoticEnergyFracCluster );
   if (fUseExoticCluster == 2)printf("\t exotic cluster above: %3.2f in same T-Card\n", fExoticMinEnergyTCard );
+  if (fUseExoticCluster == 3)printf("\t exotic cluster rejection from correction framework\n" );
   if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
   if (fUseNCells) printf("\t number of cells per cluster >= %d\n", fMinNCells );
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
@@ -5451,6 +5452,11 @@ Bool_t AliCaloPhotonCuts::SetExoticClusterCut(Int_t exoticCell)
       fUseExoticCluster       = 2;
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 60;
+    break;
+  case 16: //g
+    if (fUseExoticCluster != 3)
+      fUseExoticCluster       = 3;
+    fExoticEnergyFracCluster  = 0;
     break;
   default:
     AliError(Form("Exotic cell Cut not defined %d",exoticCell));
@@ -8609,6 +8615,16 @@ Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *even
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
+
+  // case where exotic clusters are determined in correction framework
+  if ( fUseExoticCluster == 3){
+    if(cluster->GetIsExotic()){
+      return kTRUE;
+    } else {
+      return kFALSE;
+    }
+  }
+
   energyStar              = 0;
 
   AliVCaloCells* cells    = NULL;
