@@ -743,9 +743,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
           fDCAConversionNewCentVar2->Fill(pt, IPVar2, centrality);
         }
         if(SourceNew == 3 && !IsAddedSignal(mcple))
+        {
           fDCADalitzNew->Fill(pt, IP);
           fDCADalitzNewVar1->Fill(pt, IPVar1);
           fDCADalitzNewVar2->Fill(pt, IPVar2);
+        }
 
         if(SourceNew == 0)
         {
