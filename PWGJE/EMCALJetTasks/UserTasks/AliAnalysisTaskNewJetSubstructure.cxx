@@ -438,7 +438,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
       
-      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet3->MaxTrackPt()) continue;
+      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet2->MaxTrackPt()>jet3->MaxTrackPt()) continue;
 
       fastjet::PseudoJet *sub1Hyb=new fastjet::PseudoJet();
       fastjet::PseudoJet *sub2Hyb=new fastjet::PseudoJet();
