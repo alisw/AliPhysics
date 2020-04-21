@@ -1823,7 +1823,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				//emcal
 				if(cphi<3.9){
 					fEtaPhi_emcal->Fill(cphi,ceta);
- 
+                    fECluster_pure_emcal->Fill(clust->E());
+                    
 				}
 				
 				//dcal
