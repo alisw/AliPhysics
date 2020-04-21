@@ -32,7 +32,6 @@
 // --- CaloTrackCorr system ---
 #include "AliAnaPhoton.h"
 #include "AliCaloTrackReader.h"
-#include "AliMCEvent.h"
 #include "AliCaloPID.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliFiducialCut.h"
@@ -4782,6 +4781,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if ( IsDataMC() && mcLabel >= 0 )
     {
+      if ( !GetMC() ) AliWarning("No MC pointer!");
+      
       tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),
                                               calo->GetClusterMCEdepFraction(),
                                               nlabels, 
