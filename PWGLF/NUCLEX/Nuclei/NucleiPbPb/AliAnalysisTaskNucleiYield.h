@@ -60,9 +60,9 @@ struct SLightNucleus {
   };
   float pt;
   float eta;
-  char  centrality;
   int   pdg;
   int   flag;
+  char  centrality;
 };
 
 struct RLightNucleus {
