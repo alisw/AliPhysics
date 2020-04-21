@@ -575,8 +575,17 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistPtTPCInwVsPtTPCselITSref);
   fOutput->Add(fHistPtTPCInwVsPtTPCselSPDany);
 
-  fHistPtTPCInwVsPtVsPtTrueTPCsel = new TH3F("hPtTPCInwVsPtVsPtTrueTPCsel"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c) ; p_{T}^{true} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
-  fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new TH3F("hPtTPCInwVsPtVsPtTrueTPCselITSref"," ; p_{T}^{refit} (GeV/c) ; p_{T}^{inw} (GeV/c) ; p_{T}^{true} (GeV/c)",fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt,fNPtBins,fMinPt,fMaxPt);
+  int nbinsSparse[3]={fNPtBins,fNPtBins,fNPtBins};
+  double xminSparse[3]={fMinPt,fMinPt,fMinPt};
+  double xmaxSparse[3]={fMaxPt,fMaxPt,fMaxPt};
+  fHistPtTPCInwVsPtVsPtTrueTPCsel = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCsel","",3,nbinsSparse,xminSparse,xmaxSparse);
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCselITSref","",3,nbinsSparse,xminSparse,xmaxSparse);
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(0)->SetTitle("p_{T}^{refit} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(1)->SetTitle("p_{T}^{inw} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(2)->SetTitle("p_{T}^{true} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(0)->SetTitle("p_{T}^{refit} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(1)->SetTitle("p_{T}^{inw} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(2)->SetTitle("p_{T}^{true} (GeV/c)");
   fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCsel);
   fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCselITSref);
   
@@ -1079,10 +1088,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(pttrack<1) fHistDeltaPtTPCInwVsPhiTPCselLowPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>1 && pttrack<3) fHistDeltaPtTPCInwVsPhiTPCselMidPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>3) fHistDeltaPtTPCInwVsPhiTPCselHighPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
-      if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(pttrack,pttrack0tpc,ptgen);
+      double arrayForSparse[3]={pttrack,pttrack0tpc,ptgen};
+      if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(arrayForSparse);
       if(itsRefit){
 	fHistPtTPCInwVsPtTPCselITSref->Fill(pttrack,pttrack0tpc);
-	if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(pttrack,pttrack0tpc,ptgen);
+	if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(arrayForSparse);
 	if(spdAny) fHistPtTPCInwVsPtTPCselSPDany->Fill(pttrack,pttrack0tpc);
       }
     }

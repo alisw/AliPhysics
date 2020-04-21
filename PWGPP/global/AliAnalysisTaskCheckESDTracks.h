@@ -25,6 +25,7 @@ class AliESDEvent;
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
+#include <THnSparse.h>
 
 class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
@@ -149,8 +150,8 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistDeltaPtTPCInwVsPhiTPCselHighPt;  //!<!  histo of delta pt inw - pt refit
   TH2F* fHistPtTPCInwVsPtTPCselITSref;        //!<!  histo of pt inw vs. pt refit
   TH2F* fHistPtTPCInwVsPtTPCselSPDany;        //!<!  histo of pt inw vs. pt refit
-  TH3F* fHistPtTPCInwVsPtVsPtTrueTPCsel;       //!<!  histo of pt inw vs. pt refit
-  TH3F* fHistPtTPCInwVsPtVsPtTrueTPCselITSref; //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCsel;       //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCselITSref; //!<!  histo of pt inw vs. pt refit
   
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
@@ -260,7 +261,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,24);
+  ClassDef(AliAnalysisTaskCheckESDTracks,25);
 };
 
 
