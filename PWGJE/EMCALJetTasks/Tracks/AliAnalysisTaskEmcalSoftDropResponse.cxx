@@ -271,6 +271,17 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hThetagPartLevelClosureNoRespFine_%d", cent), Form("Thetag response at particle level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
         fHistManager.CreateTH2(Form("hThetagDetLevelClosureNoRespFine_%d", cent), Form("Thetag response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       }
+
+      // Residuals
+      fHistManager.CreateTH2(Form("hZgResiduals_%d", cent), Form("Zg residuals (%d centrality bin); p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResiduals_%d", cent), Form("Rg residuals (%d centrality bin); p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResiduals_%d", cent), Form("Thetag residuals (%d centrality bin); p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", cent), 350, 0., 350., 200., -2., 2.);
+      fHistManager.CreateTH2(Form("hNsdResiduals_%d", cent), Form("Nsd residuals (%d centrality bin); p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", cent), 350, 0., 350., 80, -40., 40.);
+      fHistManager.CreateTH2(Form("hZgResidualsNormalized_%d", cent), Form("Zg residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsNormalized_%d", cent), Form("Rg residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsNormalized_%d", cent), Form("Thetag residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", cent), 350, 0., 350., 100., -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsNormalized_%d", cent), Form("Nsd residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", cent), 350, 0., 350., 100, -10., 10.);
+
       // a bit of QA stuff
       fHistManager.CreateTH1(Form("hSkippedJetsPart_%d", cent), Form("Skipped jets at part. level, %d centrality bin", cent), 350, 0., 350.);
       fHistManager.CreateTH1(Form("hSkippedJetsDet_%d", cent), Form("Skipped jets at det. level, %d centrality bin", cent), 350, 0., 350.);
@@ -370,6 +381,16 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hThetagPartLevelClosureNoRespFine", "Thetag response at particle level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       fHistManager.CreateTH2("hThetagDetLevelClosureNoRespFine", "Thetag response at detector level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
     }
+
+    // Residuals
+    fHistManager.CreateTH2("hZgResiduals", "Zg residuals; p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResiduals", "Rg residuals; p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResiduals", "Thetag residuals; p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", 350, 0., 350., 200., -2., 2.);
+    fHistManager.CreateTH2("hNsdResiduals", "Nsd residuals; p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", 350, 0., 350., 80, -40., 40.);
+    fHistManager.CreateTH2("hZgResidualsNormalized", "Zg residuals (normalized); p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsNormalized", "Rg residuals (normalized); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsNormalized", "Thetag residuals (normalized); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", 350, 0., 350., 100., -1., 1.);
+    fHistManager.CreateTH2("hNsdResidualsNormalized", "Nsd residuals (normalized); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", 350, 0., 350., 100, -10., 10.);
 
     // a bit of QA stuff
     fHistManager.CreateTH1("hSkippedJetsPart", "Skipped jets at part. level", 350, 0., 350.);
@@ -561,6 +582,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
                pointRg[4] = {untaggedDet ? -0.01 : softdropDet[2], detjet->Pt(), untaggedPart ? -0.01 : softdropPart[2], partjet->Pt()},
                pointNsd[4] = {untaggedDet ? -1. : softdropDet[5], detjet->Pt(), untaggedPart ? -1. : softdropPart[5], partjet->Pt()},
                pointThetag[4] = {untaggedDet ? -0.05 : softdropDet[2]/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart[2]/Rjet, partjet->Pt()};
+      Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
+               resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
+               resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
+               resNsd = pointNsd[kIndSDDet] - pointNsd[kIndSDPart];
       if (fForceBeamType != kpp)
       {
         // fill QA histograms
@@ -585,6 +610,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH1(Form("hRgPartLevel_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
           fHistManager.FillTH1(Form("hNsdPartLevel_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
           fHistManager.FillTH1(Form("hThetagPartLevel_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        }
+
+        if(!untaggedDet && !untaggedPart) {
+          // Fill residuals
+          fHistManager.FillTH2(Form("hZgResiduals_%d", fCentBin), pointZg[kIndPtPart], resZg);
+          fHistManager.FillTH2(Form("hRgResiduals_%d", fCentBin), pointRg[kIndPtPart], resRg);
+          fHistManager.FillTH2(Form("hThetagResiduals_%d", fCentBin),  pointThetag[kIndPtPart], resThetag);
+          fHistManager.FillTH2(Form("hNsdResiduals_%d", fCentBin),  pointNsd[kIndPtPart], resNsd);
+          fHistManager.FillTH2(Form("hZgResidualsNormalized_%d", fCentBin), pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hRgResidualsNormalized_%d", fCentBin), pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hThetagResidualsNormalized_%d", fCentBin), pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
         }
       }
       else
@@ -616,6 +653,17 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH1("hRgPartLevel", pointRg[kIndSDPart], pointRg[kIndPtPart]);
           fHistManager.FillTH1("hNsdPartLevel", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
           fHistManager.FillTH1("hThetagPartLevel", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        }
+        if(!untaggedDet && !untaggedPart) {
+          // Fill residuals
+          fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
+          fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
+          fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
+          fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
+          fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
         }
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
