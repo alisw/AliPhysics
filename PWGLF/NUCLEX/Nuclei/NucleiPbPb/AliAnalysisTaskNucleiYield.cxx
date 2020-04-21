@@ -125,6 +125,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fFillOnlyEventHistos{false}
    ,fPID{nullptr}
    ,fMagField{0.f}
+   ,fCentrality{-1.f}
    ,fDCAzLimit{10.}
    ,fDCAzNbins{400}
    ,fSigmaLimit{6.}
