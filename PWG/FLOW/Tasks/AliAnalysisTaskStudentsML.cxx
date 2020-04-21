@@ -255,6 +255,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  
   AliDebug(2,"AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML()");
 
+  this->InitializeArrays();
+
 } // AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
 
 //==========================================================================================================================================================================

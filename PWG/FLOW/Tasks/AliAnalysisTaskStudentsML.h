@@ -196,19 +196,19 @@ void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d,
   Float_t fMinBin;               			// min bin
   Float_t fMaxBin;              			// min bin 
  
-  TH1F *fPTHistogram[4]; 		//! [0]: P_t Before Track Seletction, [1]: P_t After Track Seletction, [2]: P_t Before Track Seletction (second), [3]: P_t After Track Seletction (second);
-  TH1F *fPhiHistogram[4]; 		//! [0]: Phi Before Track Seletction, [1]: Phi After Track Seletction, [2]: Phi Before Track Seletction (second), [3]: Phi After Track Seletction (second);
-  TH1F *fEtaHistogram[4]; 		//! [0]: Eta Before Track Seletction, [1]: Eta After Track Seletction, [2]: Eta Before Track Seletction (second), [3]: Eta After Track Seletction (second);
-  TH1F *fMultHistogram[4]; 		//! [0]: Multiplicity before HMO removel [1]: Multiplicity Before Track Seletction, [2]: Mult. After Track Seletction [3]: Mult. After Track Seletction (second);
-  TH1F *fTPCClustersHistogram[2]; 	//! [0]: TPC Clusters Before Corresponding, [1]: TPC Clusters After Corresponding Cut
-  TH1F *fITSClustersHistogram[2]; 	//! [0]: ITS Clusters Before Corresponding, [1]: ITS Clusters After Corresponding Cut
-  TH1F *fChiSquareTPCHistogram[2]; 	//! [0]: ChiSquare TPC Before Corresponding, [1]: ChiSquare TPC After Corresponding Cut
-  TH1F *fDCAzHistogram[2]; 		//! [0]: DCAz Before Corresponding, [1]: DCAz After Corresponding Cut
-  TH1F *fDCAxyHistogram[2]; 		//! [0]: DCAxy Before Corresponding, [1]: DCAxy After Corresponding Cut
-  TH1F *fCentralityHistogram[2]; 	//! [0]: Centrality Before Corresponding, [1]: Centrality After Corresponding Cut
+  TH1F *fPTHistogram[4]; 		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: P_t Before Track Selection (second), 3: P_t After Track Selection (second);
+  TH1F *fPhiHistogram[4]; 		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: Phi Before Track Selection (second), 3: Phi After Track Selection (second);
+  TH1F *fEtaHistogram[4]; 		//! 0: Eta Before Track Selection, 1: Eta After Track Selection, 2: Eta Before Track Selection (second), 3: Eta After Track Selection (second);
+  TH1F *fMultHistogram[4]; 		//! 0: Multiplicity before HMO removel 1: Multiplicity Before Track Selection, 2: Mult. After Track Selection 3: Mult. After Track Selection (second);
+  TH1F *fTPCClustersHistogram[2]; 	//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection
+  TH1F *fITSClustersHistogram[2]; 	//! 0: ITS Clusters Before Track Selection, 1: ITS Clusters After Track Selection
+  TH1F *fChiSquareTPCHistogram[2]; 	//! 0: ChiSquare TPC Before Track Selection, 1: ChiSquare TPC After Track Selection
+  TH1F *fDCAzHistogram[2]; 		//! 0: DCAz Before Track Selection, 1: DCAz After Track Selection
+  TH1F *fDCAxyHistogram[2]; 		//! 0: DCAxy Before Track Selection, 1: DCAxy After Track Selection
+  TH1F *fCentralityHistogram[2]; 	//! 0: Centrality Before Corresponding, 1: Centrality After Corresponding Cut
 
   //2.) SelectionCuts
-  Bool_t bDoAnalysis;			// if kTRUE: Run of AODs (real Data or MC on Recon level) -> Does Anaylsis, if kFALSE: -> Get Weights
+  Bool_t bDoAnalysis;			// if kTRUE: Run of AODs (real Data or MC on Recon level) Does Analysis, if kFALSE: Get Weights
   Bool_t bUseRecoKineTable;		// (Necessary if bDoAnalysis = kFALSE) if kTRUE: use the kine-reco mapping table (for kine level)
   Bool_t bMultCut;			// Cut to remove HMO's
   Int_t fMainFilter;           		// for main filter selection (default: Hypbrid)
@@ -230,9 +230,9 @@ void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d,
   Double_t fMaxVertexY;               	// max vertex cut Y (default -44)
   Double_t fMinVertexZ;               	// min vertex cut Z (default -10 cm)
   Double_t fMaxVertexZ;               	// max vertex cut Z (default +10 cm)
-  TH1F *fVertexXHistogram[2];               	//! [0]: Vertex X Before Corresponding, [1]: Vertex X After Corresponding Cut
-  TH1F *fVertexYHistogram[2];               	//! [0]: Vertex Y Before Corresponding, [1]: Vertex Y After Corresponding Cut
-  TH1F *fVertexZHistogram[2];               	//! [0]: Vertex Z Before Corresponding, [1]: Vertex Z After Corresponding Cut
+  TH1F *fVertexXHistogram[2];               	//! 0: Vertex X Before Corresponding, 1: Vertex X After Corresponding Cut
+  TH1F *fVertexYHistogram[2];               	//! 0: Vertex Y Before Corresponding, 1: Vertex Y After Corresponding Cut
+  TH1F *fVertexZHistogram[2];               	//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut
 
   Bool_t fCentralityfromVZero;	     	// if kTRUE: Use V0 as centrality estimator, if kFALSE: SPD Cluster
 
@@ -304,7 +304,7 @@ void SetCorrSet3(Bool_t booly, Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d,
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,27);
+  ClassDef(AliAnalysisTaskStudentsML,28);
 
 };
 
