@@ -41,6 +41,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
   }  
+  void SetFillSparses(Bool_t fill=kTRUE){
+    fFillSparses=fill;
+  }  
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
@@ -260,8 +263,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
+  Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,25);
+  ClassDef(AliAnalysisTaskCheckESDTracks,26);
 };
 
 

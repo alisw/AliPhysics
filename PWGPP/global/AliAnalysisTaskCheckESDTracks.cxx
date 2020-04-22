@@ -184,7 +184,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fMaxPt(25.),
   fReadMC(kFALSE),
   fUseMCId(kFALSE),
-  fUseGenPt(kFALSE)
+  fUseGenPt(kFALSE),
+  fFillSparses(kFALSE)
 {
   //
 
@@ -1088,12 +1089,14 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(pttrack<1) fHistDeltaPtTPCInwVsPhiTPCselLowPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>1 && pttrack<3) fHistDeltaPtTPCInwVsPhiTPCselMidPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
       else if(pttrack>3) fHistDeltaPtTPCInwVsPhiTPCselHighPt->Fill(phiPositionTPC,pttrack0tpc-pttrack);
-      double arrayForSparse[3]={pttrack,pttrack0tpc,ptgen};
-      if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(arrayForSparse);
       if(itsRefit){
 	fHistPtTPCInwVsPtTPCselITSref->Fill(pttrack,pttrack0tpc);
-	if(fReadMC) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(arrayForSparse);
 	if(spdAny) fHistPtTPCInwVsPtTPCselSPDany->Fill(pttrack,pttrack0tpc);
+      }
+      if(fReadMC && fFillSparses){
+	double arrayForSparse[3]={pttrack,pttrack0tpc,ptgen};
+	fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(arrayForSparse);
+	if(itsRefit) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(arrayForSparse);
       }
     }
     fHistEtaPhiPtInnerTPCsel->Fill(etatrackTPC,phitrackTPC,pttrackTPC);
