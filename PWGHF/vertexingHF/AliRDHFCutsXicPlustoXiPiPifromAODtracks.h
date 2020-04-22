@@ -53,7 +53,7 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   AliAODPidHF* GetPidCascPr() const {return fPidObjCascPr;}
 
 
-  Bool_t SingleTrkCuts(AliAODTrack *trk);
+  Bool_t SingleTrkCuts(AliAODTrack *trk, const AliESDVertex *primaryVtx);
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
   Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2);
@@ -62,6 +62,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   void SetProdTrackPtMin(Double_t a){fProdTrackPtMin=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
+  void SetProdTrackNTPCCrossedRowsMin(Double_t a){fProdTrackNTPCCrossedRowsMin=a;}
+  void SetProdTrackNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdTrackNTPCCrossedOverFindableRatioMin=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
   void SetProdMassRejOmega(Double_t a){fProdMassRejOmega=a;}
@@ -127,6 +129,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdTrackPtMin;         /// Minimum Bachelor pT
   Double_t fProdTrackEtaRange;      /// Bachelor Eta range
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
+  Double_t fProdTrackNTPCCrossedRowsMin;
+  Double_t fProdTrackNTPCCrossedOverFindableRatioMin;
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
@@ -152,7 +156,7 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,5); 
+  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,6); 
   /// \endcond
 };
 
