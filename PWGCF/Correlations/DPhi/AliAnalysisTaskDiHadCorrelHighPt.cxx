@@ -153,7 +153,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistGenMultiplicity(0),
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
-    fESDTrackCuts(0),
+    fESDTrackCuts(nullptr),
     fTestPions(kFALSE),
     fMergingCutV0(kFALSE),
     fMergingCutDaughters(kFALSE)
@@ -258,7 +258,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistGenMultiplicity(0),
     fHistTPCTracksVsClusters(0),
     fHistVZeroPercentileTPCMult(0),
-    fESDTrackCuts(0),
+    fESDTrackCuts(nullptr),
     fTestPions(kFALSE),
     fMergingCutV0(kFALSE),
     fMergingCutDaughters(kFALSE)
@@ -276,6 +276,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
 AliAnalysisTaskDiHadCorrelHighPt::~AliAnalysisTaskDiHadCorrelHighPt()
 {
     // destructor
+    if(fESDTrackCuts){delete fESDTrackCuts; fESDTrackCuts = nullptr;}
     if(fOutputList) {
         delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
     }
@@ -649,6 +650,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistVZeroPercentileTPCMult->Sumw2();
     fHistVZeroPercentileTPCMult->GetXaxis()->SetTitle("VZERO percentile");
     fHistVZeroPercentileTPCMult->GetYaxis()->SetTitle("TPC multiplicity");
+
+    if(!fAnalysisAOD) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
 
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
