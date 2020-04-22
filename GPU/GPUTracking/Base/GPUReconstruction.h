@@ -150,6 +150,13 @@ class GPUReconstruction
     int nEvents;
   };
 
+  struct krnlProperties {
+    krnlProperties(int t = 0, int b = 1) : nThreads(t), minBlocks(b) {}
+    unsigned int nThreads;
+    unsigned int minBlocks;
+    unsigned int total() { return nThreads * minBlocks; }
+  };
+
   // Global steering functions
   template <class T, typename... Args>
   T* AddChain(Args... args);
@@ -159,11 +166,12 @@ class GPUReconstruction
   int Exit();
 
   void DumpSettings(const char* dir = "");
-  void ReadSettings(const char* dir = "");
+  int ReadSettings(const char* dir = "");
 
   void PrepareEvent();
   virtual int RunChains() = 0;
   unsigned int getNEventsProcessed() { return mNEventsProcessed; }
+  unsigned int getNEventsProcessedInStat() { return mStatNEvents; }
   virtual int registerMemoryForGPU(const void* ptr, size_t size) = 0;
   virtual int unregisterMemoryForGPU(const void* ptr) = 0;
 
@@ -182,6 +190,7 @@ class GPUReconstruction
   void ResetRegisteredMemoryPointers(short res);
   void PrintMemoryStatistics();
   void PrintMemoryOverview();
+  void SetMemoryExternalInput(short res, void* ptr);
   GPUMemorySizeScalers* MemoryScalers() { return mMemoryScalers.get(); }
 
   // Helpers to fetch processors from other shared libraries
@@ -192,6 +201,7 @@ class GPUReconstruction
   DeviceType GetDeviceType() const { return (DeviceType)mProcessingSettings.deviceType; }
   bool IsGPU() const { return GetDeviceType() != DeviceType::INVALID_DEVICE && GetDeviceType() != DeviceType::CPU; }
   const GPUParam& GetParam() const { return mHostConstantMem->param; }
+  const GPUConstantMem& GetConstantMem() const { return *mHostConstantMem; }
   const GPUSettingsEvent& GetEventSettings() const { return mEventSettings; }
   const GPUSettingsProcessing& GetProcessingSettings() { return mProcessingSettings; }
   const GPUSettingsDeviceProcessing& GetDeviceProcessingSettings() const { return mDeviceProcessingSettings; }
@@ -204,7 +214,7 @@ class GPUReconstruction
   void SetOutputControl(const GPUOutputControl& v) { mOutputControl = v; }
   void SetOutputControl(void* ptr, size_t size);
   GPUOutputControl& OutputControl() { return mOutputControl; }
-  virtual int GetMaxThreads();
+  int GetMaxThreads() { return mMaxThreads; }
   const void* DeviceMemoryBase() const { return mDeviceMemoryBase; }
 
   RecoStepField GetRecoSteps() const { return mRecoSteps; }
@@ -272,7 +282,7 @@ class GPUReconstruction
   template <class T>
   std::unique_ptr<T> ReadStructFromFile(const char* file);
   template <class T>
-  void ReadStructFromFile(const char* file, T* obj);
+  int ReadStructFromFile(const char* file, T* obj);
 
   // Others
   virtual RecoStepField AvailableRecoSteps() { return RecoStep::AllRecoSteps; }
@@ -318,9 +328,10 @@ class GPUReconstruction
   unsigned int mNEventsProcessed = 0;
   double mStatKernelTime = 0.;
 
-  int mThreadId = -1; // Thread ID that is valid for the local CUDA context
-  int mGPUStuck = 0;  // Marks that the GPU is stuck, skip future events
-  int mNStreams = 1;  // Number of parallel GPU streams
+  int mMaxThreads = 0; // Maximum number of threads that may be running, on CPU or GPU
+  int mThreadId = -1;  // Thread ID that is valid for the local CUDA context
+  int mGPUStuck = 0;   // Marks that the GPU is stuck, skip future events
+  int mNStreams = 1;   // Number of parallel GPU streams
 
   // Management for GPUProcessors
   struct ProcessorData {
@@ -563,23 +574,24 @@ inline std::unique_ptr<T> GPUReconstruction::ReadStructFromFile(const char* file
 }
 
 template <class T>
-inline void GPUReconstruction::ReadStructFromFile(const char* file, T* obj)
+inline int GPUReconstruction::ReadStructFromFile(const char* file, T* obj)
 {
   FILE* fp = fopen(file, "rb");
   if (fp == nullptr) {
-    return;
+    return 1;
   }
   size_t size, r;
   r = fread(&size, sizeof(size), 1, fp);
   if (r == 0) {
     fclose(fp);
-    return;
+    return 1;
   }
   r = fread(obj, 1, size, fp);
   fclose(fp);
   if (mDeviceProcessingSettings.debugLevel >= 2) {
     GPUInfo("Read %d bytes from %s", (int)r, file);
   }
+  return 0;
 }
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

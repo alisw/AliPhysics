@@ -28,6 +28,7 @@
 #endif
 
 using namespace GPUCA_NAMESPACE::gpu;
+using namespace GPUCA_NAMESPACE::gpu::tpccf;
 
 template <>
 GPUdii() void GPUTPCCFClusterizer::Thread<GPUTPCCFClusterizer::computeClusters>(int nBlocks, int nThreads, int iBlock, int iThread, GPUSharedMemory& smem, processorType& clusterer)
@@ -36,10 +37,11 @@ GPUdii() void GPUTPCCFClusterizer::Thread<GPUTPCCFClusterizer::computeClusters>(
   CPU_ONLY(
     MCLabelAccumulator labelAcc(clusterer));
 
-  GPUTPCCFClusterizer::computeClustersImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), smem, chargeMap, clusterer.mPfilteredPeakPositions, CPU_PTR(&labelAcc), clusterer.mPmemory->counters.nClusters, clusterer.mNMaxClusterPerRow, clusterer.mPclusterInRow, clusterer.mPclusterByRow);
+  GPUTPCCFClusterizer::computeClustersImpl(get_num_groups(0), get_local_size(0), get_group_id(0), get_local_id(0), clusterer.mPmemory->fragment, smem, chargeMap, clusterer.mPfilteredPeakPositions, CPU_PTR(&labelAcc), clusterer.mPmemory->counters.nClusters, clusterer.mNMaxClusterPerRow, clusterer.mPclusterInRow, clusterer.mPclusterByRow);
 }
 
 GPUdii() void GPUTPCCFClusterizer::computeClustersImpl(int nBlocks, int nThreads, int iBlock, int iThread,
+                                                       const CfFragment& fragment,
                                                        GPUSharedMemory& smem,
                                                        const Array2D<PackedCharge>& chargeMap,
                                                        const ChargePos* filteredPeakPositions,
@@ -55,7 +57,6 @@ GPUdii() void GPUTPCCFClusterizer::computeClustersImpl(int nBlocks, int nThreads
   // number of work items is dividable by 64.
   // These dummy items also compute the last cluster but discard the result.
   ChargePos pos = filteredPeakPositions[CAMath::Min(idx, clusternum - 1)];
-
   Charge charge = chargeMap[pos].unpack();
 
   ClusterAccumulator pc;
@@ -77,10 +78,10 @@ GPUdii() void GPUTPCCFClusterizer::computeClustersImpl(int nBlocks, int nThreads
   buildClusterNaive(chargeMap, &pc, pos);
 #endif
 
-  if (idx >= clusternum) {
+  if (idx >= clusternum || fragment.isOverlap(pos.time())) {
     return;
   }
-  pc.finalize(pos, charge);
+  pc.finalize(pos, charge, fragment.start);
 
   tpc::ClusterNative myCluster;
   pc.toNative(pos, charge, myCluster);
@@ -136,8 +137,8 @@ GPUd() void GPUTPCCFClusterizer::addCorner(
 
   if (q > CHARGE_THRESHOLD) {
     addOuterCharge(chargeMap, myCluster, pos, {GlobalPad(2 * d.x), d.y});
-    addOuterCharge(chargeMap, myCluster, pos, {d.x, Timestamp(2 * d.y)});
-    addOuterCharge(chargeMap, myCluster, pos, {GlobalPad(2 * d.x), Timestamp(2 * d.y)});
+    addOuterCharge(chargeMap, myCluster, pos, {d.x, TPCFragmentTime(2 * d.y)});
+    addOuterCharge(chargeMap, myCluster, pos, {GlobalPad(2 * d.x), TPCFragmentTime(2 * d.y)});
   }
 }
 
@@ -150,7 +151,7 @@ GPUd() void GPUTPCCFClusterizer::addLine(
   Charge q = addInnerCharge(chargeMap, myCluster, pos, d);
 
   if (q > CHARGE_THRESHOLD) {
-    addOuterCharge(chargeMap, myCluster, pos, {GlobalPad(2 * d.x), Timestamp(2 * d.y)});
+    addOuterCharge(chargeMap, myCluster, pos, {GlobalPad(2 * d.x), TPCFragmentTime(2 * d.y)});
   }
 }
 
@@ -369,7 +370,7 @@ GPUd() void GPUTPCCFClusterizer::buildClusterNaive(
 
 GPUd() uint GPUTPCCFClusterizer::sortIntoBuckets(const tpc::ClusterNative& cluster, uint row, uint maxElemsPerBucket, uint* elemsInBucket, tpc::ClusterNative* buckets)
 {
-  uint index = CAMath::AtomicAdd(&elemsInBucket[row], 1);
+  uint index = CAMath::AtomicAdd(&elemsInBucket[row], 1u);
   if (index < maxElemsPerBucket) {
     buckets[maxElemsPerBucket * row + index] = cluster;
   }

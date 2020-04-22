@@ -45,14 +45,18 @@ using namespace GPUCA_NAMESPACE::gpu;
 #include "GPUTPCStartHitsFinder.cxx"
 #include "GPUTPCStartHitsSorter.cxx"
 #include "GPUTPCTrackletConstructor.cxx"
+#include "GPUTPCGlobalTracking.cxx"
 
 #if !defined(GPUCA_OPENCL1) && !defined(GPUCA_ALIROOT_LIB)
 // Files for TPC Merger
 #include "GPUTPCGMMergerGPU.cxx"
-#include "GPUTPCGMMerger.h"
+#include "GPUTPCGMMerger.cxx"
+#include "GPUTPCGMSliceTrack.cxx"
 #include "GPUTPCGMTrackParam.cxx"
 #include "GPUTPCGMPhysicalTrackModel.cxx"
 #include "GPUTPCGMPropagator.cxx"
+#include "GPUTPCSliceData.cxx"
+#include "GPUTPCCreateSliceData.cxx"
 
 #if defined(HAVE_O2HEADERS)
 // Files for propagation with material

@@ -42,16 +42,14 @@ class GPUTPCCFDecodeZS : public GPUKernelTemplate
     unsigned int regionStartRow;
     unsigned int nThreadsPerRow;
     unsigned int rowStride;
-    unsigned int decodeBits;
     GPUAtomic(unsigned int) rowOffsetCounter;
-    float decodeBitsFactor;
   };
 
   enum K : int {
     decodeZS,
   };
 
-  static GPUd() void decode(GPUTPCClusterFinder& clusterer, GPUSharedMemory& s, int nBlocks, int nThreads, int iBlock, int iThread, int bcShiftInFirstHBF);
+  static GPUd() void decode(GPUTPCClusterFinder& clusterer, GPUSharedMemory& s, int nBlocks, int nThreads, int iBlock, int iThread, int firstHBF);
 
 #ifdef HAVE_O2HEADERS
   typedef GPUTPCClusterFinder processorType;

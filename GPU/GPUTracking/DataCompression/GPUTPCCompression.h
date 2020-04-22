@@ -32,13 +32,11 @@ namespace o2
 {
 namespace tpc
 {
-template <class T>
-struct CompressedClustersPtrs_helper {
+struct CompressedClustersPtrs {
 };
-struct CompressedClustersCounters {
+struct CompressedClusters {
 };
-using CompressedClusters = CompressedClustersPtrs_helper<CompressedClustersCounters>;
-struct CompressedClustersPtrsOnly {
+struct CompressedClustersFlat {
 };
 } // namespace tpc
 } // namespace o2
@@ -62,6 +60,7 @@ class GPUTPCCompression : public GPUProcessor
   void SetMaxData(const GPUTrackingInOutPointers& io);
 
   void* SetPointersOutputHost(void* mem);
+  void* SetPointersOutputPtrs(void* mem);
   void* SetPointersOutput(void* mem);
   void* SetPointersScratch(void* mem);
   void* SetPointersMemory(void* mem);
@@ -88,9 +87,9 @@ class GPUTPCCompression : public GPUProcessor
 
   constexpr static unsigned int NSLICES = GPUCA_NSLICES;
 
-  o2::tpc::CompressedClustersPtrsOnly mPtrs;
-  o2::tpc::CompressedClusters mOutput;
-  const GPUTPCGMMerger* mMerger = nullptr;
+  o2::tpc::CompressedClustersPtrs mPtrs;
+  o2::tpc::CompressedClusters* mOutput = nullptr;
+  o2::tpc::CompressedClustersFlat* mOutputFlat = nullptr;
 
   memory* mMemory = nullptr;
   unsigned int* mAttachedClusterFirstIndex = nullptr;
@@ -107,10 +106,7 @@ class GPUTPCCompression : public GPUProcessor
   template <class T>
   GPUd() static void truncateSignificantBits(T& val, unsigned int nBits, unsigned int max);
 
-  short mMemoryResOutput = -1;
   short mMemoryResOutputHost = -1;
-  short mMemoryResMemory = -1;
-  short mMemoryResScratch = -1;
 };
 
 template <class T>

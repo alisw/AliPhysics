@@ -14,14 +14,12 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUTPCTrackletSelector.h
-/// \author Sergey Gorbunov, Ivan Kisel, David Rohr
+/// \file GPUTPCGlobalTracking.h
+/// \author David Rohr
 
-#ifndef GPUTPCTRACKLETSELECTOR_H
-#define GPUTPCTRACKLETSELECTOR_H
+#ifndef GPUTPCGLOBALTRACKING_H
+#define GPUTPCGLOBALTRACKING_H
 
-#include "GPUTPCDef.h"
-#include "GPUTPCHitId.h"
 #include "GPUGeneralKernels.h"
 #include "GPUConstantMem.h"
 
@@ -32,23 +30,34 @@ namespace gpu
 MEM_CLASS_PRE()
 class GPUTPCTracker;
 
-/**
- * @class GPUTPCTrackletSelector
- *
- */
-class GPUTPCTrackletSelector : public GPUKernelTemplate
+#if !defined(__OPENCL__) || defined(__OPENCLCPP__)
+class GPUTPCGlobalTracking : public GPUKernelTemplate
 {
  public:
-  MEM_CLASS_PRE()
   struct GPUSharedMemory {
-    int mItr0;          // index of the first track in the block
-    int mNThreadsTotal; // total n threads
-    int mNTracklets;    // n of tracklets
-#if GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
-    GPUTPCHitId mHits[GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE][GPUCA_GET_THREAD_COUNT(GPUCA_LB_GPUTPCTrackletSelector)];
-#endif // GPUCA_TRACKLET_SELECTOR_HITS_REG_SIZE != 0
+    CA_SHARED_STORAGE(MEM_LG(GPUTPCRow) mRows[GPUCA_ROW_COUNT]);
   };
 
+  typedef GPUconstantref() MEM_GLOBAL(GPUTPCTracker) processorType;
+  GPUhdi() CONSTEXPRRET static GPUDataTypes::RecoStep GetRecoStep() { return GPUCA_RECO_STEP::TPCSliceTracking; }
+  GPUhdi() static processorType* Processor(MEM_TYPE(GPUConstantMem) & processors)
+  {
+    return processors.tpcTrackers;
+  }
+  template <int iKernel = GPUKernelTemplate::defaultKernel>
+  GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & smem, processorType& tracker);
+
+  GPUd() static int GlobalTrackingSliceOrder(int iSlice);
+
+ private:
+  GPUd() static int PerformGlobalTrackingRun(GPUTPCTracker& tracker, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & GPUrestrict() smem, const GPUTPCTracker& sliceSource, int iTrack, int rowIndex, float angle, int direction);
+  GPUd() static void PerformGlobalTracking(int nBlocks, int nThreads, int iBlock, int iThread, const GPUTPCTracker& tracker, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & GPUrestrict() smem, GPUTPCTracker& sliceTarget, bool right);
+};
+#endif
+
+class GPUTPCGlobalTrackingCopyNumbers : public GPUKernelTemplate
+{
+ public:
   typedef GPUconstantref() MEM_GLOBAL(GPUTPCTracker) processorType;
   GPUhdi() CONSTEXPRRET static GPUDataTypes::RecoStep GetRecoStep() { return GPUCA_RECO_STEP::TPCSliceTracking; }
   MEM_TEMPLATE()
@@ -56,10 +65,11 @@ class GPUTPCTrackletSelector : public GPUKernelTemplate
   {
     return processors.tpcTrackers;
   }
-  template <int iKernel = defaultKernel>
-  GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & smem, processorType& tracker);
+  template <int iKernel = GPUKernelTemplate::defaultKernel>
+  GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & smem, processorType& tracker, int n);
 };
+
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 
-#endif // GPUTPCTRACKLETSELECTOR_H
+#endif // GPUTPCTRACKLETCONSTRUCTOR_H

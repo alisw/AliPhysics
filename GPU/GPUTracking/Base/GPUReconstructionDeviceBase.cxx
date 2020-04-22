@@ -273,8 +273,6 @@ int GPUReconstructionDeviceBase::InitDevice()
     return (1);
   }
 
-  SetThreadCounts();
-
   if (mMaster == nullptr || mDeviceProcessingSettings.debugLevel >= 2) {
     GPUInfo("GPU Tracker initialization successfull"); // Verbosity reduced because GPU backend will print GPUImportant message!
   }
@@ -301,12 +299,6 @@ int GPUReconstructionDeviceBase::ExitDevice()
   mHostMemorySize = mDeviceMemorySize = 0;
 
   return retVal;
-}
-
-int GPUReconstructionDeviceBase::GetMaxThreads()
-{
-  int retVal = mTRDThreadCount * mBlockCount;
-  return std::max(retVal, GPUReconstruction::GetMaxThreads());
 }
 
 int GPUReconstructionDeviceBase::registerMemoryForGPU(const void* ptr, size_t size)

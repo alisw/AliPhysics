@@ -396,6 +396,7 @@ int GPUTPCTrackerComponent::ConfigureSlices()
   rec.GlobalTracking = fGlobalTracking;
   devProc.stuckProtection = fGPUStuckProtection;
   rec.NonConsecutiveIDs = true;
+  rec.mergerReadFromTrackerDirectly = false;
 
   GPURecoStepConfiguration steps;
   steps.steps.set(GPUDataTypes::RecoStep::TPCSliceTracking);
@@ -657,7 +658,10 @@ void* GPUTPCTrackerComponent::TrackerDoEvent(void* par)
     printf("Memory Allocation Error\n");
     return ((void*)(size_t)-EINVAL);
   }
-  fChain->RunTPCTrackingSlices();
+  if (fChain->RunTPCTrackingSlices()) {
+    HLTError("Error running tracking!");
+    return ((void*)(size_t)-EINVAL);
+  }
   fBenchmark.Stop(1);
   HLTInfo("Processed %d clusters", nClustersTotal);
   for (int i = 0; i < NSLICES; i++) {

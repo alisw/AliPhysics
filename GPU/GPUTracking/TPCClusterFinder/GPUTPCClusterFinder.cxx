@@ -23,16 +23,17 @@
 #include "GPUHostDataTypes.h"
 
 #include "DataFormatsTPC/ZeroSuppression.h"
+#include "TPCBase/Digit.h"
 
 #include "ChargePos.h"
 #include "Array2D.h"
-#include "Digit.h"
 
 using namespace GPUCA_NAMESPACE::gpu;
 using namespace o2::tpc;
 
 void GPUTPCClusterFinder::InitializeProcessor()
 {
+  mMinMaxCN = new MinMaxCN[GPUTrackingInOutZS::NENDPOINTS];
 }
 
 GPUTPCClusterFinder::~GPUTPCClusterFinder()
@@ -59,8 +60,9 @@ void* GPUTPCClusterFinder::SetPointersInput(void* mem)
 
 void* GPUTPCClusterFinder::SetPointersZSOffset(void* mem)
 {
-  if (mNMaxPages) {
-    computePointerWithAlignment(mem, mPzsOffsets, (mRec->GetRecoStepsGPU() & GPUDataTypes::RecoStep::TPCClusterFinding) ? mNMaxPages : GPUTrackingInOutZS::NENDPOINTS);
+  const int n = (mRec->GetRecoStepsGPU() & GPUDataTypes::RecoStep::TPCClusterFinding) ? mNMaxPages : GPUTrackingInOutZS::NENDPOINTS;
+  if (n) {
+    computePointerWithAlignment(mem, mPzsOffsets, n);
   }
   return mem;
 }
@@ -68,7 +70,6 @@ void* GPUTPCClusterFinder::SetPointersZSOffset(void* mem)
 void* GPUTPCClusterFinder::SetPointersOutput(void* mem)
 {
   computePointerWithAlignment(mem, mPclusterInRow, GPUCA_ROW_COUNT);
-  computePointerWithAlignment(mem, mPclusterByRow, GPUCA_ROW_COUNT * mNMaxClusterPerRow);
   return mem;
 }
 
@@ -81,6 +82,7 @@ void* GPUTPCClusterFinder::SetPointersScratch(void* mem)
   computePointerWithAlignment(mem, mPchargeMap, TPCMapMemoryLayout<decltype(*mPchargeMap)>::items());
   computePointerWithAlignment(mem, mPpeakMap, TPCMapMemoryLayout<decltype(*mPpeakMap)>::items());
   computePointerWithAlignment(mem, mPbuf, mBufSize * mNBufs);
+  computePointerWithAlignment(mem, mPclusterByRow, GPUCA_ROW_COUNT * mNMaxClusterPerRow);
   return mem;
 }
 
@@ -108,12 +110,12 @@ void GPUTPCClusterFinder::SetNMaxDigits(size_t nDigits, size_t nPages)
   mNMaxPages = nPages;
 }
 
-size_t GPUTPCClusterFinder::getNSteps(size_t items) const
+unsigned int GPUTPCClusterFinder::getNSteps(size_t items) const
 {
   if (items == 0) {
     return 0;
   }
-  size_t c = 1;
+  unsigned int c = 1;
   size_t capacity = mScanWorkGroupSize;
   while (items > capacity) {
     capacity *= mScanWorkGroupSize;
@@ -143,4 +145,6 @@ void GPUTPCClusterFinder::clearMCMemory()
   mPlabelHeaderOffset = nullptr;
   delete[] mPlabelDataOffset;
   mPlabelDataOffset = nullptr;
+  delete[] mMinMaxCN;
+  mMinMaxCN = nullptr;
 }

@@ -22,9 +22,10 @@
 
 #include "GPUCommonDef.h"
 
-#if !defined(GPUCA_GPUCODE_DEVICE) && (!defined __cplusplus || __cplusplus < 201402L)
+#if !defined(GPUCA_GPUCODE_DEVICE)
+//&& (!defined __cplusplus || __cplusplus < 201402L) // This would enable to custom search also on the CPU if available by the compiler, but it is not always faster, so we stick to std::sort
 #include <algorithm>
-#define GPUCA_ALGORITHM_FALLBACK
+#define GPUCA_ALGORITHM_STD
 #endif
 
 // ----------------------------- SORTING -----------------------------
@@ -40,10 +41,16 @@ class GPUCommonAlgorithm
   GPUd() static void sort(T* begin, T* end);
   template <class T>
   GPUd() static void sortInBlock(T* begin, T* end);
+  template <class T>
+  GPUd() static void sortDeviceDynamic(T* begin, T* end);
   template <class T, class S>
   GPUd() static void sort(T* begin, T* end, const S& comp);
   template <class T, class S>
   GPUd() static void sortInBlock(T* begin, T* end, const S& comp);
+  template <class T, class S>
+  GPUd() static void sortDeviceDynamic(T* begin, T* end, const S& comp);
+  template <class T>
+  GPUd() static void swap(T& a, T& b);
 
  private:
   // Quicksort implementation
@@ -78,7 +85,7 @@ namespace GPUCA_NAMESPACE
 namespace gpu
 {
 
-#ifndef GPUCA_ALGORITHM_FALLBACK
+#ifndef GPUCA_ALGORITHM_STD
 template <typename I>
 GPUdi() void GPUCommonAlgorithm::IterSwap(I a, I b) noexcept
 {
@@ -211,10 +218,7 @@ typedef GPUCommonAlgorithm CAAlgo;
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 
-#if 0 //(defined(__CUDACC__) && !defined(__clang__)) || defined(__HIPCC__) // disables
-// thrust currently disabled:
-// - broken on HIP
-// - Our quicksort and bubble sort implementations are faster
+#if (defined(__CUDACC__) && !defined(__clang__)) || defined(__HIPCC__)
 
 #include "GPUCommonAlgorithmThrust.h"
 
@@ -226,9 +230,40 @@ namespace gpu
 {
 
 template <class T>
+GPUdi() void GPUCommonAlgorithm::sortDeviceDynamic(T* begin, T* end)
+{
+#ifndef GPUCA_GPUCODE_DEVICE
+  GPUCommonAlgorithm::sort(begin, end);
+#else
+  GPUCommonAlgorithm::sortDeviceDynamic(begin, end, [](auto&& x, auto&& y) { return x < y; });
+#endif
+}
+
+template <class T, class S>
+GPUdi() void GPUCommonAlgorithm::sortDeviceDynamic(T* begin, T* end, const S& comp)
+{
+#ifndef GPUCA_GPUCODE_DEVICE
+  GPUCommonAlgorithm::sort(begin, end, comp);
+#else
+  GPUCommonAlgorithm::sortInBlock(begin, end, comp);
+#endif
+}
+
+} // namespace gpu
+} // namespace GPUCA_NAMESPACE
+
+#endif // THRUST
+// sort and sortInBlock below are not taken from Thrust, since our implementations are faster
+
+namespace GPUCA_NAMESPACE
+{
+namespace gpu
+{
+
+template <class T>
 GPUdi() void GPUCommonAlgorithm::sort(T* begin, T* end)
 {
-#ifdef GPUCA_ALGORITHM_FALLBACK
+#ifdef GPUCA_ALGORITHM_STD
   std::sort(begin, end);
 #else
   QuickSort(begin, end, [](auto&& x, auto&& y) { return x < y; });
@@ -238,7 +273,7 @@ GPUdi() void GPUCommonAlgorithm::sort(T* begin, T* end)
 template <class T, class S>
 GPUdi() void GPUCommonAlgorithm::sort(T* begin, T* end, const S& comp)
 {
-#ifdef GPUCA_ALGORITHM_FALLBACK
+#ifdef GPUCA_ALGORITHM_STD
   std::sort(begin, end, comp);
 #else
   QuickSort(begin, end, comp);
@@ -279,10 +314,24 @@ GPUdi() void GPUCommonAlgorithm::sortInBlock(T* begin, T* end, const S& comp)
 #endif
 }
 
+#ifdef GPUCA_GPUCODE_DEVICE
+template <class T>
+GPUdi() void GPUCommonAlgorithm::swap(T& a, T& b)
+{
+  auto tmp = a;
+  a = b;
+  b = tmp;
+}
+#else
+template <class T>
+GPUdi() void GPUCommonAlgorithm::swap(T& a, T& b)
+{
+  std::swap(a, b);
+}
+#endif
+
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
-
-#endif // ifdef __CUDACC__
 
 // ----------------------------- WORK GROUP FUNCTIONS -----------------------------
 

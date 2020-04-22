@@ -31,7 +31,7 @@
 using namespace GPUCA_NAMESPACE::gpu;
 using namespace o2::tpc;
 
-void GPUTPCGMSliceTrack::Set(const GPUTPCGMMerger* merger, const GPUTPCSliceOutTrack* sliceTr, float alpha, int slice)
+GPUd() void GPUTPCGMSliceTrack::Set(const GPUTPCGMMerger* merger, const GPUTPCTrack* sliceTr, float alpha, int slice)
 {
   const GPUTPCBaseTrackParam& t = sliceTr->Param();
   mOrigTrack = sliceTr;
@@ -50,10 +50,10 @@ void GPUTPCGMSliceTrack::Set(const GPUTPCGMMerger* merger, const GPUTPCSliceOutT
   } else {
     mTZOffset = merger->GetConstantMem()->calibObjects.fastTransform->convZOffsetToVertexTime(slice, t.GetZOffset(), merger->Param().continuousMaxTimeBin);
   }
-  mNClusters = sliceTr->NClusters();
+  mNClusters = sliceTr->NHits();
 }
 
-void GPUTPCGMSliceTrack::Set(const GPUTPCGMTrackParam& trk, const GPUTPCSliceOutTrack* sliceTr, float alpha, int slice)
+GPUd() void GPUTPCGMSliceTrack::Set(const GPUTPCGMTrackParam& trk, const GPUTPCTrack* sliceTr, float alpha, int slice)
 {
   mOrigTrack = sliceTr;
   mX = trk.GetX();
@@ -67,7 +67,7 @@ void GPUTPCGMSliceTrack::Set(const GPUTPCGMTrackParam& trk, const GPUTPCSliceOut
   mAlpha = alpha;
   mSlice = slice;
   mTZOffset = trk.GetTZOffset();
-  mNClusters = sliceTr->NClusters();
+  mNClusters = sliceTr->NHits();
   mC0 = trk.GetCov(0);
   mC2 = trk.GetCov(2);
   mC3 = trk.GetCov(3);
@@ -79,17 +79,28 @@ void GPUTPCGMSliceTrack::Set(const GPUTPCGMTrackParam& trk, const GPUTPCSliceOut
   mC14 = trk.GetCov(14);
 }
 
-bool GPUTPCGMSliceTrack::FilterErrors(const GPUTPCGMMerger* merger, int iSlice, float maxSinPhi, float sinPhiMargin)
+GPUd() bool GPUTPCGMSliceTrack::FilterErrors(const GPUTPCGMMerger* merger, int iSlice, float maxSinPhi, float sinPhiMargin)
 {
   float lastX;
-  if (merger->Param().earlyTpcTransform) {
-    lastX = mOrigTrack->Cluster(mOrigTrack->NClusters() - 1).GetX(); // TODO: Why is this needed, Row2X should work, but looses some tracks
+  if (merger->Param().earlyTpcTransform && !merger->Param().rec.mergerReadFromTrackerDirectly) {
+    lastX = mOrigTrack->OutTrackCluster(mOrigTrack->NHits() - 1).GetX(); // TODO: Why is this needed, Row2X should work, but looses some tracks
   } else {
     //float lastX = merger->Param().tpcGeometry.Row2X(mOrigTrack->Cluster(mOrigTrack->NClusters() - 1).GetRow()); // TODO: again, why does this reduce efficiency?
     float y, z;
-    const GPUTPCSliceOutCluster& clo = mOrigTrack->Cluster(mOrigTrack->NClusters() - 1);
-    const ClusterNative& cl = merger->GetConstantMem()->ioPtrs.clustersNative->clustersLinear[clo.GetId()];
-    GPUTPCConvertImpl::convert(*merger->GetConstantMem(), iSlice, clo.GetRow(), cl.getPad(), cl.getTime(), lastX, y, z);
+    const GPUTPCSliceOutCluster* clo;
+    int row, index;
+    if (merger->Param().rec.mergerReadFromTrackerDirectly) {
+      const GPUTPCTracker& trk = merger->GetConstantMem()->tpcTrackers[iSlice];
+      const GPUTPCHitId& ic = trk.TrackHits()[mOrigTrack->FirstHitID() + mOrigTrack->NHits() - 1];
+      index = trk.Data().ClusterDataIndex(trk.Data().Row(ic.RowIndex()), ic.HitIndex()) + merger->GetConstantMem()->ioPtrs.clustersNative->clusterOffset[iSlice][0];
+      row = ic.RowIndex();
+    } else {
+      clo = &mOrigTrack->OutTrackCluster(mOrigTrack->NHits() - 1);
+      index = clo->GetId();
+      row = clo->GetRow();
+    }
+    const ClusterNative& cl = merger->GetConstantMem()->ioPtrs.clustersNative->clustersLinear[index];
+    GPUTPCConvertImpl::convert(*merger->GetConstantMem(), iSlice, row, cl.getPad(), cl.getTime(), lastX, y, z);
   }
 
   const int N = 3;
@@ -129,7 +140,7 @@ bool GPUTPCGMSliceTrack::FilterErrors(const GPUTPCGMMerger* merger, int iSlice, 
       float ex = mCosPhi;
       float ey = mSinPhi;
       float ey1 = kdx + ey;
-      if (fabsf(ey1) > maxSinPhi) {
+      if (CAMath::Abs(ey1) > maxSinPhi) {
         if (ey1 > maxSinPhi && ey1 < maxSinPhi + sinPhiMargin) {
           ey1 = maxSinPhi - 0.01;
         } else if (ey1 > -maxSinPhi - sinPhiMargin) {
@@ -257,7 +268,7 @@ bool GPUTPCGMSliceTrack::FilterErrors(const GPUTPCGMMerger* merger, int iSlice, 
   return ok;
 }
 
-bool GPUTPCGMSliceTrack::TransportToX(GPUTPCGMMerger* merger, float x, float Bz, GPUTPCGMBorderTrack& b, float maxSinPhi, bool doCov) const
+GPUd() bool GPUTPCGMSliceTrack::TransportToX(GPUTPCGMMerger* merger, float x, float Bz, GPUTPCGMBorderTrack& b, float maxSinPhi, bool doCov) const
 {
   Bz = -Bz;
   float ex = mCosPhi;
@@ -266,7 +277,7 @@ bool GPUTPCGMSliceTrack::TransportToX(GPUTPCGMMerger* merger, float x, float Bz,
   float dx = x - mX;
   float ey1 = k * dx + ey;
 
-  if (fabsf(ey1) > maxSinPhi) {
+  if (CAMath::Abs(ey1) > maxSinPhi) {
     return 0;
   }
 
@@ -326,7 +337,7 @@ bool GPUTPCGMSliceTrack::TransportToX(GPUTPCGMMerger* merger, float x, float Bz,
   float h4c44 = h4 * c44;
   float n7 = c31 + dS * c33;
 
-  if (fabsf(mQPt) > 6.66) // Special treatment for low Pt
+  if (CAMath::Abs(mQPt) > 6.66) // Special treatment for low Pt
   {
     b.SetCov(0, CAMath::Max(mC0, mC0 + h2 * h2c22 + h4 * h4c44 + 2.f * (h2 * c20ph4c42 + h4 * c40))); // Do not decrease Y cov for matching!
     float C2tmp = dS * 2.f * c31;
@@ -349,7 +360,7 @@ bool GPUTPCGMSliceTrack::TransportToX(GPUTPCGMMerger* merger, float x, float Bz,
   return 1;
 }
 
-bool GPUTPCGMSliceTrack::TransportToXAlpha(GPUTPCGMMerger* merger, float newX, float sinAlpha, float cosAlpha, float Bz, GPUTPCGMBorderTrack& b, float maxSinPhi) const
+GPUd() bool GPUTPCGMSliceTrack::TransportToXAlpha(GPUTPCGMMerger* merger, float newX, float sinAlpha, float cosAlpha, float Bz, GPUTPCGMBorderTrack& b, float maxSinPhi) const
 {
   //*
 
@@ -411,7 +422,7 @@ bool GPUTPCGMSliceTrack::TransportToXAlpha(GPUTPCGMMerger* merger, float newX, f
   float dx = newX - x;
   float ey1 = k * dx + ey;
 
-  if (fabsf(ey1) > maxSinPhi) {
+  if (CAMath::Abs(ey1) > maxSinPhi) {
     return 0;
   }
 
@@ -473,7 +484,7 @@ bool GPUTPCGMSliceTrack::TransportToXAlpha(GPUTPCGMMerger* merger, float newX, f
   return 1;
 }
 
-void GPUTPCGMSliceTrack::CopyBaseTrackCov()
+GPUd() void GPUTPCGMSliceTrack::CopyBaseTrackCov()
 {
   const float* GPUrestrict() cov = mOrigTrack->Param().mC;
   mC0 = cov[0];
