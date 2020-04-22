@@ -173,6 +173,7 @@ Int_t AliEMCALTriggerTRU::L0()
   ma = (ma >> 8) & 0x7f;
   
   AliDebug(999,Form("=== TRU fw version %x ===",fDCSConfig->GetFw()));
+  AliDebug(999,Form("=== TRU Segmentation %x ===",fDCSConfig->GetSegmentation()));
   AliDebug(999,Form("=== TRU L0 THR = %d ===",fDCSConfig->GetGTHRL0()));
   
   if (fDCSConfig->GetGTHRL0() <= 1) { // Checking for the null threshold
@@ -180,7 +181,8 @@ Int_t AliEMCALTriggerTRU::L0()
     return 0; // Don't use trigger if threshold is 0 or 1.
   }
 
-  if (fDCSConfig->GetFw() < 0x4d) {
+//  if (fDCSConfig->GetFw() < 0x4d) { // FW information not saved in OCDB
+  if (fDCSConfig->GetSegmentation() == 1) {
     return L0v0(nb, ma);
   } else {
     return L0v1(nb, ma);
