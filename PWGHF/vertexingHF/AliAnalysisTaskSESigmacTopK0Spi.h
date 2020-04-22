@@ -140,7 +140,9 @@ class AliAnalysisTaskSESigmacTopK0Spi : public AliAnalysisTaskSE
     if(fHistoMCNch) delete fHistoMCNch;
     fHistoMCNch = new TH1F(*h);
   }
-    
+
+  void SetLcAnalysis(Bool_t a) { isLcAnalysis = a;}
+  
   void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
   Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
@@ -558,9 +560,10 @@ class AliAnalysisTaskSESigmacTopK0Spi : public AliAnalysisTaskSE
   Int_t fNRotations;                      // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
   Double_t fMinAngleForRot;               //
   Double_t fMaxAngleForRot;               //
+  Bool_t isLcAnalysis;                    /// fill tree with only Lc candidates
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSESigmacTopK0Spi, 1); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSESigmacTopK0Spi, 2); /// class for Sc ->pi Lc->p K0
   /// \endcond    
 };
 
