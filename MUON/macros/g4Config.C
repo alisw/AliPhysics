@@ -51,7 +51,7 @@ void Config(const char* directory="",
       = new TG4RunConfiguration("geomRoot", 
                                 "QGSP_BERT_EMV", 
                                 "specialCuts+stepLimiter",
-                                 true);
+                                 true, false);
 
     geant4 = new TGeant4("TGeant4", "The Geant4 Monte Carlo", runConfiguration);
     cout << "Geant4 has been created." << endl;

@@ -42,11 +42,11 @@ void Config(const char * det)
       = new TG4RunConfiguration("geomRoot", 
                                 "FTFP_BERT_EMV+optical", 
                                 "specialCuts+stackPopper+stepLimiter",
-                                 true);
+                                 true, false);
 //      = new TG4RunConfiguration("geomRootToGeant4",
 //                                "FTFP_BERT_EMV+optical", 
 //                                "specialCuts+specialControls+stackPopper+stepLimiter",
-//                                 true);
+//                                 true, false);
       
     geant4 = new TGeant4("TGeant4", 
                          "The Geant4 Monte Carlo : FTFP_BERT_EMV+optical", 

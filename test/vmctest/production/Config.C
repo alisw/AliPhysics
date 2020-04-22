@@ -396,7 +396,7 @@ void Config()
 	    new TG4RunConfiguration("geomRoot", 
 				    physicsListName[iList], 
 				    "specialCuts+stackPopper+stepLimiter",
-				    true);
+				    true, false);
 	}
       }
       else if(iList>=kListMax/2){//add "optical" PL to HadronPhysicsList
@@ -405,7 +405,7 @@ void Config()
 	    new TG4RunConfiguration("geomRoot", 
 				    Form("%s+optical",physicsListName[iList-kListMax/2]), 
 				    "specialCuts+stackPopper+stepLimiter",
-				    true);
+				    true, false);
 	}
       }
     }

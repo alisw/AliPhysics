@@ -15,7 +15,7 @@ void Config()
     = new TG4RunConfiguration("geomRoot", 
 			      "FTFP_BERT_EMV+optical", 
 			      "specialCuts+stackPopper+stepLimiter",
-			      true);
+			      true, false);
   
   TGeant4 * geant4 = new TGeant4("TGeant4", 
 				 "The Geant4 Monte Carlo : FTFP_BERT_EMV-EMCAL", 
