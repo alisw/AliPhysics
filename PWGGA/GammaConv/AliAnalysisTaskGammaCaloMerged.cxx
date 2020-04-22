@@ -492,7 +492,6 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k7TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k8TeV ||
-             ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2  ||
              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
@@ -525,7 +524,23 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     ptBinsDefClus                             = 1000;
     startPtDefClus                            = 0;
     endPtDefClus                              = 100;
-  } else {
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV){
+    ptBins                                    = 160;
+    startPt                                   = 0;
+    endPt                                     = 400;
+    // pT dependent binning for very high pT (400GeV) analyses
+    for(Int_t i=0; i<ptBins+1;i++){
+      if(i<100)      arrPtBinning[i]          = 1.0*i;
+      else if(i<160) arrPtBinning[i]          = 100.+5*(i-100);
+      else           arrPtBinning[i]          = endPt;
+    }
+    ptBinsLog                                 = 780;
+    startPtLog                                = 10;
+    endPtLog                                  = 400;
+    ptBinsDefClus                             = 800;
+    startPtDefClus                            = 0;
+    endPtDefClus                              = 400;
+  }else {
     for(Int_t i=0; i<ptBins+1;i++){
       arrPtBinning[i]                          = 10.+((endPt-startPt)/ptBins)*i;
     }
@@ -1318,7 +1333,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
             fHistoTrueClusNeutralContamination[iCut]->Sumw2();
             fHistoTrueClusPhotonContamination[iCut]->Sumw2();
             fHistoTrueClusElectronContamination[iCut]->Sumw2();
-            fHistoTrueClusOtherContamination[iCut]->Sumw2(); 
+            fHistoTrueClusOtherContamination[iCut]->Sumw2();
           }
           fHistoTrueClusMultiplePrimPi0PtvsM02[iCut]->Sumw2();
           fHistoTrueClusSecPi0PtvsM02[iCut]->Sumw2();
