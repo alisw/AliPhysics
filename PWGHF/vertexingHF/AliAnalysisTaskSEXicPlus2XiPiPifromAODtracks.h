@@ -169,7 +169,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,8); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,9); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

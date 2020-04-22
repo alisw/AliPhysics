@@ -838,8 +838,25 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   Double_t nSigmaTOFpi2=-9999.;
   Double_t probPion1=-9999.;
   Double_t probPion2=-9999.;
-      
+
+  Float_t statusTPCpi1=0;
+  Float_t statusTPCpi2=0;
+  Float_t statusTOFpi1=0;
+  Float_t statusTOFpi2=0;
+  Float_t nclsTPCPIDpi1=0;
+  Float_t nclsTPCPIDpi2=0;
+  
   if(fAnalCuts->GetIsUsePID()) {
+
+    if(fAnalCuts->GetPidHF()->CheckTPCPIDStatus(part1)) statusTPCpi1=1.;
+    if(fAnalCuts->GetPidHF()->CheckTPCPIDStatus(part2)) statusTPCpi2=1.;
+
+    if(fAnalCuts->GetPidHF()->CheckTOFPIDStatus(part1)) statusTOFpi1=1.;
+    if(fAnalCuts->GetPidHF()->CheckTOFPIDStatus(part2)) statusTOFpi2=1.;
+
+    nclsTPCPIDpi1=part1->GetTPCsignalN();
+    nclsTPCPIDpi2=part2->GetTPCsignalN();
+    
     nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);    
     nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
     nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);      
@@ -966,6 +983,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[56] = xicobj->GetSecondaryVtx()->GetY();
       fCandidateVariables[57] = xicobj->GetSecondaryVtx()->GetZ();
       fCandidateVariables[59] = xicobj->YXicPlus();
+
+      fCandidateVariables[63] = statusTPCpi1;
+      fCandidateVariables[64] = statusTPCpi2;
+      fCandidateVariables[65] = statusTOFpi1;
+      fCandidateVariables[66] = statusTOFpi2;
+
+      fCandidateVariables[67] = nclsTPCPIDpi1;
+      fCandidateVariables[68] = nclsTPCPIDpi2;
       
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
@@ -1028,7 +1053,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 63;
+  Int_t nVar = 69;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1105,6 +1130,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[60]="mcxicsecvertx";
   fCandidateVariableNames[61]="mcxicsecverty";
   fCandidateVariableNames[62]="mcxicsecvertz";
+
+  fCandidateVariableNames[63]="statusTPCPIDp1";
+  fCandidateVariableNames[64]="statusTPCPIDp2";
+  fCandidateVariableNames[65]="statusTOFPIDp1";
+  fCandidateVariableNames[66]="statusTOFPIDp2";
+
+  fCandidateVariableNames[67]="nClsTPCPIDpi1";
+  fCandidateVariableNames[68]="nClsTPCPIDpi2";
   
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1328,7 +1361,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
     AliAODTrack *aodt = (AliAODTrack*)track;
 
     if(!fAnalCuts) continue;
-    if(fAnalCuts->SingleTrkCuts(aodt)){
+    if(fAnalCuts->SingleTrkCuts(aodt,fV1)){
       seleFlags[i]=kTRUE;
       nSeleTrks++;
       fHistoPiPtRef->Fill(aodt->Pt());
@@ -1773,18 +1806,22 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
 	}
 	Bool_t isInAcc=kTRUE;
+	
 	// check GenAcc level
 	if(fAnalCuts){
 	  if(!fAnalCuts->IsInFiducialAcceptance(ptpart,ypart)){ 
 	    isInAcc=kFALSE;
 	  }
 	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
+
 	if (TMath::Abs(ypart)<0.8) {
 	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
-	    if(TMath::Abs(mcpartdau->Eta())>0.8) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);;    
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) istrackIn08=kFALSE;
 	  }
+	  if(istrackIn08)fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);    
 	}
 	
 	if(isInAcc){
