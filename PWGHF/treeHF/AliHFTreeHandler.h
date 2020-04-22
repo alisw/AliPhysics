@@ -276,16 +276,32 @@ class AliHFTreeHandler : public TObject
     float fRgGenJet; //gen Rg
     float fNsdJet; //Nsd
     float fNsdGenJet; //gen Nsd
-    float fPt_motherJet; //Pt_mother
-    float fPt_motherGenJet; //gen Pt_mother
+    float fPt_splittingJet; //Pt_splitting
+    float fPt_splittingGenJet; //gen Pt_splitting
     float fk0Jet; //k0
     float fk0GenJet; //gen k0
+    float fZk0Jet; //Zk0
+    float fZk0GenJet; //gen Zk0
+    float fRk0Jet; //Rk0
+    float fRk0GenJet; //gen Rk0
     float fk1Jet; //k1
     float fk1GenJet; //gen k1
+    float fZk1Jet; //Zk1
+    float fZk1GenJet; //gen Zk1
+    float fRk1Jet; //Rk1
+    float fRk1GenJet; //gen Rk1
     float fk2Jet; //k2
     float fk2GenJet; //gen k2
+    float fZk2Jet; //Zk2
+    float fZk2GenJet; //gen Zk2
+    float fRk2Jet; //Rk2
+    float fRk2GenJet; //gen Rk2
     float fkTJet; //kT
     float fkTGenJet; //gen kT
+    float fZkTJet; //ZkT
+    float fZkTGenJet; //gen ZkT
+    float fRkTJet; //RkT
+    float fRkTGenJet; //gen RkT
     bool  fFillJets; //fill jets
     bool  fDoJetSubstructure; //fill jet substructure
     Double_t fJetRadius; //Jet finding radius
