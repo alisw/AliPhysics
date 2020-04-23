@@ -2744,6 +2744,11 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     else species = IsPIDSelectedMC(track);
     if(species != kPion && species != kKaon && species != kProton) { continue; }
 
+    //check pT ranges
+    if(fFlowPOIsPtBinEdges[species].size() > 0){
+      if(track->Pt() < fFlowPOIsPtBinEdges[species].front() || track->Pt() > fFlowPOIsPtBinEdges[species].back() ) continue;
+    }
+
     // check if only protons should be used
     if(fCutPIDUseAntiProtonOnly && species == kProton && track->Charge() == 1) { continue; }
 
