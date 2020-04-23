@@ -4268,6 +4268,7 @@ TH2F * AliEMCALRecoUtils::GetEMCALChannelRecalibrationFactors(Int_t iSM) const{
     }
     return hist;
   }
+}
 
 
 /*
