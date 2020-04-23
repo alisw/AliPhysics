@@ -1,5 +1,11 @@
+#include <vector>
 #include "TROOT.h"
 #include "TSystem.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamCollConfig.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     TString CentEst = "kInt7",//2
     bool DCAPlots = false,//3
@@ -76,7 +82,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   PDGParticles.push_back(1000010020);
 
   std::vector<bool> closeRejection;
-  std::vector<float> mTBins = {1.14, 1.26, 999.};
+  //std::vector<float> mTBins = {1.14, 1.26, 999.};
+  std::vector<float> mTBins;
+  mTBins.push_back(1.14);
+  mTBins.push_back(1.26);
+  mTBins.push_back(999.);
   std::vector<int> pairQA;
   //pairs:
   // pp             0
@@ -181,6 +191,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   kMax.push_back(3.);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
+
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
@@ -189,7 +200,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetPtQA(true);
   config->SetExtendedQAPairs(pairQA);
   config->SetDeltaEtaMax(0.012); // and here you set the actual values
   config->SetDeltaPhiMax(0.012); // and here you set the actual values
