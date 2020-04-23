@@ -65,6 +65,12 @@ CellEnergy:                                         # Cell Energy correction com
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
+CellSingleChannelCalibration:                       # Cell Single Channel Energy correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
