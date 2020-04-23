@@ -138,6 +138,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
   void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
   void SetIsPPbData(Bool_t flag){ fIsPPbData = flag; }
+  void SetIsPP13TeVData(Bool_t flag){ fIsPP13TeVData = flag; }
 
   void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; fUseMultRatioAsWeight=useWeight; }
   Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
@@ -171,7 +172,10 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
   }
-
+  void SetMultiplVsZProfilePP13TeV(TProfile* hprof, Int_t index){
+    if(fMultEstimatorAvg[index]) delete fMultEstimatorAvg[index];
+    fMultEstimatorAvg[index]=new TProfile(*hprof);
+  }
 
   TProfile* GetEstimatorHistogram(const AliVEvent* event);
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -345,11 +349,12 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   UInt_t fPDGcode; /// PDG code
 
   Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
-  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vas. Z per period
+  TProfile* fMultEstimatorAvg[33]; /// TProfile with mult vas. Z per period
   Double_t fRefMult;   /// refrence multiplcity (period b)
   Bool_t fZvtxCorrectedNtrkEstimator; /// flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
   Bool_t fIsPPData; /// flag for pp data (not checking centrality)
   Bool_t fIsPPbData; /// flag for pPb data (used for multiplicity corrections)
+  Bool_t fIsPP13TeVData; /// flag for pp 13 TeV data (used for multiplicity corrections)
   Bool_t fUseAdditionalCuts;  /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
   Bool_t fUseCutsForTMVA;     /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
   /// these are the pre-selection cuts for the TMVA
@@ -363,7 +368,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   
 
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,28); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,29); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
