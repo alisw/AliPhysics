@@ -1479,7 +1479,7 @@ void AddTask_GammaCaloMerged_pp(
   // EMC7 configs
   } else if (trainConfig == 3920){ // std
     cuts.AddCutMergedCalo("00052113","1111132060032200000","1111132060022700001","0163300000000000"); // std
-  } else if (trainConfig == 3941){ // M02 var 1
+  } else if (trainConfig == 3921){ // M02 var 1
     cuts.AddCutMergedCalo("00052113","1111132060g32200000","1111132060g22700001","0163300000000000"); // exotics from CF
     cuts.AddCutMergedCalo("00052113","1111132060e32200000","1111132060e22700001","0163300000000000"); // exotics F097 TCard 50
     cuts.AddCutMergedCalo("00052113","1111132060g32200000","1111132060g22900001","0163300000000000"); // exotics from CF M02 0.10
