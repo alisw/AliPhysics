@@ -1068,7 +1068,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetPlotCombSigma(CombSigma);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
-  trackCuts->SetFilterBit(256);
+  trackCuts->SetFilterBit(768);
   trackCuts->SetPtRange(0.02, 4.05);
   trackCuts->SetEtaRange(-0.8, 0.8);
   trackCuts->SetNClsTPC(80);
