@@ -1192,7 +1192,27 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPIDStrong(AliAODRecoDecayHF* obj) {
      fPidObjprot->SetMC(kTRUE);
      fPidObjpion->SetMC(kTRUE);
     }
+//load PidResponse for proton and pin, as done in IsSelectedPID
+if(fPidObjprot->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjprot->SetPidResponse(pidResp);
+    }
+    if(fPidObjpion->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjpion->SetPidResponse(pidResp);
+    }
+    if(fPidHF->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidHF->SetPidResponse(pidResp);
+    }
 
+//
     for(Int_t i=0;i<3;i++){
      AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
      if(!track) return 0;
