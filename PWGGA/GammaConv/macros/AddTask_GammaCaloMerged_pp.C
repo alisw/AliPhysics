@@ -1422,8 +1422,13 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 1514){
     cuts.AddCutMergedCalo("0008e113","411790106fe32200000","411790106fe22700001","0163300000000000"); // EG2+DG2
     cuts.AddCutMergedCalo("0008d113","411790106fe32200000","411790106fe22700001","0163300000000000"); // EG1+DG1
+  } else if (trainConfig == 1515){ //TB NL, -30ns, 35ns timing cut, No TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+    cuts.AddCutMergedCalo("00010113","4117901060e32200000","4117901060e22700001","0163300000000000"); // INT7 No TM
+  } else if (trainConfig == 1516){
+    cuts.AddCutMergedCalo("0008e113","4117901060e32200000","4117901060e22700001","0163300000000000"); // EG2+DG2 No TM
+    cuts.AddCutMergedCalo("0008d113","4117901060e32200000","4117901060e22700001","0163300000000000"); // EG1+DG1 No TM
 
-    
+
   // systematics pp 8 TeV no TM
   // MB configs
   } else if (trainConfig == 3900){ // std
