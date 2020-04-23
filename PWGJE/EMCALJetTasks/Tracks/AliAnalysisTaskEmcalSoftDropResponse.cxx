@@ -412,6 +412,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   fHistManager.CreateTH2("hSDUsedChargedPtjvPtcDet", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
   fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcPart", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
   fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcDet", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
   for (auto h : *fHistManager.GetListOfHistograms())
     fOutput->Add(h);
@@ -647,6 +648,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hQANnePtDet", detjet->Pt(), nnedet);
           fHistManager.FillTH2("hQANnePtPart", partjet->Pt(), nnepart);
         }
+        // Monitor jet pt relative to pt-hard of the event
+        if(fPtHard > 0.) fHistManager.FillTH1("hFracPtHardPart", partjet->Pt() / fPtHard);
 
         if(fHasResponseMatrixRooUnfold){
           fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);
