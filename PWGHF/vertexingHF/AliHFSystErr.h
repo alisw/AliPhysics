@@ -38,6 +38,7 @@ class AliHFSystErr : public TNamed
   Double_t GetRawYieldErr(Double_t pt) const;
   Double_t GetTrackingEffErr(Double_t pt) const;
   Double_t GetDataDrivenFDErr(Double_t pt) const;
+  Double_t GetRawYieldFDCorr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
   void  ResetRawYieldErr(Double_t pt, Double_t val){
@@ -403,6 +404,7 @@ class AliHFSystErr : public TNamed
   TH1F *fMCPtShape;       /// MC dNdpt
   TH1F *fPartAntipart;    /// particle=antiparticle
   TH1F *fDataDrivenFD;    /// prompt/FD fraction in case of data-driven analysis
+  TH1F *fRawYieldFDCorr;  /// correlation between raw yield and prompt/FD fraction syst. unc. in case of data-driven analysis
 
   Int_t fRunNumber;        /// Run Number (year)
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
@@ -422,7 +424,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,13);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,14);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

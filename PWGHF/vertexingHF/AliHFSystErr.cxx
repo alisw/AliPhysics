@@ -60,6 +60,7 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fMCPtShape(0),
   fPartAntipart(0),
   fDataDrivenFD(0),
+  fRawYieldFDCorr(0),
   fRunNumber(10),
   fCollisionType(0),
   fCentralityClass("0100"),
@@ -2565,19 +2566,29 @@ void AliHFSystErr::InitNonPromptDplustoKpipi2017pp5TeVML() {
   fCutsEff->SetBinContent(2,1.00);
   fCutsEff->SetBinContent(3,0.10);
   fCutsEff->SetBinContent(4,0.08);
-  for(Int_t i=5;i<=16;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=5;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
 
   // PID efficiency (from prompt analysis)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
-  for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+  for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.00);
 
-  // MC dN/dpt (dummy for the moment)
+  // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+  for(Int_t i=1;i<=16;i++) fMCPtShape->SetBinContent(i,0.01);
 
-  // FD (dummy for the moment)
+  // FD
   fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD",16,0,16);
-  for(Int_t i=1;i<=16;i++) fDataDrivenFD->SetBinContent(i,0);
+  fDataDrivenFD->SetBinContent(1,1.00);
+  fDataDrivenFD->SetBinContent(2,1.00);
+  fDataDrivenFD->SetBinContent(3,0.02);
+  fDataDrivenFD->SetBinContent(4,0.02);
+  for(Int_t i=5;i<=10;i++) fDataDrivenFD->SetBinContent(i,0.03);
+  for(Int_t i=11;i<=12;i++) fDataDrivenFD->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fDataDrivenFD->SetBinContent(i,0.10);
+
+  // Correlation between raw yield and FD syst. unc.
+  fRawYieldFDCorr = new TH1F("fRawYieldFDCorr","fRawYieldFDCorr",16,0,16);
+  for(Int_t i=1;i<=16;i++) fRawYieldFDCorr->SetBinContent(i,0.338);
 
   return;
 }
@@ -2889,7 +2900,7 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
   for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
   for(Int_t i=3;  i<=4;  i++) fRawYield->SetBinContent(i, 0.04); // [2-4]
-  for(Int_t i=5; i<=12; i++) fRawYield->SetBinContent(i, 0.03); // [16-24]
+  for(Int_t i=5; i<=12; i++) fRawYield->SetBinContent(i, 0.03); // [4-12]
 
   // Cuts efficiency
   fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
@@ -2901,13 +2912,19 @@ void AliHFSystErr::InitNonPromptDstoKKpi2017pp5TeVML() {
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
   for(Int_t i=1;  i<=12;  i++) fPIDEff->SetBinContent(i, 0.00); // [0-2]
 
-  // MC dN/dpt (dummy for the moment)
+  // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,0.);
+  for(Int_t i=1; i<=12; i++) fMCPtShape->SetBinContent(i,0.01);
 
-  // FD (dummy for the moment)
+  // FD
   fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD",12,0,12);
-  for(Int_t i=1;i<=16;i++) fDataDrivenFD->SetBinContent(i,0.);
+  for(Int_t i=3;i<=4;i++) fDataDrivenFD->SetBinContent(i,0.02);
+  for(Int_t i=5;i<=8;i++) fDataDrivenFD->SetBinContent(i,0.03);
+  for(Int_t i=9;i<=12;i++) fDataDrivenFD->SetBinContent(i,0.04);
+
+  // Correlation between raw yield and FD syst. unc.
+  fRawYieldFDCorr = new TH1F("fRawYieldFDCorr","fRawYieldFDCorr",12,0,12);
+  for(Int_t i=1;i<=12;i++) fRawYieldFDCorr->SetBinContent(i,0.688);
 
   return;
 }
@@ -10833,11 +10850,33 @@ Double_t AliHFSystErr::GetDataDrivenFDErr(Double_t pt) const {
         err = fDataDrivenFD->GetBinContent(bin);
     }
     else {
-        AliWarning("Histo for data-driven FD histo not found! Setting data-driven FD uncertainty to 0");
+        AliWarning("Histo for data-driven FD not found! Setting data-driven FD uncertainty to 0");
     }
   }
 
   return err;
+}
+//--------------------------------------------------------------------------
+Double_t AliHFSystErr::GetRawYieldFDCorr(Double_t pt) const {
+  //
+  // Get correlation
+  //
+
+  Int_t bin = -1;
+  Double_t corr = 0;
+
+  if(fIsDataDrivenFDAnalysis)
+  {
+    if(fRawYieldFDCorr) {
+        bin = fRawYieldFDCorr->FindBin(pt);
+        corr = fRawYieldFDCorr->GetBinContent(bin);
+    }
+    else {
+        AliWarning("Histo for raw yield and data-driven FD correlation not found! Setting correlation to 0");
+    }
+  }
+
+  return corr;
 }
 //--------------------------------------------------------------------------
 Double_t AliHFSystErr::GetTotalSystErr(Double_t pt,Double_t feeddownErr) const {
@@ -10856,7 +10895,7 @@ Double_t AliHFSystErr::GetTotalSystErr(Double_t pt,Double_t feeddownErr) const {
   if(fPartAntipart) err += GetPartAntipartErr(pt)*GetPartAntipartErr(pt);
 
   if(fIsDataDrivenFDAnalysis)
-    err += GetDataDrivenFDErr(pt)*GetDataDrivenFDErr(pt);
+    err += GetDataDrivenFDErr(pt)*GetDataDrivenFDErr(pt) + 2*GetRawYieldFDCorr(pt)*GetRawYieldErr(pt)*GetDataDrivenFDErr(pt);
   else
     err += feeddownErr*feeddownErr;
 
