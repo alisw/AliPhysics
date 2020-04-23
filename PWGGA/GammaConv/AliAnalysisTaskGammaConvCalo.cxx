@@ -1634,7 +1634,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
 
     if(fDoLightOutput==2 && ((((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) || (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3) || (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4))) {
-        nBinsMinv/=2;
+        nBinsMinv=200;
         if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 &&
             ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
                     ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB )){

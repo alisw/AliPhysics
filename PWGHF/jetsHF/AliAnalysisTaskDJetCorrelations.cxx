@@ -268,9 +268,9 @@ Bool_t AliAnalysisTaskDJetCorrelations::Run()
         return kFALSE;
     }
 
-    TClonesArray *arrayDStartoD0pi=nullptr;
+    TClonesArray *arrayDmesontoDaughters=nullptr;
 
-    // 1. using AOD: Finding the above TClonesArray* arrayDStartoD0pi
+    // 1. using AOD: Finding the above TClonesArray* arrayDmesontoDaughters
     if (!aodEvent && AODEvent() && IsStandardAOD()) {
 
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -284,19 +284,19 @@ Bool_t AliAnalysisTaskDJetCorrelations::Run()
         if(aodHandler->GetExtensions()) {
             AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
             AliAODEvent *aodFromExt = ext->GetAOD();
-            arrayDStartoD0pi=(TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
+            arrayDmesontoDaughters=(TClonesArray*)aodFromExt->GetList()->FindObject(fBranchName.Data());
         }
     }
     else if(aodEvent){
-        arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject(fBranchName.Data());
+        arrayDmesontoDaughters=(TClonesArray*)aodEvent->GetList()->FindObject(fBranchName.Data());
     }
 
     // check #2: if the TClonesArray not found.
-    if (!arrayDStartoD0pi) {
+    if (!arrayDmesontoDaughters) {
         AliInfo(Form("Could not find array %s, skipping the event",fBranchName.Data()));
         //  return;
     }
-    else AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast()));
+    else AliDebug(2, Form("Found %d vertices",arrayDmesontoDaughters->GetEntriesFast()));
 
     // 2. array for MC
     TClonesArray* mcArray = nullptr;
@@ -636,7 +636,7 @@ void AliAnalysisTaskDJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* MCjet,
     Double_t JetPtGen = MCjet->Pt();
     Double_t JetEtaGen = MCjet->Eta();
     Double_t DPtGen = Dgen->Pt();
-    Double_t JetnTrkGen = MCjet->GetNumberOfTracks();//unused variable
+    //Double_t JetnTrkGen = MCjet->GetNumberOfTracks();//unused variable
     AliAODMCParticle* DTrk = (AliAODMCParticle*)Dgen;
     Double_t DYGen = DTrk->Y();
     Int_t pdg = DTrk->GetPdgCode();

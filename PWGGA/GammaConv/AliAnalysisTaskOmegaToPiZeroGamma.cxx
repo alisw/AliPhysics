@@ -2096,8 +2096,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
     if (!particle) continue;
 
-    Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-    if (!isPrimary) continue;
+    // There are nearly no secondary omegas and this check takes a good amount
+    // of time. This is way this is commented out for now.
+    // Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    // if (!isPrimary) continue;
 
     // fill histograms for all true omegas
     if(particle->GetPdgCode() == 223){

@@ -143,13 +143,13 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   
 
   Bool_t          fUseMCInfo;               //! Use MC info
-  Bool_t          fBuildRMEff;              //! MC RM or efficiency studies
-  Bool_t          fUsePythia;               //! Use Pythia info only for MC
-  Bool_t          fMultPythiaHeader;        //! Use Pythia info only, with multiple Pythia events per one MB event
-  Int_t           fPythiaEvent;             //! Pythia event to be analysed, for MC with more than one Pythia event
+  Bool_t          fBuildRMEff;		        //! MC RM or efficiency studies
+  Bool_t          fUsePythia;		        //! Use Pythia info only for MC
+  Bool_t          fMultPythiaHeader;	    //! Use Pythia info only, with multiple Pythia events per one MB event
+  Int_t           fPythiaEvent;			    //! Pythia event to be analysed, for MC with more than one Pythia event
   Bool_t          fUseHijing;               //! Use only Hijing info for MC
-  Bool_t          fUseRejTracks;            //! Reject tracks for JES systematics
-  Double_t        fTrackIneff;              //! Tracking inefficiency for JES systematics
+  Bool_t          fUseRejTracks;	        //! Reject tracks for JES systematics
+  Double_t        fTrackIneff;		        //! Tracking inefficiency for JES systematics
   Bool_t          fUseReco;                 //! use reconstructed tracks when running on MC
   UInt_t          fCandidateType;           //! Dstar or D0
   TString         fCandidateName;           //! Dstar or D0
@@ -169,10 +169,10 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t          fRejectDfromB;            //! reject D mesons coming from a B meson decay (MC)
   Bool_t          fKeepOnlyDfromB;          //! only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;                //!
-  AliAODMCHeader *fMCHeader;                //!
+  AliAODMCHeader *fMCHeader;		        //!
   AliNormalizationCounter *fCounter;        //! AliNormalizationCounter
-  TRandom3	     *fRan;                     //! Random number generator
-  TClonesArray   *fArrayDStartoD0pi;        //! Why not a common array for a D meson going to its own daughters.. e.g. fArrayDmesontoDaughters
+  TRandom3	     *fRan;			            //! Random number generator
+  TClonesArray   *fArrayDmesontoDaughters;  //! Common array for a D meson going to its own daughters
   TClonesArray   *fMCarray;                 //!
   TClonesArray   *fCandidateArray;          //! contains candidates selected by AliRDHFCuts
   TClonesArray   *fSideBandArray;           //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)

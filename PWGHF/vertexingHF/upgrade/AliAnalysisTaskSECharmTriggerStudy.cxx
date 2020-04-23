@@ -617,7 +617,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             }
 
             //fill vector of 2prongs
-            if (fEnable2Prongs)
+            if (fEnable2Prongs || fEnableBeauty3Prongs)
                 FillCharm2Prong(d, issel);
 
             if (fEnableBeauty3Prongs)
@@ -770,7 +770,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             }
 
             //fill vector of 3prongs
-            if(fEnable3Prongs)
+            if(fEnable3Prongs || fEnableBeauty4Prongs)
                 FillCharm3Prong(d, isselDplus, isselDs, isselLc);
 
             if (fEnableBeauty4Prongs)
