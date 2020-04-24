@@ -3,7 +3,7 @@
 
 //**************************************************************************************
 // \class AliAnalysisTaskSECharmTriggerStudy
-// \brief task that produces an output tree for the charm trigger studies
+// \brief task that produces an output tree for the charm and beauty trigger studies
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -301,14 +301,16 @@ private:
     void FillCharm3Prong(AliAODRecoDecayHF3Prong* cand, bool isselDplus, int isselDs, int isselLc);
     void FillDstar(AliAODRecoCascadeHF* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
     void FillCharmCascade(AliAODRecoCascadeHF* cand, AliAODv0* dau, int issel);
-    void FillBeauty3Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF2Prong* dau, bool issel, unsigned short flagsDau);
-    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, unsigned short flagsDau);
+    void FillBeauty3Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF2Prong* dau, bool issel);
+    void FillBeauty4Prong(AliAODRecoDecayHF2Prong* cand, AliAODRecoDecayHF3Prong* dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc);
     void FillGenerated(AliAODMCParticle* part, int origin, int decay, bool aredauinacc);
     bool RecalcOwnPrimaryVertex(AliAODRecoDecayHF* cand);
     void CleanOwnPrimaryVertex(AliAODRecoDecayHF* cand, AliAODVertex* origvtx);
     bool AreDauInAcc(int nProng, int *labDau);
     bool IsInFiducialAcceptance(double pt, double y);
     AliAODVertex* ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, double bField, double dispersion);
+    unsigned short CheckCandTypeCharm2Prong(AliAODRecoDecayHF2Prong* cand, int &genlabel, unsigned short &decay);
+    unsigned short CheckCandTypeCharm3Prong(AliAODRecoDecayHF3Prong* cand, int &genlabel, unsigned short &decay);
 
     TList *fOutput;                             //!<! List of output histograms
     TH1F* fHistNEvents;                         //!<! Histogram for event info
