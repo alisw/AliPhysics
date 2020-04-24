@@ -12,9 +12,11 @@
 // isPPbData : Flag for pPb data, changes the Ntrk bining
 // estimatorFilename, refMult : Ntrk vs z-vtx multiplicity correction file name and average value
 // isFineNtrkBin : gives Ntrk bins of 1 unit from 0-100 (200 for pPb)
+// isPP13TeVData : flag to enable loading tracklet profiles for 2016-17-18 pp @13 TeV datasets (for online Ntrk vs z-vtx correction)
+// histweightName : name of histogram with trkl mult event weights (containing data/MC trkl mult distribution, for runs with useNtrkWeight=kTRUE)
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isFineNtrkBin=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isFineNtrkBin=kFALSE, Bool_t isPP13TeVData=kFALSE, TString histweightName="")
 {
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
@@ -782,13 +784,16 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	if(useNchWeight || useNtrkWeight){
 	  TH1F *hNchPrimaries;
 	  TH1F *hNchMeasured;
-	  if(isPPbData) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCandWeight");
+	  if(isPPbData || isPP13TeVData) {
+	  	if(histweightName.EqualTo("")) histweightName="hNtrUnCorrEvWithCandWeight"; //default name of histogram (bkw compatible)
+	  	hNchPrimaries = (TH1F*)fileCuts->Get(histweightName.Data());
+	  }
 	  else hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
 	  hNchMeasured = (TH1F*)fileCuts->Get("hNchMeasured");
 	  if(hNchPrimaries) {
 	    task->SetUseNchWeight(kTRUE);
 	    task->SetMCNchHisto(hNchPrimaries);
-	    if(isPPbData) task->SetUseNchTrackletsWeight();
+	    if(isPPbData || isPP13TeVData) task->SetUseNchTrackletsWeight();
 	  } else {
 	    Printf("FATAL: Histogram for multiplicity weights not found");
 	    return 0x0;
@@ -799,6 +804,9 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	
 	if(isPPbData) { 
 	  task->SetIsPPbData(kTRUE); 
+	}
+	if(isPP13TeVData) {
+	  task->SetIsPP13TeVData(kTRUE);	
 	}
    
 	if(estimatorFilename.EqualTo("") ) {
@@ -815,7 +823,20 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
 	  task->SetReferenceMultiplcity(refMult);
 
-	  if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
+	  if (isPP13TeVData) {     //Use LHC16-17-18 periods for mult correction - To be loaded all from file 'fileEstimator' (one can also load dummies if wants to run on some periods year only)
+            const Char_t* periodNames[33] = 	{"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p", //2016
+                                     		"LHC17c","LHC17e","LHC17f","LHC17h","LHC17i","LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r", //2017
+                                     		"LHC18b","LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"}; //2018
+            TProfile* multEstimatorAvg[33];
+            for(Int_t ip=0; ip<33; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;
+	      }
+	      task->SetMultiplVsZProfilePP13TeV(multEstimatorAvg[ip],ip);
+            }
+	  } else if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
             const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
             TProfile* multEstimatorAvg[2];
             for(Int_t ip=0; ip<2; ip++) {

@@ -134,6 +134,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fIsPP13TeVData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
@@ -145,7 +146,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   //
   //Default ctor
   //
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
 }
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
@@ -203,6 +204,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fIsPP13TeVData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
@@ -222,7 +224,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(2,AliCFContainer::Class());
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
 
   fCuts->PrintAll();
@@ -243,7 +245,7 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
     fHistoPtWeight = c.fHistoPtWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
-    for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
+    for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
   }
   return *this;
 }
@@ -304,6 +306,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
   fIsPPData(c.fIsPPData),
   fIsPPbData(c.fIsPPbData),
+  fIsPP13TeVData(c.fIsPP13TeVData),
   fUseAdditionalCuts(c.fUseAdditionalCuts),
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
@@ -316,7 +319,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   //
   // Copy Constructor
   //
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
 }
 
 //___________________________________________________________________________
@@ -334,7 +337,7 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
   if (fHistoPtWeight)       delete fHistoPtWeight;
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
-  for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
+  for(Int_t i=0; i<33; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
 }
 
 //_________________________________________________________________________-
@@ -519,10 +522,15 @@ void AliCFTaskVertexingHF::Init()
 
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4];
-  Int_t nProfiles=4;
+  TString period[33];
+  Int_t nProfiles=33;
 
-  if (fIsPPbData) { //if pPb, use only two estimator histos
+  if (fIsPP13TeVData) { //if pp at 13 TeV, use 33 estimator histos
+    period[0] = "LHC16d"; period[1] = "LHC16e"; period[2] = "LHC16g"; period[3] = "LHC16h"; period[4] = "LHC16j"; period[5] = "LHC16k"; period[6] = "LHC16l"; period[7] = "LHC16o"; period[8] = "LHC16p";
+    period[9] = "LHC17c"; period[10] = "LHC17e"; period[11] = "LHC17f"; period[12] = "LHC17h"; period[13] = "LHC17i"; period[14] = "LHC17j"; period[15] = "LHC17k"; period[16] = "LHC17l"; period[17] = "LHC17m"; period[18] = "LHC17o"; period[19] = "LHC17r";       
+    period[20] = "LHC18b"; period[21] = "LHC18d"; period[22] = "LHC18e"; period[23] = "LHC18f"; period[24] = "LHC18g"; period[25] = "LHC18h"; period[26] = "LHC18i"; period[27] = "LHC18k"; period[28] = "LHC18l"; period[29] = "LHC18m"; period[30] = "LHC18n"; period[31] = "LHC18o"; period[32] = "LHC18p";      
+    nProfiles = 33;
+  } else if (fIsPPbData) { //if pPb, use only two estimator histos
     period[0] = "LHC13b"; period[1] = "LHC13c";
     nProfiles = 2;
   } else {        // else assume pp (four histos for LHC10)
@@ -793,11 +801,15 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   fWeight=1.;
   if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
-  if(fUseNchWeight){
+  if(fUseNchWeight) {
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    else fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
-    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
+    if(!fUseTrackletsWeight) {
+    	fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
+    	AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
+    } else {
+    	fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
+    	AliDebug(2,Form("Using Nch weights (with tracklets), TrklMult=%d Weight=%f\n",nTracklets,fWeight));
+    }
   }
   Double_t eventWeight=fWeight;
 
@@ -2202,7 +2214,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
   Double_t weight = pMC>0 ? pMeas/pMC : 0.;
-  if(fUseMultRatioAsWeight)  weight = pMC;
+  if(fUseMultRatioAsWeight)  weight = pMC; //in this case, fHistoMCNch is already the ratio of data/MC!
   return weight;
 }
 //__________________________________________________________________________________________________
@@ -2301,10 +2313,49 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // pp:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  Int_t period = -1;   // pp 7 TeV:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
                        // pPb: 0-LHC13b, 1-LHC13c
+  					   // pp 13 TeV: 0-32, see below
 
-  if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
+  if (fIsPP13TeVData) {    // setting run numbers for LHC16-17-18 at 13 TeV if pp 13 TeV
+  //2016
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378 && runNo<=255469)period = 3;//16h
+    if(runNo>=256146 && runNo<=256420)period = 4;//16j
+    if(runNo>=256504 && runNo<=258537)period = 5;//16k
+    if(runNo>=258883 && runNo<=260187)period = 6;//16l
+    if(runNo>=262395 && runNo<=264035)period = 7;//16o
+    if(runNo>=264076 && runNo<=264347)period = 8;//16p
+  //2017
+    if(runNo>=270531 && runNo<=270667)period = 9;//17c
+    if(runNo>=270822 && runNo<=270830)period = 10;//17e
+    if(runNo>=270854 && runNo<=270865)period = 11;//17f
+    if(runNo>=271868 && runNo<=273103)period = 12;//17h
+    if(runNo>=273591 && runNo<=274442)period = 13;//17i
+    if(runNo>=274593 && runNo<=274671)period = 14;//17j 
+    if(runNo>=274690 && runNo<=276508)period = 15;//17k
+    if(runNo>=276551 && runNo<=278216)period = 16;//17l
+    if(runNo>=278914 && runNo<=280140)period = 17;//17m
+    if(runNo>=280282 && runNo<=281961)period = 18;//17o
+    if(runNo>=282504 && runNo<=282704)period = 19;//17r
+  //2018
+    if(runNo>=284706 && runNo<=285447)period = 20;//18b
+    if(runNo>=285978 && runNo<=286350)period = 21;//18d
+    if(runNo>=286380 && runNo<=286937)period = 22;//18e
+    if(runNo>=287000 && runNo<=287977)period = 23;//18f
+    if(runNo>=288619 && runNo<=288750)period = 24;//18g
+    if(runNo>=288804 && runNo<=288806)period = 25;//18h
+    if(runNo>=288861 && runNo<=288909)period = 26;//18i
+    if(runNo>=289165 && runNo<=289201)period = 27;//18k
+    if(runNo>=289240 && runNo<=289971)period = 28;//18l
+    if(runNo>=290222 && runNo<=292839)period = 29;//18m
+    if(runNo>=293357 && runNo<=293359)period = 30;//18n
+    if(runNo>=293368 && runNo<=293898)period = 31;//18o
+    if(runNo>=294009 && runNo<=294925)period = 32;//18p  
+    if (period<0 || period>32) return 0;
+  } else if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
     if (runNo>195343 && runNo<195484) period = 0;
     if (runNo>195528 && runNo<195678) period = 1;
     if (period<0 || period>1) return 0;
