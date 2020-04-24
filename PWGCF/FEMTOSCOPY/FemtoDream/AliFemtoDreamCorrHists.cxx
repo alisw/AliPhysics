@@ -1436,7 +1436,7 @@ void AliFemtoDreamCorrHists::FillSameEventmTMultDist(int iHist, float mT, int iM
       AliWarning(WarnMe.Data());
     } else {
       fSameEventmTMultDist[iHist][pos]->Fill(RelK, iMult); 
-      if (fSameEventmTvsMultDist[iHist]){
+      if (fSameEventmTvsMultDist[iHist]&& RelK<= 0.2){
         fSameEventmTvsMultDist[iHist]->Fill(mT, iMult);
       }
     }
@@ -1457,7 +1457,7 @@ void AliFemtoDreamCorrHists::FillMixedEventmTMultDist(int iHist, float mT, int i
       AliWarning(WarnMe.Data());
     } else {
       fMixedEventmTMultDist[iHist][pos]->Fill(RelK, iMult); 
-      if (fMixedEventmTvsMultDist[iHist]){
+      if (fMixedEventmTvsMultDist[iHist]&& RelK<= 0.2){
         fMixedEventmTvsMultDist[iHist]->Fill(mT, iMult);
       }   
     }
