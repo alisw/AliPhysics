@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2020/03/21)                      //
+//                         (Last Modified 2020/04/24)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -1278,15 +1278,15 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         if(fParticleSpecies == 3){//for kaon only
             if(fPidStrategy == 0){
-                if( track->Pt() > 0.525 && track->Pt() < 0.6){
-                    if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
-                        isAcceptedTPC = kTRUE;
-                }
-                else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
-                    if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
-                        isAcceptedTPC = kTRUE;
-                }
-                else if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
+//                if( track->Pt() > 0.525 && track->Pt() < 0.6){
+//                    if (TMath::Abs(pid[1]) < 1.)  // nsigma < 1
+//                        isAcceptedTPC = kTRUE;
+//                }
+//                else if( track->Pt() >= 0.6 && track->Pt() < 0.8){
+//                    if(pid[1] > -0.5 && pid[1] < 1.)  // asymmetry cut on nsigma
+//                        isAcceptedTPC = kTRUE;
+//                }
+                if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
                     isAcceptedTPC = kTRUE;
             }
             if(fPidStrategy == 1){
