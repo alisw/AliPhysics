@@ -576,17 +576,21 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistPtTPCInwVsPtTPCselITSref);
   fOutput->Add(fHistPtTPCInwVsPtTPCselSPDany);
 
-  int nbinsSparse[3]={fNPtBins,fNPtBins,fNPtBins};
-  double xminSparse[3]={fMinPt,fMinPt,fMinPt};
-  double xmaxSparse[3]={fMaxPt,fMaxPt,fMaxPt};
-  fHistPtTPCInwVsPtVsPtTrueTPCsel = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCsel","",3,nbinsSparse,xminSparse,xmaxSparse);
-  fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCselITSref","",3,nbinsSparse,xminSparse,xmaxSparse);
+  int nbinsSparse[5]={fNPtBins,fNPtBins,fNPtBins,3,34};
+  double xminSparse[5]={fMinPt,fMinPt,fMinPt,-1.5,0.,};
+  double xmaxSparse[5]={fMaxPt,fMaxPt,fMaxPt,1.5,85.};
+  fHistPtTPCInwVsPtVsPtTrueTPCsel = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCsel","",5,nbinsSparse,xminSparse,xmaxSparse);
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCselITSref","",5,nbinsSparse,xminSparse,xmaxSparse);
   fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(0)->SetTitle("p_{T}^{refit} (GeV/c)");
   fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(1)->SetTitle("p_{T}^{inw} (GeV/c)");
   fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(2)->SetTitle("p_{T}^{true} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(3)->SetTitle("IsPrimary");
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(4)->SetTitle("Prod. radius (cm)");
   fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(0)->SetTitle("p_{T}^{refit} (GeV/c)");
   fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(1)->SetTitle("p_{T}^{inw} (GeV/c)");
   fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(2)->SetTitle("p_{T}^{true} (GeV/c)");
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(3)->SetTitle("IsPrimary");
+  fHistPtTPCInwVsPtVsPtTrueTPCselITSref->GetAxis(4)->SetTitle("Prod. radius (cm)");
   fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCsel);
   fOutput->Add(fHistPtTPCInwVsPtVsPtTrueTPCselITSref);
   
@@ -1022,6 +1026,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Float_t pzgen=-999.;
     Float_t etagen=-999.;
     Float_t phigen=-999.;
+    Float_t prodRad=9999.;
     Int_t hadronSpecies=-1;
     Float_t invptgen=-999.;
     Int_t isPhysPrim=-999;
@@ -1030,7 +1035,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       Bool_t isBG = mcEvent->IsFromSubsidiaryEvent(abstrlabel);
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
-      
+      AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(abstrlabel);
       TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
 	ptgen=part->Pt();
@@ -1038,6 +1043,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	pxgen=part->Px();
 	pygen=part->Py();
 	pzgen=part->Pz();
+	prodRad=TMath::Sqrt(mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv());
 	if(ptgen>0.) invptgen=1./ptgen;
 	etagen=part->Eta();
 	phigen=part->Phi();
@@ -1094,7 +1100,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	if(spdAny) fHistPtTPCInwVsPtTPCselSPDany->Fill(pttrack,pttrack0tpc);
       }
       if(fReadMC && fFillSparses){
-	double arrayForSparse[3]={pttrack,pttrack0tpc,ptgen};
+	double arrayForSparse[5]={pttrack,pttrack0tpc,ptgen,(Float_t)isPhysPrim,prodRad};
 	fHistPtTPCInwVsPtVsPtTrueTPCsel->Fill(arrayForSparse);
 	if(itsRefit) fHistPtTPCInwVsPtVsPtTrueTPCselITSref->Fill(arrayForSparse);
       }
