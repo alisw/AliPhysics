@@ -193,7 +193,7 @@ Bool_t                          AliReducedVarManager::fgOptionCalibrateVZEROqVec
 Bool_t                          AliReducedVarManager::fgOptionRecenterVZEROqVec = kFALSE;
 Bool_t                          AliReducedVarManager::fgOptionRecenterTPCqVec = kFALSE;
 Bool_t                          AliReducedVarManager::fgOptionEventRes = kFALSE;
-TH1F*                           AliReducedVarManager::fgpT_reweight_centrality_0_10=0x0;
+TH1F*                           AliReducedVarManager::fgReweightMCpt=0x0;
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
   TObject()
@@ -1390,7 +1390,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    values[kPxMC] = p->MCmom(0);
    values[kPyMC] = p->MCmom(1);
    values[kPzMC] = p->MCmom(2);
-   if(fgUsedVars[kPt_weight]) values[kPt_weight] =  calculate_weight_factor(values[kPtMC],values[kCentVZERO]);
+   if(fgUsedVars[kPt_weight]) values[kPt_weight] =  CalculateWeightFactor(values[kPtMC],values[kCentVZERO]);
    
    if(fgUsedVars[kThetaMC]) values[kThetaMC] = p->ThetaMC();
    if(fgUsedVars[kEtaMC]) values[kEtaMC] = p->EtaMC();
@@ -2206,7 +2206,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      values[kPyMC] = pMC.Py();
      values[kPzMC] = pMC.Pz();
      values[kPt_weight]=0.0;
-     if(fgUsedVars[kPt_weight]) values[kPt_weight] =  calculate_weight_factor(pMC.Pt(),,values[kCentVZERO]);
+     if(fgUsedVars[kPt_weight]) values[kPt_weight] =  CalculateWeightFactor(values[kPtMC],values[kCentVZERO]);
      
      if(fgUsedVars[kThetaMC]) values[kThetaMC] = pMC.Theta();
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
@@ -4019,28 +4019,29 @@ void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
   }
 }
 //___________________________________________________________________________________
-void AliReducedVarManager::Set_pT_re_weight(TH1F *pT_centrality_0_10)
+void AliReducedVarManager::SetWeightSpectrum(TH1F *pTspectrum)
 {
-  if(pT_centrality_0_10)
-    fgpT_reweight_centrality_0_10=pT_centrality_0_10;
+  if(pTspectrum){
+    fgReweightMCpt=pTspectrum;
+  }
   else
     {
       cout<< "There is no pT reweight spectra, please double check !!!"<<endl;
     }
 }
 //____________________________________________________________________________________
-Double_t AliReducedVarManager::calculate_weight_factor( Double_t McpT, Double_t Centrality)
+Double_t AliReducedVarManager::CalculateWeightFactor( Double_t McpT, Double_t Centrality)
 {
   // currently only one pT shape was used, this can be used for pp, more centralitys bins for PbPb
-  if(!fgpT_reweight_centrality_0_10){
+  if(!fgReweightMCpt){
     cout<< "No pT reweight spectra !!"<<endl;
     return 0.0;
   }
 
-  if(McpT<=fgpT_reweight_centrality_0_10->GetBinCenter(fgpT_reweight_centrality_0_10->GetNbinsX()))
+  if(McpT<=fgReweightMCpt->GetBinCenter(fgReweightMCpt->GetNbinsX()))
     {
-      Int_t bin=fgpT_reweight_centrality_0_10->FindBin(McpT);
-      Double_t weight= fgpT_reweight_centrality_0_10->GetBinContent(bin);
+      Int_t bin=fgReweightMCpt->FindBin(McpT);
+      Double_t weight= fgReweightMCpt->GetBinContent(bin);
       return weight;
     }
   else
