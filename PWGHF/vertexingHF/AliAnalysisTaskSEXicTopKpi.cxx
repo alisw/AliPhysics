@@ -174,6 +174,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fhighMass_tree_Fill(2.7)
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
+  ,fMinPtSoftPion(0.05)
 {
   /// Default constructor
 
@@ -266,6 +267,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fhighMass_tree_Fill(2.7)
   ,fStudyScPeakMC(kFALSE)
   ,fhsparseMC_ScPeak(0x0)
+  ,fMinPtSoftPion(0.05)
 {
   /// Default constructor
 
@@ -446,7 +448,7 @@ void AliAnalysisTaskSEXicTopKpi::Init()
     //    fESDtrackCutsSoftPion->SetRequireITSRefit(kTRUE);   
     fESDtrackCutsSoftPion->SetMinNClustersITS(3);
     fESDtrackCutsSoftPion->SetMaxDCAToVertexXY(0.065);
-    fESDtrackCutsSoftPion->SetPtRange(0.05,1.e10);
+    fESDtrackCutsSoftPion->SetPtRange(fMinPtSoftPion,1.e10);
     fESDtrackCutsSoftPion->SetMaxDCAToVertexZ(0.15);
     fESDtrackCutsSoftPion->SetEtaRange(-0.9,+0.9);    
   } 
