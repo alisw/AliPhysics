@@ -71,6 +71,8 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tTOFchi2{-999.},
                                                                                          tTOFclsN{0},
                                                                                          tTRDclsN{0},
+                                                                                         tTRDntracklets{0},
+                                                                                         tTRDNchamberdEdx{0},
                                                                                          tID{0},
                                                                                          tPdgCodeMc{0},
                                                                                          fHistZv{nullptr},
@@ -199,6 +201,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTOFchi2", &tTOFchi2, "tTOFchi2/D");
     fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/I");
     fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
+    fTreeTrack->Branch("tTRDntracklets", &tTRDntracklets, "tTRDntracklets/I");
+    fTreeTrack->Branch("tTRDNchamberdEdx", &tTRDNchamberdEdx, "tTRDNchamberdEdx/I");
     fTreeTrack->Branch("tID", &tID, "tID/I");
     fTreeTrack->Branch("tPdgCodeMc", &tPdgCodeMc, "tPdgCodeMc/I");
   }
@@ -314,6 +318,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTOFchi2 = track->GetTOFchi2();
       tTOFclsN = track->GetTOFclusterN();
       tTRDclsN = track->GetTRDncls();
+      tTRDntracklets = track->GetTRDntracklets();
+      tTRDNchamberdEdx = track->GetTRDNchamberdEdx();
       tID = track->GetID();
       tnsigTPC = fPIDResponse->NumberOfSigmasTPC(track, fgkSpecies[4]);
       tnsigTOF = fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[4]);
