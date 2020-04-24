@@ -179,7 +179,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
           printf("Error! Weights for Ntracklets not correctly loaded!");
           return;
       }
-      ->SetUseNtrklWeight(kTRUE);
+      massD0Task->SetUseNtrklWeight(kTRUE);
       massD0Task->SetHistNtrklWeight(hWeight);
   }
 
