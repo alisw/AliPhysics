@@ -225,7 +225,6 @@ private:
 
   bool fEnableLikeSign;
 
-  TTree *fFileNameTree;        //!
   TObjString fCurrentFileName; //!
 
   std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!

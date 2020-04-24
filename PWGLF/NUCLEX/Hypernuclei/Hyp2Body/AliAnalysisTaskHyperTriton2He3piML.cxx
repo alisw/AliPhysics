@@ -127,7 +127,6 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
       fEnableLikeSign{false},
-      fFileNameTree{nullptr},
       fCurrentFileName{""},
       fSHyperTriton{},
       fSGenericV0{},
@@ -158,11 +157,6 @@ AliAnalysisTaskHyperTriton2He3piML::~AliAnalysisTaskHyperTriton2He3piML()
     fTreeV0 = nullptr;
   }
 
-  if (fFileNameTree)
-  {
-    delete fFileNameTree;
-    fFileNameTree = nullptr;
-  }
 }
 
 void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
@@ -171,16 +165,16 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = fInputHandler->GetPIDResponse();
   fInputHandler->SetNeedField();
-  if (fSaveFileNames)
-  {
-    fFileNameTree = new TTree("fFileNameTree", "Filename tree");
-    fFileNameTree->Branch("Filename", &fCurrentFileName);
-  }
+
 
   OpenFile(2);
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("RCollision", &fRCollision);
   fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
+  if (fSaveFileNames) {
+    fTreeV0->Branch("Filename", &fCurrentFileName);
+    fStoreAllEvents = false;
+  }
   if (fFillTracklet)
     fTreeV0->Branch("RTracklets", &fRTracklets);
 
@@ -225,8 +219,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
-  if (fSaveFileNames)
-    PostData(3, fFileNameTree);
 
   AliPDG::AddParticlesToPdgDataBase();
 } // end UserCreateOutputObjects
@@ -254,9 +246,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   {
     PostData(1, fListHist);
     PostData(2, fTreeV0);
-    if (fSaveFileNames)
-      PostData(3, fFileNameTree);
-    return;
   }
 
   if (fSaveFileNames)
@@ -264,7 +253,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     if (fCurrentFileName.String() != CurrentFileName())
     {
       fCurrentFileName = CurrentFileName();
-      fFileNameTree->Fill();
     }
   }
 
@@ -486,8 +474,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
-  if (fSaveFileNames)
-    PostData(3, fFileNameTree);
 }
 
 void AliAnalysisTaskHyperTriton2He3piML::Terminate(Option_t *) {}
