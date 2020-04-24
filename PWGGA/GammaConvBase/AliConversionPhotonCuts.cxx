@@ -182,6 +182,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fDoPhotonQualitySelectionCut(kFALSE),
   fDoPhotonQualityRejectionCut(kFALSE),
   fPhotonQualityCut(0),
+  fPhotonQualityCutTRD(0),
+  fPhotonQualityCutTOF(0),
   fRandom(0),
   fElectronArraySize(500),
   fElectronLabelArray(NULL),
@@ -361,6 +363,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
   fDoPhotonQualityRejectionCut(ref.fDoPhotonQualityRejectionCut),
   fPhotonQualityCut(ref.fPhotonQualityCut),
+  fPhotonQualityCutTRD(ref.fPhotonQualityCutTRD),
+  fPhotonQualityCutTOF(ref.fPhotonQualityCutTOF),
   fRandom(ref.fRandom),
   fElectronArraySize(ref.fElectronArraySize),
   fElectronLabelArray(NULL),
@@ -1279,20 +1283,35 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
 
   if (photonAOD){
     UChar_t photonQuality = 0;
-      AliAODEvent * aodEvent = dynamic_cast<AliAODEvent*>(event);
-      if(aodEvent) {
-        photonQuality = DeterminePhotonQualityAOD(photonAOD, event);
-      } else {
-        photonQuality = photonAOD->GetPhotonQuality();
-      }
-      if (fDoPhotonQualitySelectionCut && photonQuality != fPhotonQualityCut){
-        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
-        return kFALSE;
-      }
-      if (fDoPhotonQualityRejectionCut && photonQuality == fPhotonQualityCut){
-        if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
-        return kFALSE;
-      }
+    UChar_t photonQualityTOF = 0;
+    UChar_t photonQualityTRD = 0;
+    AliAODEvent * aodEvent = dynamic_cast<AliAODEvent*>(event);
+    if(aodEvent) {
+      photonQuality = DeterminePhotonQualityAOD(photonAOD, event);
+    } else {
+      photonQuality = photonAOD->GetPhotonQuality();
+    }
+    if (fPhotonQualityCutTOF) {
+      photonQualityTOF = DeterminePhotonQualityTOF(photonAOD, event);
+    }
+    if (fPhotonQualityCutTRD) {
+      photonQualityTRD = DeterminePhotonQualityTRD(photonAOD, event);
+    }
+
+
+    // If fPhotonQualityCutTRD == 0, the TRD part has no effect. Otherwise, selection takes place according to fPhotonQualityCutTRD
+    if (fDoPhotonQualitySelectionCut && !(photonQuality == fPhotonQualityCut &&
+                                        (!fPhotonQualityCutTRD || (fPhotonQualityCutTRD && photonQualityTRD == fPhotonQualityCutTRD)) &&
+                                        (!fPhotonQualityCutTOF || (fPhotonQualityCutTOF && photonQualityTOF == fPhotonQualityCutTOF)))){
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
+      return kFALSE;
+    }
+    if (fDoPhotonQualityRejectionCut && (photonQuality == fPhotonQualityCut &&
+                                        (!fPhotonQualityCutTRD || (fPhotonQualityCutTRD && photonQualityTRD == fPhotonQualityCutTRD)) &&
+                                        (!fPhotonQualityCutTOF || (fPhotonQualityCutTOF && photonQualityTOF == fPhotonQualityCutTOF)))){
+      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
+      return kFALSE;
+    }
   }
   cutIndex++; //12
   if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //11
@@ -2603,6 +2622,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
+  if (fPhotonQualityCutTRD || fPhotonQualityCutTOF) printf("\t TRD quality: %d, TOF quality: %d\n", fPhotonQualityCutTRD, fPhotonQualityCutTOF);
   if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
 
 }
@@ -4225,36 +4245,64 @@ Bool_t AliConversionPhotonCuts::SetSharedElectronCut(Int_t sharedElec) {
       fDoPhotonQualitySelectionCut = kFALSE;
       fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
       break;
     case 1:
       fDoSharedElecCut = kTRUE;
       fDoPhotonQualitySelectionCut = kFALSE;
       fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 0;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
       break;
     case 2:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
       fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 1;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
       break;
     case 3:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
       fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 2;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
       break;
     case 4:
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kTRUE;
       fDoPhotonQualityRejectionCut = kFALSE;
       fPhotonQualityCut = 3;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
       break;
     case 5://Cat1 rejection
       fDoSharedElecCut = kFALSE;
       fDoPhotonQualitySelectionCut = kFALSE;
       fDoPhotonQualityRejectionCut = kTRUE;
       fPhotonQualityCut = 1;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 0;
+      break;
+    case 6: // reject TPC-only photons with TOF only
+      fDoSharedElecCut = kFALSE;
+      fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kTRUE;
+      fPhotonQualityCut = 1;
+      fPhotonQualityCutTRD = 0;
+      fPhotonQualityCutTOF = 1;
+      break;
+    case 7: // reject TPC-only photons with TRD only
+      fDoSharedElecCut = kFALSE;
+      fDoPhotonQualitySelectionCut = kFALSE;
+      fDoPhotonQualityRejectionCut = kTRUE;
+      fPhotonQualityCut = 1;
+      fPhotonQualityCutTRD = 1;
+      fPhotonQualityCutTOF = 0;
       break;
     default:
       AliError(Form("Shared Electron Cut not defined %d",sharedElec));
@@ -4712,6 +4760,61 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
   } else {
     return 1;
   }
+  return 0;
+}
+
+///________________________________________________________________________
+UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoton* photon, AliVEvent* eventDummy){
+
+  AliVTrack* negTrack = GetTrack(eventDummy, photon->GetTrackLabelNegative());
+  AliVTrack* posTrack = GetTrack(eventDummy, photon->GetTrackLabelPositive());
+
+  if(!negTrack || !posTrack) {
+      return 0;
+  }
+  if(negTrack->Charge() == posTrack->Charge()){
+      return 0;
+  }
+
+  Int_t nClusterTRDneg = negTrack->GetNcls(2);
+  Int_t nClusterTRDpos = posTrack->GetNcls(2);
+  
+  if (nClusterTRDneg > 1 && nClusterTRDpos > 1){
+    return 3;
+  } else if (nClusterTRDneg > 1 || nClusterTRDpos > 1){
+    return 2;
+  } else {
+    return 1;
+  }
+
+  return 0;
+}
+
+
+///________________________________________________________________________
+UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTOF(AliAODConversionPhoton* photon, AliVEvent* eventDummy){
+
+  AliVTrack* negTrack = GetTrack(eventDummy, photon->GetTrackLabelNegative());
+  AliVTrack* posTrack = GetTrack(eventDummy, photon->GetTrackLabelPositive());
+
+  if(!negTrack || !posTrack) {
+      return 0;
+  }
+  if(negTrack->Charge() == posTrack->Charge()){
+      return 0;
+  }
+
+  Bool_t negTOFSignal = (negTrack->GetStatus() & AliVTrack::kTOFout ) && (negTrack->GetStatus() & AliVTrack::kTIME);
+  Bool_t posTOFSignal = (posTrack->GetStatus() & AliVTrack::kTOFout ) && (posTrack->GetStatus() & AliVTrack::kTIME);
+
+  if (negTOFSignal && posTOFSignal){
+    return 3;
+  } else if (negTOFSignal || posTOFSignal){
+    return 2;
+  } else {
+    return 1;
+  }
+
   return 0;
 }
 
