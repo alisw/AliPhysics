@@ -221,9 +221,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tTracks->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDNtracklets", &tracks.fTRDNtracklets, "fTRDNtracklets/b");
-    tTracks->Branch("fITSChi2Ncl", &tracks.fITSChi2Ncl, "fITSChi2Ncl/F");
-    tTracks->Branch("fTPCChi2Ncl", &tracks.fTPCChi2Ncl, "fTPCChi2Ncl/F");
+    tTracks->Branch("fTRDNTracklets", &tracks.fTRDNTracklets, "fTRDNTracklets/b");
+    tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
+    tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
     tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
     tTracks->Branch("fTOFChi2", &tracks.fTOFChi2, "fTOFChi2/F");
     tTracks->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
@@ -614,10 +614,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
     tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
     tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-    tracks.fTRDNtracklets = track->GetTRDntracklets();
+    tracks.fTRDNTracklets = track->GetTRDntracklets();
 
-    tracks.fITSChi2Ncl = (track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0);
-    tracks.fTPCChi2Ncl = (track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0);
+    tracks.fITSChi2NCl = (track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0);
+    tracks.fTPCChi2NCl = (track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0);
     tracks.fTRDChi2 = track->GetTRDchi2();
     tracks.fTOFChi2 = track->GetTOFchi2();
 
