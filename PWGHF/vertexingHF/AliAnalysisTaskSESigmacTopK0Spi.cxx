@@ -900,10 +900,10 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
   Double_t upedgesAccLcFromSc[nbinsAccLcFromSc] = {50, 19.5, 5.5, 1, 50, 2};
   fhistMCSpectrumAccLcFromSc = new THnSparseF("fhistMCSpectrumAccLcFromSc", "fhistMCSpectrumAccLcFromSc; ptLc; codeLc; Qorigin; yLc; ptSc; ySc", nbinsAccLcFromSc, binsAccLcFromSc, lowedgesAccLcFromSc, upedgesAccLcFromSc); // 
   
-  Int_t nbinsSparseSigma[9] = {25, 400, 400, 20, 25, 2, 1, 2000, 2};
-  Double_t lowEdgesSigma[9] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1, 0};
-  Double_t upEdgesSigma[9] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1, 2};
-  if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp; softPiITSrefit", 9, nbinsSparseSigma, lowEdgesSigma, upEdgesSigma);
+  Int_t nbinsSparseSigma[10] = {25, 400, 400, 20, 25, 2, 1, 200, 2, 2};
+  Double_t lowEdgesSigma[10] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1, 0, 0};
+  Double_t upEdgesSigma[10] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1, 2, 2};
+  if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp; softPiITSrefit; isSigmacMC", 10, nbinsSparseSigma, lowEdgesSigma, upEdgesSigma);
 
   fOutputSparse = new TList();
   fOutputSparse->SetOwner();
@@ -1867,7 +1867,21 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
     
     if(!fFillTree){
       std::vector<Double_t> inputVars(fNVars);
-      if (fNVars == 11) {
+      if (fNVars == 12) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = signd0;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+	inputVars[10] = ptArmLc;
+	inputVars[11] = alphaArmLc;
+      }
+      else if (fNVars == 11) {
 	inputVars[0] = invmassK0s;
 	inputVars[1] = part->Getd0Prong(0);
 	inputVars[2] = part->Getd0Prong(1);
@@ -2112,8 +2126,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
       //if(TMath::Abs(mass - 2.28646) > fLcMassWindowForSigmaC) return; //Lc mass window selection  
       //AliDebug(2, Form("Good Lc candidate , will loop over %d pions",fnSelSoftPi));
       
-      Double_t pointSigma[9]; //Lcpt, deltam, Lcmass, cosThetaStarSoftPi, Sigmapt, origin, isRotated, bdtresp, softPiITSrefit
-      
+      Double_t pointSigma[10]; //Lcpt, deltam, Lcmass, cosThetaStarSoftPi, Sigmapt, origin, isRotated, bdtresp, softPiITSrefit, isSigmacMC      
       
       pointSigma[0] = part->Pt();
       //pointSigma[2] = part->CosPointingAngle();
@@ -2122,13 +2135,8 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
       pointSigma[6] = 1;
       pointSigma[7] = -1;
       pointSigma[8] = 0;
-      // Bool_t arrayVariableIsFilled = kFALSE;
-      // if(pointS){    
-      //   for(Int_t k = 0; k < 8; k++){
-      // 	pointSigma[k] = pointS[k];
-      //   }
-      //   arrayVariableIsFilled = kTRUE;
-      // }
+      pointSigma[9] = 0;
+      if(isFromSigmaC) pointSigma[9] = 1;
       
       // Loop over soft pions
       Double_t p2 = part->P2();    
@@ -2334,7 +2342,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	      if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) pointSigma[7] = tmva;
 	      if (fUseWeightsLibrary) pointSigma[7] = BDTResponse;
 	      if(fhSparseAnalysisSigma)  {
-		if(!mcpartMum) fhSparseAnalysisSigma->Fill(pointSigma);
+		if(!fUseMCInfo) fhSparseAnalysisSigma->Fill(pointSigma);
 		else {
 		  AliAODTrack *trkd = (AliAODTrack*)part->GetDaughter(0); // Daughter(0) of Cascade is always a proton
 		  AliAODMCParticle* pProt = (AliAODMCParticle*)mcArray->At(TMath::Abs(trkd->GetLabel()));
@@ -2342,14 +2350,14 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		    pointSigma[5] = ptsigmacMC;
 		    pointSigma[0] = ptlambdacMC;
 		    fhSparseAnalysisSigma->Fill(pointSigma);
-		    fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
-		    pointlcsc[0] = ptlambdacMC;
-		    pointlcsc[1] = kRecoPID;
-		    pointlcsc[2] = checkOrigin;
-		    pointlcsc[3] = ylambdacMC;
-		    pointlcsc[4] = ptsigmacMC;
-		    pointlcsc[5] = ysigmacMC;
-		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		    //fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      
+		    //pointlcsc[0] = ptlambdacMC;
+		    //pointlcsc[1] = kRecoPID;
+		    //pointlcsc[2] = checkOrigin;
+		    //pointlcsc[3] = ylambdacMC;
+		    //pointlcsc[4] = ptsigmacMC;
+		    //pointlcsc[5] = ysigmacMC;
+		    //fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 		  }
 		}
 	      }
