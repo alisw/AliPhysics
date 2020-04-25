@@ -127,11 +127,9 @@ AliAnalysisTaskGeorgiosNTuple::~AliAnalysisTaskGeorgiosNTuple() {
 }
 
 void AliAnalysisTaskGeorgiosNTuple::UserCreateOutputObjects() {           
-   cout<<"caca*/*/*/*/*FUCKYEAH I arrive here -1-1-1-1-1"<<endl;
   fGTI = new AliVTrack *[fTrackBufferSize];
 
   if (!fEventCuts) {
-cout<<" whatdafuck "<<endl;
     AliError("No Event cuts \n");
   } else {
     fEventCuts->InitQA();
@@ -205,7 +203,6 @@ cout<<" whatdafuck "<<endl;
   fCascade->GetBach()->SetUseMCInfo(false);
   fCascade->Setv0PDGCode(3122);             //Lambda
 
-cout<<" I arrive here 0"<<endl;
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -277,7 +274,6 @@ if (!fAntiLambda->GetMinimalBooking()) {
     fResults->SetName("Results");
   }
 
-cout<<" I arrive here 1"<<endl;
   //book tree:
   ////////////
   fGeorgiosTree = new TTree("oTTree","a simple TTree");
@@ -342,7 +338,6 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
  fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
-cout<<" I arrive here 2"<<endl;
  PostData(1, fEvtList);
  PostData(2, fLambdaList);
  PostData(3, fAntiLambdaList);
@@ -353,7 +348,6 @@ cout<<" I arrive here 2"<<endl;
  PostData(8, fResults);
  PostData(9, fResultsQA);
  PostData(10, fGeorgiosTree);
-cout<<" I arrive here 3"<<endl;
 }
 
 void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
