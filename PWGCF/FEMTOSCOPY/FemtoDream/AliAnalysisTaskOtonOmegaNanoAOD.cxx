@@ -330,10 +330,10 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserExec(Option_t *option) {
   //fTRunNumber = fInputEvent->GetRunNumber(); // Old method for ESD/AOD (not working for NanoAOD)
 
   //// For NanoAOD LHC16/17/18 starting with filtering train #100:
-  //AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-  //fTRunNumber = nanoHeader->GetVarInt(nanoHeader->GetRunNumberIndex());
+  AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+  fTRunNumber = nanoHeader->GetVarInt(nanoHeader->GetRunNumberIndex());
 
-  fTRunNumber = 0.; //For NanoAOD filtering trains <100, no info
+  //fTRunNumber = 0.; //For NanoAOD filtering trains <100, no info
 
   Double_t PrimVtx[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(PrimVtx);

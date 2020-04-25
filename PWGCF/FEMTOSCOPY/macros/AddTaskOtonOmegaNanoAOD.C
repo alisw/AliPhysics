@@ -138,7 +138,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
   ConfigOtonOmega(CascadeCuts,XiPosCuts,XiNegCuts,XiBachCuts,AntiCascadeCuts,AntiXiPosCuts,AntiXiNegCuts,AntiXiBachCuts,CascadeOmegaCuts,OmegaPosCuts,OmegaNegCuts,OmegaBachCuts,AntiCascadeOmegaCuts,AntiOmegaPosCuts,AntiOmegaNegCuts,AntiOmegaBachCuts,TrackCuts,AntiTrackCuts,iConfigCuts);
 
   //???????????????????
-  if (suffix != "0" && suffix != "999") {
+//  if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
@@ -146,7 +146,7 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
     AntiCascadeCuts->SetMinimalBooking(true);
     CascadeOmegaCuts->SetMinimalBooking(true);
     AntiCascadeOmegaCuts->SetMinimalBooking(true);
-  }
+//  }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto","Femto");
 
@@ -282,9 +282,10 @@ AliAnalysisTaskSE *AddTaskOtonOmegaNanoAOD(
     config->SetPtQA(true);
   }
 
-  if (suffix != "0") {
+//  if (suffix != "0") {
     config->SetMinimalBookingME(true);
-  }
+config->SetMinimalBookingSample(true);
+//  }
   AliAnalysisTaskOtonOmegaNanoAOD* task = new AliAnalysisTaskOtonOmegaNanoAOD("OtonOmegaNanoAOD",true);
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
