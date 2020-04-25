@@ -504,11 +504,6 @@ void AliAnalysisTaskGenMcKno::MakeRTAnalysis(vector<Int_t> &mult){
 		// only primary charged particles
 		pPDG = TMath::Abs(mcPart->GetPdgCode());
 		pidCodeMC = GetPidCode(pPDG);
-		Bool_t isSelectedPart = kTRUE;
-		for(Int_t i=0; i<11; ++i) 
-			if( pidCodeMC == i ) 
-				isSelectedPart = kFALSE;
-		if ( isSelectedPart ) continue;
 		ipt = mcPart->Pt();
 		if(ipt<0.15)continue;
 		phiPart = mcPart -> Phi();
