@@ -23,7 +23,8 @@ public:
     virtual void   			NotifyRun();								  // Implement the Notify run to search for the new parameters at each new runs
 	void 					TwoMuonAna(Int_t *pos, Int_t *neg);			  // Analyses two muons and extracs dimuon information
 	void 					TwoMCMuonAna(Int_t *MCpos, Int_t *MCneg);	  // Analyses two MC muons and extracs MC dimuon information
-	void 					SetPeriod(TString period){fPeriod = period;}  // 0: 2018 q, 1: 2018 r, 2: 2015 o, 90: LHC18l7, 91: LHC16b2
+	void 					SetPeriod(TString period){fPeriod = period;} 
+	void 					SetTrigger(TString trigger){fTrigger = trigger;} 
 	void 					SetMC(Bool_t flag){fIsMC = flag;}	
 	void 					PostAllData();	
 
@@ -31,6 +32,7 @@ public:
 
 private:
 	TString 				fPeriod;
+	TString 				fTrigger;
 	Bool_t 					fIsMC;
 
     AliAODEvent*            fAOD;       		//! input event

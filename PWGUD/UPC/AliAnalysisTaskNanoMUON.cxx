@@ -68,7 +68,7 @@ ClassImp(AliAnalysisTaskNanoMUON) // classimp: necessary for root
 
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(), 
-  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -94,7 +94,7 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
-  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -508,29 +508,31 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     isTriggered = kTRUE; // No trigger required for MC
   } else {
     fTrgRunNum = fAOD->GetRunNumber();
-    // ###### CMUP10+CMUP11 triggers     
-    if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP11-B-NOPF-MUFAST")) {
-      isTriggered = kTRUE;
-      fCMUP11Decision = 1;
-    } else {
-      fCMUP11Decision = 0;
-    }
+    // ###### CMUP10+CMUP11 triggers    
+    if (fTrigger.Contains("CMUP11")){
+      if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP11-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP11Decision = 1;
+      } else {
+        fCMUP11Decision = 0;
+      }
 
-    if ((fPeriod.Contains("15o")) && trigger.Contains("CMUP10-B-NOPF-MUFAST")) {
-      isTriggered = kTRUE;
-      fCMUP10Decision = 1;
-    } else {
-      fCMUP10Decision = 0;
+      if ((fPeriod.Contains("15o")) && trigger.Contains("CMUP10-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP10Decision = 1;
+      } else {
+        fCMUP10Decision = 0;
+      }
     }
-
     // ###### CMUP6 trigger  
-    // if ((fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP6-B-NOPF-MUFAST")) {
-    //   isTriggered = kTRUE;
-    //   fCMUP6Decision = 1;
-    // } else {
-    //   fCMUP6Decision = 0;
-    // }
-
+    if (fTrigger.Contains("CMUP6")){
+      if ((fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP6-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP6Decision = 1;
+      } else {
+        fCMUP6Decision = 0;
+      }
+    }
     // Fill trigger tree
     fTrgTree->Fill();
   }
