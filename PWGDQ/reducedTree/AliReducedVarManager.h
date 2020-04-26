@@ -475,6 +475,7 @@ class AliReducedVarManager : public TObject {
     // Common pair/track variables
     kPt=kNEventVars,
     kPtMC,
+    kPt_weight,
     kPtMCfromLegs,             // MC truth pt computed using the decay leg kinematics
     kP,      
     kPMC,
@@ -842,6 +843,8 @@ class AliReducedVarManager : public TObject {
   static void SetRecenterTPCqVector(Bool_t option);
   static void SetEventResolution(Bool_t option);
   static Int_t GetCorrectedMultiplicity( Int_t estimator = kMultiplicity, Int_t correction = 0, Int_t reference = 0, Int_t smearing = 0 );
+  static void SetWeightSpectrum(TH1F *gReweightMCpt);
+  static Double_t CalculateWeightFactor(Double_t Mcpt, Double_t Centrality);
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -910,6 +913,7 @@ class AliReducedVarManager : public TObject {
   static Bool_t fgOptionRecenterVZEROqVec;         //option to do Q vector recentering for V0
   static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
   static Bool_t fgOptionEventRes;                 //option to divide by resolution
+  static TH1F* fgReweightMCpt;  // ratio between nature pt shape and gernareted pT shape
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
