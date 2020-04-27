@@ -42,6 +42,7 @@ public:
 	void       GetBinByBinCorrections();
 	void       GetMultiplicityDistributions();
 	void       GetMultiplicityDistributionsData();
+	void       GetMB();
 	void       SetPtMin(Double_t val)              {fPtMin = val;}   // Set pT cut for associated particles
 	void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
 	void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
@@ -87,10 +88,12 @@ private:
 	Int_t    fRecLeadIn;
 	Double_t ftrackmult08;
 	Double_t fv0mpercentile;
+	Double_t fv0mpercentilebefvtx;
 	Float_t fdcaxy;
 	Float_t fdcaz;	
 	AliMultSelection *fMultSelection;
-
+	AliMultSelection *fMultSelectionbefvtx;
+       
 	// KNO
 	TH1D * hNchTSGen;
 	TH1D * hNchTSGenTest;
@@ -126,6 +129,7 @@ private:
 	TH1D * hCounter;
 	TH1D * hRefMult08;
 	TH1D * hV0Mmult;
+	TH1D * hV0Mmultbefvtx;
 
 	TH2D * hRefMultvsV0Mmult;
 	TH2D * hV0MmultvsUE;
@@ -141,6 +145,7 @@ private:
 	TH1D * hPhiGen[3];
 	TH1D * hPhiRec[3];
 
+	TH2D * hPtVsV0MData;//V0M
 	TH2D * hDphiVsUEGenTest; //UE->NchTS
 	TH2D * hDphiVsUERecTest;//UE->NchTS
 	TH2D * hDphiVsUEData;//UE->NchTS

@@ -19,11 +19,11 @@
 
 // root headers
 #include <TMath.h>
-#include "TH1I.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH1D.h"
-#include "TH2D.h"
+#include <TH1I.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TFile.h>
 #include <TF2.h>
 #include <TF1.h>
@@ -40,22 +40,22 @@
 #include <TMatrixDSym.h>
 #include <TFitResult.h>
 #include <TLatex.h>
-#include "TClonesArray.h"
-#include "TDatabasePDG.h"
-#include "TLorentzVector.h"
-#include "TParticle.h"
-#include "TObjString.h"
-#include "TList.h"
-#include "TChain.h"
+#include <TClonesArray.h>
+#include <TDatabasePDG.h>
+#include <TLorentzVector.h>
+#include <TParticle.h>
+#include <TObjString.h>
+#include <TList.h>
+#include <TChain.h>
 
 // aliroot headers
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliAODInputHandler.h"
-#include "AliMuonTrackCuts.h"
+#include <AliAnalysisTask.h>
+#include <AliAnalysisManager.h>
+#include <AliAODEvent.h>
+#include <AliMCEvent.h>
+#include <AliMCParticle.h>
+#include <AliAODInputHandler.h>
+#include <AliMuonTrackCuts.h>
 
 // my headers
 #include "AliAnalysisTaskNanoMUON.h"
@@ -68,16 +68,16 @@ ClassImp(AliAnalysisTaskNanoMUON) // classimp: necessary for root
 
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(), 
-  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
   // fZNAEnergy0NH(0), fZNCEnergy0NH(0)
-  fRecTree(0), fRunNum(0), 
+  fRecTree(0), fRunNum(0), fL0inputs(0),
   // fTracklets(0),
-  fZNCEnergy(0), fZNAEnergy(0), 
+  fZNCEnergy(-999), fZNAEnergy(-999), 
   // fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(0), fV0CFiredCells(0), fADADecision(-10), fADCDecision(-10), 
+  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(-10), fV0CFiredCells(-10), fADADecision(-10), fADCDecision(-10), fIsZNAFired(-10), fIsZNCFired(-10),
   // fIR1Map(0), fIR2Map(0), 
   fMuMuPt(0), 
   // fMuMuPhi(0), 
@@ -85,24 +85,25 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
   // fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), fMuQ1(0), fMuQ2(0),
   fGenPart(0), fGenTree(0), fMCRunNum(0), fMCMuMuPt(0),
   // fMCMuMuPhi(0), 
-  fMCMuMuY(0), fMCMuMuM(0) 
-  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0)
+  fMCMuMuY(0), fMCMuMuM(0),
+  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
+  fTrgTree(0), fTrgRunNum(0), fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
-  fMuonTrackCuts(0x0), fPeriod(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0),  fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
   // fZNAEnergy0NH(0), fZNCEnergy0NH(0)
-  fRecTree(0), fRunNum(0), 
+  fRecTree(0), fRunNum(0), fL0inputs(0),
   // fTracklets(0),
-  fZNCEnergy(0), fZNAEnergy(0), 
+  fZNCEnergy(-999), fZNAEnergy(-999), 
   // fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(0), fV0CFiredCells(0), fADADecision(-10), fADCDecision(-10), 
+  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(-10), fV0CFiredCells(-10), fADADecision(-10), fADCDecision(-10), fIsZNAFired(-10), fIsZNCFired(-10),
   // fIR1Map(0), fIR2Map(0), 
   fMuMuPt(0), 
   // fMuMuPhi(0), 
@@ -110,14 +111,16 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysis
   // fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), fMuQ1(0), fMuQ2(0),
   fGenPart(0), fGenTree(0), fMCRunNum(0), fMCMuMuPt(0),
   // fMCMuMuPhi(0), 
-  fMCMuMuY(0), fMCMuMuM(0) 
-  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0)
+  fMCMuMuY(0), fMCMuMuM(0),
+  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
+  fTrgTree(0), fTrgRunNum(0), fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
 {
   // constructor
   DefineInput(0, TChain::Class());   
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TList::Class());   
-  DefineOutput(3, TTree::Class()); 
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class()); 
 }
 //_____________________________________________________________________________
 AliAnalysisTaskNanoMUON::~AliAnalysisTaskNanoMUON()
@@ -128,24 +131,12 @@ AliAnalysisTaskNanoMUON::~AliAnalysisTaskNanoMUON()
   if(fMuonTrackCuts) {delete fMuonTrackCuts;}
   if(fRecTree) {delete fRecTree;}
   if(fGenTree) {delete fGenTree;}
+  if(fTrgTree) {delete fTrgTree;}
   if(fCounterH) {delete fCounterH;}
   if(fNumberMuonsH) {delete fNumberMuonsH;}
   if(fNumberMCMuonsH) {delete fNumberMCMuonsH;}
   // if(fRAbsMuonH) {delete fRAbsMuonH;}
   // if(fMuMuMassPtH) {delete fMuMuMassPtH;}
-
-  // if(fZNATDCTimingH) {delete fZNATDCTimingH;}
-  // if(fZNCTDCTimingH) {delete fZNCTDCTimingH;}
-  // if(fZNAEnergyTimingH) {delete fZNAEnergyTimingH;}
-  // if(fZNCEnergyTimingH) {delete fZNCEnergyTimingH;}
-
-  // if(fZNATDCTimingAllH) {delete fZNATDCTimingAllH;}
-  // if(fZNCTDCTimingAllH) {delete fZNCTDCTimingAllH;}
-  // if(fZNAEnergyTimingAllH) {delete fZNAEnergyTimingAllH;}
-  // if(fZNCEnergyTimingAllH) {delete fZNCEnergyTimingAllH;}
-
-  // if(fZNAEnergy0NH) {delete fZNAEnergy0NH;}
-  // if(fZNCEnergy0NH) {delete fZNCEnergy0NH;}
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
@@ -166,6 +157,7 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   ////////////////////////////////////////
   fRecTree = new TTree("fRecTree", "fRecTree");
   fRecTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
+  fRecTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
   // fRecTree ->Branch("fTracklets", &fTracklets, "fTracklets/I");	
   fRecTree ->Branch("fZNCEnergy", &fZNCEnergy, "fZNCEnergy/F");  
   fRecTree ->Branch("fZNAEnergy", &fZNAEnergy, "fZNAEnergy/F");
@@ -181,6 +173,8 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   fRecTree ->Branch("fV0CFiredCells", &fV0CFiredCells, "fV0CFiredCells/I");
   fRecTree ->Branch("fADADecision", &fADADecision, "fADADecision/I");
   fRecTree ->Branch("fADCDecision", &fADCDecision, "fADCDecision/I");
+  fRecTree ->Branch("fIsZNAFired", &fIsZNAFired, "fIsZNAFired/I");
+  fRecTree ->Branch("fIsZNCFired", &fIsZNCFired, "fIsZNCFired/I");
   // fRecTree ->Branch("fIR1Map", &fIR1Map);
   // fRecTree ->Branch("fIR2Map", &fIR2Map);  
   fRecTree ->Branch("fMuMuPt", &fMuMuPt, "fMuMuPt/F");
@@ -222,6 +216,19 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   PostData(3, fGenTree);
 
   ////////////////////////////////////////
+  //Trigger information tree
+  ////////////////////////////////////////
+  fTrgTree = new TTree("fTrgTree", "fTrgTree");
+  if(!fIsMC){
+    fTrgTree ->Branch("fTrgRunNum", &fTrgRunNum, "fTrgRunNum/I");
+    fTrgTree ->Branch("fCMUP6Decision", &fCMUP6Decision, "fCMUP6Decision/I");
+    fTrgTree ->Branch("fCMUP10Decision", &fCMUP10Decision, "fCMUP10Decision/I");
+    fTrgTree ->Branch("fCMUP11Decision", &fCMUP11Decision, "fCMUP11Decision/I");
+    // post data
+  }  
+  PostData(4, fTrgTree);
+
+  ////////////////////////////////////////
   //output histograms
   ////////////////////////////////////////
   fOutputList = new TList();          // this is a list which will contain all  histograms
@@ -244,38 +251,6 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   // fMuMuMassPtH = new TH2F("fMuMuMassPtH", "fMuMuMassPtH", 1500, 0, 150, 150, 0, 15);
   // fOutputList->Add(fMuMuMassPtH);
 
- //  //  ZNA  Energy histogram with at least one hit in the timing window
- //  fZNAEnergyTimingH = new TH1F("fZNAEnergyTimingH", "fZNAEnergyTimingH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNAEnergyTimingH);
- //  //  ZNC  Energy histogram with at least one hit in the timing window
- //  fZNCEnergyTimingH = new TH1F("fZNCEnergyTimingH", "fZNCEnergyTimingH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNCEnergyTimingH);
- //  //  ZNA timing of all hits hits in events with at least one hit in the timing window
- //  fZNATDCTimingH = new TH1F("fZNATDCTimingH", "fZNATDCTimingH", 2200, -1100., 1100.);
- //  fOutputList->Add(fZNATDCTimingH);
- //  //  ZNC timing of all hits hits in events with at least one hit in the timing window
- //  fZNCTDCTimingH = new TH1F("fZNCTDCTimingH", "fZNCTDCTimingH", 2200, -1100., 1100.);
- //  fOutputList->Add(fZNCTDCTimingH);
-
- // //  ZNA  Energy histogram with at least one hit in the timing window
- //  fZNAEnergyTimingAllH = new TH1F("fZNAEnergyTimingAllH", "fZNAEnergyTimingAllH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNAEnergyTimingAllH);
- //  //  ZNC  Energy histogram with at least one hit in the timing window
- //  fZNCEnergyTimingAllH = new TH1F("fZNCEnergyTimingAllH", "fZNCEnergyTimingAllH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNCEnergyTimingAllH);
- //  //  ZNA timing of all hits hits in events with at least one hit in the timing window
- //  fZNATDCTimingAllH = new TH1F("fZNATDCTimingAllH", "fZNATDCTimingAllH", 2200, -1100., 1100.);
- //  fOutputList->Add(fZNATDCTimingAllH);
- //  //  ZNC timing of all hits hits in events with at least one hit in the timing window
- //  fZNCTDCTimingAllH = new TH1F("fZNCTDCTimingAllH", "fZNCTDCTimingAllH", 2200, -1100., 1100.);
- //  fOutputList->Add(fZNCTDCTimingAllH);  
-
- //   //  ZNA  Energy histogram with no hits
- //  fZNAEnergy0NH = new TH1F("fZNAEnergy0NH", "fZNAEnergy0NH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNAEnergy0NH);
- //  //  ZNC  Energy histogram with no hits
- //  fZNCEnergy0NH = new TH1F("fZNCEnergy0NH", "fZNCEnergy0NH", 35000, -10000., 60000.);
- //  fOutputList->Add(fZNCEnergy0NH);
   // post data
   PostData(2, fOutputList);           
 }
@@ -292,6 +267,7 @@ void AliAnalysisTaskNanoMUON::PostAllData()
   PostData(1, fRecTree);
   PostData(2, fOutputList);
   PostData(3, fGenTree);
+  PostData(4, fTrgTree);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
@@ -384,6 +360,68 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   }                                  
   fCounterH->Fill(iSelectionCounter); // AOD event found 2/2
   iSelectionCounter++;
+
+  ////////////////////////////////////////////
+  // Selecting good runs
+  ////////////////////////////////////////////
+  // #####################################################18q#####################################################
+  vector<Int_t> Vector_GoodRuns18q = {    295585, 295586, 295587, 295588, 295589, 295612, 295615, 295665, 295666, 295667,
+                                          295668, 295671, 295673, 295675, 295676, 295677, 295714, 295716, 295717, 295718,
+                                          295719, 295723, 295725, 295753, 295754, 295755, 295758, 295759, 295762, 295763,
+                                          295786, 295788, 295791, 295816, 295818, 295819, 295822, 295825, 295826, 295829,
+                                          295831, 295854, 295855, 295856, 295859, 295860, 295861, 295863, 295881, 295908,
+                                          295909, 295910, 295913, 295936, 295937, 295941, 295942, 295943, 295945, 295947,
+                                          296061, 296062, 296063, 296065, 296066, 296068, 296123, 296128, 296132, 296133,
+                                          296134, 296135, 296142, 296143, 296191, 296192, 296194, 296195, 296196, 296197,
+                                          296198, 296241, 296242, 296243, 296244, 296246, 296247, 296269, 296270, 296273,
+                                          296279, 296280, 296303, 296304, 296307, 296309, 296312, 296377, 296378, 296379, 
+                                          296380, 296381, 296383, 296414, 296419, 296420, 296423, 296424, 296433, 296472, 
+                                          296509, 296510, 296511, 296514, 296516, 296547, 296548, 296549, 296550, 296551,
+                                          296552, 296553, 296615, 296616, 296618, 296619, 296622, 296623                  };
+// #####################################################18r#####################################################
+  vector<Int_t> Vector_GoodRuns18r = {    296690, 296691, 296694, 296749, 296750, 296781, 296784, 296785, 296786, 296787,
+                                          296791, 296793, 296794, 296799, 296836, 296838, 296839, 296848, 296849, 296850,
+                                          296851, 296852, 296890, 296894, 296899, 296900, 296903, 296930, 296931, 296932,
+                                          296934, 296935, 296938, 296941, 296966, 296967, 296968, 296969, 296971, 296975,
+                                          296976, 296979, 297029, 297031, 297035, 297085, 297117, 297118, 297119, 297123, 
+                                          297124, 297128, 297129, 297132, 297133, 297193, 297194, 297196, 297218, 297219, 
+                                          297221, 297222, 297278, 297310, 297312, 297315, 297317, 297363, 297366, 297367, 
+                                          297372, 297379, 297380, 297405, 297408, 297413, 297414, 297415, 297441, 297442, 
+                                          297446, 297450, 297451, 297452, 297479, 297481, 297483, 297512, 297537, 297540, 
+                                          297541, 297542, 297544, 297558, 297588, 297590, 297595                          };
+// #####################################################15o#####################################################
+  vector<Int_t> Vector_GoodRuns15o = {            244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                          245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                          245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                          245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                          245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                          245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                          246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                          246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                          246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                          246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                          246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                          246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                          246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                          246949, 246980, 246982, 246984, 246989, 246991, 246994                          };
+
+  Bool_t IsGoodRun = kFALSE;
+
+  for(auto i : Vector_GoodRuns18q){
+    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
+  }
+  for(auto i : Vector_GoodRuns18r){
+    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
+  }
+  for(auto i : Vector_GoodRuns15o){
+    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
+  }
+  if(!IsGoodRun) {
+    PostAllData();
+    return;
+  }                                  
+  fCounterH->Fill(iSelectionCounter); // Good run selected 3/3
+  iSelectionCounter++;
   
   ////////////////////////////////////////////
   //  MC generated particles analysis
@@ -395,7 +433,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
       PostAllData();
       return;
     }  
-    fCounterH->Fill(iSelectionCounter); // MC generated event found -/3
+    fCounterH->Fill(iSelectionCounter); // MC generated event found -/4
     iSelectionCounter++;
 
     //are there particles at all?
@@ -404,7 +442,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
       PostAllData();
       return;
     } 
-    fCounterH->Fill(iSelectionCounter); // At least one MC generated particle -/4
+    fCounterH->Fill(iSelectionCounter); // At least one MC generated particle -/5
     iSelectionCounter++;
 
     // loop over MC tracks and select muons
@@ -440,9 +478,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
       } 
     }
     // store number of muons
-    if(fIsMC){
-      fNumberMCMuonsH->Fill(nGoodMCPosMuons,nGoodMCNegMuons);
-    }
+    fNumberMCMuonsH->Fill(nGoodMCPosMuons,nGoodMCNegMuons);
 
     ////////////////////////////////////////////
     // two MC muon analysis
@@ -451,7 +487,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
       PostAllData();
       return;
     } 
-    fCounterH->Fill(iSelectionCounter); // exactly one positive and one negative MC generated muons -/5
+    fCounterH->Fill(iSelectionCounter); // exactly one positive and one negative MC generated muons -/6
     iSelectionCounter++;
     TwoMCMuonAna(idxMCPosMuons,idxMCNegMuons);
     fGenTree->Fill();
@@ -461,22 +497,56 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   ////////////////////////////////////////////
   //  Trigger information
   ////////////////////////////////////////////
-  // in 2015 o and 2018 q,r:  CMUP11-B-NOPF-MUFAST,
-  // in 2015 o : CMUP10-B-NOPF-MUFAST, 
+  // in 2018 q,r : CMUP6-B-NOPF-MUFAST = *0VBA 0MUL ,  
+  // in 2018 q,r and 2015 o:  CMUP11-B-NOPF-MUFAST = *0VBA *0UBA *0UBC 0MUL,
+  // in 2015 o : CMUP10-B-NOPF-MUFAST = = *0VBA *0UBA *0UBC 0MSL , 
   TString trigger = fAOD->GetFiredTriggerClasses();
+  
   Bool_t isTriggered = kFALSE;
-  if (fIsMC) isTriggered = kTRUE; // No trigger required for MC
-  if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) &&  trigger.Contains("CMUP11-B-NOPF-MUFAST")) isTriggered = kTRUE;
-  if ((fPeriod.Contains("15o")) &&  trigger.Contains("CMUP10-B-NOPF-MUFAST")) isTriggered = kTRUE;  
+
+  if (fIsMC) {
+    isTriggered = kTRUE; // No trigger required for MC
+  } else {
+    fTrgRunNum = fAOD->GetRunNumber();
+    // ###### CMUP10+CMUP11 triggers    
+    if (fTrigger.Contains("CMUP11")){
+      if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP11-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP11Decision = 1;
+      } else {
+        fCMUP11Decision = 0;
+      }
+
+      if ((fPeriod.Contains("15o")) && trigger.Contains("CMUP10-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP10Decision = 1;
+      } else {
+        fCMUP10Decision = 0;
+      }
+    }
+    // ###### CMUP6 trigger  
+    if (fTrigger.Contains("CMUP6")){
+      if ((fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP6-B-NOPF-MUFAST")) {
+        isTriggered = kTRUE;
+        fCMUP6Decision = 1;
+      } else {
+        fCMUP6Decision = 0;
+      }
+    }
+    // Fill trigger tree
+    fTrgTree->Fill();
+  }
+
   if (!isTriggered) {
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); // right trigger found 3/6
+  fCounterH->Fill(iSelectionCounter); // right trigger found 4/7
   iSelectionCounter++;
 
-  // get the run number
-  fRunNum = fAOD ->GetRunNumber();
+  // get the run number and trigger inputs
+  fRunNum = fAOD->GetRunNumber();
+  fL0inputs = fAOD->GetHeader()->GetL0TriggerInputs();
   
   ////////////////////////////////////////////
   //  find muons
@@ -487,7 +557,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); // At least one track 4/7
+  fCounterH->Fill(iSelectionCounter); // At least one track 5/8
   iSelectionCounter++;
 
   // loop over tracks and select good muons
@@ -524,23 +594,23 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); // exactly one positive and one negative muons 5/8
+  fCounterH->Fill(iSelectionCounter); // exactly one positive and one negative muons 6/9
   iSelectionCounter++;
   TwoMuonAna(idxPosMuons,idxNegMuons);
 
   ////////////////////////////////////////////
   // info to determine exclusivity
   ////////////////////////////////////////////
-  // //  SPD
+  // ---SPD
   // fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
 
-  //  ZDC 
+  // ---ZDC 
   AliAODZDC *dataZDC = dynamic_cast<AliAODZDC*>(fAOD->GetZDCData());
   if(!dataZDC) {
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); // ZDC info is present 6/9
+  fCounterH->Fill(iSelectionCounter); // ZDC info is present 7/10
   iSelectionCounter++;
 
   fZNAEnergy = dataZDC->GetZNATowerEnergy()[0];
@@ -551,17 +621,17 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
   // for (Int_t i=0;i<4;i++) fZPATDC[i] = dataZDC->GetZPATDCm(i);
   // for (Int_t i=0;i<4;i++) fZPCTDC[i] = dataZDC->GetZPCTDCm(i);
- 
-  // Bool_t isZNAfired = kFALSE;
-  // Bool_t isZNCfired = kFALSE;
-  // Bool_t isZNAfiredAll = kTRUE;
-  // Bool_t isZNCfiredAll = kTRUE;
 
-  // for (Int_t iZDC=0; iZDC<4 ; iZDC++) {
-  //   // a tleast one ZDC hit in the timing window
-  //   if ( (!isZNAfired) && (fZNATDC[iZDC]>-2.) && (fZNATDC[iZDC]<2.) ) isZNAfired = kTRUE;
-  //   if ( (!isZNCfired) && (fZNCTDC[iZDC]>-2.) && (fZNCTDC[iZDC]<2.) ) isZNCfired = kTRUE;
-  //   // all ZDC hits in the timing window
+  // at least one ZDC hit in the timing window
+  fIsZNAFired = 0;
+  fIsZNCFired = 0;
+  for (Int_t i=0;i<4;i++){
+    if ( (fZNATDC[i]>-2.) && (fZNATDC[i]<2.) ) fIsZNAFired = 1;
+    if ( (fZNCTDC[i]>-2.) && (fZNCTDC[i]<2.) ) fIsZNCFired = 1;  
+  }
+
+  // ---Checks for ZDC informations
+  // all ZDC hits in the timing window
   //   if (fZNATDC[iZDC] > -999.){
   //     if ((fZNATDC[iZDC]<-2.) || (fZNATDC[iZDC]>2.)) isZNAfiredAll = kFALSE;
   //   }
@@ -594,13 +664,13 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   //   if(isZNCfiredAll) fZNCTDCTimingAllH->Fill(fZNATDC[iZDC]);
   // }
 
-  // V0
+  // ---V0
   AliVVZERO *dataVZERO = dynamic_cast<AliVVZERO*>(fAOD->GetVZEROData());
   if(!dataVZERO) {
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); //  V0 info 7/10
+  fCounterH->Fill(iSelectionCounter); //  V0 info 8/11
   iSelectionCounter++;
 
   fV0ADecision = dataVZERO->GetV0ADecision();
@@ -622,13 +692,13 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   fV0CFiredCells = nV0CFiredCells;
   fV0AFiredCells = nV0AFiredCells;
 
-  // AD
+  // ---AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
   if(!dataAD){
     PostAllData();
     return;
   } 
-  fCounterH->Fill(iSelectionCounter); //  AD info 8/11
+  fCounterH->Fill(iSelectionCounter); //  AD info 9/12
   iSelectionCounter++;
 
   fADADecision = dataAD->GetADADecision();

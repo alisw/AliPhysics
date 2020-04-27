@@ -148,9 +148,18 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAConstPtNe", "p_{t} of neutral constituents; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
   fHistos->CreateTH2("hQAConstPtChMax", "p_{t} of max charged constituents; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350, 0., 350., 350., 0., 350.);
   fHistos->CreateTH2("hQAConstPtNeMax", "p_{t} of max neutral constituents; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
-  fHistos->CreateTH2("hQAEtaPhi", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
-  fHistos->CreateTH2("hQAEtaPhiConstCh", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
-  fHistos->CreateTH2("hQAEtaPhiConstNe", "eta-phi histogram for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhi", "#eta vs. #phi for selected jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiConstCh", "#eta vs. #phi for charged constituents; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiConstNe", "#eta vs. #phi for neutral constituents; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiMaxConstCh", "#eta vs. #phi for max charged constituents; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQAEtaPhiMaxConstNe", "#eta vs. #phi for max neutral constituents; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistos->CreateTH2("hQADeltaRCharged", "#DeltaR vs. p_{t,jet} of charged constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1.);
+  fHistos->CreateTH2("hQADeltaRNeutral", "#DeltaR vs. p_{t,jet} of neutral constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
+  fHistos->CreateTH2("hQADeltaRMaxCharged", "#DeltaR vs. p_{t,jet} of charged constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1.);
+  fHistos->CreateTH2("hQADeltaRMaxNeutral", "#DeltaR vs. p_{t,jet} of neutral constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
+  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
+  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -234,6 +243,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     // removed in order to reduce the memory consumption.
     fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
     fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
+    TVector3 jetvec(j->Px(), j->Py(), j->Pz());
     if(clusters){
       auto leadcluster = j->GetLeadingCluster(clusters->GetArray());
       if(leadcluster) {
@@ -241,6 +251,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
         fHistos->FillTH2("hQAZnePt", ptjet, j->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()), weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, ptvec.Pt(), weight);
+        fHistos->FillTH2("hQAEtaPhiMaxConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
+        fHistos->FillTH2("hQADeltaRMaxNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
       } else {
         fHistos->FillTH2("hQAZnePt", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtNeMax", ptjet, 0., weight);
@@ -251,6 +263,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         cluster->GetMomentum(ptvec, fVertex,(AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
         fHistos->FillTH2("hQAConstPtNe", ptjet, ptvec.Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
+        fHistos->FillTH2("hQADeltaRNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
       }
     }
     if(tracks){
@@ -258,6 +271,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
       if(leadingtrack) {
         fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()), weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, leadingtrack->Pt(), weight);
+        fHistos->FillTH2("hQAEtaPhiMaxConstCh", leadingtrack->Eta(), TVector2::Phi_0_2pi(leadingtrack->Phi()));
+        fHistos->FillTH2("hQADeltaRMaxCharged", ptjet, j->DeltaR(leadingtrack));
       } else {
         fHistos->FillTH2("hQAZchPt", ptjet, 0., weight);
         fHistos->FillTH2("hQAConstPtChMax", ptjet, 0., weight);
@@ -266,10 +281,14 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         auto track = j->Track(ich);
         fHistos->FillTH2("hQAConstPtCh", ptjet, track->Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
+        fHistos->FillTH2("hQADeltaRCharged", ptjet, j->DeltaR(track), weight);
       }
     }
     fHistos->FillTH2("hQANChPt", ptjet, j->GetNumberOfTracks(), weight);
     fHistos->FillTH2("hQANnePt", ptjet, j->GetNumberOfClusters(), weight);
+    fHistos->FillTH2("hQAJetAreaVsJetPt", j->Pt(), j->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNEF", j->NEF(), j->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNConstDet", j->GetNumberOfClusters() + j->GetNumberOfTracks(), j->Area(), weight);
   }
 
   double maxdata[6];

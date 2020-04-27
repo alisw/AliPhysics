@@ -1,13 +1,7 @@
-#include <vector>
 #include "TROOT.h"
 #include "TSystem.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisManager.h"
-#include "AliFemtoDreamEventCuts.h"
-#include "AliFemtoDreamTrackCuts.h"
-#include "AliFemtoDreamCollConfig.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
-    TString CentEst = "kInt7",//2
+    TString CentEst = "kINT7",//2
     bool DCAPlots = false,//3
     bool CombSigma = false,//4
     bool ContributionSplitting = false,//5,
@@ -222,7 +216,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
 
   AliAnalysisTaskFemtoDreamDeuteron *task =
     new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);
-  if (CentEst == "kInt7") {
+  if (CentEst == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
   } else if (CentEst == "kHM") {
@@ -256,7 +250,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   mgr->ConnectInput(task, 0, cinput);
 
   TString addon = "";
-  if (CentEst == "kInt7") {
+  if (CentEst == "kINT7") {
     addon += "MB";
   } else if (CentEst == "kHM") {
     addon += "HM";

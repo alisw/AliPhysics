@@ -1,5 +1,5 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
-    bool isMC=false, bool MCtemplatefit=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    bool isMC=false, bool MCtemplatefit=false, float fSpherDown=0.7, float ptLow=0.5, float fdPhidEta=0.01,
     TString CentEst="kInt7", const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
@@ -1424,7 +1424,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetMinimalBooking(false);
   }
 
-  evtCuts->SetSphericityCuts(fSpherDown, 1.0);  
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0, ptLow);  
 
 
  

@@ -5,7 +5,7 @@
 #ifndef AliAnalysisTaskNanoMUON_H
 #define AliAnalysisTaskNanoMUON_H
 
-#include "AliAnalysisTaskSE.h"
+#include <AliAnalysisTaskSE.h>
 
 class AliMuonTrackCuts; 	// Include class for standard muon tack cuts
 
@@ -20,10 +20,11 @@ public:
     virtual void            UserCreateOutputObjects();
     virtual void            UserExec(Option_t* option);
     virtual void            Terminate(Option_t* option);
-    virtual void   			NotifyRun();								// Implement the Notify run to search for the new parameters at each new runs
-	void 					TwoMuonAna(Int_t *pos, Int_t *neg);			// Analyses two muons and extracs dimuon information
-	void 					TwoMCMuonAna(Int_t *MCpos, Int_t *MCneg);	// Analyses two MC muons and extracs MC dimuon information
-	void 					SetPeriod(TString period){fPeriod = period;}  // 0: 2018 q, 1: 2018 r, 2: 2015 o, 90: LHC18l7, 91: LHC16b2
+    virtual void   			NotifyRun();								  // Implement the Notify run to search for the new parameters at each new runs
+	void 					TwoMuonAna(Int_t *pos, Int_t *neg);			  // Analyses two muons and extracs dimuon information
+	void 					TwoMCMuonAna(Int_t *MCpos, Int_t *MCneg);	  // Analyses two MC muons and extracs MC dimuon information
+	void 					SetPeriod(TString period){fPeriod = period;} 
+	void 					SetTrigger(TString trigger){fTrigger = trigger;} 
 	void 					SetMC(Bool_t flag){fIsMC = flag;}	
 	void 					PostAllData();	
 
@@ -31,6 +32,7 @@ public:
 
 private:
 	TString 				fPeriod;
+	TString 				fTrigger;
 	Bool_t 					fIsMC;
 
     AliAODEvent*            fAOD;       		//! input event
@@ -43,21 +45,9 @@ private:
 	// TH2F*                   fRAbsMuonH; 		//! distribution of RAbsMuon for selected events
 	// TH2F*                   fMuMuMassPtH; 		//! kinematics of dimouns	
 
-	// TH1F*					fZNAEnergyTimingH;	//! ZNA Energy histogram with at least one hit in the timing window
-	// TH1F*					fZNCEnergyTimingH;	//! ZNC Energy histogram with at least one hit in the timing window
-	// TH1F*					fZNATDCTimingH;	//! ZNA timing of all hits in events with at least one hit in the timing window
-	// TH1F*					fZNCTDCTimingH;	//! ZNC timing of all hits in events with at least one hit in the timing window
-
-	// TH1F*					fZNAEnergyTimingAllH;	//! ZNA Energy histogram with all hits in the timing window
-	// TH1F*					fZNCEnergyTimingAllH;	//! ZNC Energy histogram with all hits in the timing window
-	// TH1F*					fZNATDCTimingAllH;	//! ZNA timing of all hits in events with all hits in the timing window
-	// TH1F*					fZNCTDCTimingAllH;	//! ZNC timing of all hits in events with all hits in the timing window
-
-	// TH1F*					fZNAEnergy0NH;	//! ZNA Energy histogram with no hits
-	// TH1F*					fZNCEnergy0NH;	//! ZNC Energy histogram with no hits
-
-	TTree *fRecTree; 		//! analysis tree
+	TTree *fRecTree; 			//! analysis tree
 	Int_t fRunNum;
+	UInt_t fL0inputs;
 	// Int_t fTracklets;
 	Float_t fZNCEnergy; 
 	Float_t fZNAEnergy;
@@ -73,6 +63,8 @@ private:
 	Int_t fV0CFiredCells; 
 	Int_t fADADecision; 
 	Int_t fADCDecision;
+	Int_t fIsZNAFired;
+	Int_t fIsZNCFired;
   	// TBits fIR1Map;
   	// TBits fIR2Map;
 	Float_t fMuMuPt; 
@@ -89,7 +81,7 @@ private:
 	// Double_t fMuQ2;
 
 	TClonesArray *fGenPart; 	//! MC particle object
-	TTree *fGenTree; 		//! MC tree
+	TTree *fGenTree; 			//! MC tree
 	Int_t fMCRunNum;
 	Float_t fMCMuMuPt; 
 	// Double_t fMCMuMuPhi;
@@ -104,7 +96,11 @@ private:
 	// Double_t fMCMuPDG1; 
 	// Double_t fMCMuPDG2;
 
-
+	TTree *fTrgTree; 			//! trigger info tree
+	Int_t fTrgRunNum;
+	Int_t fCMUP6Decision;
+	Int_t fCMUP10Decision;
+	Int_t fCMUP11Decision;
 
     AliAnalysisTaskNanoMUON(const AliAnalysisTaskNanoMUON&); // not implemented
     AliAnalysisTaskNanoMUON& operator=(const AliAnalysisTaskNanoMUON&); // not implemented

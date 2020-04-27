@@ -35,6 +35,7 @@ mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 mgr->ConnectOutput(task,1,mgr->CreateContainer("fRecTree", TTree::Class(), AliAnalysisManager::kOutputContainer,fileName.Data()));
 mgr->ConnectOutput(task,2,mgr->CreateContainer("fOutputList", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 mgr->ConnectOutput(task,3,mgr->CreateContainer("fGenTree", TTree::Class(), AliAnalysisManager::kOutputContainer,fileName.Data()));
+mgr->ConnectOutput(task,4,mgr->CreateContainer("fTrgTree", TTree::Class(), AliAnalysisManager::kOutputContainer,fileName.Data()));
 
 // in the end, this macro returns a pointer to your task. this will be convenient later on
 // when you will run your analysis in an analysis train on grid

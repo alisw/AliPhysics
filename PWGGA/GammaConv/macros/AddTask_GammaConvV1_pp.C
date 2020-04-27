@@ -1365,8 +1365,9 @@ void AddTask_GammaConvV1_pp(
     //    cuts.AddCutPCM("00010113", "0dm00089f9730000fih0404000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
     cuts.AddCutPCM("00010113", "0dm00089f9730000dih0404000", "0152101500000000"); // alpha meson pT dependent
 
-
-
+  } else if (trainConfig == 689) {   // alpha variations
+    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "015210h500000000"); // alpha pT dependent for lowB
+    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "015210i500000000"); // alpha pT dependent for lowB
 
   // Material studies Ana-----nomB
   } else if (trainConfig == 700) {
@@ -2092,6 +2093,30 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00000113","00200009227000008280400000","0163103100000010");
     cuts.AddCutPCM("00000113","00200009227000008210400000","0163103100000010");
     cuts.AddCutPCM("00000113","00200009227000008220400000","0163103100000010");
+  // ------------------ 13 TeV in multiplicity classes ------------------
+  } else if (trainConfig == 2700) {
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // min bias
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0454000", "0152103500000000"); // cat 2+3 photons
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0464000", "0152103500000000"); // select photons with ITS, TOF
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152103500000000"); // select photons with ITS, TRD
+  } else if (trainConfig == 2701) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // 0 - 10%
+    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0474000", "0152103500000000"); // 10 - 20%
+    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0474000", "0152103500000000"); // 20 - 50%
+    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 50 - 100%
+  } else if (trainConfig == 2702) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // 0 - 1%
+    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0474000", "0152103500000000"); // 1 - 5%
+    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 5 - 10%
+  } else if (trainConfig == 2703) { // Multiplicity selection, ITS + TOF photons
+    cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0464000", "0152103500000000"); // 0 - 10%
+    cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0464000", "0152103500000000"); // 10 - 20%
+    cuts.AddCutPCM("n2510113", "0dm00009f9730000dge0464000", "0152103500000000"); // 20 - 50%
+    cuts.AddCutPCM("n5a10113", "0dm00009f9730000dge0464000", "0152103500000000"); // 50 - 100%
+  } else if (trainConfig == 2704) { // Multiplicity selection, ITS + TOF photons
+    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0464000", "0152103500000000"); // 0 - 1%
+    cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0464000", "0152103500000000"); // 1 - 5%
+    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0464000", "0152103500000000"); // 5 - 10%
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
