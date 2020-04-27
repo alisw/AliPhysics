@@ -14,6 +14,8 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   //Add a task with PHOS tender which works with AOD to the analysis train
   //Author: D.Peressounko
 
+  TString OADBBadMap_TopDirName="phosBadMap";
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddPHOSTender_PCMConfig", "No analysis manager to connect to");
@@ -85,12 +87,24 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
     std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel map using a full OADB file: " <<  specificBCMap.Data() << std::endl;
     std::cout << "=============================================================" << std::endl;
     PHOSSupply->SetPrivateOADBBadMap((char*)specificBCMap.Data());
+    if (specificBCMap.Contains("OADB/PHOS/PHOSTrigBadMaps.root")){
+        OADBBadMap_TopDirName="phosTriggerBadMap";
+        std::cout << "=============================================================" << std::endl;
+        std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "Due to setting a specific bad channel map for Triggers, the Top Dir name is now: " <<  OADBBadMap_TopDirName.Data() << std::endl;
+        PHOSSupply->SetOADBBadMap_TopDir((char*)OADBBadMap_TopDirName.Data());
+    }
   }
   if (forceBadChannelMap==2){
     std::cout << "=============================================================" << std::endl;
     std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel independent of the run: " <<  specificBCMap.Data() << std::endl;
     std::cout << "=============================================================" << std::endl;
     PHOSSupply->ForceUsingBadMap((char*)specificBCMap.Data());
+    if (specificBCMap.Contains("OADB/PHOS/PHOSTrigBadMaps.root")){
+        OADBBadMap_TopDirName="phosTriggerBadMap";
+        std::cout << "=============================================================" << std::endl;
+        std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "Due to setting a specific bad channel map independent of the run for Triggers, the Top Dir name is now: " <<  OADBBadMap_TopDirName.Data() << std::endl;
+        PHOSSupply->SetOADBBadMap_TopDir((char*)OADBBadMap_TopDirName.Data());
+    }
 
   }
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;

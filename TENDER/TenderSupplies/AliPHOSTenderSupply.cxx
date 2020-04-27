@@ -58,6 +58,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
+  ,fOADBBadMap_TopDir("phosBadMap")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -90,6 +91,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
+  ,fOADBBadMap_TopDir("phosBadMap")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -235,18 +237,19 @@ void AliPHOSTenderSupply::InitTender()
   }
   
   //Init Bad channels map
+  if (!fPrivateOADBBadMap.CompareTo("")){fOADBBadMap_TopDir="phosBadMap";}
   if(!fUsePrivateBadMap){
-    AliOADBContainer badmapContainer(Form("phosBadMap"));
+    AliOADBContainer badmapContainer(Form("%s", fOADBBadMap_TopDir.Data()));
     if(fPrivateOADBBadMap.Length()!=0){
       //Load standard bad maps file if no OADB file is force loaded
       AliInfo(Form("using custom bad channel map from %s\n",fPrivateOADBBadMap.Data()));
-       badmapContainer.InitFromFile(fPrivateOADBBadMap.Data(),"phosBadMap");
+       badmapContainer.InitFromFile(fPrivateOADBBadMap.Data(),Form("%s", fOADBBadMap_TopDir.Data()));
     } else {
       //Load force loaded OADB file
       AliInfo("using standard bad channel map from $ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root\n");
-      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root",Form("%s", fOADBBadMap_TopDir.Data()));
     }
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
+    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,Form("%s", fOADBBadMap_TopDir.Data()));
     if(!maps){
       AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;
     }

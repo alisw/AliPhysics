@@ -58,6 +58,7 @@ public:
   void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
   TH2I * GetPHOSBadChannelStatusMap(Int_t iModule) const { return (TH2I*)fPHOSBadMap[iModule] ; }
   void SetPrivateOADBBadMap(char * filename){fPrivateOADBBadMap = filename;}
+  void SetOADBBadMap_TopDir(char * TopDirName){fOADBBadMap_TopDir = TopDirName;}
   
   void   InitTender();
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
@@ -94,6 +95,7 @@ private:
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
   TString fPrivateOADBBadMap ;               //Name of force loaded OADB bad channel map
+  TString fOADBBadMap_TopDir ;               //Name of Top Directory inside of OADB File
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)
@@ -109,7 +111,7 @@ private:
   TString fMCProduction ;                    //Name of MC production
   Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 9); // PHOS tender task
 };
 
 
