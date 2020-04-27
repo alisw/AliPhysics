@@ -209,6 +209,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTRD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTOF(AliAODConversionPhoton*, AliVEvent*);
     Bool_t InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle = -100, Bool_t fill = kTRUE);
     Int_t GetInPlaneOutOfPlaneCut(){return fInPlaneOutOfPlane;}
 
@@ -354,6 +356,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
     Bool_t            fDoPhotonQualityRejectionCut;         ///<
     Int_t             fPhotonQualityCut;                    ///<
+    Int_t             fPhotonQualityCutTRD;                 ///<
+    Int_t             fPhotonQualityCutTOF;                 ///<
     TRandom3          fRandom;                              ///<
     Int_t             fElectronArraySize;                   ///< Size of electron array
     Int_t*            fElectronLabelArray;                  //[fElectronArraySize]
@@ -435,7 +439,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,33)
+    ClassDef(AliConversionPhotonCuts,34)
     /// \endcond
 };
 
