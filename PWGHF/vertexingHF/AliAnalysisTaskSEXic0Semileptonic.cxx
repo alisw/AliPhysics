@@ -54,7 +54,6 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskSEHFTreeCreator.h"
 #include "AliMultSelection.h"
 
 
