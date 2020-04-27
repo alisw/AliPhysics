@@ -1365,8 +1365,9 @@ void AddTask_GammaConvV1_pp(
     //    cuts.AddCutPCM("00010113", "0dm00089f9730000fih0404000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
     cuts.AddCutPCM("00010113", "0dm00089f9730000dih0404000", "0152101500000000"); // alpha meson pT dependent
 
-
-
+  } else if (trainConfig == 689) {   // alpha variations
+    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "015210h500000000"); // alpha pT dependent for lowB
+    cuts.AddCutPCM("00010113", "0dm00089f9730000iih0404000", "015210i500000000"); // alpha pT dependent for lowB
 
   // Material studies Ana-----nomB
   } else if (trainConfig == 700) {
