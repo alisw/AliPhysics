@@ -124,6 +124,9 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
   fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, 200000, 300000);
+  fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, 200000, 300000);
+  fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, 200000, 300000);
   fHistos->CreateTH1("hEventCentrality", "Event centrality", 100., 0., 100.);
   fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
@@ -215,6 +218,9 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   fHistos->FillTH1("hEventCounterAbs", 1.);
   fHistos->FillTH1("hEventCounter", weight);
+  fHistos->FillTH1("hEventCounterRun", fRunNumber);
+  fHistos->FillTH1("hEventCounterRunWeighted", fRunNumber, weight);
+  fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
   fHistos->FillTH1("hEventCentralityAbs", eventCentrality);
   fHistos->FillTH1("hEventCentrality", eventCentrality, weight);
   AliEmcalJet *maxjet(nullptr);
