@@ -106,6 +106,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
 
   fHistos = new THistManager("histosSoftdrop");
   fHistos->CreateTH1("hEventCounter", "EventCounter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterRun", "Runwise event counter", 100000, 200000, 300000);
   fHistos->CreateTH1("hJetPtRaw", "raw jet pt", 300, 0., 300.);
   fHistos->CreateTH2("hZgVsPt", "zg vs pt", *zgBinning, *fPtBinning, "s");
   fHistos->CreateTH2("hRgVsPt", "rg vs pt", *rgBinning,  *fPtBinning, "s");
@@ -118,6 +119,8 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
     fHistos->CreateTH2("hNsdVsPtWeighted", "nsd vs pt (weighted)", *nsdBinning, *fPtBinning, "s");
     fHistos->CreateTH2("hThetagVsPtWeighted", "thetag vs pt (weighted)", *thetagBinning,  *fPtBinning, "s");
     fHistos->CreateTH1("hEventCounterWeighted", "Event counter, weighted", 1., 0.5, 1.5);
+    fHistos->CreateTH1("hEventCounterRunWeighted", "Runwise event counter (weighted)", 100000, 200000, 300000);
+    fHistos->CreateTProfile("hDownscaleFactorsRunwise", "Runwise downscale factors", 100000, 200000, 300000);
     fHistos->CreateTH1("hJetPtRawWeighted", "raw jet pt", 300, 0., 300., "s");
     fHistos->CreateTH1("hSkippedJetsWeighted", "Number of skipped jets (weighted)", *fPtBinning);
   }
@@ -181,7 +184,12 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
   Double_t weight = fUseDownscaleWeight ? 1./GetDownscaleWeight() : 1.;
   Double_t Rjet = jets->GetJetRadius();
   fHistos->FillTH1("hEventCounter", 1.);
-  if(fUseDownscaleWeight) fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+  fHistos->FillTH1("hEventCounterRun", fRunNumber);
+  if(fUseDownscaleWeight) {
+    fHistos->FillTH1("hEventCounterWeighted", 1., weight);
+    fHistos->FillTH1("hEventCounterRunWeighted", fRunNumber, weight);
+    fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
+  }
 
   for(auto jet : jets->accepted()){
     AliDebugStream(2) << "Next accepted jet with pt " << jet->Pt() << std::endl;
