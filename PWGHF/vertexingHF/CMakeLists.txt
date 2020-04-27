@@ -161,6 +161,7 @@ set(SRCS
   AliRDHFCutsKFP.cxx
   AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
   AliAnalysisTaskSESigmacTopK0Spi.cxx
+  AliAnalysisTaskSEXic0pp13TeV.cxx
 )
 
 # Headers from sources
