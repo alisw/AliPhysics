@@ -38,6 +38,7 @@
 #pragma link C++ class  AliEmcalCorrectionComponent+;
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;
+#pragma link C++ class  AliEmcalCorrectionCellSingleChannelCalibration+;
 #pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
 #pragma link C++ class  AliEmcalCorrectionCellEmulateCrosstalk+;
 #pragma link C++ class  AliEmcalCorrectionCellCombineCollections+;
