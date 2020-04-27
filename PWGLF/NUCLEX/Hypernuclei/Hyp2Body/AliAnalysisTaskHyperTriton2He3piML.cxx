@@ -369,7 +369,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       v0->GetPPxPyPz(pP[0], pP[1], pP[2]);
       v0->GetNPxPyPz(nP[0], nP[1], nP[2]);
 
-      FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
+      Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
+      if (!isFilled)
+        continue;
 
       double x{0.}, y{0.}, z{0.};
       v0->GetXYZ(x, y, z);
@@ -387,8 +389,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       lKeyPos = std::abs(v0->GetPosID());
       lKeyNeg = std::abs(v0->GetNegID());
 
-      FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
-
+      Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
+      if (!isFilled)
+        continue;
+      
       double x{v0->AliAODv0::DecayVertexV0X()}, y{v0->AliAODv0::DecayVertexV0Y()}, z{v0->AliAODv0::DecayVertexV0Z()};
       v0part.fDecayX = x - fRCollision.fX;
       v0part.fDecayY = y - fRCollision.fY;
@@ -494,15 +498,15 @@ double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
 }
 template <class T, class M>
 
-void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
-                                                            double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index)
+Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
+                                                              double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index)
 {
   if (!v0)
-    return;
+    return false;
   if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly)
-    return;
+    return false;
   if (fUseOnTheFly && v0->GetOnFlyStatus() == 0)
-    return;
+    return false;
 
   AliVTrack *pTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyPos));
   AliVTrack *nTrack = dynamic_cast<AliVTrack *>(event->GetTrack(lKeyNeg));
@@ -511,12 +515,12 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   if (fEnableLikeSign)
   {
     if (pTrack->GetSign() * nTrack->GetSign() < 0)
-      return;
+      return false;
   }
   else
   {
     if (pTrack->GetSign() * nTrack->GetSign() > 0)
-      return;
+      return false;
   }
 
   if (!pTrack || !nTrack)
@@ -524,30 +528,30 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
             "Could not retreive one of the daughter track");
 
   if (std::abs(nTrack->Eta()) > 0.8 || std::abs(pTrack->Eta()) > 0.8)
-    return;
+    return false;
 
   // TPC refit condition (done during reconstruction for Offline but not for
   // On-the-fly)
   if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit))
-    return;
+    return false;
   if (!(nTrack->GetStatus() & AliVTrack::kTPCrefit))
-    return;
+    return false;
 
   // GetKinkIndex condition
   if (pTrack->GetKinkIndex(0) > 0 || nTrack->GetKinkIndex(0) > 0)
-    return;
+    return false;
 
   // Findable cluster s > 0 condition
   if (pTrack->GetTPCNclsF() <= 0 || nTrack->GetTPCNclsF() <= 0)
-    return;
+    return false;
 
   if ((pTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters) ||
       (nTrack->GetTPCClusterInfo(2, 1) < fMinTPCclusters))
-    return;
+    return false;
 
   if ((pTrack->GetTPCsignalN() < fMinPIDclusters) ||
       (nTrack->GetTPCsignalN() < fMinPIDclusters))
-    return;
+    return false;
 
   // Official means of acquiring N-sigmas
   float nSigmaPosPi = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
@@ -574,13 +578,13 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   bool mHyperTriton = nSigmaPosAbsHe3 < fMaxTPChe3Sigma && nSigmaNegAbsPi < fMaxTPCpiSigma;
   bool aHyperTriton = nSigmaNegAbsHe3 < fMaxTPChe3Sigma && nSigmaPosAbsPi < fMaxTPCpiSigma;
   if (!mHyperTriton && !aHyperTriton)
-    return;
+    return false;
 
   AliVTrack *he3Track = aHyperTriton ? nTrack : pTrack;
   AliVTrack *piTrack = he3Track == nTrack ? pTrack : nTrack;
 
   if (he3Track->Pt() * 2 < fMinHe3pt)
-    return;
+    return false;
 
   const double *he3P = (he3Track == pTrack) ? pP : nP;
   const double *piP = (piTrack == pTrack) ? pP : nP;
@@ -592,10 +596,10 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
 
   float v0Pt = hyperVector.Pt();
   if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
-    return;
+    return false;
 
   if (hyperVector.M() < 2.9 || hyperVector.M() > 3.2)
-    return;
+    return false;
   // Track quality cuts
 
   float he3B[2], piB[2], bCov[3];
@@ -673,7 +677,7 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
     }
   }
   if (isFake && fV0Vertexer.GetMonteCarloStatus())
-    return;
+    return false;
 
   v0part.fPxHe3 = he3Vector.Px();
   v0part.fPyHe3 = he3Vector.Py();
@@ -710,6 +714,7 @@ void AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
   fHistInvMass->Fill(hyperVector.Pt(), hyperVector.M());
 
   he3index = aHyperTriton ? lKeyNeg : lKeyPos;
+  return true;
 }
 
 AliAnalysisTaskHyperTriton2He3piML *AliAnalysisTaskHyperTriton2He3piML::AddTask(bool isMC, TString suffix)
