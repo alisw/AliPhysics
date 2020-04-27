@@ -55,8 +55,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     DeuteronCuts->SetFilterBit(256);
   }
   else if (suffix == "2") {
-    DeuteronCuts->SetFilterBit(256);
-    DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+    DeuteronCuts->SetFilterBit(768);
+    //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
 
   // Track Cuts for Anti-Deuterons
