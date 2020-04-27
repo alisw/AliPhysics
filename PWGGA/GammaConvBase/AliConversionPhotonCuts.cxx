@@ -4786,8 +4786,6 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoto
   } else {
     return 1;
   }
-
-  return 0;
 }
 
 
@@ -4814,8 +4812,6 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTOF(AliAODConversionPhoto
   } else {
     return 1;
   }
-
-  return 0;
 }
 
 ///__________________________________________________________________________________________
