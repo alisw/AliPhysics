@@ -144,6 +144,6 @@
 #pragma link C++ class AliRDHFCutsKFP+;
 #pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromKFP+;
 #pragma link C++ class AliAnalysisTaskSESigmacTopK0Spi+;
-#pragma link C++ class AliAnalysisTaskSEXic0pp13TeV+;
+#pragma link C++ class AliAnalysisTaskSEXic0Semileptonic;
 
 #endif
