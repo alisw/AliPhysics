@@ -149,7 +149,7 @@ public:
   double customNsigma(double mom, double sig);
 
   template <class T, class M>
-  void FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
+  Bool_t FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
                           double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index);
 
   void SetMaxTPCsigmas(float pi, float he3)
