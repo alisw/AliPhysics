@@ -295,6 +295,14 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2(Form("hQANChPtDet_%d", cent), Form("Number of charged constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ch}", cent), 350, 0., 350., 100, 0., 100.);
       fHistManager.CreateTH2(Form("hQANnePtPart_%d", cent), Form("Number of neutral constituents at part. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
       fHistManager.CreateTH2(Form("hQANnePtDet_%d", cent), Form("Number of neutral constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtPart_%d", cent), Form("Jet area vs. jet pt at particle level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtDet_%d", cent), Form("Jet area vs. jet pt at detector level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFPart_%d", cent), Form("Jet area vs. NEF at particle level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFDet_%d", cent), Form("Jet area vs. NEF at detector level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstPart_%d", cent), Form("Jet area vs. number of consituents at particle level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstDet_%d", cent), Form("Jet area vs. number of consituents at detector level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 100, 0., 1.);
+      fHistManager.CreateTH1(Form("hQAMatchingDRAbs_%d", cent), Form("Distance between part. level jet and  det. level jet (%d centrality bin)", cent), 100, 0., 1.);
+      fHistManager.CreateTH1(Form("hQAMatchingDRAbs_%d", cent), Form("Distance between part. level jet and  det. level jet (%d centrality bin)", cent), 100, 0., 1.);
     }
   }
   else
@@ -405,13 +413,41 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fHistManager.CreateTH2("hQANChPtDet", "Number of charged constituents at det. level; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
     fHistManager.CreateTH2("hQANnePtPart", "Number of neutral constituents at part. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
     fHistManager.CreateTH2("hQANnePtDet", "Number of neutral constituents at det. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
+    fHistManager.CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+    fHistManager.CreateTH1("hQAMatchingDRAbs", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
+    fHistManager.CreateTH1("hQAMatchingDRel", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
   }
 
   // a bit of QA stuff
-  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcPart", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
-  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcDet", "p_{t,j} vs. p_{t,const} for tracks used in SD", 350., 0., 350., 350, 0., 350.);
-  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcPart", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
-  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcDet", "p_{t,j} vs. p_{t,const} for clusters used in SD", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcPart", "p_{t,j} vs. p_{t,const} for tracks used in SD (part. level); p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcDet", "p_{t,j} vs. p_{t,const} for tracks used in SD (det. level); p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcPart", "p_{t,j} vs. p_{t,const} for clusters used in SD (part. level); p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPtcDet", "p_{t,j} vs. p_{t,const} for clusters used in SD (det. level); p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350., 0., 350., 350, 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcMaxPart", "p_{t,j} vs. p_{t,const} for max tracks used in SD (part. level); p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedPtjvPtcMaxDet", "p_{t,j} vs. p_{t,const} for max tracks used in SD (det. level); p_{t,j} (GeV/c); p_{t,ch} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPcMaxPart", "p_{t,j} vs. p_{t,const} for max clusters used in SD (part. level); p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistManager.CreateTH2("hSDUsedNeutralPtjvPcMaxDet", "p_{t,j} vs. p_{t,const} for max clusters used in SD (det. level); p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350, 0., 350., 350., 0., 350.);
+  fHistManager.CreateTH2("hSDUsedChargedEtaPhiPart", "#eta-phi for tracks used in SD (part. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedEtaPhiDet", "#eta-phi for tracks used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralEtaPhiPart", "#eta vs. #phi for clusters used in SD (part. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralEtaPhiDet", "#eta vs. #phi for clusters used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedEtaPhiMaxPart", "#eta-phi for tracks used in SD (part. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedEtaPhiMaxDet", "#eta-phi for tracks used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralEtaPhiMaxPart", "#eta vs. #phi for clusters used in SD (part. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralEtaPhiMaxDet", "#eta vs. #phi for clusters used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedDRPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedDRDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedDRMaxPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedDRMaxDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRMaxPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRMaxDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
   fHistManager.CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
   for (auto h : *fHistManager.GetListOfHistograms())
@@ -567,16 +603,17 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         znedet = detjet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
       }
     }
-      if(tracks){
-        nchdet = detjet->GetNumberOfTracks();
-        auto leadingtrack = detjet->GetLeadingTrack(tracks->GetArray());
-        if(leadingtrack) zchdet = detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz());
-      }
+    if(tracks){
+      nchdet = detjet->GetNumberOfTracks();
+      auto leadingtrack = detjet->GetLeadingTrack(tracks->GetArray());
+      if(leadingtrack) zchdet = detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz());
+    }
 
     try
     {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(), tracks, clusters);
       softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), particles, nullptr);
+      auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
       bool untaggedDet = softdropDet[0] < fZcut,
            untaggedPart = softdropPart[0] < fZcut;
       Double_t pointZg[4] = {softdropDet[0], detjet->Pt(), softdropPart[0], partjet->Pt()},
@@ -592,6 +629,14 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // fill QA histograms
         fHistManager.FillTH2(Form("hQANEFPtDet_%d", fCentBin), detjet->Pt(), detjet->NEF());
         fHistManager.FillTH2(Form("hQANEFPtPart_%d", fCentBin), partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2(Form("hQAJetAreaVsJetPtPart_%d", fCentBin), partjet->Pt(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsJetPtDet_%d", fCentBin), detjet->Pt(), detjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNEFPart_%d", fCentBin), partjet->NEF(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNEFDet_%d", fCentBin), detjet->NEF(), detjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNConstPart_%d", fCentBin), partjet->GetNumberOfTracks(), partjet->Area());
+        fHistManager.FillTH2(Form("hQAJetAreaVsNConstDet_%d", fCentBin), detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
+        fHistManager.FillTH1(Form("hQAMatchingDRAbs_%d", fCentBin), deltaR);
+        fHistManager.FillTH1(Form("hQAMatchingDRel_%d", fCentBin), deltaR / detLevelJets->GetJetRadius());
         if(fUseChargedConstituents) {
           fHistManager.FillTH2(Form("hQAZchPtDet_%d", fCentBin), detjet->Pt(), zchdet);
           fHistManager.FillTH2(Form("hQAZchPtPart_%d", fCentBin), detjet->Pt(), zchpart);
@@ -635,6 +680,14 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         znepart = stat[3];
         fHistManager.FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
         fHistManager.FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2("hQAJetAreaVsJetPtPart", partjet->Pt(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsJetPtDet", detjet->Pt(), detjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNEFPart", partjet->NEF(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNEFDet", detjet->NEF(), detjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
+        fHistManager.FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
+        fHistManager.FillTH1("hQAMatchingDRAbs", deltaR);
+        fHistManager.FillTH1("hQAMatchingDRel", deltaR / detLevelJets->GetJetRadius());
         if(fUseChargedConstituents) {
           fHistManager.FillTH2("hQAZchPtDet", detjet->Pt(), zchdet);
           fHistManager.FillTH2("hQAZchPtPart", detjet->Pt(), zchpart);
@@ -847,6 +900,8 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
   std::vector<fastjet::PseudoJet> constituents;
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
+  fastjet::PseudoJet *maxcharged(nullptr), *maxneutral(nullptr);
+  fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
   if (tracks && (fUseChargedConstituents || isMC))
   { // Neutral particles part of particle container in case of MC
     AliDebugStream(1) << "Jet substructure: Using charged constituents" << std::endl;
@@ -860,11 +915,39 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       fastjet::PseudoJet constituentTrack(track->Px(), track->Py(), track->Pz(), track->E());
       constituentTrack.set_user_index(jet.TrackAt(itrk));
       constituents.push_back(constituentTrack);
+      auto &currentconstituent = constituents.back();
       if(isMC) {
-        if(track->Charge()) fHistManager.FillTH2("hSDUsedChargedPtjvPtcPart", jet.Pt(), constituentTrack.pt());
-        else fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), constituentTrack.pt());
+        if(track->Charge()) {
+          fHistManager.FillTH2("hSDUsedChargedPtjvPtcPart", jet.Pt(), constituentTrack.pt());
+          fHistManager.FillTH2("hSDUsedChargedEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
+          fHistManager.FillTH2("hSDUsedChargedDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
+          if(!maxcharged) {
+            maxcharged = &currentconstituent;
+          } else {
+            if(currentconstituent.pt() > maxcharged->pt())
+            maxcharged = &currentconstituent;
+          }
+        } else {
+          fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), constituentTrack.pt());
+          fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
+          fHistManager.FillTH2("hSDUsedNeutralDRPart", inputjet.pt(), inputjet.delta_R(constituentTrack));
+          if(!maxneutral) {
+            maxneutral = &currentconstituent;
+          } else {
+            if(currentconstituent.pt() > maxcharged->pt())
+            maxneutral = &currentconstituent;
+          }
+        }
       } else {
         fHistManager.FillTH2("hSDUsedChargedPtjvPtcDet", jet.Pt(), constituentTrack.pt());
+        fHistManager.FillTH2("hSDUsedChargedEtaPhiDet", constituentTrack.eta(), TVector2::Phi_0_2pi(constituentTrack.phi()));
+        fHistManager.FillTH2("hSDUsedChargedDRDet", inputjet.pt(), inputjet.delta_R(constituentTrack));
+        if(!maxcharged) {
+          maxcharged = &currentconstituent;
+        } else {
+          if(currentconstituent.pt() > maxcharged->pt())
+          maxcharged = &currentconstituent;
+        }
       }
     }
   }
@@ -881,8 +964,42 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       constituentCluster.set_user_index(jet.ClusterAt(icl) + kClusterOffset);
       constituents.push_back(constituentCluster);
       fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), constituentCluster.pt());
+      fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", constituentCluster.eta(), TVector2::Phi_0_2pi(constituentCluster.phi()));
+      fHistManager.FillTH2("hSDUsedNeutralDRDet", inputjet.pt(), inputjet.delta_R(constituentCluster));
+      auto &currentconstituent = constituents.back();
+      if(!maxneutral) {
+        maxneutral = &currentconstituent;
+      } else {
+        if(currentconstituent.pt() > maxneutral->pt())
+          maxneutral = &currentconstituent;
+      }
     }
   }
+
+  if(maxcharged) {
+    if(isMC) {
+      fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxPart", jet.Pt(), maxcharged->pt());
+      fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxPart", maxcharged->eta(), TVector2::Phi_0_2pi(maxcharged->phi()));
+      fHistManager.FillTH2("hSDUsedChargedDRMaxPart", inputjet.pt(), inputjet.delta_R(*maxcharged));
+    } else {
+      fHistManager.FillTH2("hSDUsedChargedPtjvPtcMaxDet", jet.Pt(), maxcharged->pt());
+      fHistManager.FillTH2("hSDUsedChargedEtaPhiMaxDet", maxcharged->eta(), TVector2::Phi_0_2pi(maxcharged->phi()));
+      fHistManager.FillTH2("hSDUsedChargedDRMaxDet", inputjet.pt(), inputjet.delta_R(*maxcharged));
+    }
+  }
+
+  if(maxneutral) {
+    if(isMC) {
+      fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxPart", jet.Pt(), maxneutral->pt());
+      fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxPart", maxneutral->eta(), TVector2::Phi_0_2pi(maxneutral->phi()));
+      fHistManager.FillTH2("hSDUsedNeutralDRMaxPart", inputjet.pt(), inputjet.delta_R(*maxneutral));
+    } else {
+      fHistManager.FillTH2("hSDUsedNeutralPtjvPcMaxDet", jet.Pt(), maxneutral->pt());
+      fHistManager.FillTH2("hSDUsedNeutralEtaPhiMaxDet", maxneutral->eta(), TVector2::Phi_0_2pi(maxneutral->phi()));
+      fHistManager.FillTH2("hSDUsedNeutralDRMaxDet", inputjet.pt(), inputjet.delta_R(*maxneutral));
+    }
+  }
+
 
   AliDebugStream(3) << "Found " << constituents.size() << " constituents for jet with pt=" << jet.Pt() << " GeV/c" << std::endl;
   if (!constituents.size())
