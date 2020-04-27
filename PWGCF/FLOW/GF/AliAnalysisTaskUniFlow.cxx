@@ -1219,8 +1219,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   DumpTObjTable("UserExec: after filtering");
 
-  Bool_t bCorrelations = FillCorrelations();
-  DumpTObjTable("UserExec: after FillCorrelations");
+  // Bool_t bCorrelations = FillCorrelations();
+  // DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -3909,6 +3909,9 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
     Double_t dWeight = 1.0;
     if(fFlowUseWeights) { dWeight = GetFlowWeight(part, species); }
 
+    Double_t dWeightRef = 1.0;
+    if(fFlowUseWeights) { dWeightRef = GetFlowWeight(part, kRefs); }
+
     // check if POI overlaps with RFPs (not for reconstructed)
     Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(part)));
 
@@ -3925,8 +3928,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
           // in case of charged, pions, kaons or protons (one witout mass)
           if(bIsWithinRefs)
           {
-            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            Double_t dCos = 0.0;
+            Double_t dSin = 0.0;
+            if(iPower > 1){
+              dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+              dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+            }
+            else{
+              dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            }
             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
         }
@@ -3946,8 +3957,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
             // possible overlap for <<4'>> with single gap (within the same subevent)
             if(bIsWithinRefs)
             {
-              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              Double_t dCos = 0.0;
+              Double_t dSin = 0.0;
+              if(iPower > 1){
+                dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+              }
+              else{
+                dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              }
               fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
           }
@@ -3964,8 +3983,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
              // possible overlap for <<4'>> with single gap (within the same subevent)
              if(bIsWithinRefs)
              {
-               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               if(iPower > 1){
+                 dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                 dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               }
+               else{
+                 dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               }
                fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
@@ -3982,6 +4009,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 
              if(bIsWithinRefs)
              {
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               if(iPower > 1){
+                 dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                 dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               }
+               else{
+                 dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               }
                fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
