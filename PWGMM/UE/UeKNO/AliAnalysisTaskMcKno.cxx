@@ -10,11 +10,12 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- * Author: Sushanta Tripathy (Sushanta.Tripathy@cern.ch)                  *
- *         Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
- *         Feng Fan (Feng.Fan@cern.ch)		                          *
- *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
+ * provided "as is" without express or implied warranty.     
+ *                                                                        *
+ * Authors: Sushanta Tripathy (Sushanta.Tripathy@cern.ch)                 *
+ *          Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)               *
+ *          Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                * 
+ *          Feng Fan (Feng.Fan@cern.ch)		                          *
  **************************************************************************/
 
 /* AliAnaysisTaskMcKno source code
@@ -136,7 +137,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKno) // classimp: necessary for root
 
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
-  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0),hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
+  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0), hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
 {
   for(Int_t i=0;i<3;++i){
     hPtVsUEGenTest[i]=0;
@@ -156,7 +157,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE(name),
-							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0),fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0),hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
+							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
 {
 
   for(Int_t i=0;i<3;++i){
@@ -402,6 +403,10 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
   hV0Mmult = new TH1D("hV0Mmult","V0M ;V0M percentile;count",100,0,100);   
   fOutputList->Add(hV0Mmult);
 
+  hV0Mmultbefvtx = 0;
+  hV0Mmultbefvtx = new TH1D("hV0Mmultbefvtx","V0M ;V0M percentile bef. vtx;count",100,0,100);   
+  fOutputList->Add(hV0Mmultbefvtx);
+
   hRefMultvsV0Mmult = 0;
   hRefMultvsV0Mmult = new TH2D("hRefMultvsV0Mmult","N_{ch} vs V0M percentile;N_{ch}; v0M percentile",3000,-0.5,2999.5,10,0,100);
   fOutputList->Add(hRefMultvsV0Mmult);
@@ -413,8 +418,6 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
   hRefmultvsUE = 0;
   hRefmultvsUE = new TH2D("hRefmultvsUE","Ref Mult vs NchTS; Ref. mult.;N_{ch}^{TS}",3000,-0.5,2999.5,3000,-0.5,2999.5);
   fOutputList->Add(hRefmultvsUE);
-
-
 
   for(Int_t i=0;i<3;++i){
     hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_1[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
@@ -448,6 +451,9 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
 
   hDphiVsNchRecTest = new TH2D("hDphiVsNchRecTest","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins,Deltabins);
   fOutputList->Add(hDphiVsNchRecTest);
+
+   hPtVsV0MData = new TH2D("hPtVsV0MData","data pT vs V0M",100,0.,100.,ptNbins,ptbins1_1);
+   fOutputList->Add(hPtVsV0MData);
      
   for(Int_t i=0;i<3;++i){
 
@@ -571,16 +577,22 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
     return;
   //hCounter->Fill(1);
 
-  // Good vertex
-  Bool_t hasRecVertex = kFALSE;
-  hasRecVertex=HasRecVertex();
-  if(!hasRecVertex)return;
-
   // Good events
   if (!fEventCuts.AcceptEvent(event)) {
     PostData(1, fOutputList);
     return;
   }
+  
+  fMultSelectionbefvtx = (AliMultSelection*) fESD->FindListObject("MultSelection");
+  if (fIspPb) {fv0mpercentilebefvtx = fMultSelectionbefvtx->GetMultiplicityPercentile("V0A");}
+  else {fv0mpercentilebefvtx = fMultSelectionbefvtx->GetMultiplicityPercentile("V0M");}
+
+  hV0Mmultbefvtx->Fill(fv0mpercentilebefvtx);
+
+   // Good vertex
+  Bool_t hasRecVertex = kFALSE;
+  hasRecVertex=HasRecVertex();
+  if(!hasRecVertex)return;
 
   // Multiplicity Estimation
   ftrackmult08 = -999;
@@ -635,7 +647,7 @@ void AliAnalysisTaskMcKno::UserExec(Option_t *)
 	  }
 	}
 	else{
-
+	  GetMB();
 	  // KNO scaling
 	  if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
 	    GetMultiplicityDistributionsData();
@@ -859,6 +871,28 @@ void AliAnalysisTaskMcKno::GetDetectorResponse() {
   // }
 
 
+}
+void AliAnalysisTaskMcKno::GetMB(){
+  Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
+  for(Int_t i=0; i < iTracks; i++) {
+
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+    if(!track) continue;
+
+    if(!fTrackFilter->IsSelected(track))
+      continue;
+
+    if( track->Pt() < 0.15)continue;
+
+    if(TMath::Abs(track->Eta()) > fEtaCut)
+      continue;
+
+    hPtVsV0MData->Fill(fv0mpercentile,track->Pt());
+
+  }
+
+  
 }
 //______________________________________________________________
 void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
