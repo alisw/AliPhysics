@@ -71,6 +71,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetSPAnalyzer(Bool_t ActSPAna) { fSPAnalysis = ActSPAna;}
 
+        void                    SetPileUpCut(Int_t cut) { fPileupCut = cut; }
+
         
 
     private:
@@ -380,6 +382,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   V0qnBins;
         Double_t                V0qnBinMin;
         Double_t                V0qnBinMax;
+
+        Int_t                   fPileupCut;
 
 
 

@@ -187,6 +187,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     V0qnBinMin(0.0),
     V0qnBinMax(15.0),
 
+    fPileupCut(500),
+
 
     fVecCorrTask()
 {}
@@ -323,6 +325,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     V0qnBinMin(0.0),
     V0qnBinMax(15.0),
 
+    fPileupCut(500),
 
     fVecCorrTask()
 {
@@ -2235,7 +2238,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
   if(bIs15o)
   {
     multESDTPCdif = multESD - 3.38*multTPC128;
-    if(multESDTPCdif > 500) { return kTRUE; }
+    if(multESDTPCdif > fPileupCut) { return kTRUE; }
 
     TF1 fMultTOFLowCut = TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
     fMultTOFLowCut.SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
