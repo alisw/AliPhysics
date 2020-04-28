@@ -165,9 +165,11 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmo
   //
     TParticlePDG* pmc =  TDatabasePDG::Instance()->GetParticle(pdg);
     if (pmc) {
-	Float_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
-	Float_t e=TMath::Sqrt(mass*mass+pmom[0]*pmom[0]+
-			      pmom[1]*pmom[1]+pmom[2]*pmom[2]);
+	Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+	Double_t px = pmom[0];
+	Double_t py = pmom[1];
+	Double_t pz = pmom[2];
+	Double_t e = TMath::Sqrt(mass * mass + px * px + py * py + pz * pz);
 	
 //    printf("Loading  mass %f ene %f No %d ip %d parent %d done %d pos %f %f %f mom %f %f %f kS %d m \n",
 //	   mass,e,fNtrack,pdg,parent,done,vpos[0],vpos[1],vpos[2],pmom[0],pmom[1],pmom[2],kS);
