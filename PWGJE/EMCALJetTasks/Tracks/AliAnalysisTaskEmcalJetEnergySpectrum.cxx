@@ -75,7 +75,6 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
-  SetUseAliAnaUtils(true);
 }
 
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name):
@@ -100,7 +99,6 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
-  SetUseAliAnaUtils(true);
 }
 
 AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
@@ -160,9 +158,9 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQADeltaRNeutral", "#DeltaR vs. p_{t,jet} of neutral constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
   fHistos->CreateTH2("hQADeltaRMaxCharged", "#DeltaR vs. p_{t,jet} of charged constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1.);
   fHistos->CreateTH2("hQADeltaRMaxNeutral", "#DeltaR vs. p_{t,jet} of neutral constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
-  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -294,7 +292,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     fHistos->FillTH2("hQANnePt", ptjet, j->GetNumberOfClusters(), weight);
     fHistos->FillTH2("hQAJetAreaVsJetPt", j->Pt(), j->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNEF", j->NEF(), j->Area(), weight);
-    fHistos->FillTH2("hQAJetAreaVsNConstDet", j->GetNumberOfClusters() + j->GetNumberOfTracks(), j->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNConst", j->GetNumberOfClusters() + j->GetNumberOfTracks(), j->Area(), weight);
   }
 
   double maxdata[6];

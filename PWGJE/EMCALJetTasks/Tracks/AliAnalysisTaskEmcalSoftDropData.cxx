@@ -132,9 +132,9 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQANChPt", "Number of charged constituents; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
   fHistos->CreateTH2("hQANnePt", "Number of neutral constituents; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
-  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+  fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
   fHistos->CreateTH2("hSDUsedChargedPtjvPtc", "p_{t,j} vs. p_{t,const} for tracks used in SD; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350., 0., 350., 350, 0., 350.);
   fHistos->CreateTH2("hSDUsedNeutralPtjvPtc", "p_{t,j} vs. p_{t,const} for clusters used in SD; p_{t,j} (GeV/c); p_{t,ne} (GeV/c)", 350., 0., 350., 350, 0., 350.);
   fHistos->CreateTH2("hSDUsedChargedPtjvPtcMax", "p_{t,j} vs. p_{t,const} for max tracks used in SD; p_{t,j} (GeV/c); p_{t,ch} (GeV/c", 350, 0., 350., 350., 0., 350.);
@@ -237,7 +237,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     fHistos->FillTH2("hQANnePt", jet->Pt(), jet->GetNumberOfClusters(), weight);
     fHistos->FillTH2("hQAJetAreaVsJetPt", jet->Pt(), jet->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNEF", jet->NEF(), jet->Area(), weight);
-    fHistos->FillTH2("hQAJetAreaVsNConstDet", jet->GetNumberOfClusters() + jet->GetNumberOfTracks(), jet->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsNConst", jet->GetNumberOfClusters() + jet->GetNumberOfTracks(), jet->Area(), weight);
   }
   return true;
 }
