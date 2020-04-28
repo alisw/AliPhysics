@@ -52,6 +52,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow():
   fptvar(0),
   fCovariance(0),
   fTriggerType(AliVEvent::kMB),
+  fUseRunAveragedWeights(kFALSE),
   fWeightList(0),
   fWeights(0),
   fWeights_pi(0),
@@ -79,6 +80,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
   fptvar(0),
   fCovariance(0),
   fTriggerType(AliVEvent::kMB),
+  fUseRunAveragedWeights(kFALSE),
   fWeightList(0),
   fWeights(0),
   fWeights_pi(0),
@@ -115,9 +117,13 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
     DefineInput(1,TList::Class());
     DefineOutput(1,AliGFWFlowContainer::Class());
   }
+  if(fStageSwitch==5) {
+    DefineOutput(1,TList::Class());
+  }
+
 };
 AliAnalysisTaskGFWPIDFlow::~AliAnalysisTaskGFWPIDFlow() {
-  if(fStageSwitch==4) {
+  if(fStageSwitch==4 || fStageSwitch==5) {
     delete [] fZMWeights;
   }
 };
@@ -217,7 +223,6 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     fPtAxis = new TAxis(NbinsPtForV2,binsPtForV2);
     fWeightList = (TList*)GetInputData(1);
     if(!fWeightList) AliFatal("Could not fetch weight list!\n");
-    LoadZMWeights();
     TObjArray *oba = new TObjArray();
     AddToOBA(oba,"MidV22");
     AddToOBA(oba,"MidV24");
@@ -239,15 +244,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     AddToOBA(oba,"MidVPr24",NbinsPtForV2);
     AddToOBA(oba,"MidVPr26",NbinsPtForV2);
     AddToOBA(oba,"MidVPr28",NbinsPtForV2);
-    // oba->Add(new TNamed("MidV22","MidV22"));
-    // oba->Add(new TNamed("MidVCh22","MidVCh22"));
-    // oba->Add(new TNamed("MidVPi22","MidVPi22"));
-    // oba->Add(new TNamed("MidVKa22","MidVKa22"));
-    // oba->Add(new TNamed("MidVPr22","MidVPr22"));
-    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-    //   oba->Add(new TNamed(Form("MidVpi22_pt_%i",i+1),"MidVpi22_pTDiff"));
-    //
-    // oba->Add(new TNamed("MidV24","MidV24"));
+
     fFC = new AliGFWFlowContainer();
     fFC->SetName("FlowContainer");
     fFC->SetXAxis(fPtAxis);
@@ -265,6 +262,12 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("poiKa",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,8);
     fGFW->AddRegion("poiPr",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,16);
 
+    //Overlap
+    fGFW->AddRegion("olCh",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,32);
+    fGFW->AddRegion("olPi",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,64);
+    fGFW->AddRegion("olKa",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,128);
+    fGFW->AddRegion("olPr",9,pows,-0.8,0.8,fPtAxis->GetNbins()+1,256);
+
     // Int_t pows[] = {5,0,4,0,3};
     // fGFW = new AliGFW();
     // fGFW->AddRegion("ref",5,pows,-0.8,0.8,1,1);
@@ -281,6 +284,20 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
 
     fRndm = new TRandom(0);
+  }
+  if(fStageSwitch==5) {
+    fWeightList = new TList();
+    fWeightList->SetOwner(kTRUE);
+    fWeightList->Add(new TH2D("Refs","ChIncl",16,-0.8,0.8,100,0,TMath::TwoPi()));
+    fWeightList->Add(new TH2D("Charged","ChExcl",16,-0.8,0.8,100,0,TMath::TwoPi()));
+    fWeightList->Add(new TH2D("Pion","ChPi",16,-0.8,0.8,100,0,TMath::TwoPi()));
+    fWeightList->Add(new TH2D("Kaon","Kacl",16,-0.8,0.8,100,0,TMath::TwoPi()));
+    fWeightList->Add(new TH2D("Proton","PrIncl",16,-0.8,0.8,100,0,TMath::TwoPi()));
+    PostData(1,fWeightList);
+    fBayesPID = new AliPIDCombined();
+    fBayesPID->SetDefaultTPCPriors();
+    fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
+    fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
   }
 
   fMidSelection = new AliGFWCuts();
@@ -306,6 +323,8 @@ void AliAnalysisTaskGFWPIDFlow::UserExec(Option_t*) {
     FillCK(fAOD,vz,l_Cent);
   if(fStageSwitch==4)
     DevFunction(fAOD,vz,l_Cent);
+  if(fStageSwitch==5)
+    FillCustomWeights(fAOD,vz,l_Cent);
 };
 void AliAnalysisTaskGFWPIDFlow::Terminate(Option_t*) {
 };
@@ -369,6 +388,7 @@ Int_t AliAnalysisTaskGFWPIDFlow::GetStageSwitch(TString instr) {
   if(instr.Contains("meanpt")) return 2;
   if(instr.Contains("full")) return 3;
   if(instr.Contains("dev")) return 4;
+  if(instr.Contains("CustomWeights")) return 5;
   return 0;
 }
 void AliAnalysisTaskGFWPIDFlow::FillWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
@@ -491,6 +511,7 @@ void AliAnalysisTaskGFWPIDFlow::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t 
   PostData(3,fCovariance);
 }
 void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+  LoadMyWeights(fAOD);
   AliAODTrack *lTrack;
   Double_t trackXYZ[3];
   fGFW->Clear();
@@ -503,20 +524,58 @@ void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Doub
     Int_t ptind = fPtAxis->FindBin(p1)-1;
     Double_t l_eta = lTrack->Eta();
     Double_t l_phi = lTrack->Phi();
-    Double_t wref = GetZMWeight(l_eta,l_phi,0);
-    fGFW->Fill(lTrack->Eta(),ptind,lTrack->Phi(),wref,3); // masks 1+2 (ref + ncharged)
     Int_t PIDIndex = GetBayesPIDIndex(lTrack);
-    if(PIDIndex>=0) {
-      wref = GetZMWeight(l_eta,l_phi,1+PIDIndex);
-      fGFW->Fill(l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
-      // if(PIDIndex==2) printf("Filling a proton with eta (%f), ptInd (%i), phi (%f), weight (%f) and mask (%i)\n",
-      //                         l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
-    }
+    Double_t ptmins[] = {0.2,0.2,0.3,0.5};
+    Double_t ptmaxs[] = {10.,10.,6.0,6.0};
+    Bool_t WithinRef=(p1>0.2 && p1<5);
+    Bool_t WithinPOI=(p1>ptmins[PIDIndex+1] && p1<ptmaxs[PIDIndex+1]);
+    /* trying to figure out whether it's a POI or a ref or both.
+    This is in particular stupid, because e.g. a proton with pT < 500 MeV should go with... ref flow weight?
+    ------------------------------
+    Under construction for now. But first need to quickly commit a weight production
+    */
+    Int_t spIndex = -1;
+
+    // Double_t wref = GetZMWeight(l_eta,l_phi,0); //ref weight
+    // Double_t wpoi = GetZMWeight(l_eta,l_phi,PIDIndex+1); //poi weight
+    //This is stupid. If e.g.
+
+    // Double_t wref = GetZMWeight(l_eta,l_phi,0);
+    // fGFW->Fill(lTrack->Eta(),ptind,lTrack->Phi(),wref,3); // masks 1+2 (ref + ncharged)
+    // Int_t PIDIndex = GetBayesPIDIndex(lTrack);
+    // if(PIDIndex>=0) {
+    //   wref = GetZMWeight(l_eta,l_phi,1+PIDIndex);
+    //   fGFW->Fill(l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
+    //   // if(PIDIndex==2) printf("Filling a proton with eta (%f), ptInd (%i), phi (%f), weight (%f) and mask (%i)\n",
+    //   //                         l_eta,ptind,l_phi,wref,(1<<(PIDIndex+2)));
+    // }
   };
   Double_t rndm = fRndm->Rndm();
   for(Int_t i=0;i<corrconfigs.size();i++)  Bool_t dm = FillFCs(corrconfigs.at(i),l_Cent,rndm);
   PostData(1,fFC);
 }
+void AliAnalysisTaskGFWPIDFlow::FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+  AliAODTrack *lTrack;
+  Double_t trackXYZ[3];
+  for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
+    lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+    if(!lTrack) continue;
+    Double_t trackXYZ[] = {0.,0.,0.};
+    if(!devAcceptAODTrack(lTrack,trackXYZ)) continue;
+    Double_t p1 = lTrack->Pt();
+    Double_t l_eta = lTrack->Eta();
+    Double_t l_phi = lTrack->Phi();
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1; //-1 for unID, 0 for pi, etc.; shift everything by 1
+    Double_t ptmins[] = {0.2,0.2,0.3,0.5};
+    Double_t ptmaxs[] = {10.,10.,6.0,6.0};
+    Bool_t WithinRef=(p1>0.2 && p1<5);
+    Bool_t WithinPOI=(p1>ptmins[PIDIndex] && p1<ptmaxs[PIDIndex]);
+    if(WithinPOI) ((TH2D*)fWeightList->At(PIDIndex+1))->Fill(l_eta, l_phi);
+    if(WithinRef && !PIDIndex) ((TH2D*)fWeightList->At(0))->Fill(l_eta, l_phi); //This becomes a pt-subset of Nch
+  };
+  PostData(1,fWeightList);
+}
+
 Bool_t AliAnalysisTaskGFWPIDFlow::GetIntValAndDNX(AliGFW::CorrConfig corconf, Double_t &l_val, Double_t &l_dnx) {
   l_dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(l_dnx==0) return kFALSE;
@@ -571,37 +630,37 @@ void AliAnalysisTaskGFWPIDFlow::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("MidVPi22","ref {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVKa22","ref {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPr22","ref {2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidVCh22","poiCh ref {2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPi22","poiPi ref {2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVKa22","poiKa ref {2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPr22","poiPr ref {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVCh22","poiCh ref | olCh {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPi22","poiPi ref | olPi {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVKa22","poiKa ref | olKa {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPr22","poiPr ref | olPr {2 -2}", kTRUE));
   //4-part corr
   corrconfigs.push_back(GetConf("MidVCh24","ref {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPi24","ref {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVKa24","ref {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPr24","ref {2 2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidVCh24","poiCh ref {2 2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPi24","poiPi ref {2 2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVKa24","poiKa ref {2 2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPr24","poiPr ref {2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVCh24","poiCh ref | olCh{2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPi24","poiPi ref | olPi{2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVKa24","poiKa ref | olKa{2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPr24","poiPr ref | olPr{2 2 -2 -2}", kTRUE));
   //6-part corr
   corrconfigs.push_back(GetConf("MidVCh26","ref {2 2 2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPi26","ref {2 2 2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVKa26","ref {2 2 2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPr26","ref {2 2 2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidVCh26","poiCh ref {2 2 2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPi26","poiPi ref {2 2 2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVKa26","poiKa ref {2 2 2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPr26","poiPr ref {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVCh26","poiCh ref | olCh {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPi26","poiPi ref | olPi {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVKa26","poiKa ref | olKa {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPr26","poiPr ref | olPr {2 2 2 -2 -2 -2}", kTRUE));
   //8-part corr
   corrconfigs.push_back(GetConf("MidVCh28","ref {2 2 2 2 -2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPi28","ref {2 2 2 2 -2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVKa28","ref {2 2 2 2 -2 -2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidVPr28","ref {2 2 2 2 -2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidVCh28","poiCh ref {2 2 2 2 -2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPi28","poiPi ref {2 2 2 2 -2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVKa28","poiKa ref {2 2 2 2 -2 -2 -2 -2}", kTRUE));
-  corrconfigs.push_back(GetConf("MidVPr28","poiPr ref {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVCh28","poiCh ref | olCh {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPi28","poiPi ref | olPi {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVKa28","poiKa ref | olKa {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidVPr28","poiPr ref | olPr {2 2 2 2 -2 -2 -2 -2}", kTRUE));
 
 };
 void AliAnalysisTaskGFWPIDFlow::GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t l_RunNo, TString pf) {
@@ -627,15 +686,20 @@ void AliAnalysisTaskGFWPIDFlow::LoadWeightAndMPT(AliAODEvent *inEv) {
     fRunNo = l_RunNo;
   };
 }
-void AliAnalysisTaskGFWPIDFlow::LoadZMWeights() {
+void AliAnalysisTaskGFWPIDFlow::LoadMyWeights(AliAODEvent* mev) {
+  Int_t lRunNo = mev->GetRunNumber();
+  if(fRunNo == lRunNo) return;
+  fRunNo = lRunNo;
   if(!fWeightList) AliFatal("Weight list not set!\n");
-  TString wNames[] = {"Charged","Pion","Kaon","Proton"};
-  if(!fZMWeights) fZMWeights = new TH2D*[4];
-  for(Int_t i=0;i<4;i++) {
+  TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
+  if(!fZMWeights) fZMWeights = new TH2D*[5];
+  for(Int_t i=0;i<5;i++) {
+    wNames[i].Prepend(Form("w%i_",fRunNo));
     fZMWeights[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
     if(!fZMWeights[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
   };
 }
+
 Bool_t AliAnalysisTaskGFWPIDFlow::WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType) {
   if(!fPIDResponse) return kFALSE;
   Double_t nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(inTrack,partType);
@@ -643,7 +707,7 @@ Bool_t AliAnalysisTaskGFWPIDFlow::WithinSigma(Double_t SigmaCut, AliAODTrack *in
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
 Double_t AliAnalysisTaskGFWPIDFlow::GetZMWeight(Double_t eta, Double_t phi, Int_t pidind) {
-  if(!fZMWeights) LoadZMWeights();
+  // if(!fZMWeights) LoadZMWeights();
   Int_t phiind = fZMWeights[pidind]->GetXaxis()->FindBin(phi);
   Int_t etaind = fZMWeights[pidind]->GetYaxis()->FindBin(eta);
   return fZMWeights[pidind]->GetBinContent(phiind,etaind);

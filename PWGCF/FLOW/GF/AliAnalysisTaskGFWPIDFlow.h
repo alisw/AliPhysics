@@ -60,7 +60,9 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   //In development
   Double_t GetZMWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   void DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void LoadZMWeights();
+  void FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void LoadMyWeights(AliAODEvent*);
+  void SetUseRunAvgWeights(Bool_t newval) { fUseRunAveragedWeights = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -79,6 +81,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   TProfile *fCovariance;
   Bool_t fmptSet;
   UInt_t fTriggerType; //! No need to store
+  Bool_t fUseRunAveragedWeights; //!
   TList *fWeightList; //!
   AliGFWWeights *fWeights;//! This should be stored in TList
   AliGFWWeights *fWeights_pi;//! This should be stored in TList
