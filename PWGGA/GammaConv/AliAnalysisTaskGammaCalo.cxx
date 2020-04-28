@@ -3667,7 +3667,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       }
       if(clus->GetNLabels() > 1){
         Int_t* mclabelsCluster = clus->GetLabels();
-        if(fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
         for(Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
           AliAODMCParticle* dummy  = (AliAODMCParticle*) fAODMCTrackArray->At(mclabelsCluster[k]);
           Int_t pdgcode = dummy->GetPdgCode();
