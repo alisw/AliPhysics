@@ -112,6 +112,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fNMaxEMCalModules(12),
   fNMaxPHOSModules(5),
   fHistoModifyAcc(NULL),
+  fAODMCTrackArray(NULL),
   fDoLightOutput(0),
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
@@ -334,6 +335,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fNMaxEMCalModules(ref.fNMaxEMCalModules),
   fNMaxPHOSModules(ref.fNMaxPHOSModules),
   fHistoModifyAcc(NULL),
+  fAODMCTrackArray(NULL),
   fDoLightOutput(ref.fDoLightOutput),
   fIsMC(ref.fIsMC),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
@@ -547,6 +549,11 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fPHOSBadChannelsMap != NULL){
     delete[] fPHOSBadChannelsMap;
     fPHOSBadChannelsMap = NULL;
+  }
+
+  if(fAODMCTrackArray){
+    delete[] fAODMCTrackArray;
+    fAODMCTrackArray = 0x0;
   }
 
   if(fFuncPtDepEta) delete fFuncPtDepEta;
@@ -3939,14 +3946,14 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
 
       if(isMC){
-        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (AODMCTrackArray == NULL){
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray == NULL){
           AliError("No MC particle list available in AOD");
           return;
         }
         Int_t tmpLabel = (Int_t) ((AliAODTrack*)inTrack)->GetLabel();
         if(tmpLabel > 0){
-          AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(tmpLabel));
+          AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
           if(!trackPart) continue;
 
           if(TMath::Abs(trackPart->GetPdgCode()) == 11){
@@ -8825,14 +8832,14 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
       }
     }
   } else {
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray == NULL){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL){
       AliError("No MC particle list available in AOD");
       return -1;
     }
 
     if (cluster->GetNLabels()>0){
-      AliAODMCParticle* particleLead    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mclabelsCluster[0]));
+      AliAODMCParticle* particleLead    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mclabelsCluster[0]));
       Short_t charge                    = particleLead->Charge();
       if (charge == 0 ){
         classification        = 0;
@@ -8843,7 +8850,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
         if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11) {
           classification      = 6;
           if (particleLead->GetMother() > -1){
-            AliAODMCParticle* mother    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
+            AliAODMCParticle* mother    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particleLead->GetMother()));
             if (mother->GetPdgCode() == 22)
               classification  = 4;
           }
@@ -8860,7 +8867,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
         Bool_t goOut = kFALSE;
         for (UInt_t i = 1; (i< cluster->GetNLabels() && !goOut); i++){
-          AliAODMCParticle* particleSub = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mclabelsCluster[i]));
+          AliAODMCParticle* particleSub = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mclabelsCluster[i]));
           Double_t charge               = particleSub->Charge();
           if ( charge != 0 ){
             classification++;
@@ -8974,23 +8981,23 @@ Bool_t AliCaloPhotonCuts::IsClusterPi0(AliVEvent *event,  AliMCEvent* mcEvent, A
       }
     }
   }else if(aodev){ // same procedure for AODsesdt
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray == NULL){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL){
       AliError("No MC particle list available in AOD");
       return kFALSE;
     }
     // check if cluster is from pi0
     if (cluster->GetNLabels()>0){
-      AliAODMCParticle* particleLead = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mclabelsCluster[0]));
+      AliAODMCParticle* particleLead = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mclabelsCluster[0]));
       if(particleLead->GetPdgCode() == 22 || particleLead->GetPdgCode() == -11 || particleLead->GetPdgCode() == 11){
         if (particleLead->GetMother() > -1){
-          AliAODMCParticle* motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
+          AliAODMCParticle* motherDummy = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particleLead->GetMother()));
 //          printf("mother pdg = %d\n",motherDummy->GetPdgCode());
           if(motherDummy->GetPdgCode() == 111) return kTRUE;
           if(motherDummy->GetPdgCode() == 22){ // check also conversions
             UInt_t whileCounter = 0;// to be 100% sure against infinite while loop
             while(motherDummy->GetMother() > -1 && whileCounter++ < 5){
-              motherDummy    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
+              motherDummy    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherDummy->GetMother()));
 //              printf("grandmother pdg = %d\n",motherDummy->GetPdgCode());
               if(motherDummy->GetPdgCode() == 111) return kTRUE;
             }

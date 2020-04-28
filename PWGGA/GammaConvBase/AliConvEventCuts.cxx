@@ -87,6 +87,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDoLightOutput(0),
   fEventQuality(-1),
   fGeomEMCAL(NULL),
+  fAODMCTrackArray(NULL),
   fIsHeavyIon(0),
   fDetectorCentrality(-1),
   fModCentralityClass(0),
@@ -219,6 +220,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fDoLightOutput(ref.fDoLightOutput),
   fEventQuality(ref.fEventQuality),
   fGeomEMCAL(ref.fGeomEMCAL),
+  fAODMCTrackArray(ref.fAODMCTrackArray),
   fIsHeavyIon(ref.fIsHeavyIon),
   fDetectorCentrality(ref.fDetectorCentrality),
   fModCentralityClass(ref.fModCentralityClass),
@@ -369,6 +371,10 @@ AliConvEventCuts::~AliConvEventCuts() {
   if(fUtils){
     delete fUtils;
     fUtils = NULL;
+  }
+  if(fAODMCTrackArray){
+    delete[] fAODMCTrackArray;
+    fAODMCTrackArray = 0x0;
   }
 
 }
@@ -6089,16 +6095,16 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
     if (debug > 1 && !accepted) cout << "rejected:" << index << endl;
   }
   else if(InputEvent->IsA()==AliAODEvent::Class()){
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray){
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
       if(!aodMCParticle) return 0; // no particle
 
       if(!aodMCParticle->IsPrimary()){
         if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
         return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent, debug);
       }
-      index = TMath::Abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+      index = TMath::Abs(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index))->GetLabel());
 
       for(Int_t i = 0;i<fnHeaders;i++){
         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
@@ -6460,9 +6466,9 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
     //mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
     PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
   } else if(event->IsA()==AliAODEvent::Class()){
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray){
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
       mesonPt = aodMCParticle->Pt();
       //mesonMass = aodMCParticle->GetCalcMass();
       PDGCode = aodMCParticle->GetPdgCode();
@@ -6547,9 +6553,9 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, Al
     gammaPt = ((TParticle*)mcEvent->Particle(index))->Pt();
     PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
   } else if(event->IsA()==AliAODEvent::Class()){
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray){
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index));
       gammaPt = aodMCParticle->Pt();
       PDGCode = aodMCParticle->GetPdgCode();
     } else {
@@ -6908,12 +6914,12 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
 //_________________________________________________________________________
 Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCParticle* AODMCParticle,  Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
 
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-  if (AODMCTrackArray == NULL) return kFALSE;
+  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL) return kFALSE;
   AliAODMCParticle* currentParticle = AODMCParticle;
   if (TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
     if (currentParticle->GetMother() != -1){
-      AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(currentParticle->GetMother()));
+      AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(currentParticle->GetMother()));
       if (particleMother){
         if (TMath::Abs(particleMother->GetPdgCode()) == 22)
           currentParticle = particleMother;
@@ -6930,7 +6936,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
 
     Bool_t dalitzCand = kFALSE;
 
-    AliAODMCParticle* firstmother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(currentParticle->GetMother()));
+    AliAODMCParticle* firstmother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(currentParticle->GetMother()));
     if (!firstmother) return kFALSE;
     Int_t pdgCodeFirstMother = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
@@ -6952,7 +6958,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
       //   cout << currentParticle->GetPdgCode() << "\t" << currentParticle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
       // }
       while (depth < 20){
-        AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(source));
+        AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(source));
         source = mother->GetMother();
         // if (currentParticle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
         Int_t pdgCodeMother     = mother->GetPdgCode();
