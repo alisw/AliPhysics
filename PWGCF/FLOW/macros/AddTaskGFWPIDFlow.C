@@ -8,6 +8,7 @@ AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=
   if(stage.Contains("meanpt")) StageSwitch=2;
   if(stage.Contains("full")) StageSwitch=3;
   if(stage.Contains("dev")) StageSwitch=4;
+  if(stage.Contains("CustomWeights")) StageSwitch=5;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -97,6 +98,11 @@ AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=
     };
     AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("FlowCont",AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputFC);
+    return task;
+  };
+  if(StageSwitch==5) {
+    AliAnalysisDataContainer *cOutputWeights  = mgr->CreateContainer("CustomWeights",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputWeights);
     return task;
   };
 
