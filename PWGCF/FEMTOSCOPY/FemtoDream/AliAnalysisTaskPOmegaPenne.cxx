@@ -12,8 +12,8 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
 
     AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne() :  AliAnalysisTaskSE(),
                                                                 fIsMC(false),
-                                                                aaEvent(0),
-                                                                aaTrack(0),
+                                                                VEvent(0),
+                                                                VTrack(0),
                                                                 fEvent(0),
                                                                 fTrack(0),
                                                                 fCascade(0),
@@ -41,8 +41,8 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
 }
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool isMC) : AliAnalysisTaskSE(name),
                                                                                       fIsMC(isMC),
-                                                                                      aaEvent(0),
-                                                                                      aaTrack(0),
+                                                                                      VEvent(0),
+                                                                                      VTrack(0),
                                                                                       fEvent(0),
                                                                                       fTrack(0),
                                                                                       fCascade(0),
@@ -83,8 +83,8 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
 }
 AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
 {
-    delete aaEvent;
-    delete aaTrack;
+    delete VEvent;
+    delete VTrack;
     delete fEvent;
     delete fTrack;
     delete fCascade;
@@ -107,13 +107,14 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete tlResultsQA;
     delete tlLambdaMC;
     delete tlAntiLambdaMC;
+    if (fGTI) delete fGTI;
     }
 
 // // Copy Constructor
 AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOmegaPenne &obj) : AliAnalysisTaskSE(obj),
                                                                                                 fIsMC(obj.fIsMC),
-                                                                                                aaEvent(obj.aaEvent),
-                                                                                                aaTrack(obj.aaTrack),
+                                                                                                VEvent(obj.VEvent),
+                                                                                                VTrack(obj.VTrack),
                                                                                                 fEvent(obj.fEvent),
                                                                                                 fTrack(obj.fTrack),
                                                                                                 fCascade(obj.fCascade),
@@ -168,10 +169,10 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
 void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
 {
    
-    fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates());
+    fEvent = new AliFemtoDreamEvent(false, false, GetCollisionCandidates(), false);
     fTrack = new AliFemtoDreamTrack();
     fTrack->SetUseMCInfo(fIsMC);
-    fGTI = new AliAODTrack *[fTrackBufferSize];
+    fGTI = new AliVTrack *[fTrackBufferSize];
     
     fEventCuts->InitQA();
  
@@ -276,27 +277,27 @@ static std::vector<AliFemtoDreamBasePart> vAntiXi;
 
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
-    aaEvent = dynamic_cast<AliAODEvent *>(fInputEvent);
+    VEvent = static_cast<AliVEvent *>(fInputEvent);
     
-    if (!aaEvent)
+    if (!VEvent)
     {
-        AliWarning("No Input aaEvent");
+        AliWarning("No Input VEvent");
     }
     else
     {
-        fEvent->SetEvent(aaEvent);
+        fEvent->SetEvent(VEvent);
         if (fEventCuts->isSelected(fEvent))
         {
             ResetGlobalTrackReference();
-            for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
+            for (int iTrack = 0; iTrack < VEvent->GetNumberOfTracks(); ++iTrack)
             {
-                aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
-                if (!aaTrack)
+                VTrack = static_cast<AliVTrack *>(VEvent->GetTrack(iTrack));
+                if (!VTrack)
                 {
                     AliFatal("No Standard AOD");
                     return;
                 }
-                StoreGlobalTrackReference(aaTrack);
+                StoreGlobalTrackReference(VTrack);
             }
            
             fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
@@ -307,9 +308,9 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             vAntiLambda.clear();
         
 
-            // for (int iTrack = 0; iTrack < aaEvent->GetNumberOfTracks(); ++iTrack)
+            // for (int iTrack = 0; iTrack < VEvent->GetNumberOfTracks(); ++iTrack)
             // {
-            //     aaTrack = dynamic_cast<AliAODTrack *>(aaEvent->GetTrack(iTrack));
+            //     aaTrack = dynamic_cast<AliAODTrack *>(VEvent->GetTrack(iTrack));
             //     if (!aaTrack)
             //     {
             //         AliFatal("No Standard AOD");
@@ -328,51 +329,47 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             //     }
             // }
 
+            // irgendwie benötigt um GetV0s() und GetCascade() zu holen
+            AliAODEvent* aodEvent = static_cast<AliAODEvent*>(VEvent); // caste input event auf ein AODEvent 
+            
             // ## Lambda Selection
             fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-            for (int iv0 = 0; iv0 < static_cast<TClonesArray *>(aaEvent->GetV0s())->GetEntriesFast(); ++iv0)
+            
+            for (int iv0 = 0; iv0 < static_cast<TClonesArray *>(aodEvent->GetV0s())->GetEntriesFast(); ++iv0)
             {
-                AliAODv0 *v0 = aaEvent->GetV0(iv0);
-                fv0->Setv0(aaEvent, v0, fEvent->GetMultiplicity());
+                AliAODv0 *v0 = aodEvent->GetV0(iv0);
+                fv0->Setv0(VEvent, v0, fEvent->GetMultiplicity());
                 if (fLambdaV0Cuts->isSelected(fv0)) 
                 {
                     vLambda.push_back(*fv0);
-                    vLambda[vLambda.size() - 1].SetCPA(1.0);
+                    vLambda[vLambda.size() - 1].SetCPA(0.5);
                 }
                 if (fAntiLambdaV0Cuts->isSelected(fv0)) 
                 {
                     vAntiLambda.push_back(*fv0);
-                    vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
+                    vAntiLambda[vAntiLambda.size() - 1].SetCPA(0.5);
                 }
             }
 
             // ## Xi selection
-            for (int iCasc = 0; iCasc < static_cast<TClonesArray *>(aaEvent->GetCascades())->GetEntriesFast(); ++iCasc)
+            for (int iCasc = 0; iCasc < static_cast<TClonesArray *>(aodEvent->GetCascades())->GetEntriesFast(); ++iCasc)
             {
-                AliAODcascade *casc = aaEvent->GetCascade(iCasc);
-                fCascade->SetCascade(aaEvent, casc);
+                AliAODcascade *casc = aodEvent->GetCascade(iCasc);
+                fCascade->SetCascade(VEvent, casc);
                 if (fCascadeCutsXi->isSelected(fCascade))
                 {
                     vXi.push_back(*fCascade);
-                    vXi[vXi.size() - 1].SetCPA(0.5);
+                    vXi[vXi.size() - 1].SetCPA(1.0);
                 }
                 if (fCascadeCutsAntiXi->isSelected(fCascade))
                 {
                     vAntiXi.push_back(*fCascade);
-                    vAntiXi[vAntiXi.size() -1].SetCPA(0.5);
+                    vAntiXi[vAntiXi.size() -1].SetCPA(1.0);
                 }
             }                                                                         
             // remove double-matched tracks
             fPairCleaner->ResetArray();
             
-            // for (auto i = vXi.begin(); i < vXi.end(); i++)
-            // {
-            //     vAntiXi[i].SetCPA(1.0);
-            // }
-            // for (auto i = vAntiXi.begin(); i < vAntiXi.end(); i++)
-            // {
-            //     vAntiXi[i].SetCPA(1.0);
-            // }
 
             fPairCleaner->CleanDecayAndDecay(&vXi, &vLambda,  0);
             fPairCleaner->CleanDecayAndDecay(&vAntiXi, &vAntiLambda, 1);
@@ -421,11 +418,11 @@ void AliAnalysisTaskPOmegaPenne::ResetGlobalTrackReference()
 
 //  Stores TrackID in Global Track Reference Array 'fGTI' if ID > 0
 //
-void AliAnalysisTaskPOmegaPenne::StoreGlobalTrackReference(AliAODTrack *aaTrack)
+void AliAnalysisTaskPOmegaPenne::StoreGlobalTrackReference(AliVTrack *vTrack)
 {
     //This method was inherited form H. Beck analysis
-
-    const int trackID = aaTrack->GetID();
+    AliNanoAODTrack *nanoTrack = static_cast<AliNanoAODTrack*>(vTrack);
+    const int trackID = vTrack->GetID();
     if (trackID < 0)
     {
         return;
@@ -438,16 +435,16 @@ void AliAnalysisTaskPOmegaPenne::StoreGlobalTrackReference(AliAODTrack *aaTrack)
 
     if (fGTI[trackID])
     {
-        if ((!aaTrack->GetFilterMap()) && (!aaTrack->GetTPCNcls()))
+        if ((!nanoTrack->GetFilterMap()) && (!vTrack->GetTPCNcls()))
         {
             return;
         }
-        if (fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls())
+        if (dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap() || fGTI[trackID]->GetTPCNcls())
         {
             printf("WARNING! global track info already there!");
-            printf("    ###     TPCNcls track1 %u Track2 %u", (fGTI[trackID])->GetTPCNcls(), aaTrack->GetTPCNcls());
-            printf("   ###     FilterMap Track1 %u track2 %u\n", (fGTI[trackID])->GetFilterMap(), aaTrack->GetFilterMap());
+            printf("    ###     TPCNcls track1 %u Track2 %u", (fGTI[trackID])->GetTPCNcls(), vTrack->GetTPCNcls());
+            printf("   ###     FilterMap Track1 %u track2 %u\n", dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap(), nanoTrack->GetFilterMap());
         }
     }
-    fGTI[trackID] = aaTrack;
+    fGTI[trackID] = vTrack;
 }
