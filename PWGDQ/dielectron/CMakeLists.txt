@@ -101,7 +101,6 @@ set(SRCS
       LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
       LMEE/AliAnalysisTaskeeCor.cxx
-      LMEE/AliAnalysisTaskeeCor.h
       LMEE/AliAnalysisTaskMLTreeMaker.cxx
       LMEE/AliAnalysisTaskMLTreeMakerEff.cxx
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
