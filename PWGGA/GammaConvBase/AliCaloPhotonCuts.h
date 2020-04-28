@@ -472,6 +472,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
     TH1S*      fHistoModifyAcc;                         // hisogram for modified acceptance, if leadCellID->1 accept cluster, if leadCellID->0 reject cluster
+    TClonesArray*   fAODMCTrackArray;                   // pointer to track array
 
     Int_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
@@ -698,7 +699,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,104)
+    ClassDef(AliCaloPhotonCuts,105)
 };
 
 #endif

@@ -548,6 +548,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
     TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
+    TClonesArray*         fAODMCTrackArray;                                     // storage of track array
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
     Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
@@ -558,7 +559,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 76);
+    ClassDef(AliAnalysisTaskGammaCalo, 77);
 };
 
 #endif
