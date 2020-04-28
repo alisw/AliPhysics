@@ -671,7 +671,71 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   vtx.fNentries[kTOF]    = ntofcls_filled;
   vtx.fNentries[kTracks] = ntrk_filled;
 
-  // TODO fill here SPD tracklets with tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
+  AliMultiplicity *mlt = fESD->GetMultiplicity();
+  Int_t Ntracklets = mlt->GetNumberOfTracklets();
+
+  Float_t theta, dphi, dphiS, dist, tgl, x;
+
+  for (Int_t itr = Ntracklets; itr--;) {
+    dphi   = mlt->GetDeltaPhi(itr);
+    dist   = mlt->CalcDist(itr);
+    
+    // on-the-fly filtering based on parameters tuned in Run2
+    dphiS  = TMath::Abs(dphi) - 0.0045; 
+    if (dphi<0) dphiS = -dphiS;
+    if (dist<1. && dphiS<0.06) {
+      theta  = mlt->GetTheta(itr);
+      tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
+      
+      // inversion formulas for tgl
+      x = (TMath::Tan(theta/2.)-1.) / (TMath::Tan(theta/2.)+1.);
+      if (TMath::Log(TMath::Tan(theta/2)) >= 0)
+        tgl = TMath::Sqrt((TMath::Power((1.+TMath::Power(x,2))/(1.-TMath::Power(x,2)),2))-1.);
+      else 
+        tgl = - TMath::Sqrt((TMath::Power((1.+TMath::Power(x,2))/(1.-TMath::Power(x,2)),2))-1.);
+      tracks.fTgl = tgl;
+    
+    // set global track parameters to NAN
+    tracks.fX = NAN;
+    tracks.fAlpha = NAN; 
+    tracks.fY = NAN;
+    tracks.fZ = NAN; 
+    tracks.fSnp = NAN;
+    tracks.fSigned1Pt = NAN;
+    tracks.fCYY = NAN;
+    tracks.fCZY = NAN;
+    tracks.fCZZ = NAN;
+    tracks.fCSnpY = NAN;
+    tracks.fCSnpZ = NAN;
+    tracks.fCSnpSnp = NAN;
+    tracks.fCTglY = NAN;
+    tracks.fCTglZ = NAN;
+    tracks.fCTglSnp = NAN;
+    tracks.fCTglTgl = NAN;
+    tracks.fC1PtY = NAN;
+    tracks.fC1PtZ = NAN;
+    tracks.fC1PtSnp = NAN;
+    tracks.fC1PtTgl = NAN;
+    tracks.fC1Pt21Pt2 = NAN;
+    tracks.fTPCinnerP = NAN; 
+    tracks.fFlags = 0;
+    tracks.fITSClusterMap = 0;
+    tracks.fTPCNClsFindable = 0;
+    tracks.fTPCNClsFindableMinusFound = 0;
+    tracks.fTPCNClsFindableMinusCrossedRows = 0;
+    tracks.fTPCNClsShared = 0;
+    tracks.fTRDNTracklets = 0;
+    tracks.fITSChi2NCl = NAN;
+    tracks.fTPCChi2NCl = NAN;
+    tracks.fTRDChi2 = NAN; 
+    tracks.fTOFChi2 = NAN;
+    tracks.fTPCSignal = NAN; 
+    tracks.fTRDSignal = NAN;
+    tracks.fTOFSignal = NAN;
+    tracks.fLength = NAN;
+    }
+    FillTree(kTracks);
+  } // end loop on tracklets
   
   //---------------------------------------------------------------------------
   // Calorimeter data
