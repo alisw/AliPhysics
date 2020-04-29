@@ -147,6 +147,14 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
   fHistos->CreateTH2("hSDUsedNeutralDR", "#DeltaR vs. p_{t,jet} for clusters used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
   fHistos->CreateTH2("hSDUsedChargedDRMax", "#DeltaR vs. p_{t,jet} for tracks used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
   fHistos->CreateTH2("hSDUsedNeutralDRMax", "#DeltaR vs. p_{t,jet} for clusters used in SD; p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  // Cluster constituent QA
+  fHistos->CreateTH2("hSDUsedClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
+  fHistos->CreateTH2("hSDUsedClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
+  fHistos->CreateTH2("hSDUsedClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
+  fHistos->CreateTH2("hSDUsedlusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
+  fHistos->CreateTH2("hSDUsedClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
+  fHistos->CreateTH2("hSDUsedClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
+
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -313,6 +321,17 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
       fHistos->FillTH2("hSDUsedNeutralPtjvPtc", jet.Pt(), constituentCluster.pt());
       fHistos->FillTH2("hSDUsedNeutralEtaPhi", constituentCluster.eta(), TVector2::Phi_0_2pi(constituentCluster.phi()));
       fHistos->FillTH2("hSDUsedNeutralDR", inputjet.pt(), inputjet.delta_R(constituentCluster));
+      fHistos->FillTH2("hSDUsedClusterTimeVsE", cluster->GetTOF() * 1e9, clustervec.E());
+      fHistos->FillTH2("hSDUsedClusterTimeVsEFine", cluster->GetTOF() * 1e9, clustervec.E());
+      fHistos->FillTH2("hSDUsedClusterNCellVsE", cluster->GetNCells(), clustervec.E());
+      fHistos->FillTH2("hSDUsedlusterM02VsE", cluster->GetM02(), clustervec.E());
+      double maxamplitude = 0.;
+      for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+        double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
+        if(amplitude > maxamplitude) maxamplitude = amplitude;
+      }
+      fHistos->FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
+      fHistos->FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       auto &currentconstituent = constituents.back();
       if(!maxneutral) {
         maxneutral = &currentconstituent;

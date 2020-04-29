@@ -161,6 +161,13 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+  // Cluster constituent QA
+  fHistos->CreateTH2("hQAClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
+  fHistos->CreateTH2("hQAClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
+  fHistos->CreateTH2("hQAClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
+  fHistos->CreateTH2("hQAClusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
+  fHistos->CreateTH2("hQAClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 100, 0., 1.1);
+  fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -206,7 +213,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   } else {
     AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
   }
-
+  bool isMC = (GetJetContainer("partjets") != nullptr);
+  double qaClusterTimeShift = isMC ? 600. : 0.;
 
   auto trgclusters = GetTriggerClustersANY();
   if(!fIsMC && fRequestTriggerClusters) trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
@@ -268,6 +276,17 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAConstPtNe", ptjet, ptvec.Pt(), weight);
         fHistos->FillTH2("hQAEtaPhiConstNe", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
         fHistos->FillTH2("hQADeltaRNeutral", ptjet, jetvec.DeltaR(ptvec.Vect()));
+        fHistos->FillTH2("hQAClusterTimeVsE", cluster->GetTOF() * 1e9 - qaClusterTimeShift, ptvec.E());
+        fHistos->FillTH2("hQAClusterTimeVsEFine", cluster->GetTOF() * 1e9 - qaClusterTimeShift, ptvec.E());
+        fHistos->FillTH2("hQAClusterNCellVsE", cluster->GetNCells(), ptvec.E());
+        fHistos->FillTH2("hQAClusterM02VsE", cluster->GetM02(), ptvec.E());
+        double maxamplitude = 0.;
+        for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+          double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
+          if(amplitude > maxamplitude) maxamplitude = amplitude;
+        }
+        fHistos->FillTH2("hQAClusterFracLeadingVsE", ptvec.E(), maxamplitude/cluster->E());
+        fHistos->FillTH2("hQAClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       }
     }
     if(tracks){
