@@ -20,12 +20,18 @@ TString names_Sec_Track_PreFilter_Cuts=("noPID_V0OnTheFly,trackkV0");
 TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 // TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75_sec_kV0_PreFilter");
 
+// ################################################################
+// ############### Standard Track Cut Secondary ###################
+// ################################################################
+//                        *** MISSING ***
+
+
 
 // PAIR CUTS
 // ################################################################
-// ################# Standard Pair Cut Primary ####################
+// ################# PreFilter Pair Cut Primary ###################
 // ################################################################
-TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
+//                        *** MISSING ***
 
 // ################################################################
 // ################# PreFilter Pair Cut Secondary #################
@@ -33,6 +39,10 @@ TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
 // TString names_Sec_Pair_PreFilter_Cuts=("noPID;kV0");
 TString names_Sec_Pair_PreFilter_Cuts=("noPID;pairkV0_PreFilter");
 
+// ################################################################
+// ################# Standard Pair Cut Primary ####################
+// ################################################################
+TString names_Prim_Pair_Cuts=("pairJPID_sum_pt20;pairJPID_sum1_pt20_sec_kV0");
 
 // ################################################################
 // ################# Standard Pair Cut Secondary ##################
@@ -73,13 +83,13 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = false;
+bool debug = true;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = true;
+bool DoMassCut         = false;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
@@ -356,7 +366,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //             primary track cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "JPID_sum_pt75"){
+  else if (cutDefinition == "JPID_sum_pt75" || cutDefinition == "JPID_sum1_pt75_sec_kV0"){
     AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
@@ -383,29 +393,20 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
 
-  else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"                   || cutDefinition == "JPID_sum1_pt75_sec_wCos"                               ||
-           cutDefinition == "JPID_sum2_pt75_sec_OnlyCosOpenAngle"      || cutDefinition == "JPID_sum2_pt75_sec_wCosChi2"                           ||
-           cutDefinition == "JPID_sum3_pt75_sec_OnlyChi2NDF"           || cutDefinition == "JPID_sum3_pt75_sec_wCosChi2LegDist"                    ||
-           cutDefinition == "JPID_sum4_pt75_sec_OnlyLegDist"           || cutDefinition == "JPID_sum4_pt75_sec_wCosChi2LegDistR"                   ||
-           cutDefinition == "JPID_sum5_pt75_sec_OnlyR"                 || cutDefinition == "JPID_sum5_pt75_sec_wCosChi2LegDistRPsiPair"            ||
-           cutDefinition == "JPID_sum6_pt75_sec_OnlyPsiPair"           || cutDefinition == "JPID_sum6_pt75_sec_wCosChi2LegDistRPsiPairM"           ||
-           cutDefinition == "JPID_sum7_pt75_sec_OnlyM"                 || cutDefinition == "JPID_sum7_pt75_sec_wCosChi2LegDistRPsiPairMArmPt"      ||
-           cutDefinition == "JPID_sum8_pt75_sec_OnlyArmPt"             || cutDefinition == "JPID_sum8_pt75_sec_wCosChi2LegDistRPsiPairMArmPtAlpha" ||
-           cutDefinition == "JPID_sum9_pt75_sec_OnlyArmAlpha"          || cutDefinition == "JPID_sum1_pt75_sec_kV0_PreFilter"
-          ){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
+  // else if (cutDefinition == "JPID_sum1_pt75_sec_kV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
 
   /////////////////////////////////////////////////////////
   //             secondary track cut settings            //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "noPID_V0OnTheFly"){
+  else if (cutDefinition == "noPID_V0OnTheFly" || cutDefinition == "trackkV0"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kV0track);
@@ -414,14 +415,14 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "trackkV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kV0track);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
+  // else if (cutDefinition == "trackkV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kV0track);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
   // else if (cutDefinition == "JPID_sum_pt75_secondary"){
   //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
@@ -443,7 +444,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "pairJPID_sum_pt20"){
+  else if (cutDefinition == "pairJPID_sum_pt20" || cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -451,13 +452,13 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     AnaCut.SetStandardCut();
   }
 
-  else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-    AnaCut.SetCentrality(centrality);
-    AnaCut.SetStandardCut();
-  }
+  // else if (cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
+  //   AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  //   AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+  //   AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  //   AnaCut.SetCentrality(centrality);
+  //   AnaCut.SetStandardCut();
+  // }
 
   /////////////////////////////////////////////////////////
   //             secondary pair cut settings             //
@@ -469,9 +470,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-
     AnaCut.SetPairCutsAna(LMEECutLib::kV0pair);
-
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -484,9 +483,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0OnTheFly);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-
     AnaCut.SetPairCutsAna(LMEECutLib::kV0pair_PreFilter);
-
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -1388,29 +1385,29 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 
 //________________________________________________________
-    task->AddFourPairMCSignal(FourElePair1_FinalState);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
-
-    task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
-
-    task->AddFourPairMCSignal(FourElePair1_FromPion);
-    task->AddFourPairMCSignal(FourElePair2_FromPion);
+    // task->AddFourPairMCSignal(FourElePair1_FinalState);
+    // task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
+    // task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_FromPion);
+    // task->AddFourPairMCSignal(FourElePair2_FromPion);
 
     task->AddFourPairMCSignal(FourElePair1_FromPion_Dalitz);
     task->AddFourPairMCSignal(FourElePair2_FromPion_Dalitz);
-
-    task->AddFourPairMCSignal(FourElePair1_FromEta);
-    task->AddFourPairMCSignal(FourElePair2_FromEta);
-
-    task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
-
-    task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
-
-    task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_FromEta);
+    // task->AddFourPairMCSignal(FourElePair2_FromEta);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
+    // task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
+    // task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
+    //
+    // task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
+    // task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
 
     if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState);
     if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary);
