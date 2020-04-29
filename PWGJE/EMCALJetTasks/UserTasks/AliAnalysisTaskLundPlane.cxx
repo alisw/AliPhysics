@@ -57,9 +57,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
   fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
   fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-  fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-  fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0),fShapesVar_Splittings_angle(0),
+  fStoreDetLevelJets(0), fDoSubJet(0),fShapesVar_Splittings_angle(0),
   fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
   fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0)
 {
@@ -81,9 +79,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
     fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-    fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-    fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0),fShapesVar_Splittings_angle(0),
+    fStoreDetLevelJets(0),fDoSubJet(0),fShapesVar_Splittings_angle(0),
     fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0)
     

@@ -15,7 +15,7 @@ class AliEmcalJetFinder;
 class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
-
+#include <vector>
 class AliAnalysisTaskLundPlane : public AliAnalysisTaskEmcalJet {
 public:
   enum JetShapeType {
@@ -113,8 +113,22 @@ protected:
   Bool_t fDoSubJet; ///< store the detector level jet quantities
 
 
-  TH1F *fPtJet; ///<
-
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
  
 
   TTree *fTreeSplittings; ///< Tree with tagging variables subtracted MC or true
