@@ -311,6 +311,7 @@ void AliAnalysisTaskGFWPIDFlow::UserExec(Option_t*) {
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
+  if(l_Cent<5 || l_Cent>70) return; //Lets only consider 5-70% 
   if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
