@@ -219,6 +219,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
+
+  private:
+  // not implemented
+    AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
+    AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment
     ClassDef(AliAnalysisTaskGammaIsoTree, 4);
 };
 
