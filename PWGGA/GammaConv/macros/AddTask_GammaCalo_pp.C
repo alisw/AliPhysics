@@ -2041,9 +2041,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790607l032230000","2l631061000000d0"); // std, alpha = 0.8
  } else if (trainConfig == 955){ // EMCal+JETS clusters standard cuts with each trigger to compare background method
     cuts.AddCutCalo("00010113","411790607l032230000","2l631031000000d0"); // INT7 - TB NL
-    cuts.AddCutCalo("00010113","411790607l032230000","2r631031000000d0"); // INT7 - Photon rotation method 
+    cuts.AddCutCalo("00010113","411790607l032230000","2r631031000000d0"); // INT7 - Photon rotation method
     cuts.AddCutCalo("0008d113","411790607l032230000","2l631031000000d0"); // EG1  - TB NL
-    cuts.AddCutCalo("0008d113","411790607l032230000","2r631031000000d0"); // EG1  - Photon rotation method 
+    cuts.AddCutCalo("0008d113","411790607l032230000","2r631031000000d0"); // EG1  - Photon rotation method
     cuts.AddCutCalo("0008e113","411790607l032230000","2l631031000000d0"); // EG2  - TB NL
     cuts.AddCutCalo("0008e113","411790607l032230000","2r631031000000d0"); // EG2  - Photon rotation method
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
@@ -2238,6 +2238,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fe3h230000","0r631031000000d0"); // EG2  NL 01
     cuts.AddCutCalo("00010113","411792106fe3j230000","0r631031000000d0"); // EG2  NL 01
     cuts.AddCutCalo("00010113","411792106fe3k230000","0r631031000000d0"); // EG2  NL 01
+  } else if (trainConfig == 2039){ // //EMCal + DCal no timing cut for timing effi
+    cuts.AddCutCalo("00010113","411790100fe32230000","01631031000000d0")
+    cuts.AddCutCalo("0008e113","411790100fe32230000","01631031000000d0")
+    cuts.AddCutCalo("0008d113","411790100fe32230000","01631031000000d0")
 
 
   } else if (trainConfig == 2040){ //EMCal + DCal EG1 mult. diff.
