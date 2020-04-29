@@ -2082,10 +2082,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTruePhotonCandidates(AliAODConver
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
 {
-  const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
-  Double_t mcProdVtxX   = primVtxMC->GetX();
-  Double_t mcProdVtxY   = primVtxMC->GetY();
-  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+//  const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
+//  Double_t mcProdVtxX   = primVtxMC->GetX();
+//  Double_t mcProdVtxY   = primVtxMC->GetY();
+//  Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray == NULL) return;
