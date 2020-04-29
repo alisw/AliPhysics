@@ -76,7 +76,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, i
   int multbins[numOfMultBins + 1] = {0.001, 50, 100, 200, 300, 400, 500, 900};
   
   int runch[numOfChTypes] = {1, 1, 1, 1};
-  const char *chrgs[numOfChTypes] = { "PIpKp", "PImKm", "PIpKm","PImKp"};
+  const char *chrgs[numOfChTypes] = { "PIpPro", "PImAPro", "PIpAPro","PImPro" };
 
   //int runktdep = 1;
   double ktrng[numOfkTbins + 1] = {0.5, 0.85, 1.0};
