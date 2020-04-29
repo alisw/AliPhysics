@@ -350,27 +350,24 @@ private:
   } mucls;              //! structure to keep muon clusters information
 
   struct {
-    // ZDC: it is not clear what is the minimal set of information (PH)
-
-    Int_t fBCsID = 0u;       /// Index to BC table
-
-    Float_t   fZEM1Energy;   	     ///< E in ZEM1
-    Float_t   fZEM2Energy;	     ///< E in ZEM2
-
-    Float_t   fZNCTowerEnergy[5];    ///< E in 5 ZNC sectors - high gain chain
-    Float_t   fZNATowerEnergy[5];    ///< E in 5 ZNA sectors - high gain chain
-    Float_t   fZPCTowerEnergy[5];    ///< E in 5 ZPC sectors - high gain chain
-    Float_t   fZPATowerEnergy[5];    ///< E in 5 ZPA sectors - high gain chain
-
-    Float_t   fZNCTowerEnergyLR[5];  ///< E in 5 ZNC sectors - low gain chain
-    Float_t   fZNATowerEnergyLR[5];  ///< E in 5 ZNA sectors - low gain chain
-    Float_t   fZPCTowerEnergyLR[5];  ///< E in 5 ZPC sectors - low gain chain
-    Float_t   fZPATowerEnergyLR[5];  ///< E in 5 ZPA sectors - low gain chain
-
-    Float_t   fZDCTDCCorrected[32][4]; /// ZDC TDC data in ns corrected 4 phase shift
-
-    UChar_t   fFired;                  /// Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  } zdc;                             //! structure to keep ZDC information
+    Int_t   fBCsID = 0u;                 /// Index to BC table
+    Float_t fEnergyZEM1 = 0.f;           ///< E in ZEM1
+    Float_t fEnergyZEM2 = 0.f;           ///< E in ZEM2
+    Float_t fEnergyCommonZNA = 0.f;      ///< E in common ZNA PMT - high gain chain
+    Float_t fEnergyCommonZNC = 0.f;      ///< E in common ZNC PMT - high gain chain
+    Float_t fEnergyCommonZPA = 0.f;      ///< E in common ZPA PMT - high gain chain
+    Float_t fEnergyCommonZPC = 0.f;      ///< E in common ZPC PMT - high gain chain
+    Float_t fEnergySectorZNA[4] = {0.f}; ///< E in 4 ZNA sectors - high gain chain
+    Float_t fEnergySectorZNC[4] = {0.f}; ///< E in 4 ZNC sectors - high gain chain
+    Float_t fEnergySectorZPA[4] = {0.f}; ///< E in 4 ZPA sectors - high gain chain
+    Float_t fEnergySectorZPC[4] = {0.f}; ///< E in 4 ZPC sectors - high gain chain
+    Float_t fTimeZEM1 = 0.f;             ///< Corrected time in ZEM1      
+    Float_t fTimeZEM2 = 0.f;             ///< Corrected time in ZEM2
+    Float_t fTimeZNA = 0.f;              ///< Corrected time in ZNA
+    Float_t fTimeZNC = 0.f;              ///< Corrected time in ZNC     
+    Float_t fTimeZPA = 0.f;              ///< Corrected time in ZPA     
+    Float_t fTimeZPC = 0.f;              ///< Corrected time in ZPC     
+  } zdc;                                 //! structure to keep ZDC information
 
   struct {
     /// Run 2 VZERO Legacy table 
@@ -380,6 +377,10 @@ private:
     Float_t fAdc[64];          ///  adc for each channel
     Float_t fTime[64];         ///  time for each channel
     Float_t fWidth[64];        ///  time width for each channel
+    Float_t fMultA;            ///  calibrated A-side multiplicity
+    Float_t fMultC;            ///  calibrated C-side multiplicity
+    Float_t fTimeA;            ///  average A-side time
+    Float_t fTimeC;            ///  average C-side time
     ULong64_t fBBFlag;         ///  BB Flags from Online V0 Electronics
     ULong64_t fBGFlag;         ///  BG Flags from Online V0 Electronics
   } vzero;                     //! structure to keep VZERO information
