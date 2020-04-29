@@ -23,9 +23,14 @@ public:
     virtual void   			NotifyRun();								  // Implement the Notify run to search for the new parameters at each new runs
 	void 					TwoMuonAna(Int_t *pos, Int_t *neg);			  // Analyses two muons and extracs dimuon information
 	void 					TwoMCMuonAna(Int_t *MCpos, Int_t *MCneg);	  // Analyses two MC muons and extracs MC dimuon information
-	void 					SetPeriod(TString period){fPeriod = period;} 
+	void 					SetPeriod(TString period){fPeriod = period;}  
 	void 					SetTrigger(TString trigger){fTrigger = trigger;} 
 	void 					SetMC(Bool_t flag){fIsMC = flag;}	
+	void 					SetScaling(Bool_t flag){fIsScalingOn = flag;}	
+	void 					SetRunAndLumi(Int_t run, Double_t lumi){
+								fMapRunAndLumi[run] = lumi;
+  								fMapAnalysedMC[run] = 0;
+							}
 	void 					PostAllData();	
 
     AliMuonTrackCuts* 		fMuonTrackCuts; 					// Use the class as a data member
@@ -34,6 +39,7 @@ private:
 	TString 				fPeriod;
 	TString 				fTrigger;
 	Bool_t 					fIsMC;
+	Bool_t 					fIsScalingOn;
 
     AliAODEvent*            fAOD;       		//! input event
     AliMCEvent*				fMC;				//! input MC event
@@ -44,6 +50,8 @@ private:
     TH2F*                   fNumberMCMuonsH;	//! count MC muons per event
 	// TH2F*                   fRAbsMuonH; 		//! distribution of RAbsMuon for selected events
 	// TH2F*                   fMuMuMassPtH; 		//! kinematics of dimouns	
+    map<Int_t,Double_t> 	fMapRunAndLumi;
+  	map<Int_t,Double_t> 	fMapAnalysedMC;
 
 	TTree *fRecTree; 			//! analysis tree
 	Int_t fRunNum;
