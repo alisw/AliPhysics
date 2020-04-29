@@ -58,8 +58,11 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
   fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
   fStoreDetLevelJets(0), fDoSubJet(0),fShapesVar_Splittings_angle(0),
-  fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
-  fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0)
+    fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
+    fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
+    fShapesVar_Splittings_angle_part(0),
+    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
+  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0)
 {
   
   SetMakeGeneralHistograms(kTRUE);
@@ -81,7 +84,10 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
     fStoreDetLevelJets(0),fDoSubJet(0),fShapesVar_Splittings_angle(0),
     fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
-    fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0)
+    fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
+    fShapesVar_Splittings_angle_part(0),
+    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
+    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0)
     
 {
  
@@ -109,7 +115,7 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
  
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   
-  fTreeSplittings = new TTree(nameoutput_Splittings, nameoutput_Splittings);
+  fTreeSplittings = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames_Splittings=new TString[18];
 
   fShapesVarNames_Splittings[0] = "angle";
@@ -206,13 +212,12 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
         continue;
       AliEmcalJet *jet2 = 0x0;
       AliEmcalJet *jet3 = 0x0;
-      fPtJet->Fill(jet1->Pt());
+      
       AliEmcalJet *jetUS = NULL;
       Int_t ifound = 0, jfound = 0;
       Int_t ilab = -1, jlab = -1;
 
-      int sub1 = -1;
-      int sub2 = -1;
+     
 
       
 
@@ -295,24 +300,9 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       IterativeDeclustering(jet1, jetCont);
     
     
-      Float_t ptMatch = 0.;
-      Float_t leadTrackMatch = 0.;
-      Double_t ktgMatch = 0;
-      ;
-      Double_t nsdMatch = 0;
-      Double_t zgMatch = 0;
-      Double_t rgMatch = 0;
-      Float_t ptDet = 0.;
-      Float_t leadTrackDet = 0.;
-      Double_t ktgDet = 0;
-      ;
-      Double_t nsdDet = 0;
-      Double_t zgDet = 0;
-      Double_t rgDet = 0;
-      Double_t aver1 = 0;
-      Double_t aver2 = 0;
-      Double_t aver3 = 0;
-      Double_t aver4 = 0;
+    
+      
+ 
       Int_t kMatched = 0;
     
       if (fJetShapeType == kPythiaDef) {
@@ -322,7 +312,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
 
         ptMatch = jet3->Pt();
 	leadTrackMatch = jet3->MaxTrackPt();
-        IterativeDeclustering(jet3, kMatched);
+        IterativeDeclusteringMC(jet3, kMatched);
        
       }
 
@@ -346,7 +336,8 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       fShapesVar_Splittings_phi1_part.clear();
       fShapesVar_Splittings_eta2_part.clear();
       fShapesVar_Splittings_phi2_part.clear();
-   
+      fShapesVar_Splittings_ptjet.clear();
+      fShapesVar_Splittings_ptjet_part.clear();
 
 
     
@@ -460,9 +451,9 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 
             rad_vec.clear();
 	    eta1_vec.clear();
-	    eta2.clear();
+	    eta2_vec.clear();
             phi1_vec.clear();
-	    phi2.clear();
+	    phi2_vec.clear();
 	    
 	    
   } catch (fastjet::Error) {
@@ -473,7 +464,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
   return;
 }
 //_________________________________________________________________________
-void AliAnalysisTaskLundPlane::IterativeParentsMCAverage(
+void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
     AliEmcalJet *fJet, Int_t km) {
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet> fInputVectors;
@@ -552,9 +543,9 @@ void AliAnalysisTaskLundPlane::IterativeParentsMCAverage(
 
             rad_vec.clear();
 	    eta1_vec.clear();
-	    eta2.clear();
+	    eta2_vec.clear();
             phi1_vec.clear();
-	    phi2.clear();
+	    phi2_vec.clear();
 
  
 
