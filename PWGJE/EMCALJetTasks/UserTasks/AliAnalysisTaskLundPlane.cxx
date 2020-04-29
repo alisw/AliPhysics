@@ -295,14 +295,14 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1))
         continue;
 
-      fShapesVar[0] = ptSubtracted;
+     
      
       IterativeDeclustering(jet1, jetCont);
     
     
     
       
- 
+      Double_t ptMatch=0;
       Int_t kMatched = 0;
     
       if (fJetShapeType == kPythiaDef) {
@@ -311,11 +311,12 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
           kMatched = 3;
 
         ptMatch = jet3->Pt();
-	leadTrackMatch = jet3->MaxTrackPt();
+
         IterativeDeclusteringMC(jet3, kMatched);
        
       }
-
+      fShapesVar_Splittings_ptjet=ptSubtracted;
+       fShapesVar_Splittings_ptjet_part=ptMatch;
    
       fTreeSplittings->Fill();
 
@@ -336,8 +337,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       fShapesVar_Splittings_phi1_part.clear();
       fShapesVar_Splittings_eta2_part.clear();
       fShapesVar_Splittings_phi2_part.clear();
-      fShapesVar_Splittings_ptjet.clear();
-      fShapesVar_Splittings_ptjet_part.clear();
+     
 
 
     

@@ -114,22 +114,30 @@ protected:
 
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2_part;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
  
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt;
+
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z;
+ 
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy;
+ 
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2;
+ 
+
+std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt_part;
+std::vector<std::vector<Double_t>>            fShapesVar_Splittings_z_part; 
+std::vector<std::vector<Double_t>>            fShapesVar_Splittings_energy_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta1_part;
+std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2_part;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi1_part;
+std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
+ 
+ Double_t                                      fShapesVar_Splittings_ptjet;
+ Double_t                                      fShapesVar_Splittings_ptjet_part; 
 
   TTree *fTreeSplittings; ///< Tree with tagging variables subtracted MC or true
                             // MC or raw
