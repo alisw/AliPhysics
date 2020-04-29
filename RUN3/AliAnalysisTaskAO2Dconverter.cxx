@@ -297,20 +297,25 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tZdc = CreateTree(kZdc);
   tZdc->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kZdc]) {
-    tZdc->Branch("fBCsID", &zdc.fBCsID, "fBCsID/I");
-    tZdc->Branch("fZEM1Energy", &zdc.fZEM1Energy, "fZEM1Energy/F");
-    tZdc->Branch("fZEM2Energy", &zdc.fZEM2Energy, "fZEM2Energy/F");
-    tZdc->Branch("fZNCTowerEnergy", zdc.fZNCTowerEnergy, "fZNCTowerEnergy[5]/F");
-    tZdc->Branch("fZNATowerEnergy", zdc.fZNATowerEnergy, "fZNATowerEnergy[5]/F");
-    tZdc->Branch("fZPCTowerEnergy", zdc.fZPCTowerEnergy, "fZPCTowerEnergy[5]/F");
-    tZdc->Branch("fZPATowerEnergy", zdc.fZPATowerEnergy, "fZPATowerEnergy[5]/F");
-    tZdc->Branch("fZNCTowerEnergyLR", zdc.fZNCTowerEnergyLR, "fZNCTowerEnergyLR[5]/F");
-    tZdc->Branch("fZNATowerEnergyLR", zdc.fZNATowerEnergyLR, "fZNATowerEnergyLR[5]/F");
-    tZdc->Branch("fZPCTowerEnergyLR", zdc.fZPCTowerEnergyLR, "fZPCTowerEnergyLR[5]/F");
-    tZdc->Branch("fZPATowerEnergyLR", zdc.fZPATowerEnergyLR, "fZPATowerEnergyLR[5]/F");
-    tZdc->Branch("fZDCTDCCorrected", zdc.fZDCTDCCorrected, "fZDCTDCCorrected[32][4]/F");
-    tZdc->Branch("fFired", &zdc.fFired, "fFired/b");
+    tZdc->Branch("fBCsID",           &zdc.fBCsID          , "fBCsID/I");
+    tZdc->Branch("fEnergyZEM1",      &zdc.fEnergyZEM1     , "fEnergyZEM1/F");
+    tZdc->Branch("fEnergyZEM2",      &zdc.fEnergyZEM2     , "fEnergyZEM2/F");
+    tZdc->Branch("fEnergyCommonZNA", &zdc.fEnergyCommonZNA, "fEnergyCommonZNA/F");
+    tZdc->Branch("fEnergyCommonZNC", &zdc.fEnergyCommonZNC, "fEnergyCommonZNC/F");
+    tZdc->Branch("fEnergyCommonZPA", &zdc.fEnergyCommonZPA, "fEnergyCommonZPA/F");
+    tZdc->Branch("fEnergyCommonZPC", &zdc.fEnergyCommonZPC, "fEnergyCommonZPC/F");
+    tZdc->Branch("fEnergySectorZNA", &zdc.fEnergySectorZNA, "fEnergySectorZNA[4]/F");
+    tZdc->Branch("fEnergySectorZNC", &zdc.fEnergySectorZNC, "fEnergySectorZNC[4]/F");
+    tZdc->Branch("fEnergySectorZPA", &zdc.fEnergySectorZPA, "fEnergySectorZPA[4]/F");
+    tZdc->Branch("fEnergySectorZPC", &zdc.fEnergySectorZPC, "fEnergySectorZPC[4]/F");
+    tZdc->Branch("fTimeZEM1",        &zdc.fTimeZEM1       , "fTimeZEM1/F");
+    tZdc->Branch("fTimeZEM2",        &zdc.fTimeZEM2       , "fTimeZEM2/F");
+    tZdc->Branch("fTimeZNA",         &zdc.fTimeZNA        , "fTimeZNA/F");
+    tZdc->Branch("fTimeZNC",         &zdc.fTimeZNC        , "fTimeZNC/F");
+    tZdc->Branch("fTimeZPA",         &zdc.fTimeZPA        , "fTimeZPA/F");
+    tZdc->Branch("fTimeZPC",         &zdc.fTimeZPC        , "fTimeZPC/F");
   }
+  
   PostTree(kZdc);
 
   // Associuate branches for VZERO
@@ -321,6 +326,10 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
     tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
     tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
+    tVzero->Branch("fMultA", &vzero.fMultA, "fMultA/F");
+    tVzero->Branch("fMultC", &vzero.fMultC, "fMultC/F");
+    tVzero->Branch("fTimeA", &vzero.fTimeA, "fTimeA/F");
+    tVzero->Branch("fTimeC", &vzero.fTimeC, "fTimeC/F");
     tVzero->Branch("fBBFlag", &vzero.fBBFlag, "fBBFlag/l");
     tVzero->Branch("fBGFlag", &vzero.fBGFlag, "fBGFlag/l");
   }
@@ -806,32 +815,52 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   AliESDZDC* esdzdc  =    fESD->GetESDZDC();
   zdc.fBCsID = eventID;
   // ZEM
-  zdc.fZEM1Energy = esdzdc->GetZEM1Energy();
-  zdc.fZEM2Energy = esdzdc->GetZEM2Energy();
-  // ZDC (P,N) towers
-  for (Int_t ich=0; ich<5; ++ich) {
-    zdc.fZNCTowerEnergy[ich] = esdzdc->GetZNCTowerEnergy()[ich];
-    zdc.fZNATowerEnergy[ich] = esdzdc->GetZNATowerEnergy()[ich];
-    zdc.fZPCTowerEnergy[ich] = esdzdc->GetZPCTowerEnergy()[ich];
-    zdc.fZPATowerEnergy[ich] = esdzdc->GetZPATowerEnergy()[ich];
-    
-    zdc.fZNCTowerEnergyLR[ich] = esdzdc->GetZNCTowerEnergyLR()[ich];
-    zdc.fZNATowerEnergyLR[ich] = esdzdc->GetZNATowerEnergyLR()[ich];
-    zdc.fZPCTowerEnergyLR[ich] = esdzdc->GetZPCTowerEnergyLR()[ich];
-    zdc.fZPATowerEnergyLR[ich] = esdzdc->GetZPATowerEnergyLR()[ich];
+  zdc.fEnergyZEM1      = esdzdc->GetZEM1Energy();
+  zdc.fEnergyZEM2      = esdzdc->GetZEM2Energy();
+  zdc.fEnergyCommonZNA = esdzdc->GetZNATowerEnergy()[0];
+  zdc.fEnergyCommonZNC = esdzdc->GetZNCTowerEnergy()[0];
+  zdc.fEnergyCommonZPA = esdzdc->GetZPATowerEnergy()[0];
+  zdc.fEnergyCommonZPC = esdzdc->GetZPCTowerEnergy()[0];
+  
+  // ZDC (P,N) sectors
+  for (Int_t ich=0; ich<4; ++ich) {
+    zdc.fEnergySectorZNA[ich] = esdzdc->GetZNATowerEnergy()[ich+1];
+    zdc.fEnergySectorZNC[ich] = esdzdc->GetZNCTowerEnergy()[ich+1];
+    zdc.fEnergySectorZPA[ich] = esdzdc->GetZPATowerEnergy()[ich+1];
+    zdc.fEnergySectorZPC[ich] = esdzdc->GetZPCTowerEnergy()[ich+1];
   }
   // ZDC TDC
-  for (Int_t ii=0; ii< 32; ++ii)
-    for (Int_t jj=0; jj<4; ++jj)
-      zdc.fZDCTDCCorrected[ii][jj] = esdzdc->GetZDCTDCCorrected(ii,jj);
-  // ZDC flags
-  zdc.fFired = 0x0;                  // Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  if (esdzdc->IsZNAhit()) zdc.fFired |= (0x1);
-  if (esdzdc->IsZNChit()) zdc.fFired |= (0x1 << 1);
-  if (esdzdc->IsZPAhit()) zdc.fFired |= (0x1 << 2);
-  if (esdzdc->IsZPChit()) zdc.fFired |= (0x1 << 3);
-  if (esdzdc->IsZEM1hit()) zdc.fFired |= (0x1 << 4);
-  if (esdzdc->IsZEM2hit()) zdc.fFired |= (0x1 << 5);
+  Bool_t isHitFlagFilled = fESD->GetRunNumber()>=208502;
+  Bool_t isZNAhit  = isHitFlagFilled ? esdzdc->IsZNAhit() : 1;
+  Bool_t isZNChit  = isHitFlagFilled ? esdzdc->IsZNChit() : 1;
+  Bool_t isZPAhit  = isHitFlagFilled ? esdzdc->IsZPAhit() : 1;
+  Bool_t isZPChit  = isHitFlagFilled ? esdzdc->IsZPChit() : 1;
+  Bool_t isZEM1hit = isHitFlagFilled ? esdzdc->IsZEM1hit() : 1;
+  Bool_t isZEM2hit = isHitFlagFilled ? esdzdc->IsZEM2hit() : 1;
+  
+  zdc.fTimeZNA  = 999.f;
+  zdc.fTimeZNC  = 999.f;
+  zdc.fTimeZPA  = 999.f;
+  zdc.fTimeZPC  = 999.f;
+  zdc.fTimeZEM1 = 999.f;
+  zdc.fTimeZEM2 = 999.f;
+
+  // Storing first ZDC hit in +/-12.5 ns around 0
+  for (Int_t i=0;i<4;i++) {
+    Float_t tZNA  = isZNAhit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZNATDCChannel(),i)  : 999.f;
+    Float_t tZNC  = isZNChit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZNCTDCChannel(),i)  : 999.f;
+    Float_t tZPA  = isZPAhit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZPATDCChannel(),i)  : 999.f;
+    Float_t tZPC  = isZPChit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZPCTDCChannel(),i)  : 999.f;
+    Float_t tZEM1 = isZEM1hit ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZEM1TDCChannel(),i) : 999.f;
+    Float_t tZEM2 = isZEM2hit ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZEM2TDCChannel(),i) : 999.f;
+    if (tZNA >-12.5 && tZNA <12.5 && zdc.fTimeZNA >998) zdc.fTimeZNA  = tZNA;
+    if (tZNC >-12.5 && tZNC <12.5 && zdc.fTimeZNC >998) zdc.fTimeZNC  = tZNC;
+    if (tZPA >-12.5 && tZPA <12.5 && zdc.fTimeZPA >998) zdc.fTimeZPA  = tZPA;
+    if (tZPC >-12.5 && tZPC <12.5 && zdc.fTimeZPC >998) zdc.fTimeZPC  = tZPC;
+    if (tZEM1>-12.5 && tZEM1<12.5 && zdc.fTimeZEM1>998) zdc.fTimeZEM1 = tZEM1;
+    if (tZEM2>-12.5 && tZEM2<12.5 && zdc.fTimeZEM2>998) zdc.fTimeZEM2 = tZEM2;
+  }
+  
   FillTree(kZdc);
   if (fTreeStatus[kZdc]) vtx.fNentries[kZdc] = 1;
 
@@ -853,6 +882,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	vzero.fBGFlag |= (mask << i);
     }
   }
+  vzero.fMultA = vz->GetMTotV0A();
+  vzero.fMultC = vz->GetMTotV0C();
+  vzero.fTimeA = vz->GetV0ATime();
+  vzero.fTimeC = vz->GetV0CTime();
   FillTree(kRun2V0);
   if (fTreeStatus[kRun2V0]) vtx.fNentries[kRun2V0] = 1;
 
