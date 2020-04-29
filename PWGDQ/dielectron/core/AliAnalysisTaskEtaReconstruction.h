@@ -498,8 +498,9 @@ private:
   std::vector<TwoPair>  fGenSmearedPairVec_secondary;
   std::vector<TwoPair>  fRecPairVec_primary;
   std::vector<TwoPair>  fRecPairVec_secondary;
-
   std::vector<TwoPair>  fRecV0Pair;
+
+  std::vector<Int_t> fPreFilter_BadTracksLabel_primary;
 
   bool fDoCocktailWeighting;
   std::string fCocktailFilename;
