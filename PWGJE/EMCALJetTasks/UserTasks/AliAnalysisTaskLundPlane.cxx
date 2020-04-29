@@ -1,6 +1,6 @@
 //
-// Few substructure observables to try with the new PbPb data
-//
+// Task for the Lund plane in pp collisions
+//authors: Leticia Cunqueiro, Laura Havener
 //
 //
 #include "AliAODMCHeader.h"
