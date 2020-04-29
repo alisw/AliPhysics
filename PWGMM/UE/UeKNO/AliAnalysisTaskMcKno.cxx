@@ -137,7 +137,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKno) // classimp: necessary for root
 
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
-  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0), hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
+  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE), fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0), hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0), hITSclustersvsUE(0),hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0),hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
 {
   for(Int_t i=0;i<3;++i){
     hPtVsUEGenTest[i]=0;
@@ -157,7 +157,7 @@ AliAnalysisTaskMcKno::AliAnalysisTaskMcKno() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKno::AliAnalysisTaskMcKno(const char* name) : AliAnalysisTaskSE(name),
-							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
+							       fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE),fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchTSGenTest(0),hNchGen(0),hNchGenTest(0), hNchTSRec(0), hNchTSRecTest(0),hNchData(0), hNchTSData(0), hNchResponse(0),hNchRec(0),hNchRecTest(0), hPtInPrim(0), hPtInPrim_pion(0), hPtInPrim_kaon(0), hPtInPrim_proton(0), hPtInPrim_sigmap(0), hPtInPrim_sigmam(0), hPtInPrim_omega(0), hPtInPrim_xi(0), hPtInPrim_rest(0), hPtOut(0), hPtOutPrim(0), hPtOutPrim_pion(0), hPtOutPrim_kaon(0), hPtOutPrim_proton(0), hPtOutPrim_sigmap(0), hPtOutPrim_sigmam(0), hPtOutPrim_omega(0), hPtOutPrim_xi(0), hPtOutPrim_rest(0), hPtOutSec(0), hCounter(0),hRefMult08(0),hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0),  hITSclustersvsUE(0), hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEGenTest(0), hDphiVsUERecTest(0), hDphiVsUEData(0), hDphiVsNchGenTest(0), hDphiVsNchRecTest(0), hDphiVsNchData(0), hDphiVsUEvsNchData_V0M(0), hPTVsDCAData(0), hPTVsDCAcentData(0), hptvsdcaPrim(0), hptvsdcaDecs(0), hptvsdcaMatl(0), hptvsdcacentralPrim(0), hptvsdcacentralDecs(0), hptvsdcacentralMatl(0), hptvsdcaAll(0), hptvsdcacentralAll(0)
 {
 
   for(Int_t i=0;i<3;++i){
@@ -203,21 +203,45 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
   if(!fLeadingTrackFilter){
     fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
     AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
-    fCuts1->SetMaxFractionSharedTPCClusters(0.4);//
-    fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);//
-    fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);//
-    fCuts1->SetMaxChi2PerClusterTPC(4);//
-    fCuts1->SetAcceptKinkDaughters(kFALSE);//
-    fCuts1->SetRequireTPCRefit(kTRUE);//
-    fCuts1->SetRequireITSRefit(kTRUE);//
-    fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-				     AliESDtrackCuts::kAny);//
-    fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
-    fCuts1->SetMaxChi2TPCConstrainedGlobal(36);//
-    fCuts1->SetMaxDCAToVertexZ(2);//
-    fCuts1->SetDCAToVertex2D(kFALSE);//
-    fCuts1->SetRequireSigmaToVertex(kFALSE);//
-    fCuts1->SetMaxChi2PerClusterITS(36);//
+    fCuts1->SetAcceptKinkDaughters(kFALSE);// Default
+    fCuts1->SetRequireTPCRefit(kTRUE);// Default
+    fCuts1->SetRequireITSRefit(kTRUE);// Default
+    fCuts1->SetDCAToVertex2D(kFALSE);// Default
+    fCuts1->SetRequireSigmaToVertex(kFALSE);// Default
+    fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");// Default
+
+    if (fTPCclustersVar1) {fCuts1->SetMaxFractionSharedTPCClusters(0.2);}
+    else if (fTPCclustersVar2) {fCuts1->SetMaxFractionSharedTPCClusters(1.);}
+    else {fCuts1->SetMaxFractionSharedTPCClusters(0.4);}// Default
+
+    if (fNcrVar1) {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+    else if (fNcrVar2) {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+    else {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+
+    if (fGeoTPCVar1) {fCuts1->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar2) {fCuts1->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar3) {fCuts1->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar4) {fCuts1->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+    else {fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+
+    if (fChisqTPCVar1) {fCuts1->SetMaxChi2PerClusterTPC(3);}
+    else if (fChisqTPCVar2) {fCuts1->SetMaxChi2PerClusterTPC(5);}
+    else {fCuts1->SetMaxChi2PerClusterTPC(4);}// Default
+
+    if (!fSPDreqVar1) {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);}// Default    
+
+    if (fChisqITSmTPCVar1) {fCuts1->SetMaxChi2TPCConstrainedGlobal(25);}//
+    else if (fChisqITSmTPCVar2) {fCuts1->SetMaxChi2TPCConstrainedGlobal(49);}//
+    else {fCuts1->SetMaxChi2TPCConstrainedGlobal(36);}// Default
+
+    if (fDcazVar1) {fCuts1->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+    else if (fDcazVar2) {fCuts1->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+    else {fCuts1->SetMaxDCAToVertexZ(2);}// Default
+
+    if (fChisqITSVar1) {fCuts1->SetMaxChi2PerClusterITS(25);}//
+    else if (fChisqITSVar2) {fCuts1->SetMaxChi2PerClusterITS(49);}//
+    else {fCuts1->SetMaxChi2PerClusterITS(36);}// Default
+
     fLeadingTrackFilter->AddCuts(fCuts1);
   }
 
@@ -418,6 +442,14 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
   hRefmultvsUE = 0;
   hRefmultvsUE = new TH2D("hRefmultvsUE","Ref Mult vs NchTS; Ref. mult.;N_{ch}^{TS}",3000,-0.5,2999.5,3000,-0.5,2999.5);
   fOutputList->Add(hRefmultvsUE);
+
+  hITSclustersvsUE = 0;
+  hITSclustersvsUE = new TH2D("hITSclustersvsUE","ITSclusters vs NchTS; ITSclusters;N_{ch}^{TS}",3000,-0.5,2999.5,3000,-0.5,2999.5);
+  fOutputList->Add(hITSclustersvsUE);
+
+  hITSclustersvsNch = 0;
+  hITSclustersvsNch = new TH2D("hITSclustersvsNch","ITSclusters vs Nch; ITSclusters;N_{ch}",3000,-0.5,2999.5,3000,-0.5,2999.5);
+  fOutputList->Add(hITSclustersvsNch);
 
   for(Int_t i=0;i<3;++i){
     hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_1[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
@@ -891,8 +923,57 @@ void AliAnalysisTaskMcKno::GetMB(){
     hPtVsV0MData->Fill(fv0mpercentile,track->Pt());
 
   }
-
+  Int_t multTSrec=0;
+  Int_t multrec=0;
   
+   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+    if(!track) continue;
+
+    if(!fTrackFilter->IsSelected(track))
+      continue;
+
+    if(TMath::Abs(track->Eta()) > fEtaCut)
+      continue;
+
+    if( track->Pt() < 0.15)continue;
+
+    Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+    multrec++;
+    // definition of the topological regions
+    if(TMath::Abs(DPhi)<pi/3.0){// near side
+      continue;
+    }
+    else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+      continue;
+    }
+    else{// transverse side
+      multTSrec++;
+    }
+
+  }
+
+   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
+
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));  // get a track (type AliesdTrack)
+
+    if(!track) continue;
+
+    if(!fLeadingTrackFilter->IsSelected(track))
+      continue;
+
+    if(TMath::Abs(track->Eta()) > fEtaCut)
+      continue;
+
+    if( track->Pt() < 0.15)continue;
+
+    hITSclustersvsUE->Fill(track->GetITSNcls(),multTSrec);
+    hITSclustersvsNch->Fill(track->GetITSNcls(),multrec);
+    
+   }
 }
 //______________________________________________________________
 void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
@@ -941,7 +1022,6 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
 	
   hV0MmultvsUE->Fill(fv0mpercentile,multTSrec);
   hRefmultvsUE->Fill(ftrackmult08,multTSrec);
-	
 
   // Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
   for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -962,6 +1042,7 @@ void AliAnalysisTaskMcKno::GetMultiplicityDistributionsData(){
     if( track->Pt() < fPtMin)continue;
 
     Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+    
 
     // definition of the topological regions
     if(TMath::Abs(DPhi)<pi/3.0){// near side
