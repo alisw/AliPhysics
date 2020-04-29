@@ -69,6 +69,7 @@ class AliEventCuts : public TList {
       kCorrelations,
       kTimeRangeCut,
       kEMCALEDCut,
+      kTPCPileUp,
       kAllCuts
     };
 

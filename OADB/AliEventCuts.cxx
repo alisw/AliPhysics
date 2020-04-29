@@ -243,11 +243,9 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
       (!usePileUpMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
-
-  if(fUseITSTPCCluCorrelationCut){
-    const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
-    if(nCluSDDSSD < its_tpcclus_limit) fFlag &= ~(BIT(kPileUp));
-  }
+  
+  const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
+  if(!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) fFlag |= BIT(kTPCPileUp);
 
   /// Centrality cuts:
   /// * Check for min and max centrality
