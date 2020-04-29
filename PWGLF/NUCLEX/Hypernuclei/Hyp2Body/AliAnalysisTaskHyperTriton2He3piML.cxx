@@ -121,6 +121,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxTPCpiSigma{10.},
       fMaxTPChe3Sigma{10.},
       fMinHe3pt{0.},
+      fMassRange{2.9,3.1},
       fMinTPCclusters{50},
       fMinPIDclusters{30},
       fMaxDeltaPhi{0.12},
@@ -598,7 +599,7 @@ Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *
   if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt))
     return false;
 
-  if (hyperVector.M() < 2.9 || hyperVector.M() > 3.2)
+  if (hyperVector.M() < fMassRange[0] || hyperVector.M() > fMassRange[1])
     return false;
   // Track quality cuts
 
