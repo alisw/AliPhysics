@@ -71,7 +71,7 @@ ClassImp(AliAnalysisTaskMKBase)
       fMCParticleType(AlidNdPtTools::kUndefined),
       fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
       fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
-      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0),
+      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0), fZInner(0),
       fPtInnerTPC(0), fEtaInnerTPC(0),
       fPhiInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
       fDCAzTPC(0), fEventCuts(0), fUseEventCuts(kFALSE), fESDtrackCutsM(0),
@@ -124,7 +124,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
       fMCParticleType(AlidNdPtTools::kUndefined),
       fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
       fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
-      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0),
+      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0), fZInner(0),
       fPtInnerTPC(0), fEtaInnerTPC(0),
       fPhiInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
       fDCAzTPC(0), fEventCuts(0), fUseEventCuts(kFALSE), fESDtrackCutsM(0),
@@ -1150,11 +1150,13 @@ Bool_t AliAnalysisTaskMKBase::InitTrackIP() {
         fPtInner = 0;
         fEtaInner = 0;
         fPhiInner = 0;
+        fZInner = -100;
         return kFALSE;
     } else {
         fPtInner = fInnerP->Pt();
         fEtaInner = fInnerP->Eta();
         fPhiInner = fInnerP->Phi();
+        fZInner = fInnerP->GetZ();
     }
     return kTRUE;
 }

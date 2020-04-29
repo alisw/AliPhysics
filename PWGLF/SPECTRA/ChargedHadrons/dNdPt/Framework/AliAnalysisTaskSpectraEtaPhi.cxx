@@ -116,7 +116,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrackM) return;
     
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEtaInnerTPC, fPhiInnerTPC, fZInnerTPC, fTPCSignalN);
+    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEtaInner, fPhiInner, fZInner, fTPCSignalN);
 }
 
 //_____________________________________________________________________________
@@ -128,7 +128,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEtaInnerTPC, fPhiInnerTPC, fZInnerTPC, fTPCSignalN);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEtaInner, fPhiInner, fZInner, fTPCSignalN);
 
 }
 
@@ -143,7 +143,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3, fEtaInnerTPC, fPhiInnerTPC, fTPCSignalN);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3, fEtaInner, fPhiInner, fTPCSignalN);
 
 }
 
@@ -182,7 +182,7 @@ AliAnalysisTaskSpectraEtaPhi* AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("tpcitsnogeonogold"));
 //     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     
     // attach the task to the manager and configure in and ouput
