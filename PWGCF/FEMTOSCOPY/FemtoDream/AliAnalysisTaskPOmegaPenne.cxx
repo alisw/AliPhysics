@@ -342,12 +342,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 if (fLambdaV0Cuts->isSelected(fv0)) 
                 {
                     vLambda.push_back(*fv0);
-                    vLambda[vLambda.size() - 1].SetCPA(0.5);
+                    vLambda[vLambda.size() - 1].SetCPA(1.0);
                 }
                 if (fAntiLambdaV0Cuts->isSelected(fv0)) 
                 {
                     vAntiLambda.push_back(*fv0);
-                    vAntiLambda[vAntiLambda.size() - 1].SetCPA(0.5);
+                    vAntiLambda[vAntiLambda.size() - 1].SetCPA(1.0);
                 }
             }
 
@@ -359,12 +359,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 if (fCascadeCutsXi->isSelected(fCascade))
                 {
                     vXi.push_back(*fCascade);
-                    vXi[vXi.size() - 1].SetCPA(1.0);
+                    vXi[vXi.size() - 1].SetCPA(0.5);
                 }
                 if (fCascadeCutsAntiXi->isSelected(fCascade))
                 {
                     vAntiXi.push_back(*fCascade);
-                    vAntiXi[vAntiXi.size() -1].SetCPA(1.0);
+                    vAntiXi[vAntiXi.size() -1].SetCPA(0.5);
                 }
             }                                                                         
             // remove double-matched tracks
