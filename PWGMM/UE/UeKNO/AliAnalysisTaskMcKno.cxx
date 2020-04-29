@@ -203,47 +203,44 @@ void AliAnalysisTaskMcKno::UserCreateOutputObjects()
   if(!fLeadingTrackFilter){
     fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
     AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
-    
-    if (fTPCclustersVar1) fCuts1->SetMaxFractionSharedTPCClusters(0.2);
-    else if (fTPCclustersVar2) fCuts1->SetMaxFractionSharedTPCClusters(1.);
-    else fCuts1->SetMaxFractionSharedTPCClusters(0.4);// Default
-
-    if (fNcrVar1) fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);//
-    else if (fNcrVar2) fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);//
-    else fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Default
-
-    if (fGeoTPCVar1) fCuts1->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);//
-    else if (fGeoTPCVar2) fCuts1->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);//
-    else if (fGeoTPCVar3) fCuts1->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);//
-    else if (fGeoTPCVar4) fCuts1->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);//
-    else fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);// Default
-
-    if (fChisqTPCVar1) fCuts1->SetMaxChi2PerClusterTPC(3);
-    else if (fChisqTPCVar2) fCuts1->SetMaxChi2PerClusterTPC(5);
-    else fCuts1->SetMaxChi2PerClusterTPC(4);// Default
-
     fCuts1->SetAcceptKinkDaughters(kFALSE);// Default
     fCuts1->SetRequireTPCRefit(kTRUE);// Default
     fCuts1->SetRequireITSRefit(kTRUE);// Default
-
-    if (!fSPDreqVar1) fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);// Default
-
-    fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");// Default
-
-    if (fChisqITSmTPCVar1) fCuts1->SetMaxChi2TPCConstrainedGlobal(25);//
-    else if (fChisqITSmTPCVar2) fCuts1->SetMaxChi2TPCConstrainedGlobal(49);//
-    else fCuts1->SetMaxChi2TPCConstrainedGlobal(36);// Default
-
-    if (fDcazVar1) fCuts1->SetMaxDCAToVertexZ(1); // DCAz = 1 cm
-    else if (fDcazVar2) fCuts1->SetMaxDCAToVertexZ(5); // DCAz = 5 cm
-    else fCuts1->SetMaxDCAToVertexZ(2);// Default
-
     fCuts1->SetDCAToVertex2D(kFALSE);// Default
     fCuts1->SetRequireSigmaToVertex(kFALSE);// Default
+    fCuts1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");// Default
 
-    if (fChisqITSVar1) fCuts1->SetMaxChi2PerClusterITS(25);//
-    else if (fChisqITSVar2) fCuts1->SetMaxChi2PerClusterITS(49);//
-    else fCuts1->SetMaxChi2PerClusterITS(36);// Default
+    if (fTPCclustersVar1) {fCuts1->SetMaxFractionSharedTPCClusters(0.2);}
+    else if (fTPCclustersVar2) {fCuts1->SetMaxFractionSharedTPCClusters(1.);}
+    else {fCuts1->SetMaxFractionSharedTPCClusters(0.4);}// Default
+
+    if (fNcrVar1) {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+    else if (fNcrVar2) {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+    else {fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+
+    if (fGeoTPCVar1) {fCuts1->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar2) {fCuts1->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar3) {fCuts1->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar4) {fCuts1->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+    else {fCuts1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+
+    if (fChisqTPCVar1) {fCuts1->SetMaxChi2PerClusterTPC(3);}
+    else if (fChisqTPCVar2) {fCuts1->SetMaxChi2PerClusterTPC(5);}
+    else {fCuts1->SetMaxChi2PerClusterTPC(4);}// Default
+
+    if (!fSPDreqVar1) {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);}// Default    
+
+    if (fChisqITSmTPCVar1) {fCuts1->SetMaxChi2TPCConstrainedGlobal(25);}//
+    else if (fChisqITSmTPCVar2) {fCuts1->SetMaxChi2TPCConstrainedGlobal(49);}//
+    else {fCuts1->SetMaxChi2TPCConstrainedGlobal(36);}// Default
+
+    if (fDcazVar1) {fCuts1->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+    else if (fDcazVar2) {fCuts1->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+    else {fCuts1->SetMaxDCAToVertexZ(2);}// Default
+
+    if (fChisqITSVar1) {fCuts1->SetMaxChi2PerClusterITS(25);}//
+    else if (fChisqITSVar2) {fCuts1->SetMaxChi2PerClusterITS(49);}//
+    else {fCuts1->SetMaxChi2PerClusterITS(36);}// Default
 
     fLeadingTrackFilter->AddCuts(fCuts1);
   }
