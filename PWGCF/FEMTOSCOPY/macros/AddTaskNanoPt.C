@@ -7,7 +7,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoPt.h"
 AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
-                                   TString trigger = "kInt7",//2
+                                   TString trigger = "kINT7",//2
                                    bool DCAPlots = false,//3
                                    bool CombSigma = false,//4
                                    bool ContributionSplitting = false,//5,
@@ -90,6 +90,9 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
 
+  std::vector<int> NBins;
+  std::vector<float> kMin;
+  std::vector<float> kMax;
   std::vector<bool> closeRejection;
   std::vector<float> mTBins = {1.14, 1.26, 999.};
   std::vector<int> pairQA;
@@ -108,6 +111,9 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);
+    NBins.push_back(1000);
+    kMin.push_back(0.);
+    kMax.push_back(1.);
   }
 
   closeRejection[0] = true;  // pp
@@ -158,44 +164,11 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
-
-  std::vector<int> NBins;
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(750);
-
-  std::vector<float> kMin;
-  //minimum k* value
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  kMin.push_back(0.);
-  //maximum k* value
-
-  std::vector<float> kMax;
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
-  kMax.push_back(3.);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
   config->SetZBins(ZVtxBins);
@@ -229,7 +202,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-  
+
   if (RefMult08) {
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   }
@@ -719,7 +692,7 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
 
   TString addon = "";
 
-  if (trigger == "kInt7") {
+  if (trigger == "kINT7") {
     addon += "MB";
   } else if (trigger == "kHM") {
     addon += "HM";
