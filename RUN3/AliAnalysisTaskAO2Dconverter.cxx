@@ -678,11 +678,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     if (fTreeStatus[kTracks]) ntrk_filled++;
   } // end loop on tracks
   vtx.fNentries[kTOF]    = ntofcls_filled;
-  vtx.fNentries[kTracks] = ntrk_filled;
 
   AliMultiplicity *mlt = fESD->GetMultiplicity();
   Int_t Ntracklets = mlt->GetNumberOfTracklets();
 
+  Int_t ntracklet_filled = 0;
   Float_t theta, phi, dphi, dphiS, dist, x, tgl, alpha;
 
   for (Int_t itr = Ntracklets; itr--;) {
@@ -748,8 +748,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       tracks.fLength = NAN;
 
       FillTree(kTracks);
+      if (fTreeStatus[kTracks]) ntracklet_filled++;
     }
   } // end loop on tracklets
+  vtx.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
   
   //---------------------------------------------------------------------------
   // Calorimeter data
