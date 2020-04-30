@@ -57,6 +57,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fUseStandardOutlierRejection(kFALSE),
   fSampleSplitter(nullptr)
 {
 }
@@ -71,6 +72,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fUseStandardOutlierRejection(kFALSE),
   fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
@@ -182,6 +184,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   auto partjets = GetJetContainer(fNameParticleJets);
   if(!partjets) return true;
