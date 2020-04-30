@@ -63,6 +63,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   void FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void LoadMyWeights(AliAODEvent*);
   void SetUseRunAvgWeights(Bool_t newval) { fUseRunAveragedWeights = newval; };
+  void SetGFWMode(Int_t newval) { fGFWMode = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -92,6 +93,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   AliGFWCuts *fFWSelection; //!
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
+  Int_t fGFWMode; //!
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t EnableDebug=kFALSE); //Pending implementation: possibility to pass pre-calculated values (e.g. for ref flow)
   Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
