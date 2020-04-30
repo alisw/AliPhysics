@@ -1,10 +1,7 @@
 void Config()
 {
+  gRandom->SetSeed(12345);
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
-  
-  gSystem->Load("libGeom");
-  cout << "\t* Loading TFluka..." << endl;  
-  gSystem->Load("libfluka");    
   
   cout << "\t* Instantiating TFluka..." << endl;
   new  TFluka("C++ Interface to Fluka", 0/*verbositylevel*/);
