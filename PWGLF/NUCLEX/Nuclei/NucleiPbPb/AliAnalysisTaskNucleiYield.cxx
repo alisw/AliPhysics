@@ -169,8 +169,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
-   ,fRecNucleus{}
-   ,fSimNucleus{}
+   ,fRecNucleus{0.,0.,0.,0.,0.,0.,0,0,0}
+   ,fSimNucleus{0.,0.,0,0,0}
    ,fParticle{AliPID::kUnknown}
    ,fCentBins{0}
    ,fDCABins{0}
