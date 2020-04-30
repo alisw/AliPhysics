@@ -50,8 +50,8 @@ private:
     TH2F*                   fNumberMCMuonsH;	//! count MC muons per event
 	// TH2F*                   fRAbsMuonH; 		//! distribution of RAbsMuon for selected events
 	// TH2F*                   fMuMuMassPtH; 		//! kinematics of dimouns	
-    map<Int_t,Double_t> 	fMapRunAndLumi;
-  	map<Int_t,Double_t> 	fMapAnalysedMC;
+    std::map<Int_t,Double_t> 	fMapRunAndLumi;
+  	std::map<Int_t,Double_t> 	fMapAnalysedMC;
 
 	TTree *fRecTree; 			//! analysis tree
 	Int_t fRunNum;
