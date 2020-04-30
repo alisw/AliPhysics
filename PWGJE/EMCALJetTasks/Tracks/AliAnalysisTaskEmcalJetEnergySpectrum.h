@@ -78,6 +78,7 @@ public:
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
+  void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
 
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
@@ -118,6 +119,7 @@ private:
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
+  Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning

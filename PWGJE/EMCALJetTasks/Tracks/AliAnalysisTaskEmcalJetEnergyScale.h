@@ -51,6 +51,7 @@ public:
   void SetFractionResponseClosure(double fraction) { fFractionResponseClosure = fraction; }
   void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
   void SetEnergyScaleShift(Double_t scaleshift)  { fScaleShift = scaleshift; }
+  void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
 
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
@@ -78,6 +79,7 @@ private:
   Double_t                    fFractionResponseClosure;       ///< Fraction of jets used for response in closure test
   Bool_t                      fFillHSparse;                   ///< Fill THnSparses
   Double_t                    fScaleShift;                    ///< Shift of the jet energy scale (fixed)
+  Bool_t                      fUseStandardOutlierRejection;   ///< Use standard outlier rejection
   TRandom                     *fSampleSplitter;               //!<! Sample splitter
 
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);

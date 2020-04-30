@@ -79,6 +79,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fHasResponseMatrixRooUnfold(true),
                                                                                fUseChargedConstituents(true),
                                                                                fUseNeutralConstituents(true),
+                                                                               fUseStandardOutlierRejection(false),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
                                                                                fSampleTrimmer(nullptr),
@@ -112,6 +113,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fHasResponseMatrixRooUnfold(true),
                                                                                                fUseChargedConstituents(true),
                                                                                                fUseNeutralConstituents(true),
+                                                                                               fUseStandardOutlierRejection(false),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
                                                                                                fSampleTrimmer(nullptr),
@@ -525,6 +527,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
     return true;
   if (!(fIsPythia || fIsHerwig))
     return true; // Only relevant for pt-hard production
+  if(fUseStandardOutlierRejection) 
+    return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   auto partjets = GetJetContainer(fNamePartLevelJetContainer);
   if (!partjets)
