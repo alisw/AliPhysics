@@ -39,6 +39,7 @@ public:
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
+    kEventsExtra,
     kTracks,
     kCalo,
     kCaloTrigger,
@@ -117,10 +118,6 @@ private:
   // Data structures
 
   struct {
-    // Start indices and numbers of elements for data in the other trees matching this vertex.
-    // Needed for random access of collision-related data, allowing skipping data discarded by the user
-    Int_t     fStart[kTrees]    = {0}; /// Start entry indices for data in the other trees matching this vertex
-    Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
     // Event data
     Int_t fBCsID = 0u;       /// Index to BC table
     // Primary vertex position
@@ -145,6 +142,13 @@ private:
     UChar_t fCollisionTimeMask = 0u;    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
   } vtx; //! structure to keep the primary vertex (avoid name conflicts)
+  
+  struct {
+    // Start indices and numbers of elements for data in the other trees matching this vertex.
+    // Needed for random access of collision-related data, allowing skipping data discarded by the user
+    Int_t     fStart[kTrees]    = {0}; /// Start entry indices for data in the other trees matching this vertex
+    Int_t     fNentries[kTrees] = {0}; /// Numbers of entries for data in the other trees matching this vertex
+  } eventextra; //! structure for benchmarking information
 
   struct {
     int fRunNumber = -1;         /// Run number
@@ -405,7 +409,7 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 7);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 8);
 };
 
 #endif

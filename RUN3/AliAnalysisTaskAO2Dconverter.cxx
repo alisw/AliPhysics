@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -152,11 +152,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tEvents = CreateTree(kEvents);
   tEvents->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kEvents]) {
-    TString sstart = TString::Format("fStart[%d]/I", kTrees);
-    TString sentries = TString::Format("fNentries[%d]/I", kTrees);
     tEvents->Branch("fBCsID", &vtx.fBCsID, "fBCsID/I");
-    tEvents->Branch("fStart", vtx.fStart, sstart.Data());
-    tEvents->Branch("fNentries", vtx.fNentries, sentries.Data()); // TODO do we need this?
     tEvents->Branch("fPosX", &vtx.fPosX, "fPosX/F");
     tEvents->Branch("fPosY", &vtx.fPosY, "fPosY/F");
     tEvents->Branch("fPosZ", &vtx.fPosZ, "fPosZ/F");
@@ -173,6 +169,17 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fCollisionTimeMask", &vtx.fCollisionTimeMask, "fCollisionTimeMask/b");
   }
   PostTree(kEvents);
+  
+  // Extra information for debugging for event table
+  TTree* tEventsExtra = CreateTree(kEventsExtra);
+  tEventsExtra->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kEventsExtra]) {
+    TString sstart = TString::Format("fStart[%d]/I", kTrees);
+    TString sentries = TString::Format("fNentries[%d]/I", kTrees);
+    tEventsExtra->Branch("fStart", eventextra.fStart, sstart.Data());
+    tEventsExtra->Branch("fNentries", eventextra.fNentries, sentries.Data());
+  }
+  PostTree(kEventsExtra);
 
   // Associate branches for fEventTree
   TTree* tBC = CreateTree(kBC);
@@ -494,8 +501,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
   if(pvtx->GetNContributors()<2) return;
 
-  // Get access to the current event number
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Int_t eventID = fEventCount++;
 
   //---------------------------------------------------------------------------
@@ -503,9 +508,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // Adjust start indices for this event in all trees by adding the number of entries of the previous event
   for (auto i = 0; i < kTrees; ++i)
-     vtx.fStart[i] += vtx.fNentries[i];
+     eventextra.fStart[i] += eventextra.fNentries[i];
 
-  vtx.fNentries[kEvents] = 1;  // one entry per vertex
+  eventextra.fNentries[kEvents] = 1;  // one entry per vertex
   vtx.fBCsID = eventID;
   vtx.fPosX = pvtx->GetX();
   vtx.fPosY = pvtx->GetY();
@@ -677,7 +682,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kTracks);
     if (fTreeStatus[kTracks]) ntrk_filled++;
   } // end loop on tracks
-  vtx.fNentries[kTOF]    = ntofcls_filled;
+
+  eventextra.fNentries[kTOF]    = ntofcls_filled;
 
   AliMultiplicity *mlt = fESD->GetMultiplicity();
   Int_t Ntracklets = mlt->GetNumberOfTracklets();
@@ -751,7 +757,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       if (fTreeStatus[kTracks]) ntracklet_filled++;
     }
   } // end loop on tracklets
-  vtx.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
+  eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
   
   //---------------------------------------------------------------------------
   // Calorimeter data
@@ -778,7 +784,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
   } // end loop on calo cells
-  vtx.fNentries[kCalo] = ncalocells_filled;
+  eventextra.fNentries[kCalo] = ncalocells_filled;
 
   AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fESD->GetRunNumber()); // Needed for EMCAL trigger mapping
   AliESDCaloTrigger *calotriggers = fESD->GetCaloTrigger("EMCAL");
@@ -801,7 +807,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCaloTrigger);
     if (fTreeStatus[kCaloTrigger]) ncalotriggers_filled++;
   }
-  vtx.fNentries[kCaloTrigger] = ncalotriggers_filled;
+  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
 
   cells = fESD->GetPHOSCells();
   nCells = cells->GetNumberOfCells();
@@ -826,7 +832,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) nphoscells_filled++;
   } // end loop on PHOS cells
-  vtx.fNentries[kCalo] = nphoscells_filled;
+  eventextra.fNentries[kCalo] = nphoscells_filled;
 
   //---------------------------------------------------------------------------
   // Muon tracks
@@ -878,8 +884,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kMuon);
     if (fTreeStatus[kMuon]) nmu_filled++;
   } // End loop on muon tracks
-  vtx.fNentries[kMuon] = nmu_filled;
-  vtx.fNentries[kMuonCls] = nmucl_filled;
+  eventextra.fNentries[kMuon] = nmu_filled;
+  eventextra.fNentries[kMuonCls] = nmucl_filled;
 
   //---------------------------------------------------------------------------
   // ZDC
@@ -933,7 +939,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   
   FillTree(kZdc);
-  if (fTreeStatus[kZdc]) vtx.fNentries[kZdc] = 1;
+  if (fTreeStatus[kZdc]) eventextra.fNentries[kZdc] = 1;
 
   //---------------------------------------------------------------------------
   // VZERO
@@ -958,7 +964,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   vzero.fTimeA = vz->GetV0ATime();
   vzero.fTimeC = vz->GetV0CTime();
   FillTree(kRun2V0);
-  if (fTreeStatus[kRun2V0]) vtx.fNentries[kRun2V0] = 1;
+  if (fTreeStatus[kRun2V0]) eventextra.fNentries[kRun2V0] = 1;
 
   //---------------------------------------------------------------------------
   // V0s (Lambda and KS)
@@ -976,7 +982,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       if (fTreeStatus[kV0s]) nv0_filled++;
     }
   } // End loop on V0s
-  vtx.fNentries[kV0s] = nv0_filled;
+  eventextra.fNentries[kV0s] = nv0_filled;
 
   //---------------------------------------------------------------------------
   // Cascades
@@ -1020,7 +1026,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     delete [] sortedPosNeg;
     delete [] sortIdx;
   } // End if V0s
-  vtx.fNentries[kCascades] = ncascades_filled;
+  eventextra.fNentries[kCascades] = ncascades_filled;
   
   //---------------------------------------------------------------------------
   // MC data (to be modified)
@@ -1064,7 +1070,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     }
     fOffsetLabel += nMCtracks; // Offset for the labels of the next event
   }
-  vtx.fNentries[kKinematics] = nkine_filled;
+  eventextra.fNentries[kKinematics] = nkine_filled;
 
   if (MCEvt) {
     // MC vertex
@@ -1096,9 +1102,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         }
       }
     }
-    vtx.fNentries[kMCvtx] = 1;
+    eventextra.fNentries[kMCvtx] = 1;
   } else {
-    vtx.fNentries[kMCvtx] = 0;
+    eventextra.fNentries[kMCvtx] = 0;
   }
   // Filling the tree of vertices has to be done last because it contains the
   // index data for the other trees
