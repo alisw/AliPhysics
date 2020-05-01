@@ -835,7 +835,8 @@ AliAnalysisTask *RegisterTaskNpepplowB13(Bool_t useMC, Int_t RunSystematic = 0, 
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     
     if(useMC && weightlevelback>=0) {
-        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_Sep28.root");
+        //ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_Sep28.root");
+        ConfigWeightFactors(task,kFALSE,WhichWei,"nonHFEcorrect_pp13_LowB_Final_April30_2020.root");
     }
     
     //create data containers
