@@ -58,10 +58,12 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   void GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t runno, TString pf="");
   Bool_t WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType);
   //In development
+  Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   Double_t GetZMWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   void DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void LoadMyWeights(AliAODEvent*);
+  void LoadZMWeights();
   void SetUseRunAvgWeights(Bool_t newval) { fUseRunAveragedWeights = newval; };
   void SetGFWMode(Int_t newval) { fGFWMode = newval; };
  protected:
@@ -99,7 +101,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
   //In development
-  TH2D **fZMWeights; //
+  TH2D **fWeightArray; //
   AliPIDCombined *fBayesPID;
   Bool_t HasTPCPID(AliAODTrack* l_track);
   Bool_t HasTOFPID(AliAODTrack* l_track);
