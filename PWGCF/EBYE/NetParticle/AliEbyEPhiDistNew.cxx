@@ -1381,7 +1381,7 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     if (fParticleSpecies == 2) {//for Pion: TPC+TOF
         if(fPidStrategy==0){
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
-            else isAccepted =  isAcceptedTPC;
+            else isAccepted = isAcceptedITS && isAcceptedTPC;
         }
         else if(fPidStrategy == 1){
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
@@ -1391,9 +1391,8 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
     if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
         if(fPidStrategy == 0){
-            
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTOF;
-            else isAccepted =  isAcceptedTPC;
+            else isAccepted = isAcceptedITS && isAcceptedTPC;
         }
         
         else if (fPidStrategy == 1){
