@@ -217,7 +217,7 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonsFilterCJ(const AliAnalysisTaskDmesonsFilterCJ &source);
   AliAnalysisTaskDmesonsFilterCJ& operator=(const AliAnalysisTaskDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 2); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 3); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif
