@@ -743,7 +743,7 @@ void AliAnalysisTaskGFWPIDFlow::LoadWeightAndMPT(AliAODEvent *inEv) {
   };
 }
 void AliAnalysisTaskGFWPIDFlow::LoadMyWeights(AliAODEvent* mev) {
-  Int_t lRunNo = mev->GetRunNumber();
+  Int_t lRunNo = mev->GetRunNumber(); //246048 for testing purposes
   if(fRunNo == lRunNo) return;
   fRunNo = lRunNo;
   if(!fWeightList) AliFatal("Weight list not set!\n");
@@ -771,9 +771,8 @@ Bool_t AliAnalysisTaskGFWPIDFlow::WithinSigma(Double_t SigmaCut, AliAODTrack *in
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
 Double_t AliAnalysisTaskGFWPIDFlow::GetMyWeight(Double_t eta, Double_t phi, Int_t pidind) {
-  // return GetZMWeight(eta,phi,pidind);//Overriding for now
-  Int_t phiind = fWeightArray[pidind]->GetXaxis()->FindBin(eta);
-  Int_t etaind = fWeightArray[pidind]->GetYaxis()->FindBin(phi);
+  Int_t etaind = fWeightArray[pidind]->GetXaxis()->FindBin(eta);
+  Int_t phiind = fWeightArray[pidind]->GetYaxis()->FindBin(phi);
   return fWeightArray[pidind]->GetBinContent(etaind,phiind);
 }
 Double_t AliAnalysisTaskGFWPIDFlow::GetZMWeight(Double_t eta, Double_t phi, Int_t pidind) {
