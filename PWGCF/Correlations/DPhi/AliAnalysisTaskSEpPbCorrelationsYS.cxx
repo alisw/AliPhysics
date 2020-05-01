@@ -724,10 +724,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
  }
  void AliAnalysisTaskSEpPbCorrelationsYS::DefineVZEROOutput() {
 
-   const Int_t nVZEROBins[3] = {10, 8, 15};
+   Int_t ncent;
+   if(fCentType=="Manual") ncent=20;
+   else ncent=15;
+   const Int_t nVZEROBins[3] = {10, 8, ncent};
    Double_t binning_eta_vzero[11] = {-3.7, -3.2, -2.7, -2.2, -1.7, 0., 2.8,  3.4,  3.9,  4.5,  5.1};
    Double_t binning_phi_vzero[9] = {0., 0.7853, 1.5707, 2.3561, 3.1415, 3.9269, 4.7123, 5.4977, 6.2831};
-   Double_t binning_cent[16] = {0.,  1.,  2.,  3.,  4.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
+   Double_t binning_cent[16] = {0., 0.1, 1.,  2.,  3.,   5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
 
    fHist_vzeromult = new TH2F("fHist_vzeromult", "fHist_vzeromult", 64, -0.5, 63.5, 500, 0, 500);
    fOutputList1->Add(fHist_vzeromult);
@@ -738,7 +741,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistVZERO = new AliTHn("fHistVZERO", "fHistVZERO", 1, 3, nVZEROBins);
    fHistVZERO->SetBinLimits(0, binning_eta_vzero);
    fHistVZERO->SetBinLimits(1, binning_phi_vzero);
-   fHistVZERO->SetBinLimits(2, binning_cent);
+   if(fCentType=="Manual") fHistVZERO->SetBinLimits(2, binning_cent);
+   else fHistVZERO->SetBinLimits(2, 0, 200);
    fOutputList1->Add(fHistVZERO);
    
  }
@@ -776,7 +780,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524,
        4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123,
        4.712389};
-   Double_t binning_cent[16] = {0.,  1.,  2.,  3.,  4.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
+   Double_t binning_cent[16] = {0., 0.1, 1., 2.,  3.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
      Double_t binning_zvx[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
    if(fasso=="PID" && fQA){
    fHistPIDQA = new AliTHn("fHistPIDQA", "fHistPIDQA", 3, 4, ipidBin);
@@ -911,7 +915,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 fh2_FMD_eta_phi_aftercut=new TH2D("fh2_FMD_eta_phi_aftercut","fh2_FMD_eta_phi_aftercut",200,-4,6,20,0,2*TMath::Pi());
 	 fOutputList2->Add(fh2_FMD_eta_phi_aftercut);
 	 
-	 fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,20,0,ncentmax);
+	 if(fCentType=="Manual")fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,15,binning_cent);
+	 else fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,20,0,200);
 	 fOutputList2->Add(fhistfmdphiacc);
 	 
 	 fhFMDmultchannel=new TH2F("fhFMDmultchannel","fhFMDmultchannel",200,-4,6,100,0,100);
@@ -925,13 +930,17 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   fhFMDmult_runbyrun_aside[i]=new TH2D(Form("fhFMDmult_runbyrun_aside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
 	   //     fOutputList2->Add(fhFMDmult_runbyrun_aside[i]);
 	 }
-	 
-	 const Int_t ifmdbin[4]={200,20,20,20};
+
+	 Int_t ncentbinfmd;
+	 if(fCentType=="Manual") ncentbinfmd=20;
+	 else ncentbinfmd=15;
+	 const Int_t ifmdbin[4]={200,20,ncentbinfmd,10};
 	 fhistfmd=new AliTHn("fhistfmd","fhistfmd",1,4,ifmdbin);
 	 fhistfmd->SetBinLimits(0,-4.,6.);
 	 fhistfmd->SetBinLimits(1,0.,2*TMath::Pi());
 	 if(fCentType=="Manual")fhistfmd->SetBinLimits(2,0.,200.);
-	 else fhistfmd->SetBinLimits(2,0.,100.);
+	 //	 else fhistfmd->SetBinLimits(2,0.,100.);
+	 else fhistfmd->SetBinLimits(2,binning_cent);
 	 fhistfmd->SetBinLimits(3,-10.,10.);
 	 fhistfmd->SetVarTitle(0,"eta");
 	 fhistfmd->SetVarTitle(1,"phi");
@@ -2156,7 +2165,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    Double_t eta_ave;
    Double_t phi_vzero;
    Double_t mult_vzero;
-   Double_t vzeroqa[3];
+
    Double_t mult_vzero_eq;
    Float_t nV0A_hits_fmdacc=0;
    Float_t nV0C_hits_fmdacc=0;
@@ -2173,18 +2182,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      fHist_vzeromult->Fill(imod, mult_vzero);
      fHist_vzeromultEqweighted->Fill(imod, mult_vzero_eq);
      fHist2dmult->Fill(imod, mult_vzero_eq, mult_vzero);
-     vzeroqa[0] = eta_ave;
-     vzeroqa[1] = phi_vzero;
-     vzeroqa[2] = lCentrality;
-     if (fQA)   fHistVZERO->Fill(vzeroqa, 0, (Double_t)mult_vzero_eq);
-     /*
-     if(imod>31) {
-       if(fAnaMode=="TPCV0A") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
-       if(fAnaMode=="V0AV0C")selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
-     }else if(imod<32) {
-       if(fAnaMode=="TPCV0C" ||fAnaMode=="V0AV0C")selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta_ave,phi_vzero,-999,-999,-999,-999,-999,mult_vzero_eq));
-     }
-     */
    }
    
    Float_t nFMD_fwd_hits=0;
@@ -2424,6 +2421,20 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    }
    
    if(hphiacceptance) delete hphiacceptance;
+
+   Double_t vzeroqa[3];
+   for (Int_t imod = 0; imod < 64; imod++) {
+     eta_min = fvzero->GetVZEROEtaMin(imod);
+     eta_max = fvzero->GetVZEROEtaMax(imod);
+     phi_vzero = fvzero->GetVZEROAvgPhi(imod);
+     mult_vzero = fvzero->GetMultiplicity(imod);
+     mult_vzero_eq = fEvent->GetVZEROEqMultiplicity(imod);
+     eta_ave = (eta_min + eta_max) / 2.;
+     vzeroqa[0] = eta_ave;
+     vzeroqa[1] = phi_vzero;
+     vzeroqa[2] = lCentrality;
+     fHistVZERO->Fill(vzeroqa, 0, (Double_t)mult_vzero_eq);
+   }
 
    
    DumpTObjTable("End of fill fmd tracks");
