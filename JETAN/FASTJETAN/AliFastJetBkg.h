@@ -16,6 +16,8 @@
 // renamed from AliJetBkg to AliFastJetBkg as this class uses only FASTJET based algos        
 //---------------------------------------------------------------------
 #include "fastjet/PseudoJet.hh"
+#include <vector>
+using std::vector;
 #ifdef __CINT__
 namespace fastjet {
   class PsuedoJet;
