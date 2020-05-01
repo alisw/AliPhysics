@@ -750,7 +750,7 @@ void AliAnalysisTaskGFWPIDFlow::LoadMyWeights(AliAODEvent* mev) {
   TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
   if(!fWeightArray) fWeightArray = new TH2D*[5];
   for(Int_t i=0;i<5;i++) {
-    //wNames[i].Prepend(Form("w%i_",fRunNo));
+    wNames[i].Prepend(Form("w%i_",fRunNo));
     fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
     if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
   };
@@ -771,7 +771,7 @@ Bool_t AliAnalysisTaskGFWPIDFlow::WithinSigma(Double_t SigmaCut, AliAODTrack *in
   return (TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF) < SigmaCut);
 }
 Double_t AliAnalysisTaskGFWPIDFlow::GetMyWeight(Double_t eta, Double_t phi, Int_t pidind) {
-  return GetZMWeight(eta,phi,pidind);//Overriding for now
+  // return GetZMWeight(eta,phi,pidind);//Overriding for now
   Int_t phiind = fWeightArray[pidind]->GetXaxis()->FindBin(eta);
   Int_t etaind = fWeightArray[pidind]->GetYaxis()->FindBin(phi);
   return fWeightArray[pidind]->GetBinContent(etaind,phiind);
