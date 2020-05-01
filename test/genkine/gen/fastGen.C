@@ -24,6 +24,10 @@
 #include "AliHeader.h"
 #include "AliGenPythia.h"
 #include "AliPythia.h"
+
+using std::cout;
+using std::cerr;
+using std::endl;
 #endif
 
 // Forward declarations of utility functions
@@ -47,7 +51,7 @@ void fastGen(Int_t nev = 1, const char* filename = "galice.root")
   // Prepare the simulation environment
   
   // Create run loader
-  AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
+  AliRunLoader* rl = AliRunLoader::Open(filename,"FASTRUN","recreate");
   
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(nev);
