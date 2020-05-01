@@ -291,6 +291,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaIsoTree::Notify()
 {
+    return kTRUE;
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){

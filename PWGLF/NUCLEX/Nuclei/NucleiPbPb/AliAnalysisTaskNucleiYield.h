@@ -347,6 +347,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.tofNsigma = fPID->NumberOfSigmasTOF(track, fParticle);
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+      fRecNucleus.flag = 0;
       fRecNucleus.flag |= !tofPID.GetT0binMask(tofPID.GetMomBin(track->GetTPCmomentum())) ? RLightNucleus::kT0fill : 0;
       if (fIsMC) {
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kPrimary) ? RLightNucleus::kPrimary : 0;

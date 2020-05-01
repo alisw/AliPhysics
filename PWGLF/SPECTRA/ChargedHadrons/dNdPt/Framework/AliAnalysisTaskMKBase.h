@@ -303,10 +303,11 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fPtInner;                   //!<! inner param pt                                                    --InitTrackIP()
         Double_t                        fEtaInner;                  //!<! inner param eta                                                   --InitTrackIP()
         Double_t                        fPhiInner;                  //!<! inner param phi                                                   --InitTrackIP()
+        Double_t                        fZInner;                    //!<! inner param Z                                                   --InitTrackIP()
         Double_t                        fPtInnerTPC;                //!<! tpc inner pt                                                      --InitTrackTPC()
         Double_t                        fEtaInnerTPC;               //!<! tpc inner eta                                                     --InitTrackTPC()
         Double_t                        fPhiInnerTPC;               //!<! tpc inner phi                                                     --InitTrackTPC()
-        Double_t                        fZInnerTPC; //!<! tpc inner parameter of track --InitTrackTPC
+        Double_t                        fZInnerTPC;                 //!<! tpc inner parameter of track                              --InitTrackTPC
         Float_t                         fDCATPC[2];                 //!<! TPC impact parameter (DCA)                                        --InitTrackTPC()
         Float_t                         fDCACovTPC[3];              //!<! TPC impat parameter (DCA) covariance                              --InitTrackTPC()
         Double_t                        fDCArTPC;                   //!<! TPC impact parameter (DCA) in xy-direction                        --InitTrackTPC()

@@ -96,7 +96,7 @@ AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=
       cInWeights->SetData(tlWeights);
       mgr->ConnectInput(task,1,cInWeights);
     };
-    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("FlowCont",AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer(Form("FlowCont_%s",name.Data()),AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputFC);
     return task;
   };

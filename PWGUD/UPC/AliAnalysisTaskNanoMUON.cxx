@@ -16,6 +16,7 @@
 // c++ headers
 #include <iostream>
 #include <fstream>
+#include <map>
 
 // root headers
 #include <TMath.h>
@@ -59,16 +60,17 @@
 
 // my headers
 #include "AliAnalysisTaskNanoMUON.h"
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 class AliAnalysisTaskNanoMUON;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
 ClassImp(AliAnalysisTaskNanoMUON) // classimp: necessary for root
 
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(), 
-  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fIsScalingOn(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMapRunAndLumi(), fMapAnalysedMC(),
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -92,9 +94,10 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
-  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fIsScalingOn(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0), 
+  fMapRunAndLumi(), fMapAnalysedMC(),
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
@@ -122,7 +125,7 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysis
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TTree::Class()); 
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskNanoMUON::~AliAnalysisTaskNanoMUON()
 {
   // destructor
@@ -138,7 +141,7 @@ AliAnalysisTaskNanoMUON::~AliAnalysisTaskNanoMUON()
   // if(fRAbsMuonH) {delete fRAbsMuonH;}
   // if(fMuMuMassPtH) {delete fMuMuMassPtH;}
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
 {
   // create output objects
@@ -254,13 +257,13 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   // post data
   PostData(2, fOutputList);           
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::NotifyRun()
 {
   /// Set run number for cuts
   fMuonTrackCuts->SetRun(fInputHandler);
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::PostAllData()
 {
   // Post data
@@ -269,7 +272,7 @@ void AliAnalysisTaskNanoMUON::PostAllData()
   PostData(3, fGenTree);
   PostData(4, fTrgTree);
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
 {
   // Get muon masss fromn PDG
@@ -310,7 +313,7 @@ void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
   // fMuPt2 = NegTrack->Pt();
   // fMuQ2 = NegTrack->Charge();
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::TwoMCMuonAna(Int_t *idxMCPosMuons, Int_t *idxMCNegMuons)
 {
   // get tracks  
@@ -342,7 +345,7 @@ void AliAnalysisTaskNanoMUON::TwoMCMuonAna(Int_t *idxMCPosMuons, Int_t *idxMCNeg
   // fMCMuPt2 = NegMCPart->Pt(); 
   // fMCMuPDG2 = NegMCPart->PdgCode();
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
 {
   Int_t iSelectionCounter = 0; // no selection applied yet 
@@ -364,57 +367,10 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   ////////////////////////////////////////////
   // Selecting good runs
   ////////////////////////////////////////////
-  // #####################################################18q#####################################################
-  vector<Int_t> Vector_GoodRuns18q = {    295585, 295586, 295587, 295588, 295589, 295612, 295615, 295665, 295666, 295667,
-                                          295668, 295671, 295673, 295675, 295676, 295677, 295714, 295716, 295717, 295718,
-                                          295719, 295723, 295725, 295753, 295754, 295755, 295758, 295759, 295762, 295763,
-                                          295786, 295788, 295791, 295816, 295818, 295819, 295822, 295825, 295826, 295829,
-                                          295831, 295854, 295855, 295856, 295859, 295860, 295861, 295863, 295881, 295908,
-                                          295909, 295910, 295913, 295936, 295937, 295941, 295942, 295943, 295945, 295947,
-                                          296061, 296062, 296063, 296065, 296066, 296068, 296123, 296128, 296132, 296133,
-                                          296134, 296135, 296142, 296143, 296191, 296192, 296194, 296195, 296196, 296197,
-                                          296198, 296241, 296242, 296243, 296244, 296246, 296247, 296269, 296270, 296273,
-                                          296279, 296280, 296303, 296304, 296307, 296309, 296312, 296377, 296378, 296379, 
-                                          296380, 296381, 296383, 296414, 296419, 296420, 296423, 296424, 296433, 296472, 
-                                          296509, 296510, 296511, 296514, 296516, 296547, 296548, 296549, 296550, 296551,
-                                          296552, 296553, 296615, 296616, 296618, 296619, 296622, 296623                  };
-// #####################################################18r#####################################################
-  vector<Int_t> Vector_GoodRuns18r = {    296690, 296691, 296694, 296749, 296750, 296781, 296784, 296785, 296786, 296787,
-                                          296791, 296793, 296794, 296799, 296836, 296838, 296839, 296848, 296849, 296850,
-                                          296851, 296852, 296890, 296894, 296899, 296900, 296903, 296930, 296931, 296932,
-                                          296934, 296935, 296938, 296941, 296966, 296967, 296968, 296969, 296971, 296975,
-                                          296976, 296979, 297029, 297031, 297035, 297085, 297117, 297118, 297119, 297123, 
-                                          297124, 297128, 297129, 297132, 297133, 297193, 297194, 297196, 297218, 297219, 
-                                          297221, 297222, 297278, 297310, 297312, 297315, 297317, 297363, 297366, 297367, 
-                                          297372, 297379, 297380, 297405, 297408, 297413, 297414, 297415, 297441, 297442, 
-                                          297446, 297450, 297451, 297452, 297479, 297481, 297483, 297512, 297537, 297540, 
-                                          297541, 297542, 297544, 297558, 297588, 297590, 297595                          };
-// #####################################################15o#####################################################
-  vector<Int_t> Vector_GoodRuns15o = {            244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
-                                          245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
-                                          245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
-                                          245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
-                                          245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
-                                          245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
-                                          246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
-                                          246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
-                                          246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
-                                          246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
-                                          246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
-                                          246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
-                                          246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
-                                          246949, 246980, 246982, 246984, 246989, 246991, 246994                          };
-
   Bool_t IsGoodRun = kFALSE;
 
-  for(auto i : Vector_GoodRuns18q){
-    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
-  }
-  for(auto i : Vector_GoodRuns18r){
-    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
-  }
-  for(auto i : Vector_GoodRuns15o){
-    if( fAOD->GetRunNumber() == i ) IsGoodRun = kTRUE;
+  for(auto i : fMapRunAndLumi){
+    if( fAOD->GetRunNumber() == i.first ) IsGoodRun = kTRUE;
   }
   if(!IsGoodRun) {
     PostAllData();
@@ -422,7 +378,22 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   }                                  
   fCounterH->Fill(iSelectionCounter); // Good run selected 3/3
   iSelectionCounter++;
-  
+  ////////////////////////////////////////////
+  //  MC Luminosity scaling
+  ////////////////////////////////////////////
+  const char *InputName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  Int_t scaling = 20000;
+
+  if( strstr(InputName,"/kCohJpsiToMu/") ){
+    scaling = 40000;
+  } 
+
+  if(fIsMC && fIsScalingOn && (fMapAnalysedMC[fAOD->GetRunNumber()] > Int_t(fMapRunAndLumi[fAOD->GetRunNumber()]*scaling) ) )  {
+    PostAllData();
+    return;
+  }                 
+  fMapAnalysedMC[fAOD->GetRunNumber()]++;
+
   ////////////////////////////////////////////
   //  MC generated particles analysis
   ////////////////////////////////////////////
@@ -719,13 +690,13 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   delete [] idxNegMuons;
 
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::Terminate(Option_t *)
 {
     cout << endl;
     // terminate
     // called at the END of the analysis (when all events are processed)
 }
-//_____________________________________________________________________________
+// ----------------------------------------------------------------------------------------------------------------------------------
 
 

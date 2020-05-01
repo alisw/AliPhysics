@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -152,11 +152,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tEvents = CreateTree(kEvents);
   tEvents->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kEvents]) {
-    TString sstart = TString::Format("fStart[%d]/I", kTrees);
-    TString sentries = TString::Format("fNentries[%d]/I", kTrees);
     tEvents->Branch("fBCsID", &vtx.fBCsID, "fBCsID/I");
-    tEvents->Branch("fStart", vtx.fStart, sstart.Data());
-    tEvents->Branch("fNentries", vtx.fNentries, sentries.Data()); // TODO do we need this?
     tEvents->Branch("fPosX", &vtx.fPosX, "fPosX/F");
     tEvents->Branch("fPosY", &vtx.fPosY, "fPosY/F");
     tEvents->Branch("fPosZ", &vtx.fPosZ, "fPosZ/F");
@@ -173,6 +169,17 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tEvents->Branch("fCollisionTimeMask", &vtx.fCollisionTimeMask, "fCollisionTimeMask/b");
   }
   PostTree(kEvents);
+  
+  // Extra information for debugging for event table
+  TTree* tEventsExtra = CreateTree(kEventsExtra);
+  tEventsExtra->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kEventsExtra]) {
+    TString sstart = TString::Format("fStart[%d]/I", kTrees);
+    TString sentries = TString::Format("fNentries[%d]/I", kTrees);
+    tEventsExtra->Branch("fStart", eventextra.fStart, sstart.Data());
+    tEventsExtra->Branch("fNentries", eventextra.fNentries, sentries.Data());
+  }
+  PostTree(kEventsExtra);
 
   // Associate branches for fEventTree
   TTree* tBC = CreateTree(kBC);
@@ -297,20 +304,25 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* tZdc = CreateTree(kZdc);
   tZdc->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kZdc]) {
-    tZdc->Branch("fBCsID", &zdc.fBCsID, "fBCsID/I");
-    tZdc->Branch("fZEM1Energy", &zdc.fZEM1Energy, "fZEM1Energy/F");
-    tZdc->Branch("fZEM2Energy", &zdc.fZEM2Energy, "fZEM2Energy/F");
-    tZdc->Branch("fZNCTowerEnergy", zdc.fZNCTowerEnergy, "fZNCTowerEnergy[5]/F");
-    tZdc->Branch("fZNATowerEnergy", zdc.fZNATowerEnergy, "fZNATowerEnergy[5]/F");
-    tZdc->Branch("fZPCTowerEnergy", zdc.fZPCTowerEnergy, "fZPCTowerEnergy[5]/F");
-    tZdc->Branch("fZPATowerEnergy", zdc.fZPATowerEnergy, "fZPATowerEnergy[5]/F");
-    tZdc->Branch("fZNCTowerEnergyLR", zdc.fZNCTowerEnergyLR, "fZNCTowerEnergyLR[5]/F");
-    tZdc->Branch("fZNATowerEnergyLR", zdc.fZNATowerEnergyLR, "fZNATowerEnergyLR[5]/F");
-    tZdc->Branch("fZPCTowerEnergyLR", zdc.fZPCTowerEnergyLR, "fZPCTowerEnergyLR[5]/F");
-    tZdc->Branch("fZPATowerEnergyLR", zdc.fZPATowerEnergyLR, "fZPATowerEnergyLR[5]/F");
-    tZdc->Branch("fZDCTDCCorrected", zdc.fZDCTDCCorrected, "fZDCTDCCorrected[32][4]/F");
-    tZdc->Branch("fFired", &zdc.fFired, "fFired/b");
+    tZdc->Branch("fBCsID",           &zdc.fBCsID          , "fBCsID/I");
+    tZdc->Branch("fEnergyZEM1",      &zdc.fEnergyZEM1     , "fEnergyZEM1/F");
+    tZdc->Branch("fEnergyZEM2",      &zdc.fEnergyZEM2     , "fEnergyZEM2/F");
+    tZdc->Branch("fEnergyCommonZNA", &zdc.fEnergyCommonZNA, "fEnergyCommonZNA/F");
+    tZdc->Branch("fEnergyCommonZNC", &zdc.fEnergyCommonZNC, "fEnergyCommonZNC/F");
+    tZdc->Branch("fEnergyCommonZPA", &zdc.fEnergyCommonZPA, "fEnergyCommonZPA/F");
+    tZdc->Branch("fEnergyCommonZPC", &zdc.fEnergyCommonZPC, "fEnergyCommonZPC/F");
+    tZdc->Branch("fEnergySectorZNA", &zdc.fEnergySectorZNA, "fEnergySectorZNA[4]/F");
+    tZdc->Branch("fEnergySectorZNC", &zdc.fEnergySectorZNC, "fEnergySectorZNC[4]/F");
+    tZdc->Branch("fEnergySectorZPA", &zdc.fEnergySectorZPA, "fEnergySectorZPA[4]/F");
+    tZdc->Branch("fEnergySectorZPC", &zdc.fEnergySectorZPC, "fEnergySectorZPC[4]/F");
+    tZdc->Branch("fTimeZEM1",        &zdc.fTimeZEM1       , "fTimeZEM1/F");
+    tZdc->Branch("fTimeZEM2",        &zdc.fTimeZEM2       , "fTimeZEM2/F");
+    tZdc->Branch("fTimeZNA",         &zdc.fTimeZNA        , "fTimeZNA/F");
+    tZdc->Branch("fTimeZNC",         &zdc.fTimeZNC        , "fTimeZNC/F");
+    tZdc->Branch("fTimeZPA",         &zdc.fTimeZPA        , "fTimeZPA/F");
+    tZdc->Branch("fTimeZPC",         &zdc.fTimeZPC        , "fTimeZPC/F");
   }
+  
   PostTree(kZdc);
 
   // Associuate branches for VZERO
@@ -321,6 +333,10 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     tVzero->Branch("fAdc", vzero.fAdc, "fAdc[64]/F");
     tVzero->Branch("fTime", vzero.fTime, "fTime[64]/F");
     tVzero->Branch("fWidth", vzero.fWidth, "fWidth[64]/F");
+    tVzero->Branch("fMultA", &vzero.fMultA, "fMultA/F");
+    tVzero->Branch("fMultC", &vzero.fMultC, "fMultC/F");
+    tVzero->Branch("fTimeA", &vzero.fTimeA, "fTimeA/F");
+    tVzero->Branch("fTimeC", &vzero.fTimeC, "fTimeC/F");
     tVzero->Branch("fBBFlag", &vzero.fBBFlag, "fBBFlag/l");
     tVzero->Branch("fBGFlag", &vzero.fBGFlag, "fBGFlag/l");
   }
@@ -485,8 +501,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
   if(pvtx->GetNContributors()<2) return;
 
-  // Get access to the current event number
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Int_t eventID = fEventCount++;
 
   //---------------------------------------------------------------------------
@@ -494,9 +508,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // Adjust start indices for this event in all trees by adding the number of entries of the previous event
   for (auto i = 0; i < kTrees; ++i)
-     vtx.fStart[i] += vtx.fNentries[i];
+     eventextra.fStart[i] += eventextra.fNentries[i];
 
-  vtx.fNentries[kEvents] = 1;  // one entry per vertex
+  eventextra.fNentries[kEvents] = 1;  // one entry per vertex
   vtx.fBCsID = eventID;
   vtx.fPosX = pvtx->GetX();
   vtx.fPosY = pvtx->GetY();
@@ -668,10 +682,82 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kTracks);
     if (fTreeStatus[kTracks]) ntrk_filled++;
   } // end loop on tracks
-  vtx.fNentries[kTOF]    = ntofcls_filled;
-  vtx.fNentries[kTracks] = ntrk_filled;
 
-  // TODO fill here SPD tracklets with tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
+  eventextra.fNentries[kTOF]    = ntofcls_filled;
+
+  AliMultiplicity *mlt = fESD->GetMultiplicity();
+  Int_t Ntracklets = mlt->GetNumberOfTracklets();
+
+  Int_t ntracklet_filled = 0;
+  Float_t theta, phi, dphi, dphiS, dist, x, tgl, alpha;
+
+  for (Int_t itr = Ntracklets; itr--;) {
+    dphi   = mlt->GetDeltaPhi(itr);
+    dist   = mlt->CalcDist(itr);
+    
+    // on-the-fly filtering based on parameters tuned in Run2
+    dphiS  = TMath::Abs(dphi) - 0.0045; 
+    if (dphi<0) dphiS = -dphiS;
+    if (dist<1. && dphiS<0.06) {
+      theta  = mlt->GetTheta(itr);
+      phi = mlt->GetPhi(itr);
+      tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
+      
+      // inversion formulas for snp and alpha
+      tracks.fSnp = 0.;
+      alpha = phi - TMath::Pi();
+      tracks.fAlpha = alpha;
+
+      // inversion formulas for tgl
+      x = (TMath::Tan(theta/2.)-1.) / (TMath::Tan(theta/2.)+1.);
+      if (TMath::Log(TMath::Tan(theta/2)) >= 0)
+        tgl = TMath::Sqrt((TMath::Power((1.+TMath::Power(x,2))/(1.-TMath::Power(x,2)),2))-1.);
+      else 
+        tgl = - TMath::Sqrt((TMath::Power((1.+TMath::Power(x,2))/(1.-TMath::Power(x,2)),2))-1.);
+      tracks.fTgl = tgl;
+    
+      // set global track parameters to NAN
+      tracks.fX = NAN;
+      tracks.fY = NAN;
+      tracks.fZ = NAN; 
+      tracks.fSigned1Pt = NAN;
+      tracks.fCYY = NAN;
+      tracks.fCZY = NAN;
+      tracks.fCZZ = NAN;
+      tracks.fCSnpY = NAN;
+      tracks.fCSnpZ = NAN;
+      tracks.fCSnpSnp = NAN;
+      tracks.fCTglY = NAN;
+      tracks.fCTglZ = NAN;
+      tracks.fCTglSnp = NAN;
+      tracks.fCTglTgl = NAN;
+      tracks.fC1PtY = NAN;
+      tracks.fC1PtZ = NAN;
+      tracks.fC1PtSnp = NAN;
+      tracks.fC1PtTgl = NAN;
+      tracks.fC1Pt21Pt2 = NAN;
+      tracks.fTPCinnerP = NAN; 
+      tracks.fFlags = 0;
+      tracks.fITSClusterMap = 0;
+      tracks.fTPCNClsFindable = 0;
+      tracks.fTPCNClsFindableMinusFound = 0;
+      tracks.fTPCNClsFindableMinusCrossedRows = 0;
+      tracks.fTPCNClsShared = 0;
+      tracks.fTRDNTracklets = 0;
+      tracks.fITSChi2NCl = NAN;
+      tracks.fTPCChi2NCl = NAN;
+      tracks.fTRDChi2 = NAN; 
+      tracks.fTOFChi2 = NAN;
+      tracks.fTPCSignal = NAN; 
+      tracks.fTRDSignal = NAN;
+      tracks.fTOFSignal = NAN;
+      tracks.fLength = NAN;
+
+      FillTree(kTracks);
+      if (fTreeStatus[kTracks]) ntracklet_filled++;
+    }
+  } // end loop on tracklets
+  eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
   
   //---------------------------------------------------------------------------
   // Calorimeter data
@@ -698,7 +784,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
   } // end loop on calo cells
-  vtx.fNentries[kCalo] = ncalocells_filled;
+  eventextra.fNentries[kCalo] = ncalocells_filled;
 
   AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fESD->GetRunNumber()); // Needed for EMCAL trigger mapping
   AliESDCaloTrigger *calotriggers = fESD->GetCaloTrigger("EMCAL");
@@ -721,7 +807,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCaloTrigger);
     if (fTreeStatus[kCaloTrigger]) ncalotriggers_filled++;
   }
-  vtx.fNentries[kCaloTrigger] = ncalotriggers_filled;
+  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
 
   cells = fESD->GetPHOSCells();
   nCells = cells->GetNumberOfCells();
@@ -746,7 +832,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) nphoscells_filled++;
   } // end loop on PHOS cells
-  vtx.fNentries[kCalo] = nphoscells_filled;
+  eventextra.fNentries[kCalo] = nphoscells_filled;
 
   //---------------------------------------------------------------------------
   // Muon tracks
@@ -798,42 +884,62 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     FillTree(kMuon);
     if (fTreeStatus[kMuon]) nmu_filled++;
   } // End loop on muon tracks
-  vtx.fNentries[kMuon] = nmu_filled;
-  vtx.fNentries[kMuonCls] = nmucl_filled;
+  eventextra.fNentries[kMuon] = nmu_filled;
+  eventextra.fNentries[kMuonCls] = nmucl_filled;
 
   //---------------------------------------------------------------------------
   // ZDC
   AliESDZDC* esdzdc  =    fESD->GetESDZDC();
   zdc.fBCsID = eventID;
   // ZEM
-  zdc.fZEM1Energy = esdzdc->GetZEM1Energy();
-  zdc.fZEM2Energy = esdzdc->GetZEM2Energy();
-  // ZDC (P,N) towers
-  for (Int_t ich=0; ich<5; ++ich) {
-    zdc.fZNCTowerEnergy[ich] = esdzdc->GetZNCTowerEnergy()[ich];
-    zdc.fZNATowerEnergy[ich] = esdzdc->GetZNATowerEnergy()[ich];
-    zdc.fZPCTowerEnergy[ich] = esdzdc->GetZPCTowerEnergy()[ich];
-    zdc.fZPATowerEnergy[ich] = esdzdc->GetZPATowerEnergy()[ich];
-    
-    zdc.fZNCTowerEnergyLR[ich] = esdzdc->GetZNCTowerEnergyLR()[ich];
-    zdc.fZNATowerEnergyLR[ich] = esdzdc->GetZNATowerEnergyLR()[ich];
-    zdc.fZPCTowerEnergyLR[ich] = esdzdc->GetZPCTowerEnergyLR()[ich];
-    zdc.fZPATowerEnergyLR[ich] = esdzdc->GetZPATowerEnergyLR()[ich];
+  zdc.fEnergyZEM1      = esdzdc->GetZEM1Energy();
+  zdc.fEnergyZEM2      = esdzdc->GetZEM2Energy();
+  zdc.fEnergyCommonZNA = esdzdc->GetZNATowerEnergy()[0];
+  zdc.fEnergyCommonZNC = esdzdc->GetZNCTowerEnergy()[0];
+  zdc.fEnergyCommonZPA = esdzdc->GetZPATowerEnergy()[0];
+  zdc.fEnergyCommonZPC = esdzdc->GetZPCTowerEnergy()[0];
+  
+  // ZDC (P,N) sectors
+  for (Int_t ich=0; ich<4; ++ich) {
+    zdc.fEnergySectorZNA[ich] = esdzdc->GetZNATowerEnergy()[ich+1];
+    zdc.fEnergySectorZNC[ich] = esdzdc->GetZNCTowerEnergy()[ich+1];
+    zdc.fEnergySectorZPA[ich] = esdzdc->GetZPATowerEnergy()[ich+1];
+    zdc.fEnergySectorZPC[ich] = esdzdc->GetZPCTowerEnergy()[ich+1];
   }
   // ZDC TDC
-  for (Int_t ii=0; ii< 32; ++ii)
-    for (Int_t jj=0; jj<4; ++jj)
-      zdc.fZDCTDCCorrected[ii][jj] = esdzdc->GetZDCTDCCorrected(ii,jj);
-  // ZDC flags
-  zdc.fFired = 0x0;                  // Bits: 0 - ZNA, 1 - ZNC, 2 - ZPA, 3 - ZPC, 4 - ZEM1, 5 - ZEM2
-  if (esdzdc->IsZNAhit()) zdc.fFired |= (0x1);
-  if (esdzdc->IsZNChit()) zdc.fFired |= (0x1 << 1);
-  if (esdzdc->IsZPAhit()) zdc.fFired |= (0x1 << 2);
-  if (esdzdc->IsZPChit()) zdc.fFired |= (0x1 << 3);
-  if (esdzdc->IsZEM1hit()) zdc.fFired |= (0x1 << 4);
-  if (esdzdc->IsZEM2hit()) zdc.fFired |= (0x1 << 5);
+  Bool_t isHitFlagFilled = fESD->GetRunNumber()>=208502;
+  Bool_t isZNAhit  = isHitFlagFilled ? esdzdc->IsZNAhit() : 1;
+  Bool_t isZNChit  = isHitFlagFilled ? esdzdc->IsZNChit() : 1;
+  Bool_t isZPAhit  = isHitFlagFilled ? esdzdc->IsZPAhit() : 1;
+  Bool_t isZPChit  = isHitFlagFilled ? esdzdc->IsZPChit() : 1;
+  Bool_t isZEM1hit = isHitFlagFilled ? esdzdc->IsZEM1hit() : 1;
+  Bool_t isZEM2hit = isHitFlagFilled ? esdzdc->IsZEM2hit() : 1;
+  
+  zdc.fTimeZNA  = 999.f;
+  zdc.fTimeZNC  = 999.f;
+  zdc.fTimeZPA  = 999.f;
+  zdc.fTimeZPC  = 999.f;
+  zdc.fTimeZEM1 = 999.f;
+  zdc.fTimeZEM2 = 999.f;
+
+  // Storing first ZDC hit in +/-12.5 ns around 0
+  for (Int_t i=0;i<4;i++) {
+    Float_t tZNA  = isZNAhit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZNATDCChannel(),i)  : 999.f;
+    Float_t tZNC  = isZNChit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZNCTDCChannel(),i)  : 999.f;
+    Float_t tZPA  = isZPAhit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZPATDCChannel(),i)  : 999.f;
+    Float_t tZPC  = isZPChit  ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZPCTDCChannel(),i)  : 999.f;
+    Float_t tZEM1 = isZEM1hit ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZEM1TDCChannel(),i) : 999.f;
+    Float_t tZEM2 = isZEM2hit ? esdzdc->GetZDCTDCCorrected(esdzdc->GetZEM2TDCChannel(),i) : 999.f;
+    if (tZNA >-12.5 && tZNA <12.5 && zdc.fTimeZNA >998) zdc.fTimeZNA  = tZNA;
+    if (tZNC >-12.5 && tZNC <12.5 && zdc.fTimeZNC >998) zdc.fTimeZNC  = tZNC;
+    if (tZPA >-12.5 && tZPA <12.5 && zdc.fTimeZPA >998) zdc.fTimeZPA  = tZPA;
+    if (tZPC >-12.5 && tZPC <12.5 && zdc.fTimeZPC >998) zdc.fTimeZPC  = tZPC;
+    if (tZEM1>-12.5 && tZEM1<12.5 && zdc.fTimeZEM1>998) zdc.fTimeZEM1 = tZEM1;
+    if (tZEM2>-12.5 && tZEM2<12.5 && zdc.fTimeZEM2>998) zdc.fTimeZEM2 = tZEM2;
+  }
+  
   FillTree(kZdc);
-  if (fTreeStatus[kZdc]) vtx.fNentries[kZdc] = 1;
+  if (fTreeStatus[kZdc]) eventextra.fNentries[kZdc] = 1;
 
   //---------------------------------------------------------------------------
   // VZERO
@@ -853,8 +959,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	vzero.fBGFlag |= (mask << i);
     }
   }
+  vzero.fMultA = vz->GetMTotV0A();
+  vzero.fMultC = vz->GetMTotV0C();
+  vzero.fTimeA = vz->GetV0ATime();
+  vzero.fTimeC = vz->GetV0CTime();
   FillTree(kRun2V0);
-  if (fTreeStatus[kRun2V0]) vtx.fNentries[kRun2V0] = 1;
+  if (fTreeStatus[kRun2V0]) eventextra.fNentries[kRun2V0] = 1;
 
   //---------------------------------------------------------------------------
   // V0s (Lambda and KS)
@@ -872,7 +982,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       if (fTreeStatus[kV0s]) nv0_filled++;
     }
   } // End loop on V0s
-  vtx.fNentries[kV0s] = nv0_filled;
+  eventextra.fNentries[kV0s] = nv0_filled;
 
   //---------------------------------------------------------------------------
   // Cascades
@@ -916,7 +1026,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     delete [] sortedPosNeg;
     delete [] sortIdx;
   } // End if V0s
-  vtx.fNentries[kCascades] = ncascades_filled;
+  eventextra.fNentries[kCascades] = ncascades_filled;
   
   //---------------------------------------------------------------------------
   // MC data (to be modified)
@@ -960,7 +1070,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     }
     fOffsetLabel += nMCtracks; // Offset for the labels of the next event
   }
-  vtx.fNentries[kKinematics] = nkine_filled;
+  eventextra.fNentries[kKinematics] = nkine_filled;
 
   if (MCEvt) {
     // MC vertex
@@ -992,9 +1102,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         }
       }
     }
-    vtx.fNentries[kMCvtx] = 1;
+    eventextra.fNentries[kMCvtx] = 1;
   } else {
-    vtx.fNentries[kMCvtx] = 0;
+    eventextra.fNentries[kMCvtx] = 0;
   }
   // Filling the tree of vertices has to be done last because it contains the
   // index data for the other trees

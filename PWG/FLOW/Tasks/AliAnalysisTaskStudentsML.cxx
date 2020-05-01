@@ -112,18 +112,18 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bUseEtaWeights(kFALSE),
  fNumberRuns(90),
  //Variables for the correlation
- fMaxCorrelator(12),
+ fMaxCorrelator(14),
  fNumber(0),  		//number of correlation first correlator
  fNumberSecond(0), 	//number of correlation second correlator
  fNumberThird(0),	//number of correlation second correlator
  fNumberFourth(0),	//number of correlation fourth correlator
  fNumberFifth(0),	//number of correlation fifth correlator
  fMinNumberPart(14),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), //second set of harmonics
- fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), //third set of harmonics
- fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), //fourth set of harmonics
- fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), //fifth set of harmonics
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //second set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //third set of harmonics
+ fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //fourth set of harmonics
+ fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fifth set of harmonics
  fCentrality(NULL),
  fMixedParticleHarmonics(NULL),
  bDoMixed(kFALSE),
@@ -225,18 +225,18 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bUseEtaWeights(kFALSE),
  fNumberRuns(90),
  //Variables for the correlation
- fMaxCorrelator(12),
+ fMaxCorrelator(14),
  fNumber(0),  		//number of correlation first correlator
  fNumberSecond(0), 	//number of correlation second correlator
  fNumberThird(0),	//number of correlation second correlator
  fNumberFourth(0),	//number of correlation fourth correlator
  fNumberFifth(0),	//number of correlation fifth correlator
  fMinNumberPart(14),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), //second set of harmonics
- fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), //third set of harmonics
- fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), //fourth set of harmonics
- fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), //fifth set of harmonics
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), //second set of harmonics
+ fb1(0), fb2(0), fb3(0), fb4(0), fb5(0), fb6(0), fb7(0), //third set of harmonics
+ fd1(0), fd2(0), fd3(0), fd4(0), fd5(0), fd6(0), fd7(0), //fourth set of harmonics
+ fe1(0), fe2(0), fe3(0), fe4(0), fe5(0), fe6(0), fe7(0), //fifth set of harmonics
  // Final results:
  fCentrality(NULL),
  fMixedParticleHarmonics(NULL),
@@ -784,9 +784,9 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
 
-   for(Int_t js=0;js<97;js++) 
+   for(Int_t js=0;js<85;js++) 
    {
-     for(Int_t j=0;j<13;j++)
+     for(Int_t j=0;j<15;j++)
      {
       fQvector[js][j] = TComplex(0.,0.); //! 
      } 
@@ -1474,9 +1474,9 @@ void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParti
  // b) Calculate Q-vectors for available angles and weights. 
 
  // a) Make sure all Q-vectors are initially zero:
- for(Int_t h=0;h<97;h++)
+ for(Int_t h=0;h<85;h++)
  {
-  for(Int_t p=0;p<13;p++)
+  for(Int_t p=0;p<15;p++)
   {
    fQvector[h][p] = TComplex(0.,0.);
   } //  for(Int_t p=0;p<kMaxPower;p++)
@@ -1490,9 +1490,9 @@ void AliAnalysisTaskStudentsML::CalculateQvectors(Int_t CalculateQvectors_nParti
  {
   dPhi2 = CalculateQvectors_angles[i];
   if(bUseWeights){wPhi = CalculateQvectors_weights[i];} //Change some point
-  for(Int_t h=0;h<97;h++)
+  for(Int_t h=0;h<85;h++)
   {
-   for(Int_t p=0;p<13;p++)
+   for(Int_t p=0;p<15;p++)
    {
     if(bUseWeights){wPhiToPowerP = pow(wPhi,p);}
     fQvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
@@ -1585,10 +1585,10 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 
 //==========================================================================================================================================================================
 
-void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Double_t* Correlation_Angle, Int_t Correlation_Mult, Double_t* Correlation_Weight)
+void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Int_t h13, Int_t h14, Double_t* Correlation_Angle, Int_t Correlation_Mult, Double_t* Correlation_Weight)
 {
 	
-       if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10+h11+h12!=0.){return;} //protection against anisotropic correlators
+       if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10+h11+h12+h13+h14!=0.){return;} //protection against anisotropic correlators
 	
        // Calculate n-particle correlations from Q-vectors (using recursion):	
 
@@ -1727,7 +1727,20 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         
         }//  12-p correlation
 
-        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10 && Number!=12) { return; }
+        if(14==Number)
+        {
+         Int_t harmonicsFourteenNum[14] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14};       
+         Int_t harmonicsFourteenDen[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};       
+         TComplex fourteenRecursion = Recursion(14,harmonicsFourteenNum)/Recursion(14,harmonicsFourteenDen).Re();
+         Double_t wfourteenRecursion = Recursion(14,harmonicsFourteenDen).Re();
+         fRecursion[0][12]->Fill(0.5,fourteenRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[0][12]->Fill(1.5,wfourteenRecursion);
+         fRecursion[1][12]->Fill(0.5,fourteenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[1][12]->Fill(1.5,wfourteenRecursion);
+        
+        }//  12-p correlation
+
+        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10 && Number!=12 && Number!=14) { return; }
       
  }//void Correlation() 
 
@@ -1752,7 +1765,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     if(fNumber!=0)
     {
-	this->Correlation(fNumber,fh1,fh2,fh3,fh4,fh5,fh6,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(fNumber,fh1,fh2,fh3,fh4,fh5,fh6,fh7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationNum[0]=fRecursion[0][fNumber-2]->GetBinContent(1);
    	Weight_CorrelationNum[0]=fRecursion[0][fNumber-2]->GetBinContent(2);
@@ -1762,7 +1775,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 	Int_t Number_Denom = 2*fNumber;
 
-	this->Correlation(Number_Denom,fh1,-1.*fh1,fh2,-1.*fh2,fh3,-1.*fh3,fh4,-1.*fh4,fh5,-1.*fh5,fh6,-1.*fh6,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(Number_Denom,fh1,-1.*fh1,fh2,-1.*fh2,fh3,-1.*fh3,fh4,-1.*fh4,fh5,-1.*fh5,fh6,-1.*fh6,fh7,-1.*fh7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationDenom[0]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
    	Weight_CorrelationDenom[0]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
@@ -1774,7 +1787,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     if(fNumberSecond!=0)
     {
-	this->Correlation(fNumberSecond,fa1,fa2,fa3,fa4,fa5,fa6,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(fNumberSecond,fa1,fa2,fa3,fa4,fa5,fa6,fa7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationNum[1]=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
    	Weight_CorrelationNum[1]=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
@@ -1784,7 +1797,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 	Int_t Number_Denom = 2*fNumberSecond;
 
-	this->Correlation(Number_Denom,fa1,-1.*fa1,fa2,-1.*fa2,fa3,-1.*fa3,fa4,-1.*fa4,fa5,-1.*fa5,fa6,-1.*fa6,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(Number_Denom,fa1,-1.*fa1,fa2,-1.*fa2,fa3,-1.*fa3,fa4,-1.*fa4,fa5,-1.*fa5,fa6,-1.*fa6,fa7,-1.*fa7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationDenom[1]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
    	Weight_CorrelationDenom[1]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
@@ -1797,7 +1810,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     if(fNumberThird!=0)
     {
-	this->Correlation(fNumberThird,fb1,fb2,fb3,fb4,fb5,fb6,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(fNumberThird,fb1,fb2,fb3,fb4,fb5,fb6,fb7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationNum[2]=fRecursion[0][fNumberThird-2]->GetBinContent(1);
    	Weight_CorrelationNum[2]=fRecursion[0][fNumberThird-2]->GetBinContent(2);
@@ -1807,7 +1820,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 	Int_t Number_Denom = 2*fNumberThird;
 
-	this->Correlation(Number_Denom,fb1,-1.*fb1,fb2,-1.*fb2,fb3,-1.*fb3,fb4,-1.*fb4,fb5,-1.*fb5,fb6,-1.*fb6,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(Number_Denom,fb1,-1.*fb1,fb2,-1.*fb2,fb3,-1.*fb3,fb4,-1.*fb4,fb5,-1.*fb5,fb6,-1.*fb6,fb7,-1.*fb7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationDenom[2]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
    	Weight_CorrelationDenom[2]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
@@ -1820,7 +1833,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     if(fNumberFourth!=0)
     {
-	this->Correlation(fNumberFourth,fd1,fd2,fd3,fd4,fd5,fd6,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(fNumberFourth,fd1,fd2,fd3,fd4,fd5,fd6,fd7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationNum[3]=fRecursion[0][fNumberFourth-2]->GetBinContent(1);
    	Weight_CorrelationNum[3]=fRecursion[0][fNumberFourth-2]->GetBinContent(2);
@@ -1830,7 +1843,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 	Int_t Number_Denom = 2*fNumberFourth;
 
-	this->Correlation(Number_Denom,fd1,-1.*fd1,fd2,-1.*fd2,fd3,-1.*fd3,fd4,-1.*fd4,fd5,-1.*fd5,fd6,-1.*fd6,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(Number_Denom,fd1,-1.*fd1,fd2,-1.*fd2,fd3,-1.*fd3,fd4,-1.*fd4,fd5,-1.*fd5,fd6,-1.*fd6,fd7,-1.*fd7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationDenom[3]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
    	Weight_CorrelationDenom[3]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
@@ -1842,7 +1855,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     if(fNumberFifth!=0)
     {
-	this->Correlation(fNumberFifth,fe1,fe2,fe3,fe4,fe5,fe6,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(fNumberFifth,fe1,fe2,fe3,fe4,fe5,fe6,fe7,0.,0.,0.,0.,0.,0.,0.,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationNum[4]=fRecursion[0][fNumberFifth-2]->GetBinContent(1);
    	Weight_CorrelationNum[4]=fRecursion[0][fNumberFifth-2]->GetBinContent(2);
@@ -1852,7 +1865,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 	Int_t Number_Denom = 2*fNumberFifth;
 
-	this->Correlation(Number_Denom,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,fe5,-1.*fe5,fe6,-1.*fe6,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
+this->Correlation(Number_Denom,fe1,-1.*fe1,fe2,-1.*fe2,fe3,-1.*fe3,fe4,-1.*fe4,fe5,-1.*fe5,fe6,-1.*fe6,fe7,-1.*fe7,MainTask_Angle_Array,MainTask_Mult,MainTask_Weight_Array);  
 
    	CorrelationDenom[4]=fRecursion[0][Number_Denom-2]->GetBinContent(1);
    	Weight_CorrelationDenom[4]=fRecursion[0][Number_Denom-2]->GetBinContent(2);
@@ -1894,7 +1907,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
 
    //Calculas for particle group A and B
-    this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_A,Mixed_Mult_A,Dummy_Weights_A);  //do the correlation for the first set
+    this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_A,Mixed_Mult_A,Dummy_Weights_A);  //do the correlation for the first set
 
     FirstCorrelation=fRecursion[0][2]->GetBinContent(1);
     Weight_FirstCorrelation=fRecursion[0][2]->GetBinContent(2);
@@ -1904,7 +1917,7 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_Mult, Double_t* MainTask
 
     //~~~~~~~~~~~~~~~~~
 
-   this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_B,Mixed_Mult_B,Dummy_Weights_B); 
+   this->Correlation(4.,Harmonicus, -Harmonicus, Harmonicus, -Harmonicus,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,Mixed_Angle_B,Mixed_Mult_B,Dummy_Weights_B); 
 
     SecondCorrelation=fRecursion[0][2]->GetBinContent(1);
     Weight_SecondCorrelation=fRecursion[0][2]->GetBinContent(2);

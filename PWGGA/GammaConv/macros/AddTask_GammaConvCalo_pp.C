@@ -3235,11 +3235,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0t63103100b00010"); // random angle with evt. weight
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0u63103100b00010"); // random angle with multiple decays with evt. weight
   } else if (trainConfig == 3101) {  //   (fPSigSmearing, fPSigSmearingCte)
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100b00010"); // smearing (0.025,  0.030)
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117912067032230000","0163103100g00010"); // smearing (0.025,  0.020)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // smearing (0.025,  0.030)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901067032230000","0163103100g00010"); // smearing (0.025,  0.020)
     // Variations of EDC Part
   } else if (trainConfig == 3102){ // timing Cut variation  std -50+30ns
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901017032230000","0163103100b00010"); //     -1000  +1000 ns
@@ -3344,11 +3344,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0t63103100b00010"); // random angle with evt. weight
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0u63103100b00010"); // random angle with multiple decays with evt. weight
   } else if (trainConfig == 3201) {  //   (fPSigSmearing, fPSigSmearingCte)
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100b00010"); // smearing (0.025,  0.030)
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117912067032230000","0163103100g00010"); // smearing (0.025,  0.020)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100b00010"); // smearing (0.025,  0.030)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901067032230000","0163103100g00010"); // smearing (0.025,  0.020)
     // Variations of EDC Part
   } else if (trainConfig == 3202){ // timing Cut variation  std -50+30ns
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901017032230000","0163103100b00010"); //     -1000  +1000 ns
@@ -3449,7 +3449,7 @@ void AddTask_GammaConvCalo_pp(
     // systematics for PCM-EDC  13 TeV- LowB
 
   } else if (trainConfig == 3300) {   // std Cut
-    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117901067032230000","0163103100b00010");  
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117901067032230000","0163103100b00010");
 
   } else if (trainConfig == 3301) {   // min pT variations
     cuts.AddCutPCMCalo("00010113", "0dm00079f9730000iih0404000","4117901067032230000","0163103100b00010");  // eta < 0.8  // remove  55-72 bin, min pT 0  (40) MeV
@@ -3506,11 +3506,11 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0t63103100b00010"); // random angle with evt. weight
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0u63103100b00010"); // random angle with multiple decays with evt. weight
   } else if (trainConfig == 3310) {  //   (fPSigSmearing, fPSigSmearingCte)
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067032230000","0163103100b00010"); // smearing (0.025,  0.030)
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067032230000","0163103100g00010"); // smearing (0.025,  0.020)
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100a00010"); // smearing (0.0275, 0.025)
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100b00010"); // smearing (0.025,  0.030)
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100c00010"); // smearing (0.0275, 0.020)
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100f00010"); // smearing (0.0275, 0.015)
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100g00010"); // smearing (0.025,  0.020)
     // Variations of EDC Part
   } else if (trainConfig == 3311){ // timing Cut variation  std -50+30ns
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901017032230000","0163103100b00010"); //     -1000  +1000 ns
@@ -3539,9 +3539,14 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067832230000","0163103100b00010"); // ExC 95
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067b32230000","0163103100b00010"); // ExC 95 + TCard > 50
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067e32230000","0163103100b00010"); // ExC 97 + TCard > 50
-    } else if ( trainConfig == 3317){ //opening angle, std 1 == >0.5, 1 cell diagonal
+  } else if ( trainConfig == 3317){ //opening angle, std 1 == >0.5, 1 cell diagonal
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100b00000"); //0: min opening angle 0    -> open
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0163103100b00030"); //3: min opening angle 0.01 -> 2 cell diag
+  } else if (trainConfig == 3318){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117911067e32230000","0163103100b00010"); // INT7 NL11
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117912067e32230000","0163103100b00010"); // INT7 NL12
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117921067e32230000","0163103100b00010"); // INT7 NL21
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117922067e32230000","0163103100b00010"); // INT7 NL22
 
 
 

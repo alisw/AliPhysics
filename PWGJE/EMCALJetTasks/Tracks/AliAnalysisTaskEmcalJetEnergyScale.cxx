@@ -57,6 +57,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fUseStandardOutlierRejection(kFALSE),
   fSampleSplitter(nullptr)
 {
 }
@@ -71,6 +72,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
   fScaleShift(0.),
+  fUseStandardOutlierRejection(kFALSE),
   fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
@@ -156,14 +158,21 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQADeltaRMaxChargedDet", "#DeltaR vs. p_{t,jet} of charged constituents (det. level); p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1.);
   fHistos->CreateTH2("hQADeltaRMaxNeutralPart", "#DeltaR vs. p_{t,jet} of neutral constituents (part. level); p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
   fHistos->CreateTH2("hQADeltaRMaxNeutralDet", "#DeltaR vs. p_{t,jet} of neutral constituents (det. level); p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
-  fHistos->CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
-  fHistos->CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+  fHistos->CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 200, 0.,2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
   fHistos->CreateTH1("hQAMatchingDRAbs", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
   fHistos->CreateTH1("hQAMatchingDRel", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
+    // Cluster constituent QA
+  fHistos->CreateTH2("hQAClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
+  fHistos->CreateTH2("hQAClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
+  fHistos->CreateTH2("hQAClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
+  fHistos->CreateTH2("hQAClusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
+  fHistos->CreateTH2("hQAClusteroFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
+  fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
@@ -175,6 +184,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   auto partjets = GetJetContainer(fNameParticleJets);
   if(!partjets) return true;
@@ -271,6 +281,17 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
         fHistos->FillTH2("hQAConstPtNeDet", detjet->Pt(), clustervec.Pt());
         fHistos->FillTH2("hQAEtaPhiConstNeDet", clustervec.Eta(), TVector2::Phi_0_2pi(clustervec.Phi()));
         fHistos->FillTH2("hQADeltaRNeutralDet", detjet->Pt(), jetvecDet.DeltaR(clustervec.Vect()));
+        fHistos->FillTH2("hQAClusterTimeVsE", cluster->GetTOF() * 1e9 - 600, clustervec.E());         // time in ns., apply 600 ns time shift
+        fHistos->FillTH2("hQAClusterTimeVsEFine", cluster->GetTOF() * 1e9 - 600, clustervec.E());     // time in ns., apply 600 ns time shift
+        fHistos->FillTH2("hQAClusterNCellVsE", cluster->GetNCells(), clustervec.E());
+        fHistos->FillTH2("hQAClusterM02VsE", cluster->GetM02(), clustervec.E());
+        double maxamplitude = 0.;
+        for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+          double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
+          if(amplitude > maxamplitude) maxamplitude = amplitude;
+        }
+        fHistos->FillTH2("hQAClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
+        fHistos->FillTH2("hQAClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       }
 
       if(leadcluster){

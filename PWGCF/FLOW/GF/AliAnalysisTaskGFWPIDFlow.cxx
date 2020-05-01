@@ -63,6 +63,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow():
   fFWSelection(0),
   fFC(0),
   fGFW(0),
+  fGFWMode(0),
   fZMWeights(0),
   fBayesPID(0),
   fPtAxis(0),
@@ -91,6 +92,7 @@ AliAnalysisTaskGFWPIDFlow::AliAnalysisTaskGFWPIDFlow(const char *name, Bool_t Is
   fFWSelection(0),
   fFC(0),
   fGFW(0),
+  fGFWMode(0),
   fZMWeights(0),
   fBayesPID(0),
   fPtAxis(0),
@@ -246,7 +248,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     AddToOBA(oba,"MidVPr28",NbinsPtForV2);
 
     fFC = new AliGFWFlowContainer();
-    fFC->SetName("FlowContainer");
+    fFC->SetName(Form("FlowContainer_%i",fGFWMode));
     fFC->SetXAxis(fPtAxis);
     Double_t l_MultiBins[] = {5,10,20,30,40,50,60};
     fFC->Initialize(oba,6,l_MultiBins,10);
@@ -311,6 +313,7 @@ void AliAnalysisTaskGFWPIDFlow::UserExec(Option_t*) {
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
+  if(l_Cent<5 || l_Cent>70) return; //Lets only consider 5-70%
   if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
@@ -524,17 +527,38 @@ void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Doub
     Int_t ptind = fPtAxis->FindBin(p1)-1;
     Double_t l_eta = lTrack->Eta();
     Double_t l_phi = lTrack->Phi();
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack);
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    // Int_t spIndex = PIDIndex+1;
     Double_t ptmins[] = {0.2,0.2,0.3,0.5};
     Double_t ptmaxs[] = {10.,10.,6.0,6.0};
     Bool_t WithinRef=(p1>0.2 && p1<5);
-    Bool_t WithinPOI=(p1>ptmins[PIDIndex+1] && p1<ptmaxs[PIDIndex+1]);
+    Bool_t WithinPOI=(p1>ptmins[PIDIndex] && p1<ptmaxs[PIDIndex]);
+    Bool_t WithinNch=(p1>ptmins[0] && p1<ptmaxs[0]); //Within Ncharged (important for e.g. protons)
+    if(!WithinRef && !WithinPOI) continue;
+    Bool_t REFnotPOI = (WithinRef && !WithinPOI); // Particles that could be POI, but fall out of pT range
+    Double_t wRef = GetZMWeight(l_eta,l_phi,0);
+    Double_t wPOI = WithinPOI?GetZMWeight(l_eta,l_phi,PIDIndex+1):GetZMWeight(l_eta,l_phi,1); //If not within POI (e.g. low pT protons), then use Nch weights
+    if(fGFWMode == 0) { //This should be the default mode
+      if(WithinRef && WithinPOI)
+        if(PIDIndex) wRef = wPOI; //All there is. If particle is both (then it's overlap), override ref with POI
+    }
+    if(fGFWMode == 1) {//This is to check whether we can use Nch weights for ref particles. Same as before, but no PIDIndex check
+      if(WithinRef && WithinPOI)
+        wRef = wPOI;
+    }
+    if(WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wRef,1); //Filling in ref flow
+    if(WithinPOI && PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Filling POI flow for ID'ed
+    if(WithinNch) fGFW->Fill(l_eta,ptind,l_phi,wPOI,2); //Filling POI flow for ID'ed
+    //Filling overlaps:
+    if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,1<<(PIDIndex+5)); //Filling POI flow for ID'ed
+    if(WithinNch && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,32); //Filling POI flow for ID'ed
+
+
     /* trying to figure out whether it's a POI or a ref or both.
     This is in particular stupid, because e.g. a proton with pT < 500 MeV should go with... ref flow weight?
     ------------------------------
     Under construction for now. But first need to quickly commit a weight production
     */
-    Int_t spIndex = -1;
 
     // Double_t wref = GetZMWeight(l_eta,l_phi,0); //ref weight
     // Double_t wpoi = GetZMWeight(l_eta,l_phi,PIDIndex+1); //poi weight

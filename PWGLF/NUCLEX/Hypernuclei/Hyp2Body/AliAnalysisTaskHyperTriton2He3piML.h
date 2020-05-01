@@ -179,6 +179,8 @@ public:
 
   void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
+  void SetMassRange(float min, float max) { fMassRange[0] = min; fMassRange[1] = max; }
+
   AliEventCuts fEventCuts; /// Event cuts class
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
@@ -216,6 +218,7 @@ private:
   float fMaxTPCpiSigma;
   float fMaxTPChe3Sigma;
   float fMinHe3pt;
+  float fMassRange[2];
   unsigned char fMinTPCclusters;
   unsigned char fMinPIDclusters;
 

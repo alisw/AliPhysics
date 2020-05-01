@@ -76,7 +76,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TComplex CalculateMixedQVectors(Double_t Harm, Int_t M_A, Int_t M_B, Double_t* Ang_A, Double_t* Ang_B);
   TComplex Q(Int_t n, Int_t p);
   TComplex Recursion(Int_t n, Int_t* harmonic, Int_t mult, Int_t skip);
-  virtual void Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Double_t* Correlation_Angle, Int_t Correlation_Mult, Double_t* Correlation_Weight);
+  virtual void Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10, Int_t h11, Int_t h12, Int_t h13, Int_t h14, Double_t* Correlation_Angle, Int_t Correlation_Mult, Double_t* Correlation_Weight);
 
   virtual void MainTask(Int_t MainTask_Mult, Double_t* MainTask_Angle_Array, Double_t* MainTask_Weight_Array);
   virtual void MixedParticle(Int_t Harmonicus, Int_t Mixed_Mult_A, Double_t* Mixed_Angle_A, Int_t Mixed_Mult_B, Double_t* Mixed_Angle_B);
@@ -143,20 +143,20 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
 
-  void SetCorrSet1(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f)
-  {this->fNumber=Number; this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f;}
+  void SetCorrSet1(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
+  {this->fNumber=Number; this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g;}
 
-   void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f)
-  {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f;}
+   void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
+  {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g;}
 
-  void SetCorrSet3( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f)
-  { this->fNumberThird=Number; this->fb1=a; this->fb2=b; this->fb3=c; this->fb4=d; this->fb5=e; this->fb6=f;}
+  void SetCorrSet3( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
+  { this->fNumberThird=Number; this->fb1=a; this->fb2=b; this->fb3=c; this->fb4=d; this->fb5=e; this->fb6=f; this->fb7=g;}
 
-  void SetCorrSet4( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f)
-  { this->fNumberFourth=Number; this->fd1=a; this->fd2=b; this->fd3=c; this->fd4=d; this->fd5=e; this->fd6=f;}
+  void SetCorrSet4( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
+  { this->fNumberFourth=Number; this->fd1=a; this->fd2=b; this->fd3=c; this->fd4=d; this->fd5=e; this->fd6=f; this->fd7=g;}
 
-  void SetCorrSet5( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f)
-  { this->fNumberFifth=Number; this->fe1=a; this->fe2=b; this->fe3=c; this->fe4=d; this->fe5=e; this->fe6=f;}
+  void SetCorrSet5( Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g)
+  { this->fNumberFifth=Number; this->fe1=a; this->fe2=b; this->fe3=c; this->fe4=d; this->fe5=e; this->fe6=f; this->fe7=g;}
 
   void SetMixed(Bool_t top, Int_t nop, Bool_t DifferentCharge, Bool_t PositiveCharge)
   {this->bDoMixed = top; this->fMixedHarmonic = nop; this->bDifferentCharge = DifferentCharge; 
@@ -271,7 +271,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          	// maximum of correlation 
-  TProfile *fRecursion[2][12];    	//!   
+  TProfile *fRecursion[2][14];    	//!   
   
   Int_t fNumber;           		// Number of correlation first correlator
   Int_t fNumberSecond;          	// Number of correlation second correlator
@@ -280,19 +280,17 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fNumberFifth;			// Number of correlation fifth correlator
   Int_t fMinNumberPart;           	// Minimal number of particles to do correlation
 
-  Int_t fh1, fh2, fh3, fh4, fh5, fh6;  //harmonics
-  Int_t fa1, fa2, fa3, fa4, fa5, fa6;  //second set of harmonics
-  Int_t fb1, fb2, fb3, fb4, fb5, fb6;  //third set of harmonics
-  Int_t fd1, fd2, fd3, fd4, fd5, fd6;  //fourth set of harmonics
-  Int_t fe1, fe2, fe3, fe4, fe5, fe6;  //fith set of harmonics
+  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7;  //harmonics
+  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7;  //second set of harmonics
+  Int_t fb1, fb2, fb3, fb4, fb5, fb6, fb7;  //third set of harmonics
+  Int_t fd1, fd2, fd3, fd4, fd5, fd6, fd7;  //fourth set of harmonics
+  Int_t fe1, fe2, fe3, fe4, fe5, fe6, fe7;  //fith set of harmonics
   
-  TComplex fQvector[97][13];       	//! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[85][15];       	//! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
   TProfile *fCentrality;         	// final centrality result
-  TProfile *fCentralitySecond;         	// final centrality result for second harmonics 
-  TProfile *fCentralityThird;         	// final centrality result for third harmonics 
   TProfile *fMixedParticleHarmonics; 	// Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 	// if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
   Bool_t bDifferentCharge; 	 	// used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
@@ -306,7 +304,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,28);
+  ClassDef(AliAnalysisTaskStudentsML,29);
 
 };
 

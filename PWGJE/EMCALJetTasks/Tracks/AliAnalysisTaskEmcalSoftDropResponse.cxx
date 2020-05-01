@@ -79,6 +79,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fHasResponseMatrixRooUnfold(true),
                                                                                fUseChargedConstituents(true),
                                                                                fUseNeutralConstituents(true),
+                                                                               fUseStandardOutlierRejection(false),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
                                                                                fSampleTrimmer(nullptr),
@@ -112,6 +113,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fHasResponseMatrixRooUnfold(true),
                                                                                                fUseChargedConstituents(true),
                                                                                                fUseNeutralConstituents(true),
+                                                                                               fUseStandardOutlierRejection(false),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
                                                                                                fSampleTrimmer(nullptr),
@@ -272,19 +274,39 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
         fHistManager.CreateTH2(Form("hThetagDetLevelClosureNoRespFine_%d", cent), Form("Thetag response at detector level (closure test, jets not used for the response matrix), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
       }
 
-      // Residuals
-      fHistManager.CreateTH2(Form("hZgResiduals_%d", cent), Form("Zg residuals (%d centrality bin); p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
-      fHistManager.CreateTH2(Form("hRgResiduals_%d", cent), Form("Rg residuals (%d centrality bin); p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
-      fHistManager.CreateTH2(Form("hThetagResiduals_%d", cent), Form("Thetag residuals (%d centrality bin); p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", cent), 350, 0., 350., 200., -2., 2.);
-      fHistManager.CreateTH2(Form("hNsdResiduals_%d", cent), Form("Nsd residuals (%d centrality bin); p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", cent), 350, 0., 350., 80, -40., 40.);
-      fHistManager.CreateTH2(Form("hZgResidualsNormalized_%d", cent), Form("Zg residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
-      fHistManager.CreateTH2(Form("hRgResidualsNormalized_%d", cent), Form("Rg residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
-      fHistManager.CreateTH2(Form("hThetagResidualsNormalized_%d", cent), Form("Thetag residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", cent), 350, 0., 350., 100., -1., 1.);
-      fHistManager.CreateTH2(Form("hNsdResidualsNormalized_%d", cent), Form("Nsd residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", cent), 350, 0., 350., 100, -10., 10.);
+      // Residuals vs. pt,part
+      fHistManager.CreateTH2(Form("hZgResiduals_%d", cent), Form("z_{g} residuals (%d centrality bin); p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResiduals_%d", cent), Form("R_{g} residuals (%d centrality bin); p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResiduals_%d", cent), Form("#Theta_{g} residuals (%d centrality bin); p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", cent), 350, 0., 350., 200, -2., 2.);
+      fHistManager.CreateTH2(Form("hNsdResiduals_%d", cent), Form("n_{SD} residuals (%d centrality bin); p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", cent), 350, 0., 350., 80, -40., 40.);
+      fHistManager.CreateTH2(Form("hZgResidualsNormalized_%d", cent), Form("z_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsNormalized_%d", cent), Form("R_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsNormalized_%d", cent), Form("#Theta_{g} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", cent), 350, 0., 350., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsNormalized_%d", cent), Form("n_{SD} residuals (normalized, %d centrality bin); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", cent), 350, 0., 350., 100, -10., 10.);
+      // Residuals vs. Rg
+      fHistManager.CreateTH2(Form("hZgResidualsRg_%d", cent), Form("z_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsRg_%d", cent), Form("R_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; R_{g,det} - R_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsRg_%d", cent), Form("#Theta_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsRg_%d", cent), Form("z_{g} residuals vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 80, -40., 40.);
+      fHistManager.CreateTH2(Form("hZgResidualsRgNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsRgNormalized_%d", cent), Form("R_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; R_{g,det} - R_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsRgNormalized_%d", cent), Form("#Theta_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsRgNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. R_{g} (%d centrality bin); R_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -10., 10.); 
+      // Residuals vs. Thetag
+      fHistManager.CreateTH2(Form("hZgResidualsThetag_%d", cent), Form("z_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsThetag_%d", cent), Form("R_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; R_{g,det} - R_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsThetag_%d", cent), Form("#Theta_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsThetag_%d", cent), Form("z_{g} residuals vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 80, -40., 40.);
+      fHistManager.CreateTH2(Form("hZgResidualsThetagNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hRgResidualsThetagNormalized_%d", cent), Form("R_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; R_{g,det} - R_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hThetagResidualsThetagNormalized_%d", cent), Form("#Theta_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", cent), 100, 0., 1., 100, -1., 1.);
+      fHistManager.CreateTH2(Form("hNsdResidualsThetagNormalized_%d", cent), Form("z_{g} residuals (normalized) vs. #Theta_{g} (%d centrality bin); #Theta_{g}; z_{g,det} - z_{g,part}", cent), 100, 0., 1., 100, -10., 10.); 
 
       // a bit of QA stuff
       fHistManager.CreateTH1(Form("hSkippedJetsPart_%d", cent), Form("Skipped jets at part. level, %d centrality bin", cent), 350, 0., 350.);
       fHistManager.CreateTH1(Form("hSkippedJetsDet_%d", cent), Form("Skipped jets at det. level, %d centrality bin", cent), 350, 0., 350.);
+      fHistManager.CreateTH2(Form("hQAEtaPhiPart_%d", cent), Form("#eta vs. #phi for selected part. level jets (%d centrality bin); #eta; #phi", cent), 100, -1., 1., 100, 0., 7.);
+      fHistManager.CreateTH2(Form("hQAEtaPhiDet_%d", cent), Form("#eta vs. #phi for selected det. level jets (%d centrality bin); #eta; #phi", cent), 100, -1., 1., 100, 0., 7.);
       fHistManager.CreateTH2(Form("hQANEFPtPart_%d", cent), Form("Neutral energy fraction at part. level, %d centrality bin; p_{t} (GeV/c); NEF", cent), 350, 0., 350., 100, 0., 1.);
       fHistManager.CreateTH2(Form("hQANEFPtDet_%d", cent), Form("Neutral energy fraction at det. level, %d centrality bin; p_{t} (GeV/c); NEF", cent), 350, 0., 350., 100, 0., 1.);
       fHistManager.CreateTH2(Form("hQAZchPtPart_%d", cent), "z_{ch,max} at part. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
@@ -295,12 +317,12 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2(Form("hQANChPtDet_%d", cent), Form("Number of charged constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ch}", cent), 350, 0., 350., 100, 0., 100.);
       fHistManager.CreateTH2(Form("hQANnePtPart_%d", cent), Form("Number of neutral constituents at part. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
       fHistManager.CreateTH2(Form("hQANnePtDet_%d", cent), Form("Number of neutral constituents at det. level, %d centrality bin; p_{t} (GeV/c); N_{ne}", cent), 350, 0., 350., 100, 0., 100.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtPart_%d", cent), Form("Jet area vs. jet pt at particle level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 100, 0., 1.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtDet_%d", cent), Form("Jet area vs. jet pt at detector level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 100, 0., 1.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFPart_%d", cent), Form("Jet area vs. NEF at particle level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 100, 0., 1.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFDet_%d", cent), Form("Jet area vs. NEF at detector level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 100, 0., 1.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstPart_%d", cent), Form("Jet area vs. number of consituents at particle level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 100, 0., 1.);
-      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstDet_%d", cent), Form("Jet area vs. number of consituents at detector level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 100, 0., 1.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtPart_%d", cent), Form("Jet area vs. jet pt at particle level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 200, 0., 2.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsJetPtDet_%d", cent), Form("Jet area vs. jet pt at detector level (%d centrality bin); p_{t} (GeV/c); Area", cent), 350, 0., 350., 200, 0., 2.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFPart_%d", cent), Form("Jet area vs. NEF at particle level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 200, 0., 2.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNEFDet_%d", cent), Form("Jet area vs. NEF at detector level (%d centrality bin); NEF; Area", cent), 100, 0., 1., 200, 0., 2.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstPart_%d", cent), Form("Jet area vs. number of consituents at particle level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 200, 0., 2.);
+      fHistManager.CreateTH2(Form("hQAJetAreaVsNConstDet_%d", cent), Form("Jet area vs. number of consituents at detector level (%d centrality bin); Number of constituents; Area", cent), 101, -0.5, 100.5, 200, 0., 2.);
       fHistManager.CreateTH1(Form("hQAMatchingDRAbs_%d", cent), Form("Distance between part. level jet and  det. level jet (%d centrality bin)", cent), 100, 0., 1.);
       fHistManager.CreateTH1(Form("hQAMatchingDRAbs_%d", cent), Form("Distance between part. level jet and  det. level jet (%d centrality bin)", cent), 100, 0., 1.);
     }
@@ -390,19 +412,39 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       fHistManager.CreateTH2("hThetagDetLevelClosureNoRespFine", "Thetag response at detector level (closure test, jets not used for the response matrix)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() - 1, binEdgesPtFine.GetArray());
     }
 
-    // Residuals
-    fHistManager.CreateTH2("hZgResiduals", "Zg residuals; p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", 350, 0., 350., 100, -1., 1.);
-    fHistManager.CreateTH2("hRgResiduals", "Rg residuals; p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", 350, 0., 350., 100, -1., 1.);
-    fHistManager.CreateTH2("hThetagResiduals", "Thetag residuals; p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", 350, 0., 350., 200., -2., 2.);
-    fHistManager.CreateTH2("hNsdResiduals", "Nsd residuals; p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", 350, 0., 350., 80, -40., 40.);
-    fHistManager.CreateTH2("hZgResidualsNormalized", "Zg residuals (normalized); p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", 350, 0., 350., 100, -1., 1.);
-    fHistManager.CreateTH2("hRgResidualsNormalized", "Rg residuals (normalized); p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", 350, 0., 350., 100, -1., 1.);
-    fHistManager.CreateTH2("hThetagResidualsNormalized", "Thetag residuals (normalized); p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", 350, 0., 350., 100., -1., 1.);
-    fHistManager.CreateTH2("hNsdResidualsNormalized", "Nsd residuals (normalized); p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", 350, 0., 350., 100, -10., 10.);
+    // Residuals vs. pt,part
+    fHistManager.CreateTH2("hZgResiduals", "z_{g} residuals vs. p_{t,part}; p_{t,part} (GeV/c); z_{g, det} - z_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResiduals", "R_{g} residuals vs. p_{t,part}; p_{t,part} (GeV/c); R_{g, det} - R_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResiduals", "#Theta_{g} residuals vs. p_{t,part}; p_{t,part} (GeV/c); #Theta_{g, det} - #Theta_{g, part}", 350, 0., 350., 200, -2., 2.);
+    fHistManager.CreateTH2("hNsdResiduals", "n_{SD} residuals vs. p_{t,part}; p_{t,part} (GeV/c); n_{SD, det} - n_{SD, part}", 350, 0., 350., 80, -40., 40.);
+    fHistManager.CreateTH2("hZgResidualsNormalized", "z_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (z_{g, det} - z_{g, part})/z_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsNormalized", "R_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (R_{g, det} - R_{g, part})/R_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsNormalized", "#Theta_{g} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (#Theta_{g, det} - #Theta_{g, part})/#Theta_{g, part}", 350, 0., 350., 100, -1., 1.);
+    fHistManager.CreateTH2("hNsdResidualsNormalized", "n_{SD} residuals (normalized) vs. p_{t,part}; p_{t,part} (GeV/c); (n_{SD, det} - n_{SD, part})/n_{SD, part}", 350, 0., 350., 100, -10., 10.);
+    // Residuals vs. Rg
+    fHistManager.CreateTH2("hZgResidualsRg", "z_{g} residuals vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsRg", "R_{g} residuals vs. R_{g}; R_{g}; R_{g,det} - R_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsRg", "#Theta_{g} residuals vs. R_{g}; R_{g}; #Theta_{g,det} - #Theta_{g,part}", 100, 0., 1., 200, -2., 2.);
+    fHistManager.CreateTH2("hNsdResidualsRg", "z_{g} residuals vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 80, -40., 40.);
+    fHistManager.CreateTH2("hZgResidualsRgNormalized", "z_{g} residuals (normalized) vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsRgNormalized", "R_{g} residuals (normalized) vs. R_{g}; R_{g}; R_{g,det} - R_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsRgNormalized", "#Theta_{g} residuals (normalized) vs. R_{g}; R_{g}; #Theta_{g,det} - #Theta_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hNsdResidualsRgNormalized", "z_{g} residuals (normalized) vs. R_{g}; R_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -10., 10.);
+    // Residuals vs. Thetag
+    fHistManager.CreateTH2("hZgResidualsThetag", "z_{g} residuals vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsThetag", "R_{g} residuals vs. #Theta_{g}; #Theta_{g}; R_{g,det} - R_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsThetag", "#Theta_{g} residuals vs. #Theta_{g}; #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", 100, 0., 1., 200, -2., 2.);
+    fHistManager.CreateTH2("hNsdResidualsThetag", "z_{g} residuals vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 80, -40., 40.);
+    fHistManager.CreateTH2("hZgResidualsThetagNormalized", "z_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hRgResidualsThetagNormalized", "R_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; R_{g,det} - R_{g,part}", 100, 0., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hThetagResidualsThetagNormalized", "#Theta_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; #Theta_{g,det} - #Theta_{g,part}", 100, -1., 1., 100, -1., 1.);
+    fHistManager.CreateTH2("hNsdResidualsThetagNormalized", "z_{g} residuals (normalized) vs. #Theta_{g}; #Theta_{g}; z_{g,det} - z_{g,part}", 100, 0., 1., 100, -10., 10.);
 
     // a bit of QA stuff
     fHistManager.CreateTH1("hSkippedJetsPart", "Skipped jets at part. level", 350, 0., 350.);
     fHistManager.CreateTH1("hSkippedJetsDet", "Skipped jets at det. level", 350, 0., 350.);
+    fHistManager.CreateTH2("hQAEtaPhiPart", "#eta vs. #phi for selected part. level jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
+    fHistManager.CreateTH2("hQAEtaPhiDet", "#eta vs. #phi for selected det. level jets; #eta; #phi", 100, -1., 1., 100, 0., 7.);
     fHistManager.CreateTH2("hQANEFPtPart", "Neutral energy fraction at part. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
     fHistManager.CreateTH2("hQANEFPtDet", "Neutral energy fraction at det. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
     fHistManager.CreateTH2("hQAZchPtPart", "z_{ch,max} at part. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
@@ -413,12 +455,12 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fHistManager.CreateTH2("hQANChPtDet", "Number of charged constituents at det. level; p_{t} (GeV/c); N_{ch}", 350, 0., 350., 100, 0., 100.);
     fHistManager.CreateTH2("hQANnePtPart", "Number of neutral constituents at part. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
     fHistManager.CreateTH2("hQANnePtDet", "Number of neutral constituents at det. level; p_{t} (GeV/c); N_{ne}", 350, 0., 350., 100, 0., 100.);
-    fHistManager.CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-    fHistManager.CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 100, 0., 1.);
-    fHistManager.CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-    fHistManager.CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 100, 0., 1.);
-    fHistManager.CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
-    fHistManager.CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 100, 0., 1.);
+    fHistManager.CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+    fHistManager.CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
+    fHistManager.CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+    fHistManager.CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+    fHistManager.CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+    fHistManager.CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
     fHistManager.CreateTH1("hQAMatchingDRAbs", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
     fHistManager.CreateTH1("hQAMatchingDRel", "Distance between part. level jet and  det. level jet", 100, 0., 1.);
   }
@@ -440,14 +482,21 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   fHistManager.CreateTH2("hSDUsedChargedEtaPhiMaxDet", "#eta-phi for tracks used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
   fHistManager.CreateTH2("hSDUsedNeutralEtaPhiMaxPart", "#eta vs. #phi for clusters used in SD (part. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
   fHistManager.CreateTH2("hSDUsedNeutralEtaPhiMaxDet", "#eta vs. #phi for clusters used in SD (det. level); #eta; #phi", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedChargedDRPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedChargedDRDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedNeutralDRPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedNeutralDRDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedChargedDRMaxPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedChargedDRMaxDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedNeutralDRMaxPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
-  fHistManager.CreateTH2("hSDUsedNeutralDRMaxDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 100, -1., 1., 100, 0., 7.);
+  fHistManager.CreateTH2("hSDUsedChargedDRPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedChargedDRDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedChargedDRMaxPart", "#DeltaR vs. p_{t,jet} for tracks used in SD (part. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedChargedDRMaxDet", "#DeltaR vs. p_{t,jet} for tracks used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRMaxPart", "#DeltaR vs. p_{t,jet} for clusters used in SD (part. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  fHistManager.CreateTH2("hSDUsedNeutralDRMaxDet", "#DeltaR vs. p_{t,jet} for clusters used in SD (det. level); p_{t,jet}; #DeltaR", 350, 0., 350., 100, 0., 1.);
+  // Cluster constituent QA
+  fHistManager.CreateTH2("hSDUsedClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
+  fHistManager.CreateTH2("hSDUsedClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
+  fHistManager.CreateTH2("hSDUsedClusterNCellVsE", "Cluster number of cells vs. energy; Number of cells; E (GeV)", 201, -0.5, 200.5, 200, 0., 200.);
+  fHistManager.CreateTH2("hSDUsedlusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
+  fHistManager.CreateTH2("hSDUsedClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
+  fHistManager.CreateTH2("hSDUsedClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistManager.CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
   for (auto h : *fHistManager.GetListOfHistograms())
@@ -478,6 +527,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
     return true;
   if (!(fIsPythia || fIsHerwig))
     return true; // Only relevant for pt-hard production
+  if(fUseStandardOutlierRejection) 
+    return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   auto partjets = GetJetContainer(fNamePartLevelJetContainer);
   if (!partjets)
@@ -629,6 +680,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // fill QA histograms
         fHistManager.FillTH2(Form("hQANEFPtDet_%d", fCentBin), detjet->Pt(), detjet->NEF());
         fHistManager.FillTH2(Form("hQANEFPtPart_%d", fCentBin), partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2(Form("hQAEtaPhiPart_%d", fCentBin), partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
+        fHistManager.FillTH2(Form("hQAEtaPhiDet_%d", fCentBin), detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
         fHistManager.FillTH2(Form("hQAJetAreaVsJetPtPart_%d", fCentBin), partjet->Pt(), partjet->Area());
         fHistManager.FillTH2(Form("hQAJetAreaVsJetPtDet_%d", fCentBin), detjet->Pt(), detjet->Area());
         fHistManager.FillTH2(Form("hQAJetAreaVsNEFPart_%d", fCentBin), partjet->NEF(), partjet->Area());
@@ -659,7 +712,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         }
 
         if(!untaggedDet && !untaggedPart) {
-          // Fill residuals
+          // Fill residuals (vs pt, Rg, Thetag)
           fHistManager.FillTH2(Form("hZgResiduals_%d", fCentBin), pointZg[kIndPtPart], resZg);
           fHistManager.FillTH2(Form("hRgResiduals_%d", fCentBin), pointRg[kIndPtPart], resRg);
           fHistManager.FillTH2(Form("hThetagResiduals_%d", fCentBin),  pointThetag[kIndPtPart], resThetag);
@@ -668,6 +721,22 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2(Form("hRgResidualsNormalized_%d", fCentBin), pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
           fHistManager.FillTH2(Form("hThetagResidualsNormalized_%d", fCentBin), pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
           fHistManager.FillTH2(Form("hNsdResidualsNormalized_%d", fCentBin), pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTH2(Form("hZgResidualsRg_%d", fCentBin), pointRg[kIndSDPart], resZg);
+          fHistManager.FillTH2(Form("hRgResidualsRg_%d", fCentBin), pointRg[kIndSDPart], resRg);
+          fHistManager.FillTH2(Form("hThetagResidualsRg_%d", fCentBin), pointRg[kIndSDPart], resThetag);
+          fHistManager.FillTH2(Form("hNsdResidualsRg_%d", fCentBin), pointRg[kIndSDPart], resNsd);
+          fHistManager.FillTH2(Form("hZgResidualsRgNormalized_%d", fCentBin), pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hRgResidualsRgNormalized_%d", fCentBin), pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hThetagResidualsRgNormalized_%d", fCentBin), pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2(Form("hNsdResidualsRgNormalized_%d", fCentBin), pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTH2(Form("hZgResidualsThetag_%d", fCentBin), pointThetag[kIndSDPart], resZg);
+          fHistManager.FillTH2(Form("hRgResidualsThetag_%d", fCentBin), pointThetag[kIndSDPart], resRg);
+          fHistManager.FillTH2(Form("hThetagResidualsThetag_%d", fCentBin), pointThetag[kIndSDPart], resThetag);
+          fHistManager.FillTH2(Form("hNsdResidualsThetag_%d", fCentBin), pointThetag[kIndSDPart], resNsd);
+          fHistManager.FillTH2(Form("hZgResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hRgResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2(Form("hThetagResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2(Form("hNsdResidualsThetagNormalized_%d", fCentBin), pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
         }
       }
       else
@@ -680,6 +749,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         znepart = stat[3];
         fHistManager.FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
         fHistManager.FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
+        fHistManager.FillTH2("hQAEtaPhiPart", partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
+        fHistManager.FillTH2("hQAEtaPhiDet", detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
         fHistManager.FillTH2("hQAJetAreaVsJetPtPart", partjet->Pt(), partjet->Area());
         fHistManager.FillTH2("hQAJetAreaVsJetPtDet", detjet->Pt(), detjet->Area());
         fHistManager.FillTH2("hQAJetAreaVsNEFPart", partjet->NEF(), partjet->Area());
@@ -720,6 +791,22 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
           fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
           fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTH2("hZgResidualsRg", pointRg[kIndSDPart], resZg);
+          fHistManager.FillTH2("hRgResidualsRg", pointRg[kIndSDPart], resRg);
+          fHistManager.FillTH2("hThetagResidualsRg", pointRg[kIndSDPart], resThetag);
+          fHistManager.FillTH2("hNsdResidualsRg", pointRg[kIndSDPart], resNsd);
+          fHistManager.FillTH2("hZgResidualsRgNormalized", pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2("hRgResidualsRgNormalized", pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2("hThetagResidualsRgNormalized", pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2("hNsdResidualsRgNormalized", pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          fHistManager.FillTH2("hZgResidualsThetag", pointThetag[kIndSDPart], resZg);
+          fHistManager.FillTH2("hRgResidualsThetag", pointThetag[kIndSDPart], resRg);
+          fHistManager.FillTH2("hThetagResidualsThetag", pointThetag[kIndSDPart], resThetag);
+          fHistManager.FillTH2("hNsdResidualsThetag", pointThetag[kIndSDPart], resNsd);
+          fHistManager.FillTH2("hZgResidualsThetagNormalized", pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
+          fHistManager.FillTH2("hRgResidualsThetagNormalized", pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
+          fHistManager.FillTH2("hThetagResidualsThetagNormalized", pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+          fHistManager.FillTH2("hNsdResidualsThetagNormalized", pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
         }
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
@@ -934,7 +1021,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
           if(!maxneutral) {
             maxneutral = &currentconstituent;
           } else {
-            if(currentconstituent.pt() > maxcharged->pt())
+            if(currentconstituent.pt() > maxneutral->pt())
             maxneutral = &currentconstituent;
           }
         }
@@ -966,6 +1053,18 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
       fHistManager.FillTH2("hSDUsedNeutralPtjvPtcDet", jet.Pt(), constituentCluster.pt());
       fHistManager.FillTH2("hSDUsedNeutralEtaPhiDet", constituentCluster.eta(), TVector2::Phi_0_2pi(constituentCluster.phi()));
       fHistManager.FillTH2("hSDUsedNeutralDRDet", inputjet.pt(), inputjet.delta_R(constituentCluster));
+      fHistManager.FillTH2("hSDUsedClusterTimeVsE", cluster->GetTOF() * 1e9 - 600, clustervec.E());       // time in ns., apply 600 ns time shift
+      fHistManager.FillTH2("hSDUsedClusterTimeVsEFine", cluster->GetTOF() * 1e9 - 600, clustervec.E());   // time in ns., apply 600 ns time shift
+      fHistManager.FillTH2("hSDUsedClusterNCellVsE", cluster->GetNCells(), clustervec.E());
+      fHistManager.FillTH2("hSDUsedlusterM02VsE", cluster->GetM02(), clustervec.E());
+      double maxamplitude = 0.;
+      for(int icell = 0; icell < cluster->GetNCells(); icell++) {
+        double amplitude = fInputEvent->GetEMCALCells()->GetAmplitude(fInputEvent->GetEMCALCells()->GetCellPosition(cluster->GetCellAbsId(icell)));
+        if(amplitude > maxamplitude) maxamplitude = amplitude;
+      }
+      fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
+      fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
+
       auto &currentconstituent = constituents.back();
       if(!maxneutral) {
         maxneutral = &currentconstituent;

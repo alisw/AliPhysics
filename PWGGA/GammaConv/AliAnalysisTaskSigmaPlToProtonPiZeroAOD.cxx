@@ -665,8 +665,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			if(fHistNClusWCuts[iCut]) fHistNClusWCuts[iCut]->Fill(nClusWCuts);
 			//Paaring
 			TLorentzVector rekombinatedPi0;
-			TLorentzVector photonCandidate1;
-			TLorentzVector photonCandidate2;
+//			TLorentzVector photonCandidate1;
+//			TLorentzVector photonCandidate2;
 			TLorentzVector protonVektor;
 			TLorentzVector sigmaVektor;
 			Bool_t trueSigmaProton = kFALSE;
