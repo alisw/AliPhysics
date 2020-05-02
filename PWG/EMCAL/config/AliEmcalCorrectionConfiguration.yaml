@@ -56,6 +56,12 @@ sharedParameters:
     removeMCGen2: ""                                # name of generator input to be accepted
 # This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
 # Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
+CellCloneContainer:                                 # Clone the cell branch into a new one
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    clonedCellsBranchName: "emcalCellsClone"        # Name of branch with new cells
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+           - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -292,6 +298,7 @@ PHOSCorrections:                                    # PHOS recalibration compone
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
 executionOrder:
+    - CellCloneContainer
     - CellEmulateCrosstalk
     - CellEnergy
     - CellEnergyVariation
