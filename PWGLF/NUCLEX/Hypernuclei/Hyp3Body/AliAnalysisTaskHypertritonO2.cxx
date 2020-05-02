@@ -338,6 +338,7 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
   //   deuterons = GetEventMixingTracks(fREvent.fCent, fREvent.fZ);
   // }
 
+  fVertexer.setBz(esdEvent->GetMagneticField());
   RHyperTritonO2 recHyp;
   int indices[2][3]{{1,1,0},{0,0,1}};
   for (int idx{0}; idx < 2; ++idx) {
