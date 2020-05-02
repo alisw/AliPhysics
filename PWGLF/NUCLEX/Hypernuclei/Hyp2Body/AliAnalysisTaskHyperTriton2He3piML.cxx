@@ -500,7 +500,7 @@ double AliAnalysisTaskHyperTriton2He3piML::customNsigma(double mom, double sig)
 template <class T, class M>
 
 Bool_t AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap,
-                                                              double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index)
+                                                              double *pP, double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index)
 {
   if (!v0)
     return false;

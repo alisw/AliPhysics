@@ -150,7 +150,7 @@ public:
 
   template <class T, class M>
   Bool_t FillHyperCandidate(T *v0, AliVEvent *event, AliMCEvent *mcEvent, M mcMap, double *pP,
-                          double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi v0part, int he3index);
+                          double *nP, int lKeyPos, int lKeyNeg, RHyperTritonHe3pi &v0part, int &he3index);
 
   void SetMaxTPCsigmas(float pi, float he3)
   {
