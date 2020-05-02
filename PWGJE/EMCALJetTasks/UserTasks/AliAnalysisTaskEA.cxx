@@ -148,9 +148,10 @@ fhVertexZ(0x0),
 fhJetPtAreaV0norm_PartLevel(0x0),
 fhRhoMBpart(0x0), 
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
-fhV0A_V0C_V0MnormPartLevel(0x0),
-fhV0A_V0APartLevel_V0Mnorm(0x0),
-fhV0C_V0CPartLevel_V0Mnorm(0x0),
+fhSignal_V0M_trueMB_PartLevel(0x0),
+fhV0A_V0C_PartLevel(0x0),
+fhV0A_V0APartLevel(0x0),
+fhV0C_V0CPartLevel(0x0),
 //fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
@@ -177,7 +178,10 @@ fhV0CRunByRunMB(0x0),
 fhV0MRunByRunMB(0x0),
 fhV0MnormRunByRunMB(0x0),
 fhJetPtEvtByEvent(0x0),
+fhRecoilJetPtEvtByEventRandomTT(0x0),
+fhNumberOfHighPtJetsRecoilRandomTTPartLevel(0x0),
 fhJetPtEvtByEventPartLevel(0x0),
+fhRecoilJetPtEvtByEventRandomTTPartLevel(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -196,7 +200,11 @@ fJetR(0.4),
 fJetAcut(0.),
 fRhoType(0),
 kOldV0MC(kFALSE),
-fMultFramework(kFALSE)                            
+fMultFramework(kFALSE), 
+fRho(0.),
+fRhoMC(0.),
+fRhoEMB(0.),
+fRunnumber(0)
 {
    //default constructor
    
@@ -218,7 +226,6 @@ fMultFramework(kFALSE)
       fhTrackEtaIncl[itg]=0x0;
 
       fhTrackMult[itg]=0x0;
-      fhMeanTrackPt[itg]=0x0;
 
       fhJetPhiIncl[itg]=0x0;
       fhJetEtaIncl[itg]=0x0;
@@ -311,20 +318,11 @@ fMultFramework(kFALSE)
       fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[i] = 0x0;
 
    
-      //remx 
-      fhJetPtPartLevelCorrTTHdl[i] = 0x0;
-      fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[i] = 0x0;
 
       //embedding
       for(Int_t itg=kMB; itg<=kGA; itg++){
          fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][i] = 0x0;
          fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][i] = 0x0;
-         
-         fhJetPtPartLevelCorrTTHdl_EMB[itg][i] = 0x0;
-         
-         fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[itg][i] = 0x0;
-         fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[itg][i] = 0x0;
-         fhJetPtPartLevelZeroTTHdl_EMB[itg][i] = 0x0;
       }  
    }
 
@@ -436,6 +434,7 @@ fMultFramework(kFALSE)
  
          fhNumberOfHighPtJetsCB[itg][itt]     = NULL;
          fhNumberOfHighPtJetsRecoil[itg][itt] = NULL;
+         if(itt==0) fhNumberOfHighPtJetsRecoilRandomTT[itg] = NULL;
       }
       fhRecoilJetPtEvtByEvent[itt] = NULL;
 
@@ -507,9 +506,10 @@ fhVertexZ(0x0),
 fhJetPtAreaV0norm_PartLevel(0x0),
 fhRhoMBpart(0x0), 
 fhV0MAssymVsV0Mnorm_PartLevel(0x0),
-fhV0A_V0C_V0MnormPartLevel(0x0),
-fhV0A_V0APartLevel_V0Mnorm(0x0),
-fhV0C_V0CPartLevel_V0Mnorm(0x0),
+fhSignal_V0M_trueMB_PartLevel(0x0),
+fhV0A_V0C_PartLevel(0x0),
+fhV0A_V0APartLevel(0x0),
+fhV0C_V0CPartLevel(0x0),
 //fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
@@ -536,7 +536,10 @@ fhV0CRunByRunMB(0x0),
 fhV0MRunByRunMB(0x0),
 fhV0MnormRunByRunMB(0x0),
 fhJetPtEvtByEvent(0x0),
+fhRecoilJetPtEvtByEventRandomTT(0x0),
+fhNumberOfHighPtJetsRecoilRandomTTPartLevel(0x0),
 fhJetPtEvtByEventPartLevel(0x0),
+fhRecoilJetPtEvtByEventRandomTTPartLevel(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -555,7 +558,11 @@ fJetR(0.4),
 fJetAcut(0.),
 fRhoType(0),                           
 kOldV0MC(kFALSE),
-fMultFramework(kFALSE) 
+fMultFramework(kFALSE),
+fRho(0.),
+fRhoMC(0.),
+fRhoEMB(0.),
+fRunnumber(0)
 {
    //Constructor
    
@@ -576,7 +583,6 @@ fMultFramework(kFALSE)
       fhTrackEtaIncl[itg]=0x0;
 
       fhTrackMult[itg]=0x0;
-      fhMeanTrackPt[itg]=0x0;
 
       fhJetPhiIncl[itg]=0x0;
       fhJetEtaIncl[itg]=0x0;
@@ -668,21 +674,11 @@ fMultFramework(kFALSE)
       fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[i] = 0x0;
 
  
-      //remx 
-      fhJetPtPartLevelCorrTTHdl[i] = 0x0;
-      fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[i] = 0x0;
    
       //embedding
       for(Int_t itg=kMB; itg<=kGA; itg++){ 
          fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][i] = 0x0;
          fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][i] = 0x0;
-         
-         fhJetPtPartLevelCorrTTHdl_EMB[itg][i] = 0x0;
-         
-         fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[itg][i] = 0x0;
-         fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[itg][i] = 0x0;
-
-         fhJetPtPartLevelZeroTTHdl_EMB[itg][i] = 0x0;
       }  
    }
 
@@ -792,6 +788,7 @@ fMultFramework(kFALSE)
  
          fhNumberOfHighPtJetsCB[itg][itt] = NULL;
          fhNumberOfHighPtJetsRecoil[itg][itt] = NULL;
+         if(itt==0) fhNumberOfHighPtJetsRecoilRandomTT[itg] = NULL;
       }
 
       fhRecoilJetPtEvtByEvent[itt] = NULL;
@@ -1329,18 +1326,146 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    //Execute only once:  Get tracks, jets from arrays if not already given 
    if(!fInitializedLocal) ExecOnceLocal(); 
 
-   TLorentzVector myTT;
-   Int_t idx;
-   TString name;
-   Double_t tmparr[4]; 
-   Double_t tmparr3[3]; 
+   fRho    = 0.; 
+   fRhoMC  = 0.;  
+   fRhoEMB = 0.;  
+   
+   fRunnumber = 0; 
+
+   AliGenEventHeader* mcHeader = NULL;
+   AliAODMCHeader* aodMCH = NULL;
+
+   //+++++++++++++++++++++++++++++ check MC z vertex position ++++++++++++++++++++++++++
+   if(fMode == AliAnalysisTaskEA::kKine){ //KINE
+      AliRunLoader *rl = AliRunLoader::Instance();
+      if(rl)  mcHeader = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
+   }else if(fMode == AliAnalysisTaskEA::kMC){ 
+      if(MCEvent()){
+       
+         mcHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+         if(!mcHeader){
+            // Check if AOD
+             aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+             if(aodMCH){
+                for(UInt_t i = 0; i<aodMCH->GetNCocktailHeaders(); i++){
+                  mcHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+                  if(mcHeader) break;
+               }
+            }
+         }
+      }
+   }
+
+   if(mcHeader){
+      TArrayF pyVtx; 
+      mcHeader->PrimaryVertex(pyVtx);
+      if(TMath::Abs(pyVtx[2]) > fZVertexCut) return kTRUE; //skip events with particle level vertex out of +-10 cm
+   }
+
+   //_________________________________________________________________
+   // INITIALIZATION 
+   for(Int_t i=0; i<fkTTbins; i++){
+      fIndexTTC[i] = -1;
+      fIndexTTH[i] = -1;
+      fIndexTTJ[i] = -1;
+   
+      fIndexTTH_PartLevel[i] = -1;
+      fIndexTTC_PartLevel[i] = -1;
+   
+      fTTC[i].resize(0);
+      fTTH[i].resize(0);
+      fTTJ[i].resize(0);
+   
+      fTTH_PartLevel[i].resize(0);
+      fTTC_PartLevel[i].resize(0);
+  
+      fdeltapT[i]  = 0.; 
+      fdeltapT_PartLevel[i]  = 0.; 
+   }
+   
+
+   for(Int_t i=0; i<fnClusterTTBins; i++){
+      fClusterTT[i] = 0;
+      fClusterTT_PartLevel[i] = 0;
+   }
+   
+   for(Int_t i=0; i<fnHadronTTBins; i++){
+      fHadronTT[i] = 0;
+      fHadronTT_PartLevel[i] = 0;
+   }
+   
+   for(Int_t i=0; i<fnJetChTTBins; i++){
+      fJetChTT[i] = 0;
+   }
+
+   //_________________________________________________________________
+
+   fhJetPtEvtByEvent->Reset();
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
+      fhRecoilJetPtEvtByEvent[itt]->Reset(); 
+   }
+   fhRecoilJetPtEvtByEventRandomTT->Reset(); 
+
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == kKine){
+      fhJetPtEvtByEventPartLevel->Reset();
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
+         fhRecoilJetPtEvtByEventPartLevel[itt]->Reset(); 
+      }
+      fhRecoilJetPtEvtByEventRandomTTPartLevel->Reset();
+   } 
    //_________________________________________________________________
    // EVENT SELECTION
    fHistEvtSelection->Fill(0.5); //Count input event
 
+   //_________________________________________________________
+   //READ  TRACK AND JET CONTAINERS
+   //Container operations   http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerIterateTechniques
+   
+   if(fMode == AliAnalysisTaskEA::kNormal || fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kEmbedding || fMode == AliAnalysisTaskEA::kEmbPy){  
+      //fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //track container detector-level   real data only
+      fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(0)); //track container detector-level   real data only
+      fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data()));     //detector-level AKT jets real data or hybrid event
+      fKTJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetContainerName.Data())); //detector-level KT jets real data or hybrid event
+      
+      fRho = GetMyRho(fKTJetContainerDetLevel); //estimated backround pt density
+   }  
+ 
+   if( fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kEmbedding || fMode == kKine ||  fMode == AliAnalysisTaskEA::kEmbPy){  //particle level particles and jets  for  MC and embedding
+      //fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //pythia particle level particles 
+      fParticleContainerPartLevel = GetParticleContainer(1); //pythia particle level particles 
+      fJetContainerPartLevel      = static_cast<AliJetContainer*> (GetJetContainer(fMyJetParticleContainerName.Data()));   //pythia particle level AKT jets
+      fKTJetContainerPartLevel    = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetParticleContainerName.Data()));   //pythia particle level KT jets
+   
+      fRhoMC = GetMyRho(fKTJetContainerPartLevel); //estimated backround pt density
+   }
+   
+   if( fMode == AliAnalysisTaskEA::kEmbedding){ //Detector level pythia  for  embedding
+   
+      //fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(fMyDetLevelContainerName.Data())); //pythia detector level tracks
+      fTrkContainerDetLevelEMB   = static_cast<AliTrackContainer*> (GetTrackContainer(2)); //pythia detector level tracks from AOD 
+      fJetContainerDetLevelEMB   = static_cast<AliJetContainer*> (GetJetContainer(fMyJetDetLevelContainerName.Data()));  //pythia detector level AKT jets 
+      fKTJetContainerDetLevelEMB = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetDetLevelContainerName.Data()));  //pythia detector level KT jets 
+   
+      fRhoEMB = GetMyRho(fKTJetContainerDetLevelEMB); //estimated backround pt density
+   }
+ 
+   //_________________________________________________________________
+   // DECIDE WHETHER TO FILL SIGNAL TT OR REFERENCE TT  DEPENDING ON RANDOM  NUMBER  
+   fFillSigTT = kTRUE;  
+   if( fRandom->Integer(100) < 5) fFillSigTT = kFALSE; 
+   //________________________________________________________________
+   //DATA ANALYSIS PARTICLE LEVEL
+
+   if(fMode == AliAnalysisTaskEA::kMC  || fMode == AliAnalysisTaskEA::kKine)  AnalyzeParticleLevel(); 
+   if(fMode == AliAnalysisTaskEA::kKine) return kTRUE;
+
+
+   //________________________________________________________________
+   //DATA ANALYSIS DETECTOR LEVEL
+
    //Check Reconstructed event vertex and pileup
    if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
-
 
    fIsMinBiasTrig = kFALSE; //Minimum bias event flag
    if(PassedMinBiasTrigger()){
@@ -1367,62 +1492,525 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    }
 
    //_________________________________________________________________
-   Double_t rho    = 0.; 
-   Double_t rhoMC  = 0.;  
-   Double_t rhoEMB = 0.;  
-   Double_t dphi     = 999.;
-   
-   Double_t jetPtCorrPart = 0.; //particle level jet pt corrected for rho
-   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
-   Double_t jetPtCorrDetShift  = 0.;  //detector level jet pt corrected for rho
-   Double_t sharedFraction = 0.; //shared fraction between detector level and combined level
 
-   Double_t ptLJ=-1, etaLJ=999, phiLJ=0; //leading jet
-   Double_t ptSJ=-1, etaSJ=999, phiSJ=0; //subleading jet
-   Double_t ptLJmc=-1, etaLJmc=999, phiLJmc=0; //leading jet
-   Double_t ptSJmc=-1, etaSJmc=999, phiSJmc=0; //subleading jet
-   Int_t b1,b2;
 
-   Int_t runnumber = 0; 
-
-   fhJetPtEvtByEvent->Reset();
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
-      fhRecoilJetPtEvtByEvent[itt]->Reset(); 
-   }
-
-   if(fMode == AliAnalysisTaskEA::kMC || fMode == kKine){
-      fhJetPtEvtByEventPartLevel->Reset();
-      for(Int_t itt=0; itt<fnHadronTTBins; itt++){ 
-         fhRecoilJetPtEvtByEventPartLevel[itt]->Reset(); 
-      }
-   } 
+   fTrigflag[0] = fIsMinBiasTrig; 
+   fTrigflag[1] = fIsHighMultTrig;
+   fTrigflag[2] = fIsEmcalTrig;
 
    //_________________________________________________________________
-   //                    JET+TRACK CONTAINERS
+ 
+   InitEventProperties(); 
+   if(fMode == kEmbPy){                  EmbeddingFromTxtFile(); return kTRUE; } 
+   if(fMode == kEmbedding){              EmbeddingFromAODFile(); return kTRUE; }
+   if(fMode == AliAnalysisTaskEA::kMC)   FillResponseMatrix(); 
+
+   GeneralTrackProperties();
+   AnalyzeRawData();
+ 
+   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEA::AnalyzeRawData(){
+   //Analyze raw data
   
    AliEmcalJet  *jet = NULL;        //jet pointer real jet 
-   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
-   AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
    AliVParticle *track = NULL; //jet constituent
-   AliVParticle *mcParticle = NULL; //mc particle
-   //_________________________________________________________________
+   Double_t shift1, shift2;
+   //pt asymmetry 
+   Double_t sumJetPtTT       = 0.; 
+   Double_t sumJetPtRecoil   = 0.; 
+   Double_t sumTrackPtTT     = 0.; 
+   Double_t sumTrackPtRecoil = 0.; 
+   Double_t ptLJ=-1, etaLJ=999, phiLJ=0; //leading jet
+   Double_t ptSJ=-1, etaSJ=999, phiSJ=0; //subleading jet
+   Int_t b1,b2;
+   Double_t tmparr[4]; 
+   Double_t tmparr3[3];
+   TLorentzVector myTT;
+   Int_t idx;
+   Double_t dphi     = 999.;
+   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
+   Double_t jetPtCorrDetShift  = 0.;  //detector level jet pt corrected for rho
 
 
-   Bool_t trigflag[] = {fIsMinBiasTrig, fIsHighMultTrig, fIsEmcalTrig};
-
-   //_________________________________________________________________
+ 
+   //     Find the leading and subleading jets  for estimates  of Delta pt and Exclude 2 leading jets 
+   for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+      // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+      jet = jetIterator.second;  // Get the pointer to jet object
+      if(!jet)  continue; 
+    
+      if(jet->Pt() > ptLJ){
+         ptSJ  = ptLJ;
+         etaSJ = etaLJ;
+         phiSJ = phiLJ;
    
+         ptLJ  = jet->Pt(); 
+         etaLJ = jet->Eta(); 
+         phiLJ = jet->Phi(); 
+      }else if(jet->Pt() > ptSJ){
+         ptSJ  = jet->Pt();
+         etaSJ = jet->Eta();
+         phiSJ = jet->Phi(); 
+      }
+   }
+ 
+   //______________________________________________________________
+   //                       TTH  ANALYSIS 
+   //______________________________________________________________
    
-   // END EVENT SELECTION
-   //_________________________________________________________________
-   // DECIDE WHETHER TO FILL SIGNAL TT OR REFERENCE TT  DEPENDING ON RANDOM  NUMBER  
-   fFillSigTT = kTRUE;  
-   if( fRandom->Integer(100) < 5) fFillSigTT = kFALSE; 
+   if(fIsMinBiasTrig || fIsHighMultTrig){
+
+      //Njet  spectrum for jets recoiling fro random direction (particle level)
+      Double_t rndTTPhi = TMath::Pi() * fRandom->Uniform(0,2); 
+      for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+         jet = jetIterator.second;  
+         if(!jet)  continue;
+         if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi() - rndTTPhi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+            fhRecoilJetPtEvtByEventRandomTT->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum
+         } 
+      } 
+
+      //count number of jets with pT larger than something in recoil region
+      tmparr3[2] = fMultV0Mnorm;
+      for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+         if(!fTrigflag[itg]) continue; //check which trigger fired
+
+         for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoilRandomTT[itg]->GetAxis(0)->GetNbins(); ii++){
+            tmparr3[0] = fhNumberOfHighPtJetsRecoilRandomTT[itg]->GetAxis(0)->GetBinLowEdge(ii);
+            b1 = fhRecoilJetPtEvtByEventRandomTT->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+            b2 = fhRecoilJetPtEvtByEventRandomTT->GetXaxis()->GetNbins()+1;  //include overflow bin
+            tmparr3[1] = fhRecoilJetPtEvtByEventRandomTT->Integral(b1,b2);
+            fhNumberOfHighPtJetsRecoilRandomTT[itg]->Fill(tmparr3);
+         }
+      } 
+
+      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      //LOOP SEARCH FOR HIGH PT HADRON TRIGGER IN INCLUSIVE EVENTS 
+      for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+         // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+         track = trackIterator.second;  // Get the full track
+         if(!track) continue;
+   
+         if(IsTrackInAcceptance(track, kDetLevel)){  
+            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+               if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
+                  myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
+                  fTTH[itt].push_back(myTT);
+                  fHadronTT[itt]++;   // there was a high pt 
+               } 
+            }
+         } 
+      }
+   
+      //chose trigger hadron TT
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         fdeltapT[itt] = 0.;
+         
+         if(fHadronTT[itt]>0){
+            fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
+            idx = fIndexTTH[itt];
+         
+            fdeltapT[itt] = GetDeltaPt(fTTH[itt][idx].Phi(), fTTH[itt][idx].Eta(), phiLJ, etaLJ, phiSJ, etaSJ, fRho, kDetLevel);
+         }
+      }
+   
+      for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+         if(!fTrigflag[itg]) continue; //check which trigger fired
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+   
+            fhMultTTH[itg][itt]->Fill(fHadronTT[itt]); 
+   
+            if(!fHadronTT[itt]) continue; //check whether there was hadron TT
+   
+            fhRhoTTH[itg][itt]->Fill(fRho);
+         }
+      }
   
-   //_________________________________________________________________
-   //                EVENT PROPERTIES   
+      for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+         jet = jetIterator.second;  
+         if(!jet)  continue;
+         fhJetPtEvtByEvent->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum 
+      } 
+   
+   
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         if(!fHadronTT[itt]) continue; //analyze events with hadron TT only 
+   
+         for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+            if(!fTrigflag[itg]) continue; //check which trigger fired
+    
+//            fhCentralityTTH[itg][fkV0A][itt]->Fill(fCentralityV0A, fMultV0A); 
+//            fhCentralityTTH[itg][fkV0C][itt]->Fill(fCentralityV0C, fMultV0C);
+//            fhCentralityTTH[itg][fkV0M][itt]->Fill(fCentralityV0M, fMultV0M); 
+//            fhCentralityTTH[itg][fkV0Mnorm1][itt]->Fill(fCentralityV0M, fMultV0Mnorm); 
+    
+            fhSignalTTH[itg][fkV0A][itt]->Fill(fMultV0A);
+            fhSignalTTH[itg][fkV0C][itt]->Fill(fMultV0C);
+            fhSignalTTH[itg][fkV0M][itt]->Fill(fMultV0M);
+            fhSignalTTH[itg][fkV0Mnorm1][itt]->Fill(fMultV0Mnorm);
+   
+            fhV0MAssymVsV0MnormTTH[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M);
+
+            //count number of jets with pT larger than something   
+            tmparr3[2] = fMultV0Mnorm;
+            for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetNbins(); ii++){
+               tmparr3[0] = fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
+               b1 = fhJetPtEvtByEvent->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+               b2 = fhJetPtEvtByEvent->GetXaxis()->GetNbins()+1;  //include overflow bin
+               tmparr3[1] = fhJetPtEvtByEvent->Integral(b1,b2);
+               fhNumberOfHighPtJetsCB[itg][itt]->Fill(tmparr3);
+            }
+         }
+   
+         if(fIsMinBiasTrig){
+            fhV0AvsV0CTTH[itt]->Fill(fMultV0C, fMultV0A);
+         }
+   
+         //pick up TTH hadron accoding to the index
+         idx = fIndexTTH[itt];
+         if(idx>-1){
+            sumJetPtTT       = 0.; 
+            sumJetPtRecoil   = 0.; 
+            sumTrackPtTT     = 0.; 
+            sumTrackPtRecoil = 0.; 
+ 
+            for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+   
+               //fhDeltaPtTTH_RC_CentV0M[itg][itt]->Fill(fCentralityV0M, fdeltapT[itt]);
+               fhDeltaPtTTH_RC_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fdeltapT[itt]);        
+            }
+   
+            if(fFillSigTT  && itt==0) continue;  // Do not fill reference 
+            if(!fFillSigTT && itt>0)  continue;  // Do not fill signal 
+   
+            for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+   
+               //fhTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0M centrality
+               fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm,  fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+               fhTTH_3D_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+            }
+   
+            //recoil jets
+            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+   
+               dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
+
+               jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+               
+               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+                  if(!fTrigflag[itg]) continue; //check which trigger fired
+                  fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
+               
+                  tmparr[0] = fMultV0Mnorm;
+                  tmparr[1] = fAsymV0M;
+                  tmparr[2] = jetPtCorrDet;
+                  tmparr[3] = TMath::Abs(dphi);
+                  fhRecoilJetTTH_V0Mnorm1[itg][itt]->Fill(tmparr); 
+
+                  tmparr[0] = jet->Pt();
+                  tmparr[1] = jet->Eta();
+                  tmparr[2] = jet->Phi();
+                  tmparr[3] = fMultV0Mnorm;
+                  fhJetPtEtaPhiV0normTTH[itg][itt]->Fill(tmparr); 
+               }
+ 
+               if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                  fhRecoilJetPtEvtByEvent[itt]->Fill(jet->Pt());
+                  sumJetPtRecoil += jet->Pt(); 
+               }else{
+                  sumJetPtTT     += jet->Pt(); //sum jet pT in 
+               } 
+               
+               if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){     //select recoil jet
+                  for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+                     if(!fTrigflag[itg]) continue; //check which trigger fired
+                     //fhRecoilJetPtTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, jetPtCorrDet);
+                     fhRecoilJetPtTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet);
+
+                     tmparr3[0] = jetPtCorrDet;
+                     tmparr3[1] = jet->Area();
+                     tmparr3[2] = fMultV0Mnorm;
+                     fhJetPtAreaV0normTTH[itg][itt]->Fill(tmparr3);
+               
+                     if(itt==0){
+                        for(Int_t is=0; is<fkShift;is++){
+                           jetPtCorrDetShift = jetPtCorrDet - 0.3 + is*0.01;  //from -300 MeV to 300 MeV in steps of 10 MeV
+                           fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][is]->Fill(fMultV0Mnorm, jetPtCorrDetShift);
+                        }
+                     }
+                  }
+               } 
+            }
+
+            for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+
+               //count number of jets with pT larger than something in recoil region
+               tmparr3[2] = fMultV0Mnorm;
+               for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetNbins(); ii++){
+                  tmparr3[0] = fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
+                  b1 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+                  b2 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
+                  tmparr3[1] = fhRecoilJetPtEvtByEvent[itt]->Integral(b1,b2);
+                  fhNumberOfHighPtJetsRecoil[itg][itt]->Fill(tmparr3);
+               }
+               
+               //Fill jet pt asymmetry
+               if(sumJetPtRecoil + sumJetPtTT > 0){
+                  fhJetPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumJetPtRecoil - sumJetPtTT) / (sumJetPtRecoil + sumJetPtTT));
+               }
+            }
+
+            //Fill track pt asymmetry
+            for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               track = trackIterator.second;  // Get the full track
+               if(!track) continue;
+           
+               if(IsTrackInAcceptance(track, kDetLevel)){  
+                  dphi = TVector2::Phi_mpi_pi(track->Phi() - fTTH[itt][idx].Phi()); 
+                  if(TMath::Abs(dphi) > TMath::Pi()/2){ //select recoil hemisphere and count tracks 
+                     sumTrackPtRecoil += track->Pt(); 
+                  }else{
+                     sumTrackPtTT     += track->Pt(); //sum jet pT in 
+                  } 
+               }
+            }
+ 
+            for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+
+               if(sumTrackPtRecoil + sumTrackPtTT > 0){
+                  fhTrackPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumTrackPtRecoil - sumTrackPtTT) / (sumTrackPtRecoil + sumTrackPtTT));
+               }
+            }
+         }
+      }
+   }
+
+   
+   //_________________________________________________________
+   //              EMCAL CLUSTERS   TTC
+   //_________________________________________________________
+   TLorentzVector ph;
+   if(fMyClusterContainerName.Data()){
+      fClusterContainerDetLevel =  static_cast<AliClusterContainer*> ( GetClusterContainer(fMyClusterContainerName.Data()));
+   
+      for(auto cluster: fClusterContainerDetLevel->accepted()){
+         fClusterContainerDetLevel->GetMomentum(ph, cluster);
+   
+         if(!FinalClusterCuts(cluster)) continue;
+   
+         for(Int_t itg = kMB; itg<=kGA; itg++){
+            if(!fTrigflag[itg])  continue;
+            fhClusterPhiIncl[itg]->Fill(ph.Pt(), ph.Phi());
+            fhClusterEtaIncl[itg]->Fill(ph.Pt(), ph.Eta());
+         }
+   
+   
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){ // seatch for TTC candidates
+            if(fClusterTTLowPt[igg] < ph.Pt() && ph.Pt() < fClusterTTHighPt[igg]){
+               myTT.SetPtEtaPhiM(ph.Pt(),ph.Eta(),ph.Phi(),0.); 
+               fTTC[igg].push_back(myTT);
+               fClusterTT[igg]++;   // there was a high pt emcal cluster 
+            } 
+         }
+      }
+   
+      //chose trigger emcal cluster TTC
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+         fdeltapT[igg] = 0; 
+
+         if(fClusterTT[igg]>0){
+            fIndexTTC[igg] = fRandom->Integer(fClusterTT[igg]);
+            idx = fIndexTTC[igg];// gamma trigger
+            fdeltapT[igg] = GetDeltaPt(fTTC[igg][idx].Phi(), fTTC[igg][idx].Eta(), phiLJ, etaLJ, phiSJ, etaSJ, fRho, kDetLevel);
+         }
+      }
+     
+      for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
+         if(!fTrigflag[itg]) continue; //check which trigger fired
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+            fhMultTTC[itg][igg]->Fill(fClusterTT[igg]); 
+     
+            if(!fClusterTT[igg]) continue;  //check whether there was TT
+     
+            fhRhoTTC[itg][igg]->Fill(fRho);
+         }
+      }
+   
+      //  analysis of      TTC   bias events
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+          
+         if(!fClusterTT[igg]) continue;
+      
+         for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
+            if(!fTrigflag[itg]) continue; //check which trigger fired
+            
+//            fhCentralityTTC[itg][fkV0A][igg]->Fill(fCentralityV0A, fMultV0A); 
+//            fhCentralityTTC[itg][fkV0C][igg]->Fill(fCentralityV0C, fMultV0C); 
+//            fhCentralityTTC[itg][fkV0M][igg]->Fill(fCentralityV0M, fMultV0M); 
+//            fhCentralityTTC[itg][fkV0Mnorm1][igg]->Fill(fCentralityV0M, fMultV0Mnorm); 
+      
+            fhSignalTTC[itg][fkV0A][igg]->Fill(fMultV0A);
+            fhSignalTTC[itg][fkV0C][igg]->Fill(fMultV0C);
+            fhSignalTTC[itg][fkV0M][igg]->Fill(fMultV0M);
+            fhSignalTTC[itg][fkV0Mnorm1][igg]->Fill(fMultV0Mnorm);
+         }
+      
+         if(fIsMinBiasTrig){
+            fhV0AvsV0CTTCinMB[igg]->Fill(fMultV0C, fMultV0A);
+         }else if(fIsEmcalTrig){
+            fhV0AvsV0CTTCinGA[igg]->Fill(fMultV0C, fMultV0A);
+         }
+      
+         //Recoil jets 
+         idx = fIndexTTC[igg];// gamma trigger
+         if(idx>-1){
+      
+            for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+     
+               //fhDeltaPtTTC_RC_CentV0M[itg][igg]->Fill(fCentralityV0M, fdeltapT[igg]);
+               fhDeltaPtTTC_RC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, fdeltapT[igg]);
+            }
+      
+            if(fFillSigTT && igg==0) continue;  // Do not fill reference 
+            if(!fFillSigTT && igg>0) continue;  // Do not fill signal 
+      
+      
+            for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
+               if(!fTrigflag[itg]) continue; //check which trigger fired
+     
+               //fhTTC_CentV0M[itg][igg]->Fill(fCentralityV0M, fTTC[igg][idx].Pt()); //fill TTC trigger track pT
+               fhTTC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, fTTC[igg][idx].Pt()); //fill  TTC trigger track pT
+            }
+          
+            //recoil jets
+            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+        
+               if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC[igg][idx].Phi())) > fPhiCut){     
+                  //recoil jet
+                  jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+                     
+                  for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
+                     if(!fTrigflag[itg]) continue; //check which trigger fired
+                  
+                     //fhRecoilJetPtTTC_CentV0M[itg][igg]->Fill(fCentralityV0M, jetPtCorrDet);
+                     fhRecoilJetPtTTC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, jetPtCorrDet);
+                  }
+               } 
+            }  
+         }
+      }
+   }//cluster container   
+   
+   
+   //_________________________________________________________
+   //      LOOP OVER JETS  DETECTOR LEVEL  TTJ
+   //_________________________________________________________
+   
+   for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+      // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+      jet = jetIterator.second;  // Get the pointer to jet object
+      if(!jet)  continue; 
+  
+      tmparr[0] = jet->Pt();
+      tmparr[1] = jet->Eta();
+      tmparr[2] = jet->Phi();
+      tmparr[3] = fMultV0Mnorm;
+
+      jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+      
+      tmparr3[0] = jetPtCorrDet;
+      tmparr3[1] = jet->Area();
+      tmparr3[2] = fMultV0Mnorm;
+
+      
+      for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+         if(!fTrigflag[itg]) continue; //check which trigger fired
+      
+         fhJetPhiIncl[itg]->Fill(jetPtCorrDet, jet->Phi());
+         fhJetEtaIncl[itg]->Fill(jetPtCorrDet, jet->Eta());
+         fhJetPtEtaPhiV0norm[itg]->Fill(tmparr);
+      
+         fhJetPtAreaV0norm[itg]->Fill(tmparr3);
+      }
+
+      jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+   
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){ //search for TTJ candidates
+         if(fJetChTTLowPt[ijj] < jetPtCorrDet && jetPtCorrDet < fJetChTTHighPt[ijj]){
+            myTT.SetPtEtaPhiM(jetPtCorrDet, jet->Eta(), jet->Phi(), 0.); 
+            fTTJ[ijj].push_back(myTT);
+            fJetChTT[ijj]++;   // there was a high pt jet
+         } 
+      }
+   }
+   
+   //chose trigger emcal cluster TT 
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      if(fJetChTT[ijj]>0){
+         fIndexTTJ[ijj] = fRandom->Integer(fJetChTT[ijj]);
+      }
+   }
+   
+   
+   for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+      if(!fTrigflag[itg]) continue; //check which trigger fired
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+   
+         fhMultTTJ[itg][ijj]->Fill(fJetChTT[ijj]); 
+   
+         if(!fJetChTT[ijj]) continue; //check if there is jet TT 
+   
+         fhRhoTTJ[itg][ijj]->Fill(fRho);
+      }
+   }
+   
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      
+      if(!fJetChTT[ijj]) continue; 
+       
+      for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
+         if(!fTrigflag[itg]) continue; //check which trigger fired
+   
+//         fhCentralityTTJ[itg][fkV0A][ijj]->Fill(fCentralityV0A, fMultV0A); 
+//         fhCentralityTTJ[itg][fkV0C][ijj]->Fill(fCentralityV0C, fMultV0C); 
+//         fhCentralityTTJ[itg][fkV0M][ijj]->Fill(fCentralityV0M, fMultV0M); 
+//         fhCentralityTTJ[itg][fkV0Mnorm1][ijj]->Fill(fCentralityV0M, fMultV0Mnorm); 
+      
+         fhSignalTTJ[itg][fkV0A][ijj]->Fill(fMultV0A);
+         fhSignalTTJ[itg][fkV0C][ijj]->Fill(fMultV0C);
+         fhSignalTTJ[itg][fkV0M][ijj]->Fill(fMultV0M);
+         fhSignalTTJ[itg][fkV0Mnorm1][ijj]->Fill(fMultV0Mnorm);
+      } 
+      
+      if(fIsMinBiasTrig){
+         fhV0AvsV0CTTJ[ijj]->Fill(fMultV0C, fMultV0A);
+      }
+   }
+   return;
+}
+//_________________________________________________________________
+void AliAnalysisTaskEA::InitEventProperties(){
+   // EVENT PROPERTIES   
    Double_t normV0A = -1; 
    Double_t normV0C = -1;
+   TString name;
+   AliVParticle *track = NULL; //jet constituent
+   Int_t    trackMult  = 0;
  
    if(fMode != AliAnalysisTaskEA::kKine){  
    
@@ -1462,7 +2050,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fNTracklets = -9999;
       }
       
-      runnumber  = InputEvent()->GetRunNumber();  
+      fRunnumber  = InputEvent()->GetRunNumber();  
       
       AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
       if(vzeroAOD){
@@ -1473,9 +2061,9 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fMultV0M = fMultV0A + fMultV0C;
       
          if(fMode != AliAnalysisTaskEA::kMC){
-            fMeanV0M = fHelperEA->GetV0M(runnumber);
-            meanV0A  = fHelperEA->GetV0A(runnumber);
-            meanV0C  = fHelperEA->GetV0C(runnumber);
+            fMeanV0M = fHelperEA->GetV0M(fRunnumber);
+            meanV0A  = fHelperEA->GetV0A(fRunnumber);
+            meanV0C  = fHelperEA->GetV0C(fRunnumber);
          }else{
             fMeanV0M = fHelperEA->GetV0MDetLevel();
             meanV0A  = fHelperEA->GetV0ADetLevel();
@@ -1505,147 +2093,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fAsymV0M = 999;
       }
    }  
-  
-   
-   
-   //_________________________________________________________
-   //READ  TRACK AND JET CONTAINERS
-   //Container operations   http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerIterateTechniques
-   
-   if(fMode == AliAnalysisTaskEA::kNormal || fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kEmbedding || fMode == AliAnalysisTaskEA::kEmbPy){  
-      //fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //track container detector-level   real data only
-      fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(0)); //track container detector-level   real data only
-      fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data()));     //detector-level AKT jets real data or hybrid event
-      fKTJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetContainerName.Data())); //detector-level KT jets real data or hybrid event
-      
-      rho = GetMyRho(fKTJetContainerDetLevel); //estimated backround pt density
-   }  
- 
-   if( fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kEmbedding || fMode == kKine ||  fMode == AliAnalysisTaskEA::kEmbPy){  //particle level particles and jets  for  MC and embedding
-      //fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //pythia particle level particles 
-      fParticleContainerPartLevel = GetParticleContainer(1); //pythia particle level particles 
-      fJetContainerPartLevel      = static_cast<AliJetContainer*> (GetJetContainer(fMyJetParticleContainerName.Data()));   //pythia particle level AKT jets
-      fKTJetContainerPartLevel    = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetParticleContainerName.Data()));   //pythia particle level KT jets
-   
-      rhoMC = GetMyRho(fKTJetContainerPartLevel); //estimated backround pt density
-   }
-   
-   if( fMode == AliAnalysisTaskEA::kEmbedding){ //Detector level pythia  for  embedding
-   
-      //fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(fMyDetLevelContainerName.Data())); //pythia detector level tracks
-      fTrkContainerDetLevelEMB   = static_cast<AliTrackContainer*> (GetTrackContainer(2)); //pythia detector level tracks from AOD 
-      fJetContainerDetLevelEMB   = static_cast<AliJetContainer*> (GetJetContainer(fMyJetDetLevelContainerName.Data()));  //pythia detector level AKT jets 
-      fKTJetContainerDetLevelEMB = static_cast<AliJetContainer*> (GetJetContainer(fMyKTJetDetLevelContainerName.Data()));  //pythia detector level KT jets 
-   
-      rhoEMB = GetMyRho(fKTJetContainerDetLevelEMB); //estimated backround pt density
-   }
-   
-   
-   //________________________________________________________
-   //     Find the leading and subleading jets  for estimates  of Delta pt
-   
-   
-   if(fMode != AliAnalysisTaskEA::kKine){  
-      //Exclude 2 leading jets 
-      for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-                      // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-          jet = jetIterator.second;  // Get the pointer to jet object
-          if(!jet)  continue; 
-       
-          if(jet->Pt() > ptLJ){
-             ptSJ  = ptLJ;
-             etaSJ = etaLJ;
-             phiSJ = phiLJ;
-      
-             ptLJ  = jet->Pt(); 
-             etaLJ = jet->Eta(); 
-             phiLJ = jet->Phi(); 
-          }else if(jet->Pt() > ptSJ){
-             ptSJ  = jet->Pt();
-             etaSJ = jet->Eta();
-             phiSJ = jet->Phi(); 
-          }
-      }
-   }
- 
-   //Exclude 2 leading jets MC 
-   if(fMode != AliAnalysisTaskEA::kNormal && fMode != AliAnalysisTaskEA::kEmbPy){
-      for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
-          // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-          jet = jetIterator.second;  // Get the pointer to jet object
-          if(!jet)  continue; 
-       
-          if(jet->Pt() > ptLJmc){
-             ptSJmc  = ptLJmc;
-             etaSJmc = etaLJmc;
-             phiSJmc = phiLJmc;
-      
-             ptLJmc  = jet->Pt(); 
-             etaLJmc = jet->Eta(); 
-             phiLJmc = jet->Phi(); 
-          }else if(jet->Pt() > ptSJmc){
-             ptSJmc  = jet->Pt();
-             etaSJmc = jet->Eta();
-             phiSJmc = jet->Phi(); 
-          }
-      }
-   }
-   
-   //_________________________________________________________
-   //                 TT
-   
-   for(Int_t i=0; i<fkTTbins; i++){
-      fIndexTTC[i] = -1;
-      fIndexTTH[i] = -1;
-      fIndexTTJ[i] = -1;
-   
-      fIndexTTH_PartLevel[i] = -1;
-      fIndexTTC_PartLevel[i] = -1;
-   
-      fTTC[i].resize(0);
-      fTTH[i].resize(0);
-      fTTJ[i].resize(0);
-   
-      fTTH_PartLevel[i].resize(0);
-      fTTC_PartLevel[i].resize(0);
-  
-      fdeltapT[i]  = 0.; 
-      fdeltapT_PartLevel[i]  = 0.; 
-   }
-   
-   TLorentzVector ph;
-   for(Int_t i=0; i<fnClusterTTBins; i++){
-      fClusterTT[i] = 0;
-      fClusterTT_PartLevel[i] = 0;
-   }
-   
-   for(Int_t i=0; i<fnHadronTTBins; i++){
-      fHadronTT[i] = 0;
-      fHadronTT_PartLevel[i] = 0;
-   }
-   
-   for(Int_t i=0; i<fnJetChTTBins; i++){
-      fJetChTT[i] = 0;
-   }
-   
-   Double_t xyz[50];
-   Double_t pxpypz[50];
-   Double_t cv[21];
-   Double_t shift1, shift2;
-   
-   Int_t label, labelMC;                  
-   Bool_t labelfound = 0;
-   AliAODMCParticle* particleMC = NULL;    
-   AliAODTrack *trackAOD=NULL ;
-
-   Int_t    trackMult  = 0;
-   Double_t sumTrackPt = 0.;
- 
-   //pt asymmetry 
-   Double_t sumJetPtTT       = 0.; 
-   Double_t sumJetPtRecoil   = 0.; 
-   Double_t sumTrackPtTT     = 0.; 
-   Double_t sumTrackPtRecoil = 0.; 
  
    if((fIsEmcalTrig || fIsMinBiasTrig || fIsHighMultTrig) && (fMode != AliAnalysisTaskEA::kKine)){  //real data + mc det level + embedding
      
@@ -1654,9 +2101,9 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    
   
       for(Int_t itg=kMB; itg<=kGA; itg++){    //@@@
-         if(!trigflag[itg]) continue; 
+         if(!fTrigflag[itg]) continue; 
          //events without TT requirement
-         fhRho[itg]->Fill(rho);
+         fhRho[itg]->Fill(fRho);
    
 //          fhCentrality[itg][fkV0A]->Fill(fCentralityV0A, fMultV0A); 
 //          fhCentrality[itg][fkV0C]->Fill(fCentralityV0C, fMultV0C); 
@@ -1679,18 +2126,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    
          if(IsTrackInAcceptance(track, kDetLevel)){  
             trackMult++;
-            sumTrackPt += track->Pt();
          }
-      }
-      if(trackMult>0){
-         sumTrackPt = sumTrackPt/trackMult;
       }
    
       for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-         if(!trigflag[itg]) continue; 
+         if(!fTrigflag[itg]) continue; 
     
          fhTrackMult[itg]->Fill(fMultV0Mnorm, trackMult); 
-         fhMeanTrackPt[itg]->Fill(fMultV0Mnorm, sumTrackPt);
 
          fhV0A_V0C_V0Mnorm[itg]->Fill(fMultV0A, fMultV0C, fMultV0Mnorm);
       }
@@ -1701,7 +2143,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhVertex[2]->Fill(fzVertex);
    
    
-         name = Form("%d", runnumber);      
+         name = Form("%d", fRunnumber);      
          fhV0ARunByRunMB->Fill(name.Data(), fMultV0A, 1.0);
          fhV0CRunByRunMB->Fill(name.Data(), fMultV0C, 1.0);
          fhV0MRunByRunMB->Fill(name.Data(), fMultV0M, 1.0);
@@ -1710,814 +2152,33 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhV0AvsSPD->Fill(fNTracklets, fMultV0A);
          fhV0CvsSPD->Fill(fNTracklets, fMultV0C);
       }
-   
-   
-      //_________________________________________________________
-      //LOOP OVER TRACKS DETECTOR LEVEL
-    
-      for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
-         // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-         track = trackIterator.second;  // Get the full track
-         if(!track) continue;
-   
-         if(IsTrackInAcceptance(track, kDetLevel)){  
-   
-            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-               if(!trigflag[itg]) continue; 
-               fhTrackPhiIncl[itg]->Fill(track->Pt(), track->Phi());
-               fhTrackEtaIncl[itg]->Fill(track->Pt(), track->Eta());
-   
-               tmparr[0] = track->Pt();
-               tmparr[1] = track->Eta();
-               tmparr[2] = track->Phi();
-               tmparr[3] = fMultV0Mnorm;
-               fhTrackPtEtaPhiV0norm[itg]->Fill(tmparr);
-            }
-         }
-      }
-   
-   
-   
-      //___________________________________________
-      //   EMBEDDED EVENTS FROM PYTHIA TEXT FILE    
-      if(fMode == kEmbPy){
+   }   
+}
+//_________________________________________________________________
+void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 
-         if(!fIsMinBiasTrig && !fIsHighMultTrig) return kTRUE; //if this is not MB or HM  skip the rest
+   TLorentzVector myTT;
+   AliEmcalJet  *jet = NULL;        //jet pointer real jet 
+   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
+   AliVParticle *track = NULL; //jet constituent
+   AliVParticle *mcParticle = NULL; //mc particle
+   AliAODMCParticle* daughtermc;
+   Int_t b1,b2;
+   Double_t ptLJmc=-1, etaLJmc=999, phiLJmc=0; //leading jet
+   Double_t ptSJmc=-1, etaSJmc=999, phiSJmc=0; //subleading jet
+   Int_t idx;
+   Double_t tmparr[4]; 
+   Double_t tmparr3[3];
+   Double_t jetPtCorrDet  = 0.; 
+   Double_t jetPtCorrPart = 0.;
 
-         if(fParticleContainerPartLevel){
-   
-            //detector level pythia mc particles
-            for(auto mcDetIterator : fParticleContainerPartLevel->accepted_momentum() ){
-               track = mcDetIterator.second;  // Get the pointer to mc particle object
-               if(!track)  continue; 
-   
-               if(IsTrackInAcceptance(track, kDetLevel)){
-                  fhTrackEtaInclEMB->Fill(track->Pt(), track->Eta());
-   
-                  for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                     if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
-                        myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
-                        fTTH[itt].push_back(myTT);
-                        fHadronTT[itt]++;   // there was a high pt 
-                     }
-                  }
-               }        
-            }
+   //pt asymmetry 
+   Double_t sumJetPtTT       = 0.; 
+   Double_t sumJetPtRecoil   = 0.; 
+   Double_t sumTrackPtTT     = 0.; 
+   Double_t sumTrackPtRecoil = 0.; 
+   Double_t dphi             = 999.;
  
-            //chose trigger hadron TT which will be common for  Detector level pythia and the combined event
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-               if(fHadronTT[itt]>0){
-                  fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
-               }
-            }
-      
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-               idx = fIndexTTH[itt];//hadron trigger
-               if(idx<0) continue;
-
-
-               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                  if(!trigflag[itg]) continue; 
-                  fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
-               }
-   
-               //recoil jets pythia detector level event 
-               for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-             
-                  dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi());  
-
-                  jetPtCorrDet = jet->Pt() - rhoMC*jet->Area();
-                  
-                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                     if(!trigflag[itg]) continue; 
-                     fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
-                  }
-               } 
-   
-               //recoil jets in the combined event
-               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-              
-                  dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
-
-                  jetPtCorrDet = jet->Pt() - rho*jet->Area();
-                  
-                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                     if(!trigflag[itg]) continue; 
-                     fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
-                  }
-                 
-                  //fill similar disribution but just for jets which have pythia partner
-                  jetDetMC =  jet->ClosestJet(); //This is the closes pythia Detector level jet
-                  if(jetDetMC){ 
-
-                     dphi = TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[itt][idx].Phi()); 
-
-                     jetPtCorrDet  =  jetDetMC->Pt() - jetDetMC->Area()*rhoMC; 
-                     
-                     for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                        if(!trigflag[itg]) continue; 
-                        fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
-                     }
-                  }
-               }//jet loop 
-            }//TT loop
-         }//EMB track container
- 
-         return kTRUE; 
-      }
-      //___________________________________________
-      //   EMBEDDED EVENTS FROM AOD 
- 
-      if(fMode == kEmbedding){
-   
-         if(!fIsMinBiasTrig && !fIsHighMultTrig) return kTRUE; //if this is not MB or HM  skip the rest
-  
-         const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-         double ptHardBin = embeddingHelper->GetPtHardBin();
-         
-         for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-            if(!trigflag[itg]) continue; 
-            fhTrialsEMBtot[itg]->Fill(0.5, embeddingHelper->GetPythiaTrials());
-            fhXsectionEMBtot[itg]->Fill(0.5, embeddingHelper->GetPythiaXSection());
-         
-            fhTrialsEMB[itg]->Fill( ptHardBin, embeddingHelper->GetPythiaTrials());
-            fhXsectionEMB[itg]->Fill( ptHardBin, embeddingHelper->GetPythiaXSection());
-            fhPtHardEMB[itg]->Fill( embeddingHelper->GetPythiaPtHard());
-         }
-         //Find TT among the PYTHIA Detector level tracks
-         // This TT will be used for pythia detector level events as well as for the combined event      
-    
-         if(fTrkContainerDetLevelEMB){
-   
-            //detector level pythia mc particles
-            for(auto mcDetIterator : fTrkContainerDetLevelEMB->accepted_momentum() ){
-               track = mcDetIterator.second;  // Get the pointer to mc particle object
-               if(!track)  continue; 
-   
-               if(IsTrackInAcceptance(track, kDetLevel)){
-                  fhTrackEtaInclEMB->Fill(track->Pt(), track->Eta());
-   
-                  for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                     if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
-                        myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
-                        fTTH[itt].push_back(myTT);
-                        fHadronTT[itt]++;   // there was a high pt 
-                     }
-                  }
-               }        
-            }
-   
-            //chose trigger hadron TT which will be common for  Detector level pythia and the combined event
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-               if(fHadronTT[itt]>0){
-                  fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
-               }
-            }
-      
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-               idx = fIndexTTH[itt];//hadron trigger
-               if(idx<0) continue;
-  
-
-               if(fFillSigTT && itt==0) continue;  // Do not fill reference 
-               if(!fFillSigTT && itt>0) continue;  // Do not fill signal 
-
-               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                  if(!trigflag[itg]) continue; 
-                  fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
-               }
-   
-               //recoil jets pythia detector level event 
-               for(auto jetIterator : fJetContainerDetLevelEMB->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-             
-                  dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi());  
-
-                  jetPtCorrDet = jet->Pt() - rhoEMB*jet->Area();
-                  
-                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                     if(!trigflag[itg]) continue; 
-                     fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
-                  }
-               } 
-   
-               //recoil jets in the combined event
-               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-              
-                  dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
-
-                  jetPtCorrDet = jet->Pt() - rho*jet->Area();
-                  
-                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                     if(!trigflag[itg]) continue; 
-                     fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
-                  
-                  }
-
-                  //fill similar disribution but just for jets which have pythia partner
-                  jetDetMC =  jet->ClosestJet(); //This is the closes pythia Detector level jet
-                  if(jetDetMC){ 
-
-                     dphi = TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[itt][idx].Phi()); 
-
-                     jetPtCorrDet  =  jetDetMC->Pt() - jetDetMC->Area()*rhoEMB; 
-                     
-                     for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                        if(!trigflag[itg]) continue; 
-                        fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
-                     }
-                  }
-               }//jet loop 
-            }//TT loop
-         }//EMB track container
-  
-         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-         //                RESPONSE MATRIX FROM EMBEDDED EVENTS
-         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-         //Response matrix normalization.  The matrix will be constructed using 
-         //- inclusive generator level jets in acceptance
-         //- recoil jets  (that recould from detector level pythia TT)
-         if(fJetContainerPartLevel){
-            for(auto jetPartIterator : fJetContainerPartLevel->accepted_momentum() ){
-               jetPartMC = jetPartIterator.second;  // Get the pointer to mc particle object
-               if(!jetPartMC)  continue; 
-         
-               jetPtCorrPart = jetPartMC->Pt() - jetPartMC->Area()*rhoMC;
-               
-               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                  if(!trigflag[itg]) continue; //inclusive jet spectrum for ReMx normalization 
-                  fhJetPtPartLevelCorr_EMB[itg]->Fill(jetPtCorrPart);
-                  fhJetPtPartLevelZero_EMB[itg]->Fill(jetPartMC->Pt());
-               }
-               
-               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                  idx = fIndexTTH[itt];//hadron trigger
-                  if(idx<0) continue;
-               
-                  dphi = TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH[itt][idx].Phi()); 
-               
-                  if(TMath::Abs(dphi) > fPhiCut){    //fill with recoil jets only 
-                     for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                        if(!trigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
-                        fhJetPtPartLevelCorrTTHdl_EMB[itg][itt]->Fill(jetPtCorrPart);
-                        fhJetPtPartLevelZeroTTHdl_EMB[itg][itt]->Fill(jetPartMC->Pt());
-                     }
-                  }
-               }
-            }
-         }
-         
-         //FILL 2D RESPONSE MATRIX Find closest particle level and detector level jets  and detector level  combined level
-         if(fJetContainerDetLevel){
-         
-            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-               jet = jetIterator.second;  // jet on combined level 
-               if(!jet)  continue; 
-         
-               //find closest pythia detector level jet
-               jetDetMC =  jet->ClosestJet();
-               if(!jetDetMC) continue;
-         
-               sharedFraction = fJetContainerDetLevel->GetFractionSharedPt(jet); //Check shared momentum fraction
-         
-               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                  if(!trigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
-                  fhSharedJetFraction[itg]->Fill(jetDetMC->Pt(), sharedFraction);
-               } 
-         
-               if(sharedFraction < fMinFractionShared) continue; 
-         
-               jetPartMC = jetDetMC->ClosestJet(); //This is the closes pythia particle level jet to the pythia detector level jet
-               if(!jetPartMC) continue; 
-               if(jetPartMC->Pt()<1e-3) continue; //prevents matching with a ghost
-         
-               jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*rhoMC; 
-               jetPtCorrDet  =  jet->Pt() - jet->Area()*rho; 
-               
-               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                  if(!trigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
-                  fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[itg]->Fill(jetPtCorrDet, jetPtCorrPart); //response matrix
-                  fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg]->Fill(jetPtCorrDet, jetPartMC->Pt()); //response matrix
-               }
-               
-               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                  idx = fIndexTTH[itt];//hadron trigger
-                  if(idx<0) continue;
-               
-                  dphi = TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH[itt][idx].Phi()); 
-               
-                  if(TMath::Abs(dphi) > fPhiCut){    //fill with recoil jets only
-                     for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
-                        if(!trigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
-                        fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[itg][itt]->Fill(jetPtCorrDet, jetPtCorrPart);
-                        fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[itg][itt]->Fill(jetPtCorrDet, jetPartMC->Pt());
-                     }
-                  }
-               }
-            }
-         } 
-         return kTRUE;
-      }
-   
-   
-      //____________ INCLUSIVE EVENTS _______________________________
-      if(fIsMinBiasTrig){
-   
-         for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
-            // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-            track = trackIterator.second;  // Get the full track
-            if(!track) continue;
-    
-            if(IsTrackInAcceptance(track, kDetLevel)){  
-    
-               //get sigma pT / pT  
-               //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
-               memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
-               memset(pxpypz, 0, sizeof(Double_t) * 50);
-               memset(xyz, 0, sizeof(Double_t) * 50);
-   
-               trackAOD = dynamic_cast <AliAODTrack*>( track);
-               if(trackAOD){
-                  trackAOD->GetXYZ(xyz);
-                  trackAOD->GetPxPyPz(pxpypz);
-                  trackAOD->GetCovarianceXYZPxPyPz(cv);
-                  
-                  AliExternalTrackParam  par(xyz, pxpypz, cv, trackAOD->Charge());
-                  fhSigmaPtOverPtVsPt->Fill(trackAOD->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
-                  
-                  if(trackAOD->Charge()<0){
-                     fhOneOverPtVsPhiNeg->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
-                  }else{
-                     fhOneOverPtVsPhiPos->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
-                  }
-                  
-                  //DCA distributions
-                  fhDCAinXVsPt->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                  fhDCAinYVsPt->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                 
-                  //SINGLE TRACK EFFICIENCY AND CONTAMINATION
-                  if(fMode == AliAnalysisTaskEA::kMC){
-                     label = TMath::Abs(trackAOD->GetLabel()); 
-                     
-                     particleMC = NULL;
-                     labelfound = 0;
-                     for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
-                        particleMC  =  static_cast <AliAODMCParticle*>(  mcPartIterator.second);  // Get the pointer to mc particle object
-                  
-                        labelMC = TMath::Abs(particleMC->GetLabel());
-                        if(labelMC==label && label > -1){
-                           labelfound=1;
-                           break;
-                        }
-                     }
-                     if(labelfound && particleMC && particleMC->IsPhysicalPrimary()){
-                        fhDCAinXVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                        fhDCAinYVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                     }else{
-                        fhDCAinXVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
-                        fhDCAinYVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
-                     }//AID
-                  }
-               }
-            }
-         }
-      }
-   
-      //______________________________________________________________
-      //                       TTH  ANALYSIS 
-      //______________________________________________________________
-   
-      if(fIsMinBiasTrig || fIsHighMultTrig){
-         //LOOP SEARCH FOR HIGH PT HADRON TRIGGER IN INCLUSIVE EVENTS 
-         for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
-            // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-            track = trackIterator.second;  // Get the full track
-            if(!track) continue;
-      
-            if(IsTrackInAcceptance(track, kDetLevel)){  
-               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                  if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
-                     myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
-                     fTTH[itt].push_back(myTT);
-                     fHadronTT[itt]++;   // there was a high pt 
-                  } 
-               }
-            } 
-         }
-      
-         //chose trigger hadron TT
-         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-            fdeltapT[itt] = 0.;
-            
-            if(fHadronTT[itt]>0){
-               fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
-               idx = fIndexTTH[itt];
-            
-               fdeltapT[itt] = GetDeltaPt(fTTH[itt][idx].Phi(), fTTH[itt][idx].Eta(), phiLJ, etaLJ, phiSJ, etaSJ, rho, kDetLevel);
-            }
-         }
-      
-         for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-            if(!trigflag[itg]) continue; //check which trigger fired
-            for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-      
-               fhMultTTH[itg][itt]->Fill(fHadronTT[itt]); 
-      
-               if(!fHadronTT[itt]) continue; //check whether there was hadron TT
-      
-               fhRhoTTH[itg][itt]->Fill(rho);
-            }
-         }
-  
-         for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-            jet = jetIterator.second;  
-            if(!jet)  continue;
-            fhJetPtEvtByEvent->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum 
-         } 
-    
-      
-         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-            if(!fHadronTT[itt]) continue; //analyze events with hadron TT only 
-   
-            for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-               if(!trigflag[itg]) continue; //check which trigger fired
-       
-//               fhCentralityTTH[itg][fkV0A][itt]->Fill(fCentralityV0A, fMultV0A); 
-//               fhCentralityTTH[itg][fkV0C][itt]->Fill(fCentralityV0C, fMultV0C);
-//               fhCentralityTTH[itg][fkV0M][itt]->Fill(fCentralityV0M, fMultV0M); 
-//               fhCentralityTTH[itg][fkV0Mnorm1][itt]->Fill(fCentralityV0M, fMultV0Mnorm); 
-       
-               fhSignalTTH[itg][fkV0A][itt]->Fill(fMultV0A);
-               fhSignalTTH[itg][fkV0C][itt]->Fill(fMultV0C);
-               fhSignalTTH[itg][fkV0M][itt]->Fill(fMultV0M);
-               fhSignalTTH[itg][fkV0Mnorm1][itt]->Fill(fMultV0Mnorm);
-   
-               fhV0MAssymVsV0MnormTTH[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M);
-
-               //count number of jets with pT larger than something   
-               tmparr3[2] = fMultV0Mnorm;
-               for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetNbins(); ii++){
-                  tmparr3[0] = fhNumberOfHighPtJetsCB[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
-                  b1 = fhJetPtEvtByEvent->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
-                  b2 = fhJetPtEvtByEvent->GetXaxis()->GetNbins()+1;  //include overflow bin
-                  tmparr3[1] = fhJetPtEvtByEvent->Integral(b1,b2);
-                  fhNumberOfHighPtJetsCB[itg][itt]->Fill(tmparr3);
-               }
-            }
-      
-            if(fIsMinBiasTrig){
-               fhV0AvsV0CTTH[itt]->Fill(fMultV0C, fMultV0A);
-            }
-   
-            //pick up TTH hadron accoding to the index
-            idx = fIndexTTH[itt];
-            if(idx>-1){
-               sumJetPtTT       = 0.; 
-               sumJetPtRecoil   = 0.; 
-               sumTrackPtTT     = 0.; 
-               sumTrackPtRecoil = 0.; 
- 
-               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-      
-                  //fhDeltaPtTTH_RC_CentV0M[itg][itt]->Fill(fCentralityV0M, fdeltapT[itt]);
-                  fhDeltaPtTTH_RC_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fdeltapT[itt]);        
-               }
-   
-               if(fFillSigTT  && itt==0) continue;  // Do not fill reference 
-               if(!fFillSigTT && itt>0)  continue;  // Do not fill signal 
-    
-               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-      
-                  //fhTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0M centrality
-                  fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm,  fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
-                  fhTTH_3D_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fAsymV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
-               }
-      
-               //recoil jets
-               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-      
-                  dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
-
-                  jetPtCorrDet = jet->Pt() - rho*jet->Area();
-                  
-                  for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                     if(!trigflag[itg]) continue; //check which trigger fired
-                     fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
-                  
-                     tmparr[0] = fMultV0Mnorm;
-                     tmparr[1] = fAsymV0M;
-                     tmparr[2] = jetPtCorrDet;
-                     tmparr[3] = TMath::Abs(dphi);
-                     fhRecoilJetTTH_V0Mnorm1[itg][itt]->Fill(tmparr); 
-
-                     tmparr[0] = jet->Pt();
-                     tmparr[1] = jet->Eta();
-                     tmparr[2] = jet->Phi();
-                     tmparr[3] = fMultV0Mnorm;
-                     fhJetPtEtaPhiV0normTTH[itg][itt]->Fill(tmparr); 
-                  }
- 
-                  if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
-                     fhRecoilJetPtEvtByEvent[itt]->Fill(jet->Pt());
-                     sumJetPtRecoil += jet->Pt(); 
-                  }else{
-                     sumJetPtTT     += jet->Pt(); //sum jet pT in 
-                  } 
-                  
-                  if(TMath::Abs(TVector2::Phi_mpi_pi(dphi)) > fPhiCut){     //select recoil jet
-                     for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                        if(!trigflag[itg]) continue; //check which trigger fired
-                        //fhRecoilJetPtTTH_CentV0M[itg][itt]->Fill(fCentralityV0M, jetPtCorrDet);
-                        fhRecoilJetPtTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet);
-
-                        tmparr3[0] = jetPtCorrDet;
-                        tmparr3[1] = jet->Area();
-                        tmparr3[2] = fMultV0Mnorm;
-                        fhJetPtAreaV0normTTH[itg][itt]->Fill(tmparr3);
-                  
-                        if(itt==0){
-                           for(Int_t is=0; is<fkShift;is++){
-                              jetPtCorrDetShift = jetPtCorrDet - 0.3 + is*0.01;  //from -300 MeV to 300 MeV in steps of 10 MeV
-                              fhRecoilJetPtTTHref_V0Mnorm1_rhoShift[itg][is]->Fill(fMultV0Mnorm, jetPtCorrDetShift);
-                           }
-                        }
-                     }
-                  } 
-               }
-
-               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-
-                  //count number of jets with pT larger than something in recoil region
-                  tmparr3[2] = fMultV0Mnorm;
-                  for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetNbins(); ii++){
-                     tmparr3[0] = fhNumberOfHighPtJetsRecoil[itg][itt]->GetAxis(0)->GetBinLowEdge(ii);
-                     b1 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
-                     b2 = fhRecoilJetPtEvtByEvent[itt]->GetXaxis()->GetNbins()+1;  //include overflow bin
-                     tmparr3[1] = fhRecoilJetPtEvtByEvent[itt]->Integral(b1,b2);
-                     fhNumberOfHighPtJetsRecoil[itg][itt]->Fill(tmparr3);
-                  }
-                  
-                  //Fill jet pt asymmetry
-                  if(sumJetPtRecoil + sumJetPtTT > 0){
-                     fhJetPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumJetPtRecoil - sumJetPtTT) / (sumJetPtRecoil + sumJetPtTT));
-                  }
-               }
-
-               //Fill track pt asymmetry
-               for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  track = trackIterator.second;  // Get the full track
-                  if(!track) continue;
-              
-                  if(IsTrackInAcceptance(track, kDetLevel)){  
-                     dphi = TVector2::Phi_mpi_pi(track->Phi() - fTTH[itt][idx].Phi()); 
-                     if(TMath::Abs(dphi) > TMath::Pi()/2){ //select recoil hemisphere and count tracks 
-                        sumTrackPtRecoil += track->Pt(); 
-                     }else{
-                        sumTrackPtTT     += track->Pt(); //sum jet pT in 
-                     } 
-                  }
-               }
- 
-               for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-
-                  if(sumTrackPtRecoil + sumTrackPtTT > 0){
-                     fhTrackPtAsymmetryCB[itg][itt]->Fill( fMultV0Mnorm, (sumTrackPtRecoil - sumTrackPtTT) / (sumTrackPtRecoil + sumTrackPtTT));
-                  }
-               }
-            }
-         }
-      }
-
-   
-      //_________________________________________________________
-      //              EMCAL CLUSTERS   TTC
-      //_________________________________________________________
-      if(fMyClusterContainerName.Data()){
-         fClusterContainerDetLevel =  static_cast<AliClusterContainer*> ( GetClusterContainer(fMyClusterContainerName.Data()));
-     
-         for(auto cluster: fClusterContainerDetLevel->accepted()){
-            fClusterContainerDetLevel->GetMomentum(ph, cluster);
-   
-            if(!FinalClusterCuts(cluster)) continue;
-   
-            for(Int_t itg = kMB; itg<=kGA; itg++){
-               if(!trigflag[itg])  continue;
-               fhClusterPhiIncl[itg]->Fill(ph.Pt(), ph.Phi());
-               fhClusterEtaIncl[itg]->Fill(ph.Pt(), ph.Eta());
-            }
-   
-   
-            for(Int_t igg=0; igg<fnClusterTTBins; igg++){ // seatch for TTC candidates
-               if(fClusterTTLowPt[igg] < ph.Pt() && ph.Pt() < fClusterTTHighPt[igg]){
-                  myTT.SetPtEtaPhiM(ph.Pt(),ph.Eta(),ph.Phi(),0.); 
-                  fTTC[igg].push_back(myTT);
-                  fClusterTT[igg]++;   // there was a high pt emcal cluster 
-               } 
-            }
-         }
-   
-         //chose trigger emcal cluster TTC
-         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-            fdeltapT[igg] = 0; 
-
-            if(fClusterTT[igg]>0){
-               fIndexTTC[igg] = fRandom->Integer(fClusterTT[igg]);
-               idx = fIndexTTC[igg];// gamma trigger
-               fdeltapT[igg] = GetDeltaPt(fTTC[igg][idx].Phi(), fTTC[igg][idx].Eta(), phiLJ, etaLJ, phiSJ, etaSJ, rho, kDetLevel);
-            }
-         }
-        
-         for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
-            if(!trigflag[itg]) continue; //check which trigger fired
-            for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-               fhMultTTC[itg][igg]->Fill(fClusterTT[igg]); 
-        
-               if(!fClusterTT[igg]) continue;  //check whether there was TT
-        
-               fhRhoTTC[itg][igg]->Fill(rho);
-            }
-         }
-   
-         //  analysis of      TTC   bias events
-         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-             
-            if(!fClusterTT[igg]) continue;
-         
-            for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
-               if(!trigflag[itg]) continue; //check which trigger fired
-               
-//               fhCentralityTTC[itg][fkV0A][igg]->Fill(fCentralityV0A, fMultV0A); 
-//               fhCentralityTTC[itg][fkV0C][igg]->Fill(fCentralityV0C, fMultV0C); 
-//               fhCentralityTTC[itg][fkV0M][igg]->Fill(fCentralityV0M, fMultV0M); 
-//               fhCentralityTTC[itg][fkV0Mnorm1][igg]->Fill(fCentralityV0M, fMultV0Mnorm); 
-         
-               fhSignalTTC[itg][fkV0A][igg]->Fill(fMultV0A);
-               fhSignalTTC[itg][fkV0C][igg]->Fill(fMultV0C);
-               fhSignalTTC[itg][fkV0M][igg]->Fill(fMultV0M);
-               fhSignalTTC[itg][fkV0Mnorm1][igg]->Fill(fMultV0Mnorm);
-            }
-         
-            if(fIsMinBiasTrig){
-               fhV0AvsV0CTTCinMB[igg]->Fill(fMultV0C, fMultV0A);
-            }else if(fIsEmcalTrig){
-               fhV0AvsV0CTTCinGA[igg]->Fill(fMultV0C, fMultV0A);
-            }
-         
-            //Recoil jets 
-            idx = fIndexTTC[igg];// gamma trigger
-            if(idx>-1){
-         
-               for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-        
-                  //fhDeltaPtTTC_RC_CentV0M[itg][igg]->Fill(fCentralityV0M, fdeltapT[igg]);
-                  fhDeltaPtTTC_RC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, fdeltapT[igg]);
-               }
-         
-               if(fFillSigTT && igg==0) continue;  // Do not fill reference 
-               if(!fFillSigTT && igg>0) continue;  // Do not fill signal 
-         
-         
-               for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
-                  if(!trigflag[itg]) continue; //check which trigger fired
-        
-                  //fhTTC_CentV0M[itg][igg]->Fill(fCentralityV0M, fTTC[igg][idx].Pt()); //fill TTC trigger track pT
-                  fhTTC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, fTTC[igg][idx].Pt()); //fill  TTC trigger track pT
-               }
-             
-               //recoil jets
-               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-                  // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet)  continue; 
-           
-                  if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC[igg][idx].Phi())) > fPhiCut){     
-                     //recoil jet
-                     jetPtCorrDet = jet->Pt() - rho*jet->Area();
-                        
-                     for(Int_t itg=kMB; itg<=kGA; itg++){ //@@@
-                        if(!trigflag[itg]) continue; //check which trigger fired
-                     
-                        //fhRecoilJetPtTTC_CentV0M[itg][igg]->Fill(fCentralityV0M, jetPtCorrDet);
-                        fhRecoilJetPtTTC_V0Mnorm1[itg][igg]->Fill(fMultV0Mnorm, jetPtCorrDet);
-                     }
-                  } 
-               }  
-            }
-         }
-      }//cluster container   
-   
-   
-      //_________________________________________________________
-      //      LOOP OVER JETS  DETECTOR LEVEL  TTJ
-      //_________________________________________________________
-    
-      for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-         // trackIterator is a std::map of AliTLorentzVector and AliVTrack
-         jet = jetIterator.second;  // Get the pointer to jet object
-         if(!jet)  continue; 
-  
-         tmparr[0] = jet->Pt();
-         tmparr[1] = jet->Eta();
-         tmparr[2] = jet->Phi();
-         tmparr[3] = fMultV0Mnorm;
-
-         jetPtCorrDet = jet->Pt() - rho*jet->Area();
-         
-         tmparr3[0] = jetPtCorrDet;
-         tmparr3[1] = jet->Area();
-         tmparr3[2] = fMultV0Mnorm;
-
-         
-         for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-            if(!trigflag[itg]) continue; //check which trigger fired
-         
-            fhJetPhiIncl[itg]->Fill(jetPtCorrDet, jet->Phi());
-            fhJetEtaIncl[itg]->Fill(jetPtCorrDet, jet->Eta());
-            fhJetPtEtaPhiV0norm[itg]->Fill(tmparr);
-         
-            fhJetPtAreaV0norm[itg]->Fill(tmparr3);
-         }
-
-         jetPtCorrDet = jet->Pt() - rho*jet->Area();
-   
-         for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){ //search for TTJ candidates
-            if(fJetChTTLowPt[ijj] < jetPtCorrDet && jetPtCorrDet < fJetChTTHighPt[ijj]){
-               myTT.SetPtEtaPhiM(jetPtCorrDet, jet->Eta(), jet->Phi(), 0.); 
-               fTTJ[ijj].push_back(myTT);
-               fJetChTT[ijj]++;   // there was a high pt jet
-            } 
-         }
-      }
-   
-      //chose trigger emcal cluster TT 
-      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         if(fJetChTT[ijj]>0){
-            fIndexTTJ[ijj] = fRandom->Integer(fJetChTT[ijj]);
-         }
-      }
-   
-   
-      for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-         if(!trigflag[itg]) continue; //check which trigger fired
-         for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-   
-            fhMultTTJ[itg][ijj]->Fill(fJetChTT[ijj]); 
-   
-            if(!fJetChTT[ijj]) continue; //check if there is jet TT 
-   
-            fhRhoTTJ[itg][ijj]->Fill(rho);
-         }
-      }
-   
-      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         
-         if(!fJetChTT[ijj]) continue; 
-          
-         for(Int_t itg=kMB; itg<=kHM; itg++){ //@@@
-            if(!trigflag[itg]) continue; //check which trigger fired
-    
-//            fhCentralityTTJ[itg][fkV0A][ijj]->Fill(fCentralityV0A, fMultV0A); 
-//            fhCentralityTTJ[itg][fkV0C][ijj]->Fill(fCentralityV0C, fMultV0C); 
-//            fhCentralityTTJ[itg][fkV0M][ijj]->Fill(fCentralityV0M, fMultV0M); 
-//            fhCentralityTTJ[itg][fkV0Mnorm1][ijj]->Fill(fCentralityV0M, fMultV0Mnorm); 
-         
-            fhSignalTTJ[itg][fkV0A][ijj]->Fill(fMultV0A);
-            fhSignalTTJ[itg][fkV0C][ijj]->Fill(fMultV0C);
-            fhSignalTTJ[itg][fkV0M][ijj]->Fill(fMultV0M);
-            fhSignalTTJ[itg][fkV0Mnorm1][ijj]->Fill(fMultV0Mnorm);
-         } 
-         
-         if(fIsMinBiasTrig){
-            fhV0AvsV0CTTJ[ijj]->Fill(fMultV0C, fMultV0A);
-         }
-      }
-   }//trigger selection for real, mc detector level, embedded
-
-
-
-   //___________________________________________
-   //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
-
    fMultV0A_PartLevel = 0.;
    fMultV0C_PartLevel = 0.;
    fMultV0M_PartLevel = 0.;
@@ -2527,27 +2188,54 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    Bool_t isMBpartlevel = 0; // requires coincidence of V0A and V0C on parton level
 
+
    if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine ){
 
-      fhRhoMBpart->Fill(rhoMC);
+      fhRhoMBpart->Fill(fRhoMC);
+
+      //Exclude 2 leading jets MC 
+      for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+         // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+         jet = jetIterator.second;  // Get the pointer to jet object
+         if(!jet)  continue; 
+       
+         if(jet->Pt() > ptLJmc){
+            ptSJmc  = ptLJmc;
+            etaSJmc = etaLJmc;
+            phiSJmc = phiLJmc;
+      
+            ptLJmc  = jet->Pt(); 
+            etaLJmc = jet->Eta(); 
+            phiLJmc = jet->Phi(); 
+         }else if(jet->Pt() > ptSJmc){
+            ptSJmc  = jet->Pt();
+            etaSJmc = jet->Eta();
+            phiSJmc = jet->Phi(); 
+         }
+      }
+
+
+
 
       TClonesArray* arrayMC = 0; // array particles in the MC event
       if(fMode == AliAnalysisTaskEA::kMC){
          arrayMC = (TClonesArray*) InputEvent()->FindListObject(AliAODMCParticle::StdBranchName());
          if(!arrayMC){
             AliError("No MC array found!");
-            return kFALSE;
+            return;
          }
       }
-      AliAODMCParticle* daughtermc; 
-
-      Bool_t bRecPrim = kFALSE;
+       
 
       if(fParticleContainerPartLevel){
          //pT spectrum of particle level physical primary mc particles
          for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
             mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
             if(!mcParticle)  continue; 
+
+            if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+               fhPtTrkTruePrimGen->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //Track Efficiency denominator
+            }    
 
             if(mcParticle->Charge()){ 
                if((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()){
@@ -2565,22 +2253,67 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          //fMultV0Cnorm_PartLevel = fMultV0C_PartLevel/fMeanV0C_PartLevel;
          fMultV0Mnorm_PartLevel = fMultV0M_PartLevel/fMeanV0M_PartLevel;
 
-         if(isMBpartlevel){
+         fhSignal_V0M_trueMB_PartLevel->Fill(fMultV0M_PartLevel); //Fill V0M multiplicity without the conicidence condition
+
+         if(isMBpartlevel){ //V0 COINCIDENCE
             fHistEvtSelection->Fill(6.5); //Count Accepted input event 
 
-            fhV0A_V0C_V0MnormPartLevel->Fill(fMultV0A_PartLevel, fMultV0C_PartLevel, fMultV0Mnorm_PartLevel);  
-            fhV0A_V0APartLevel_V0Mnorm->Fill(fMultV0A, fMultV0A_PartLevel, fMultV0Mnorm);    
-            fhV0C_V0CPartLevel_V0Mnorm->Fill(fMultV0C, fMultV0C_PartLevel, fMultV0Mnorm);    
+            if(fMode == AliAnalysisTaskEA::kMC){
+               fhV0A_V0C_PartLevel->Fill(fMultV0A_PartLevel, fMultV0C_PartLevel);  
+               fhV0A_V0APartLevel->Fill(fMultV0A, fMultV0A_PartLevel);    
+               fhV0C_V0CPartLevel->Fill(fMultV0C, fMultV0C_PartLevel);    
+            }
+
+            fhSignal_PartLevel[fkV0A]->Fill(fMultV0A_PartLevel);
+            fhSignal_PartLevel[fkV0C]->Fill(fMultV0C_PartLevel);
+            fhSignal_PartLevel[fkV0M]->Fill(fMultV0M_PartLevel); //V0M multiplicity 
+            fhSignal_PartLevel[fkV0Mnorm1]->Fill(fMultV0Mnorm_PartLevel);
+         
+
+            Double_t meanV0Apart  =  fHelperEA->GetV0APartLevel(); 
+            Double_t meanV0Cpart  =  fHelperEA->GetV0CPartLevel(); 
+            if(meanV0Apart > 0 && meanV0Cpart > 0){
+               Double_t multV0Anorm_part = fMultV0A_PartLevel/meanV0Apart;
+               Double_t multV0Cnorm_part = fMultV0C_PartLevel/meanV0Cpart;
+         
+               if((multV0Anorm_part + multV0Cnorm_part)>0){
+                  fAsymV0M_PartLevel = (multV0Anorm_part - multV0Cnorm_part )/(multV0Anorm_part + multV0Cnorm_part);
+               }
+            }
+         
+            fhV0MAssymVsV0Mnorm_PartLevel->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel);
+
+            
+            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+            //Njet  spectrum for jets recoiling from random direction (particle level)
+            Double_t rndTTPhi = TMath::Pi() * fRandom->Uniform(0,2); 
+
+            for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+               jet = jetIterator.second;  
+               if(!jet)  continue;
+               if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi() - rndTTPhi)) > TMath::Pi()/2){ //select recoil hemisphere and count jets
+                  fhRecoilJetPtEvtByEventRandomTTPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum
+               } 
+            } 
+
+            //count number of jets with pT larger than something in recoil region
+            tmparr3[2] = fMultV0Mnorm_PartLevel;
+            for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsRecoilRandomTTPartLevel->GetAxis(0)->GetNbins(); ii++){
+               tmparr3[0] = fhNumberOfHighPtJetsRecoilRandomTTPartLevel->GetAxis(0)->GetBinLowEdge(ii);
+               b1 = fhRecoilJetPtEvtByEventRandomTTPartLevel->GetXaxis()->FindBin(tmparr3[0] + 1e-5);
+               b2 = fhRecoilJetPtEvtByEventRandomTTPartLevel->GetXaxis()->GetNbins()+1;  //include overflow bin
+               tmparr3[1] = fhRecoilJetPtEvtByEventRandomTTPartLevel->Integral(b1,b2);
+               fhNumberOfHighPtJetsRecoilRandomTTPartLevel->Fill(tmparr3);
+            }
+            //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   
 
-            //pT spectrum of particle level physical primary mc particles
+            //Search for TT candidates in particle level physical primary mc particles
             for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
                mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
                if(!mcParticle)  continue; 
             
                if(IsTrackInAcceptance(mcParticle, kPartLevel)){
-                  fhPtTrkTruePrimGen->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel);
-            
                   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
                      if(fHadronTTLowPt[itt] < mcParticle->Pt() && mcParticle->Pt() < fHadronTTHighPt[itt]){
                         myTT.SetPtEtaPhiM(mcParticle->Pt(),mcParticle->Eta(),mcParticle->Phi(),0.); 
@@ -2620,31 +2353,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }//end of mc particle loop
             
 
-
-            fhSignal_PartLevel[fkV0A]->Fill(fMultV0A_PartLevel);
-            fhSignal_PartLevel[fkV0C]->Fill(fMultV0C_PartLevel);
-            fhSignal_PartLevel[fkV0M]->Fill(fMultV0M_PartLevel);
-            fhSignal_PartLevel[fkV0Mnorm1]->Fill(fMultV0Mnorm_PartLevel);
-         
-
-            Double_t meanV0Apart  =  fHelperEA->GetV0APartLevel(); 
-            Double_t meanV0Cpart  =  fHelperEA->GetV0CPartLevel(); 
-            if(meanV0Apart > 0 && meanV0Cpart > 0){
-               Double_t multV0Anorm_part = fMultV0A_PartLevel/meanV0Apart;
-               Double_t multV0Cnorm_part = fMultV0C_PartLevel/meanV0Cpart;
-         
-               if((multV0Anorm_part + multV0Cnorm_part)>0){
-                  fAsymV0M_PartLevel = (multV0Anorm_part - multV0Cnorm_part )/(multV0Anorm_part + multV0Cnorm_part);
-               }
-            }
-         
-            fhV0MAssymVsV0Mnorm_PartLevel->Fill(fMultV0Mnorm_PartLevel, fAsymV0M_PartLevel);
-
+            //++++++++++++++++++++++++++++++++++++++++++++++++++
             for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
                jet = jetIterator.second;  
                if(!jet)  continue;
-               fhJetPtEvtByEventPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum 
+               fhJetPtEvtByEventPartLevel->Fill(jet->Pt());  //Fill event by event inclusive jet spectrum in CB
             } 
+            //++++++++++++++++++++++++++++++++++++++++++++++++++
  
             //chose trigger hadron TT   particle level
             for(Int_t itt=0; itt<fnHadronTTBins; itt++){
@@ -2653,7 +2368,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   idx = fIndexTTH_PartLevel[itt]; 
 
   
-                  //count number of jets with pT larger than something   
+                  //count number of jets with pT larger than something in CB 
                   tmparr3[2] = fMultV0Mnorm;
                   for(Int_t ii = 1; ii<=fhNumberOfHighPtJetsCBPartLevel[itt]->GetAxis(0)->GetNbins(); ii++){
                      tmparr3[0] = fhNumberOfHighPtJetsCBPartLevel[itt]->GetAxis(0)->GetBinLowEdge(ii);
@@ -2664,7 +2379,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   }
       
                  
-                  fdeltapT_PartLevel[itt] = GetDeltaPt(fTTH_PartLevel[itt][idx].Phi(), fTTH_PartLevel[itt][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, rhoMC, kPartLevel);
+                  fdeltapT_PartLevel[itt] = GetDeltaPt(fTTH_PartLevel[itt][idx].Phi(), fTTH_PartLevel[itt][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, fRhoMC, kPartLevel);
                   //signal in events with hadron TT   particle level
          
                   fhSignalTTH_PartLevel[fkV0A][itt]->Fill(fMultV0A_PartLevel);
@@ -2683,7 +2398,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                      sumTrackPtTT     = 0.; 
                      sumTrackPtRecoil = 0.;
  
-                     fhRhoTTHinMBpart[itt]->Fill(rhoMC);
+                     fhRhoTTHinMBpart[itt]->Fill(fRhoMC);
                      fhDeltaPtTTH_RC_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[itt]);
          
                      if(fFillSigTT && itt==0) continue;  // Do not fill reference 
@@ -2701,7 +2416,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          
                         dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH_PartLevel[itt][idx].Phi());                       
 
-                        jetPtCorrDet = jet->Pt() - rhoMC*jet->Area();
+                        jetPtCorrDet = jet->Pt() - fRhoMC*jet->Area();
                         
                         fhRecoilJetPhiTTH_V0Mnorm1_PartLevel[itt]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet, dphi);
                         
@@ -2777,7 +2492,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                      fIndexTTC_PartLevel[igg] = fRandom->Integer(fClusterTT_PartLevel[igg]);
                      idx = fIndexTTC_PartLevel[igg];// gamma trigger
              
-                     fdeltapT_PartLevel[igg] = GetDeltaPt(fTTC_PartLevel[igg][idx].Phi(), fTTC_PartLevel[igg][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, rhoMC, kPartLevel);
+                     fdeltapT_PartLevel[igg] = GetDeltaPt(fTTC_PartLevel[igg][idx].Phi(), fTTC_PartLevel[igg][idx].Eta(), phiLJmc, etaLJmc, phiSJmc, etaSJmc, fRhoMC, kPartLevel);
             
                      //signal in events with hadron TT   particle level
                      fhSignalTTC_PartLevel[fkV0A][igg]->Fill(fMultV0A_PartLevel);
@@ -2787,7 +2502,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             
                      if(idx>-1){ 
             
-                        fhRhoTTCinMBpart[igg]->Fill(rhoMC);
+                        fhRhoTTCinMBpart[igg]->Fill(fRhoMC);
                         fhDeltaPtTTC_RC_V0Mnorm1_PartLevel[igg]->Fill(fMultV0Mnorm_PartLevel, fdeltapT_PartLevel[igg]);
              
                         if(fFillSigTT && igg==0) continue;  // Do not fill reference 
@@ -2803,7 +2518,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                        
                            if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC_PartLevel[igg][idx].Phi())) > fPhiCut){     
                               //recoil jet
-                              jetPtCorrDet = jet->Pt() - rhoMC*jet->Area();
+                              jetPtCorrDet = jet->Pt() - fRhoMC*jet->Area();
                               fhRecoilJetPtTTC_V0Mnorm1_PartLevel[igg]->Fill(fMultV0Mnorm_PartLevel, jetPtCorrDet);
                            }
                         } 
@@ -2813,154 +2528,546 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }
          }
       }
+   }
 
-
-     if(isMBpartlevel && fIsMinBiasTrig && fMode != AliAnalysisTaskEA::kKine) {
-        //pT spectrum of detector level physical primary tracks and secondary tracks
-        if(fTrkContainerDetLevel && fParticleContainerPartLevel){
-           for(auto trkIterator : fTrkContainerDetLevel->accepted_momentum() ){
-              track = trkIterator.second;  // Get the pointer to mc particle object
-              if(!track)  continue; 
-       
-              if(!IsTrackInAcceptance(track, kDetLevel)) continue; //reconstructed level tracks
-              bRecPrim = kFALSE; //not yet matched to generator level physical primary
-       
-              for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
-                 mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
-                 if(!mcParticle)  continue; 
-       
-                 if(IsTrackInAcceptance(mcParticle, kPartLevel)){
-                    if(TMath::Abs(track->GetLabel()) == TMath::Abs(mcParticle->GetLabel())){
-                       //has the same label as reconstr track
-                    
-                       bRecPrim = kTRUE;
-                       fhPtTrkTruePrimRec->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //this is well recontr phys primary
-                       break;
-                    }//same label with rec particle
-                 }
-              }//loop over gen tracks
-              if(!bRecPrim){
-                 fhPtTrkSecOrFakeRec->Fill(track->Pt(), track->Eta(), fMultV0Mnorm_PartLevel); //matchnig to phys primary not found, this is fake or second.
-              }
-           }
-        }
-       
-        //__________________________________________________________
-        //  FILL JET RESPONSE MATRIX
-        //__________________________________________________________
-       
-        //Response matrix normalization - spectrum of all generator level jets in acceptance
-        if(fJetContainerPartLevel){
-           for(auto jetPartIterator : fJetContainerPartLevel->accepted_momentum() ){
-              jetPartMC = jetPartIterator.second;  // Get the pointer to mc particle object
-              if(!jetPartMC)  continue; 
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   if(fMode != AliAnalysisTaskEA::kKine) {
+      //Response matrix normalization - spectrum of all generator level jets in acceptance
+      if(fJetContainerPartLevel){
+         for(auto jetPartIterator : fJetContainerPartLevel->accepted_momentum() ){
+            jetPartMC = jetPartIterator.second;  // Get the pointer to mc particle object
+            if(!jetPartMC)  continue; 
       
-              jetPtCorrPart = jetPartMC->Pt() - jetPartMC->Area()*rhoMC;
-              
-              fhJetPtPartLevelCorr->Fill(jetPtCorrPart);
-              fhJetPtPartLevelZero->Fill(jetPartMC->Pt());
-              
-              
-              tmparr3[0] = jetPtCorrPart;
-              tmparr3[1] = jetPartMC->Area();
-              tmparr3[2] = fMultV0Mnorm_PartLevel;
-              
-              fhJetPtAreaV0norm_PartLevel->Fill(tmparr3); 
-              
-              for(Int_t itt=0; itt<fnHadronTTBins; itt++){ //event contains a particle level trigger
-                 if(fHadronTT[itt]>0){
-                    idx = fIndexTTH[itt];
-                    dphi = TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH[itt][idx].Phi()); 
-              
-                    if(TMath::Abs(dphi) > fPhiCut){    //fill with recoil jets only 
-                       fhJetPtPartLevelCorrTTHdl[itt]->Fill(jetPtCorrPart);
-                    }
-                 }
-              }
-           }
-        }
-       
-        //1) Find closest particle level and detector level jets
-        //2) Get momentum shift due to fake tracks
-        if(fJetContainerDetLevel){
-           Double_t  sumAllTrackPtInJet   = 0.;
-           Double_t  sumFakeTrackPtInJet  = 0.;
-       
-       
-           for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
-              jet = jetIterator.second;  // Get the pointer to jet object
-              if(!jet)  continue; 
-       
-              //Get momentum shift due to fake tracks
-              sumAllTrackPtInJet  = 0.;
-              sumFakeTrackPtInJet = 0.;
-       
-              for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
-                 track = static_cast<AliVParticle*> (jet->TrackAt(iq, fTrkContainerDetLevel->GetArray()));
-                 if(!track) continue;
-                 bRecPrim = kFALSE; //not yet matched to generator level physical primary
-       
-                 for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
-                    mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
-                    if(!mcParticle)  continue; 
-       
-                    if(IsTrackInAcceptance(mcParticle, kPartLevel)){
-                       if(TMath::Abs(track->GetLabel()) == TMath::Abs(mcParticle->GetLabel())){
-                          bRecPrim = kTRUE;
-                          break;
-                       }
-                    }
-                 }
-                 if(!(bRecPrim && mcParticle &&  mcParticle->IsPhysicalPrimary())){ //this is a fake track
-       
-                    sumFakeTrackPtInJet += track->Pt();
-                 }
-                 sumAllTrackPtInJet += track->Pt();
-              }
-       
-              if(sumAllTrackPtInJet>0){
-                 jetPtCorrDet = jet->Pt() - jet->Area()*rho;
-                 fhFractionOfSecInJet->Fill(jetPtCorrDet, sumFakeTrackPtInJet/sumAllTrackPtInJet);
-              }
-       
-              //Fill Response matrix
-              jetPartMC =  jet->ClosestJet();
-              if(!jetPartMC) continue;
-              if(jetPartMC->Pt()<1e-3) continue; //prevents matching with a ghost
-       
-              jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*rhoMC; 
-              jetPtCorrDet  =  jet->Pt() - jet->Area()*rho; 
-              
-              fhJetPtPartLevelVsJetPtDetLevelCorr->Fill(jetPtCorrDet,jetPtCorrPart); //response matrix
-              fhJetPtPartLevelVsJetPtDetLevelZero->Fill(jet->Pt(),jetPartMC->Pt()); //response matrix
-              
-              for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-                 if(fHadronTT[itt]>0){
-                    idx = fIndexTTH[itt];
-                    dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
-              
-                    if(TMath::Abs(dphi) > fPhiCut){    //fill with recoil jets only 
-                       fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt]->Fill(jetPtCorrDet,jetPtCorrPart); 
-                    } 
-                 }
-              }
-              
-              
-              if(jetPtCorrPart>0){
-                 fhJetPtResolutionVsPtPartLevel->Fill(jetPtCorrPart,(jetPtCorrDet-jetPtCorrPart)/jetPtCorrPart); //jet pT resolution
-              }
-           }
-        }
+            jetPtCorrPart = jetPartMC->Pt() - jetPartMC->Area()*fRhoMC;
+            
+            fhJetPtPartLevelCorr->Fill(jetPtCorrPart);
+            fhJetPtPartLevelZero->Fill(jetPartMC->Pt());
+            
+            
+            tmparr3[0] = jetPtCorrPart;
+            tmparr3[1] = jetPartMC->Area();
+            tmparr3[2] = fMultV0Mnorm_PartLevel;
+            
+            fhJetPtAreaV0norm_PartLevel->Fill(tmparr3); 
+            
+         }
+      }
+   }
+}
+//_________________________________________________________________
+void AliAnalysisTaskEA::FillResponseMatrix(){
+   //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
+   AliEmcalJet  *jet = NULL;        //jet pointer real jet 
+   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
+   AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
+   AliVParticle *track = NULL; //jet constituent
+   AliVParticle *mcParticle = NULL; //mc particle
+   Bool_t bRecPrim = kFALSE;
+   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
+   Double_t jetPtCorrPart = 0.;
+
+
+   if(fIsMinBiasTrig && fMode != AliAnalysisTaskEA::kKine) {
+      //pT spectrum of detector level physical primary tracks and secondary tracks
+      if(fTrkContainerDetLevel && fParticleContainerPartLevel){
+         for(auto trkIterator : fTrkContainerDetLevel->accepted_momentum() ){
+            track = trkIterator.second;  // Get the pointer to mc particle object
+            if(!track)  continue; 
+      
+            if(!IsTrackInAcceptance(track, kDetLevel)) continue; //reconstructed level tracks
+            bRecPrim = kFALSE; //not yet matched to generator level physical primary
+      
+            for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+               mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
+               if(!mcParticle)  continue; 
+      
+               if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+                  if(TMath::Abs(track->GetLabel()) == TMath::Abs(mcParticle->GetLabel())){
+                     //has the same label as reconstr track
+                  
+                     bRecPrim = kTRUE;
+                     fhPtTrkTruePrimRec->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //this is well recontr phys primary
+                     break;
+                  }//same label with rec particle
+               }
+            }//loop over gen tracks
+            if(!bRecPrim){
+               fhPtTrkSecOrFakeRec->Fill(track->Pt(), track->Eta(), fMultV0Mnorm_PartLevel); //matchnig to phys primary not found, this is fake or second.
+            }
+         }
+      }
+      
+      //__________________________________________________________
+      //  FILL JET RESPONSE MATRIX
+      //__________________________________________________________
+      
+      
+      //1) Find closest particle level and detector level jets
+      //2) Get momentum shift due to fake tracks
+      if(fJetContainerDetLevel){
+         Double_t  sumAllTrackPtInJet   = 0.;
+         Double_t  sumFakeTrackPtInJet  = 0.;
+      
+      
+         for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+            jet = jetIterator.second;  // Get the pointer to jet object
+            if(!jet)  continue; 
+      
+            //Get momentum shift due to fake tracks
+            sumAllTrackPtInJet  = 0.;
+            sumFakeTrackPtInJet = 0.;
+      
+            for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
+               track = static_cast<AliVParticle*> (jet->TrackAt(iq, fTrkContainerDetLevel->GetArray()));
+               if(!track) continue;
+               bRecPrim = kFALSE; //not yet matched to generator level physical primary
+      
+               for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+                  mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
+                  if(!mcParticle)  continue; 
+      
+                  if(IsTrackInAcceptance(mcParticle, kPartLevel)){
+                     if(TMath::Abs(track->GetLabel()) == TMath::Abs(mcParticle->GetLabel())){
+                        bRecPrim = kTRUE;
+                        break;
+                     }
+                  }
+               }
+               if(!(bRecPrim && mcParticle &&  mcParticle->IsPhysicalPrimary())){ //this is a fake track
+      
+                  sumFakeTrackPtInJet += track->Pt();
+               }
+               sumAllTrackPtInJet += track->Pt();
+            }
+      
+            if(sumAllTrackPtInJet>0){
+               jetPtCorrDet = jet->Pt() - jet->Area()*fRho;
+               fhFractionOfSecInJet->Fill(jetPtCorrDet, sumFakeTrackPtInJet/sumAllTrackPtInJet);
+            }
+      
+            //Fill Response matrix
+            jetPartMC =  jet->ClosestJet();
+            if(!jetPartMC) continue;
+            if(jetPartMC->Pt()<1e-3) continue; //prevents matching with a ghost
+      
+            jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*fRhoMC; 
+            jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho; 
+            
+            fhJetPtPartLevelVsJetPtDetLevelCorr->Fill(jetPtCorrDet,jetPtCorrPart); //response matrix
+            fhJetPtPartLevelVsJetPtDetLevelZero->Fill(jet->Pt(),jetPartMC->Pt()); //response matrix
+            
+            if(jetPtCorrPart>0){
+               fhJetPtResolutionVsPtPartLevel->Fill(jetPtCorrPart,(jetPtCorrDet-jetPtCorrPart)/jetPtCorrPart); //jet pT resolution
+            }
+         }
       }
    }
 
+   return; 
+}
+//________________________________________________________________________
+void  AliAnalysisTaskEA::EmbeddingFromTxtFile(){
+   //   EMBEDDED EVENTS FROM PYTHIA TEXT FILE    
+
+   AliEmcalJet  *jet = NULL;        //jet pointer real jet 
+   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
+   AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
+   AliVParticle *track = NULL; //jet constituent
+   AliVParticle *mcParticle = NULL; //mc particle
+   Bool_t bRecPrim = kFALSE;
+   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
+   Double_t jetPtCorrPart = 0.;
+   TLorentzVector myTT;
+   Int_t idx = -1;
+   Double_t dphi = 999.;
  
-   //___________________________________________________________
+   for(Int_t i=0; i<fkTTbins; i++){
+      fIndexTTH[i] = -1;
+      fTTH[i].resize(0);
+   }
+   for(Int_t i=0; i<fnHadronTTBins; i++){
+      fHadronTT[i] = 0;
+   }
+ 
+   if(fMode == kEmbPy){
+
+      if(!fIsMinBiasTrig && !fIsHighMultTrig) return; //if this is not MB or HM  skip the rest
+
+      if(fParticleContainerPartLevel){
+   
+         //detector level pythia mc particles
+         for(auto mcDetIterator : fParticleContainerPartLevel->accepted_momentum() ){
+            track = mcDetIterator.second;  // Get the pointer to mc particle object
+            if(!track)  continue; 
+   
+            if(IsTrackInAcceptance(track, kDetLevel)){
+               fhTrackEtaInclEMB->Fill(track->Pt(), track->Eta());
+   
+               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+                  if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
+                     myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
+                     fTTH[itt].push_back(myTT);
+                     fHadronTT[itt]++;   // there was a high pt 
+                  }
+               }
+            }        
+         }
+ 
+         //chose trigger hadron TT which will be common for  Detector level pythia and the combined event
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            if(fHadronTT[itt]>0){
+               fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
+            }
+         }
+   
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            idx = fIndexTTH[itt];//hadron trigger
+            if(idx<0) continue;
 
 
-   return kTRUE;
+            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+               if(!fTrigflag[itg]) continue; 
+               fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+            }
+   
+            //recoil jets pythia detector level event 
+            for(auto jetIterator : fJetContainerPartLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+          
+               dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi());  
+
+               jetPtCorrDet = jet->Pt() - fRhoMC*jet->Area();
+               
+               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                  if(!fTrigflag[itg]) continue; 
+                  fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
+               }
+            } 
+   
+            //recoil jets in the combined event
+            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+           
+               dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
+
+               jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+               
+               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                  if(!fTrigflag[itg]) continue; 
+                  fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
+               }
+              
+               //fill similar disribution but just for jets which have pythia partner
+               jetDetMC =  jet->ClosestJet(); //This is the closes pythia Detector level jet
+               if(jetDetMC){ 
+
+                  dphi = TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[itt][idx].Phi()); 
+
+                  jetPtCorrDet  =  jetDetMC->Pt() - jetDetMC->Area()*fRhoMC; 
+                  
+                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                     if(!fTrigflag[itg]) continue; 
+                     fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
+                  }
+               }
+            }//jet loop 
+         }//TT loop
+      }//EMB track container
+   }
+   return; 
 }
 
+
+//________________________________________________________________________
+void  AliAnalysisTaskEA::EmbeddingFromAODFile(){
+   //   EMBEDDED EVENTS FROM AOD 
+   AliEmcalJet  *jet = NULL;        //jet pointer real jet 
+   AliEmcalJet  *jetPartMC = NULL;  //jet pointer particle level MC jet
+   AliEmcalJet  *jetDetMC  = NULL;  //jet pointed detector level MC jet
+   AliVParticle *track = NULL; //jet constituent
+   AliVParticle *mcParticle = NULL; //mc particle
+   TLorentzVector myTT;
+   Int_t idx = -1;
+   Double_t jetPtCorrDet  = 0.;  //detector level jet pt corrected for rho
+   Double_t jetPtCorrPart = 0.;
+   Double_t sharedFraction = 0.; //shared fraction between detector level and combined level
+   Double_t dphi = 999.0;
+
+   if(fMode == kEmbedding){
+  
+      if(!fIsMinBiasTrig && !fIsHighMultTrig) return; //if this is not MB or HM  skip the rest
+  
+      const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+      double ptHardBin = embeddingHelper->GetPtHardBin();
+      
+      for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+         if(!fTrigflag[itg]) continue; 
+         fhTrialsEMBtot[itg]->Fill(0.5, embeddingHelper->GetPythiaTrials());
+         fhXsectionEMBtot[itg]->Fill(0.5, embeddingHelper->GetPythiaXSection());
+      
+         fhTrialsEMB[itg]->Fill( ptHardBin, embeddingHelper->GetPythiaTrials());
+         fhXsectionEMB[itg]->Fill( ptHardBin, embeddingHelper->GetPythiaXSection());
+         fhPtHardEMB[itg]->Fill( embeddingHelper->GetPythiaPtHard());
+      }
+      //Find TT among the PYTHIA Detector level tracks
+      // This TT will be used for pythia detector level events as well as for the combined event      
+  
+      if(fTrkContainerDetLevelEMB){
+  
+         //detector level pythia mc particles
+         for(auto mcDetIterator : fTrkContainerDetLevelEMB->accepted_momentum() ){
+            track = mcDetIterator.second;  // Get the pointer to mc particle object
+            if(!track)  continue; 
+  
+            if(IsTrackInAcceptance(track, kDetLevel)){
+               fhTrackEtaInclEMB->Fill(track->Pt(), track->Eta());
+  
+               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+                  if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
+                     myTT.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.); 
+                     fTTH[itt].push_back(myTT);
+                     fHadronTT[itt]++;   // there was a high pt 
+                  }
+               }
+            }        
+         }
+  
+         //chose trigger hadron TT which will be common for  Detector level pythia and the combined event
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            if(fHadronTT[itt]>0){
+               fIndexTTH[itt] = fRandom->Integer(fHadronTT[itt]);
+            }
+         }
+   
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            idx = fIndexTTH[itt];//hadron trigger
+            if(idx<0) continue;
+  
+
+            if(fFillSigTT && itt==0) continue;  // Do not fill reference 
+            if(!fFillSigTT && itt>0) continue;  // Do not fill signal 
+
+            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+               if(!fTrigflag[itg]) continue; 
+               fhTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+            }
+  
+            //recoil jets pythia detector level event 
+            for(auto jetIterator : fJetContainerDetLevelEMB->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+          
+               dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi());  
+
+               jetPtCorrDet = jet->Pt() - fRhoEMB*jet->Area();
+               
+               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                  if(!fTrigflag[itg]) continue; 
+                  fhRecoilJetPhiTTH_EMB_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
+               }
+            } 
+  
+            //recoil jets in the combined event
+            for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+               // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+               jet = jetIterator.second;  // Get the pointer to jet object
+               if(!jet)  continue; 
+           
+               dphi = TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi()); 
+
+               jetPtCorrDet = jet->Pt() - fRho*jet->Area();
+               
+               for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                  if(!fTrigflag[itg]) continue; 
+                  fhRecoilJetPhiTTH_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi);
+               
+               }
+
+               //fill similar disribution but just for jets which have pythia partner
+               jetDetMC =  jet->ClosestJet(); //This is the closes pythia Detector level jet
+               if(jetDetMC){ 
+
+                  dphi = TVector2::Phi_mpi_pi(jetDetMC->Phi()-fTTH[itt][idx].Phi()); 
+
+                  jetPtCorrDet  =  jetDetMC->Pt() - jetDetMC->Area()*fRhoEMB; 
+                  
+                  for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+                     if(!fTrigflag[itg]) continue; 
+                     fhRecoilJetPhiTTH_TAG_V0Mnorm1[itg][itt]->Fill(fMultV0Mnorm, jetPtCorrDet, dphi); 
+                  }
+               }
+            }//jet loop 
+         }//TT loop
+      }//EMB track container
+  
+      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      //                RESPONSE MATRIX FROM EMBEDDED EVENTS
+      //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      //Response matrix normalization.  The matrix will be constructed using 
+      //- inclusive generator level jets in acceptance
+      //- recoil jets  (that recould from detector level pythia TT)
+      if(fJetContainerPartLevel){
+         for(auto jetPartIterator : fJetContainerPartLevel->accepted_momentum() ){
+            jetPartMC = jetPartIterator.second;  // Get the pointer to mc particle object
+            if(!jetPartMC)  continue; 
+      
+            jetPtCorrPart = jetPartMC->Pt() - jetPartMC->Area()*fRhoMC;
+            
+            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+               if(!fTrigflag[itg]) continue; //inclusive jet spectrum for ReMx normalization 
+               fhJetPtPartLevelCorr_EMB[itg]->Fill(jetPtCorrPart);
+               fhJetPtPartLevelZero_EMB[itg]->Fill(jetPartMC->Pt());
+            }
+         }
+      }
+      
+      //FILL 2D RESPONSE MATRIX Find closest particle level and detector level jets  and detector level  combined level
+      if(fJetContainerDetLevel){
+      
+         for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+            jet = jetIterator.second;  // jet on combined level 
+            if(!jet)  continue; 
+      
+            //find closest pythia detector level jet
+            jetDetMC =  jet->ClosestJet();
+            if(!jetDetMC) continue;
+      
+            sharedFraction = fJetContainerDetLevel->GetFractionSharedPt(jet); //Check shared momentum fraction
+      
+            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+               if(!fTrigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
+               fhSharedJetFraction[itg]->Fill(jetDetMC->Pt(), sharedFraction);
+            } 
+      
+            if(sharedFraction < fMinFractionShared) continue; 
+      
+            jetPartMC = jetDetMC->ClosestJet(); //This is the closes pythia particle level jet to the pythia detector level jet
+            if(!jetPartMC) continue; 
+            if(jetPartMC->Pt()<1e-3) continue; //prevents matching with a ghost
+      
+            jetPtCorrPart =  jetPartMC->Pt() - jetPartMC->Area()*fRhoMC; 
+            jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho; 
+            
+            for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+               if(!fTrigflag[itg]) continue; //recoil jet spectrum for ReMx normalization 
+               fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[itg]->Fill(jetPtCorrDet, jetPtCorrPart); //response matrix
+               fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg]->Fill(jetPtCorrDet, jetPartMC->Pt()); //response matrix
+            }
+         }
+      } 
+   }
+
+   return;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEA::GeneralTrackProperties(){
+   
+   Double_t xyz[50];
+   Double_t pxpypz[50];
+   Double_t cv[21];
+   Double_t tmparr[4]; 
+   
+   Int_t label, labelMC;                  
+   Bool_t labelfound = 0;
+   AliAODMCParticle* particleMC = NULL;    
+   AliVParticle *track = NULL; //jet constituent
+   AliAODTrack *trackAOD=NULL ;
+
+
+
+ 
+   //_________________________________________________________
+   //LOOP OVER TRACKS DETECTOR LEVEL
+   
+   for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+      // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+      track = trackIterator.second;  // Get the full track
+      if(!track) continue;
+   
+      if(IsTrackInAcceptance(track, kDetLevel)){  
+   
+         for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
+            if(!fTrigflag[itg]) continue; 
+            fhTrackPhiIncl[itg]->Fill(track->Pt(), track->Phi());
+            fhTrackEtaIncl[itg]->Fill(track->Pt(), track->Eta());
+   
+            tmparr[0] = track->Pt();
+            tmparr[1] = track->Eta();
+            tmparr[2] = track->Phi();
+            tmparr[3] = fMultV0Mnorm;
+            fhTrackPtEtaPhiV0norm[itg]->Fill(tmparr);
+         }
+      }
+   }
+   
+   //____________ INCLUSIVE EVENTS _______________________________
+   if(fIsMinBiasTrig){
+   
+      for(auto trackIterator : fTrkContainerDetLevel->accepted_momentum() ){
+         // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+         track = trackIterator.second;  // Get the full track
+         if(!track) continue;
+   
+         if(IsTrackInAcceptance(track, kDetLevel)){  
+   
+            //get sigma pT / pT  
+            //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
+            memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
+            memset(pxpypz, 0, sizeof(Double_t) * 50);
+            memset(xyz, 0, sizeof(Double_t) * 50);
+   
+            trackAOD = dynamic_cast <AliAODTrack*>( track);
+            if(trackAOD){
+               trackAOD->GetXYZ(xyz);
+               trackAOD->GetPxPyPz(pxpypz);
+               trackAOD->GetCovarianceXYZPxPyPz(cv);
+               
+               AliExternalTrackParam  par(xyz, pxpypz, cv, trackAOD->Charge());
+               fhSigmaPtOverPtVsPt->Fill(trackAOD->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
+               
+               if(trackAOD->Charge()<0){
+                  fhOneOverPtVsPhiNeg->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
+               }else{
+                  fhOneOverPtVsPhiPos->Fill(trackAOD->Phi(), 1.0/trackAOD->Pt());
+               }
+               
+               //DCA distributions
+               fhDCAinXVsPt->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+               fhDCAinYVsPt->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+              
+               //SINGLE TRACK EFFICIENCY AND CONTAMINATION
+               if(fMode == AliAnalysisTaskEA::kMC){
+                  label = TMath::Abs(trackAOD->GetLabel()); 
+                  
+                  particleMC = NULL;
+                  labelfound = 0;
+                  for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+                     particleMC  =  static_cast <AliAODMCParticle*>(  mcPartIterator.second);  // Get the pointer to mc particle object
+               
+                     labelMC = TMath::Abs(particleMC->GetLabel());
+                     if(labelMC==label && label > -1){
+                        labelfound=1;
+                        break;
+                     }
+                  }
+                  if(labelfound && particleMC && particleMC->IsPhysicalPrimary()){
+                     fhDCAinXVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+                     fhDCAinYVsPtPhysPrimary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+                  }else{
+                     fhDCAinXVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->XAtDCA());
+                     fhDCAinYVsPtSecondary->Fill(trackAOD->Pt(), trackAOD->YAtDCA());
+                  }//AID
+               }
+            }
+         }
+      }
+   }
+}
 //________________________________________________________________________
 void AliAnalysisTaskEA::Terminate(Option_t *){
    //Treminate 
@@ -3440,6 +3547,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fOutput->Add((TH1D*) fhSignal_PartLevel[ic]); 
       }
 
+      name = Form("fhSignal_V0M_trueMB_PartLevel");
+      fhSignal_V0M_trueMB_PartLevel = new TH1D(name.Data(), name.Data(), 500, 0, 500);
+      fOutput->Add((TH1D*) fhSignal_V0M_trueMB_PartLevel); 
+      
+
       //TT hadron
       for(Int_t ic=0; ic<fkCE;ic++){ //MB
          for(Int_t itt=0; itt<fnHadronTTBins; itt++){
@@ -3508,17 +3620,17 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    } 
 
    if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){ 
-      name = Form("fhV0A_V0C_V0MnormPartLevel_MB");
-      fhV0A_V0C_V0MnormPartLevel = new TH3D(name.Data(),name.Data(),100,0,200, 100,0,200, 10, 0, 10);
-      fOutput->Add((TH3D*) fhV0A_V0C_V0MnormPartLevel);
+      name = Form("fhV0A_V0C_PartLevel_MB");
+      fhV0A_V0C_PartLevel = new TH2D(name.Data(),name.Data(),100,0,200, 100,0,200);
+      fOutput->Add((TH2D*) fhV0A_V0C_PartLevel);
 
-      name = Form("fhV0A_V0APartLevel_V0Mnorm_MB");
-      fhV0A_V0APartLevel_V0Mnorm = new TH3D(name.Data(),name.Data(),100,0,1000, 100,0,200, 10, 0, 10);
-      fOutput->Add((TH3D*) fhV0A_V0APartLevel_V0Mnorm);
+      name = Form("fhV0A_V0APartLevel_MB");
+      fhV0A_V0APartLevel = new TH2D(name.Data(),name.Data(),100,0,1000, 100,0,200);
+      fOutput->Add((TH2D*) fhV0A_V0APartLevel);
    
-      name = Form("fhV0C_V0CPartLevel_V0Mnorm_MB");
-      fhV0C_V0CPartLevel_V0Mnorm = (TH3D*)  fhV0A_V0APartLevel_V0Mnorm->Clone(name.Data());
-      fOutput->Add((TH3D*) fhV0C_V0CPartLevel_V0Mnorm);
+      name = Form("fhV0C_V0CPartLevel_MB");
+      fhV0C_V0CPartLevel = (TH2D*)  fhV0A_V0APartLevel->Clone(name.Data());
+      fOutput->Add((TH2D*) fhV0C_V0CPartLevel);
    }
 
 
@@ -3575,10 +3687,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       name = Form("fhTrackMult%s", trig[itg].Data());
       fhTrackMult[itg] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 1000, 0, 1000); 
       fOutput->Add((TH2D*) fhTrackMult[itg]); 
-
-      name = Form("fhMeanTrackPt%s", trig[itg].Data());
-      fhMeanTrackPt[itg] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 20);
-      fOutput->Add((TH1D*) fhMeanTrackPt[itg]); 
    }
 
 
@@ -3949,16 +4057,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhJetPtResolutionVsPtPartLevel = new TH2D(name.Data(), name.Data(),100,0,100,50,0,2);
       fOutput->Add((TH2D*) fhJetPtResolutionVsPtPartLevel);
 
-      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
-
-         name = Form("fhJetPtPartLevelCorr_TTHdl%d_%d_Rho%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype.Data());
-         fhJetPtPartLevelCorrTTHdl[itt] = (TH1D*)  fhJetPtPartLevelCorr->Clone(name.Data());
-         fOutput->Add((TH1D*) fhJetPtPartLevelCorrTTHdl[itt]); //Norm spectrum for detector level TTH
-
-         name = Form("fhJetPtPartLevelVsJetPtDetLevelCorr_TTHdl%d_%d_Rho%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], rhotype.Data());
-         fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt] = (TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr->Clone(name.Data());
-         fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[itt]); //ReMx for detector level TTH
-      }
    }
 
    //JET PT ASYMMETRY
@@ -4003,9 +4101,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    //Auxiliary jet pT spectra filled event by event which will not go to output
    fhJetPtEvtByEvent       = new TH1D("fhJetPtEvtByEvent","fhJetPtEvtByEvent", 100,0,100);  
-
+   fhRecoilJetPtEvtByEventRandomTT = new TH1D("fhRecoilJetPtEvtByEventRandomTT","fhRecoilJetPtEvtByEventRandomTT", 100,0,100);  
+ 
    if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
-      fhJetPtEvtByEventPartLevel = new TH1D("fhJetPtEvtByEventPartLevel","fhJetPtEvtByEventPartLevel", 100,0,100);  
+      fhJetPtEvtByEventPartLevel = new TH1D("fhJetPtEvtByEventPartLevel","fhJetPtEvtByEventPartLevel", 100,0,100); 
+      fhRecoilJetPtEvtByEventRandomTTPartLevel = new TH1D("fhRecoilJetPtEvtByEventRandomTTPartLevel","fhRecoilJetPtEvtByEventRandomTTPartLevel", 100,0,100);  
    }
 
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
@@ -4013,9 +4113,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhRecoilJetPtEvtByEvent[itt] = new TH1D(name.Data(),name.Data(),100,0,100); 
    }
 
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
-      name = Form("fhRecoilJetPtEvtByEvent_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-      fhRecoilJetPtEvtByEventPartLevel[itt] = new TH1D(name.Data(),name.Data(),100,0,100); 
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
+         name = Form("fhRecoilJetPtEvtByEvent_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhRecoilJetPtEvtByEventPartLevel[itt] = new TH1D(name.Data(),name.Data(),100,0,100); 
+      }
    }
 
    //Count multiplicity of high-pT jets per event
@@ -4061,6 +4163,15 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       } 
    } 
 
+   for(Int_t itg=kMB; itg<=kHM; itg++){
+      if(fMode == AliAnalysisTaskEA::kKine) continue; 
+      if((fMode == AliAnalysisTaskEA::kMC) && itg == kHM) continue; 
+ 
+      name = Form("fhNumberOfHighPtJetsRecoil_%s_randomTTH", trig[itg].Data());
+      fhNumberOfHighPtJetsRecoilRandomTT[itg] = new THnSparseF(name.Data(),"Number of recoil jets with pt above X (random TT)", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+      fOutput->Add((THnSparse*) fhNumberOfHighPtJetsRecoilRandomTT[itg]); 
+   }
+
    if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
          name = Form("fhNumberOfHighPtJetsRecoil_MB_TTH%d_%d_PartLevel", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
@@ -4070,8 +4181,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       } 
    } 
 
-
-
+   if(fMode == AliAnalysisTaskEA::kMC || fMode == AliAnalysisTaskEA::kKine){
+      name = Form("fhNumberOfHighPtJetsRecoil_MB_randomTTH_PartLevel");
+      fhNumberOfHighPtJetsRecoilRandomTTPartLevel = new  THnSparseF(name.Data(),"Number of recoil jets with pt above X particle level (random TT)", khighptjetdim, highptjetbins, highptjetxmin, highptjetxmax);
+      fOutput->Add((THnSparse*) fhNumberOfHighPtJetsRecoilRandomTTPartLevel);
+   }
    //+++++++++++++++++++++++++++ EMBEDDING +++++++++++++++++++++++
    if(fMode == AliAnalysisTaskEA::kEmbedding){
 
@@ -4085,18 +4199,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          name = Form("fhJetPtPartLevelZero_EMB_%s",trig[itg].Data());
          fhJetPtPartLevelZero_EMB[itg] = new TH1D(name.Data(), name.Data(), 250, 0, 250);
          fOutput->Add((TH1D*) fhJetPtPartLevelZero_EMB[itg]);
-
-
-         for(Int_t itt=0; itt<fnHadronTTBins; itt++){   //@@@  
-            //normalization for response matrix in events with TTH   
-            name = Form("%s_TTHdl%d_%d", fhJetPtPartLevelCorr_EMB[itg]->GetName(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-            fhJetPtPartLevelCorrTTHdl_EMB[itg][itt] = (TH1D*) fhJetPtPartLevelCorr_EMB[itg]->Clone(name.Data());    
-            fOutput->Add((TH1D*) fhJetPtPartLevelCorrTTHdl_EMB[itg][itt]);
-
-            name = Form("%s_TTHdl%d_%d",fhJetPtPartLevelZero_EMB[itg]->GetName(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-            fhJetPtPartLevelZeroTTHdl_EMB[itg][itt] = (TH1D*) fhJetPtPartLevelZero_EMB[itg]->Clone(name.Data());    
-            fOutput->Add((TH1D*) fhJetPtPartLevelZeroTTHdl_EMB[itg][itt]);
-         }
       }
 
       //remx
@@ -4109,15 +4211,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg] = new TH2D(name.Data(), name.Data(), 270, -20, 250, 250, 0, 250);        
          fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg]);
 
-         for(Int_t itt=0; itt<fnHadronTTBins; itt++){    //response matrix in events with TTH   
-            name = Form("%s_TTHdl%d_%d", fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[itg]->GetName(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-            fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[itg][itt] = (TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[itg]->Clone(name.Data());
-            fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[itg][itt]);
-
-            name = Form("%s_TTHdl%d_%d", fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg]->GetName(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-            fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[itg][itt] = (TH2D*) fhJetPtPartLevelVsJetPtDetLevelZero_EMB[itg]->Clone(name.Data());
-            fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[itg][itt]);
-         } 
       }
 
       for(Int_t itg=kMB; itg<=kHM; itg++){    //@@@
