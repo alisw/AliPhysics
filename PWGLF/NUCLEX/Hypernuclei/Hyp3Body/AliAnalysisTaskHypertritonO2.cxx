@@ -360,9 +360,15 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
             fRecHyp.tpcNsig_pr = p.nSigmaTPC;
             fRecHyp.tpcNsig_pi = pi.nSigmaTPC;
 
-            auto& deuPos = fVertexer.getTrackPos(0); 
-            auto& proPos = fVertexer.getTrackPos(1); 
-            auto& piPos = fVertexer.getTrackPos(2); 
+            fVertexer.propagateTracksToVertex();
+            auto& deuTrackPos = fVertexer.getTrack(0); 
+            auto& proTrackPos = fVertexer.getTrack(1); 
+            auto& piTrackPos = fVertexer.getTrack(2); 
+
+            double deuPos[3],proPos[3],piPos[3];
+            deuTrackPos.GetXYZ(deuPos);
+            proTrackPos.GetXYZ(proPos);
+            piTrackPos.GetXYZ(piPos);
 
             fRecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
             fRecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
