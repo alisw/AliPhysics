@@ -160,6 +160,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Bool_t      Run();
   Bool_t      FillHistograms();
 
+  void AnalyzeParticleLevel();
+  void InitEventProperties();
+  void EmbeddingFromTxtFile();
+  void EmbeddingFromAODFile();
+  void FillResponseMatrix();
+  void GeneralTrackProperties();
+  void AnalyzeRawData();
+
 
  private:
 
@@ -294,6 +302,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
 
    TH1D* fhSignal_PartLevel[fkCE];                 //! particle level centrality estimators:  mult V0, mult VC, V0M, V0Mnorm  in MB
+   TH1D* fhSignal_V0M_trueMB_PartLevel;            //! V0M distribution in true MB events
    TH1D* fhSignalTTH_PartLevel[fkCE][fkTTbins];  //! particle level distributions of centrality estimators biased with hadron TT in min bias
    TH1D* fhSignalTTC_PartLevel[fkCE][fkTTbins];  //! particle level distributions of centrality estimators biased with cluster TT in min bias
 
@@ -305,9 +314,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
 
    TH3D* fhV0A_V0C_V0Mnorm[kTG];                     //! V0A vs V0C in MB  versus V0Mnorm 
-   TH3D* fhV0A_V0C_V0MnormPartLevel;                 //! V0A vs V0C in MB  versus V0Mnorm all particle level 
-   TH3D* fhV0A_V0APartLevel_V0Mnorm;                 //! V0A vs particle level V0A in MB  versus V0Mnorm 
-   TH3D* fhV0C_V0CPartLevel_V0Mnorm;                 //! V0C vs particle level V0C in MB  versus V0Mnorm 
+   TH2D* fhV0A_V0C_PartLevel;                        //! V0A vs V0C in MB  versus V0Mnorm all particle level 
+   TH2D* fhV0A_V0APartLevel;                         //! V0A vs particle level V0A in MB  versus V0Mnorm 
+   TH2D* fhV0C_V0CPartLevel;                         //! V0C vs particle level V0C in MB  versus V0Mnorm 
 //   TH2D* fhV0MvsV0Mnorm;                             //! V0M vs V0Mnorm in MB 
    TH2D* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
    TH2D* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
@@ -321,7 +330,6 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhMultTTC[kTG][fkTTbins];                       //! multiplicity of cluster TT 
 
    TH2D* fhTrackMult[kTG];                                 //! multiplicity of midrapidity charged tracks 
-   TH2D* fhMeanTrackPt[kTG];                               //! mean track pT 
 
    //hadron TT
 //   TH2D* fhTTH_CentV0M[kTG][fkTTbins];                    //! counter of semi-inclusive hadron TT versus V0M    centrality
@@ -381,11 +389,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH1D* fhJetPtPartLevelCorr;                          //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero;                          //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhJetPtPartLevelCorrTTHdl[fkTTbins];           //! response matrix normalization spectrum, events with det. level TTH 
 
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;           //! response matrix jet pT corrected on rho
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl[fkTTbins];  //! response matrix events with detector level TTH
 
    TH2D* fhJetPtResolutionVsPtPartLevel;                //! resolution of jet pT
 
@@ -408,16 +414,21 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhJetPtAsymmetryCB[kTG][fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
    TH2D* fhTrackPtAsymmetryCB[kTG][fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
    THnSparse* fhNumberOfHighPtJetsCB[kTG][fkTTbins];     //! number of jets with pT larger than X in central barrel 
-   THnSparse* fhNumberOfHighPtJetsRecoil[kTG][fkTTbins]; //! number of jets with pT larger than X in recoil region 
+   THnSparse* fhNumberOfHighPtJetsRecoil[kTG][fkTTbins]; //! number of jets with pT larger than X in recoil region of physical TT
+   THnSparse* fhNumberOfHighPtJetsRecoilRandomTT[kTG];   //! number of jets with pT larger than X in recoil region of random TT
+
    TH1D* fhJetPtEvtByEvent;                              //! event by event pt spectrum of jets 
-   TH1D* fhRecoilJetPtEvtByEvent[fkTTbins];              //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEvent[fkTTbins];              //! event by event pt spectrum of jets with physical TT 
+   TH1D* fhRecoilJetPtEvtByEventRandomTT;                //! event by event pt spectrum of jets with radom TT 
 
    TH2D* fhJetPtAsymmetryCBPartLevel[fkTTbins];              //! JetpT asymmetry in central barrel  TT direction / recoil region 
    TH2D* fhTrackPtAsymmetryCBPartLevel[fkTTbins];            //! JetpT asymmetry in central barrel  TT direction / recoil region 
    THnSparse* fhNumberOfHighPtJetsCBPartLevel[fkTTbins];     //! number of jets with pT larger than X in central barrel 
-   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region 
-   TH1D* fhJetPtEvtByEventPartLevel;                              //! event by event pt spectrum of jets 
-   TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];              //! event by event pt spectrum of jets 
+   THnSparse* fhNumberOfHighPtJetsRecoilPartLevel[fkTTbins]; //! number of jets with pT larger than X in recoil region of physical TT
+   THnSparse* fhNumberOfHighPtJetsRecoilRandomTTPartLevel;   //! number of jets with pT larger than X in recoil region of random TT
+   TH1D* fhJetPtEvtByEventPartLevel;                         //! event by event pt spectrum of jets 
+   TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];         //! event by event pt spectrum of jets with physical TT
+   TH1D* fhRecoilJetPtEvtByEventRandomTTPartLevel;           //! event by event pt spectrum of jets with radom TT
 
 
 
@@ -428,14 +439,10 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH1D* fhJetPtPartLevelCorr_EMB[kTG];                   //! response matrix normalization spectrum, jet pT corrected on rho
    TH1D* fhJetPtPartLevelZero_EMB[kTG];                   //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhJetPtPartLevelCorrTTHdl_EMB[kTG][fkTTbins];    //! response matrix normalization spectrum, events with det. level TTH 
-   TH1D* fhJetPtPartLevelZeroTTHdl_EMB[kTG][fkTTbins];    //! response matrix normalization spectrum, events with det. level TTH 
 
 
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[kTG];           //! response matrix jet pT corrected on rho    embedded to minimum bias events
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero_EMB[kTG];           //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorrTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZeroTTHdl_EMB[kTG][fkTTbins];  //! response matrix events with detector level TTH
 
   
 
@@ -508,11 +515,18 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Bool_t kOldV0MC;                                // set old MC settings for V0 which had a bug in delta electrons 
 
    Bool_t fMultFramework;                        // use mean V0M values from the centrality framework 
-  
+
+   Double_t fRho;                                  //! underlying event density real events
+   Double_t fRhoMC;                                //! underlying event density detector level events events
+   Double_t fRhoEMB;                               //! underlying event density in events with embedded tracks
+
+   Bool_t fTrigflag[3];                            //! trigger flags
+   Int_t  fRunnumber;                              //! run number 
+ 
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 28); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 29); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

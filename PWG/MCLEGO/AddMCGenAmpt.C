@@ -14,6 +14,7 @@ AliGenerator *AddMCGenAmpt(
                           Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
                           Bool_t stringMelting = kTRUE,   // string melting option
                           Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
+                          Bool_t Xecollisions  = kFALSE,  // pA instead of AA collisions
                           Bool_t pAcollisions  = kFALSE,  // pA instead of AA collisions
                           Bool_t ppcollisions  = kFALSE   // pp instead of AA collisions
                            )
@@ -55,6 +56,10 @@ AliGenerator *AddMCGenAmpt(
   else if (pAcollisions){
     genAMPT->SetProjectile("A", 208, 82);
     genAMPT->SetTarget("P", 1, 1);
+  } 
+  else if (Xecollisions){
+    genAMPT->SetProjectile("A", 129, 54);
+    genAMPT->SetTarget("A", 129, 54);
   } else {
     genAMPT->SetProjectile("A", 208, 82);
     genAMPT->SetTarget("A", 208, 82);

@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class TNamed;
-AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=kFALSE, TString stage = "dev",
-                          TString NUAWeights="", TString PIDWeights="alien:///alice/cern.ch/user/v/vvislavi/Weights/PIDWeights.root")
+AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=kFALSE, TString stage = "dev", Int_t GFWMode=0,
+                          TString NUAWeights="", TString PIDWeights="alien:///alice/cern.ch/user/v/vvislavi/Weights/PIDWeights.root", TString PIDWeights2="")
 {
   Int_t StageSwitch = 0;
   if(stage.Contains("weights")) StageSwitch=1;
@@ -24,6 +24,7 @@ AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=
   };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskGFWPIDFlow* task = new AliAnalysisTaskGFWPIDFlow(name.Data(), IsMC, stage);
+  task->SetGFWMode(GFWMode);
   if(!task)
     return 0x0;
 
@@ -90,13 +91,25 @@ AliAnalysisTaskGFWPIDFlow* AddTaskGFWPIDFlow(TString name = "name", Bool_t IsMC=
     TObjArray *AllContainers = mgr->GetContainers();
     if(!AllContainers->FindObject("PIDWeights")) {
       TGrid::Connect("alien:");
-      TFile *tfWeights = TFile::Open(PIDWeights);
+      TFile *tfWeights = TFile::Open(PIDWeights.Data());
       TList *tlWeights = (TList*)tfWeights->Get("PIDWeights");
       AliAnalysisDataContainer *cInWeights = mgr->CreateContainer("PIDWeights",TList::Class(), AliAnalysisManager::kInputContainer);
       cInWeights->SetData(tlWeights);
       mgr->ConnectInput(task,1,cInWeights);
-    };
-    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer(Form("FlowCont_%s",name.Data()),AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("PIDWeights"));
+    if(!PIDWeights2.IsNull()) {
+      if(!AllContainers->FindObject("PIDWeights_ZM")) {
+        TGrid::Connect("alien:");
+        TFile *tfWeights = TFile::Open(PIDWeights2.Data());
+        TList *tlWeights = (TList*)tfWeights->Get("PIDWeights");
+        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer("PIDWeights_ZM",TList::Class(), AliAnalysisManager::kInputContainer);
+        cInWeights->SetData(tlWeights);
+        mgr->ConnectInput(task,2,cInWeights);
+      } else mgr->ConnectInput(task,2,(AliAnalysisDataContainer*)AllContainers->FindObject("PIDWeights_ZM"));
+
+    }
+
+    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer(Form("FlowCont_%i",GFWMode),AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputFC);
     return task;
   };

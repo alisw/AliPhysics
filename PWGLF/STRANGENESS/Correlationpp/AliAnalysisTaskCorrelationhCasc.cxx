@@ -121,7 +121,6 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fHistMultvsV0MC(0),
   fHistTriggerNotLeading(0),
   fHistTriggerNotLeadingMC(0),
-  fHistMassvsPt(0),
   fHistMassvsPt_tagli(0x0),
   fHistMultvsTriggerBefAll(0),
   fHistMultvsTriggerMCTruthBefAll(0),
@@ -304,7 +303,6 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fHistMultvsV0MC(0),
   fHistTriggerNotLeading(0),
   fHistTriggerNotLeadingMC(0),
-  fHistMassvsPt(0),
   fHistMassvsPt_tagli(0x0),
   fHistMultvsTriggerBefAll(0),
   fHistMultvsTriggerMCTruthBefAll(0),
@@ -526,18 +524,21 @@ void AliAnalysisTaskCorrelationhCasc::ProcessMCParticles(Bool_t Generated, AliAO
       }
       else if(isV0==kTRUE){ //for associated particles
 	if (!(particle->IsPhysicalPrimary()))continue;
-
 	if (TMath::Abs(particle->GetPdgCode())==PDGCodeAssoc[ParticleType]){ //Xi
 	  if (particle->Charge()<0)	  lChargeXi = -1;
 	  else if (particle->Charge()>0)  lChargeXi = 1;
-	  if (TMath::Abs(particle->Eta())>fEtaV0Assoc ) continue;
-	fHistGeneratedV0PtTMaxPhi[0]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
-	fHistGeneratedV0PtTMaxEta[0]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
-	fHistGeneratedV0PtPtTMax[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
-	if (TMath::Abs(particle->Y())>0.5 ) continue;
-	fHistGeneratedV0PtTMaxPhi[1]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
-	fHistGeneratedV0PtTMaxEta[1]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
-	fHistGeneratedV0PtPtTMax[1]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	  if (TMath::Abs(particle->Eta())<=fEtaV0Assoc ) {
+	    //if (TMath::Abs(particle->Eta())>fEtaV0Assoc ) continue;
+	    fHistGeneratedV0PtTMaxPhi[0]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
+	    fHistGeneratedV0PtTMaxEta[0]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
+	    fHistGeneratedV0PtPtTMax[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	}
+	    if (TMath::Abs(particle->Y())<=0.5 ) {
+	    //    if (TMath::Abs(particle->Y())>0.5 ) continue;
+	    fHistGeneratedV0PtTMaxPhi[1]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
+	    fHistGeneratedV0PtTMaxEta[1]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
+	    fHistGeneratedV0PtPtTMax[1]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	}
 	}      
       }
     }
@@ -928,14 +929,10 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistSecondParticleTruth->GetXaxis()->SetTitle("Number (reco true)");
   fHistSecondParticleTruth->GetYaxis()->SetTitle("Number (MC)");
 
-  fHistMassvsPt = new TH2F *[6];
   fHistMassvsPt_tagli = new TH2F *[6];
 
   for(Int_t j=0; j<6; j++){
-    fHistMassvsPt[j] = new TH2F(Form("fHistMassvsPt_" +fV0+ "_%i",j),Form("fHistMassvsPt_"+fV0 + "_%i"+" (cuts on PID, eta and track quality of daughters + eta V0) ",j),400,lLimInfMass,lLimSupMass,160,-16,16); 
     fHistMassvsPt_tagli[j] = new TH2F(Form("fHistMassvsPt_" +fV0+ "_tagli_%i",j),Form("fHistMassvsPt_" +fV0+ "_tagli_%i" + " (all selections on V0 applied)",j),400,lLimInfMass,lLimSupMass,160,-16,16);
-    fHistMassvsPt[j]->GetXaxis()->SetTitle("Invariant mass of V0 candidate");
-    fHistMassvsPt[j]->GetYaxis()->SetTitle("p_{T} of V0 candidate");   
     fHistMassvsPt_tagli[j]->GetXaxis()->SetTitle("Invariant mass of V0 candidate");
     fHistMassvsPt_tagli[j]->GetYaxis()->SetTitle("p_{T} of V0 candidate");   
   }
@@ -1313,8 +1310,8 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fOutputList->Add(fHist_multiplicity); 
   fOutputList->Add(fHist_multiplicity_EvwTrigger);
   fOutputList->Add(fHistMultiplicityVsVertexZ);
-  fOutputList->Add(fHistFractionSharedTPCClusters);
-  fOutputList->Add(fHistGoldenCut);
+  //  fOutputList->Add(fHistFractionSharedTPCClusters);
+  //  fOutputList->Add(fHistGoldenCut);
   fOutputList->Add(fHistMultvsTriggerBefAll);
   fOutputList->Add(fHistMultvsTriggerMCTruthBefAll);
   fOutputList->Add(fHistMultvsTriggerAll);
@@ -1360,7 +1357,6 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
 
 
   for(Int_t j=0; j < 6; j++){
-    fOutputList->Add(fHistMassvsPt[j]);
     fOutputList->Add(fHistMassvsPt_tagli[j]);
     
     for(Int_t i=0; i<1; i++){  
@@ -1846,13 +1842,13 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     if (nClustersTPC!=0) {
       fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
     }
-    fHistFractionSharedTPCClusters->Fill(fracClustersTPCShared);
+    //    fHistFractionSharedTPCClusters->Fill(fracClustersTPCShared);
     //  if (fracClustersTPCShared > 0.2) continue;
     //    fHistTrack->Fill(9);
 
 
     //Golden cut (not applied)
-    fHistGoldenCut->Fill(track->GetChi2TPCConstrainedVsGlobal());
+    //    fHistGoldenCut->Fill(track->GetChi2TPCConstrainedVsGlobal());
     //  if ((track->GetChi2TPCConstrainedVsGlobal())>36) continue;
     //    fHistTrack->Fill(7);
 
@@ -2722,13 +2718,6 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
       lRapCasc =lRapOmega;
     }
 
-    for (Int_t m =0; m<5;m++){
-      if(lPercentiles>=moltep[m] && lPercentiles<moltep[m+1]){
-	fHistMassvsPt[m]->Fill(lInvMassCasc, lXiTransvMom*lChargeXi);
-      }
-    }
-    fHistMassvsPt[5]->Fill(lInvMassCasc, lXiTransvMom*lChargeXi);
-
     if(fReadMCTruth){
       if (fMCEvent){
 	//cout << "\n this particle has passed all but pt cuts: let's fill the mass Pt histo for true reco K0s "<< endl;
@@ -2765,6 +2754,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	fHistMassvsPt_tagli[m]->Fill(lInvMassCasc,lChargeXi*lXiTransvMom);      
       }
     }
+    
     fHistMassvsPt_tagli[5]->Fill(lInvMassCasc,lChargeXi*lXiTransvMom);      
 
     NumberSecondParticle++;
@@ -2913,7 +2903,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	Bool_t skipV0_MC=kFALSE;
 	AliAODMCParticle* particleV0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 	if (!particleV0) continue;
-	if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
+	//	if(TMath::Abs(particleV0->Eta())> fEtaV0Assoc)continue;
 	if (!(particleV0->IsPhysicalPrimary()))continue; 
 	if(!(particleV0->Pt()> fminPtV0 && particleV0->Pt()<fmaxPtV0) )continue;
 	if (TMath::Abs(particleV0->GetPdgCode())!=PDGCodeCasc[ParticleType]) continue;

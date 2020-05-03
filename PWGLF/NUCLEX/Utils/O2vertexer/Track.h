@@ -33,6 +33,13 @@ class TrackParCov : public AliExternalTrackParam
   float getTgl() const { return this->GetTgl(); }
   float getQ2Pt() const { return this->GetSigned1Pt(); }
 
+    /// calculate cos^2 and cos of track direction in rphi-tracking
+  float getCsp2() const
+  {
+    float csp2 = (1. - getSnp()) * (1. + getSnp());
+    return csp2 > o2::constants::math::Almost0 ? csp2 : o2::constants::math::Almost0;
+  }
+  float getCsp() const { return sqrtf(getCsp2()); }
 
   // derived getters
   float getCurvature(float b) const { return this->GetC(b); }

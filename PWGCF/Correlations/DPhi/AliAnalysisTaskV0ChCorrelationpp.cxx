@@ -2054,7 +2054,16 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          isNegPionForTPC = kTRUE;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(Ntrack,AliPID::kProton))<fV0PIDSigma)
          isNegProtonForTPC = kTRUE;
- 
+
+
+
+
+// reject bunch-off pile-up
+  if(!fAnalysisMC){      
+ if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
+     } 
+  
+  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       }

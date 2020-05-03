@@ -18,15 +18,15 @@ class AliRsnDaughter;
 class AliRsnMiniParticle : public TObject {
 public:
 
-   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0), fPassesOOBPileupCut(kTRUE) {
+   AliRsnMiniParticle() : fIndex(-0x80000000), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0), fPassesOOBPileupCut(kTRUE) {
        Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;
-       fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
+       fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
        fMass[0] = fMass[1] = -1.0;
    }
 
    Int_t         &Index()                    {return fIndex;}
-   void          SetResonance()              {fIndex=-99999;}
-   Bool_t        IsResonance()               {return (fIndex==-99999);}
+   void          SetResonance()              {fIndex=-0x7fffffff;}
+   Bool_t        IsResonance()               {return (fIndex==-0x7fffffff);}
    Int_t         &IndexV0Pos()               {return fIndexDaughters[0];}
    Int_t         &IndexV0Neg()               {return fIndexDaughters[1];}
    Int_t         &IndexBachelor()            {return fIndexDaughters[2];}

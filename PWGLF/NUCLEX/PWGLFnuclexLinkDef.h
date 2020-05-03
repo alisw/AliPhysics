@@ -137,6 +137,8 @@
 #pragma link C++ class REvent+;
 #pragma link C++ class o2::vertexing::DCAFitter2+;
 #pragma link C++ class o2::vertexing::DCAFitter3+;
+#pragma link C++ class o2::track::TrackAuxPar+;
+#pragma link C++ class o2::track::CrossInfo+;
 #endif
 
 /// * VertexerHyp3Body
@@ -158,4 +160,5 @@
 #pragma link C++ class AliNanoSkimmingV0s+;
 /// * ChunkFilter
 #pragma link C++ class AliAnalysisTaskFilterHe3+;
+
 #endif

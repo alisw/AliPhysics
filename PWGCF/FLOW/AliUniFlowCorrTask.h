@@ -14,7 +14,7 @@ class AliUniFlowCorrTask : public TObject
             Bool_t doPOIs,
             std::vector<Int_t> harms,
             std::vector<Double_t> gaps = std::vector<Double_t>(),
-            std::vector<Int_t> maxPowVec = std::vector<Int_t>());
+            std::vector<Int_t> maxPowVec);
         virtual ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
         Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
