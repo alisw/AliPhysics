@@ -26,6 +26,10 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     evtCuts->CleanUpMult(false, false, false, true);
     evtCuts->SetMultVsCentPlots(true);
 
+    AliFemtoDreamEventCuts *evtCuts2 = AliFemtoDreamEventCuts::StandardCutsRun2();
+    evtCuts2->CleanUpMult(false, false, false, true);
+    evtCuts2->SetMultVsCentPlots(true);
+
     // Track Cuts
     //
     // AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -43,7 +47,11 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
 
-    // v0Cuts->SetCutInvMass(0.006);                   // same mass range as in XiCuts()
+    AliFemtoDreamv0Cuts *v0Cuts2 = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
+
+    AliFemtoDreamTrackCuts *Posv0Daug2 = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *Negv0Daug2 = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
+    // v0Cuts->SetCutInvMass(0.006);                       // same mass range as in XiCuts()
     // v0Cuts->SetCutTransverseRadius(1.4, 200);           // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
     //                                                     // 
     // v0Cuts->SetCutCPA(0.97);                            // CPA für sekundäre weiter!
@@ -55,6 +63,11 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     v0Cuts->SetPDGCodeNegDaug(211);  //Pion
     v0Cuts->SetPDGCodev0(3122);      //Lambda
 
+    v0Cuts2->SetPosDaugterTrackCuts(Posv0Daug2);
+    v0Cuts2->SetNegDaugterTrackCuts(Negv0Daug2);
+    v0Cuts2->SetPDGCodePosDaug(2212); //Proton
+    v0Cuts2->SetPDGCodeNegDaug(211);  //Pion
+    v0Cuts2->SetPDGCodev0(3122);      //Lambda
 
     AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
 
@@ -62,6 +75,13 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     PosAntiv0Daug->SetCutCharge(1);
     AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
     NegAntiv0Daug->SetCutCharge(-1);
+
+    AliFemtoDreamv0Cuts *Antiv0Cuts2 = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
+
+    AliFemtoDreamTrackCuts *PosAntiv0Daug2 = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
+    PosAntiv0Daug2->SetCutCharge(1);
+    AliFemtoDreamTrackCuts *NegAntiv0Daug2 = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+    NegAntiv0Daug2->SetCutCharge(-1);
 
     // Antiv0Cuts->SetCutInvMass(0.006);                   // same v0 mass range as in XiCuts()
     // Antiv0Cuts->SetCutTransverseRadius(1.4, 200);       // damit v0s erst ab möglichem xiCut berücksichtigt werden - Xi mittlerer flugweg etwa 4,9 cm
@@ -73,6 +93,12 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
     Antiv0Cuts->SetPDGCodeNegDaug(2212); //Proton
     Antiv0Cuts->SetPDGCodev0(-3122);     //Lambda
+
+    Antiv0Cuts2->SetPosDaugterTrackCuts(PosAntiv0Daug);
+    Antiv0Cuts2->SetNegDaugterTrackCuts(NegAntiv0Daug);
+    Antiv0Cuts2->SetPDGCodePosDaug(211);  //Pion
+    Antiv0Cuts2->SetPDGCodeNegDaug(2212); //Proton
+    Antiv0Cuts2->SetPDGCodev0(-3122);     //Lambda
 
     //  #### Cascade Cuts
     //
@@ -92,6 +118,21 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     CascadeCutsXion->SetPDGCodePosDaug(2212);   // p +
     CascadeCutsXion->SetPDGCodeNegDaug(-211);   // pi -
     CascadeCutsXion->SetPDGCodeBach(-211);      // pi -
+
+    AliFemtoDreamCascadeCuts *CascadeCutsXion2 = AliFemtoDreamCascadeCuts::XiCuts(isMC, false);
+    CascadeCutsXion2->SetXiCharge(-1);
+    AliFemtoDreamTrackCuts *XiNegCuts2 = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *XiPosCuts2 = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+    AliFemtoDreamTrackCuts *XiBachCuts2 = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
+
+    CascadeCutsXion2->Setv0Negcuts(XiNegCuts2);
+    CascadeCutsXion2->Setv0PosCuts(XiPosCuts2);
+    CascadeCutsXion2->SetBachCuts(XiBachCuts2);
+    CascadeCutsXion2->SetPDGCodeCasc(3312);      // Xi -
+    CascadeCutsXion2->SetPDGCodev0(3122);        // Xi 0
+    CascadeCutsXion2->SetPDGCodePosDaug(2212);   // p +
+    CascadeCutsXion2->SetPDGCodeNegDaug(-211);   // pi -
+    CascadeCutsXion2->SetPDGCodeBach(-211);      // pi -
 
     // Anti Xion Cascade
     //
@@ -115,6 +156,27 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AntiCascadeCutsXion->SetPDGCodePosDaug(211);    // pi + 
     AntiCascadeCutsXion->SetPDGCodeNegDaug(-2212);  // p bar -
     AntiCascadeCutsXion->SetPDGCodeBach(211);       // pi +
+
+    AliFemtoDreamCascadeCuts *AntiCascadeCutsXion2 = AliFemtoDreamCascadeCuts::XiCuts(isMC, false); 
+    AntiCascadeCutsXion2->SetXiCharge(1);
+
+    AliFemtoDreamTrackCuts *AntiXiNegCuts2 = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
+    AntiXiNegCuts2->SetCutCharge(-1);
+    
+    AliFemtoDreamTrackCuts *AntiXiPosCuts2 = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
+    AntiXiPosCuts2->SetCutCharge(1);
+    
+    AliFemtoDreamTrackCuts *AntiXiBachCuts2 = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
+    AntiXiBachCuts2->SetCutCharge(1);
+
+    AntiCascadeCutsXion2->Setv0Negcuts(AntiXiNegCuts2);
+    AntiCascadeCutsXion2->Setv0PosCuts(AntiXiPosCuts2);
+    AntiCascadeCutsXion2->SetBachCuts(AntiXiBachCuts2);
+    AntiCascadeCutsXion2->SetPDGCodeCasc(-3312);     // Xi bar +
+    AntiCascadeCutsXion2->SetPDGCodev0(-3122);       // Xi bar 0
+    AntiCascadeCutsXion2->SetPDGCodePosDaug(211);    // pi + 
+    AntiCascadeCutsXion2->SetPDGCodeNegDaug(-2212);  // p bar -
+    AntiCascadeCutsXion2->SetPDGCodeBach(211);       // pi +
 
     std::vector<int> PDGParticles;
     // PDGParticles.push_back(2212);   // Protons
@@ -263,7 +325,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
         std::cout << "=====================================================================" << std::endl;
         std::cout << "=====================================================================" << std::endl;
     }
-
+    //#
     task->SetEventCuts(evtCuts);
     // task->SetTrackCutsProton(TrackCutsProton);
     // task->SetTrackCutsAntiProton(TrackCutsAntiProton);
@@ -271,6 +333,14 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     task->SetAntiv0Cuts(Antiv0Cuts);
     task->SetTrackCutsXion(CascadeCutsXion);
     task->SetTrackCutsAntiXion(AntiCascadeCutsXion);
+    // # 2
+    task->SetEventCuts2(evtCuts2);
+    task->Setv0Cuts2(v0Cuts2);
+    task->SetAntiv0Cuts2(Antiv0Cuts2);
+    task->SetTrackCutsXion2(CascadeCutsXion2);
+    task->SetTrackCutsAntiXion2(AntiCascadeCutsXion2);
+    //#
+
     task->SetCollectionConfig(config);
 
     mgr->AddTask(task);
@@ -296,6 +366,15 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     AliAnalysisDataContainer *coutputAntiXis;
     AliAnalysisDataContainer *coutputResults;
     AliAnalysisDataContainer *coutputResultsQA;
+    // #2 only keep Xi instead of lambda
+    AliAnalysisDataContainer *coutputEventCuts2;
+    AliAnalysisDataContainer *coutputV0Cuts2;
+    AliAnalysisDataContainer *coutputAntiV0Cuts2;
+    AliAnalysisDataContainer *coutputXis2;
+    AliAnalysisDataContainer *coutputAntiXis2;
+    AliAnalysisDataContainer *coutputResultsQA2;
+    AliAnalysisDataContainer *coutputResults2;
+
     coutputEventCuts =      mgr->CreateContainer(Form("EvtCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "EvtCuts"));
     // coutputProtons =        mgr->CreateContainer(Form("ProtonTrackCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ProtonTrackCuts"));
     // coutputAntiProtons =    mgr->CreateContainer(Form("ProtonAntiTrackCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ProtonAntiTrackCuts"));
@@ -305,6 +384,15 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     coutputAntiXis =        mgr->CreateContainer(Form("XiAntiCascadeCuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiAntiCascadeCuts")));
     coutputResults =        mgr->CreateContainer(Form("Results"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results"));
     coutputResultsQA =      mgr->CreateContainer(Form("ResultsQA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA"));
+    
+    coutputEventCuts2 =      mgr->CreateContainer(Form("EvtCuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "EvtCuts2"));
+    coutputV0Cuts2 =         mgr->CreateContainer(Form("V0Cuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("V0Cuts2")));
+    coutputAntiV0Cuts2 =     mgr->CreateContainer(Form("AntiV0Cuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "AntiV0Cuts"));
+    coutputXis2 =            mgr->CreateContainer(Form("XiCascadeCuts2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiCascadeCuts2")));
+    coutputAntiXis2 =        mgr->CreateContainer(Form("XiAntiCascadeCut2s"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("XiAntiCascadeCuts2")));
+    coutputResultsQA2 =      mgr->CreateContainer(Form("ResultsQA2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA2"));
+    coutputResults2 =        mgr->CreateContainer(Form("ResultsXi2"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsXi2"));
+    
     mgr->ConnectOutput(task, 1, coutputEventCuts);
     // mgr->ConnectOutput(task, 2, coutputProtons);
     // mgr->ConnectOutput(task, 3, coutputAntiProtons);
@@ -313,7 +401,15 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
     mgr->ConnectOutput(task, 4, coutputXis);
     mgr->ConnectOutput(task, 5, coutputAntiXis);
     mgr->ConnectOutput(task, 6, coutputResults);
-    mgr->ConnectOutput(task, 7, coutputResultsQA);
+    mgr->ConnectOutput(task, 7, coutputResultsQA);    // paircleaner - keep lambda not Xi
+    mgr->ConnectOutput(task, 8, coutputEventCuts2);
+    mgr->ConnectOutput(task, 9, coutputV0Cuts2);
+    mgr->ConnectOutput(task, 10, coutputAntiV0Cuts2);
+    mgr->ConnectOutput(task, 11, coutputXis2);
+    mgr->ConnectOutput(task, 12, coutputAntiXis2);
+    mgr->ConnectOutput(task, 13, coutputResults2);
+    mgr->ConnectOutput(task, 14, coutputResultsQA2);    // paircleaner - keep Xi not lambda
+    
 
     // for MC   -   naming convention for gentle femto : *TrkCutsMC* - *AntiTrkCutsMC* - *CascCutsMC* - *AntiCascCutsMC*
     if (isMC)
@@ -328,8 +424,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne( bool isMC = false, TString CentE
         coutputAntiCascCutsMC = mgr->CreateContainer(Form("V0AntiCascCutsMC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "V0AntiCascCutsMC"));
         // mgr->ConnectOutput(task, 10, coutputTrkCutsMC);
         // mgr->ConnectOutput(task, 11, coutputAntiTrkCutsMC);
-        mgr->ConnectOutput(task, 8, coutputCascCutsMC);
-        mgr->ConnectOutput(task, 9, coutputAntiCascCutsMC);
+        mgr->ConnectOutput(task, 15, coutputCascCutsMC);
+        mgr->ConnectOutput(task, 16, coutputAntiCascCutsMC);
     }
 
     return task;
