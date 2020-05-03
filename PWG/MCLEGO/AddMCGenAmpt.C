@@ -14,9 +14,9 @@ AliGenerator *AddMCGenAmpt(
                           Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
                           Bool_t stringMelting = kTRUE,   // string melting option
                           Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
-                          Bool_t Xecollisions  = kFALSE,  // pA instead of AA collisions
                           Bool_t pAcollisions  = kFALSE,  // pA instead of AA collisions
-                          Bool_t ppcollisions  = kFALSE   // pp instead of AA collisions
+                          Bool_t ppcollisions  = kFALSE,  // pp instead of AA collisions
+                          Bool_t Xecollisions  = kFALSE   // XeXe instead of PbPb collisions
                            )
 {
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
