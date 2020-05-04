@@ -286,6 +286,7 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
   // }
 
   fVertexer.setBz(esdEvent->GetMagneticField());
+  fVertexerLambda.setBz(esdEvent->GetMagneticField());
   int indices[2][3]{{1,1,0},{0,0,1}};
   
   std::unordered_map<int, int> mcMap;
@@ -305,6 +306,8 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
           if (nVert) {
             auto vert = fVertexer.getPCACandidate();
 
+            fVertexer.propagateTracksToVertex();
+
             auto& deuTrack = fVertexer.getTrack(0);
             auto& prTrack = fVertexer.getTrack(1);
             auto& piTrack = fVertexer.getTrack(2);
@@ -313,10 +316,10 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
             lVector lpro{prTrack.Pt(), prTrack.Eta(), prTrack.Phi(), kPMass};
             lVector lpi{piTrack.Pt(), piTrack.Eta(), piTrack.Phi(), kPiMass};
             lVector hypertriton{ldeu + lpro + lpi};
-
             const float mass = hypertriton.mass();
             if (mass < fMassWindow[0] || mass > fMassWindow[1])
               continue;
+            fRecHyp.mppi = (lpi + lpro).mass();
             ROOT::Math::XYZVectorF decayVtx{(float)(vert[0] - pvPos[0]), (float)(vert[1] - pvPos[1]), (float)(vert[2] - pvPos[2])};
 
             const float totalMom = hypertriton.P();
@@ -360,29 +363,51 @@ void AliAnalysisTaskHypertritonO2::UserExec(Option_t *) {
             fRecHyp.tpcNsig_pr = p.nSigmaTPC;
             fRecHyp.tpcNsig_pi = pi.nSigmaTPC;
 
-            fVertexer.propagateTracksToVertex();
-            auto& deuTrackPos = fVertexer.getTrack(0); 
-            auto& proTrackPos = fVertexer.getTrack(1); 
-            auto& piTrackPos = fVertexer.getTrack(2); 
-
             double deuPos[3],proPos[3],piPos[3];
-            deuTrackPos.GetXYZ(deuPos);
-            proTrackPos.GetXYZ(proPos);
-            piTrackPos.GetXYZ(piPos);
+            deuTrack.GetXYZ(deuPos);
+            prTrack.GetXYZ(proPos);
+            piTrack.GetXYZ(piPos);
 
             fRecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
+            if (fRecHyp.dca_de_pr > fMaxTrack2TrackDCA[0]) continue;
             fRecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
+            if (fRecHyp.dca_de_pi > fMaxTrack2TrackDCA[1]) continue;
             fRecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
+            if (fRecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2]) continue;
 
             fRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
+            if (fRecHyp.dca_de_sv > fMaxTrack2SVDCA[0]) continue;
             fRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
+            if (fRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1]) continue;
             fRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
+            if (fRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2]) continue;
 
             fRecHyp.chi2 = fVertexer.getChi2AtPCACandidate();
 
             fRecHyp.tpcClus_de = deu.track->GetTPCsignalN();
             fRecHyp.tpcClus_pr = p.track->GetTPCsignalN();
             fRecHyp.tpcClus_pi = pi.track->GetTPCsignalN();
+
+            if (fLambdaCheck) {
+              int nVertLambda{0};
+              try {
+                nVertLambda = fVertexerLambda.process(*p.track, *pi.track);
+              } catch (std::runtime_error& e) {  }
+              if (nVertLambda) {
+                auto vertLambda = fVertexerLambda.getPCACandidate();
+                fVertexerLambda.propagateTracksToVertex();
+                auto& prTrackL = fVertexerLambda.getTrack(0);
+                auto& piTrackL = fVertexerLambda.getTrack(1);
+                ROOT::Math::XYZVectorF decayVtxLambda{(float)(vertLambda[0] - pvPos[0]), (float)(vertLambda[1] - pvPos[1]), (float)(vertLambda[2] - pvPos[2])};
+                lVector lproL{prTrackL.Pt(), prTrackL.Eta(), prTrackL.Phi(), kPMass};
+                lVector lpiL{piTrackL.Pt(), piTrackL.Eta(), piTrackL.Phi(), kPiMass};
+                lVector lambda{lproL + lpiL};
+                fRecHyp.mppi_vert = lambda.mass();
+                const float lambdaLen = std::sqrt(decayVtxLambda.Mag2());
+                fRecHyp.cosPA_Lambda = lambda.Vect().Dot(decayVtxLambda) / (lambda.P() * lambdaLen);
+                fRecHyp.dca_lambda_hyper = Hypot(vert[0] - vertLambda[0], vert[1] - vertLambda[1], vert[2] - vertLambda[2]);
+              }
+            }
 
             bool record{!fMC || !fOnlyTrueCandidates};
             if (fMC) {

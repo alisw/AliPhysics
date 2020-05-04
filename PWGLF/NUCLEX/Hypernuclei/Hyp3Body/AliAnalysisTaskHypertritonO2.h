@@ -36,6 +36,10 @@ struct RHyperTritonO2 {
   float r = -1.f;
   float cosPA = -2.f;
   float m = -1;
+  float cosPA_Lambda = -2.; 
+  Double32_t mppi_vert = -1.; //[1.077,1.203,8]
+  Double32_t mppi = -1.;      //[1.077,1.203,8]
+  Double32_t dca_lambda_hyper = -1.0; //[0.0,8.0,8]
   Double32_t dca_de = -1.0; //[0.0,8.0,8]
   Double32_t dca_pr = -1.0; //[0.0,8.0,8]
   Double32_t dca_pi = -1.0; //[0.0,8.0,8]
@@ -101,12 +105,15 @@ public:
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
 
   o2::vertexing::DCAFitter3 fVertexer;
+  o2::vertexing::DCAFitter2 fVertexerLambda;
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
   bool  fSwapSign = false;
   float fMassWindow[2] = {2.94f, 3.06f};
   float  fRequireTOFpid[3] = {10.,10.,10.}; /// momentum after which the TOF matching is required
   int   fMinTPCpidClusters[3] = {70, 70, 50};
   float fMinTrackDCA[3] = {0., 0., 0.};
+  float fMaxTrack2TrackDCA[3] = {8.,8.,8.};
+  float fMaxTrack2SVDCA[3] = {8.,8.,8.};
   float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
   float fTOFsigmas[3] = {4.f, 4.f, 4.f};
   float fCandidateCtRange[2] = {0.f, 35.f};
@@ -115,6 +122,7 @@ public:
   float fMinCosPA = 0.9;
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
+  bool  fLambdaCheck = true;
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
 
 
