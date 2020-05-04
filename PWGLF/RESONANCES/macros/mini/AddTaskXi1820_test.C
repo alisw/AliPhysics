@@ -91,7 +91,8 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
     else if(trigger==2) task->UseESDTriggerMask(AliVEvent::kCentral);//PbPb
     else if(trigger==3) task->UseESDTriggerMask(AliVEvent::kSemiCentral);//PbPb
-    
+    else if(trigger==4) task->UseESDTriggerMask(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);//PbPb
+
     // multiplicity
     bool isPP=false;
     if(!system) isPP=true;
@@ -110,7 +111,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     int nmix=5;
     if((EventCuts%10000)/1000==1) nmix=0;
     float maxDiffVzMix=1;
-    float maxDiffMultMix=10;
+    float maxDiffMultMix=5;
     task->UseContinuousMix();
     task->SetNMix(nmix);
     task->SetMaxDiffVz(maxDiffVzMix);
@@ -176,7 +177,7 @@ AliRsnMiniAnalysisTask* AddtaskXi1820_test(
     int j,nmult=0;
     if(!MultBins){
         for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
-    }else if((!trigger) || (trigger==2) || (trigger==3)){//!trigger
+    }else if((!trigger) || (trigger==2) || (trigger==3) ||(trigger==4)){//!trigger
         for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
@@ -448,7 +449,7 @@ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if((!trigger) || (trigger==2) || (trigger==3)){
+    }else if((!trigger) || (trigger==2) || (trigger==3)|| (trigger==4)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;
@@ -975,7 +976,7 @@ Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask* task,
     if(!MultBins){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.e6; nmult++;
-    }else if((!trigger) || (trigger==2) || (trigger==3)){
+    }else if((!trigger) || (trigger==2) || (trigger==3)|| (trigger==4)){
         multbins[nmult]=0.; nmult++;
         multbins[nmult]=1.; nmult++;
         multbins[nmult]=5.; nmult++;
