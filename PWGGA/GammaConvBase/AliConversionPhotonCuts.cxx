@@ -3708,6 +3708,11 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fTOFtimeMax = 100;
     fTOFtimingBothLegs = kTRUE;
     break;
+  case 10: // a  -10,6
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-10;
+    fTofPIDnSigmaAboveElectronLine=6;
+    break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
     return kFALSE;
@@ -3913,6 +3918,12 @@ Bool_t AliConversionPhotonCuts::SetQtMaxCut(Int_t QtMaxCut){   // Set Cut
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
+  case 21:  //l
+    fQtPtMax=0.11;
+    fQtMax=0.030;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kTRUE;
+    break;
   default:
     AliError(Form("Warning: QtMaxCut not defined %d",QtMaxCut));
     return kFALSE;
@@ -3996,6 +4007,10 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
   case 20: //k for exp cut (fDo2DPsiPairChi2 = 2)
     fChi2CutConversion = 20.;
     fChi2CutConversionExpFunc = -0.055;
+    break;
+  case 21: //l for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 30.;
+    fChi2CutConversionExpFunc = -0.011;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
@@ -4082,6 +4097,10 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     break;
   case 18: //i
     fPsiPairCut = 0.40; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 19: //j
+    fPsiPairCut = 0.15; //
     fDo2DPsiPairChi2 = 2; //
     break;
   default:
