@@ -309,7 +309,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 
       for(int itrk = 0; itrk < detjet->GetNumberOfTracks(); itrk++) {
         auto trk = detjet->Track(itrk);
-        fHistos->FillTH2("hQAConstPtChPart", detjet->Pt(), trk->Pt());
+        fHistos->FillTH2("hQAConstPtChDet", detjet->Pt(), trk->Pt());
         fHistos->FillTH2("hQAEtaPhiConstChDet", trk->Eta(), TVector2::Phi_0_2pi(trk->Phi()));
         fHistos->FillTH2("hQADeltaRChargedDet", detjet->Pt(), detjet->DeltaR(trk));
       }
