@@ -40,6 +40,7 @@
 #include "AliMultSelection.h"
 #include "AliVMultiplicity.h"
 #include "AliVVZERO.h"
+#include "AliJetContainer.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -48,6 +49,17 @@
 #include "AliJJet.h"
 #include "AliAnalysisTaskRidge.h"
 #include <AliDirList.h>
+#include "AliEmcalJet.h"
+#include "AliLog.h"
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
+#include "AliStack.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelectionAOD.h"
+#include "AliEmcalJet.h"
+#include <TClonesArray.h>
+#include <TList.h>
+#include <TProfile.h>
 
 using namespace std;
 
@@ -205,6 +217,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D jetptbin = {
 	0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
 
+	binRho = AxisFix("Rho",100,0,10);
+
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
 
@@ -238,6 +252,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	CreateTHnSparse("hTrackDataLTRaw","hTrackDataLTRaw",5,{binCent,binPt,binPhiTrack,binEtaTrack,binZ},"s");
 
         CreateTHnSparse("nevtForMult","nevtForMult",2,{binCent,binV0Amp},"s");
+
+	CreateTHnSparse("hRho","hRho",3,{binCent,binJetpT,binRho},"s");
 
 	if( fOption.Contains("MC") ){
 	        CreateTHnSparse("hRidgeMCALICELT","hRidgeMCALICELT",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binLtpt},"s");
@@ -338,6 +354,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 
 	V0M_mean = 120;
+
+	cout << "INIT vo : " << V0M_mean << endl;
 }
 //___________________________________________________________________
 void AliAnalysisTaskRidge::Exec(Option_t* )
@@ -360,6 +378,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
 
+
+	cout << "event started " << endl;
 
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
@@ -501,7 +521,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 	double v0amplitude=0;
 
-//	fJetTask = (AliJJetTask*) fEvt -> FindListObject("AliJJetTask");
 	if( !fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
 
@@ -512,9 +531,19 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
 	}
 
+	cout << "before jet " << endl;
 	TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
+
+	AliJetContainer* ktjets = (AliJetContainer*)fJetTask->GetAliJJetList(2);
+	cout << "obtain kt jet " << endl;
+	RHO = 0.0; RHOM = 0.0;
+	cout << (bool)ktjets << endl;
+	if( ktjets ) this -> MeasureBgDensity( ktjets );
+	cout << "RHO measured " << endl;
+	double rho = RHO;
+
 	AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
-	
+
 	fJetPt = 0.0;
 	double JetEta = -10.0;
 	double JetPhi = -10.0;
@@ -670,6 +699,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                         fHistos->FillTH1("hJetPt",Cjet->Pt(),1.0);
                         fHistos->FillTH1("hJetEta",Cjet->Eta(),1.0);
                         fHistos->FillTH1("hJetPhi",Cjet->Phi(),1.0);
+
+			FillTHnSparse("hRho",{fCent,Cjet->Pt(),rho},1.0);
         	}
 
 	        if( !fOption.Contains("HighMult") ){
@@ -1780,6 +1811,78 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 		}
 	}
 }
+
+void AliAnalysisTaskRidge::MeasureBgDensity(AliJetContainer* ktContainer){
+	cout << "funxtion started  " << endl;
+        RHO=0;
+        RHOM=0;
+        int n = 0;
+        TLorentzVector1D rhoarray;
+        Double1D Sumpt;
+        Double1D Summ;
+        TLorentzVector leadingkt;
+        Bool_t isfirstdijet = true;
+
+	cout << "Before for statement " << endl;
+
+        for( auto j : ktContainer->accepted() ){
+		cout << "start of for statement " << endl;
+                if (fabs(j->Eta())>0.7)  continue;
+                double lpt = 0;
+                double sumpt = 0;
+                double summ = 0;
+                TLorentzVector sumkt (0,0,0,0);
+
+                for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
+                        auto trk =  j->Track(it);
+                        if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
+                        TLorentzVector temp;
+                        temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),AliPID::ParticleMass(AliPID::kPion));
+                        if( lpt < temp.Pt() )  lpt = temp.Pt();
+                        sumkt += temp;
+                        sumpt += temp.Pt();
+                        summ += (sqrt(AliPID::ParticleMass(AliPID::kPion)*AliPID::ParticleMass(AliPID::kPion)+temp.Pt()*temp.Pt())-temp.Pt());
+                }
+                sumpt /= j->Area();
+                summ /= j->Area();
+
+                if (n==0) { //remove leading kt jet
+                        leadingkt = sumkt;
+                        n++;
+                        continue;
+                }
+                //remove back-subleading kt jet
+                else if (fabs(sumkt.DeltaPhi(leadingkt))>pi/2. && isfirstdijet){
+                        n++;
+                        isfirstdijet = false;
+                        continue;
+                }
+                Sumpt.push_back(sumpt);
+                Summ.push_back(summ);
+
+		cout << n << "th jet" << endl;
+
+                n++;
+
+        }
+
+        Double_t rhopt[Sumpt.size()];
+        Double_t rhom[Summ.size()];
+        int i=0;
+        for (auto k : Sumpt){
+                rhopt[i] = k;
+                i++;
+        }
+        i=0;
+        for (auto k : Summ){
+                rhom[i] = k;
+                i++;
+        }
+        RHO = TMath::Median(Sumpt.size(),rhopt);
+        RHOM = TMath::Median(Summ.size(),rhom);
+//        FillTHnSparse("hRho",{fCent,RHO, pthardbin},sf);
+}
+
 //___________________________________________________________________
 void AliAnalysisTaskRidge::FinishTaskOutput()
 {
