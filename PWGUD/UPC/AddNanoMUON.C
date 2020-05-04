@@ -35,9 +35,13 @@ mgr->AddTask(task);
 mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 // same for the output
 TString fRecTreeName = "fRecTree";
+fRecTreeName += suffix;
 TString fOutputListName = "fOutputList";
+fOutputListName += suffix;
 TString fGenTreeName = "fGenTree";
+fGenTreeName += suffix;
 TString fTrgTreeName = "fTrgTree";
+fTrgTreeName += suffix;
 
 mgr->ConnectOutput(task,1,mgr->CreateContainer(fRecTreeName.Data(), TTree::Class(), AliAnalysisManager::kOutputContainer,fileName.Data()));
 mgr->ConnectOutput(task,2,mgr->CreateContainer(fOutputListName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
