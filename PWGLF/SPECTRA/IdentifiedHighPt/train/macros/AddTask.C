@@ -94,7 +94,6 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     //Set analysis details
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-    taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
     taskHighPtDeDx->SetAnalysisRun2(kFALSE); 
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
@@ -109,7 +108,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetVtxCut(10.0);
     taskHighPtDeDx->SetContributorsVtxCut(0);
     taskHighPtDeDx->SetContributorsVtxSPDCut(0);
-    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetZvsSPDvtxCorrCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
     taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
     
     //Set trigger particle tracks, v0s and daughter track details
@@ -141,7 +140,6 @@ if(typerun==3){//pp analysis
     //Set analysis details
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-    taskHighPtDeDx->SetAnalysisPbPb(kFALSE); //for pbpb and ppb
     taskHighPtDeDx->SetAnalysisRun2(kTRUE);
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
@@ -156,7 +154,7 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetVtxCut(10.0);
     taskHighPtDeDx->SetContributorsVtxCut(0);
     taskHighPtDeDx->SetContributorsVtxSPDCut(0);
-    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetZvsSPDvtxCorrCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
     taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
     
     //Set trigger particle tracks, v0s and daughter track details
@@ -191,7 +189,6 @@ if(typerun==4){//ppb analysis
     //Set analysis details
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
-    taskHighPtDeDx->SetAnalysisPbPb(kTRUE); //for pbpb and ppb
     taskHighPtDeDx->SetAnalysisRun2(kTRUE);
     taskHighPtDeDx->SetTrigger1(kTriggerInt); 
     taskHighPtDeDx->SetTrigger2(kTriggerInt);
@@ -206,7 +203,7 @@ if(typerun==4){//ppb analysis
     taskHighPtDeDx->SetVtxCut(10.0);
     taskHighPtDeDx->SetContributorsVtxCut(0);
     taskHighPtDeDx->SetContributorsVtxSPDCut(0);
-    taskHighPtDeDx->SetPileupCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
+    taskHighPtDeDx->SetZvsSPDvtxCorrCut(999.); //Correlation between global Zvtx and SPD Zvtx: use 999. for no cut
     taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
     
     //Set trigger particle tracks, v0s and daughter track details
