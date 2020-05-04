@@ -46,7 +46,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetDecayRCut() { return fDecayRCut; }
   Int_t    GetContributorsVtxCut() { return fContributorsVtxCut; }
   Int_t    GetContributorsVtxSPDCut() { return fContributorsVtxSPDCut; }
-  Double_t GetPileupCut() { return fPileupCut; }
+  Double_t GetZvsSPDvtxCorrCut() { return fZvsSPDvtxCorrCut; }
   Double_t GetVtxR2Cut() { return fVtxR2Cut; }
   Double_t GetCrossedRowsCut() { return fCrossedRowsCut; }
   Double_t GetCrossedOverFindableCut() { return fCrossedOverFindableCut; }
@@ -76,13 +76,12 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
   virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;}   
   virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;}
-  virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
   virtual void  SetAnalysisRun2(Bool_t isanaRun2) {fAnalysisRun2 = isanaRun2;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
   virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}
   virtual void  SetContributorsVtxCut(Int_t value) {fContributorsVtxCut = value;}
   virtual void  SetContributorsVtxSPDCut(Int_t value) {fContributorsVtxSPDCut =  value;}
-  virtual void  SetPileupCut(Double_t value) {fPileupCut = value;}
+  virtual void  SetZvsSPDvtxCorrCut(Double_t value) {fZvsSPDvtxCorrCut = value;}
   virtual void  SetVtxR2Cut(Double_t value) { fVtxR2Cut = value;}
   virtual void  SetCrossedRowsCut(Double_t value) {fCrossedRowsCut = value;}
   virtual void  SetCrossedOverFindableCut(Double_t value) {fCrossedOverFindableCut = value;}
@@ -139,7 +138,6 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   TString       fCentDetector;        //  e.g. "V0M" or "V0A"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fCentFrameworkAliCen; //   kTRUE: use AliCentrality, kFALSE: use AliMultSelection
-  Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
   Bool_t        fAnalysisRun2;        //  true for LHC run-2 analyses
   Bool_t        fVZEROBranch;         //true if you want to store VZERO cells information
   TRandom*      fRandom;              //! random number generator
@@ -170,7 +168,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Int_t        fContributorsVtxCut; // Number of tracks (+1) used to fit this vertex
  
   Int_t        fContributorsVtxSPDCut; // Number of tracks (+1) used to fit this vertex
-  Double_t     fPileupCut;          // |zvtx-zvtxSPD| > fPileupCut is considered bad vtx
+  Double_t     fZvsSPDvtxCorrCut;   // |zvtx-zvtxSPD| > fZvsSPDvtxCorrCut is considered bad vtx
   Double_t     fVtxR2Cut;           // r = sqrt(x^2+y^2) which is the distance between PV and the z axis
   Double_t     fCrossedRowsCut;     // CrossedRowsTOC
   Double_t     fCrossedOverFindableCut; // CrossedRowsTPC / findable 
