@@ -20,7 +20,8 @@ if( mgr->GetMCtruthEventHandler() ) fIsMC = kTRUE;
 
 // by default, a file is open for writing. here, we get the filename
 TString fileName = AliAnalysisManager::GetCommonFileName();
-fileName += ":NanoMUON";      // create a subfolder in the file
+fileName += ":NanoMUON";     // create a subfolder in the file
+fileName += suffix;      	 // specific subfolder name for each subwagon
 // now we create an instance of your task
 AliAnalysisTaskNanoMUON* task = new AliAnalysisTaskNanoMUON(name.Data());   
 if(!task) return 0x0;
@@ -34,13 +35,9 @@ mgr->AddTask(task);
 mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 // same for the output
 TString fRecTreeName = "fRecTree";
-fRecTreeName += suffix;
 TString fOutputListName = "fOutputList";
-fOutputListName += suffix;
 TString fGenTreeName = "fGenTree";
-fGenTreeName += suffix;
 TString fTrgTreeName = "fTrgTree";
-fTrgTreeName += suffix;
 
 mgr->ConnectOutput(task,1,mgr->CreateContainer(fRecTreeName.Data(), TTree::Class(), AliAnalysisManager::kOutputContainer,fileName.Data()));
 mgr->ConnectOutput(task,2,mgr->CreateContainer(fOutputListName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
