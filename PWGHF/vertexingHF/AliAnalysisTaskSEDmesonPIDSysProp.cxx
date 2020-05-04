@@ -551,31 +551,31 @@ bool AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
     }
   }
   else if(fPIDstrategy==knSigmaPID) {
-    fHistEffPionTPC[0] = (TH1F*)systfile->Get(Form("hEffPionTPCDataV0tag_%0.fsigma",fnSigma));
-    fHistSystPionTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffPionTPCDataV0tag_%0.fsigma",fnSigma));
+    fHistEffPionTPC[0] = (TH1F*)systfile->Get(Form("etaint/hEffPionTPCDataV0tag_%0.fsigma",fnSigma));
+    fHistSystPionTPC[0] = (TH1F*)systfile->Get(Form("etaint/hRatioEffPionTPCDataV0tag_%0.fsigma",fnSigma));
     if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return false;
     if(fKaonTPCHistoOpt==kKaonTOFtag) {
-      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
-      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("etaint/hEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("etaint/hRatioEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
     }
     else if(fKaonTPCHistoOpt==kKaonKinkstag) {
-      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
-      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("etaint/hEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("etaint/hRatioEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
     }
     if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return false;
-    fHistEffPionTOF = (TH1F*)systfile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-    fHistSystPionTOF = (TH1F*)systfile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+    fHistEffPionTOF = (TH1F*)systfile->Get(Form("etaint/hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+    fHistSystPionTOF = (TH1F*)systfile->Get(Form("etaint/hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
     if(!fHistSystPionTOF || !fHistEffPionTOF) return false;
     if(fKaonTOFHistoOpt==kKaonTPCtag) {
-      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("etaint/hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("etaint/hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
     }
     else if(fKaonTOFHistoOpt==kSamePionV0tag) {
-      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("etaint/hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("etaint/hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
     }
-    fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-    fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+    fHistEffKaonTOF = (TH1F*)systfile->Get(Form("etaint/hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+    fHistSystKaonTOF = (TH1F*)systfile->Get(Form("etaint/hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
     if(!fHistSystKaonTOF || !fHistEffKaonTOF) return false;
   }
   
