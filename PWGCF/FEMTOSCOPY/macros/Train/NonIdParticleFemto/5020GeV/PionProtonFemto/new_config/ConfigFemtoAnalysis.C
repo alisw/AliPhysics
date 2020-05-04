@@ -86,16 +86,17 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0=1, int runcentrality1, i
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
 
   int gammacut = 1;
-  double shqmax = 0.5;
+  double shqmax = 1.0;
   //if (runshlcms) shqmax = 2.0;
   //else shqmax = 0.9;
 
-  int nbinssh = 100;
+  int nbinssh = 200;
 
   //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
-  Reader->SetDCAglobalTrack(1);  
+  Reader->SetDCAglobalTrack(1); 
+  Reader->SetTrackPileUpRemoval(kTRUE); 
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
