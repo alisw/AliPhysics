@@ -163,7 +163,7 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetEtaCut(0.8); 
     taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
     taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
-    taskHighPtDeDx->SetCosPACut(0.97);
+    taskHighPtDeDx->SetCosPACut(0.98);
     taskHighPtDeDx->SetDecayRCut(0.5);
     taskHighPtDeDx->SetMinPtV0(1.0);
     taskHighPtDeDx->SetMassCut(0.1); 
