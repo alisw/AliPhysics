@@ -27,46 +27,52 @@ class AliESDtrack;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
-struct SHyperTritonO2 {
-  float pt = -999.f;
-  float phi = -999.f;
-  float pz = -999.f;
-  float ct = -1.f;
-  float t = -1.f;
-  bool positive = false;
-};
-
 struct RHyperTritonO2 {
+  float fCent = -1.;
   float pt = -999.f;
   float phi = -999.f;
   float pz = -999.f;
   float ct = -1.f;
   float r = -1.f;
-  float cosPA = -1.f;
+  float cosPA = -2.f;
   float m = -1;
-  Double32_t dca_de = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pr = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pi = 2.0; //[0.0,2.0,8]
+  Double32_t dca_de = -1.0; //[0.0,8.0,8]
+  Double32_t dca_pr = -1.0; //[0.0,8.0,8]
+  Double32_t dca_pi = -1.0; //[0.0,8.0,8]
   Double32_t tpcNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pi = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pi = -4.0; //[-4.0,4.0,8]
-  Double32_t dca_de_pr = -4.0; //[0.0,4.0,8]
-  Double32_t dca_de_pi = -4.0; //[0.0,4.0,8]
-  Double32_t dca_pr_pi = -4.0; //[0.0,4.0,8]
-  Double32_t dca_de_sv = -4.0; //[0.0,4.0,8]
-  Double32_t dca_pr_sv = -4.0; //[0.0,4.0,8]
-  Double32_t dca_pi_sv = -4.0; //[0.0,4.0,8]
-  Double32_t chi2 = -1.f;      //[0.0,10.,16]
-  bool hasTOF_de;
-  bool hasTOF_pr;
-  bool hasTOF_pi;
+  Double32_t dca_de_pr = -4.0; //[0.0,8.0,8]
+  Double32_t dca_de_pi = -4.0; //[0.0,8.0,8]
+  Double32_t dca_pr_pi = -4.0; //[0.0,8.0,8]
+  Double32_t dca_de_sv = -4.0; //[0.0,8.0,8]
+  Double32_t dca_pr_sv = -4.0; //[0.0,8.0,8]
+  Double32_t dca_pi_sv = -4.0; //[0.0,8.0,8]
+  Double32_t chi2 = -1.f;      //[0.0,16.,16]
   UChar_t tpcClus_de = 0u;
   UChar_t tpcClus_pr = 0u;
   UChar_t tpcClus_pi = 0u;
   UChar_t candidates = 0u;
+  UChar_t fTrigger = 0u;
+  bool hasTOF_de = false;
+  bool hasTOF_pr = false;
+  bool hasTOF_pi = false;
+  bool positive = false;
+};
+
+struct SHyperTritonO2 : public RHyperTritonO2 {
+  SHyperTritonO2() : RHyperTritonO2{} {}
+  SHyperTritonO2(const RHyperTritonO2& other) : RHyperTritonO2{other} {}
+  float gPt = -999.f;
+  float gPhi = -999.f;
+  float gPz = -999.f;
+  float gCt = -1.f;
+  float gT = -1.f;
+  bool  gPositive = false;
+  bool  gReconstructed = false;
 };
 
 class AliAnalysisTaskHypertritonO2 : public AliAnalysisTaskSE {
@@ -74,7 +80,7 @@ class AliAnalysisTaskHypertritonO2 : public AliAnalysisTaskSE {
 public:
   enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3) };
 
-  AliAnalysisTaskHypertritonO2(bool mc = false, std::string name = "HyperTriton3KF");
+  AliAnalysisTaskHypertritonO2(bool mc = false, std::string name = "HyperTriton3O2");
   virtual ~AliAnalysisTaskHypertritonO2();
 
   virtual void UserCreateOutputObjects();
@@ -113,6 +119,7 @@ public:
 
 
 private:
+  void FillGenHypertriton(int id, bool reco, AliMCEvent* mcEv);
 
   int FindEventMixingCentBin(const float centrality);
   int FindEventMixingZBin(const float zVtx);
@@ -144,14 +151,11 @@ private:
   std::list<AliESDtrack> fEventMixingPool[10][10];    /// container for the ESD used fot event mixing
   int fEventMixingPoolDepth = 0;                      /// max depth of the event mixing pool
 
-  float fCent;
-  unsigned char fTrigger;
-  std::vector<SHyperTritonO2>  fGenHyp;
-  std::vector<int>             fGenRecMap;
-  std::vector<float>           fGenRecDeutMom;
-  std::vector<float>           fGenRecProtMom;
-  std::vector<float>           fGenRecPiMom;
-  std::vector<RHyperTritonO2>  fRecHyp;
+  SHyperTritonO2   fGenHyp;
+  float            fGenRecDeutMom;
+  float            fGenRecProtMom;
+  float            fGenRecPiMom;
+  RHyperTritonO2   fRecHyp;
 
   AliAnalysisTaskHypertritonO2(const AliAnalysisTaskHypertritonO2 &);               // not implemented
   AliAnalysisTaskHypertritonO2 &operator=(const AliAnalysisTaskHypertritonO2 &);    // not implemented

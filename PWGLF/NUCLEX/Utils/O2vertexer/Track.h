@@ -90,7 +90,7 @@ class TrackParCov : public AliExternalTrackParam
 
   void getCircleParamsLoc(float bz, o2::utils::CircleXY& c) const;
   void getCircleParams(float bz, o2::utils::CircleXY& c, float& sna, float& csa) const;
-
+  ClassDef(TrackParCov, 1)
 };
 
 //_______________________________________________________

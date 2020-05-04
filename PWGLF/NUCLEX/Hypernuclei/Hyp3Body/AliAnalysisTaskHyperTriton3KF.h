@@ -56,18 +56,18 @@ struct RHyperTriton3KF {
   float chi2_topology = -1.f;
   float cosPA = -1.f;
   float m = -1;
-  Double32_t dca_de = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pr = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pi = 2.0; //[0.0,2.0,8]
+  Double32_t dca_de = 2.0; //[0.0,4.0,8]
+  Double32_t dca_pr = 2.0; //[0.0,4.0,8]
+  Double32_t dca_pi = 2.0; //[0.0,4.0,8]
   Double32_t tpcNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pi = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pi = -4.0; //[-4.0,4.0,8]
-  Double32_t dca_de_pr = -4.0; //[0.0,2.0,8]
-  Double32_t dca_de_pi = -4.0; //[0.0,2.0,8]
-  Double32_t dca_pr_pi = -4.0; //[0.0,2.0,8]
+  Double32_t dca_de_pr = -4.0; //[0.0,4.0,8]
+  Double32_t dca_de_pi = -4.0; //[0.0,4.0,8]
+  Double32_t dca_pr_pi = -4.0; //[0.0,4.0,8]
   bool hasTOF_de;
   bool hasTOF_pr;
   bool hasTOF_pi;

@@ -139,6 +139,11 @@
 #pragma link C++ class o2::vertexing::DCAFitter3+;
 #pragma link C++ class o2::track::TrackAuxPar+;
 #pragma link C++ class o2::track::CrossInfo+;
+#pragma link C++ class o2::utils::CircleXY+;
+#pragma link C++ class o2::vertexing::TrackDeriv;
+#pragma link C++ class o2::vertexing::TrackCovI;
+#pragma link C++ class o2::track::TrackParCov;
+#pragma link C++ class o2::track::IntervalXY;
 #endif
 
 /// * VertexerHyp3Body

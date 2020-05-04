@@ -366,7 +366,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
       twoCandidate.AddDaughter(p.particle);
 
       recHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
-      if (recHyp.chi2_deuprot > fMaxKFchi2[0])
+      if (recHyp.chi2_deuprot > fMaxKFchi2[0] || recHyp.chi2_deuprot < 0.)
         continue;
       for (const auto &pi : helpers[kPion]) {
         if (p.track == pi.track || deu.track == pi.track || pi.particle.GetQ() * p.particle.GetQ() > 0) 
@@ -374,7 +374,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
         KFParticle hyperTriton{twoCandidate};
         hyperTriton.AddDaughter(pi.particle);
         recHyp.chi2_3prongs = hyperTriton.GetChi2() / hyperTriton.GetNDF();
-        if (recHyp.chi2_3prongs > fMaxKFchi2[1])
+        if (recHyp.chi2_3prongs > fMaxKFchi2[1] || recHyp.chi2_3prongs < 0.)
           continue;
         double mass = hyperTriton.GetMass();
         if (mass < fMassWindow[0] || mass > fMassWindow[1])
@@ -389,7 +389,7 @@ void AliAnalysisTaskHyperTriton3KF::UserExec(Option_t *) {
 
         hyperTriton.SetProductionVertex(prodVertex);
         recHyp.chi2_topology = hyperTriton.GetChi2() / hyperTriton.GetNDF();
-        if (recHyp.chi2_topology > fMaxKFchi2[2])
+        if (recHyp.chi2_topology > fMaxKFchi2[2] || recHyp.chi2_topology < 0.)
           continue;
         recHyp.l = hyperTriton.GetDecayLength();
         recHyp.r = hyperTriton.GetDecayLengthXY();
