@@ -3681,6 +3681,11 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fTOFtimeMax = 100;
     fTOFtimingBothLegs = kTRUE;
     break;
+  case 10: // a  -10,6
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-10;
+    fTofPIDnSigmaAboveElectronLine=6;
+    break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
     return kFALSE;
