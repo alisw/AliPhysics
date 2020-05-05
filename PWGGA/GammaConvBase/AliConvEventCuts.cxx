@@ -4881,7 +4881,7 @@ Int_t AliConvEventCuts::GetPtHardBinFromPath(const char* currFile,AliVEvent *eve
   // Determine archive type
   TString archivetype;
   std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
-  for(auto t : *walk){
+  for(auto const &t : *walk){
     TString &tok = static_cast<TObjString *>(t)->String();
     if(tok.Contains(".zip")){
       archivetype = tok;
@@ -4913,7 +4913,7 @@ Int_t AliConvEventCuts::GetPtHardBinFromPath(const char* currFile,AliVEvent *eve
     // this needs a determin
     std::unique_ptr<TObjArray> toks(tmp.Tokenize("/"));
     TString tag = "_" + archivetype;
-    for(auto t : *toks){
+    for(auto const &t : *toks){
       TString &path = static_cast<TObjString *>(t)->String();
       if(path.Contains(tag)){
         Int_t posTag = path.Index(tag);
@@ -4939,7 +4939,7 @@ Int_t AliConvEventCuts::GetPtHardBinFromPath(const char* currFile,AliVEvent *eve
 
   bool binfound = false;
   std::unique_ptr<TObjArray> tokens(strPthard.Tokenize("/"));
-  for(auto t : *tokens) {
+  for(auto const &t : *tokens) {
     TString &tok = static_cast<TObjString *>(t)->String();
     if(tok.IsDec()){
       Int_t number = tok.Atoi();

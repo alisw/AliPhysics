@@ -6854,7 +6854,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundSwapp(){
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodV0Rotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
-          for(auto kCurrentClusterCandidates  : *fClusterCandidates){
+          for(auto const& kCurrentClusterCandidates  : *fClusterCandidates){
             if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentClusterCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentClusterCandidates)) continue;
 
             std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
@@ -6867,7 +6867,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundSwapp(){
               }
             }
           }
-          for(auto kCurrentGammaCandidates  : *fGammaCandidates){
+          for(auto const& kCurrentGammaCandidates  : *fGammaCandidates){
             if(currentEventGoodV0Temp1 == ((AliAODConversionPhoton*) kCurrentGammaCandidates) || currentEventGoodV0Temp2 == ((AliAODConversionPhoton*) kCurrentGammaCandidates)) continue;
 
             std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
