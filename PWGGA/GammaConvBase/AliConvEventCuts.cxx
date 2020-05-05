@@ -5048,7 +5048,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   if (fSpecialTrigger == 6){
     AliTriggerMimickHelper* tempMimickHelper = 0x0;
-    tempMimickHelper = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask("CaloTriggerHelper_%s", GetCutNumber()));
+    tempMimickHelper = (AliTriggerMimickHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
     if (tempMimickHelper){
       return tempMimickHelper->GetEventChosenByTrigger();
     } else {

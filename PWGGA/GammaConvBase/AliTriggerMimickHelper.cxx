@@ -23,23 +23,9 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliTriggerMimickHelper.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
-#include "AliTrackerBase.h"
-#include "AliV0ReaderV1.h"
-#include "AliPHOSTriggerUtils.h"
-
-#include "TAxis.h"
-#include "TChain.h"
-#include "TH1F.h"
-#include "TF1.h"
-
-#include <vector>
-#include <map>
-#include <utility>
+#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
 
 class iostream;
 

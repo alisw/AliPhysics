@@ -2,14 +2,14 @@
 #define AliTriggerMimickHelper_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliPHOSTriggerUtils.h"
+#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
 
 using namespace std;
 
 class AliTriggerMimickHelper : public AliAnalysisTaskSE {
 
   public:
-    AliTriggerMimickHelper(const char *name="CaloTrackMatcher_0_0", Int_t clusterType = 0, Bool_t isMC);
+    AliTriggerMimickHelper(const char *name="CaloTrackMatcher_0_0", Int_t clusterType = 0, Bool_t isMC=kFALSE);
     enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
     //Uncopyable & operator=(const Uncopyable&);
 
