@@ -932,6 +932,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     }*/
     // Load NUE
     if(fUseNUEWeights){
+        if(!gGrid) { TGrid::Connect("alien://"); }
         if(fNUE==1){
             fFileTrackEff = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_AMPT.root");
         }
