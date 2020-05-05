@@ -131,7 +131,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
 AliEventCuts::~AliEventCuts() { 
   delete fMultiplicityV0McorrCut; 
   delete fFB32trackCuts;
-  delete fFB32trackCuts;
+  delete fTPConlyCuts;
 }
 
 bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
