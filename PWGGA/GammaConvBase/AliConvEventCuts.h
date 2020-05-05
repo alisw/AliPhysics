@@ -20,6 +20,7 @@
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
 #include "AliTimeRangeCut.h"
+#include "AliTriggerMimickHelper.h"
 
 class AliESDEvent;
 class AliAODEvent;
