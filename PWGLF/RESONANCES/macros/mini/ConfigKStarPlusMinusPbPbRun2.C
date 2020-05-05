@@ -349,7 +349,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
 
 	// axis Z: CosThetaStar                                                                                                                                 
 	if (!isPP)
-	  out->AddAxis(cosThStarID, 10, 0, 1.0);//
+	  out->AddAxis(cosThSID, 10, 0, 1.0);//
 	else
 	  out->AddAxis(cosThStarID, 10, 0, 1.0);
 
