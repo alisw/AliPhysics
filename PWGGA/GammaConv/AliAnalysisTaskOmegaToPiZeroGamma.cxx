@@ -4162,7 +4162,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
                 }
               }
               // loop over other Pions from same event
-              for(auto kCurrentClusterCandidates  : *fPi0Candidates){
+              for(auto const& kCurrentClusterCandidates  : *fPi0Candidates){
                 if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentClusterCandidates) ){ continue;}
 
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentClusterCandidates), currentEventGoodPhotonRotation.get()));
@@ -4272,7 +4272,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
                 }
               }
               // loop over other Pions from same event
-              for(auto kCurrentClusterCandidates  : *fPi0Candidates){
+              for(auto const& kCurrentClusterCandidates  : *fPi0Candidates){
                 if(currentEventGoodV0Temp2 == ((AliAODConversionMother*) kCurrentClusterCandidates) ){ continue;}
 
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate(new AliAODConversionMother(((AliAODConversionMother*) kCurrentClusterCandidates), currentEventGoodPhotonRotation.get()));
