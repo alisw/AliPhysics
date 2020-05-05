@@ -510,9 +510,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     return;
   }
 
-  // Fill trigger tree
   fTrgRunNum = fAOD->GetRunNumber();
-  fTrgTree->Fill();
 
   fCounterH->Fill(iSelectionCounter); // right trigger found 4/7
   iSelectionCounter++;
@@ -682,6 +680,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   // fIR2Map = fAOD->GetHeader()->GetIRInt2InteractionMap();
 
   // fill the tree
+  fTrgTree->Fill();
   fRecTree->Fill();
 
   // post the data
