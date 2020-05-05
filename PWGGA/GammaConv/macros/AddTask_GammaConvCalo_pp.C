@@ -3756,7 +3756,7 @@ void AddTask_GammaConvCalo_pp(
     }
 
     TString EventCutPos = cuts.GetEventCut(i);
-    EventCutPos = EventCutCutPos(3,2);
+    EventCutPos = EventCutPos(3,2);
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
     if( (!(AliTriggerMimickHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!EventCutPos.CompareTo("62")) ){
       AliTriggerMimickHelper* fMimickHelper = new AliTriggerMimickHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
