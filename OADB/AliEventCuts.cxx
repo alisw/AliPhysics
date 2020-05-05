@@ -228,11 +228,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   bool usePileUpSPD = (fUseCombinedMVSPDcut && vtx == vtSPD) || fUseSPDpileUpCut;
   AliVMultiplicity* mult = ev->GetMultiplicity();
   const int ntrkl = mult->GetNumberOfTracklets();
-  int nCluSDDSSD=0;
-  for(Int_t iLay=2; iLay<6; iLay++) nCluSDDSSD+=mult->GetNumberOfITSClusters(iLay);
-  int nCluTPC=0;
-  if (dynamic_cast<AliAODEvent*>(ev)) nCluTPC=dynamic_cast<AliAODEvent*>(ev)->GetNumberOfTPCClusters();
-  else if (dynamic_cast<AliESDEvent*>(ev)) nCluTPC=dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTPCClusters();
 
   if (fUseMultiplicityDependentPileUpCuts) {
     if (ntrkl < 20) fSPDpileupMinContributors = 3;
@@ -243,9 +238,19 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
       (!usePileUpMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
-  
+
+
+  // Rejection of TPC pileup
+  int nCluSDDSSD=0;
+  for(Int_t iLay=2; iLay<6; iLay++) nCluSDDSSD+=mult->GetNumberOfITSClusters(iLay);
+  int nCluTPC=0;
+  if (dynamic_cast<AliAODEvent*>(ev)) nCluTPC=dynamic_cast<AliAODEvent*>(ev)->GetNumberOfTPCClusters();
+  else if (dynamic_cast<AliESDEvent*>(ev)) nCluTPC=dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTPCClusters();
+  if(fUseVariablesCorrelationCuts || fTOFvsFB32[0] || fUseStrongVarCorrelationCut) ComputeTrackMultiplicity(ev);
   const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
-  if(!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) fFlag |= BIT(kTPCPileUp);
+  const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
+  if((!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) && 
+     (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit))) fFlag |= BIT(kTPCPileUp);
 
   /// Centrality cuts:
   /// * Check for min and max centrality
@@ -287,7 +292,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// If the correlation plots are defined, we should fill them
   if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {
-    ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
     const double fb32tof = fContainer.fMultTrkFB32TOF;
@@ -296,15 +300,13 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
     const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
     const double sigma32tof = PolN(fb32,fTOFvsFB32sigmaPars, 5);
-    const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
 
     const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
 
     if (((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
         multV0Mcut &&
-        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
-        (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit))
+        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl))
         || fMC || !fUseVariablesCorrelationCuts)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);

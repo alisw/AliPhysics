@@ -129,7 +129,9 @@ class AliEventCuts : public TList {
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
     void          SelectOnlyInelGt0(bool toogle) { fOverrideInelGt0 = true; fSelectInelGt0 = toogle; }
-
+    void          SetRejectTPCPileupWithITSTPCnCluCorr(bool opt) { fUseITSTPCCluCorrelationCut = opt; }
+    void          SetRejectTPCPileupWithV0CentTPCnTracksCorr(bool opt) { fUseStrongVarCorrelationCut = opt; }
+    
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
     bool          fGreenLight;                    ///< If true it will bypass all the selections.
