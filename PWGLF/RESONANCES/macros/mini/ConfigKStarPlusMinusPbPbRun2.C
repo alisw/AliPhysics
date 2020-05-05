@@ -351,7 +351,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
 	if (!isPP)
 	  out->AddAxis(cosThSID, 10, 0, 1.0);//
 	else
-	  out->AddAxis(cosThStarID, 10, 0, 1.0);
+	  out->AddAxis(cosThSID, 10, 0, 1.0);
 
 	
 	
@@ -376,9 +376,9 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 	// axis Z: CosThetaStar                                                                                                                                 
 	if (!isPP)
-	  out->AddAxis(cosThStarID, 10, 0, 1.0);//
+	  out->AddAxis(cosThSID, 10, 0, 1.0);//
 	else
-	  out->AddAxis(cosThStarID, 10, 0, 1.0);
+	  out->AddAxis(cosThSID, 10, 0, 1.0);
 
 	
         AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
