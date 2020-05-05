@@ -478,17 +478,16 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   if (fIsMC) {
     isTriggered = kTRUE; // No trigger required for MC
   } else {
-    fTrgRunNum = fAOD->GetRunNumber();
     // ###### CMUP10+CMUP11 triggers    
     if (fTrigger.Contains("CMUP11")){
-      if ((fPeriod.Contains("15o") || fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP11-B-NOPF-MUFAST")) {
+      if (trigger.Contains("CMUP11-B-NOPF-MUFAST")) {
         isTriggered = kTRUE;
         fCMUP11Decision = 1;
       } else {
         fCMUP11Decision = 0;
       }
 
-      if ((fPeriod.Contains("15o")) && trigger.Contains("CMUP10-B-NOPF-MUFAST")) {
+      if (trigger.Contains("CMUP10-B-NOPF-MUFAST")) {
         isTriggered = kTRUE;
         fCMUP10Decision = 1;
       } else {
@@ -497,21 +496,24 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     }
     // ###### CMUP6 trigger  
     if (fTrigger.Contains("CMUP6")){
-      if ((fPeriod.Contains("18q") || fPeriod.Contains("18r")) && trigger.Contains("CMUP6-B-NOPF-MUFAST")) {
+      if (trigger.Contains("CMUP6-B-NOPF-MUFAST")) {
         isTriggered = kTRUE;
         fCMUP6Decision = 1;
       } else {
         fCMUP6Decision = 0;
       }
     }
-    // Fill trigger tree
-    fTrgTree->Fill();
   }
 
   if (!isTriggered) {
     PostAllData();
     return;
-  } 
+  }
+
+  // Fill trigger tree
+  fTrgRunNum = fAOD->GetRunNumber();
+  fTrgTree->Fill();
+
   fCounterH->Fill(iSelectionCounter); // right trigger found 4/7
   iSelectionCounter++;
 
