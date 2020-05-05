@@ -201,6 +201,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameHistoReweightingMultMC(""),
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
+  fPHOSTrigUtils(0x0),
+  fPHOSTrigger(kPHOSAny),
   fDebugLevel(0)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -335,6 +337,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC),
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
+  fPHOSTrigUtils(0x0),
+  fPHOSTrigger(kPHOSAny),
   fDebugLevel(ref.fDebugLevel)
 {
   // Copy Constructor
@@ -5041,6 +5045,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     return kFALSE;
   }
 
+  if (fSpecialTrigger == 6){
+    AliTriggerMimickHelper* tempMimickHelper = 0x0;
+    tempMimickHelper = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask("CaloTriggerHelper_%s", GetCutNumber()));
+    if (tempMimickHelper){
+      return tempMimickHelper->GetEventChosenByTrigger();
+    } else {
+      return kFALSE;
+    }
+  }
+
 
     // Trigger mimicking based on cluster energy
     // thresholds are loaded from the OADB (OADB/PWGGA/EMCalTriggerMimicOADB.root)
@@ -5363,6 +5377,13 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               }
             }
             // gamma triggers -> no overlap with L0 and MB trigger required
+            if (fSpecialTrigger == 6){
+                 if( fSpecialSubTriggerName.CompareTo("CPHI7") == 0){
+                     if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                 } else if( fSpecialSubTriggerName.CompareTo("CPHI8") == 0){
+                     if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                 }
+            }
             if (fSpecialTrigger == 8){
               // trigger rejection EGA
               if( fSpecialSubTriggerName.CompareTo("7EGA") == 0){
@@ -5668,7 +5689,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
           }
 
         } else if (isMC){
-          if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+          if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
             // isSelected = 0;
             // if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<event->GetRunNumber()<<endl;
             // if (fTriggersEMCAL&fTriggersEMCALSelected){
