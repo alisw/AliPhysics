@@ -20,13 +20,13 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
   TString outputSlotName[nHarmonics];
   
   //Create the event cut object
-  cutsEvent = createFlowEventCutObject(gMultiplicityEstimator,gCutOnSphericity,gMinSphericity,gMaxSphericity,doQA);
+  cutsEvent = createFlowEventCutObject(isMC,gMultiplicityEstimator,gCutOnSphericity,gMinSphericity,gMaxSphericity,doQA);
     
   //Create the RP cut object
-  cutsRP = createFlowRPCutObject(gAODfilterBit,gCharge,doQA);
+  cutsRP = createFlowRPCutObject(isMC,gAODfilterBit,gCharge,doQA);
     
   //Create the POI cut object
-  cutsPOI = createFlowPOICutObject(particleSpecies,gAODfilterBit,gProbPID,gCharge,doQA);
+  cutsPOI = createFlowPOICutObject(isMC,particleSpecies,gAODfilterBit,gProbPID,gCharge,doQA);
         
   suffixName += "QC";
   if(particleSpecies != "") {
@@ -143,18 +143,34 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
 }
 
 //_________________________________________________________//
-AliFlowEventCuts *createFlowEventCutObject(AliFlowEventCuts::refMultMethod gMultiplicityEstimator = AliFlowEventCuts::kVZERO, Bool_t gCutOnSphericity = kFALSE, Double_t gMinSphericity = 0.0, Double_t gMaxSphericity = 1.0, Bool_t doQA = kFALSE) {
+AliFlowEventCuts *createFlowEventCutObject(Bool_t isMC, AliFlowEventCuts::refMultMethod gMultiplicityEstimator = AliFlowEventCuts::kVZERO, Bool_t gCutOnSphericity = kFALSE, Double_t gMinSphericity = 0.0, Double_t gMaxSphericity = 1.0, Bool_t doQA = kFALSE) {
   //Part of the code that creates the event cut objects
   Double_t gVertexZmin = -10., gVertexZmax = 10.;
   
   //Create the event cut objects
   AliFlowEventCuts *cutsEvent = new AliFlowEventCuts("eventcuts");
-  cutsEvent->SetCentralityPercentileMethod(gMultiplicityEstimator);
-  //cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-  cutsEvent->SetCheckPileup(kTRUE);
   cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
   if(gCutOnSphericity)
     cutsEvent->SetSphericityCut(gMinSphericity,gMaxSphericity);
+
+  if(!isMC) {
+    cutsEvent->SetCentralityPercentileMethod(gMultiplicityEstimator);
+    //cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+    cutsEvent->SetCheckPileup(kTRUE);
+  }
+
+  if(isMC) {
+    AliFlowTrackCuts* cutsRefMult = new AliFlowTrackCuts("MCRefMult");
+    cutsRefMult->SetParamType(AliFlowTrackCuts::kMC);
+    cutsRefMult->SetParamMix(AliFlowTrackCuts::kTrackWithMCkine);
+    cutsRefMult->SetMCisPrimary(kTRUE);
+    cutsRefMult->SetPtRange(0.2,10.);
+    cutsRefMult->SetEtaRange(-0.8,0.8);
+
+    cutsRefMult->SetQA(kFALSE);
+    cutsEvent->SetRefMultCuts(cutsRefMult);
+  }
+
   cutsEvent->SetQA(doQA);
   
   //return the object
@@ -162,7 +178,8 @@ AliFlowEventCuts *createFlowEventCutObject(AliFlowEventCuts::refMultMethod gMult
 }
 
 //_________________________________________________________//
-AliFlowTrackCuts *createFlowRPCutObject(Int_t gAODfilterBit = 768,
+AliFlowTrackCuts *createFlowRPCutObject(Bool_t isMC,
+					Int_t gAODfilterBit = 768,
                                         Double_t gCharge = 0.,
                                         Bool_t doQA = kFALSE) {
   //Part of the code that creates the RP cut objects
@@ -173,12 +190,19 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gAODfilterBit = 768,
   AliFlowTrackCuts *cutsRP = new AliFlowTrackCuts("rpCuts");
   
   if (gCharge!=0) cutsRP->SetCharge(gCharge);
-  
-  cutsRP->SetMinNClustersTPC(70);
-  cutsRP->SetPtRange(0.2,10.);
+    cutsRP->SetPtRange(0.2,10.);
   cutsRP->SetEtaRange(gEtaMin,gEtaMax);
-  cutsRP->SetMinimalTPCdedx(gMinTPCdedx);
-  cutsRP->SetAODfilterBit(gAODfilterBit);
+
+  if(isMC) {
+    cutsRP->SetParamType(AliFlowTrackCuts::kMC);
+    cutsRP->SetParamMix(AliFlowTrackCuts::kTrackWithMCkine);
+    cutsRP->SetMCisPrimary(kTRUE);
+  }
+  else {  
+    cutsRP->SetMinNClustersTPC(70);
+    cutsRP->SetMinimalTPCdedx(gMinTPCdedx);
+    cutsRP->SetAODfilterBit(gAODfilterBit);
+  }
   cutsRP->SetQA(doQA);
   
   //return the object
@@ -198,35 +222,43 @@ AliFlowTrackCuts *createFlowPOICutObject(TString particleSpecies = "Pion",
   AliFlowTrackCuts *cutsPOI = new AliFlowTrackCuts("poiCuts");
   
   if (gCharge!=0) cutsPOI->SetCharge(gCharge);
-  
-  cutsPOI->SetMinNClustersTPC(70);
   cutsPOI->SetPtRange(0.2,10.);
   cutsPOI->SetEtaRange(gEtaMin,gEtaMax);
-  cutsPOI->SetMinimalTPCdedx(gMinTPCdedx);
-  cutsPOI->SetAODfilterBit(gAODfilterBit);
-  cutsPOI->SetQA(doQA);
-  
-  Bool_t isPID = kFALSE;
-  if(particleSpecies != "")
-    isPID = kTRUE;
-  
-  if(isPID) {
-    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
-    AliPID::EParticleType particleType = AliPID::kPion;
-    
-    if(particleSpecies.Contains("Pion")) {
-      particleType = AliPID::kPion;
-    }
-    else if(particleSpecies.Contains("Kaon")) {
-      particleType = AliPID::kKaon;
-    }
-    else if(particleSpecies.Contains("Proton")) {
-      particleType = AliPID::kProton;
-    }
-  
-    cutsPOI->SetPID(particleType, sourcePID, gProbPID);
+
+  if(isMC) {
+    cutsPOI->SetParamType(AliFlowTrackCuts::kMC);
+    cutsPOI->SetParamMix(AliFlowTrackCuts::kTrackWithMCkine);
+    cutsPOI->SetMCisPrimary(kTRUE);
   }
-  
+  else {
+    cutsPOI->SetMinNClustersTPC(70);
+    cutsPOI->SetMinimalTPCdedx(gMinTPCdedx);
+    cutsPOI->SetAODfilterBit(gAODfilterBit);
+    
+    Bool_t isPID = kFALSE;
+    if(particleSpecies != "")
+      isPID = kTRUE;
+    
+    if(isPID) {
+      AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
+      AliPID::EParticleType particleType = AliPID::kPion;
+      
+      if(particleSpecies.Contains("Pion")) {
+	particleType = AliPID::kPion;
+      }
+      else if(particleSpecies.Contains("Kaon")) {
+	particleType = AliPID::kKaon;
+      }
+      else if(particleSpecies.Contains("Proton")) {
+	particleType = AliPID::kProton;
+      }
+      
+      cutsPOI->SetPID(particleType, sourcePID, gProbPID);
+    }
+  }
+
+  cutsPOI->SetQA(doQA);
+    
   //return the object
   return cutsPOI;
 }
