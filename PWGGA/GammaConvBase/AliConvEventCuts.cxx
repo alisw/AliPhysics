@@ -5299,7 +5299,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 // trigger rejection for EMC and DMC triggers together
                 if (fSpecialSubTriggerName.CompareTo("CEMC7") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("CDMC7") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                } else if (fSpecialSubTriggerName.CompareTo("CEMC8") == 0 && fSpecialSubTriggerName.CompareTo("CDMC8") == 0){
+                } else if (fSpecialSubTriggerName.CompareTo("CEMC8") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("CDMC8") == 0){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 }
               } else {
