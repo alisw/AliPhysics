@@ -677,9 +677,8 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDV0s();
   }
-  if(fInputEvent->IsA()==AliAODEvent::Class() && !GetAODConversionGammas()){
-    fEventCuts->SetEventQuality(2);
-    return kFALSE;
+  if(fInputEvent->IsA()==AliAODEvent::Class() ){
+    GetAODConversionGammas();
   }
 
   return kTRUE;
