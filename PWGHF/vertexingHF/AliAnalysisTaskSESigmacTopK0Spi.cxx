@@ -215,7 +215,7 @@ AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi():
 }
 //___________________________________________________________________________
 AliAnalysisTaskSESigmacTopK0Spi::AliAnalysisTaskSESigmacTopK0Spi(const Char_t* name,
-									     AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly) :
+								 AliRDHFCutsLctoV0* analCuts, Bool_t useOnTheFly) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -1893,6 +1893,29 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	inputVars[8] = nSigmaTPCpr;
 	inputVars[9] = nSigmaTPCpi;
 	inputVars[10] = nSigmaTPCka;
+      }
+      else if (fNVars == 10) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+      }
+      else if (fNVars == 9) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = nSigmaTOFpr;
+	inputVars[6] = nSigmaTPCpr;
+	inputVars[7] = nSigmaTPCpi;
+	inputVars[8] = nSigmaTPCka;
       }
       else if (fNVars == 8) {
 	inputVars[0] = invmassK0s;
