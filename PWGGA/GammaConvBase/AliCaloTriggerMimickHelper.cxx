@@ -22,20 +22,20 @@
 
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
-#include "AliTriggerMimickHelper.h"
+#include "AliCaloTriggerMimickHelper.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
-#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
+#include "TChain.h"
 
 class iostream;
 
 using namespace std;
 
 
-ClassImp(AliTriggerMimickHelper)
+ClassImp(AliCaloTriggerMimickHelper)
 
 //________________________________________________________________________
-AliTriggerMimickHelper::AliTriggerMimickHelper(const char *name, Int_t clusterType, Bool_t isMC) : AliAnalysisTaskSE(name),
+AliCaloTriggerMimickHelper::AliCaloTriggerMimickHelper(const char *name, Int_t clusterType, Bool_t isMC) : AliAnalysisTaskSE(name),
   fClusterType(clusterType),
   fRunNumber(-1),
   fPHOSTrigUtils(0x0),
@@ -45,21 +45,41 @@ AliTriggerMimickHelper::AliTriggerMimickHelper(const char *name, Int_t clusterTy
   fEventChosenByTrigger(kFALSE),
   fDoLightOutput(kFALSE)
 {
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
     // Default constructor
+    DefineInput(0, TChain::Class());
 }
 
 //________________________________________________________________________
-AliTriggerMimickHelper::~AliTriggerMimickHelper(){
+AliCaloTriggerMimickHelper::AliCaloTriggerMimickHelper(const char *name, Int_t clusterType, Int_t isMC) : AliAnalysisTaskSE(name),
+  fClusterType(clusterType),
+  fRunNumber(-1),
+  fPHOSTrigUtils(0x0),
+  fPHOSTrigger(kPHOSAny),
+  fForceRun(kFALSE),
+  fIsMC(isMC),
+  fEventChosenByTrigger(kFALSE),
+  fDoLightOutput(kFALSE)
+{
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
+    // Default constructor
+    DefineInput(0, TChain::Class());
+}
+
+//________________________________________________________________________
+AliCaloTriggerMimickHelper::~AliCaloTriggerMimickHelper(){
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
     // default deconstructor
 }
 
 //________________________________________________________________________
-void AliTriggerMimickHelper::Terminate(Option_t *){
+void AliCaloTriggerMimickHelper::Terminate(Option_t *){
 
 }
 
 //________________________________________________________________________
-void AliTriggerMimickHelper::UserCreateOutputObjects(){
+void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
   //Prepare PHOS trigger utils if necessary
   fPHOSTrigUtils = new AliPHOSTriggerUtils("PHOSTrig") ;
   if(fForceRun){
@@ -72,8 +92,9 @@ void AliTriggerMimickHelper::UserCreateOutputObjects(){
 
 
 //________________________________________________________________________
-void AliTriggerMimickHelper::UserExec(Option_t *){
-  // main method of AliTriggerMimickHelper, first initialize and then process event
+void AliCaloTriggerMimickHelper::UserExec(Option_t *){
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
+  // main method of AliCaloTriggerMimickHelper, first initialize and then process event
   if(!fForceRun)
     fRunNumber=fInputEvent->GetRunNumber() ;
   // do processing only for PHOS (2) clusters; for EMCal (1), DCal (3), EMCal with DCal (4) or  otherwise do nothing
@@ -99,7 +120,8 @@ void AliTriggerMimickHelper::UserExec(Option_t *){
 }
 
 
-void AliTriggerMimickHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton){
+void AliCaloTriggerMimickHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton){
+    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
     //Mark photons fired trigger
     if(isMCPhoton){
       SetEventChosenByTrigger(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;

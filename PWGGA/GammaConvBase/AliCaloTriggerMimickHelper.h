@@ -1,19 +1,21 @@
-#ifndef AliTriggerMimickHelper_H
-#define AliTriggerMimickHelper_H
+#ifndef AliCaloTriggerMimickHelper_H
+#define AliCaloTriggerMimickHelper_H
 
 #include "AliAnalysisTaskSE.h"
-#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
+#include "TChain.h"
+#include "AliPHOSTriggerUtils.h"
 
 using namespace std;
 
-class AliTriggerMimickHelper : public AliAnalysisTaskSE {
+class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
 
   public:
-    AliTriggerMimickHelper(const char *name="CaloTrackMatcher_0_0", Int_t clusterType = 0, Bool_t isMC=kFALSE);
+    AliCaloTriggerMimickHelper(const char *name="AliCaloTriggerMimickHelper", Int_t clusterType = 0, Bool_t isMC=kFALSE);
+    AliCaloTriggerMimickHelper(const char *name="AliCaloTriggerMimickHelper", Int_t clusterType = 0, Int_t isMC=0);
     enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
     //Uncopyable & operator=(const Uncopyable&);
 
-    virtual ~AliTriggerMimickHelper();                            //virtual destructor
+    virtual ~AliCaloTriggerMimickHelper();                            //virtual destructor
     void UserCreateOutputObjects();
 
     virtual void UserExec(Option_t *option);
@@ -27,8 +29,8 @@ class AliTriggerMimickHelper : public AliAnalysisTaskSE {
     Bool_t GetEventChosenByTrigger()                { return fEventChosenByTrigger                  ; }
 
   private:
-    AliTriggerMimickHelper (const AliTriggerMimickHelper&);             // not implemented
-    AliTriggerMimickHelper & operator=(const AliTriggerMimickHelper&);  // not implemented
+    AliCaloTriggerMimickHelper (const AliCaloTriggerMimickHelper&);             // not implemented
+    AliCaloTriggerMimickHelper & operator=(const AliCaloTriggerMimickHelper&);  // not implemented
 
     // private methods
     void SetClusterType(Int_t iClusterType)     { fClusterType = iClusterType                 ; }
@@ -47,7 +49,7 @@ class AliTriggerMimickHelper : public AliAnalysisTaskSE {
     Bool_t                  fIsMC ;                                     //! Is this is MC
     Bool_t                  fEventChosenByTrigger;                      //!
 
-    ClassDef(AliTriggerMimickHelper, 1);
+    ClassDef(AliCaloTriggerMimickHelper, 1);
 };
 
 #endif
