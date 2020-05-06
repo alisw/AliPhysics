@@ -210,7 +210,8 @@ AliFlowTrackCuts *createFlowRPCutObject(Bool_t isMC,
 }
 
 //_________________________________________________________//
-AliFlowTrackCuts *createFlowPOICutObject(TString particleSpecies = "Pion",
+AliFlowTrackCuts *createFlowPOICutObject(Bool_t isMC,
+					 TString particleSpecies = "Pion",
 					 Int_t gAODfilterBit = 768,
                                          Double_t gProbPID = 0.9,
 					 Double_t gCharge = 0.,
