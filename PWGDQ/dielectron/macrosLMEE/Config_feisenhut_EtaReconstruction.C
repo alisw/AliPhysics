@@ -8,7 +8,8 @@ TString names_Prim_Track_PreFilter_Cuts=("JPID_sum_pt75_PreFilter;JPID_sum1_pt75
 // ################################################################
 // ################# PreFilter Track Cut Secondary ################
 // ################################################################
-TString names_Sec_Track_PreFilter_Cuts=("noPID_V0OnTheFly,trackkV0");
+//         !!!!!!!    actually not in use     !!!!!!
+TString names_Sec_Track_PreFilter_Cuts=("noPID_V0_PreFilter;track_V0_PreFilter");
 
 // ################################################################
 // ################# Standard Track Cut Primary ###################
@@ -23,7 +24,7 @@ TString names_Prim_Track_standard_Cuts=("JPID_sum_pt75;JPID_sum1_pt75_sec_kV0");
 // ################################################################
 // ############### Standard Track Cut Secondary ###################
 // ################################################################
-//                        *** MISSING ***
+TString names_Sec_Track_standard_Cuts=("noPID_V0_standard;track_V0_standard");
 
 
 
@@ -83,17 +84,17 @@ Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 
-bool debug = true;
+bool debug = false;
 
 bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = false;
+bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
-bool UseMCDataSig   = false;
+bool UseMCDataSig   = false; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -338,7 +339,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
   if (cutDefinition == "noPID"){
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
@@ -406,10 +406,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   /////////////////////////////////////////////////////////
   //             secondary track cut settings            //
   /////////////////////////////////////////////////////////
-  else if (cutDefinition == "noPID_V0OnTheFly" || cutDefinition == "trackkV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+  else if (cutDefinition == "noPID_V0_PreFilter" || cutDefinition == "noPID_V0_standard" || cutDefinition == "track_V0_PreFilter"){
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoKinPIDCuts);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kV0track);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
@@ -423,6 +424,16 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   //   AnaCut.SetCentrality(centrality);
   //   AnaCut.SetStandardCut();
   // }
+
+  else if (cutDefinition == "track_V0_standard"){
+    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt20);
+    // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+
 
   // else if (cutDefinition == "JPID_sum_pt75_secondary"){
   //   AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
@@ -464,9 +475,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   //             secondary pair cut settings             //
   /////////////////////////////////////////////////////////
   else if (cutDefinition == "pairkV0"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
@@ -476,9 +485,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
   else if (cutDefinition == "pairkV0_PreFilter"){
-    // AnaCut.SetPIDAna(LMEECutLib::kPIDcut_TEST);
     AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
-    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_noKinCuts);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0OnTheFly);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
@@ -1385,29 +1392,29 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 
 //________________________________________________________
-    // task->AddFourPairMCSignal(FourElePair1_FinalState);
-    // task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
-    // task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_FromPion);
-    // task->AddFourPairMCSignal(FourElePair2_FromPion);
+    task->AddFourPairMCSignal(FourElePair1_FinalState);
+    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
+
+    task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
+    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
+
+    task->AddFourPairMCSignal(FourElePair1_FromPion);
+    task->AddFourPairMCSignal(FourElePair2_FromPion);
 
     task->AddFourPairMCSignal(FourElePair1_FromPion_Dalitz);
     task->AddFourPairMCSignal(FourElePair2_FromPion_Dalitz);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_FromEta);
-    // task->AddFourPairMCSignal(FourElePair2_FromEta);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
-    // task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
-    // task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
-    //
-    // task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
-    // task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
+
+    task->AddFourPairMCSignal(FourElePair1_FromEta);
+    task->AddFourPairMCSignal(FourElePair2_FromEta);
+
+    task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
+    task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
+
+    task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
+    task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
+
+    task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
+    task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
 
     if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState);
     if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary);

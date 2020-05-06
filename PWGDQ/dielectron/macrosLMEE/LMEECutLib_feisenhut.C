@@ -68,8 +68,8 @@ public:
     kPID_Jeromian_01_PreFilter,
     kPID_Jeromian_01_pt200,
     kPIDcut_1_pt75,
-    kPIDcut_TEST,
-    kNoPID_noKinCuts
+    kPID_V0_TPC_Pt20,
+    kNoKinPIDCuts
     };
   enum LMEEPIDPre{
     kStandardPre
@@ -82,7 +82,7 @@ public:
     kTRACKcut_2_PreFilter,
     kTRACKcut_1_secondary,
     kDefaultNoTrackCuts,
-    kV0track
+    kV0track_PreFilter
   };
   enum LMEETrackSelectionPre{
     kPrefilter_cut1
@@ -789,6 +789,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   etaRange120->AddCut(AliDielectronVarManager::kEta, -1.20, 1.20);
   AliDielectronVarCuts *etaRange150 = new AliDielectronVarCuts("etaRange150","etaRange150");
   etaRange150->AddCut(AliDielectronVarManager::kEta, -1.50, 1.50);
+  AliDielectronVarCuts *noEtaCut = new AliDielectronVarCuts("noEtaCut","noEtaCut");
   // pt range:
   AliDielectronVarCuts *ptRange400to8000 = new AliDielectronVarCuts("ptRange400to8000","ptRange400to8000");
   ptRange400to8000->AddCut(AliDielectronVarManager::kPt, 0.4, 8.0);
@@ -808,7 +809,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   ptRange200to8000->AddCut(AliDielectronVarManager::kPt, 0.2, 8.0);
   AliDielectronVarCuts *ptRange20to100000 = new AliDielectronVarCuts("ptRange20to100000","ptRange20to100000");
   ptRange20to100000->AddCut(AliDielectronVarManager::kPt, 0.02, 100.0);
-
+  AliDielectronVarCuts *noPtCut = new AliDielectronVarCuts("noPtCut","noPtCut");
 
   // PDG Code PID
   AliDielectronVarCuts *PDGelectron = new AliDielectronVarCuts("PDGelectron","PDGelectron");
@@ -908,12 +909,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   PIDcut_1->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
   PIDcut_1->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
-  AliDielectronPID *PIDcut_TEST = new AliDielectronPID("PIDcut_TEST","PIDcut_TEST");
-  PIDcut_TEST->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1000.0, 1000.0 , 0. ,100., kFALSE);
-  // PIDcut_TEST->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3.5 , 0. ,100., kFALSE);
-  // PIDcut_TEST->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 3.5 , 0. ,100., kTRUE);
-  // PIDcut_TEST->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
-  // PIDcut_TEST->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  AliDielectronPID *PIDcut_V0_TPC_Pt20 = new AliDielectronPID("PIDcut_V0_TPC_Pt20","PIDcut_V0_TPC_Pt20");
+  PIDcut_V0_TPC_Pt20->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
 
 
@@ -1308,6 +1305,9 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   //-----------------------------------------------
   switch (AnaCut.GetPIDAna()) {
 
+    case kNoKinPIDCuts:
+      pidCuts = LMEECutLib::SetKinematics(noEtaCut, noPtCut, PIDnoneExisting, AnaCut);;
+      break;
     case kNoPID_Pt75:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDnoneExisting, AnaCut);;
       break;
@@ -1316,9 +1316,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       break;
     case kNoPID_Pt200:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, PIDnoneExisting, AnaCut);;
-      break;
-    case kNoPID_noKinCuts:
-      pidCuts = LMEECutLib::SetKinematics(etaRange150, ptRange20to100000, PIDnoneExisting, AnaCut);;
       break;
     case kPID_Jeromian_01:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, Jeromian_01_sum, AnaCut);;
@@ -1332,8 +1329,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     case kPIDcut_1_pt75:
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDcut_1, AnaCut);;
       break;
-    case kPIDcut_TEST:
-      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDcut_TEST, AnaCut);;
+    case kPID_V0_TPC_Pt20:
+      pidCuts = LMEECutLib::SetKinematics(noEtaCut, noPtCut, PIDcut_V0_TPC_Pt20, AnaCut);;
       break;
 
     default: cout << "No Analysis PID Cut defined " << endl;
@@ -1519,30 +1516,30 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(AnalysisCut AnaCut) {
       trackCuts = cgTrackCutsAnaSPDfirst;
       break;
 
-    case kV0track:
-      // primarily meant for inclusion, for quite pure sample...
-      AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
-      gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
-      // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
-      // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
-      // gammaV0Cuts->SetExcludeTracks(kTRUE);
-      // // gammaV0Cuts->SetExcludeTracks(kFALSE); (standard?)
-      // AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-      // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-      // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
-      // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
-      cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
-      cgTrackCutsV0select->AddCut(gammaV0Cuts);
-      // cgTrackCutsV0select->AddCut(trackCutsAOD);
-      trackCuts = cgTrackCutsV0select;
-      break;
+    // case kV0track_PreFilter:
+    //   // primarily meant for inclusion, for quite pure sample...
+    //   AliDielectronV0Cuts *gammaV0Cuts = new AliDielectronV0Cuts("gammaV0Cuts","gammaV0Cuts");
+    //   gammaV0Cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);  // kAll(default), kOffline or kOnTheFly
+    //   // gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0,  kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.0,  kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kR,                             3.0,  90.0,  kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kM,                             0.0,   0.05, kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.02, kFALSE);
+    //   // gammaV0Cuts->AddCut(AliDielectronVarManager::kArmAlpha,                     -0.35,  0.35, kFALSE); // should increase purity...
+    //   // gammaV0Cuts->SetExcludeTracks(kTRUE);
+    //   // // gammaV0Cuts->SetExcludeTracks(kFALSE); (standard?)
+    //   // AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
+    //   // trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+    //   // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+    //   // trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1);
+    //   cgTrackCutsV0select = new AliDielectronCutGroup("cgTrackCutsV0select","cgTrackCutsV0select",AliDielectronCutGroup::kCompAND);
+    //   cgTrackCutsV0select->AddCut(gammaV0Cuts);
+    //   // cgTrackCutsV0select->AddCut(trackCutsAOD);
+    //   trackCuts = cgTrackCutsV0select;
+    //   break;
 
     // case kNone:
       // trackCuts = GetTrackCuts(kNoTrackCuts);

@@ -165,9 +165,10 @@ public:
 
 
    // Track cuts setter
-   void   AddTrackCuts_primary_standard  (AliAnalysisFilter* filter)  {fTrackCuts_primary_standard.push_back(filter);}
-   void   AddTrackCuts_primary_PreFilter  (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
-   void   AddTrackCuts_secondary_PreFilter  (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_primary_PreFilter   (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_primary_standard    (AliAnalysisFilter* filter) {fTrackCuts_primary_standard.push_back(filter);}
+   void   AddTrackCuts_secondary_standard  (AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
 
    // Pair cuts setter
    void   AddPairCuts_primary  (AliAnalysisFilter* filter) {fPairCuts_primary.push_back(filter);}
@@ -399,6 +400,7 @@ private:
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_PreFilter;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
   std::vector<AliAnalysisFilter*> fTrackCuts_secondary_PreFilter;
+  std::vector<AliAnalysisFilter*> fTrackCuts_secondary_standard;
   std::vector<AliAnalysisFilter*> fPairCuts_primary;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;
