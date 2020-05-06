@@ -96,6 +96,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fDeltaAODFilename("AliAODGammaConversion.root"),
   fRelabelAODs(kFALSE),
   fPreviousV0ReaderPerformsAODRelabeling(0),
+  fErrorAODRelabeling(kFALSE),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
@@ -678,7 +679,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
     ProcessESDV0s();
   }
   if(fInputEvent->IsA()==AliAODEvent::Class() ){
-    GetAODConversionGammas();
+    fErrorAODRelabeling = !GetAODConversionGammas();
   }
 
   return kTRUE;
