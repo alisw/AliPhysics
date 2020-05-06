@@ -66,6 +66,7 @@ public:
 	float GetCentrality() const{return fcent;};
 	double GetZVertex() const{return fZvert;};
 	int GetRunNumber() const{return fRunNum;};
+	AliAODEvent * GetAODEvent() const{return paodEvent;}
 
 	void SetDebugLevel(int debuglevel){
 		fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;}
@@ -119,6 +120,7 @@ private:
 	TDirectory *fOutput;     // output
 	TString fTaskName; //
 	TString fCentDetName; //
+	AliAODEvent *paodEvent; //
 	float fcent; //
 	double fZvert; //
 	bool fnoCentBin; // no centrality bin => 1
