@@ -27,3 +27,6 @@ PIDstudies:
         nSigma: [3, 2, 1] # nSigma cut values to be tested
         markersEffMC: [20, 21, 33] # marker styles for efficiency histos
         markersEffData: [24, 25, 27] # marker styles for efficiency histos
+
+TPCTOFmatching:
+    enable: 1 # 0: false, 1: true

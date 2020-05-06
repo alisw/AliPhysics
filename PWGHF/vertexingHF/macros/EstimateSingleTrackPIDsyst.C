@@ -41,7 +41,7 @@
 // \brief: macro for estimation of PID Systematic uncertainty of the single tracks (pions/kaons/protons)                                            //
 //         it needs a config input file such as https://github.com/alisw/AliPhysics/blob/master/PWGHF/vertexingHF/macros/config_singletrack_pid.yml //
 //         it requires ROOT6 for the usage of RDataFrame                                                                                            //
-// \main function: EstimateSingleTrackPIDsyst(TString cfgFileName)                                                                                  //
+// \main function: AnalysePIDTree(TString cfgFileName)                                                                                              //
 // \author: F. Grosa, fabrizio.grosa@cern.ch                                                                                                        //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -73,7 +73,16 @@ const unsigned int nMaxEff = 20;
 
 //_____________________________________________________
 //METHOD PROTOTYPES
-void EstimateSingleTrackPIDsyst(TString cfgFileName="config_singletrack_pid.yml");
+void AnalysePIDTree(TString cfgFileName="config_singletrack_pid.yml");
+void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, std::string inListNameData,
+                        std::string inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
+                        std::string outDirName, TString varTitle, int var4proj,
+                        unsigned int nBins, std::vector<double> binMins, std::vector<double> binMaxs, double binLims[], std::vector<TString> binLabels,
+                        unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, double binEtaLims[], std::vector<TString> etaBinLabels, YAML::Node config);
+void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDirNameData, std::string inListNameData,
+                                   std::string inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
+                                   std::string outDirName, TString varTitle, int var4proj, unsigned int nBins, double binLims[],
+                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels);
 void ComputeEfficiency(double num, double den, double &eff, double &effunc);
 void GetTOFFractionsFromData(int whichpart, unsigned int iBin, std::map<int, TH1D*> hFracMC, std::map<int, TH1D*> hFracData, std::map<int, TH1D*> hNsigmaMC,
                              TH1D *hNsigmaData, TFractionFitter *&fNsigmaFitter, std::vector<int> &templUsed);
@@ -86,7 +95,7 @@ void SetTH1Style(TH1 *histo, int markerstyle, int markercolor, float markersize,
 
 //_____________________________________________________
 //METHOD IMPLEMENTATIONS
-void EstimateSingleTrackPIDsyst(TString cfgFileName)
+void AnalysePIDTree(TString cfgFileName)
 {
 
     SetStyle();
@@ -197,9 +206,38 @@ void EstimateSingleTrackPIDsyst(TString cfgFileName)
         std::cout << absEtaBinMins[iEtaBin] << "-" << absEtaBinMaxs[iEtaBin] << std::endl;
     }
 
-    // quantities for PID studies
-
+    // PID analysis
     bool doPIDstudies = static_cast<bool>(config["PIDstudies"]["enable"].as<int>());
+    if(doPIDstudies)
+    {
+        std::cout << "\n*******************************************\n" << std::endl;
+        std::cout << "\e[1m\033[32mStarting PID analysis\033[0m\e[0m\n" << std::endl;
+
+        PerformPIDAnalysis(inFileNameData, inDirNameData, inListNameData, inFileNameMC, inDirNameMC, inListNameMC,
+                           outDirName, varTitle, var4proj, nBins, binMins, binMaxs, binLims, binLabels, 
+                           nEtaBins, absEtaBinMins, absEtaBinMaxs, binEtaLims, etaBinLabels, config);
+    }
+
+    // TPC-TOF matching analysis
+    bool doTOFTPCmatchingStudies = static_cast<bool>(config["TPCTOFmatching"]["enable"].as<int>());
+    if(doTOFTPCmatchingStudies)
+    {
+        std::cout << "\n*******************************************\n" << std::endl;
+        std::cout << "\e[1m\033[32mStarting TPC-TOF matching analysis\033[0m\e[0m\n" << std::endl;
+
+        PerformTPCTOFmatchingAnalysis(inFileNameData, inDirNameData, inListNameData, inFileNameMC, inDirNameMC, inListNameMC,
+                                      outDirName, varTitle, var4proj, nBins, binLims, nEtaBins, absEtaBinMins, absEtaBinMaxs, etaBinLabels);
+    }
+}
+
+//______________________________________________________
+void PerformPIDAnalysis(std::string inFileNameData, std::string inDirNameData, std::string inListNameData,
+                        std::string inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
+                        std::string outDirName, TString varTitle, int var4proj,
+                        unsigned int nBins, std::vector<double> binMins, std::vector<double> binMaxs, double binLims[], std::vector<TString> binLabels,
+                        unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, double binEtaLims[], std::vector<TString> etaBinLabels, YAML::Node config)
+{
+    // quantities for PID studies
     bool produceQAplots = static_cast<bool>(config["PIDstudies"]["produceQAplots"].as<int>());
 
     std::vector<int> nSigma4Eff = config["PIDstudies"]["PIDefficiency"]["nSigma"].as<std::vector<int> >();
@@ -2276,6 +2314,425 @@ void EstimateSingleTrackPIDsyst(TString cfgFileName)
     
     std::cout << Form("File with distributions %s/NsigmaPIDdistr.root saved\n", outDirName.data()) << std::endl;    
     std::cout << "\033[32mDone\033[0m" << std::endl;
+}
+
+//______________________________________________________
+void PerformTPCTOFmatchingAnalysis(std::string inFileNameData, std::string inDirNameData, std::string inListNameData,
+                                   std::string inFileNameMC, std::string inDirNameMC, std::string inListNameMC,
+                                   std::string outDirName, TString varTitle, int var4proj, unsigned int nBins, double binLims[],
+                                   unsigned int nEtaBins, std::vector<double> absEtaBinMins, std::vector<double> absEtaBinMaxs, std::vector<TString> etaBinLabels)
+{
+    //load MC inputs
+    auto infileMC = TFile::Open(inFileNameMC.data());
+    if (!infileMC || !infileMC->IsOpen())
+        return;
+    auto indirMC = static_cast<TDirectoryFile *>(infileMC->Get(inDirNameMC.data()));
+    if (!indirMC)
+    {
+        std::cerr << Form("\033[31mERROR: TDirectoryFile %s not found in input file for MC! Exit\033[0m", inDirNameMC.data()) << std::endl;
+        return;
+    }
+    auto listMC = static_cast<TList *>(indirMC->Get(inListNameMC.data()));
+    if (!listMC)
+    {
+        std::cerr << Form("\033[31mERROR: TList %s not found in input file for MC! Exit\033[0m", inListNameMC.data()) << std::endl;
+        return;
+    }
+
+    std::cout << "\n*******************************************\n" << std::endl;
+    std::cout << "\033[32mProject MC tree\033[0m\n" << std::endl;
+    ROOT::EnableImplicitMT(); //tell ROOT to go parallel
+    ROOT::RDataFrame dataFrameMC(Form("%s/%s", inDirNameMC.data(), "fPIDtree"), inFileNameMC);
+
+    // histos for TPC-TOF marching efficiency vs. p and true particle species    
+    std::map<int, TH1D*> hPionMCV0tagWithTOF, hKaonMCTPCtagWithTOF, hProtonMCV0tagWithTOF, hPionMCV0tagAll, hKaonMCTPCtagAll, hProtonMCV0tagAll; 
+    TH1D* hTPCTOFMatchEffPionMCV0tag, *hTPCTOFMatchEffKaonMCTPCtag, *hTPCTOFMatchEffProtonMCV0tag, *hTPCTOFMatchEffPionMCtrue, *hTPCTOFMatchEffKaonMCtrue, *hTPCTOFMatchEffProtonMCtrue;
+    TH1D* hRatioTPCTOFMatchEffPionMC, *hRatioTPCTOFMatchEffKaonMC, *hRatioTPCTOFMatchEffProtonMC;
+
+    TString pSel = "";
+    if(var4proj == kP)
+        pSel = "pTPC";
+    else
+        pSel = "pT";
+
+    double etaLims[101];
+    for(int iEtaBin = 0; iEtaBin < 101; iEtaBin++)
+        etaLims[iEtaBin] = -1. + 0.02*iEtaBin;
+
+    double hasTOFLims[3] = {-0.5, 0.5, 1.5};
+
+    double partLims[6];
+    for(int iPartBin = 0; iPartBin < 6; iPartBin++)
+        partLims[iPartBin] = iPartBin;
+    std::map<int, double> partBins = {{kElectron, 0.5}, {kMuon, 1.5}, {kPion, 2.5}, {kKaon, 3.5}, {kProton, 4.5}};
+
+    auto dataFrameMCEta = dataFrameMC.Filter(Form("(eta > %f && eta < %f) || (eta > -%f && eta < -%f)",
+                                                 absEtaBinMins[nEtaBins-1]*1000, absEtaBinMaxs[nEtaBins-1]*1000,
+                                                 absEtaBinMaxs[nEtaBins-1]*1000, absEtaBinMins[nEtaBins-1]*1000));
+
+    std::cout << "Selecting V0 tagged pions" << std::endl;
+    TString tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
+    auto dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
+    auto hTOFInfoPionMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                      .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                      .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                      .Histo3D({"hTOFInfoPionMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
+
+    std::cout << "Selecting TPC tagged kaons" << std::endl;
+    tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
+    dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
+    auto hTOFInfoKaonMCTPCtagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                       .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                       .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                       .Histo3D({"hTOFInfoKaonMCTPCtagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
+
+    std::cout << "Selecting V0 tagged protons" << std::endl;
+    tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
+    dataFrameMCSel = dataFrameMCEta.Filter(tagSel.Data());
+    auto hTOFinfoProtonMCV0tagVsPVsPart = dataFrameMCSel.Define("TOF_info", Form("if((tag & %llu) > 0) return 0; else return 1;", BIT(15))) //AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                        .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                        .Define("part", "if(PDGcode == 11) return 0; else if(PDGcode == 13) return 1; else if(PDGcode == 211) return 2; else if(PDGcode == 321) return 3; else if(PDGcode == 2212) return 4; else return -1;")
+                                                        .Histo3D({"hTOFinfoProtonMCV0tagVsPVsPart", "", 5u, partLims, static_cast<int>(nBins), binLims, 2u, hasTOFLims}, "part", "p_scaled", "TOF_info");
+
+    std::cout << "\n\rProcessing pseudorapidity bin 01/01 (\033[32mMC always only eta integrated\033[0m)";
+    for(auto &part : pdgNames)
+    {
+        int partBinMin = hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->FindBin(partBins[part.first]);
+        int partBinMax = hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->FindBin(partBins[part.first]);
+        if(part.first == kAll)
+        {
+            partBinMin = -1;
+            partBinMax = -1;
+        }
+
+        hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hTOFInfoPionMCV0tagVsPVsPart->GetZaxis()->SetRange(2, 2);
+        hPionMCV0tagWithTOF[part.first] = static_cast<TH1D*>(hTOFInfoPionMCV0tagVsPVsPart->Project3D("y"));
+        hPionMCV0tagWithTOF[part.first]->SetNameTitle(Form("hPionMCV0tagWithTOF_%s", part.second.data()),Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+        hTOFInfoPionMCV0tagVsPVsPart->GetZaxis()->SetRange(-1, -1);
+
+        hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hPionMCV0tagAll[part.first] = static_cast<TH1D*>(hTOFInfoPionMCV0tagVsPVsPart->Project3D("y"));
+        hPionMCV0tagAll[part.first]->SetNameTitle(Form("hPionMCV0tagAll_%s", part.second.data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoPionMCV0tagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetZaxis()->SetRange(2, 2);
+        hKaonMCTPCtagWithTOF[part.first] = static_cast<TH1D*>(hTOFInfoKaonMCTPCtagVsPVsPart->Project3D("y"));
+        hKaonMCTPCtagWithTOF[part.first]->SetNameTitle(Form("hKaonMCTPCtagWithTOF_%s", part.second.data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetZaxis()->SetRange(-1, -1);
+
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hKaonMCTPCtagAll[part.first] = static_cast<TH1D*>(hTOFInfoKaonMCTPCtagVsPVsPart->Project3D("y"));
+        hKaonMCTPCtagAll[part.first]->SetNameTitle(Form("hKaonMCTPCtagAll_%s", part.second.data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoKaonMCTPCtagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+
+        hTOFinfoProtonMCV0tagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hTOFinfoProtonMCV0tagVsPVsPart->GetZaxis()->SetRange(2, 2);
+        hProtonMCV0tagWithTOF[part.first] = static_cast<TH1D*>(hTOFinfoProtonMCV0tagVsPVsPart->Project3D("y"));
+        hProtonMCV0tagWithTOF[part.first]->SetNameTitle(Form("hProtonMCV0tagWithTOF_%s", part.second.data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFinfoProtonMCV0tagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+        hTOFinfoProtonMCV0tagVsPVsPart->GetZaxis()->SetRange(-1, -1);
+
+        hTOFinfoProtonMCV0tagVsPVsPart->GetXaxis()->SetRange(partBinMin, partBinMax);
+        hProtonMCV0tagAll[part.first] = static_cast<TH1D*>(hTOFinfoProtonMCV0tagVsPVsPart->Project3D("y"));
+        hProtonMCV0tagAll[part.first]->SetNameTitle(Form("hProtonMCV0tagAll_%s", part.second.data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFinfoProtonMCV0tagVsPVsPart->GetXaxis()->SetRange(-1, -1);
+
+        if(part.first != kAll)
+        {
+            SetTH1Style(hPionMCV0tagWithTOF[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hPionMCV0tagAll[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hKaonMCTPCtagWithTOF[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hKaonMCTPCtagAll[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hProtonMCV0tagWithTOF[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hProtonMCV0tagAll[part.first], kFullCircle, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+        }
+        else
+        {
+            SetTH1Style(hPionMCV0tagWithTOF[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hPionMCV0tagAll[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hKaonMCTPCtagWithTOF[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hKaonMCTPCtagAll[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hProtonMCV0tagWithTOF[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+            SetTH1Style(hProtonMCV0tagAll[part.first], kOpenSquare, pdgColors[part.first], 1., 2, pdgColors[part.first], kWhite, 0.055, 0.06);
+        }
+    }
+
+    hTPCTOFMatchEffPionMCV0tag = static_cast<TH1D*>(hPionMCV0tagWithTOF[kAll]->Clone("hTPCTOFMatchEffPionMCV0tag"));
+    hTPCTOFMatchEffPionMCV0tag->Divide(hPionMCV0tagWithTOF[kAll], hPionMCV0tagAll[kAll], 1., 1., "B");
+    hTPCTOFMatchEffKaonMCTPCtag = static_cast<TH1D*>(hKaonMCTPCtagWithTOF[kAll]->Clone("hTPCTOFMatchEffKaonMCTPCtag"));
+    hTPCTOFMatchEffKaonMCTPCtag->Divide(hKaonMCTPCtagWithTOF[kAll], hKaonMCTPCtagAll[kAll], 1., 1., "B");
+    hTPCTOFMatchEffProtonMCV0tag = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kAll]->Clone("hTPCTOFMatchEffProtonMCV0tag"));
+    hTPCTOFMatchEffProtonMCV0tag->Divide(hProtonMCV0tagWithTOF[kAll], hProtonMCV0tagAll[kAll], 1., 1., "B");
+
+    hTPCTOFMatchEffPionMCtrue = static_cast<TH1D*>(hPionMCV0tagWithTOF[kPion]->Clone("hTPCTOFMatchEffPionMCV0tag"));
+    hTPCTOFMatchEffPionMCtrue->Divide(hPionMCV0tagWithTOF[kPion], hPionMCV0tagAll[kPion], 1., 1., "B");
+    hTPCTOFMatchEffKaonMCtrue = static_cast<TH1D*>(hKaonMCTPCtagWithTOF[kKaon]->Clone("hTPCTOFMatchEffKaonMCTPCtag"));
+    hTPCTOFMatchEffKaonMCtrue->Divide(hKaonMCTPCtagWithTOF[kKaon], hKaonMCTPCtagAll[kKaon], 1., 1., "B");
+    hTPCTOFMatchEffProtonMCtrue = static_cast<TH1D*>(hProtonMCV0tagWithTOF[kProton]->Clone("hTPCTOFMatchEffProtonMCV0tag"));
+    hTPCTOFMatchEffProtonMCtrue->Divide(hProtonMCV0tagWithTOF[kProton], hProtonMCV0tagAll[kProton], 1., 1., "B");
+
+    hRatioTPCTOFMatchEffPionMC = static_cast<TH1D*>(hTPCTOFMatchEffPionMCV0tag->Clone("hRatioTPCTOFMatchEffPionMC"));
+    hRatioTPCTOFMatchEffPionMC->Divide(hTPCTOFMatchEffPionMCtrue);
+    hRatioTPCTOFMatchEffKaonMC = static_cast<TH1D*>(hTPCTOFMatchEffKaonMCTPCtag->Clone("hRatioTPCTOFMatchEffKaonMC"));
+    hRatioTPCTOFMatchEffKaonMC->Divide(hTPCTOFMatchEffKaonMCtrue);
+    hRatioTPCTOFMatchEffProtonMC = static_cast<TH1D*>(hTPCTOFMatchEffProtonMCV0tag->Clone("hRatioTPCTOFMatchEffProtonMC"));
+    hRatioTPCTOFMatchEffProtonMC->Divide(hTPCTOFMatchEffProtonMCtrue);
+
+    TLegend* letPionMC = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letPionMC->SetTextSize(0.045);
+    letPionMC->AddEntry(hTPCTOFMatchEffPionMCV0tag, "MC V0 tag", "lp");
+    letPionMC->AddEntry(hTPCTOFMatchEffPionMCtrue, "MC true", "lp");
+
+    TLegend* letKaonMC = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letKaonMC->SetTextSize(0.045);
+    letKaonMC->AddEntry(hTPCTOFMatchEffKaonMCTPCtag, "MC TPC tag", "lp");
+    letKaonMC->AddEntry(hTPCTOFMatchEffKaonMCtrue, "MC true", "lp");
+
+    TLegend* letProtonMC = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letProtonMC->SetTextSize(0.045);
+    letProtonMC->AddEntry(hTPCTOFMatchEffProtonMCV0tag, "MC V0 tag", "lp");
+    letProtonMC->AddEntry(hTPCTOFMatchEffProtonMCtrue, "MC true", "lp");
+
+    TCanvas* cTPCTOFMatchEffMCtags = new TCanvas("cTPCTOFMatchEffMCtags", "cTPCTOFMatchEffMCtags", 1920, 1080);
+    cTPCTOFMatchEffMCtags->Divide(3, 2);
+    cTPCTOFMatchEffMCtags->cd(1)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Pion TPC-TOF matching efficiency", varTitle.Data()));
+    cTPCTOFMatchEffMCtags->cd(1)->SetLogy();
+    hTPCTOFMatchEffPionMCV0tag->DrawCopy("same");
+    hTPCTOFMatchEffPionMCtrue->DrawCopy("same");
+    letPionMC->Draw();
+    cTPCTOFMatchEffMCtags->cd(2)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Kaon TPC-TOF matching efficiency", varTitle.Data()));
+    cTPCTOFMatchEffMCtags->cd(2)->SetLogy();
+    hTPCTOFMatchEffKaonMCTPCtag->DrawCopy("same");
+    hTPCTOFMatchEffKaonMCtrue->DrawCopy("same");
+    letKaonMC->Draw();
+    cTPCTOFMatchEffMCtags->cd(3)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Proton TPC-TOF matching efficiency", varTitle.Data()));
+    cTPCTOFMatchEffMCtags->cd(3)->SetLogy();
+    hTPCTOFMatchEffProtonMCV0tag->DrawCopy("same");
+    hTPCTOFMatchEffProtonMCtrue->DrawCopy("same");
+    letProtonMC->Draw();
+    cTPCTOFMatchEffMCtags->cd(4)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Pion match. eff. ratio (MC tag / MC true)", varTitle.Data()));
+    hRatioTPCTOFMatchEffPionMC->DrawCopy("same");
+    cTPCTOFMatchEffMCtags->cd(5)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Kaon match. eff. ratio (MC tag / MC true)", varTitle.Data()));
+    hRatioTPCTOFMatchEffKaonMC->DrawCopy("same");
+    cTPCTOFMatchEffMCtags->cd(6)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Proton match. eff. ratio (MC tag / MC true)", varTitle.Data()));
+    hRatioTPCTOFMatchEffProtonMC->DrawCopy("same");
+
+    std::cout << "\n\n\033[32mDone\033[0m" << std::endl;
+
+    //load data inputs
+    auto infileData = TFile::Open(inFileNameData.data());
+    if (!infileData || !infileData->IsOpen())
+        return;
+    auto indirData = static_cast<TDirectoryFile *>(infileData->Get(inDirNameData.data()));
+    if (!indirData)
+    {
+        std::cerr << Form("TDirectoryFile %s not found in input file for Data! Exit", inDirNameData.data()) << std::endl;
+        return;
+    }
+    auto listData = static_cast<TList *>(indirData->Get(inListNameData.data()));
+    if (!listData)
+    {
+        std::cerr << Form("TList %s not found in input file for Data! Exit", inListNameData.data()) << std::endl;
+        return;
+    }
+
+    std::cout << "\n*******************************************\n" << std::endl;
+    std::cout << "\033[32mProject data tree\033[0m\n" << std::endl;
+    ROOT::RDataFrame dataFrameData(Form("%s/%s", inDirNameData.data(), "fPIDtree"), inFileNameData);
+
+    // histos for TPC-TOF marching efficiency vs. eta and p    
+    std::array<TH1D*, nEtaBinsMax+1> hPionDataV0tagWithTOF, hKaonDataTPCtagWithTOF, hProtonDataV0tagWithTOF, hPionDataV0tagAll, hKaonDataTPCtagAll, hProtonDataV0tagAll; 
+    std::array<TH1D*, nEtaBinsMax+1> hTPCTOFMatchEffPionDataV0tag, hTPCTOFMatchEffKaonDataTPCtag, hTPCTOFMatchEffProtonDataV0tag;
+    std::array<TH1D*, nEtaBinsMax+1> hRatioTPCTOFMatchEffPionDataV0tagMCtrue, hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue, hRatioTPCTOFMatchEffProtonDataV0tagMCtrue;
+    std::array<TCanvas*, nEtaBinsMax+1> cTPCTOFMatchEffDatatagsMCtrue;
+
+    TLegend* letPionData = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letPionData->SetTextSize(0.045);
+    TLegend* letKaonData = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letKaonData->SetTextSize(0.045);
+    TLegend* letProtonData = new TLegend(0.2, 0.2, 0.5, 0.4);
+    letProtonData->SetTextSize(0.045);
+
+    std::cout << "Selecting V0 tagged pions" << std::endl;
+    tagSel = Form("(((tag & %d) > 0) || ((tag & %d) > 0))", AliAnalysisTaskSEHFSystPID::kIsPionFromK0s, AliAnalysisTaskSEHFSystPID::kIsPionFromL);
+    auto dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    auto hTOFInfoPionDataV0tagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                         .Define("eta_scaled", "static_cast<float>(eta)/1000")
+                                                         .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                         .Histo3D({"hTOFInfoPionDataV0tagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 2u, hasTOFLims}, "p_scaled", "eta_scaled", "TOF_info");
+
+    std::cout << "Selecting TPC tagged kaons" << std::endl;
+    tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsKaonFromTPC);
+    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    auto hTOFInfoKaonDataTPCtagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                          .Define("eta_scaled", "static_cast<float>(eta)/1000")
+                                                          .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                          .Histo3D({"hTOFInfoKaonDataTPCtagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 2u, hasTOFLims}, "p_scaled", "eta_scaled", "TOF_info");
+
+    std::cout << "Selecting V0 tagged protons" << std::endl;
+    tagSel = Form("((tag & %d) > 0)", AliAnalysisTaskSEHFSystPID::kIsProtonFromL);
+    dataFrameDataSel = dataFrameData.Filter(tagSel.Data());
+    auto hTOFInfoProtonDataV0tagVsEtaVsP = dataFrameDataSel.Define("TOF_info", Form("if((trackbits & %d) > 0) return 0; else return 1;", AliAnalysisTaskSEHFSystPID::kHasNoTOF))
+                                                           .Define("eta_scaled", "static_cast<float>(eta)/1000")
+                                                           .Define("p_scaled", Form("static_cast<float>(%s)/1000", pSel.Data()))
+                                                           .Histo3D({"hTOFInfoProtonDataV0tagVsEtaVsP", "", static_cast<int>(nBins), binLims, 100u, etaLims, 2u, hasTOFLims}, "p_scaled", "eta_scaled", "TOF_info");
+
+    std::cout << std::endl;
+    for(unsigned int iEtaBin = 0; iEtaBin < nEtaBins; iEtaBin++)
+    {
+        std::cout << Form("\rProcessing pseudorapidity bin %02d/%02d", iEtaBin+1, nEtaBins);
+        int etaMinBinPos = hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->FindBin(absEtaBinMins[iEtaBin]*1.0001);
+        int etaMaxBinPos = hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->FindBin(absEtaBinMaxs[iEtaBin]*0.9999);
+        int etaMinBinNeg = hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->FindBin(-absEtaBinMaxs[iEtaBin]*0.9999);
+        int etaMaxBinNeg = hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->FindBin(-absEtaBinMins[iEtaBin]*1.0001);
+
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hTOFInfoPionDataV0tagVsEtaVsP->GetZaxis()->SetRange(2, 2);
+        hPionDataV0tagWithTOF[iEtaBin] = static_cast<TH1D*>(hTOFInfoPionDataV0tagVsEtaVsP->Project3D("x"));
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hPionDataV0tagWithTOF[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoPionDataV0tagVsEtaVsP->Project3D("x")));
+        hPionDataV0tagWithTOF[iEtaBin]->SetNameTitle(Form("hPionDataV0tagWithTOF_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoPionDataV0tagVsEtaVsP->GetZaxis()->SetRange(-1, -1);
+
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hPionDataV0tagAll[iEtaBin] = static_cast<TH1D*>(hTOFInfoPionDataV0tagVsEtaVsP->Project3D("x"));
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hPionDataV0tagAll[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoPionDataV0tagVsEtaVsP->Project3D("x")));
+        hPionDataV0tagAll[iEtaBin]->SetNameTitle(Form("hPionDataV0tagAll_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoPionDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetZaxis()->SetRange(2, 2);
+        hKaonDataTPCtagWithTOF[iEtaBin] = static_cast<TH1D*>(hTOFInfoKaonDataTPCtagVsEtaVsP->Project3D("x"));
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hKaonDataTPCtagWithTOF[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoKaonDataTPCtagVsEtaVsP->Project3D("x")));
+        hKaonDataTPCtagWithTOF[iEtaBin]->SetNameTitle(Form("hKaonDataTPCtagWithTOF_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetZaxis()->SetRange(-1, -1);
+
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hKaonDataTPCtagAll[iEtaBin] = static_cast<TH1D*>(hTOFInfoKaonDataTPCtagVsEtaVsP->Project3D("x"));
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hKaonDataTPCtagAll[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoKaonDataTPCtagVsEtaVsP->Project3D("x")));
+        hKaonDataTPCtagAll[iEtaBin]->SetNameTitle(Form("hKaonDataTPCtagAll_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoKaonDataTPCtagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetZaxis()->SetRange(2, 2);
+        hProtonDataV0tagWithTOF[iEtaBin] = static_cast<TH1D*>(hTOFInfoProtonDataV0tagVsEtaVsP->Project3D("x"));
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hProtonDataV0tagWithTOF[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoProtonDataV0tagVsEtaVsP->Project3D("x")));
+        hProtonDataV0tagWithTOF[iEtaBin]->SetNameTitle(Form("hProtonDataV0tagWithTOF_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetZaxis()->SetRange(-1, -1);
+
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinPos, etaMaxBinPos);
+        hProtonDataV0tagAll[iEtaBin] = static_cast<TH1D*>(hTOFInfoProtonDataV0tagVsEtaVsP->Project3D("x"));
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(etaMinBinNeg, etaMaxBinNeg);
+        hProtonDataV0tagAll[iEtaBin]->Add(static_cast<TH1D*>(hTOFInfoProtonDataV0tagVsEtaVsP->Project3D("x")));
+        hProtonDataV0tagAll[iEtaBin]->SetNameTitle(Form("hProtonDataV0tagAll_%s", etaBinLabels[iEtaBin].Data()), Form(";%s (GeV(#it{c})); Entries", varTitle.Data()));
+        hTOFInfoProtonDataV0tagVsEtaVsP->GetYaxis()->SetRange(-1, -1);
+
+        SetTH1Style(hPionDataV0tagWithTOF[iEtaBin], kFullDiamond, pdgColors[kPion]+1, 1., 2, pdgColors[kPion], kWhite, 0.055, 0.06);
+        SetTH1Style(hPionDataV0tagAll[iEtaBin], kOpenDiamond, pdgColors[kPion]+1, 1., 2, pdgColors[kPion], kWhite, 0.055, 0.06);
+        SetTH1Style(hKaonDataTPCtagWithTOF[iEtaBin], kFullDiamond, pdgColors[kKaon]-1, 1., 2, pdgColors[kKaon], kWhite, 0.055, 0.06);
+        SetTH1Style(hKaonDataTPCtagAll[iEtaBin], kOpenDiamond, pdgColors[kKaon]-1, 1., 2, pdgColors[kKaon], kWhite, 0.055, 0.06);
+        SetTH1Style(hProtonDataV0tagWithTOF[iEtaBin], kFullDiamond, pdgColors[kProton]+1, 1., 2, pdgColors[kProton], kWhite, 0.055, 0.06);
+        SetTH1Style(hProtonDataV0tagAll[iEtaBin], kOpenDiamond, pdgColors[kProton]+1, 1., 2, pdgColors[kProton], kWhite, 0.055, 0.06);
+
+        hTPCTOFMatchEffPionDataV0tag[iEtaBin] = static_cast<TH1D*>(hPionDataV0tagWithTOF[iEtaBin]->Clone("hTPCTOFMatchEffPionDataV0tag"));
+        hTPCTOFMatchEffPionDataV0tag[iEtaBin]->Divide(hPionDataV0tagWithTOF[iEtaBin], hPionDataV0tagAll[iEtaBin], 1., 1., "B");
+        hTPCTOFMatchEffKaonDataTPCtag[iEtaBin] = static_cast<TH1D*>(hKaonDataTPCtagWithTOF[iEtaBin]->Clone("hTPCTOFMatchEffKaonDataTPCtag"));
+        hTPCTOFMatchEffKaonDataTPCtag[iEtaBin]->Divide(hKaonDataTPCtagWithTOF[iEtaBin], hKaonDataTPCtagAll[iEtaBin], 1., 1., "B");
+        hTPCTOFMatchEffProtonDataV0tag[iEtaBin] = static_cast<TH1D*>(hProtonDataV0tagWithTOF[iEtaBin]->Clone("hTPCTOFMatchEffProtonDataV0tag"));
+        hTPCTOFMatchEffProtonDataV0tag[iEtaBin]->Divide(hProtonDataV0tagWithTOF[iEtaBin], hProtonDataV0tagAll[iEtaBin], 1., 1., "B");
+
+        hRatioTPCTOFMatchEffPionDataV0tagMCtrue[iEtaBin] = static_cast<TH1D*>(hTPCTOFMatchEffPionDataV0tag[iEtaBin]->Clone("hRatioTPCTOFMatchEffPionDataV0tagMCtrue"));
+        hRatioTPCTOFMatchEffPionDataV0tagMCtrue[iEtaBin]->Divide(hTPCTOFMatchEffPionMCtrue);
+        hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue[iEtaBin] = static_cast<TH1D*>(hTPCTOFMatchEffKaonDataTPCtag[iEtaBin]->Clone("hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue"));
+        hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue[iEtaBin]->Divide(hTPCTOFMatchEffKaonMCtrue);
+        hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin] = static_cast<TH1D*>(hTPCTOFMatchEffProtonDataV0tag[iEtaBin]->Clone("hRatioTPCTOFMatchEffProtonDataV0tagMCtrue"));
+        hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin]->Divide(hTPCTOFMatchEffProtonMCtrue);
+
+        if(iEtaBin == 0)
+        {
+            letPionData->AddEntry(hTPCTOFMatchEffPionDataV0tag[iEtaBin],"Data V0 tag","lp");
+            letPionData->AddEntry(hTPCTOFMatchEffPionMCtrue,"MC true","lp");
+            letKaonData->AddEntry(hTPCTOFMatchEffKaonDataTPCtag[iEtaBin],"Data TPC tag","lp");
+            letKaonData->AddEntry(hTPCTOFMatchEffKaonMCtrue,"MC true","lp");
+            letProtonData->AddEntry(hTPCTOFMatchEffProtonDataV0tag[iEtaBin],"Data V0 tag","lp");
+            letProtonData->AddEntry(hTPCTOFMatchEffProtonMCtrue,"MC true","lp");
+        }
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin] = new TCanvas(Form("cTPCTOFMatchEffDatatagsMCtrue_%s", etaBinLabels[iEtaBin].Data()), Form("cTPCTOFMatchEffDatatagsMCtrue_%s", etaBinLabels[iEtaBin].Data()), 1920, 1080);
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->Divide(3, 2);
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(1)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Pion TPC-TOF matching efficiency", varTitle.Data()));
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(1)->SetLogy();
+        hTPCTOFMatchEffPionMCtrue->DrawCopy("same");
+        hTPCTOFMatchEffPionDataV0tag[iEtaBin]->DrawCopy("same");
+        letPionData->Draw();
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(2)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Kaon TPC-TOF matching efficiency", varTitle.Data()));
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(2)->SetLogy();
+        hTPCTOFMatchEffKaonMCtrue->DrawCopy("same");
+        hTPCTOFMatchEffKaonDataTPCtag[iEtaBin]->DrawCopy("same");
+        letKaonData->Draw();
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(3)->DrawFrame(binLims[0], 1.e-3, binLims[nBins], 1., Form(";%s (GeV/#it{c});Proton TPC-TOF matching efficiency", varTitle.Data()));
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(3)->SetLogy();
+        hTPCTOFMatchEffProtonMCtrue->DrawCopy("same");
+        hTPCTOFMatchEffProtonDataV0tag[iEtaBin]->DrawCopy("same");
+        letProtonData->Draw();
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(4)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Pion match. eff. ratio (Data tag / MC true)", varTitle.Data()));
+        hRatioTPCTOFMatchEffPionDataV0tagMCtrue[iEtaBin]->DrawCopy("same");
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(5)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Kaon match. eff. ratio (Data tag / MC true)", varTitle.Data()));
+        hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue[iEtaBin]->DrawCopy("same");
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->cd(6)->DrawFrame(binLims[0], 0.75, binLims[nBins], 1.25, Form(";%s (GeV/#it{c});Proton match. eff. ratio (Data tag / MC true)", varTitle.Data()));
+        hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin]->DrawCopy("same");
+    }
+
+    std::cout << "\n\n\033[32mDone\033[0m" << std::endl;
+
+    //output files
+    std::cout << "\n*******************************************\n" << std::endl;
+    std::cout << "\033[32mSaving output files\033[0m\n" << std::endl;
+
+    std::array<TDirectoryFile*, nEtaBinsMax+1> dirEtaBinEff;
+    TFile outFileMatchEff(Form("%s/TPCTOFMatchingEffSystSingleTrack.root", outDirName.data()), "recreate");
+    outFileMatchEff.cd();
+    cTPCTOFMatchEffMCtags->Write();
+    hTPCTOFMatchEffPionMCV0tag->Write();
+    hTPCTOFMatchEffPionMCtrue->Write();
+    hTPCTOFMatchEffKaonMCTPCtag->Write();
+    hTPCTOFMatchEffKaonMCtrue->Write();
+    hTPCTOFMatchEffProtonMCV0tag->Write();
+    hTPCTOFMatchEffProtonMCtrue->Write();
+    hRatioTPCTOFMatchEffPionMC->Write();
+    hRatioTPCTOFMatchEffKaonMC->Write();
+    hRatioTPCTOFMatchEffProtonMC->Write();
+    for (unsigned int iEtaBin = 0; iEtaBin < nEtaBins; iEtaBin++)
+    {
+        outFileMatchEff.cd();
+        dirEtaBinEff[iEtaBin] = new TDirectoryFile(etaBinLabels[iEtaBin], etaBinLabels[iEtaBin]);
+        dirEtaBinEff[iEtaBin]->Write();
+        dirEtaBinEff[iEtaBin]->cd();
+        cTPCTOFMatchEffDatatagsMCtrue[iEtaBin]->Write();
+        hTPCTOFMatchEffPionDataV0tag[iEtaBin]->Write();
+        hTPCTOFMatchEffKaonDataTPCtag[iEtaBin]->Write();
+        hTPCTOFMatchEffProtonDataV0tag[iEtaBin]->Write();
+        hRatioTPCTOFMatchEffPionDataV0tagMCtrue[iEtaBin]->Write();
+        hRatioTPCTOFMatchEffKaonDataTPCtagMCtrue[iEtaBin]->Write();
+        hRatioTPCTOFMatchEffProtonDataV0tagMCtrue[iEtaBin]->Write();
+    }
+    outFileMatchEff.Close();
 }
 
 //______________________________________________________
