@@ -19,6 +19,7 @@
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
+#include "AliTimeRangeCut.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -389,10 +390,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
-      void    SetEventQuality(Int_t value)                                          { if (fEventQuality) {
-                                                                                        AliWarning(Form("Changing fEventQuality from %i to %i", fEventQuality, value));
-                                                                                      }
-                                                                                      fEventQuality = value                                     ; }
+
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
@@ -671,6 +669,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            ///< period selector
       EnergyVar                   fEnergyEnum;                            ///< energy selector
+      AliTimeRangeCut             fTimeRangeCut;                          //!
 
       TObjString*                 fCutString;                             ///< cut number used for analysis
       TString                     fCutStringRead;                         ///<
