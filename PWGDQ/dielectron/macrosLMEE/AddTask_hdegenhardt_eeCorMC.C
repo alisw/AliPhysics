@@ -1,4 +1,4 @@
-AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
+AliAnalysisTask AddTaskeeCor(
 			char *name = 			"Output"
 			,char *period = 		"17"
 			,Bool_t recabPID = 		kTRUE
@@ -204,10 +204,10 @@ AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 		}
 		//----- (DCAee) Smearing --------------------------------------
 		if (dcaSmr){
-			if (dcaSmrMethod = "math")	 		tasklmee->SetDCASmearingByMath(kTRUE);
-			else if (dcaSmrMethod = "maps") 	tasklmee->SetDCASmearingByMaps(kTRUE);
-			else if (dcaSmrMethod = "parDir") 	tasklmee->SetDCASmearingByPars(kTRUE,kFALSE);//most probable value set (kFALSE - center)
-			else if (dcaSmrMethod = "parGaus") 	tasklmee->SetDCASmearingByPars(kTRUE,kTRUE);//for gaussian distribution set (kTRUE)
+			if (dcaSmrMethod == "math")	 		tasklmee->SetDCASmearingByMath(kTRUE);
+			else if (dcaSmrMethod == "maps") 	tasklmee->SetDCASmearingByMaps(kTRUE);
+			else if (dcaSmrMethod == "parDir") 	tasklmee->SetDCASmearingByPars(kTRUE,kFALSE);//most probable value set (kFALSE - center)
+			else if (dcaSmrMethod == "parGaus") tasklmee->SetDCASmearingByPars(kTRUE,kTRUE);//for gaussian distribution set (kTRUE)
 			
 			tasklmee->SetDCAmapsFromMC(dcaMapsFromMC);
 			
