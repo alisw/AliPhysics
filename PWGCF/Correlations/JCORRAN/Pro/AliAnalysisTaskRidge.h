@@ -32,6 +32,7 @@
 #include <TString.h>
 #include <TLorentzVector.h>
 #include "AliJJetTask.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
 using namespace std;
 
@@ -48,6 +49,7 @@ class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
 class TLorentzVector;
+
 
 class AliAnalysisTaskRidgeRunTable {
     public:
@@ -70,8 +72,9 @@ class AliAnalysisTaskRidgeRunTable {
 };
 
 
-class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
-//class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet, AliAnalysisTaskSE {
+//class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
+//class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet, public AliAnalysisTaskSE {
+class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
     public:
       typedef std::vector<Bool_t> Bool_1d;
       typedef std::vector<Double_t> Double1D;
@@ -186,6 +189,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         Float_t                         fCent;
         Double_t                        fZ;
 	Double_t			fZ_gen;
+ 
+        TObjArray 			*fjets; //!
 
         std::vector < UInt_t >          goodtrackindices; //!
         std::vector < UInt_t >          goodtrackindicesMCALICE; //!
