@@ -104,8 +104,8 @@ private:
 	// Double_t fMCMuPDG1; 
 	// Double_t fMCMuPDG2;
 
-	TTree *fTrgTree; 			//! trigger info tree
-	Int_t fTrgRunNum;
+	// TTree *fTrgTree; 			//! trigger info tree
+	// Int_t fTrgRunNum;
 	Int_t fCMUP6Decision;
 	Int_t fCMUP10Decision;
 	Int_t fCMUP11Decision;
