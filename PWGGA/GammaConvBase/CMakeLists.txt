@@ -34,6 +34,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                    )
 
 # Sources in alphabetical order
@@ -43,6 +44,7 @@ set(SRCS
     AliAODConversionPhoton.cxx
     AliCaloPhotonCuts.cxx
     AliCaloTrackMatcher.cxx
+    AliCaloTriggerMimickHelper.cxx
     AliConversionAODBGHandlerRP.cxx
     AliConversionCuts.cxx
     AliConversionMesonCuts.cxx
