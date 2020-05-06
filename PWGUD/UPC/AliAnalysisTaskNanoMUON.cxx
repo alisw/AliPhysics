@@ -89,7 +89,8 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
   // fMCMuMuPhi(0), 
   fMCMuMuY(0), fMCMuMuM(0),
   // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
-  fTrgTree(0), fTrgRunNum(0), fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
+  // fTrgTree(0), fTrgRunNum(0), 
+  fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -116,7 +117,8 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysis
   // fMCMuMuPhi(0), 
   fMCMuMuY(0), fMCMuMuM(0),
   // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
-  fTrgTree(0), fTrgRunNum(0), fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
+  // fTrgTree(0), fTrgRunNum(0), 
+  fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10)
 {
   // constructor
   DefineInput(0, TChain::Class());   
@@ -134,7 +136,7 @@ AliAnalysisTaskNanoMUON::~AliAnalysisTaskNanoMUON()
   if(fMuonTrackCuts) {delete fMuonTrackCuts;}
   if(fRecTree) {delete fRecTree;}
   if(fGenTree) {delete fGenTree;}
-  if(fTrgTree) {delete fTrgTree;}
+  // if(fTrgTree) {delete fTrgTree;}
   if(fCounterH) {delete fCounterH;}
   if(fNumberMuonsH) {delete fNumberMuonsH;}
   if(fNumberMCMuonsH) {delete fNumberMCMuonsH;}
@@ -192,6 +194,9 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   // fRecTree ->Branch("fMuPhi2", &fMuPhi2, "fMuPhi2/D");
   // fRecTree ->Branch("fMuQ1", &fMuQ1, "fMuQ1/D");
   // fRecTree ->Branch("fMuQ2", &fMuQ2, "fMuQ2/D");
+  fRecTree ->Branch("fCMUP6Decision", &fCMUP6Decision, "fCMUP6Decision/I");
+  fRecTree ->Branch("fCMUP10Decision", &fCMUP10Decision, "fCMUP10Decision/I");
+  fRecTree ->Branch("fCMUP11Decision", &fCMUP11Decision, "fCMUP11Decision/I");
   // post data
   PostData(1, fRecTree);
 
@@ -221,15 +226,15 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   ////////////////////////////////////////
   //Trigger information tree
   ////////////////////////////////////////
-  fTrgTree = new TTree("fTrgTree", "fTrgTree");
-  if(!fIsMC){
-    fTrgTree ->Branch("fTrgRunNum", &fTrgRunNum, "fTrgRunNum/I");
-    fTrgTree ->Branch("fCMUP6Decision", &fCMUP6Decision, "fCMUP6Decision/I");
-    fTrgTree ->Branch("fCMUP10Decision", &fCMUP10Decision, "fCMUP10Decision/I");
-    fTrgTree ->Branch("fCMUP11Decision", &fCMUP11Decision, "fCMUP11Decision/I");
-    // post data
-  }  
-  PostData(4, fTrgTree);
+  // fTrgTree = new TTree("fTrgTree", "fTrgTree");
+  // if(!fIsMC){
+  //   fTrgTree ->Branch("fTrgRunNum", &fTrgRunNum, "fTrgRunNum/I");
+  //   fTrgTree ->Branch("fCMUP6Decision", &fCMUP6Decision, "fCMUP6Decision/I");
+  //   fTrgTree ->Branch("fCMUP10Decision", &fCMUP10Decision, "fCMUP10Decision/I");
+  //   fTrgTree ->Branch("fCMUP11Decision", &fCMUP11Decision, "fCMUP11Decision/I");
+  //   // post data
+  // }  
+  // PostData(4, fTrgTree);
 
   ////////////////////////////////////////
   //output histograms
@@ -270,7 +275,7 @@ void AliAnalysisTaskNanoMUON::PostAllData()
   PostData(1, fRecTree);
   PostData(2, fOutputList);
   PostData(3, fGenTree);
-  PostData(4, fTrgTree);
+  // PostData(4, fTrgTree);
 }
 // ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
@@ -510,7 +515,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
     return;
   }
 
-  fTrgRunNum = fAOD->GetRunNumber();
+  // fTrgRunNum = fAOD->GetRunNumber();
 
   fCounterH->Fill(iSelectionCounter); // right trigger found 4/7
   iSelectionCounter++;
@@ -680,7 +685,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   // fIR2Map = fAOD->GetHeader()->GetIRInt2InteractionMap();
 
   // fill the tree
-  fTrgTree->Fill();
+  // fTrgTree->Fill();
   fRecTree->Fill();
 
   // post the data
