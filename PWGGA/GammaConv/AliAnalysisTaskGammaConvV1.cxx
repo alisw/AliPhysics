@@ -2316,7 +2316,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   }
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-  if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
+  if(fInputEvent->IsIncompleteDAQ()==kTRUE || fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;  // incomplete event or relabeling failed
   // Event Not Accepted due to MC event missing or because it is incomplete or  wrong trigger for V0ReaderV1 => skip broken events/files
   if(eventQuality == 2 || eventQuality == 3){
     // write out name of broken file if it has not been done already
