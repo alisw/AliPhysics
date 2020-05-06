@@ -156,6 +156,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistImpParXYPtMulTPCselSPDanyPrim{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecDec{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecMat{nullptr},
+  fHistPtDeltaPtTrueImpParXY{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
@@ -334,6 +335,7 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
     delete fHistImpParXYPtMulTPCselSPDanySecDec;
     delete fHistImpParXYPtMulTPCselSPDanySecMat;
+    delete fHistPtDeltaPtTrueImpParXY;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
@@ -577,7 +579,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistPtTPCInwVsPtTPCselSPDany);
 
   int nbinsSparse[5]={fNPtBins,fNPtBins,fNPtBins,3,34};
-  double xminSparse[5]={fMinPt,fMinPt,fMinPt,-1.5,0.,};
+  double xminSparse[5]={fMinPt,fMinPt,fMinPt,-1.5,0.};
   double xmaxSparse[5]={fMaxPt,fMaxPt,fMaxPt,1.5,85.};
   fHistPtTPCInwVsPtVsPtTrueTPCsel = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCsel","",5,nbinsSparse,xminSparse,xmaxSparse);
   fHistPtTPCInwVsPtVsPtTrueTPCselITSref = new THnSparseF("hPtTPCInwVsPtVsPtTrueTPCselITSref","",5,nbinsSparse,xminSparse,xmaxSparse);
@@ -760,6 +762,18 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
+  int nbinsSparseIP[4]={nPtBins4ip,100,nIPBins4ip,3};
+  double xminSparseIP[4]={ptBins4ip[0],-0.25,ipBins4ip[0],-1.5};
+  double xmaxSparseIP[4]={ptBins4ip[nPtBins4ip],0.25,ipBins4ip[nIPBins4ip],1.5};
+  fHistPtDeltaPtTrueImpParXY = new THnSparseF("hPtDeltaPtTrueImpParXY","",4,nbinsSparseIP,xminSparseIP,xmaxSparseIP);
+  fHistPtDeltaPtTrueImpParXY->GetAxis(0)->SetTitle("p_{T}^{reco} (GeV/c)");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(0)->Set(nPtBins4ip,ptBins4ip);
+  fHistPtDeltaPtTrueImpParXY->GetAxis(1)->SetTitle("p_{T}^{reco}-p_{T}^{true} (GeV/c)");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(2)->SetTitle("d_{0}^{xy} (#mum)");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(2)->Set(nIPBins4ip,ipBins4ip);
+  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(3)->SetTitle("IsPrimary");
+  fOutput->Add(fHistPtDeltaPtTrueImpParXY);
+  
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,25,0.,5.,50,0.,50.);
   fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,25,0.,5.,50,0.,50.);
   fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,25,0.,5.,50,0.,50.);
@@ -1226,6 +1240,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(ptOnX,impactXY*10000.,ncl1);
 	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
 	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
+	if(fFillSparses){
+	  double arrayForSparseIP[4]={pttrack,pttrack-ptgen,impactXY*10000.,(Float_t)isPhysPrim};
+	  fHistPtDeltaPtTrueImpParXY->Fill(arrayForSparseIP);
+	}
       }
 
     }
