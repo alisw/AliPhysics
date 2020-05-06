@@ -4558,7 +4558,10 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     fMinEtaCut=-0.6687; // use EMCal cut also for DCal
     fMinEtaInnerEdge=-0.227579; // DCal hole
     break;
-
+  case 10:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=0.;
+    break;
   default:
     AliError(Form("MinEta Cut not defined %d",minEta));
     return kFALSE;
@@ -4612,6 +4615,10 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
     if(!fUseEtaCut) fUseEtaCut=1;
     fMaxEtaCut=0.66465; // use EMCal cut also for DCal
     fMaxEtaInnerEdge=0.227579; // DCal hole
+    break;
+  case 10:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.0;
     break;
   default:
     AliError(Form("MaxEta Cut not defined %d",maxEta));
