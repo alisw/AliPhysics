@@ -4838,9 +4838,9 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
 
     TString nameProfile;
     if      (flag==1){
-                nameProfile = "profileContainingMaterialBudgetWeights_fewRadialBins";}
+                nameProfile = "profile2DContainingMaterialBudgetWeights_fewRadialBins";}
     else if (flag==2){
-                nameProfile = "profileContainingMaterialBudgetWeights_manyRadialBins";}
+                nameProfile = "profile2DContainingMaterialBudgetWeights_manyRadialBins";}
     else {
         AliError(Form("%d not a valid flag for InitMaterialBudgetWeightingOfPi0Candidates()",flag));
         return kFALSE;
@@ -4850,7 +4850,7 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
         AliError(Form("File %s for materialbudgetweights not found",filename.Data()));
         return kFALSE;
     }
-    fProfileContainingMaterialBudgetWeights = (TProfile*)file->Get(nameProfile.Data());
+    fProfileContainingMaterialBudgetWeights = (TProfile2D*)file->Get(nameProfile.Data());
     if (!fProfileContainingMaterialBudgetWeights){
         AliError(Form("Histogram %s not found in file",nameProfile.Data()));
         return kFALSE;
@@ -4869,9 +4869,23 @@ Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(A
 
     Float_t weight = 1.0;
     Float_t gammaConversionRadius = gamma->GetConversionRadius();
-    Int_t bin = fProfileContainingMaterialBudgetWeights->FindBin(gammaConversionRadius);
-    if (bin > 0 && bin <= fProfileContainingMaterialBudgetWeights->GetNbinsX()){
-        weight = fProfileContainingMaterialBudgetWeights->GetBinContent(bin);
+    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces. 
+    // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
+    Float_t maxPtForCor = 0.7;  
+    Float_t defaultPtForCor = 0.5;  
+    Float_t gammaPt = gamma->Pt();
+    Int_t binX = fProfileContainingMaterialBudgetWeights->GetXaxis()->FindBin(gammaConversionRadius+0.001);
+    Int_t binY;
+
+    if (gammaPt < maxPtForCor){
+      binY = fProfileContainingMaterialBudgetWeights->GetYaxis()->FindBin(gammaPt+0.001);
+    }  else{
+      binY = fProfileContainingMaterialBudgetWeights->GetYaxis()->FindBin(defaultPtForCor+0.001);
     }
+    if (  (binX > 0 && binX <= fProfileContainingMaterialBudgetWeights->GetNbinsX()) &&
+	  (binY > 0 && binY <= fProfileContainingMaterialBudgetWeights->GetNbinsY())){
+      weight = fProfileContainingMaterialBudgetWeights->GetBinContent(binX,binY);
+    }
+    //    cout << gammaConversionRadius<< " " << gammaPt << " " << binX<< " " << binY << " "<<  weight<< endl;
     return weight;
 }
