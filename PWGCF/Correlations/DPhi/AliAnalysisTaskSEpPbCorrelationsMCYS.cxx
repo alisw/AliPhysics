@@ -1392,17 +1392,24 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
      
    }else if(fAnaMode=="FMDFMD"){
      const Int_t nTrackVars_fmdfmd = 6;
-     const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70.,80.,100.1};
-	 //	 const Double_t binning_cent_fmdfmd_HMPP[9]={0.,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-     const Double_t binning_cent_fmdfmd_HMPP[9]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
-     const Int_t iTrackBin_fmdfmd[6]={49,17,32,8,20,10};
+     //     const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70.,80.,100.1};
+     //	 const Double_t binning_cent_fmdfmd_HMPP[9]={0.,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+     //const Double_t binning_cent_fmdfmd_HMPP[9]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
+
+     const Int_t iTrackBin_fmdfmd[6]={49,17,32,ncentbin,20,10};
+
      fHistReconstTrack= new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, nTrackVars_fmdfmd,iTrackBin_fmdfmd);
      fHistReconstTrack->SetBinLimits(0,3.425,8.325);
      //    fHistReconstTrack->SetBinLimits(0,3.525,8.325);
      fHistReconstTrack->SetBinLimits(1,binning_etafmdc);
      fHistReconstTrack->SetBinLimits(2,binning_etafmd);
-     if(fcollisiontype=="HMPP")  fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
-	 else fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd);
+     //     if(fcollisiontype=="HMPP")  fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
+     //	 else fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd);
+     if(fcollisiontype=="HMPP") fHistReconstTrack->SetBinLimits(3,binning_cent_HMPP);
+     else if(fcollisiontype=="PbPb") fHistReconstTrack->SetBinLimits(3,binning_cent_fmdfmd_PbPb);
+     else if(fcollisiontype=="MBPP") fHistReconstTrack->SetBinLimits(3,binning_cent_MBPP);
+     else fHistReconstTrack->SetBinLimits(3,binning_cent_trig);
+
      if(!fprim)   fHistReconstTrack->SetBinLimits(4,-0.55*TMath::Pi(),1.45*TMath::Pi());
      else  fHistReconstTrack->SetBinLimits(4,-0.5*TMath::Pi()-0.0001,1.5*TMath::Pi()-0.0001);
      fHistReconstTrack->SetBinLimits(5,-10.,10.);
@@ -1417,8 +1424,17 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
      //fHistReconstTrackMix->SetBinLimits(0,3.525,8.325);
      fHistReconstTrackMix->SetBinLimits(1,binning_etafmdc);
      fHistReconstTrackMix->SetBinLimits(2,binning_etafmd);
-     if(fcollisiontype=="HMPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
-     else fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
+     
+     if(fcollisiontype=="HMPP") fHistReconstTrackMix->SetBinLimits(3,binning_cent_HMPP);
+     else if(fcollisiontype=="PbPb") fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_PbPb);
+     else if(fcollisiontype=="MBPP") fHistReconstTrackMix->SetBinLimits(3,binning_cent_MBPP);
+     else fHistReconstTrackMix->SetBinLimits(3,binning_cent_trig);
+     
+     //     if(fcollisiontype=="HMPP")fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd_HMPP);
+     //     else fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
+
+
+
      //    fHistReconstTrackMix->SetBinLimits(4,-0.551*TMath::Pi(),1.449*TMath::Pi());   
      if(!fprim)fHistReconstTrackMix->SetBinLimits(4,-0.55*TMath::Pi(),1.45*TMath::Pi());
      else fHistReconstTrackMix->SetBinLimits(4,-0.5*TMath::Pi()-0.0001,1.5*TMath::Pi()-0.0001);
@@ -2295,6 +2311,7 @@ if(fAnaMode=="TPCTPC"){
        }
      }else if(fAnaMode=="FMDFMD"){
        if(mcTrackEta>1.7 && mcTrackEta<4.9) selectedTracksMC1->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
+       if(mcTrackEta>-3.4  && mcTrackEta<-1.7) selectedTracksMC2->Add(new AliAssociatedTrackYSMC(mcTrack->Charge(),mcTrackEta,mcTrack->Phi(),mcTrack->Pt(),mcTrack->GetLabel(),-999,-999,0, 1));
      }
    }			
  }	  
