@@ -95,6 +95,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
   Reader->SetDCAglobalTrack(1);  
+  Reader->SetTrackPileUpRemoval(kTRUE); 
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
