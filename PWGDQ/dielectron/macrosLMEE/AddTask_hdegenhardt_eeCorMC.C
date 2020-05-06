@@ -1,4 +1,4 @@
-AliAnalysisTask AddTaskeeCor(
+AliAnalysisTask AddTask_hdegenhardt_eeCorMC(
 			char *name = 			"Output"
 			,char *period = 		"17"
 			,Bool_t recabPID = 		kTRUE
