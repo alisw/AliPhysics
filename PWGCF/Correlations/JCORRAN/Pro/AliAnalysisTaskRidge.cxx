@@ -60,6 +60,7 @@
 #include <TClonesArray.h>
 #include <TList.h>
 #include <TProfile.h>
+#include "AliAnalysisTaskEmcalJet.h"
 
 using namespace std;
 
@@ -90,7 +91,7 @@ AliAnalysisTaskRidgeRunTable::~AliAnalysisTaskRidgeRunTable()
 
 //___________________________________________________________________
 AliAnalysisTaskRidge::AliAnalysisTaskRidge()
-:AliAnalysisTaskSE("AliAnalysisTaskRidge")
+:AliAnalysisTaskEmcalJet("AliAnalysisTaskRidge")
     , fOption() 
     , goodtrackindices()
 	, fEMpool ()
@@ -106,7 +107,7 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
       const char *name
     , const char *option
 )
-:AliAnalysisTaskSE(name)
+:AliAnalysisTaskEmcalJet(name)
     , fOption(option)
     , goodtrackindices()
 	, fEMpool () 
@@ -217,7 +218,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D jetptbin = {
 	0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
 
-	binRho = AxisFix("Rho",100,0,10);
+	binRho = AxisFix("Rho",100,0,1);
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
@@ -355,7 +356,6 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	V0M_mean = 120;
 
-	cout << "INIT vo : " << V0M_mean << endl;
 }
 //___________________________________________________________________
 void AliAnalysisTaskRidge::Exec(Option_t* )
@@ -379,7 +379,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
 
 
-	cout << "event started " << endl;
 
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
@@ -531,15 +530,45 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
 	}
 
-	cout << "before jet " << endl;
-	TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
+	TObjArray *fjets = new TObjArray;
+	fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
 
-	AliJetContainer* ktjets = (AliJetContainer*)fJetTask->GetAliJJetList(2);
-	cout << "obtain kt jet " << endl;
+//	ktjets = (TObjArray*)fJetTask->GetAliJJetList(2);
+//	TObject *ktjets = (TObject*)fJetTask->GetAliJJetList(2);
+//	AliJetContainer* ktjets = dynamic_cast<AliJetContainer*>(fJetTask->GetAliJJetList(2));
+
+	AliJetContainer* ktjets = GetJetContainer(2);
+
 	RHO = 0.0; RHOM = 0.0;
-	cout << (bool)ktjets << endl;
-	if( ktjets ) this -> MeasureBgDensity( ktjets );
-	cout << "RHO measured " << endl;
+
+	if( ktjets )
+	this -> MeasureBgDensity( ktjets );
+//	cout << "RHO measured " << endl;
+
+/*
+	AliJJet* ktJet;
+	AliJBaseTrack* kttrack;
+	AliAODTrack* ktt_aod;
+
+	if( ktjets->GetEntries() < 2.5 ){
+		RHO = 0.0;
+	}
+	else{
+		Double_t Sumpt[ktjets->GetEntries()-2];
+		cout << "ktjets->GetEntries() : " << ktjets->GetEntries() << endl;
+		for(int i=2;i<ktjets->GetEntries();i++){
+			Sumpt[i-2] = 0.0;
+			ktJet = dynamic_cast<AliJJet*>( ktjets->At(i) );
+			cout << i << endl;
+			for(int j=0;j<ktJet->GetNConstituents();j++){
+				kttrack = dynamic_cast<AliJBaseTrack*>( ktJet->GetConstituent(j) );
+				ktt_aod = dynamic_cast<AliAODTrack*>( fEvt ->GetTrack( kttrack->GetID() ) );
+				cout << kttrack->GetLorentzVector().Pt() << ", " << ktt_aod->Pt() << endl;
+			}
+		}
+	}
+*/
+
 	double rho = RHO;
 
 	AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
@@ -1813,7 +1842,6 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 }
 
 void AliAnalysisTaskRidge::MeasureBgDensity(AliJetContainer* ktContainer){
-	cout << "funxtion started  " << endl;
         RHO=0;
         RHOM=0;
         int n = 0;
@@ -1823,10 +1851,10 @@ void AliAnalysisTaskRidge::MeasureBgDensity(AliJetContainer* ktContainer){
         TLorentzVector leadingkt;
         Bool_t isfirstdijet = true;
 
-	cout << "Before for statement " << endl;
+
+	if( ktContainer->GetNJets() > 2.5 ) return;
 
         for( auto j : ktContainer->accepted() ){
-		cout << "start of for statement " << endl;
                 if (fabs(j->Eta())>0.7)  continue;
                 double lpt = 0;
                 double sumpt = 0;
@@ -1860,7 +1888,6 @@ void AliAnalysisTaskRidge::MeasureBgDensity(AliJetContainer* ktContainer){
                 Sumpt.push_back(sumpt);
                 Summ.push_back(summ);
 
-		cout << n << "th jet" << endl;
 
                 n++;
 
@@ -1881,6 +1908,7 @@ void AliAnalysisTaskRidge::MeasureBgDensity(AliJetContainer* ktContainer){
         RHO = TMath::Median(Sumpt.size(),rhopt);
         RHOM = TMath::Median(Summ.size(),rhom);
 //        FillTHnSparse("hRho",{fCent,RHO, pthardbin},sf);
+	return;
 }
 
 //___________________________________________________________________
