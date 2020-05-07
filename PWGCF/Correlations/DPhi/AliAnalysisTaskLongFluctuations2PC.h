@@ -22,37 +22,32 @@ class AliAnalysisTaskLongFluctuations2PC : public AliAnalysisTaskSE
         virtual void    UserExec(Option_t* option);
         virtual void    Terminate(Option_t* option);
         void            SetMCRead(Bool_t bs);
-        void            SetFilterBit(Int_t fb)                      {fFilterBit = fb;}
-        void            SetCentrality(TString Cent)                 {fCentrality = Cent;}
-        void            SetChi2DoF(Double_t Chi2DoF)                {fChi2DoF = Chi2DoF;}
-        void            SetNclTPC(Int_t ncl)                        {fTPCNcls = ncl;}
-        void            SetPtLimits(Double_t ptmin, Double_t ptmax) {fPtmin = ptmin; fPtmax = ptmax;}
-        void            SetEtaLimit(Double_t etalimit)              {fEta = etalimit;}  
+        void            SetCentrality(TString Cent);
+        void            SetChi2DoF(Double_t Chi2DoF);
+        void            SetNclTPC(Int_t ncl);
+        void            SetPtLimits(Double_t ptmin, Double_t ptmax);
+        void            SetEtaLimit(Double_t etalimit);
 
     private:
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
-        TH1D*                   fHistBg[9][17];        //! 2PC background histogram (eta)
-        TH2D*                   fHistSig[9][17];        //! 2PC signal histogram (eta1, eta2)
-        TH2D*                   fHistBgGap[9][17];        //! 2PC background histogram with gap (eta,phi)
-        TH2D*                   fHistSigGap[9][17];       //! 2PC signal histogram with gap (eta1, eta2)
+        TH2D*                   fHistBgTPC[9][17];        //! 2PC background histogram (eta,phi) TPC
+        TH3D*                   fHistSigTPC[9][17];        //! 2PC signal histogram (eta1, eta2,d,phi) TPC
+        TH2D*                   fHistBgGlob[9][17];        //! 2PC background histogram with gap (eta,phi) Globals
+        TH3D*                   fHistSigGlob[9][17];       //! 2PC signal histogram with gap (eta1, eta2,dphi) Globals
 
-        TH1D*                   fHistBgMC[9];        //! 2PC MC background histogram (eta)
-        TH2D*                   fHistSigMC[9];        //! 2PC MC signal histogram (eta1, eta2)
-        TH2D*                   fHistBgGapMC[9];        //! 2PC MC background histogram with gap (eta,phi)
-        TH2D*                   fHistSigGapMC[9];       //! 2PC MC signal histogram with gap (eta1, eta2)
+        TH2D*                   fHistBgMC[9];        //! 2PC MC background histogram (eta)
+        TH3D*                   fHistSigMC[9];        //! 2PC MC signal histogram (eta1, eta2)
         TH1D*                   fMultD;
         TProfile*               fMultDpT;
         TH1D*                   fMultDMC;
         TProfile*               fMultDpTMC;
         TH2D*                   fMultDReMC;
+        TH2D*                   fPVzCentNevents;
+        TH2D*                   fCentMultQA;
+        TH3D*                   fAllCentQA;
     
-    Int_t mCounter;
-        
-    Float_t mPVz;
-        Float_t mCent;
-        Bool_t mIsMC;
-        Int_t fFilterBit;
+        Bool_t fIsMC;
         TString fCentrality;
         Double_t fChi2DoF;
         Int_t fTPCNcls;
@@ -63,7 +58,7 @@ class AliAnalysisTaskLongFluctuations2PC : public AliAnalysisTaskSE
         AliAnalysisTaskLongFluctuations2PC(const AliAnalysisTaskLongFluctuations2PC&); // not implemented
         AliAnalysisTaskLongFluctuations2PC& operator=(const AliAnalysisTaskLongFluctuations2PC&); // not implemented
 
-        ClassDef(AliAnalysisTaskLongFluctuations2PC, 1);
+        ClassDef(AliAnalysisTaskLongFluctuations2PC, 3);
 };
 
 #endif

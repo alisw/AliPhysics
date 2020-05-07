@@ -84,6 +84,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         void FillTreeGenXic0(AliAODMCParticle *mcpart, AliAODMCParticle *mcpipart, AliAODMCParticle *mccascpart, Int_t decaytype);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
+        void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
     private:
         void                    DefineEvent();
@@ -101,6 +102,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
+        TList*                  fOutputWeight;        //!<! Output list after weight
         TTree*                  fTree_Event;          //!<! tree of event
         Float_t*                fVar_Event;           //!<! variables of event to be written to the tree
         TTree*                  fTree_Xic0;             //!<! tree of the candidate variables
@@ -111,7 +113,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 //        Float_t*                fVar_AntiXicZero;         //!<! variables of Anti-Xic0 to be written to the tree
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
-        Bool_t                  fIsMC;                ///< Flag of MC analysis
+        Bool_t                  fIsMC; ///< Flag of MC analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
         TH1F*                   fHistMCGen_Lambda_Pt; //!<! Pt distribution of lambda at gen. level
@@ -405,13 +407,14 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         THnSparseF*             fHistMCGen_PiXiMassvsPiPt_PionMinus; //!<! mcArray
         Bool_t                  fWriteXic0MCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
         Bool_t                  fWriteXic0Tree; ///< flag to decide whether to write XicZero tree
-
-
+        TF1*                    fWeight; ///< weight of Data/MC_gen
+        TH1D*                   fHistMCGen_Xic0Pt_weight; //!<! pt of Xic0 after weight at gen. level
+        TH2D*                   f2DHistMCRec_Xic0Pt_weight; //!<! pt of Xic0 after weight at rec. level
 
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 2);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 3);
 };
 
 #endif

@@ -88,6 +88,7 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   Correlationpp/AliAnalysisCorrelationEventCollection.cxx
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   )
 
 # Headers from sources

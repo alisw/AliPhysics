@@ -92,19 +92,19 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fMassBins(), fPairPtBins()
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPreFilterMass(), fLowerPreFilterMass()
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPrimSecPreFilterMass(), fLowerPrimSecPreFilterMass(), fUpperSecSecPreFilterMass(), fLowerSecSecPreFilterMass(), fV0OnFlyStatus()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary_PreFilter(), fTrackCuts_primary_standard(), fPairCuts_primary(), fPairCuts_secondary_PreFilter(), fPairCuts_secondary_standard(), fUsedVars(0x0)
+                                                                              , fTrackCuts_primary_PreFilter(), fTrackCuts_primary_standard(), fTrackCuts_secondary_PreFilter(), fTrackCuts_secondary_standard(), fPairCuts_primary(), fPairCuts_secondary_PreFilter(), fPairCuts_secondary_standard(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0), fTrackCutListVecPrim(), fTrackCutListVecSec(), fPairCutListVecSec(), fFourPairCutListVec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair()
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fVecSecSecPrefilter()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
-                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair()
+                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -128,19 +128,19 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fMassBins(), fPairPtBins()
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPreFilterMass(), fLowerPreFilterMass()
+                                                                              , fLowerMassCutPrimaries(), fUpperMassCutPrimaries(), fMassCutSecondaries(), fUpperPrimSecPreFilterMass(), fLowerPrimSecPreFilterMass(), fUpperSecSecPreFilterMass(), fLowerSecSecPreFilterMass(), fV0OnFlyStatus()
                                                                               , fSinglePrimaryLegMCSignal(), fSingleSecondaryLegMCSignal(), fPrimaryPairMCSignal(), fSecondaryPairMCSignal(), fFourPairMCSignal(), fPrimaryDielectronPairNotFromSameMother(), fSecondaryDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorMCSignalName(""), fGeneratorULSSignalName(""), fGeneratorHashs(), fGeneratorMCSignalHashs(), fGeneratorULSSignalHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
-                                                                              , fTrackCuts_primary_PreFilter(), fTrackCuts_primary_standard(), fPairCuts_primary(), fPairCuts_secondary_PreFilter(), fPairCuts_secondary_standard(), fUsedVars(0x0)
+                                                                              , fTrackCuts_primary_PreFilter(), fTrackCuts_primary_standard(), fTrackCuts_secondary_PreFilter(), fTrackCuts_secondary_standard(), fPairCuts_primary(), fPairCuts_secondary_PreFilter(), fPairCuts_secondary_standard(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
                                                                               , fHistEvents(0x0), fHistEventStat(0x0), fHistCentrality(0x0), fHistVertex(0x0), fHistVertexContibutors(0x0), fHistNTracks(0x0)
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0), fTrackCutListVecPrim(), fTrackCutListVecSec(), fPairCutListVecSec(), fFourPairCutListVec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair()
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair(), fVecSecSecPrefilter()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
-                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair()
+                                                                              , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
                                                                               , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
                                                                               fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
@@ -735,6 +735,16 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           fFourPairList->Add(list);
         }
 
+        TH2D* fHistBeforeSecSecPrefilter = new TH2D ("HistBeforeSecSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        TH2D* fHistAfterSecSecPrefilter = new TH2D ("HistAfterSecSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        fHistBeforeSecSecPrefilter->Sumw2();
+        fHistAfterSecSecPrefilter->Sumw2();
+        fVecSecSecPrefilter.push_back(fHistBeforeSecSecPrefilter);
+        fVecSecSecPrefilter.push_back(fHistAfterSecSecPrefilter);
+        fFourPairList->Add(fHistBeforeSecSecPrefilter);
+        fFourPairList->Add(fHistAfterSecSecPrefilter);
+
+
       } // end if fDoFourPairing
 
     fOutputList->Add(fSingleElectronList);
@@ -786,6 +796,8 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   fRecPairVec_primary.clear();
   fRecPairVec_secondary.clear();  // not in use at the moment (used in DoRecTwoPairing for secondary case)
   fRecV0Pair.clear();
+
+  fPreFilter_BadTracksLabel_primary.clear();
 
   // ##########################################################
   // Set MC event
@@ -1311,7 +1323,7 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
 
   if (fDoPairing){
-    if(fdebug) std::cout << "start two pairing" << std::endl;
+    // if(fdebug) std::cout << "start two pairing" << std::endl;
                                                                                 // Debug code in order to check Pdg Codes of Particle, Mother and GrandMother
                                                                                 // if (fdebug) {
                                                                                 //   if (fdebug) std::cout << __LINE__ << " Primary Particles: " << std::endl;
@@ -1345,29 +1357,41 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
 
     Bool_t PrimaryPair = kTRUE;
     Bool_t SmearedPair  = kTRUE;
-                                                                                if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
-                                                                                if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
-                                                                                if (fdebug) std::cout << "Do primary two generated pairing" << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ <<  " DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
+                                                                                // if(fdebug) std::cout << __LINE__ <<  " DEBUG_AnalysisTask: fGenNegPart_secondary: "  << fGenNegPart_secondary.size() << " fGenPosPart_secondary: " <<  fGenPosPart_secondary.size() << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two generated pairing" << std::endl;
     DoGenAndGenSmearTwoPairing(&fGenNegPart_primary, &fGenPosPart_primary, PrimaryPair, !SmearedPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two generated pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do secondary two generated pairing" << std::endl;
     DoGenAndGenSmearTwoPairing(&fGenNegPart_secondary, &fGenPosPart_secondary, !PrimaryPair, !SmearedPair, centralityWeight);
 
     if(fArrResoPt){
-                                                                                if (fdebug) std::cout << "Do primary two generated smeared pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two generated smeared pairing" << std::endl;
       DoGenAndGenSmearTwoPairing(&fGenSmearedNegPart_primary, &fGenSmearedPosPart_primary, PrimaryPair, SmearedPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two generated smeared pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do secondary two generated smeared pairing" << std::endl;
       DoGenAndGenSmearTwoPairing(&fGenSmearedNegPart_secondary, &fGenSmearedPosPart_secondary, !PrimaryPair, SmearedPair, centralityWeight);
     }
-                                                                                if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
-    DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PrimaryPair, centralityWeight);
-                                                                                if (fdebug) std::cout << "Do secondary two reconstructed pairing" << std::endl;
+                                                                                // if (fdebug) std::cout << "Do primary two reconstructed pairing" << std::endl;
+    DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PrimaryPair, centralityWeight); // ! Note: use for secondaries is commented out, since secondaries are selected with V0-Finder
+                                                                                // if (fdebug) std::cout << "Do secondary two reconstructed pairing" << std::endl;
     // DoRecTwoPairing(fRecNegPart_secondary, fRecPosPart_secondary, fSecondaryPairMCSignal, !PrimaryPair, centralityWeight);
     DoRecTwoPairingV0(fSecondaryPairMCSignal);
 
-                                                                                if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors, " << std::endl <<
-                                                                                " fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
-                                                                                " fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << " fRecPairVec_secondary = " << fRecPairVec_secondary.size() << std::endl;
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after TwoPairing, " << std::endl <<
+                                                                                // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                // /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */
+                                                                                // " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */
+                                                                                // " fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
 
+
+
+                                                                                // if (fdebug) {
+                                                                                // Cout to look at V0's daughter labels
+                                                                                //   for (size_t i = 0; i < fRecV0Pair.size(); i++) {
+                                                                                //     std::cout << "V0Status = " << fRecV0Pair.at(i).GetV0Status() << " Tracks: Label1 = " << fRecV0Pair.at(i).GetFirstDaughter() << " Label2 = " <<  fRecV0Pair.at(i).GetSecondDaughter() << std::endl;
+                                                                                //   }
+                                                                                // }
 
 
 
@@ -1378,33 +1402,83 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
   /*  ------ \/ ------ Four Pairing ------ \/ ------  */
   if (fDoFourPairing){
     //##########################################################
-    //############### Unlike Signe Pairing #####################
+    //################### Four Pairing #########################
     //##########################################################
-    if(fdebug) std::cout << "Doing four pairing..." << std::endl;
+                                                                                // if(fdebug) std::cout << "Doing four pairing..." << std::endl;
     Bool_t SmearedPair  = kTRUE;
     Bool_t ReconstructedPair = kTRUE;
     Bool_t PairPrimary = kTRUE;
     Bool_t TrackCuts = kTRUE;
 
-                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
-                                                                                if (fdebug) std::cout << "Do generated four pairing" << std::endl;
-                                                                                DoFourPairing(fGenPairVec_primary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, centralityWeight);
-                                                                                if(fArrResoPt){
-                                                                                  if (fdebug) std::cout << "Do generated smeared four pairing" << std::endl;
-                                                                                  DoFourPairing(fGenSmearedPairVec_primary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, centralityWeight);
-                                                                                }
-                                                                                if(fdebug) std::cout << __LINE__ << " Start Four PreFilter " << std::endl;
-                                                                                if(fUsePreFilter)DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
-                                                                                if(fUseSecPreFilter)DoFourPreFilter(&fRecV0Pair, &fRecV0Pair);
-                                                                                if(fdebug) std::cout << __LINE__ << " Apply Sec_StandardCuts for Pairing " << std::endl;
-                                                                                ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fTrackCuts_primary_standard ,  TrackCuts,  PairPrimary, centralityWeight);
-                                                                                ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fPairCuts_primary           , !TrackCuts,  PairPrimary, centralityWeight);
-                                                                                // ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard,  TrackCuts, !PairPrimary, centralityWeight); // track cuts on secondaries not implemented yet
-                                                                                ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard, !TrackCuts, !PairPrimary, centralityWeight);
 
-                                                                                if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
-                                                                                DoFourPairing(fRecPairVec_primary, fRecV0Pair, ReconstructedPair, !SmearedPair, centralityWeight);
-                                                                                // DoFourPairing(fRecPairVec_primary, fRecPairVec_secondary, ReconstructedPair, !SmearedPair, centralityWeight);
+    // #############################################
+    // #     DoFourPairing of Gen & GenSmeared     #
+    // #############################################
+                                                                                // if (fdebug) std::cout << "Do generated four pairing" << std::endl;
+    DoFourPairing(fGenPairVec_primary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, centralityWeight);
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+    if(fArrResoPt){
+      // if (fdebug) std::cout << "Do generated smeared four pairing" << std::endl;
+      DoFourPairing(fGenSmearedPairVec_primary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, centralityWeight);
+    }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
+
+    // #############################################
+    // #     DoFourPairing Reconstructed           #
+    // #############################################
+    // #      Apply PreFitlers        #
+    // ################################
+                                                                                // if(fdebug) std::cout << __LINE__ << " Start Four PreFilter " << std::endl;
+    // PreFilter using Prim and Sec Vector is rejecting tracks out of pos and neg particle vector, thats why the primary pair vector is cleared and primary paring is done again
+    if(fUsePreFilter)DoFourPreFilter(&fRecPairVec_primary, &fRecV0Pair);
+    if(fUseSecPreFilter)DoFourPreFilter(&fRecV0Pair, &fRecV0Pair);
+
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after applying PreFilters, " << std::endl <<
+                                                                                // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                // /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */
+                                                                                // " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */
+                                                                                // " fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
+
+    // Clear Primary Part Vector and do TwoPairing again with pos/neg particle vectors reduced by PreFilter
+    fRecPairVec_primary.clear();
+    DoRecTwoPairing(fRecNegPart_primary, fRecPosPart_primary, fPrimaryPairMCSignal,  PairPrimary, centralityWeight);
+
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after the second primary pairing, " << std::endl <<
+                                                                                // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                // /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */
+                                                                                // " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */
+                                                                                // " fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
+
+    // ################################
+    // #      Apply Standard Cut      #
+    // ################################
+                                                                                // if(fdebug) std::cout << __LINE__ << " Apply StandardCuts for Pairing " << std::endl;
+    ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fTrackCuts_primary_standard  ,  TrackCuts,  PairPrimary, centralityWeight);
+    ApplyStandardCutsAndFillHists(&fRecPairVec_primary, fPairCuts_primary            , !TrackCuts,  PairPrimary, centralityWeight);
+    ApplyStandardCutsAndFillHists(&fRecV0Pair         , fTrackCuts_secondary_standard,  TrackCuts, !PairPrimary, centralityWeight);
+    ApplyStandardCutsAndFillHists(&fRecV0Pair         , fPairCuts_secondary_standard , !TrackCuts, !PairPrimary, centralityWeight);
+
+
+                                                                                // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after applying standard cuts, " << std::endl <<
+                                                                                // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                // /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */
+                                                                                // " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */
+                                                                                // " fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
+
+
+
+    // ################################
+    // #      Do actual pairing       #
+    // ################################
+                                                                                // if(fdebug) std::cout << __LINE__ << " Start Four Reconstructed Pairing " << std::endl;
+    DoFourPairing(fRecPairVec_primary, fRecV0Pair, ReconstructedPair, !SmearedPair, centralityWeight);
+    // DoFourPairing(fRecPairVec_primary, fRecPairVec_secondary, ReconstructedPair, !SmearedPair, centralityWeight);
 
 										                                                            // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
                                                                                 // if(fdebug) std::cout << __LINE__ <<  "DEBUG_AnalysisTask: fGenNegPart_primary:   "  << fGenNegPart_primary.size()   << " fGenPosPart_primary:   " <<  fGenPosPart_primary.size()   << std::endl;
@@ -2125,17 +2199,19 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
       AliVParticle* negTrack = fEvent->GetTrack(fPairVec->at(iPair).GetFirstDaughter());
       AliVParticle* posTrack = fEvent->GetTrack(fPairVec->at(iPair).GetSecondDaughter());
 
-      int poslabel = posTrack->GetLabel();
       int neglabel = negTrack->GetLabel();
-      int absposlabel = TMath::Abs(poslabel);
+      int poslabel = posTrack->GetLabel();
       int absneglabel = TMath::Abs(neglabel);
+      int absposlabel = TMath::Abs(poslabel);
 
+      Particle negPart  = CreateParticle(negTrack);
+      Particle posPart  = CreateParticle(posTrack);
 
       // ###############################
       // Track cuts on primary pair
       // ###############################
       if(TrackCuts == kTRUE){
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " Cout Debug: Apply standard priamry track cuts. " << std::endl;
         //  ---------- RECONSTRUCTED Tracks  ---------- //
         // Check if pos and neg Track are passing cut selections
         std::vector<bool> selected_posTrack(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
@@ -2161,18 +2237,21 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
           iPair--;
           continue;
         }
-
         std::vector<Bool_t> mcSignal_acc_posPart(fSinglePrimaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
         std::vector<Bool_t> mcSignal_acc_negPart(fSinglePrimaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
         CheckSinglePrimaryLegMCsignals(mcSignal_acc_posPart, absposlabel);
         CheckSinglePrimaryLegMCsignals(mcSignal_acc_negPart, absneglabel);
 
-        Particle posPart  = CreateParticle(posTrack);
-        Particle negPart  = CreateParticle(negTrack);
+
         posPart.isMCSignal_primary   = mcSignal_acc_posPart;
         negPart.isMCSignal_primary   = mcSignal_acc_negPart;
         posPart.isReconstructed_primary = selected_posTrack;
         negPart.isReconstructed_primary = selected_negTrack;
+
+        fPairVec->at(iPair).SetDauthersAreReconstructed(selected_negTrack,selected_posTrack);
+
+        AliVParticle* mcPosPart = fMC->GetTrack(absposlabel);
+        AliVParticle* mcNegPart = fMC->GetTrack(absneglabel);
 
         // check if MCSignal and isReconstructed for positive primary track
         if (posPart.fCharge > 0) {
@@ -2181,6 +2260,7 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
               if (posPart.isMCSignal_primary[i] == kTRUE) {
                 if (posPart.isReconstructed_primary[j] == kTRUE){
                   dynamic_cast<TH3D*>(fHistRecPrimaryPosPart.at(j * posPart.isMCSignal_primary.size() + i))->Fill(posPart.fPt, posPart.fEta, posPart.fPhi, centralityWeight);
+                  FillTrackHistograms_Primary(posTrack, mcPosPart, j, i); // Fill primary track support histograms
                 }// is selected by cutsetting
               } // is selected by MC signal
             } // end of loop over all cutsettings
@@ -2194,6 +2274,7 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
               if (negPart.isMCSignal_primary[i] == kTRUE) {
                 if (negPart.isReconstructed_primary[j] == kTRUE){
                   dynamic_cast<TH3D*>(fHistRecPrimaryNegPart.at(j * negPart.isMCSignal_primary.size() + i))->Fill(negPart.fPt, negPart.fEta, negPart.fPhi, centralityWeight);
+                  FillTrackHistograms_Primary(negTrack, mcNegPart, j, i); // Fill primary track support histograms
                 }// is selected by cutsetting
               } // is selected by MC signal
             } // end of loop over all cutsettings
@@ -2203,12 +2284,11 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
 
 
 
-
       // ###############################
       // Pair cuts on primary pair
       // ###############################
       else if (TrackCuts == kFALSE) {
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " Cout Debug: Apply standard primary pair cuts. " << std::endl;
         AliDielectronPair *pair = new AliDielectronPair;
         pair->SetKFUsage(false);
         pair->SetTracks(static_cast<AliVTrack*>(negTrack), 11, static_cast<AliVTrack*>(posTrack), -11);
@@ -2217,6 +2297,7 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
         // Check if pair is passing cut selections
         std::vector<bool> selected(fCutsetting.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
         for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          if (fPairVec->at(iPair).fFirstPartIsReconstructed[iCut] == kFALSE || fPairVec->at(iPair).fSecondPartIsReconstructed[iCut] == kFALSE) continue;  //check if both daughters are reconstructed
           UInt_t selectedMask=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
           // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
           // apply pair cuts
@@ -2278,30 +2359,115 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
       // Get V0 from Event, selected trough V0ID stored in TwoPair and is set in reconstructed secondary two pairing
       Int_t fV0ID = fPairVec->at(iPair).GetV0ID();
       AliAODv0* fV0 = ((AliAODEvent*)fEvent)->GetV0(fV0ID);
-      AliAODTrack *posTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(0));
-      AliAODTrack *negTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(1));
+      AliAODTrack *TrackD1 = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(0));
+      AliAODTrack *TrackD2 = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(1));
 
+      int labelD1 = TrackD1->GetLabel();
+      int labelD2 = TrackD2->GetLabel();
+      int absD1label = TMath::Abs(labelD1);
+      int absD2label = TMath::Abs(labelD2);
 
+      Particle PartD1  = CreateParticle(TrackD1);
+      Particle PartD2  = CreateParticle(TrackD2);
+
+      // ###############################
+      // Track cuts on secondary tracks
+      // ###############################
       if (TrackCuts == kTRUE) {
-        // ###############################
-        // Track cuts on secondary pair   *** not implemented yet ***
-        // ###############################
+                                                                                // if(fdebug) std::cout << __LINE__ << " Cout Debug: Apply standard secondary track cuts. " << std::endl;
+        // Check if Daughter1 and Daughter2 Tracks are passing cut selections
+        std::vector<bool> selected_TrackD1(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask_TrackD1=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply track cuts
+          UInt_t cutMask_TrackD1 = fCutsetting.at(iCut)->IsSelected(TrackD1);
+          if (cutMask_TrackD1 == selectedMask_TrackD1) {selected_TrackD1[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        std::vector<bool> selected_TrackD2(fCutsetting.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+        for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          UInt_t selectedMask_TrackD2=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
+          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+          // apply track cuts
+          UInt_t cutMask_TrackD2 = fCutsetting.at(iCut)->IsSelected(TrackD2);
+          if (cutMask_TrackD2 == selectedMask_TrackD2) {selected_TrackD2[iCut] = kTRUE; /*std::cout << "reconstructed TRUE" << std::endl;*/}
+        }
+        // ##########################################################
+        // check if at least one is selected by cuts otherwise remove this pair from vector
+        if ((CheckIfOneIsTrue(selected_TrackD1) == kFALSE) || (CheckIfOneIsTrue(selected_TrackD2) == kFALSE)) {
+          fPairVec->erase(fPairVec->begin()+iPair);
+          iPair--;
+          continue;
+        }
+
+        std::vector<Bool_t> mcSignal_acc_TrackD1(fSingleSecondaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
+        std::vector<Bool_t> mcSignal_acc_TrackD2(fSingleSecondaryLegMCSignal.size(), kFALSE); // vector which stores if track is accepted by [i]-th mcsignal
+        CheckSingleSecondaryLegMCsignals(mcSignal_acc_TrackD1, absD1label);
+        CheckSingleSecondaryLegMCsignals(mcSignal_acc_TrackD2, absD2label);
+
+        PartD1.isMCSignal_secondary   = mcSignal_acc_TrackD1;
+        PartD2.isMCSignal_secondary   = mcSignal_acc_TrackD2;
+        PartD1.isReconstructed_secondary = selected_TrackD1;
+        PartD2.isReconstructed_secondary = selected_TrackD2;
+
+        fPairVec->at(iPair).SetDauthersAreReconstructed(selected_TrackD1,selected_TrackD2);
+
+        AliVParticle* mcPartD1 = fMC->GetTrack(absD1label);
+        AliVParticle* mcPartD2 = fMC->GetTrack(absD2label);
+
+
+        // check if MCSignal and isReconstructed for positive primary track
+        for (unsigned int i = 0; i < PartD1.isMCSignal_secondary.size(); ++i){
+          for (unsigned int j = 0; j < PartD1.isReconstructed_secondary.size(); ++j){
+            if (PartD1.isMCSignal_secondary[i] == kTRUE) {
+              if (PartD1.isReconstructed_secondary[j] == kTRUE){
+                if (PartD1.fCharge > 0) {
+                  dynamic_cast<TH3D*>(fHistRecSecondaryPosPart.at(j * PartD1.isMCSignal_secondary.size() + i))->Fill(PartD1.fPt, PartD1.fEta, PartD1.fPhi, centralityWeight);
+                  // FillTrackHistograms_Secondary(TrackD1, mcPartD1, j, i); // Fill secondary track support histograms
+                } // end if particle positive
+                if (PartD1.fCharge < 0) {
+                  dynamic_cast<TH3D*>(fHistRecSecondaryNegPart.at(j * PartD1.isMCSignal_secondary.size() + i))->Fill(PartD1.fPt, PartD1.fEta, PartD1.fPhi, centralityWeight);
+                  // FillTrackHistograms_Secondary(TrackD1, mcPartD1, j, i); // Fill secondary track support histograms
+                } // end if particle negative
+              }// is selected by cutsetting
+            } // is selected by MC signal
+          } // end of loop over all cutsettings
+        } // end of loop over all MCsignals
+        // check if MCSignal and isReconstructed for negative primaryTrack
+        for (unsigned int i = 0; i < PartD2.isMCSignal_secondary.size(); ++i){
+          for (unsigned int j = 0; j < PartD2.isReconstructed_secondary.size(); ++j){
+            if (PartD2.isMCSignal_secondary[i] == kTRUE) {
+              if (PartD2.isReconstructed_secondary[j] == kTRUE){
+                if (PartD2.fCharge > 0) {
+                  dynamic_cast<TH3D*>(fHistRecSecondaryPosPart.at(j * PartD2.isMCSignal_secondary.size() + i))->Fill(PartD2.fPt, PartD2.fEta, PartD2.fPhi, centralityWeight);
+                  // FillTrackHistograms_Secondary(TrackD2, mcPartD2, j, i); // Fill secondary track support histograms
+                } // end if particle positive
+                if (PartD2.fCharge < 0) {
+                  dynamic_cast<TH3D*>(fHistRecSecondaryNegPart.at(j * PartD2.isMCSignal_secondary.size() + i))->Fill(PartD2.fPt, PartD2.fEta, PartD2.fPhi, centralityWeight);
+                  // FillTrackHistograms_Secondary(TrackD2, mcPartD2, j, i); // Fill secondary track support histograms
+                } // end if particle negative
+              }// is selected by cutsetting
+            } // is selected by MC signal
+          } // end of loop over all cutsettings
+        } // end of loop over all MCsignals
       } // end if TrackCuts true
+
 
 
       // ###############################
       // Pair cuts on secondary pair
       // ###############################
       else if(TrackCuts == kFALSE) {
-
+                                                                                // if(fdebug) std::cout << __LINE__ << " Cout Debug: Apply standard secondary pair cuts. " << std::endl;
         AliDielectronPair *pair = new AliDielectronPair;
         pair->SetKFUsage(false);
-        pair->SetTracks(static_cast<AliAODTrack*>(negTrack), 11, static_cast<AliAODTrack*>(posTrack), -11);
+        pair->SetTracks(static_cast<AliAODTrack*>(TrackD2), 11, static_cast<AliAODTrack*>(TrackD1), -11);
 
         //  ---------- RECONSTRUCTED Pairs with PAIR  ---------- //
         // Check if pair is passing cut selections
         std::vector<bool> selected(fCutsetting.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
         for (UInt_t iCut=0; iCut<fCutsetting.size(); ++iCut){ // loop over all specified cutInstances
+          if (fPairVec->at(iPair).fFirstPartIsReconstructed[iCut] == kFALSE || fPairVec->at(iPair).fSecondPartIsReconstructed[iCut] == kFALSE) continue;  //check if both daughters are reconstructed
           UInt_t selectedMask=( 1 << fCutsetting.at(iCut)->GetCuts()->GetEntries())-1;
           // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
           // apply pair cuts
@@ -2332,12 +2498,12 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
 
 
         // track label, points back to MC track
-        Int_t posTrackLabel = TMath::Abs(posTrack->GetLabel());
-        Int_t negTrackLabel = TMath::Abs(negTrack->GetLabel());
+        Int_t TrackD1Label = TMath::Abs(TrackD1->GetLabel());
+        Int_t TrackD2Label = TMath::Abs(TrackD2->GetLabel());
 
         // Fill secondary support histos
-        AliVParticle* mcPosPart = fMC->GetTrack(posTrackLabel);
-        AliVParticle* mcNegPart = fMC->GetTrack(negTrackLabel);
+        AliVParticle* mcPosPart = fMC->GetTrack(TrackD1Label);
+        AliVParticle* mcNegPart = fMC->GetTrack(TrackD2Label);
 
 
         for (unsigned int i = 0; i < fPairVec->at(iPair).isReconstructed_secondary.size(); ++i){
@@ -2345,13 +2511,13 @@ void AliAnalysisTaskEtaReconstruction::ApplyStandardCutsAndFillHists (std::vecto
             for (unsigned int j = 0; j < mcTwoSignal_acc.size(); ++j){
               if (mcTwoSignal_acc[j] == kTRUE){
                 fHistRecSecondaryPair.at(  i *   mcTwoSignal_acc.size() + j)->Fill(mass, pairpt, weight * centralityWeight);
-                FillTrackHistograms_Secondary(posTrack, mcPosPart, i, j); // Fill secondary support histograms
-                FillTrackHistograms_Secondary(negTrack, mcNegPart, i, j); // Fill secondary support histograms
-                FillPairHistograms_Secondary(pair, i, j);                    // Fill pair secondary histograms
-              }// is selected by cutsetting
-            } // end of loop over all cutsettings
-          } // is selected by MCSignal
-        } // end of loop over all MCsignals
+                FillTrackHistograms_Secondary(TrackD1, mcPosPart, i, j); // Fill track secondary support histograms
+                FillTrackHistograms_Secondary(TrackD2, mcNegPart, i, j); // Fill track secondary support histograms
+                FillPairHistograms_Secondary(pair, i, j);                 // Fill pair  secondary support histograms
+              } // is selected by MCSignal
+            } // end of loop over all MCsignals
+          } // is selected by cutsetting
+        } // end of loop over all cutsettings
         delete pair;
       } // end if TrackCuts false
     } // end if Pair secondary
@@ -2390,8 +2556,8 @@ void AliAnalysisTaskEtaReconstruction::DoGenAndGenSmearTwoPairing(std::vector<Pa
       }
 
       // check if at least one mc signal is true
-      if (PartPrimary == kTRUE && CheckIfOneIsTrue(mcTwoSignal_acc_primary) == kFALSE) continue;
-      if (PartPrimary == kFALSE && CheckIfOneIsTrue(mcTwoSignal_acc_secondary) == kFALSE) continue;
+      if      (PartPrimary == kTRUE  && CheckIfOneIsTrue(mcTwoSignal_acc_primary)   == kFALSE) continue;
+      else if (PartPrimary == kFALSE && CheckIfOneIsTrue(mcTwoSignal_acc_secondary) == kFALSE) continue;
 
 
       // Construct pair variables from LorentzVectors
@@ -2450,7 +2616,7 @@ void AliAnalysisTaskEtaReconstruction::DoGenAndGenSmearTwoPairing(std::vector<Pa
       short   charge  = mcPart1->Charge() + mcPart2->Charge();
       TwoPair MotherParticle(pairpt, eta, phi, mass, charge);
 
-      MotherParticle.SetDautherTrackID(vec_negParticle->at(neg_i).GetTrackID(), vec_posParticle->at(pos_i).GetTrackID());  // first: neg track, second: pos track
+      MotherParticle.SetDaughterTrackID(vec_negParticle->at(neg_i).GetTrackID(), vec_posParticle->at(pos_i).GetTrackID());  // first: neg track, second: pos track
 
       if      (PartPrimary == kTRUE)   MotherParticle.SetMCTwoSignal_acc_prim(mcTwoSignal_acc_primary);
       else if (PartPrimary == kFALSE)  MotherParticle.SetMCTwoSignal_acc_sec(mcTwoSignal_acc_secondary);
@@ -2568,7 +2734,7 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
       if (CheckIfOneIsTrue(mcTwoSignal_acc) == kFALSE) continue;
 
       std::vector<bool> selected_primary(fPairCuts_primary.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
-      std::vector<bool> selected_secondary(fPairCuts_secondary_standard.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+      // std::vector<bool> selected_secondary(fPairCuts_secondary_standard.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
       if (PartPrimary == kTRUE) {
         //  ---------- RECONSTRUCTED for PAIR  ---------- //
         // Check if particle is passing primary selection cuts
@@ -2578,26 +2744,32 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
           // apply track cuts
           UInt_t cutMask_primary = fPairCuts_primary.at(iCut)->IsSelected(pair);
           if (cutMask_primary == selectedMask_primary) {selected_primary[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
-        }
+        }                                                                      // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Size of Vectors after applying standard cuts, " << std::endl <<
+                                                                                // " fRecNegPart_primary = " << fRecNegPart_primary.size() << std::endl <<
+                                                                                // " fRecPosPart_primary = " << fRecPosPart_primary.size() << std::endl <<
+                                                                                // /*" fGenPairVec_primary = "   << fGenPairVec_primary.size()   << " fGenSmearedPairVec_primary =   " << fGenSmearedPairVec_primary.size()   << */
+                                                                                // " fRecPairVec_primary =   " << fRecPairVec_primary.size()   << std::endl <<
+                                                                                // /*" fGenPairVec_secondary = " << fGenPairVec_secondary.size() << " fGenSmearedPairVec_secondary = " << fGenSmearedPairVec_secondary.size() << */
+                                                                                // " fRecPairVec_secondary = " << fRecV0Pair.size()/*fRecPairVec_secondary.size()*/ << std::endl;
         // ##########################################################
         // check if at least one is selected by cuts otherwise skip this particle
         if (CheckIfOneIsTrue(selected_primary) == kFALSE) continue;
       }
 
-      else if (PartPrimary == kFALSE) {
-        //  ---------- RECONSTRUCTED for PAIR  ---------- //
-        // Check if particle is passing secondary selection cuts
-        for (UInt_t iCut=0; iCut<fPairCuts_secondary_standard.size(); ++iCut){ // loop over all specified cutInstances
-          UInt_t selectedMask_secondary=( 1 << fPairCuts_secondary_standard.at(iCut)->GetCuts()->GetEntries())-1;
-          // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-          // apply track cuts
-          UInt_t cutMask_secondary = fPairCuts_secondary_standard.at(iCut)->IsSelected(pair);
-          if (cutMask_secondary == selectedMask_secondary) {selected_secondary[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
-        }
-        // ##########################################################
-        // check if at least one is selected by cuts otherwise skip this particle
-        if (CheckIfOneIsTrue(selected_secondary) == kFALSE) continue;
-      }
+      // else if (PartPrimary == kFALSE) {
+      //   //  ---------- RECONSTRUCTED for PAIR  ---------- //
+      //   // Check if particle is passing secondary selection cuts
+      //   for (UInt_t iCut=0; iCut<fPairCuts_secondary_standard.size(); ++iCut){ // loop over all specified cutInstances
+      //     UInt_t selectedMask_secondary=( 1 << fPairCuts_secondary_standard.at(iCut)->GetCuts()->GetEntries())-1;
+      //     // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+      //     // apply track cuts
+      //     UInt_t cutMask_secondary = fPairCuts_secondary_standard.at(iCut)->IsSelected(pair);
+      //     if (cutMask_secondary == selectedMask_secondary) {selected_secondary[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
+      //   }
+      //   // ##########################################################
+      //   // check if at least one is selected by cuts otherwise skip this particle
+      //   if (CheckIfOneIsTrue(selected_secondary) == kFALSE) continue;
+      // }
       // Construct pair variables from LorentzVectors
       TLorentzVector Lvec1;
       TLorentzVector Lvec2;
@@ -2606,7 +2778,7 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
       if (fDoMassCut == kTRUE && PartPrimary == kTRUE  && (fLowerMassCutPrimaries >= mass || mass >= fUpperMassCutPrimaries)) continue; // mass cut for primaries
-      if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass >= fMassCutSecondaries   ) continue; // mass cut for primaries
+      // if (fDoMassCut == kTRUE && PartPrimary == kFALSE && mass >= fMassCutSecondaries   ) continue; // mass cut for primaries
       double pairpt = LvecM.Pt();
       double weight = 1.;
       if (fCocktailFile) {
@@ -2676,20 +2848,20 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairing(std::vector<Particle> fRe
       double  phi     = LvecM.Phi();
       short   charge  = track1->Charge() + track2->Charge();
       TwoPair MotherParticle(pairpt, eta, phi, mass, charge);
-      MotherParticle.SetDautherTrackID(fRecNegPart[neg_i].GetTrackID(), fRecPosPart[pos_i].GetTrackID());  // first: neg track, second: pos track
+      MotherParticle.SetDaughterTrackID(fRecNegPart[neg_i].GetTrackID(), fRecPosPart[pos_i].GetTrackID());  // first: neg track, second: pos track
 
       if (PartPrimary == kTRUE) {
         MotherParticle.isReconstructed_primary   = selected_primary;
-        MotherParticle.SetDauthersAreReconstructed(fRecNegPart[neg_i].isReconstructed_primary, fRecPosPart[pos_i].isReconstructed_primary);
+        // MotherParticle.SetDauthersAreReconstructed(fRecNegPart[neg_i].isReconstructed_primary, fRecPosPart[pos_i].isReconstructed_primary);
         MotherParticle.SetMCTwoSignal_acc_prim(mcTwoSignal_acc);
         fRecPairVec_primary.push_back(MotherParticle);
       }
-      else if (PartPrimary == kFALSE) {
-        MotherParticle.isReconstructed_secondary = selected_secondary;
-        MotherParticle.SetDauthersAreReconstructed(fRecNegPart[neg_i].isReconstructed_secondary, fRecPosPart[pos_i].isReconstructed_secondary);
-        MotherParticle.SetMCTwoSignal_acc_sec(mcTwoSignal_acc);
-        fRecPairVec_secondary.push_back(MotherParticle);
-      }
+      // else if (PartPrimary == kFALSE) {
+      //   MotherParticle.isReconstructed_secondary = selected_secondary;
+      //   MotherParticle.SetDauthersAreReconstructed(fRecNegPart[neg_i].isReconstructed_secondary, fRecPosPart[pos_i].isReconstructed_secondary);
+      //   MotherParticle.SetMCTwoSignal_acc_sec(mcTwoSignal_acc);
+      //   fRecPairVec_secondary.push_back(MotherParticle);
+      // }
 
                                                                                 // if(fdebug){ std::cout << __LINE__ << " DEBUG_AnalysisTask: Mother Particlel: Pt = " << MotherParticle.fPt <<
                                                                                 // ", Eta = " << MotherParticle.fEta <<
@@ -2772,11 +2944,12 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
       // int v0label = fV0->GetLabel();
       // int absv0label = TMath::Abs(v0label);
 
+      Bool_t fV0Status = fV0 ->GetOnFlyStatus();
+      if (fV0Status != fV0OnFlyStatus) continue;
+
       // new part
       AliAODTrack *posAODTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(0));
       AliAODTrack *negAODTrack = (AliAODTrack *) (fV0->GetSecondaryVtx()->GetDaughter(1));
-
-
 
 
       // Apply MC signals
@@ -2797,28 +2970,30 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
       //  ---------- RECONSTRUCTED for PAIR  ---------- //
       // Check if particle is passing secondary selection cuts
 
-      std::vector<bool> selected_secondary(fPairCuts_secondary_PreFilter.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+      std::vector<bool> selected_secondary(fPairCuts_secondary_PreFilter.size(), kFALSE); // vector which stores if pair is accepted by [i]-th selection cut
       for (UInt_t iCut=0; iCut<fPairCuts_secondary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
         UInt_t selectedMask_secondary=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
         // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-        // apply track cuts
+        // apply pair cuts
         UInt_t cutMask_secondary = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(pair);
         if (cutMask_secondary == selectedMask_secondary) {selected_secondary[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
       }
 
 
 
-      // //  ---------- RECONSTRUCTED for TRACKS  ---------- //
-      // for (UInt_t iCut=0; iCut<fPairCuts_secondary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
-        //   UInt_t selectedMask_secondary_firstPar=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
-        //   UInt_t selectedMask_secondary_secPar=( 1 << fPairCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
-        //   // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
-        //   // apply track cuts
-        //   UInt_t cutMask_secondary_firstPar = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(posAODTrack);
-        //   UInt_t cutMask_secondary_secPar = fPairCuts_secondary_PreFilter.at(iCut)->IsSelected(negAODTrack);
-        //   if (cutMask_secondary_firstPar == selectedMask_secondary_firstPar) {selected_secondary_firstPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
-        //   if (cutMask_secondary_secPar == selectedMask_secondary_secPar) {selected_secondary_secPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
-        // }
+      // // //  ---------- RECONSTRUCTED for TRACKS  ---------- //
+      // std::vector<bool> selected_secondary_firstPar(fTrackCuts_secondary_PreFilter.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+      // std::vector<bool> selected_secondary_secPar  (fTrackCuts_secondary_PreFilter.size(), kFALSE); // vector which stores if track is accepted by [i]-th selection cut
+      // for (UInt_t iCut=0; iCut<fTrackCuts_secondary_PreFilter.size(); ++iCut){ // loop over all specified cutInstances
+      //   UInt_t selectedMask_secondary_firstPar=( 1 << fTrackCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
+      //   UInt_t selectedMask_secondary_secPar=( 1 << fTrackCuts_secondary_PreFilter.at(iCut)->GetCuts()->GetEntries())-1;
+      //   // cutting logic taken from AliDielectron::FillTrackArrays()          FillPairArrays()
+      //   // apply track cuts
+      //   UInt_t cutMask_secondary_firstPar = fTrackCuts_secondary_PreFilter.at(iCut)->IsSelected(posAODTrack);
+      //   UInt_t cutMask_secondary_secPar = fTrackCuts_secondary_PreFilter.at(iCut)->IsSelected(negAODTrack);
+      //   if (cutMask_secondary_firstPar == selectedMask_secondary_firstPar) {selected_secondary_firstPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
+      //   if (cutMask_secondary_secPar == selectedMask_secondary_secPar) {selected_secondary_secPar[iCut] = kTRUE; /*std::cout << "sec_reconstructed TRUE" << std::endl;*/}
+      // }
 
 
       // ##########################################################
@@ -2836,20 +3011,23 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
                                                                               // int grandMotherID1 = TMath::Abs(fMC->GetTrack(motherID1)->GetMother());
 
 
-                                                                              // track label, points back to MC track
-                                                                              // Int_t posTrackLabel = TMath::Abs(posAODTrack->GetLabel());
-                                                                              // Int_t negTrackLabel = TMath::Abs(negAODTrack->GetLabel());
-                                                                                  // unique track ID, points back to the ESD track
-                                                                                  // Short_t posTrackID = posAODTrack->GetID();
-                                                                                  // Short_t negTrackID = negAODTrack->GetID();
 
 
 
                                                                               // if (fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: fV0 Label: " << v0label << " PosID: " << posTrackID << " PosLabel: " << posTrackLabel << " NegID: " << negTrackID << " NegLabel: " << negTrackLabel << std::endl;
 
-                                                                              // // Check particles mother and grandmother
-                                                                              // // std::cout << __LINE__ << " DEBUG_AnalysisTask: fEvent->TrackID = " << fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID())->GetLabel() << ", fMC->TrackID = " << fMC->GetTrack(fRecNegPart[neg_i].GetTrackID())->GetLabel() << std::endl;
-                                                                              // // std::cout << __LINE__ << /*" DEBUG_AnalysisTask: fEvent->TrackLabel = " << ((AliAODTrack*)fEvent->GetTrack(negTrackID))->GetID() <<*/ ", fMC->TrackLabel = " << fMC->GetTrack(negTrackID)->GetLabel() << std::endl;
+                                                                              // Check particles mother and grandmother
+                                                                              // std::cout << __LINE__ << " DEBUG_AnalysisTask: fEvent->TrackID = " << fEvent->GetTrack(fRecNegPart[neg_i].GetTrackID())->GetLabel() << ", fMC->TrackID = " << fMC->GetTrack(fRecNegPart[neg_i].GetTrackID())->GetLabel() << std::endl;
+                                                                              // std::cout << __LINE__ << /*" DEBUG_AnalysisTask: fEvent->TrackLabel = " << ((AliAODTrack*)fEvent->GetTrack(negTrackID))->GetID() <<*/ ", fMC->TrackLabel = " << fMC->GetTrack(negTrackID)->GetLabel() << std::endl;
+
+
+
+                                                                              // // track label, points back to MC track
+                                                                              // Int_t posTrackLabel = TMath::Abs(posAODTrack->GetLabel());
+                                                                              // Int_t negTrackLabel = TMath::Abs(negAODTrack->GetLabel());
+                                                                              // // unique track ID, points back to the ESD track
+                                                                              // // Short_t posTrackID = posAODTrack->GetID();
+                                                                              // // Short_t negTrackID = negAODTrack->GetID();
                                                                               // int label1 = fMC->GetTrack(negTrackLabel)->GetLabel();
                                                                               // int label2 = fMC->GetTrack(posTrackLabel)->GetLabel();
                                                                               // // int abslabel1 = TMath::Abs(label1);
@@ -2867,9 +3045,9 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
                                                                               // int posMPdgCode = fMC->GetTrack(motherLabel2)->PdgCode();
                                                                               // int negGMPdgCode = fMC->GetTrack(grandMotherLabel1)->PdgCode();
                                                                               // int posGMPdgCode = fMC->GetTrack(grandMotherLabel2)->PdgCode();
-
-
-
+                                                                              //
+                                                                              //
+                                                                              //
                                                                               // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE" << std::endl;
                                                                               // if (fdebug) {
                                                                               //   // if ((negGMPdgCode != 111 && negGMPdgCode != 221) || (posGMPdgCode != 111 && posGMPdgCode != 221)) {
@@ -2908,7 +3086,20 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
                                                                               //
                                                                               //     std::cout << __LINE__ << "                      ====================================                              " << std::endl;
                                                                               //   }
+                                                                              // int label1 = negAODTrack->GetLabel();
+                                                                              // int label2 = posAODTrack->GetLabel();
+                                                                              // int abslabel1 = TMath::Abs(label1);
+                                                                              // int abslabel2 = TMath::Abs(label2);
+                                                                              // int daughter1pdg = fMC->GetTrack(abslabel1)->PdgCode();
+                                                                              // int daughter2pdg = fMC->GetTrack(abslabel2)->PdgCode();
+                                                                              // int motherID1 = TMath::Abs(fMC->GetTrack(abslabel1)->GetMother());
+                                                                              // int motherID2 = TMath::Abs(fMC->GetTrack(abslabel2)->GetMother());
+                                                                              // int mother1pdg = fMC->GetTrack(motherID1)->PdgCode();
+                                                                              // int mother2pdg = fMC->GetTrack(motherID2)->PdgCode();
+                                                                              // if(fdebug && (TMath::Abs(daughter1pdg) != 11 || TMath::Abs(daughter2pdg) != 11))  std::cout << __LINE__ << " DEBUG_AnalysisTask: Daughters of V0 have PDGCode: Daughter1 = " << daughter1pdg << ", and Daughter2 = " << daughter2pdg << std::endl;
+                                                                              // if(fdebug && (mother1pdg != 22 || mother2pdg != 22)) std::cout << __LINE__<< " Mother is no Photon: posMother1 = " << mother1pdg << ", negMother 2 = " << mother2pdg << std::endl;
                                                                               // }
+
 
 
 
@@ -2933,12 +3124,15 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
 
       // MotherParticle.isReconstructed_secondary = selected_secondary;
       MotherParticle.SetV0ID(iV0);
-      MotherParticle.SetDautherTrackID(negAODTrack->GetID(), posAODTrack->GetID()); // first: neg track, second: pos track
+      // MotherParticle.SetDaughterTrackID(negAODTrack->GetLabel(), posAODTrack->GetLabel()); // first: neg track, second: pos track
+      MotherParticle.SetV0Status(fV0Status);
       // MotherParticle.SetDauthersAreReconstructed(fRecNegPart[neg_i].isReconstructed_secondary, fRecPosPart[pos_i].isReconstructed_secondary);
       // MotherParticle.SetMCTwoSignal_acc_sec(mcTwoSignal_acc);
 
                                                                               // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE" << std::endl;
-
+                                                                              // if (fdebug) {
+                                                                              //     std::cout << "V0: Label1 = " << negAODTrack->GetLabel() << " Label2 = " <<  posAODTrack->GetLabel() << std::endl;
+                                                                              // }
       fRecV0Pair.push_back(MotherParticle);
 
 
@@ -2969,6 +3163,10 @@ void AliAnalysisTaskEtaReconstruction::DoRecTwoPairingV0(std::vector<AliDielectr
 
 void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary){
   if(fPairVec_primary->size() == 0 || fPairVec_secondary->size() == 0) return;
+  // if(fdebug) std::cout << " fPairVec_primary: "    << fPairVec_primary->size()   << std::endl;
+  // if(fdebug) std::cout << " fPairVec_secondary: "  << fPairVec_secondary->size() << std::endl;
+  if ((fPairVec_primary == fPairVec_secondary) && (fPairVec_secondary->size()==1)) {/*std::cout << "return cause vector has jsut one V0" << std::endl;*/
+                                                                                    return;}
   // for (int prim_i = fPairVec_primary->size()-1; prim_i >= 0; --prim_i){
   //                                                                               if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter prim_i = " << prim_i << std::endl;
   //   for (int sec_i = fPairVec_secondary->size()-1; sec_i >= 0; --sec_i){
@@ -2994,20 +3192,70 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
   //   } // end of loop sec_i
   // } // end of loop prim_i
 
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE" << std::endl;
+  unsigned int sec_iStartValue = 0;
   for (unsigned int prim_i = 0; prim_i < fPairVec_primary->size(); ++prim_i){
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter prim_i = " << prim_i << std::endl;
-    for (unsigned int sec_i = 0; sec_i < fPairVec_secondary->size(); ++sec_i){
+    if (fPairVec_primary == fPairVec_secondary) sec_iStartValue = prim_i+1;      // setting sec_i=prim_i+1 is avoiding pairing of same pair (V0)
+    for (unsigned int sec_i = sec_iStartValue; sec_i < fPairVec_secondary->size(); ++sec_i){
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT Loop parameter sec_i = " << sec_i << std::endl;
 
       // Use if case, when PreFilter is used with twice the same vector.
       // e.g. Try rejection of pions trough pairing of 2 secondary photon conversion pairs.    (Pi0 -> 2 photons -> e+ e-  e+ e-)
       if (fPairVec_primary == fPairVec_secondary) {
-        Int_t track1ID = fPairVec_primary->at(prim_i).GetFirstDaughter();    // negative track
-        Int_t track2ID = fPairVec_primary->at(prim_i).GetSecondDaughter();   // positive track
-        Int_t track3ID = fPairVec_secondary->at(sec_i).GetFirstDaughter();   // negative track
-        Int_t track4ID = fPairVec_secondary->at(sec_i).GetSecondDaughter();  // positive track
-        if (track1ID == track3ID || track2ID == track4ID) continue;
+        Int_t fFirstV0ID  = fPairVec_primary->at(prim_i) .GetV0ID();
+        Int_t fSecondV0ID = fPairVec_secondary->at(sec_i).GetV0ID();
+        AliAODv0* fFirstV0 = ((AliAODEvent*)fEvent)->GetV0(fFirstV0ID);
+        AliAODv0* fSecondV0 = ((AliAODEvent*)fEvent)->GetV0(fSecondV0ID);
+        AliAODTrack *track1 = (AliAODTrack *) (fFirstV0 ->GetSecondaryVtx()->GetDaughter(0));
+        AliAODTrack *track2 = (AliAODTrack *) (fFirstV0 ->GetSecondaryVtx()->GetDaughter(1));
+        AliAODTrack *track3 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(0));
+        AliAODTrack *track4 = (AliAODTrack *) (fSecondV0->GetSecondaryVtx()->GetDaughter(1));
+
+
+        // Int_t track1ID = fPairVec_primary->at(prim_i).GetFirstDaughter();    // negative track
+        // Int_t track2ID = fPairVec_primary->at(prim_i).GetSecondDaughter();   // positive track
+        // Int_t track3ID = fPairVec_secondary->at(sec_i).GetFirstDaughter();   // negative track
+        // Int_t track4ID = fPairVec_secondary->at(sec_i).GetSecondDaughter();  // positive track
+        if (track1 == track2 || track1 == track3 || track1 == track4 || track2 == track3 || track2 == track4 || track3 == track4)  continue;
+
+        // if (fdebug) {
+        //   // int label1 = fMC->GetTrack(track1ID)->GetLabel();
+        //   // int label2 = fMC->GetTrack(track2ID)->GetLabel();
+        //   // int label3 = fMC->GetTrack(track3ID)->GetLabel();
+        //   // int label4 = fMC->GetTrack(track4ID)->GetLabel();
+        //   Int_t trackLabel1 = TMath::Abs(track1->GetLabel());                                  int track1PDG = fMC->GetTrack(trackLabel1)->PdgCode();
+        //   Int_t trackLabel2 = TMath::Abs(track2->GetLabel());                                  int track2PDG = fMC->GetTrack(trackLabel2)->PdgCode();
+        //   Int_t trackLabel3 = TMath::Abs(track3->GetLabel());                                  int track3PDG = fMC->GetTrack(trackLabel3)->PdgCode();
+        //   Int_t trackLabel4 = TMath::Abs(track4->GetLabel());                                  int track4PDG = fMC->GetTrack(trackLabel4)->PdgCode();
+        //   int motherLabel1 = TMath::Abs(fMC->GetTrack(trackLabel1)->GetMother());              int mother1PDG = fMC->GetTrack(motherLabel1)->PdgCode();
+        //   int motherLabel2 = TMath::Abs(fMC->GetTrack(trackLabel2)->GetMother());              int mother2PDG = fMC->GetTrack(motherLabel2)->PdgCode();
+        //   int motherLabel3 = TMath::Abs(fMC->GetTrack(trackLabel3)->GetMother());              int mother3PDG = fMC->GetTrack(motherLabel3)->PdgCode();
+        //   int motherLabel4 = TMath::Abs(fMC->GetTrack(trackLabel4)->GetMother());              int mother4PDG = fMC->GetTrack(motherLabel4)->PdgCode();
+        //   int grandMotherLabel1 = TMath::Abs(fMC->GetTrack(motherLabel1)->GetMother());        int grandMother1PDG = fMC->GetTrack(grandMotherLabel1)->PdgCode();
+        //   int grandMotherLabel2 = TMath::Abs(fMC->GetTrack(motherLabel2)->GetMother());        int grandMother2PDG = fMC->GetTrack(grandMotherLabel2)->PdgCode();
+        //   int grandMotherLabel3 = TMath::Abs(fMC->GetTrack(motherLabel3)->GetMother());        int grandMother3PDG = fMC->GetTrack(grandMotherLabel3)->PdgCode();
+        //   int grandMotherLabel4 = TMath::Abs(fMC->GetTrack(motherLabel4)->GetMother());        int grandMother4PDG = fMC->GetTrack(grandMotherLabel4)->PdgCode();
+        //   // int NDauthersGM1 =fMC->GetTrack(grandMotherLabel1)->GetNDaughters();
+        //   // int NDauthersGM2 =fMC->GetTrack(grandMotherLabel2)->GetNDaughters();
+        //   // int NDauthersGM3 =fMC->GetTrack(grandMotherLabel3)->GetNDaughters();
+        //   // int NDauthersGM4 =fMC->GetTrack(grandMotherLabel4)->GetNDaughters();
+        //
+        //   if (grandMotherLabel1 == grandMotherLabel3 || grandMotherLabel2 == grandMotherLabel4) {
+        //     std::cout << __LINE__ << " Decay from same GrandMother: " << " prim_i = " << prim_i << " sec_i = " << sec_i << std::endl;
+        //     std::cout << "trackLabel1 = " << trackLabel1 << " track1PDG = " << track1PDG << " mother1Label = " << motherLabel1 << " mother1PDG = " << mother1PDG << " grandMotherLabel1 = "  << grandMotherLabel1 << " grandMother1PDG = " << grandMother1PDG << std::endl;
+        //     std::cout << "trackLabel2 = " << trackLabel2 << " track2PDG = " << track2PDG << " mother2Label = " << motherLabel2 << " mother2PDG = " << mother2PDG << " grandMotherLabel2 = "  << grandMotherLabel2 << " grandMother2PDG = " << grandMother2PDG << std::endl;
+        //     std::cout << "trackLabel3 = " << trackLabel3 << " track3PDG = " << track3PDG << " mother3Label = " << motherLabel3 << " mother3PDG = " << mother3PDG << " grandMotherLabel3 = "  << grandMotherLabel3 << " grandMother3PDG = " << grandMother3PDG << std::endl;
+        //     std::cout << "trackLabel4 = " << trackLabel4 << " track4PDG = " << track4PDG << " mother4Label = " << motherLabel4 << " mother4PDG = " << mother4PDG << " grandMotherLabel4 = "  << grandMotherLabel4 << " grandMother4PDG = " << grandMother4PDG << std::endl;
+        //   }
+        // }
+
       }
+
+
+
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE" << std::endl;
+
 
       // Get LorentzVectors from reconstructed first pair (primary) and reconstructed V0 (secondary V0)
       TLorentzVector Lvec1;
@@ -3019,9 +3267,32 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
       TLorentzVector LvecM = Lvec1 + Lvec2;
       double mass = LvecM.M();
-      if(mass > fUpperPreFilterMass || mass < fLowerPreFilterMass ) continue;
-      else {
+      double pairpt = LvecM.Pt();
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: COUT LINE " << std::endl;
+
+      if (fPairVec_primary == fPairVec_secondary) fVecSecSecPrefilter.at(0)->Fill(mass, pairpt/*, weight * centralityWeight*/);
+
+      // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask:Calculated PreFilter mass = " << mass << std::endl;
+
+      if      ( (fPairVec_primary != fPairVec_secondary) && (mass > fUpperPrimSecPreFilterMass || mass < fLowerPrimSecPreFilterMass) ) {/*std::cout << __LINE__ << " Accept 4Pair with mass = " << mass << std::endl;*/
+                                                                                                                                        continue;}
+      else if ( (fPairVec_primary == fPairVec_secondary) && (mass > fUpperSecSecPreFilterMass || mass < fLowerSecSecPreFilterMass) )   {/*std::cout << __LINE__ << " Accept 4Pair with mass = " << mass << std::endl;*/
+                                                                                                                                        fVecSecSecPrefilter.at(1)->Fill(mass, pairpt/*, weight * centralityWeight*/);
+                                                                                                                                        continue;}
+      else {
+        AliVParticle* track1 = fEvent->GetTrack(fPairVec_primary->at(prim_i).GetFirstDaughter());   // primary eletrons, neg, first Daughter
+        AliVParticle* track2 = fEvent->GetTrack(fPairVec_primary->at(prim_i).GetSecondDaughter());  // primary eletrons, pos, second Daughter
+
+        Int_t labelD1 = -1;
+        Int_t labelD2 = -1;
+        labelD1 = track1->GetLabel();
+        labelD2 = track2->GetLabel();
+        fPreFilter_BadTracksLabel_primary.push_back(labelD1);
+        fPreFilter_BadTracksLabel_primary.push_back(labelD2);
+
+
+                                                                                // if(fdebug && (fPairVec_primary != fPairVec_secondary)) std::cout << __LINE__ << " DEBUG_AnalysisTask: PreFilter: erasing pair from primary and secondary vector. mass = " << mass << std::endl;
+                                                                                // if(fdebug && (fPairVec_primary == fPairVec_secondary)) std::cout << __LINE__ << " DEBUG_AnalysisTask: PreFilter: erasing V0's from secondary vector. mass = " << mass << std::endl;
         fPairVec_primary->erase(fPairVec_primary->begin()+prim_i);
         fPairVec_secondary->erase(fPairVec_secondary->begin()+sec_i);
         prim_i--;
@@ -3030,6 +3301,20 @@ void AliAnalysisTaskEtaReconstruction::DoFourPreFilter(std::vector<TwoPair>* fPa
       }
     } // end of loop sec_i
   } // end of loop prim_i
+
+  // remove tracks from neg and pos primary vector, if prim sec prefilter is applied
+  if (fPairVec_primary != fPairVec_secondary) {
+    for (unsigned int iNeg = 0; iNeg < fRecNegPart_primary.size(); iNeg++) {
+        AliVParticle* track = fEvent->GetTrack(fRecNegPart_primary[iNeg].GetTrackID());
+        Int_t tracklabel = track->GetLabel();
+        if (std::find(fPreFilter_BadTracksLabel_primary.begin(), fPreFilter_BadTracksLabel_primary.end(), tracklabel) != fPreFilter_BadTracksLabel_primary.end()) fRecNegPart_primary.erase(fRecNegPart_primary.begin()+iNeg);
+    }
+    for (unsigned int iPos = 0; iPos < fRecPosPart_primary.size(); iPos++) {
+        AliVParticle* track = fEvent->GetTrack(fRecPosPart_primary[iPos].GetTrackID());
+        Int_t tracklabel = track->GetLabel();
+        if (std::find(fPreFilter_BadTracksLabel_primary.begin(), fPreFilter_BadTracksLabel_primary.end(), tracklabel) != fPreFilter_BadTracksLabel_primary.end()) fRecPosPart_primary.erase(fRecPosPart_primary.begin()+iPos);
+    }
+  }
 }
 
 
@@ -3087,6 +3372,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
 
         // Check if electrons are from MCSignal Generator
               // if (!fGenPosPart_primary[prim_i].GetMCSignalPair() || !fGenNegPart_primary[prim_i].GetMCSignalPair() || !fGenNegPart_secondary[sec_i].GetMCSignalPair() || !fGenPosPart_secondary[sec_i].GetMCSignalPair()) continue;
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
         // Apply MC signals
         // Check if it is according to mcsignals
@@ -3114,6 +3400,61 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
       double mass = LvecM.M();
       double pairpt = LvecM.Pt();
       double weight = 1.;
+
+
+      // if(fdebug) {
+      //   if(mass<0.13){
+      //     if (CaseRec == kFALSE && CaseSmearing == kFALSE) {
+      //       AliVParticle* track1 = fMC->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
+      //       AliVParticle* track2 = fMC->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
+      //       AliVParticle* track3 = fMC->GetTrack(fPairVec_secondary[sec_i].GetFirstDaughter());  // secondary electron, neg, first Daughter
+      //       AliVParticle* track4 = fMC->GetTrack(fPairVec_secondary[sec_i].GetSecondDaughter());  // secondary electron, pos, second Daughter
+      //
+      //       Int_t labelD1 = -1;   labelD1 = TMath::Abs(track1->GetLabel());     Int_t pdgD1 = track1->PdgCode();
+      //       Int_t labelD2 = -1;   labelD2 = TMath::Abs(track2->GetLabel());     Int_t pdgD2 = track2->PdgCode();
+      //       Int_t labelD3 = -1;   labelD3 = TMath::Abs(track3->GetLabel());     Int_t pdgD3 = track3->PdgCode();
+      //       Int_t labelD4 = -1;   labelD4 = TMath::Abs(track4->GetLabel());     Int_t pdgD4 = track4->PdgCode();
+      //
+      //       Int_t labelM1 = -1;   labelM1 = TMath::Abs(track1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
+      //       Int_t labelM2 = -1;   labelM2 = TMath::Abs(track2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
+      //       Int_t labelM3 = -1;   labelM3 = TMath::Abs(track3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
+      //       Int_t labelM4 = -1;   labelM4 = TMath::Abs(track4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
+      //
+      //       Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
+      //       Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
+      //       Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
+      //       Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
+      //
+      //       std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
+      //       std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
+      //       std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
+      //       std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
+      //       std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
+      //       std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
+      //       std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
+      //       std::cout << "    -----------" << std::endl;
+      //       std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
+      //       std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
+      //       std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
+      //       std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
+      //       std::cout << "    -----------" << std::endl;
+      //       std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
+      //       std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
+      //       std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
+      //       std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
+      //       std::cout << "    -----------" << std::endl;
+      //       TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
+      //       fLVPart1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), track1->M());
+      //       fLVPart2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), track2->M());
+      //       fLVPart3.SetPtEtaPhiM(track3->Pt(), track3->Eta(), track3->Phi(), track3->M());
+      //       fLVPart4.SetPtEtaPhiM(track4->Pt(), track4->Eta(), track4->Phi(), track4->M());
+      //       fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
+      //       std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
+      //     }
+      //   }
+      // }
+
+
 
       if (CaseRec == kTRUE) {
         double  pairAngle = Lvec1.Angle(Lvec2.Vect());
@@ -3146,6 +3487,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
           } // end of loop over all MCsignals
         }
       }
+                                                                                // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: 4Pair with mass = " << mass << std::endl;
       if (CaseRec == kTRUE) {
         for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
           if (mcSignal_acc[i] == kTRUE){

@@ -127,11 +127,9 @@ AliAnalysisTaskGeorgiosNTuple::~AliAnalysisTaskGeorgiosNTuple() {
 }
 
 void AliAnalysisTaskGeorgiosNTuple::UserCreateOutputObjects() {           
-   cout<<"caca*/*/*/*/*FUCKYEAH I arrive here -1-1-1-1-1"<<endl;
   fGTI = new AliVTrack *[fTrackBufferSize];
 
   if (!fEventCuts) {
-cout<<" whatdafuck "<<endl;
     AliError("No Event cuts \n");
   } else {
     fEventCuts->InitQA();
@@ -205,7 +203,6 @@ cout<<" whatdafuck "<<endl;
   fCascade->GetBach()->SetUseMCInfo(false);
   fCascade->Setv0PDGCode(3122);             //Lambda
 
-cout<<" I arrive here 0"<<endl;
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -277,7 +274,6 @@ if (!fAntiLambda->GetMinimalBooking()) {
     fResults->SetName("Results");
   }
 
-cout<<" I arrive here 1"<<endl;
   //book tree:
   ////////////
   fGeorgiosTree = new TTree("oTTree","a simple TTree");
@@ -289,8 +285,10 @@ cout<<" I arrive here 1"<<endl;
 fGeorgiosTree->Branch("nv0",&fTnv0,"fTnv0/I");
 fGeorgiosTree->Branch("v0Charge",&fTv0Charge,"fTv0Charge[fTnv0]/S");
 fGeorgiosTree->Branch("v0DCA",&fTv0DCA,"fTv0DCA[fTnv0]/F");
-fGeorgiosTree->Branch("v0DaughtersDCA",&fTv0DaughtersDCA,"fTv0DaughtersDCA[fTnv0]/f");
+fGeorgiosTree->Branch("v0DaughtersDCA",&fTv0DaughtersDCA,"fTv0DaughtersDCA[fTnv0]/F");
 fGeorgiosTree->Branch("v0LambdaMass",&fTv0LambdaMass,"fTv0LambdaMass[fTnv0]/F");
+fGeorgiosTree->Branch("v0LambdaVr",&fTv0LambdaVr,"fTv0LambdaVr[fTnv0]/F");
+fGeorgiosTree->Branch("v0LambdaPA",&fTv0LambdaPA,"fTv0LambdaPA[fTnv0]/F");
 fGeorgiosTree->Branch("Trackv0Px",&fTTrackv0Px,"fTTrackv0Px[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Py",&fTTrackv0Py,"fTTrackv0Py[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Pz",&fTTrackv0Pz,"fTTrackv0Pz[fTnv0][2]/F");
@@ -340,7 +338,6 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
  fGeorgiosTree->Branch("TrackPhi",&fTTrackPhi,"fTTrackPhi[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackID",&fTTrackID,"fTTrackID[fTnCascade][3]/I");
 
-cout<<" I arrive here 2"<<endl;
  PostData(1, fEvtList);
  PostData(2, fLambdaList);
  PostData(3, fAntiLambdaList);
@@ -351,7 +348,6 @@ cout<<" I arrive here 2"<<endl;
  PostData(8, fResults);
  PostData(9, fResultsQA);
  PostData(10, fGeorgiosTree);
-cout<<" I arrive here 3"<<endl;
 }
 
 void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
@@ -383,13 +379,13 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
    fTv0DCA[ii]=-100000.;
    fTv0DaughtersDCA[ii]=-100000.;
    fTv0LambdaMass[ii]=-100000.;
-
+   fTv0LambdaVr[ii]=-100000.;
+   fTv0LambdaPA[ii]=-100000.;
+ 
    fTv0Vx[ii]=-100000.;
    fTv0Vy[ii]=-100000.;
    fTv0Vz[ii]=-100000.;
-   fTv0Vr[ii]=-100000.;
-   fTv0PA[ii]=-100000.;
-   for (int jj=0; jj<2; jj++){
+  for (int jj=0; jj<2; jj++){
     fTTrackv0P[ii][jj]=-100000;
     fTTrackv0Px[ii][jj]=-100000.;
     fTTrackv0Py[ii][jj]=-100000.;
@@ -658,8 +654,8 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
  fTv0DCA[fTnv0] = Thev0->GetDCAPrimVtx();
  fTv0Charge[fTnv0] = Thev0->GetCharge().at(0);
  fTv0LambdaMass[fTnv0] = Thev0->Getv0Mass();
- fTv0Vr[fTnv0] = Thev0->GetTransverseRadius();
-// ftv0PA[fTnv0] = Thev0->;
+ fTv0LambdaVr[fTnv0] = Thev0->GetTransverseRadius();
+ fTv0LambdaPA[fTnv0] = Thev0->GetCPA();
  fTv0DaughtersDCA[fTnv0] = Thev0-> GetDaugDCA();
 
  AliFemtoDreamTrack* TheTrackv0 = Thev0->GetPosDaughter();

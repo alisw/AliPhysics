@@ -1219,8 +1219,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   DumpTObjTable("UserExec: after filtering");
 
-  Bool_t bCorrelations = FillCorrelations();
-  DumpTObjTable("UserExec: after FillCorrelations");
+  // Bool_t bCorrelations = FillCorrelations();
+  // DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -2744,6 +2744,11 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     else species = IsPIDSelectedMC(track);
     if(species != kPion && species != kKaon && species != kProton) { continue; }
 
+    //check pT ranges
+    if(fFlowPOIsPtBinEdges[species].size() > 0){
+      if(track->Pt() < fFlowPOIsPtBinEdges[species].front() || track->Pt() > fFlowPOIsPtBinEdges[species].back() ) continue;
+    }
+
     // check if only protons should be used
     if(fCutPIDUseAntiProtonOnly && species == kProton && track->Charge() == 1) { continue; }
 
@@ -3121,7 +3126,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
 
     if(iNumGaps > 2) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
     if(iNumGaps == 2 && task->fdGaps[0] != task->fdGaps[1]) { AliError("Different position of the border when using 3 subevents! Not implemented yet!"); return kFALSE; }
-    if(iNumHarm > 12) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
+    if(iNumHarm > 16) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
     Double_t dGap = -1.0;
     if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
@@ -3141,6 +3146,8 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
               if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), kRefs);
               if(iNumHarm > 8) CalculateCorrelations(fVecCorrTask.at(iTask-4), kRefs);
               if(iNumHarm > 10) CalculateCorrelations(fVecCorrTask.at(iTask-5), kRefs);
+              if(iNumHarm > 12) CalculateCorrelations(fVecCorrTask.at(iTask-6), kRefs);
+              if(iNumHarm > 14) CalculateCorrelations(fVecCorrTask.at(iTask-7), kRefs);
             }
             continue;
         }
@@ -3766,10 +3773,14 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   Int_t maxHarm = task->fMaxHarm;
   Int_t maxWeightPower = task->fMaxWeightPower;
 
+  Bool_t usePowVector = task->fbUsePowerVector;
+  std::vector<Int_t> maxPowVec = {0};
+  if(usePowVector) maxPowVec = task->fiMaxPow;
+
   // clearing output (global) flow vectors
-  ResetFlowVector(fFlowVecQpos, maxHarm, maxWeightPower);
-  ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower);
-  if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower); }
+  ResetFlowVector(fFlowVecQpos, maxHarm, maxWeightPower, usePowVector, maxPowVec);
+  ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower, usePowVector, maxPowVec);
+  if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower, usePowVector, maxPowVec); }
 
   for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
   {
@@ -3784,49 +3795,57 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
 
     if(!bHasGap) // no eta gap
     {
-      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+        if(usePowVector) maxWeightPower = maxPowVec[iHarm];
         for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
         {
           Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
           Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
           fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
         }
+      }
     }
     else
     {
       // RFP in positive eta acceptance
       if(dEta > dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
       }
       // RFP in negative eta acceptance
       if(dEta < -dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
       }
 
       // RFP in middle (for 3sub) if gap > 0
       if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
       }
 
     } // endif {dEtaGap}
@@ -3904,6 +3923,9 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
     Double_t dWeight = 1.0;
     if(fFlowUseWeights) { dWeight = GetFlowWeight(part, species); }
 
+    Double_t dWeightRef = 1.0;
+    if(fFlowUseWeights) { dWeightRef = GetFlowWeight(part, kRefs); }
+
     // check if POI overlaps with RFPs (not for reconstructed)
     Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(part)));
 
@@ -3920,8 +3942,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
           // in case of charged, pions, kaons or protons (one witout mass)
           if(bIsWithinRefs)
           {
-            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            Double_t dCos = 0.0;
+            Double_t dSin = 0.0;
+            if(iPower > 1){
+              dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+              dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+            }
+            else{
+              dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            }
             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
         }
@@ -3941,8 +3971,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
             // possible overlap for <<4'>> with single gap (within the same subevent)
             if(bIsWithinRefs)
             {
-              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              Double_t dCos = 0.0;
+              Double_t dSin = 0.0;
+              if(iPower > 1){
+                dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+              }
+              else{
+                dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              }
               fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
           }
@@ -3959,8 +3997,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
              // possible overlap for <<4'>> with single gap (within the same subevent)
              if(bIsWithinRefs)
              {
-               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               if(iPower > 1){
+                 dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                 dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               }
+               else{
+                 dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               }
                fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
@@ -3977,6 +4023,16 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 
              if(bIsWithinRefs)
              {
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               if(iPower > 1){
+                 dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+                 dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               }
+               else{
+                 dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               }
                fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
@@ -3990,11 +4046,12 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
    return iTracksFilled;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower)
+void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower, Bool_t usePow, std::vector<Int_t> maxPowVec)
 {
   // Reset RFPs (Q) array values to TComplex(0,0,kFALSE) for given array
   // *************************************************************
   for(Int_t iHarm(0); iHarm <= maxHarm; ++iHarm) {
+    if(usePow) maxWeightPower = maxPowVec[iHarm];
     for(Int_t iPower(0); iPower <= maxWeightPower; ++iPower) {
       array[iHarm][iPower](0.0,0.0);
     }
@@ -4111,9 +4168,9 @@ Bool_t AliAnalysisTaskUniFlow::HasTrackPIDTOF(const AliAODTrack* track) const
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs)
+void AliAnalysisTaskUniFlow::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> maxPowVec)
 {
-    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps));
+    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps, maxPowVec));
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::Terminate(Option_t* option)

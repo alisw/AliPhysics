@@ -12,7 +12,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
     const Float_t EtaMin = -0.8,
     const Float_t EtaMax = +0.8,
 		const TString outname = "LMEE.root",
-		const Bool_t isMC = kFALSE
+		const Bool_t isMC = kFALSE,
+		const TString suffix=""
     )
 {
   //get the current analysis manager
@@ -46,7 +47,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
   //create task and add it to the manager (MB)
-  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()));
+  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()));
   task->UsePhysicsSelection(kTRUE);
   task->SetTriggerMask(trigger);
 
@@ -67,9 +68,13 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
   THnF *hs_width_TOF_El = 0x0;
   THnF *hs_mean_TPC_Pi  = 0x0;
   THnF *hs_width_TPC_Pi = 0x0;
+  THnF *hs_mean_TPC_Ka  = 0x0;
+  THnF *hs_width_TPC_Ka = 0x0;
+  THnF *hs_mean_TPC_Pr  = 0x0;
+  THnF *hs_width_TPC_Pr = 0x0;
 
 	TFile *rootfile = 0x0;
-	if(calibFileName != ""){
+	if(calibFileName.Contains("pass3")){
 		printf("reading : %s for PID calibration\n",calibFileName.Data());
 		rootfile = TFile::Open(calibFileName,"READ");
 		hs_mean_TPC_El  = (THnF*)rootfile->Get("hs_mean_TPC_El");
@@ -80,6 +85,26 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 		hs_width_TOF_El = (THnF*)rootfile->Get("hs_width_TOF_El");
 		hs_mean_TPC_Pi  = (THnF*)rootfile->Get("hs_mean_TPC_Pi");
 		hs_width_TPC_Pi = (THnF*)rootfile->Get("hs_width_TPC_Pi");
+		hs_mean_TPC_Ka  = (THnF*)rootfile->Get("hs_mean_TPC_Ka");
+		hs_width_TPC_Ka = (THnF*)rootfile->Get("hs_width_TPC_Ka");
+		hs_mean_TPC_Pr  = (THnF*)rootfile->Get("hs_mean_TPC_Pr");
+		hs_width_TPC_Pr = (THnF*)rootfile->Get("hs_width_TPC_Pr");
+	}
+	else if(calibFileName.Contains("pass1")){
+		printf("reading : %s for PID calibration\n",calibFileName.Data());
+		rootfile = TFile::Open(calibFileName,"READ");
+		hs_mean_TPC_El  = (THnF*)rootfile->Get("hs_mean_TPC_El");
+		hs_width_TPC_El = (THnF*)rootfile->Get("hs_width_TPC_El");
+		hs_mean_ITS_El  = (THnF*)rootfile->Get("hs_mean_ITS_El");
+		hs_width_ITS_El = (THnF*)rootfile->Get("hs_width_ITS_El");
+		hs_mean_TOF_El  = (THnF*)rootfile->Get("hs_mean_TOF_El");
+		hs_width_TOF_El = (THnF*)rootfile->Get("hs_width_TOF_El");
+		hs_mean_TPC_Pi  = (THnF*)rootfile->Get("hs_mean_TPC_Pi");
+		hs_width_TPC_Pi = (THnF*)rootfile->Get("hs_width_TPC_Pi");
+		hs_mean_TPC_Ka  = (THnF*)rootfile->Get("hs_mean_TPC_Ka");
+		hs_width_TPC_Ka = (THnF*)rootfile->Get("hs_width_TPC_Ka");
+		hs_mean_TPC_Pr  = (THnF*)rootfile->Get("hs_mean_TPC_Pr");
+		hs_width_TPC_Pr = (THnF*)rootfile->Get("hs_width_TPC_Pr");
 	}
 
   for (Int_t itc=0; itc<nTC; ++itc){
@@ -93,15 +118,22 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 				if(rootfile && rootfile->IsOpen()){
 					diel->SetPIDCaibinPU(kTRUE);
 					//for electron
-					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_mean_TPC_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kElectron,hs_width_TPC_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_mean_ITS_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kITS,AliPID::kElectron,hs_width_ITS_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_mean_TOF_El ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTOF,AliPID::kElectron,hs_width_TOF_El,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
 					//for pion
-					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
-					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta,AliDielectronVarManager::kNclsITS1,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_mean_TPC_Pi     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kPion,hs_width_TPC_Pi    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					//for kaon
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_mean_TPC_Ka     ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kKaon,hs_width_TPC_Ka    ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					//for proton
+					diel->SetCentroidCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_mean_TPC_Pr   ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+					diel->   SetWidthCorrFunctionPU(AliDielectronPID::kTPC,AliPID::kProton,hs_width_TPC_Pr  ,AliDielectronVarManager::kNSDDSSDclsEvent,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM,AliDielectronVarManager::kPIn,AliDielectronVarManager::kEta);
+
 				}
 
         if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
@@ -134,25 +166,25 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("Tree_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Tree_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("Histos_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("Histos_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer(Form("CF_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("CF_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer(Form("EventStat_dsekihat_Cen%d_%d_%s",CenMin,CenMax,triggername.Data()),
+    mgr->CreateContainer(Form("EventStat_dsekihat_Cen%d_%d_%s%s",CenMin,CenMax,triggername.Data(),suffix.Data()),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s",outputFileName.Data()));

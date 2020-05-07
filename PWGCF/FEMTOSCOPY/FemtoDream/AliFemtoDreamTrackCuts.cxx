@@ -1068,7 +1068,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetPlotCombSigma(CombSigma);
   trackCuts->SetPlotContrib(ContribSplitting);
   trackCuts->SetIsMonteCarlo(isMC);
-  trackCuts->SetFilterBit(256);
+  trackCuts->SetFilterBit(768);
   trackCuts->SetPtRange(0.02, 4.05);
   trackCuts->SetEtaRange(-0.8, 0.8);
   trackCuts->SetNClsTPC(80);
@@ -1078,7 +1078,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kDeuteron, 1.4);
-  trackCuts->SetCutITSPID(1.4, -3., 3.); 
+  trackCuts->SetCutITSPID(1.4, -2., 1e30); 
   trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
   return trackCuts;

@@ -7,9 +7,13 @@
 #include <TSpline.h>
 #include <AliESDtrackCuts.h>
 #include <AliESDv0.h>
+#include "Math/Vector4D.h"
+
 
 class AliPIDResponse;
 class AliMCEvent;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliVertexerHyperTriton2Body : public TNamed
 {
@@ -87,6 +91,9 @@ class AliVertexerHyperTriton2Body : public TNamed
     {
         fMaxPtV0 = lMaxPt;
     }
+
+    void SetMassRange(float min, float max) { fMassRange[0] = min; fMassRange[1] = max; }
+
     //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding()
     {
@@ -202,6 +209,8 @@ class AliVertexerHyperTriton2Body : public TNamed
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
 
     Double_t fV0VertexerSels[7]; // Array to store the 7 values for the different selections V0 related
+
+    float fMassRange[2];
     double fMagneticField;
     double fPrimaryVertexX;
     double fPrimaryVertexY;
@@ -211,7 +220,7 @@ class AliVertexerHyperTriton2Body : public TNamed
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 
-    ClassDef(AliVertexerHyperTriton2Body, 3);
+    ClassDef(AliVertexerHyperTriton2Body, 4);
     //1: first implementation
 };
 

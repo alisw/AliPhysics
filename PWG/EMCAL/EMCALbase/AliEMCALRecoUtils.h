@@ -70,7 +70,8 @@ public:
   void     Print(const Option_t*) const;
 
   /// Non linearity enum list of possible parametrizations. 
-  /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
+  /// Recomended for data kTestBeamShaper and for simulation kTestBeamFinalMC
+  /// (this also requires enableShaperCorrection: true in the .yaml configuration for data)
   enum     NonlinearityFunctions
   { 
     kPi0MC   = 0, kPi0GammaGamma = 1,
@@ -86,7 +87,9 @@ public:
     kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
     kBeamTestCorrectedv4 = 17, // Different parametrization of v3 but similar, improve E>100 GeV linearity
     kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
-    kPi0MCNS = 19              // Custom fit of all avail. TB points and E>100 GeV MC
+    kPi0MCNS = 19,             // Custom fit of all avail. TB points and E>100 GeV MC
+    kTestBeamShaper = 20,      // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL
+    kTestBeamFinalMC = 21      // Final/official fit of all avail. TB points and E>100 GeV MC
   };
 
   /// Cluster position enum list of possible algoritms
@@ -203,6 +206,24 @@ public:
   void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
   void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
                                                            SwitchOnRecalibration()           ; }      
+  // Single Channel Calibration
+  Bool_t   IsSingleChannelRecalibrationOn()                     const { return fSingleChannelRecalibration ; }
+  void     SwitchOffSingleChannelRecalibration()                      { fSingleChannelRecalibration = kFALSE ; }
+  void     SwitchOnSingleChannelRecalibration()                       { fSingleChannelRecalibration = kTRUE  ; 
+                                                                        if(!fEMCALSingleChannelRecalibrationFactors)InitEMCALSingleChannelRecalibrationFactors() ; }
+  void     InitEMCALSingleChannelRecalibrationFactors() ;
+  TObjArray* GetEMCALSingleChannelRecalibrationFactorsArray()   const { return fEMCALSingleChannelRecalibrationFactors ; }
+  TH2F *   GetEMCALSingleChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM) ; }	
+  Float_t  GetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fEMCALSingleChannelRecalibrationFactors) 
+      return (Float_t) ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; } 
+  void     SetEMCALSingleChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALSingleChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+  void     SetEMCALSingleChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+    if(!fEMCALSingleChannelRecalibrationFactors) InitEMCALSingleChannelRecalibrationFactors() ;
+    ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+  
   // Time Recalibration
   void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
@@ -536,7 +557,12 @@ private:
   Bool_t     fRecalibration;             ///< Switch on or off the recalibration
   Bool_t     fUse1Drecalib;              ///< Flag to use one dimensional recalibration histogram
   TObjArray* fEMCALRecalibrationFactors; ///< Array of histograms with map of recalibration factors, EMCAL
-    
+
+  // Single Channel Energy Recalibration 
+  Bool_t     fCellsSingleChannelRecalibrated;         ///< Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
+  Bool_t     fSingleChannelRecalibration;             ///< Switch on or off the single channel calibration
+  TObjArray* fEMCALSingleChannelRecalibrationFactors; ///< Array of histograms with map of single channel calibration factors, EMCAL and DCAL
+  
   // Time Recalibration 
   Float_t    fConstantTimeShift;         ///< Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
   Bool_t     fTimeRecalibration;         ///< Switch on or off the time recalibration
@@ -625,7 +651,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 33) ;
+  ClassDef(AliEMCALRecoUtils, 34) ;
   /// \endcond
 
 };

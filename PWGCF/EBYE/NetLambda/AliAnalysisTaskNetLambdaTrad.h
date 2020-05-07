@@ -43,10 +43,7 @@ protected:
     TH2F*  hlmasseta;
     TH2F*  hamasseta;
  
-    
-    TH2F*  hetaVO;
-    TH2F*  hpetaVO;
-    TH2F*  hnetaVO;
+ 
     TH2F*  hpxy;
     TH2F*  hprow;
     TH2F*  hnrow;
@@ -54,6 +51,8 @@ protected:
     TH2F*  hnegp;
     TH2F*  hpospi;
     TH2F*  hnegpi;
+    TH2F*  hpostpc;
+    TH2F*  hnegtpc;
     
     TH2F*  lhDCAd;
     TH2F*  ahDCAd;
@@ -69,11 +68,7 @@ protected:
     TH2F*  ahntPV;
     TH2F*  lhptPV;
     TH2F*  ahptPV;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
-    TH3F*  f3fHistCentVsInvMassLambda0point3;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point3;
+
     
     Float_t fCentrality;
     Int_t fTreeVariableLeastNbrCrossedRows;
@@ -81,9 +76,7 @@ protected:
     
     UInt_t fEvSel;
     Int_t  fNptBins;
-    
-    THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusCh03;
+ 
     Int_t    GetPtBin(Double_t pt);
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };

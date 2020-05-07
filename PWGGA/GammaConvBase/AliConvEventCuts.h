@@ -389,6 +389,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+      void    SetEventQuality(Int_t value)                                          { if (fEventQuality) {
+                                                                                        AliWarning(Form("Changing fEventQuality from %i to %i", fEventQuality, value));
+                                                                                      }
+                                                                                      fEventQuality = value                                     ; }
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
@@ -633,9 +637,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TList*                      fHistograms;                            ///<
       TList*                      fHeaderList;                            ///<
 
-      Int_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+      Int_t                       fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
+      TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
       Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
@@ -758,7 +763,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,75)
+      ClassDef(AliConvEventCuts,76)
       /// \endcond
 };
 

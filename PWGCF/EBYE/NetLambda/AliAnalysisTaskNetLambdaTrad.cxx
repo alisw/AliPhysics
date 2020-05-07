@@ -2,7 +2,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
 // email: ejiro.naomi.umaka@cern.ch
-//Mar24
+//Apr 19 Track/V0 selections
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -51,9 +51,6 @@ fHistCentrality(0x0),
 
 hpVz(0x0),
 hpxy(0x0),
-hetaVO(0x0),
-hpetaVO(0x0),
-hnetaVO(0x0),
 hlmasseta(0x0),
 hamasseta(0x0),
 hprow(0x0),
@@ -62,6 +59,8 @@ hposp(0x0),
 hnegp(0x0),
 hpospi(0x0),
 hnegpi(0x0),
+hpostpc(0x0),
+hnegtpc(0x0),
 
 lhDCAd(0x0),
 ahDCAd(0x0),
@@ -77,16 +76,10 @@ ahntPV(0x0),
 lhptPV(0x0),
 ahptPV(0x0),
 
-f3fHistCentVsInvMassLambda1point0(0x0),
-f3fHistCentVsInvMassAntiLambda1point0(0x0),
-f3fHistCentVsInvMassLambda0point3(0x0),
-f3fHistCentVsInvMassAntiLambda0point3(0x0),
 
 fCentrality(-1),
 fNptBins(23),
-fEvSel(AliVEvent::kINT7),
-fPtBinNplusNminusCh03(NULL),
-fPtBinNplusNminusCh(NULL)
+fEvSel(AliVEvent::kINT7)
 
 {
     Info("AliAnalysisTaskNetLambdaTrad","Calling Constructor");
@@ -119,7 +112,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     hpVz = new TH1D( "hpVz", "hpVz",100,-20,20);
     fListHist->Add(hpVz);
 
-    hpxy = new TH2F("hpxy","hpxy ", 100,-1,1,100,-1,1);
+    hpxy = new TH2F("hpxy","hpxy ", 500,-0.4,0.4,500,0.2,0.8);
     fListHist->Add(hpxy);
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -137,104 +130,63 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         1.1252,1.126,1.1268,1.1276,1.1284,1.1292,1.13,1.1308,1.1316,1.1324,1.1332,1.134,1.1348,1.1356,1.1364,1.1372,1.138,1.1388,1.1396,1.1404,1.1412,1.142,1.1428,1.1436,1.1444,1.1452,1.146,1.1468,1.1476,
         1.1484,1.1492,1.15,1.1508,1.1516,1.1524,1.1532,1.154,1.1548,1.1556,1.1564,1.1572,1.158,1.1588,1.1596,1.1604};
     Long_t Massbinnumb = sizeof(MassBins)/sizeof(Double_t) - 1;
+   
     
-    hetaVO = new TH2F("hetaVO","hetaVO", 100, -1, 1, fNptBins, LambdaPtBins);
-    fListHist->Add(hetaVO);
-    
-    hpetaVO = new TH2F("hpetaVO","hpetaVO", 100, -1, 1, fNptBins, LambdaPtBins);
-    fListHist->Add(hpetaVO);
-    
-    hnetaVO = new TH2F("hnetaVO","hnetaVO", 100, -1, 1, fNptBins, LambdaPtBins);
-    fListHist->Add(hnetaVO);
-    
-    hlmasseta = new TH2F("hlmasseta","hlmasseta", Massbinnumb, MassBins, 100, -1, 1);
+    hlmasseta = new TH2F("hlmasseta","hlmasseta", Massbinnumb, MassBins, 500, -1, 1);
     fListHist->Add(hlmasseta);
     
-    hamasseta = new TH2F("hamasseta","hamasseta", Massbinnumb, MassBins, 100, -1, 1);
+    hamasseta = new TH2F("hamasseta","hamasseta", Massbinnumb, MassBins, 500, -1, 1);
     fListHist->Add(hamasseta);
     
-    hprow = new TH2F("hprow","hprow", 100, 0,10, 1000, 20, 200);
+    hprow = new TH2F("hprow","hprow", 1000, 0,5, 10000, 60, 160);
     fListHist->Add(hprow);
     
-    hnrow = new TH2F("hnrow","hnrow", 100, 0,10, 1000, 20, 200);
+    hnrow = new TH2F("hnrow","hnrow", 1000, 0,5, 10000, 60, 160);
     fListHist->Add(hnrow);
     
-    hposp = new TH2F("hposp","hposp", fNptBins, LambdaPtBins, 100, -10, 10);
+    hposp = new TH2F("hposp","hposp", Massbinnumb, MassBins, 6000, -6, 6);
     fListHist->Add(hposp);
     
-    hnegp = new TH2F("hnegp","hnegp", fNptBins, LambdaPtBins, 100, -10, 10);
+    hnegp = new TH2F("hnegp","hnegp", Massbinnumb, MassBins, 6000, -6, 6);
     fListHist->Add(hnegp);
     
-    hpospi = new TH2F("hpospi","hpospi", fNptBins, LambdaPtBins, 100, -10, 10);
+    hpospi = new TH2F("hpospi","hpospi", Massbinnumb, MassBins, 6000, -6, 6);
     fListHist->Add(hpospi);
     
-    hnegpi = new TH2F("hnegpi","hnegpi", fNptBins, LambdaPtBins, 100, -10, 10);
+    hnegpi = new TH2F("hnegpi","hnegpi", Massbinnumb, MassBins, 6000, -6, 6);
     fListHist->Add(hnegpi);
     
+    hpostpc = new TH2F("hpostpc","hpostpc", 50,0,3, 800, 0,800);
+    fListHist->Add(hpostpc);
     
-    lhDCAd = new TH2F("lhDCAd","lhDCAd", Massbinnumb, MassBins, 100, 0, 2);
+    hnegtpc = new TH2F("hnegtpc","hnegtpc", 50,0,3, 800, 0,800);
+    fListHist->Add(hnegtpc);
+    
+    
+    lhDCAd = new TH2F("lhDCAd","lhDCAd", Massbinnumb, MassBins, 500, 0, 1);
     fListHist->Add(lhDCAd);
-    ahDCAd = new TH2F("ahDCAd","ahDCAd", Massbinnumb, MassBins, 100, 0, 2);
+    ahDCAd = new TH2F("ahDCAd","ahDCAd", Massbinnumb, MassBins, 500, 0, 1);
     fListHist->Add(ahDCAd);
-    lhV0rad = new TH2F("lhV0rad","lhV0rad", Massbinnumb, MassBins, 200, 0, 199);
+    lhV0rad = new TH2F("lhV0rad","lhV0rad", Massbinnumb, MassBins, 50000, 1, 100);
     fListHist->Add(lhV0rad);
-    ahV0rad = new TH2F("ahV0rad","ahV0rad", Massbinnumb, MassBins, 200, 0, 199);
+    ahV0rad = new TH2F("ahV0rad","ahV0rad", Massbinnumb, MassBins, 50000, 1, 100);
     fListHist->Add(ahV0rad);
-    lhCosp = new TH2F("lhCosp","lhCosp", Massbinnumb, MassBins, 100, 0, 1);
+    lhCosp = new TH2F("lhCosp","lhCosp", Massbinnumb, MassBins, 500, 0.9, 1.1);
     fListHist->Add(lhCosp);
-    ahCosp = new TH2F("ahCosp","ahCosp", Massbinnumb, MassBins, 100, 0, 1);
+    ahCosp = new TH2F("ahCosp","ahCosp", Massbinnumb, MassBins, 500, 0.9, 1.1);
     fListHist->Add(ahCosp);
-    lhV0tPV = new TH2F("lhV0tPV","lhV0tPV", Massbinnumb, MassBins, 200, 0, 199);
+    lhV0tPV = new TH2F("lhV0tPV","lhV0tPV", Massbinnumb, MassBins, 5000, 0, 10);
     fListHist->Add(lhV0tPV);
-    ahV0tPV = new TH2F("ahV0tPV","ahV0tPV", Massbinnumb, MassBins, 200, 0, 199);
+    ahV0tPV = new TH2F("ahV0tPV","ahV0tPV", Massbinnumb, MassBins, 5000, 0, 10);
     fListHist->Add(ahV0tPV);
-    lhntPV = new TH2F("lhntPV","lhntPV", Massbinnumb, MassBins, 100, 0, 99);
+    lhntPV = new TH2F("lhntPV","lhntPV", Massbinnumb, MassBins, 2500, 1, 5);
     fListHist->Add(lhntPV);
-    ahntPV = new TH2F("ahntPV","ahntPV", Massbinnumb, MassBins, 100, 0, 99);
+    ahntPV = new TH2F("ahntPV","ahntPV", Massbinnumb, MassBins, 2500, 1, 5);
     fListHist->Add(ahntPV);
-    lhptPV = new TH2F("lhptPV","lhptPV", Massbinnumb, MassBins, 100, 0, 99);
+    lhptPV = new TH2F("lhptPV","lhptPV", Massbinnumb, MassBins, 2500, 1, 5);
     fListHist->Add(lhptPV);
-    ahptPV = new TH2F("ahptPV","ahptPV", Massbinnumb, MassBins, 100, 0, 99);
+    ahptPV = new TH2F("ahptPV","ahptPV", Massbinnumb, MassBins, 2500, 1, 5);
     fListHist->Add(ahptPV);
-
- 
-    
-    //V0 hists//
-    
-    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","f3fHistCentVsInvMassLambda1point0",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassLambda1point0);
-
-
-    f3fHistCentVsInvMassAntiLambda1point0 = new TH3F("f3fHistCentVsInvMassAntiLambda1point0","f3fHistCentVsInvMassAntiLambda1point0",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0);
-
-    
-    f3fHistCentVsInvMassLambda0point3 = new TH3F("f3fHistCentVsInvMassLambda0point3","f3fHistCentVsInvMassLambda0point3 ",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassLambda0point3);
-    
-    
-    f3fHistCentVsInvMassAntiLambda0point3 = new TH3F("f3fHistCentVsInvMassAntiLambda0point3","f3fHistCentVsInvMassAntiLambda0point3",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-    fListHist->Add(f3fHistCentVsInvMassAntiLambda0point3);
-
-    
-    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //THNSPARSE BINNING
-    
-    const Int_t dim = 47; //3 pt bins*2 + 1 cent bin
-    Int_t bin[dim];
-    bin[0] = 81;
-    for(Int_t ibin = 1; ibin < dim; ibin++) bin[ibin] = 500;
-    Double_t min[dim];
-    for(Int_t jbin = 0; jbin < dim; jbin++) min[jbin] =  -0.5;
-    Double_t max[dim];
-    max[0] = 80.5;
-    for(Int_t jbin = 1; jbin < dim; jbin++) max[jbin] = 499.5;
-    
-    fPtBinNplusNminusCh = new THnSparseI("fPtBinNplusNminusCh","fPtBinNplusNminusCh", dim, bin, min, max);
-    fListHist->Add(fPtBinNplusNminusCh);
-    
-    fPtBinNplusNminusCh03 = new THnSparseI("fPtBinNplusNminusCh03","fPtBinNplusNminusCh03", dim, bin, min, max);
-    fListHist->Add(fPtBinNplusNminusCh03);
 
     PostData(1,fListHist);
 }
@@ -243,20 +195,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
 {
-    
-    const Int_t dim = fNptBins*2;
-    
-    Int_t ptChEta1point0[dim];
-    Int_t ptChEta0point3[dim];
-    
-    
-    for(Int_t idx = 0; idx < dim; idx++)
-    {
-        ptChEta1point0[idx] = 0.;
-        ptChEta0point3[idx] = 0.;
-        
-    }
-    
+  
     if (!fInputEvent) return;
     
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -347,8 +286,13 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
-        if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
         
+        Float_t lThisPosdEdx = esdpTrack -> GetTPCsignal();
+        Float_t lThisNegdEdx = esdnTrack -> GetTPCsignal();
+        Float_t ptrTPCm = esdpTrack->GetTPCmomentum();
+        Float_t ntrTPCm = esdnTrack->GetTPCmomentum();
+     
+        if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
         Double_t tV0mom[3];
         esdv0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
         Double_t lV0TotalMomentum = TMath::Sqrt(
@@ -428,118 +372,60 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         pospion  = fPIDResponse->NumberOfSigmasTPC( esdpTrack, AliPID::kPion );
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
 
-        hetaVO->Fill(eta,V0pt);
-        hpetaVO->Fill(peta,V0pt);
-        hnetaVO->Fill(neta,V0pt);
-
         hprow->Fill(ppt, lPosTrackCrossedRows);
         hnrow->Fill(npt, lPosTrackCrossedRows);
+ 
+        hpostpc->Fill(ptrTPCm, lThisPosdEdx);
+        hnegtpc->Fill(ntrTPCm, lThisNegdEdx);
         
-        hposp->Fill(V0pt, posprnsg);
-        hnegp->Fill(V0pt, negprnsg);
-        hpospi->Fill(V0pt, pospion);
-        hnegpi->Fill(V0pt, negpion);
+        hposp->Fill(invMassLambda, posprnsg);
+        hnegp->Fill(invMassAntiLambda, negprnsg);
+        hpospi->Fill(invMassAntiLambda, pospion);
+        hnegpi->Fill(invMassLambda, negpion);
         
-        lhDCAd->Fill(invMassLambda, dcaDaughters);
-        lhV0rad->Fill(invMassLambda, v0Radius);
-        lhCosp->Fill(invMassLambda, cosPointingAngle);
-        lhV0tPV->Fill(invMassLambda, dcaV0ToVertex);
-        lhntPV->Fill(invMassLambda, dcaNegToVertex);
-        lhptPV->Fill(invMassLambda, dcaPosToVertex);
-        
-        
-        ahDCAd->Fill(invMassAntiLambda, dcaDaughters);
-        ahV0rad->Fill(invMassAntiLambda, v0Radius);
-        ahCosp->Fill(invMassAntiLambda, cosPointingAngle);
-        ahV0tPV->Fill(invMassAntiLambda, dcaV0ToVertex);
-        ahntPV->Fill(invMassAntiLambda, dcaNegToVertex);
-        ahptPV->Fill(invMassAntiLambda, dcaPosToVertex);
-        
-    
-     
+      
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
-        if(dcaDaughters > 0.8) continue;
-        if(v0Radius < 5.0) continue;
-        if(cosPointingAngle < 0.99) continue;
-        
-
-        Int_t iptbin = GetPtBin(V0pt);
-        if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
-        
-        
+ 
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
-            {hlmasseta->Fill(invMassLambda,eta);}
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg) <= 3 && TMath::Abs(pospion) <= 3)
-            {hamasseta->Fill(invMassAntiLambda,eta);}
-            
-
-        if(TMath::Abs(eta) < 0.8)
-        {
-            if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
-                {
-                f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
-
-                if(invMassLambda > 1.11 && invMassLambda < 1.122)
-                {
-                    ptChEta1point0[iptbin] += 1;
-                }
-                }
-            if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg) <= 3 && TMath::Abs(pospion) <= 3)
-                {
-                f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
-                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                {
-                    ptChEta1point0[iptbin+fNptBins] += 1;
-                }
-                }
-
-        }
-            
-            if(TMath::Abs(eta) < 0.3)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3 && v0Radius > 5.0 && cosPointingAngle > 0.99 && dcaDaughters < 0.8)
             {
-                if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.25 && dcaPosToVertex > 0.1 && TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
-                {
-                    f3fHistCentVsInvMassLambda0point3->Fill(fCentrality,invMassLambda,V0pt);
-                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
-                    {
-                        ptChEta0point3[iptbin] += 1;
-                    }
-                }
-                if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg) <= 3 && TMath::Abs(pospion) <= 3)
-                {
-                    f3fHistCentVsInvMassAntiLambda0point3->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                    {
-                        ptChEta0point3[iptbin+fNptBins] += 1;
-                    }
-                }
+                hlmasseta->Fill(invMassLambda,eta);
             }
+            
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex > 0.25 && TMath::Abs(negprnsg) <= 3 && TMath::Abs(pospion) <= 3 && v0Radius > 5.0 && cosPointingAngle > 0.99 && dcaDaughters < 0.8)
+            {
+                hamasseta->Fill(invMassAntiLambda,eta);
+            }
+            
+            if(TMath::Abs(posprnsg) <= 3 && TMath::Abs(negpion) <= 3)
+            {
+                
+                lhDCAd->Fill(invMassLambda, dcaDaughters);
+                lhV0rad->Fill(invMassLambda, v0Radius);
+                lhCosp->Fill(invMassLambda, cosPointingAngle);
+                lhV0tPV->Fill(invMassLambda, dcaV0ToVertex);
+                lhntPV->Fill(invMassLambda, dcaNegToVertex);
+                lhptPV->Fill(invMassLambda, dcaPosToVertex);
+                
+            }
+
+            if(TMath::Abs(negprnsg) <= 3 && TMath::Abs(pospion) <= 3)
+            {
+                ahDCAd->Fill(invMassAntiLambda, dcaDaughters);
+                ahV0rad->Fill(invMassAntiLambda, v0Radius);
+                ahCosp->Fill(invMassAntiLambda, cosPointingAngle);
+                ahV0tPV->Fill(invMassAntiLambda, dcaV0ToVertex);
+                ahntPV->Fill(invMassAntiLambda, dcaNegToVertex);
+                ahptPV->Fill(invMassAntiLambda, dcaPosToVertex);
+            }
+
         
         }// zero onfly V0
     }// end of V0 loop
 
-    
-    Double_t ptContainer[dim+1];
-    ptContainer[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainer[i] = ptChEta1point0[i-1];
-    }
-    fPtBinNplusNminusCh->Fill(ptContainer);
-    
-    Double_t ptContainer2[dim+1];
-    ptContainer2[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainer2[i] = ptChEta0point3[i-1];
-    }
-    fPtBinNplusNminusCh03->Fill(ptContainer2);
 
- 
     PostData(1,fListHist);
 }
 
@@ -549,7 +435,7 @@ Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-    Double_t LambdaPtBins[4] = {0.9,1.0,4.0,4.2};
+    Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2, 4.4};
 
     
     

@@ -117,12 +117,14 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMinPtEvent(0)
 ,fMaxNTr(999)
 ,fMinNTr(0)
+,fVarZVTXCut(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
 ,fMaxHadronEta(0.8)
 ,fMinHadronEta(-0.8)
 ,fVarEleOpt(0)
 ,fElectronkAny(kFALSE)
+,fElectronkFirst(kFALSE)
 ,fTPCnCut(100)
 ,fTPCndEdxCut(80)
 ,fITSnCut(3)
@@ -585,12 +587,14 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMinPtEvent(0)
 ,fMaxNTr(999)
 ,fMinNTr(0)
+,fVarZVTXCut(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
 ,fMaxHadronEta(0.8)
 ,fMinHadronEta(-0.8)
 ,fVarEleOpt(0)
 ,fElectronkAny(kFALSE)
+,fElectronkFirst(kFALSE)
 ,fTPCnCut(100)
 ,fTPCndEdxCut(80)
 ,fITSnCut(3)
@@ -1352,7 +1356,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       fNoEvents->Fill(1);
       fHFENoEvents->Fill(nTrMCAcc, 1);
       fMCNoEvents->Fill(nTrMCAcc, 1);
-      if (fOneTimeCheck) {
+        if (fOneTimeCheck) {
 	fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
 	fV0ACTrueInel->Fill(multV0A, multV0C);
       }
@@ -1368,6 +1372,9 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fEventCuts.fRequireTrackVertex = false; // not in default pp cuts
   fEventCuts.fMinVtz = -10.f;
   fEventCuts.fMaxVtz = 10.f;
+  if (fVarZVTXCut==1) fEventCuts.fMaxVtz = 0.52;
+  if (fVarZVTXCut==2) fEventCuts.fMinVtz = 0.52;
+  
   fEventCuts.fMaxDeltaSpdTrackAbsolute = 0.5f;
   fEventCuts.fMaxDeltaSpdTrackNsigmaSPD = 1.e14f;
   fEventCuts.fMaxDeltaSpdTrackNsigmaTrack = 1.e14;
@@ -3160,18 +3167,18 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
   //////////// Hadron and Electron RecEff //////////////////////
 
-  Int_t    EffHBins[4]={NBinsHadRed, 18, 16, NVertexBins};
-  Double_t EffHXmin[4]={XminHadron, -0.9, 0, -10};
-  Double_t EffHXmax[4]={XmaxHadron, 0.9, TMath::TwoPi(), 10};
+  Int_t    EffHBins[4]={NBinsHadRed, 16, 16, NVertexBins};
+  Double_t EffHXmin[4]={XminHadron, -0.8, 0, -10};
+  Double_t EffHXmax[4]={XmaxHadron, 0.8, TMath::TwoPi(), 10};
 
-  Int_t    EffEBins[4]={NBinsElectronRecEff, 18, 16, NVertexBins};
-  Double_t EffEXmin[4]={XminElectron, -0.9, 0, -10};
-  Double_t EffEXmax[4]={100, 0.9, TMath::TwoPi(), 10};
+  Int_t    EffEBins[4]={NBinsElectronRecEff, 16, 16, NVertexBins};
+  Double_t EffEXmin[4]={XminElectron, -0.8, 0, -10};
+  Double_t EffEXmax[4]={100, 0.8, TMath::TwoPi(), 10};
     
   if (!fOneTimeCheck) { // maybe reduce axis further
     EffHBins[1]=9; // hadrons for pt, eta, zVtx
     EffHBins[2]=1; // hadrons for pt, eta, zVtx
-    EffEBins[1]=1; // electrons only pt, zVtx
+    EffEBins[1]=2; // electrons only pt, zVtx
     EffEBins[2]=1;
   }
 
@@ -5213,7 +5220,9 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
   if(!(ITSPointOnLayer0 || ITSPointOnLayer1)) return kFALSE; // now kAny
   if (fillHists)fElectronTrackCuts->Fill(Vtrack->Pt(), 11, EventWeight);
 
-  if(!(ITSPointOnLayer0 && ITSPointOnLayer1) && !fElectronkAny) return kFALSE; // now kBoth
+  if(!(ITSPointOnLayer0) && fElectronkFirst) return kFALSE;
+
+  if(!(ITSPointOnLayer0 && ITSPointOnLayer1) && !(fElectronkAny || fElectronkFirst)) return kFALSE; // now kBoth
   if (fillHists) fElectronTrackCuts->Fill(Vtrack->Pt(), 12, EventWeight);
   
 
@@ -7214,6 +7223,9 @@ void AliAnalysisTaskHaHFECorrel::SetEleVarOpt(Int_t VarOpt) {
   case 19:
     fMinElectronEta=-0.8; // default 0.8
     fMaxElectronEta=0;
+    break;
+  case 20:
+    fElectronkFirst=kTRUE;
     break;
   }
 

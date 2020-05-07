@@ -93,6 +93,8 @@ set(SRCS
     AliCutHandlerPCM.cxx
     AliConversionAodSkimTask.cxx
     AliAnalysisTaskSigmaPlToProtonPiZero.cxx
+    AliAnalysisTaskSigmaPlToProtonPiZeroAOD.cxx
+    AliAnalysisTaskGammaIsoTree.cxx
    )
 
 # Headers from sources

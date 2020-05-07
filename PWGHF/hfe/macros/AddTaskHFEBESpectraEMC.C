@@ -10,13 +10,17 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
                                  Bool_t SwitchFillMCTemp = kTRUE,
                                  Bool_t SwitchRecalIP = kTRUE,
                                  Double_t deltaEta=0.05, Double_t deltaPhi=0.05,
-                                 Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.7,
+                                 Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.9,
                                  Double_t m20Min=0.0, Double_t m20Max=20000,
-                                 Double_t eovpMin=0.9, Double_t eovpMax=1.2,
+                                 Double_t eovpMin=0.8, Double_t eovpMax=1.2,
+                                 Int_t itsNCls = 3,
                                  Bool_t IsPPAnalysis=kFALSE,
+                                 Bool_t SwitchEMCTrig = kFALSE,
+                                 Bool_t hasTwoEMCTrigThres=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
-                                 TString centrality="V0M",
-                                 Bool_t hasTwoEMCTrigThres=kTRUE, Int_t thEG1ADC=140, Int_t thEG2ADC=89)
+                                 Bool_t IsPbPb2018 = kFALSE,
+                                 Int_t thEG1ADC=140, Int_t thEG2ADC=89,
+                                 TString centrality="V0M")
 {
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -87,6 +91,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     hfecalqa7->SetM02Cut(m02Min,m02Max1,m02Max2);
     hfecalqa7->SetM20Cut(m20Min,m20Max);
     hfecalqa7->SetEovPCut(eovpMin,eovpMax);
+    hfecalqa7->SetITSNCls(itsNCls);
     
     if(SwitchFillMCTemp){
         TString DMesonWeightMaps, BMesonWeightMaps;
@@ -153,7 +158,45 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     mgr->ConnectInput(hfecalqa7, 0, cinput7);
     mgr->ConnectOutput(hfecalqa7, 1, coutput7);
     
-    if(hasTwoEMCTrigThres)
+    if(IsPbPb2018){
+        //Centrality trigger used in 2018
+        
+        AliAnalysisTaskHFEBESpectraEMC *hfecalqaCent = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
+        mgr->AddTask(hfecalqaCent);
+        if(MimCent == 0) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
+        if(MimCent == 30) hfecalqaCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+        hfecalqaCent->IsAnalysispp(IsPPAnalysis);
+        hfecalqaCent->SetElecIDsparse(FillElecSparse);
+        hfecalqaCent->SetTenderSwitch(UseTender);
+        hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
+        hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
+        hfecalqaCent->SetCentralityMim(MimCent);
+        hfecalqaCent->SetCentralityMax(MaxCent);
+        hfecalqaCent->SetCentralityEstimator(centrality.Data());
+        hfecalqaCent->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
+        hfecalqaCent->SetNonHFEEffi(SwitchNHFEeffi);
+        hfecalqaCent->SetElecRecoEffi(SwitchEleRecoEffi);
+        hfecalqaCent->SwitchMCTemplateWeightCalc(SwitchMCTempWeightCalc);
+        hfecalqaCent->SwitchFillMCTemplate(SwitchFillMCTemp);
+        hfecalqaCent->SwitchRecalImpPar(SwitchRecalIP);
+        hfecalqaCent->SetTrackMatchPar(deltaEta, deltaPhi);
+        hfecalqaCent->SetM02Cut(m02Min,m02Max1,m02Max2);
+        hfecalqaCent->SetM20Cut(m20Min,m20Max);
+        hfecalqaCent->SetEovPCut(eovpMin,eovpMax);
+        hfecalqaCent->SetITSNCls(itsNCls);
+        
+        TString containerNameCent = mgr->GetCommonFileName();
+        containerNameCent += ":PWGHF_HFEBESpectraEMC_Cent";
+        containerNameCent += ContNameExt;
+        TString SubcontainerNameCent = Form("HFEBESpectraEMC_Cent_%s",calib);
+        SubcontainerNameCent += ContNameExt;
+        AliAnalysisDataContainer *cinputCent  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutputCent = mgr->CreateContainer(SubcontainerNameCent, TList::Class(),AliAnalysisManager::kOutputContainer, containerNameCent.Data());
+        mgr->ConnectInput(hfecalqaCent, 0, cinputCent);
+        mgr->ConnectOutput(hfecalqaCent, 1, coutputCent);
+    }
+    
+    if(SwitchEMCTrig)
     {
         // EMCal EGA EG1
         if(ClsTypeEMC){
@@ -181,6 +224,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig01->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig01->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig01->SetITSNCls(itsNCls);
             
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGAEG1";
@@ -191,43 +235,6 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             AliAnalysisDataContainer *coutput01 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
             mgr->ConnectInput(hfecalqaTrig01, 0, cinput01);
             mgr->ConnectOutput(hfecalqaTrig01, 1, coutput01);
-
-            // EMCal EGA EG2
-            AliAnalysisTaskHFEBESpectraEMC *hfecalqaTrig02 = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
-            mgr->AddTask(hfecalqaTrig02);
-            hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-            hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
-            hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
-            hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
-            hfecalqaTrig02->SetTenderSwitch(UseTender);
-            hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
-            hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
-            hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
-            hfecalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
-            hfecalqaTrig02->SetCentralityMim(MimCent);
-            hfecalqaTrig02->SetCentralityMax(MaxCent);
-            hfecalqaTrig02->SetCentralityEstimator(centrality.Data());
-            hfecalqaTrig02->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
-            hfecalqaTrig02->SetNonHFEEffi(SwitchNHFEeffi);
-            hfecalqaTrig02->SetElecRecoEffi(SwitchEleRecoEffi);
-            hfecalqaTrig02->SwitchMCTemplateWeightCalc(SwitchMCTempWeightCalc);
-            hfecalqaTrig02->SwitchFillMCTemplate(SwitchFillMCTemp);
-            hfecalqaTrig02->SwitchRecalImpPar(SwitchRecalIP);
-            hfecalqaTrig02->SetTrackMatchPar(deltaEta, deltaPhi);
-            hfecalqaTrig02->SetM02Cut(m02Min,m02Max1,m02Max2);
-            hfecalqaTrig02->SetM20Cut(m20Min,m20Max);
-            hfecalqaTrig02->SetEovPCut(eovpMin,eovpMax);
-
-            TString containerName02 = mgr->GetCommonFileName();
-            containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGAEG2";
-            containerName02 += ContNameExt;
-            TString SubcontainerName02 = Form("HFEBESpectraEMC_EG2_%s",calib);
-            SubcontainerName02 += ContNameExt;
-            AliAnalysisDataContainer *cinput02  = mgr->GetCommonInputContainer();
-            AliAnalysisDataContainer *coutput02 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
-            mgr->ConnectInput(hfecalqaTrig02, 0, cinput02);
-            mgr->ConnectOutput(hfecalqaTrig02, 1, coutput02); 
-
         }
         
         if(ClsTypeDCAL){
@@ -256,6 +263,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig01->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig01->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig01->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig01->SetITSNCls(itsNCls);
             
             TString containerName01 = mgr->GetCommonFileName();
             containerName01 += ":PWGHF_HFEBESpectraEMC_TrigGADG1";
@@ -266,8 +274,52 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             AliAnalysisDataContainer *coutput01 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
             mgr->ConnectInput(hfecalqaTrig01, 0, cinput01);
             mgr->ConnectOutput(hfecalqaTrig01, 1, coutput01);
-            
+        }
+    }
+    
+    if(SwitchEMCTrig && hasTwoEMCTrigThres)
+    {
+        if(ClsTypeEMC){
             // EMCal EGA EG2
+            AliAnalysisTaskHFEBESpectraEMC *hfecalqaTrig02 = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
+            mgr->AddTask(hfecalqaTrig02);
+            hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+            hfecalqaTrig02->SetEMCalTriggerEG2(kTRUE);
+            hfecalqaTrig02->IsAnalysispp(IsPPAnalysis);
+            hfecalqaTrig02->SetElecIDsparse(FillElecSparse);
+            hfecalqaTrig02->SetTenderSwitch(UseTender);
+            hfecalqaTrig02->SetThresholdEG1(thEG1ADC);
+            hfecalqaTrig02->SetThresholdEG2(thEG2ADC);
+            hfecalqaTrig02->SetClusterTypeEMC(ClsTypeEMC);
+            hfecalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
+            hfecalqaTrig02->SetCentralityMim(MimCent);
+            hfecalqaTrig02->SetCentralityMax(MaxCent);
+            hfecalqaTrig02->SetCentralityEstimator(centrality.Data());
+            hfecalqaTrig02->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
+            hfecalqaTrig02->SetNonHFEEffi(SwitchNHFEeffi);
+            hfecalqaTrig02->SetElecRecoEffi(SwitchEleRecoEffi);
+            hfecalqaTrig02->SwitchMCTemplateWeightCalc(SwitchMCTempWeightCalc);
+            hfecalqaTrig02->SwitchFillMCTemplate(SwitchFillMCTemp);
+            hfecalqaTrig02->SwitchRecalImpPar(SwitchRecalIP);
+            hfecalqaTrig02->SetTrackMatchPar(deltaEta, deltaPhi);
+            hfecalqaTrig02->SetM02Cut(m02Min,m02Max1,m02Max2);
+            hfecalqaTrig02->SetM20Cut(m20Min,m20Max);
+            hfecalqaTrig02->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig02->SetITSNCls(itsNCls);
+
+            TString containerName02 = mgr->GetCommonFileName();
+            containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGAEG2";
+            containerName02 += ContNameExt;
+            TString SubcontainerName02 = Form("HFEBESpectraEMC_EG2_%s",calib);
+            SubcontainerName02 += ContNameExt;
+            AliAnalysisDataContainer *cinput02  = mgr->GetCommonInputContainer();
+            AliAnalysisDataContainer *coutput02 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
+            mgr->ConnectInput(hfecalqaTrig02, 0, cinput02);
+            mgr->ConnectOutput(hfecalqaTrig02, 1, coutput02);
+        }
+        
+        if(ClsTypeDCAL){
+            // DCal EGA DG2
             AliAnalysisTaskHFEBESpectraEMC *hfecalqaTrig02 = new AliAnalysisTaskHFEBESpectraEMC("emcqa");
             mgr->AddTask(hfecalqaTrig02);
             hfecalqaTrig02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
@@ -292,6 +344,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
             hfecalqaTrig02->SetM02Cut(m02Min,m02Max1,m02Max2);
             hfecalqaTrig02->SetM20Cut(m20Min,m20Max);
             hfecalqaTrig02->SetEovPCut(eovpMin,eovpMax);
+            hfecalqaTrig02->SetITSNCls(itsNCls);
             
             TString containerName02 = mgr->GetCommonFileName();
             containerName02 += ":PWGHF_HFEBESpectraEMC_TrigGADG2";

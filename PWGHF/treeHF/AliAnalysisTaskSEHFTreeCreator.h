@@ -353,9 +353,11 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_EMCEJE;                       /// flag with information about rejection of the event
     Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
     Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
     Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
+    Bool_t                  fIsEvSel_EMCEJE;                       /// boolean whether event accept for EMCEJE
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UShort_t                fBC;                                   /// bunch crossing number
@@ -379,15 +381,24 @@ private:
     Bool_t                  fTriggerOnlineINT7;                    /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerOnlineHighMultSPD;             /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerOnlineHighMultV0;              /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerOnlineEMCALEJ1;                /// Flag explicitly whether bitmap kEMCEJ1
+    Bool_t                  fTriggerOnlineEMCALEJ2;                /// Flag explicitly whether bitmap kEMCEJ2
+    Bool_t                  fTriggerOnlineDCALDJ1;                 /// Flag explicitly whether bitmap DCALDJ1
+    Bool_t                  fTriggerOnlineDCALDJ2;                 /// Flag explicitly whether bitmap DCALDJ2
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
     Bool_t                  fTriggerBitCentral;                    /// Flag explicitly whether bitmap contains kCentral
     Bool_t                  fTriggerBitSemiCentral;                /// Flag explicitly whether bitmap contains kSemiCentral
+    Bool_t                  fTriggerBitEMCEJE;                     /// Flag explicitly whether bitmap contains kEMCEJE
     TString                 fTriggerClasses;                       /// Collect all trigger classes
     Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
     Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
     Bool_t                  fTriggerClassHighMultV0m;              /// Flag explicitly whether classes contain HighMultV0
+    Bool_t                  fTriggerClassEMCALEJ1;                 /// Flag explicitly whether classes contain EMCALEJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassEMCALEJ2;                 /// Flag explicitly whether classes contain EMCALEJ2 (conatined in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ1;                  /// Flag explicitly whether classes contain DCALDJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ2;                  /// Flag explicitly whether classes contain DCALDJ2 (conatined in AliVEvent::kEMCEJE)
     Int_t                   fnV0M;                                 /// V0M multiplicity
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
@@ -500,7 +511,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,28);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,29);
     /// \endcond
 };
 

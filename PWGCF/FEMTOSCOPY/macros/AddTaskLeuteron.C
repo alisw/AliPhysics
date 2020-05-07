@@ -62,8 +62,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts1->SetEtaRange(-0.8,0.8);			// set range of the pseudo-rapidity
   TrackCuts1->SetNClsTPC(80);				// set lower limit of clusters per track in the TPC
   TrackCuts1->SetDCAReCalculation(true);		// recalculate the DCA by PropagateToVertex or use information stored in AOD
-  TrackCuts1->SetDCAVtxZ(2.0);				// DCA from track to z-coordiante of primary vertex (cm)
-  TrackCuts1->SetDCAVtxXY(1.0);				// DCA from track to x-y-plane of primary vertex (cm)
+  TrackCuts1->SetDCAVtxZ(0.2);				// DCA from track to z-coordiante of primary vertex (cm)
+  TrackCuts1->SetDCAVtxXY(0.1);				// DCA from track to x-y-plane of primary vertex (cm)
   TrackCuts1->SetCutSharedCls(true);			// cut out tracks which have shared clusters in the TPC
   TrackCuts1->SetCutTPCCrossedRows(true,70,0.83);
     // SetCutTPCCrossedRows(1,2,3)
@@ -126,8 +126,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(70);
   TrackCuts3->SetDCAReCalculation(true);
-  TrackCuts3->SetDCAVtxZ(1.0);
-  TrackCuts3->SetDCAVtxXY(1.0);
+  TrackCuts3->SetDCAVtxZ(0.2);
+  TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
   TrackCuts3->SetPID(AliPID::kDeuteron,1.5);
@@ -156,8 +156,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(70);			
   TrackCuts4->SetDCAReCalculation(true);
-  TrackCuts4->SetDCAVtxZ(1.0);
-  TrackCuts4->SetDCAVtxXY(1.0);
+  TrackCuts4->SetDCAVtxZ(0.2);
+  TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
   TrackCuts4->SetPID(AliPID::kDeuteron,1.5);

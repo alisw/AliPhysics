@@ -81,8 +81,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
     fDumpster(nullptr),
-    fUseDumpster(nullptr),
-    fUseDumpsterRestPairs(nullptr),
+    fUseDumpster(false),
+    fUseDumpsterRestPairs(false),
     fTrackBufferSize() {
 }
 
@@ -157,8 +157,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
     fAntiProtonAntiDeuteronDump(nullptr),
     fDeuteronAntiDeuteronDump(nullptr),
     fDumpster(nullptr),
-    fUseDumpster(nullptr),
-    fUseDumpsterRestPairs(nullptr),
+    fUseDumpster(false),
+    fUseDumpsterRestPairs(false),
     fTrackBufferSize(2000) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts

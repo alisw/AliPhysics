@@ -52,18 +52,28 @@
 ClassImp(AliAnalysisTaskIPCalib);
 
 //_______________________________________________________________________________________
-AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib() : AliAnalysisTaskEmcalJet(), fHistManager(), fReadMC(kFALSE)
+AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib() : AliAnalysisTaskEmcalJet(), fHistManager(), fReadMC(kFALSE), fCorrectRes(kFALSE)
 {
   //
   // def ctor
   //
+
+  for (int i = 0; i < 5; i++)
+  {
+    fCorrectionFactors[i] = 0x0;
+  }
 }
 
 //_______________________________________________________________________________________
-AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE), fHistManager(name), fReadMC(kFALSE)
+AliAnalysisTaskIPCalib::AliAnalysisTaskIPCalib(const char *name) : AliAnalysisTaskEmcalJet(name, kTRUE), fHistManager(name), fReadMC(kFALSE), fCorrectRes(kFALSE)
 {
   //
   SetMakeGeneralHistograms(kTRUE);
+
+  for (int i = 0; i < 5; i++)
+  {
+    fCorrectionFactors[i] = 0x0;
+  }
 }
 
 //_______________________________________________________________________________________
@@ -81,14 +91,17 @@ void AliAnalysisTaskIPCalib::UserCreateOutputObjects()
   AllocateTrackHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
-  TObject* obj = 0;
-  while ((obj = next())) {
-    TH1* hh = dynamic_cast<TH1*>(obj);
-    if (hh) {
+  TObject *obj = 0;
+  while ((obj = next()))
+  {
+    TH1 *hh = dynamic_cast<TH1 *>(obj);
+    if (hh)
+    {
       hh->Sumw2();
     }
-    THnSparse* hn = dynamic_cast<THnSparse*>(obj);
-    if (hn) {
+    THnSparse *hn = dynamic_cast<THnSparse *>(obj);
+    if (hn)
+    {
       hn->Sumw2();
     }
     fOutput->Add(obj);
@@ -104,12 +117,14 @@ void AliAnalysisTaskIPCalib::AllocateTrackHistograms()
   TString histtitle;
   TString groupname;
 
-  AliParticleContainer* partCont = 0;
+  AliParticleContainer *partCont = 0;
   TIter next(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+  while ((partCont = static_cast<AliParticleContainer *>(next())))
+  {
     groupname = partCont->GetName();
     // Protect against creating the histograms twice
-    if (fHistManager.FindObject(groupname)) {
+    if (fHistManager.FindObject(groupname))
+    {
       AliWarning(TString::Format("%s: Found groupname %s in hist manager. The track containers will be filled into the same histograms.",
                                  GetName(), groupname.Data()));
       continue;
@@ -119,7 +134,8 @@ void AliAnalysisTaskIPCalib::AllocateTrackHistograms()
 
     Int_t ttype[2] = {4, 9};
 
-    for (Int_t i = 0; i < 2; i++) {
+    for (Int_t i = 0; i < 2; i++)
+    {
       histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), ttype[i]);
       histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, 500, 0, 100, "s");
@@ -163,16 +179,18 @@ void AliAnalysisTaskIPCalib::AllocateTrackHistograms()
       Double_t from = 0.5;
       Double_t to = 50;
 
-      for (int j = 0; j < bins; j++) {
+      for (int j = 0; j < bins; j++)
+      {
         binedges[j] = pow(10, log10(from) + (log10(to) - log10(from)) / double(bins) * double(j));
       }
 
-      TLinearBinning* xbinning = new TLinearBinning(400, -40, 40);
-      TVariableBinning* ybinning = new TVariableBinning(binedges);
+      TLinearBinning *xbinning = new TLinearBinning(400, -40, 40);
+      TVariableBinning *ybinning = new TVariableBinning(binedges);
       TLinearBinning nbinning(100, 0, 100);
-      const TBinning* histsmbinning[3] = {xbinning, ybinning, &nbinning};
+      const TBinning *histsmbinning[3] = {xbinning, ybinning, &nbinning};
 
-      for (Int_t j = 1; j <= 4; j++) {
+      for (Int_t j = 1; j <= 6; j++)
+      {
         histname = TString::Format("%s/histSIPPscat_%d_%d", groupname.Data(), ttype[i], j);
         histtitle = TString::Format("%s;S_{d_{0}};p(sin#theta)^{3/2};counts",
                                     histname.Data());
@@ -217,18 +235,24 @@ void AliAnalysisTaskIPCalib::AllocateTrackHistograms()
 
     histname = TString::Format("%s/histNTracks", groupname.Data());
     histtitle = TString::Format("%s;number of tracks;events", histname.Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType != kpp)
+    {
       fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000, "s");
-    } else {
+    }
+    else
+    {
       fHistManager.CreateTH1(histname, histtitle, 200, 0, 200, "s");
     }
   }
 
   histname = "fHistSumNTracks";
   histtitle = TString::Format("%s;Sum of n tracks;events", histname.Data());
-  if (fForceBeamType != kpp) {
+  if (fForceBeamType != kpp)
+  {
     fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000, "s");
-  } else {
+  }
+  else
+  {
     fHistManager.CreateTH1(histname, histtitle, 200, 0, 200, "s");
   }
 }
@@ -244,33 +268,36 @@ Bool_t AliAnalysisTaskIPCalib::FillHistograms()
 //_______________________________________________________________________________________
 void AliAnalysisTaskIPCalib::DoTrackLoop()
 {
-  AliAODVertex* vtx = (AliAODVertex*)InputEvent()->GetPrimaryVertex();
+  AliAODVertex *vtx = (AliAODVertex *)InputEvent()->GetPrimaryVertex();
   Double_t Bz = InputEvent()->GetMagneticField();
 
-  AliClusterContainer* clusCont = GetClusterContainer(0);
+  AliClusterContainer *clusCont = GetClusterContainer(0);
 
   TString histname;
   TString groupname;
 
   UInt_t sumAcceptedTracks = 0;
 
-  TClonesArray* mcArray = 0x0;
-  if (fReadMC) {
-    mcArray = dynamic_cast<TClonesArray*>(((AliAODEvent*)InputEvent())->FindListObject(AliAODMCParticle::StdBranchName()));
+  TClonesArray *mcArray = 0x0;
+  if (fReadMC)
+  {
+    mcArray = dynamic_cast<TClonesArray *>(((AliAODEvent *)InputEvent())->FindListObject(AliAODMCParticle::StdBranchName()));
   }
 
-  AliParticleContainer* partCont = 0;
+  AliParticleContainer *partCont = 0;
   TIter next(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+  while ((partCont = static_cast<AliParticleContainer *>(next())))
+  {
     groupname = partCont->GetName();
     UInt_t count = 0;
-    for (auto part : partCont->accepted()) {
+    for (auto part : partCont->accepted())
+    {
       if (!part)
         continue;
 
       count++;
 
-      AliAODTrack* track = dynamic_cast<AliAODTrack*>(part);
+      AliAODTrack *track = dynamic_cast<AliAODTrack *>(part);
 
       Double_t d0z0[2], covd0z0[3];
       track->PropagateToDCA(vtx, Bz, 100, d0z0, covd0z0);
@@ -298,19 +325,14 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
       histname = TString::Format("%s/histTrackNITScls_%d", groupname.Data(), fb);
       fHistManager.FillTH1(histname, track->GetITSNcls());
 
-      if ( 
-          track->Pt()<0.5 
-          || 
-          track->GetTPCNcls()<80 
-          || 
-          track->Chi2perNDF()>5 
-          ||
-          track->GetITSNcls()<=1
-          || 
-          TMath::Abs(d0z0[0])>1 
-          || 
-          TMath::Abs(d0z0[1])>2 
-      ) continue;
+      if (
+          track->Pt() < 0.5 ||
+          track->GetTPCNcls() < 80 ||
+          track->Chi2perNDF() > 5 ||
+          track->GetITSNcls() <= 1 ||
+          TMath::Abs(d0z0[0]) > 1 ||
+          TMath::Abs(d0z0[1]) > 2)
+        continue;
 
       histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fb);
       fHistManager.FillTH1(histname, part->Pt());
@@ -328,6 +350,9 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
       Double_t pms = 1. / (TMath::Power(track->Pt(), 2) * TMath::Sin(track->Theta()));
 
       Double_t sip = d0z0[0] / sd0;
+
+      if (fCorrectRes)
+        sip = CorrectIPs(sip, psc, track->GetITSNcls());
 
       histname = TString::Format("%s/histSIPPscat_%d_%d", groupname.Data(), fb, track->GetITSNcls());
       fHistManager.FillTH2(histname, sip, psc);
@@ -369,6 +394,38 @@ void AliAnalysisTaskIPCalib::DoTrackLoop()
 }
 
 //_______________________________________________________________________________________
+Double_t AliAnalysisTaskIPCalib::CorrectIPs(Double_t sIP, Double_t pScat, Int_t nITS)
+{
+  Double_t AlphaPull = 1.;
+  if (pScat > 36.7)
+    pScat = 36.7;
+
+  for (int i = 0; i < 3; i++)
+  {
+    if (!fCorrectionFactors[i])
+    {
+      std::cout << "Correction function doesn't exists, Returning the original value of IPs" << std::endl;
+      return sIP;
+    }
+  }
+
+  for (int i = 3; i < 5; i++)
+  {
+    if (nITS > 4 && !fCorrectionFactors[i])
+    {
+      std::cout << "Correction function doesn't exists for ITS hits > 4, Returning the original value of IPs" << std::endl;
+      return sIP;
+    }
+  }
+
+  AlphaPull = fCorrectionFactors[nITS - 2]->Eval(pScat);
+
+  Double_t CorrIPs = sIP / AlphaPull;
+
+  return CorrIPs;
+}
+
+//_______________________________________________________________________________________
 void AliAnalysisTaskIPCalib::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
@@ -391,7 +448,7 @@ Bool_t AliAnalysisTaskIPCalib::Run()
  * This function is called once at the end of the analysis.
  */
 //_______________________________________________________________________________________
-void AliAnalysisTaskIPCalib::Terminate(Option_t*)
+void AliAnalysisTaskIPCalib::Terminate(Option_t *)
 {
   //
 }
@@ -402,26 +459,30 @@ void AliAnalysisTaskIPCalib::Terminate(Option_t*)
  * have to deal with difficulties caused by CINT.
  */
 //_______________________________________________________________________________________
-AliAnalysisTaskIPCalib* AliAnalysisTaskIPCalib::AddTaskIPCalib(const char* ntracks,
-                                                               const char* suffix)
+AliAnalysisTaskIPCalib *AliAnalysisTaskIPCalib::AddTaskIPCalib(const char *ntracks,
+                                                                   TString pathToCorrFunc,
+                                                                   const char *suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
-  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
     ::Error("AddTaskEmcalJetSample", "No analysis manager to connect to.");
     return 0;
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  AliVEventHandler* handler = mgr->GetInputEventHandler();
-  if (!handler) {
+  AliVEventHandler *handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
     ::Error("AddTaskEmcalJetSample", "This task requires an input event handler");
     return 0;
   }
 
-  enum EDataType_t {
+  enum EDataType_t
+  {
     kUnknown,
     kESD,
     kAOD
@@ -429,9 +490,12 @@ AliAnalysisTaskIPCalib* AliAnalysisTaskIPCalib::AddTaskIPCalib(const char* ntrac
 
   EDataType_t dataType = kUnknown;
 
-  if (handler->InheritsFrom("AliESDInputHandler")) {
+  if (handler->InheritsFrom("AliESDInputHandler"))
+  {
     dataType = kESD;
-  } else if (handler->InheritsFrom("AliAODInputHandler")) {
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler"))
+  {
     dataType = kAOD;
   }
 
@@ -441,35 +505,61 @@ AliAnalysisTaskIPCalib* AliAnalysisTaskIPCalib::AddTaskIPCalib(const char* ntrac
 
   TString trackName(ntracks);
 
-  if (trackName == "usedefault") {
-    if (dataType == kESD) {
+  if (trackName == "usedefault")
+  {
+    if (dataType == kESD)
+    {
       trackName = "Tracks";
-    } else if (dataType == kAOD) {
+    }
+    else if (dataType == kAOD)
+    {
       trackName = "tracks";
-    } else {
+    }
+    else
+    {
       trackName = "";
     }
   }
 
   TString name("AliAnalysisTaskIPCalib");
-  if (!trackName.IsNull()) {
+  if (!trackName.IsNull())
+  {
     name += "_";
     name += trackName;
   }
-  if (strcmp(suffix, "") != 0) {
+  if (strcmp(suffix, "") != 0)
+  {
     name += "_";
     name += suffix;
   }
 
-  AliAnalysisTaskIPCalib* ipTask = new AliAnalysisTaskIPCalib(name);
+  AliAnalysisTaskIPCalib *ipTask = new AliAnalysisTaskIPCalib(name);
   //   ipTask->SetVzRange(-10,10);
 
-  if (trackName == "mcparticles") {
+  if (trackName == "mcparticles")
+  {
     ipTask->AddMCParticleContainer(trackName);
-  } else if (trackName == "tracks" || trackName == "Tracks") {
+  }
+  else if (trackName == "tracks" || trackName == "Tracks")
+  {
     ipTask->AddTrackContainer(trackName);
-  } else if (!trackName.IsNull()) {
+  }
+  else if (!trackName.IsNull())
+  {
     ipTask->AddParticleContainer(trackName);
+  }
+
+  if (!pathToCorrFunc.IsNull())
+  {
+    TFile *file = TFile::Open(pathToCorrFunc.Data());
+    for (int i = 0; i < 5; i++)
+    {
+      if ((TH1D *)file->Get(Form("fno_%i", i)))
+      {
+        TF1 *CorrectionFunction = (TF1 *)file->Get(Form("fno_%i", i));
+        ipTask->SetCorrectionFunction(CorrectionFunction, i);
+      }
+    }
   }
 
   //-------------------------------------------------------
@@ -479,10 +569,10 @@ AliAnalysisTaskIPCalib* AliAnalysisTaskIPCalib::AddTaskIPCalib(const char* ntrac
   mgr->AddTask(ipTask);
 
   // Create containers for input/output
-  AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   TString contname(name);
   contname += "_histos";
-  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname.Data(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                             TList::Class(), AliAnalysisManager::kOutputContainer,
                                                             Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput(ipTask, 0, cinput1);

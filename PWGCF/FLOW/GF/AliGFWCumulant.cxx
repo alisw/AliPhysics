@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #include "AliGFWCumulant.h"
 
 AliGFWCumulant::AliGFWCumulant():
@@ -17,7 +21,7 @@ AliGFWCumulant::~AliGFWCumulant()
   //printf("Destructor (?) for some reason called?\n");
   //DestroyComplexVectorArray();
 };
-void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight) {
+void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Double_t SecondWeight) {
   if(!fInitialized)
     CreateComplexVectorArray(1,1,1);
   if(fPt==1) ptin=0; //If one bin, then just fill it straight; otherwise, if ptin is out-of-range, do not fill
@@ -27,7 +31,12 @@ void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t 
     Double_t lSin = TMath::Sin(lN*phi); //No need to recalculate for each power
     Double_t lCos = TMath::Cos(lN*phi); //No need to recalculate for each power
     for(Int_t lPow=0; lPow<PW(lN); lPow++) {
-      Double_t lPrefactor = TMath::Power(weight, lPow); //Dont calculate it twice; multiplication is cheaper that power
+      Double_t lPrefactor = 0;
+      //Dont calculate it twice; multiplication is cheaper that power
+      //Also, if second weight is specified, then keep the first weight with power no more than 1, and us the other weight otherwise
+      //this is important when POIs are a subset of REFs and have different weights than REFs
+      if(SecondWeight>0 && lPow>1) lPrefactor = TMath::Power(SecondWeight, lPow-1)*weight;
+      else lPrefactor = TMath::Power(weight,lPow);
       Double_t qsin = lPrefactor * lSin;
       Double_t qcos = lPrefactor * lCos;
       fQvector[ptin][lN][lPow](fQvector[ptin][lN][lPow].Re()+qcos,fQvector[ptin][lN][lPow].Im()+qsin);//+=TComplex(qcos,qsin);

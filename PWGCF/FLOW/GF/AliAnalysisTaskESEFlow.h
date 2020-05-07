@@ -71,6 +71,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetSPAnalyzer(Bool_t ActSPAna) { fSPAnalysis = ActSPAna;}
 
+        void                    SetPileUpCut(Int_t cut) { fPileupCut = cut; }
+        void                    SetChi2TPCFl( Bool_t actChi2TPC, Float_t actValue) { fCheckChi2TPC = actChi2TPC; vTPCChi2Bound = actValue; }
+
+        void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
+
+        void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
         
 
     private:
@@ -113,11 +119,21 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  fqSelList;   //!
         //output histograms
         TH3F*                   fHistPhiEtaVz;    //!
+        TH3F*                   fHistPtEtaVz;   //!
         TH1F*                   fHistPhi;       //!
         TH1F*                   fHistEta;       //!
         TH1F*                   fHistPt;        //!
         TH1F*                   fHistZVertex;   //!
         TH1F*                   fHistPhiCor;    //!
+        TH3F*                   fHistPhiCor3D;    //!
+        TH1F*                   fHistTPCchi2;   //!
+
+        TH2D*                   fhQAEventsfMult32vsCentr;   //!
+        TH2D*                   fhQAEventsfMult128vsCentr;   //!
+        TH2D*                   fhQAEventsfMult96vsCentr;   //!
+        TH2D*                   fhQAEventsfMultTPCvsTOF;    //!
+        TH2D*                   fhQAEventsfMultTPCvsESD;    //!
+
 
         TSpline3*               fSplq2TPC[90];  // q2 TPC splines
         TSpline3*               fSplq3TPC[90];  // q3 TPC splines
@@ -129,6 +145,9 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH3F*                   fh3Weights; //!
         TH1F*                   fhV0Calib;  //!
         TH1F*                   fHistPDG; //!
+
+        TFile*                  fFileTrackEff; //! NUE
+        TH3F*                   fhTrackNUE; //!
 
         
 
@@ -214,8 +233,10 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Bool_t InitializeTask();
         Bool_t LoadWeights(); // load weights histograms
+        Bool_t LoadNUE();   // load Katka nue
         Bool_t LoadV0Calibration();
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
+        Double_t GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const;
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
@@ -380,6 +401,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   V0qnBins;
         Double_t                V0qnBinMin;
         Double_t                V0qnBinMax;
+
+        Int_t                   fPileupCut;
+        Bool_t                  fCheckChi2TPC;
+        Float_t                 vTPCChi2Bound;
+        Bool_t                  fFillQARej;
+        Bool_t                  fUseNUEWeights;
+        Int_t                   fNUE;
 
 
 

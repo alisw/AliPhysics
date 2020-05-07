@@ -41,6 +41,8 @@
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
 #pragma link C++ class AliConversionAodSkimTask+;
 #pragma link C++ class AliAnalysisTaskSigmaPlToProtonPiZero+;
+#pragma link C++ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD+;
+#pragma link C++ class AliAnalysisTaskGammaIsoTree+;
 
 
 // Old tasks

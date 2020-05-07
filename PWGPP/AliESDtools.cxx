@@ -76,6 +76,13 @@
 #include "AliMathBase.h"
 #include "AliESDTOFHit.h"
 #include "AliTOFGeometry.h"
+#include "AliESDZDC.h"
+#include "AliESDHeader.h"
+#include "AliTriggerAnalysis.h"
+#include "AliESDUtils.h"
+#include "AliAnalysisManager.h"
+#include "AliMCEvent.h"
+#include "AliGenCocktailEventHeader.h"
 
 ClassImp(AliESDtools)
 AliESDtools*  AliESDtools::fgInstance;
@@ -84,6 +91,7 @@ AliESDtools::AliESDtools():
   fVerbose(0),
   fESDtree(nullptr),
   fEvent(nullptr),
+  fMCEvent(nullptr),                   // ponter to MC event if available
   fPIDResponse(nullptr),               // PID response parametrization
   fTaskMode(kFALSE),                   // switch - task mode
   fHisITSVertex(nullptr),                            // ITS z vertex histogram
@@ -100,6 +108,9 @@ AliESDtools::AliESDtools():
   fHistPhiTPCCounterCITS(nullptr),      // helper histogram for TIdentity tree
   fHistPhiITSCounterA(nullptr),         // helper histogram for TIdentity tree
   fHistPhiITSCounterC(nullptr),         // helper histogram for TIdentity tree
+  fHist2DTrackletsCounter(nullptr),     // 2D tracklet Phi x tgl norm histogram
+  fHist2DTrackCounter(nullptr),         // 2D track Phi x tgl histogram
+  fHist2DTrackSumPt(nullptr),           // 2D track Phi x tgl sum pt histogram
   fCacheTrackCounters(nullptr),         // track counter
   fCacheTrackTPCCountersZ(nullptr),         // track counter
   fCacheTrackdEdxRatio(nullptr),        // dEdx info counter
@@ -110,6 +121,8 @@ AliESDtools::AliESDtools():
   fStreamer(nullptr)
 {
   fgInstance=this;
+  fTriggerAnalysis=new AliTriggerAnalysis;
+
 }
 
 /// Initialize tool - set ESD address and book histogram counters
@@ -158,6 +171,13 @@ void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
     fHistPhiTPCCounterCITS = new TH1F("hPhiTPCCounterCITS", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
     fHistPhiITSCounterA = new TH1F("hPhiITSCounterA", "control histogram to count tracks on the A side in phi ", 36, 0., 18.);
     fHistPhiITSCounterC = new TH1F("hPhiITSCounterC", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
+    //
+    fHist2DTrackletsCounter= new TH2S("Hist2DTrackletsCounter"," 2D tracklet Phi x tgl norm histogram",18,0,TMath::TwoPi(),8,-2,2);
+    fHist2DTrackCounter    = new TH2S("fHist2DTrackCounter"," 2D track Phi x tgl histogram", 18,0,TMath::TwoPi(),8,-1,1);
+    fHist2DTrackSumPt      = new TH2F("fHist2DTrackSumPt","2D track Phi x tgl sum pt histogram", 36,0,TMath::TwoPi(),8,-1,1);
+    //
+    fHist2DMCCounter    = new TH2S("fHist2DMCCounter"," 2D MC particle Phi x tgl histogram", 18,0,TMath::TwoPi(),32,-4,4);
+    fHist2DMCSumPt      = new TH2F("fHist2DMCSumPt","2D MC particle Phi x tgl sum pt histogram", 36,0,TMath::TwoPi(),32,-4,4);
   }
 }
 
@@ -476,6 +496,7 @@ Int_t AliESDtools::CalculateEventVariables(){
   CacheTPCEventInformation();
   CachePileupVertexTPC(fEvent->GetEventNumberInFile());
   CacheITSVertexInformation(true,0.1,0.2);
+  FillTrackCounters();
   //
   //
   const Int_t kNclTPCCut=60;
@@ -832,6 +853,102 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t doReset, Int_t ver
   }
   return 1;
 }
+Int_t  AliESDtools::FillTrackCounters(){
+  const Float_t vertexNorm=0.14;
+  const Int_t kNCRCut=130;
+  const Float_t kNCRCut1=10;
+  const Double_t kDCACut=5;
+  const Double_t kSigmaBias=2;
+  const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+  const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
+  Int_t nTracklets = multObj->GetNumberOfTracklets();
+  // tracklet multiplicity histogram
+  fHist2DTrackletsCounter->Reset();
+  for (Int_t iTracklet=0; iTracklet<nTracklets; iTracklet++){
+    Float_t phi=multObj->GetPhi(iTracklet);
+    Float_t tglNorm=multObj->GetTheta(iTracklet);
+    tglNorm = -TMath::Tan(tglNorm-TMath::Pi()/2.);
+    tglNorm+=vertexNorm*vertex->GetZ();
+    fHist2DTrackletsCounter->Fill(phi,tglNorm);
+  }
+  // track  multiplicity  and sum pt histogram
+  fHist2DTrackCounter->Reset();
+  fHist2DTrackSumPt->Reset();
+  Int_t nTracks=fEvent->GetNumberOfTracks();
+  for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
+    AliESDtrack *pTrack = fEvent->GetTrack(iTrack);
+    Float_t dcaXY, dcaz;
+    Float_t mPt = 1/pTrack->Pt();
+    if (pTrack == nullptr) continue;
+    if (pTrack->IsOn(AliVTrack::kTPCin) == 0) continue;
+    if (pTrack->IsOn(AliVTrack::kITSin) == 0) continue;
+    if (pTrack->GetTPCClusterInfo(3, 1) < kNCRCut-kNCRCut1*mPt) continue;
+    pTrack->GetImpactParameters(dcaXY, dcaz);
+    if (TMath::Abs(dcaXY) > kDCACut) continue;
+    Double_t phi = pTrack->GetAlpha();
+    if (phi<0) phi+=TMath::TwoPi();
+    fHist2DTrackCounter->Fill(phi,pTrack->GetTgl());
+    // use k sigma biased  pt measurement
+    mPt+=kSigmaBias*TMath::Sqrt(pTrack->GetSigma1Pt2());
+    fHist2DTrackSumPt->Fill(phi, pTrack->GetTgl(),1./mPt);
+  }
+}
+
+/// check if the particle belongs to pile-up
+Bool_t AliESDtools::IsPileup(Int_t index) {
+  const Float_t kPileUpCut = 1.0;
+  if (fMCEvent == nullptr) return kFALSE;
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+  if (cocktailHeader == nullptr) return kFALSE;
+  TList *lgen = cocktailHeader->GetHeaders();
+  AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(index);
+  if (!mcPart) return kFALSE;
+  Int_t theGen = mcPart->GetGeneratorIndex();
+  AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(theGen);
+  Double_t timeNs = gh->InteractionTime() * 1e9;
+  if (TMath::Abs(timeNs) > kPileUpCut) return kTRUE;
+  return kFALSE;
+}
+
+/// fill MC counters and sum pt histograms
+/// \return
+Int_t AliESDtools::FillMCCounters() {
+  const Float_t kPileUpCut = 1;
+  const Float_t kPtCut=0.005; //
+  if (!fMCEvent) return 0;
+  AliStack *stack = fMCEvent->Stack();
+  if (!stack) return 0;
+  Int_t nPart = stack->GetNtrack();
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+  TList *lgen = cocktailHeader ?  cocktailHeader->GetHeaders():nullptr;
+  fHist2DMCCounter->Reset();
+  fHist2DMCSumPt->Reset();
+  for (Int_t iMc = 0; iMc < nPart; ++iMc) {
+    if (lgen){
+      AliMCParticle *mcPart = (AliMCParticle *) fMCEvent->GetTrack(iMc);
+      Int_t theGen = mcPart->GetGeneratorIndex();
+      AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(theGen);
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if (TMath::Abs(timeNs) > kPileUpCut) continue;
+    }
+    TParticle *particle = stack->Particle(iMc);
+    if (!particle) continue;
+    // only charged particles
+    if (!particle->GetPDG()) continue;
+    Double_t charge = particle->GetPDG()->Charge() / 3.;
+    if (TMath::Abs(charge) < 0.5) continue;
+    // physical primary
+    Bool_t prim = stack->IsPhysicalPrimary(iMc);
+    if (!prim) continue;
+    if (particle->Pt()<kPtCut) continue;
+    Float_t phi = TMath::ATan2(particle->Py(), particle->Px());
+    if (phi<0) phi+=TMath::TwoPi();
+    Float_t tgl= particle->Pz()/particle->Pt();
+    fHist2DMCCounter->Fill(phi,tgl);
+    fHist2DMCSumPt->Fill(phi,tgl,particle->Pt());
+  }
+}
+
 
 
 /// DumpEvent variables ito the tree
@@ -844,6 +961,14 @@ Int_t AliESDtools::DumpEventVariables() {
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
   Int_t tpcTrackBeforeClean=fEvent->GetNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+  TBits onlineMultMap = multObj->GetFastOrFiredChips();
+  TBits offlineMultMap = multObj->GetFiredChipMap();
+  AliESDZDC* esdZDC = fEvent->GetESDZDC();
+  bool isLaserEvent =  fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+  bool isHVdip =  fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+  bool isIncomplete = fTriggerAnalysis->IsIncompleteEvent(fEvent);
+  bool isZnaHit = esdZDC->IsZNAhit();
+  bool isZncHit = esdZDC->IsZNChit();
 
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
@@ -855,6 +980,9 @@ Int_t AliESDtools::DumpEventVariables() {
   TVectorF phiCountCITSOnly(36);
   TVectorF tZeroMult(24);  for (Int_t i=1;i<24;i++) tZeroMult[i] = 0.f;
   TVectorF vZeroMult(64);  for (Int_t i=1;i<64;i++) vZeroMult[i] = 0.f;
+  TVectorF tZeroTime(24);  for (Int_t i=1;i<24;i++) tZeroTime[i] = 0.f;
+  TVectorF vZeroTime(64);  for (Int_t i=1;i<64;i++) vZeroTime[i] = 0.f;
+
   TVectorF itsClustersPerLayer(6); for (Int_t i=1;i<6;i++) itsClustersPerLayer[i] = 0.f;
   //
   for (Int_t i=1;i<37;i++){
@@ -868,11 +996,33 @@ Int_t AliESDtools::DumpEventVariables() {
   //
   // Additional counters for ITS TPC V0 and T0
   const AliESDTZERO *esdTzero = fEvent->GetESDTZERO();
-  const Double32_t *t0amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Amp=esdTzero->GetT0amplitude();
+  const Double32_t *t0Time=esdTzero->GetT0time();
+  //  ZDC amplitude  and timers
+  TMatrixF zdcTime(32,4);
+  TMatrixF zdcEnergy(8,5);
+  for (Int_t i=0; i<32; i++) {
+    for (Int_t j=0; j<4; j++) {
+      zdcTime(i, j) = esdZDC->GetZDCTDCData(i, j);
+      //printf("%d\t%d\n",i,j);
+    }
+  }
+  for (int i=0; i<5; i++){
+    zdcEnergy(0,i)=esdZDC->GetZN1TowerEnergy()[i];
+    zdcEnergy(1,i)=esdZDC->GetZN2TowerEnergy()[i];
+    zdcEnergy(2,i)=esdZDC->GetZP1TowerEnergy()[i];
+    zdcEnergy(3,i)=esdZDC->GetZP2TowerEnergy()[i];
+    zdcEnergy(4,i)=esdZDC->GetZN1TowerEnergyLR()[i];
+    zdcEnergy(5,i)=esdZDC->GetZN2TowerEnergyLR()[i];
+    zdcEnergy(6,i)=esdZDC->GetZP1TowerEnergyLR()[i];
+    zdcEnergy(7,i)=esdZDC->GetZP2TowerEnergyLR()[i];
+  }
   //
 
-  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroMult[i] = (Float_t) t0Amp[i]; }
+  for (Int_t i=0;i<24;i++) { tZeroTime[i] = (Float_t) t0Time[i]; }
   for (Int_t i=0;i<64;i++) { vZeroMult[i] = fEvent->GetVZEROData()-> GetMultiplicity(i); }
+  for (Int_t i=0;i<64;i++) { vZeroTime[i] = fEvent->GetVZEROData()-> GetTime(i); }
   for (Int_t i=0;i<6;i++)  { itsClustersPerLayer[i] = multObj->GetNumberOfITSClusters(i); }
   Int_t runNumber=fEvent->GetRunNumber();
   Double_t timeStampS=fEvent->GetTimeStamp();
@@ -882,6 +1032,12 @@ Int_t AliESDtools::DumpEventVariables() {
   ULong64_t bunchCrossID = (ULong64_t)fEvent->GetBunchCrossNumber();
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
+  // generate GID from the file name and event number
+  if (gid==0 && AliAnalysisManager::GetAnalysisManager()) {
+    TString fileName(AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName());
+    fileName += TString::Format("%d", fEvent->GetEventNumberInFile());
+    gid = fileName.Hash();
+  }
   Short_t   eventMult = fEvent->GetNumberOfTracks();
   ULong64_t triggerMask = fEvent->GetTriggerMask();
   const Int_t  kNEstimators=27;
@@ -934,6 +1090,43 @@ Int_t AliESDtools::DumpEventVariables() {
     delete grLumiGraph;
     timeStampCache=timeStamp;
   }
+  // pile-up info from ESD as in ANALYSIS/ESDfilter/AliAnalysisTaskESDfilter.cxx
+  // Add custom TPC and ITS pileup infos
+  static TVectorF vtiTPCESD(10), vtiITSESD(8);
+   AliESDHeader* headESD = fEvent->GetHeader();
+  if (headESD->GetTPCPileUpInfo()) {
+    vtiTPCESD=*(headESD->GetTPCPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetTPCPileupVertexInfo(fEvent, vtiTPCESD);
+  }
+  if (headESD->GetITSPileUpInfo()) {
+    vtiITSESD=*(headESD->GetITSPileUpInfo());
+  }
+  else {
+    AliESDUtils::GetITSPileupVertexInfo(fEvent, vtiITSESD);
+  }
+  // Barrel counter histograms  and pileup (PWGPP-550)
+  TMatrixF *eventInfoMC=0;
+  if (fMCEvent){
+    FillMCCounters();
+    AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *> (fMCEvent->GenEventHeader());
+    TList list0;
+    list0.AddLast(fMCEvent->GenEventHeader());
+    TList *lgen = cocktailHeader ?  cocktailHeader->GetHeaders():&list0;
+    TArrayF primVtx(3);
+    if (lgen){
+      Int_t entries =lgen->GetEntries();
+      eventInfoMC=new TMatrixF(lgen->GetEntries(),5);
+      for (Int_t i=0; i<entries; i++){
+        AliGenEventHeader *gh = (AliGenEventHeader *) lgen->At(i);
+        (*eventInfoMC)(i,3)=gh->InteractionTime() * 1e9;
+        (*eventInfoMC)(i,4)=gh->NProduced();
+        gh->PrimaryVertex(primVtx);
+        for (Int_t j=0; j<3; j++) (*eventInfoMC)(i,j)=primVtx[j];
+      }
+    }
+  }
 
   // dump event variables into tree
   (*fStreamer)<<"events"<<
@@ -944,10 +1137,17 @@ Int_t AliESDtools::DumpEventVariables() {
                      "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
                      "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
                      "triggerMask="          << triggerMask           <<  //trigger mask
-                     "vz="                   << fVz                    <<  // vertex Z
+                     //
+                     "isLaserEvent="        <<isLaserEvent           <<  // fTriggerAnalysis->IsLaserWarmUpTPCEvent(fEvent);
+                     "isHVdip="             <<isHVdip                <<  // fTriggerAnalysis->IsHVdipTPCEvent(fEvent);
+                     "isIncomplete="        <<isIncomplete           <<  // fTriggerAnalysis->IsIncompleteEvent(fEvent);
+                     "isZnaHit="            <<isZnaHit               <<  //esdZDC->IsZNAhit();
+                     "isZncHit="            << isZncHit              <<  // esdZDC->IsZNChit();
+                     //
+                     "vz="                   << fVz                   <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
-                     "tpcMult="              << TPCMult               <<  //  TPC multiplicity
+                     "tpcMult="              << TPCMult               <<  //  TPC multiplicityf
                      "eventMult="            << eventMult             <<  //  event multiplicity
                      "eventMultESD="         << eventMultESD           <<  //  event multiplicity ESD
                      "nTracksStored="        << nTracksStored          <<  // number of sored tracks
@@ -957,6 +1157,14 @@ Int_t AliESDtools::DumpEventVariables() {
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
                      "centrality.="          <<&centrality<<                // vector of centrality estimators
                      //
+                     "onlineMultMap.="       <<&onlineMultMap          <<  // online multiplicity bitmask
+                     "offlineMultMap.="       <<&offlineMultMap        <<  // offline multiplicity bitmask
+                     //
+                     "zdcTime.="            <<&zdcTime                 <<  //zdc time matrix
+                     "zdcEnergy.="            <<&zdcEnergy             <<  //zdc energy matrix
+                     //
+                     "tZeroTime.="           << &tZeroTime             <<  // T0 time
+                     "vZeroTime.="           << &vZeroTime             <<  // V0 time
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity
                      "itsClustersPerLayer.=" << &itsClustersPerLayer   <<  // its clusters per layer
@@ -973,15 +1181,28 @@ Int_t AliESDtools::DumpEventVariables() {
                      "phiCountAITSOnly.="    << &phiCountAITSOnly      <<  // track count only ITS on A side
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
                      //
-                     "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
-                     "itsVertexInfo.="<<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
+                     "tpcVertexInfoESD.="    <<&vtiTPCESD              <<  // TPC vertex information -as calculated in ESD - before cleaning
+                     "itsVertexInfoESD.="    <<&vtiITSESD              <<  // ITS vertex information for pile up rejection -as caclulated in ESD after cleaning
+                      //
+                     "tpcVertexInfo.="       <<fTPCVertexInfo<<                   // TPC vertex information
+                     "itsVertexInfo.="       <<fITSVertexInfo<<                   // ITS vertex information for pile up rejection
                      //
+                     "hist2DTrackletsCounter.=" <<fHist2DTrackletsCounter<<    // 2D tracklet Phi x tgl norm histogram
+                     "hist2DTrackCounter.="   << fHist2DTrackCounter<<        // 2D track Phi x tgl histogram
+                     "hist2DTrackSumPt.="     << fHist2DTrackSumPt<<          // 2D track Phi x tgl sum pt histogram
+                         //
                      "nTOFclusters="<<nTOFclusters<<                       // tof mutliplicity estimators
                      "nTOFhits="<<nTOFhits<<
                      "nTOFmatches="<<nTOFmatches<<
-                     "nCaloClusters="<<nCaloClusters<<                     // calorimeter mutltiplicity estimators
-                     "\n";
+                     "nCaloClusters="<<nCaloClusters;                     // calorimeter multiplicity estimators
 
+                     if (fMCEvent) (*fStreamer)<<"events"<<
+                      "hist2DMCCounter.="      << fHist2DMCCounter<<           // 2D MC Phi x tgl histogram
+                      "hist2DMCSumPt.="        << fHist2DMCSumPt<<            // 2D MC Phi x tgl sum pt histogram
+                      "eventInfoMC.="          << eventInfoMC;                // event informatiion matrix colums= (x,y,z,time entries), rows (generators)
+                     (*fStreamer)<<"events"<<
+                     "\n";
+  if ( eventInfoMC) delete eventInfoMC;
   return 0;
 }
 /// Set default tree aliases and corresponding metadata for anotation

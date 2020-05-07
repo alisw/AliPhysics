@@ -32,13 +32,11 @@
                  fV0Finder;           // 0 = oldFinder, 1 = newFinder
                  fCentFramework;      // 0 = AliCentrality, 1 = AliMultSelection
   * 23 jan 2019: add more filter bit flags for v0 daughters, and make sure TPCrefit, nCrossedRowsTPC, and findable cuts are always there 
-  * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetPileupCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
+  * 30 jan 2019: setting functions for: SetContributorsVtxCut, SetContributorsVtxSPDCut, SetZvsSPDvtxCorrCut, SetVtxR2Cut, SetCrossedRowsCut, SetCrossedOverFindableCut, and removing the eta cut limit of 0.8 on V0s (but keeping it on tracks & daughter tracks)
   * 06 feb 2019: implement reject kink daughters option
   * 17 jan 2020: removing esd part of the code since heavily outdated 
   * 29 jan 2020: oob pileup cut and AliEventCuts for run-2 analyses
-
-  Remiders:
-  * For pp: remove pile up thing
+  * 23 apr 2020: preparing for pp, renaming PileupCut, clean-up
 
   */
 
@@ -105,7 +103,6 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
-  fAnalysisPbPb(kFALSE),
   fAnalysisRun2(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
@@ -128,7 +125,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fDecayRCut(0.2),
   fContributorsVtxCut(2),
   fContributorsVtxSPDCut(2),
-  fPileupCut(0.5),          
+  fZvsSPDvtxCorrCut(0.5),          
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
@@ -178,7 +175,6 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fCentDetector("V0M"),
   fAnalysisMC(kFALSE),
   fCentFrameworkAliCen(kFALSE),
-  fAnalysisPbPb(kFALSE),
   fAnalysisRun2(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
@@ -201,7 +197,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fDecayRCut(0.2),
   fContributorsVtxCut(2),
   fContributorsVtxSPDCut(2),
-  fPileupCut(0.5),          
+  fZvsSPDvtxCorrCut(0.5),          
   fVtxR2Cut(10.0),           
   fCrossedRowsCut(70.0),     
   fCrossedOverFindableCut(0.8),
@@ -402,13 +398,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit1 ){
     fn1->Fill(1);
-    fTriggeredEventMB = 1; // event triggered as minimum bias
+    fTriggeredEventMB = 1;
   }
-  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit2 ){
-    fTriggeredEventMB += 2;  
-    fn2->Fill(1);
-  }
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit2 ){
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }
   
   //Addition to trigger x-check: fTriggerInt; // 0 = kMB, 1 = kCent, 2 = kSemiCent
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
@@ -511,7 +507,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 	fZvtx = vtx->GetZ();
 	
 	// Correlation between global Zvtx and SPD Zvtx
-	if(TMath::Abs( fZvtx - zvSPD ) > fPileupCut) fZvtx  = -1599; // vtx is bad -> assign "bad" value:
+	if(TMath::Abs( fZvtx - zvSPD ) > fZvsSPDvtxCorrCut) fZvtx  = -1599; // vtx is bad -> assign "bad" value:
 	
       } //spd vtx
     } //radius cut
@@ -542,27 +538,24 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // only analyze triggered events
   if(fTriggeredEventMB){
     
-    if(fAnalysisPbPb){
-      if(fCentFrameworkAliCen){ // CentFramework in AliCentrality
-	fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
-	
-	AliCentrality *centObject =  fAOD->GetCentrality();
-	if(centObject) centrality = centObject->GetCentralityPercentile(fCentDetector); 
-	
-      }else{ // CentFramework in AliMultSelection
-	fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
-	
-	AliMultSelection* centObject = 0x0; 
-	centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-	if(centObject){
-	  centrality = centObject->GetMultiplicityPercentile(fCentDetector);
-	}
-	if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
+    if(fCentFrameworkAliCen){ // CentFramework in AliCentrality
+      fCentFramework = 0; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
+      
+      AliCentrality *centObject =  fAOD->GetCentrality();
+      if(centObject) centrality = centObject->GetCentralityPercentile(fCentDetector); 
+      
+    }else{ // CentFramework in AliMultSelection
+      fCentFramework = 1; // x-check histo: 0 = AliCentrality, 1 = AliMultSelection
+      
+      AliMultSelection* centObject = 0x0; 
+      centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+      if(centObject){
+	centrality = centObject->GetMultiplicityPercentile(fCentDetector);
       }
-      
-      if((centrality>fMaxCent)||(centrality<fMinCent))return;	
-      
-    }//pbpb
+      if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
+    }
+    
+    if((centrality>fMaxCent)||(centrality<fMinCent))return;	
     
     fcent->Fill(centrality);
     AnalyzeAOD(fAOD);

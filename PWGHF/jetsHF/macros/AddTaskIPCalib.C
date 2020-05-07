@@ -1,7 +1,8 @@
 AliAnalysisTaskIPCalib* AddTaskIPCalib(
   const char *ntracks            = "usedefault",
-  const char *suffix             = ""
+  TString pathToCorrFunc = "",
+  const char* suffix = ""
 )
 {
-  return AliAnalysisTaskIPCalib::AddTaskIPCalib(ntracks, suffix);
+  return AliAnalysisTaskIPCalib::AddTaskIPCalib(ntracks, pathToCorrFunc, suffix);
 }

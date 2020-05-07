@@ -18,9 +18,10 @@ AliAnalysisTaskLongFluctuations2PC* AddTaskLongFluctuations2PC(TString name = "n
     // now we create an instance of your task
     AliAnalysisTaskLongFluctuations2PC* task = new AliAnalysisTaskLongFluctuations2PC(name.Data());
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetMCRead(0);
     task->SetChi2DoF(4);
+    task->SetNclTPC(70);
     task->SetPtLimits(0.2, 2.0);
     task->SetEtaLimit(0.8);
     // add your task to the manager

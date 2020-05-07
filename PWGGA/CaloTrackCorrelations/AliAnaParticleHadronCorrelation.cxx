@@ -4703,8 +4703,11 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliCaloTrackPartic
     if ( deltaPhi <= -TMath::PiOver2() ) deltaPhi+=TMath::TwoPi();
     if ( deltaPhi > 3*TMath::PiOver2() ) deltaPhi-=TMath::TwoPi();
     
+    Float_t hmpidSignal =  0;
+    if ( IsHMPIDCorrelation() ) hmpidSignal = track->GetHMPIDsignal();   
+    
     FillChargedAngularCorrelationHistograms(pt,  ptTrig,  bin, phi, phiTrig,  deltaPhi,
-                                            eta, etaTrig, sm, decayTag, track->GetHMPIDsignal(),
+                                            eta, etaTrig, sm, decayTag, hmpidSignal,
                                             outTOF, cenbin, mcTag);
     
     //

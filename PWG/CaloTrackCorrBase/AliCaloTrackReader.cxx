@@ -148,7 +148,7 @@ fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fParRun(kFALSE),                 fCurrentParIndex(0),
 fOutputContainer(0x0),       fhEMCALClusterEtaPhi(0),         fhEMCALClusterEtaPhiFidCut(0),     
-fhEMCALClusterTimeE(0),      
+fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),      
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
 fEnergyHistogramNbins(0),
@@ -576,18 +576,25 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   SetEventTriggerBit();
   
   // In case of Mixing, avoid checking the triggers in the min bias events
-  if(!fEventTriggerAtSE && (isMB && !isTrigger)) return kTRUE;
+  if ( !fEventTriggerAtSE && (isMB && !isTrigger) ) return kTRUE;
   
-  if( (IsEventEMCALL1() || IsEventEMCALL0())  &&  fTriggerPatchClusterMatch)
-  {
-    if(fRejectEMCalTriggerEventsWith2Tresholds)
-    {
-      // Reject triggered events when there is coincidence on both EMCal trigger thresholds,
-      // but the requested trigger is the low trigger threshold
-      if(IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("EJ2")) return kFALSE;
-      if(IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("EG2")) return kFALSE;
-    }
+  // Reject triggered events when there is coincidence on both EMCal/DCal L1 high and low trigger thresholds,
+  // but the requested trigger is the high trigger threshold
+  if ( fRejectEMCalTriggerEventsWith2Tresholds )
+  {    
+    if ( IsEventEMCALL1Jet1  () && IsEventEMCALL1Jet2  () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
+    if ( IsEventEMCALL1Gamma1() && IsEventEMCALL1Gamma2() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+    if ( IsEventDCALL1Jet1   () && IsEventDCALL1Jet2   () && fFiredTriggerClassName.Contains("J1") ) return kFALSE;
+    if ( IsEventDCALL1Gamma1 () && IsEventDCALL1Gamma2 () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
     
+     fhNEventsAfterCut->Fill(5.5);
+  }
+  
+  // Match triggers
+  //
+  if ( fTriggerPatchClusterMatch &&
+      ( IsEventEMCALL1() || IsEventEMCALL0() || IsEventDCALL1() || IsEventDCALL0() ) )
+  {
     //Get Patches that triggered
     TArrayI patches = GetTriggerPatches(fTriggerPatchTimeWindow[0],fTriggerPatchTimeWindow[1]);
     
@@ -611,7 +618,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     AliDebug(1,"Pass EMCal triggered event rejection \n"); 
     
-    fhNEventsAfterCut->Fill(5.5);
+    fhNEventsAfterCut->Fill(6.5);
   }
   
   //-------------------------------------------------------------------------------------
@@ -623,7 +630,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     AliDebug(1,Form("Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data()));
     return kFALSE;
     
-    fhNEventsAfterCut->Fill(6.5);
+    fhNEventsAfterCut->Fill(7.5);
   }
   
   //-------------------------------------------------------------------------------------
@@ -642,7 +649,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     AliDebug(1,"Pass LED event rejection");
     
-    fhNEventsAfterCut->Fill(7.5);
+    fhNEventsAfterCut->Fill(8.5);
   } // Remove LED events
 
   // All selection criteria passed, accept the event
@@ -753,7 +760,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
 //___________________________________________________
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
-  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 20, 0, 20) ;
+  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 21, 0, 21) ;
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
@@ -761,21 +768,22 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Mixing Event");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Trigger string");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(5 ,"5=Trigger Bit");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=Good EMC Trigger");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=!Fast Cluster");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(8 ,"8=!LED");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=Time stamp"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=Primary vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Null 3 vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Z vertex window"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=Pile-up"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=V0AND"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=Centrality"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=GenHeader"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=PtHard-Jet");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=PtHard-Cluster"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=N Track>0"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(20,"20=TOF BC"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=L1 no L2"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=Good EMC Trigger");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(8 ,"8=!Fast Cluster");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=!LED");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=Time stamp"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Primary vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Null 3 vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=Z vertex window"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=Pile-up"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=V0AND"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=Centrality"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=GenHeader"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=PtHard-Jet");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=PtHard-Cluster"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(20,"20=N Track>0"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(21,"21=TOF BC"); 
   fOutputContainer->Add(fhNEventsAfterCut);
 
   if ( fFillEMCAL )
@@ -799,6 +807,12 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
     fhEMCALClusterTimeE->SetYTitle("#it{time}_{cluster} (ns)");
     fOutputContainer->Add(fhEMCALClusterTimeE);
+
+    fhEMCALClusterDisToBadE  = new TH2F 
+    ("hEMCALReaderDistToBadE","Distance to bad cell vs #it{E}_{cluster}", 50,0,50,20,0,20);
+    fhEMCALClusterDisToBadE->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhEMCALClusterDisToBadE->SetYTitle("Distance to bad cell");
+    fOutputContainer->Add(fhEMCALClusterDisToBadE);
     
     fhEMCALClusterEtaPhi  = new TH2F 
     ("hEMCALReaderEtaPhi","#eta vs #varphi",80,-2, 2,100, 0,10);
@@ -1455,7 +1469,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass Time Stamp rejection");
     
-    fhNEventsAfterCut->Fill(8.5);
+    fhNEventsAfterCut->Fill(9.5);
   }
 
   if(fDataType==kESD && fTimeStampEventCTPBCCorrExclude)
@@ -1470,7 +1484,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass Time Stamp CTPBCCorr rejection");
     
-    fhNEventsAfterCut->Fill(8.5);
+    fhNEventsAfterCut->Fill(9.5);
   }
 
   
@@ -1484,7 +1498,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   {
     if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
 
-    fhNEventsAfterCut->Fill(9.5);
+    fhNEventsAfterCut->Fill(10.5);
 
     if( TMath::Abs(fVertex[0][0] ) < 1.e-6 &&
         TMath::Abs(fVertex[0][1] ) < 1.e-6 &&
@@ -1492,13 +1506,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
 
     AliDebug(1,"Pass primary vertex/null rejection");
     
-    fhNEventsAfterCut->Fill(10.5);
+    fhNEventsAfterCut->Fill(11.5);
   }
 
   //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
   if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
-  fhNEventsAfterCut->Fill(11.5);
+  fhNEventsAfterCut->Fill(12.5);
 
   AliDebug(1,"Pass z vertex rejection");
 
@@ -1515,7 +1529,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass Pile-Up event rejection");
     
-    fhNEventsAfterCut->Fill(12.5);
+    fhNEventsAfterCut->Fill(13.5);
   }
   
   if(fDoV0ANDEventSelection)
@@ -1534,7 +1548,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass V0AND event rejection");
     
-    fhNEventsAfterCut->Fill(13.5);
+    fhNEventsAfterCut->Fill(14.5);
   }
 
   //------------------------------------------------------
@@ -1554,7 +1568,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass centrality rejection");
     
-    fhNEventsAfterCut->Fill(14.5);
+    fhNEventsAfterCut->Fill(15.5);
   }
 
   //----------------------------------------------------------------
@@ -1590,7 +1604,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       
       AliDebug(1,"Pass Event header selection");
       
-      fhNEventsAfterCut->Fill(15.5);
+      fhNEventsAfterCut->Fill(16.5);
     }
     
     // Pythia header
@@ -1621,7 +1635,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         AliDebug(1,"Pass Pt Hard - Jet rejection");
         
-        fhNEventsAfterCut->Fill(16.5);
+        fhNEventsAfterCut->Fill(17.5);
       }
       
       if(fComparePtHardAndClusterPt)
@@ -1630,7 +1644,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         
         AliDebug(1,"Pass Pt Hard - Cluster rejection");
         
-        fhNEventsAfterCut->Fill(17.5);
+        fhNEventsAfterCut->Fill(18.5);
       }
     } // pythia header
   } // MC
@@ -1666,7 +1680,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of null track events");
 
-    fhNEventsAfterCut->Fill(18.5);    
+    fhNEventsAfterCut->Fill(19.5);    
   }
   
   if(fDoVertexBCEventSelection)
@@ -1675,7 +1689,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
-    fhNEventsAfterCut->Fill(19.5);
+    fhNEventsAfterCut->Fill(20.5);
   }
   
   if(fFillEMCALCells)
@@ -2292,6 +2306,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Apply distance to bad channel cut
   //
   Double_t distBad = clus->GetDistanceToBadChannel() ; //Distance to bad channel
+  fhEMCALClusterDisToBadE->Fill(clus->E(),distBad);
   
   if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
   
@@ -3673,11 +3688,18 @@ void AliCaloTrackReader::SetEventTriggerBit()
   fEventTrigMinBias       = kFALSE;
   fEventTrigCentral       = kFALSE;
   fEventTrigSemiCentral   = kFALSE;
+  
   fEventTrigEMCALL0       = kFALSE;
   fEventTrigEMCALL1Gamma1 = kFALSE;
   fEventTrigEMCALL1Gamma2 = kFALSE;
   fEventTrigEMCALL1Jet1   = kFALSE;
   fEventTrigEMCALL1Jet2   = kFALSE;
+
+  fEventTrigDCALL0        = kFALSE;
+  fEventTrigDCALL1Gamma1  = kFALSE;
+  fEventTrigDCALL1Gamma2  = kFALSE;
+  fEventTrigDCALL1Jet1    = kFALSE;
+  fEventTrigDCALL1Jet2    = kFALSE;
   
   AliDebug(1,Form("Select trigger mask bit %d - Trigger Event %s - Select <%s>",
                   fEventTriggerMask,GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
@@ -3688,7 +3710,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
     if( GetFiredTriggerClasses().Contains("-B-") || GetFiredTriggerClasses().Contains("-S-") || GetFiredTriggerClasses().Contains("-I-") )
     {
       if     ( GetFiredTriggerClasses().Contains("EGA" ) ||
-              GetFiredTriggerClasses().Contains("EG1" )   )
+               GetFiredTriggerClasses().Contains("EG1" )   )
       {
         fEventTrigEMCALL1Gamma1 = kTRUE;
         if( GetFiredTriggerClasses().Contains("EG1" ) && !fFiredTriggerClassName.Contains("EG1") ) fEventTrigEMCALL1Gamma1 = kFALSE;
@@ -3699,7 +3721,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
         if( !fFiredTriggerClassName.Contains("EG2") ) fEventTrigEMCALL1Gamma2 = kFALSE;
       }
       else if( GetFiredTriggerClasses().Contains("EJE" ) ||
-              GetFiredTriggerClasses().Contains("EJ1" )   )
+               GetFiredTriggerClasses().Contains("EJ1" )   )
       {
         fEventTrigEMCALL1Jet1   = kTRUE;
         if( GetFiredTriggerClasses().Contains("EJ1" ) && !fFiredTriggerClassName.Contains("EJ1") )
@@ -3739,10 +3761,11 @@ void AliCaloTrackReader::SetEventTriggerBit()
   }
   else
 	{
-	  // EMC L1 Gamma
+	  // EMC/DMC L1 Gamma
 	  if     ( fEventTriggerMask & AliVEvent::kEMCEGA      )
     {
       //printf("EGA trigger bit\n");
+      // EMCal
       if     (GetFiredTriggerClasses().Contains("EG"))
       {
         if     (GetFiredTriggerClasses().Contains("EGA")) fEventTrigEMCALL1Gamma1 = kTRUE;
@@ -3752,11 +3775,19 @@ void AliCaloTrackReader::SetEventTriggerBit()
           if(GetFiredTriggerClasses().Contains("EG2")) fEventTrigEMCALL1Gamma2 = kTRUE;
         }
       }
+      
+      // DCal
+      if     (GetFiredTriggerClasses().Contains("DG"))
+      {
+        if(GetFiredTriggerClasses().Contains("DG1")) fEventTrigDCALL1Gamma1 = kTRUE;
+        if(GetFiredTriggerClasses().Contains("DG2")) fEventTrigDCALL1Gamma2 = kTRUE;
+      }
     }
 	  // EMC L1 Jet
-	  else if( fEventTriggerMask & AliVEvent::kEMCEJE      )
+    else if( fEventTriggerMask & AliVEvent::kEMCEJE      )
     {
       //printf("EGA trigger bit\n");
+      // EMCal
       if     (GetFiredTriggerClasses().Contains("EJ"))
       {
         if     (GetFiredTriggerClasses().Contains("EJE")) fEventTrigEMCALL1Jet1 = kTRUE;
@@ -3766,13 +3797,21 @@ void AliCaloTrackReader::SetEventTriggerBit()
           if(GetFiredTriggerClasses().Contains("EJ2")) fEventTrigEMCALL1Jet2 = kTRUE;
         }
       }
+      
+      // DCal
+      if     (GetFiredTriggerClasses().Contains("DJ"))
+      {
+        if(GetFiredTriggerClasses().Contains("DJ1")) fEventTrigDCALL1Jet1 = kTRUE;
+        if(GetFiredTriggerClasses().Contains("DJ2")) fEventTrigDCALL1Jet2 = kTRUE;
+      }
     }
 		// EMC L0
 	  else if((fEventTriggerMask & AliVEvent::kEMC7) ||
             (fEventTriggerMask & AliVEvent::kEMC1)       )
     {
       //printf("L0 trigger bit\n");
-	    fEventTrigEMCALL0 = kTRUE;
+	    if      ( GetFiredTriggerClasses().Contains("EMC") ) fEventTrigEMCALL0 = kTRUE;
+      else if ( GetFiredTriggerClasses().Contains("DMC") ) fEventTrigDCALL0  = kTRUE;
     }
 	  // Min Bias Pb-Pb
 	  else if( fEventTriggerMask & AliVEvent::kCentral     )
@@ -3797,10 +3836,14 @@ void AliCaloTrackReader::SetEventTriggerBit()
     }
 	}
   
-  AliDebug(1,Form("Event bits: \n \t MB   %d, Cen  %d, Sem  %d, L0   %d, L1G1 %d, L1G2 %d, L1J1 %d, L1J2 %d",
+  AliDebug(1,Form("Event bits: \n \t MB   %d, Cen  %d, Sem  %d,"
+                  "L0 EMC   %d, L1-EG1 %d, L1-EG2 %d, L1-EJ1 %d, L1-EJ2 %d"
+                  "L0 DMC   %d, L1-DG1 %d, L1-DG2 %d, L1-DJ1 %d, L1-DJ2 %d",
                   fEventTrigMinBias,      fEventTrigCentral,       fEventTrigSemiCentral,
                   fEventTrigEMCALL0 ,     fEventTrigEMCALL1Gamma1, fEventTrigEMCALL1Gamma2,
-                  fEventTrigEMCALL1Jet1 , fEventTrigEMCALL1Jet2));
+                  fEventTrigEMCALL1Jet1 , fEventTrigEMCALL1Jet2,
+                  fEventTrigDCALL0      , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2,
+                  fEventTrigDCALL1Jet1  , fEventTrigDCALL1Jet2));
   
   // L1 trigger bit
   if( fBitEGA == 0 && fBitEJE == 0 )

@@ -37,6 +37,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AlidNdPtTools.h"
 #include "AliEventCuts.h"
+#include <vector>
 
 class AliESDtrackCuts;
 class AliInputEventHandler;
@@ -77,6 +78,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliESDtrackCuts*       GetESDtrackCuts(Int_t i) { return (i < 10) ? fESDtrackCuts[i] : 0; }
         
         static Long64_t        FillHist(THnSparseD* s, Double_t x1, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0, Double_t x12 =0) { return AlidNdPtTools::FillHist(s, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12); }
+        static Long64_t        FillHistWeighted(THnSparseD* s, std::vector<double> const& val, double weight) {return AlidNdPtTools::FillHistWeighted(s, val, weight);}
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0) { return AlidNdPtTools::AddAxis(label, nbins, xmin, xmax, option); }
         static Int_t           AddAxis(const char* label, const char* title, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0) { return AlidNdPtTools::AddAxis(label, title, nbins, xmin, xmax, option); }
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t* xbins, const char* option = 0) { return AlidNdPtTools::AddAxis(label, nbins, xbins, option); }
@@ -301,10 +303,11 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fPtInner;                   //!<! inner param pt                                                    --InitTrackIP()
         Double_t                        fEtaInner;                  //!<! inner param eta                                                   --InitTrackIP()
         Double_t                        fPhiInner;                  //!<! inner param phi                                                   --InitTrackIP()
+        Double_t                        fZInner;                    //!<! inner param Z                                                   --InitTrackIP()
         Double_t                        fPtInnerTPC;                //!<! tpc inner pt                                                      --InitTrackTPC()
         Double_t                        fEtaInnerTPC;               //!<! tpc inner eta                                                     --InitTrackTPC()
         Double_t                        fPhiInnerTPC;               //!<! tpc inner phi                                                     --InitTrackTPC()
-        Double_t                        fZInnerTPC; //!<! tpc inner parameter of track --InitTrackTPC
+        Double_t                        fZInnerTPC;                 //!<! tpc inner parameter of track                              --InitTrackTPC
         Float_t                         fDCATPC[2];                 //!<! TPC impact parameter (DCA)                                        --InitTrackTPC()
         Float_t                         fDCACovTPC[3];              //!<! TPC impat parameter (DCA) covariance                              --InitTrackTPC()
         Double_t                        fDCArTPC;                   //!<! TPC impact parameter (DCA) in xy-direction                        --InitTrackTPC()

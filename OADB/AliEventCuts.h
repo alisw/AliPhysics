@@ -69,6 +69,7 @@ class AliEventCuts : public TList {
       kCorrelations,
       kTimeRangeCut,
       kEMCALEDCut,
+      kTPCPileUp,
       kAllCuts
     };
 
@@ -128,7 +129,9 @@ class AliEventCuts : public TList {
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
     void          SelectOnlyInelGt0(bool toogle) { fOverrideInelGt0 = true; fSelectInelGt0 = toogle; }
-
+    void          SetRejectTPCPileupWithITSTPCnCluCorr(bool opt) { fUseITSTPCCluCorrelationCut = opt; }
+    void          SetRejectTPCPileupWithV0CentTPCnTracksCorr(bool opt) { fUseStrongVarCorrelationCut = opt; }
+    
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
     bool          fGreenLight;                    ///< If true it will bypass all the selections.
@@ -168,6 +171,7 @@ class AliEventCuts : public TList {
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
     bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
+    bool          fUseITSTPCCluCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -178,7 +182,8 @@ class AliEventCuts : public TList {
     TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
     double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
     double        fVZEROvsTPCoutPolCut[5];        ///< Cut on VZERO multipliciy vs the number of tracks with kTPCout on
-
+    double        fITSvsTPCcluPolCut[3];          ///< Cut on SDD+SSD clusters vs TPC clusters
+    
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
     std::vector<std::string> fTriggerClasses;     ///< Trigger classes
@@ -239,7 +244,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts, 13)
+    ClassDef(AliEventCuts, 14)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

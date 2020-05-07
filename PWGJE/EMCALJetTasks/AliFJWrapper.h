@@ -1,14 +1,14 @@
 #ifndef AliFJWrapper_H
 #define AliFJWrapper_H
 
-#if !defined(__CINT__)
-
 #include <vector>
 #include <TString.h>
+
+#if !defined(__CINT__)
+
 #include "AliLog.h"
 #include "FJ_includes.h"
 #include "AliJetShape.h"
-
 
 class AliFJWrapper
 {
@@ -244,8 +244,8 @@ class AliFJWrapper
   AliFJWrapper(const AliFJWrapper& wrapper);
   AliFJWrapper& operator = (const AliFJWrapper& wrapper);
 };
-#endif
-#endif
+#endif /*__CINT__*/
+#endif /*AliFJWrapper_H*/
 
 #ifdef AliFJWrapper_CXX
 #undef AliFJWrapper_CXX
@@ -1721,13 +1721,4 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
   else return -2;
 
 }
-
-
-
-
-
-
-
-
-
 #endif

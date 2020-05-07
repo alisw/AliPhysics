@@ -767,11 +767,12 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  }
 		} //end of loop over xic daughters
 	      if(nFound==5){
-		if(isInAcc){
-		  if ((TMath::Abs(mcdaughter1->Eta())>0.9) || (TMath::Abs(mcdaughter2->Eta())>0.9) || (TMath::Abs(mcdaughterProtonFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromXi->Eta())>0.9)){ //to check also the y acceptance of Xi and Lambda?
-		    isInAcc=kFALSE;
-		  }
-		}
+		//this is actually already done at previous steps SelectSingleTrk and SelectCascades -> this is not needed here
+		//if(isInAcc){
+		//		  if ((TMath::Abs(mcdaughter1->Eta())>0.8) || (TMath::Abs(mcdaughter2->Eta())>0.8) || (TMath::Abs(mcdaughterProtonFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromLambda->Eta())>0.9) || (TMath::Abs(mcdaughterPionFromXi->Eta())>0.9)){ //to check also the y acceptance of Xi and Lambda?
+		  //  isInAcc=kFALSE;
+		  //}
+		//}
 		if(isInAcc){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco,checkOrigin);
 		  isXic=kTRUE;
@@ -781,6 +782,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+		  }
+		  fAnalCuts->SetUsePID(kTRUE);
+		}
+		if(TMath::Abs(mcxic->Y())<0.8){
+		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco08,checkOrigin);
+		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
+		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+		  }
+		  fAnalCuts->SetUsePID(kFALSE);
+		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
+		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kTRUE);
 		}
@@ -826,17 +838,33 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   Double_t nSigmaTOFpi2=-9999.;
   Double_t probPion1=-9999.;
   Double_t probPion2=-9999.;
-      
+
+  Float_t statusTPCpi1=0;
+  Float_t statusTPCpi2=0;
+  Float_t statusTOFpi1=0;
+  Float_t statusTOFpi2=0;
+  Float_t nclsTPCPIDpi1=0;
+  Float_t nclsTPCPIDpi2=0;
+  
   if(fAnalCuts->GetIsUsePID()) {
+
+    if(fAnalCuts->GetPidHF()->CheckTPCPIDStatus(part1)) statusTPCpi1=1.;
+    if(fAnalCuts->GetPidHF()->CheckTPCPIDStatus(part2)) statusTPCpi2=1.;
+
+    if(fAnalCuts->GetPidHF()->CheckTOFPIDStatus(part1)) statusTOFpi1=1.;
+    if(fAnalCuts->GetPidHF()->CheckTOFPIDStatus(part2)) statusTOFpi2=1.;
+
+    nclsTPCPIDpi1=part1->GetTPCsignalN();
+    nclsTPCPIDpi2=part2->GetTPCsignalN();
+    
     nSigmaTPCpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part1,AliPID::kPion);    
     nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
     nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);      
     nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
 	
-    if(fAnalCuts->GetPidHF()->GetUseCombined()){
-      probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
-      probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
-    }
+    probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
+    probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+    
   }
 
       
@@ -912,6 +940,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[53] = -9999;
       fCandidateVariables[54] = -9999;
       fCandidateVariables[58] = -9999;
+      fCandidateVariables[60] = -9999;
+      fCandidateVariables[61] = -9999;
+      fCandidateVariables[62] = -9999;
  
  
       if(fUseMCInfo){
@@ -941,6 +972,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	    fCandidateVariables[53] = mcdaughter2->Pt();
 	    fCandidateVariables[54] = mcdaughterxi->Pt();
 	    fCandidateVariables[58] = static_cast<Float_t>(checkOrigin);
+	    fCandidateVariables[60] = mcsecvertx;
+	    fCandidateVariables[61] = mcsecverty;
+	    fCandidateVariables[62] = mcdaughter1->Zv();
 	  }
 	}
       }
@@ -949,6 +983,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       fCandidateVariables[56] = xicobj->GetSecondaryVtx()->GetY();
       fCandidateVariables[57] = xicobj->GetSecondaryVtx()->GetZ();
       fCandidateVariables[59] = xicobj->YXicPlus();
+
+      fCandidateVariables[63] = statusTPCpi1;
+      fCandidateVariables[64] = statusTPCpi2;
+      fCandidateVariables[65] = statusTOFpi1;
+      fCandidateVariables[66] = statusTOFpi2;
+
+      fCandidateVariables[67] = nclsTPCPIDpi1;
+      fCandidateVariables[68] = nclsTPCPIDpi2;
       
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
@@ -1011,7 +1053,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   //
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 60;
+  Int_t nVar = 69;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1084,6 +1126,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   
   fCandidateVariableNames[58]="isPrompt";
   fCandidateVariableNames[59]="Xicy";
+
+  fCandidateVariableNames[60]="mcxicsecvertx";
+  fCandidateVariableNames[61]="mcxicsecverty";
+  fCandidateVariableNames[62]="mcxicsecvertz";
+
+  fCandidateVariableNames[63]="statusTPCPIDp1";
+  fCandidateVariableNames[64]="statusTPCPIDp2";
+  fCandidateVariableNames[65]="statusTOFPIDp1";
+  fCandidateVariableNames[66]="statusTOFPIDp2";
+
+  fCandidateVariableNames[67]="nClsTPCPIDpi1";
+  fCandidateVariableNames[68]="nClsTPCPIDpi2";
+  
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }
@@ -1187,6 +1242,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHistoXiMassvsPtRef5);
   fOutput->Add(fHistoXiMassvsPtRef6);
   fOutput->Add(fHistoPiPtRef);
+  fOutput->Add(fHistoPiEtaRef);
   fOutput->Add(fQAHistoNSelectedTracks);
   fOutput->Add(fQAHistoNSelectedCasc);
   fOutput->Add(fQAHistoDCApi1pi2);
@@ -1202,7 +1258,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fQAHistoSecondaryVertexXY);
   
   if(fUseMCInfo) {
-    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,20,-0.5,9.5,2,3.5,5.5);
+    fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,2,3.5,5.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
   }
 
@@ -1305,7 +1361,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::SelectTrack( const AliVEvent 
     AliAODTrack *aodt = (AliAODTrack*)track;
 
     if(!fAnalCuts) continue;
-    if(fAnalCuts->SingleTrkCuts(aodt)){
+    if(fAnalCuts->SingleTrkCuts(aodt,fV1)){
       seleFlags[i]=kTRUE;
       nSeleTrks++;
       fHistoPiPtRef->Fill(aodt->Pt());
@@ -1750,18 +1806,29 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
 	}
 	Bool_t isInAcc=kTRUE;
+	
 	// check GenAcc level
 	if(fAnalCuts){
 	  if(!fAnalCuts->IsInFiducialAcceptance(ptpart,ypart)){ 
 	    isInAcc=kFALSE;
 	  }
 	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
-	    
+
+	if (TMath::Abs(ypart)<0.8) {
+	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  Bool_t istrackIn08=kTRUE;
+	  for(Int_t k=0;k<5;k++){
+	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) istrackIn08=kFALSE;
+	  }
+	  if(istrackIn08)fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);    
+	}
+	
 	if(isInAcc){
 	  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
-	    if(TMath::Abs(mcpartdau->Eta())>0.9) isInAcc=kFALSE;    
+	    if(TMath::Abs(mcpartdau->Eta())>0.8) isInAcc=kFALSE;    
 	  }
 	}
 	if(isInAcc) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);

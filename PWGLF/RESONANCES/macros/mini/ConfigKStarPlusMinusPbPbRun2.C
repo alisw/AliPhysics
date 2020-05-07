@@ -1,13 +1,7 @@
 /*=================================================================================
- Dukhishyam Mallick - last modified November 2019 (mallick.dukhishyam@cern.ch)
- Modified by Enrico Fragiacomo - 15/01/2014                                                                                                         
- //            Modified by Kishora Nayak - 14/06/2016                                                                                                                          Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)                                                                                                
-              Modified by Sudipan De - 01/04/2019 (sde@cern.ch)                                                                                                                Modified by Dukhishyam Mallick- 01/04/2019 (dmallick@cern.ch)                                                                                      
-              Modified by Dukhishyam Mallick- 26/11/2019 (dmallick@cern.ch)    
+ Dukhishyam Mallick - last modified 15 April 2020 (mallick.dukhishyam@cern.ch)
 
  *** Configuration script for K*+-->K0Short-Pi analysis ***
-
-
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
 //
@@ -51,6 +45,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
  Float_t                 rowsbycluster,
  Float_t		 v0rapidity,
  Int_t                   Sys
+ //UInt_t      triggerMask=AliVEvent::kINT7
  )
 //kTPCpidphipp2015
 {
@@ -66,12 +61,16 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
   AliRsnCutSetDaughterParticle* cutSetPi;
   
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
+
+  cout<<"Value of custom quality--------------------"<<customQualityCutsID<<endl;
+  
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
 
     //Set custom quality cuts for systematic checks
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2011,AliPID::kPion,-1.);
     cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate, piPIDCut,nsigmaTOF),trkQualityCut,cutPiCandidate,AliPID::kPion,piPIDCut,nsigmaTOF);
   }else{
+
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),AliRsnCutSetDaughterParticle::kQualityStd2011,AliPID::kPion,-1.,aodFilterBit,kTRUE);
@@ -109,11 +108,18 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     cutK0s->SetSwitch(Switch);
     cutK0s->SetfLife(pLife);
     cutK0s->SetfLowRadius(radiuslow);
-    cutK0s->SetfHighRadius(200);
+    cutK0s->SetfHighRadius(100);
     cutK0s->SetMaxRapidity(v0rapidity);
     cutK0s->SetpT_Tolerance(tol_switch);
     cutK0s->SetMassTolSigma(tol_sigma);
+    //cutK0s->SetArmentousCut(2.0);
 
+    //cout<<"Get Input Value Of Armentous cut-------->:"<<cutK0s->GetArmentousCut()<<endl;
+
+    
+
+    
+    
     if(enableSys)
     {
 
@@ -153,6 +159,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
         //AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
         AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
         AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+	AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
     }
 
     //
@@ -165,7 +172,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     /* centrality       */ Int_t centID  = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
     /* pseudorapidity   */ Int_t etaID   = task->CreateValue(AliRsnMiniValue::kEta, kFALSE);
     /* rapidity         */ Int_t yID     = task->CreateValue(AliRsnMiniValue::kY, kFALSE);
-    /* CosThetaStar      */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStar,kFALSE);
+    /* CosThetaStar      */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStar,kFALSE);
     
     /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
     /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
@@ -176,7 +183,16 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
     /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
 
-
+    if(isMC==1)
+     {
+     /* CosThetaStar     */ Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+     }
+    else
+      {
+     /* CosThetaStar     */  Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+     }
+  
+    
     //
     // -- Create all needed outputs -----------------------------------------------------------------
     //
@@ -189,22 +205,26 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     Bool_t  use     [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
     Bool_t  useIM   [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
     TString name    [6] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust"};
-    TString comp    [6] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE"            };
-    TString output  [6] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"            };
+    TString comp    [7] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE","SINGLE"            };
+    TString output  [7] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE","SPARSE"            };
+    
     Char_t  charge1 [6] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'               };
     Char_t  charge2 [6] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'               };
-    Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s             };
+    // Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s             };
+    Int_t   cutID1  [7] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s, iCutK0s             };
     Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi            };
     Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323              };
     Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166           };
     AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame              };
-
-    for (Int_t i = 0; i < 6; i++) {
+    
+    for (Int_t i = 0; i < 7; i++) {
       if (!use[i]) continue;
       //if (collSyst) output[i] = "SPARSE";
       // create output
       AliRsnMiniOutput *out = task->CreateOutput(Form("ChargeKstar_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
       // selection settings
+      if (i<6)
+	{
       out->SetCutID(0, cutID1[i]);
       out->SetCutID(1, cutID2[i]);
       out->SetDaughter(0, AliRsnDaughter::kKaon0);
@@ -214,8 +234,6 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
       out->SetMotherPDG(ipdg[i]);
       out->SetMotherMass(mass[i]);
       
-      
-	
       // pair cuts
       out->SetPairCuts(paircuts[i]);
       // axis X: invmass
@@ -226,26 +244,42 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
       out->AddAxis(ptID, 300, 0.0, 30.0);
       //  out->AddAxis(k0sDCA, 10, 0.0, 1.0);
       
-      // axis W: Centrality                                                                                                                                   //      if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+      // axis W: Centrality                                                                                                                                   //if (co    llSyst) out->AddAxis(centID, 10, 0.0, 100.0);
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
         else out->AddAxis(centID, 100, 0.0, 100.);
         if(isGT) out->AddAxis(sdpt,100,0.,10.);
-	
 
-	
+	// axis Z: CosThetaStar
+        out->AddAxis(cosThSID, 10, 0.0, 1.0);
+
+ 	}
+
+      else if (i==6)
+	{
+	  out->SetCutID(0, cutID1[i]);
+	  out->AddAxis(imID, 90, 0.2, 1.1);
+	  out->AddAxis(ptID, 300, 0.0, 30.0);
+	  out->AddAxis(centID, 100, 0.0, 100.);
+	  // axis W: CosThetaStar
+	  out->AddAxis(cosThSID, 10, 0.0, 1.0);
+
+	}
     }
 
 
     // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
     /*******************commentout*******************************/
-    AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
+      AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sNegDaughPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sPosDaughPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sMass(cutSetK0s->GetMonitorOutput());
-    // AddMonitorOutput_K0sDCA(cutSetK0s->GetMonitorOutput());
+    AddMonitorOutput_K0sDCA(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sRadius(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sDaughterDCA(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sCosPointAngle(cutSetK0s->GetMonitorOutput());
+    //added by me/////////   
+    //AddMonitorOutput_ArmentousCut(cutSetK0s->GetMonitorOutput());
+    ////////////////////////
     // AddMonitorOutput_K0sProtonPID(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sPionPID(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sfpLife(cutSetK0s->GetMonitorOutput());
@@ -257,7 +291,9 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     //    AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
     //AddMonitorOutput_MinDCAToVertexXY(cutSetK0s->GetMonitorOutput());     //Uncomment if fixed value Cut used
 
-    if(isRotate){
+    //cutK0s->Print();
+
+   if(isRotate){
       
       for (Int_t i = 0; i < 2; i++)
 	{  if (!use[i]) continue;
@@ -278,10 +314,13 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
 	  out->AddAxis(ptID, 300, 0.0, 30.0);
 	  //if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0); 
 	  if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-	  else out->AddAxis(centID, 100, 0.0, 100.); 
+	  else out->AddAxis(centID, 100, 0.0, 100.);
+	  // axis Z: CosThetaStar
+	  out->AddAxis(cosThSID, 10, 0.0, 1.0);
+
 	}
     }
-    
+
     
     if (isMC) {
       
@@ -308,11 +347,11 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
         //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
-	// axis W: CosThetaStar                                                                                                                                 
-	//	if (!isPP)
-	// out->AddAxis(cosThStarID, 10, 0, 1.0);//
-	//	else
-	// out->AddAxis(cosThStarID, 10, 0, 1.0);
+	// axis Z: CosThetaStar                                                                                                                                 
+	if (!isPP)
+	  out->AddAxis(cosThSID, 10, 0, 1.0);//
+	else
+	  out->AddAxis(cosThSID, 10, 0, 1.0);
 
 	
 	
@@ -335,8 +374,12 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
         else out->AddAxis(centID, 100, 0.0, 100.);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
-	
-	
+	// axis Z: CosThetaStar                                                                                                                                 
+	if (!isPP)
+	  out->AddAxis(cosThSID, 10, 0, 1.0);//
+	else
+	  out->AddAxis(cosThSID, 10, 0, 1.0);
+
 	
         AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
         outps->SetDaughter(0,AliRsnDaughter::kKaon0);
@@ -575,7 +618,7 @@ void AddMonitorOutput_K0sMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
 }
 
-/*void AddMonitorOutput_K0sDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
+void AddMonitorOutput_K0sDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
  {
  // K0s DCA
  AliRsnValueDaughter *axisK0sDCA = new AliRsnValueDaughter("k0s_dca", AliRsnValueDaughter::kV0DCA);
@@ -586,7 +629,7 @@ void AddMonitorOutput_K0sMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
  // add outputs to loop
  if (mon) mon->Add(outMonitorK0sDCA);
  if (ldca) ldca->AddOutput(outMonitorK0sDCA);
- }   */
+ }   
 
 void AddMonitorOutput_K0sRadius(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
 {
@@ -618,12 +661,14 @@ void AddMonitorOutput_K0sDaughterDCA(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
 }
 
+
 void AddMonitorOutput_K0sCosPointAngle(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lcpa=0)
 {
 
     // K0s Cosine of the Pointing Angle
     AliRsnValueDaughter *axisK0sCPA = new AliRsnValueDaughter("k0s_cospointang", AliRsnValueDaughter::kCosPointAng);
-    axisK0sCPA->SetBins(0.97,1.,0.0001);
+    //axisK0sCPA->SetBins(0.97,1.,0.0001);
+    axisK0sCPA->SetBins(0.9,1.,0.0001);
 
     // output: 2D histogram
     AliRsnListOutput *outMonitorK0sCPA = new AliRsnListOutput("K0s_CosineOfPointingAngle", AliRsnListOutput::kHistoDefault);
@@ -634,6 +679,35 @@ void AddMonitorOutput_K0sCosPointAngle(TObjArray *mon=0,TString opt="",AliRsnLoo
     if (lcpa) lcpa->AddOutput(outMonitorK0sCPA);
 
 }
+
+
+//added by me /////////////////////////////////////////////////
+
+/*
+void AddMonitorOutput_ArmentousCut(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lac=0)
+{
+
+    // K0s Arm Cut
+    AliRsnValueDaughter *axisK0sAC = new AliRsnValueDaughter("K0s_ArmCut", AliRsnValueDaughter::Armentous);
+    axisK0sAC->SetBins(-10.0,10.0,0.1);
+
+    // output: 2D histogram
+    AliRsnListOutput *outMonitorK0sAC = new AliRsnListOutput("K0s_ArmentousCut", AliRsnListOutput::kHistoDefault);
+    outMonitorK0sAC->AddValue(axisK0sAC);
+
+    // add outputs to loop
+    if (mon) mon->Add(outMonitorK0sAC);
+    if (lac) lac->AddOutput(outMonitorK0sAC);
+
+}
+*/
+
+///////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 
 void AddMonitorOutput_K0sPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpiPID=0)
@@ -812,7 +886,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
             else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
             else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
         }
-
+    
         trkQualityCut->Print();
         return kTRUE;
     }else if(customQualityCutsID==2 || (customQualityCutsID>=100 && customQualityCutsID<200)){

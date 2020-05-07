@@ -978,6 +978,9 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
       miniParticlePtr = fMiniEvent->AddParticle();
       miniParticlePtr->CopyDaughter(&cursor);
       miniParticlePtr->Index() = ip;
+
+      AliAODTrack* aodtrack = cursor.Ref2AODtrack();
+      if(aodtrack) miniParticlePtr->Index() = aodtrack->GetID();
       
       // copy momentum and MC info if present
       // miniParticle.CopyDaughter(&cursor);

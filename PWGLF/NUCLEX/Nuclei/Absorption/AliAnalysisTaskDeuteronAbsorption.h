@@ -71,9 +71,13 @@ private:
   Int_t tnPIDclsTPC;      // number of clusters used for PID in the TPC
   Double_t tTOFsigDx;     // track-to-hit residual in TOF (x-direction)
   Double_t tTOFsigDz;     // track-to-hit residual in TOF (z-direction)
+  Double_t tTOFchi2;      // chi2 of the hit in the TOF
   Int_t tTOFclsN;         // number of cluster candidates in TOF
   Int_t tTRDclsN;         // number of TRD clusters attached to the track
+  Int_t tTRDntracklets;   // number of TRD tracklets used for tracking
+  Int_t tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
   Int_t tID;              // identification number of the track
+  Int_t tPdgCodeMc;       // pdg code of the track if MC information is available
   
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
@@ -98,7 +102,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 1);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 3);
 };
 
 #endif

@@ -56,13 +56,26 @@ sharedParameters:
     removeMCGen2: ""                                # name of generator input to be accepted
 # This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
 # Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
+CellCloneContainer:                                 # Clone the cell branch into a new one
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    clonedCellsBranchName: "emcalCellsClone"        # Name of branch with new cells
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+           - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    disableTempCalib: false                         # Switch off temperature calib completely (this should only be done by experts)
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellSingleChannelCalibration:                       # Cell Single Channel Energy correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
@@ -286,6 +299,7 @@ PHOSCorrections:                                    # PHOS recalibration compone
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
 executionOrder:
+    - CellCloneContainer
     - CellEmulateCrosstalk
     - CellEnergy
     - CellEnergyVariation

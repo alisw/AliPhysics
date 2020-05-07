@@ -82,10 +82,15 @@ class AliFemtoDreamEventCuts {
     return fDoSpherCuts;
   }
   ;
-  void SetSphericityCuts(float spherlow, float spherup) {
+  void SetSphericityCuts(float spherlow, float spherup, float ptLow) {
     fSpherCutsLow = spherlow;
     fSpherCutsUp = spherup;
+    fLowPtSpherCalc = ptLow;
     fDoSpherCuts = true;
+  }
+  ;
+  float GetlowerPtBoundSpherCalc() const {
+    return fLowPtSpherCalc;
   }
   ;
 
@@ -147,12 +152,13 @@ class AliFemtoDreamEventCuts {
   bool fUseAliEvtCuts;            //
   bool fCentVsMultPlots;    //
   bool fDoSpherCuts;       //
+  float  fLowPtSpherCalc;  //  
   float fSpherCutsLow;      //
   float fSpherCutsUp;      //
   bool fDoSpheroCuts;       //
   float fSpheroCutsLow;      //
   float fSpheroCutsUp;      //
-ClassDef(AliFemtoDreamEventCuts,7)
+ClassDef(AliFemtoDreamEventCuts,8)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */

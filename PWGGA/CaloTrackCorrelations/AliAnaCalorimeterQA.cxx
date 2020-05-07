@@ -1077,7 +1077,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // Fill histograms related to single cluster, mc vs data
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
-    if(IsDataMC() && nLabel > 0 && labels) 
+    if ( IsDataMC() && nLabel > 0 && labels && GetMC() ) 
       mcOK = ClusterMCHistograms(matched, labels, 
                                  clus->GetClusterMCEdepFraction(),
                                  nLabel, pdg);

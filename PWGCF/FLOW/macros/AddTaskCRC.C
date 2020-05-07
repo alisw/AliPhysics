@@ -74,19 +74,19 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Double_t centrMin=0.;
   Double_t centrMax=100.;
   Double_t CenBinWidth=10.;
-  Bool_t bCalculateCRCInt=kFALSE;
-  Bool_t bCalculateCRC2=kFALSE;
+  Bool_t bCalculateCRCInt=kTRUE;
+  Bool_t bCalculateCRC2=kTRUE;
   Float_t MaxDevZN=10.;
   Int_t NumCenBins=100;
   Bool_t bCalculateCRC=kTRUE;
   if(analysisTypeUser == "TrackQA") bCalculateCRC=kFALSE;
-  Bool_t bCalculateCRCVZ=kFALSE;
+  Bool_t bCalculateCRCVZ=kTRUE;
   TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
-  Bool_t bCalculateEbEFlow=kFALSE;
+  Bool_t bCalculateEbEFlow=kTRUE;
   Bool_t bDivSigma=kFALSE;
-  Bool_t bCalculateCRCZDC=kFALSE;
-  Bool_t bCalculateCME=kFALSE;
+  Bool_t bCalculateCRCZDC=kTRUE;
+  Bool_t bCalculateCME=kTRUE;
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
   Bool_t bMimicGlobalCuts=kFALSE;
@@ -134,6 +134,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     Appendix += Label;
     CRCsuffix += Appendix;
   }
+
+  TGrid::Connect("alien://");                                //@Shi
 
   // create instance of the class: because possible qa plots are added in a second output slot,
   // the flow analysis task must know if you want to save qa plots at the time of class construction
@@ -270,7 +272,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete VZEROGainEqFile;
     // load VZERO Q-vector re-centering
-    TString VZEROQVecRecFileName = "alien:///alice/cern.ch/user/m/mhaque/jacopo/15oHI_VZEROQVecRec.root";
+    //TString VZEROQVecRecFileName = "alien:///alice/cern.ch/user/m/mhaque/jacopo/15oHI_VZEROQVecRec.root";
+    TString VZEROQVecRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_VZEROQVecRec.root"; //@Shi
     TFile* VZEROQVecRecFile = TFile::Open(VZEROQVecRecFileName,"READ");
     if(!VZEROQVecRecFile) {
       cout << "ERROR: VZERO Q-vector re-centering file not found!" << endl;

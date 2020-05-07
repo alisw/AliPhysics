@@ -41,19 +41,22 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   DeuteronCuts->SetCutCharge(1);
   DeuteronCuts->SetPtRange(0.4, 4.);
   DeuteronCuts->SetEtaRange(-0.8, 0.8);
-  DeuteronCuts->SetNClsTPC(70);
+  DeuteronCuts->SetNClsTPC(80);
   DeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
-  DeuteronCuts->SetDCAVtxZ(1.0);
-  DeuteronCuts->SetDCAVtxXY(1.0);
+  DeuteronCuts->SetDCAVtxZ(0.2);
+  DeuteronCuts->SetDCAVtxXY(0.1);
   DeuteronCuts->SetCutSharedCls(true);
-  DeuteronCuts->SetCutTPCCrossedRows(false, 70, 0.83);
+  DeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   DeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
   DeuteronCuts->SetRejLowPtPionsTOF(true);
   DeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    DeuteronCuts->SetDCAVtxZ(0.2);
-    DeuteronCuts->SetDCAVtxXY(0.1);
+    DeuteronCuts->SetFilterBit(256);
+  }
+  else if (suffix == "2") {
+    DeuteronCuts->SetFilterBit(768);
+    //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
 
   // Track Cuts for Anti-Deuterons
@@ -68,19 +71,22 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
   AntiDeuteronCuts->SetCutCharge(-1);
   AntiDeuteronCuts->SetPtRange(0.4, 4.);
   AntiDeuteronCuts->SetEtaRange(-0.8, 0.8);
-  AntiDeuteronCuts->SetNClsTPC(70);
+  AntiDeuteronCuts->SetNClsTPC(80);
   AntiDeuteronCuts->SetDCAReCalculation(true);  // Get the dca from PropagateToVertex
-  AntiDeuteronCuts->SetDCAVtxZ(1.0);
-  AntiDeuteronCuts->SetDCAVtxXY(1.0);
+  AntiDeuteronCuts->SetDCAVtxZ(0.2);
+  AntiDeuteronCuts->SetDCAVtxXY(0.1);
   AntiDeuteronCuts->SetCutSharedCls(true);
-  AntiDeuteronCuts->SetCutTPCCrossedRows(false, 70, 0.83);
+  AntiDeuteronCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 1.4);
   AntiDeuteronCuts->SetRejLowPtPionsTOF(true);
   AntiDeuteronCuts->SetCutSmallestSig(true);
 
   if (suffix == "1") {
-    AntiDeuteronCuts->SetDCAVtxZ(0.2);
-    AntiDeuteronCuts->SetDCAVtxXY(0.1);
+    AntiDeuteronCuts->SetFilterBit(256);
+  }
+  else if (suffix == "2") {
+    AntiDeuteronCuts->SetFilterBit(256);
+    AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
   }
 
   // Lambda Cuts

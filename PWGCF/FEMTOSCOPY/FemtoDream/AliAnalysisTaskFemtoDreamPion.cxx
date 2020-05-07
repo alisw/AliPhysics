@@ -55,9 +55,6 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
   fOutput->SetName("Output");
   fOutput->SetOwner();
 
-  fEvent=new AliFemtoDreamEvent(false,true,fTrigger);
-  fOutput->Add(fEvent->GetEvtCutList());
-
   fTrack=new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
 
@@ -68,6 +65,13 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
   }
     fEventCuts->InitQA();
     fOutput->Add(fEventCuts->GetHistList());
+
+  //printf("fEventCuts->GetlowerPtBoundSpherCalc() is: %f\n",fEventCuts->GetlowerPtBoundSpherCalc());
+  float DummyFloat = fEventCuts->GetlowerPtBoundSpherCalc();
+  //printf("DummyFloat is: %f\n",DummyFloat);
+  fEvent=new AliFemtoDreamEvent(false,true,fTrigger,DummyFloat); // Constructor fails to set the right value needs to be investigated
+  fEvent->SetfLowPtSpherCalc(DummyFloat); //quick fix to set the right value of the pT Cut
+  fOutput->Add(fEvent->GetEvtCutList());
 
   if (!fTrackCutsPosPion) {
     AliFatal("Track Cuts for Pion+ not set!");
@@ -107,8 +111,6 @@ void AliAnalysisTaskFemtoDreamPion::UserCreateOutputObjects() {
 
   PostData(1,fOutput);
 }
-
-
 
 void AliAnalysisTaskFemtoDreamPion::UserExec(Option_t *) {
   AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);

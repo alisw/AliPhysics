@@ -83,6 +83,7 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fDCalDG1(kFALSE),
 fDCalDG2(kFALSE),
+flagWevt(kFALSE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fMCparticle(0),
@@ -181,6 +182,9 @@ fITShitPhi(0),
 fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
+fHistGeneWboson(0),
+fHistGeneWboson_pos(0),
+fHistGeneWboson_ele(0),
 fInvmassPi0Dalitz(0),
 fHistRawNits(0), 
 fHistRawNtpc(0), 
@@ -205,6 +209,8 @@ fCompTrackPtMatch(0),
 fCompTrackPtMatchwithEMC(0),
 fMCcheckPi0decay(0),
 fMCcheckEtadecay(0),
+fHistWpos(0), 
+fHistWele(0), 
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -234,6 +240,7 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fDCalDG1(kFALSE),
 fDCalDG2(kFALSE),
+flagWevt(kFALSE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
 fMCparticle(0),
@@ -332,6 +339,9 @@ fITShitPhi(0),
 fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
+fHistGeneWboson(0),
+fHistGeneWboson_pos(0),
+fHistGeneWboson_ele(0),
 fInvmassPi0Dalitz(0),
 fHistRawNits(0), 
 fHistRawNtpc(0), 
@@ -356,6 +366,8 @@ fCompTrackPtMatch(0),
 fCompTrackPtMatchwithEMC(0),
 fMCcheckPi0decay(0),
 fMCcheckEtadecay(0),
+fHistWpos(0), 
+fHistWele(0), 
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -677,7 +689,16 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fInvmassULS_MCtrue = new TH2F("fInvmassULS_MCtrue", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 6,-0.5,5.5,1000,0,1.0);
     fOutputList->Add(fInvmassULS_MCtrue);
-    
+ 
+    fHistGeneWboson = new TH1F("fHistGeneWboson","W production",100,0,100);
+    fOutputList->Add(fHistGeneWboson);
+   
+    fHistGeneWboson_pos = new TH1F("fHistGeneWboson_pos","W production",100,0,100);
+    fOutputList->Add(fHistGeneWboson_pos);
+
+    fHistGeneWboson_ele = new TH1F("fHistGeneWboson_ele","W production",100,0,100);
+    fOutputList->Add(fHistGeneWboson_ele);
+
     fHistRawNits = new TH2F("fHistRawNits","Raw its hits; p_{T}(GeV/c); counts",40,0,40,7,0,7);
     fOutputList->Add(fHistRawNits);
 
@@ -737,6 +758,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
     fMCcheckEtadecay = new TH2F("fMCcheckEtadecay","electrons from Eta in enhance",50,0,50,50,0,50);
     fOutputList->Add(fMCcheckEtadecay);
+
+    fHistWpos = new TH1F("fHistWpos","W->pos",100,0,100);
+    fOutputList->Add(fHistWpos);
+    fHistWele = new TH1F("fHistWele","W->ele",100,0,100);
+    fOutputList->Add(fHistWele);
 
     if(fFlagSparse){
     Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 10, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
@@ -1419,6 +1445,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 }
                 fEleCanITSNCls->Fill(track->Pt(),fITSncls++);
             }
+
+            if((fTPCnSigma > -1 && fTPCnSigma < 3) && (eop>0.9 && eop<1.3) && MCinfo[2]==24.0)
+               {
+                if(track->Charge()>0)fHistWpos->Fill(track->Pt());
+                if(track->Charge()<0)fHistWele->Fill(track->Pt());
+      
+               }
+
         }
     } //track loop
 
@@ -1698,7 +1732,29 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &Npure
             } 
         }
         
-    }
+      if(pdgGen==24 && fMCparticle->GetMother()<0)
+          {
+
+           fHistGeneWboson->Fill(fMCparticle->Pt());
+
+           for(int ich = fMCparticle->GetDaughterFirst(); ich<=fMCparticle->GetDaughterLast(); ich++)
+              {
+               AliAODMCParticle* Cparticle = (AliAODMCParticle*) fMCarray->At(ich);
+               if(TMath::Abs(Cparticle->GetPdgCode())!=11)continue;
+   
+               if(fMCparticle->GetPdgCode()==-24)
+                  {
+                   fHistGeneWboson_pos->Fill(Cparticle->Pt());
+                  }
+
+               if(fMCparticle->GetPdgCode()==24)
+                  { 
+                   fHistGeneWboson_ele->Fill(Cparticle->Pt());
+                  }
+              }
+          }
+
+    } // loop
     
     return;
 }
@@ -1711,7 +1767,10 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
   Int_t pdg = fMCparticle->GetPdgCode();
   Int_t ilabelM = -1;
   if(TMath::Abs(pdg)==11)FindMother(fMCparticle, ilabelM, pidM);
-           
+  if(TMath::Abs(pdg)==11 && flagWevt)FindMotherWboson(fMCparticle, ilabelM, pidM);
+ 
+  //cout << "Original = " << pidM << endl;          
+
   if(ilabelM>0)
     {
      //cout << ilabelM << " ; " << NpureMC << " ; " << NpureMCproc << " ; " << enhance  << endl;
@@ -1749,6 +1808,22 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
         if(MCinfo[1]==11.0 && (MCinfo[5]==1.0 || MCinfo[5]==2.0))fMCcheckHFdecay->Fill(1,fMCparticle->Pt());
 
  }
+
+//_____________________________________________________________________
+ void AliAnalysisTaskHFEemcQA::FindMotherWboson(AliAODMCParticle* part, Int_t &label, Int_t &pid)
+ {
+     // Find mother in case of MC
+
+     while(part->GetMother()>0)
+     {
+         label = part->GetMother();
+         //AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
+         part = (AliAODMCParticle*)fMCarray->At(label);
+         pid = part->GetPdgCode();
+         //cout << "mother pid = " << pid << " ; status "<<  part->GetStatus() << " ; " << label  << endl;
+     }
+ }
+
 
 //_______________________________________________________________________
 void AliAnalysisTaskHFEemcQA::GetRawTrackInfo(AliAODTrack* rtrack)

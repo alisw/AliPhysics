@@ -218,7 +218,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH2D *                  fHistTPCTracksVsClusters; //!
         TH2D *                  fHistVZeroPercentileTPCMult;//!
 
-        AliESDtrackCuts *       fESDTrackCuts; //
+        AliESDtrackCuts *       fESDTrackCuts; //!
         Bool_t                  fTestPions; // for testing MC trains
         Bool_t                  fMergingCutV0; // enable merrging cut based on V0 
         Bool_t                  fMergingCutDaughters; // enable merrging cut based on V0 daughters
@@ -226,7 +226,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 20);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 21);
 };
 
 class AliV0ChParticle : public AliVParticle
@@ -249,7 +249,7 @@ class AliV0ChParticle : public AliVParticle
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Short_t charge, Double_t pz, Double_t energ)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(0), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass,Double_t phi1, Double_t pt1,Double_t eta1, Double_t char1, Double_t phi2,Double_t pt2,Double_t eta2, Double_t char2)
@@ -327,7 +327,7 @@ class AliV0ChParticle : public AliVParticle
       Double_t fEta2; // eta of second daughter 
       Double_t fChar2; // charge of second daughter 
    
-      ClassDef( AliV0ChParticle, 5) // class required for correlatios calculation and event mixing
+      ClassDef( AliV0ChParticle, 6) // class required for correlatios calculation and event mixing
  };
 
 #endif

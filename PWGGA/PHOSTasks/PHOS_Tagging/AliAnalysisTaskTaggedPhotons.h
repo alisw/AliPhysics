@@ -32,6 +32,7 @@ public:
   enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta } ; 
   enum cutType{kDefCut, kLowECut} ;
   enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
+  enum trackSelections{kLHC13x,kFAST,kCENTwoSSD,kCENTwSSD} ;
     
   AliAnalysisTaskTaggedPhotons() ;
   AliAnalysisTaskTaggedPhotons(const char *name) ;
@@ -60,6 +61,7 @@ public:
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
   void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1){ fNonlinA=a; fNonlinB=b; fNonlinC=c;}
+  void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -137,6 +139,7 @@ private:
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis
   phosTriggerType fPHOSTrigger; // Kind of PHOS trigger: L0,L1
+  trackSelections fTrackSelection; 
   
   //
   TH2I * fPHOSBadMap[6] ;        //! 

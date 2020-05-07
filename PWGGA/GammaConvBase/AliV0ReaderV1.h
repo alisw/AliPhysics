@@ -123,7 +123,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               RelabelAODs(Bool_t relabel=kTRUE)                {fRelabelAODs=relabel; return;}
     Bool_t             AreAODsRelabeled()                               {return fRelabelAODs;}
     Int_t              IsReaderPerformingRelabeling()                   {return fPreviousV0ReaderPerformsAODRelabeling;}
-    void               RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
+    Bool_t             RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
+    Bool_t             GetErrorAODRelabeling()                          {return fErrorAODRelabeling;}
     void               SetPeriodName(TString name)                      {fPeriodName = name;
                                                                          AliInfo(Form("Set PeriodName to: %s",fPeriodName.Data()));
                                                                          return;}
@@ -210,6 +211,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TString        fDeltaAODFilename;             // set filename for delta/satellite aod
     Bool_t         fRelabelAODs;                  //
     Int_t          fPreviousV0ReaderPerformsAODRelabeling; // 0->not set, meaning V0Reader has not yet determined if it should do AODRelabeling, 1-> V0Reader perfomrs relabeling, 2-> previous V0Reader in list perfomrs relabeling
+    Bool_t         fErrorAODRelabeling;           // to remember if for the current event an error occured  while retrieving and relabeling of the gammas
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
     Int_t          fNumberOfTPCoutTracks;         // Number of TPC Tracks with TPCout flag
@@ -286,7 +288,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 22)
+    ClassDef(AliV0ReaderV1, 23)
 
 };
 

@@ -56,6 +56,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHypV0s.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
@@ -105,6 +106,7 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
+  Utils/NanoAOD/AliNanoSkimmingV0s.cxx  
   Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
@@ -114,11 +116,23 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHyperTriton3KF.cxx
+      Hypernuclei/Hyp3Body/AliAnalysisTaskHypertritonO2.cxx
+      Utils/O2vertexer/Primitive2D.cxx
+      Utils/O2vertexer/DCAFitterN.cxx
 	  )
 endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(HDRS
+	  ${HDRS}
+      Utils/O2vertexer/HelixHelper.h
+      Utils/O2vertexer/MathUtils.h
+      Utils/O2vertexer/Track.h
+	  )
+endif()
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

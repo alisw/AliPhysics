@@ -209,9 +209,11 @@ fIsEvRej(0),
 fIsEvRej_INT7(0),
 fIsEvRej_HighMultSPD(0),
 fIsEvRej_HighMultV0(0),
+fIsEvRej_EMCEJE(0),
 fIsEvSel_INT7(false),
 fIsEvSel_HighMultSPD(false),
 fIsEvSel_HighMultV0(false),
+fIsEvSel_EMCEJE(false),
 fRunNumber(0),
 fRunNumberCDB(0),
 fBC(0),
@@ -235,15 +237,24 @@ fTriggerMask(0),
 fTriggerOnlineINT7(false),
 fTriggerOnlineHighMultSPD(false),
 fTriggerOnlineHighMultV0(false),
+fTriggerOnlineEMCALEJ1(false),
+fTriggerOnlineEMCALEJ2(false),
+fTriggerOnlineDCALDJ1(false),
+fTriggerOnlineDCALDJ2(false),
 fTriggerBitINT7(false),
 fTriggerBitHighMultSPD(false),
 fTriggerBitHighMultV0(false),
 fTriggerBitCentral(false),
 fTriggerBitSemiCentral(false),
+fTriggerBitEMCEJE(false),
 fTriggerClasses(""),
 fTriggerClassINT7(false),
 fTriggerClassHighMultSPD(false),
 fTriggerClassHighMultV0m(false),
+fTriggerClassEMCALEJ1(false),
+fTriggerClassEMCALEJ2(false),
+fTriggerClassDCALDJ1(false),
+fTriggerClassDCALDJ2(false),
 fnV0M(0),
 fnV0MEq(0),
 fnV0MCorr(0),
@@ -609,6 +620,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_rej_INT7", &fIsEvRej_INT7);
   fTreeEvChar->Branch("is_ev_rej_HighMultSPD", &fIsEvRej_HighMultSPD);
   fTreeEvChar->Branch("is_ev_rej_HighMultV0", &fIsEvRej_HighMultV0);
+  fTreeEvChar->Branch("is_ev_rej_EMCEJE", &fIsEvRej_EMCEJE);
   fTreeEvChar->Branch("run_number", &fRunNumber);
   fTreeEvChar->Branch("ev_id", &fEventID);
   fTreeEvChar->Branch("ev_id_ext", &fEventIDExt);
@@ -619,15 +631,24 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("trigger_online_INT7", &fTriggerOnlineINT7);
   fTreeEvChar->Branch("trigger_online_HighMultSPD", &fTriggerOnlineHighMultSPD);
   fTreeEvChar->Branch("trigger_online_HighMultV0", &fTriggerOnlineHighMultV0);
+  fTreeEvChar->Branch("trigger_online_EMCALEJ1", &fTriggerOnlineEMCALEJ1);
+  fTreeEvChar->Branch("trigger_online_EMCALEJ2", &fTriggerOnlineEMCALEJ2);
+  fTreeEvChar->Branch("trigger_online_DCALDJ1", &fTriggerOnlineDCALDJ1);
+  fTreeEvChar->Branch("trigger_online_DCALDJ2", &fTriggerOnlineDCALDJ2);
   fTreeEvChar->Branch("trigger_hasbit_INT7", &fTriggerBitINT7);
   fTreeEvChar->Branch("trigger_hasbit_HighMultSPD", &fTriggerBitHighMultSPD);
   fTreeEvChar->Branch("trigger_hasbit_HighMultV0", &fTriggerBitHighMultV0);
   fTreeEvChar->Branch("trigger_hasbit_Central", &fTriggerBitCentral);
   fTreeEvChar->Branch("trigger_hasbit_SemiCentral", &fTriggerBitSemiCentral);
+  fTreeEvChar->Branch("trigger_hasbit_EMCEJE", &fTriggerBitEMCEJE);
   fTreeEvChar->Branch("trigger_classes", &fTriggerClasses);
   fTreeEvChar->Branch("trigger_hasclass_INT7", &fTriggerClassINT7);
   fTreeEvChar->Branch("trigger_hasclass_HighMultSPD", &fTriggerClassHighMultSPD);
   fTreeEvChar->Branch("trigger_hasclass_HighMultV0", &fTriggerClassHighMultV0m);
+  fTreeEvChar->Branch("trigger_hasclass_EMCALEJ1", &fTriggerClassEMCALEJ1);
+  fTreeEvChar->Branch("trigger_hasclass_EMCALEJ2", &fTriggerClassEMCALEJ2);
+  fTreeEvChar->Branch("trigger_hasclass_DCALDJ1", &fTriggerClassDCALDJ1);
+  fTreeEvChar->Branch("trigger_hasclass_DCALDJ2", &fTriggerClassDCALDJ2);
   fTreeEvChar->Branch("z_vtx_gen", &fzVtxGen);
   fTreeEvChar->Branch("n_tracklets_corr", &fnTrackletsCorr);
   fTreeEvChar->Branch("n_tracklets_corr_shm", &fnTrackletsCorrSHM);
@@ -643,6 +664,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_sel_int7", &fIsEvSel_INT7);
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
+  fTreeEvChar->Branch("is_ev_sel_EMCEJE", &fIsEvSel_EMCEJE);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1388,6 +1410,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fIsEvSel_HighMultV0 = fEvSelectionCuts->IsEventSelected(aod);
   fIsEvRej_HighMultV0 = fEvSelectionCuts->GetEventRejectionBitMap();
     
+  fEvSelectionCuts->SetTriggerMask(AliVEvent::kEMCEJE);
+  fIsEvSel_EMCEJE = fEvSelectionCuts->IsEventSelected(aod);
+  fIsEvRej_EMCEJE = fEvSelectionCuts->GetEventRejectionBitMap();
+
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
   //V0 multiplicities
@@ -1432,11 +1458,16 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fTriggerBitHighMultV0 = static_cast<bool>(fTriggerMask & AliVEvent::kHighMultV0);
   fTriggerBitCentral = static_cast<bool>(fTriggerMask & AliVEvent::kCentral);
   fTriggerBitSemiCentral = static_cast<bool>(fTriggerMask & AliVEvent::kSemiCentral);
+  fTriggerBitEMCEJE = static_cast<bool>(fTriggerMask & AliVEvent::kEMCEJE);
   
   fTriggerClasses = aod->GetFiredTriggerClasses();
   fTriggerClassINT7 = fTriggerClasses.Contains("CINT7-B");
   fTriggerClassHighMultSPD = fTriggerClasses.Contains("CVHMSH2-B");
   fTriggerClassHighMultV0m = fTriggerClasses.Contains("CVHMV0M-B");
+  fTriggerClassEMCALEJ1 = fTriggerClasses.Contains("EJ1");
+  fTriggerClassEMCALEJ2 = fTriggerClasses.Contains("EJ2");
+  fTriggerClassDCALDJ1 = fTriggerClasses.Contains("DJ1");
+  fTriggerClassDCALDJ2 = fTriggerClasses.Contains("DJ2");
   
   // bits for CTP inputs
   if (fRunNumberCDB != fRunNumber) {
@@ -1452,12 +1483,21 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   const auto inputV0M = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0VHM")) : nullptr;
   const auto inputV0A = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0V0A")) : nullptr;
   const auto inputV0C = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("0V0C")) : nullptr;
+  const auto inputEMCALEJ1 = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("1EJ1")) : nullptr;
+  const auto inputEMCALEJ2 = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("1EJ2")) : nullptr;
+  const auto inputDCALDJ1 = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("1DJ1")) : nullptr;
+  const auto inputDCALDJ2 = trgCfg ? static_cast<AliTriggerInput*>(inputs.FindObject("1DJ2")) : nullptr;
   const auto triggerBits = aod->GetHeader()->GetL0TriggerInputs();
   fTriggerOnlineHighMultSPD = inputSHM ? TESTBIT(triggerBits, inputSHM->GetIndexCTP() - 1) : -1;
   fTriggerOnlineHighMultV0 = inputV0M ? TESTBIT(triggerBits, inputV0M->GetIndexCTP() - 1) : -1;
   fTriggerOnlineINT7 = (inputV0C && inputV0A) ?
                        (TESTBIT(triggerBits, inputV0C->GetIndexCTP() - 1) &&
                         TESTBIT(triggerBits, inputV0A->GetIndexCTP() - 1)) : -1;
+
+  fTriggerOnlineEMCALEJ1 = inputEMCALEJ1 ? TESTBIT(triggerBits, inputEMCALEJ1->GetIndexCTP() - 1) : -1;
+  fTriggerOnlineEMCALEJ2 = inputEMCALEJ2 ? TESTBIT(triggerBits, inputEMCALEJ2->GetIndexCTP() - 1) : -1;
+  fTriggerOnlineDCALDJ1 = inputDCALDJ1 ? TESTBIT(triggerBits, inputDCALDJ1->GetIndexCTP() - 1) : -1;
+  fTriggerOnlineDCALDJ2 = inputDCALDJ2 ? TESTBIT(triggerBits, inputDCALDJ2->GetIndexCTP() - 1) : -1;
   
   fTreeEvChar->Fill(); 
   //get PID response

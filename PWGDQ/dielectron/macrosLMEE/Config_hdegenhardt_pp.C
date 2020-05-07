@@ -1,28 +1,30 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 TVectorD *GetVector(Int_t var);
 
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupPairCuts (AliDielectron *die, Int_t cutDefinition);
+void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition, Double_t ptMin, Bool_t reqTPCnTOF);
+void SetupPairCuts(AliDielectron *die, Int_t cutDefinition);
 void SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 void SetTOFSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 const AliDielectronEventCuts *GetEventCutsMinBias();
 
-TString names=("pt200_TPCTOFcombITSshared");//,TPCtight,TPCloose,TOFtight,TOFloose,track1,track2,track3,track4,track5,track6,track7,track8,track9,track10,track11,track12,track13,track14,track15,track16,track17,track18,track19,track20");
-TObjArray *arrNames=names.Tokenize(",");
-const Int_t nDie=arrNames->GetEntriesFast();
+//TString names = ("pt200_TPCTOFcombITSshared");
+TString names = ("pt200_TPCTOFcombITSshared,TPCtight,TPCloose,TOFtight,TOFloose,track1,track2,track3,track4,track5,track6,track7,track8,track9,track10,track11,track12,track13,track14,track15,track16,track17,track18,track19,track20");
 
-enum {kPhiV = 0, kPt3D, kEta3D, kPhi3D, kMee, kMeeLinear, kMeeLinear2, kMeeForDCAee, kPhiVRebinned, kP2D, kPtee3D, kMee3D, kPairDCAsig, kPairDCA, kDeltaPhiLin, kDeltaEtaLin};
-
-Bool_t kPairing  = 0;
-Bool_t kMixing   = 0; // kPairing has a higher priority
-Bool_t kPairCuts = 0;
-Bool_t kTPCCorr  = 0;
-Bool_t kTOFCorr  = 0;
-Bool_t copyCorr  = 1; // kTRUE to download the correction maps
+TObjArray *arrNames = names.Tokenize(",");
+const Int_t nDie = arrNames->GetEntriesFast();
 
 Bool_t hasMC;
 
-AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFALSE, char *period = "16d")
+enum {kPhiV = 0, kPt3D, kEta3D, kPhi3D, kMee, kMeeLinear, kMeeLinear2, kMeeForDCAee, kPhiVRebinned, kP2D, kPtee3D, kMee3D, kPairDCAsig, kPairDCA, kDeltaPhiLin, kDeltaEtaLin};
+
+Bool_t kPairing  = 1;
+Bool_t kMixing   = 1; // kPairing has a higher priority
+Bool_t kPairCuts = 0;
+Bool_t kTPCCorr  = 1;
+Bool_t kTOFCorr  = 1;
+Bool_t copyCorr  = 1; // kTRUE to download the TPC & TOF correction maps
+
+AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFALSE, char *period = "16d", Double_t ptMin = 0.2, Bool_t sysUnc = kFALSE, Bool_t reqTPCnTOF = kFALSE)
 {
     //
     // Setup the instance of AliDielectron
@@ -42,7 +44,7 @@ AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFAL
 
     //=== cut setup ===================================================
     //--- track cuts
-    SetupTrackCuts(die, cutDefinition);
+    SetupTrackCuts(die, cutDefinition, ptMin, reqTPCnTOF);
     //--- pair cuts
     if (kPairCuts) SetupPairCuts(die, cutDefinition);
 
@@ -65,7 +67,7 @@ AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFAL
 
     }
 
-    InitHistograms(die, cutDefinition);
+    InitHistograms(die, cutDefinition, sysUnc);
     //  InitCF(die,cutDefinition);
 
     //=== Kalman Filter ===============================================
@@ -78,7 +80,7 @@ AliDielectron* Config_hdegenhardt_pp(Int_t cutDefinition, Bool_t kMinBias = kFAL
 }
 
 //______________________________________________________________________________________
-void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
+void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition, Double_t ptMin, Bool_t reqTPCnTOF)
 {
     //
     // Setup the track cuts
@@ -122,10 +124,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     // for AOD analysis, one can cut on the DielectronVarManager variables directly
     AliDielectronVarCuts *etaRange08 = new AliDielectronVarCuts("etaRange08","etaRange08");
     etaRange08->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-    AliDielectronVarCuts *ptRange04to100 = new AliDielectronVarCuts("ptRange04to100","ptRange04to100");
-    ptRange04to100->AddCut(AliDielectronVarManager::kPt, 0.4, 100.0);
-    //AliDielectronVarCuts *ptRange02to100 = new AliDielectronVarCuts("ptRange02to100","ptRange02to100");
-    //ptRange02to100->AddCut(AliDielectronVarManager::kPt, 0.2, 100.0);
+    AliDielectronVarCuts *ptRangeMinTo100 = new AliDielectronVarCuts("ptRangeMinTo100","ptRangeMinTo100");
+    ptRangeMinTo100->AddCut(AliDielectronVarManager::kPt, ptMin, 100.0);
 
     AliDielectronVarCuts* trackCutsAOD = new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
 
@@ -134,8 +134,6 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, nFclsTPCfCross,   1.5);
     trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,   0.0,   nClsSFracTPC);
     trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0,   chi2TPC);
-    //kNFclsTPCr: number of findable clusters(crossed rows) in the TPC with more robust definition
-    //kNFclsTPCfCross: fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
 
     trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,   nClusITS, 100.0);
     trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl, 0.0, chi2ITS);
@@ -145,7 +143,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,   -1*impactParZ, impactParZ);
 
     cuts->AddCut(etaRange08);
-    cuts->AddCut(ptRange04to100);
+    cuts->AddCut(ptRangeMinTo100);
     cuts->AddCut(trackCutsAOD);
 
     Double_t TPCv = 0.;
@@ -189,8 +187,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     combinedPIDcuts->AddCut(pidTPCTOFreq);
     combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
 
-    die->GetTrackFilter().AddCuts(combinedPIDcuts);
-    //die->GetTrackFilter().AddCuts(pidTPCTOFreq);
+	if (reqTPCnTOF) die->GetTrackFilter().AddCuts(pidTPCTOFreq);
+    else die->GetTrackFilter().AddCuts(combinedPIDcuts);
     //die->GetTrackFilter().AddCuts(pidTPCHadRejTOFif);
     
     printf("Track cuts: %.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%c\n",impactParXY,impactParZ,nClusITS,chi2ITS,nClusTPC,nFclsTPCr,nFclsTPCfCross,nClsSFracTPC,chi2TPC,trackCutsVar[cutDefinition][8]);
@@ -215,7 +213,7 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
 
 
 //______________________________________________________________________________________
-void InitHistograms(AliDielectron *die, Int_t cutDefinition)
+void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t sysUnc)
 {
 
     //=== Setup histogram Manager =====================================
@@ -254,7 +252,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     }
 
     //=== add histograms to event class ===============================
-	if (nDie == 1){
+	if (!sysUnc){
 		histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0.,1.,AliDielectronVarManager::kNevents);
 		histos->UserHistogram("Event","VtxZ","Vertex Z;Vertex Z [cm];N of events",300,-15.,15.,AliDielectronVarManager::kZvPrim);
 
@@ -278,6 +276,14 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Track","dXY","dXY;DCA_{xy} (cm);N of tracks", 200,-2.,2.,AliDielectronVarManager::kImpactParXY);
     histos->UserHistogram("Track","dZ","dZ;DCA_{z} (cm);N of tracks",  400,-4.,4.,AliDielectronVarManager::kImpactParZ);
     histos->UserHistogram("Track","dXY_dZ","dXY dZ Map;DCA_{xy} (cm);DCA_{z} (cm)", 150,-1.5.,1.5.,400,-4.,4.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
+	if (!sysUnc){
+		histos->UserHistogram("Track","Pt_dcaXYres0","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.4,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres1","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.04,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+		histos->UserHistogram("Track","Pt_dcaXYres2","Pt dXYres Map;#it{p}_{T} (GeV/#it{c}); DCA_{xy}^{res} (cm)",150,0.,15.,1000,0.,0.004,AliDielectronVarManager::kPt,AliDielectronVarManager::kImpactParXYres);
+
+		histos->UserHistogram("Track","Pt_dXY_phi","#phi vs DCA and Pt;#phi;DCA_{xy}^{e} (cm);#it{p}_{T} (GeV/#it{c}))",72, 0., TMath::TwoPi(), 200, -2., 2., 100, 0., 10., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY, AliDielectronVarManager::kPt);
+		histos->UserHistogram("Track","dXY_phi","DCA vs #phi;#phi;DCA_{xy}^{e} (cm)",72, 0., TMath::TwoPi(), 800, -2., 2., AliDielectronVarManager::kPhi, AliDielectronVarManager::kImpactParXY);
+	}
 
     //--- track checks (TPC) ---------------------------------------------
     histos->UserHistogram("Track","TPCcrossedRowsOverFindable","Number of Crossed Rows TPC over Findable;Ratio TPC crossed rows over findable;N of tracks",150,0.,1.5,AliDielectronVarManager::kNFclsTPCfCross);
@@ -290,7 +296,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Track","ITSnCls","Number of Clusters ITS;N of ITS clusters;N of tracks",10,-0.5,9.5,AliDielectronVarManager::kNclsITS);
     histos->UserHistogram("Track","ITSchi2","ITS Chi2 value;ITS #chi^{2}/N of ITS clusters;N of tracks",100,0.,10.,AliDielectronVarManager::kITSchi2Cl);
     histos->UserHistogram("Track","ITSSharedClusters","N of ITS shared clusters;N of shared clusters ITS;N of tracks",20,-10.,10.,AliDielectronVarManager::kNclsSITS);
-	if (nDie == 1){
+	if (!sysUnc){
 		//--- PID information ---------------------------------------------
 		//-----------------------------------------------------------------
 		//--- ITS ---------------------------------------------------------
@@ -324,7 +330,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     //=== add histograms to Pair classes ==============================
 
     if (kPairing){
-		if (nDie == 1){
+		if (!sysUnc){
 				histos->UserHistogram("Pair","InvMass","Inv.Mass;#it{m}_{ee} (GeV/#it{c}^{2});N of pairs", 400,0.,4.,AliDielectronVarManager::kM);
 				histos->UserHistogram("Pair","PairPt","PairPt;Pair #it{p}_{T} (GeV/#it{c});N of pairs", 160,0.,8.,AliDielectronVarManager::kPt);
 				histos->UserHistogram("Pair","OpeningAngle","Opening angle;Opening angle;n of pairs", 180,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
@@ -338,7 +344,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
         // mass 10 MeV, pT 1 GeV
 		histos->UserHistogram("Pair","InvMass_PtRebinned_deltaPhi","InvMass:Pt:DeltaPhi;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});#delta#varphi",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kDeltaPhi);
 		histos->UserHistogram("Pair","InvMass_PtRebinned_dca","InvMass:Pt:DCA;#it{m}_{ee} (GeV/#it{c}^{2});Pair #it{p}_{T} (GeV/#it{c});DCA_{ee} (#sigma_{xy})",GetVector(kMeeLinear2),GetVector(kPtee3D),GetVector(kDeltaPhiLin),AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
-		if (nDie == 1){
+		if (!sysUnc){
 				// --- mass vs pT vs deltaPhi vs deltaEta ----------------------------------------------------------
 				// 4D THnSparse
 				const int nDim = 4;
@@ -424,14 +430,6 @@ void SetNSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, 
 
     TH2F* histMean2D;
     TH2F* histWidth2D;
-    if (isTPC){
-      histMean2D = new TH2F("histMean2D","histMean2D", 13, 0.2, 1.5, 16, -0.8, 0.8);
-      histWidth2D = new TH2F("histWidth2D","histWidth2D", 13, 0.2, 1.5, 16, -0.8, 0.8);
-    }
-    else{
-      histMean2D = new TH2F("histMean2DTOF","histMean2DTOF", 11, 0.4, 1.5, 16, -0.8, 0.8);
-      histWidth2D = new TH2F("histWidth2DTOF","histWidth2DTOF", 11, 0.4, 1.5, 16, -0.8, 0.8);
-    }
 
     if (!GetCorrectionsHisto(&histMean2D, &histWidth2D, period, isTPC)){
         printf("#  File with corrections could not be accessed!\n");
@@ -447,12 +445,7 @@ void SetNSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, 
       die->SetCentroidCorrFunctionTOF(histMean2D, corrXdim, corrYdim);
       die->SetWidthCorrFunctionTOF(histWidth2D, corrXdim, corrYdim);
     }
-    if (test){
-      printf("mean: ");
-      print(histMean2D);
-      printf("width: ");
-      print(histWidth2D);
-    }
+    
     printf(">> %s PID eta correction loaded!\n", isTPC?"TPC":"TOF");
 }
 
@@ -476,17 +469,18 @@ Bool_t GetCorrectionsHisto(TH2F **mean, TH2F **width, char *period, Bool_t isTPC
 	char rootFile[100];
     sprintf(rootFile,"alien://alice/cern.ch/user/h/hfranzde/TPCnTOFcor/calMaps1%c.root",period[1]);
     
-    if (copyCorr){
-		TGrid::Connect("alien://");
-		gSystem->Exec(Form("alien_cp %s .",rootFile))
-	}
-	
     TFile *f;
     char fileName[100];
     sprintf(fileName,"calMaps1%c.root",period[1]);
-  	f = TFile::Open(fileName);
-  	if (!f) return kFALSE;
-
+    f = TFile::Open(fileName);
+  	
+    if (copyCorr && !f){
+		TGrid::Connect("alien://");
+		gSystem->Exec(Form("alien_cp %s .",rootFile));
+		f = TFile::Open(fileName);
+		if (!f) return kFALSE;
+	}
+	
   	char *p = GetCorPeriodMap(period);
 
   	char hNameM[100]; //Mean histo name
@@ -511,40 +505,29 @@ Bool_t GetCorrectionsHisto(TH2F **mean, TH2F **width, char *period, Bool_t isTPC
 
     *mean = m->Clone();
     *width = w->Clone();
-    //print(*mean);
-    //print(*width);
+    
     return kTRUE;
 }
 
-void print(TH2F *histo){
-  Int_t nBinsX = histo->GetNbinsX();
-  Int_t nBinsY = histo->GetNbinsY();
-  const int tam = nBinsX*nBinsY;
-  Float_t vector[tam];
-
-  printf("{");
-  for (int binX = 1; binX <= nBinsX; binX++){
-    for (int binY = 1; binY <= nBinsY; binY++){
-      vector[(binY-1)+nBinsY*(binX-1)] = histo->GetBinContent(binX,binY);
-      if (binX == nBinsX && binY == nBinsY) printf(" %f", histo->GetBinContent(binX,binY));
-      else printf(" %f,", histo->GetBinContent(binX,binY));
-    }
-  }
-  printf("};\n\n");
-
-  histo->DrawCopy("colz");
-}
-
-char *GetCorPeriodMap(char *p){ //If low stat period, use the maps for all periods in the year
-		 if (p == "16d") return "16ALL";
-	else if (p == "16g") return "16ALL";
-	else if (p == "16i") return "16ALL";
-	else if (p == "16p") return "16ALL";
-	else if (p == "17c") return "17ALL";
-	else if (p == "17e") return "17ALL";
-	else if (p == "17f") return "17ALL";
-	else if (p == "17j") return "17ALL";
-	else if (p == "17r") return "17ALL";
+char *GetCorPeriodMap(char *p){ //If low stat period, use the maps for all periods
+		 if (p[1] == '6') return "16ALL";
+	else if (p[1] == '7') return "17ALL";
+	else if (p == "18spl")   return "18ALLsplines";
+	else if (p == "18noSpl") return "18ALLnoSplines";
+	else if (p == "18b") return "18b";
+	else if (p == "18d") return "18d";
+	else if (p == "18e") return "18e";
+	else if (p == "18f") return "18f";
+	else if (p == "18h") return "18h";
+	else if (p == "18j") return "18j";
+	else if (p == "18l") return "18l";
+	else if (p == "18g") return "18g";
+	else if (p == "18i") return "18i";
+	else if (p == "18k") return "18k";
+	else if (p == "18m") return "18m";
+	else if (p == "18n") return "18n";
+	else if (p == "18o") return "18o";
+	else if (p == "18p") return "18p";
 	else return p;
 }
 

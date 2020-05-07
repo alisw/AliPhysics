@@ -131,6 +131,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // Sc peak studies in MC
   void SetStudyScPeakMC(Bool_t flag)  {fStudyScPeakMC=flag;}
 
+  // Change the min pT for the soft pion
+  void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -338,8 +341,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fStudyScPeakMC;
   THnSparseF* fhsparseMC_ScPeak; //!
 
+  // double to change the min pT for the soft pion
+  Double_t fMinPtSoftPion;  // !
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,11); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,12); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

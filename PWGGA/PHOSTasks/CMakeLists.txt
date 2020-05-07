@@ -142,6 +142,7 @@ set(SRCS
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
     PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
+    PHOS_Tagging/AliAnalysisPhotonDDA.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
     UserTasks/AliCaloClusterInfo.cxx

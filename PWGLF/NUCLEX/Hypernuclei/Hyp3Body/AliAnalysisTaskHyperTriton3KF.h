@@ -36,8 +36,8 @@ struct REvent3KF
 };
 
 struct SHyperTriton3KF {
-  float px = -999.f;
-  float py = -999.f;
+  float pt = -999.f;
+  float phi = -999.f;
   float pz = -999.f;
   float l = -1.f;
   float t = -1.f;
@@ -46,8 +46,8 @@ struct SHyperTriton3KF {
 
 
 struct RHyperTriton3KF {
-  float px = -999.f;
-  float py = -999.f;
+  float pt = -999.f;
+  float phi = -999.f;
   float pz = -999.f;
   float l = -1.f;
   float r = -1.f;
@@ -56,18 +56,18 @@ struct RHyperTriton3KF {
   float chi2_topology = -1.f;
   float cosPA = -1.f;
   float m = -1;
-  Double32_t dca_de = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pr = 2.0; //[0.0,2.0,8]
-  Double32_t dca_pi = 2.0; //[0.0,2.0,8]
+  Double32_t dca_de = 2.0; //[0.0,4.0,8]
+  Double32_t dca_pr = 2.0; //[0.0,4.0,8]
+  Double32_t dca_pi = 2.0; //[0.0,4.0,8]
   Double32_t tpcNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tpcNsig_pi = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_de = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pr = -4.0; //[-4.0,4.0,8]
   Double32_t tofNsig_pi = -4.0; //[-4.0,4.0,8]
-  Double32_t dca_de_pr = -4.0; //[0.0,2.0,8]
-  Double32_t dca_de_pi = -4.0; //[0.0,2.0,8]
-  Double32_t dca_pr_pi = -4.0; //[0.0,2.0,8]
+  Double32_t dca_de_pr = -4.0; //[0.0,4.0,8]
+  Double32_t dca_de_pi = -4.0; //[0.0,4.0,8]
+  Double32_t dca_pr_pi = -4.0; //[0.0,4.0,8]
   bool hasTOF_de;
   bool hasTOF_pr;
   bool hasTOF_pi;
@@ -103,18 +103,17 @@ public:
 
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
   bool  fSwapSign = false;
-  float fMassWindow[2] = {2.9f, 3.15f};
-  bool  fRequireTOFpid[3] = {false,false,false};
+  float fMassWindow[2] = {2.94f, 3.06f};
+  float  fRequireTOFpid[3] = {10.,10.,10.}; /// momentum after which the TOF matching is required
   int   fMinTPCpidClusters[3] = {70, 70, 70};
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
-  float fTOFsigmas[3] = {5.f, 5.f, 5.f};
-  float fCandidateCtRange[2] = {0.f, 40.f};
-  float fCandidatePtRange[2] = {0.f, 10.f};
+  float fTOFsigmas[3] = {4.f, 4.f, 4.f};
+  float fCandidateCtRange[2] = {0.f, 35.f};
+  float fCandidatePtRange[2] = {1.f, 9.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
   float fMinCosPA = 0.9;
   bool  fUseAbsCosPAcut = true;
-  float fCtRange[2] = {0.,45.};
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   bool  fOnlyTrueCandidates = false;
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
@@ -155,6 +154,9 @@ private:
   REvent3KF                    fREvent;
   std::vector<SHyperTriton3KF> fGenHyp;
   std::vector<int>             fGenRecMap;
+  std::vector<float>           fGenRecDeutMom;
+  std::vector<float>           fGenRecProtMom;
+  std::vector<float>           fGenRecPiMom;
   std::vector<RHyperTriton3KF> fRecHyp;
 
   AliAnalysisTaskHyperTriton3KF(const AliAnalysisTaskHyperTriton3KF &);               // not implemented

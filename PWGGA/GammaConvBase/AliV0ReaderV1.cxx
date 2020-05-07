@@ -96,6 +96,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fDeltaAODFilename("AliAODGammaConversion.root"),
   fRelabelAODs(kFALSE),
   fPreviousV0ReaderPerformsAODRelabeling(0),
+  fErrorAODRelabeling(kFALSE),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
@@ -677,8 +678,8 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ProcessESDV0s();
   }
-  if(fInputEvent->IsA()==AliAODEvent::Class()){
-    GetAODConversionGammas();
+  if(fInputEvent->IsA()==AliAODEvent::Class() ){
+    fErrorAODRelabeling = !GetAODConversionGammas();
   }
 
   return kTRUE;
@@ -1243,39 +1244,48 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   AliAODEvent *fAODEvent=dynamic_cast<AliAODEvent*>(fInputEvent);
 
-  if(fAODEvent){
-
-    if(fConversionGammas == NULL){
-      fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
-    }
-    fConversionGammas->Delete();//Reset the TClonesArray
-
-    //Get Gammas from satellite AOD gamma branch
-
-    AliAODConversionPhoton *gamma=0x0;
-
-    TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-
-    if(!fInputGammas){
-      FindDeltaAODBranchName();
-      fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
-    if(!fInputGammas){AliError("No Gamma Satellites found");return kFALSE;}
-    // Apply Selection Cuts to Gammas and create local working copy
-    if(fInputGammas){
-      for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
-        gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
-        if(gamma){
-        if(fRelabelAODs)RelabelAODPhotonCandidates(gamma);
-        if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
-          new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
-        }
-      }
-    }
+  if(!fAODEvent){
+    AliFatal("fInputEvent was not a AliAODEvent but we are in an AOD function.");
+    return kFALSE;
   }
 
-  if(fConversionGammas->GetEntries()){return kTRUE;}
+  if(fConversionGammas == NULL){
+    fConversionGammas = new TClonesArray("AliAODConversionPhoton",100);
+  }
+  fConversionGammas->Delete();//Reset the TClonesArray
 
-  return kFALSE;
+  //Get Gammas from satellite AOD gamma branch
+
+  AliAODConversionPhoton *gamma=0x0;
+
+  TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
+
+  if(!fInputGammas){
+    FindDeltaAODBranchName();
+    fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
+  if(!fInputGammas){
+    AliError("No Gamma Satellites found");
+    return kFALSE;}
+
+  // Apply Selection Cuts to Gammas and create local working copy
+  Bool_t relabelingWorkedForAll = kTRUE;
+  for(Int_t i=0;i<fInputGammas->GetEntriesFast();i++){
+    gamma=dynamic_cast<AliAODConversionPhoton*>(fInputGammas->At(i));
+    if(!gamma){
+      AliError("Non AliAODConversionPhoton type entry in fInputGammas. This event will get rejected.");
+      return kFALSE;          
+    }
+    if(fRelabelAODs){
+      relabelingWorkedForAll &= RelabelAODPhotonCandidates(gamma);}
+    if(fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
+      new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliAODConversionPhoton(*gamma);}
+  }
+  if(!relabelingWorkedForAll){
+    AliError("For one or more photon candidate the AOD daughters could not be found. The labels of those were set to -999999 and the event will get rejected.");
+    return kFALSE;
+  }
+    
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -1295,9 +1305,9 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 }
 
 //________________________________________________________________________
-void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
+Bool_t AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
 
-  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
   else if(fPreviousV0ReaderPerformsAODRelabeling == 0){
     printf("Running AODs! Determine if V0Reader '%s' should perform relabeling\n",this->GetName());
     TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
@@ -1316,7 +1326,7 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
     }
     if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers before '%s', but none of them is relabeling!",this->GetName()));
 
-    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
     else{
       printf("This V0Reader '%s' is first to be processed: do relabel AODs by current reader!\n",this->GetName());
       fPreviousV0ReaderPerformsAODRelabeling = 1;
@@ -1348,21 +1358,20 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
       }
     }
     if(AODLabelNeg && AODLabelPos){
-      return;
-    }
-  }
-  if(!AODLabelPos || !AODLabelNeg){
-    AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i, setting all labels to -999999",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
-    if(!AODLabelNeg){
-      PhotonCandidate->SetMCLabelNegative(-999999);
-      PhotonCandidate->SetLabelNegative(-999999);
-    }
-    if(!AODLabelPos){
-      PhotonCandidate->SetMCLabelPositive(-999999);
-      PhotonCandidate->SetLabelPositive(-999999);
+      return kTRUE;
     }
   }
 
+  // if we get here at least one daughter could not be found
+  if(!AODLabelNeg){
+    PhotonCandidate->SetMCLabelNegative(-999999);
+    PhotonCandidate->SetLabelNegative(-999999);
+  }
+  if(!AODLabelPos){
+    PhotonCandidate->SetMCLabelPositive(-999999);
+    PhotonCandidate->SetLabelPositive(-999999);
+  }
+  return kFALSE;
 }
 
 //************************************************************************

@@ -98,7 +98,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   //Deafult constructor
   //no memory allocations
@@ -158,7 +159,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   // Constructor.
 
@@ -213,7 +215,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
-  fPHOSTrigger(kPHOSAny)  
+  fPHOSTrigger(kPHOSAny),
+  fTrackSelection(kLHC13x)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -360,14 +363,12 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   fNPID=4 ;  //Extend to 8 to look at PID cuts systematics
   
-  Int_t nPt=71;
-  Double_t ptBins[72]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.6,2.8, 
-                       3.,3.2,3.4,3.6,3.8, 4.0,4.5,4.8,5.,5.5, 5.6,6.0,6.4,6.5,7.0, 7.2,7.5,8.0,8.5,9.0, 9.5,10.,11.,12.,13., 14.,15.,16.,17.,18., 19.,20.,22.,24.,25.,26., 28.,30.,32., 35.,40.,45., 50.,55.,60.,65.,70.};
+  Int_t nPt=73;
+  Double_t ptBins[74]={0.,0.1,0.2,0.3,0.4, 0.5,0.6,0.7,0.8,0.9, 1.0,1.1,1.2,1.3,1.4, 1.5,1.6,1.7,1.8,1.9, 2.0,2.2,2.4,2.5,2.6, 
+                       2.8,3.,3.2,3.4,3.6, 3.8,4.0,4.5,4.8,5., 5.5,5.6,6.0,6.4,6.5, 7.0,7.2,7.5,8.0,8.5, 9.0,9.5,10.,11.,12., 13.,14.,15.,16.,17., 18.,19.,20.,22.,24., 25.,26.,28.,30.,32., 35.,40.,45.,50.,55., 60.,65.,70.,80.};
 
                      
                      
-                     //   const Int_t nPt=650 ;
-//   const Double_t ptMax=65. ;
   const Int_t nM=500 ;
   const Double_t mMax=1. ;
 
@@ -797,18 +798,28 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
     AliAODTrack *track = (AliAODTrack*)event->GetTrack(i) ;
-    if(!track->IsOn(AliVTrack::kITSpureSA))
-      continue ;
-    if(TMath::Abs(track->Eta())> 0.8)
-      continue ;
-    if(track->Pt() < 0.15 || track->Pt()>10.) continue ;
-    if(track->GetITSNcls()<4) continue ; 
-    if(track->GetITSchi2()> 36.*track->GetITSNcls()) continue ; 
-    float dr, dz;
-    track->GetImpactParameters(dr, dz);
-    // Check pointing to the primary vertex
-    if(TMath::Abs(dr) > 3.2) continue;
-    if(TMath::Abs(dz) > 2.4) continue;
+    if(fTrackSelection==kLHC13x){
+      if(!track->IsOn(AliVTrack::kITSpureSA))
+        continue ;
+      if(TMath::Abs(track->Eta())> 0.8)
+        continue ;
+      if(track->Pt() < 0.15 || track->Pt()>10.) continue ;
+      if(track->GetITSNcls()<4) continue ; 
+      if(track->GetITSchi2()> 36.*track->GetITSNcls()) continue ; 
+      float dr, dz;
+      track->GetImpactParameters(dr, dz);
+      // Check pointing to the primary vertex
+      if(TMath::Abs(dr) > 3.2) continue;
+      if(TMath::Abs(dz) > 2.4) continue;
+    }
+    if(fTrackSelection==kFAST || fTrackSelection ==kCENTwoSSD || fTrackSelection==kCENTwSSD){
+      UInt_t bit = 1 << 5;
+      if (!track->TestFilterBit(bit))
+         continue ;
+      if(TMath::Abs(track->Eta())> 0.8)
+        continue ;
+      if(track->Pt() < 0.15 || track->Pt()>10.) continue ;  
+    }
     
     if(trackMult>=fTrackEvent->GetSize())
 	fTrackEvent->Expand(2*trackMult) ;
@@ -2624,7 +2635,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
      fCentBin=0;
      while(fCentBin<fNCenBin && fCentrality>fCenBinEdges.At(fCentBin))
         fCentBin++ ;
-     if(fCentBin>=fNCenBin) fNCenBin=fNCenBin-1; 
+     if(fCentBin>=fNCenBin) fCentBin=fNCenBin-1; 
       
      if(fIsMB)
         fCentWeight=MBCentralityWeight(fCentrality); 
@@ -2636,7 +2647,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
   
   
   //In case of p-Pb data Run2  
-  if(fRunNumber >=265015 	 && fRunNumber <= 267161 ){ //LHC16qrst
+  if(fRunNumber >=265015 	 && fRunNumber <= 267166 ){ //LHC16qrst
     
     //Fill Centrality before vertex/pileup cuts
     AliMultSelection *multSelection = (AliMultSelection*) event -> FindListObject("MultSelection");
@@ -2856,4 +2867,100 @@ Double_t AliAnalysisTaskTaggedPhotons::TOFCutEff(Double_t x ){
   }
   //no other parameterizations so far
   return 1.; 
+}
+//___________________________________________________________________________
+double AliAnalysisTaskTaggedPhotons::CalculateSphericity(){
+  TMatrixD Si(2,2);
+  TMatrixD S(2,2);
+  Double_t p(0);
+
+  Int_t numberOfRecTracks = 0;
+  Int_t nTr = fInputEvent->GetNumberOfTracks() ;
+  for(Int_t iTracks = 0; iTracks<nTr; iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(fIsMB){
+        if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+        if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      }
+      else{
+        if(!curTrack->IsOn(AliVTrack::kITSpureSA)) continue ;
+        if(!curTrack->TestFilterBit(AliAODTrack::kTrkITSsa)) continue;
+        if(curTrack->GetITSNcls()<4) continue ;
+      }
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.5) continue;
+      numberOfRecTracks++;
+
+      Si(0,0)=pow(curTrack->Px(),2);
+      Si(0,1)=curTrack->Px()*curTrack->Py();
+      Si(1,0)=curTrack->Py()*curTrack->Px();
+      Si(1,1)=pow(curTrack->Py(),2);
+      S += (1./curTrack->Pt())*Si;
+      p += curTrack->Pt();
+  }
+  if(p==0 || numberOfRecTracks<3){
+      return -0.1;
+  }else{
+      TMatrixDEigen eg((1./p)*S); 
+      return (2*eg.GetEigenValues()(1,1))/(eg.GetEigenValues()(0,0)+eg.GetEigenValues()(1,1));
+  }
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskTaggedPhotons::CalculateSpherocity(){
+  const int minMulti=3;
+  const double minPt=0.15;
+  Int_t nTr = fInputEvent->GetNumberOfTracks() ;
+  if(nTr<minMulti) return -0.1;//if not enough tracks (1st check), return -0.1
+  int trackMulti=0;
+  
+  Double_t sumpt=0;
+  std::vector<Double_t> nx;
+  std::vector<Double_t> ny;
+  std::vector<Double_t> px;
+  std::vector<Double_t> py;
+  for(Int_t itrk=0;itrk<nTr;++itrk) {
+    AliAODTrack *track=(AliAODTrack*)fInputEvent->GetTrack(itrk);
+    if(!track) continue;
+
+    if(fIsMB){
+      if(track->GetID()<0) continue; // Avoid double counting of tracks
+        if(!track->IsHybridGlobalConstrainedGlobal()) continue;
+    }
+    else{
+      if(!track->IsOn(AliVTrack::kITSpureSA)) continue ;
+      if(track->GetITSNcls()<4) continue ;
+    }
+    if(TMath::Abs(track->Eta())>0.8) continue;
+//       if(!((AliAODTrack*)track)->TestFilterBit(fAODFilterBit)) continue; //Check filter bit
+//       //Manually check for ITS & TPC refit
+//       if((track->GetStatus()&AliVTrack::kITSrefit)!=AliVTrack::kITSrefit) continue;
+//       if((track->GetStatus()&AliVTrack::kTPCrefit)!=AliVTrack::kTPCrefit) continue;
+  
+    Double_t pt = track->Pt();
+    if(pt<minPt) continue;
+    sumpt+=pt;
+    Double_t phi = track->Phi();
+    nx.push_back(TMath::Cos(phi));
+    ny.push_back(TMath::Sin(phi));
+    px.push_back(pt*nx[trackMulti]);
+    py.push_back(pt*ny[trackMulti]);
+    ++trackMulti;
+  };
+  if(trackMulti<minMulti) {
+    return -0.1; //if not enought tracks
+  };
+  //Calculating spherocity now
+  Double_t retval=2; //Return value should be the minimal value in range 0..1, so 2 is a good starting point.
+  for(Int_t i=0; i<trackMulti; i++) {
+    Double_t num=0;
+    for(Int_t j=0;j<trackMulti;j++)
+      num+=TMath::Abs(ny[i]*px[j] -nx[i]*py[j]);
+    Double_t sFull = TMath::Power((num/sumpt),2);
+    if(sFull < retval)
+      retval = sFull;
+  }
+  if(retval>1) return -0.2; //If sph>1, something went wrong
+  retval=retval*TMath::Pi()*TMath::Pi()/4; //normalization
+  return retval;
+
 }

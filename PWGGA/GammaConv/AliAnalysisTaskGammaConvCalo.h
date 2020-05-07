@@ -194,6 +194,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fTrueGammaCandidatesConv;   // current list of true Conv photon candidates
     TList*                              fTrueGammaCandidatesCalo;   // current list of true Calo photon candidates
     TList*                              fMCGammaCandidates;     // current list of MC generated photon candidates
+    TClonesArray*                       fAODMCTrackArray;       // pointer to track array
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -597,7 +598,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 60);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 61);
 };
 
 #endif
