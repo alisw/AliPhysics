@@ -3,8 +3,11 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TChain.h"
-#include "AliPHOSTriggerUtils.h"
+#include "AliPHOSGeometry.h"
+#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
+#include <iostream>
 
+class AliPHOSTriggerUtils;
 using namespace std;
 
 class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
@@ -27,6 +30,7 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     void SetRunNumber(int run)                      { fRunNumber=run; fForceRun=kTRUE               ; }             //Use given run number, don't read from data
     void SetEventChosenByTrigger( Bool_t flag )     { fEventChosenByTrigger = flag                  ; }
     Bool_t GetEventChosenByTrigger()                { return fEventChosenByTrigger                  ; }
+    AliPHOSGeometry*  GetGeomPHOS()                 { return fGeomPHOS                              ; }
 
   private:
     AliCaloTriggerMimickHelper (const AliCaloTriggerMimickHelper&);             // not implemented
@@ -40,9 +44,14 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     // basic variables/objects
     Int_t                   fClusterType;                               //! EMCal(1), PHOS(2) or not running (0)
     Int_t                   fRunNumber;                                 // current run number
+    Int_t                   nModules;
+    Int_t                   fNMaxPHOSModules;
+    Int_t                   nMaxCellsPHOS;
+
 
     phosTriggerType         fPHOSTrigger;                               // Kind of PHOS trigger: L0,L1
     AliPHOSTriggerUtils *   fPHOSTrigUtils ;                            //! utils to analyze PHOS trigger
+    AliPHOSGeometry*        fGeomPHOS;                                  // pointer to PHOS geometry
 
     Bool_t                  fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
