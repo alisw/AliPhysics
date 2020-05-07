@@ -498,6 +498,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   fHistManager.CreateTH2("hSDUsedClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
   fHistManager.CreateTH2("hSDUsedClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistManager.CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  fHistManager.CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
   for (auto h : *fHistManager.GetListOfHistograms())
     fOutput->Add(h);
@@ -773,7 +774,10 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
           fHistManager.FillTH2("hQANnePtPart", partjet->Pt(), nnepart);
         }
         // Monitor jet pt relative to pt-hard of the event
-        if(fPtHard > 0.) fHistManager.FillTH1("hFracPtHardPart", partjet->Pt() / fPtHard);
+        if(fPtHard > 0.){
+          fHistManager.FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
+          fHistManager.FillTH1("hFracPtHardPart", partjet->Pt() / fPtHard);
+        } 
 
         if(fHasResponseMatrixRooUnfold){
           fHistManager.FillTH1("hZgPartLevel", pointZg[kIndSDPart], pointZg[kIndPtPart]);

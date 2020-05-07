@@ -174,6 +174,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 110, 0., 1.1);
   fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   fSampleSplitter = new TRandom;
@@ -368,6 +369,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     fHistos->FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
     fHistos->FillTH1("hFracPtHardPart", partjet->Pt()/fPtHard);
+    fHistos->FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
   }
 
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
