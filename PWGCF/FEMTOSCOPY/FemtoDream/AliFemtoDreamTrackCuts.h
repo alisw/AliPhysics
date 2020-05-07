@@ -260,6 +260,11 @@ class AliFemtoDreamTrackCuts {
       fMCHists->SetName(name.Data());
   }
   ;
+  void SetMultDCAPlots(int min, int max) {
+    MultDCAmin = min;
+    MultDCAmax = max;
+  }
+  ;
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDCuts(AliFemtoDreamTrack *Track);
@@ -325,8 +330,10 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITS;                // defaults to 3
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
+  float MultDCAmin;            //
+  float MultDCAmax;            // 
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,9)
+ClassDef(AliFemtoDreamTrackCuts,10)
   ;
 };
 

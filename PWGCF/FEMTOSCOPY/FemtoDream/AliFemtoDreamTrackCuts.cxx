@@ -69,6 +69,8 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITS(3.),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
+      MultDCAmin(27),          
+      MultDCAmax(55), 
       fRejectPions(false) {
 }
 
@@ -131,6 +133,8 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fNSigValueITS(cuts.fNSigValueITS),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
+      MultDCAmin(cuts.MultDCAmin),          
+      MultDCAmax(cuts.MultDCAmax),
       fRejectPions(cuts.fRejectPions) {
 }
 
@@ -196,6 +200,8 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fNSigValueITS = cuts.fNSigValueITS;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
+  this->MultDCAmin = cuts.MultDCAmin;
+  this->MultDCAmax = cuts.MultDCAmax;
   this->fRejectPions = cuts.fRejectPions;
   return *this;
 }
@@ -647,11 +653,13 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin, fpTmax);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM, fpTmin, fpTmax, 
+					MultDCAmin, MultDCAmax);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother,
-					      fpTmin, fpTmax);
+					      fpTmin, fpTmax, 
+					      MultDCAmin, MultDCAmax);
     }
     BookTrackCuts();
   } else {
