@@ -86,6 +86,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
+  fInputGammas(NULL),
   fConversionGammas(NULL),
   fUseImprovedVertex(kTRUE),
   fUseOwnXYZCalculation(kTRUE),
@@ -777,7 +778,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
-	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
+          if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -1258,8 +1259,8 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   AliAODConversionPhoton *gamma=0x0;
 
-  TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-
+  if(!fInputGammas) {
+    fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
   if(!fInputGammas){
     FindDeltaAODBranchName();
     fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
