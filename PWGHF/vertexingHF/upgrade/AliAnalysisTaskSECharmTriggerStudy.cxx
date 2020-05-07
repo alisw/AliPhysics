@@ -684,8 +684,8 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
                             Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             Bplus.SetProngIDs(2, id);
-
-                            FillBeauty3Prong(&Bplus, d, true);
+                            if(Bplus.CosPointingAngle() > 0.7) //minimal selection
+                                FillBeauty3Prong(&Bplus, d, true);
 
                             delete vertexBplus;
                             vertexBplus = nullptr;
@@ -859,7 +859,8 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             B.SetProngIDs(2, id);
 
-                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
+                            if(B.CosPointingAngle() > 0.7) //minimal selection to avoid memory issues
+                                FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
 
                             delete vertexB;
                             vertexB = nullptr;
