@@ -28,6 +28,7 @@ ClassImp(AliVertexerHyperTriton2Body)
       fMaxPtV0(1000),
       fMinXforXYtest(-3.0),
       fV0VertexerSels{},
+      fMassRange{2.9,3.1},
       fMagneticField{0.},
       fPrimaryVertexX{0.},
       fPrimaryVertexY{0.},
@@ -189,7 +190,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         negVector.SetCoordinates(negCharge * negMom[0], negCharge * negMom[1], negCharge * negMom[2], negMass);
         hyperVector = posVector + negVector;
 
-        if (hyperVector.M() < 2.9 || hyperVector.M() > 3.2)  //selection on hypertriton invariant mass
+        if (hyperVector.M() < fMassRange[0] || hyperVector.M() > fMassRange[1])  //selection on hypertriton invariant mass
             return;
 
         Double_t momV0[3] = {hyperVector.Px(), hyperVector.Py(), hyperVector.Pz()};
