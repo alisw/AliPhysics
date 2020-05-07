@@ -237,6 +237,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
     fPtGenDaughter[i] = -1;
     fPtDaughter[i] = -1;
     fSignDaughter[i] = 0;
+    fPdgDaughter[i] = -1;
     }
   for(Int_t i = 0; i<3;  i++)fTriggerClass[i] = kFALSE;
   DefineOutput(1, TList::Class());
@@ -294,10 +295,10 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   
   fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   fTreeJPsi ->Branch("fPt", &fPt, "fPt/F");
-  //fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
+  fTreeJPsi ->Branch("fPtDaughter", &fPtDaughter[0], "fPtDaughter[2]/F");
   //fTreeJPsi ->Branch("fVectDaughter0", &fVectDaughter[0]);
   //fTreeJPsi ->Branch("fVectDaughter1", &fVectDaughter[1]);
-  //fTreeJPsi ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
+  fTreeJPsi ->Branch("fSignDaughter", &fSignDaughter[0], "fSignDaughter[2]/I");
   fTreeJPsi ->Branch("fY", &fY, "fY/F");
   fTreeJPsi ->Branch("fM", &fM, "fM/F");
   fTreeJPsi ->Branch("fPhi", &fPhi, "fPhi/F");
@@ -321,11 +322,12 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   //fTreeJPsi ->Branch("fTrackLenght", &fTrackLenght[0],"fTrackLenght[6]/F");
   //fTreeJPsi ->Branch("fTrackPhiPos", &fTrackPhiPos[0],"fTrackPhiPos[2]/F");
   if(isMC){
-	//fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
-	//fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
+	fTreeJPsi ->Branch("fPtGen", &fPtGen, "fPtGen/F");
+	fTreeJPsi ->Branch("fPtGenDaughter", &fPtGenDaughter[0], "fPtGenDaughter[2]/F");
+	fTreeJPsi ->Branch("fPdgDaughter", &fPdgDaughter[0], "fPdgDaughter[2]/I");
 	fTreeJPsi ->Branch("fYGen", &fYGen, "fYGen/F");
 	fTreeJPsi ->Branch("fMGen", &fMGen, "fMGen/F");
-	//fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
+	fTreeJPsi ->Branch("fPhiGen", &fPhiGen, "fPhiGen/F");
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O",NTRIGGERINPUTS));
 	}
   fOutputList->Add(fTreeJPsi);
@@ -384,7 +386,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeMatch ->Branch("fTriggerClass", &fTriggerClass[0],"fTriggerClass[3]/O");
   fTreeMatch ->Branch("fClosestIR1", &fClosestIR1, "fClosestIR1/S");
   fTreeMatch ->Branch("fClosestIR2", &fClosestIR2, "fClosestIR2/S");
-  fOutputList->Add(fTreeMatch);
+  //fOutputList->Add(fTreeMatch);
 
    
   hTPCPIDMuonCorr = new TH2D("hTPCPIDMuonCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
@@ -803,6 +805,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
           AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
 	  
           fPtGenDaughter[iTrack] = mcPart->Pt();
+	  fPdgDaughter[iTrack] = mcPart->PdgCode();
           TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
           vLabelPart.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
           vMC += vLabelPart;
@@ -916,7 +919,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  }
   }
   
-  //
   if(isESD){
   
   TBits fIR1Map = fEvent->GetHeader()->GetIRInt1InteractionMap();
