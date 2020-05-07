@@ -87,6 +87,9 @@ private:
 	// Double_t fMuPhi2;
 	// Double_t fMuQ1; 
 	// Double_t fMuQ2;
+	Int_t fCMUP6Decision;
+	Int_t fCMUP10Decision;
+	Int_t fCMUP11Decision;
 
 	TClonesArray *fGenPart; 	//! MC particle object
 	TTree *fGenTree; 			//! MC tree
@@ -104,11 +107,12 @@ private:
 	// Double_t fMCMuPDG1; 
 	// Double_t fMCMuPDG2;
 
-	// TTree *fTrgTree; 			//! trigger info tree
-	// Int_t fTrgRunNum;
-	Int_t fCMUP6Decision;
-	Int_t fCMUP10Decision;
-	Int_t fCMUP11Decision;
+	TTree *fTrgTree; 			//! trigger info tree
+	Int_t fTrgRunNum;
+	Int_t fCMUP6;
+	Int_t fCMUP10;
+	Int_t fCMUP11;
+
 
     AliAnalysisTaskNanoMUON(const AliAnalysisTaskNanoMUON&); // not implemented
     AliAnalysisTaskNanoMUON& operator=(const AliAnalysisTaskNanoMUON&); // not implemented
