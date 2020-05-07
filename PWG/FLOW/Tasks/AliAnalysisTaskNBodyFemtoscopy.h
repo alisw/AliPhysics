@@ -24,6 +24,7 @@ laura.serksnyte@cern.ch
 #include "TExMap.h"
 #include "TH1F.h"
 #include "TString.h"
+#include "TRandom3.h"
 
 //================================================================================================================
 
@@ -55,6 +56,7 @@ class AliAnalysisTaskNBodyFemtoscopy : public AliAnalysisTaskSE{
   Bool_t Kaon(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);  // check if particle is a kaon
   Bool_t Proton(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);  // check if particle is a proton
   virtual void GlobalTracksAODTEST(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAODTEST - take only  normal global tracks
+  virtual void CreateRandomIndices(AliAODEvent *aAOD);
 
   // 3.) Setters and getters:
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -149,8 +151,9 @@ class AliAnalysisTaskNBodyFemtoscopy : public AliAnalysisTaskSE{
   AliAnalysisTaskNBodyFemtoscopy& operator=(const AliAnalysisTaskNBodyFemtoscopy& aatmpf);
   
   AliPIDResponse *fPIDResponse; //! PID response object
-  // 0.) Base lists:
+  // 0.) Base lists, index array, ...:
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
+  TArrayI *fRandomIndices;  // an array to keep randomized indices
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList; // list to hold all control histograms

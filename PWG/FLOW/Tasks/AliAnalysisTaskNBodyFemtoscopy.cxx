@@ -38,6 +38,7 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
  AliAnalysisTaskSE(name), 
  fPIDResponse(NULL),
  fHistList(NULL),
+ fRandomIndices(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
@@ -105,6 +106,9 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name,
    // not needed for the time being
   }
 
+  // c) Determine seed for gRandom:
+  delete gRandom;
+  gRandom = new TRandom3(0); 
 } // AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy(const char *name, Bool_t useParticleWeights): 
 
 //================================================================================================================
@@ -113,6 +117,7 @@ AliAnalysisTaskNBodyFemtoscopy::AliAnalysisTaskNBodyFemtoscopy():
  AliAnalysisTaskSE(), 
  fPIDResponse(NULL),
  fHistList(NULL),
+ fRandomIndices(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
@@ -214,6 +219,11 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  //Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){Fatal(sMethodName.Data(),"!aAOD");}
+
+ // create the randomizes indexes
+ this->CreateRandomIndices(aAOD);
+
+
  // Check Multiplicity
  AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
  if(!ams){Fatal(sMethodName.Data(),"!ams");}
@@ -230,7 +240,7 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
  // b1) Start analysis over AODs:
  // Get the TExMap for GLOBAL tracks and the list of all tracks
  if(fGlobalTracksAODTEST[0]) fGlobalTracksAODTEST[0]->Delete();
- GlobalTracksAODTEST(aAOD,0);
+ this->GlobalTracksAODTEST(aAOD,0);
  if(0 == fGlobalTracksAODTEST[0]->GetSize()){return;}
  *fAllTracksTEST[0] = *(aAOD->GetTracks());
  // Analyse track by track
@@ -253,12 +263,12 @@ void AliAnalysisTaskNBodyFemtoscopy::UserExec(Option_t *)
   if(!this->GlobalTrackCuts(gTrack)){continue;}
   // check particle
   fTestTPCOnlyVsGlobal->Fill(gTrack->Pt()-aTrack->Pt());
-  Pion(gTrack,1,kTRUE);
-  Kaon(gTrack,1,kTRUE);
-  Proton(gTrack,1,kTRUE);
-  Pion(gTrack,-1,kTRUE);
-  Kaon(gTrack,-1,kTRUE);
-  Proton(gTrack,-1,kTRUE);
+  this->Pion(gTrack,1,kTRUE);
+  this->Kaon(gTrack,1,kTRUE);
+  this->Proton(gTrack,1,kTRUE);
+  this->Pion(gTrack,-1,kTRUE);
+  this->Kaon(gTrack,-1,kTRUE);
+  this->Proton(gTrack,-1,kTRUE);
   Double_t pt = aTrack->Pt(); 
   fPtHist->Fill(pt); 
   numberOfTracksAfterAllSelection ++;
@@ -704,6 +714,35 @@ void AliAnalysisTaskNBodyFemtoscopy::GlobalTracksAODTEST(AliAODEvent *aAOD, Int_
 } // void AliAnalysisTaskNBodyFemtoscopy::GlobalTracksAODTEST(AliAODEvent *aAOD)
 
 //=======================================================================================================================
+void AliAnalysisTaskNBodyFemtoscopy::CreateRandomIndices(AliAODEvent *aAOD)
+{
+ // Fisher-Yates algorithm:
+ Int_t nPrim = aAOD->GetNumberOfTracks();
+ if(nPrim > 0)
+ {
+  fRandomIndices = new TArrayI(nPrim);
+ }
+ else
+ {
+  return;
+ }
+
+ for(Int_t i=0;i<nPrim;i++)
+ {
+  fRandomIndices->AddAt(i,i);
+ }
+ for(Int_t i=nPrim-1;i>=1;i--)
+ {
+  Int_t j = gRandom->Integer(i+1);
+  Int_t temp = fRandomIndices->GetAt(j);
+  fRandomIndices->AddAt(fRandomIndices->GetAt(i),j);
+  fRandomIndices->AddAt(temp,i);
+ } // end of for(Int_t i=nPrim-1;i>=1;i--) 
+
+} // void AliAnalysisTaskNBodyFemtoscopy::CreateRandomIndices(AliAODEvent *aAOD)
+
+//=======================================================================================================================
+
 
 void AliAnalysisTaskNBodyFemtoscopy::Terminate(Option_t *)
 {
@@ -844,9 +883,13 @@ void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
  fNumberOfTracksHistAfterAllCuts->SetFillColor(kRed-10);
  fNumberOfTracksHistAfterAllCuts->GetXaxis()->SetTitle("Number of tracks");
  fControlHistogramsList->Add(fNumberOfTracksHistAfterAllCuts);
-
- fTestPIDTrueFalsePositive = new TH2F("fTestPIDTrueFalsePositive","True positives PID",7,0,3,6,0,3);
- fTestPIDTrueFalsePositive->LabelsDeflate();
+ Int_t xBinsTemp = 7;
+ Int_t yBinsTemp = 6;
+ fTestPIDTrueFalsePositive = new TH2F("fTestPIDTrueFalsePositive","True positives PID",xBinsTemp,0,6,yBinsTemp,0,5);
+ const char *particleNameY[yBinsTemp] = {"Pion+","Pion-","Proton+","Proton-","Kaon+","Kaon-"};
+ for (Int_t i=1;i<=yBinsTemp;i++) fTestPIDTrueFalsePositive->GetYaxis()->SetBinLabel(i,particleNameY[i-1]);
+ const char *particleNameX[xBinsTemp] = {"Pion+","Pion-","Proton+","Proton-","Kaon+","Kaon-", "Other"};
+ for (Int_t i=1;i<=xBinsTemp;i++) fTestPIDTrueFalsePositive->GetXaxis()->SetBinLabel(i,particleNameX[i-1]);
  fControlHistogramsList->Add(fTestPIDTrueFalsePositive);
 
 
