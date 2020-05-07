@@ -83,6 +83,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
+   fUseBuiltinEventCuts(kFALSE),
+   fEventCut(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -151,6 +153,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
+   fUseBuiltinEventCuts(kFALSE),
+   fEventCut(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -854,19 +858,31 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    // if event cuts are defined, they are checked here
    // final decision on the event depends on this
    isSelected = kTRUE;
-   if (fEventCuts) {
-      if (!fEventCuts->IsSelected(&fRsnEvent)) {
-         msg += " -- Local cuts = REJECTED";
-         isSelected = kFALSE;
-	 // fill counter
-	 fHEventStat->Fill(15.1);
+   if(fUseBuiltinEventCuts){
+      isSelected = fEventCut.AcceptEvent(fRsnEvent.GetRef());
+      if(isSelected){
+         msg += " -- Built-in AliEventCuts = ACCEPTED";
+      }
+      else{
+         msg += " -- Built-in AliEventCuts = REJECTED";
+         fHEventStat->Fill(15.1);
+      }
+   }
+   else{
+      if (fEventCuts) {
+         if (!fEventCuts->IsSelected(&fRsnEvent)) {
+            msg += " -- Local cuts = REJECTED";
+            isSelected = kFALSE;
+      // fill counter
+      fHEventStat->Fill(15.1);
+         } else {
+            msg += " -- Local cuts = ACCEPTED";
+            isSelected = kTRUE;
+         }
       } else {
-         msg += " -- Local cuts = ACCEPTED";
+         msg += " -- Local cuts = NONE";
          isSelected = kTRUE;
       }
-   } else {
-      msg += " -- Local cuts = NONE";
-      isSelected = kTRUE;
    }
 
    // if the above exit point is not taken, the event is accepted
