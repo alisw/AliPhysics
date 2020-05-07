@@ -170,6 +170,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAClusterM02VsE", "Cluster M02 vs energy; M02; E (GeV)", 150, 0., 1.5, 200, 0., 200.);
   fHistos->CreateTH2("hQAClusterFracLeadingVsE", "Cluster frac leading cell vs energy; E (GeV); Frac. leading cell", 200, 0., 200., 100, 0., 1.1);
   fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
+  fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -315,6 +317,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     fHistos->FillTH2("hQAJetAreaVsJetPt", j->Pt(), j->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNEF", j->NEF(), j->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNConst", j->GetNumberOfClusters() + j->GetNumberOfTracks(), j->Area(), weight);
+    // comparison to pt-hard
+    if(fPtHard > 0.) {
+      fHistos->FillTH1("hFracPtHardDet", j->Pt()/fPtHard);
+    }
   }
 
   double maxdata[6];
@@ -334,6 +340,14 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(fFillHSparse){
       maxdata[5] = static_cast<double>(t);
       fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
+    }
+  }
+
+  // outlier cut (MC only)
+  if(fPtHard > 0.) {
+    auto partjets = GetJetContainer("partjets");
+    if(partjets) {
+      for(auto j : partjets->accepted()) fHistos->FillTH1("hFracPtHardPart",  j->Pt()/fPtHard);
     }
   }
   return true;
