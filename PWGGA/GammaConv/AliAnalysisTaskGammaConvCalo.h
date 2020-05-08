@@ -170,7 +170,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fInvMassShowerShape;    //! Array of lists with invMass shower shape trees
     TList**                             fTrueList;              //! Array of lists with histograms with MC validated reconstructed properties
     TList**                             fMCList;                //! Array of lists with histograms with pure MC information
-    TList**                             fClusterOutputList;     //!Array of lists of output histograms for cluster photons
+    TList**                             fClusterOutputList;     //! Array of lists of output histograms for cluster photons
     TList*                              fOutputContainer;       //! Output container
     TClonesArray*                       fReaderGammas;          //! Array with conversion photons selected by V0Reader Cut
     TList*                              fGammaCandidates;       //! current list of photon candidates
