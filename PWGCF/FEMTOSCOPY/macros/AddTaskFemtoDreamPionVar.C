@@ -1414,6 +1414,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetMinimalBooking(false);
+  fTrackCutsPosPion->SetPlotDCADist(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
@@ -1441,6 +1442,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
+  fTrackCutsNegPion->SetPlotDCADist(true);
 
   //MC Template treatment
   if ( isMC && MCtemplatefit ) {
