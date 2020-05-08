@@ -172,14 +172,14 @@ void AliAnalysisTaskNanoLD::UserCreateOutputObjects() {
   fAntiLambdaList = fAntiLambda->GetQAHists();
 
   // Mass squared plots
-  fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF", "Deuterons", 5, 0. ,5., 16, 0., 8.);
+  fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF", "Deuterons", 50, 0. ,5., 400, 0., 8.);
   fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_T (GeV/c)");
-  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c)^2");
+  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c^2)^2");
   fDeuteronList->Add(fDeuteronMassSqTOF);
 
   fAntiDeuteronMassSqTOF = new TH2F("fAntiDeuteronMassSqTOF", "AntiDeuterons", 50, 0. ,5., 400, 0., 8.);
   fAntiDeuteronMassSqTOF->GetXaxis()->SetTitle("p_T (GeV/c)");
-  fAntiDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c)^2");
+  fAntiDeuteronMassSqTOF->GetYaxis()->SetTitle("m^2 (GeV/c^2)^2");
   fAntiDeuteronList->Add(fAntiDeuteronMassSqTOF);
 
   fResultsQA = new TList();
