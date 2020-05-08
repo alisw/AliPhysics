@@ -55,8 +55,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     DeuteronCuts->SetFilterBit(256);
   }
   else if (suffix == "2") {
-    DeuteronCuts->SetFilterBit(768);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+  }
+  else if (suffix == "3") {
+    DeuteronCuts->SetFilterBit(256);
+    DeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
     //DeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+  }
+  else if (suffix == "4") {
+    DeuteronCuts->SetFilterBit(256);
+    DeuteronCuts->SetDCAVtxZ(5.);
+    DeuteronCuts->SetDCAVtxXY(5.);
   }
 
   // Track Cuts for Anti-Deuterons
@@ -85,8 +94,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLD(bool fullBlastQA = false,
     AntiDeuteronCuts->SetFilterBit(256);
   }
   else if (suffix == "2") {
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+  }
+  else if (suffix == "3") {
     AntiDeuteronCuts->SetFilterBit(256);
-    AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+    AntiDeuteronCuts->SetPID(AliPID::kDeuteron, 999.);
+    //AntiDeuteronCuts->SetCutITSPID(1.4, -2., 1e30);
+  }
+  else if (suffix == "4") {
+    AntiDeuteronCuts->SetFilterBit(256);
+    AntiDeuteronCuts->SetDCAVtxZ(5.);
+    AntiDeuteronCuts->SetDCAVtxXY(5.);
   }
 
   // Lambda Cuts
