@@ -684,8 +684,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
                             Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             Bplus.SetProngIDs(2, id);
-                            if(Bplus.CosPointingAngle() > 0.7) //minimal selection
-                                FillBeauty3Prong(&Bplus, d, true);
+                            FillBeauty3Prong(&Bplus, d, true);
 
                             delete vertexBplus;
                             vertexBplus = nullptr;
@@ -859,8 +858,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             B.SetProngIDs(2, id);
 
-                            if(B.CosPointingAngle() > 0.7) //minimal selection to avoid memory issues
-                                FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
+                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
 
                             delete vertexB;
                             vertexB = nullptr;
@@ -1009,6 +1007,10 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     if(fReadMC && fFillGenTree)
         fGenTree->Fill();
 
+    PostData(1, fOutput);
+    PostData(2, fRecoTree);
+    PostData(3, fGenTree);
+
     fCharm2Prong.clear();
     fCharm3Prong.clear();
     fDstar.clear();
@@ -1016,10 +1018,6 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     fBeauty3Prong.clear();
     fBeauty4Prong.clear();
     fGenHadron.clear();
-
-    PostData(1, fOutput);
-    PostData(2, fRecoTree);
-    PostData(3, fGenTree);
 
     return;
 }
@@ -1428,6 +1426,9 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
         if (TMath::Abs(massLbPDG - invmassLb) > 0.4) //check mass
             isselLb = false;
     }
+
+    if(!isselB0 && !isselBs && !isselLb)
+        return;
 
     b4Prong.fPt = cand->Pt();
     b4Prong.fYB0 = cand->Y(511);
