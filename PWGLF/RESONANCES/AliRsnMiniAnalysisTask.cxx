@@ -781,10 +781,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
 
       if(isSelected && fSkipTriggerMask){
-	if( (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSkipTriggerMask) == fSkipTriggerMask) isSelected=kFALSE;
+	      if( (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSkipTriggerMask) == fSkipTriggerMask) 
+            isSelected = kFALSE;
       }
 
-      if (!isSelected) {
+      if (!isSelected && !fUseBuiltinEventCuts) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
          fRsnEvent.SetRefMC(0x0);
@@ -794,11 +795,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       fRsnEvent.SetRef(fInputEvent);
       // add MC if requested and available
       if (fUseMC) {
-	if (fMCEvent)
-	   fRsnEvent.SetRefMC(fMCEvent);
+	      if (fMCEvent)
+	         fRsnEvent.SetRefMC(fMCEvent);
          else {
-	   AliWarning("MC event requested but not available");
-	   fRsnEvent.SetRefMC(0x0);
+            AliWarning("MC event requested but not available");
+            fRsnEvent.SetRefMC(0x0);
          }
       }
    } else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
