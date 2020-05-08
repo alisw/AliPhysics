@@ -55,6 +55,7 @@ ClassImp(AliRsnMiniAnalysisTask)
 /// Default constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
+   fEventCut(0x0),
    fUseMC(kFALSE),
    fEvNum(0),
    fTriggerMask(0),
@@ -84,7 +85,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fUseBuiltinEventCuts(kFALSE),
-   fEventCut(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -125,6 +125,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
 /// 
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bool_t saveRsnTreeInFile) :
    AliAnalysisTaskSE(name),
+   fEventCut(0x0),
    fUseMC(useMC),
    fEvNum(0),
    fTriggerMask(AliVEvent::kMB),
@@ -154,7 +155,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fUseBuiltinEventCuts(kFALSE),
-   fEventCut(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
@@ -196,6 +196,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
 /// Copy constructor
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy) :
    AliAnalysisTaskSE(copy),
+   // fEventCut(copy.fEventCut), // <- need to update!  (2020.05.08 blim)
    fUseMC(copy.fUseMC),
    fEvNum(0),
    fTriggerMask(copy.fTriggerMask),
@@ -270,6 +271,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    AliAnalysisTaskSE::operator=(copy);
    if (this == &copy)
       return *this;
+   // fEventCut = copy.fEventCut, // <- need to update! (2020.05.08 blim)
    fUseMC = copy.fUseMC;
    fEvNum = copy.fEvNum;
    fTriggerMask = copy.fTriggerMask;

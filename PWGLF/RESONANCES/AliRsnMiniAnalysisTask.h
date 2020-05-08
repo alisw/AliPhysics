@@ -101,6 +101,7 @@ public:
 
    Int_t               AddResonanceFinder(AliRsnMiniResonanceFinder* f);
    Int_t               GetNResonanceFinders() {return fResonanceFinders.GetEntries();}
+   AliEventCuts         fEventCut;        ///< AliEventCut
 
 private:
    Char_t   CheckCurrentEvent();
@@ -150,7 +151,6 @@ private:
    TH2F                *fHAEventPlane;        //!<! histogram of event plane vs. multiplicity/centrality
 
    Bool_t              fUseBuiltinEventCuts; //< use Built-in AliEventCuts
-   AliEventCuts         fEventCut;        ///< AliEventCut
    AliRsnCutSet        *fEventCuts;       ///< cuts on events
    TObjArray            fTrackCuts;       ///< list of single track cuts
    AliRsnEvent          fRsnEvent;        ///< interface object to the event
