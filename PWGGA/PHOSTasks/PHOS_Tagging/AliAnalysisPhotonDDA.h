@@ -49,23 +49,23 @@ private:
 
  
 private:
-  THashList * fOutputContainer = nullptr;       //final histogram container  
-  Int_t   fCenBin ;
-  Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
-  Int_t   fNCenBin ;            //NUmber of centrality bins
-  TArrayI fCenBinEdges;         //Centrality binning
-  Double_t     fMinBCDistance; // Cut on distance to bad
-  Double_t     fCentrality ;   // centrality
+  THashList * fOutputContainer ;       // final histogram container  
+  Int_t   fCenBin ;                    // centrality bin
+  Int_t   fCentEstimator;              // Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
+  Int_t   fNCenBin ;                   // Number of centrality bins
+  TArrayI fCenBinEdges;                //Centrality binning
+  Double_t     fMinBCDistance;         // Cut on distance to bad
+  Double_t     fCentrality ;           // centrality
   Int_t fRunNumber ;
   Bool_t fIsMC ;
-  AliPHOSGeometry  *fPHOSGeo = nullptr;         //! PHOS geometry
-  Int_t fEventCounter;                          // number of analyzed events
-  AliPIDResponse     *fPIDResponse = nullptr;   //! PID response 
-  TClonesArray * fPHOSEvent = nullptr ;
-  TList        * fCurrentMixedList = nullptr;
-  TList        * fPHOSEvents[5] = {nullptr} ;
+  AliPHOSGeometry  *fPHOSGeo ;         //! PHOS geometry
+  Int_t fEventCounter;                 // number of analyzed events
+  AliPIDResponse     *fPIDResponse ;   //! PID response 
+  TClonesArray * fPHOSEvent  ;
+  TList        * fCurrentMixedList ;
+  TList        * fPHOSEvents[5] ;
   TH2F         * fhCont2D[15][4] ;
-  ClassDef(AliAnalysisPhotonDDA, 1);            // PHOS analysis task
+  ClassDef(AliAnalysisPhotonDDA, 1);   // PHOS DDA analysis task
 };
 
 #endif

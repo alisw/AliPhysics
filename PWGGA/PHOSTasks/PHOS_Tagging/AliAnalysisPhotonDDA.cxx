@@ -63,12 +63,13 @@ AliAnalysisPhotonDDA::AliAnalysisPhotonDDA(const char *name)
   fPHOSGeo(nullptr),
   fEventCounter(0),
   fPIDResponse(nullptr),
-  fPHOSEvent(nullptr)
+  fPHOSEvent(nullptr),
+  fCurrentMixedList(nullptr)
 {
     
   // Output slots #0 write into a TH1 container
   DefineOutput(1,TList::Class());
-
+  for(int i=0; i<5; i++)fPHOSEvents[i]=nullptr; 
 
 }
 
