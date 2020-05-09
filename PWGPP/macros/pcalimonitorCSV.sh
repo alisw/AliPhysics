@@ -27,8 +27,11 @@ dumpCSV(){
        dumpCSV   https://alimonitor.cern.ch/prod/jobs.jsp?t=20831 table.csv
 HELP_USAGE
     [[ $# -ne 2 ]] &&return
-    curl -Lk  --tlsv1 --cert $HOME/.globus/usercert.pem --key $HOME/.globus/userkey.pem -o table.mif   "${1}&res_path=mif"
-    cat table.mif |sed  s_/I:_,_g| sed s_/D:_,_g  |  sed s_/C:_,_g | sed s_\"_,_g | sed s_:_,_g | sed s_/I__ > $2
+    inPath="$1"
+    output=$2
+    echo dumpCSV ${inPath} -- ${output}
+    curl -Lk  --tlsv1 --cert $HOME/.globus/usercert.pem --key $HOME/.globus/userkey.pem -o table.mif   "${inPath}"'&res_path=mif'
+    cat table.mif |sed  s_/I:_,_g| sed s_/D:_,_g  |  sed s_/C:_,_g | sed s_\"_,_g | sed s_:_,_g | sed s_/I__ > $output
 }
 
 printSummary(){
@@ -55,10 +58,10 @@ exampleUsage(){
     This is example usage of the pcalimonitorCSV.sh
 HELP_USAGE
     source $AliPhysics_SRC/PWGPP/macros/pcalimonitorCSV.sh
-    dumpCSV https://alimonitor.cern.ch/prod/jobs.jsp?t=20831 table.csv
+    dumpCSV "https://alimonitor.cern.ch/prod/jobs.jsp?t=20831&outputdir=pass1" table.csv
     printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table
     #
-    dumpCSV https://alimonitor.cern.ch/prod/jobs.jsp?t=20831 table.csv
+    dumpCSV      "https://alimonitor.cern.ch/prod/jobs.jsp?t=20831" table.csv
     printSummary JobID,RunNo,input_events,wall_time,outputsize,outputsize/input_events table "where input_events>40000 ORDER BY input_events DESC"
 
 }
