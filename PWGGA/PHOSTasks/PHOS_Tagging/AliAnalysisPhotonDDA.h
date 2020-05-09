@@ -34,6 +34,7 @@ public:
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} 
 
   void SetDistanceToBad(Double_t d=2.5){fMinBCDistance=d;} 
+  void SetMC(Bool_t a){fIsMC=a;}
   
 private:
   AliAnalysisPhotonDDA(const AliAnalysisPhotonDDA&); // not implemented
@@ -48,22 +49,23 @@ private:
 
  
 private:
-  THashList * fOutputContainer;       //final histogram container 
-  Int_t   fCenBin ;
-  Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
-  Int_t   fNCenBin ;            //NUmber of centrality bins
-  TArrayI fCenBinEdges;         //Centrality binning
-  Double_t     fMinBCDistance; // Cut on distance to bad
-  Double_t     fCentrality ;   // centrality
+  THashList * fOutputContainer ;       // final histogram container  
+  Int_t   fCenBin ;                    // centrality bin
+  Int_t   fCentEstimator;              // Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
+  Int_t   fNCenBin ;                   // Number of centrality bins
+  TArrayI fCenBinEdges;                //Centrality binning
+  Double_t     fMinBCDistance;         // Cut on distance to bad
+  Double_t     fCentrality ;           // centrality
   Int_t fRunNumber ;
-
-  AliPHOSGeometry  *fPHOSGeo;         //! PHOS geometry
-  Int_t fEventCounter;                // number of analyzed events
-  AliPIDResponse     *fPIDResponse;     //! PID response 
-  TClonesArray * fPHOSEvent ;
+  Bool_t fIsMC ;
+  AliPHOSGeometry  *fPHOSGeo ;         //! PHOS geometry
+  Int_t fEventCounter;                 // number of analyzed events
+  AliPIDResponse     *fPIDResponse ;   //! PID response 
+  TClonesArray * fPHOSEvent  ;
   TList        * fCurrentMixedList ;
   TList        * fPHOSEvents[5] ;
-  ClassDef(AliAnalysisPhotonDDA, 1); // PHOS analysis task
+  TH2F         * fhCont2D[15][4] ;
+  ClassDef(AliAnalysisPhotonDDA, 1);   // PHOS DDA analysis task
 };
 
 #endif
