@@ -120,6 +120,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskPID+;
 #pragma link C++ class AliAnalysisTaskPIDV0base+;
+#pragma link C++ class AliPieceWisePoly+;
 #pragma link C++ class AliAnalysisTaskPSHFE+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;

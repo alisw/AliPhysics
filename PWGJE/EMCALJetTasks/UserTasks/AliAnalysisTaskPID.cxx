@@ -11,6 +11,7 @@
 #include "TFitResult.h"
 
 #include "AliMCParticle.h"
+#include "AliStack.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -31,6 +32,10 @@
 #include "AliPPVsMultUtils.h"
 
 #include "AliAnalysisTaskPID.h"
+
+#include "AliEMCALTrack.h"
+
+#include "AliTrackContainer.h"
 
 /*
 This task collects PID output from different detectors.
@@ -65,8 +70,17 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fDoPtResolution(kFALSE)
   , fDoDeDxCheck(kFALSE)
   , fDoBinZeroStudy(kFALSE)
+  , fDoTPCclusterStudies(kFALSE)
+  , fDoDCATemplateGeneration(kFALSE)
+  , fDCAUpperpTLimit(0.6)
+  , fSigmaFactorCutForDCATemplateGeneration(3.0)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
+  , fStorePt(kTRUE)
+  , fStoreZ(kTRUE)
+  , fStoreXi(kTRUE)
+  , fStoreRadialDistance(kTRUE)
+  , fStorejT(kTRUE)
   , fTakeIntoAccountMuons(kFALSE)
   , fUseITS(kFALSE)
   , fUseTOF(kFALSE)
@@ -88,6 +102,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
   , fSystematicScalingSplinesAboveThreshold(1.0)
+  , fMultBinSystematics(0x0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
@@ -168,6 +183,25 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fIsUEPID(kFALSE)
   , fh2UEDensity(0x0)
   , fh1JetArea(0x0)
+  , fh3DCA_XY_Positive(0x0)
+  , fh3DCA_XY_Primaries_Positive(0x0)
+  , fh3DCA_XY_WeakDecays_Positive(0x0)
+  , fh3DCA_XY_Material_Positive(0x0) 
+  , fh3DCA_XY_Negative(0x0)
+  , fh3DCA_XY_Primaries_Negative(0x0)
+  , fh3DCA_XY_WeakDecays_Negative(0x0)
+  , fh3DCA_XY_Material_Negative(0x0)
+  , fTPCclusterStudies(0x0)
+  , fhclusterStudies(0x0) 
+  , fClusterStudiesPiMomentumFirstLow(0.45)
+  , fClusterStudiesPiMomentumFirstHigh(0.55)
+  , fClusterStudiesPiMomentumSecondLow(1.5)
+  , fClusterStudiesPiMomentumSecondHigh(1.6)
+  , fClusterStudiesKaMomentumLow(1.2)
+  , fClusterStudiesKaMomentumHigh(1.3)
+  , fClusterStudiesPrMomentumLow(2.0)
+  , fClusterStudiesPrMomentumHigh(2.1)  
+  , fVicinityCut(0.2)
 {
   // default Constructor
   
@@ -212,8 +246,17 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fDoPtResolution(kFALSE)
   , fDoDeDxCheck(kFALSE)
   , fDoBinZeroStudy(kFALSE)
+  , fDoTPCclusterStudies(kFALSE)
+  , fDoDCATemplateGeneration(kFALSE)
+  , fDCAUpperpTLimit(0.6)
+  , fSigmaFactorCutForDCATemplateGeneration(3.0)  
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
+  , fStorePt(kTRUE)
+  , fStoreZ(kTRUE)
+  , fStoreXi(kTRUE)
+  , fStoreRadialDistance(kTRUE)
+  , fStorejT(kTRUE)  
   , fTakeIntoAccountMuons(kFALSE)
   , fUseITS(kFALSE)
   , fUseTOF(kFALSE)
@@ -235,6 +278,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
   , fSystematicScalingSplinesAboveThreshold(1.0)
+  , fMultBinSystematics(0x0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
@@ -315,6 +359,25 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fIsUEPID(kFALSE)
   , fh2UEDensity(0x0)
   , fh1JetArea(0x0)
+  , fh3DCA_XY_Positive(0x0)
+  , fh3DCA_XY_Primaries_Positive(0x0)
+  , fh3DCA_XY_WeakDecays_Positive(0x0)
+  , fh3DCA_XY_Material_Positive(0x0)  
+  , fh3DCA_XY_Negative(0x0)
+  , fh3DCA_XY_Primaries_Negative(0x0)
+  , fh3DCA_XY_WeakDecays_Negative(0x0)
+  , fh3DCA_XY_Material_Negative(0x0)  
+  , fTPCclusterStudies(0x0)
+  , fhclusterStudies(0x0)  
+  , fClusterStudiesPiMomentumFirstLow(0.45)
+  , fClusterStudiesPiMomentumFirstHigh(0.55)
+  , fClusterStudiesPiMomentumSecondLow(1.5)
+  , fClusterStudiesPiMomentumSecondHigh(1.6)
+  , fClusterStudiesKaMomentumLow(1.2)
+  , fClusterStudiesKaMomentumHigh(1.3)
+  , fClusterStudiesPrMomentumLow(2.0)
+  , fClusterStudiesPrMomentumHigh(2.1) 
+  , fVicinityCut(0.2)
 {
   // Constructor
   
@@ -487,6 +550,20 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   fGenRespPrDeltaPi = 0x0;
   fGenRespPrDeltaPr = 0x0;
   */
+  
+//   delete fh2UEDensity;
+//   fh2UEDensity = 0x0;
+//   delete fh1JetArea;
+//   fh1JetArea = 0x0;
+//   delete fh2DCA_XY;
+//   fh2DCA_XY = 0x0;
+//   delete fh2DCA_XY_Primaries;
+//   fh2DCA_XY_Primaries = 0x0;
+//   delete fh2DCA_XY_WeakDecays;
+//   fh2DCA_XY_WeakDecays = 0x0;
+//   delete fh2DCA_XY_Material;
+//   fh2DCA_XY_Material = 0x0;
+  
 }
 
 
@@ -636,32 +713,36 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                   6.5,   7.,  8.,   9., 10.,  11., 12.,  13., 14.,  15.,
                                   16.,  18., 20.,  22., 24.,  26., 28.,  30., 32.,  34., 
                                   36.,  40., 45.,  50. };
-
- 
+                                                               
+ //Bins for the Light flavor analysis
 //   const Int_t nPtBins = 59;
 //   Double_t binsPt[nPtBins + 1] = {0.01, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0};
   
   const Bool_t useITSTPCtrackletsCentEstimatorWithNewBinning = fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0
                                                                && fStoreCentralityPercentile;
   
-  const Int_t nCentBinsGeneral = 12;
+//   const Int_t nCentBinsGeneral = 12;
+  const Int_t nCentBinsGeneral = 4;
   const Int_t nCentBinsNewITSTPCtracklets = 16;
   
   const Int_t nCentBins = useITSTPCtrackletsCentEstimatorWithNewBinning ? nCentBinsNewITSTPCtracklets : nCentBinsGeneral;
-
+  
   Double_t binsCent[nCentBins+1];
   for (Int_t i = 0; i < nCentBins + 1; i++)
     binsCent[i] = -1;
   
   //-1 for pp (unless explicitely requested); 90-100 has huge electro-magnetic impurities
-  Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+//   Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  5, 10, 20, 30, 40, 50, 60, 70, 80,  90, 100 };
+  Double_t binsCentV0[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
   
   // These centrality estimators deal with integers! This implies that the ranges are always [lowlim, uplim - 1]
   Double_t binsCentITSTPCTracklets[nCentBinsNewITSTPCtracklets+1] = { 0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 9999 };
-  Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
+//   Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = { 0, 7, 13, 20, 29, 40, 50, 60, 72, 83, 95, 105, 115 };
+  Double_t binsCentITSTPCTrackletsOldPreliminary[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
   
   // Special centrality binning for pp
-  Double_t binsCentpp[nCentBinsGeneral+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+//   Double_t binsCentpp[nCentBinsGeneral+1] =   { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+  Double_t binsCentpp[nCentBinsGeneral+1] = {-1, 0,  10, 60, 100 };
   
   if (fCentralityEstimator.CompareTo("ITSTPCtrackletsOldPreliminaryBinning", TString::kIgnoreCase) == 0 && fStoreCentralityPercentile) {
     // Special binning for this centrality estimator; but keep number of bins!
@@ -680,12 +761,15 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   }
   else {
     // Take default binning for VZERO
-    for (Int_t i = 0; i < nCentBinsGeneral+1; i++)
+    for (Int_t i = 0; i < nCentBins+1; i++)
       binsCent[i] = binsCentV0[i];
   }
 
-  const Int_t nJetPtBins = 11;
-  Double_t binsJetPt[nJetPtBins+1] = {0, 2, 5, 10, 15, 20, 30, 40, 60, 80, 120, 200};
+//   const Int_t nJetPtBins = 11;
+//   Double_t binsJetPt[nJetPtBins+1] = {0, 2, 5, 10, 15, 20, 30, 40, 60, 80, 120, 200};
+  
+  const Int_t nJetPtBins = 4;
+  Double_t binsJetPt[nJetPtBins+1] = {5, 10, 15, 20, 30};
   
   const Int_t nChargeBins = 2;
   const Double_t binsCharge[nChargeBins+1] = { -1.0 - 1e-4, 0.0, 1.0 + 1e-4 };
@@ -916,7 +1000,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if (fIsUEPID) {
     fh2UEDensity = new TH2D("fh2UEDensity", "p_{T} density of the Underlying event;Centrality Percentile;UE p_{T}/Event", nCentBins, binsCent, 10, 0.0, 4.0);
     fOutputContainer->Add(fh2UEDensity);
-    fh1JetArea = new TH1D("fh1JetArea", "Jet Area (real)/#Pi*#Rho^{2} of the Jets used in the UE;Centrality Percentile",nCentBins,binsCent);
+    fh1JetArea = new TH1D("fh1JetArea", "Jet Area (real)/#pi*#rho^{2} of the Jets used in the UE;Centrality Percentile",nCentBins,binsCent);
     fOutputContainer->Add(fh1JetArea);
   }
   
@@ -999,11 +1083,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if (fDoPID || fDoEfficiency) {
     // Generated jets
     fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
-                             nCentBins, binsCent, nJetPtBins, binsJetPt);
+                              nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtRec->Sumw2();
     fOutputContainer->Add(fh2FFJetPtRec);
     fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
-                             nCentBins, binsCent, nJetPtBins, binsJetPt);
+                              nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtGen->Sumw2();
     fOutputContainer->Add(fh2FFJetPtGen);
   }
@@ -1125,6 +1209,112 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                                                     nBinsBinZeroStudy, binZeroStudyBins, binZeroStudyXmin, binZeroStudyXmax);
     SetUpBinZeroStudyHist(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej, binsCent, binsPt);
     fOutputContainer->Add(fChargedGenPrimariesTriggerSelVtxCutZPileUpRej);
+  }
+  
+  if (GetDoDCATemplateGeneration()) {
+    std::cout << "Create Template Generation" << std::endl;
+    const Int_t nPtBinsDCA = 22;
+    Double_t ptBinsDCA[nPtBinsDCA + 1] = {0.01, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};
+    
+//     const Int_t nPtBinsDCA = 19;
+//     Double_t ptBinsDCA[nPtBinsDCA + 1] = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.};   
+    
+    const Int_t nDCABins = 75;    
+    const Double_t DCABinlow = 0.0;
+    const Double_t DCABinUp = 0.25;
+    const Double_t DCAStep = (DCABinUp - DCABinlow)/nDCABins;
+    
+    Double_t binsDCA[nDCABins + 1];
+    
+    for (Int_t DCABin=0;DCABin<nDCABins + 1;DCABin++) {
+      binsDCA[DCABin] = DCABinlow + DCAStep * DCABin;
+    }
+    
+    if (GetStoreAdditionalJetInformation()) {
+      fh3DCA_XY_Positive = new TH3D("fh3DCA_XY_Positive","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Positive);
+      fh3DCA_XY_Primaries_Positive = new TH3D("fh3DCA_XY_Primaries_Positive","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Primaries_Positive);
+      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);  
+      fOutputContainer->Add(fh3DCA_XY_WeakDecays_Positive);
+      fh3DCA_XY_Material_Positive = new TH3D("fh3DCA_XY_Material_Positive","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Material_Positive);
+      fh3DCA_XY_Negative = new TH3D("fh3DCA_XY_Negative","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Negative);
+      fh3DCA_XY_Primaries_Negative = new TH3D("fh3DCA_XY_Primaries_Negative","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Primaries_Negative);
+      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);  
+      fOutputContainer->Add(fh3DCA_XY_WeakDecays_Negative);
+      fh3DCA_XY_Material_Negative = new TH3D("fh3DCA_XY_Material_Negative","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, nJetPtBins, binsJetPt);
+      fOutputContainer->Add(fh3DCA_XY_Material_Negative);      
+    }
+    else {
+      fh3DCA_XY_Positive = new TH3D("fh3DCA_XY_Positive","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Positive);
+      fh3DCA_XY_Primaries_Positive = new TH3D("fh3DCA_XY_Primaries_Positive","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Primaries_Positive);
+      fh3DCA_XY_WeakDecays_Positive = new TH3D("fh3DCA_XY_WeakDecays_Positive","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);  
+      fOutputContainer->Add(fh3DCA_XY_WeakDecays_Positive);
+      fh3DCA_XY_Material_Positive = new TH3D("fh3DCA_XY_Material_Positive","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Material_Positive); 
+      
+      fh3DCA_XY_Negative = new TH3D("fh3DCA_XY_Negative","DCA distribution of protons", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Negative);
+      fh3DCA_XY_Primaries_Negative = new TH3D("fh3DCA_XY_Primaries_Negative","DCA distribution of primary particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Primaries_Negative);
+      fh3DCA_XY_WeakDecays_Negative = new TH3D("fh3DCA_XY_WeakDecays_Negative","DCA distribution of weak decay products", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);  
+      fOutputContainer->Add(fh3DCA_XY_WeakDecays_Negative);
+      fh3DCA_XY_Material_Negative = new TH3D("fh3DCA_XY_Material_Negative","DCA distribution of material particles", nPtBinsDCA, ptBinsDCA, nDCABins, binsDCA, 0, 0x0);
+      fOutputContainer->Add(fh3DCA_XY_Material_Negative);       
+    }
+  }
+  
+  if (GetDoTPCclusterStudies()) {
+    Int_t nBinsPrime = 320;
+    Double_t primeLow = 0.4;
+    Double_t primeHigh = 2.0;
+    Int_t arrNumbers = 4;
+    fTPCclusterStudies = new TObjArray*[arrNumbers];
+    Int_t histNumbers = 3;
+    
+    const Int_t nBinsY[histNumbers+1] = {8, 4, 11, 15};
+    Float_t twopi = 2.0 * TMath::Pi();
+    
+    Double_t binsPrime[nBinsPrime+1];
+    for (Int_t i=0;i<=nBinsPrime;i++) {
+      binsPrime[i] = primeLow + i*(primeHigh - primeLow)/nBinsPrime;
+    }
+    
+    Double_t binsYEta[nBinsY[0] + 1] = {-0.9, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.9};
+    Double_t binsYPhi[nBinsY[1] + 1] = {0.0, twopi/4.0, twopi/2.0, 3.0 * twopi/4.0, twopi};
+    Double_t binsYMult[nBinsY[2] + 1] = {0, 100, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000};
+//     for (Int_t i=0;i<nBinsY[2] + 1;++i) {
+//       binsYMult[i] = i * 5.0;
+//     }
+    
+    Double_t binsYclusters[nBinsY[3] + 1] = {1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
+    const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYclusters};
+    
+//     Double_t binsYNearTracks[nBinsY[3] + 1] = {0,1,2,3,4,5,6,7,8,9,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+//     const Double_t* binsY[histNumbers+1] = {binsYEta, binsYPhi, binsYMult, binsYNearTracks};    
+    
+    fhclusterStudies = new TH1*[arrNumbers*histNumbers];
+    TString arrNames[arrNumbers] = {"Pi first", "Pi second", "Ka", "Pr"};
+    TString histNames[histNumbers] = {"fh2Eta", "fh2Phi", "fh3MultClusters" };
+    for (Int_t i=0;i<arrNumbers;++i) {
+      fTPCclusterStudies[i] = new TObjArray(1);
+      fTPCclusterStudies[i]->SetName(arrNames[i]);
+      fTPCclusterStudies[i]->SetOwner(kTRUE);
+      fOutputContainer->Add(fTPCclusterStudies[i]);
+      for (Int_t j=0;j<histNumbers;++j) {
+        if (j != 2)
+          fhclusterStudies[i*histNumbers+j] = new TH2F(histNames[j], histNames[j], nBinsPrime, binsPrime, nBinsY[j], binsY[j]);
+        else
+          fhclusterStudies[i*histNumbers+j] = new TH3F(histNames[j], histNames[j], nBinsPrime, binsPrime, nBinsY[2], binsY[2], nBinsY[0], binsY[0]);
+            
+        fTPCclusterStudies[i]->Add(fhclusterStudies[i*histNumbers+j]);
+      }
+    }
   }
   
   if(fDebug > 2)
@@ -1376,7 +1566,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
-          valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
+          valuesGenYield[GetIndexOfChargeAxisGenYield(), -1, -1] = chargeMC;
           
           if (isMultSelected)
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
@@ -1490,7 +1680,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
     if (fDoPID || fDoDeDxCheck || fDoPtResolution) 
-      ProcessTrack(track, pdg, centralityPercentile, -1, isMBSelected, isMultSelected); // No jet information in this case -> Set jet pT to -1
+      ProcessTrack(track, pdg, centralityPercentile, -1, isMBSelected, isMultSelected, -1, -1); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
@@ -1543,6 +1733,12 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         }
       }
     }
+    
+    if (GetDoDCATemplateGeneration()) {
+      FillDCA(track,dEdxTPC,fEvent->GetPrimaryVertex(),fMC);
+    }
+    
+    
   } //track loop 
   
   if(fDebug > 2)
@@ -1572,7 +1768,7 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
   
   
   if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
-      (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
+      (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon) || fMultBinSystematics) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -1649,22 +1845,16 @@ Int_t AliAnalysisTaskPID::PDGtoMCID(Int_t pdg)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi, Bool_t storeXi)
+void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi)
 {
   // Uses trackPt and jetPt to obtain z and xi.
-  
   z = (jetPt > 0 && trackPt >= 0) ? (trackPt / jetPt) : -1;
-  if (storeXi) {
-    xi = (z > 0) ? TMath::Log(1. / z) : -1;
-  }
-  else {
-    xi = -1;
-  }
-  
+  xi = (z > 0) ? TMath::Log(1. / z) : -1;
+    
   if(trackPt > (1. - 1e-06) * jetPt && trackPt < (1. + 1e-06) * jetPt) { // case z=1 : move entry to last histo bin <1
     z  = 1. - 1e-06;
-    xi = storeXi ? 1e-06 : -1;
-  }
+    xi = 1e-06;
+  }   
 }
 
 
@@ -2734,6 +2924,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Do PtResolution: %d\n", fDoPtResolution);
   printf("Do dEdxCheck: %d\n", fDoDeDxCheck);
   printf("Do binZeroStudy: %d\n", fDoBinZeroStudy);
+  printf("Do TemplateGeneration: %d\n",fDoDCATemplateGeneration);
   if (fDoEfficiency) {
     if (GetEventGenerator() == kPythia6Perugia2011) {
       std::cout << "Use Strangeness weighting factors for Pythia 6 (Perugia 2011)" << std::endl;
@@ -2742,7 +2933,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
       std::cout << "Use Strangeness weighting factors for Pythia 6 (Perugia 0)" << std::endl;
     }
     else {
-      std::cout << "Using kUnknown Strangeness weighting factors" << std::endl;
+      std::cout << "Strangeness weighting factor is 1.0" << std::endl;
     }
   }
   
@@ -2782,9 +2973,10 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
-                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected, Bool_t storeXi,
+                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected, 
                                         Double_t radialDistanceToJet, Double_t jT) 
 {
+  
   // Process the track (generate expected response, fill histos, etc.).
   // particlePDGcode == 0 means data. Otherwise, the corresponding MC ID will be assumed.
   
@@ -2836,7 +3028,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t pT = track->Pt();
   
   Double_t z = -1, xi = -1;
-  GetJetTrackObservables(pT, jetPt, z, xi, storeXi);
+  GetJetTrackObservables(pT, jetPt, z, xi);
   
   Double_t trackCharge = fStoreCharge ? track->Charge() : -2;
   
@@ -2869,6 +3061,8 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t dEdxEl, dEdxKa, dEdxPi, dEdxMu, dEdxPr;
   Double_t sigmaEl, sigmaKa, sigmaPi, sigmaMu, sigmaPr;
   
+  const Int_t currEvtMultiplicity = fPIDResponse->GetTPCResponse().GetCurrentEventMultiplicity();
+  
   if (fDoAnySystematicStudiesOnTheExpectedSignal) {
     // Get the uncorrected signal first and the corresponding correction factors.
     // Then modify the correction factors and properly recalculate the corrected dEdx
@@ -2883,7 +3077,18 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     
     // Scale splines, if desired
     if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
-        (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
+        (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon) || fMultBinSystematics) {
+
+      if (fMultBinSystematics) {
+        Int_t multBin = fMultBinSystematics->GetXaxis()->FindFixBin(currEvtMultiplicity);
+        if (TMath::Odd(multBin)) {
+          fSystematicScalingSplinesAboveThreshold = fMultBinSystematics->GetBinContent(multBin);
+        }
+        else {
+          Double_t scalefactor = (currEvtMultiplicity - fMultBinSystematics->GetXaxis()->GetBinLowEdge(multBin))/(fMultBinSystematics->GetXaxis()->GetBinUpEdge(multBin) - fMultBinSystematics->GetXaxis()->GetBinLowEdge(multBin));
+          fSystematicScalingSplinesAboveThreshold = (1.0 - scalefactor) * fMultBinSystematics->GetBinContent(multBin - 1) + scalefactor * fMultBinSystematics->GetBinContent(multBin + 1);
+        }
+      }
        
       // Tune turn-on of correction for pions (not so relevant for the other species, since at very large momenta)
       Double_t bg = 0;
@@ -2892,35 +3097,30 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
         
       bg = pTPC / AliPID::ParticleMass(AliPID::kElectron);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
-      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
-                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxEl *= usedSystematicScalingSplines;
       
       bg = pTPC / AliPID::ParticleMass(AliPID::kKaon);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
-      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
-                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxKa *= usedSystematicScalingSplines;
       
       bg = pTPC / AliPID::ParticleMass(AliPID::kPion);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
-      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
-                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxPi *= usedSystematicScalingSplines;
       
       if (fTakeIntoAccountMuons) {
         bg = pTPC / AliPID::ParticleMass(AliPID::kMuon);
         scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
-        usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
-                                              + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+        usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
         dEdxMu *= usedSystematicScalingSplines;
       }
       
       
       bg = pTPC / AliPID::ParticleMass(AliPID::kProton);
       scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
-      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
-                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor) + fSystematicScalingSplinesAboveThreshold * scaleFactor;
       dEdxPr *= usedSystematicScalingSplines;
     }
     
@@ -2981,7 +3181,6 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     }
     
     // Get the multiplicity correction factors for the (modified) expected dEdx
-    const Int_t currEvtMultiplicity = fPIDResponse->GetTPCResponse().GetCurrentEventMultiplicity();
     
     Double_t multiplicityCorrEl = fPIDResponse->UseTPCMultiplicityCorrection() ? fPIDResponse->GetTPCResponse().GetMultiplicityCorrectionFast(track,
                                     dEdxEl * etaCorrEl, currEvtMultiplicity) : 1.;
@@ -3419,14 +3618,14 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   Double_t entry[fStoreAdditionalJetInformation ? kDataNumAxes : kDataNumAxes - fgkNumJetAxes];
   entry[kDataMCID] = binMC;
-  entry[kDataPt] = pT;
+  entry[kDataPt] = GetStorePt() ? pT : -1;
   
   if (fStoreAdditionalJetInformation) {
     entry[kDataJetPt] = jetPt;
-    entry[kDataZ] = z;
-    entry[kDataXi] = xi;
-    entry[kDataDistance] = radialDistanceToJet;
-    entry[kDataJt] = jT;
+    entry[kDataZ] = GetStoreZ() ? z : -1;
+    entry[kDataXi] = GetStoreXi() ? xi : -1;
+    entry[kDataDistance] = GetStoreRadialDistance() ? radialDistanceToJet : -1;
+    entry[kDataJt] = GetStorejT() ? jT : -1;
   }
   
   entry[GetIndexOfChargeAxisData()] = trackCharge;
@@ -3470,16 +3669,16 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t genEntry[fStoreAdditionalJetInformation ? kGenNumAxes : kGenNumAxes - fgkNumJetAxes];
   genEntry[kGenMCID] = binMC;
   genEntry[kGenSelectSpecies] = 0;
-  genEntry[kGenPt] = pT;
+  genEntry[kGenPt] = entry[kDataPt];
   genEntry[kGenDeltaPrimeSpecies] = -999;
   genEntry[kGenCentrality] = centralityPercentile;
   
   if (fStoreAdditionalJetInformation) {
     genEntry[kGenJetPt] = jetPt;
-    genEntry[kGenZ] = z;
-    genEntry[kGenXi] = xi;
-    genEntry[kGenDistance] = radialDistanceToJet;
-    genEntry[kGenJt] = jT;
+    genEntry[kGenZ] = entry[kDataZ];
+    genEntry[kGenXi] = entry[kDataXi];
+    genEntry[kGenDistance] = entry[kDataDistance];
+    genEntry[kGenJt] = entry[kDataJt];
   }
   
   genEntry[GetIndexOfChargeAxisGen()] = trackCharge;
@@ -4276,5 +4475,210 @@ void AliAnalysisTaskPID::NormalizeJetArea(Double_t jetParameter) {
     return;
   }
   
-  fh1JetArea->Scale(1.0/(fh2FFJetPtRec->GetEntries() * jetParameter * jetParameter * TMath::Pi()));
+  Double_t givenJetArea = jetParameter * jetParameter * TMath::Pi();
+  for (Int_t i=0;i<=fh1JetArea->GetNbinsX();++i) {
+    if (TMath::Abs(fh1JetArea->GetBinContent(i)) < 1e-6)
+      continue;
+    
+    fh1JetArea->SetBinContent(i,fh1JetArea->GetBinContent(i)/(givenJetArea * fh2FFJetPtRec->Integral(i,i,0,fh2FFJetPtRec->GetNbinsY())));
+  }
+}
+
+void AliAnalysisTaskPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVVertex* primvtx, AliMCEvent* mcEvent, Double_t jetPt) {
+  
+  if (!GetDoDCATemplateGeneration())
+    return;
+  
+  if (!track || !fPIDResponse) {
+    std::cout << "Track: " << track << std::endl;
+    std::cout << "fPIDResponse: " << fPIDResponse << std::endl;
+    return;
+  }
+  
+  const AliESDtrack* esdtrack = dynamic_cast<AliESDtrack*>(track);
+  
+  if (!primvtx && !esdtrack) {
+    std::cout << "Cannot Fill DCA Template Generation. " << std::endl;
+    std::cout << "Primary Vertex pointer: " << primvtx << std::endl;
+    std::cout << "esdtrack pointer: " << esdtrack << std::endl;
+    return;
+  }
+  
+  if (dEdxTPC < 0.0)
+    dEdxTPC = track->GetTPCsignal();
+  
+  Double_t trackpT = track->Pt();
+  
+  if (trackpT < GetDCAUpperpTLimit()) {
+    
+    Double_t dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+                                                              fPIDResponse->UseTPCEtaCorrection(),
+                                                              fPIDResponse->UseTPCMultiplicityCorrection());
+    Double_t sigmaPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
+                                                              fPIDResponse->UseTPCEtaCorrection(),
+                                                              fPIDResponse->UseTPCMultiplicityCorrection()); 
+     
+    Double_t tightfactor = 1.0;
+    if (trackpT >= 0.6)
+      tightfactor = 0.6;
+    
+    if (TMath::Abs(dEdxTPC - dEdxPr) <= tightfactor * GetSigmaFactorCutForDCATemplateGeneration() * sigmaPr) {
+      
+      Bool_t positiveCharge = track->Charge() > 0.0;
+      
+      Double_t dca;
+      
+      if (esdtrack) {
+        //Standard method for determining the dca
+        Float_t dca_arr[2] = {0.0,0.0};
+        Float_t cov[3] = {0.0,0.0,0.0};
+        esdtrack->GetImpactParameters(dca_arr, cov);
+        
+        dca = dca_arr[0];
+      }
+      else {
+        Double_t v[3] = {0.0,0.0,0.0};
+        Double_t pos[3] = {0.0,0.0,0.0};
+        primvtx->GetXYZ(v);
+        track->GetXYZ(pos);
+        
+        dca = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));         
+      }
+      
+      if (jetPt < 0.0)
+        jetPt = 0.5;
+      
+      if (positiveCharge) 
+        fh3DCA_XY_Positive->Fill(trackpT, dca, jetPt);
+      else
+        fh3DCA_XY_Negative->Fill(trackpT, dca, jetPt);
+      
+      if (mcEvent) {
+      
+        AliStack* stack = mcEvent->Stack();
+        if (!stack)
+          return;
+        
+        Int_t label = TMath::Abs(track->GetLabel());
+        
+        if (positiveCharge) {
+          if (mcEvent->IsPhysicalPrimary(label))
+            fh3DCA_XY_Primaries_Positive->Fill(trackpT, dca, jetPt);
+          else if (stack->IsSecondaryFromWeakDecay(label))
+            fh3DCA_XY_WeakDecays_Positive->Fill(trackpT, dca, jetPt);
+          else if (stack->IsSecondaryFromMaterial(label))
+            fh3DCA_XY_Material_Positive->Fill(trackpT, dca, jetPt);
+        }
+        else {
+          if (mcEvent->IsPhysicalPrimary(label))
+            fh3DCA_XY_Primaries_Negative->Fill(trackpT, dca, jetPt);
+          else if (stack->IsSecondaryFromWeakDecay(label))
+            fh3DCA_XY_WeakDecays_Negative->Fill(trackpT, dca, jetPt);
+          else if (stack->IsSecondaryFromMaterial(label))
+            fh3DCA_XY_Material_Negative->Fill(trackpT, dca, jetPt);
+        }
+      }
+    }
+  }
+}
+
+void AliAnalysisTaskPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_t multiplicity, Double_t dEdx, Int_t PiTracksEnabled, AliTrackContainer* trackContainer) {
+  if (!GetDoTPCclusterStudies())
+    return;
+  
+//   Double_t momentum = track->Pt();
+//   if (dEdx < 0)
+//     dEdx = track->GetTPCsignal();
+//   
+//   const Int_t nparam = 4;
+//   Double_t param[nparam] = {track->Eta(), track->Phi(), (Double_t)multiplicity, 0.0};
+//   
+//   if (track->GetTPCsignalN() < 140)
+//     return;
+//   
+//   if (!trackContainer)
+//     param[3] = track->GetTPCsignalN();
+//   
+//   Char_t v0tagAllCharges = TMath::Abs(v0tag);
+//   
+//   Bool_t isV0pi = (v0tagAllCharges == 15);
+//   
+//   Double_t deltaPrime = 0.0;
+//   
+//   if (isV0pi && TMath::Abs(PiTracksEnabled) == 1) {
+//     if (momentum > GetClusterStudiesPiMomentumFirstLow() && momentum < GetClusterStudiesPiMomentumFirstHigh()) {
+//       if (trackContainer)
+//         param[3] = GetNumberOfNearTracks(track, trackContainer);
+//       
+//       deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
+//       FillTPCclusterStudiesHistograms(fTPCclusterStudies[0], deltaPrime, nparam, param);
+//     }
+//     if (momentum > GetClusterStudiesPiMomentumSecondLow() && momentum < GetClusterStudiesPiMomentumSecondHigh()) {
+//       if (trackContainer)
+//         param[3] = GetNumberOfNearTracks(track, trackContainer);
+//       
+//       deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
+//       FillTPCclusterStudiesHistograms(fTPCclusterStudies[1], deltaPrime, nparam, param);
+//     }
+//   }
+//   else {
+//     if (PiTracksEnabled == 0 || PiTracksEnabled == -1) {
+//       if (momentum > GetClusterStudiesKaMomentumLow() && momentum < GetClusterStudiesKaMomentumHigh() && TMath::Abs(fPIDResponse->GetNumberOfSigmasTOF(track, AliPID::kKaon)) < 1.0) {
+//         if (trackContainer)
+//           param[3] = GetNumberOfNearTracks(track, trackContainer);
+//         
+//         deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
+//         FillTPCclusterStudiesHistograms(fTPCclusterStudies[2], deltaPrime, nparam, param);
+//       }
+//       else if (momentum > GetClusterStudiesPrMomentumLow() && momentum < GetClusterStudiesPrMomentumHigh() && TMath::Abs(fPIDResponse->GetNumberOfSigmasTOF(track, AliPID::kProton)) < 1.0) {
+//         if (trackContainer)
+//           param[3] = GetNumberOfNearTracks(track, trackContainer);
+//         
+//         deltaPrime = dEdx/fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, fPIDResponse->UseTPCEtaCorrection(), fPIDResponse->UseTPCMultiplicityCorrection());
+//         FillTPCclusterStudiesHistograms(fTPCclusterStudies[3], deltaPrime, nparam, param);
+//       }
+//     }
+//   }
+    
+  return;
+}
+
+void AliAnalysisTaskPID::FillTPCclusterStudiesHistograms(TObjArray* histarray, Double_t deltaPrime, Int_t nparam, Double_t param[]) {
+  for (Int_t i=0;i<histarray->GetEntriesFast();++i) {
+    if (i != 2) {
+      TH2* hist = dynamic_cast<TH2*>(histarray->At(i));
+      if (hist)
+        hist->Fill(deltaPrime, param[i]);
+    }
+    else {
+      TH3* hist = dynamic_cast<TH3*>(histarray->At(i));
+      if (hist)
+        hist->Fill(deltaPrime, param[2], param[0]);
+    }
+  }
+  return;
+}
+
+Int_t AliAnalysisTaskPID::GetNumberOfNearTracks(AliVTrack* track, AliTrackContainer* trackContainer) {
+  Int_t nOfNearTracks = 0;
+  Double_t phi = track->Phi();
+  Double_t theta = track->Theta();
+  
+  for (auto part : trackContainer->accepted()) {
+    
+    if (!part)
+      continue;
+
+    if (part->GetID() == track->GetID())
+      continue;
+    
+    Double_t phi_distance = part->Phi() - phi;
+    Double_t theta_distance = part->Theta() - theta;
+    
+    
+    if (TMath::Sqrt(phi_distance * phi_distance + theta_distance * theta_distance) < fVicinityCut)
+      nOfNearTracks++;
+  }
+  
+  return nOfNearTracks;
 }
