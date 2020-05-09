@@ -42,6 +42,7 @@
 #include "AliMagF.h"
 #include "AliCaloPhoton.h"
 #include "AliMultSelection.h"
+#include "AliAODMCParticle.h"
 // Analysis task to fill histograms with PHOS AOD clusters and cells
 // Authors: Yuri Kharlov
 // Date   : 28.05.2009
@@ -57,6 +58,8 @@ AliAnalysisPhotonDDA::AliAnalysisPhotonDDA(const char *name)
   fNCenBin(5),   
   fMinBCDistance(0.),
   fCentrality(0.),
+  fRunNumber(-1),
+  fIsMC(kTRUE),
   fPHOSGeo(nullptr),
   fEventCounter(0),
   fPIDResponse(nullptr),
@@ -141,7 +144,7 @@ void AliAnalysisPhotonDDA::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hEclPtUndMinus","p_{track} vs E_{clu}, #bar{p}",200,0.,20.,200,0.,20.));
 
   TString parts[4]={"Pi","K","Pr","Und"} ;
-  for(Int_t cen=0; cen<6; cen++){
+  for(Int_t cen=0; cen<fNCenBin; cen++){
 
     fOutputContainer->Add(new TH3F(Form("hdxdzpt_cen%d",cen),"dx,dx,Pt",100,-50.,50.,100,-50.,50.,200,0.,20.));
     fOutputContainer->Add(new TH3F(Form("hdrEpt_cen%d",cen),"rEPt",100,0.,50.,200,0.,20.,200,0.,20.));
@@ -172,6 +175,37 @@ void AliAnalysisPhotonDDA::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hClusterTOF","Cluster spectrum",200,0.,20.,400,-200.e-9,200.e-9));
   fOutputContainer->Add(new TH2F("hClusterTOFn2","Cluster spectrum",200,0.,20.,400,-200.e-9,200.e-9));
   fOutputContainer->Add(new TH2F("hClusterTOFm02","Cluster spectrum",200,0.,20.,400,-200.e-9,200.e-9));
+  
+ //MC  
+  char partName[15][10] ;
+  snprintf(partName[0],10,"pi0");
+  snprintf(partName[1],10,"eta") ;
+  snprintf(partName[2],10,"omega"); 
+  snprintf(partName[3],10,"K0s"); 
+  snprintf(partName[4],10,"Kpm"); 
+  snprintf(partName[5],10,"pipm"); 
+  snprintf(partName[6],10,"n"); 
+  snprintf(partName[7],10,"nbar"); 
+  snprintf(partName[8],10,"p"); 
+  snprintf(partName[9],10,"pbar"); 
+  snprintf(partName[10],10,"el"); 
+  snprintf(partName[11],10,"OtherCh"); 
+  snprintf(partName[12],10,"OtherNeu"); 
+  
+  char cPID[8][15] ;
+  snprintf(cPID[0],5,"All") ;
+  snprintf(cPID[1],5,"Disp");
+  snprintf(cPID[2],5,"CPV") ;
+  snprintf(cPID[3],5,"Both"); 
+  
+  if(fIsMC){
+    for(Int_t ipart=0; ipart<13; ipart++){  
+      for(Int_t iPID=0; iPID<4; iPID++){
+        fhCont2D[ipart][iPID]= new TH2F(Form("hMCRec_%s_%s",partName[ipart],cPID[iPID]),"Rec vs primary",200,0.,20.,200,0.,20.) ;    
+        fOutputContainer->Add(fhCont2D[ipart][iPID]) ;
+      }
+    }
+  }
    
   for(Int_t j=0;j<fNCenBin;j++)
     fPHOSEvents[j]=0x0 ;    //Container for PHOS photons
@@ -202,6 +236,8 @@ void AliAnalysisPhotonDDA::UserExec(Option_t *)
      Printf("ERROR: Could not retrieve event");
      return;
   }
+  
+  TClonesArray* stack = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
 
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
@@ -288,6 +324,7 @@ void AliAnalysisPhotonDDA::UserExec(Option_t *)
     if(!track->IsHybridGlobalConstrainedGlobal())
       continue ;
     if(  TMath::Abs(track->Eta())< 0.8) {
+        
       trackMult++;
       Double_t pt = track->Pt();
       FillHistogram("hTrackPt",pt);
@@ -425,10 +462,88 @@ void AliAnalysisPhotonDDA::UserExec(Option_t *)
       }
     }
         
-    
-//     if(cpvBit) //only charged clusters
-//       continue ; 
+    //classify parents    
+    if(fIsMC){
+       Int_t primLabel=clu->GetLabelAt(0) ; 
+       //Look what particle left vertex
+       if(primLabel>-1){
+         AliAODMCParticle * prim = (AliAODMCParticle*)stack->At(primLabel) ;
+         Int_t iparent=primLabel;
+         AliAODMCParticle * parent = prim;
+         Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
+         while((r2 > 1.) && (iparent>-1)){
+           iparent=parent->GetMother();
+           if(iparent<0)
+	           break ;
+           parent=(AliAODMCParticle*)stack->At(iparent);
+           r2=parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() ;
+         }
+         Int_t parentPDG=parent->GetPdgCode() ;    
+         Int_t parentIndx=0;
+         switch(parentPDG){
+	       case 22: iparent=parent->GetMother();
+                 if(iparent>=0){
+                    parent=(AliAODMCParticle*)stack->At(iparent);
+                    parentPDG=parent->GetPdgCode() ;
+                    if(parentPDG==111){ //pi0
+                      parentIndx=0;   
+                      break ;  
+                    }
+                    if(parentPDG==221){ //eta
+                      parentIndx=1;   
+                      break ;  
+                    }
+                    if(parentPDG==223){ //omega
+                      parentIndx=2;   
+                      break ;  
+                    }
+                 }
+                 parentIndx=12;
+                 break ;
 
+         case 111: parentIndx=0;   
+                  break ; 
+         case 221: parentIndx=1;   
+                  break ;  
+	       case  11:
+	       case -11: parentIndx=10; //e+-  
+                  break ;  
+	 case -2212: parentIndx=9; //pbar 
+                  break ;
+	 case -2112: parentIndx=7; //nbar 
+                  break ;	  
+	 case  211:
+	 case -211: parentIndx=5; //pbar 
+                  break ;
+	 case 2212:parentIndx=8; //proton 
+                  break ;	  
+	 case  321:
+	 case -321:parentIndx=4; //K+- 
+                  break ;
+	 case 310: parentIndx=3; //Ks0
+	          break ;
+	 case 2112: parentIndx=6; //n 
+                  break ;	
+	 default:  
+	   if(parent->Charge()!=0)
+	     parentIndx=11; //other charged
+	   else 
+	     parentIndx=12; //other neutral
+  }  
+        
+         fhCont2D[parentIndx][0]->Fill(clu->E(),parent->Pt()) ;
+         if(cpvBit){
+           fhCont2D[parentIndx][2]->Fill(clu->E(),parent->Pt()) ;
+         }
+         if(dispBit){
+           fhCont2D[parentIndx][1]->Fill(clu->E(),parent->Pt()) ;
+           if(cpvBit){
+             fhCont2D[parentIndx][3]->Fill(clu->E(),parent->Pt()) ;
+           }
+         }
+       }
+    } 
+        
     if (!track) continue;
     if(!track->IsHybridGlobalConstrainedGlobal())
       continue ;
