@@ -33,6 +33,7 @@ AliHFJet::AliHFJet():
   fPt(-1.),
   fEta(-1.),
   fPhi(-1.),
+  fLeadingPt(-1.),
   fDeltaEta(-1.),
   fDeltaPhi(-1.),
   fDeltaR(-1.),
@@ -65,6 +66,7 @@ AliHFJet::AliHFJet(const AliHFJet &source):
   fPt(source.fPt),
   fEta(source.fEta),
   fPhi(source.fPhi),
+  fLeadingPt(source.fLeadingPt),
   fDeltaEta(source.fDeltaEta),
   fDeltaPhi(source.fDeltaPhi),
   fDeltaR(source.fDeltaR),
@@ -105,6 +107,7 @@ void AliHFJet::Reset()
   fPt = -1.;
   fEta = -1.;
   fPhi = -1.;
+  fLeadingPt = -1.;
   fDeltaEta = -1.;
   fDeltaPhi = -1.;
   fDeltaR = -1.;

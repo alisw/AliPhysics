@@ -361,6 +361,8 @@ void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet:
   hfjet.fPt=jet.perp();
   hfjet.fEta=jet.pseudorapidity();
   hfjet.fPhi=jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
+  hfjet.fLeadingPt=sorted_constituents[0].perp();
   if (cand) hfjet.fDeltaEta=jet.pseudorapidity()-cand->Eta();
   else hfjet.fDeltaEta=-99;
   if (cand) hfjet.fDeltaPhi=RelativePhi(jet.phi(),cand->Phi());
@@ -384,6 +386,8 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
   hfjet.fPt=jet.perp();
   hfjet.fEta=jet.pseudorapidity();
   hfjet.fPhi=jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
+  hfjet.fLeadingPt=sorted_constituents[0].perp();
   if (mcpart) hfjet.fDeltaEta=jet.pseudorapidity()-mcpart->Eta();
   else hfjet.fDeltaEta=-99;
   if (mcpart) hfjet.fDeltaPhi=RelativePhi(jet.phi(),mcpart->Phi());

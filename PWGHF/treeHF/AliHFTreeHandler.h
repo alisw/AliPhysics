@@ -88,7 +88,9 @@ class AliHFTreeHandler : public TObject
     bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
 
     void SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, Double_t invmass, TClonesArray *mcarray, AliAODMCParticle* mcPart);
+    void SetAndFillInclusiveJetVars(TClonesArray *array,TClonesArray *mcarray);
     void SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart);
+    void SetAndFillInclusiveGenJetVars(TClonesArray *array);
 #ifdef HAVE_FASTJET
     void SetJetParameters(AliHFJetFinder& hfjetfinder);
 #endif
@@ -262,6 +264,8 @@ class AliHFTreeHandler : public TObject
     float fEtaGenJet; ///gen jet pseudorapidity
     float fPhiJet; ///jet azimuthal angle
     float fPhiGenJet; ///gen jet azimuthal angle
+    float fLeadingPtJet; //jet leading track pT
+    float fLeadingPtGenJet; //genjet leading track pT
     float fDeltaEtaJetHadron; ///jet hadron pseudorapidity
     float fDeltaEtaGenJetHadron; ///gen jet hadron pseudorapidity
     float fDeltaPhiJetHadron; ///jet hadron azimuthal angle
