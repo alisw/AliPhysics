@@ -49,7 +49,7 @@ private:
 
  
 private:
-  THashList * fOutputContainer = nullptr;       //final histogram container 
+  THashList * fOutputContainer = nullptr;       //final histogram container  
   Int_t   fCenBin ;
   Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   Int_t   fNCenBin ;            //NUmber of centrality bins
@@ -58,14 +58,13 @@ private:
   Double_t     fCentrality ;   // centrality
   Int_t fRunNumber ;
   Bool_t fIsMC ;
-
   AliPHOSGeometry  *fPHOSGeo = nullptr;         //! PHOS geometry
   Int_t fEventCounter;                          // number of analyzed events
   AliPIDResponse     *fPIDResponse = nullptr;   //! PID response 
   TClonesArray * fPHOSEvent = nullptr ;
   TList        * fCurrentMixedList = nullptr;
   TList        * fPHOSEvents[5] = {nullptr} ;
-  TH2F         * fhCont2D[15][4] = {nullptr};
+  TH2F         * fhCont2D[15][4] ;
   ClassDef(AliAnalysisPhotonDDA, 1);            // PHOS analysis task
 };
 
