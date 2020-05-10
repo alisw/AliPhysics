@@ -440,7 +440,7 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
   fTreeVar->Branch("phi_jet",&fPhiJet);
   fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
   fTreeVar->Branch("ptleadingtrack_jet",&fLeadingPtJet);
-  fTreeVar->Branch("ptleadingtrack_genjet",&fLeadingPtGenJet);
+  fTreeVar->Branch("ptleadingtrack_gen_jet",&fLeadingPtGenJet);
   fTreeVar->Branch("delta_eta_jet",&fDeltaEtaJetHadron);
   fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
   fTreeVar->Branch("delta_phi_jet",&fDeltaPhiJetHadron);
@@ -455,8 +455,8 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
   fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
   fTreeVar->Branch("nsd_jet",&fNsdJet);
   fTreeVar->Branch("nsd_gen_jet",&fNsdGenJet);
-  fTreeVar->Branch("Pt_splitting_jet",&fPt_splittingJet);
-  fTreeVar->Branch("Pt_splitting_gen_jet",&fPt_splittingGenJet);
+  fTreeVar->Branch("pt_splitting_jet",&fPt_splittingJet);
+  fTreeVar->Branch("pt_splitting_gen_jet",&fPt_splittingGenJet);
   fTreeVar->Branch("k0_jet",&fk0Jet);
   fTreeVar->Branch("k0_gen_jet",&fk0GenJet);
   fTreeVar->Branch("zk0_jet",&fZk0Jet);
@@ -500,7 +500,7 @@ void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
   fTreeVar->Branch("zg_jet",&fZgGenJet);
   fTreeVar->Branch("rg_jet",&fRgGenJet);
   fTreeVar->Branch("nsd_jet",&fNsdGenJet);
-  fTreeVar->Branch("Pt_splitting_jet",&fPt_splittingGenJet);
+  fTreeVar->Branch("pt_splitting_jet",&fPt_splittingGenJet);
   fTreeVar->Branch("k0_jet",&fk0GenJet);
   fTreeVar->Branch("zk0_jet",&fZk0GenJet);
   fTreeVar->Branch("rk0_jet",&fRk0GenJet);
