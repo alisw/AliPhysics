@@ -16,11 +16,12 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
                                                      Int_t fillTreeLb=0,
                                                      Int_t pidOpt=AliHFTreeHandler::kNsigmaPID,
                                                      Int_t singletrackvarsopt=AliHFTreeHandler::kRedSingleTrackVars,
-                                                     Bool_t fillParticleTree = kFALSE,
+						     Bool_t fillParticleTree = kFALSE,
                                                      Bool_t fillTrackletTree = kFALSE,
                                                      Int_t fillNJetTrees = 0,
                                                      Bool_t fillJetConstituentTrees = kFALSE,
-                                                     Bool_t isITSUpgradeProd = kFALSE)
+                                                     Bool_t isITSUpgradeProd = kFALSE,
+						     Bool_t fillInclusiveJetTree = kFALSE)
 {
     //
     //
@@ -122,6 +123,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     task->SetFillDstarTree(fillTreeDstar);
     task->SetFillLc2V0bachelorTree(fillTreeLc2V0bachelor);
     task->SetFillLbTree(fillTreeLb);
+    task->SetFillInclusiveJetTree(fillInclusiveJetTree);
     task->SetFillParticleTree(fillParticleTree);
     task->SetFillTrackletTree(fillTrackletTree);
     task->SetPIDoptD0Tree(pidOpt);
