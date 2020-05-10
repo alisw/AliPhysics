@@ -883,8 +883,8 @@ void AliAnalysisTaskNBodyFemtoscopy::BookControlHistograms()
  fNumberOfTracksHistAfterAllCuts->SetFillColor(kRed-10);
  fNumberOfTracksHistAfterAllCuts->GetXaxis()->SetTitle("Number of tracks");
  fControlHistogramsList->Add(fNumberOfTracksHistAfterAllCuts);
- Int_t xBinsTemp = 7;
- Int_t yBinsTemp = 6;
+ const Int_t xBinsTemp = 7;
+ const Int_t yBinsTemp = 6;
  fTestPIDTrueFalsePositive = new TH2F("fTestPIDTrueFalsePositive","True positives PID",xBinsTemp,0,6,yBinsTemp,0,5);
  const char *particleNameY[yBinsTemp] = {"Pion+","Pion-","Proton+","Proton-","Kaon+","Kaon-"};
  for (Int_t i=1;i<=yBinsTemp;i++) fTestPIDTrueFalsePositive->GetYaxis()->SetBinLabel(i,particleNameY[i-1]);
