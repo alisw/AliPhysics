@@ -225,6 +225,7 @@ private:
 
   struct {
     // MC information on the event
+    Int_t fBCsID = 0u;       /// Index to BC table
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
     Float_t fX = -999.f;  /// Primary vertex x coordinate from MC
     Float_t fY = -999.f;  /// Primary vertex y coordinate from MC
