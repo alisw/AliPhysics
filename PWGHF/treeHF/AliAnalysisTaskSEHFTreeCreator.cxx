@@ -941,9 +941,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     OpenFile(24);
     TString nameoutput = "tree_InclusiveJet";
     fTreeHandlerInclusiveJet = new AliHFTreeHandlerInclusiveJet();
-    fTreeHandlerInclusiveJet->SetOptSingleTrackVars(fTreeSingleTrackVarsOpt);
-    if(fReadMC && fWriteOnlySignal) fTreeHandlerInclusiveJet->SetFillOnlySignal(fWriteOnlySignal);
-    if(fEnableNsigmaTPCDataCorr) fTreeHandlerInclusiveJet->EnableNsigmaTPCDataDrivenCorrection(fSystemForNsigmaTPCDataCorr);
     fTreeHandlerInclusiveJet->SetFillJets(fFillJets);
     fTreeHandlerInclusiveJet->SetDoJetSubstructure(fDoJetSubstructure);
     fTreeHandlerInclusiveJet->SetTrackingEfficiency(fTrackingEfficiency);
@@ -969,7 +966,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
 
   
   if(fFillParticleTree){
-    OpenFile(25);
+    OpenFile(26);
     TString nameoutput = "tree_Particle";
     fTreeHandlerParticle = new AliParticleTreeHandler();
     fTreeHandlerParticle->SetParticleContainer(GetParticleContainer(0));
@@ -977,7 +974,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     fVariablesTreeParticle->SetMaxVirtualSize(1.e+8/nEnabledTrees);
     fTreeEvChar->AddFriend(fVariablesTreeParticle);
     if(fFillMCGenTrees && fReadMC) {
-      OpenFile(26);
+      OpenFile(27);
       TString nameoutput = "tree_Particle_gen";
       fTreeHandlerGenParticle = new AliParticleTreeHandler();
       fTreeHandlerGenParticle->SetParticleContainer(GetParticleContainer(1));
@@ -987,7 +984,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     }
   }
   if(fFillTrackletTree){
-    OpenFile(27);
+    OpenFile(28);
     TString nameoutput = "tree_Tracklet";
     fTreeHandlerTracklet = new AliTrackletTreeHandler();
     fVariablesTreeTracklet = (TTree*)fTreeHandlerTracklet->BuildTree(nameoutput,nameoutput);
@@ -996,7 +993,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   }
   if(fWriteNJetTrees > 0){
     for (int i=0; i<fJetCollArray.GetEntriesFast(); i++) {
-      OpenFile(28 + i);
+      OpenFile(29 + i);
       
       // Create jet tree handlers and configure them
       fTreeHandlerJet.push_back(new AliJetTreeHandler());
