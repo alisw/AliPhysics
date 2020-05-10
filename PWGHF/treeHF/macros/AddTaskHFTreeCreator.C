@@ -174,6 +174,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     TString treeGenDstarname = "coutputTreeGenDstar";
     TString treeGenLc2V0bachelorname = "coutputTreeGenLc2V0bachelor";
     TString treeGenLbname = "coutputTreeGenLb";
+    TString treeInclusiveJetName = "coutputTreeInclusiveJet";
+    TString treeGenInclusiveJetName = "coutputTreeGenInclusiveJet";
     TString treeParticleName = "coutputTreeParticle";
     TString treeTrackletName = "coutputTreeTracklet";
     TString treeGenParticleName = "coutputTreeGenParticle";
@@ -204,6 +206,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     treeGenDstarname += finDirname.Data();
     treeGenLc2V0bachelorname += finDirname.Data();
     treeGenLbname += finDirname.Data();
+    treeInclusiveJetName += finDirname.Data();
+    treeGenInclusiveJetName += finDirname.Data();
     treeParticleName += finDirname.Data();
     treeTrackletName += finDirname.Data();
     treeGenParticleName += finDirname.Data();
@@ -244,6 +248,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *coutputTreeLb = 0x0;
     AliAnalysisDataContainer *coutputTreeGenLb = 0x0;
     AliAnalysisDataContainer *coutputTreeParticle = 0x0;
+    AliAnalysisDataContainer *coutputTreeInclusiveJet = 0x0;
+    AliAnalysisDataContainer *coutputTreeGenInclusiveJet = 0x0;
     AliAnalysisDataContainer *coutputTreeTracklet = 0x0;
     AliAnalysisDataContainer *coutputTreeGenParticle = 0x0;
     std::vector<AliAnalysisDataContainer*> coutputTreeJet;
@@ -330,6 +336,15 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
       }
     }
   
+    if(fillInclusiveJetTree) {
+      coutputTreeInclusiveJet = mgr->CreateContainer(treeInclusiveJetName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+      coutputTreeInclusiveJet->SetSpecialOutput();
+      if(readMC && fillMGgenTrees) {
+        coutputTreeGenInclusiveJet = mgr->CreateContainer(treeGenInclusiveJetName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        coutputTreeGenInclusiveJet->SetSpecialOutput();
+      }
+    }
+
     if(fillParticleTree) {
       coutputTreeParticle = mgr->CreateContainer(treeParticleName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
       coutputTreeParticle->SetSpecialOutput();
@@ -338,6 +353,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
         coutputTreeGenParticle->SetSpecialOutput();
       }
     }
+    
   
     if(fillTrackletTree) {
       coutputTreeTracklet = mgr->CreateContainer(treeTrackletName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -397,19 +413,24 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
       mgr->ConnectOutput(task,22,coutputTreeLb);
       if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,23,coutputTreeGenLb);
     }
+    if(fillInclusiveJetTree) {
+      mgr->ConnectOutput(task,24,coutputTreeInclusiveJet);
+      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,25,coutputTreeGenInclusiveJet);
+    }
+    
     if(fillParticleTree) {
-      mgr->ConnectOutput(task,24,coutputTreeParticle);
-      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,25,coutputTreeGenParticle);
+      mgr->ConnectOutput(task,26,coutputTreeParticle);
+      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,27,coutputTreeGenParticle);
     }
     if(fillTrackletTree) {
-      mgr->ConnectOutput(task,26,coutputTreeTracklet);
+      mgr->ConnectOutput(task,28,coutputTreeTracklet);
     }
     for (int i=0; i<fillNJetTrees; i++) {
-      mgr->ConnectOutput(task,27+i,coutputTreeJet.at(i));
+      mgr->ConnectOutput(task,29+i,coutputTreeJet.at(i));
     }
     if (fillJetConstituentTrees) {
       for (int i=0; i<fillNJetTrees; i++) {
-        mgr->ConnectOutput(task,27+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
+        mgr->ConnectOutput(task,29+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
       }
     }
 
