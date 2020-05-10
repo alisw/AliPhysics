@@ -48,6 +48,7 @@ class AliESDtrackCuts;
 class AliEventplane;
 class AliVCluster;
 #include "AliLog.h"
+#include "AliEventCuts.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -472,6 +473,9 @@ public:
   void             SwitchOffRejectNoTrackEvents()          { fDoRejectNoTrackEvents = kFALSE ; }
   Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
 
+  void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
+  AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
+  
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -765,8 +769,6 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
-  
-  
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -953,6 +955,9 @@ public:
   Int_t            fNMixedEvent ;                  ///<  Number of events in mixed event buffer.
   Double_t      ** fVertex      ;                  //!<! Vertex array 3 dim for each mixed event buffer.
   
+  AliEventCuts     fEventCuts;                     ///< Event selection utility
+  Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
+  
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
   Int_t            fLastMixedTracksEvent ;         ///<  Temporary container with the last event added to the mixing list for tracks.
@@ -1065,7 +1070,7 @@ public:
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 
-  //handle runs affected by PAR
+  // Handle runs affected by PAR
   Bool_t           fParRun;                        ///<  Flag set true when run affected by PAR
   Short_t          fCurrentParIndex;               //!<! temporal PAR number based on event global to get L1 phase correction in PAR runs
   
@@ -1109,7 +1114,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,86) ;
+  ClassDef(AliCaloTrackReader,87) ;
   /// \endcond
 
 } ;
