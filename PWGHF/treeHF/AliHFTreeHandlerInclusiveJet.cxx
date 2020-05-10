@@ -46,11 +46,11 @@ TTree* AliHFTreeHandlerInclusiveJet::BuildTree(TString name, TString title)
   }
   fTreeVar = new TTree(name.Data(),title.Data());
 
-  //set common variables
-  AddCommonDmesonVarBranches();
-
-  //set single-track variables
-  AddSingleTrackBranches();
+  fTreeVar->Branch("run_number",&fRunNumber);
+  fTreeVar->Branch("ev_id",&fEvID);
+  fTreeVar->Branch("ev_id_ext",&fEvIDExt);
+  fTreeVar->Branch("ev_id_long",&fEvIDLong);
+  
   if (fFillJets) AddJetBranches();
   
   return fTreeVar;
