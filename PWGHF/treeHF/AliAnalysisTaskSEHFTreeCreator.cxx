@@ -1554,11 +1554,12 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   if(fWriteVariableTreeBplus) ProcessBplus(array2prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeBs) ProcessBs(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeLb) ProcessLb(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
-  if(fWriteVariableTreeInclusiveJet) ProcessInclusiveJet(aod,mcArray);
-  if(fFillMCGenTrees && fReadMC){
-    if(fWriteVariableTreeInclusiveJet) ProcessMCGenInclusiveJet(mcArray);
-    else ProcessMCGen(mcArray);
+  if(fWriteVariableTreeInclusiveJet){
+    ProcessInclusiveJet(aod,mcArray);
+    if(fFillMCGenTrees && fReadMC) ProcessMCGenInclusiveJet(mcArray);
   }
+  if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray);
+  
   
   // Fill the jet tree
   if (fWriteNJetTrees > 0 || fFillParticleTree) {
