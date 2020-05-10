@@ -104,6 +104,7 @@ fEventType(-1),
 fTaskName(""),               fCaloUtils(0x0),                 fMCUtils(0x0), 
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
+fEventCuts(1),               fUseEventCutsClass(kFALSE),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
@@ -760,7 +761,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
 //___________________________________________________
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
-  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 21, 0, 21) ;
+  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 22, 0, 22) ;
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
@@ -784,6 +785,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=PtHard-Cluster"); 
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(20,"20=N Track>0"); 
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(21,"21=TOF BC"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(22,"22=AliEventCuts"); 
   fOutputContainer->Add(fhNEventsAfterCut);
 
   if ( fFillEMCAL )
@@ -1494,7 +1496,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   FillVertexArray();
   
-  if(fUseEventsWithPrimaryVertex)
+  if ( fUseEventsWithPrimaryVertex )
   {
     if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
 
@@ -1519,7 +1521,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
-  if(fDoPileUpEventRejection)
+  if ( fDoPileUpEventRejection )
   {
     // Do not analyze events with pileup
     Bool_t bPileup = IsPileUpFromSPD();
@@ -1532,7 +1534,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     fhNEventsAfterCut->Fill(13.5);
   }
   
-  if(fDoV0ANDEventSelection)
+  if ( fDoV0ANDEventSelection )
   {
     AliVVZERO* v0 = fInputEvent->GetVZEROData();
 
@@ -1598,7 +1600,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     // the one requested among the possible generators.
     // Needed in case of cocktail MC generation with multiple options.
     //----------------------------------------------------------------
-    if(fMCGenerEventHeaderToAccept!="") 
+    if ( fMCGenerEventHeaderToAccept!="" ) 
     {
       if ( !fGenEventHeader ) return kFALSE;
       
@@ -1629,7 +1631,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       // To be used on for MC data in pT hard bins
       //---------------------------------------------------------------------------
       
-      if(fComparePtHardAndJetPt)
+      if ( fComparePtHardAndJetPt )
       {
         if ( !ComparePtHardAndJetPt(pyProcess, pyProcessName) ) return kFALSE ;
         
@@ -1672,25 +1674,48 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // Fill the arrays with cluster/tracks/cells data
   //-----------------------------------------------
   
-  if(fFillCTS)
+  if ( fFillCTS )
   {
     FillInputCTS();
-    //Accept events with at least one track
-    if(fTrackMult[0] == 0 && fDoRejectNoTrackEvents) return kFALSE ;
+    
+    // Accept events with at least one track
+    if ( fTrackMult[0] == 0 && fDoRejectNoTrackEvents ) 
+      return kFALSE ;
     
     AliDebug(1,"Pass rejection of null track events");
 
     fhNEventsAfterCut->Fill(19.5);    
   }
   
-  if(fDoVertexBCEventSelection)
+  if ( fDoVertexBCEventSelection )
   {
-    if(fVertexBC != 0 && fVertexBC != AliVTrack::kTOFBCNA) return kFALSE ;
+    if ( fVertexBC != 0 && fVertexBC != AliVTrack::kTOFBCNA ) 
+      return kFALSE ;
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
     fhNEventsAfterCut->Fill(20.5);
   }
+  
+  //-----------------------------------
+  // Check the event cuts implemented in AliEventCuts class
+  // Right after other event cuts applied here 
+  // Some might be also applied in AliEventCuts
+  //-----------------------------------
+  if ( fUseEventCutsClass )
+  {
+    Bool_t accept = fEventCuts.AcceptEvent(GetInputEvent());
+    
+    if ( !accept ) return kFALSE;
+    
+    AliDebug(1,"Pass AliEventCuts!");
+    
+    fhNEventsAfterCut->Fill(21.5);
+  }
+  
+  //-----------------------------------
+  // Get and filter calorimeter data
+  //-----------------------------------
   
   if(fFillEMCALCells)
     FillInputEMCALCells();
