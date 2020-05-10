@@ -378,6 +378,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     TTree * tMCvtx = CreateTree(kMCvtx);
     tMCvtx->SetAutoFlush(fNumberOfEventsPerCluster);
     if(fTreeStatus[kMCvtx]) {
+      tMCvtx->Branch("fBCsID", &mcvtx.fBCsID, "fBCsID/I");
       tMCvtx->Branch("fGeneratorsID", &mcvtx.fGeneratorsID, "fGeneratorsID/S");
       tMCvtx->Branch("fX", &mcvtx.fX, "fX/F");
       tMCvtx->Branch("fY", &mcvtx.fY, "fY/F");
@@ -1091,6 +1092,9 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     const AliVVertex* MCvtx = MCEvt->GetPrimaryVertex();
     if (!MCvtx) //Check on the MC vertex
       AliFatal("Could not retrieve MC vertex");
+
+    mcvtx.fBCsID = eventID;
+
     mcvtx.fX = MCvtx->GetX();
     mcvtx.fY = MCvtx->GetY();
     mcvtx.fZ = MCvtx->GetZ();
