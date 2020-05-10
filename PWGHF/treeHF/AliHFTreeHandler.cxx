@@ -657,7 +657,7 @@ void AliHFTreeHandler::SetAndFillInclusiveJetVars(TClonesArray *array, TClonesAr
     if (mcarray){
       for (Int_t j=0; j<genjets.size(); j++){
 	genjet=genjets[j];
-	if (TMath::Sqrt(((jet.fEta-genjet.fEta)*(jet.fEta-genjet.fEta))+((jet.fPhi-genjet.fPhi)*(jet.fPhi-genjet.fPhi))) < 0.2) break;
+	if (TMath::Sqrt(((jet.fEta-genjet.fEta)*(jet.fEta-genjet.fEta))+((jet.fPhi-genjet.fPhi)*(jet.fPhi-genjet.fPhi))) < 0.2) break; //should be y not eta but close enough for now
       }
     }
     SetGenJetTreeVars(genjet);

@@ -3726,7 +3726,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessInclusiveJet(AliAODEvent *aod, TClon
   
 
   fTreeHandlerInclusiveJet->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong, 0.0, NULL, 0.0, 0, NULL);
-  if (fFillJets) fTreeHandlerInclusiveJet->SetAndFillInclusiveJetVars(aod->GetTracks(),arrMC);
+  fTreeHandlerInclusiveJet->SetAndFillInclusiveJetVars(aod->GetTracks(),arrMC);
 
   return;
 }
@@ -3734,7 +3734,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessInclusiveJet(AliAODEvent *aod, TClon
 void AliAnalysisTaskSEHFTreeCreator::ProcessMCGenInclusiveJet(TClonesArray *arrayMC){
 
   fTreeHandlerGenInclusiveJet->SetMCGenVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong);
-  if (fFillJets)fTreeHandlerGenInclusiveJet->SetAndFillInclusiveGenJetVars(arrayMC);
+  fTreeHandlerGenInclusiveJet->SetAndFillInclusiveGenJetVars(arrayMC);
 
 }
 
