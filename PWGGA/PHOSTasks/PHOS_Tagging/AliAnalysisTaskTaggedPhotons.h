@@ -152,6 +152,8 @@ private:
   TH2F * fhReSingleIso[3][10][8]; //!
   TH2F * fhMiSingleIso[3][10][8]; //!
   TH1F * fhPiIsolation[20][10] ;  //!
+  TH2F * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
+  TH2F * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
   
   TH2F * fhQAAllEpartn ;    //!
   TH2F * fhQAAllzpartn ;    //!

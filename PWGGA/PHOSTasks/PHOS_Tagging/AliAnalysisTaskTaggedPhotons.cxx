@@ -442,6 +442,14 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
        fhReSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Re_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
        fOutputContainer->Add(fhReSingleIso[iEmin][cen][iPID]) ;
+
+       fhReTruePi0[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTruePi0_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+                                         "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
+       fOutputContainer->Add(fhReTruePi0[iEmin][cen][iPID] ) ;
+
+       fhReTrueEta[iEmin][cen][iPID] = new TH2F(Form("hInvM_ReTrueEta_Emin%d_%s_cent%d",iEmin+1,cPID[iPID],cen),
+                                         "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ; 
+       fOutputContainer->Add(fhReTrueEta[iEmin][cen][iPID] ) ;
        
        fhMiSingleIso[iEmin][cen][iPID]= new TH2F(Form("hSingleInvM_Mi_Emin%d_Iso_%s_cent%d",iEmin+1,cPID[iPID],cen),
                                                "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
@@ -1443,6 +1451,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+      Int_t commonParent = IsSameParent(p1,p2);
       if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
@@ -1455,10 +1464,22 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         for(Int_t iPID=0; iPID<fNPID; iPID++){  
           if(TestPID(iPID, p1,p2)){
             fhRe[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+            if(commonParent==111)
+              fhReTruePi0[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+            if(commonParent==221)
+              fhReTrueEta[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
             if((p1->E()>0.2) && (p2->E()>0.2)){
               fhRe[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+              if(commonParent==111)
+                fhReTruePi0[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+              if(commonParent==221)
+                fhReTrueEta[1][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
               if((p1->E()>0.3) && (p2->E()>0.3)){
                 fhRe[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+                if(commonParent==111)
+                  fhReTruePi0[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+                if(commonParent==221)
+                  fhReTrueEta[2][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
               }
             }
           }
@@ -1842,7 +1863,7 @@ Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const 
   
     while(prim2!=-1){       
       if(prim1==prim2){
-	return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
+	      return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
       }
       prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
     }
