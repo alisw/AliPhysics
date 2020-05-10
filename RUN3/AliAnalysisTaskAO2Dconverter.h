@@ -52,7 +52,6 @@ public:
     kTOF,
     kKinematics,
     kMCvtx,
-    kRange,
     kLabels,
     kBC,
     kTrees
@@ -236,16 +235,12 @@ private:
   } mcvtx;  //! MC vertices
 
   struct {
-    // Range of labels:
-    // for track i the labels are located between fRange[i] and fRange[i+1]
-    // so we have Ntracks+1 entries in the table (tree) and fRange[0]=0
-    UInt_t fRange = 0; // Current upper limit of the range
-  } range; //! Range of labels for each track
-
-  struct {
     // Track labels
-    Int_t fLabel = -1;           /// Track label
-    // Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
+    Int_t fLabel = -1;       /// Track label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+                             /// Bit 0-6: mismatch at ITS layer
+                             /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
+                             /// Bit 10: TRD, bit 11: TOF
   } labels; //! Track labels
   
   struct {

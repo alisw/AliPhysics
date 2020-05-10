@@ -100,9 +100,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2range", "O2labels", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2kine", "O2mcvtx", "O2labels", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "Range of MC labels", "MC labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC vertex", "MC labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -412,20 +412,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     }
     PostTree(kKinematics);
 
-    // Range for the MC labels of each reconstructed track
-    TTree* tRange = CreateTree(kRange);
-    tRange->SetAutoFlush(fNumberOfEventsPerCluster);
-    if (fTreeStatus[kRange]) {
-      tRange->Branch("fRange", &range.fRange, "fRange/i");
-      FillTree(kRange); // Put the begin of the first range to 0
-    }
-    PostTree(kRange);
-    
     // MC labels of each reconstructed track
     TTree* tLabels = CreateTree(kLabels);
     tLabels->SetAutoFlush(fNumberOfEventsPerCluster);
     if (fTreeStatus[kLabels]) {
       tLabels->Branch("fLabel", &labels.fLabel, "fLabel/I");
+      tLabels->Branch("fLabelMask", &labels.fLabelMask, "fLabelMask/s");
     }
     PostTree(kLabels);
   }
@@ -642,15 +634,37 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
-      // Right now we have only one label, the data model is adapted to many labels
-      // We expect a loop on the labels in Run3 MC
-      // for (ilabel=0; ilabel<nlabels; ++ilabel) {
       Int_t alabel = track->GetLabel();
       labels.fLabel = TMath::Sign(TMath::Abs(alabel) + fOffsetLabel, alabel); // keep the sign of the label
+      labels.fLabelMask = 0;
+      // Use the ITS shared clusters to set the corresponding bits 0-6
+      UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
+      labels.fLabelMask |= itsMask;
+      // Use the number of TPC shared clusters as number of TPC mismatches
+      // encode in bits 7-9 the values in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
+      const TBits * tpcShared = track->GetTPCSharedMapPtr();
+      UInt_t tpcCount = tpcShared->CountBits();
+      UShort_t tpcMask = 0;
+      while (tpcCount>0) {
+	tpcCount = tpcCount >> 1;
+	tpcMask++;
+      }
+      if (tpcMask>7) tpcMask = 7;
+      labels.fLabelMask |= (tpcMask<<7);
+      // TRD (bit 10)
+      // We can also use labels per tracklet in the future
+      Int_t trdLabel = track->GetTRDLabel();
+      if (TMath::Abs(alabel)!=TMath::Abs(trdLabel)) labels.fLabelMask |= (0x1 << 10);
+      // TOF (bit 11)
+      Int_t tofLabel[3]={-1};
+      track->GetTOFLabel(tofLabel);
+      // Check if at least one of the TOF hits matches the track label
+      if (!( TMath::Abs(alabel)==TMath::Abs(tofLabel[0])
+	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[1])
+	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[2])))
+	labels.fLabelMask |= (0x1 << 11);
+      
       FillTree(kLabels);
-      range.fRange++;
-      // } // End of loop on labels
-      FillTree(kRange);
     }
   
 #ifdef USE_TOF_CLUST
