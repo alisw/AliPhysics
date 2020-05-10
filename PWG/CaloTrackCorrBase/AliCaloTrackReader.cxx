@@ -899,6 +899,9 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
   }
   
+  if ( fUseEventCutsClass )
+    fEventCuts.AddQAplotsToList(fOutputContainer); 
+  
   return fOutputContainer ;
 }
 
