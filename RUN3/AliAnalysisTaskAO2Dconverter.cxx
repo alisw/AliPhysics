@@ -134,6 +134,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   case kStandard:
     DisableTree(kKinematics);
     DisableTree(kMCvtx);
+    DisableTree(kLabels);
     break;
   default:
     break;
@@ -392,7 +393,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     // Associate branches for Kinematics
     TTree* Kinematics = CreateTree(kKinematics);
     Kinematics->SetAutoFlush(fNumberOfEventsPerCluster);
-    if (fTreeStatus[kMC]) {
+    if (fTreeStatus[kKinematics]) {
       Kinematics->Branch("fCollisionsID", &mcparticle.fCollisionsID, "fCollisionsID/I");
 
       Kinematics->Branch("fPdgCode", &mcparticle.fPdgCode, "fPdgCode/I");
