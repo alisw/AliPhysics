@@ -679,7 +679,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
   fTreeEvChar->Branch("is_ev_sel_EMCEJE", &fIsEvSel_EMCEJE);
-  fTreeEvChar->Branch("cros_ssection", &fCross_Section);
+  fTreeEvChar->Branch("cross_section", &fCross_Section);
   fTreeEvChar->Branch("trials", &fTrials);
   fTreeEvChar->Branch("pthard", &fpthard);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
