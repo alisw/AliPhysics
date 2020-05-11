@@ -221,7 +221,7 @@ fIsEvSel_HighMultSPD(false),
 fIsEvSel_HighMultV0(false),
 fIsEvSel_EMCEJE(false),
 fCross_Section(-1.),
-fTrials(-1.),
+fTrials(-1),
 fpthard(-1.),
 fRunNumber(0),
 fRunNumberCDB(0),
@@ -1286,14 +1286,13 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
       printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC particles branch not found!\n");
       return;
     }
-    
     // load MC header
     mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
       printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
       return;
     }
-    fzVtxGen = mcHeader->GetVtxZ();
+    fzVtxGen = mcHeader->GetVtxZ();     
   }
   
   Bool_t isSameEvSelD0=kTRUE;
@@ -1466,9 +1465,22 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
-  fCross_Section = mcHeader->GetCrossSection();
-  fTrials = mcHeader->GetTrials();
+
+  TFile *F_xsection = new TFile(Form("pyxsec_hists.root"));
+  TList *L_xsection = (TList *) F_xsection->Get("cFilterList");
+  TProfile *fh_xsection = (TProfile *) L_xsection->FindObject("h1Xsec");
+  TH1D *fh_Trials = (TH1D *) L_xsection->FindObject("h1Trials");
+
+  //fCross_Section = mcHeader->GetCrossSection();
+  //fTrials = mcHeader->GetTrials();
+  fCross_Section = fh_xsection->GetBinContent(1);
+  fTrials = fh_Trials->GetBinContent(1);
   fpthard = mcHeader->GetPtHard();
+
+  delete F_xsection;
+  delete L_xsection;
+  delete fh_xsection;
+  delete fh_Trials;
 
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
