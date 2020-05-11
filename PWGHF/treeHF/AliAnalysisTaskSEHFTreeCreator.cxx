@@ -1467,7 +1467,6 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
   if(fDoPtHard){
-    cout << "FINDING pyxsec!!!!!!!!!!!!!!!!!!!!!!"<<endl;
     TString currentfilepath_pyxsec = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
     for (Int_t s_end=0; s_end<11; s_end++) currentfilepath_pyxsec.Remove(currentfilepath_pyxsec.Length()-1);
     TString pyxsec_name = "pyxsec_hists.root";
