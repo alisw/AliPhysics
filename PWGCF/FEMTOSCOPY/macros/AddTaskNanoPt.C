@@ -181,8 +181,8 @@ AliAnalysisTaskSE *AddTaskNanoPt(  bool isMC = true,
   config->SetClosePairRejection(closeRejection);
   config->SetPtQA(true);
   config->SetExtendedQAPairs(pairQA);
-  config->SetDeltaEtaMax(0.012); // and here you set the actual values
-  config->SetDeltaPhiMax(0.012); // and here you set the actual values
+  config->SetDeltaEtaMax(0.017); // and here you set the actual values
+  config->SetDeltaPhiMax(0.017); // and here you set the actual values
   //Here we set the mixing depth.
   config->SetMixingDepth(10);
 
