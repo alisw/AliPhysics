@@ -220,6 +220,9 @@ fIsEvSel_INT7(false),
 fIsEvSel_HighMultSPD(false),
 fIsEvSel_HighMultV0(false),
 fIsEvSel_EMCEJE(false),
+fCross_Section(-1.),
+fTrials(-1.),
+fpthard(-1.),
 fRunNumber(0),
 fRunNumberCDB(0),
 fBC(0),
@@ -675,6 +678,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
   fTreeEvChar->Branch("is_ev_sel_shm", &fIsEvSel_HighMultSPD);
   fTreeEvChar->Branch("is_ev_sel_vhm", &fIsEvSel_HighMultV0);
   fTreeEvChar->Branch("is_ev_sel_EMCEJE", &fIsEvSel_EMCEJE);
+  fTreeEvChar->Branch("cros_ssection", &fCross_Section);
+  fTreeEvChar->Branch("trials", &fTrials);
+  fTreeEvChar->Branch("pthard", &fpthard);
   fTreeEvChar->SetMaxVirtualSize(1.e+8/nEnabledTrees);
   
   if(fWriteVariableTreeD0){
@@ -1459,6 +1465,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
   fIsEvRej_EMCEJE = fEvSelectionCuts->GetEventRejectionBitMap();
 
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
+
+  fCross_Section = mcHeader->GetCrossSection();
+  fTrials = mcHeader->GetTrials();
+  fpthard = mcHeader->GetPtHard();
 
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();

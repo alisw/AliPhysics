@@ -370,6 +370,9 @@ private:
     Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
     Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
     Bool_t                  fIsEvSel_EMCEJE;                       /// boolean whether event accept for EMCEJE
+    Double_t                fCross_Section;                        /// cross section of pt hard bin event
+    Int_t                   fTrials;                               /// Trials of pt hard bin event
+    Double_t                fpthard;                               /// Pt hard bin of event
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
     UShort_t                fBC;                                   /// bunch crossing number
