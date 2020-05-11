@@ -274,6 +274,8 @@ class AliHFTreeHandler : public TObject
     float fDeltaRGenJetHadron; ///gen jet hadron distance
     float fNTracksJet;  //number of tracks in the jet
     float fNTracksGenJet;  //number of tracks in the gen jet
+    float fZJet; // fragmentation function in jet
+    float fZGenJet; //fragmentation function in gen jet
     float fZgJet; //zg
     float fZgGenJet; //gen zg
     float fRgJet; //Rg

@@ -370,7 +370,24 @@ void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet:
   if (cand) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
   else hfjet.fDeltaR=-99;
   hfjet.fN=constituents.size();
-
+  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
+  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
+  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  Double_t Px_Cand;
+  Double_t Py_Cand;
+  Double_t Pz_Cand;
+  if(cand){
+    Px_Cand=cand->Pt()*TMath::Cos(cand->Phi());
+    Py_Cand=cand->Pt()*TMath::Sin(cand->Phi());
+    Pz_Cand=cand->Pt()*TMath::SinH(cand->Eta());
+  }
+  else{
+    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
+  }
+  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
+  
   if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,constituents);
   
 }
@@ -395,6 +412,23 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
   if (mcpart) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
   else hfjet.fDeltaR=-99;
   hfjet.fN=constituents.size();
+  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
+  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
+  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  Double_t Px_Cand;
+  Double_t Py_Cand;
+  Double_t Pz_Cand;
+  if(mcpart){
+    Px_Cand=mcpart->Pt()*TMath::Cos(mcpart->Phi());
+    Py_Cand=mcpart->Pt()*TMath::Sin(mcpart->Phi());
+    Pz_Cand=mcpart->Pt()*TMath::SinH(mcpart->Eta());
+  }
+  else{
+    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
+  }
+  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
 
   if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,constituents);
   
