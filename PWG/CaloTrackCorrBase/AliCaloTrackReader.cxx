@@ -1937,9 +1937,26 @@ void AliCaloTrackReader::FillInputCTS()
   
   for (Int_t itrack =  0; itrack <  nTracks; itrack++)
   {
-    AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
+    AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; 
     
-    FillInputCTSSelectTrack(track,itrack, bc0);
+    FillInputCTSSelectTrack(track, itrack, bc0);
+  }
+  
+  // Add embedded tracks from external event
+  // Only if input event is just data and not already external
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] )
+  {
+    AliVEvent * externalEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+    if ( externalEvent )
+    {
+      for (Int_t jtrack =  0; jtrack < externalEvent->GetNumberOfTracks() ; jtrack++)
+      {
+        AliVTrack * extTrack = (AliVTrack*) externalEvent->GetTrack(jtrack) ; 
+        
+        FillInputCTSSelectTrack(extTrack, jtrack, bc0);
+      } // track loop
+    } 
+    else printf("No external event for embed mc %d embed data %d\n",fEmbeddedEvent[0], fEmbeddedEvent[1]);
   }
   
   if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
