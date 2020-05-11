@@ -611,6 +611,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
 ///       * Strip: Consider also removing LED flashing single strips
 ///    *CheckTriggerPeriod: Activate configuration of analysis if trigger existed in a given period
+///    *EmbedMC: Activate recovery of embedded MC signal
+///          * EmbedMCInput: Both MC and Input event from embedded signal, just MC analysis
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -816,11 +818,27 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Set the list name for later recovery in macros 
   maker->GetListOfAnalysisContainers()->SetName(anaCaloTrackCorrBase);
   
+  // Activate recovery of embedded events
+  Bool_t embed = kFALSE;
+  if ( cutsString.Contains("EmbedMC") )
+  {
+    embed = kTRUE; // use trigger masks later
+    maker->GetReader()->UseEmbeddedEvent(kTRUE,kFALSE); // if only first true, remember to get the combined clusters/cells
+    
+    // Both input event and MC event come from embedded signal
+    if ( cutsString.Contains("EmbedMCInput") )
+    {
+      maker->GetReader()->UseEmbeddedEvent(kTRUE,kTRUE); // if only first true, remember to get the combined clusters/cells
+    }
+  }
+ 
   // Select events trigger depending on trigger
   //
   maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
-  if ( !simulation )
+  //printf("xxxx simu %d && embed %d\n",simulation,embed);
+  if ( !simulation || (simulation && embed) )
   {
+    printf("xxxxx Get trigger mask!\n");
 #if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
 #endif
