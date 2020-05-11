@@ -35,6 +35,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -1195,6 +1196,9 @@ void AliCaloTrackReader::InitParameters()
   fEventTriggerMask      = AliVEvent::kAny;
   fMixEventTriggerMask   = AliVEvent::kAnyINT;
   fEventTriggerAtSE      = kTRUE; // Use only events that pass event selection at SE base class
+ 
+  fEmbeddedEvent[0] = kFALSE;
+  fEmbeddedEvent[1] = kFALSE;
   
   fAcceptFastCluster = kTRUE;
   fEventType         = -1;
@@ -1908,20 +1912,13 @@ void AliCaloTrackReader::FillVertexArray()
 
 //_____________________________________
 /// Fill the array with Central Tracking System (CTS) 
-/// filtered tracks. To select the tracks, kinematic cuts, DCA, 
-/// re-fit status and timing cuts are applied. 
-/// Other more ESD/AOD dependent cuts are applied in *SelectTrack()* method,
-/// see AliCaloTrackAODReader and AliCaloTrackESDReader.
+/// filtered tracks. Filtering done in FillInputCTSSelectTracks()
 //_____________________________________
 void AliCaloTrackReader::FillInputCTS()
 {  
   AliDebug(1,"Begin");
-  
-  Double_t pTrack[3] = {0,0,0};
-  
+    
   Int_t nTracks = fInputEvent->GetNumberOfTracks() ;
-  Int_t nstatus = 0;
-  Double_t bz   = GetInputEvent()->GetMagneticField();
   
   for(Int_t i = 0; i < 19; i++)
   {
@@ -1936,139 +1933,175 @@ void AliCaloTrackReader::FillInputCTS()
   }
   
   Bool_t   bc0  = kFALSE;
-  if(fRecalculateVertexBC) fVertexBC = AliVTrack::kTOFBCNA;
+  if ( fRecalculateVertexBC ) fVertexBC = AliVTrack::kTOFBCNA;
   
   for (Int_t itrack =  0; itrack <  nTracks; itrack++)
-  {////////////// track loop
-    AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; // retrieve track from esd
-    
-    if ( !AcceptParticleMCLabel( TMath::Abs(track->GetLabel()) ) ) continue ;
-    
-    fhCTSTrackCutsPt[0]->Fill(track->Pt());
-    
-    //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
-    ULong_t status = track->GetStatus();
-    
-    if (fTrackStatus && !((status & fTrackStatus) == fTrackStatus))
-      continue ;
-
-    fhCTSTrackCutsPt[1]->Fill(track->Pt());
-    
-    nstatus++;
-
-    //-------------------------
-    // Select the tracks depending on cuts of AOD or ESD
-    if(!SelectTrack(track, pTrack)) continue ;
-    
-    fhCTSTrackCutsPt[2]->Fill(track->Pt());
-    
-    //-------------------------
-    // TOF cuts
-    Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
-    Double_t tof  = -1000;
-    Int_t trackBC = -1000 ;
-    
-    if(fAccessTrackTOF)
-    {
-      if(okTOF)
-      {
-        trackBC = track->GetTOFBunchCrossing(bz);
-        SetTrackEventBC(trackBC+9);
-        
-        tof = track->GetTOFsignal()*1e-3;
-        
-        //After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
-        if(fRecalculateVertexBC)
-        {
-          if     (trackBC != 0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
-          else if(trackBC == 0)                                   bc0       = kTRUE;
-        }
-        
-        //In any case, the time should to be larger than the fixed window ...
-        if( fUseTrackTimeCut && (trackBC !=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
-        {
-          //printf("Remove track time %f and bc = %d\n",tof,trackBC);
-          continue ;
-        }
-        //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
-      }
-    }
-    
-    fhCTSTrackCutsPt[3]->Fill(track->Pt());
-
-    //---------------------
-    // DCA cuts
-    //
-    fMomentum.SetPxPyPzE(pTrack[0],pTrack[1],pTrack[2],0);
-        
-    if(fUseTrackDCACut)
-    {      
-      Float_t dcaTPC =-999;
-      //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
-      if( fDataType == kAOD ) dcaTPC = ((AliAODTrack*) track)->DCA();
-
-      //normal way to get the dca, cut on dca_xy
-      if(dcaTPC==-999)
-      {
-        Double_t dca[2]   = {1e6,1e6};
-        Double_t covar[3] = {1e6,1e6,1e6};
-        Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),bz,100.,dca,covar);
-        if( okDCA) okDCA = AcceptDCA(fMomentum.Pt(),dca[0]);
-        if(!okDCA)
-        {
-          //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f\n",fMomentum.Pt(),dca[0]);
-          continue ;
-        }
-      }
-    }// DCA cuts
-    
-    fhCTSTrackCutsPt[4]->Fill(track->Pt());
-
-    //-------------------------
-    // Kinematic/acceptance cuts
-    //
-    // Count the tracks in eta < 0.9 and different pT cuts
-    Float_t ptTrack = fMomentum.Pt();
-    if(TMath::Abs(track->Eta())< fTrackMultEtaCut) 
-    {
-      for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
-      {
-        if(ptTrack > fTrackMultPtCut[iptCut]) 
-        {
-          fTrackMult [iptCut]++;
-          fTrackSumPt[iptCut]+=ptTrack;
-        }
-      }
-    }
-    
-    if(fCTSPtMin > ptTrack || fCTSPtMax < ptTrack) continue ;
-    
-    // Check effect of cuts on track BC
-    if(fAccessTrackTOF && okTOF) SetTrackEventBCcut(trackBC+9);
-    
-    if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS)) continue;
-    
-    fhCTSTrackCutsPt[5]->Fill(track->Pt());
-        
-    // ------------------------------
-    // Add selected tracks to array
-    AliDebug(2,Form("Selected tracks pt %3.2f, phi %3.2f deg, eta %3.2f",
-                    fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
-        
-    fCTSTracks->Add(track);
-    
-    // TODO, check if remove
-    if (fMixedEvent)  track->SetID(itrack);
-    
-  }// track loop
-	
-  if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
   {
-    if( bc0 ) fVertexBC = 0 ;
-    else      fVertexBC = AliVTrack::kTOFBCNA ;
+    AliVTrack * track = (AliVTrack*)fInputEvent->GetTrack(itrack) ; 
+    
+    FillInputCTSSelectTrack(track, itrack, bc0);
   }
   
-  AliDebug(1,Form("CTS entries %d, input tracks %d, pass status %d, multipliticy %d", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult[0]));//fCTSTracksNormalInputEntries);
+  // Add embedded tracks from external event
+  // Only if input event is just data and not already external
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] )
+  {
+    AliVEvent * externalEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+    if ( externalEvent )
+    {
+      for (Int_t jtrack =  0; jtrack < externalEvent->GetNumberOfTracks() ; jtrack++)
+      {
+        AliVTrack * extTrack = (AliVTrack*) externalEvent->GetTrack(jtrack) ; 
+        
+        FillInputCTSSelectTrack(extTrack, jtrack, bc0);
+      } // track loop
+    } 
+    else printf("No external event for embed mc %d embed data %d\n",fEmbeddedEvent[0], fEmbeddedEvent[1]);
+  }
+  
+  if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
+  {
+    if ( bc0 ) fVertexBC = 0 ;
+    else       fVertexBC = AliVTrack::kTOFBCNA ;
+  }
+  
+  AliDebug(1,Form("CTS entries %d, input tracks %d, multipliticy %d", 
+                  fCTSTracks->GetEntriesFast(), nTracks, fTrackMult[0]));
+}
+
+//_______________________________________________________________________________
+/// Select the tracks based on kinematic cuts, DCA, 
+/// re-fit status and timing cuts are applied. 
+/// 
+/// Other more ESD/AOD dependent cuts are applied in *SelectTrack()* method,
+/// see AliCaloTrackAODReader and AliCaloTrackESDReader.
+///
+/// \param track: AliVTrack pointer
+/// \param iclus: track index, only needed in case of mixing frame (not used recently)
+/// \param bc0: bunch crossing bool, at least one vertex track at bc=0
+///
+/// Method called by *FillInputCTS()*
+//_______________________________________________________________________________
+void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack,
+                                                 Bool_t & bc0)
+{
+  if ( !AcceptParticleMCLabel( TMath::Abs(track->GetLabel()) ) ) return ;
+  
+  fhCTSTrackCutsPt[0]->Fill(track->Pt());
+  
+  //Select tracks under certain conditions, TPCrefit, ITSrefit ... check the set bits
+  ULong_t status = track->GetStatus();
+  
+  if ( fTrackStatus && !((status & fTrackStatus) == fTrackStatus) )
+    return ;
+  
+  fhCTSTrackCutsPt[1]->Fill(track->Pt());
+    
+  //-------------------------
+  // Select the tracks depending on cuts of AOD or ESD
+  Double_t pTrack[3] = {0,0,0};
+  if ( !SelectTrack(track, pTrack) ) return ;
+  
+  fhCTSTrackCutsPt[2]->Fill(track->Pt());
+  
+  //-------------------------
+  // TOF cuts
+  Bool_t okTOF  = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
+  Double_t tof  = -1000;
+  Int_t trackBC = -1000 ;
+
+  if ( fAccessTrackTOF )
+  {
+    if ( okTOF )
+    {
+      trackBC = track->GetTOFBunchCrossing(GetInputEvent()->GetMagneticField());
+      SetTrackEventBC(trackBC+9);
+      
+      tof = track->GetTOFsignal()*1e-3;
+      
+      // After selecting tracks with small DCA, pointing to vertex, set vertex BC depeding on tracks BC
+      if(fRecalculateVertexBC)
+      {
+        if     (trackBC != 0 && trackBC != AliVTrack::kTOFBCNA) fVertexBC = trackBC;
+        else if(trackBC == 0)                                   bc0       = kTRUE;
+      }
+      
+      //In any case, the time should to be larger than the fixed window ...
+      if( fUseTrackTimeCut && (trackBC !=0 || tof < fTrackTimeCutMin  || tof > fTrackTimeCutMax) )
+      {
+        //printf("Remove track time %f and bc = %d\n",tof,trackBC);
+        return ;
+      }
+      //else printf("Accept track time %f and bc = %d\n",tof,trackBC);
+    }
+  }
+  
+  fhCTSTrackCutsPt[3]->Fill(track->Pt());
+  
+  //---------------------
+  // DCA cuts
+  //
+  fMomentum.SetPxPyPzE(pTrack[0],pTrack[1],pTrack[2],0);
+  
+  if ( fUseTrackDCACut )
+  {      
+    Float_t dcaTPC =-999;
+    //In case of AODs, TPC tracks cannot be propagated back to primary vertex,
+    if( fDataType == kAOD ) dcaTPC = ((AliAODTrack*) track)->DCA();
+    
+    //normal way to get the dca, cut on dca_xy
+    if ( dcaTPC==-999 )
+    {
+      Double_t dca[2]   = {1e6,1e6};
+      Double_t covar[3] = {1e6,1e6,1e6};
+      Bool_t okDCA = track->PropagateToDCA(fInputEvent->GetPrimaryVertex(),GetInputEvent()->GetMagneticField(),100.,dca,covar);
+      if (  okDCA ) okDCA = AcceptDCA(fMomentum.Pt(),dca[0]);
+      if ( !okDCA )
+      {
+        //printf("AliCaloTrackReader::FillInputCTS() - Reject track pt %2.2f, dca_xy %2.4f\n",fMomentum.Pt(),dca[0]);
+        return ;
+      }
+    }
+  }// DCA cuts
+  
+  fhCTSTrackCutsPt[4]->Fill(track->Pt());
+  
+  //-------------------------
+  // Kinematic/acceptance cuts
+  //
+  // Count the tracks in eta < 0.9 and different pT cuts
+  Float_t ptTrack = fMomentum.Pt();
+  if ( TMath::Abs(track->Eta()) <  fTrackMultEtaCut ) 
+  {
+    for(Int_t iptCut = 0; iptCut < fTrackMultNPtCut; iptCut++ )
+    {
+      if ( ptTrack > fTrackMultPtCut[iptCut] ) 
+      {
+        fTrackMult [iptCut]++;
+        fTrackSumPt[iptCut]+=ptTrack;
+      }
+    }
+  }
+  
+  if ( fCTSPtMin > ptTrack || fCTSPtMax < ptTrack ) return ;
+  
+  // Check effect of cuts on track BC
+  if ( fAccessTrackTOF && okTOF ) SetTrackEventBCcut(trackBC+9);
+  
+  if ( fCheckFidCut && 
+      !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS) ) return;
+  
+  fhCTSTrackCutsPt[5]->Fill(track->Pt());
+  
+  // ------------------------------
+  // Add selected tracks to array
+  AliDebug(2,Form("Selected tracks pt %3.2f, phi %3.2f deg, eta %3.2f",
+                  fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+  
+  fCTSTracks->Add(track);
+  
+  // TODO, check if remove
+  if ( fMixedEvent )  track->SetID(itrack);
 }
 
 //_______________________________________________________________________________
@@ -2090,7 +2123,7 @@ void AliCaloTrackReader::FillInputCTS()
 ///
 /// Method called by *FillInputEMCAL()*
 //_______________________________________________________________________________
-void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
+void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t iclus)
 {
   // Accept clusters with the proper label, only applicable for MC
   if ( clus->GetLabel() >= 0 )  // -1 corresponds to noisy MC
@@ -2477,7 +2510,7 @@ void AliCaloTrackReader::FillInputEMCAL()
       {
         if (clus->IsEMCAL())
         {
-          FillInputEMCALAlgorithm(clus, iclus);
+          FillInputEMCALSelectCluster(clus, iclus);
         }//EMCAL cluster
       }// cluster exists
     }// cluster loop
@@ -2510,7 +2543,7 @@ void AliCaloTrackReader::FillInputEMCAL()
     {
       AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
       //printf("E %f\n",clus->E());
-      if (clus) FillInputEMCALAlgorithm(clus, iclus);
+      if (clus) FillInputEMCALSelectCluster(clus, iclus);
       else      AliWarning("Null cluster in list!");
     }// cluster loop
     
@@ -3920,17 +3953,18 @@ void AliCaloTrackReader::SetEventTriggerBit()
 
 //____________________________________________________________
 /// Define here the input event and mixed event.
-/// Called in AliAnaCaloTrackCorrMaker.
+/// Called in ESD/AOD readers
 //____________________________________________________________
-void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
+void AliCaloTrackReader::SetInputEvent(AliVEvent * input)
 {
   fInputEvent  = input;
+  
   fMixedEvent = dynamic_cast<AliMixedEvent*>(GetInputEvent()) ;
-  if (fMixedEvent)
+  if ( fMixedEvent )
     fNMixedEvent = fMixedEvent->GetNumberOfEvents() ;
   
-  //Delete previous vertex
-  if(fVertex)
+  // Delete previous vertex
+  if ( fVertex )
   {
     for (Int_t i = 0; i < fNMixedEvent; i++)
     {
@@ -3947,6 +3981,28 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
     fVertex[i][1] = 0.0 ;
     fVertex[i][2] = 0.0 ;
   }
+  
+  // Recover embedded event instead
+  if ( fEmbeddedEvent[1] ) 
+    fInputEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
 }
 
-
+//____________________________________________________________
+/// Set the MC event used in analysis.
+/// In case of embedding, recover it from external event
+//____________________________________________________________
+void AliCaloTrackReader::SetMC(AliMCEvent * mc)              
+{ 
+  fMC = mc ; // MCEvent(); Set in the main steering task.
+  
+  // In case of embedding get it from external event
+  //
+  if ( fEmbeddedEvent[0] )
+  {
+    fMC = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalMCEvent();
+    if ( !fMC ) 
+    {
+      printf("Embedded MC event not found\n");
+    }
+  } // embedded
+}

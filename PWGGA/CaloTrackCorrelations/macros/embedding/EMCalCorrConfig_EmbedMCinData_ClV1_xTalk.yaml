@@ -1,0 +1,279 @@
+configurationName: "EMCal correction framework embedding MC, Cl v1"
+recycleUnusedEmbeddedEventsMode: true
+sharedParameters:
+    cellBranchName: "usedefault"
+    clusterBranchName: "usedefault"
+    clusterCombinedBranchName: "caloClustersCombined"
+    trackBranchName: "usedefault"
+inputObjects:
+    cells:
+        cells:
+            branchName: "sharedParameters:cellBranchName"
+        cells_embed:
+            branchName: "sharedParameters:cellBranchName"
+            embedding: true
+        cells_combined:
+            branchName: "emcalCellsCombined"
+    clusterContainers:
+        baseClusterContainer:
+            # Sets the branch name
+            branchName: "sharedParameters:clusterBranchName"
+            # Takes all default cuts!
+        baseClusterContainer_data:
+            # Same settings as the base container, but recreated for clarity
+            branchName: "sharedParameters:clusterBranchName"
+        baseClusterContainer_embed:
+            embedding: true
+        baseClusterContainer_combined:
+            branchName: "sharedParameters:clusterCombinedBranchName"
+        # Used after clusterizer
+        baseClusterContainer1:
+            # Sets the branch name
+            branchName: "sharedParameters:clusterBranchName"
+            minE: 0.0                        # Formerly clusterEMin
+            minPt: 0.0                       # Formerly clusterPtMin
+        baseClusterContainer1_data:
+            # Same settings as the base container, but recreated for clarity
+            branchName: "sharedParameters:clusterBranchName"
+        baseClusterContainer1_embed:
+            embedding: true
+        baseClusterContainer1_combined:
+            # Sets the branch name
+            branchName: "sharedParameters:clusterCombinedBranchName"
+        # Used for cluster-track matcher and after
+        baseClusterContainer2:
+            # Sets the branch name
+            branchName: "sharedParameters:clusterBranchName"
+            minE: 0.0                        # Formerly clusterEMin
+            minPt: 0.0                       # Formerly clusterPtMin
+            clusNonLinCorrEnergyCut: 0.15    # Formerly "minPt" and then clusterNonLinCorrEnergyMin
+        baseClusterContainer2_data:
+            # Same settings as the base container, but recreated for clarity
+            branchName: "sharedParameters:clusterBranchName"
+        baseClusterContainer2_embed:
+            embedding: true
+        baseClusterContainer2_combined:
+            branchName: "sharedParameters:clusterCombinedBranchName"
+    trackContainers:
+        trackContainerName:
+            # Sets the branch name
+            branchName: "sharedParameters:trackBranchName"
+            minPt: 0.15                    # formerly "minPt"
+            trackFilterType: kHybridTracks
+        trackContainerName_embed:
+            embedding: true
+            
+            
+# Cross talk emulation, only on embedded cells   
+CellEmulateCrosstalk:   
+    createHistos: true
+    inducedTCardMinimum: 0.1           
+CellEmulateCrosstalk_embed:                 
+    enabled: true                            
+    cellsNames:
+       - cells_embed 
+                  
+# Cell energy
+CellEnergy:
+    createHistos: true
+# _data is equivalent to the base correction, but I am making it explicit for clarity
+CellEnergy_data:
+    enabled: true
+    cellsNames:
+        - cells
+# No cell energy calibration should be applied to the embedded MC
+
+# Cell bad channel
+CellBadChannel:
+    createHistos: true
+CellBadChannel_data:
+    enabled: true
+    cellsNames:
+        - cells
+CellBadChannel_embed:
+    enabled: true
+    cellsNames:
+        - cells_embed
+
+# Cell Time Calib
+CellTimeCalib:
+    createHistos: true
+CellTimeCalib_data:
+    enabled: true
+    cellsNames:
+        - cells
+# No cell time calibration should be applied to the embedded MC
+
+# Combine cells together
+CellCombineCollections_combined:
+    enabled: true
+    cellsNames:
+        - cells
+
+# Clusterizer
+Clusterizer:
+    createHistos: true
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    recalDistToBadChannels: true                    
+    recalShowerShape: false                         
+    remapMcAod: false             # true on old productions
+    # Clusterizerv3 won't properly clusterizer embedded cells without additional preprocessing, so use v2 instead.
+    clusterizer: kClusterizerv1
+Clusterizer_combined:
+    enabled: true
+    setCellMCLabelFromCluster: 0
+    enableFracEMCRecalc: false     # false on old productions, off since it kills data input, to be checked
+    cellsNames:
+        - cells_combined
+    # By selecting the cluster container here, we set where it will be output
+    clusterContainersNames:
+        - baseClusterContainer_combined
+# We continue the correction chains here for QA and matching purposes
+Clusterizer_data:
+    enabled: true
+    cellsNames:
+        - cells_data
+    clusterContainersNames:
+        - baseClusterContainer_data
+Clusterizer_embed:
+    enabled: true
+    setCellMCLabelFromCluster: 0
+    enableFracEMCRecalc: false     # false on old productions, off since it kills data input, to be checked
+    cellsNames:
+        - cells_embed
+    clusterContainersNames:
+        - baseClusterContainer_embed
+
+# Exotics
+ClusterExotics:
+    createHistos: true
+ClusterExotics_combined:
+    enabled: true
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer1_combined
+ClusterExotics_data:
+    enabled: true
+    cellsNames:
+        - cells_data
+    clusterContainersNames:
+        - baseClusterContainer1_data
+ClusterExotics_embed:
+    enabled: true
+    cellsNames:
+        - cells_embed
+    clusterContainersNames:
+        - baseClusterContainer1_embed
+
+# Non-linearity
+ClusterNonLinearity:
+    setForceClusterE: true
+    createHistos: true
+ClusterNonLinearity_combined:
+    enabled: true
+    nonLinFunct: kTestBeamFinalMC  
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer1_combined
+ClusterNonLinearity_data:
+    enabled: true
+    nonLinFunct: kTestBeamShaper 
+    cellsNames:
+        - cells_data
+    clusterContainersNames:
+        - baseClusterContainer1_data
+ClusterNonLinearity_embed:
+    enabled: true
+    nonLinFunct: kTestBeamFinalMC  
+    cellsNames:
+        - cells_embed
+    clusterContainersNames:
+        - baseClusterContainer1_embed
+
+## Non-linearity after burner
+#ClusterNonLinearityMCAfterburner:
+#    afterburnerVersion: kPCM_EMCal
+#    setForceClusterE: true
+#    createHistos: true
+#    setMCPeriod: "kTestBeamFinalMCRun2"
+#ClusterNonLinearityMCAfterburner_combined:
+#    enabled: true
+#    cellsNames:
+#        - cells_combined
+#    clusterContainersNames:
+#        - baseClusterContainer1_combined
+#ClusterNonLinearityMCAfterburner_embed:
+#    enabled: true
+#    cellsNames:
+#        - cells_embed
+#    clusterContainersNames:
+#        - baseClusterContainer1_embed
+
+
+# Cluster-track matcher
+ClusterTrackMatcher:
+    createHistos: true
+    useDCA: false
+    usePIDmass: false
+ClusterTrackMatcher_combined:
+    enabled: true
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer2_combined
+    trackContainersNames:
+        - trackContainerName
+        - trackContainerName_embed
+ClusterTrackMatcher_data:
+    enabled: true
+    cellsNames:
+        - cells_data
+    clusterContainersNames:
+        - baseClusterContainer2_data
+    trackContainersNames:
+        - trackContainerName
+ClusterTrackMatcher_embed:
+    enabled: true
+    cellsNames:
+        - cells_embed
+    clusterContainersNames:
+        - baseClusterContainer2_embed
+    trackContainersNames:
+        - trackContainerName_embed
+
+# Hadronic correction (needed?)
+ClusterHadronicCorrection:
+    createHistos: true
+ClusterHadronicCorrection_combined:
+    enabled: true
+    plotOversubtractionHistograms: true
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer2_combined
+    trackContainersNames:
+        - trackContainerName
+        - trackContainerName_embed
+ClusterHadronicCorrection_data:
+    enabled: true
+    cellsNames:
+        - cells_data
+    clusterContainersNames:
+        - baseClusterContainer2_data
+    trackContainersNames:
+        - trackContainerName
+ClusterHadronicCorrection_embed:
+    enabled: true
+    cellsNames:
+        - cells_embed
+    clusterContainersNames:
+        - baseClusterContainer2_embed
+    trackContainersNames:
+        - trackContainerName_embed
+
