@@ -79,6 +79,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fEtaGenJet(-99.),
   fPhiJet(-99.),
   fPhiGenJet(-99.),
+  fLeadingPtJet(-99.),
+  fLeadingPtGenJet(-99.),
   fDeltaEtaJetHadron(-99.),
   fDeltaEtaGenJetHadron(-99.),
   fDeltaPhiJetHadron(-99.),
@@ -87,6 +89,8 @@ AliHFTreeHandler::AliHFTreeHandler():
   fDeltaRGenJetHadron(-99.),
   fNTracksJet(-99.),
   fNTracksGenJet(-99.),
+  fZJet(-99.),
+  fZGenJet(-99.),
   fZgJet(-99.),
   fZgGenJet(-99.),
   fRgJet(-99.),
@@ -213,6 +217,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fEtaGenJet(-99.),
   fPhiJet(-99.),
   fPhiGenJet(-99.),
+  fLeadingPtJet(-99.),
+  fLeadingPtGenJet(-99.),
   fDeltaEtaJetHadron(-99.),
   fDeltaEtaGenJetHadron(-99.),
   fDeltaPhiJetHadron(-99.),
@@ -221,6 +227,8 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fDeltaRGenJetHadron(-99.),
   fNTracksJet(-99.),
   fNTracksGenJet(-99.),
+  fZJet(-99.),
+  fZGenJet(-99.),
   fZgJet(-99.),
   fZgGenJet(-99.),
   fRgJet(-99.),
@@ -435,6 +443,8 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
   fTreeVar->Branch("eta_gen_jet",&fEtaGenJet);
   fTreeVar->Branch("phi_jet",&fPhiJet);
   fTreeVar->Branch("phi_gen_jet",&fPhiGenJet);
+  fTreeVar->Branch("ptleadingtrack_jet",&fLeadingPtJet);
+  fTreeVar->Branch("ptleadingtrack_gen_jet",&fLeadingPtGenJet);
   fTreeVar->Branch("delta_eta_jet",&fDeltaEtaJetHadron);
   fTreeVar->Branch("delta_eta_gen_jet",&fDeltaEtaGenJetHadron);
   fTreeVar->Branch("delta_phi_jet",&fDeltaPhiJetHadron);
@@ -443,14 +453,16 @@ void AliHFTreeHandler::AddJetBranches() { //Jet branches added
   fTreeVar->Branch("delta_r_gen_jet",&fDeltaRGenJetHadron);
   fTreeVar->Branch("ntracks_jet",&fNTracksJet);
   fTreeVar->Branch("ntracks_gen_jet",&fNTracksGenJet);
+  fTreeVar->Branch("z_jet",&fZJet);
+  fTreeVar->Branch("z_gen_jet",&fZGenJet);
   fTreeVar->Branch("zg_jet",&fZgJet);
   fTreeVar->Branch("zg_gen_jet",&fZgGenJet);
   fTreeVar->Branch("rg_jet",&fRgJet);
   fTreeVar->Branch("rg_gen_jet",&fRgGenJet);
   fTreeVar->Branch("nsd_jet",&fNsdJet);
   fTreeVar->Branch("nsd_gen_jet",&fNsdGenJet);
-  fTreeVar->Branch("Pt_splitting_jet",&fPt_splittingJet);
-  fTreeVar->Branch("Pt_splitting_gen_jet",&fPt_splittingGenJet);
+  fTreeVar->Branch("pt_splitting_jet",&fPt_splittingJet);
+  fTreeVar->Branch("pt_splitting_gen_jet",&fPt_splittingGenJet);
   fTreeVar->Branch("k0_jet",&fk0Jet);
   fTreeVar->Branch("k0_gen_jet",&fk0GenJet);
   fTreeVar->Branch("zk0_jet",&fZk0Jet);
@@ -486,14 +498,16 @@ void AliHFTreeHandler::AddGenJetBranches() { //Gen jet branches added
   fTreeVar->Branch("pt_jet",&fPtGenJet);
   fTreeVar->Branch("eta_jet",&fEtaGenJet);
   fTreeVar->Branch("phi_jet",&fPhiGenJet);
+  fTreeVar->Branch("ptleadingtrack_jet",&fLeadingPtGenJet);
   fTreeVar->Branch("delta_eta_jet",&fDeltaEtaGenJetHadron);
   fTreeVar->Branch("delta_phi_jet",&fDeltaPhiGenJetHadron);
   fTreeVar->Branch("delta_r_jet",&fDeltaRGenJetHadron);
   fTreeVar->Branch("ntracks_jet",&fNTracksGenJet);
+  fTreeVar->Branch("z_jet",&fZGenJet);
   fTreeVar->Branch("zg_jet",&fZgGenJet);
   fTreeVar->Branch("rg_jet",&fRgGenJet);
   fTreeVar->Branch("nsd_jet",&fNsdGenJet);
-  fTreeVar->Branch("Pt_splitting_jet",&fPt_splittingGenJet);
+  fTreeVar->Branch("pt_splitting_jet",&fPt_splittingGenJet);
   fTreeVar->Branch("k0_jet",&fk0GenJet);
   fTreeVar->Branch("zk0_jet",&fZk0GenJet);
   fTreeVar->Branch("rk0_jet",&fRk0GenJet);
@@ -628,6 +642,40 @@ void AliHFTreeHandler::SetJetVars(TClonesArray *array, AliAODRecoDecayHF* cand, 
 
 }
 
+//________________________________________________________________
+void AliHFTreeHandler::SetAndFillInclusiveJetVars(TClonesArray *array, TClonesArray *mcarray) {
+#ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder); 
+  std::vector<AliHFJet> jets(hfjetfinder.GetJets(array));
+
+  std::vector<AliHFJet> genjets;
+  if (mcarray){
+    AliHFJetFinder hfgenjetfinder;
+    SetJetParameters(hfgenjetfinder); 
+    genjets=hfgenjetfinder.GetMCJets(mcarray);
+  }
+    
+  AliHFJet jet;
+  AliHFJet genjet;
+  for (Int_t i=0; i<jets.size(); i++){
+    jet=jets[i];
+    SetJetTreeVars(jet);
+    if (mcarray){
+      for (Int_t j=0; j<genjets.size(); j++){
+	genjet=genjets[j];
+	if (TMath::Sqrt(((jet.fEta-genjet.fEta)*(jet.fEta-genjet.fEta))+((jet.fPhi-genjet.fPhi)*(jet.fPhi-genjet.fPhi))) < 0.2) break; //should be y not eta but close enough for now
+      }
+    }
+    SetGenJetTreeVars(genjet);
+    AliHFTreeHandler::FillTree();
+  }
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
+#endif 
+
+}
+
 
 //________________________________________________________________
 void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPart) {
@@ -641,7 +689,26 @@ void AliHFTreeHandler::SetGenJetVars(TClonesArray *array, AliAODMCParticle* mcPa
   std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
 #endif 
 }
+
+
+//________________________________________________________________
+void AliHFTreeHandler::SetAndFillInclusiveGenJetVars(TClonesArray *array) {
 #ifdef HAVE_FASTJET
+  AliHFJetFinder hfjetfinder;
+  SetJetParameters(hfjetfinder);
+  std::vector<AliHFJet> jets(hfjetfinder.GetMCJets(array));
+  AliHFJet jet;
+  for (Int_t i=0; i<jets.size(); i++){
+    jet=jets[i];
+    SetGenJetTreeVars(jet);
+    AliHFTreeHandler::FillTree();
+  }
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
+#endif 
+}
+#ifdef HAVE_FASTJET
+
 //________________________________________________________________
 void AliHFTreeHandler::SetJetParameters(AliHFJetFinder& hfjetfinder){
 
@@ -662,10 +729,12 @@ void AliHFTreeHandler::SetJetTreeVars(AliHFJet hfjet){
   fPtJet=hfjet.GetPt();
   fEtaJet=hfjet.GetEta();
   fPhiJet=hfjet.GetPhi();
+  fLeadingPtJet=hfjet.GetLeadingPt();
   fDeltaEtaJetHadron=hfjet.GetDeltaEta();
   fDeltaPhiJetHadron=hfjet.GetDeltaPhi();
   fDeltaRJetHadron=hfjet.GetDeltaR();
   fNTracksJet=hfjet.GetN();
+  fZJet=hfjet.GetZ();
   if (fDoJetSubstructure){
     fZgJet=hfjet.GetZg();
     fRgJet=hfjet.GetRg();
@@ -693,10 +762,12 @@ void AliHFTreeHandler::SetGenJetTreeVars(AliHFJet hfjet){
   fPtGenJet=hfjet.GetPt();
   fEtaGenJet=hfjet.GetEta();
   fPhiGenJet=hfjet.GetPhi();
+  fLeadingPtGenJet=hfjet.GetLeadingPt();
   fDeltaEtaGenJetHadron=hfjet.GetDeltaEta();
   fDeltaPhiGenJetHadron=hfjet.GetDeltaPhi();
   fDeltaRGenJetHadron=hfjet.GetDeltaR();
   fNTracksGenJet=hfjet.GetN();
+  fZGenJet=hfjet.GetZ();
   if (fDoJetSubstructure){
     fZgGenJet=hfjet.GetZg();
     fRgGenJet=hfjet.GetRg();
