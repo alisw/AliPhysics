@@ -1465,8 +1465,11 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
-
-  TFile *F_xsection = new TFile(Form("pyxsec_hists.root"));
+  cout << "FINDING pyxsec!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+  TString currentfilepath_pyxsec = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+  for (Int_t s_end=0; s_end<11; s_end++) currentfilepath_pyxsec.Remove(currentfilepath_pyxsec.Length()-1);
+  TString pyxsec_name = "pyxsec_hists.root";
+  TFile *F_xsection = new TFile(currentfilepath_pyxsec+pyxsec_name);
   TList *L_xsection = (TList *) F_xsection->Get("cFilterList");
   TProfile *fh_xsection = (TProfile *) L_xsection->FindObject("h1Xsec");
   TH1D *fh_Trials = (TH1D *) L_xsection->FindObject("h1Trials");
