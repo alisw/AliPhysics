@@ -807,7 +807,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
       if (!fTrk) continue;
 
-    if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part)) continue;
+      //if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part)) continue;
       PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
       PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
     
@@ -913,7 +913,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
 
-     AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+     AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
 
   if (fTrackCont)
     for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
