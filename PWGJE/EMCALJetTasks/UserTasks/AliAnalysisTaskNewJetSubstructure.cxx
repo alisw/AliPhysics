@@ -798,14 +798,22 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
-  unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
-    if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part))
-      continue;
-    PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+ 
+
+   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+
+  if (fTrackCont)
+    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;
+
+      //if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part)) continue;
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
+    
+   
     fInputVectors.push_back(PseudoTracks);
-    constituentIndex++;
+   
   }
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
   fastjet::JetDefinition fJetDef(jetalgo, 1.,
@@ -904,12 +912,28 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
-  unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
-    PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+
+     AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
+
+  if (fTrackCont)
+    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;
+
+    
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
+    
+   
     fInputVectors.push_back(PseudoTracks);
+   
   }
+
+
+
+
+
+  
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
   fastjet::JetDefinition fJetDef(jetalgo, 1.,
