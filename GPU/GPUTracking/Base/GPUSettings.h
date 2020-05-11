@@ -89,6 +89,9 @@ struct GPUSettingsRec {
   unsigned char mergerInterpolateErrors; // Use interpolation for cluster rejection based on chi-2 instead of extrapolation
   char fitInProjections;                 // -1 for automatic
   char fitPropagateBzOnly;               // Use only Bz for the propagation during the fit in the first n passes, -1 = NWays -1
+  char retryRefit;                       // Retry refit with larger cluster errors when fit fails
+  char loopInterpolationInExtraPass;     // Perform the loop interpolation in an extra pass
+  char mergerReadFromTrackerDirectly;    // Make the TPC merger read the output directly from the tracker class
 };
 
 // Settings describing the events / time frames
@@ -158,10 +161,12 @@ struct GPUSettingsDeviceProcessing {
   int nTPCClustererLanes;             // Number of TPC clusterers that can run in parallel
   bool deviceTimers;                  // Use device timers instead of host-based timers
   bool registerStandaloneInputMemory; // Automatically register memory for the GPU which is used as input for the standalone benchmark
-  int tpcCompressionGatherMode;       // Modes: 0 = gather by DMA, 1 = DMA + gather on host, ...
+  int tpcCompressionGatherMode;       // Modes: 0 = gather by DMA, 1 = DMA + gather on host, 2 = gather by kernel
   bool mergerSortTracks;              // Sort track indices for GPU track fit
   bool runMC;                         // Process MC labels
   float memoryScalingFactor;          // Factor to apply to all memory scalers
+  bool fitSlowTracksInOtherPass;      // Do a second pass on tracks that are supposed to take long, an attempt to reduce divergence on the GPU
+  bool fullMergerOnGPU;               // Perform full TPC track merging on GPU instead of only refit
 };
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

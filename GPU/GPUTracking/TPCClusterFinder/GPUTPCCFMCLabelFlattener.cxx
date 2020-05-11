@@ -24,6 +24,7 @@
 #endif
 
 using namespace GPUCA_NAMESPACE::gpu;
+using namespace GPUCA_NAMESPACE::gpu::tpccf;
 
 #if !defined(GPUCA_GPUCODE)
 void GPUTPCCFMCLabelFlattener::setGlobalOffsetsAndAllocate(

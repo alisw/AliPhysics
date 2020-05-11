@@ -14,16 +14,17 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUTrackingLinkDef_O2.h
+/// \file GPUTPCCreateSliceData.cxx
 /// \author David Rohr
 
-#ifdef __CLING__
+#include "GPUTPCCreateSliceData.h"
+#include "GPUTPCTracker.h"
+#include "GPUCommonMath.h"
 
-#pragma link off all globals;
-#pragma link off all classes;
-#pragma link off all functions;
+using namespace GPUCA_NAMESPACE::gpu;
 
-#pragma link C++ class o2::gpu::GPUTPCO2Interface + ;
-#pragma link C++ class o2::gpu::TPCdEdxCalibrationSplines + ;
-
-#endif
+template <>
+GPUdii() void GPUTPCCreateSliceData::Thread<0>(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() MEM_LOCAL(GPUSharedMemory) & GPUrestrict() s, processorType& GPUrestrict() tracker)
+{
+  tracker.Data().InitFromClusterData(nBlocks, nThreads, iBlock, iThread, tracker.GetConstantMem(), tracker.ISlice(), s.tmp);
+}

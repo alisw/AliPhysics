@@ -126,6 +126,7 @@ include_directories(${CMAKE_SOURCE_DIR}/TPCClusterFinder
                     ${CMAKE_SOURCE_DIR}/../../../DataFormats/Detectors/ITSMFT/ITS/include
                     ${CMAKE_SOURCE_DIR}/../../../DataFormats/Detectors/TPC/include
                     ${CMAKE_SOURCE_DIR}/../../../DataFormats/Headers/include
+                    ${CMAKE_SOURCE_DIR}/../../../DataFormats/MemoryResources/include
                     ${CMAKE_SOURCE_DIR}/../../../DataFormats/Reconstruction/include
                     ${CMAKE_SOURCE_DIR}/../../../DataFormats/simulation/include
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/Base/include
@@ -135,6 +136,7 @@ include_directories(${CMAKE_SOURCE_DIR}/TPCClusterFinder
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/ITSMFT/ITS/tracking/cuda/src
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/ITSMFT/ITS/tracking/hip/include
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/ITSMFT/ITS/tracking/hip/src
+                    ${CMAKE_SOURCE_DIR}/../../../Detectors/Raw/include
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/TPC/base/include
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/TRD/base/include
                     ${CMAKE_SOURCE_DIR}/../../../Detectors/TRD/base/src)
@@ -155,6 +157,7 @@ target_compile_definitions(standalone_support PUBLIC $<TARGET_PROPERTY:O2::GPUTr
 # Add all sources and dependencies to to support based on Config File
 if(CONFIG_O2_EXTENSIONS)
   target_sources(standalone_support PRIVATE
+               ../../..//DataFormats/Detectors/TPC/src/CompressedClusters.cxx
                ../../..//DataFormats/simulation/src/MCCompLabel.cxx
                ../../..//Detectors/TRD/base/src/TRDGeometryBase.cxx
                ../../..//Detectors/Base/src/MatLayerCylSet.cxx

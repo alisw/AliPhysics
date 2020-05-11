@@ -57,6 +57,9 @@ void GPUSettingsRec::SetDefaults()
   mergerInterpolateErrors = 1;
   fitInProjections = -1;
   fitPropagateBzOnly = -1;
+  retryRefit = 1;
+  loopInterpolationInExtraPass = 0;
+  mergerReadFromTrackerDirectly = 1;
 }
 
 void GPUSettingsEvent::SetDefaults()
@@ -101,8 +104,10 @@ void GPUSettingsDeviceProcessing::SetDefaults()
   forceMemoryPoolSize = 0;
   nTPCClustererLanes = 3;
   registerStandaloneInputMemory = false;
-  tpcCompressionGatherMode = 1;
+  tpcCompressionGatherMode = -1;
   mergerSortTracks = 1;
   runMC = false;
   memoryScalingFactor = 1.f;
+  fitSlowTracksInOtherPass = false;
+  fullMergerOnGPU = true;
 }

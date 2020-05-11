@@ -36,6 +36,9 @@ namespace o2
 {
 namespace tpc
 {
+class Digit
+{
+};
 struct ClusterNative {
   GPUd() static float getTime() { return 0.f; }
   GPUd() static float getPad() { return 0.f; }
@@ -82,11 +85,9 @@ namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-namespace deprecated
+class TPCdEdxCalibrationSplines
 {
-struct PackedDigit {
 };
-} // namespace deprecated
 class GPUFakeEmpty
 {
 };
@@ -99,7 +100,7 @@ class GPUTPCConvert
 class GPUTPCCompression
 {
  public:
-  GPUFakeEmpty mOutput;
+  GPUFakeEmpty* mOutput;
 };
 class GPUTPCClusterFinder
 {

@@ -102,14 +102,15 @@ class GPUChain
   inline void TransferMemoryResourcesToHost(RecoStep step, GPUProcessor* proc, int stream = -1, bool all = false) { timeCpy(step, false, &GPUReconstructionCPU::TransferMemoryResourcesToHost, proc, stream, all); }
   inline void TransferMemoryResourceLinkToGPU(RecoStep step, short res, int stream = -1, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { timeCpy(step, true, &GPUReconstructionCPU::TransferMemoryResourceLinkToGPU, res, stream, ev, evList, nEvents); }
   inline void TransferMemoryResourceLinkToHost(RecoStep step, short res, int stream = -1, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { timeCpy(step, false, &GPUReconstructionCPU::TransferMemoryResourceLinkToHost, res, stream, ev, evList, nEvents); }
+  // Todo: retrieve step from proc, move kernelClass->GetStep to retrieve it from GetProcessor
   inline void WriteToConstantMemory(RecoStep step, size_t offset, const void* src, size_t size, int stream = -1, deviceEvent* ev = nullptr) { timeCpy(step, true, &GPUReconstructionCPU::WriteToConstantMemory, offset, src, size, stream, ev); }
-  inline void GPUMemCpy(RecoStep step, void* dst, const void* src, size_t size, int stream, bool toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { timeCpy(step, toGPU, &GPUReconstructionCPU::GPUMemCpy, dst, src, size, stream, toGPU, ev, evList, nEvents); }
-  inline void GPUMemCpyAlways(RecoStep step, void* dst, const void* src, size_t size, int stream, char toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1)
+  inline void GPUMemCpy(RecoStep step, void* dst, const void* src, size_t size, int stream, int toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { timeCpy(step, toGPU, &GPUReconstructionCPU::GPUMemCpy, dst, src, size, stream, toGPU, ev, evList, nEvents); }
+  inline void GPUMemCpyAlways(RecoStep step, void* dst, const void* src, size_t size, int stream, int toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1)
   {
-    if (toGPU >= 0) {
-      timeCpy<true>(step, toGPU, &GPUReconstructionCPU::GPUMemCpyAlways, GetRecoStepsGPU() & step, dst, src, size, stream, toGPU, ev, evList, nEvents);
-    } else {
+    if (toGPU == -1) {
       memcpy(dst, src, size);
+    } else {
+      timeCpy<true>(step, toGPU, &GPUReconstructionCPU::GPUMemCpyAlways, GetRecoStepsGPU() & step, dst, src, size, stream, toGPU, ev, evList, nEvents);
     }
   }
 
@@ -168,37 +169,31 @@ class GPUChain
   {
     return mRec->runKernel<S, I, J, Args...>(x, y, z, std::forward<Args>(args)...);
   }
-  template <class T, int I = 0, int J = -1>
-  HighResTimer& getKernelTimer(int num = 0)
+  template <class S, int I = 0>
+  const GPUReconstruction::krnlProperties getKernelProperties()
   {
-    return mRec->getKernelTimer<T, I, J>(num);
+    return mRec->getKernelProperties<S, I>();
+  }
+
+  template <class T, int I = 0, int J = -1>
+  HighResTimer& getKernelTimer(RecoStep step, int num = 0, size_t addMemorySize = 0)
+  {
+    return mRec->getKernelTimer<T, I, J>(step, num, addMemorySize);
   }
   template <class T, int J = -1>
   HighResTimer& getTimer(const char* name, int num = -1)
   {
     return mRec->getTimer<T, J>(name, num);
   }
-  krnlExec GetGrid(unsigned int totalItems, unsigned int nThreads, int stream);
+  krnlExec GetGrid(unsigned int totalItems, unsigned int nThreads, int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+  krnlExec GetGrid(unsigned int totalItems, int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+  krnlExec GetGridBlk(unsigned int nBlocks, int stream, GPUReconstruction::krnlDeviceType d = GPUReconstruction::krnlDeviceType::Auto, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+  krnlExec GetGridBlkStep(unsigned int nBlocks, int stream, GPUCA_RECO_STEP st = GPUCA_RECO_STEP::NoRecoStep);
+
   inline unsigned int BlockCount() const { return mRec->mBlockCount; }
   inline unsigned int WarpSize() const { return mRec->mWarpSize; }
   inline unsigned int ThreadCount() const { return mRec->mThreadCount; }
-  inline unsigned int ConstructorBlockCount() const { return mRec->mConstructorBlockCount; }
-  inline unsigned int SelectorBlockCount() const { return mRec->mSelectorBlockCount; }
-  inline unsigned int HitsSorterBlockCount() const { return mRec->mHitsSorterBlockCount; }
-  inline unsigned int ConstructorThreadCount() const { return mRec->mConstructorThreadCount; }
-  inline unsigned int SelectorThreadCount() const { return mRec->mSelectorThreadCount; }
-  inline unsigned int FinderThreadCount() const { return mRec->mFinderThreadCount; }
-  inline unsigned int HitsSorterThreadCount() const { return mRec->mHitsSorterThreadCount; }
-  inline unsigned int HitsFinderThreadCount() const { return mRec->mHitsFinderThreadCount; }
-  inline unsigned int ClustererThreadCount() const { return mRec->mClustererThreadCount; }
-  inline unsigned int ScanThreadCount() const { return mRec->mScanThreadCount; }
-  inline unsigned int TRDThreadCount() const { return mRec->mTRDThreadCount; }
-  inline unsigned int ConverterThreadCount() const { return mRec->mConverterThreadCount; }
-  inline unsigned int Compression1ThreadCount() const { return mRec->mCompression1ThreadCount; }
-  inline unsigned int Compression2ThreadCount() const { return mRec->mCompression2ThreadCount; }
-  inline unsigned int CFDecodeThreadCount() const { return mRec->mCFDecodeThreadCount; }
-  inline unsigned int FitThreadCount() const { return mRec->mFitThreadCount; }
-  inline unsigned int ITSThreadCount() const { return mRec->mITSThreadCount; }
+
   inline size_t AllocateRegisteredMemory(GPUProcessor* proc) { return mRec->AllocateRegisteredMemory(proc); }
   inline size_t AllocateRegisteredMemory(short res, GPUOutputControl* control = nullptr) { return mRec->AllocateRegisteredMemory(res, control); }
   template <class T>
@@ -211,11 +206,16 @@ class GPUChain
   virtual int DoStuckProtection(int stream, void* event) { return 0; }
 
   template <class T, class S, typename... Args>
-  bool DoDebugAndDump(RecoStep step, int mask, T& processor, S T::*func, Args&... args);
+  bool DoDebugAndDump(RecoStep step, int mask, T& processor, S T::*func, Args&&... args)
+  {
+    return DoDebugAndDump(step, mask, true, processor, func, args...);
+  }
+  template <class T, class S, typename... Args>
+  bool DoDebugAndDump(RecoStep step, int mask, bool transfer, T& processor, S T::*func, Args&&... args);
 
  private:
   template <bool Always = false, class T, class S, typename... Args>
-  void timeCpy(RecoStep step, bool toGPU, S T::*func, Args... args);
+  void timeCpy(RecoStep step, int toGPU, S T::*func, Args... args);
 };
 
 template <class T>
@@ -225,14 +225,14 @@ inline void GPUChain::RunHelperThreads(T function, GPUReconstructionHelpers::hel
 }
 
 template <bool Always, class T, class S, typename... Args>
-inline void GPUChain::timeCpy(RecoStep step, bool toGPU, S T::*func, Args... args)
+inline void GPUChain::timeCpy(RecoStep step, int toGPU, S T::*func, Args... args)
 {
   if (!Always && step != RecoStep::NoRecoStep && !(GetRecoStepsGPU() & step)) {
     return;
   }
   HighResTimer* timer = nullptr;
   size_t* bytes = nullptr;
-  if (mRec->mDeviceProcessingSettings.debugLevel >= 1) {
+  if (mRec->mDeviceProcessingSettings.debugLevel >= 1 && toGPU >= 0) { // Todo: time special cases toGPU < 0
     int id = mRec->getRecoStepNum(step, false);
     if (id != -1) {
       auto& tmp = mRec->mTimersRecoSteps[id];
@@ -251,10 +251,12 @@ inline void GPUChain::timeCpy(RecoStep step, bool toGPU, S T::*func, Args... arg
 }
 
 template <class T, class S, typename... Args>
-bool GPUChain::DoDebugAndDump(GPUChain::RecoStep step, int mask, T& processor, S T::*func, Args&... args)
+bool GPUChain::DoDebugAndDump(GPUChain::RecoStep step, int mask, bool transfer, T& processor, S T::*func, Args&&... args)
 {
   if (GetDeviceProcessingSettings().keepAllMemory) {
-    TransferMemoryResourcesToHost(step, &processor, -1, true);
+    if (transfer) {
+      TransferMemoryResourcesToHost(step, &processor, -1, true);
+    }
     if (GetDeviceProcessingSettings().debugLevel >= 6 && (mask == 0 || (GetDeviceProcessingSettings().debugMask & mask))) {
       (processor.*func)(args...);
       return true;
