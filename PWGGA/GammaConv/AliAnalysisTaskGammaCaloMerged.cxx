@@ -1826,11 +1826,13 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
     } else if (((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->GetMinNLMCut() > 1 ){
       const Int_t   nc = clus->GetNCells();
-      Int_t   absCellIdList[nc];
-      //Float_t maxEList[nc];
-      //Int_t nlm = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent, absCellIdList, maxEList);
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
-                                    clus, fInputEvent, fIsMC, clusSub1, clusSub2);
+
+      Int_t     absCellIdList[nc];
+      Float_t   cellEnergyList[nc];
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent, absCellIdList, cellEnergyList);
+
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[1], absCellIdList[1],
+                                                                     clus, fInputEvent, fIsMC, clusSub1, clusSub2);
     }
     fHistoClusMergedPtvsM02[fiCut]->Fill( PhotonCandidate->Pt(),
                           clus->GetM02(),
