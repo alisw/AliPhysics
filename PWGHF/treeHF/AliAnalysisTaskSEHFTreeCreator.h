@@ -158,6 +158,7 @@ public:
     void SetSoftDropZCut(Double_t d) {fSoftDropZCut = d; }
     void SetSoftDropBeta(Double_t d) {fSoftDropBeta = d; }
     void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
+    void SetDoPtHard(bool b) {fDoPtHard = b;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
@@ -508,6 +509,7 @@ private:
     
     bool                    fFillJets;                             /// FillJetInfo
     bool                    fDoJetSubstructure;                    /// FillJetSubstructure
+    bool                    fDoPtHard;                             /// Get infor for Pt Hard Bins
     
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction

@@ -328,6 +328,7 @@ fFillMass(false),
 fFillMatchingJetID(false),
 fFillJets(false),
 fDoJetSubstructure(false),
+fDoPtHard(false),
 fEnableNsigmaTPCDataCorr(false),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
 fCorrNtrVtx(false),
@@ -1465,25 +1466,28 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
 
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
 
-  cout << "FINDING pyxsec!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-  TString currentfilepath_pyxsec = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
-  for (Int_t s_end=0; s_end<11; s_end++) currentfilepath_pyxsec.Remove(currentfilepath_pyxsec.Length()-1);
-  TString pyxsec_name = "pyxsec_hists.root";
-  TFile *F_xsection = new TFile(currentfilepath_pyxsec+pyxsec_name);
-  TList *L_xsection = (TList *) F_xsection->Get("cFilterList");
-  TProfile *fh_xsection = (TProfile *) L_xsection->FindObject("h1Xsec");
-  TH1D *fh_Trials = (TH1D *) L_xsection->FindObject("h1Trials");
+  if(fDoPtHard){
+    cout << "FINDING pyxsec!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+    TString currentfilepath_pyxsec = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+    for (Int_t s_end=0; s_end<11; s_end++) currentfilepath_pyxsec.Remove(currentfilepath_pyxsec.Length()-1);
+    TString pyxsec_name = "pyxsec_hists.root";
+    TFile *F_xsection = new TFile(currentfilepath_pyxsec+pyxsec_name);
+    TList *L_xsection = (TList *) F_xsection->Get("cFilterList");
+    TProfile *fh_xsection = (TProfile *) L_xsection->FindObject("h1Xsec");
+    TH1D *fh_Trials = (TH1D *) L_xsection->FindObject("h1Trials");
 
-  //fCross_Section = mcHeader->GetCrossSection();
-  //fTrials = mcHeader->GetTrials();
-  fCross_Section = fh_xsection->GetBinContent(1);
-  fTrials = fh_Trials->GetBinContent(1);
-  fpthard = mcHeader->GetPtHard();
+    //fCross_Section = mcHeader->GetCrossSection();
+    //fTrials = mcHeader->GetTrials();
+    fCross_Section = fh_xsection->GetBinContent(1);
+    fTrials = fh_Trials->GetBinContent(1);
+    fpthard = mcHeader->GetPtHard();
 
-  delete F_xsection;
-  delete L_xsection;
-  delete fh_xsection;
-  delete fh_Trials;
+    delete F_xsection;
+    delete L_xsection;
+    delete fh_xsection;
+    delete fh_Trials;
+
+  }
 
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
