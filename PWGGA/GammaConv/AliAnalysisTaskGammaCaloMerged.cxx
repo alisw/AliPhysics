@@ -1831,7 +1831,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       Float_t   cellEnergyList[nc];
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(clus, fInputEvent, absCellIdList, cellEnergyList);
 
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[1], absCellIdList[1],
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
                                                                      clus, fInputEvent, fIsMC, clusSub1, clusSub2);
     }
     fHistoClusMergedPtvsM02[fiCut]->Fill( PhotonCandidate->Pt(),
