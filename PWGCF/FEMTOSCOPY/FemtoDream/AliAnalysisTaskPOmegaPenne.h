@@ -52,6 +52,12 @@ public:
     void SetTrackCutsXion2(        AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
     void SetTrackCutsAntiXion2(    AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
     // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
+    float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
+    float CalculateInvMassLambda(TVector3 momPosDaughter, TVector3 momNegDaughter);
+    float CalculateInvMassXi(TVector3 momBach, TVector3 momPosDaughter, TVector3 momNegDaughter);
+
+    // void Setv0Cuts_rec(            AliFemtoDreamv0Cuts      *v0Cuts_rec        )  { fLambdaV0Cuts_rec        =   v0Cuts_rec;        };
+    // void SetAntiv0Cuts_rec(        AliFemtoDreamv0Cuts      *v0AntiCuts_rec        )  { fAntiLambdaV0Cuts_rec        =   v0AntiCuts_rec;        };
 
  private:
     void ResetGlobalTrackReference();
@@ -83,6 +89,8 @@ public:
     AliFemtoDreamPairCleaner           *fPairCleaner2;         //!
     AliFemtoDreamPartCollection        *fPartColl;             //!
     AliFemtoDreamPartCollection        *fPartColl2;            //!
+    // AliFemtoDreamv0Cuts                *fLambdaV0Cuts_rec;     //!
+    // AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts_rec; //!
     AliVTrack                          **fGTI;                 //!
     int                                 fTrackBufferSize;      //
     // ## Output Container
@@ -108,8 +116,16 @@ public:
     // TList                              *tlAntiProtonMC;        //!
     TList                              *tlLambdaMC;            //!
     TList                              *tlAntiLambdaMC;        //!
+    TList                              *tlRecombination;       //!      Recombinations Lists and histos
+    TH1F                               *hInvMassLambda;        //!
+    TH1F                               *hInvMassXi;            //!
+    TH1F                               *fEvtCounter;           //!
+    AliFemtoDreamv0                    *fv0_recomb;            //!
+    TList                              *tlLambdaList_rec;      //!
+    TList                              *tlAntiLambdaList_rec;  //!
+
   
-    ClassDef(AliAnalysisTaskPOmegaPenne,12)
+    ClassDef(AliAnalysisTaskPOmegaPenne,19)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
