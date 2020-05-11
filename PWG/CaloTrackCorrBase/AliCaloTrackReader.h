@@ -296,8 +296,9 @@ public:
   
   virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
+  virtual void     FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack, Bool_t & bc0) ;
   virtual void     FillInputEMCAL() ;
-  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus) ;
+  virtual void     FillInputEMCALSelectCluster(AliVCluster * clus, Int_t iclus) ;
   virtual void     FillInputPHOS() ;
   virtual void     FillInputEMCALCells() ;
   virtual void     FillInputPHOSCells() ;
