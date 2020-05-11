@@ -96,8 +96,14 @@ public:
   
   virtual void    SetInputEvent(AliVEvent* input) ;
   virtual void    SetOutputEvent(AliAODEvent*  aod)        { fOutputEvent = aod            ; }
-  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
+  virtual void    SetMC(AliMCEvent* mc) ;           
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
+  
+  /// Use as input for the analysis the MCEvent() or the InputEvent() from embedded MC signal.
+  /// \param useMCEvt: recover not the standard MCEvent() but an external MC embedded event
+  /// \param useInputEvt: recover not the standard InputEvent() but an external embedded input event
+  void         UseEmbeddedEvent(Bool_t useMCEvt, Bool_t useInputEvt) { 
+    fEmbeddedEvent[0] = useMCEvt ; fEmbeddedEvent[1] = useInputEvt ; }
   
   // Delta AODs
   
@@ -887,6 +893,8 @@ public:
   AliAODEvent    * fOutputEvent;                   //!<! pointer to aod output.
   AliMCEvent     * fMC;                            //!<! Monte Carlo Event Handler.  
 
+  Bool_t           fEmbeddedEvent[2];              ///< Data and MC events embedded with AliAnalysisTaskEmcalEmbeddingHelper
+
   Bool_t           fFillCTS;                       ///<  Use data from CTS.
   Bool_t           fFillEMCAL;                     ///<  Use data from EMCAL.
   Bool_t           fFillDCAL;                      ///<  Use data from DCAL, not needed in the normal case, use just EMCal array with DCal limits.
@@ -1115,7 +1123,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,87) ;
+  ClassDef(AliCaloTrackReader,88) ;
   /// \endcond
 
 } ;

@@ -35,6 +35,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -1195,6 +1196,9 @@ void AliCaloTrackReader::InitParameters()
   fEventTriggerMask      = AliVEvent::kAny;
   fMixEventTriggerMask   = AliVEvent::kAnyINT;
   fEventTriggerAtSE      = kTRUE; // Use only events that pass event selection at SE base class
+ 
+  fEmbeddedEvent[0] = kFALSE;
+  fEmbeddedEvent[1] = kFALSE;
   
   fAcceptFastCluster = kTRUE;
   fEventType         = -1;
@@ -3932,17 +3936,18 @@ void AliCaloTrackReader::SetEventTriggerBit()
 
 //____________________________________________________________
 /// Define here the input event and mixed event.
-/// Called in AliAnaCaloTrackCorrMaker.
+/// Called in ESD/AOD readers
 //____________________________________________________________
-void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
+void AliCaloTrackReader::SetInputEvent(AliVEvent * input)
 {
   fInputEvent  = input;
+  
   fMixedEvent = dynamic_cast<AliMixedEvent*>(GetInputEvent()) ;
-  if (fMixedEvent)
+  if ( fMixedEvent )
     fNMixedEvent = fMixedEvent->GetNumberOfEvents() ;
   
-  //Delete previous vertex
-  if(fVertex)
+  // Delete previous vertex
+  if ( fVertex )
   {
     for (Int_t i = 0; i < fNMixedEvent; i++)
     {
@@ -3959,6 +3964,28 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
     fVertex[i][1] = 0.0 ;
     fVertex[i][2] = 0.0 ;
   }
+  
+  // Recover embedded event instead
+  if ( fEmbeddedEvent[1] ) 
+    fInputEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
 }
 
-
+//____________________________________________________________
+/// Set the MC event used in analysis.
+/// In case of embedding, recover it from external event
+//____________________________________________________________
+void AliCaloTrackReader::SetMC(AliMCEvent * mc)              
+{ 
+  fMC = mc ; // MCEvent(); Set in the main steering task.
+  
+  // In case of embedding get it from external event
+  //
+  if ( fEmbeddedEvent[0] )
+  {
+    fMC = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalMCEvent();
+    if ( !fMC ) 
+    {
+      printf("Embedded MC event not found\n");
+    }
+  } // embedded
+}
