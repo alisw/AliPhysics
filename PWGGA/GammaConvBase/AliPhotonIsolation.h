@@ -42,19 +42,19 @@ class AliPhotonIsolation : public AliAnalysisTaskSE {
   void DebugIsolation();
 
   // basic variables/objects
-  Int_t                 fPhotonType;             //
-  TString               fV0ReaderName;           // Name of V0Reader
-  TString               fCorrTaskSetting;        // Name of Corr Task Setting
-  map<Int_t,Float_t> fMapClustertoPtR1;    // Map cluster ID to pTsum in cone R=0.1
-  map<Int_t,Float_t> fMapClustertoPtR2;    // Map cluster ID to pTsum in cone R=0.2
-  map<Int_t,Float_t> fMapClustertoPtR3;    // Map cluster ID to pTsum in cone R=0.3
-  map<Int_t,Float_t> fMapClustertoPtR4;    // Map cluster ID to pTsum in cone R=0.4
+  Int_t                 fPhotonType;       //!
+  TString               fV0ReaderName;     // Name of V0Reader
+  TString               fCorrTaskSetting;  // Name of Corr Task Setting
+  map<Int_t,Float_t> fMapClustertoPtR1;    //! Map cluster ID to pTsum in cone R=0.1
+  map<Int_t,Float_t> fMapClustertoPtR2;    //! Map cluster ID to pTsum in cone R=0.2
+  map<Int_t,Float_t> fMapClustertoPtR3;    //! Map cluster ID to pTsum in cone R=0.3
+  map<Int_t,Float_t> fMapClustertoPtR4;    //! Map cluster ID to pTsum in cone R=0.4
 
   //histos
-  TList*                fListHistos;             // list with histogram(s)
-  TH1F*                 fHistTest;
-  TH1F*                 fHistClusterEnergy;
-  TH1F*                 fHistIso;
+  TList*                fListHistos;             //! list with histogram(s)
+  TH1F*                 fHistTest;               //!
+  TH1F*                 fHistClusterEnergy;      //!
+  TH1F*                 fHistIso;                //!
 
   ClassDef(AliPhotonIsolation,1)
     };

@@ -111,17 +111,17 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
 
     Long_t fCaloPhotonMCLabels[50];         //!
     Long_t fCaloPhotonMotherMCLabels[20];   //!
-    Long_t fNeutralPionLabels[20];   //!
-    Int_t fLeadingNeutralPionIndex;   //!
-    Int_t fLeadingNeutralPionDaughterIndex;   //!
-    Float_t fNeutralPionEnergyFraction[20];   //!
+    Long_t fNeutralPionLabels[20];          //!
+    Int_t fLeadingNeutralPionIndex;         //!
+    Int_t fLeadingNeutralPionDaughterIndex; //!
+    Float_t fNeutralPionEnergyFraction[20]; //!
     Long_t fCaloClusterRef;                 //!
-    Float_t fDCArPrimVtx;
-    Float_t fDCAzPrimVtx;
-    Float_t fInvMassPair;
+    Float_t fDCArPrimVtx;                   //!
+    Float_t fDCAzPrimVtx;                   //!
+    Float_t fInvMassPair;                   //!
     Int_t fNCaloPhotonMCLabels;             //!
     Int_t fNCaloPhotonMotherMCLabels;       //!
-    Int_t fNNeutralPionLabels;       //!
+    Int_t fNNeutralPionLabels;              //!
     Int_t fCaloPhotonMCFlags;               //!
     Int_t fPairedId;                        //!
     Char_t fCaloPhoton;                     //!

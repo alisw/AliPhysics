@@ -86,6 +86,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fPCMv0BitField(NULL),
   fConversionCuts(NULL),
   fEventCuts(NULL),
+  fInputGammas(NULL),
   fConversionGammas(NULL),
   fUseImprovedVertex(kTRUE),
   fUseOwnXYZCalculation(kTRUE),
@@ -642,7 +643,6 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   if(!fEventCuts){AliError("No EventCuts");return kFALSE;}
   if(!fConversionCuts){AliError("No ConversionCuts");return kFALSE;}
 
-
   // Count Primary Tracks Event
   CountTracks();
 
@@ -777,7 +777,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
-	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
+          if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -867,11 +867,9 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 
 
   // Set Track Labels
-
   fCurrentMotherKF->SetTrackLabels(currentTrackLabels[0],currentTrackLabels[1]);
 
   // Set V0 index
-
   fCurrentMotherKF->SetV0Index(currentV0Index);
 
   //Set MC Label
@@ -1258,8 +1256,8 @@ Bool_t AliV0ReaderV1::GetAODConversionGammas(){
 
   AliAODConversionPhoton *gamma=0x0;
 
-  TClonesArray *fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));
-
+  if(!fInputGammas) {
+    fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
   if(!fInputGammas){
     FindDeltaAODBranchName();
     fInputGammas=dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(fDeltaAODBranchName.Data()));}
@@ -1492,7 +1490,6 @@ void AliV0ReaderV1::CalculateSphericity(){
   fNumberOfRecTracks = 0;
   fSphericity = -1;
   TMatrixD EigenV(2,2);
-  TVector2* EigenVector;
   fSphericityAxisMainPhi = 0;
   Double_t MirroredMainSphericityAxis = 0;
   fSphericityAxisSecondaryPhi = 0;
@@ -1569,12 +1566,12 @@ void AliV0ReaderV1::CalculateSphericity(){
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
       EigenV.Zero();
       EigenV = TMatrixDEigen(St).GetEigenVectors();
-      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
-      fSphericityAxisMainPhi = EigenVector->Phi();
+      TVector2 EigenVector(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector.Phi();
       MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
       if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
-      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
-      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      TVector2 EigenVector_2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector_2.Phi();
       if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
           fInEMCalAcceptance = kTRUE;
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
@@ -1610,12 +1607,12 @@ void AliV0ReaderV1::CalculateSphericity(){
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
       EigenV.Zero();
       EigenV = TMatrixDEigen(St).GetEigenVectors();
-      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
-      fSphericityAxisMainPhi = EigenVector->Phi();
+      TVector2 EigenVector(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector.Phi();
       MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
       if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
-      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
-      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      TVector2 EigenVector_2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector_2.Phi();
       if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
           fInEMCalAcceptance = kTRUE;
       }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){

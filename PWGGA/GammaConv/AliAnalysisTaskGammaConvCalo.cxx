@@ -88,13 +88,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
-  fEventCuts(NULL),
   fCutArray(NULL),
-  fConversionCuts(NULL),
   fClusterCutArray(NULL),
-  fCaloPhotonCuts(NULL),
   fMesonCutArray(NULL),
-  fMesonCuts(NULL),
   fConvJetReader(NULL),
   fOutlierJetReader(NULL),
   fDoJetAnalysis(kFALSE),
@@ -418,8 +414,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
-//  fHistoTruePi0NonLinearity(NULL),
-//  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
@@ -496,13 +490,9 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
-  fEventCuts(NULL),
   fCutArray(NULL),
-  fConversionCuts(NULL),
   fClusterCutArray(NULL),
-  fCaloPhotonCuts(NULL),
   fMesonCutArray(NULL),
-  fMesonCuts(NULL),
   fConvJetReader(NULL),
   fOutlierJetReader(NULL),
   fDoJetAnalysis(kFALSE),
@@ -826,8 +816,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
-//  fHistoTruePi0NonLinearity(NULL),
-//  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
@@ -930,10 +918,6 @@ AliAnalysisTaskGammaConvCalo::~AliAnalysisTaskGammaConvCalo()
   if(fMCGammaCandidates){
     delete[] fMCGammaCandidates;
     fMCGammaCandidates = 0x0;
-  }
-  if(fAODMCTrackArray){
-    delete[] fAODMCTrackArray;
-    fAODMCTrackArray = 0x0;
   }
 }
 //___________________________________________________________

@@ -551,11 +551,6 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
     fPHOSBadChannelsMap = NULL;
   }
 
-  if(fAODMCTrackArray){
-    delete[] fAODMCTrackArray;
-    fAODMCTrackArray = 0x0;
-  }
-
   if(fFuncPtDepEta) delete fFuncPtDepEta;
   if(fFuncPtDepPhi) delete fFuncPtDepPhi;
   if(fFuncTimingEfficiencyMCSimCluster) delete fFuncTimingEfficiencyMCSimCluster;
