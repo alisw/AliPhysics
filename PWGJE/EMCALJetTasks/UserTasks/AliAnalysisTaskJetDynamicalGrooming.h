@@ -65,9 +65,17 @@ namespace PWGJE {
 namespace EMCALJetTasks {
 namespace SubstructureTree {
 
+/**
+ * @class Subjets
+ * @brief Subjets of a jet.
+ *
+ * Store the subjets as determined by declustering a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class Subjets {
  public:
-  // TODO: Fully update and document!
   Subjets();
   // Additional constructors
   Subjets(const Subjets & other);
@@ -95,13 +103,22 @@ class Subjets {
  protected:
   std::vector<unsigned short> fSplittingNodeIndex;        ///<  Index of the parent splitting node.
   std::vector<bool> fPartOfIterativeSplitting;            ///<  True if the splitting is follow an iterative splitting.
-  std::vector<std::vector<unsigned short>> fConstituentIndices;        ///<  Constituent jet indices (ie. index by the stored jet constituents, not the global index).
+  std::vector<std::vector<unsigned short>> fConstituentIndices;        ///<  Constituent jet indices (ie. indexed by the stored jet constituents, not the global index).
 
   /// \cond CLASSIMP
   ClassDef(Subjets, 2) // Subjets from splittings.
   /// \endcond
 };
 
+/**
+ * @class JetSplittings
+ * @brief Properties of jet splittings.
+ *
+ * Store the properties of jet splittings determined by declustering a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class JetSplittings {
  public:
   JetSplittings();
@@ -139,10 +156,18 @@ class JetSplittings {
   /// \endcond
 };
 
+/**
+ * @class JetConstituents
+ * @brief Jet constituents.
+ *
+ * Store the constituents associated with a jet.
+ *
+ * @author Raymond Ehlers <raymond.ehlers@cern.ch>, ORNL
+ * @date 9 Feb 2020
+ */
 class JetConstituents
 {
  public:
-  // TODO: Fully update and document!
   JetConstituents();
   // Additional constructors
   JetConstituents(const JetConstituents & other);
@@ -173,7 +198,7 @@ class JetConstituents
   std::vector<float> fPt;                 ///<  Jet constituent pt
   std::vector<float> fEta;                ///<  Jet constituent eta
   std::vector<float> fPhi;                ///<  Jet constituent phi
-  std::vector<int> fID;                   ///<  Jet constituent identifier. MClabel (via GetLabel()) or global index (with offset defined here).
+  std::vector<int> fID;                   ///<  Jet constituent identifier. MC label (via GetLabel()) or global index (with offset defined above).
 
   /// \cond CLASSIMP
   ClassDef(JetConstituents, 2) // Jet constituents.

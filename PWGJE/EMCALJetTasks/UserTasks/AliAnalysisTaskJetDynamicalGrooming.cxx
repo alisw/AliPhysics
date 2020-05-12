@@ -1146,10 +1146,11 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     inputVectors.push_back(pseudoTrack);
 
     // Also store the jet constituents in the output
-    // Ensure they are uniquely identified using the id. We don't use the global index (accessed via `TrackAt(int)`) because they
-    // won't be the same for the subtracted and unsubtracted constituents (they are different TClonesArrays). Instead, we label
-    // the part and det level with the MClabel (ie. for those which have it available), and for the data, we use the global
-    // index (offset sufficiently) so it won't overlap with other values.
+    // Ensure they are uniquely identified (per type of jet) using the id. We don't use the global index (accessed via
+    // `TrackAt(int)`) because they won't be the same for the subtracted and unsubtracted constituents (they are different
+    // TClonesArrays). Instead, we label the part and det level with the MClabel (ie. for those which have it available),
+    // and for the data (where it always equals -1), we use the global index (offset sufficiently) so it won't overlap with
+    // other values.
     int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + SubstructureTree::JetConstituents::GetGlobalIndexOffset());
     jetSplittings.AddJetConstituent(part , id);
   }
@@ -1171,31 +1172,11 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     std::vector<fastjet::PseudoJet> outputJets = cs->inclusive_jets(0);
 
     fastjet::PseudoJet jj;
-    //fastjet::PseudoJet j1;
-    //fastjet::PseudoJet j2;
     jj = outputJets[0];
 
     // Store the jet splittings.
     int splittingNodeIndex = -1;
     ExtractJetSplittings(jetSplittings, jj, splittingNodeIndex, true);
-    /*while (jj.has_parents(j1, j2)) {
-      splittingLabel++;
-      // j1 should always be the harder of the two subjets.
-      if (j1.perp() < j2.perp()) {
-        swap(j1, j2);
-      }
-
-      double z = j2.perp() / (j2.perp() + j1.perp());
-      double delta_R = j1.delta_R(j2);
-      double xkt = j2.perp() * sin(delta_R);
-      std::vector<unsigned int> constituentIndices;
-      for (auto constituent: j1.constituents()) {
-        constituentIndices.emplace_back(constituent.user_index());
-      }
-      jetSplittings.AddSplitting(xkt, delta_R, z, constituentIndices);
-
-      jj = j1;
-    }*/
 
     // Cleanup the allocated cluster sequence.
     delete cs;
@@ -1226,9 +1207,9 @@ void AliAnalysisTaskJetDynamicalGrooming::ExtractJetSplittings(SubstructureTree:
   double xkt = j2.perp() * sin(delta_R);
   // Add the splitting node.
   jetSplittings.AddSplitting(xkt, delta_R, z, splittingNodeIndex);
-  // Increment after storing splitting because the parent is the new one.
-  //splittingNodeIndex++;
-  // -1 because we want to index the parent splitting that was just stored.
+  // Determine which splitting parent the subjets will point to (ie. the one that
+  // we just stored). It's stored at the end of the splittings array. (which we offset
+  // by -1 to stay within the array).
   splittingNodeIndex = jetSplittings.GetNumberOfSplittings() - 1;
   // Store the subjets
   std::vector<unsigned short> j1ConstituentIndices, j2ConstituentIndices;
