@@ -155,10 +155,11 @@ class JetConstituents
   bool Clear();
 
   // Getters and setters
-  void AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent& part);
+  void AddJetConstituent(const AliVParticle* part, const int & id);
   #if !(defined(__CINT__) || defined(__MAKECINT__))
   std::tuple<float, float, float, int> GetJetConstituent(int i) const;
   #endif
+  static const int GetGlobalIndexOffset() { return fgkGlobalIndexOffset; }
 
   // Printing
   std::string toString() const;
@@ -167,13 +168,15 @@ class JetConstituents
   std::ostream & Print(std::ostream &in) const;
 
  protected:
+  static const int fgkGlobalIndexOffset;  ///<  Offset for GlobalIndex values in the ID to ensure it never conflicts with the label.
+
   std::vector<float> fPt;                 ///<  Jet constituent pt
   std::vector<float> fEta;                ///<  Jet constituent eta
   std::vector<float> fPhi;                ///<  Jet constituent phi
-  std::vector<unsigned int> fGlobalIndex; ///<  Jet constituent global index
+  std::vector<int> fID;                   ///<  Jet constituent identifier. MClabel (via GetLabel()) or global index (with offset defined here).
 
   /// \cond CLASSIMP
-  ClassDef(JetConstituents, 1) // Jet constituents.
+  ClassDef(JetConstituents, 2) // Jet constituents.
   /// \endcond
 };
 
@@ -202,7 +205,7 @@ class JetSubstructureSplittings {
 
   // Setters
   void SetJetPt(float pt) { fJetPt = pt; }
-  void AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent& part);
+  void AddJetConstituent(const AliVParticle* part, const int & id);
   void AddSplitting(float kt, float deltaR, float z, short parentIndex);
   void AddSubjet(const unsigned short splittingNodeIndex, const bool partOfIterativeSplitting,
           const std::vector<unsigned short>& constituentIndices);
@@ -350,7 +353,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData);
   void ExtractJetSplittings(SubstructureTree::JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int splittingNodeIndex, bool followingIterativeSplitting);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliEmcalJet* fJetM);
-  bool CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1);
+  bool CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1);
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///<  YAML configuration file.
