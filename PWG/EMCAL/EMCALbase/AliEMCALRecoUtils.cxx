@@ -2461,12 +2461,13 @@ void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, 
     
   } // mc cell label loop
   
-  //
-  // If no label found, reject cell
-  // It can happen to have this case (4 MC labels per cell is not enough for some cases)
-  // better to remove. To be treated carefully.
-  //
-  if ( nLabels == 0 ) amp = 0;
+//  Commented on 12/05/20, in embedding case, data input cells are removed
+//  Also, it will remove MC noise
+//  // If no label found, reject cell
+//  // It can happen to have this case (4 MC labels per cell is not enough for some cases)
+//  // better to remove. To be treated carefully.
+//  //
+//  if ( nLabels == 0 ) amp = 0;
   
 }
 
