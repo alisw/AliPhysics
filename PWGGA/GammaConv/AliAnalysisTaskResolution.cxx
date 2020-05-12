@@ -160,6 +160,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
     fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+    if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
 	if(eventQuality != 0){// Event Not Accepted
 		return;
 	}

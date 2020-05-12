@@ -1755,6 +1755,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 	//
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+    if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){

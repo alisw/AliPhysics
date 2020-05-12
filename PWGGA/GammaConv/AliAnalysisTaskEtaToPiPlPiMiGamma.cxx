@@ -657,7 +657,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::UserExec(Option_t *){
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-	if(InputEvent()->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
+	if(InputEvent()->IsIncompleteDAQ()==kTRUE || fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;  // incomplete event
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			fHistoNEvents[iCut]->Fill(eventQuality);
