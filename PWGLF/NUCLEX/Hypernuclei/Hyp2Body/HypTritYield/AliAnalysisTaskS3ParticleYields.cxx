@@ -449,11 +449,11 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fHistogramList->Add(fHistTrigger);
   fHistogramList->Add(fHistV0);
   fHistogramList->Add(fHistEvents);
-  fHistogramList->Add(fHistData);
-  fHistogramList->Add(fHistMC);
+  //fHistogramList->Add(fHistData);
+  //fHistogramList->Add(fHistMC);
 
   fEventCuts.AddQAplotsToList(fHistogramList);
-  //TREE for only V0 and combined track V0 analysis
+  //TREE
   fTree = new TTree("treeheLp","fTree");
   fTree->Branch("fTrigger", &fTrigger, "fTrigger/I");
   fTree->Branch("fMultV0M",&fMultV0M,"fMultV0M/I");
@@ -480,14 +480,16 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fTree->Branch("fhe3P", &fhe3P, "fhe3P/F");
   fTree->Branch("fhe3Pt", &fhe3Pt, "fhe3Pt/F");
   fTree->Branch("fhe3chi2", &fhe3chi2, "fhe3chi2/F");
-  //fTree->Branch("fpP", &fpP, "fpP/F");
+  fTree->Branch("fpchi2", &fpchi2, "fpchi2/F");
+  fTree->Branch("fpP", &fpP, "fpP/F");
+  fTree->Branch("fpPt", &fpPt, "fpPt/F");
   //DCA's
   fTree->Branch("fdcaLambda", &fdcaLambda, "fdcaLambda/F");
   //PA's
   fTree->Branch("fcosLambda", &fcosLambda, "fcosLambda/F");
   //Rapidity
   fTree->Branch("fyLambda", &fyLambda, "fyLambda/F");
-  //fTree->Branch("fpy", &fpy, "fpy/F");
+  fTree->Branch("fpy", &fpy, "fpy/F");
   fTree->Branch("fpLy", &fpLy, "fpLy/F");
   fTree->Branch("fpiy", &fpiy, "fpiy/F");
   fTree->Branch("fhe3y", &fhe3y, "fhe3y/F");
@@ -496,51 +498,52 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fTree->Branch("fpLDca", &fpLDca ,"fpLDca/F");
   fTree->Branch("fhe3Dca", &fhe3Dca ,"fhe3Dca/F");
   fTree->Branch("fhe3Dcaz", &fhe3Dcaz ,"fhe3Dcaz/F");
-  //fTree->Branch("fpDca", &fpDca ,"fpDca/F");
+  fTree->Branch("fpDcaz", &fpDcaz ,"fpDcaz/F");
+  fTree->Branch("fpDca", &fpDca ,"fpDca/F");
   //DCA From secondary/tertiary Vertex
   fTree->Branch("fpiDcaSec", &fpiDcaSec, "fpiDcaSec/F");
   fTree->Branch("fpLDcaSec", &fpLDcaSec ,"fpLDcaSec/F");
   //Number of Clusters
   fTree->Branch("fpiNcls", &fpiNcls, "fpiNcls/F");
   fTree->Branch("fhe3Ncls", &fhe3Ncls, "fhe3Ncls/F");
-  //fTree->Branch("fpNcls", &fpNcls, "fpNcls/F");
+  fTree->Branch("fpNcls", &fpNcls, "fpNcls/F");
   fTree->Branch("fpLNcls", &fpLNcls, "fpLNcls/F");
   //Number of Clusters ITS
   fTree->Branch("fpiNclsITS", &fpiNclsITS, "fpiNclsITS/F");
   fTree->Branch("fhe3NclsITS", &fhe3NclsITS, "fhe3NclsITS/F");
-  //fTree->Branch("fpNclsITS", &fpNclsITS, "fpNclsITS/F");
+  fTree->Branch("fpNclsITS", &fpNclsITS, "fpNclsITS/F");
   fTree->Branch("fpLNclsITS", &fpLNclsITS, "fpLNclsITS/F");
   //Number of Sigmas PID
   fTree->Branch("fhe3DedxSigma", &fhe3DedxSigma, "fhe3DedxSigma/F");
-  //fTree->Branch("fpDedxSigma", &fpDedxSigma, "fpDedxSigma/F");
+  fTree->Branch("fpDedxSigma", &fpDedxSigma, "fpDedxSigma/F");
   fTree->Branch("fpLDedxSigma", &fpLDedxSigma, "fpLDedxSigma/F");
   fTree->Branch("fpiDedxSigma", &fpiDedxSigma, "fpiDedxSigma/F");
   //TPC Signal
   fTree->Branch("fpiDedx", &fpiDedx, "fpiDedx/F");
   fTree->Branch("fhe3Dedx", &fhe3Dedx, "fhe3Dedx/F");
-  //fTree->Branch("fpDedx", &fpDedx, "fpDedx/F");
+  fTree->Branch("fpDedx", &fpDedx, "fpDedx/F");
   fTree->Branch("fpLDedx", &fpLDedx, "fpLDedx/F");
   //Armenteros
   fTree->Branch("farmalpha", &farmalpha, "farmalpha/F");
   fTree->Branch("farmpt", &farmpt, "farmpt/F");
   //Eta
   fTree->Branch("fEtaHe3", &fEtaHe3, "fEtaHe3/F");
-  //fTree->Branch("fEtaP", &fEtaP, "fEtaP/F");
+  fTree->Branch("fEtaP", &fEtaP, "fEtaP/F");
   fTree->Branch("fEtaPL", &fEtaPL, "fEtaPL/F");
   fTree->Branch("fEtaPi", &fEtaPi, "fEtaPi/F");
   //Phi
   fTree->Branch("fPhiHe3", &fPhiHe3, "fPhiHe3/F");
-  //fTree->Branch("fPhiP", &fPhiP, "fPhiP/F");
+  fTree->Branch("fPhiP", &fPhiP, "fPhiP/F");
   fTree->Branch("fPhiPL", &fPhiPL, "fPhiPL/F");
   fTree->Branch("fPhiPi", &fPhiPi, "fPhiPi/F");
   //GeoLength
   fTree->Branch("fGeoLengthHe3", &fGeoLengthHe3, "fGeoLengthHe3/F");
-  //fTree->Branch("fGeoLengthP", &fGeoLengthP, "fGeoLengthP/F");
+  fTree->Branch("fGeoLengthP", &fGeoLengthP, "fGeoLengthP/F");
   fTree->Branch("fGeoLengthPL", &fGeoLengthPL, "fGeoLengthPL/F");
   fTree->Branch("fGeoLengthPi", &fGeoLengthPi, "fGeoLengthPi/F");
   //TOF Signal
   fTree->Branch("fTOFSignalHe3", &fTOFSignalHe3, "fTOFSignalHe3/F");
-  //fTree->Branch("fTOFSignalP", &fTOFSignalP, "fTOFSignalP/F");
+  fTree->Branch("fTOFSignalP", &fTOFSignalP, "fTOFSignalP/F");
   fTree->Branch("fTOFSignalPL", &fTOFSignalPL, "fTOFSignalPL/F");
   fTree->Branch("fTOFSignalPi", &fTOFSignalPi, "fTOFSignalPi/F");
 
@@ -550,10 +553,10 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fTree->Branch("fisMaterialHe3", &fisMaterialHe3, "fisMaterialHe3/I");
   fTree->Branch("fisfromHypertriton", &fisfromHypertriton, "fisfromHypertriton/I");
 
-  //fTree->Branch("fMCtrueP", &fMCtrueP, "fMCtrueP/I");
-  //fTree->Branch("fisPrimaryP", &fisPrimaryP, "fisPrimaryP/I");
-  //fTree->Branch("fisWeakP", &fisWeakP, "fisWeakP/I");
-  //fTree->Branch("fisMaterialP", &fisMaterialP, "fisMaterialP/I");
+  fTree->Branch("fMCtrueP", &fMCtrueP, "fMCtrueP/I");
+  fTree->Branch("fisPrimaryP", &fisPrimaryP, "fisPrimaryP/I");
+  fTree->Branch("fisWeakP", &fisWeakP, "fisWeakP/I");
+  fTree->Branch("fisMaterialP", &fisMaterialP, "fisMaterialP/I");
 
   fTree->Branch("fMCtrueL", &fMCtrueL, "fMCtrueL/I");
 
@@ -572,12 +575,12 @@ void AliAnalysisTaskS3ParticleYields::UserCreateOutputObjects() {
   fTreeGen->Branch("fisSecondaryGenHe3", &fisSecondaryGenHe3, "fisSecondaryGenHe3/I");  
   fTreeGen->Branch("fisMaterialGenHe3", &fisMaterialGenHe3, "fisMaterialGenHe3/I"); 
   fTreeGen->Branch("fHe3Charge", &fHe3Charge, "fHe3Charge/I");
-  //fTreeGen->Branch("fpPGen", &fpPGen, "fpPGen/F"); 
-  //fTreeGen->Branch("fyPGen", &fyPGen, "fyPGen/F"); 
-  //fTreeGen->Branch("fisPrimaryGenP", &fisPrimaryGenP, "fisPrimaryGenP/I"); 
-  //fTreeGen->Branch("fisSecondaryGenP", &fisSecondaryGenP, "fisSecondaryGenP/I");  
-  //fTreeGen->Branch("fisMaterialGenP", &fisMaterialGenP, "fisMaterialGenP/I"); 
-  //fTreeGen->Branch("fPCharge", &fPCharge, "fPCharge/I"); 
+  fTreeGen->Branch("fpPGen", &fpPGen, "fpPGen/F");
+  fTreeGen->Branch("fyPGen", &fyPGen, "fyPGen/F");
+  fTreeGen->Branch("fisPrimaryGenP", &fisPrimaryGenP, "fisPrimaryGenP/I");
+  fTreeGen->Branch("fisSecondaryGenP", &fisSecondaryGenP, "fisSecondaryGenP/I");
+  fTreeGen->Branch("fisMaterialGenP", &fisMaterialGenP, "fisMaterialGenP/I");
+  fTreeGen->Branch("fPCharge", &fPCharge, "fPCharge/I");
   fTreeGen->Branch("fpLambdaGen", &fpLambdaGen, "fpLambdaGen/F");
   fTreeGen->Branch("fyLambdaGen", &fyLambdaGen, "fyLambdaGen/F");
   fTreeGen->Branch("fLambdaCharge", &fLambdaCharge, "fLambdaCharge/I");
@@ -663,9 +666,7 @@ void AliAnalysisTaskS3ParticleYields::UserExec(Option_t *) {
   fMagneticField  = fESDevent->GetMagneticField();
   //Primary Vertex Position
   fPrimaryVertex.SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
-  fVertexPosition = fPrimaryVertex; 
-  //V0
-  fNV0Cand = 0;
+  fVertexPosition = fPrimaryVertex;
 
   AliESDtrackCuts trackCutsV0("AlitrackCutsV0", "AlitrackCutsV0");
 
@@ -702,9 +703,11 @@ void AliAnalysisTaskS3ParticleYields::dEdxCheck(){
 }
 void AliAnalysisTaskS3ParticleYields::He3PYields(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent){
   fHistEvents->Fill(fTrigger);
-  Int_t count = 0;
+  Int_t count;
 
   for (Int_t ATracks = 0; ATracks < fESDevent->GetNumberOfTracks(); ATracks++) {
+      
+      count = 0;
 
     AliESDtrack* trackA = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(ATracks));
 
@@ -757,8 +760,8 @@ void AliAnalysisTaskS3ParticleYields::He3PYields(AliESDtrackCuts trackCutsV0, Al
         fisMaterialHe3 = fStack->IsSecondaryFromMaterial(TMath::Abs(label));
         fisfromHypertriton = TMath::Abs(particleMother->PdgCode()) == fgkPdgCode[kPDGHyperHydrogen3];   
       }
-      //count++;
-      fTree->Fill();
+      count++;
+      //fTree->Fill();
     }
     if ((fBetheSplines && TMath::Abs(fPID->NumberOfSigmasTPC(trackA, AliPID::kProton)) < 3) || (!fBetheSplines && TMath::Abs(Bethe(*trackA, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3)){
       TLorentzVector fd(0.,0.,0.,0.);
@@ -794,14 +797,56 @@ void AliAnalysisTaskS3ParticleYields::He3PYields(AliESDtrackCuts trackCutsV0, Al
         fisWeakP = fStack->IsSecondaryFromWeakDecay(TMath::Abs(label)); 
         fisMaterialP = fStack->IsSecondaryFromMaterial(TMath::Abs(label));   
       }   
-      Double_t vecHistRec[19] = {fpP,  fpPt, fpDca, fpDcaz, fpNcls, fpNclsITS, fpDedxSigma, fpDedx, fEtaP, fPhiP, fGeoLengthP, fTOFSignalP, fpchi2,  static_cast<Double_t>(fMCtrueP),  static_cast<Double_t>(fisPrimaryP),  static_cast<Double_t>(fisWeakP),  static_cast<Double_t>(fisMaterialP), fpy, static_cast<Double_t>(signA)};
-      fHistData->Fill(vecHistRec);
+      //Double_t vecHistRec[19] = {fpP,  fpPt, fpDca, fpDcaz, fpNcls, fpNclsITS, fpDedxSigma, fpDedx, fEtaP, fPhiP, fGeoLengthP, fTOFSignalP, fpchi2,  static_cast<Double_t>(fMCtrueP),  static_cast<Double_t>(fisPrimaryP),  static_cast<Double_t>(fisWeakP),  static_cast<Double_t>(fisMaterialP), fpy, static_cast<Double_t>(signA)};
+      //fHistData->Fill(vecHistRec);
+        count++;
     }
-    //if (count>0) fTree->Fill();
-  } 
+    if (count>0) fTree->Fill();
+      fhe3Pt = -99;
+      fhe3P = -99;
+      fhe3y = -99;
+      fTOFSignalHe3 = -99;
+      fhe3Ncls = -99;
+      fhe3NclsITS = -99;
+      fhe3Dedx = -99;
+      fGeoLengthHe3 = -99;
+      fPhiHe3 = -99;
+      fEtaHe3 = -99;
+      fhe3chi2 = -99;
+      fhe3Dca = -99;
+      fhe3Dcaz = -99;
+      fTOFSignalHe3 = -99;
+      fhe3DedxSigma = -99;
+      fMCtrueHe3 =-99;
+      fisPrimaryHe3 = -99;
+      fisWeakHe3 = -99;
+      fisMaterialHe3 = -99;
+      fisfromHypertriton = -99;
+      fpPt = -99;
+      fpP =-99;
+      fpy = -99;
+      fpNcls = -99;
+      fpNclsITS = -99;
+      fpDedx = -99;
+      fGeoLengthP = -99;
+      fPhiP = -99;
+      fEtaP = -99;
+      fTOFSignalP = -99;
+      fpchi2 = -99;
+      fpDca = -99;
+      fpDcaz = -99;
+      fz = -99;
+      fpDedxSigma = -99;
+      fMCtrueP = -99;
+      fisPrimaryP = -99;
+      fisWeakP = -99;
+      fisMaterialP = -99;
+  }
 }
 void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, AliMCEvent* mcEvent){
   for (Int_t ivertex = 0; ivertex < fESDevent->GetNumberOfV0s(); ivertex++) {
+      
+    fNV0Cand = 0;
 
     fHistV0->Fill(fTrigger);
     fV0 = fESDevent->GetV0(ivertex);
@@ -952,8 +997,8 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
       }
       fNV0Cand = fNV0Cand + 1;
     }//end 
-    fNumberV0s = (fNV0Cand);
-    if (fNV0Cand) fTree->Fill();
+    //fNumberV0s = (fNV0Cand);
+    //if (fNV0Cand) fTree->Fill();
 
     if (protonNegative && pionPositive) {
       if(fMCtrue) fmc = 1;
@@ -1051,6 +1096,43 @@ void AliAnalysisTaskS3ParticleYields::V0Analysis(AliESDtrackCuts trackCutsV0, Al
     }//end 
     fNumberV0s = (fNV0Cand);
     if (fNV0Cand) fTree->Fill();
+      fmc = -99;
+      fz = -99;
+      fdcaLambda = -99;
+      fcosLambda = -99;
+      fonTheFly = -99;
+      fpLDedx = -99;
+      fpiDedx = -99;
+      fEtaPL = -99;
+      fEtaPi = -99;
+      fPhiPL = -99;
+      fPhiPi = -99;
+      fGeoLengthPL = -99;
+      fGeoLengthPi = -99;
+      fTOFSignalPL = -99;
+      fTOFSignalPi = -99;
+      fpLDedxSigma = -99;
+      fpiDedxSigma = -99;
+      fpLDca = -99;
+      fpiDca = -99;
+      fpLNcls = -99;
+      fpiNcls = -99;
+      fpLNclsITS = -99;
+      fpiNclsITS = -99;
+      fpLP = -99;
+      fpiP = -99;
+      fpLy = -99;
+      fpiy = -99;
+      fmLambda = -99;
+      fpLambda = -99;
+      fptLambda = -99;
+      fyLambda = -99;
+      fctLambda = -99;
+      fpLDcaSec = -99;
+      fpiDcaSec = -99;
+      farmalpha = -99;
+      farmpt = -99;
+      fMCtrueL = -99;
   }
 }
 void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
@@ -1083,8 +1165,9 @@ void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
       fisMaterialGenP = fStack->IsSecondaryFromMaterial(TMath::Abs(stackN));
       if(particleMother->PdgCode() == fgkPdgCode[kPDGProton]) fPCharge = 1;
       if(particleMother->PdgCode() == fgkPdgCode[kPDGAntiProton]) fPCharge = -1;
-      Double_t vecHistMC[6]={fpPGen, fyPGen,  static_cast<Double_t>(fisPrimaryGenP),  static_cast<Double_t>(fisSecondaryGenP),  static_cast<Double_t>(fisMaterialGenP), static_cast<Double_t>(fPCharge)};
-      fHistMC->Fill(vecHistMC);
+      //Double_t vecHistMC[6]={fpPGen, fyPGen,  static_cast<Double_t>(fisPrimaryGenP),  static_cast<Double_t>(fisSecondaryGenP),  static_cast<Double_t>(fisMaterialGenP), static_cast<Double_t>(fPCharge)};
+      //fHistMC->Fill(vecHistMC);
+        count++;
     }
     if(TMath::Abs(particleMother->PdgCode()) == fgkPdgCode[kPDGLambda]){
       Int_t labelFirstDaughter =  mcEvent->GetLabelOfParticleFirstDaughter(TMath::Abs(stackN));
@@ -1101,6 +1184,21 @@ void AliAnalysisTaskS3ParticleYields::MCGenerated(AliMCEvent* mcEvent) {
       count++;
     }  
     if(count>0) fTreeGen->Fill();
+      fpHe3Gen = -99;
+      fyHe3Gen = -99;
+      fisPrimaryGenHe3 = -99;
+      fisSecondaryGenHe3 = -99;
+      fisMaterialGenHe3 = -99;
+      fHe3Charge = -99;
+      fpPGen = -99;
+      fyPGen = -99;
+      fisPrimaryGenP = -99;
+      fisSecondaryGenP = -99;
+      fisMaterialGenP = -99;
+      fPCharge = -99;
+      fpLambdaGen = -99;
+      fyLambdaGen = -99;
+      fLambdaCharge = -99;
   }
 }
 //_____________________________________________________________________________
