@@ -131,6 +131,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP8T12P2JJ,
       kPP8T12P2GJLow,
       kPP8T12P2GJHigh,
+      kPP8T12P2GJGeant3,
+      kPP8T12P2GJGeant4,
       // pPb 5 TeV 2013
       kPPb5T13P2DPMJet,
       kPPb5T13P4JJ,

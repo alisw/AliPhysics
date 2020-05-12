@@ -1,11 +1,8 @@
 void AddTask_GammaIsoTree(
+  Int_t     trainConfig                   = 1,
   Int_t     isMC                          = 0,
   Int_t     IsHeavyIon                    = 0,
-  TString   TaskEventCutnumber           = "00010113",
   TString   photonCutNumberV0Reader      = "00200009327000008250400000",
-  TString   TaskClusterCutnumberEMC      = "1111100010022700000",
-  TString   TaskClusterCutnumberPHOS     = "1111100010022700000",
-  TString   TaskConvCutnumber            = "0dm0000922700000dge0404000",
   TString   periodNameV0Reader            = "",
   Bool_t    kHistograms                   = kTRUE,
   TString   corrTaskSetting = "",
@@ -18,8 +15,53 @@ void AddTask_GammaIsoTree(
   Bool_t    storePHOSCluster              = kTRUE,
   Bool_t    storeConversions              = kTRUE,
   Bool_t    doIsolation                   = kTRUE,
-  Bool_t    doTrackMatching               = kFALSE,
+  Bool_t    doTrackMatching               = kFALSE
   ){
+
+  //
+  // ─── SET CONFIG ─────────────────────────────────────────────────────────────────
+  //
+
+  // Default
+  TString   TaskEventCutnumber                = "00010113";
+  TString   TaskClusterCutnumberEMC           = "1111100010022700000";
+  TString   TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+  TString   TaskClusterCutnumberPHOS          = "2444411044013300000";
+  TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
+
+  Float_t trackIsoR[2] = {0.2,0.4};
+  Float_t neutralIsoR[2] = {0.2,0.4};
+  
+  // pp 8 TeV
+  // ────────────────────────────────────────────────────────────────────────────────
+  if(trainConfig == 1){ 
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "1111132060032230000";
+      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+  } else if(trainConfig == 2){ 
+      TaskEventCutnumber                = "00052113";
+      TaskClusterCutnumberEMC           = "1111132060032230000";
+      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+  } else if(trainConfig == 3){ 
+      TaskEventCutnumber                = "00081113";
+      TaskClusterCutnumberEMC           = "1111132060032230000";
+      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+  // pPb 8 TeV
+  // ────────────────────────────────────────────────────────────────────────────────
+  } else if(trainConfig == 10){
+      TaskEventCutnumber                     = "80010123";
+      TaskClusterCutnumberEMC                = "1111111060032230000";
+      TaskClusterCutnumberBackgroundEMC      = "1111111060032230000";
+      TaskClusterCutnumberPHOS               = "2444411044013300000";
+      TaskConvCutnumber                      = "0dm00009f9730000dge0404000";
+  }
+
   
 
   // ================== GetAnalysisManager ===============================
@@ -109,7 +151,7 @@ void AddTask_GammaIsoTree(
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
-  // EMC cluster cuts
+  // EMC signal cluster cuts (used to store in tree)
   AliCaloPhotonCuts *analysisClusterCutsEMC = new AliCaloPhotonCuts(isMC,"analysisClusterCutsEMC","analysisClusterCutsEMC");
   analysisClusterCutsEMC->SetV0ReaderName(V0ReaderName);
   analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
@@ -117,6 +159,15 @@ void AddTask_GammaIsoTree(
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumberEMC.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
+
+  // EMC background cluster cuts (used to calculate iso and tagging)
+  AliCaloPhotonCuts *analysisClusterCutsBackgroundEMC = new AliCaloPhotonCuts(isMC,"analysisClusterCutsBackgroundEMC","analysisClusterCutsBackgroundEMC");
+  analysisClusterCutsBackgroundEMC->SetV0ReaderName(V0ReaderName);
+  analysisClusterCutsBackgroundEMC->SetCorrectionTaskSetting(corrTaskSetting);
+  // analysisClusterCutsBackgroundEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
+  analysisClusterCutsBackgroundEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
+  analysisClusterCutsBackgroundEMC->InitializeCutsFromCutString(TaskClusterCutnumberBackgroundEMC.Data());
+  analysisClusterCutsBackgroundEMC->SetFillCutHistograms("");
 
   // PHOS cluster cuts
   AliCaloPhotonCuts *analysisClusterCutsPHOS = new AliCaloPhotonCuts(isMC,"analysisClusterCutsPHOS","analysisClusterCutsPHOS");
@@ -133,10 +184,12 @@ void AddTask_GammaIsoTree(
   
   fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
+  fQA->SetClusterCutsBackgroundEMC(analysisClusterCutsBackgroundEMC,IsHeavyIon);
   fQA->SetClusterCutsPHOS(analysisClusterCutsPHOS,IsHeavyIon);
   fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
   fQA->SetDoTrackIso(kTRUE);
-  fQA->SetTrackIsoR(0.4);
+  fQA->SetTrackIsoR(trackIsoR[0],trackIsoR[1]);
+  fQA->SetNeutralIsoR(trackIsoR[0],trackIsoR[1]);
   fQA->SetCorrectionTaskSetting(corrTaskSetting);
   fQA->SetSaveConversions(storeConversions);
   fQA->SetSaveEMCClusters(storeEMCalCluster);
@@ -146,14 +199,14 @@ void AddTask_GammaIsoTree(
   mgr->AddTask(fQA);
 
   mgr->ConnectInput(fQA, 0,  cinput );
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer( "GammaIsoTree",
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
                                                             TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,
-                                                            "GammaIsoTree.root");
-  AliAnalysisDataContainer *histos= mgr->CreateContainer( "GammaIsoTree_histos",
+                                                            Form("GammaIsoTree_%d.root",trainConfig));
+  AliAnalysisDataContainer *histos= mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
                                                             TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,
-                                                            "GammaIsoTree_histos.root");
+                                                            Form("GammaIsoTree_histos_%d.root",trainConfig));
   mgr->ConnectOutput (fQA, 1, histos );
   mgr->ConnectOutput (fQA, 2, coutput );
 
