@@ -130,9 +130,9 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Int_t fHe3Charge, fPCharge, fLambdaCharge;
 
   TVector3              fVertexPosition; //< position of primary vertex
-  UShort_t              fNumberV0s;      //< number of v0s in event
+  Int_t              fNumberV0s;      //< number of v0s in event
   Int_t                 fCentrality;     //< centrality of event
-  UShort_t              fTrigger;        //< array of Triggers
+  Int_t              fTrigger;        //< array of Triggers
   TString               fTriggerClasses; //< fired trigger classes
 
   Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;
