@@ -6472,9 +6472,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.969703*0.989*0.9969*0.9991, -3.80387, -0.200546);
 
-        } else if( fCurrentMC == kPP8T12P2JJ ){
+        } else if( fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974859*0.987*0.996, -3.85842, -0.405277);
-
         // 2.76TeV LHC11a/LHC13g
         } else if( fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.984889*0.995*0.9970, -3.65456, -1.12744);
@@ -6598,7 +6597,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.96105*0.999*0.9996, -3.62239, -0.556256);
 
-        } else if( fCurrentMC == kPP8T12P2JJ  ){
+        } else if( fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.960596*0.999*0.999, -3.48444, -0.766862);
 
         // 2.76TeV LHC11a/LHC13g
@@ -6710,7 +6709,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 15:
       if (fClusterType == 1 || fClusterType == 3){
         // 8TeV LHC12x
-        if ( fCurrentMC==k14e2b || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ ){
+        if ( fCurrentMC==k14e2b || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4 ){
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04979, 1.3, 0.0967998, 219.381, 63.1604, 1.011);
           if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9846, -3.319, -2.033);
 
@@ -6730,7 +6729,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 16:
       if (fClusterType == 1 || fClusterType == 3){
         // 8TeV LHC12x
-        if ( fCurrentMC==k14e2b  || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ ){
+        if ( fCurrentMC==k14e2b  || fCurrentMC == kPP8T12P2Pyt8 || fCurrentMC == kPP8T12P2Pho  || fCurrentMC == k12pp8TeV || fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4){
           energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06539, 1.121, 0.0967998, 219.381, 63.1604, 1.011);
           if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9676, -3.216, -0.6828);
 
@@ -6829,7 +6828,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0654169768, -0.0935785719, -0.1137883054, 1.1814766150, -0.1980098061, -0.0854569214) - 0.0138);
         } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0652493513, -0.0929276101, -0.1113762695, 1.1837801885, -0.1999914832, -0.0854569214) - 0.0145);
-        } else if( fCurrentMC == kPP8T12P2JJ ){
+        } else if( fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0489259285, -0.0759079646, -0.1239772934, 1.1835846739, -0.1998987993, -0.0854186691) - 0.014);
         // 7 TeV
         } else if( fCurrentMC == k14j4 ){ //v3
@@ -6939,7 +6938,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.1389201636, -0.1999994717, -0.1622237979, 1.1603460704, -0.1999999989, -0.2194447313) - 0.0025);
         } else if( fCurrentMC == kPP8T12P2Pho ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0105301622, -0.0732424689, -0.5000000000, 1.0689250170, -0.1082682369, -0.4388156470) - 0.001);
-        } else if( fCurrentMC == kPP8T12P2JJ ){
+        } else if( fCurrentMC == kPP8T12P2JJ || fCurrentMC == kPP8T12P2GJGeant3 || fCurrentMC == kPP8T12P2GJGeant4 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 0.9922456908, -0.0551212559, -0.5000000000, 1.0513459039, -0.0894163252, -0.5000000000) + 0.002);
         // 7 TeV
         } else if( fCurrentMC == k14j4 ){ //v3
@@ -8207,6 +8206,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC16c2_plus") == 0 ) return kPP8T12P2JJ;
   else if ( namePeriod.CompareTo("LHC17g5b") == 0 ) return kPP8T12P2GJLow;
   else if ( namePeriod.CompareTo("LHC17g5c") == 0 ) return kPP8T12P2GJHigh;
+  else if ( namePeriod.CompareTo("LHC17g5a1") == 0 ) return kPP8T12P2GJGeant3;
+  else if ( namePeriod.CompareTo("LHC17g5a2") == 0 ) return kPP8T12P2GJGeant4;
 
   // pPb 5 TeV 2013 MC pass 2
   else if(  namePeriod.Contains("LHC13b2_efix"))        return kPPb5T13P2DPMJet;

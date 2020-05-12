@@ -142,6 +142,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
         kLHC17g5b,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
         kLHC17g5c,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
+        kLHC17g5a1,        //!< anchored LHC12[a-h] pass 2 - GJ Geant3
+        kLHC17g5a2,        //!< anchored LHC12[a-h] pass 2 - GJ Geant3
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
