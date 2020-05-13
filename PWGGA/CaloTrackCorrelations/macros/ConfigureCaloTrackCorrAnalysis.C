@@ -380,6 +380,12 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
 {
   SetAnalysisMixingCentralityBins(ana, col);
   
+  if ( kAnaCutsString.Contains("SelectEmbed") ) 
+  {
+    ana->SwitchOnEmbededSignalSelection() ;
+    ana->SwitchOnFillEmbededSignalHistograms() ;
+  }
+  
   //
   // Histograms ranges
   //
@@ -2040,7 +2046,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 /// \param simulation : A bool identifying the data as simulation
 /// \param year : The year the data was taken, used to configure some histograms
 /// \param col : A string with the colliding system
-/// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
+/// \param analysisString : String that contains what analysis to activate, options: Photon, Isolation, Correlation, ... see below
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size higher limit
@@ -2053,6 +2059,12 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 /// \param mixOn : A bool to switch the correlation mixing analysis
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
+///   
+///   Options for analysisString:
+///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
+///    * Isolation analysis: "MultiIsoUESubMethods", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
+///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.5"
 ///
 void ConfigureCaloTrackCorrAnalysis
 (
