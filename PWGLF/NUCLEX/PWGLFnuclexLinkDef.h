@@ -108,7 +108,6 @@
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
-#pragma link C++ class AliAnalysisTaskHypertriton3+;
 
 /// * KF2Body
 #pragma link C++ class AliAnalysisTaskHypertritonKFTree+;
@@ -116,25 +115,13 @@
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
-#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
-#pragma link C++ class AliAnalysisTaskHyperTriton3KF+;
-#pragma link C++ class REvent3KF+;
 #pragma link C++ class RHyperTriton3KF+;
 #pragma link C++ class SHyperTriton3KF+;
-#pragma link C++ class std::vector<RHyperTriton3KF>+;
-#pragma link C++ class std::vector<SHyperTriton3KF>+;
-#pragma link C++ class AliAnalysisTaskHypertritonO2+;
-#pragma link C++ class RHyperTritonO2+;
-#pragma link C++ class SHyperTritonO2+;
-#pragma link C++ class std::vector<RHyperTritonO2>+;
-#pragma link C++ class std::vector<SHyperTritonO2>+;
+#pragma link C++ class AliAnalysisTaskHypertriton3+;
+#pragma link C++ class RHyperTriton3O2+;
+#pragma link C++ class SHyperTriton3O2+;
 #pragma link C++ class RHypertriton3+;
 #pragma link C++ class SHypertriton3+;
-#pragma link C++ class MLSelected+;
-#pragma link C++ class std::vector<RHypertriton3>+;
-#pragma link C++ class std::vector<SHypertriton3>+;
-#pragma link C++ class std::vector<MLSelected>+;
-#pragma link C++ class REvent+;
 #pragma link C++ class o2::vertexing::DCAFitter2+;
 #pragma link C++ class o2::vertexing::DCAFitter3+;
 #pragma link C++ class o2::track::TrackAuxPar+;
