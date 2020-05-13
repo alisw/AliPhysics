@@ -660,7 +660,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             
             for (size_t iterUpwards = iterLamb + 1; iterUpwards < vLambda.size(); iterUpwards++) 
             {
-                tmpLambda_recomb.clear();
                 // check for shared tracks
                 if ( vLambda[iterLamb].GetIDTracks()[0] == vLambda[iterUpwards].GetIDTracks()[0])
                 {
@@ -668,6 +667,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb[ 0 ].SetMomentum(2, vLambda[iterUpwards].GetMomentum(2));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
                     fEvtCounter->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassLambda_shared_pion->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                    }
+                    vLambda.clear();
+                    vLambda_recomb.clear();
                 }
                 if(vLambda[iterLamb].GetIDTracks()[1] == vLambda[iterUpwards].GetIDTracks()[1])
                 {
@@ -675,6 +681,13 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb[ 0 ].SetMomentum(1, vLambda[iterUpwards].GetMomentum(1));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
                     fEvtCounter->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                    }
+                    vLambda.clear();
+                    vLambda_recomb.clear();
                 }
                 else 
                 {
@@ -688,16 +701,16 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     vLambda_recomb.push_back(tmpLambda_recomb[1]);
                     fEvtCounter->Fill(6);
                     fEvtCounter->Fill(6);
+                    for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
+                    {
+                        hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                    }
+                    vLambda.clear();
+                    vLambda_recomb.clear();
                 }
             }
         }
-
-        for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
-        {
-            hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
-        }
-        vLambda_recomb.clear();
-
         //###########################################
         // Lambda - Xi recombinations
         //##########################################
