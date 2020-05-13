@@ -35,7 +35,6 @@
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliMultSelection.h"
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -82,11 +81,11 @@ fCTSTracks(0x0),             fEMCALClusters(0x0),
 fDCALClusters(0x0),          fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
 fInputEvent(0x0),            fOutputEvent(0x0),               fMC(0x0),
+fSelectEmbeddedClusters(kFALSE),
 fFillCTS(0),                 fFillEMCAL(0),
 fFillDCAL(0),                fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
-fSelectEmbeddedClusters(kFALSE),
 fScaleEPerSM(kFALSE),       
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
@@ -2159,8 +2158,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
 
   //---------------------------
   // Embedding case
-  // TO BE REVISED
-  if(fSelectEmbeddedClusters)
+  if ( fSelectEmbeddedClusters )
   {
     if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
     //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
