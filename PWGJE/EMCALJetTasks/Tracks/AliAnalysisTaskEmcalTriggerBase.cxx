@@ -702,6 +702,8 @@ Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(const TString &trigge
     else if(triggerclass.Contains("DMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DMC7"));
     else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
     else if(triggerclass.Contains("EJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ1"));
+    else if(triggerclass.Contains("DJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ2"));
+    else if(triggerclass.Contains("DJ1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DJ1"));
     else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
     else if(triggerclass.Contains("EG1")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG1"));
     else if(triggerclass.Contains("DG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("DG2"));
