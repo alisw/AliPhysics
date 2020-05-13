@@ -64,7 +64,7 @@ inputObjects:
             embedding: true
             
             
-# Cross talk emulation, only on embedded cells   
+## Cross talk emulation, only on embedded cells   
 CellEmulateCrosstalk:   
     createHistos: true
     inducedTCardMinimum: 0.1           
@@ -107,6 +107,7 @@ CellTimeCalib_data:
 # Combine cells together
 CellCombineCollections_combined:
     enabled: true
+    mergeCells: true
     cellsNames:
         - cells
 
@@ -126,7 +127,7 @@ Clusterizer:
 Clusterizer_combined:
     enabled: true
     setCellMCLabelFromCluster: 0
-    enableFracEMCRecalc: false     # false on old productions, off since it kills data input, to be checked
+    enableFracEMCRecalc: true     # false on old productions, off since it kills data input, to be checked
     cellsNames:
         - cells_combined
     # By selecting the cluster container here, we set where it will be output
@@ -142,33 +143,33 @@ Clusterizer_data:
 Clusterizer_embed:
     enabled: true
     setCellMCLabelFromCluster: 0
-    enableFracEMCRecalc: false     # false on old productions, off since it kills data input, to be checked
+    enableFracEMCRecalc: true     # false on old productions, off since it kills data input, to be checked
     cellsNames:
         - cells_embed
     clusterContainersNames:
         - baseClusterContainer_embed
 
-# Exotics
-ClusterExotics:
-    createHistos: true
-ClusterExotics_combined:
-    enabled: true
-    cellsNames:
-        - cells_combined
-    clusterContainersNames:
-        - baseClusterContainer1_combined
-ClusterExotics_data:
-    enabled: true
-    cellsNames:
-        - cells_data
-    clusterContainersNames:
-        - baseClusterContainer1_data
-ClusterExotics_embed:
-    enabled: true
-    cellsNames:
-        - cells_embed
-    clusterContainersNames:
-        - baseClusterContainer1_embed
+## Exotics
+#ClusterExotics:
+#    createHistos: true
+#ClusterExotics_combined:
+#    enabled: true
+#    cellsNames:
+#        - cells_combined
+#    clusterContainersNames:
+#        - baseClusterContainer1_combined
+#ClusterExotics_data:
+#    enabled: true
+#    cellsNames:
+#        - cells_data
+#    clusterContainersNames:
+#        - baseClusterContainer1_data
+#ClusterExotics_embed:
+#    enabled: true
+#    cellsNames:
+#        - cells_embed
+#    clusterContainersNames:
+#        - baseClusterContainer1_embed
 
 # Non-linearity
 ClusterNonLinearity:
@@ -248,32 +249,32 @@ ClusterTrackMatcher_embed:
         - trackContainerName_embed
 
 # Hadronic correction (needed?)
-ClusterHadronicCorrection:
-    createHistos: true
-ClusterHadronicCorrection_combined:
-    enabled: true
-    plotOversubtractionHistograms: true
-    cellsNames:
-        - cells_combined
-    clusterContainersNames:
-        - baseClusterContainer2_combined
-    trackContainersNames:
-        - trackContainerName
-        - trackContainerName_embed
-ClusterHadronicCorrection_data:
-    enabled: true
-    cellsNames:
-        - cells_data
-    clusterContainersNames:
-        - baseClusterContainer2_data
-    trackContainersNames:
-        - trackContainerName
-ClusterHadronicCorrection_embed:
-    enabled: true
-    cellsNames:
-        - cells_embed
-    clusterContainersNames:
-        - baseClusterContainer2_embed
-    trackContainersNames:
-        - trackContainerName_embed
+#ClusterHadronicCorrection:
+#    createHistos: true
+#ClusterHadronicCorrection_combined:
+#    enabled: true
+#    plotOversubtractionHistograms: true
+#    cellsNames:
+#        - cells_combined
+#    clusterContainersNames:
+#        - baseClusterContainer2_combined
+#    trackContainersNames:
+#        - trackContainerName
+#        - trackContainerName_embed
+#ClusterHadronicCorrection_data:
+#    enabled: true
+#    cellsNames:
+#        - cells_data
+#    clusterContainersNames:
+#        - baseClusterContainer2_data
+#    trackContainersNames:
+#        - trackContainerName
+#ClusterHadronicCorrection_embed:
+#    enabled: true
+#    cellsNames:
+#        - cells_embed
+#    clusterContainersNames:
+#        - baseClusterContainer2_embed
+#    trackContainersNames:
+#        - trackContainerName_embed
 
