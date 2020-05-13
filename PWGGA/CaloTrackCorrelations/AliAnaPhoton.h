@@ -238,9 +238,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   //
   // Histograms
   //
-    
-  TH1F * fhClusterCutsE [10];                       //!<! control histogram on the different photon selection cuts, E
-  TH1F * fhClusterCutsPt[10];                       //!<! control histogram on the different photon selection cuts, pT
+  /// Total number basic cluster cuts
+  static const Int_t fgkNClusterCuts = 11 ;
+  TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
+  TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   TH2F * fhNCellsE;                                 //!<! number of cells in cluster vs E
   TH2F * fhCellsE;                                  //!<! energy of cells in cluster vs E of cluster
   TH2F * fhMaxCellDiffClusterE;                     //!<! Fraction of energy carried by cell with maximum energy

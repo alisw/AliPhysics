@@ -197,7 +197,7 @@ fhDistance2Hijing(0)
     fhMCESphericity    [i]               = 0;
   }
   
-  for(Int_t i = 0; i < 5; i++)
+  for(Int_t i = 0; i < fgkNClusterCuts; i++)
   {
     fhClusterCutsE [i] = 0;
     fhClusterCutsPt[i] = 0;
@@ -1825,7 +1825,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     }
   }
   
-  if (IsDataMC())
+  if ( IsDataMC() )
   {
     AliVCaloCells* cells = 0;
     if(GetCalorimeter() == kEMCAL) cells = GetEMCALCells();
@@ -1835,24 +1835,87 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     Float_t fraction = 0;
     // printf("check embedding %i\n",GetReader()->IsEmbeddedClusterSelectionOn());
     
-    if(GetReader()->IsEmbeddedClusterSelectionOn())
+    if ( IsEmbedingAnalysisOn() )      
     {
       // Only working for EMCAL
       // 	printf("embedded\n");
         
       Float_t clusterE = 0; // recalculate in case corrections applied.
       Float_t cellE    = 0;
-      for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
+//      printf("N cells combined %d, data %d, MC %d, data+MC-combined %d\n",
+//                    cells->GetNumberOfCells(),
+//                    GetReader()->GetInputEvent()->GetEMCALCells()->GetNumberOfCells(),
+//                    GetReader()->GetEMCALCellsExternalEvent()->GetNumberOfCells(),
+//             GetReader()->GetInputEvent()->GetEMCALCells()->GetNumberOfCells()+GetReader()->GetEMCALCellsExternalEvent()->GetNumberOfCells()-cells->GetNumberOfCells());
+      if ( !GetReader()->IsEmbeddedMCEventUsed() )
       {
-        cellE    = cells->GetCellAmplitude(cluster->GetCellAbsId(icell));
-        clusterE+=cellE;
-        fraction+=cellE*cluster->GetCellAmplitudeFraction(icell);
+        for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
+        {
+          cellE    = cells->GetCellAmplitude(cluster->GetCellAbsId(icell));
+          clusterE+=cellE;
+          fraction+=cellE*cluster->GetCellAmplitudeFraction(icell);
+        }
+        // Fraction of total energy due to the embedded signal
+        fraction/=clusterE;
+      }
+      else if ( !GetReader()->IsEmbeddedInputEventUsed() )
+      {
+        Float_t sigCellE    = 0; 
+        Float_t sigClusterE = 0; 
+
+//        Float_t comCellE    = 0;
+//        Float_t extCellE    = 0;
+//        Float_t datCellE    = 0;
+//        Float_t comClusterE = 0; 
+//        Float_t extClusterE = 0; 
+//        Float_t datClusterE = 0; 
+        for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
+        {
+          Int_t id = cluster->GetCellAbsId(icell);
+          //extCellE = GetReader()->GetEMCALCellsExternalEvent()->GetCellAmplitude(id); // cells from external event
+          //datCellE = GetReader()->GetInputEvent()->GetEMCALCells()->GetCellAmplitude(id);  // cells from data
+          
+          cellE    = cells->GetCellAmplitude(id);//extCellE+datCellE;
+          sigCellE = cells->GetCellEFraction(id); // MC signal
+
+//          Short_t cellNumber = -1;
+//          Double_t amplitude = 0;
+//          Double_t time = 0;
+//          Double_t eFrac = 0;
+//          Int_t mcLabel = 0;
+//          comCellE = 0;
+//          for(Int_t icell  = 0; icell < cells->GetNumberOfCells(); icell++)
+//          {
+//            cells->GetCell(icell, cellNumber, amplitude, time, mcLabel, eFrac);
+//            if ( id == cellNumber ) comCellE += amplitude;
+//          }
+          
+          clusterE   += cellE   ;
+//          extClusterE+= extCellE;
+//          datClusterE+= datCellE;
+//          comClusterE+= comCellE;
+          sigClusterE+= sigCellE;
+        }
+        
+        // Fraction of total energy due to the embedded signal
+        //fraction = extClusterE / clusterE;
+        fraction = sigClusterE / clusterE;
+   
+//        printf("Embedded signal E fraction %2.3f, Energy: Reco %2.3f,  sum cell %2.3f, combi %2.3f, ext+data %2.3f,"
+//                        " ext %2.3f, sig %2.3f, data %2.3f - "
+//                        "Fraction sum/reco %2.3f - Fraction sum/combi %2.3f, ext/signal %2.3f \n",
+//                        fraction, energy, clusterE, comClusterE, datClusterE+extClusterE,
+//                        extClusterE, sigClusterE, datClusterE,  
+//                        clusterE/energy, clusterE/comClusterE, sigClusterE/extClusterE);
+        
+        if ( fraction > 1 )
+        {
+          printf("Careful! Embedded signal E fraction %2.3f,  sum cell %2.3f, sum sig %2.3f \n",
+                 fraction, clusterE, sigClusterE);
+        }
       }
       
-      //Fraction of total energy due to the embedded signal
-      fraction/=clusterE;
-      
-      AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f",fraction, clusterE));
+      AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f", fraction, clusterE));
       
       fhEmbeddedSignalFractionEnergy->Fill(clusterE, fraction, GetEventWeight()*weightPt);
     }  // embedded fraction
@@ -1870,7 +1933,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       else                 mcIndex = kmcssPhotonConv;
       
       // Fill histograms to check shape of embedded clusters
-      if(GetReader()->IsEmbeddedClusterSelectionOn())
+      if ( IsEmbedingAnalysisOn() )
       {
         if     (fraction > 0.9)
         {
@@ -1900,7 +1963,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       else                 mcIndex = kmcssPi0Conv;
 
       // Fill histograms to check shape of embedded clusters
-      if(GetReader()->IsEmbeddedClusterSelectionOn())
+      if ( IsEmbedingAnalysisOn() )
       {
         if     (fraction > 0.9)
         {
@@ -1949,7 +2012,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     //
     // Check particle overlaps in cluster
     //
-    if ( !GetReader()->IsEmbeddedClusterSelectionOn() )
+    if ( !IsEmbedingAnalysisOn() )
     {    
       // Compare the primary depositing more energy with the rest,
       // if no photon/electron as comon ancestor (conversions), count as other particle
@@ -2255,8 +2318,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   Int_t bin[] = {0,2,4,6,10,15,20,100}; // energy bins for SS studies
   
-  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID"};
-  for (Int_t i = 0; i < 10 ;  i++)
+  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","PID","Embed"};
+  Int_t ncuts = fgkNClusterCuts;
+  if ( !SelectEmbededSignal() ) ncuts = fgkNClusterCuts-1;
+  for (Int_t i = 0; i < ncuts ;  i++)
   {
     fhClusterCutsE[i] = new TH1F(Form("hE_Cut_%d_%s", i, cut[i].Data()),
                                 Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
@@ -3747,7 +3812,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPtLambda0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPtLambda0[i]) ;
         
-        if(!GetReader()->IsEmbeddedClusterSelectionOn())
+        if ( !IsEmbedingAnalysisOn() )
         {
           for(Int_t iover = 0; iover < 3; iover++)
           {
@@ -3896,7 +3961,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
       }// loop
       
-//      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+//      if(!IsEmbedingAnalysisOn())
 //      {
 //        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
 //                                                "cluster from Photon : E vs #lambda_{0}^{2}",
@@ -3920,7 +3985,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
 //      } // No embedding
       
-      if(GetReader()->IsEmbeddedClusterSelectionOn())
+      if ( IsEmbedingAnalysisOn() )
       {
         fhEmbeddedSignalFractionEnergy  = new TH2F("hEmbeddedSignal_FractionEnergy",
                                                    "Energy Fraction of embedded signal versus cluster energy",
@@ -4987,6 +5052,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     fhClusterCutsE [9]->Fill(en, GetEventWeight()*weightPt);
     fhClusterCutsPt[9]->Fill(pt, GetEventWeight()*weightPt);
+    
+    // Select only clusters with MC signal and data background
+    //
+    if ( SelectEmbededSignal() && IsDataMC() )
+    {
+      if ( nlabels == 0 || mcLabel < 0 ) continue;
+      //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
+      
+      fhClusterCutsE [10]->Fill(en, GetEventWeight()*weightPt);
+      fhClusterCutsPt[10]->Fill(pt, GetEventWeight()*weightPt);
+    }
     
     if ( IsDataMC() )
     {

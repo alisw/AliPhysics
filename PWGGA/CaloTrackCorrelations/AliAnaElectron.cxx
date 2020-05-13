@@ -357,21 +357,42 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     if ( GetCalorimeter() == kEMCAL ) cells = GetEMCALCells();
     else                              cells = GetPHOSCells();
     
-    //Fill histograms to check shape of embedded clusters
+    // Fill histograms to check shape of embedded clusters
     Float_t fraction = 0;
-    if ( GetReader()->IsEmbeddedClusterSelectionOn() )
-    {//Only working for EMCAL
+    if (  IsEmbedingAnalysisOn() )
+    {
+      //Only working for EMCAL
       Float_t clusterE = 0; // recalculate in case corrections applied.
       Float_t cellE    = 0;
-      for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+      if ( !GetReader()->IsEmbeddedMCEventUsed() )
       {
-        cellE    = cells->GetCellAmplitude(cluster->GetCellAbsId(icell));
-        clusterE+=cellE;  
-        fraction+=cellE*cluster->GetCellAmplitudeFraction(icell);
+        for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+        {
+          cellE    = cells->GetCellAmplitude(cluster->GetCellAbsId(icell));
+          clusterE+=cellE;  
+          fraction+=cellE*cluster->GetCellAmplitudeFraction(icell);
+        }
+        
+        // Fraction of total energy due to the embedded signal
+        fraction/=clusterE;
       }
-      
-      // Fraction of total energy due to the embedded signal
-      fraction/=clusterE;
+      else if ( !GetReader()->IsEmbeddedInputEventUsed() )
+      {
+        Float_t sigCellE    = 0; 
+        Float_t sigClusterE = 0; 
+        for(Int_t icell  = 0; icell < cluster->GetNCells(); icell++)
+        {
+          Int_t id = cluster->GetCellAbsId(icell);
+          
+          cellE    = cells->GetCellAmplitude(id);
+          sigCellE = cells->GetCellEFraction(id); // MC signal
+          clusterE   += cellE   ;
+          sigClusterE+= sigCellE;
+        }
+        
+        // Fraction of total energy due to the embedded signal
+        fraction = sigClusterE / clusterE;
+      }
       
       AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f",fraction, clusterE));
       
@@ -392,7 +413,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     {
       index = kmcssElectron;
        
-      if ( !GetReader()->IsEmbeddedClusterSelectionOn() )
+      if ( !IsEmbedingAnalysisOn() )
       {
         //Check particle overlaps in cluster
         
@@ -423,7 +444,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
       }//No embedding
       
       //Fill histograms to check shape of embedded clusters
-      if ( GetReader()->IsEmbeddedClusterSelectionOn() )
+      if ( IsEmbedingAnalysisOn() )
       {
         if      ( fraction > 0.9 ) 
         {
@@ -1443,7 +1464,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   {
     if ( IsDataMC() )
     {
-      if ( !GetReader()->IsEmbeddedClusterSelectionOn() )
+      if ( !IsEmbedingAnalysisOn() )
       {
         fhMCElectronELambda0NoOverlap  = new TH2F("hELambda0_MCElectron_NoOverlap",
                                                   "cluster from Electron : E vs #sigma_{long}^{2}",
@@ -1468,7 +1489,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       } // No embedding
       
       // Fill histograms to check shape of embedded clusters
-      if ( GetReader()->IsEmbeddedClusterSelectionOn() )
+      if ( IsEmbedingAnalysisOn() )
       {
         fhEmbeddedSignalFractionEnergy  = new TH2F("hEmbeddedSignal_FractionEnergy",
                                                    "Energy Fraction of embedded signal versus cluster energy",
@@ -1634,6 +1655,13 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     
     Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(calo, cells); // NLM
     if ( !ClusterSelected(calo,nMaxima) ) continue;
+    
+    // Select only clusters with MC signal and data background
+    //
+    if ( SelectEmbededSignal() && IsDataMC() )
+    {
+      if ( calo->GetNLabels() == 0 || calo->GetLabel() < 0 ) continue;
+    }
     
     //-------------------------------------
     // PID selection
