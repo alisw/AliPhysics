@@ -766,7 +766,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   double xminSparseIP[4]={ptBins4ip[0],-0.25,ipBins4ip[0],-1.5};
   double xmaxSparseIP[4]={ptBins4ip[nPtBins4ip],0.25,ipBins4ip[nIPBins4ip],1.5};
   fHistPtDeltaPtTrueImpParXY = new THnSparseF("hPtDeltaPtTrueImpParXY","",4,nbinsSparseIP,xminSparseIP,xmaxSparseIP);
-  fHistPtDeltaPtTrueImpParXY->GetAxis(0)->SetTitle("p_{T}^{reco} (GeV/c)");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(0)->SetTitle(xTit.Data());
   fHistPtDeltaPtTrueImpParXY->GetAxis(0)->Set(nPtBins4ip,ptBins4ip);
   fHistPtDeltaPtTrueImpParXY->GetAxis(1)->SetTitle("p_{T}^{reco}-p_{T}^{true} (GeV/c)");
   fHistPtDeltaPtTrueImpParXY->GetAxis(2)->SetTitle("d_{0}^{xy} (#mum)");
@@ -1241,7 +1241,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
 	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
 	if(fFillSparses){
-	  double arrayForSparseIP[4]={pttrack,pttrack-ptgen,impactXY*10000.,(Float_t)isPhysPrim};
+	  double arrayForSparseIP[4]={ptOnX,pttrack-ptgen,impactXY*10000.,(Float_t)isPhysPrim};
 	  fHistPtDeltaPtTrueImpParXY->Fill(arrayForSparseIP);
 	}
       }
