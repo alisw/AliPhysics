@@ -62,7 +62,8 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   Double_t GetZMWeight(Double_t eta, Double_t phi, Int_t PIDIndex);
   void DevFunction(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void FillCustomWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void LoadMyWeights(AliAODEvent*);
+  void LoadMyWeights(AliAODEvent* lEv);
+  void LoadMyWeights(); //Dont wan't an overloaded function here, b/c in case something is wrong with event, weights might get reloaded
   void LoadZMWeights();
   void SetUseRunAvgWeights(Bool_t newval) { fUseRunAveragedWeights = newval; };
   void SetGFWMode(Int_t newval) { fGFWMode = newval; };
