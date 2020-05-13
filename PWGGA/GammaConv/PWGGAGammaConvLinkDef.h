@@ -22,6 +22,7 @@
 #pragma link C++ class AliAnalysisTaskOmegaMCStudies+;
 #pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 #pragma link C++ class AliAnalysisTaskHadronicCocktailMC+;
+#pragma link C++ class AliAnalysisTaskConvCaloTree+;
 #pragma link C++ class AliAnalysisTaskQA+;
 
 #pragma link C++ class AliAnaConvIsolation+;

@@ -53,6 +53,7 @@ set(SRCS
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskJetOutlierRemoval.cxx
     AliAnalysisTaskClusterQA.cxx
+    AliAnalysisTaskConvCaloTree.cxx
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
