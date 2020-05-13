@@ -460,12 +460,12 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     fEvtCounter->GetXaxis()->SetBinLabel(7, "prot_Lambda + pi_Lambda");     // reconstruct Lambda from other Lambda
 
     tlRecombination->Add(hInvMassLambda_total);
-    tlRecombination->Add(hInvMassLambda_total);
-    tlRecombination->Add(hInvMassLambda_total);
+    tlRecombination->Add(hInvMassLambda_shared_pion);
+    tlRecombination->Add(hInvMassLambda_shared_proton);
     tlRecombination->Add(hInvMassXi_total);
-    tlRecombination->Add(hInvMassXi_total);
-    tlRecombination->Add(hInvMassXi_total);
-    tlRecombination->Add(hInvMassXi_total);
+    tlRecombination->Add(hInvMassXi_shared_bach);
+    tlRecombination->Add(hInvMassXi_shared_pi_daugh);
+    tlRecombination->Add(hInvMassXi_shared_prot_daugh);
     tlRecombination->Add(fEvtCounter);
 
     // Connect Cuts to OutputContainers
@@ -686,8 +686,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     tmpLambda_recomb[1].SetMomentum(2, vLambda[iterUpwards].GetMomentum(2));
                     vLambda_recomb.push_back(tmpLambda_recomb[0]);
                     vLambda_recomb.push_back(tmpLambda_recomb[1]);
-                    // std::cout << "vLambda_recomb.size(): " << vLambda_recomb.size() << std::endl;
-                    // std::cout << "      iterUpwards: " << iterUpwards << std::endl;
                     fEvtCounter->Fill(6);
                     fEvtCounter->Fill(6);
                 }
