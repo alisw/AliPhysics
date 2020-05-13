@@ -3449,7 +3449,9 @@ void AddTask_GammaConvCalo_pp(
     // systematics for PCM-EDC  13 TeV- LowB
 
   } else if (trainConfig == 3300) {   // std Cut
-    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117901067032230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117901067032230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117900067032230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113", "0dm00089f9730000iih0404000","4117937067032230000","0163103100000010");
 
   } else if (trainConfig == 3301) {   // min pT variations
     cuts.AddCutPCMCalo("00010113", "0dm00079f9730000iih0404000","4117901067032230000","0163103100b00010");  // eta < 0.8  // remove  55-72 bin, min pT 0  (40) MeV
