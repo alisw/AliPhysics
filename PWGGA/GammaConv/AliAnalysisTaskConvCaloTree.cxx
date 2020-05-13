@@ -601,7 +601,7 @@ void AliAnalysisTaskConvCaloTree::ProcessTracksAOD(){
       fVBuffer_Track_P.push_back(static_cast<Short_t>(aodt->P()*100));
     }
     fVBuffer_Track_Calo_eta.push_back(static_cast<Short_t>(trackEta*10000));
-    fVBuffer_Track_Calo_phi.push_back(static_cast<unsigned Short_t>(trackPhi*10000));
+    fVBuffer_Track_Calo_phi.push_back(static_cast<UShort_t>(trackPhi*10000));
 
   }
 }
