@@ -137,7 +137,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_pz;                         //!<! vector buffer: track pz (*100)
     std::vector<Short_t>                 fVBuffer_Track_P;                          //!<! vector buffer: track P  (*100)
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
-    std::vector<unsigned short>          fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
+    std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
     ClassDef(AliAnalysisTaskConvCaloTree, 1);
 };
