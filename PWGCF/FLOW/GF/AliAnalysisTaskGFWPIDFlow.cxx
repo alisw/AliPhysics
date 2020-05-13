@@ -228,6 +228,7 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     if(fGFWMode==2 || fGFWMode==3) fWeightList = (TList*)GetInputData(2);// Load ZM weights instead, if required
     if(!fWeightList) AliFatal("Could not fetch weight list!\n");
     if(fGFWMode==2 || fGFWMode==3) LoadZMWeights();
+    if(fGFWMode==4) LoadMyWeights();
     TObjArray *oba = new TObjArray();
     AddToOBA(oba,"MidV22");
     AddToOBA(oba,"MidV24");
@@ -585,6 +586,19 @@ void AliAnalysisTaskGFWPIDFlow::DevFunction(AliAODEvent *fAOD, Double_t vz, Doub
         fGFW->Fill(l_eta,ptind,l_phi,wCha,32); //Filling all charged
       }
     }
+    if(fGFWMode==4) { //My modes, to be tested against morphed weights
+      Double_t wRef = GetMyWeight(l_eta,l_phi,1);
+      Double_t wPOI = WithinPOI?GetMyWeight(l_eta,l_phi,PIDIndex+1):GetMyWeight(l_eta,l_phi,1); //If not within POI (e.g. low pT protons), then use Nch weights
+      //This is to check whether we can use Nch weights for ref particles. Same as before, but no PIDIndex check
+      if(WithinRef && WithinPOI)
+        wRef = wPOI;
+      if(WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wRef,1); //Filling in ref flow
+      if(WithinPOI && PIDIndex) fGFW->Fill(l_eta,ptind,l_phi,wPOI,(1<<(PIDIndex+1))); //Filling POI flow for ID'ed
+      if(WithinNch) fGFW->Fill(l_eta,ptind,l_phi,wPOI,2); //Filling POI flow for ID'ed
+      //Filling overlaps:
+      if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,1<<(PIDIndex+5)); //Filling POI flow for ID'ed
+      if(WithinNch && WithinRef) fGFW->Fill(l_eta,ptind,l_phi,wPOI,32); //Filling POI flow for ID'ed
+    };
 
     /* trying to figure out whether it's a POI or a ref or both.
     This is in particular stupid, because e.g. a proton with pT < 500 MeV should go with... ref flow weight?
@@ -750,11 +764,21 @@ void AliAnalysisTaskGFWPIDFlow::LoadMyWeights(AliAODEvent* mev) {
   TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
   if(!fWeightArray) fWeightArray = new TH2D*[5];
   for(Int_t i=0;i<5;i++) {
-    wNames[i].Prepend(Form("w%i_",fRunNo));
+    wNames[i].Prepend(Form("w%i_",fRunNo)); //Only add if mev set; otherwise,
     fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
     if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
   };
 }
+void AliAnalysisTaskGFWPIDFlow::LoadMyWeights() {
+  if(!fWeightList) AliFatal("Weight list not set!\n");
+  TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
+  if(!fWeightArray) fWeightArray = new TH2D*[5];
+  for(Int_t i=0;i<5;i++) {
+    fWeightArray[i] = (TH2D*)fWeightList->FindObject(wNames[i].Data());
+    if(!fWeightArray[i]) AliFatal(Form("Could not get %s weights!\n",wNames[i].Data()));
+  };
+}
+
 void AliAnalysisTaskGFWPIDFlow::LoadZMWeights() {
   if(!fWeightList) AliFatal("Weight list not set!\n");
   TString wNames[] = {"Refs","Charged","Pion","Kaon","Proton"};
