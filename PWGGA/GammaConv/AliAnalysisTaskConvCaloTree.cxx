@@ -592,8 +592,8 @@ void AliAnalysisTaskConvCaloTree::ProcessTracksAOD(){
       // maximum values for Short_t (--> not matched to Calo)
       // Store this information if all tracks are stored
       if(fSaveTracks == 2){
-        fVBuffer_Track_Calo_eta.push_back(32768);
-        fVBuffer_Track_Calo_phi.push_back(65535);
+        fVBuffer_Track_Calo_eta.push_back(static_cast<Short_t>(32767));
+        fVBuffer_Track_Calo_phi.push_back(static_cast<UShort_t>(65535));
       }
       continue;
     }
