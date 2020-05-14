@@ -102,7 +102,7 @@ fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 // MC histograms
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
-fhEmbeddedSignalFractionEnergy(0),
+fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyPerCentrality(0),
 fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),
 fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),
 fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),
@@ -1918,6 +1918,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f", fraction, clusterE));
       
       fhEmbeddedSignalFractionEnergy->Fill(clusterE, fraction, GetEventWeight()*weightPt);
+      if ( IsHighMultiplicityAnalysisOn() )
+        fhEmbeddedSignalFractionEnergyPerCentrality->Fill(clusterE, fraction, GetEventCentrality(), GetEventWeight()*weightPt);
+
     }  // embedded fraction
       
     //
@@ -3993,6 +3996,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbeddedSignalFractionEnergy->SetYTitle("Fraction");
         fhEmbeddedSignalFractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedSignalFractionEnergy) ;
+        
+        if ( IsHighMultiplicityAnalysisOn() )
+        {
+          fhEmbeddedSignalFractionEnergyPerCentrality  = new TH3F("hEmbeddedSignal_FractionEnergy_PerCentrality",
+                                                     "Energy Fraction of embedded signal versus cluster energy and centrality",
+                                                     nptbins,ptmin,ptmax,20,0.,1.,20,0,100);
+          fhEmbeddedSignalFractionEnergyPerCentrality->SetYTitle("Fraction");
+          fhEmbeddedSignalFractionEnergyPerCentrality->SetXTitle("#it{E} (GeV)");
+          fhEmbeddedSignalFractionEnergyPerCentrality->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhEmbeddedSignalFractionEnergyPerCentrality) ;
+        }
         
         fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
                                                     "cluster from Photon embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",

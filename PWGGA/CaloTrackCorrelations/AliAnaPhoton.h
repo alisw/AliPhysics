@@ -384,6 +384,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of photon energy of embedded signal vs cluster energy
+  TH3F * fhEmbeddedSignalFractionEnergyPerCentrality ; //!<! Fraction of photon energy of embedded signal vs cluster energy vs centrality
   
   TH2F * fhEmbedPhotonELambda0FullSignal ;          //!<!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
   TH2F * fhEmbedPhotonELambda0MostlySignal ;        //!<!  Lambda0 vs E for embedded photons with 90%<fraction<50%
