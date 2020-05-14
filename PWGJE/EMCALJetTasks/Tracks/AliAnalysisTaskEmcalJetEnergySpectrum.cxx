@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
+  fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
@@ -97,6 +98,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
+  fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
@@ -184,11 +186,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-  auto partjets = GetJetContainer("partjets");
-  if(!partjets) return true;
+  AliJetContainer *outlierjets(nullptr);
+  switch(fJetTypeOutliers){
+    case kOutlierPartJet: outlierjets = GetJetContainer("partjets"); break;
+    case kOutlierDetJet: outlierjets = GetJetContainer(fNameJetContainer); break;
+  };
+  if(!outlierjets) return true;
 
   // Check whether there is at least one particle level jet with pt above n * event pt-hard
-  auto jetiter = partjets->accepted();
+  auto jetiter = outlierjets->accepted();
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
