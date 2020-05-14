@@ -49,6 +49,7 @@ class AliEventplane;
 class AliVCluster;
 #include "AliLog.h"
 #include "AliEventCuts.h"
+//#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -99,12 +100,30 @@ public:
   virtual void    SetMC(AliMCEvent* mc) ;           
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
+  //
+  // Embedded events
+  //
+  /// Reject clusters without MC label (reject background)
+  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
+  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
+  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
+  
   /// Use as input for the analysis the MCEvent() or the InputEvent() from embedded MC signal.
   /// \param useMCEvt: recover not the standard MCEvent() but an external MC embedded event
   /// \param useInputEvt: recover not the standard InputEvent() but an external embedded input event
   void         UseEmbeddedEvent(Bool_t useMCEvt, Bool_t useInputEvt) { 
     fEmbeddedEvent[0] = useMCEvt ; fEmbeddedEvent[1] = useInputEvt ; }
+
+  Bool_t        IsEmbeddedMCEventUsed   () { return fEmbeddedEvent[0] ; }
+  Bool_t        IsEmbeddedInputEventUsed() { return fEmbeddedEvent[1] ; }
   
+//  AliVCaloCells * GetEMCALCellsExternalEvent() { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetEMCALCells() ; }
+//  AliVCluster   * GetCaloClusterExternalEvent(Int_t icluster) { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetCaloCluster(icluster) ; }
+//  Int_t           GetNumberOfCaloClustersExternalEvent() { 
+//     return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetNumberOfCaloClusters() ; }
+//  
   // Delta AODs
   
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
@@ -280,10 +299,6 @@ public:
   void             SwitchOffClusterEScalePerSMCorrection() { fScaleEPerSM = kFALSE         ; }
   void             SetScaleFactorPerSM(Int_t ism, Float_t factor)          
                                                            { if ( ism < 22 && ism >= 0 ) fScaleFactorPerSM[ism] = factor ; }
-   
-  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
-  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
-  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
 
   // Shower shape smearing function
   
@@ -894,6 +909,7 @@ public:
   AliMCEvent     * fMC;                            //!<! Monte Carlo Event Handler.  
 
   Bool_t           fEmbeddedEvent[2];              ///< Data and MC events embedded with AliAnalysisTaskEmcalEmbeddingHelper
+  Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
 
   Bool_t           fFillCTS;                       ///<  Use data from CTS.
   Bool_t           fFillEMCAL;                     ///<  Use data from EMCAL.
@@ -903,7 +919,6 @@ public:
   Bool_t           fFillPHOSCells;                 ///<  Use data from PHOS.
   Bool_t           fRecalculateClusters;           ///<  Correct clusters, recalculate them if recalibration parameters is given.
   Bool_t           fCorrectELinearity;             ///<  Correct cluster linearity, always on.
-  Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
   
   Bool_t           fScaleEPerSM ;                  ///<  Scale cluster energy by a constant factor, depending on SM 
   Float_t          fScaleFactorPerSM[22];          ///<  Scale factor depending on SM number to be applied to cluster energy

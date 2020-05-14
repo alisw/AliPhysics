@@ -254,11 +254,11 @@ AliAnalysisManager* runCaloTrackCorrEmbeddingAnalysis(
   {
     tempCorrectionTask->SelectCollisionCandidates(kPhysSel);
     // Configure centrality
-    tempCorrectionTask->SetNCentBins(5);
+    tempCorrectionTask->SetNCentBins(8);
     if (bIsRun2) {
       tempCorrectionTask->SetUseNewCentralityEstimation(kTRUE);
     }
-    tempCorrectionTask->SetUserConfigurationFilename("./EMCalCorrConfig_EmbeddMCData_ClV1_xTalk.yaml");
+    tempCorrectionTask->SetUserConfigurationFilename("./EMCalCorrConfig_EmbedMCinData_ClV1_xTalk.yaml");
     
     tempCorrectionTask->Initialize();
   }
@@ -311,7 +311,7 @@ AliAnalysisManager* runCaloTrackCorrEmbeddingAnalysis(
   TString kPeriod = "LHC18q";
   
   TString  cutSelected      = "SPDPileUp";  
-  TString  analysisSelected = "QA_Charged";
+  TString  analysisSelected = "Photon_QA_Charged";
   
   TString trigger       = "default";// MB
   TString clustersArray = "";//"caloClustersCombined"; // "caloClusters"
@@ -344,12 +344,14 @@ AliAnalysisManager* runCaloTrackCorrEmbeddingAnalysis(
   cellsArray    = "emcalCellsCombined";//"emcalCellsCombined"; // "emcalCells"
   AliAnalysisTaskCaloTrackCorrelation * emcComb = AddTaskGammaHadronCorrelationSelectAnalysis
   ("EMCAL",kMC,kYear,kCollision,kPeriod,rejectEMCTrig,"",cutSelected+"_EmbedMC",
-   calibrate,nonLinOn, analysisSelected,
+   calibrate,nonLinOn, analysisSelected+"_SelectEmbed",
    shshMax,isoCone,isoConeMin,isoPtTh,isoMethod ,isoContent,leading,
    tm,minCen,maxCen,mixOn,outputfile,printSettings,debug,trigger);
     
   emcComb->GetAnalysisMaker()->GetReader()->SetEMCALClusterListName(clustersArray);
   emcComb->GetAnalysisMaker()->GetReader()->SetEMCALCellsListName(cellsArray);
+  
+  //emcComb->GetAnalysisMaker()->GetReader()->SwitchOnEmbeddedClustersSelection();
   
   //emcComb->GetAnalysisMaker()->GetReader()->SwitchOffRejectNoTrackEvents();
   
