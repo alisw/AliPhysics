@@ -10610,16 +10610,17 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   //  ---> ITS-TPC matching efficency + TPC quality tracks
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nbins,1,upedge_pt);
   fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fTrackingEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fTrackingEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fTrackingEff->SetBinContent( 4,0.06);  //   4-5 GeV/c
-  fTrackingEff->SetBinContent( 5,0.06);  //   5-6 GeV/c
-  fTrackingEff->SetBinContent( 6,0.07);  //   6-7 GeV/c
-  fTrackingEff->SetBinContent( 7,0.07);  //   7-8 GeV/c
-  fTrackingEff->SetBinContent( 8,0.07);  //   8-9 GeV/c
-  fTrackingEff->SetBinContent( 9,0.07);  //  9-10 GeV/c
-  fTrackingEff->SetBinContent(10,0.07);  // 10-11 GeV/c
-  fTrackingEff->SetBinContent(11,0.07);  // 11-12 GeV/c
+  fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fTrackingEff->SetBinContent( 2,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   2-3 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 3,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   3-4 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 4,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   4-5 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 5,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   5-6 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 6,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   6-7 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 7,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   7-8 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 8,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   8-9 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 9,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //  9-10 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(10,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 10-11 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(11,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 11-12 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fTrackingEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Raw yield extraction
@@ -10627,14 +10628,14 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   fRawYield->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fRawYield->SetBinContent( 2,0.25);  //   2-3 GeV/c
   fRawYield->SetBinContent( 3,0.25);  //   3-4 GeV/c
-  fRawYield->SetBinContent( 4,0.25);  //   4-5 GeV/c
-  fRawYield->SetBinContent( 5,0.25);  //   5-6 GeV/c
-  fRawYield->SetBinContent( 6,0.25);  //   6-7 GeV/c
-  fRawYield->SetBinContent( 7,0.25);  //   7-8 GeV/c
-  fRawYield->SetBinContent( 8,0.25);  //   8-9 GeV/c
-  fRawYield->SetBinContent( 9,0.25);  //  9-10 GeV/c
-  fRawYield->SetBinContent(10,0.25);  // 10-11 GeV/c
-  fRawYield->SetBinContent(11,0.25);  // 11-12 GeV/c
+  fRawYield->SetBinContent( 4,0.15);  //   4-5 GeV/c
+  fRawYield->SetBinContent( 5,0.15);  //   5-6 GeV/c
+  fRawYield->SetBinContent( 6,0.10);  //   6-7 GeV/c
+  fRawYield->SetBinContent( 7,0.10);  //   7-8 GeV/c
+  fRawYield->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fRawYield->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fRawYield->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fRawYield->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fRawYield->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Cut variation
@@ -10642,19 +10643,30 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
   fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
-  fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
-  fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fCutsEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fCutsEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.05);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nbins,1,upedge_pt);
-  for(Int_t i=1;i<=nbins;i++) fPIDEff->SetBinContent(i,0.0);
+  fPIDEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fPIDEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
+  fPIDEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
+  fPIDEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fPIDEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fPIDEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fPIDEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fPIDEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fPIDEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fPIDEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fPIDEff->SetBinContent(11,0.05);  // 11-12 GeV/c
+  if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fPIDEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
@@ -10698,31 +10710,31 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   //  ---> ITS-TPC matching efficency + TPC quality tracks
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nbins,1,upedge_pt);
   fTrackingEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fTrackingEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fTrackingEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fTrackingEff->SetBinContent( 4,0.06);  //   4-5 GeV/c
-  fTrackingEff->SetBinContent( 5,0.06);  //   5-6 GeV/c
-  fTrackingEff->SetBinContent( 6,0.07);  //   6-7 GeV/c
-  fTrackingEff->SetBinContent( 7,0.07);  //   7-8 GeV/c
-  fTrackingEff->SetBinContent( 8,0.07);  //   8-9 GeV/c
-  fTrackingEff->SetBinContent( 9,0.07);  //  9-10 GeV/c
-  fTrackingEff->SetBinContent(10,0.07);  // 10-11 GeV/c
-  fTrackingEff->SetBinContent(11,0.07);  // 11-12 GeV/c
+  fTrackingEff->SetBinContent( 2,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   2-3 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 3,0.05+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   3-4 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 4,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   4-5 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 5,0.06+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   5-6 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 6,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   6-7 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 7,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   7-8 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 8,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //   8-9 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent( 9,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  //  9-10 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(10,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 10-11 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
+  fTrackingEff->SetBinContent(11,0.07+TMath::Sqrt( 0.01666*0.01666+0.01*0.01 ));  // 11-12 GeV/c  ---> additional match_eff+quadSum+TPCcutQuality for soft pion (match. eff. only from 2018 periods)
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fTrackingEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Raw yield extraction (taken from Lc(<-Sc) case)
   fRawYield = new TH1F("fRawYield","fRawYield",nbins,1,upedge_pt);
   fRawYield->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fRawYield->SetBinContent( 2,0.25);  //   2-3 GeV/c
-  fRawYield->SetBinContent( 3,0.25);  //   3-4 GeV/c
-  fRawYield->SetBinContent( 4,0.25);  //   4-5 GeV/c
-  fRawYield->SetBinContent( 5,0.25);  //   5-6 GeV/c
-  fRawYield->SetBinContent( 6,0.25);  //   6-7 GeV/c
-  fRawYield->SetBinContent( 7,0.25);  //   7-8 GeV/c
-  fRawYield->SetBinContent( 8,0.25);  //   8-9 GeV/c
-  fRawYield->SetBinContent( 9,0.25);  //  9-10 GeV/c
-  fRawYield->SetBinContent(10,0.25);  // 10-11 GeV/c
-  fRawYield->SetBinContent(11,0.25);  // 11-12 GeV/c
+  fRawYield->SetBinContent( 2,0.30);  //   2-3 GeV/c
+  fRawYield->SetBinContent( 3,0.30);  //   3-4 GeV/c
+  fRawYield->SetBinContent( 4,0.15);  //   4-5 GeV/c
+  fRawYield->SetBinContent( 5,0.15);  //   5-6 GeV/c
+  fRawYield->SetBinContent( 6,0.10);  //   6-7 GeV/c
+  fRawYield->SetBinContent( 7,0.10);  //   7-8 GeV/c
+  fRawYield->SetBinContent( 8,0.10);  //   8-9 GeV/c
+  fRawYield->SetBinContent( 9,0.10);  //  9-10 GeV/c
+  fRawYield->SetBinContent(10,0.10);  // 10-11 GeV/c
+  fRawYield->SetBinContent(11,0.10);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fRawYield->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // Cut variation
@@ -10730,19 +10742,30 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   fCutsEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
   fCutsEff->SetBinContent( 2,0.10);  //   2-3 GeV/c
   fCutsEff->SetBinContent( 3,0.10);  //   3-4 GeV/c
-  fCutsEff->SetBinContent( 4,0.10);  //   4-5 GeV/c
-  fCutsEff->SetBinContent( 5,0.10);  //   5-6 GeV/c
-  fCutsEff->SetBinContent( 6,0.10);  //   6-7 GeV/c
-  fCutsEff->SetBinContent( 7,0.10);  //   7-8 GeV/c
-  fCutsEff->SetBinContent( 8,0.10);  //   8-9 GeV/c
-  fCutsEff->SetBinContent( 9,0.10);  //  9-10 GeV/c
-  fCutsEff->SetBinContent(10,0.10);  // 10-11 GeV/c
-  fCutsEff->SetBinContent(11,0.10);  // 11-12 GeV/c
+  fCutsEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fCutsEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fCutsEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fCutsEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fCutsEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fCutsEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fCutsEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fCutsEff->SetBinContent(11,0.05);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fCutsEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // PID
   fPIDEff = new TH1F("fPIDEff","fPIDEff",nbins,1,upedge_pt);
-  for(Int_t i=1;i<=nbins;i++) fPIDEff->SetBinContent(i,0.0);
+  fPIDEff->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
+  fPIDEff->SetBinContent( 2,0.05);  //   2-3 GeV/c
+  fPIDEff->SetBinContent( 3,0.05);  //   3-4 GeV/c
+  fPIDEff->SetBinContent( 4,0.05);  //   4-5 GeV/c
+  fPIDEff->SetBinContent( 5,0.05);  //   5-6 GeV/c
+  fPIDEff->SetBinContent( 6,0.05);  //   6-7 GeV/c
+  fPIDEff->SetBinContent( 7,0.05);  //   7-8 GeV/c
+  fPIDEff->SetBinContent( 8,0.05);  //   8-9 GeV/c
+  fPIDEff->SetBinContent( 9,0.05);  //  9-10 GeV/c
+  fPIDEff->SetBinContent(10,0.05);  // 10-11 GeV/c
+  fPIDEff->SetBinContent(11,0.05);  // 11-12 GeV/c
+  if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fPIDEff->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
