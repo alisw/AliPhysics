@@ -58,6 +58,8 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fFillHSparse(false),
   fScaleShift(0.),
   fUseStandardOutlierRejection(kFALSE),
+  fDebugMaxJetOutliers(kFALSE),
+  fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
 }
@@ -73,6 +75,8 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fFillHSparse(false),
   fScaleShift(0.),
   fUseStandardOutlierRejection(kFALSE),
+  fDebugMaxJetOutliers(kFALSE),
+  fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
   SetUseAliAnaUtils(true);
@@ -175,6 +179,10 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAClusterFracLeadingVsNcell", "Cluster frac leading cell vs number of cells; Number of cells; Frac. leading cell", 201, -0.5, 200.5, 110, 0., 1.1);
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
+  if(fDebugMaxJetOutliers) {
+    fHistos->CreateTH2("hDebugMaxJetPt", "Debug Detection of max. part jet; p_{t,stl}; p_{t,man}", 350, 0., 350, 350., 0., 350.);
+    fHistos->CreateTH1("hDebugMaxJetError", "Number of cases where the max. jet pt differs between methods", 1., 0.5, 1.5);
+  }
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   fSampleSplitter = new TRandom;
@@ -187,15 +195,34 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-  auto partjets = GetJetContainer(fNameParticleJets);
-  if(!partjets) return true;
+  AliJetContainer *outlierjets(nullptr);
+  switch(fJetTypeOutliers) { 
+    case kOutlierPartJet: outlierjets = GetJetContainer(fNameParticleJets); break;
+    case kOutlierDetJet: outlierjets = GetJetContainer(fNameDetectorJets); break;
+  };
+  if(!outlierjets) return true;
 
   // Check whether there is at least one particle level jet with pt above n * event pt-hard
-  auto jetiter = partjets->accepted();
+  auto jetiter = outlierjets->accepted();
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
     AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    if(fDebugMaxJetOutliers) {
+      // cross check whether implemenation using stl gives the same result as a trivial manual iteration
+      // over all jets
+      // for debug purposes
+      auto jetiter1 = outlierjets->accepted();
+      AliEmcalJet *debugmax(nullptr);
+      for(auto testjet : jetiter1) {
+        if(!debugmax) debugmax = testjet;
+        else {
+          if(testjet->Pt() > debugmax->Pt()) debugmax = testjet;
+        }
+      }
+      fHistos->FillTH2("hDebugMaxJetPt", (*max)->Pt(), debugmax->Pt());
+      if(*max != debugmax) fHistos->FillTH1("hDebugMaxJetError", 1.);
+    }
     if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
   }
   return true;

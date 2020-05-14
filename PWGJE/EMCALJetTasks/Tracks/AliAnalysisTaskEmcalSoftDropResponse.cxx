@@ -80,6 +80,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fUseChargedConstituents(true),
                                                                                fUseNeutralConstituents(true),
                                                                                fUseStandardOutlierRejection(false),
+                                                                               fJetTypeOutliers(kOutlierPartJet),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
                                                                                fSampleTrimmer(nullptr),
@@ -114,6 +115,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fUseChargedConstituents(true),
                                                                                                fUseNeutralConstituents(true),
                                                                                                fUseStandardOutlierRejection(false),
+                                                                                               fJetTypeOutliers(kOutlierPartJet),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
                                                                                                fSampleTrimmer(nullptr),
@@ -531,12 +533,24 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
   if(fUseStandardOutlierRejection) 
     return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-  auto partjets = GetJetContainer(fNamePartLevelJetContainer);
-  if (!partjets)
+  AliJetContainer *outlierjets(nullptr);
+  switch (fJetTypeOutliers)
+  {
+  case kOutlierPartJet:
+    outlierjets = GetJetContainer(fNamePartLevelJetContainer);
+    break;
+  case kOutlierDetJet:
+    outlierjets = GetJetContainer(fNameDetLevelJetContainer);
+    break;
+  
+  default:
+    break;
+  }
+  if (!outlierjets)
     return true;
 
   // Check whether there is at least one particle level jet with pt above n * event pt-hard
-  auto jetiter = partjets->accepted();
+  auto jetiter = outlierjets->accepted();
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs) { return lhs->Pt() < rhs->Pt(); });
   if (max != jetiter.end())
   {

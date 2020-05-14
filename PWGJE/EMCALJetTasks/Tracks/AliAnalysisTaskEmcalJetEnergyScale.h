@@ -41,6 +41,10 @@ namespace EMCALJetTasks{
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
+  };
   AliAnalysisTaskEmcalJetEnergyScale();
   AliAnalysisTaskEmcalJetEnergyScale(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergyScale();
@@ -52,6 +56,8 @@ public:
   void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
   void SetEnergyScaleShift(Double_t scaleshift)  { fScaleShift = scaleshift; }
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
+  void SetDebugMaxJetOutliers(bool doDebug)      { fDebugMaxJetOutliers = doDebug; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
@@ -80,6 +86,8 @@ private:
   Bool_t                      fFillHSparse;                   ///< Fill THnSparses
   Double_t                    fScaleShift;                    ///< Shift of the jet energy scale (fixed)
   Bool_t                      fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  Bool_t                      fDebugMaxJetOutliers;           ///< Debug max jet determination for outlier rejection
+  EJetTypeOutliers_t          fJetTypeOutliers;               ///< Jet type used for outlier detection
   TRandom                     *fSampleSplitter;               //!<! Sample splitter
 
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);

@@ -52,6 +52,10 @@ public:
     kKTAlgo = 1,
     kAKTAlgo = 2
   };
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
+  };
 
   AliAnalysisTaskEmcalSoftDropResponse();
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
@@ -76,6 +80,7 @@ public:
   void SetNameUnSubLevelJetContainer(const char *name) { fNameUnSubLevelJetContainer = name; }
   void SetIsEmbeddedEvent(bool isEmbedded) {fIsEmbeddedEvent = isEmbedded; }
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
   static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
 
@@ -107,6 +112,7 @@ private:
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
   Bool_t                        fUseStandardOutlierRejection; ///< Use standard outlier rejection (from AliAnalysisTaskEmcal)
+  EJetTypeOutliers_t            fJetTypeOutliers;           ///< Jet type used for outlier detection
   TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
   TRandom                       *fSampleTrimmer;            ///< Sample trimmer
