@@ -23,7 +23,7 @@ Polarization* AddPolarization(TString name = "name")
         return 0x0;
     }
     // by default, a file is open for writing. here, we get the filename
-    TString fileName = "PolarizationSample.root";    //AliAnalysisManager::GetCommonFileName();
+    TString fileName = AliAnalysisManager::GetCommonFileName();
     //cout<< fileName<<endl;
    // return;
     fileName += ":Polar";      // create a subfolder in the file
