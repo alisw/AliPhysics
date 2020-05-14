@@ -425,15 +425,16 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
           if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
         }
       }
-      PhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kTRUE);
+
+      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!fAODMCTrackArray) return;
+
+      PhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, kTRUE);
 
       Int_t gammaMCLabel          = PhotonCandidate->GetCaloPhotonMCLabel(0);   // get most probable MC label
       Int_t gammaMotherLabel      = -1;
 
       AliAODMCParticle * gammaMC = 0x0;
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(!fAODMCTrackArray) return;
-
       if(gammaMCLabel != -1){
         gammaMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMCLabel));
         if (PhotonCandidate->IsLargestComponentPhoton() || PhotonCandidate->IsLargestComponentElectron()){    // largest component is electron

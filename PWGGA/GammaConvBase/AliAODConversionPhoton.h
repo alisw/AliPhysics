@@ -81,7 +81,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Int_t GetLeadingNeutralPionDaughterIndex(){return fLeadingNeutralPionDaughterIndex;}
 
     void SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t enableSort, Bool_t mergedAnalysis = kFALSE, AliVCluster* cluster = NULL);
-    void SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort, Bool_t mergedAnalysis = kFALSE, AliVCluster* cluster = NULL);
+    void SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArray, Bool_t enableSort, Bool_t mergedAnalysis = kFALSE, AliVCluster* cluster = NULL);
     void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
     Long_t GetCaloClusterRef()const {return fCaloClusterRef;}
     void PrintCaloMCLabelsAndInfo(AliMCEvent *mcEvent);

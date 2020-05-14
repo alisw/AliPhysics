@@ -1246,7 +1246,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidatesAOD(AliAODConversion
     return mcLabelCluster;
   }
 
-  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE, kTRUE,cluster);
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, kFALSE, kTRUE,cluster);
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
     fBuffer_Cluster_MC_EFracFirstLabel = cluster->GetClusterMCEdepFraction(0);
