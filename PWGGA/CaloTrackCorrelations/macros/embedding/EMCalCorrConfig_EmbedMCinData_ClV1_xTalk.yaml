@@ -127,7 +127,7 @@ Clusterizer:
 Clusterizer_combined:
     enabled: true
     setCellMCLabelFromCluster: 0
-    enableFracEMCRecalc: true     # false on old productions, off since it kills data input, to be checked
+    enableFracEMCRecalc: false     # false since original cluster list is data
     cellsNames:
         - cells_combined
     # By selecting the cluster container here, we set where it will be output
@@ -143,7 +143,7 @@ Clusterizer_data:
 Clusterizer_embed:
     enabled: true
     setCellMCLabelFromCluster: 0
-    enableFracEMCRecalc: true     # false on old productions, off since it kills data input, to be checked
+    enableFracEMCRecalc: false     # false since original cluster list is data
     cellsNames:
         - cells_embed
     clusterContainersNames:
