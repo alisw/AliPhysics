@@ -347,7 +347,7 @@ void AliAnalysisTaskTrackQA::UserCreateOutputObjects()
     hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");

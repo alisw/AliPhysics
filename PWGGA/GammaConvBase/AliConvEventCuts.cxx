@@ -117,6 +117,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fGeneratorNames(NULL),
   fPeriodEnum(kNoPeriod),
   fEnergyEnum(kUnset),
+  fTimeRangeCut(),
   fCutString(NULL),
   fCutStringRead(""),
   fUtils(NULL),
@@ -250,6 +251,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fGeneratorNames(ref.fGeneratorNames),
   fPeriodEnum(ref.fPeriodEnum),
   fEnergyEnum(kUnset),
+  fTimeRangeCut(),
   fCutString(NULL),
   fCutStringRead(""),
   fUtils(NULL),
@@ -783,6 +785,18 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
     if(hEventPlaneAngle)hEventPlaneAngle->Fill(TMath::Abs(fEventPlaneAngle));
   }
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
+  // for data from LHC18r apply timeRange cut
+  if((fPeriodEnum==kLHC18qr) && (!isMC)) {
+
+    // no need to check here for new runNumber, InitFromRunNumber does this internally
+    fTimeRangeCut.InitFromRunNumber(event->GetRunNumber());
+    if(fTimeRangeCut.CutEvent(event)){
+      // since timecut is necessary because of TPC problems
+      fEventQuality = 9;
+      return kFALSE;
+    }
+  }
 
   fEventQuality = 0;
   return kTRUE;

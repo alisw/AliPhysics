@@ -250,7 +250,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fHistoNEvents->GetXaxis()->SetBinLabel(7,"Pile-Up");
   fHistoNEvents->GetXaxis()->SetBinLabel(8,"no SDD");
   fHistoNEvents->GetXaxis()->SetBinLabel(9,"no V0AND");
-  fHistoNEvents->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+  fHistoNEvents->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
   fHistoNEvents->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
   fHistoNEvents->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
   fHistoNEvents->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");

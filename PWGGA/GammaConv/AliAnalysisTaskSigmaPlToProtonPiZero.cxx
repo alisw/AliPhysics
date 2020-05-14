@@ -310,7 +310,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZero::UserCreateOutputObjects()
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(7,"SPD Pile-Up");
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problems");
+	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problems");
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 	    fHistNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
