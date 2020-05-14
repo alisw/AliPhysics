@@ -49,7 +49,7 @@ class AliEventplane;
 class AliVCluster;
 #include "AliLog.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+//#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -117,13 +117,13 @@ public:
   Bool_t        IsEmbeddedMCEventUsed   () { return fEmbeddedEvent[0] ; }
   Bool_t        IsEmbeddedInputEventUsed() { return fEmbeddedEvent[1] ; }
   
-  AliVCaloCells * GetEMCALCellsExternalEvent() { 
-    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetEMCALCells() ; }
-  AliVCluster   * GetCaloClusterExternalEvent(Int_t icluster) { 
-    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetCaloCluster(icluster) ; }
-  Int_t           GetNumberOfCaloClustersExternalEvent() { 
-     return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetNumberOfCaloClusters() ; }
-  
+//  AliVCaloCells * GetEMCALCellsExternalEvent() { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetEMCALCells() ; }
+//  AliVCluster   * GetCaloClusterExternalEvent(Int_t icluster) { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetCaloCluster(icluster) ; }
+//  Int_t           GetNumberOfCaloClustersExternalEvent() { 
+//     return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetNumberOfCaloClusters() ; }
+//  
   // Delta AODs
   
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }

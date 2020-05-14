@@ -35,6 +35,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliMultSelection.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
