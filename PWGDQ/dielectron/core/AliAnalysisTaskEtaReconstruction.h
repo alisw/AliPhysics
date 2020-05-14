@@ -451,7 +451,7 @@ private:
   std::vector<TH2D*> fHistGenSmearedFourPair;
   std::vector<TH2D*> fHistRecFourPair;
 
-  std::vector<TH2D*> fVecSecSecPrefilter;
+  std::vector<TH2D*> fVecHistPrefilters;
 
 
   bool fWriteLegsFromPair;

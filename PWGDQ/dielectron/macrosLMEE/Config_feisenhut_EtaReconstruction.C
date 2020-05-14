@@ -94,7 +94,7 @@ bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
-bool UseMCDataSig   = false; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
+bool UseMCDataSig   = true; // if it is selected true the running time is increasing drastically, Reducing time for example by mass cut.
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -145,8 +145,10 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 1.;
 const double lowerMassCutPrimaries = 0.1;
 const double upperMassCutPrimaries = 0.2;
-const double lowerPrimSecPreFilterMass = 0.03;
-const double upperPrimSecPreFilterMass = 0.25;
+const double lowerPrimSecPreFilterMass = 0.1;
+const double upperPrimSecPreFilterMass = 0.165;
+// const double lowerPrimSecPreFilterMass = 0.03;
+// const double upperPrimSecPreFilterMass = 0.25;
 const double lowerSecSecPreFilterMass = 0.1;
 const double upperSecSecPreFilterMass = 0.2;
 const double massCutSecondaries = 0.01;
@@ -909,250 +911,250 @@ std::vector<bool> AddSingleSecondaryLegMCSignal(AliAnalysisTaskEtaReconstruction
 // #########################################################
 void AddPrimaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
-    AliDielectronSignalMC pair_sameMother_finalstate("pair_sameMother_finalstate","pair_sameMother_finalstate");
-    pair_sameMother_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_finalstate("elePair_sameMother_finalstate","elePair_sameMother_finalstate");
+    elePair_sameMother_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_DifferentMother_finalstate("pair_DifferentMother_finalstate","pair_DifferentMother_finalstate");
-    pair_DifferentMother_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_finalstate("elePair_DifferentMother_finalstate","elePair_DifferentMother_finalstate");
+    elePair_DifferentMother_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_UndefinedMother_finalstate("pair_UndefinedMother_finalstate","pair_UndefinedMother_finalstate");
-    pair_UndefinedMother_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_finalstate("elePair_UndefinedMother_finalstate","elePair_UndefinedMother_finalstate");
+    elePair_UndefinedMother_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
-    AliDielectronSignalMC pair_sameMother_photon_finalstate("pair_sameMother_photon_finalstate","pair_sameMother_photon_finalstate");
-    pair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_photon_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_photon_finalstate("elePair_sameMother_photon_finalstate","elePair_sameMother_photon_finalstate");
+    elePair_sameMother_photon_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_photon_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_finalstate.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_finalstate.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_eta_finalstate("pair_sameMother_eta_finalstate","pair_sameMother_eta_finalstate");
-    pair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_eta_finalstate("elePair_sameMother_eta_finalstate","elePair_sameMother_eta_finalstate");
+    elePair_sameMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_sameMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_DifferentMother_eta_finalstate("pair_DifferentMother_eta_finalstate","pair_DifferentMother_eta_finalstate");
-    pair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_eta_finalstate("elePair_DifferentMother_eta_finalstate","elePair_DifferentMother_eta_finalstate");
+    elePair_DifferentMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_DifferentMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_UndefinedMother_eta_finalstate("pair_UndefinedMother_eta_finalstate","pair_UndefinedMother_eta_finalstate");
-    pair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_eta_finalstate("elePair_UndefinedMother_eta_finalstate","elePair_UndefinedMother_eta_finalstate");
+    elePair_UndefinedMother_eta_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_eta_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_eta_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
+    elePair_UndefinedMother_eta_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_eta_finalstate.SetMotherPDGs(221,221);
 
-    AliDielectronSignalMC pair_sameMother_pion_finalstate("pair_sameMother_pion_finalstate","pair_sameMother_pion_finalstate");
-    pair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_pion_finalstate("elePair_sameMother_pion_finalstate","elePair_sameMother_pion_finalstate");
+    elePair_sameMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_sameMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
+    elePair_sameMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_pion_finalstate.SetMotherPDGs(111,111); //
 
-    AliDielectronSignalMC pair_DifferentMother_pion_finalstate("pair_DifferentMother_pion_finalstate","pair_DifferentMother_pion_finalstate");
-    pair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_DifferentMother_pion_finalstate("elePair_DifferentMother_pion_finalstate","elePair_DifferentMother_pion_finalstate");
+    elePair_DifferentMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_DifferentMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
+    elePair_DifferentMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_pion_finalstate.SetMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_UndefinedMother_pion_finalstate("pair_UndefinedMother_pion_finalstate","pair_UndefinedMother_pion_finalstate");
-    pair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
-    pair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_UndefinedMother_pion_finalstate("elePair_UndefinedMother_pion_finalstate","elePair_UndefinedMother_pion_finalstate");
+    elePair_UndefinedMother_pion_finalstate.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_pion_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_pion_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
+    elePair_UndefinedMother_pion_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_pion_finalstate.SetMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_CharmedMesonsWithSameMother("CharmedMesonsWithSameMother","CharmedMesonsWithSameMother");
+    elePair_sameMother_CharmedMesonsWithSameMother.SetLegPDGs(11,-11);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
+    elePair_sameMother_CharmedMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_CharmedMesonsWithSameMother.SetMotherPDGs(402, 402); //
 
-    AliDielectronSignalMC pair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
-    pair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC elePair_sameMother_BeautyMesonsWithSameMother("BeautyMesonsWithSameMother","BeautyMesonsWithSameMother");
+    elePair_sameMother_BeautyMesonsWithSameMother.SetLegPDGs(11,-11);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
+    elePair_sameMother_BeautyMesonsWithSameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_BeautyMesonsWithSameMother.SetMotherPDGs(502, 502); //
 
-    AliDielectronSignalMC pair_anyPart_UndefinedMother_finalstate("pair_anyPart_UndefinedMother_finalstate","pair_anyPart_UndefinedMother_finalstate");
-    pair_anyPart_UndefinedMother_finalstate.SetLegPDGs(0,0);
-    pair_anyPart_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_anyPart_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    AliDielectronSignalMC anyPair_anyPart_UndefinedMother_finalstate("anyPair_anyPart_UndefinedMother_finalstate","anyPair_anyPart_UndefinedMother_finalstate");
+    anyPair_anyPart_UndefinedMother_finalstate.SetLegPDGs(0,0);
+    anyPair_anyPart_UndefinedMother_finalstate.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    anyPair_anyPart_UndefinedMother_finalstate.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
-    pair_anyPart_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    anyPair_anyPart_UndefinedMother_finalstate.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
-    if(UseMCDataSig) task->AddPrimaryPairMCSignal(pair_anyPart_UndefinedMother_finalstate);
+    if(UseMCDataSig) task->AddPrimaryPairMCSignal(anyPair_anyPart_UndefinedMother_finalstate);
 
-    task->AddPrimaryPairMCSignal(pair_sameMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_photon_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_eta_finalstate);
-    task->AddPrimaryPairMCSignal(pair_sameMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_DifferentMother_pion_finalstate);
-    task->AddPrimaryPairMCSignal(pair_UndefinedMother_pion_finalstate);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-    // task->AddPrimaryPairMCSignal(pair_sameMother_BeautyMesonsWithSameMother);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_photon_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_eta_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_sameMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_DifferentMother_pion_finalstate);
+    task->AddPrimaryPairMCSignal(elePair_UndefinedMother_pion_finalstate);
+    // task->AddPrimaryPairMCSignal(elePair_sameMother_CharmedMesonsWithSameMother);
+    // task->AddPrimaryPairMCSignal(elePair_sameMother_BeautyMesonsWithSameMother);
 }
 
 void AddSecondaryPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
-    AliDielectronSignalMC pair_sameMother_secondary("pair_sameMother_secondary","pair_sameMother_secondary");
-    pair_sameMother_secondary.SetLegPDGs(11,-11);
-    pair_sameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_secondary("elePair_sameMother_secondary","elePair_sameMother_secondary");
+    elePair_sameMother_secondary.SetLegPDGs(11,-11);
+    elePair_sameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_UndefinedMother_secondary("pair_UndefinedMother_secondary","pair_UndefinedMother_secondary");
-    pair_UndefinedMother_secondary.SetLegPDGs(11,-11);
-    pair_UndefinedMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_UndefinedMother_secondary("elePair_UndefinedMother_secondary","elePair_UndefinedMother_secondary");
+    elePair_UndefinedMother_secondary.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_UndefinedMother_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
-    AliDielectronSignalMC pair_DifferentMother_secondary("pair_DifferentMother_secondary","pair_DifferentMother_secondary");
-    pair_DifferentMother_secondary.SetLegPDGs(11,-11);
-    pair_DifferentMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_DifferentMother_secondary("elePair_DifferentMother_secondary","elePair_DifferentMother_secondary");
+    elePair_DifferentMother_secondary.SetLegPDGs(11,-11);
+    elePair_DifferentMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_DifferentMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary("pair_sameMother_photon_secondary","pair_sameMother_photon_secondary");
-    pair_sameMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary("elePair_sameMother_photon_secondary","elePair_sameMother_photon_secondary");
+    elePair_sameMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondaryfromMaterial("pair_sameMother_photon_secondaryfromMaterial","pair_sameMother_photon_secondaryfromMaterial");
-    pair_sameMother_photon_secondaryfromMaterial.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondaryfromMaterial.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondaryfromMaterial.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
+    AliDielectronSignalMC elePair_sameMother_photon_secondaryfromMaterial("elePair_sameMother_photon_secondaryfromMaterial","elePair_sameMother_photon_secondaryfromMaterial");
+    elePair_sameMother_photon_secondaryfromMaterial.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondaryfromMaterial.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondaryfromMaterial.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
     //mother
-    pair_sameMother_photon_secondaryfromMaterial.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondaryfromMaterial.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondaryfromMaterial.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondaryfromMaterial.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondaryfromWD("pair_sameMother_photon_secondaryfromWD","pair_sameMother_photon_secondaryfromWD");
-    pair_sameMother_photon_secondaryfromWD.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondaryfromWD.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondaryfromWD.SetLegSources(AliDielectronSignalMC::kSecondaryFromWeakDecay, AliDielectronSignalMC::kSecondaryFromWeakDecay);
+    AliDielectronSignalMC elePair_sameMother_photon_secondaryfromWD("elePair_sameMother_photon_secondaryfromWD","elePair_sameMother_photon_secondaryfromWD");
+    elePair_sameMother_photon_secondaryfromWD.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondaryfromWD.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondaryfromWD.SetLegSources(AliDielectronSignalMC::kSecondaryFromWeakDecay, AliDielectronSignalMC::kSecondaryFromWeakDecay);
     //mother
-    pair_sameMother_photon_secondaryfromWD.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondaryfromWD.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondaryfromWD.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondaryfromWD.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_UndefinedMother_photon_secondary("pair_UndefinedMother_photon_secondary","pair_UndefinedMother_photon_secondary");
-    pair_UndefinedMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_UndefinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_UndefinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_UndefinedMother_photon_secondary("elePair_UndefinedMother_photon_secondary","elePair_UndefinedMother_photon_secondary");
+    elePair_UndefinedMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_UndefinedMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_UndefinedMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_UndefinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
-    pair_UndefinedMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_UndefinedMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+    elePair_UndefinedMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_DifferentMother_photon_secondary("pair_DifferentMother_photon_secondary","pair_DifferentMother_photon_secondary");
-    pair_DifferentMother_photon_secondary.SetLegPDGs(11,-11);
-    pair_DifferentMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_DifferentMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_DifferentMother_photon_secondary("elePair_DifferentMother_photon_secondary","elePair_DifferentMother_photon_secondary");
+    elePair_DifferentMother_photon_secondary.SetLegPDGs(11,-11);
+    elePair_DifferentMother_photon_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_DifferentMother_photon_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_DifferentMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
-    pair_DifferentMother_photon_secondary.SetMotherPDGs(22,22);
+    elePair_DifferentMother_photon_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_DifferentMother_photon_secondary.SetMotherPDGs(22,22);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary_pion("pair_sameMother_photon_secondary_pion","pair_sameMother_photon_secondary_pion");
-    pair_sameMother_photon_secondary_pion.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary_pion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary_pion("elePair_sameMother_photon_secondary_pion","elePair_sameMother_photon_secondary_pion");
+    elePair_sameMother_photon_secondary_pion.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary_pion.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary_pion.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_pion.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary_pion.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_pion.SetMotherPDGs(22,22);
     //grand-mother
-    // pair_sameMother_photon_secondary_pion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_pion.SetGrandMotherPDGs(111,111);
+    // elePair_sameMother_photon_secondary_pion.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_pion.SetGrandMotherPDGs(111,111);
 
-    AliDielectronSignalMC pair_sameMother_photon_secondary_eta("pair_sameMother_photon_secondary_eta","pair_sameMother_photon_secondary_eta");
-    pair_sameMother_photon_secondary_eta.SetLegPDGs(11,-11);
-    pair_sameMother_photon_secondary_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother_photon_secondary_eta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_sameMother_photon_secondary_eta("elePair_sameMother_photon_secondary_eta","elePair_sameMother_photon_secondary_eta");
+    elePair_sameMother_photon_secondary_eta.SetLegPDGs(11,-11);
+    elePair_sameMother_photon_secondary_eta.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_sameMother_photon_secondary_eta.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_eta.SetMotherPDGs(22,22);
+    elePair_sameMother_photon_secondary_eta.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_eta.SetMotherPDGs(22,22);
     //grand-mother
-    // pair_sameMother_photon_secondary_eta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
-    pair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
+    // elePair_sameMother_photon_secondary_eta.SetGrandMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_sameMother_photon_secondary_eta.SetGrandMotherPDGs(221,221);
 
 
 
-    AliDielectronSignalMC pair_conversion_secondary("pair_conversion_secondary","pair_conversion_secondary");
-    pair_conversion_secondary.SetLegPDGs(11,-11);
-    pair_conversion_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_conversion_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_conversion_secondary("elePair_conversion_secondary","elePair_conversion_secondary");
+    elePair_conversion_secondary.SetLegPDGs(11,-11);
+    elePair_conversion_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_conversion_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_conversion_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
+    elePair_conversion_secondary.SetMothersRelation(AliDielectronSignalMC::kSame);
 
-    AliDielectronSignalMC pair_random_secondary("pair_random_secondary","pair_random_secondary");
-    pair_random_secondary.SetLegPDGs(11,-11);
-    pair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_random_secondary("elePair_random_secondary","elePair_random_secondary");
+    elePair_random_secondary.SetLegPDGs(11,-11);
+    elePair_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
 
-    AliDielectronSignalMC pair_NotSameMother_secondary("pair_NotSameMother_secondary","pair_NotSameMother_secondary");
-    pair_NotSameMother_secondary.SetLegPDGs(11,-11);
-    pair_NotSameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC elePair_NotSameMother_secondary("elePair_NotSameMother_secondary","elePair_NotSameMother_secondary");
+    elePair_NotSameMother_secondary.SetLegPDGs(11,-11);
+    elePair_NotSameMother_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    elePair_NotSameMother_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
     //mother
-    pair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
+    elePair_NotSameMother_secondary.SetMothersRelation(AliDielectronSignalMC::kDifferent);
 
-    AliDielectronSignalMC pair_anyPart_random_secondary("pair_anyPart_random_secondary","pair_anyPart_random_secondary");
-    pair_anyPart_random_secondary.SetLegPDGs(0,0);
-    pair_anyPart_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_anyPart_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+    AliDielectronSignalMC anyPair_anyPart_random_secondary("anyPair_anyPart_random_secondary","anyPair_anyPart_random_secondary");
+    anyPair_anyPart_random_secondary.SetLegPDGs(0,0);
+    anyPair_anyPart_random_secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    anyPair_anyPart_random_secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
 
 
-    if(UseMCDataSig) task->AddSecondaryPairMCSignal(pair_anyPart_random_secondary);
+    if(UseMCDataSig) task->AddSecondaryPairMCSignal(anyPair_anyPart_random_secondary);
 
-    // task->AddSecondaryPairMCSignal(pair_sameMother_secondary);
-    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_secondary);
-    // task->AddSecondaryPairMCSignal(pair_DifferentMother_secondary);
-task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromMaterial);
-    // task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondaryfromWD);
-    // task->AddSecondaryPairMCSignal(pair_DifferentMother_photon_secondary);
-    // task->AddSecondaryPairMCSignal(pair_UndefinedMother_photon_secondary);
-task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_pion);
-task->AddSecondaryPairMCSignal(pair_sameMother_photon_secondary_eta);
-task->AddSecondaryPairMCSignal(pair_conversion_secondary);
-task->AddSecondaryPairMCSignal(pair_random_secondary);
-task->AddSecondaryPairMCSignal(pair_NotSameMother_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_UndefinedMother_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_DifferentMother_secondary);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondaryfromMaterial);
+    // task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondaryfromWD);
+    // task->AddSecondaryPairMCSignal(elePair_DifferentMother_photon_secondary);
+    // task->AddSecondaryPairMCSignal(elePair_UndefinedMother_photon_secondary);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary_pion);
+task->AddSecondaryPairMCSignal(elePair_sameMother_photon_secondary_eta);
+task->AddSecondaryPairMCSignal(elePair_conversion_secondary);
+task->AddSecondaryPairMCSignal(elePair_random_secondary);
+task->AddSecondaryPairMCSignal(elePair_NotSameMother_secondary);
 }
 
 void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
