@@ -53,7 +53,6 @@ set(SRCS
     AliAnalysisTaskTransTask.cxx
     AliAnalysisTaskTOFTrigger.cxx
     AliAnalysisTaskZDCTree.cxx
-
     Polarization.cxx
    )
 
