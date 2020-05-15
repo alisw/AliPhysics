@@ -124,6 +124,7 @@ public:
     TH1F                               *hInvMassXi_shared_bach;            //!
     TH1F                               *hInvMassXi_shared_pi_daugh;            //!
     TH1F                               *hInvMassXi_shared_prot_daugh;            //!
+    TH1                                *hInvMassXi_shared_Lambda;            //!
     TH1F                               *fEvtCounter;           //!
     AliFemtoDreamv0                    *fv0_recomb;            //!
     TList                              *tlLambdaList_rec;      //!
