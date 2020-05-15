@@ -74,6 +74,7 @@
 #pragma link C++ class AliAnalysisTaskGeneralBF+;
 #pragma link C++ class AliAnaTaskMomScan+;
 #pragma link C++ class AliCorrelationAnalysis+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCYS+;
 #pragma link C++ class AliAssociatedTrackYS+;
