@@ -31,27 +31,37 @@ void AddTask_GammaIsoTree(
 
   Float_t trackIsoR[2] = {0.2,0.4};
   Float_t neutralIsoR[2] = {0.2,0.4};
+  Bool_t backgroundTrackMatching = kTRUE;
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
   if(trainConfig == 1){ 
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "1111132060032230000";
-      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberBackgroundEMC = "1111100060022700000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
   } else if(trainConfig == 2){ 
       TaskEventCutnumber                = "00052113";
       TaskClusterCutnumberEMC           = "1111132060032230000";
-      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberBackgroundEMC = "1111100060022700000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
   } else if(trainConfig == 3){ 
       TaskEventCutnumber                = "00081113";
-      TaskClusterCutnumberEMC           = "1111132060032230000";
-      TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+      TaskClusterCutnumberEMC           = "1111132010032230000";
+      TaskClusterCutnumberBackgroundEMC = "1111100060022700000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+  } else if(trainConfig == 4){  // min bias loose cluster cuts
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "1111132000002000000";
+      TaskClusterCutnumberBackgroundEMC = "1111132060022700000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      backgroundTrackMatching = kTRUE;
   // pPb 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
   } else if(trainConfig == 10){
@@ -188,6 +198,7 @@ void AddTask_GammaIsoTree(
   fQA->SetClusterCutsPHOS(analysisClusterCutsPHOS,IsHeavyIon);
   fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
   fQA->SetDoTrackIso(kTRUE);
+  fQA->SetDoBackgroundTrackMatching(backgroundTrackMatching);
   fQA->SetTrackIsoR(trackIsoR[0],trackIsoR[1]);
   fQA->SetNeutralIsoR(trackIsoR[0],trackIsoR[1]);
   fQA->SetCorrectionTaskSetting(corrTaskSetting);

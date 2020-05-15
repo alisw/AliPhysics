@@ -52,8 +52,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fClusterPHOSCandidates(0),
   fTracks(0),
   fMCParticles(0),
-  fIDMatchedEMCTrack(0),
-  fIDMatchedEMCTrackBackground(0),
+  fExtraClusterInfo(),
+  fExtraClusterInfoBackground(),
   fDataEvtHeader(),
   fMCEvtHeader(),
   fConvIsoInfo(0),
@@ -133,8 +133,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fClusterPHOSCandidates(0),
   fTracks(0),
   fMCParticles(0),
-  fIDMatchedEMCTrack(0),
-  fIDMatchedEMCTrackBackground(0),
+  fExtraClusterInfo(),
+  fExtraClusterInfoBackground(),
   fDataEvtHeader(),
   fMCEvtHeader(),
   fConvIsoInfo(0),
@@ -291,7 +291,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fAnalysisTree->Branch("fClusterEMCalCandidates","vector<AliAODCaloCluster*>",&fClusterEMCalCandidates,101);
   fAnalysisTree->Branch("fClusterPHOSCandidates","vector<AliAODCaloCluster*>",&fClusterPHOSCandidates,101);
   fAnalysisTree->Branch("fTracks","vector<AliAODTrack*>",&fTracks,101);
-  fAnalysisTree->Branch("fIDMatchedEMCTrack","vector<Short_t>",&fIDMatchedEMCTrack,101);
+  fAnalysisTree->Branch("fExtraClusterInfo","vector<extraClusterInfo>",&fExtraClusterInfo,101);
   fAnalysisTree->Branch("fConvIsoInfo","vector<isoInfo>",&fConvIsoInfo,101);
   fAnalysisTree->Branch("fCaloIsoInfo","vector<isoInfo>",&fCaloIsoInfo,101);
   if(fIsMC>0){
@@ -311,6 +311,7 @@ Bool_t AliAnalysisTaskGammaIsoTree::Notify()
 void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
 
   fInputEvent                         = InputEvent();
+  ((AliCaloPhotonCuts*)fClusterCutsEMC)->InitializeEMCAL(fInputEvent);
   if(fIsMC>0) fMCEvent                  = MCEvent();
   // Get V0 reader
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -436,8 +437,8 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fTracks.clear();
   for (auto p : fMCParticles){ delete p;} 
   fMCParticles.clear();
-  fIDMatchedEMCTrack.clear();
-  fIDMatchedEMCTrackBackground.clear();
+  fExtraClusterInfo.clear();
+  fExtraClusterInfoBackground.clear();
   fConvIsoInfo.clear();
   fCaloIsoInfo.clear();
 
@@ -446,7 +447,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fClusterPHOSCandidates.resize(0);
   fTracks.resize(0);
   fMCParticles.resize(0);
-  fIDMatchedEMCTrack.resize(0);
+  fExtraClusterInfo.resize(0);
   fConvIsoInfo.resize(0);
   fCaloIsoInfo.resize(0);
 
@@ -527,9 +528,18 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
           continue;
         }
 
-        Int_t matchIndex = ProcessTrackMatching(clus,fTracks);
+        // get additional cluster info
+        Short_t nLM = ((AliCaloPhotonCuts*)fClusterCutsEMC)->GetNumberOfLocalMaxima(clus, fInputEvent);
+        Short_t matchIndex = ProcessTrackMatching(clus,fTracks);
+        Float_t eFrac = GetExoticEnergyFraction(clus,fInputEvent);
         if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
-          fIDMatchedEMCTrackBackground.push_back(matchIndex);
+          
+          extraClusterInfo clusInfo;  
+          clusInfo.nLM = nLM;
+          clusInfo.matchedTrackIndex = matchIndex;
+          clusInfo.exoticEFrac = eFrac;
+          
+          fExtraClusterInfoBackground.push_back(clusInfo);
           fClusterEMCalCandidatesBackground.push_back(new AliAODCaloCluster(*clus));
         }
 
@@ -538,8 +548,13 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
           delete clus;
           continue;
         }
-        
-        fIDMatchedEMCTrack.push_back(matchIndex);
+        // get and set nLM  
+        extraClusterInfo clusInfo;  
+        clusInfo.nLM = nLM;
+        clusInfo.matchedTrackIndex = matchIndex;
+        clusInfo.exoticEFrac = eFrac;
+
+        fExtraClusterInfo.push_back(clusInfo);
         fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
         if(fDoTrackIsolation){
           isoInfo caloIso;
@@ -561,17 +576,25 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
     if(!clus) continue;
 
     if(!arrClustersProcess && clus->IsEMCAL()){ // if is was not saved already
-      // check if given EMC cuts are fulfilled
-      Int_t matchIndex = ProcessTrackMatching(clus,fTracks);
+      // get additional cluster info
+      Short_t nLM = ((AliCaloPhotonCuts*)fClusterCutsEMC)->GetNumberOfLocalMaxima(clus, fInputEvent);
+      Short_t matchIndex = ProcessTrackMatching(clus,fTracks);
+      Float_t eFrac = GetExoticEnergyFraction(clus,fInputEvent);
+
+      extraClusterInfo clusInfo;  
+      clusInfo.nLM = nLM;
+      clusInfo.matchedTrackIndex = matchIndex;
+      clusInfo.exoticEFrac = eFrac;
       if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
-        fIDMatchedEMCTrackBackground.push_back(matchIndex);
+        
+        fExtraClusterInfoBackground.push_back(clusInfo);
         fClusterEMCalCandidatesBackground.push_back(new AliAODCaloCluster(*clus));
       }
       if(!((AliCaloPhotonCuts*)fClusterCutsEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         delete clus;
         continue;
       }
-      fIDMatchedEMCTrack.push_back(matchIndex);
+      fExtraClusterInfo.push_back(clusInfo);
       fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
       if(fDoTrackIsolation){
           isoInfo caloIso;
@@ -590,7 +613,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         delete clus;
         continue;
       }
-
       fClusterPHOSCandidates.push_back(new AliAODCaloCluster(*clus));
       delete clus;
       continue;
@@ -802,11 +824,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster* clu
         Double_t dEta = trackEta - clusterEta;
         Double_t dPhi = trackPhi - clusterPhi;
         Double_t dR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
-        Double_t detatest=trackEta-clusterEta;
-        Double_t dphitest=TVector2::Phi_mpi_pi(trackPhi-clusterPhi);
-        Double_t dTest=TMath::Sqrt(detatest*detatest+dphitest*dphitest);
-        // cout << "dR1 = " << dR << endl;
-        // cout << "dR2 = " << dTest << endl;
         if(dR <= fTrackIsolationR[0]) arrIso[0] += v4track.Pt();
         if(dR <= fTrackIsolationR[1]) arrIso[1] += v4track.Pt();
     }
@@ -828,9 +845,11 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODConversionPhoton
     {
         AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground.at(c);
         if(!clusterE) continue;
+
+        extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
         // check if cluster is neutral
         if(fDoBackgroundTrackMatching){
-           if(fIDMatchedEMCTrackBackground.at(c) != -1) continue;
+           if(clusInfo.matchedTrackIndex != -1) continue;
         }
      
     
@@ -1002,9 +1021,9 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODCaloCluster* clu
         AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground.at(c);
         if(!clusterE) continue;
         if(clusterE->GetID() == cluster->GetID()) continue;
-
+        extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
         if(fDoBackgroundTrackMatching){
-           if(fIDMatchedEMCTrackBackground.at(c) != -1) continue;
+           if(clusInfo.matchedTrackIndex != -1) continue;
         }
  
         TLorentzVector v4othercluster;
@@ -1061,8 +1080,9 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
 
   for (UInt_t c = 0; c < fClusterEMCalCandidatesBackground.size(); c++)
   {
+    extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
     if(fDoBackgroundTrackMatching){
-       if(fIDMatchedEMCTrackBackground.at(c) != -1) continue;
+       if(clusInfo.matchedTrackIndex != -1) continue;
     }
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
@@ -1149,8 +1169,9 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
     
     if(fClusterEMCalCandidatesBackground.at(c)->GetID() == cluster->GetID()) continue;
     
+    extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
     if(fDoBackgroundTrackMatching){
-       if(fIDMatchedEMCTrackBackground.at(c) != -1) continue;
+       if(clusInfo.matchedTrackIndex != -1) continue;
     }
     fClusterEMCalCandidatesBackground.at(c)->GetMomentum(clusterVector,vertex);
 
@@ -1276,3 +1297,21 @@ void AliAnalysisTaskGammaIsoTree::RelabelAODPhotonCandidates(Bool_t mode){
     delete[] fESDArrayNeg;
   }
 }
+
+Float_t AliAnalysisTaskGammaIsoTree::GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event){
+    Float_t exoticEnergyFrac =-999;   
+    if (!cluster) {
+      AliInfo("Cluster pointer null!");
+      return 999;
+    }
+    AliVCaloCells* cells    = event->GetEMCALCells();
+
+    Int_t largestCellID     = ((AliCaloPhotonCuts*)fClusterCutsEMC)->FindLargestCellInCluster(cluster,event);
+    Float_t ecell1          = cells->GetCellAmplitude(largestCellID);
+    Float_t eCross          = ((AliCaloPhotonCuts*)fClusterCutsEMC)->GetECross(largestCellID,cells);
+    exoticEnergyFrac = 1-eCross/ecell1;
+    
+    return exoticEnergyFrac;
+
+}
+
