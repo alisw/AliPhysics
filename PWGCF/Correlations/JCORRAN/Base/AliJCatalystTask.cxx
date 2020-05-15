@@ -171,7 +171,14 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
-		AliMCEvent *mcEvent = MCEvent();
+		AliMCEvent *mcEvent;
+		if(FLUC_KINEONLYEXT) {
+			AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+			mcEvent = fMcHandler->MCEvent();
+
+		} else {
+			mcEvent = MCEvent();
+		}
 		if (!mcEvent) {
 			AliError("ERROR: mcEvent not available");
 			return;
