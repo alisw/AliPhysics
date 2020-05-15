@@ -410,7 +410,7 @@ Float_t AliAnalysisTaskSEpPbCorrelationsJetV2::GetDPhiStar(
 
   return dphistar;
 }
-
+/*
 class AliAssociatedTrackYS : public AliVParticle {
 public:
   AliAssociatedTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
@@ -512,16 +512,16 @@ private:
   Int_t fID2;
   ClassDef(AliAssociatedTrackYS, 1);
 };
+*/
 
-
-class AliAssociatedTPCPairsYS : public AliVParticle {
+class AliAssociatedTPCPairs : public AliVParticle {
 public:
-  AliAssociatedTPCPairsYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt, Float_t pt2,
+  AliAssociatedTPCPairs(Short_t charge, Float_t eta, Float_t phi, Float_t pt, Float_t pt2,
                        Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate,
                        Double_t multiplicity, Double_t deta_pairs, Double_t dphi_pairs)
       : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fpT_Asso(pt2), fID(ID), fID1(ID1),
         fID2(ID2), fCandidate(candidate), fMultiplicity(multiplicity), fdeta_pairs(deta_pairs), fdphi_pairs(dphi_pairs) {}
-  virtual ~AliAssociatedTPCPairsYS() {}
+  virtual ~AliAssociatedTPCPairs() {}
 
   virtual Double_t Px() const {
     AliFatal("Not implemented");
@@ -619,13 +619,13 @@ private:
   Double_t fMultiplicity;
   Int_t fID1;
   Int_t fID2;
-  ClassDef(AliAssociatedTPCPairsYS, 1);
+  ClassDef(AliAssociatedTPCPairs, 1);
 };
 
 
 
 
-
+/*
 class AliMixTrackYS : public AliVParticle {
 public:
   AliMixTrackYS(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
@@ -730,9 +730,9 @@ private:
   Float_t fpz;
 
   ClassDef(AliMixTrackYS, 1);
-};
+};*/
 //---------------------------------------------------------------------------------------
-
+/*
 class AliAssociatedVZEROYS : public AliVParticle {
 public:
   AliAssociatedVZEROYS(Float_t multiplicity,
@@ -837,5 +837,5 @@ private:
 
   ClassDef(AliAssociatedVZEROYS, 1);
 };
-
+*/
 #endif

@@ -89,10 +89,10 @@
 //#include "AliForwardUtil.h"
 
 #include "AliAnalysisTaskSEpPbCorrelationsJetV2.h"
-
+#include "AliAnalysisTaskSEpPbCorrelationsYS.h"
 ClassImp(AliAnalysisTaskSEpPbCorrelationsJetV2)
 ClassImp(AliAssociatedTrackYS)
-ClassImp(AliAssociatedTPCPairsYS)
+ClassImp(AliAssociatedTPCPairs)
 ClassImp(AliMixTrackYS)
 ClassImp(AliAssociatedVZEROYS)
 
@@ -1954,13 +1954,13 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
     triggerHist->Fill(binscontTrig, 0);
     Double_t dTPC_Pairs_Eta = triggerEta-associate_TPC->Eta();
     Double_t dTPC_Pairs_phi = RangePhi(triggerPhi-associate_TPC->Phi());
-    selected_TPC_Pairs->Add(new AliAssociatedTPCPairsYS(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
+    selected_TPC_Pairs->Add(new AliAssociatedTPCPairs(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
     }
   }
 
   for(Int_t j2 = 0;j2 < selected_TPC_Pairs->GetEntriesFast(); j2++)
   {
-   AliAssociatedTPCPairsYS *associate_TPC_Pair = (AliAssociatedTPCPairsYS*)selected_TPC_Pairs->At(j2);
+   AliAssociatedTPCPairs *associate_TPC_Pair = (AliAssociatedTPCPairs*)selected_TPC_Pairs->At(j2);
    if(!associate_TPC_Pair) continue;
    for(Int_t k = 0; k < selectedTrackArray->GetEntriesFast(); k++)
    {
@@ -2024,7 +2024,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t
      triggerHist->Fill(binscontTrig, 0);
      Double_t dTPC_Pairs_Eta = triggerEta-associate_TPC->Eta();
      Double_t dTPC_Pairs_phi = RangePhi(triggerPhi-associate_TPC->Phi());
-     selected_TPC_Pairs->Add(new AliAssociatedTPCPairsYS(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
+     selected_TPC_Pairs->Add(new AliAssociatedTPCPairs(trigger->Charge(), triggerEta, triggerPhi, triggerPt, associate_TPC->Pt(), trigger->GetID(), -999, -999, 0, 1, dTPC_Pairs_Eta,dTPC_Pairs_phi));
      }
    }
 */
@@ -2035,7 +2035,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracksMixing(Double_t
       Double_t binscont[8];
       for(Int_t j2 = 0; j2 < selected_TPC_Pairs->GetEntriesFast(); j2++)
       {
-       AliAssociatedTPCPairsYS *associate_TPC_Pair = (AliAssociatedTPCPairsYS*)selected_TPC_Pairs->At(j2);
+       AliAssociatedTPCPairs *associate_TPC_Pair = (AliAssociatedTPCPairs*)selected_TPC_Pairs->At(j2);
        if(!associate_TPC_Pair) continue;
 
        binscontTrig[0] = associate_TPC_Pair->Pt();
