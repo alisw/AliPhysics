@@ -872,10 +872,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         
     }
     if(fCutType ==kLowECut){
-      if(clu->E()>1. && clu->GetNCells()<3)
+      if(clu->E()>2. && clu->GetNCells()<3)
         continue ;          
     
-      if(clu->E()>1 && clu->GetM02()<0.1) 
+      if(clu->E()>2. && clu->GetM02()<0.1) 
         continue ;          
     }
     

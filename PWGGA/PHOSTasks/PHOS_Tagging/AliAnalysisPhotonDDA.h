@@ -63,7 +63,7 @@ private:
   AliPIDResponse     *fPIDResponse ;   //! PID response 
   TClonesArray * fPHOSEvent  ;
   TList        * fCurrentMixedList ;
-  TList        * fPHOSEvents[5] ;
+  TList        * fPHOSEvents[20] ; 
   TH2F         * fhCont2D[15][4] ;
   ClassDef(AliAnalysisPhotonDDA, 1);   // PHOS DDA analysis task
 };
