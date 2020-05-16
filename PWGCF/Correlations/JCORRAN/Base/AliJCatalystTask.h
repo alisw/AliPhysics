@@ -75,7 +75,6 @@ public:
 	// Read AOD or KineOnly files
 	void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList, float fCent);
 	void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
-	void ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fCent);
 	void SetTestFilterBit( Int_t FilterBit){ fFilterBit = FilterBit; cout << "Settting TestFilterBit = " << FilterBit << endl;}
 	void SetNumTPCClusters( UInt_t NumTPCClusters){ fNumTPCClusters = NumTPCClusters; }
 	void SetEffConfig( int effMode, int FilterBit );
