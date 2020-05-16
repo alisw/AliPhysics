@@ -1923,11 +1923,11 @@ Int_t AliAnalysisTaskHFEmultTPCEMCAL::ClassifyTrack(AliAODTrack* track,const Ali
 	
 	//=====Hits on SPD layers=============
 	
-	/*if(fSPDBoth){ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer
+       if(fSPDBoth){ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer
 	else if(fSPDAny){ if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;} //Hit on any layer
 	else if(fSPDFirst){ if(!(track->HasPointOnITSLayer(0))) return 0;} //Hit on first and second SPD layer
-  */
-   if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;
+  
+   //if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;
     
 	//=========DCA Cut ==================
 	Double_t d0z0[2]={-999,-999}, cov[3];
