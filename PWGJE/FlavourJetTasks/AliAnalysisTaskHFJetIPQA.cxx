@@ -2570,7 +2570,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fTrackChi2OverNDF",&fTrackChi2OverNDF,"fTrackChi2OverNDF[nTracks]/F");
     tJetTree->Branch("fTrackPt",&fTrackPt,"fTrackP[nTracks]/F");
     tJetTree->Branch("iTrackITSHits",&iTrackITSHits,"iTrackITSHits[nTracks]/I");
-    tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/F");
+    tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/I");
     tJetTree->Branch("bFull",&bFull,"bFull[fNThresholds]/b");
     tJetTree->Branch("bSingle1st",&bSingle1st,"bSingle1st[fNThresholds]/b");
     tJetTree->Branch("bSingle2nd",&bSingle2nd,"bSingle2nd[fNThresholds]/b");

@@ -65,6 +65,7 @@ ClassImp(AliAnalysisTaskPOmegaPenne)
                                                                 hInvMassXi_shared_bach(0),
                                                                 hInvMassXi_shared_pi_daugh(0),
                                                                 hInvMassXi_shared_prot_daugh(0),
+                                                                hInvMassXi_shared_Lambda(0),
                                                                 fEvtCounter(0)
                                                                 // fLambdaV0Cuts_rec(0),
                                                                 // fAntiLambdaV0Cuts_rec(0)
@@ -121,6 +122,7 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const char *name, bool is
                                                                                       hInvMassXi_shared_bach(0),
                                                                                       hInvMassXi_shared_pi_daugh(0),
                                                                                       hInvMassXi_shared_prot_daugh(0),
+                                                                                      hInvMassXi_shared_Lambda(0),
                                                                                       fEvtCounter(0)
                                                                                     //   fLambdaV0Cuts_rec(0),
                                                                                     //   fAntiLambdaV0Cuts_rec(0)
@@ -199,6 +201,7 @@ AliAnalysisTaskPOmegaPenne::~AliAnalysisTaskPOmegaPenne()       // Destructor
     delete hInvMassXi_shared_bach;
     delete hInvMassXi_shared_pi_daugh;
     delete hInvMassXi_shared_prot_daugh;
+    delete hInvMassXi_shared_Lambda;
                                                                 
     delete fEvtCounter;
     if (fGTI) delete fGTI;
@@ -256,6 +259,7 @@ AliAnalysisTaskPOmegaPenne::AliAnalysisTaskPOmegaPenne(const AliAnalysisTaskPOme
                                                                                                 hInvMassXi_shared_bach(obj.hInvMassXi_shared_bach),
                                                                                                 hInvMassXi_shared_pi_daugh(obj.hInvMassXi_shared_pi_daugh),
                                                                                                 hInvMassXi_shared_prot_daugh(obj.hInvMassXi_shared_prot_daugh),
+                                                                                                hInvMassXi_shared_Lambda(obj.hInvMassXi_shared_Lambda),
                                                                                                 fEvtCounter(obj.fEvtCounter)
                                                                                                 // fLambdaV0Cuts_rec(obj.fLambdaV0Cuts_rec),
                                                                                                 // fAntiLambdaV0Cuts_rec(obj.fAntiLambdaV0Cuts_rec)
@@ -445,10 +449,11 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     hInvMassLambda_total = new TH1F("InvariantMassLambdatotal", "Invariant Mass LAMBDA total", 500, 1.0, 2.0); 
     hInvMassLambda_shared_pion = new TH1F("InvariantMassLambdaSharedPion", "Invariant Mass LAMBDA shared Pion", 500, 1.0, 2.0);
     hInvMassLambda_shared_proton = new TH1F("InvariantMassLambdaSharedProton", "Invariant Mass LAMBDA shared Proton", 500, 1.0, 2.0);
-    hInvMassXi_total = new TH1F("InvariantMassXi", "Invariant Mass XI", 500, 0.700, 1.600); 
-    hInvMassXi_shared_bach = new TH1F("InvariantMassXiSharedBach", "Invariant Mass XI shared Bachelor Pi", 500, 0.700, 1.600); 
-    hInvMassXi_shared_pi_daugh = new TH1F("InvariantMassXiSharedPiDaugh", "Invariant Mass XI shared Pi Daugh", 500, 0.700, 1.600); 
-    hInvMassXi_shared_prot_daugh = new TH1F("InvariantMassXiSharedProtDaugh", "Invariant Mass XI shared Prot Daugh", 500, 0.700, 1.600); 
+    hInvMassXi_total = new TH1F("InvariantMassXi", "Invariant Mass XI", 600, 0.700, 2.500); 
+    hInvMassXi_shared_bach = new TH1F("InvariantMassXiSharedBach", "Invariant Mass XI shared Bachelor Pi", 600, 0.700, 2.500); 
+    hInvMassXi_shared_pi_daugh = new TH1F("InvariantMassXiSharedPiDaugh", "Invariant Mass XI shared Pi Daugh", 600, 0.700, 2.500); 
+    hInvMassXi_shared_prot_daugh = new TH1F("InvariantMassXiSharedProtDaugh", "Invariant Mass XI shared Prot Daugh", 600, 0.700, 2.500); 
+    hInvMassXi_shared_Lambda = new TH1F("InvariantMassXiSharedLambda", "Invariant Mass XI shared Lambda", 600, 0.700, 2.500); 
 
     fEvtCounter = new TH1F("EventCounter", "Event Counter", 7, 0, 7);
     fEvtCounter->GetXaxis()->SetBinLabel(1, "Prot_Lambda + pi_Xi1");        // reconstruct Lambda
@@ -466,6 +471,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlRecombination->Add(hInvMassXi_shared_bach);
     tlRecombination->Add(hInvMassXi_shared_pi_daugh);
     tlRecombination->Add(hInvMassXi_shared_prot_daugh);
+    tlRecombination->Add(hInvMassXi_shared_Lambda);
     tlRecombination->Add(fEvtCounter);
 
     // Connect Cuts to OutputContainers
@@ -520,12 +526,13 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     }
 }
 
-static std::vector<AliFemtoDreamBasePart> vLambda;           // recombination vectors
+static std::vector<AliFemtoDreamBasePart> vLambda;           // keep Xi after OPairCleaner
 static std::vector<AliFemtoDreamBasePart> vAntiLambda;       
 static std::vector<AliFemtoDreamBasePart> vXi;           
 static std::vector<AliFemtoDreamBasePart> vAntiXi;       
 
-static std::vector<AliFemtoDreamBasePart> vLambda2;             // keep Xi after PairCleaner
+
+static std::vector<AliFemtoDreamBasePart> vLambda2;             // keep Lambda after OPairCleaner
 static std::vector<AliFemtoDreamBasePart> vAntiLambda2;         
 static std::vector<AliFemtoDreamBasePart> vXi2;                 
 static std::vector<AliFemtoDreamBasePart> vAntiXi2;             
@@ -533,6 +540,8 @@ static std::vector<AliFemtoDreamBasePart> vAntiXi2;
 //recombined 
 static std::vector<AliFemtoDreamBasePart> vLambda_recomb;
 static std::vector<AliFemtoDreamBasePart> vXi_recomb; 
+
+static int counter = 0;
 
 void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 {
@@ -582,7 +591,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             AliAODv0 *v0 = aodEvent->GetV0(iv0);
             fv0->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
 
-            // ## Lambda Selection 1 ## keep Lambda
+            // ## Lambda Selection 1 ## keep Xi
             if (fLambdaV0Cuts->isSelected(fv0))
             {
                 vLambda.push_back(*fv0);
@@ -595,7 +604,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             }
 
             fv0_2->Setv0(fInputEvent, v0, fEvent->GetMultiplicity());
-            // ## Lambda Selection 2 ## keep Xi
+            // ## Lambda Selection 2 ## keep Lambda
             if (fLambdaV0Cuts2->isSelected(fv0_2))
             {
                 vLambda2.push_back(*fv0_2);
@@ -613,7 +622,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             AliAODcascade *casc = aodEvent->GetCascade(iCasc);
             fCascade->SetCascade(fInputEvent, casc);
 
-            // ## Xi selection 1 ### keep Lambda
+            // ## Xi selection 1 ### keep Xi
             if (fCascadeCutsXi->isSelected(fCascade))
             {
                 vXi.push_back(*fCascade);
@@ -626,7 +635,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             }
 
             fCascade2->SetCascade(fInputEvent, casc);
-            // ## Xi selection 2 ### keep Xi
+            // ## Xi selection 2 ### keep Lambda
             if (fCascadeCutsXi2->isSelected(fCascade2))
             {
                 vXi2.push_back(*fCascade2);
@@ -638,16 +647,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 vAntiXi2[vAntiXi2.size() - 1].SetCPA(0.5);
             }
         }
-
-
+        
         //###########################################
         // Lambda - Lambda recombinations
         //##########################################
         std::vector<AliFemtoDreamBasePart> tmpLambda_recomb(0); // recombination Vector for the loop
-                
-        for (size_t iterLamb = 0; iterLamb < vLambda.size(); iterLamb++)       // ein lambda mit allen höheren kombinieren (siehe zweite schleife)
+        
+        // ein lambda mit allen höheren kombinieren (siehe zweite schleife)
+        // schleife läuft nur bis zum vorletzten lambda
+        for (size_t iterLamb = 0; iterLamb + 1 < vLambda.size(); iterLamb++)       
         {
-            if(vLambda.size()<=1) break;        // abbrechen wenn Lambda leer oder nur ein Teilchen enthält
+            if(vLambda.size() == 1) break;        // abbrechen wenn Lambda nur ein Teilchen enthält oder 
 
             // recombiniere lambda[iterLamb] mit den darauf folgenden Lambdas 
             // - dadurch werden nicht doppelt Lambdas aber im moment noch doppelt Tracks wenn sie sich zwei Lambdas teilen  
@@ -657,10 +667,12 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             // GetMomentum(1) - Pion
             // GetMomentum(2) - Proton
 
-            
             for (size_t iterUpwards = iterLamb + 1; iterUpwards < vLambda.size(); iterUpwards++) 
             {
+                tmpLambda_recomb.clear();
                 // check for shared tracks
+                if(vLambda[iterLamb].GetIDTracks().size() < 2 || vLambda[iterUpwards].GetIDTracks().size() < 2 ) continue;    // failsafe if the Lambda has no 2 tracks
+
                 if ( vLambda[iterLamb].GetIDTracks()[0] == vLambda[iterUpwards].GetIDTracks()[0])
                 {
                     tmpLambda_recomb.push_back(vLambda[iterLamb]);
@@ -669,11 +681,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     fEvtCounter->Fill(6);
                     for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
                     {
-                        hInvMassLambda_shared_pion->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
-                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_shared_pion->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                                vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                          vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
                     }
-                    vLambda.clear();
-                    vLambda_recomb.clear();
                 }
                 if(vLambda[iterLamb].GetIDTracks()[1] == vLambda[iterUpwards].GetIDTracks()[1])
                 {
@@ -683,11 +695,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     fEvtCounter->Fill(6);
                     for (size_t iterLamb_recomb = 0; iterLamb_recomb < vLambda_recomb.size(); iterLamb_recomb++)
                     {
-                        hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
-                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                                  vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
+                        hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), 
+                                                                          vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
                     }
-                    vLambda.clear();
-                    vLambda_recomb.clear();
                 }
                 else 
                 {
@@ -706,11 +718,11 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         hInvMassLambda_shared_proton->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
                         hInvMassLambda_total->Fill(CalculateInvMassLambda(vLambda_recomb[iterLamb_recomb].GetMomentum(1), vLambda_recomb[iterLamb_recomb].GetMomentum(2)));
                     }
-                    vLambda.clear();
-                    vLambda_recomb.clear();
                 }
             }
         }
+        vLambda_recomb.clear();
+
         //###########################################
         // Lambda - Xi recombinations
         //##########################################
@@ -741,15 +753,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 tmpLambda_recomb.push_back(vLambda[iterLamb]);
                 tmpLambda_recomb.push_back(vLambda[iterLamb]);
                 tmpLambda_recomb.push_back(vLambda[iterLamb]);
-
-                // take Xi's and manipulate the three lambdas before
-                tmpLambda_recomb[ 0 ].SetMomentum(1, vXi[iterXi].GetMomentum(0));       // Bachelor Xi-Pion mit Lambda-Proton
-                tmpLambda_recomb[ 1 ].SetMomentum(1, vXi[iterXi].GetMomentum(2));       // Daughter Xi-Pion mit Lambda-Proton
-                tmpLambda_recomb[ 2 ].SetMomentum(2, vXi[iterXi].GetMomentum(3));       // Daughter Xi-Proton mit Lambda-Pion
-                vLambda_recomb.push_back(tmpLambda_recomb[0]);
-                vLambda_recomb.push_back(tmpLambda_recomb[1]);
-                vLambda_recomb.push_back(tmpLambda_recomb[2]);
                 
+                if(tmpLambda_recomb.size() >= 3 && vXi[iterXi].GetMomenta().size() >=3)
+                {
+                    // take Xi's constituents and manipulate the three lambdas before
+                    tmpLambda_recomb[0].SetMomentum(1, vXi[iterXi].GetMomentum(0)); // Bachelor Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[1].SetMomentum(1, vXi[iterXi].GetMomentum(2)); // Daughter Xi-Pion mit Lambda-Proton
+                    tmpLambda_recomb[2].SetMomentum(2, vXi[iterXi].GetMomentum(3)); // Daughter Xi-Proton mit Lambda-Pion
+                    vLambda_recomb.push_back(tmpLambda_recomb[0]);
+                    vLambda_recomb.push_back(tmpLambda_recomb[1]);
+                    vLambda_recomb.push_back(tmpLambda_recomb[2]);
+                }
                 // ## Xi pairing
                 if (vXi[iterXi].GetIDTracks()[0] == vLambda[iterLamb].GetIDTracks()[0])     // ## ## Bachelor shared ## ##
                 {
@@ -775,11 +789,15 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 }
                 if (vXi[iterXi].GetIDTracks()[1] == vLambda[iterLamb].GetIDTracks()[1])    // ## ## pion daughter shared ## ##
                 {
-                    if (vXi[iterXi].GetIDTracks()[2] == vLambda[iterLamb].GetIDTracks()[2]) // ## ## full lambda shared ## ##
+                    if (vXi[iterXi].GetIDTracks()[2] == vLambda[iterLamb].GetIDTracks()[2]) // ## ## and daughter proton shared -> full lambda shared ## ##
                     {
                     tmpXi_recomb.push_back(vXi[iterXi]);
                     tmpXi_recomb[0].SetMomentum(3, vLambda[iterLamb].GetMomentum(1));   // set only Bachelor
-                    vXi_recomb.push_back(vXi[0]);
+                    vXi_recomb.push_back(tmpXi_recomb[0]);
+
+                    hInvMassXi_shared_Lambda->Fill(CalculateInvMassXi(tmpXi_recomb[0].GetMomentum(3),
+                                                                      tmpXi_recomb[0].GetMomentum(2),
+                                                                      tmpXi_recomb[0].GetMomentum(1)));
                     }
                     else // ## ## only daughter pion shared ## ##
                     {
@@ -802,7 +820,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                         }
                     }
                 }
-                if (vXi[iterXi].GetIDTracks()[2] == vLambda[iterLamb].GetIDTracks()[2])     // ## ## daughter proton shared ## ##
+                if (vXi[iterXi].GetIDTracks()[2] == vLambda[iterLamb].GetIDTracks()[2] && vXi[iterXi].GetIDTracks()[1] != vLambda[iterLamb].GetIDTracks()[1])     // ## ## only daughter proton shared ## ##
                 {
                     tmpXi_recomb.push_back(vXi[iterXi]);
                     tmpXi_recomb.push_back(vXi[iterXi]);
@@ -849,7 +867,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         }
         vXi_recomb.clear();
         vLambda_recomb.clear();
-
+        
         //###########################################
         // Cleanup and Postdata
         //##########################################
@@ -912,10 +930,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
             PostData(17, tlAntiLambdaMC);
         }
-    }
-    
-    // std::cout << "high Boundary: " << fhighBound << std::endl;
-    // std::cout << "low Boundary: " << flowBound << std::endl;
+    }   
 }
 
 void AliAnalysisTaskPOmegaPenne::ResetGlobalTrackReference()

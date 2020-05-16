@@ -452,7 +452,7 @@ private:
     Float_t fTrackChi2OverNDF[100];
     Float_t fTrackPt[100];
     Int_t iTrackITSHits[100];
-    Bool_t bTrackIsV0[100];
+    Int_t bTrackIsV0[100];
     Bool_t bFull[30];
     Bool_t bSingle1st[30];
     Bool_t bSingle2nd[30];
@@ -715,7 +715,7 @@ private:
     return kTRUE;
     }
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 58)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 59)
 };
 
 #endif

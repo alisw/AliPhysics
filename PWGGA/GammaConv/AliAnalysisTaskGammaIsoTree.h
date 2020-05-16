@@ -53,6 +53,11 @@ typedef struct {
 } lightCluster;
 
 typedef struct {
+    Short_t nLM,matchedTrackIndex;
+    Float_t exoticEFrac;
+} extraClusterInfo;
+
+typedef struct {
   Double32_t isoRawCharged[2],isoRawNeutral[2], isoCell[2]; // storage for two isolation radii each
   Int_t isTagged; //0 : no 1:withOtherConv 2: withOtherCluster 3: both
 } isoInfo;
@@ -163,8 +168,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     //std::vector<lightCluster> fClusterPHOSCandidates;  //
     std::vector<AliAODTrack*>   fTracks;  //
     std::vector<AliAODMCParticle*>   fMCParticles;  // stores mc particles
-    std::vector<Short_t>        fIDMatchedEMCTrack; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    std::vector<Short_t>        fIDMatchedEMCTrackBackground; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    std::vector<extraClusterInfo>    fExtraClusterInfo; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    std::vector<extraClusterInfo>    fExtraClusterInfoBackground; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
     dEvtHeader                  fDataEvtHeader; // storage for general event properties
     mcEvtHeader                 fMCEvtHeader;   // storage for MC event properties
     std::vector<isoInfo>        fConvIsoInfo;   // storage for isolation info of conv photons, following same ordering as fConversionCandidates
@@ -239,10 +244,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t ProcessTagging(AliAODCaloCluster* cluster);
     void ReduceTrackInfo();
     void RelabelAODPhotonCandidates(Bool_t mode);
+    Float_t GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event);
 
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 5);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 6);
 };
 
 #endif
