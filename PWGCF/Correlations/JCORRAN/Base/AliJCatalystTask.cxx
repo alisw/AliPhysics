@@ -595,6 +595,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 			}
 		}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 // To read the track generated from a external alievent generators
 void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList, TClonesArray *TrackListALICE, float fcent)
@@ -632,6 +633,7 @@ void AliJCatalystTask::ReadKineTracks( AliStack *stack, TClonesArray *TrackList,
 				jtrack->SetCharge(ch) ;
 			}
 	}
+	if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
 }
 
 double AliJCatalystTask::GetCentralityFromImpactPar(double ip) {
