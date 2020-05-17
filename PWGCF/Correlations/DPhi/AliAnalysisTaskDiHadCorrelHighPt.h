@@ -56,7 +56,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         void                    SetPtTrigMin(Double_t var) {fPtTrigMin=var;}
         void                    SetPtAsocMin(Double_t var) {fPtAsocMin=var;}
-        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard,Bool_t hV0,Bool_t isMCGen);
+        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard,Bool_t hV0);
         void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks, THnSparse * fHistKor, Double_t lPVz,Float_t perc);
         void                    TopologCuts(THnSparse* fHist,Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
         void                    FillMC(const AliVParticle *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Double_t lPVz,THnSparse * histPur, TObjArray * selectedMCV0assoc,TH3F * fHistresol, Double_t posTrackProp[6],Double_t negTrackProp[6]);
@@ -97,8 +97,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetAcceptLambdasFromCascades (Bool_t accept) { fAacceptLambdasFromCasscade = accept; }
         void                    SetAcceptPurePrimHadrons (Bool_t accept) { fPurePrimHadrons = accept; }
         void                    SetAcceptPureV0 (Bool_t accept) { fPureV0 = accept; }
-        Float_t                 GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius);
-        void                    SetMergingCut(Double_t cut) { fMergingCut = cut; }
         void                    SetNumberOfDeltaPhiBins(Int_t bins) { fNumberOfDeltaPhiBins = bins; }
         void                    SetNumberOfDeltaEtaBins(Int_t bins) { fNumberOfDeltaEtaBins = bins; }
         void                    SetNumberOfEtaBins(Int_t bins) { fNumberOfEtaBins = bins; }
@@ -110,8 +108,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetESDtrackCuts(AliESDtrackCuts *const trcuts) { fESDTrackCuts = trcuts; }
         void                    SetAnalysisAOD(Bool_t aodAnalysis) { fAnalysisAOD = aodAnalysis; }
         void                    SetTestPions(Bool_t pions) { fTestPions = pions; }
-        void                    SetMergingCutV0(Bool_t cut) { fMergingCutV0 = cut; }
-        void                    SetMergingCutDaughters(Bool_t cut) { fMergingCutDaughters = cut; }
+        void                    SetAnalyseFeedDown(Bool_t fd) { fAnalyseFeedDown = fd; }
+        void                    CorrelationsXi(TObjArray *triggers,TObjArray *assoc,Double_t lPVz,Double_t perc,Bool_t Xih);
 
         AliEventCuts            fAliEventCuts;
     
@@ -129,8 +127,8 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse*              fHistdPhidEtaMix;           //!
         TH1D*                   fHistV0Multiplicity;         //!
         TH2D*                   fHistMultVtxz;              //!
-        TH3D*                   fHistMCPtAs;            //!
-        TH3D*                   fHistRCPtAs;            //!
+        THnSparse*              fHistMCPtAs;            //!
+        THnSparse*              fHistRCPtAs;            //!
         THnSparse*              fHistNumberOfTriggers;  //!
         THnSparse*              fHistMCKorelacie;       //!
         THnSparse*              fHistMCMixingRec;       //!
@@ -165,7 +163,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse*              fHistRecV0; //!
         THnSparse*              fHistGenV0; //!
     
-        TH3D*                   fHistMCPtTrigg;            //!
         TH3D*                   fHistRCPtTrigg;            //!
         TH1D*                   fHistSelection;            //!
         TH1F*                   fHistMultipPercentile;     //!
@@ -204,7 +201,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fPurePrimHadrons; // anable to accept only pure primary hadrons for MC closure test
         Bool_t                  fPureV0; // anable to accept only pure good ID V0 for MC closure test
         Bool_t                  fAnalysisAOD;// anable to change between ESDs and AODs
-        Double_t                fMergingCut; // cut for track spliting/merging
         Int_t                   fNumberOfDeltaPhiBins; // Number of DeltaPhi Bins in correlation function and in mixing
         Int_t                   fNumberOfDeltaEtaBins; // Number of DeltaEta Bins in correlation functionand in mixing
         Int_t                   fNumberOfEtaBins; // Number of Eta bins for efficiency correction
@@ -220,45 +216,52 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         AliESDtrackCuts *       fESDTrackCuts; //!
         Bool_t                  fTestPions; // for testing MC trains
-        Bool_t                  fMergingCutV0; // enable merrging cut based on V0 
-        Bool_t                  fMergingCutDaughters; // enable merrging cut based on V0 daughters
+
+        TH2D *                  fHistPosNegTracks; //!
+        TH3F *                  fHistLambdaFeedDown; //! 
+        Bool_t                  fAnalyseFeedDown;
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 21);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 22);
 };
 
 class AliV0ChParticle : public AliVParticle
 {
     public:
       AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate,Double_t mass)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(-1),fIDh(-1),fIDpos(-1),fIDneg(-1),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(-1),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
       {
       }
       AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label),fIDh(-1),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label),fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
       {
       }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Short_t charge, Double_t pz, Double_t energ)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t iDh,Short_t charge, Double_t pz, Double_t energ)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh),fIDpos(-1),fIDneg(-1),fIDbach(0),fMass(0),fCharge(charge), fPz(pz), fEnergie(energ),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass,Double_t phi1, Double_t pt1,Double_t eta1, Double_t char1, Double_t phi2,Double_t pt2,Double_t eta2, Double_t char2)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(phi1),fPt1(pt1),fEta1(eta1),fChar1(char1),fPhi2(phi2),fPt2(pt2),fEta2(eta2),fChar2(char2)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(phi1),fPt1(pt1),fEta1(eta1),fChar1(char1),fPhi2(phi2),fPt2(pt2),fEta2(eta2),fChar2(char2)
     {
     }
     AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg,Double_t mass)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(0),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
     {
+    }
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt,Short_t candidate,Double_t mass,Int_t idpos, Int_t idneg,Int_t idbach)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(0), fIDh(-1),fIDpos(idpos), fIDneg(idneg), fIDbach(idbach),fMass(mass),fCharge(0),fPz(0),fEnergie(0),fPhi1(0),fPt1(0),fEta1(0),fChar1(0),fPhi2(0),fPt2(0),fEta2(0),fChar2(0)
+    {
+
     }
      virtual ~AliV0ChParticle() {}
   
@@ -296,6 +299,7 @@ class AliV0ChParticle : public AliVParticle
     Int_t   GetIDCh()             const { return fIDh; }
     Int_t   GetIDPos()            const { return fIDpos; }
     Int_t   GetIDNeg()            const { return fIDneg; }
+    Int_t   GetIDBach()            const { return fIDbach; }
     Short_t GetCharge1()          const { return fChar1; }
     Short_t GetCharge2()          const { return fChar2; }
     Double_t GetPhi1()            const { return fPhi1; }
@@ -314,6 +318,7 @@ class AliV0ChParticle : public AliVParticle
       Int_t fIDh;   // Label
       Int_t fIDpos;   // Label of possitive charged daughter
       Int_t fIDneg;   // Label of negative charged daughter
+      Int_t fIDbach;   // Label of bachelor track
       Double_t fMass; // mass
       Short_t fCharge; // charge of the track
       Double_t fPz; //pZ
@@ -327,7 +332,7 @@ class AliV0ChParticle : public AliVParticle
       Double_t fEta2; // eta of second daughter 
       Double_t fChar2; // charge of second daughter 
    
-      ClassDef( AliV0ChParticle, 6) // class required for correlatios calculation and event mixing
+      ClassDef( AliV0ChParticle, 7) // class required for correlatios calculation and event mixing
  };
 
 #endif
