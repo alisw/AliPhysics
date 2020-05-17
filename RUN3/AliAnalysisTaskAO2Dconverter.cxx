@@ -433,8 +433,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     TTree* tLabels = CreateTree(kMcLabel);
     tLabels->SetAutoFlush(fNumberOfEventsPerCluster);
     if (fTreeStatus[kMcLabel]) {
-      tLabels->Branch("fLabel", &mclabel.fLabel, "fLabel/I");
-      tLabels->Branch("fLabelMask", &mclabel.fLabelMask, "fLabelMask/s");
+      tLabels->Branch("fLbl", &mclabel.fLbl, "fLbl/I");
+      tLabels->Branch("fLblMask", &mclabel.fLblMask, "fLblMask/s");
     }
     PostTree(kMcLabel);
   }
@@ -652,11 +652,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
       Int_t alabel = track->GetLabel();
-      mclabel.fLabel = TMath::Sign(TMath::Abs(alabel) + fOffsetLabel, alabel); // keep the sign of the label
-      mclabel.fLabelMask = 0;
+      mclabel.fLbl = TMath::Sign(TMath::Abs(alabel) + fOffsetLabel, alabel); // keep the sign of the label
+      mclabel.fLblMask = 0;
       // Use the ITS shared clusters to set the corresponding bits 0-6
       UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
-      mclabel.fLabelMask |= itsMask;
+      mclabel.fLblMask |= itsMask;
       // Use the number of TPC shared clusters as number of TPC mismatches
       // encode in bits 7-9 the values in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
       const TBits * tpcShared = track->GetTPCSharedMapPtr();
@@ -667,11 +667,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	tpcMask++;
       }
       if (tpcMask>7) tpcMask = 7;
-      mclabel.fLabelMask |= (tpcMask<<7);
+      mclabel.fLblMask |= (tpcMask<<7);
       // TRD (bit 10)
       // We can also use labels per tracklet in the future
       Int_t trdLabel = track->GetTRDLabel();
-      if (TMath::Abs(alabel)!=TMath::Abs(trdLabel)) mclabel.fLabelMask |= (0x1 << 10);
+      if (TMath::Abs(alabel)!=TMath::Abs(trdLabel)) mclabel.fLblMask |= (0x1 << 10);
       // TOF (bit 11)
       Int_t tofLabel[3]={-1};
       track->GetTOFLabel(tofLabel);
@@ -679,7 +679,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       if (!( TMath::Abs(alabel)==TMath::Abs(tofLabel[0])
 	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[1])
 	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[2])))
-	mclabel.fLabelMask |= (0x1 << 11);
+	mclabel.fLblMask |= (0x1 << 11);
       
       FillTree(kMcLabel);
     }
