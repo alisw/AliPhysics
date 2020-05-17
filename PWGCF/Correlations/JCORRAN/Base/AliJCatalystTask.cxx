@@ -27,6 +27,7 @@
 #include <AliAODMCParticle.h>
 #include <AliMCEvent.h>
 #include <AliGenHijingEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAODEvent.h>
@@ -162,7 +163,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	fInputList->Clear();
 	fInputListALICE->Clear();
 
-	float fImpactParameter = -1.0f;
+	float fImpactParameter = .0; // setting 0 for the generator which doesn't have this info. 
 	double fvertex[3];
 
 	fEvtNum++;
@@ -172,7 +173,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	// load current event and save track, event info
 	if(flags & FLUC_KINEONLY) {
 		AliMCEvent *mcEvent;
-		if(FLUC_KINEONLYEXT) {
+		if(flags & FLUC_KINEONLYEXT) {
 			AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
 			mcEvent = fMcHandler->MCEvent();
 
@@ -185,12 +186,12 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		}
 
 		if(!fnoCentBin) {
-			AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-			if(!headerH)
-				return;
-			//Double_t gReactionPlane = headerH->ReactionPlaneAngle();
-			Double_t gImpactParameter = headerH->ImpactParameter();
-			fcent = GetCentralityFromImpactPar(gImpactParameter);
+			AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+			AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
+			if (hijingHeader) fImpactParameter = hijingHeader->ImpactParameter();
+    			else if (dpmHeader) fImpactParameter = dpmHeader->ImpactParameter();
+
+			fcent = GetCentralityFromImpactPar(fImpactParameter);
 		}
 		if(flags & FLUC_ALICE_IPINFO){
 			//force to use ALICE impact parameter setting
