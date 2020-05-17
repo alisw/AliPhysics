@@ -715,8 +715,8 @@ void AliDecayerPythia8::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, I
     fPythia8->ReadString("4122:addChannel = 1 0.0159 0 2212 311");
     fPythia8->ReadString("4122:addChannel = 1 0.0130 0 3122 211");
     //add Xic+ decays absent in PYTHIA8 decay table
-    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 313");
-    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 321 211");
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 -313");
+    fPythia8->ReadString("4232:addChannel = 1 0.2 0 2212 -321 211");
     fPythia8->ReadString("4232:addChannel = 1 0.2 0 3324 211");
     fPythia8->ReadString("4232:addChannel = 1 0.2 0 3312 211 211");
     //add Xic0 decays absent in PYTHIA8 decay table
