@@ -1907,7 +1907,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueClusterCandidatesAOD(AliAODCo
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, fEnableSortForClusMC);
 
   return;
 }
