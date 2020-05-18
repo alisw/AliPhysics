@@ -28,6 +28,7 @@
 #include <AliMCEvent.h>
 #include <AliGenHijingEventHeader.h>
 #include <AliGenDPMjetEventHeader.h>
+#include <AliGenHepMCEventHeader.h>
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
 #include <AliAODEvent.h>
@@ -188,8 +189,16 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 		if(!fnoCentBin) {
 			AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
 			AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
-			if (hijingHeader) fImpactParameter = hijingHeader->ImpactParameter();
-    			else if (dpmHeader) fImpactParameter = dpmHeader->ImpactParameter();
+			AliGenHepMCEventHeader* hepHeader = dynamic_cast<AliGenHepMCEventHeader*>(mcEvent->GenEventHeader());
+			if (hijingHeader) {
+				fImpactParameter = hijingHeader->ImpactParameter();
+    			} else if (dpmHeader) {
+				fImpactParameter = dpmHeader->ImpactParameter();
+    			} else if (hepHeader) {
+				fImpactParameter = hepHeader->impact_parameter();
+			} else {
+			       DEBUG( 4,  "KineOnly no header in event generator" );       			      
+			}
 
 			fcent = GetCentralityFromImpactPar(fImpactParameter);
 		}
