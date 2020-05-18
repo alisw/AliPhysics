@@ -151,35 +151,33 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     }
 
   protected:
-    AliVEvent*                  fInputEvent;                //
-    AliMCEvent*                 fMCEvent;                   //
+    AliVEvent*                  fInputEvent;                //!<!
+    AliMCEvent*                 fMCEvent;                   //!<!
     Double_t                    fWeightJetJetMC;            //
-    TList*                      fOutputList;                //
-    TTree*                      fAnalysisTree;              //
-    Int_t                       fIsMC;
+    TList*                      fOutputList;                //!<!
+    TTree*                      fAnalysisTree;              //!<!
+    Int_t                       fIsMC;                      //
     Bool_t                      fIsHeavyIon;                //
     AliV0ReaderV1*              fV0Reader;        //!<! V0Reader for basic conversion photon selection
     TString                     fV0ReaderName;       ///< Name of the V0 reader
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
-    std::vector<AliAODConversionPhoton*> fConversionCandidates;  // stores conv candidates of event that fulfill cuts
-    std::vector<AliAODCaloCluster*> fClusterEMCalCandidates;   // stores emcal clusters that fulfill cuts
-    std::vector<AliAODCaloCluster*> fClusterEMCalCandidatesBackground;  // vector containing clusters used for tagging and isolation, for internal use only
-    std::vector<AliAODCaloCluster*> fClusterPHOSCandidates;  // stores phos clusters that fulfill cuts
-    //std::vector<lightCluster> fClusterEMCalCandidates;  //
-    //std::vector<lightCluster> fClusterPHOSCandidates;  //
-    std::vector<AliAODTrack*>   fTracks;  //
-    std::vector<AliAODMCParticle*>   fMCParticles;  // stores mc particles
-    std::vector<extraClusterInfo>    fExtraClusterInfo; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    std::vector<extraClusterInfo>    fExtraClusterInfoBackground; // ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    dEvtHeader                  fDataEvtHeader; // storage for general event properties
-    mcEvtHeader                 fMCEvtHeader;   // storage for MC event properties
-    std::vector<isoInfo>        fConvIsoInfo;   // storage for isolation info of conv photons, following same ordering as fConversionCandidates
-    std::vector<isoInfo>        fCaloIsoInfo;   // storage for isolation of EMC clusters, following same ordering as fConversionCandidates
+    std::vector<AliAODConversionPhoton*> fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
+    std::vector<AliAODCaloCluster*> fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
+    std::vector<AliAODCaloCluster*> fClusterEMCalCandidatesBackground;   //!<! vector containing clusters used for tagging and isolation, for internal use only
+    std::vector<AliAODCaloCluster*> fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
+    std::vector<AliAODTrack*>   fTracks;   //!<!
+    std::vector<AliAODMCParticle*>   fMCParticles;   //!<! stores mc particles
+    std::vector<extraClusterInfo>    fExtraClusterInfo;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    std::vector<extraClusterInfo>    fExtraClusterInfoBackground;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    dEvtHeader                  fDataEvtHeader;  //!<! storage for general event properties
+    mcEvtHeader                 fMCEvtHeader;    //!<! storage for MC event properties
+    std::vector<isoInfo>        fConvIsoInfo;    //!<! storage for isolation info of conv photons, following same ordering as fConversionCandidates
+    std::vector<isoInfo>        fCaloIsoInfo;    //!<! storage for isolation of EMC clusters, following same ordering as fConversionCandidates
    
-    AliEMCALGeometry*           fGeomEMCAL;                  // pointer to EMCAL geometry
+    AliEMCALGeometry*           fGeomEMCAL;    // pointer to EMCAL geometry
     
     // cuts and setting
-    TString                     fCorrTaskSetting;
+    TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
     AliCaloPhotonCuts*          fClusterCutsBackgroundEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
@@ -251,7 +249,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 6);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 7);
 };
 
 #endif
