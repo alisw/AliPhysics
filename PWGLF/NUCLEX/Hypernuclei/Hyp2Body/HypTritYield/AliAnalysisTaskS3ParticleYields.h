@@ -100,6 +100,8 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
   TH1F                  *fHistEvents;
   TTree                 *fTree;                //<   Tree containing reduced events
+  TTree                 *gTree;                //<   Tree containing reduced events
+  TTree                 *hTree;                //<   Tree containing reduced events
   TTree                 *fTreeGen;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
