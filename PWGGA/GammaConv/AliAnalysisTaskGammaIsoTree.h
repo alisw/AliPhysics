@@ -123,10 +123,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetTrackIsoR(Float_t r1, Float_t r2){ fTrackIsolationR[0] = r1; fTrackIsolationR[1] = r2;}
     void SetDoNeutralIso(Bool_t p0){ fDoNeutralIsolation = p0;}
     void SetNeutralIsoR(Float_t r1, Float_t r2){ fNeutralIsolationR[0] = r1; fNeutralIsolationR[1] = r2;}
-
+    
+    void SetDoCellIso(Bool_t p0){ fDoCellIsolation = p0;}
     void SetRhoOutName(TString s){fRhoOutName = s;}
     void SetBuffSize(Long64_t buff){fTreeBuffSize = buff;}
-
+    void SetDoTagging(Bool_t p0){ fDoTagging = p0;}
     void SetPi0TaggingWindow(Double_t min,Double_t max=0.){
         fPi0TaggingWindow[0] = min;
         fPi0TaggingWindow[1] = max;
@@ -205,7 +206,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     Bool_t                      fDoNeutralIsolation; //
     Float_t                     fNeutralIsolationR[2]; //
+    Bool_t                      fDoCellIsolation; //
     
+    Bool_t                      fDoTagging; //
     Double_t                    fPi0TaggingWindow[2];    // inv mass window used for pi0 tagging
     Double_t                    fEtaTaggingWindow[2];    // inv mass window used for eta tagging
     

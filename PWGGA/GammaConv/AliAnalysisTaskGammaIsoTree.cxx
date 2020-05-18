@@ -82,6 +82,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fTrackIsolationR(),
   fDoNeutralIsolation(kFALSE),
   fNeutralIsolationR(),
+  fDoCellIsolation(kTRUE),
+  fDoTagging(kFALSE),
   fPi0TaggingWindow(),
   fEtaTaggingWindow(),
   fSaveConversions(kTRUE),
@@ -163,6 +165,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fTrackIsolationR(),
   fDoNeutralIsolation(kFALSE),
   fNeutralIsolationR(),
+  fDoCellIsolation(kTRUE),
+  fDoTagging(kFALSE),
   fPi0TaggingWindow(),
   fEtaTaggingWindow(),
   fSaveConversions(kTRUE),
@@ -476,14 +480,13 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
     if(!((AliConversionPhotonCuts*)fConvCuts)->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
     fConversionCandidates.push_back(new AliAODConversionPhoton(*PhotonCandidate));
     
-    if(fDoTrackIsolation){
-      isoInfo convIso;
-      ProcessChargedIsolation(PhotonCandidate,convIso.isoRawCharged);
-      ProcessNeutralIsolation(PhotonCandidate,convIso.isoRawNeutral);
-      ProcessCellIsolation(PhotonCandidate,convIso.isoCell);
-      convIso.isTagged = ProcessTagging(PhotonCandidate); 
-      fConvIsoInfo.push_back(convIso);
-    }
+    isoInfo convIso;
+    if(fDoTrackIsolation) ProcessChargedIsolation(PhotonCandidate,convIso.isoRawCharged);
+    if(fDoNeutralIsolation) ProcessNeutralIsolation(PhotonCandidate,convIso.isoRawNeutral);
+    if(fDoCellIsolation) ProcessCellIsolation(PhotonCandidate,convIso.isoCell);
+    if(fDoTagging) convIso.isTagged = ProcessTagging(PhotonCandidate); 
+    fConvIsoInfo.push_back(convIso);
+    
     
     if(fMCEvent){
     }
@@ -556,14 +559,12 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
 
         fExtraClusterInfo.push_back(clusInfo);
         fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
-        if(fDoTrackIsolation){
-          isoInfo caloIso;
-          ProcessChargedIsolation(clus,caloIso.isoRawCharged);
-          ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
-          ProcessCellIsolation(clus,caloIso.isoCell);
-          caloIso.isTagged = ProcessTagging(clus);  // TODO
-          fCaloIsoInfo.push_back(caloIso);
-        }
+        isoInfo caloIso;
+        if(fDoTrackIsolation) ProcessChargedIsolation(clus,caloIso.isoRawCharged);
+        if(fDoNeutralIsolation) ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
+        if(fDoCellIsolation) ProcessCellIsolation(clus,caloIso.isoCell);
+        if(fDoTagging) caloIso.isTagged = ProcessTagging(clus);  // TODO
+        fCaloIsoInfo.push_back(caloIso);
         delete clus;
       }
   }
@@ -596,18 +597,18 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
       }
       fExtraClusterInfo.push_back(clusInfo);
       fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
-      if(fDoTrackIsolation){
-          isoInfo caloIso;
-          ProcessChargedIsolation(clus,caloIso.isoRawCharged);
-          ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
-          ProcessCellIsolation(clus,caloIso.isoCell);
-          caloIso.isTagged = ProcessTagging(clus);  // TODO
-          fCaloIsoInfo.push_back(caloIso);
-      }
+      
+      isoInfo caloIso;
+      if(fDoTrackIsolation) ProcessChargedIsolation(clus,caloIso.isoRawCharged);
+      if(fDoNeutralIsolation)ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
+      if(fDoCellIsolation) ProcessCellIsolation(clus,caloIso.isoCell);
+      if(fDoTagging) caloIso.isTagged = ProcessTagging(clus);  // TODO
+      fCaloIsoInfo.push_back(caloIso);
+      
       delete clus;
       continue;
     }
-    if(clus->IsPHOS()){
+    if(clus->IsPHOS() && fSavePHOSClusters){
     // if(clus->GetType() == AliVCluster::kPHOSNeutral){
       if(!((AliCaloPhotonCuts*)fClusterCutsPHOS)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         delete clus;
