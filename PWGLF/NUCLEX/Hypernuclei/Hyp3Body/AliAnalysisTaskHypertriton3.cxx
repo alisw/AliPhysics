@@ -497,8 +497,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             continue;
           }
           fRecHyp->r = decayVtx.Rho();
-          float hSign = deu.track->Charge() > 0 ? 1. : -1;
-          fRecHyp->pt = hSign * hypertriton.pt();
+          fRecHyp->positive = deu.track->Charge() > 0;
+          fRecHyp->pt = hypertriton.pt();
           fRecHyp->phi = hypertriton.phi();
           fRecHyp->pz = hypertriton.pz();
           fRecHyp->m = mass;
