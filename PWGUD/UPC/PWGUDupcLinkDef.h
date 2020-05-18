@@ -32,4 +32,5 @@
 #pragma link C++ class AliAnalysisTaskTOFTrigger+;
 #pragma link C++ class AliAnalysisTaskZDCTree+;
 #pragma link C++ class AliAnalysisTaskUPCPhiTest+;
+#pragma link C++ class Polarization+;
 #endif
