@@ -170,7 +170,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale","FullCalo")
+/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale","FullCalo", "NCellCutEnDep")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param year: The year the data was taken, used to configure time cut and fiducial cut
 /// \param simulation : A bool identifying the data as simulation
@@ -613,6 +613,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    *CheckTriggerPeriod: Activate configuration of analysis if trigger existed in a given period
 ///    *EmbedMC: Activate recovery of embedded MC signal
 ///          * EmbedMCInput: Both MC and Input event from embedded signal, just MC analysis
+///    "NCellCutEnDep": Apply N cell depedent cut on EMCal clusters above 40 GeV
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (

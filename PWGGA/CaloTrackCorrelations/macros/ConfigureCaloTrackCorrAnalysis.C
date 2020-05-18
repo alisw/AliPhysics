@@ -1673,7 +1673,7 @@ AliAnaChargedParticles* ConfigureChargedAnalysis
   
   ana->SetMinPt(0.2);
   ana->SwitchOnFiducialCut();
-  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ; //more restrictive cut in reader and after in isolation
+  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360) ; //more restrictive cut in reader and after in isolation
   
   ana->SwitchOffFillVertexBC0Histograms();
   
