@@ -45,6 +45,8 @@ private:
    TList *fOutputList;          //! output data container 
  
    TProfile*     fh1Xsec;   //! pythia cross section and trials
+   TProfile*     fevweight;   //! pythia cross section and trials
+   TH1F* 	 fimpactpar; //! impact parameter
    TH1F*         fh1Trials; //! trials are added
    TH1F*         fh1PtHard;  //! Pt har of the event...      
    TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt      
