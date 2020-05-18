@@ -32,6 +32,10 @@ void AddTask_GammaIsoTree(
   Float_t trackIsoR[2] = {0.2,0.4};
   Float_t neutralIsoR[2] = {0.2,0.4};
   Bool_t backgroundTrackMatching = kTRUE;
+  Bool_t doNeutralIso = kTRUE;
+  Bool_t doChargedIso = kTRUE;
+  Bool_t doCellIso = kTRUE;
+  Bool_t doTagging = kTRUE;
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
@@ -62,6 +66,11 @@ void AddTask_GammaIsoTree(
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
       backgroundTrackMatching = kTRUE;
+      doNeutralIso = kFALSE;
+      doChargedIso = kFALSE;
+      doTagging = kFALSE;
+      doCellIso = kTRUE;
+
   // pPb 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
   } else if(trainConfig == 10){
@@ -199,6 +208,10 @@ void AddTask_GammaIsoTree(
   fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
   fQA->SetDoTrackIso(kTRUE);
   fQA->SetDoBackgroundTrackMatching(backgroundTrackMatching);
+  fQA->SetDoTrackIso(doChargedIso);
+  fQA->SetDoNeutralIso(doNeutralIso);
+  fQA->SetDoTagging(doTagging);
+  fQA->SetDoCellIso(doCellIso);
   fQA->SetTrackIsoR(trackIsoR[0],trackIsoR[1]);
   fQA->SetNeutralIsoR(trackIsoR[0],trackIsoR[1]);
   fQA->SetCorrectionTaskSetting(corrTaskSetting);
