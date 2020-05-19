@@ -19,6 +19,9 @@ class YAML_CPP_API ostream_wrapper {
   explicit ostream_wrapper(std::ostream& stream);
   ~ostream_wrapper();
 
+  ostream_wrapper(ostream_wrapper &original);
+  ostream_wrapper &operator=(const ostream_wrapper &ref);
+
   void write(const std::string& str);
   void write(const char* str, std::size_t size);
 

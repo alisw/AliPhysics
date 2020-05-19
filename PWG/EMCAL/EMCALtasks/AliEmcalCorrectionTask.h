@@ -287,6 +287,9 @@ class AliEmcalCorrectionCellContainer {
   {}
   virtual ~AliEmcalCorrectionCellContainer() {}
 
+  AliEmcalCorrectionCellContainer(const AliEmcalCorrectionCellContainer & task);
+  AliEmcalCorrectionCellContainer &operator=(AliEmcalCorrectionCellContainer other);
+
   /// Get the name of the cells branch (NOT the same as the name!)
   std::string GetBranchName() const { return fBranchName; }
   /// Get the name of the cells object (NOT the same as the branch!)

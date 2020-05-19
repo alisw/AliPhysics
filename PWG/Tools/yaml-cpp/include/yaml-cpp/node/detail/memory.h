@@ -22,6 +22,7 @@ namespace YAML {
 namespace detail {
 class YAML_CPP_API memory {
  public:
+  memory() : m_nodes(){}
   node& create_node();
   void merge(const memory& rhs);
 

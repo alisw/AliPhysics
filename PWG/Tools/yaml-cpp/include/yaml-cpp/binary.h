@@ -19,15 +19,18 @@ YAML_CPP_API std::vector<unsigned char> DecodeBase64(const std::string &input);
 
 class YAML_CPP_API Binary {
  public:
-  Binary() : m_unownedData(0), m_unownedSize(0) {}
+  Binary() : m_data(0), m_unownedData(0), m_unownedSize(0) {}
   Binary(const unsigned char *data_, std::size_t size_)
-      : m_unownedData(data_), m_unownedSize(size_) {}
+      : m_data(0), m_unownedData(data_), m_unownedSize(size_) {}
 
   bool owned() const { return !m_unownedData; }
   std::size_t size() const { return owned() ? m_data.size() : m_unownedSize; }
   const unsigned char *data() const {
     return owned() ? &m_data[0] : m_unownedData;
   }
+
+  Binary(Binary &original);
+  Binary &operator=(const Binary &ref);
 
   void swap(std::vector<unsigned char> &rhs) {
     if (m_unownedData) {
@@ -56,7 +59,7 @@ class YAML_CPP_API Binary {
   }
 
   bool operator!=(const Binary &rhs) const { return !(*this == rhs); }
-
+ 
  private:
   std::vector<unsigned char> m_data;
   const unsigned char *m_unownedData;
