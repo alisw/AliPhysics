@@ -145,10 +145,10 @@ const double maxEtaCut = 0.8;
 // const double upperMassCutPrimaries = 1.;
 const double lowerMassCutPrimaries = 0.1;
 const double upperMassCutPrimaries = 0.2;
-const double lowerPrimSecPreFilterMass = 0.1;
-const double upperPrimSecPreFilterMass = 0.165;
-// const double lowerPrimSecPreFilterMass = 0.03;
-// const double upperPrimSecPreFilterMass = 0.25;
+// const double lowerPrimSecPreFilterMass = 0.1;
+// const double upperPrimSecPreFilterMass = 0.165;
+const double lowerPrimSecPreFilterMass = 0.03;
+const double upperPrimSecPreFilterMass = 0.25;
 const double lowerSecSecPreFilterMass = 0.1;
 const double upperSecSecPreFilterMass = 0.2;
 const double massCutSecondaries = 0.01;
@@ -340,7 +340,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   if (cutDefinition == "noPID"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
@@ -428,7 +429,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   // }
 
   else if (cutDefinition == "track_V0_standard"){
-    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kPID_V0_TPC_Pt75);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -458,7 +459,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   //              primary pair cut settings              //
   /////////////////////////////////////////////////////////
   else if (cutDefinition == "pairJPID_sum_pt20" || cutDefinition == "pairJPID_sum1_pt20_sec_kV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
     AnaCut.SetCentrality(centrality);
@@ -477,7 +479,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   //             secondary pair cut settings             //
   /////////////////////////////////////////////////////////
   else if (cutDefinition == "pairkV0"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kDefaultNoTrackCuts);
@@ -487,7 +490,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   }
 
   else if (cutDefinition == "pairkV0_PreFilter"){
-    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    // AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt20);
+    AnaCut.SetPIDAna(LMEECutLib::kNoPID_Pt75);
     // AnaCut.SetPIDAna(LMEECutLib::kPID_Jeromian_01);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kV0OnTheFly);
     // AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1_secondary);
@@ -1374,23 +1378,45 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
         // FourElePair2_MissMatchEtaPion_Dalitz.SetCheckMotherGrandmotherDiffPairRelation(kTRUE,kTRUE); // is assuming that both pairs using: SetMothersRelation(AliDielectronSignalMC::kSame)
 
 
-    //________________________________________________________
+  //________________________________________________________
       // First Pair
-        AliDielectronSignalMC FourAnyPartPair1_FinalState("FourAnyPartPair1_FinalState","FourAnyPartPair1_FinalState");
-        FourAnyPartPair1_FinalState.SetLegPDGs(0,0);
-        FourAnyPartPair1_FinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourAnyPartPair1_FinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        AliDielectronSignalMC FourElePair1_FinalState_UndefinedMother("FourElePair1_FinalState_UndefinedMother","FourElePair1_FinalState_UndefinedMother");
+        FourElePair1_FinalState_UndefinedMother.SetLegPDGs(11,-11);
+        FourElePair1_FinalState_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_FinalState_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
         //mother
-        FourAnyPartPair1_FinalState.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        FourElePair1_FinalState_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
       // Second Pair
-        AliDielectronSignalMC FourAnyPartPair2_Secondary("FourAnyPartPair2_Secondary","FourAnyPartPair2_Secondary");
-        FourAnyPartPair2_Secondary.SetLegPDGs(0,0);
-        FourAnyPartPair2_Secondary.SetCheckBothChargesLegs(kTRUE,kTRUE);
-        FourAnyPartPair2_Secondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        AliDielectronSignalMC FourElePair2_Secondary_from_UndefinedMother("FourElePair2_Secondary_from_UndefinedMother","FourElePair2_Secondary_from_UndefinedMother");
+        FourElePair2_Secondary_from_UndefinedMother.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_from_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_from_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // FourElePair2_Secondary_from_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        // FourElePair2_Secondary_from_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondaryFromMaterial, AliDielectronSignalMC::kSecondaryFromMaterial);
         // mother
-        FourAnyPartPair2_Secondary.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        FourElePair2_Secondary_from_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+        // FourElePair2_Secondary_from_UndefinedMother.SetMotherPDGs(22, 22); //
+
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourAnyPartPair1_FinalState_UndefinedMother("FourAnyPartPair1_FinalState_UndefinedMother","FourAnyPartPair1_FinalState_UndefinedMother");
+        FourAnyPartPair1_FinalState_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair1_FinalState_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair1_FinalState_UndefinedMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+        //mother
+        FourAnyPartPair1_FinalState_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+      // Second Pair
+        AliDielectronSignalMC FourAnyPartPair2_Secondary_UndefinedMother("FourAnyPartPair2_Secondary_UndefinedMother","FourAnyPartPair2_Secondary_UndefinedMother");
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair2_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
 
 
 //________________________________________________________
@@ -1418,6 +1444,9 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
     task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
     task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
 
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState);
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary);
+    task->AddFourPairMCSignal(FourElePair1_FinalState_UndefinedMother);
+    task->AddFourPairMCSignal(FourElePair2_Secondary_from_UndefinedMother);
+
+    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary_UndefinedMother);
 }
