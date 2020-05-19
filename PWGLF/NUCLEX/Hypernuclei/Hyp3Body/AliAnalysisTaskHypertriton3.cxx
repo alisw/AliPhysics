@@ -304,7 +304,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     track->GetImpactParameters(dca[0], dca[1]);
     double dcaNorm = std::hypot(dca[0], dca[1]);
 
-    if (!fVertexer.getUseAbsDCA())
+    if (fUseCovarianceCut)
     {
       float cyy = track->GetSigmaY2(), czz = track->GetSigmaZ2(), cyz = track->GetSigmaZY();
       float detYZ = cyy * czz - cyz * cyz;

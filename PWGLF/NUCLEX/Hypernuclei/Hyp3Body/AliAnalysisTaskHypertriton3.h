@@ -83,6 +83,7 @@ public:
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
   bool  fKF = true;
+  bool  fUseCovarianceCut = false;
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
 
