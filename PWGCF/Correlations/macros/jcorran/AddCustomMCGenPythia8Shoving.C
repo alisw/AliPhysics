@@ -1,11 +1,11 @@
 AliGenerator* CreatePythia8Gen( TString lTune          = "pp",
                                Float_t e_cms       = 13000.,
-                               Float_t fgAmplitude = 3.0
+                               Float_t fgAmplitude = 4.0
                                );
 
 AliGenerator* AddCustomMCGenPythia8Shoving(   TString lTune          = "pp-shoving",
                                        Float_t e_cms       = 13000.,
-                                       Float_t fgAmplitude = 3.0
+                                       Float_t fgAmplitude = 4.0
                                        ) {
     
     
@@ -19,7 +19,7 @@ AliGenerator* AddCustomMCGenPythia8Shoving(   TString lTune          = "pp-shovi
 
 AliGenerator* CreatePythia8Gen( TString lTune,
                                Float_t e_cms,
-                               Float_t fgAmplitude = 3.0
+                               Float_t fgAmplitude = 4.0
                                ) {
     
     gSystem->Load("libpythia6");
@@ -61,24 +61,24 @@ AliGenerator* CreatePythia8Gen( TString lTune,
         (AliPythia8::Instance())->ReadString("SoftQCD:nonDiffractive = on");
         (AliPythia8::Instance())->ReadString("SoftQCD:singleDiffractive = on");
         (AliPythia8::Instance())->ReadString("SoftQCD:doubleDiffractive = on");
-        (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
-        (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
-        (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = off");
-        (AliPythia8::Instance())->ReadString("Ropewalk:rCutOff = 6.0");
-        (AliPythia8::Instance())->ReadString("Ropewalk:limitMom = on");
-        (AliPythia8::Instance())->ReadString(Form("Ropewalk:pTcut = %lf",2.0));
-        (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.41");
-        (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
-        (AliPythia8::Instance())->ReadString(Form("Ropewalk:gAmplitude = %lf",fgAmplitude));
-        (AliPythia8::Instance())->ReadString("Ropewalk:gExponent = 1.0");
-        (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.1");
-        (AliPythia8::Instance())->ReadString("Ropewalk:tShove = 1.");
-        (AliPythia8::Instance())->ReadString("Ropewalk:deltay = 0.2");
-        (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5");
+        (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = off"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:rCutOff = 10.0"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:limitMom = on"); //
+        (AliPythia8::Instance())->ReadString(Form("Ropewalk:pTcut = %lf",2.0)); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.41"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2"); //
+        (AliPythia8::Instance())->ReadString(Form("Ropewalk:gAmplitude = %lf",fgAmplitude)); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:gExponent = 1.0"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.1"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:tShove = 1.");  //
+        (AliPythia8::Instance())->ReadString("Ropewalk:deltay = 0.1"); //
+        (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5");  //
         // Enabling setting of vertex information.
-        (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
-        (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
-        (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+        (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on"); //
+        (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7"); //
+        (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1"); //
         //===========================================================================
     }
     if ( lTune.EqualTo("pp-default") ){
