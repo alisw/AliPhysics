@@ -69,6 +69,7 @@ public:
     kPID_Jeromian_01_pt200,
     kPIDcut_1_pt75,
     kPID_V0_TPC_Pt20,
+    kPID_V0_TPC_Pt75,
     kNoKinPIDCuts
     };
   enum LMEEPIDPre{
@@ -909,8 +910,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   PIDcut_1->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
   PIDcut_1->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
-  AliDielectronPID *PIDcut_V0_TPC_Pt20 = new AliDielectronPID("PIDcut_V0_TPC_Pt20","PIDcut_V0_TPC_Pt20");
-  PIDcut_V0_TPC_Pt20->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  AliDielectronPID *PIDcut_V0_TPC = new AliDielectronPID("PIDcut_V0_TPC","PIDcut_V0_TPC");
+  PIDcut_V0_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
 
 
 
@@ -1330,7 +1331,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDcut_1, AnaCut);;
       break;
     case kPID_V0_TPC_Pt20:
-      pidCuts = LMEECutLib::SetKinematics(noEtaCut, noPtCut, PIDcut_V0_TPC_Pt20, AnaCut);;
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange20to8000, PIDcut_V0_TPC, AnaCut);;
+      break;
+    case kPID_V0_TPC_Pt75:
+      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange75to8000, PIDcut_V0_TPC, AnaCut);;
       break;
 
     default: cout << "No Analysis PID Cut defined " << endl;
