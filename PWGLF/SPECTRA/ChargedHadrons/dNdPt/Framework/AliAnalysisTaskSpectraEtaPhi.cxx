@@ -65,9 +65,9 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("MCQ",3,-1.5,1.5);
     AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
     AddAxis("MCinfo",4,-0.5,3.5);  // 0=prim, 1=decay 2=material, 3=genprim
-    AddAxis("tpceta","#eta_{TPC}",10,-1.,+1.);
-    AddAxis("tpcphi","#phi_{TPC}",18,0.,2*TMath::Pi());
-    AddAxis("tpcz","Z_{TPC}",60,-30,+30);
+    AddAxis("eta","#eta",10,-1.,+1.);
+    AddAxis("phi","#phi",144,0.,2*TMath::Pi());
+    AddAxis("z","Z",60,-30,+30);
     AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistEffCont = CreateHist("fHistEffCont");
     fOutputList->Add(fHistEffCont);
@@ -76,9 +76,9 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("nAcc","mult6kcoarse");
     AddAxis("pt");
     AddAxis("Q",3,-1.5,1.5);
-    AddAxis("tpceta","#eta_{TPC}",10,-1.,+1.);
-    AddAxis("tpcphi","#phi_{TPC}",18,0.,2*TMath::Pi());
-    AddAxis("tpcz","Z_{TPC}",60,-30,+30);
+    AddAxis("eta","#eta",10,-1.,+1.);
+    AddAxis("phi","#phi",144,0.,2*TMath::Pi());
+    AddAxis("z","Z",60,-30,+30);
     AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistTrack = CreateHist("fHistTrack");
     fOutputList->Add(fHistTrack);
