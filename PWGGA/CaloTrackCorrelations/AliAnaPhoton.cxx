@@ -2539,23 +2539,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   //Shower shape
   if(fFillSSHistograms)
   {
-    fhLam0E  = new TH2F ("hLam0E","#lambda_{0}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhLam0E->SetYTitle("#lambda_{0}^{2}");
+    fhLam0E  = new TH2F ("hLam0E","#sigma^{2}_{long} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam0E->SetYTitle("#sigma^{2}_{long}");
     fhLam0E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam0E);
 
-    fhLam0Pt  = new TH2F ("hLam0Pt","#lambda_{0}^{2} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhLam0Pt->SetYTitle("#lambda_{0}^{2}");
+    fhLam0Pt  = new TH2F ("hLam0Pt","#sigma^{2}_{long} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam0Pt->SetYTitle("#sigma^{2}_{long}");
     fhLam0Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam0Pt);
     
-    fhLam1E  = new TH2F ("hLam1E","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhLam1E->SetYTitle("#lambda_{1}^{2}");
+    fhLam1E  = new TH2F ("hLam1E","#sigma^{2}_{short} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam1E->SetYTitle("#sigma^{2}_{short}");
     fhLam1E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam1E);
 
-    fhLam1Pt  = new TH2F ("hLam1Pt","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-    fhLam1Pt->SetYTitle("#lambda_{1}^{2}");
+    fhLam1Pt  = new TH2F ("hLam1Pt","#sigma^{2}_{short} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam1Pt->SetYTitle("#sigma^{2}_{short}");
     fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam1Pt);
 
@@ -2566,17 +2566,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         if(ism < fFirstModule || ism > fLastModule) continue;
         fhLam0PerSM[ism] = new TH2F
         (Form("hLam0_SM%d",ism),
-         Form("#it{p}_{T} vs #lambda^{2}_{0} in SM %d",ism),
+         Form("#it{p}_{T} vs #sigma^{2}_{long} in SM %d",ism),
          nptbins,ptmin,ptmax,40,0,0.4);
-        fhLam0PerSM[ism]->SetYTitle("#lambda^{2}_{0}");
+        fhLam0PerSM[ism]->SetYTitle("#sigma^{2}_{long}");
         fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhLam0PerSM[ism]) ;             
         
         fhLam1PerSM[ism] = new TH2F
         (Form("hLam1_SM%d",ism),
-         Form("#it{p}_{T} vs #lambda^{2}_{1} in SM %d",ism),
+         Form("#it{p}_{T} vs #sigma^{2}_{short} in SM %d",ism),
          nptbins,ptmin,ptmax,40,0,0.4);
-        fhLam1PerSM[ism]->SetYTitle("#lambda^{2}_{1}");
+        fhLam1PerSM[ism]->SetYTitle("#sigma^{2}_{short}");
         fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhLam1PerSM[ism]) ;   
       }
@@ -2597,41 +2597,41 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if(fFillSSNLocMaxHisto)
     {
-      fhLam0PtNLM1  = new TH2F ("hLam0PtNLM1","#lambda_{0}^{2} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtNLM1->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtNLM1  = new TH2F ("hLam0PtNLM1","#sigma^{2}_{long} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtNLM1->SetYTitle("#sigma^{2}_{long}");
       fhLam0PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PtNLM1);
       
-      fhLam0PtNLM2  = new TH2F ("hLam0PtNLM2","#lambda_{0}^{2} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtNLM2->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtNLM2  = new TH2F ("hLam0PtNLM2","#sigma^{2}_{long} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtNLM2->SetYTitle("#sigma^{2}_{long}");
       fhLam0PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PtNLM2);
 
-      fhLam1PtNLM1  = new TH2F ("hLam1PtNLM1","#lambda_{1}^{2} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1PtNLM1->SetYTitle("#lambda_{1}^{2}");
+      fhLam1PtNLM1  = new TH2F ("hLam1PtNLM1","#sigma^{2}_{short} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1PtNLM1->SetYTitle("#sigma^{2}_{short}");
       fhLam1PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam1PtNLM1);
       
-      fhLam1PtNLM2  = new TH2F ("hLam1PtNLM2","#lambda_{1}^{2} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1PtNLM2->SetYTitle("#lambda_{1}^{2}");
+      fhLam1PtNLM2  = new TH2F ("hLam1PtNLM2","#sigma^{2}_{short} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1PtNLM2->SetYTitle("#sigma^{2}_{short}");
       fhLam1PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam1PtNLM2);      
     }
     
     if(!fRejectTrackMatch)
     {
-      fhLam0ETM  = new TH2F ("hLam0ETM","#lambda_{0}^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0ETM->SetYTitle("#lambda_{0}^{2}");
+      fhLam0ETM  = new TH2F ("hLam0ETM","#sigma^{2}_{long} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0ETM->SetYTitle("#sigma^{2}_{long}");
       fhLam0ETM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam0ETM);
 
-      fhLam0PtTM  = new TH2F ("hLam0PtTM","#lambda_{0}^{2} vs #it{p}_{T}, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtTM->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtTM  = new TH2F ("hLam0PtTM","#sigma^{2}_{long} vs #it{p}_{T}, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtTM->SetYTitle("#sigma^{2}_{long}");
       fhLam0PtTM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PtTM);
       
-      fhLam1ETM  = new TH2F ("hLam1ETM","#lambda_{1}^{2} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1ETM->SetYTitle("#lambda_{1}^{2}");
+      fhLam1ETM  = new TH2F ("hLam1ETM","#sigma^{2}_{short} vs E, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1ETM->SetYTitle("#sigma^{2}_{short}");
       fhLam1ETM->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETM);
       
@@ -2646,18 +2646,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
     {
-      fhLam0ETRD  = new TH2F ("hLam0ETRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0ETRD->SetYTitle("#lambda_{0}^{2}");
+      fhLam0ETRD  = new TH2F ("hLam0ETRD","#sigma^{2}_{long} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0ETRD->SetYTitle("#sigma^{2}_{long}");
       fhLam0ETRD->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam0ETRD);
       
-      fhLam0PtTRD  = new TH2F ("hLam0PtTRD","#lambda_{0}^{2} vs #it{p}_{T}, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam0PtTRD->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtTRD  = new TH2F ("hLam0PtTRD","#sigma^{2}_{long} vs #it{p}_{T}, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtTRD->SetYTitle("#sigma^{2}_{long}");
       fhLam0PtTRD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PtTRD);
       
-      fhLam1ETRD  = new TH2F ("hLam1ETRD","#lambda_{1}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-      fhLam1ETRD->SetYTitle("#lambda_{1}^{2}");
+      fhLam1ETRD  = new TH2F ("hLam1ETRD","#sigma^{2}_{short} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1ETRD->SetYTitle("#sigma^{2}_{short}");
       fhLam1ETRD->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1ETRD);
       
@@ -2671,18 +2671,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if(!fRejectTrackMatch &&  GetFirstSMCoveredByTRD() >=0 )
       {
-        fhLam0ETMTRD  = new TH2F ("hLam0ETMTRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhLam0ETMTRD->SetYTitle("#lambda_{0}^{2}");
+        fhLam0ETMTRD  = new TH2F ("hLam0ETMTRD","#sigma^{2}_{long} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhLam0ETMTRD->SetYTitle("#sigma^{2}_{long}");
         fhLam0ETMTRD->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam0ETMTRD);
         
-        fhLam0PtTMTRD  = new TH2F ("hLam0PtTMTRD","#lambda_{0}^{2} vs #it{p}_{T}, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhLam0PtTMTRD->SetYTitle("#lambda_{0}^{2}");
+        fhLam0PtTMTRD  = new TH2F ("hLam0PtTMTRD","#sigma^{2}_{long} vs #it{p}_{T}, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhLam0PtTMTRD->SetYTitle("#sigma^{2}_{long}");
         fhLam0PtTMTRD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhLam0PtTMTRD);
         
-        fhLam1ETMTRD  = new TH2F ("hLam1ETMTRD","#lambda_{1}^{2} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhLam1ETMTRD->SetYTitle("#lambda_{1}^{2}");
+        fhLam1ETMTRD  = new TH2F ("hLam1ETMTRD","#sigma^{2}_{short} vs E, EMCAL SM covered by TRD, cut on track-matching residual |#Delta #eta| < 0.05,  |#Delta #varphi| < 0.05", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhLam1ETMTRD->SetYTitle("#sigma^{2}_{short}");
         fhLam1ETMTRD->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam1ETMTRD);
         
@@ -2698,24 +2698,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if(!fFillOnlySimpleSSHisto)
     {
-      fhNCellsLam0LowE  = new TH2F ("hNCellsLam0LowE","N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam0LowE  = new TH2F ("hNCellsLam0LowE","N_{cells} in cluster vs #sigma^{2}_{long}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam0LowE->SetXTitle("N_{cells}");
-      fhNCellsLam0LowE->SetYTitle("#lambda_{0}^{2}");
+      fhNCellsLam0LowE->SetYTitle("#sigma^{2}_{long}");
       outputContainer->Add(fhNCellsLam0LowE);
       
-      fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #sigma^{2}_{long}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam0HighE->SetXTitle("N_{cells}");
-      fhNCellsLam0HighE->SetYTitle("#lambda_{0}^{2}");
+      fhNCellsLam0HighE->SetYTitle("#sigma^{2}_{long}");
       outputContainer->Add(fhNCellsLam0HighE);
       
-      fhNCellsLam1LowE  = new TH2F ("hNCellsLam1LowE","N_{cells} in cluster vs #lambda_{1}^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam1LowE  = new TH2F ("hNCellsLam1LowE","N_{cells} in cluster vs #sigma^{2}_{short}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam1LowE->SetXTitle("N_{cells}");
-      fhNCellsLam1LowE->SetYTitle("#lambda_{0}^{2}");
+      fhNCellsLam1LowE->SetYTitle("#sigma^{2}_{long}");
       outputContainer->Add(fhNCellsLam1LowE);
       
-      fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
+      fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #sigma^{2}_{short}, #it{E} > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
       fhNCellsLam1HighE->SetXTitle("N_{cells}");
-      fhNCellsLam1HighE->SetYTitle("#lambda_{0}^{2}");
+      fhNCellsLam1HighE->SetYTitle("#sigma^{2}_{long}");
       outputContainer->Add(fhNCellsLam1HighE);
       
       fhNCellsDispLowE  = new TH2F ("hNCellsDispLowE","N_{cells} in cluster vs dispersion^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax);
@@ -2728,54 +2728,54 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhNCellsDispHighE->SetYTitle("D^{2}");
       outputContainer->Add(fhNCellsDispHighE);
       
-      fhEtaLam0LowE  = new TH2F ("hEtaLam0LowE","#eta vs #lambda_{0}^{2}, E < 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
-      fhEtaLam0LowE->SetYTitle("#lambda_{0}^{2}");
+      fhEtaLam0LowE  = new TH2F ("hEtaLam0LowE","#eta vs #sigma^{2}_{long}, E < 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
+      fhEtaLam0LowE->SetYTitle("#sigma^{2}_{long}");
       fhEtaLam0LowE->SetXTitle("#eta");
       outputContainer->Add(fhEtaLam0LowE);
       
-      fhPhiLam0LowE  = new TH2F ("hPhiLam0LowE","#varphi vs #lambda_{0}^{2}, E < 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
-      fhPhiLam0LowE->SetYTitle("#lambda_{0}^{2}");
+      fhPhiLam0LowE  = new TH2F ("hPhiLam0LowE","#varphi vs #sigma^{2}_{long}, E < 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
+      fhPhiLam0LowE->SetYTitle("#sigma^{2}_{long}");
       fhPhiLam0LowE->SetXTitle("#varphi (rad)");
       outputContainer->Add(fhPhiLam0LowE);
       
-      fhEtaLam0HighE  = new TH2F ("hEtaLam0HighE","#eta vs #lambda_{0}^{2}, #it{E} > 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
-      fhEtaLam0HighE->SetYTitle("#lambda_{0}^{2}");
+      fhEtaLam0HighE  = new TH2F ("hEtaLam0HighE","#eta vs #sigma^{2}_{long}, #it{E} > 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax);
+      fhEtaLam0HighE->SetYTitle("#sigma^{2}_{long}");
       fhEtaLam0HighE->SetXTitle("#eta");
       outputContainer->Add(fhEtaLam0HighE);
       
-      fhPhiLam0HighE  = new TH2F ("hPhiLam0HighE","#varphi vs #lambda_{0}^{2}, #it{E} > 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
-      fhPhiLam0HighE->SetYTitle("#lambda_{0}^{2}");
+      fhPhiLam0HighE  = new TH2F ("hPhiLam0HighE","#varphi vs #sigma^{2}_{long}, #it{E} > 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax);
+      fhPhiLam0HighE->SetYTitle("#sigma^{2}_{long}");
       fhPhiLam0HighE->SetXTitle("#varphi (rad)");
       outputContainer->Add(fhPhiLam0HighE);
       
-      fhLam1Lam0LowE  = new TH2F ("hLam1Lam0LowE","#lambda_{0}^{2} vs #lambda_{1}^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
-      fhLam1Lam0LowE->SetYTitle("#lambda_{0}^{2}");
-      fhLam1Lam0LowE->SetXTitle("#lambda_{1}^{2}");
+      fhLam1Lam0LowE  = new TH2F ("hLam1Lam0LowE","#sigma^{2}_{long} vs #sigma^{2}_{short} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam1Lam0LowE->SetYTitle("#sigma^{2}_{long}");
+      fhLam1Lam0LowE->SetXTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhLam1Lam0LowE);
       
-      fhLam1Lam0HighE  = new TH2F ("hLam1Lam0HighE","#lambda_{0}^{2} vs #lambda_{1}^{2} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
-      fhLam1Lam0HighE->SetYTitle("#lambda_{0}^{2}");
-      fhLam1Lam0HighE->SetXTitle("#lambda_{1}^{2}");
+      fhLam1Lam0HighE  = new TH2F ("hLam1Lam0HighE","#sigma^{2}_{long} vs #sigma^{2}_{short} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam1Lam0HighE->SetYTitle("#sigma^{2}_{long}");
+      fhLam1Lam0HighE->SetXTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhLam1Lam0HighE);
       
-      fhLam0DispLowE  = new TH2F ("hLam0DispLowE","#lambda_{0}^{2} vs dispersion^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
-      fhLam0DispLowE->SetXTitle("#lambda_{0}^{2}");
+      fhLam0DispLowE  = new TH2F ("hLam0DispLowE","#sigma^{2}_{long} vs dispersion^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam0DispLowE->SetXTitle("#sigma^{2}_{long}");
       fhLam0DispLowE->SetYTitle("D^{2}");
       outputContainer->Add(fhLam0DispLowE);
       
-      fhLam0DispHighE  = new TH2F ("hLam0DispHighE","#lambda_{0}^{2} vs dispersion^{2} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
-      fhLam0DispHighE->SetXTitle("#lambda_{0}^{2}");
+      fhLam0DispHighE  = new TH2F ("hLam0DispHighE","#sigma^{2}_{long} vs dispersion^{2} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhLam0DispHighE->SetXTitle("#sigma^{2}_{long}");
       fhLam0DispHighE->SetYTitle("D^{2}");
       outputContainer->Add(fhLam0DispHighE);
       
-      fhDispLam1LowE  = new TH2F ("hDispLam1LowE","Dispersion^{2} vs #lambda_{1}^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
+      fhDispLam1LowE  = new TH2F ("hDispLam1LowE","Dispersion^{2} vs #sigma^{2}_{short} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
       fhDispLam1LowE->SetXTitle("D^{2}");
-      fhDispLam1LowE->SetYTitle("#lambda_{1}^{2}");
+      fhDispLam1LowE->SetYTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhDispLam1LowE);
       
       fhDispLam1HighE  = new TH2F ("hDispLam1HighE","Dispersion^{2} vs #lambda_{1^{2}} in cluster of #it{E} > 2 GeV",  ssbins,ssmin,ssmax, ssbins,ssmin,ssmax);
       fhDispLam1HighE->SetXTitle("D^{2}");
-      fhDispLam1HighE->SetYTitle("#lambda_{1}^{2}");
+      fhDispLam1HighE->SetYTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhDispLam1HighE);
       
       if(GetCalorimeter() == kEMCAL)
@@ -2837,15 +2837,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhDispEtaDispPhi[i]->SetYTitle("#sigma^{2}_{#varphi #varphi}");
           outputContainer->Add(fhDispEtaDispPhi[i]);
           
-          fhLambda0DispEta[i] = new TH2F (Form("hLambda0DispEta_EBin%d",i),Form("#lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]),
+          fhLambda0DispEta[i] = new TH2F (Form("hLambda0DispEta_EBin%d",i),Form("#sigma^{2}_{long} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",bin[i],bin[i+1]),
                                           ssbins,ssmin,ssmax , ssbins,ssmin,ssmax);
-          fhLambda0DispEta[i]->SetXTitle("#lambda^{2}_{0}");
+          fhLambda0DispEta[i]->SetXTitle("#sigma^{2}_{long}");
           fhLambda0DispEta[i]->SetYTitle("#sigma^{2}_{#eta #eta}");
           outputContainer->Add(fhLambda0DispEta[i]);
           
-          fhLambda0DispPhi[i] = new TH2F (Form("hLambda0DispPhi_EBin%d",i),Form("#lambda^{2}_{0}} vs #sigma^{2}_{#varphi #varphi} for %d < E < %d GeV",bin[i],bin[i+1]),
+          fhLambda0DispPhi[i] = new TH2F (Form("hLambda0DispPhi_EBin%d",i),Form("#sigma^{2}_{long}} vs #sigma^{2}_{#varphi #varphi} for %d < E < %d GeV",bin[i],bin[i+1]),
                                           ssbins,ssmin,ssmax , ssbins,ssmin,ssmax);
-          fhLambda0DispPhi[i]->SetXTitle("#lambda^{2}_{0}");
+          fhLambda0DispPhi[i]->SetXTitle("#sigma^{2}_{long}");
           fhLambda0DispPhi[i]->SetYTitle("#sigma^{2}_{#varphi #varphi}");
           outputContainer->Add(fhLambda0DispPhi[i]);
         }
@@ -3294,9 +3294,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       {
 //        fhLam0EMCALRegion[ieta][iphi] = 
 //        new TH2F(Form("hLam0_eta%d_phi%d",ieta,iphi),
-//                 Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d",ieta,iphi),
+//                 Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, region eta %d, phi %d",ieta,iphi),
 //                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//        fhLam0EMCALRegion[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+//        fhLam0EMCALRegion[ieta][iphi]->SetYTitle("#sigma^{2}_{long}");
 //        fhLam0EMCALRegion[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
 //        outputContainer->Add(fhLam0EMCALRegion[ieta][iphi]) ;
 //        
@@ -3304,9 +3304,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //        {
 //          fhLam0EMCALRegionTRD[ieta][iphi] = 
 //          new TH2F(Form("hLam0TRD_eta%d_phi%d",ieta,iphi),
-//                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, region eta %d, phi %d, SM covered by TRD",ieta,iphi),
+//                   Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, region eta %d, phi %d, SM covered by TRD",ieta,iphi),
 //                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//          fhLam0EMCALRegionTRD[ieta][iphi]->SetYTitle("#lambda_{0}^{2}");
+//          fhLam0EMCALRegionTRD[ieta][iphi]->SetYTitle("#sigma^{2}_{long}");
 //          fhLam0EMCALRegionTRD[ieta][iphi]->SetXTitle("#it{p}_{T} (GeV)");
 //          outputContainer->Add(fhLam0EMCALRegionTRD[ieta][iphi]) ;
 //        } // TRD
@@ -3317,17 +3317,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
           fhLam0EMCALRegionPerSM[ieta][iphi][ism] = 
           new TH2F(Form("hLam0_eta%d_phi%d_sm%d",ieta,iphi,ism),
-                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
+                   Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#lambda_{0}^{2}");
+          fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#sigma^{2}_{long}");
           fhLam0EMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
           outputContainer->Add(fhLam0EMCALRegionPerSM[ieta][iphi][ism]) ;
           
           fhLam1EMCALRegionPerSM[ieta][iphi][ism] = 
           new TH2F(Form("hLam1_eta%d_phi%d_sm%d",ieta,iphi,ism),
-                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
+                   Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{short}, sm %d, region eta %d, phi %d",ism,ieta,iphi),
                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhLam1EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#lambda_{1}^{2}");
+          fhLam1EMCALRegionPerSM[ieta][iphi][ism]->SetYTitle("#sigma^{2}_{short}");
           fhLam1EMCALRegionPerSM[ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
           outputContainer->Add(fhLam1EMCALRegionPerSM[ieta][iphi][ism]) ;
         }
@@ -3335,7 +3335,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     } // ieta
     
     Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
-    TString l0bin  [] = {"0.23<#lambda^{2}_{0}<0.26","0.3<#lambda^{2}_{0}<0.4"};
+    TString l0bin  [] = {"0.23<#sigma^{2}_{long}<0.26","0.3<#sigma^{2}_{long}<0.4"};
     
     for(Int_t il0 = 0; il0 < 2; il0++)
     {
@@ -3438,9 +3438,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
         fhLam1Lam0BinPerSM[il0][ism] = new TH2F
         (Form("hLam1Lam0Bin%d_sm%d",il0,ism),
-         Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, %s",ism,l0bin[il0].Data()),
+         Form("#it{p}_{T} vs #sigma^{2}_{short} in sm %d, %s",ism,l0bin[il0].Data()),
          nptbins,ptmin,ptmax,40,0,0.4);
-        fhLam1Lam0BinPerSM[il0][ism]->SetYTitle("#lambda^{2}_{1}");
+        fhLam1Lam0BinPerSM[il0][ism]->SetYTitle("#sigma^{2}_{short}");
         fhLam1Lam0BinPerSM[il0][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhLam1Lam0BinPerSM[il0][ism]) ;   
         
@@ -3567,33 +3567,33 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhLam0PerSMLargeTimeInClusterCell[ism] = new TH2F
       (Form("hLam0_sm%d_LargeTimeInClusterCell",ism),
-       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d,|t_{secondary cell}| > 50 ns",ism),
+       Form("#it{p}_{T} vs #sigma^{2}_{long} in sm %d,|t_{secondary cell}| > 50 ns",ism),
        nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam0PerSMLargeTimeInClusterCell[ism]->SetYTitle("#lambda^{2}_{0}");
+      fhLam0PerSMLargeTimeInClusterCell[ism]->SetYTitle("#sigma^{2}_{long}");
       fhLam0PerSMLargeTimeInClusterCell[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PerSMLargeTimeInClusterCell[ism]) ;             
       
       fhLam1PerSMLargeTimeInClusterCell[ism] = new TH2F
       (Form("hLam1_sm%d_LargeTimeInClusterCell",ism),
-       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, |t_{secondary cell}| > 50 ns",ism),
+       Form("#it{p}_{T} vs #sigma^{2}_{short} in sm %d, |t_{secondary cell}| > 50 ns",ism),
        nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam1PerSMLargeTimeInClusterCell[ism]->SetYTitle("#lambda^{2}_{1}");
+      fhLam1PerSMLargeTimeInClusterCell[ism]->SetYTitle("#sigma^{2}_{short}");
       fhLam1PerSMLargeTimeInClusterCell[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam1PerSMLargeTimeInClusterCell[ism]) ;   
       
 //      fhLam0PerSMSPDPileUp[ism] = new TH2F
 //      (Form("hLam0_sm%d_SPDPileUp",ism),
-//       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d, Pile-up event SPD",ism),
+//       Form("#it{p}_{T} vs #sigma^{2}_{long} in sm %d, Pile-up event SPD",ism),
 //       nptbins,ptmin,ptmax,40,0,0.4);
-//      fhLam0PerSMSPDPileUp[ism]->SetYTitle("#lambda^{2}_{0}");
+//      fhLam0PerSMSPDPileUp[ism]->SetYTitle("#sigma^{2}_{long}");
 //      fhLam0PerSMSPDPileUp[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 //      outputContainer->Add(fhLam0PerSMSPDPileUp[ism]) ;             
 //      
 //      fhLam1PerSMSPDPileUp[ism] = new TH2F
 //      (Form("hLam1_sm%d_SPDPileUp",ism),
-//       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, Pile-up event SPD",ism),
+//       Form("#it{p}_{T} vs #sigma^{2}_{short} in sm %d, Pile-up event SPD",ism),
 //       nptbins,ptmin,ptmax,40,0,0.4);
-//      fhLam1PerSMSPDPileUp[ism]->SetYTitle("#lambda^{2}_{1}");
+//      fhLam1PerSMSPDPileUp[ism]->SetYTitle("#sigma^{2}_{short}");
 //      fhLam1PerSMSPDPileUp[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 //      outputContainer->Add(fhLam1PerSMSPDPileUp[ism]) ;   
       
@@ -3601,17 +3601,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //      {
 //        fhLam0PerSMShared[ism] = new TH2F
 //        (Form("hLam0_sm%d_SMShared",ism),
-//         Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d, SM shared",ism),
+//         Form("#it{p}_{T} vs #sigma^{2}_{long} in sm %d, SM shared",ism),
 //         nptbins,ptmin,ptmax,40,0,0.4);
-//        fhLam0PerSMShared[ism]->SetYTitle("#lambda^{2}_{0}");
+//        fhLam0PerSMShared[ism]->SetYTitle("#sigma^{2}_{long}");
 //        fhLam0PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 //        outputContainer->Add(fhLam0PerSMShared[ism]) ;             
 //        
 //        fhLam1PerSMShared[ism] = new TH2F
 //        (Form("hLam1_sm%d_SMShared",ism),
-//         Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, SM shared",ism),
+//         Form("#it{p}_{T} vs #sigma^{2}_{short} in sm %d, SM shared",ism),
 //         nptbins,ptmin,ptmax,40,0,0.4);
-//        fhLam1PerSMShared[ism]->SetYTitle("#lambda^{2}_{1}");
+//        fhLam1PerSMShared[ism]->SetYTitle("#sigma^{2}_{short}");
 //        fhLam1PerSMShared[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
 //        outputContainer->Add(fhLam1PerSMShared[ism]) ;   
 //      } // run1
@@ -3621,17 +3621,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     {
       fhLam0PerNLargeTimeInClusterCell[ilarge] = new TH2F
       (Form("hLam0_NLargeTimeInClusterCell%d",ilarge),
-       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d,|t_{secondary cell}| > 50 ns",ilarge),
+       Form("#it{p}_{T} vs #sigma^{2}_{long} in sm %d,|t_{secondary cell}| > 50 ns",ilarge),
        nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam0PerNLargeTimeInClusterCell[ilarge]->SetYTitle("#lambda^{2}_{0}");
+      fhLam0PerNLargeTimeInClusterCell[ilarge]->SetYTitle("#sigma^{2}_{long}");
       fhLam0PerNLargeTimeInClusterCell[ilarge]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PerNLargeTimeInClusterCell[ilarge]) ;             
       
       fhLam1PerNLargeTimeInClusterCell[ilarge] = new TH2F
       (Form("hLam1_NLargeTimeInClusterCell%d",ilarge),
-       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d, |t_{secondary cell}| > 50 ns",ilarge),
+       Form("#it{p}_{T} vs #sigma^{2}_{short} in sm %d, |t_{secondary cell}| > 50 ns",ilarge),
        nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam1PerNLargeTimeInClusterCell[ilarge]->SetYTitle("#lambda^{2}_{1}");
+      fhLam1PerNLargeTimeInClusterCell[ilarge]->SetYTitle("#sigma^{2}_{short}");
       fhLam1PerNLargeTimeInClusterCell[ilarge]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam1PerNLargeTimeInClusterCell[ilarge]) ;   
     }
@@ -3804,16 +3804,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       for(Int_t i = 0; i < fgkNssTypes; i++)
       {
         fhMCELambda0[i]  = new TH2F(Form("hELambda0_MC%s",pnamess[i].Data()),
-                                    Form("cluster from %s : E vs #lambda_{0}^{2}",ptypess[i].Data()),
+                                    Form("cluster from %s : E vs #sigma^{2}_{long}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCELambda0[i]->SetYTitle("#lambda_{0}^{2}");
+        fhMCELambda0[i]->SetYTitle("#sigma^{2}_{long}");
         fhMCELambda0[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCELambda0[i]) ;
 
         fhMCPtLambda0[i]  = new TH2F(Form("hPtLambda0_MC%s",pnamess[i].Data()),
-                                    Form("cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}",ptypess[i].Data()),
+                                    Form("cluster from %s : #it{p}_{T} vs #sigma^{2}_{long}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCPtLambda0[i]->SetYTitle("#lambda_{0}^{2}");
+        fhMCPtLambda0[i]->SetYTitle("#sigma^{2}_{long}");
         fhMCPtLambda0[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPtLambda0[i]) ;
         
@@ -3822,18 +3822,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           for(Int_t iover = 0; iover < 3; iover++)
           {
             fhMCPtLambda0Overlaps[i][iover]  = new TH2F(Form("hPtLambda0_MC%s_Overlap%d",pnamess[i].Data(),iover),
-                                                 Form("cluster from %s : #it{p}_{T} vs #lambda_{0}^{2}, N Overlaps = %d",ptypess[i].Data(),iover),
+                                                 Form("cluster from %s : #it{p}_{T} vs #sigma^{2}_{long}, N Overlaps = %d",ptypess[i].Data(),iover),
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhMCPtLambda0Overlaps[i][iover]->SetYTitle("#lambda_{0}^{2}");
+            fhMCPtLambda0Overlaps[i][iover]->SetYTitle("#sigma^{2}_{long}");
             fhMCPtLambda0Overlaps[i][iover]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhMCPtLambda0Overlaps[i][iover]) ;
           }
         }
         
         fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
-                                    Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
+                                    Form("cluster from %s : E vs #sigma^{2}_{short}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhMCELambda1[i]->SetYTitle("#lambda_{1}^{2}");
+        fhMCELambda1[i]->SetYTitle("#sigma^{2}_{short}");
         fhMCELambda1[i]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMCELambda1[i]) ;
         
@@ -3861,23 +3861,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           outputContainer->Add(fhMCMaxCellDiffClusterE[i]);
           
           fhMCLambda0vsClusterMaxCellDiffE0[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE0_MC%s",pnamess[i].Data()),
-                                                           Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, E < 2 GeV",ptypess[i].Data()),
+                                                           Form("cluster from %s : #sigma^{2}_{long} vs fraction of energy carried by max cell, E < 2 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
-          fhMCLambda0vsClusterMaxCellDiffE0[i]->SetXTitle("#lambda_{0}^{2}");
+          fhMCLambda0vsClusterMaxCellDiffE0[i]->SetXTitle("#sigma^{2}_{long}");
           fhMCLambda0vsClusterMaxCellDiffE0[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE0[i]) ;
           
           fhMCLambda0vsClusterMaxCellDiffE2[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE2_MC%s",pnamess[i].Data()),
-                                                           Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, 2< E < 6 GeV",ptypess[i].Data()),
+                                                           Form("cluster from %s : #sigma^{2}_{long} vs fraction of energy carried by max cell, 2< E < 6 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
-          fhMCLambda0vsClusterMaxCellDiffE2[i]->SetXTitle("#lambda_{0}^{2}");
+          fhMCLambda0vsClusterMaxCellDiffE2[i]->SetXTitle("#sigma^{2}_{long}");
           fhMCLambda0vsClusterMaxCellDiffE2[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE2[i]) ;
           
           fhMCLambda0vsClusterMaxCellDiffE6[i]  = new TH2F(Form("hLambda0vsClusterMaxCellDiffE6_MC%s",pnamess[i].Data()),
-                                                           Form("cluster from %s : #lambda^{2}_{0} vs fraction of energy carried by max cell, #it{E} > 6 GeV",ptypess[i].Data()),
+                                                           Form("cluster from %s : #sigma^{2}_{long} vs fraction of energy carried by max cell, #it{E} > 6 GeV",ptypess[i].Data()),
                                                            ssbins,ssmin,ssmax,500,0,1.);
-          fhMCLambda0vsClusterMaxCellDiffE6[i]->SetXTitle("#lambda_{0}^{2}");
+          fhMCLambda0vsClusterMaxCellDiffE6[i]->SetXTitle("#sigma^{2}_{long}");
           fhMCLambda0vsClusterMaxCellDiffE6[i]->SetYTitle("(#it{E}_{cluster} - #it{E}_{cell max})/ #it{E}_{cluster}");
           outputContainer->Add(fhMCLambda0vsClusterMaxCellDiffE6[i]) ;
           
@@ -3949,16 +3949,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
               outputContainer->Add(fhMCDispEtaDispPhi[ie][i]);
               
               fhMCLambda0DispEta[ie][i] = new TH2F (Form("hMCLambda0DispEta_EBin%d_MC%s",ie,pnamess[i].Data()),
-                                                    Form("cluster from %s : #lambda^{2}_{0} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]),
+                                                    Form("cluster from %s : #sigma^{2}_{long} vs #sigma^{2}_{#eta #eta} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]),
                                                     ssbins,ssmin,ssmax , ssbins,ssmin,ssmax);
-              fhMCLambda0DispEta[ie][i]->SetXTitle("#lambda^{2}_{0}");
+              fhMCLambda0DispEta[ie][i]->SetXTitle("#sigma^{2}_{long}");
               fhMCLambda0DispEta[ie][i]->SetYTitle("#sigma^{2}_{#varphi #varphi}");
               outputContainer->Add(fhMCLambda0DispEta[ie][i]);
               
               fhMCLambda0DispPhi[ie][i] = new TH2F (Form("hMCLambda0DispPhi_EBin%d_MC%s",ie,pnamess[i].Data()),
-                                                    Form("cluster from %s :#lambda^{2}_{0} vs #sigma^{2}_{#varphi #varphi} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]),
+                                                    Form("cluster from %s :#sigma^{2}_{long} vs #sigma^{2}_{#varphi #varphi} for %d < E < %d GeV",pnamess[i].Data(),bin[ie],bin[ie+1]),
                                                     ssbins,ssmin,ssmax , ssbins,ssmin,ssmax);
-              fhMCLambda0DispPhi[ie][i]->SetXTitle("#lambda^{2}_{0}");
+              fhMCLambda0DispPhi[ie][i]->SetXTitle("#sigma^{2}_{long}");
               fhMCLambda0DispPhi[ie][i]->SetYTitle("#sigma^{2}_{#varphi #varphi}");
               outputContainer->Add(fhMCLambda0DispPhi[ie][i]);
             }
@@ -3969,23 +3969,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //      if(!IsEmbedingAnalysisOn())
 //      {
 //        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
-//                                                "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                "cluster from Photon : E vs #sigma^{2}_{long}",
 //                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NoOverlap->SetYTitle("#sigma^{2}_{long}");
 //        fhMCPhotonELambda0NoOverlap->SetXTitle("#it{E} (GeV)");
 //        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ;
 //        
 //        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
-//                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                                 "cluster from Photon : E vs #sigma^{2}_{long}",
 //                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0TwoOverlap->SetYTitle("#sigma^{2}_{long}");
 //        fhMCPhotonELambda0TwoOverlap->SetXTitle("#it{E} (GeV)");
 //        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ;
 //        
 //        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
-//                                               "cluster from Photon : E vs #lambda_{0}^{2}",
+//                                               "cluster from Photon : E vs #sigma^{2}_{long}",
 //                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-//        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
+//        fhMCPhotonELambda0NOverlap->SetYTitle("#sigma^{2}_{long}");
 //        fhMCPhotonELambda0NOverlap->SetXTitle("#it{E} (GeV)");
 //        outputContainer->Add(fhMCPhotonELambda0NOverlap) ;
 //      } // No embedding
@@ -4011,58 +4011,58 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
         
         fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
-                                                    "cluster from Photon embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                    "cluster from Photon embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0FullSignal->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPhotonELambda0FullSignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullSignal) ;
         
         fhEmbedPhotonELambda0MostlySignal  = new TH2F("hELambda0_EmbedPhoton_MostlySignal",
-                                                      "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                      "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #sigma^{2}_{long}",
                                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0MostlySignal->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPhotonELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlySignal) ;
         
         fhEmbedPhotonELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPhoton_MostlyBkg",
-                                                   "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
+                                                   "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #sigma^{2}_{long}",
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPhotonELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlyBkg) ;
         
         fhEmbedPhotonELambda0FullBkg  = new TH2F("hELambda0_EmbedPhoton_FullBkg",
-                                                 "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
+                                                 "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #sigma^{2}_{long}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0FullBkg->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPhotonELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ;
         
         fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
-                                                 "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                 "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0FullSignal->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPi0ELambda0FullSignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullSignal) ;
         
         fhEmbedPi0ELambda0MostlySignal  = new TH2F("hELambda0_EmbedPi0_MostlySignal",
-                                                   "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                   "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #sigma^{2}_{long}",
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0MostlySignal->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPi0ELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlySignal) ;
         
         fhEmbedPi0ELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPi0_MostlyBkg",
-                                                "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
+                                                "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #sigma^{2}_{long}",
                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0MostlyBkg->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPi0ELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlyBkg) ;
         
         fhEmbedPi0ELambda0FullBkg  = new TH2F("hELambda0_EmbedPi0_FullBkg",
-                                              "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
+                                              "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #sigma^{2}_{long}",
                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0FullBkg->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPi0ELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ;
       }// embedded histograms
@@ -4092,16 +4092,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         for(Int_t iR = 0; iR < 6; iR++)
         {
           fhMCConversionLambda0Rcut[iR] = new TH2F(Form("hMCPhotonConversionLambda0_R%d",iR),
-                                                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",region[iR].Data()),
+                                                   Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, conversion in %s",region[iR].Data()),
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhMCConversionLambda0Rcut[iR]->SetYTitle("#lambda_{0}^{2}");
+          fhMCConversionLambda0Rcut[iR]->SetYTitle("#sigma^{2}_{long}");
           fhMCConversionLambda0Rcut[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhMCConversionLambda0Rcut[iR]) ;
           
           fhMCConversionLambda1Rcut[iR] = new TH2F(Form("hMCPhotonConversionLambda1_R%d",iR),
-                                                   Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, conversion in %s",region[iR].Data()),
+                                                   Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{short}, conversion in %s",region[iR].Data()),
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-          fhMCConversionLambda1Rcut[iR]->SetYTitle("#lambda_{1}^{2}");
+          fhMCConversionLambda1Rcut[iR]->SetYTitle("#sigma^{2}_{short}");
           fhMCConversionLambda1Rcut[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhMCConversionLambda1Rcut[iR]) ;
         } // R cut
@@ -4112,16 +4112,16 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           for(Int_t iR = 0; iR < 6; iR++)
           {
             fhMCConversionLambda0RcutTRD[iR] = new TH2F(Form("hMCPhotonConversionLambda0TRD_R%d",iR),
-                                                        Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, SM covered by TRD",region[iR].Data()),
+                                                        Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, conversion in %s, SM covered by TRD",region[iR].Data()),
                                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhMCConversionLambda0RcutTRD[iR]->SetYTitle("#lambda_{0}^{2}");
+            fhMCConversionLambda0RcutTRD[iR]->SetYTitle("#sigma^{2}_{long}");
             fhMCConversionLambda0RcutTRD[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhMCConversionLambda0RcutTRD[iR]) ;
             
             fhMCConversionLambda1RcutTRD[iR] = new TH2F(Form("hMCPhotonConversionLambda1TRD_R%d",iR),
-                                                        Form("cluster from converted photon, #it{p}_{T} vs #lambda_{1}^{2}, conversion in %s, SM covered by TRD",region[iR].Data()),
+                                                        Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{short}, conversion in %s, SM covered by TRD",region[iR].Data()),
                                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhMCConversionLambda1RcutTRD[iR]->SetYTitle("#lambda_{1}^{2}");
+            fhMCConversionLambda1RcutTRD[iR]->SetYTitle("#sigma^{2}_{short}");
             fhMCConversionLambda1RcutTRD[iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhMCConversionLambda1RcutTRD[iR]) ;
           } // R cut
@@ -4137,9 +4137,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         //            {
         //              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR] = 
         //              new TH2F(Form("hMCPhotonConversionLambda0_R%d_eta%d_phi%d",iR,ieta,iphi),
-        //                       Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d",region[iR].Data(),ieta,iphi),
+        //                       Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, conversion in %s, region eta %d, phi %d",region[iR].Data(),ieta,iphi),
         //                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        //              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
+        //              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetYTitle("#sigma^{2}_{long}");
         //              fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         //              outputContainer->Add(fhLam0EMCALRegionMCConvRcut[ieta][iphi][iR]) ;
         //              
@@ -4147,9 +4147,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         //              {
         //                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR] = 
         //                new TH2F(Form("hMCPhotonConversionLambda0TRD_R%d_eta%d_phi%d",iR,ieta,iphi),
-        //                         Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s, region eta %d, phi %d, SM covered by TRD",region[iR].Data(),ieta,iphi),
+        //                         Form("cluster from converted photon, #it{p}_{T} vs #sigma^{2}_{long}, conversion in %s, region eta %d, phi %d, SM covered by TRD",region[iR].Data(),ieta,iphi),
         //                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        //                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetYTitle("#lambda_{0}^{2}");
+        //                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetYTitle("#sigma^{2}_{long}");
         //                fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         //                outputContainer->Add(fhLam0EMCALRegionTRDMCConvRcut[ieta][iphi][iR]) ;
         //              } // TRD
