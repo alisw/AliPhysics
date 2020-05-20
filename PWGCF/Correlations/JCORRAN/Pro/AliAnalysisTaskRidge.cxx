@@ -269,6 +269,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	        CreateTHnSparse("hRidgeMixingSMCCMSLT","hRidgeMixingSMCCMSLT",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binLtpt},"s");
 	        CreateTHnSparse("hNtrigMCCMS","hNtrigMCCMS",4,{binCent,binTPt,binNtrig,binLtpt},"s");
 
+                CreateTHnSparse("hRidgeMCALICEJet","hRidgeMCALICEJet",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binJetpT},"s");
+                CreateTHnSparse("hRidgeMixingSMCALICEJet","hRidgeMixingSMCALICEJet",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binJetpT},"s");
+                CreateTHnSparse("hNtrigMCALICEJet","hNtrigMCALICEJet",4,{binCent,binTPt,binNtrig,binJetpT},"s");
+
+                CreateTHnSparse("hRidgeMCCMSJet","hRidgeMCCMSJet",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binJetpT},"s");
+                CreateTHnSparse("hRidgeMixingSMCCMSJet","hRidgeMixingSMCCMSJet",6,{binCent,binPhi,binMCEta,binTPt,binAPt,binJetpT},"s");
+                CreateTHnSparse("hNtrigMCCMSJet","hNtrigMCCMSJet",4,{binCent,binTPt,binNtrig,binJetpT},"s");
+
 	        CreateTHnSparse("hTrackDataTrue","hTrackDataTrue",5,{binPt,binPhiTrack,binEtaTrack,binCent,binZ},"s");
 	        CreateTHnSparse("hTrackMCallcut","hTrackMCallcut",5,{binPt,binPhiTrack,binEtaTrack,binZ,binTrkEff},"s");
 
@@ -282,6 +290,11 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	        CreateTHnSparse("MultiplicityStudy","MultiplicityStudy",4,
 	                {binEta,binUnipT,binCent,binV0Amp},"s");
+
+		CreateTHnSparse("hRhoMC","hRhoMC",3,{binCent,binJetpT,binRho},"s");
+
+		fHistos->CreateTH1("hJetPtMC","",240,0,120);
+		fHistos->CreateTH1("hJetPtCorMC","",240,0,120);
 	}
 
 
@@ -386,6 +399,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( !fEvt ) return;
 
 	if( fOption.Contains("MC") ){ IsMC = kTRUE; }
+
+        if( IsMC ){
+                AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
+                        (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
+                if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
+        }
 
 
 
@@ -518,8 +537,13 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		IsFirstEvent = kFALSE;
         }
 
-	fCent = 200;
+	fCent = 200.0;
 	fZ = 0.0;
+
+	fJetPt = 0.0;
+	RHO = 0.0;
+
+	fJetPtMC = 0.0;
 
 	AliInputEventHandler* inputHandler;
 	inputHandler = (AliInputEventHandler*)
@@ -547,57 +571,95 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		AliVVZERO* lVV0 = fEvt->GetVZEROData();
         	for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
 	}
-	TObjArray* fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
 
-	auto jettest0 = fJetTask->GetJetContainer(0);
-	auto jettest1 = fJetTask->GetJetContainer(1);
-	auto ktjets = fJetTask->GetJetContainer(2);
+	int Charged_anti_kt_index = 1;
+	int Charged_kt_index = 2;
 
-	RHO = 0.0; RHOM = 0.0;
+	int Charged_anti_kt_mcparticle_index = -1;
+	int Charged_kt_mcparticle_index = -1;
 
-	this->RhoSparse(ktjets, jettest1, 2);
+	if( IsMC ){
+		Charged_anti_kt_index = 1;
+		Charged_kt_index = 4;
+		Charged_anti_kt_mcparticle_index = 3;
+		Charged_kt_mcparticle_index = 5;
+	}
 
-	AliJJet* ktJet;
-	AliJBaseTrack* kttrack;
-	AliAODTrack* ktt_aod;
+	auto antiktjets = fJetTask->GetJetContainer(Charged_anti_kt_index);
+	auto ktjets = fJetTask->GetJetContainer(Charged_kt_index);
+
+	AliJetContainer* antiktjets_mcp;
+	AliJetContainer* ktjets_mcp;
+
+	if( IsMC ){
+		antiktjets_mcp = fJetTask->GetJetContainer(Charged_anti_kt_mcparticle_index);
+		ktjets_mcp = fJetTask->GetJetContainer(Charged_kt_mcparticle_index);
+	}
+
+	TObjArray* fjets = (TObjArray*)fJetTask->GetAliJJetList(Charged_anti_kt_index);
+
+	double rho = 0.0;
+	this->RhoSparse(ktjets, antiktjets, 2);
+	rho = RHO;
 	
-	TLorentzVector* LorentzTrack;
+	double rhomc = 0.0;	
+	if( IsMC ){
+		this->RhoSparse(ktjets_mcp, antiktjets_mcp, 2);		
+		rhomc = RHO;
+	}
 
-	double rho = RHO;
 	double area = 0.0;
-	AliJJet *Ljet = dynamic_cast<AliJJet*>( fjets->At(0) );
-
-	fJetPt = 0.0;
 	double JetEta = -10.0;
 	double JetPhi = -10.0;
 
-
-	if( Ljet ){
+/*
+	AliEmcalJet *Ljet;
+	if( antiktjets->GetNJets()>0 ) Ljet = dynamic_cast<AliEmcalJet*>( antiktjets->GetJet(0) );
+	if( Ljet && fabs( Ljet->Eta() ) < JetEtaAccpetance ){
 		fJetPt = Ljet->Pt();
 		JetEta = Ljet->Eta();
 		JetPhi = Ljet->Phi();
-		area = Ljet->GetArea();
+		area = Ljet->Area();
 	}
-
-	AliJJet* Cjet;
-	for(int i=0;i<fjets->GetEntries();i++){
-		Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
-		if( fabs( Cjet->Eta() ) > JetEtaAccpetance ){ continue; }
+*/
+	AliEmcalJet* Cjet;
+	for(int i=0;i<antiktjets->GetNJets();i++){
+		Cjet = dynamic_cast<AliEmcalJet*>( antiktjets->GetJet(i) );
+		if( fabs( Cjet->Eta() ) > JetEtaAccpetance || Cjet->Pt() < 0.1 ){ continue; }
 		if( ( fJetPt < Cjet->Pt() ) ){
 			fJetPt = Cjet->Pt();
 			JetEta = Cjet->Eta();
 			JetPhi = Cjet->Phi();
-			area = Cjet->GetArea();
+			area = Cjet->Area();
 		}
 	}
+
+	AliEmcalJet* LjetMC;
+	AliEmcalJet* CjetMC;
+	fJetPtMC = 0.0;
+	double areaMC = 0.0;
+	if( IsMC ){
+/*
+		LjetMC = dynamic_cast<AliEmcalJet*>( antiktjets_mcp->GetJet(0) );
+		if( LjetMC && fabs( LjetMC->Eta() ) < JetEtaAccpetance ){
+			fJetPtMC = LjetMC->Pt();
+			areaMC = LjetMC->Area();
+		}
+*/
+		for(int i=0;i<antiktjets_mcp->GetNJets();i++){
+			CjetMC = dynamic_cast<AliEmcalJet*>( antiktjets_mcp->GetJet(i) );
+			if( !CjetMC ) continue;
+			if( fabs( CjetMC->Eta() ) > JetEtaAccpetance || CjetMC->Pt() < 0.1 ) continue;
+			if( fJetPtMC < CjetMC->Pt() ){
+				fJetPtMC = CjetMC->Pt();
+				areaMC = CjetMC->Area();
+			}
+		}
+	}
+
         const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
         const AliVVertex* spdVtx   = fEvt->GetPrimaryVertexSPD() ;
 
-        if( IsMC ){
-                AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
-                        (fEvt->FindListObject(AliAODMCHeader::StdBranchName()));
-                if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
-        }
 
 	AbsZmax = 8.0;
 	if( fOption.Contains("TightVtx") ) AbsZmax = 6.0;
@@ -711,8 +773,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 			fHistos->FillTH1("hLJetPhi",JetPhi,1.0);
 		}
 
-        	for(int i=0;i<fjets->GetEntries();i++){
-        	        Cjet = dynamic_cast<AliJJet*>( fjets->At(i) );
+        	for(int i=0;i<antiktjets->GetNJets();i++){
+        	        Cjet = dynamic_cast<AliEmcalJet*>( antiktjets->GetJet(i) );
         	        if( fabs( Cjet->Eta() ) > JetEtaAccpetance ){ continue; }
 /*
         	        if( ( fJetPt <  Cjet->Pt() ) ){
@@ -727,10 +789,23 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 			FillTHnSparse("hRho",{fCent,Cjet->Pt(),rho},1.0);
 
-			fHistos->FillTH1("hJetPtCor",Cjet->Pt() - rho*Cjet->GetArea(),1.0);
+			fHistos->FillTH1("hJetPtCor",Cjet->Pt() - rho*Cjet->Area(),1.0);
         	}
 
+		if( IsMC ){
+	                for(int i=0;i<antiktjets_mcp->GetNJets();i++){
+	                        CjetMC = dynamic_cast<AliEmcalJet*>( antiktjets_mcp->GetJet(i) );
+	                        if( !CjetMC ) continue;
+	                        if( fabs( CjetMC->Eta() ) > JetEtaAccpetance || CjetMC->Pt() < 0.1 ) continue;
+
+				fHistos->FillTH1("hJetPtMC",CjetMC->Pt(),1.0);
+				FillTHnSparse("hRhoMC",{fCent,CjetMC->Pt(),rhomc},1.0);
+				fHistos->FillTH1("hJetPtCorMC",CjetMC->Pt() - rhomc*CjetMC->Area(),1.0);
+                        }
+                }
+
 		fJetPt -= rho*area;
+		fJetPtMC -= rhomc*areaMC;
 
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
@@ -1622,29 +1697,6 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 
         int epsizeALICE=0, epsizeCMS=0;
 	int n=0;
-        if( fsetmixing && centbin>=0 && zbin>=0 && IsMC ){
-
-		eventpoolMC &epMCALICE = fEMpoolMCALICE[centbin][zbin];
-		eventpoolMC &epMCCMS = fEMpoolMCCMS[centbin][zbin];
-
-                epsizeALICE = epMCALICE.size();
-		if( epMCALICE.size() < bookingsizeMC ) return;
-		n=0;
-                for( auto pool: epMCALICE ){
-                        if( n == (epMCALICE.size() -1 ) ) continue;
-                        for( auto track: pool ) trkpoolMCALICE.push_back(track);
-                        n++;
-                }
-
-		epsizeCMS = epMCCMS.size();
-		if( epMCCMS.size() < bookingsizeMC ) return;
-		n=0;
-		for( auto pool: epMCCMS ){
-			if( n == (epMCCMS.size() -1 ) ) continue;
-			for( auto track: pool ) trkpoolMCCMS.push_back(track);
-			n++;
-		}
-        }
 
 	double deltaeta;
 	double deltaphi;
@@ -1656,6 +1708,7 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 	double MaxPtCMS=0;
 	double MaxPhiCMS;
 	double MaxEtaCMS;
+
 
         if( IsMC && fEvt->IsA()==AliAODEvent::Class() ){
                 if( fabs(fZ_gen)<AbsZmax ){
@@ -1684,20 +1737,26 @@ void AliAnalysisTaskRidge::FillTracksMC(){
 	}
 
 
-	if( nTracksMCALICE > 1 && !fOption.Contains("CMSOnly") ) FillTHnSparse("hTrackMCALICELT",{fCent,MaxPtALICE,MaxPhiALICE,MaxEtaALICE,fZ_gen},1.0);
+	if( nTracksMCALICE > 1 && !fOption.Contains("CMSOnly") ){
+		FillTHnSparse("hTrackMCALICELT",{fCent,MaxPtALICE,MaxPhiALICE,MaxEtaALICE,fZ_gen},1.0);
+	}
 	if( nTracksMCCMS > 1 && fOption.Contains("AddCMS") ) FillTHnSparse("hTrackMCCMSLT",{fCent,MaxPtCMS,MaxPhiCMS,MaxEtaCMS,fZ_gen},1.0);
 
         for(int i=0;i<binTPt.GetNbins();i++){
-//                if( NTracksPerPtBinMCALICE[i] > 0.5 )
-		if( !fOption.Contains("CMSOnly") ) FillTHnSparse("hNtrigMCALICE",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtALICE},NTracksPerPtBinMCALICE[i]);
-//                if( NTracksPerPtBinMCCMS[i] > 0.5 )
-		if( fOption.Contains("AddCMS") ) FillTHnSparse("hNtrigMCCMS",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtCMS},NTracksPerPtBinMCCMS[i]);
+		if( !fOption.Contains("CMSOnly") ){
+			FillTHnSparse("hNtrigMCALICE",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtALICE},NTracksPerPtBinMCALICE[i]);
+			FillTHnSparse("hNtrigMCALICEJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPtMC},NTracksPerPtBinMCALICE[i]);
+		}
+		if( fOption.Contains("AddCMS") ){
+			FillTHnSparse("hNtrigMCCMS",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPtCMS},NTracksPerPtBinMCCMS[i]);
+			FillTHnSparse("hNtrigMCCMSJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPtMC},NTracksPerPtBinMCCMS[i]);
+		}
         }
 
 
 	if( IsMC && fEvt->IsA()==AliAODEvent::Class() ){
 		if( fabs(fZ_gen)<AbsZmax ){
-			if( nTracksMCALICE > 0 )
+		 	if( nTracksMCALICE > 0 ){
                         for(Int_t iTracks = 0; iTracks < nTracksMCALICE-1; iTracks++){
                                 par1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(goodtrackindicesMCALICE[iTracks]));
                                 if( !par1 ) continue;
@@ -1715,60 +1774,19 @@ void AliAnalysisTaskRidge::FillTracksMC(){
                                 	if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
 
 					if( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),par2->Pt()) )-1] > 0 ){
-//						FillTHnSparse("hRidgeMCALICE",{fCent,deltaphi,deltaeta,
-  //                                      	        max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-    //                                    	        1.0 / ( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] ) );
-						if( !fOption.Contains("CMSOnly") )
-						FillTHnSparse("hRidgeMCALICELT",{fCent,deltaphi,deltaeta,
+						if( !fOption.Contains("CMSOnly") ){
+							FillTHnSparse("hRidgeMCALICELT",{fCent,deltaphi,deltaeta,
 							max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()),MaxPtALICE},
 							1.0 );
-					}
-//                                        FillTHnSparse("hRidgeMCALICENTrig",{fCent,deltaphi,deltaeta,
-  //                                              max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-    //                                            1.0 / ( 1.0 ) );
 
-					if( (bool)(fEvt->GetTrack( par1->GetLabel() ) ) && (bool)(fEvt->GetTrack( par2->GetLabel() ) ) ){
-//						FillTHnSparse("hRidgeMCALICET",{fCent,deltaphi,deltaeta,
-//							max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-//							1.0 / ( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] ) );
+							FillTHnSparse("hRidgeMCALICEJet",{fCent,deltaphi,deltaeta,
+							max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()),fJetPtMC},
+							1.0 );
+						}
 					}
 				}
 			}
-
-
-
-			for(Int_t iTracks = 0; iTracks < nTracksMCALICE; iTracks++){
-				par1 = (AliAODMCParticle*)(fMCArray->At(goodtrackindicesMCALICE[iTracks]));
-				if( !par1 ) continue;
-				for(Int_t jTracks = 0; jTracks < trkpoolMCALICE.size(); jTracks++){
-					parMixing = trkpoolMCALICE.at(jTracks);
-					if( par1->Pt() < parMixing.pt ) continue;
-
-					deltaeta = par1->Eta() - parMixing.eta;
-					deltaphi = par1->Phi() - parMixing.phi;
-					deltaphi = TVector2::Phi_0_2pi(deltaphi);
-					if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
-
-					if( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] > 0 ){
-//						FillTHnSparse("hRidgeMixingSMCALICE",{fCent,deltaphi,deltaeta,
-//							max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-//							1.0 / ( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] ) );
-						if( !fOption.Contains("CMSOnly") )
-						FillTHnSparse("hRidgeMixingSMCALICELT",{fCent,deltaphi,deltaeta,
-							max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt),MaxPtALICE},
-							1.0 );
-					}
-  //                                      FillTHnSparse("hRidgeMixingSMCALICENTrig",{fCent,deltaphi,deltaeta,
-    //                                            max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-      //                                          1.0 / (1.0) );
-					if( (bool)(fEvt->GetTrack( par1->GetLabel() ) ) && parMixing.IsTrackRecon ){
-	//					FillTHnSparse("hRidgeMixingSMCALICET",{fCent,deltaphi,deltaeta,
-	//						max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-	//						1.0 / nTracksMCALICE );
-					}
-				}
-                        }
-
+			}
 			if( nTracksMCCMS > 0 && fOption.Contains("AddCMS") )
 			for(Int_t iTracks = 0; iTracks < nTracksMCCMS-1; iTracks++){
 				par1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(goodtrackindicesMCCMS[iTracks]));
@@ -1787,26 +1805,70 @@ void AliAnalysisTaskRidge::FillTracksMC(){
                                         deltaphi = TVector2::Phi_0_2pi(deltaphi);
                                         if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
 					if( NTracksPerPtBinMCCMS[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] > 0 ){
-	//					FillTHnSparse("hRidgeMCCMS",{fCent,deltaphi,deltaeta,
-	  //                                              max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-	    //                                            1.0 / ( NTracksPerPtBinMCCMS[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] ) );
-
 						FillTHnSparse("hRidgeMCCMSLT",{fCent,deltaphi,deltaeta,
 							max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()),MaxPtCMS},
 							1.0  );
 					}
-//                                        FillTHnSparse("hRidgeMCCMSNTrig",{fCent,deltaphi,deltaeta,
-  //                                              max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-    //                                            1.0 / (1.0) );
-					if( (bool)(fEvt->GetTrack( par1->GetLabel() ) ) && (bool)(fEvt->GetTrack( par2->GetLabel() ) ) ){
-//                                                FillTHnSparse("hRidgeMCCMST",{fCent,deltaphi,deltaeta,
-  //                                                      max(par1-> Pt(),par2-> Pt()), min(par1-> Pt(),par2-> Pt()) },
-    //                                                    1.0 / ( NTracksPerPtBinMCCMS[binTPt.FindBin( max(par1->Pt(),par2-> Pt()) )-1] ) );
-                                        }
 				}
 			}
 
+		}
+	}
 
+
+        if( fsetmixing && centbin>=0 && zbin>=0 && IsMC ){
+
+                eventpoolMC &epMCALICE = fEMpoolMCALICE[centbin][zbin];
+                eventpoolMC &epMCCMS = fEMpoolMCCMS[centbin][zbin];
+
+                epsizeALICE = epMCALICE.size();
+                if( epMCALICE.size() < bookingsizeMC ) return;
+                n=0;
+                for( auto pool: epMCALICE ){
+                        if( n == (epMCALICE.size() -1 ) ) continue;
+                        for( auto track: pool ) trkpoolMCALICE.push_back(track);
+                        n++;
+                }
+
+                epsizeCMS = epMCCMS.size();
+                if( epMCCMS.size() < bookingsizeMC ) return;
+                n=0;
+                for( auto pool: epMCCMS ){
+                        if( n == (epMCCMS.size() -1 ) ) continue;
+                        for( auto track: pool ) trkpoolMCCMS.push_back(track);
+                        n++;
+                }
+        }
+
+
+        if( IsMC && fEvt->IsA()==AliAODEvent::Class() && fsetmixing ){
+                if( fabs(fZ_gen)<AbsZmax ){
+			if( nTracksMCALICE > 0 ){
+                        for(Int_t iTracks = 0; iTracks < nTracksMCALICE; iTracks++){
+                                par1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(goodtrackindicesMCALICE[iTracks]));
+                                if( !par1 ) continue;
+                                for(Int_t jTracks = 0; jTracks < trkpoolMCALICE.size(); jTracks++){
+                                        parMixing = trkpoolMCALICE.at(jTracks);
+                                        if( par1->Pt() < parMixing.pt ) continue;
+                                        
+                                        deltaeta = par1->Eta() - parMixing.eta;
+                                        deltaphi = par1->Phi() - parMixing.phi;
+                                        deltaphi = TVector2::Phi_0_2pi(deltaphi);
+                                        if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
+                                        
+                                        if( NTracksPerPtBinMCALICE[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] > 0 ){
+                                                if( !fOption.Contains("CMSOnly") ){
+                                                	FillTHnSparse("hRidgeMixingSMCALICELT",{fCent,deltaphi,deltaeta,
+                                                        max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt),MaxPtALICE},
+                                                        1.0 );
+							FillTHnSparse("hRidgeMixingSMCALICEJet",{fCent,deltaphi,deltaeta,
+							max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt),fJetPtMC},
+							1.0 );
+						}
+                                        }
+                                }
+                        }
+			}
 			if( fOption.Contains("AddCMS") )
 			for(Int_t iTracks = 0; iTracks < nTracksMCCMS; iTracks++){
 				par1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(goodtrackindicesMCCMS[iTracks]));	
@@ -1820,21 +1882,10 @@ void AliAnalysisTaskRidge::FillTracksMC(){
                                         deltaphi = TVector2::Phi_0_2pi(deltaphi);
                                         if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi;
 					if( NTracksPerPtBinMCCMS[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] > 0 ){
-//	                                        FillTHnSparse("hRidgeMixingSMCCMS",{fCent,deltaphi,deltaeta,
-//	                                                max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-//	                                                1.0 / ( NTracksPerPtBinMCCMS[binTPt.FindBin( max(par1->Pt(),parMixing.pt) )-1] ) );
 						FillTHnSparse("hRidgeMixingSMCCMSLT",{fCent,deltaphi,deltaeta,
 							max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt),MaxPtCMS},
 							1.0  );
 					}
-//					FillTHnSparse("hRidgeMixingSMCCMSNTrig",{fCent,deltaphi,deltaeta,
-  //                                              max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-    //                                            1.0 / (1.0) );
-                                        if( (bool)(fEvt->GetTrack( par1->GetLabel() ) ) && parMixing.IsTrackRecon ){
-//                                                FillTHnSparse("hRidgeMixingSMCCMST",{fCent,deltaphi,deltaeta,
-  //                                                      max(par1-> Pt(),parMixing.pt), min(par1-> Pt(),parMixing.pt) },
-    //                                                    1.0 / nTracksMCCMS );
-                                        } 
                                }
 			}
 		}
@@ -1894,7 +1945,6 @@ void AliAnalysisTaskRidge::RhoSparse(AliJetContainer *ktContainer, AliJetContain
 	RHO *= OccCorr;
 	//cout << "jet pt end\n\n"
 	//	 << endl;
-	cout << 2*TMath::Pi()*0.9 << "< " << TotalTPCArea << ", " << TotaljetAreaPhys << endl;
 }
 
 Bool_t AliAnalysisTaskRidge::isOverlapping(AliEmcalJet *jet1, AliEmcalJet *jet2)
