@@ -852,6 +852,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                     {
                         tmpXi_recomb.push_back(vXi[iterXi]);
                     }
+                    
                     tmpXi_recomb[0].SetMomentum(3, vLambda[iterLamb].GetMomentum(1)); // set Bachelor
                     tmpXi_recomb[1].SetMomentum(1, vLambda[iterLamb].GetMomentum(1)); // set Pi-Daughter
                     tmpXi_recomb[2].SetMomentum(2, vLambda[iterLamb].GetMomentum(2)); // set Proton-Daughter
