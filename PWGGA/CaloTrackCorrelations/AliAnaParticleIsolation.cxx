@@ -64,7 +64,8 @@ fFillEMCALRegionHistograms(0),
 fFillOverlapHistograms(0),                        
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),             fFillTrackOriginHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
-fDecayBits(),                     fFillNLMHistograms(0),
+fDecayBits(),                     fFillNLMHistograms(0),                   
+fFillOnlyTH3Histo(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fFillBackgroundBinHistograms(0),  fNBkgBin(0),
@@ -1659,6 +1660,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     {
       if ( fMakeSeveralIC && iso ) continue;
       
+      if ( fFillOnlyTH3Histo ) continue;
+
       fhPt[iso][ishsh]  = new TH1F
       (Form("hPt%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
        Form("%s%s, %s",
@@ -1667,7 +1670,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPt[iso][ishsh]->SetYTitle("#it{counts}");
       fhPt[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPt[iso][ishsh]) ;
-      
       
       fhPtEtaPhi[iso][ishsh]  = new TH3F
       (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
@@ -1779,7 +1781,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
   if ( !fMakeSeveralIC )
   {
-    if ( !fFillBackgroundBinHistograms && fFillSSHisto &&
+    if ( !fFillBackgroundBinHistograms &&
         (method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC) )
     {
@@ -1832,6 +1834,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
       {
+        if ( fFillOnlyTH3Histo ) continue;
+        
         fhConeSumPtM02Cut[ishsh] = new TH2F
         (Form("hConeSumPtM02%s",m02Name[ishsh].Data()),
          Form("%s%s",parTitleR.Data(),m02Title[ishsh].Data()),
@@ -1870,6 +1874,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
      
     for(Int_t iso = 0; iso < 2; iso++)
     {
+      if ( fFillOnlyTH3Histo ) continue;
+
       for(Int_t ishsh = 0; ishsh < nShSh; ishsh++)
       {
         if ( fFillNLMHistograms )
@@ -2901,7 +2907,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         }
       }
       
-      if ( IsDataMC() && fFillTrackOriginHistograms )
+      if ( IsDataMC() && fFillTrackOriginHistograms && IsGeneratedParticlesAnalysisOn()  )
       {
         TString mcChPartName[] = {"Pion","Kaon","Proton","Other"};
         for(Int_t imc = 0; imc < 4; imc++)
@@ -4409,7 +4415,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
     }
     
-    if ( IsDataMC() )
+    // Generator level primary particles
+    if ( IsDataMC() && IsGeneratedParticlesAnalysisOn()  )
     {
       // For histograms in arrays, index in the array, corresponding to any particle origin
       
@@ -4708,7 +4715,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtPrimMCEtaIsoOverlap) ;
       }
       
-    }//Histos with MC
+    }//Histos with MC primary particles generator level
     
     if ( IsPileUpAnalysisOn() )
     {
@@ -5391,7 +5398,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 {
   // In case of simulated data, fill acceptance histograms
   // Not ready for multiple case analysis.
-  if(IsDataMC() && !fMakeSeveralIC) FillAcceptanceHistograms();
+  if ( IsDataMC() && !fMakeSeveralIC && IsGeneratedParticlesAnalysisOn() ) 
+    FillAcceptanceHistograms();
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -5478,14 +5486,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
      
     Bool_t narrow       = kFALSE;
     Bool_t inM02Windows = kTRUE;
-    if ( fFillSSHisto )
-    {
-      if      ( m02 > fM02Narrow[0] && m02 < fM02Narrow[1] ) narrow = kTRUE;
-      else if ( m02 > fM02Wide  [0] && m02 < fM02Wide  [1] ) narrow = kFALSE; 
-      else inM02Windows = kFALSE; // skip clusters out of both ranges
-    }
     
-    if ( !fFillBackgroundBinHistograms && fFillSSHisto &&
+    if      ( m02 > fM02Narrow[0] && m02 < fM02Narrow[1] ) narrow = kTRUE;
+    else if ( m02 > fM02Wide  [0] && m02 < fM02Wide  [1] ) narrow = kFALSE; 
+    else inM02Windows = kFALSE; // skip clusters out of both ranges
+    
+    if ( !fFillBackgroundBinHistograms &&
         (method == AliIsolationCut::kSumPtIC || 
          method >= AliIsolationCut::kSumBkgSubIC) )
     {
@@ -5494,14 +5500,14 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if ( IsHighMultiplicityAnalysisOn() && GetEventCentralityBin() >=0 && GetNCentrBin() > 0)
         fhPtM02SumPtConeCent[GetEventCentralityBin()]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
-      if ( inM02Windows )
+      if ( inM02Windows && !fFillOnlyTH3Histo )
       {
           fhConeSumPtM02Cut[narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
 
         if ( IsHighMultiplicityAnalysisOn() )
           fhConeSumPtCentM02Cut[narrow]->Fill(pt, coneptsum, GetEventCentrality(), GetEventWeight()*weightTrig);
       }
-      
+
       if ( IsDataMC() )
       {
         fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
@@ -5517,7 +5523,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
              fhPtM02SumPtConeMC[kmcEtaDecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
          }
          
-        if ( inM02Windows )
+        if ( inM02Windows  && !fFillOnlyTH3Histo )
         {
           fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
 
@@ -5532,6 +5538,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
               fhConeSumPtM02CutMC[kmcEtaDecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
           }
         } // in m02 window
+        
       } // MC
     } // TH3 histo and TH2 pT iso
     
@@ -5623,7 +5630,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         
       } // cluster array found
     } // recover cluster
-      
+    
     // Check number of overlaps in cluster
     //
     Int_t noverlaps = -1;
@@ -5635,6 +5642,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels, mcTag, -1,
                                                      GetMC(), overpdg, overlab);
     }
+    
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone 
     // for different selection cases: per SM, exotics, TCard, ...
@@ -5706,7 +5714,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if ( fFillEMCALRegionHistograms && GetCalorimeter() == kEMCAL ) 
       StudyEMCALRegions(pt, phi, eta, m02, 
                         coneptsumTrack, coneptsumCluster, isolated, iSM);
-        
+    
     //---------------------------------------------------------------
     // Conversion radius in MC
     //---------------------------------------------------------------
@@ -5733,7 +5741,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     // Fill depending shower shape narrow or wide or iso or not iso
     // On non photon analysis, iso or non iso filled
     //
-    if ( !inM02Windows ) continue; // it is on the wide or narrow window if those are selected, see above
+    if ( !inM02Windows || fFillOnlyTH3Histo ) continue; // it is on the wide or narrow window if those are selected, see above
     
     fhPt[isolated][narrow]->Fill(pt    , GetEventWeight()*weightTrig);
     
@@ -6754,9 +6762,9 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
          fFillTaggedDecayHistograms,fNDecayBits);
   
   printf("Active histogram filled: TM %d, SS %d, per SM %d, per TCard %d,\n"
-         "EMCal region %d, NLM %d\n",
+         "EMCal region %d, NLM %d, TH3 only %d\n",
          fFillTMHisto, fFillSSHisto, fFillPerSMHistograms, fFillPerTCardIndexHistograms, 
-         fFillEMCALRegionHistograms, fFillNLMHistograms);
+         fFillEMCALRegionHistograms, fFillNLMHistograms, fFillOnlyTH3Histo);
   
   printf("Studies: Tracks in cone %d, Conversion radius %d; iso bkg %d (n=%d);\n"
          " pt bins %d (n=%d); pt in cone cuts %d (n=%d); eta cuts %d (n=%d);\n"

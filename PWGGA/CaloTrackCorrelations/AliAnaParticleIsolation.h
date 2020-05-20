@@ -151,6 +151,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
   void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
+
+  void         SwitchOnOnlyTH3HistoFill()            { fFillOnlyTH3Histo = kTRUE ; }
+  void         SwitchOffOnlyTH3HistoFill()           { fFillOnlyTH3Histo = kFALSE; }
   
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
@@ -258,6 +261,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
+  Bool_t   fFillOnlyTH3Histo;                         ///< Fill only TH3 histograms when duplication
+  
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
   Bool_t   fCheckLeadingWithNeutralClusters;          ///<  Compare the trigger candidate to Leading pT with the clusters pT, by default only charged.
   Bool_t   fSelectPrimariesInCone;                    ///<  In primary particle isolation studies, select only particles in isolation cone within detector acceptance and E cut.
@@ -832,7 +837,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,46) ;
+  ClassDef(AliAnaParticleIsolation,47) ;
   /// \endcond
 
 } ;
