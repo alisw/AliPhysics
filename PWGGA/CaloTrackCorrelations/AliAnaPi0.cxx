@@ -431,7 +431,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
-  if(IsDataMC())
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
   {
     // Pi0
     
@@ -2993,7 +2993,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       if( inacceptance2 && !GetFiducialCut()->IsInFiducialCut(fPhotonMom2.Eta(), fPhotonMom2.Phi(), GetCalorimeter()) ) inacceptance2 = kFALSE ;
     }
     
-    if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg);
+    if ( fFillArmenterosThetaStar ) FillArmenterosThetaStar(pdg);
     
     Int_t absID1=-1;
     Int_t absID2=-1;
@@ -3922,7 +3922,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
 void AliAnaPi0::MakeAnalysisFillHistograms()
 {
   // In case of simulated data, fill acceptance histograms
-  if(IsDataMC())
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
   {
     FillAcceptanceHistograms();
   
