@@ -67,6 +67,7 @@ public:
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
+  void SetCentrality(Double_t cenMin, Double_t cenMax) {fCenMin = cenMin; fCenMax = cenMax;}
 
   void SetPoolPVzBinLimits(Int_t Nzvtxbins, const Double_t *ZvtxBins) {
     fNzVtxBins = Nzvtxbins;
@@ -170,6 +171,9 @@ private:
   Int_t fNEntries;
   
   Double_t lCentrality;
+  Double_t fCenMax;
+  Double_t fCenMin;
+
   Float_t bSign;
   Double_t fZVertex;
 
@@ -379,7 +383,7 @@ private:
   TProfile* SP_uVZEROC2[8];
   TProfile* SP_uVZEROC3[8];
 
-  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 2);
+  ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 3);
 };
 //---------------------------------------------------------------------------------------
 Float_t AliAnalysisTaskSEpPbCorrelationsJetV2::GetDPhiStar(
@@ -619,7 +623,7 @@ private:
   Double_t fMultiplicity;
   Int_t fID1;
   Int_t fID2;
-  ClassDef(AliAssociatedTPCPairs, 1);
+  ClassDef(AliAssociatedTPCPairs, 2);
 };
 
 

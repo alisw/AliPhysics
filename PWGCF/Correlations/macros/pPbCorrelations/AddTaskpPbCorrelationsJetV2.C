@@ -3,7 +3,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
 								       TString  fCollisiontype ="pPb",
-								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
+								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
 								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
@@ -15,8 +15,10 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Bool_t fptdiff          =kTRUE,
 								       Float_t fmaxpt          =5.0,
 								       Int_t fMinNTracksInPool =50000,
-								       Int_t fMinNEventsInPool =5								     
-								       )
+								       Int_t fMinNEventsInPool =5, 
+								       Double_t dCenMin = 0.,
+								       Double_t dCenMax = 10.
+                                                                      )
 {
   // Get the current analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -68,6 +70,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->Setacceptancehole(fmakehole);
   myTask->SetPtdiff(fptdiff);
   myTask->SetPtMax(fmaxpt);
+  myTask->SetCentrality(dCenMin,dCenMax);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
