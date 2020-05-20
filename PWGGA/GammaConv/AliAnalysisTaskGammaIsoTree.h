@@ -52,15 +52,71 @@ typedef struct {
   Long_t fCaloPhotonMCLabels[50];
 } lightCluster;
 
-typedef struct {
-    Short_t nLM,matchedTrackIndex;
-    Float_t exoticEFrac;
-} extraClusterInfo;
+// small class for extra information on clusters
+class extraClusterInfo : public TObject{
+    public:
+      Short_t nLM,matchedTrackIndex;
+      Float_t exoticEFrac;
+      extraClusterInfo(Short_t pNLM, Short_t pmatchedTrackIndex,Float_t pexoticEFrac)
+       : nLM(pNLM),
+         matchedTrackIndex(pmatchedTrackIndex),
+         exoticEFrac(pexoticEFrac)
+      {}
 
-typedef struct {
-  Double32_t isoRawCharged[2],isoRawNeutral[2], isoCell[2]; // storage for two isolation radii each
-  Int_t isTagged; //0 : no 1:withOtherConv 2: withOtherCluster 3: both
-} isoInfo;
+      extraClusterInfo() : extraClusterInfo(0,0,0) {}
+      Bool_t isMatched(){
+        if(matchedTrackIndex!=-1){
+          return kTRUE;
+        } else{
+          return kFALSE;
+        }
+      }
+
+      // copy constructor
+      extraClusterInfo(const extraClusterInfo & original) : nLM(original.nLM),matchedTrackIndex(original.matchedTrackIndex),exoticEFrac(original.exoticEFrac){}
+  private:
+    ClassDef(extraClusterInfo, 1);
+};
+
+// small class for details on isolation and tagging
+class isoInfo : public TObject {
+  public:
+    Double32_t isoRawCharged[2],isoRawNeutral[2], isoCell[2]; // storage for two isolation radii each
+    Int_t isTagged; //0 : no 1:withOtherConv 2: withOtherCluster 3: both
+    isoInfo() 
+    : isTagged(0)
+    {
+        isoRawCharged[0] = -1;
+        isoRawCharged[1] = -1;
+        isoRawNeutral[0] = -1;
+        isoRawNeutral[1] = -1;
+        isoCell[0] = -1;
+        isoCell[1] = -1;
+    }
+    
+    isoInfo(Double32_t isoRawCh[2], Double32_t isoRawNeut[2],Double32_t isoC[2], Int_t tagged) 
+    : isTagged(0)
+    {
+        isoRawCharged[0] = isoRawCh[0];
+        isoRawCharged[1] = isoRawCh[1];
+        isoRawNeutral[0] = isoRawNeut[0];
+        isoRawNeutral[1] = isoRawNeut[1];
+        isoCell[0] = isoC[0];
+        isoCell[1] = isoC[1];
+    }
+    // copy construction
+    isoInfo(const isoInfo & original) : isTagged(original.isTagged)
+      {
+        isoRawCharged[0] = original.isoRawCharged[0];
+        isoRawCharged[1] = original.isoRawCharged[1];
+        isoRawNeutral[0] = original.isoRawNeutral[0];
+        isoRawNeutral[1] = original.isoRawNeutral[1];
+        isoCell[0] = original.isoCell[0];
+        isoCell[1] = original.isoCell[1];
+      }
+  private:
+    ClassDef(isoInfo, 1);
+};
 
 
 class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
@@ -161,18 +217,18 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     AliV0ReaderV1*              fV0Reader;        //!<! V0Reader for basic conversion photon selection
     TString                     fV0ReaderName;       ///< Name of the V0 reader
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
-    std::vector<AliAODConversionPhoton*> fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
-    std::vector<AliAODCaloCluster*> fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
-    std::vector<AliAODCaloCluster*> fClusterEMCalCandidatesBackground;   //!<! vector containing clusters used for tagging and isolation, for internal use only
-    std::vector<AliAODCaloCluster*> fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
-    std::vector<AliAODTrack*>   fTracks;   //!<!
-    std::vector<AliAODMCParticle*>   fMCParticles;   //!<! stores mc particles
-    std::vector<extraClusterInfo>    fExtraClusterInfo;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    std::vector<extraClusterInfo>    fExtraClusterInfoBackground;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    TClonesArray* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
+    TClonesArray* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
+    TClonesArray* fClusterEMCalCandidatesBackground;   //!<! vector containing clusters used for tagging and isolation, for internal use only
+    TClonesArray* fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
+    TClonesArray* fTracks;   //!<!
+    TClonesArray* fMCParticles;   //!<! stores mc particles
+    TClonesArray* fExtraClusterInfo;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
+    TClonesArray* fExtraClusterInfoBackground;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
     dEvtHeader                  fDataEvtHeader;  //!<! storage for general event properties
     mcEvtHeader                 fMCEvtHeader;    //!<! storage for MC event properties
-    std::vector<isoInfo>        fConvIsoInfo;    //!<! storage for isolation info of conv photons, following same ordering as fConversionCandidates
-    std::vector<isoInfo>        fCaloIsoInfo;    //!<! storage for isolation of EMC clusters, following same ordering as fConversionCandidates
+    TClonesArray*        fConvIsoInfo;    //!<! storage for isolation info of conv photons, following same ordering as fConversionCandidates
+    TClonesArray*        fCaloIsoInfo;    //!<! storage for isolation of EMC clusters, following same ordering as fConversionCandidates
    
     AliEMCALGeometry*           fGeomEMCAL;    // pointer to EMCAL geometry
     
@@ -234,7 +290,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
     void ProcessTracks();
     void ProcessMCParticles();
-    Int_t ProcessTrackMatching(AliAODCaloCluster* clus, std::vector<AliAODTrack*> tracks);
+    Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TClonesArray* tracks);
     void ProcessChargedIsolation(AliAODConversionPhoton* photon, Double32_t arrIso[]);
     void ProcessChargedIsolation(AliAODCaloCluster* cluster, Double32_t arrIso[]);
     void ProcessNeutralIsolation(AliAODConversionPhoton* photon, Double32_t arrIso[]);
@@ -249,7 +305,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 7);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 9);
 };
 
 #endif

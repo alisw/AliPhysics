@@ -219,6 +219,7 @@ void AddTask_GammaIsoTree(
   fQA->SetSaveEMCClusters(storeEMCalCluster);
   fQA->SetSavePHOSClusters(storePHOSCluster);
   fQA->SetSaveTracks(storeTracks);
+  fQA->SetBuffSize(60*1024*1024);
   
   mgr->AddTask(fQA);
 
