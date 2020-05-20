@@ -3721,6 +3721,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     for(Int_t i = 0; i < fNPrimaryHistograms; i++)
     {
+      if ( !IsGeneratedParticlesAnalysisOn() ) continue;
+      
       fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",ppname[i].Data()),
                                Form("primary photon %s : E ",pptype[i].Data()),
                                nptbins,ptmin,ptmax);
@@ -5156,8 +5158,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 void  AliAnaPhoton::MakeAnalysisFillHistograms()
 {
   // In case of simulated data, fill acceptance histograms
-  if(IsDataMC()) FillAcceptanceHistograms();
-  
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
+    FillAcceptanceHistograms();
+
   // Get vertex
   Double_t v[3] = {0,0,0}; //vertex ;
   GetReader()->GetVertex(v);
