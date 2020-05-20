@@ -1088,7 +1088,7 @@ float AliAnalysisTaskPOmegaPenne::CalculateInvMassHere(AliFemtoDreamv0 *v0, int 
     return invMass;
 }
 
-void AliAnalysisTaskPOmegaPenne::MixChildParticles(std::vector<AliFemtoDreamBasePart> XiVector, std::vector<AliFemtoDreamBasePart> LambdaVector, TList outputLists, bool checkSameParticleMixing)
+void AliAnalysisTaskPOmegaPenne::MixChildParticles(std::vector<AliFemtoDreamBasePart> XiVector, std::vector<AliFemtoDreamBasePart> LambdaVector, TList &outputLists, bool checkSameParticleMixing)
 {
     std::vector<AliFemtoDreamBasePart> vLambda_recomb(0);
     std::vector<AliFemtoDreamBasePart> vXi_recomb(0);

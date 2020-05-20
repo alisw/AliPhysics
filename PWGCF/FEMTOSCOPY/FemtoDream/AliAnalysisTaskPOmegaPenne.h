@@ -56,9 +56,9 @@ public:
     float CalculateInvMassLambda(TVector3 momPosDaughter, TVector3 momNegDaughter);
     float CalculateInvMassXi(TVector3 momBach, TVector3 momPosDaughter, TVector3 momNegDaughter);
     void MixChildParticles(std::vector<AliFemtoDreamBasePart> XiVector, 
-                                                       std::vector<AliFemtoDreamBasePart> LambdaVector, 
-                                                       TList outputLists,
-                                                       bool checkSameParticleMixing = true);
+                           std::vector<AliFemtoDreamBasePart> LambdaVector, 
+                           TList &outputLists,
+                           bool checkSameParticleMixing = true);
 
     // void Setv0Cuts_rec(            AliFemtoDreamv0Cuts      *v0Cuts_rec        )  { fLambdaV0Cuts_rec        =   v0Cuts_rec;        };
     // void SetAntiv0Cuts_rec(        AliFemtoDreamv0Cuts      *v0AntiCuts_rec        )  { fAntiLambdaV0Cuts_rec        =   v0AntiCuts_rec;        };
