@@ -106,33 +106,35 @@ public:
     TList                              *tlCascadeCutsXi;       //!
     TList                              *tlAntiCascadeCutsXi;   //!
     // #2
-    TList                              *tlEventCuts2;          //!
-    TList                              *tlLambdaList2;         //!
-    TList                              *tlAntiLambdaList2;     //!
-    TList                              *tlCascadeCutsXi2;      //!
-    TList                              *tlAntiCascadeCutsXi2;  //!
-    TList                              *tlResults;             //!      
-    TList                              *tlResults2;            //!
-    TList                              *tlResultsQA;           //!      PairCleaner - Keep Lambda
-    TList                              *tlResultsQA2;          //!      PairCleaner - Keep Xi
+    TList                              *tlEventCuts2;                       //!
+    TList                              *tlLambdaList2;                      //!
+    TList                              *tlAntiLambdaList2;                  //!
+    TList                              *tlCascadeCutsXi2;                   //!
+    TList                              *tlAntiCascadeCutsXi2;               //!
+    TList                              *tlResults;                          //!      
+    TList                              *tlResults2;                         //!
+    TList                              *tlResultsQA;                        //!      PairCleaner - Keep Lambda
+    TList                              *tlResultsQA2;                       //!      PairCleaner - Keep Xi
     // ## MC Container
     // TList                              *tlProtonMC;            //!
     // TList                              *tlAntiProtonMC;        //!
-    TList                              *tlLambdaMC;            //!
-    TList                              *tlAntiLambdaMC;        //!
-    TList                              *tlRecombination;       //!      Recombinations Lists and histos
-    TH1F                               *hInvMassLambda_total;  //!
-    TH1F                               *hInvMassLambda_shared_pion; //!
-    TH1F                               *hInvMassLambda_shared_proton; //!
-    TH1F                               *hInvMassXi_total;            //!
-    TH1F                               *hInvMassXi_shared_bach;            //!
-    TH1F                               *hInvMassXi_shared_pi_daugh;            //!
-    TH1F                               *hInvMassXi_shared_prot_daugh;            //!
-    TH1                                *hInvMassXi_shared_Lambda;            //!
-    TH1F                               *fEvtCounter;           //!
-    AliFemtoDreamv0                    *fv0_recomb;            //!
-    TList                              *tlLambdaList_rec;      //!
-    TList                              *tlAntiLambdaList_rec;  //!
+    TList                              *tlLambdaMC;                         //!
+    TList                              *tlAntiLambdaMC;                     //!
+    TList                              *tlRecombination;                    //!      Recombinations Lists and histos
+    TH1F                               *hInvMassLambda_total;               //!
+    TH1F                               *hInvMassLambda_shared_pion;         //!
+    TH1F                               *hInvMassLambda_shared_proton;       //!
+    TH1F                               *hInvMassXi_total;                   //!
+    TH1F                               *hInvMassXi_shared_bach;             //!
+    TH1F                               *hInvMassXi_shared_pi_daugh;         //!
+    TH1F                               *hInvMassXi_shared_prot_daugh;       //!
+    TH1F                               *hInvMassXi_shared_Lambda;           //!
+    TH1F                               *hInvMassLambda_sanityCheck;         //!
+    TH1                                *hInvMassXi_sanityCheck;             //!
+    TH1F                               *fEvtCounter;                        //!
+    AliFemtoDreamv0                    *fv0_recomb;                         //!
+    TList                              *tlLambdaList_rec;                   //!
+    TList                              *tlAntiLambdaList_rec;               //!
 
   
     ClassDef(AliAnalysisTaskPOmegaPenne,19)
