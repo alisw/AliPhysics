@@ -378,6 +378,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   // Acceptance
   for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
   {
+    fhConeSumPtPrimMC[i] = 0;
     fhPtPrimMCiso[i] = 0;
     fhPtPrimMC   [i] = 0;
     fhEtaPrimMC  [i] = 0;
@@ -4416,17 +4417,25 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       {
         fhPtPrimMC[i]  = new TH1F
         (Form("hPtPrim_MC%s",ppname[i].Data()),
-         Form("primary photon  %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         Form("primary photon  %s, %s",pptype[i].Data(),parTitle[1].Data()),
          nptbins,ptmin,ptmax);
         fhPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMC[i]) ;
         
         fhPtPrimMCiso[i]  = new TH1F
         (Form("hPtPrim_MCiso%s",ppname[i].Data()),
-         Form("primary isolated photon %s : #it{p}_{T}, %s",pptype[i].Data(),parTitle[1].Data()),
+         Form("primary isolated photon %s, %s",pptype[i].Data(),parTitle[1].Data()),
          nptbins,ptmin,ptmax);
         fhPtPrimMCiso[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtPrimMCiso[i]) ;
+        
+        fhConeSumPtPrimMC[i] = new TH2F
+        (Form("hConeSumPtPrim_MC%s",ppname[i].Data()),
+         Form("primary photon %s: %s",pptype[i].Data(),parTitleR.Data()),
+         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtPrimMC[i]) ;
         
         fhEtaPrimMC[i]  = new TH2F
         (Form("hEtaPrim_MC%s",ppname[i].Data()),
@@ -6273,6 +6282,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
        npart == 0)
       isolated = kTRUE;
+    
+    fhConeSumPtPrimMC [mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+    fhConeSumPtPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
     
     if(isolated)
     {

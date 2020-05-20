@@ -403,6 +403,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Phi of generated photon.
   TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];             //!<! Number of generated photon vs pT.
   TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];             //!<! Number of generated isolated photon vs pT.
+  TH2F *   fhConeSumPtPrimMC[fgkNmcPrimTypes];         //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone.
+
   
   TH1F *   fhPtPrimMCPi0DecayPairOutOfCone;            //!<! Pi0 decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance;      //!<! Pi0 decay photons, with decay pair out of detector acceptance.
