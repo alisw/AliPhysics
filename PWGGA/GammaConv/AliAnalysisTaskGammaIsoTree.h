@@ -74,8 +74,6 @@ class extraClusterInfo : public TObject{
 
       // copy constructor
       extraClusterInfo(const extraClusterInfo & original) : nLM(original.nLM),matchedTrackIndex(original.matchedTrackIndex),exoticEFrac(original.exoticEFrac){}
-  private:
-    ClassDef(extraClusterInfo, 1);
 };
 
 // small class for details on isolation and tagging
@@ -114,8 +112,6 @@ class isoInfo : public TObject {
         isoCell[0] = original.isoCell[0];
         isoCell[1] = original.isoCell[1];
       }
-  private:
-    ClassDef(isoInfo, 1);
 };
 
 
