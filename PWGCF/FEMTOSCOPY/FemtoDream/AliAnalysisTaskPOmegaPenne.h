@@ -137,7 +137,7 @@ public:
     TList                              *tlAntiLambdaList_rec;               //!
 
   
-    ClassDef(AliAnalysisTaskPOmegaPenne,19)
+    ClassDef(AliAnalysisTaskPOmegaPenne,20)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
