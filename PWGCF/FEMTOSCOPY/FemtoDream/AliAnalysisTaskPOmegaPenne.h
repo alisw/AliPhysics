@@ -57,7 +57,7 @@ public:
     float CalculateInvMassXi(TVector3 momBach, TVector3 momPosDaughter, TVector3 momNegDaughter);
     void MixChildParticles(std::vector<AliFemtoDreamBasePart> XiVector, 
                            std::vector<AliFemtoDreamBasePart> LambdaVector, 
-                           TList &outputLists,
+                           TList *outputLists,
                            bool checkSameParticleMixing = true);
 
     // void Setv0Cuts_rec(            AliFemtoDreamv0Cuts      *v0Cuts_rec        )  { fLambdaV0Cuts_rec        =   v0Cuts_rec;        };
@@ -137,7 +137,7 @@ public:
     TList                              *tlAntiLambdaList_rec;               //!
 
   
-    ClassDef(AliAnalysisTaskPOmegaPenne,20)
+    ClassDef(AliAnalysisTaskPOmegaPenne,21)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
