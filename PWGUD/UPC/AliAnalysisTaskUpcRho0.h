@@ -14,6 +14,7 @@ class TList;
 class AliPIDResponse;
 class AliESDEvent;
 class TBits;
+class AliTOFTriggerMask;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -31,6 +32,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
 	void SetDebugMode(Bool_t _debugMode){ debugMode = _debugMode; }
 	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
+	void SetTOFFileName(TString _name) {fTOFFileName = _name; isUsingTOFeff = kTRUE;}
  	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
  	void SetTPCNcls(Int_t _fTPCNcls) {fTPCNcls = _fTPCNcls;}
  	void SetOption(TString _fOption){fOption = _fOption;}
@@ -135,6 +137,13 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TFile *fSPDfile;
 	TH1D *hBCmod4;
 	TH2D *hSPDeff;
+
+	// TOF effi
+	Bool_t isUsingTOFeff;
+	TFile *fTOFfile;
+	TString fTOFFileName;
+	TH2F *hTOFeff;
+	AliTOFTriggerMask *fTOFmask;
 
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented
