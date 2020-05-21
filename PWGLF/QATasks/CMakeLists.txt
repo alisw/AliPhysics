@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/QATasks)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+		    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
@@ -35,6 +36,7 @@ set(SRCS
   AliAnalysisTaskQAV0AOD.cxx
   AliAnalysisTaskQAMultistrange.cxx
   AliAnalysisTaskLFefficiencies.cxx
+  AliAnalysisTaskStrAODqa.cxx
   )
 
 # Headers from sources
