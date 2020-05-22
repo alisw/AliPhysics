@@ -107,6 +107,7 @@ fEvPlaneV0(0),
 fEvPlaneV0A(0),
 fEvPlaneV0C(0),
 fEvPlaneTPC(0),
+fVtxZ_all(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -264,6 +265,7 @@ fEvPlaneV0(0),
 fEvPlaneV0A(0),
 fEvPlaneV0C(0),
 fEvPlaneTPC(0),
+fVtxZ_all(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -446,7 +448,10 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fEvPlaneTPC = new TH2F("fEvPlaneTPC","TPC EP",100,0,100,100,0,TMath::Pi());
     fOutputList->Add(fEvPlaneTPC);
-    
+ 
+    fVtxZ_all = new TH2F("fVtxZ_all","Z vertex position without any cuts;Vtx_{z};counts",100,0,100,2000,-100,100);
+    fOutputList->Add(fVtxZ_all);
+ 
     fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",500,-25,25);
     fOutputList->Add(fVtxZ);
     
@@ -890,12 +895,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
     Double_t NcontV = pVtx->GetNContributors();
-    if(NcontV<2)return;
-    fNevents->Fill(1); //events with 2 tracks
-    
     Zvertex = pVtx->GetZ();
     Yvertex = pVtx->GetY();
     Xvertex = pVtx->GetX();
+    fVtxZ_all->Fill(NcontV,Zvertex);
+
+    if(NcontV<2)return;
+    fNevents->Fill(1); //events with 2 tracks
+    
     fVtxZ->Fill(Zvertex);
     fVtxX->Fill(Xvertex);
     fVtxY->Fill(Yvertex);
