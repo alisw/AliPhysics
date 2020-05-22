@@ -32,6 +32,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Root includes
+#include <TArray.h>
+#include <TArrayL64.h>
 #include <TNamed.h>
 #include <TMath.h>
 class TObjArray;
@@ -286,17 +288,16 @@ public:
   Bool_t IsParRun()      { return fIsParRun ; }
   Short_t GetCurrentParNumber()         { return fCurrentParNumber ; }
   void SetCurrentParNumber(Short_t par) { fCurrentParNumber = par ; }
-  Short_t GetNPars()                    { return fNPars ; }
-  void SetNPars(Short_t npars)          { fNPars = npars ;
-    if(fGlobalEventID) delete fGlobalEventID;
-    fGlobalEventID = new ULong64_t[npars];
-    for(Short_t i=0;i<npars;i++) fGlobalEventID[i]=0; 
+  Short_t GetNPars()                    { return fGlobalEventID.GetSize() ; }
+  void SetNPars(Short_t npars)          { 
+    fGlobalEventID.Set(npars);
+    fGlobalEventID.Reset();
   }
   ULong64_t GetGlobalIDPar(Short_t par) {
-    return par<fNPars ? fGlobalEventID[par] : 0 ;
+    return par<GetNPars() ? fGlobalEventID[par] : 0 ;
   }
   void SetGlobalIDPar(ULong64_t glob, Short_t par) {
-    if(par < fNPars) fGlobalEventID[par] = glob ;
+    if(par < GetNPars()) fGlobalEventID[par] = glob ;
     else AliInfo("PAR index exceeds max number of PARs in the run");
   }
 
@@ -574,8 +575,7 @@ private:
   TObjArray* fEMCALL1PhaseInTimeRecalibration; ///< Histogram with map of L1 phase per SM, EMCAL
   Bool_t     fIsParRun;                        //!<! flag if run contains PAR
   Short_t    fCurrentParNumber;                //!<! Current par number
-  Short_t    fNPars;                           ///< Number of PARs in run
-  ULong64_t* fGlobalEventID;                   ///< array with globalID for PAR runs
+  TArrayL64  fGlobalEventID;                   ///< Global event ID
   Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
   // Recalibrate with run dependent corrections, energy
@@ -611,10 +611,10 @@ private:
   Bool_t     fAODHybridTracks;           ///< Match with hybrid
   Bool_t     fAODTPCOnlyTracks;          ///< Match with TPC only tracks
   
-  TArrayI  * fMatchedTrackIndex;         ///< Array that stores indexes of matched tracks      
-  TArrayI  * fMatchedClusterIndex;       ///< Array that stores indexes of matched clusters
-  TArrayF  * fResidualEta;               ///< Array that stores the residual eta
-  TArrayF  * fResidualPhi;               ///< Array that stores the residual phi
+  TArrayI    fMatchedTrackIndex;         ///< Array that stores indexes of matched tracks      
+  TArrayI    fMatchedClusterIndex;       ///< Array that stores indexes of matched clusters
+  TArrayF    fResidualEta;               ///< Array that stores the residual eta
+  TArrayF    fResidualPhi;               ///< Array that stores the residual phi
   Bool_t     fCutEtaPhiSum;              ///< Place cut on sqrt(dEta^2+dPhi^2)
   Bool_t     fCutEtaPhiSeparate;         ///< Cut on dEta and dPhi separately
   Float_t    fCutR;                      ///< sqrt(dEta^2+dPhi^2) cut on matching
@@ -651,7 +651,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 34) ;
+  ClassDef(AliEMCALRecoUtils, 35) ;
   /// \endcond
 
 };
