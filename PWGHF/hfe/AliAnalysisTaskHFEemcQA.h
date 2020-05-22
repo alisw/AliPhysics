@@ -125,6 +125,7 @@ private:
     TH2F        *fEvPlaneV0A;//! V0A event plane
     TH2F        *fEvPlaneV0C;//! V0C event plane
     TH2F        *fEvPlaneTPC;//! TPC event plane
+    TH2F        *fVtxZ_all;//!Vertex z
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
