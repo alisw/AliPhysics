@@ -57,7 +57,7 @@ fNZvertBin(0),                fNrpBin(0),
 fNCentrBin(0),                fNmaxMixEv(0),
 fDoOwnMix(0),                 fUseTrackMultBins(0),
 fFillPileUpHistograms(0),     fFillHighMultHistograms(0),
-fMakePlots(kFALSE),
+fFillGenPartHisto(1),         fMakePlots(kFALSE),
 fFillEmbedHistograms(0),      fSelectEmbededSignal(0),
 
 fInputAODBranch(0x0),         fInputAODName(""),
@@ -895,8 +895,8 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Do mix event        =     %d\n",    fDoOwnMix);
   printf("\t N: z vert %d, RP %d, Centr %d, Mix event Pool size %d, Use track mult %d\n",
          fNZvertBin,fNrpBin,fNCentrBin,fNmaxMixEv,fUseTrackMultBins);
-  printf("Fill histo: pile-up %d, high mult %d, embed %d",
-         fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms);
+  printf("Fill histo: pile-up %d, high mult %d, embed %d, generated particles %d",
+         fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
   printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
         
   
