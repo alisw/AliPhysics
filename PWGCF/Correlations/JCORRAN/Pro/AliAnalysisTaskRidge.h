@@ -235,7 +235,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	Double_t			fLT_pT_MCALICE;
 	Double_t			fLT_pT_MCCMS;
 	Double_t			fJetPt;
-
+	Double_t			fJetPtMC;
 
 	Bool_t                          fsetmixing = kTRUE;
         Bool_t                          IsDGV0=kFALSE;
@@ -277,6 +277,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 
 	Double_t RHO;
 	Double_t RHOM;
+
 
     ClassDef(AliAnalysisTaskRidge, 1);
 };
