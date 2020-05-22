@@ -623,10 +623,19 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Track loop
   for(Int_t iTrack=0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
   Bool_t goodTPCTrack = kTRUE;
-  Bool_t goodITSTrack = kTRUE;
+  Bool_t goodITSTrack = kTRUE;  
     if(isESD){ 
     	AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
 	if( !trk ) continue;
+	
+	if(isMC && trk->GetLabel() >= 0){
+	  //Skip pion tracks to simulate feed down with neutral pions
+	  AliMCEvent *mc = MCEvent();
+          if(!mc) return;
+          AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
+	  if(TMath::Abs(mcPart->PdgCode()) == 211)continue;
+	  }
+	
 	if(fTrackCutsBit0->AcceptTrack(trk) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1))) fNGoodTracksLoose++;
 	
     	if(!fTrackCutsBit4->AcceptTrack(trk)) goodTPCTrack = kFALSE;
