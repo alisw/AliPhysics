@@ -90,7 +90,8 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , bc()
     , tracks()
     , mccollision()
-    , mclabel()
+    , mctracklabel()
+    , mccalolabel()
     , mcparticle()
 #ifdef USE_TOF_CLUST
     , tofClusters()
@@ -118,9 +119,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mclabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -150,7 +151,8 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   case kStandard:
     DisableTree(kMcParticle);
     DisableTree(kMcCollision);
-    DisableTree(kMcLabel);
+    DisableTree(kMcTrackLabel);
+    DisableTree(kMcCaloLabel);
     break;
   default:
     break;
@@ -430,14 +432,23 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     PostTree(kMcParticle);
 
     // MC labels of each reconstructed track
-    TTree* tLabels = CreateTree(kMcLabel);
+    TTree* tLabels = CreateTree(kMcTrackLabel);
     tLabels->SetAutoFlush(fNumberOfEventsPerCluster);
-    if (fTreeStatus[kMcLabel]) {
-      tLabels->Branch("fLbl", &mclabel.fLbl, "fLbl/I");
-      tLabels->Branch("fLblMask", &mclabel.fLblMask, "fLblMask/s");
+    if (fTreeStatus[kMcTrackLabel]) {
+      tLabels->Branch("fLabel", &mctracklabel.fLabel, "fLabel/i");
+      tLabels->Branch("fLabelMask", &mctracklabel.fLabelMask, "fLabelMask/s");
     }
-    PostTree(kMcLabel);
-  }
+    PostTree(kMcTrackLabel);
+
+    // MC labels of each reconstructed calo cluster
+    TTree* tCaloLabels = CreateTree(kMcCaloLabel);
+    tCaloLabels->SetAutoFlush(fNumberOfEventsPerCluster);
+    if (fTreeStatus[kMcCaloLabel]) {
+      tCaloLabels->Branch("fLabel", &mccalolabel.fLabel, "fLabel/i");
+      tCaloLabels->Branch("fLabelMask", &mccalolabel.fLabelMask, "fLabelMask/s");
+    }
+    PostTree(kMcCaloLabel);
+}
 
 
   Prune(); //Removing all unwanted branches (if any)
@@ -652,11 +663,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
       Int_t alabel = track->GetLabel();
-      mclabel.fLbl = TMath::Sign(TMath::Abs(alabel) + fOffsetLabel, alabel); // keep the sign of the label
-      mclabel.fLblMask = 0;
+      mctracklabel.fLabel = TMath::Abs(alabel) + fOffsetLabel;
+      mctracklabel.fLabelMask = 0;
       // Use the ITS shared clusters to set the corresponding bits 0-6
       UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
-      mclabel.fLblMask |= itsMask;
+      mctracklabel.fLabelMask |= itsMask;
       // Use the number of TPC shared clusters as number of TPC mismatches
       // encode in bits 7-9 the values in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
       const TBits * tpcShared = track->GetTPCSharedMapPtr();
@@ -667,11 +678,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 	tpcMask++;
       }
       if (tpcMask>7) tpcMask = 7;
-      mclabel.fLblMask |= (tpcMask<<7);
+      mctracklabel.fLabelMask |= (tpcMask<<7);
       // TRD (bit 10)
       // We can also use labels per tracklet in the future
       Int_t trdLabel = track->GetTRDLabel();
-      if (TMath::Abs(alabel)!=TMath::Abs(trdLabel)) mclabel.fLblMask |= (0x1 << 10);
+      if (TMath::Abs(alabel)!=TMath::Abs(trdLabel)) mctracklabel.fLabelMask |= (0x1 << 10);
       // TOF (bit 11)
       Int_t tofLabel[3]={-1};
       track->GetTOFLabel(tofLabel);
@@ -679,9 +690,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       if (!( TMath::Abs(alabel)==TMath::Abs(tofLabel[0])
 	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[1])
 	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[2])))
-	mclabel.fLblMask |= (0x1 << 11);
-      
-      FillTree(kMcLabel);
+	mctracklabel.fLabelMask |= (0x1 << 11);
+
+      if (alabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
+
+      FillTree(kMcTrackLabel);
     }
   
 #ifdef USE_TOF_CLUST
@@ -814,6 +827,13 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     calo.fCellType = cells->GetHighGain(ice) ? 0. : 1.; 
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
+    if (fTaskMode == kMC) {
+      mccalolabel.fLabel = TMath::Abs(mclabel) + fOffsetLabel;
+      mccalolabel.fLabelMask = 0;
+      if (mclabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
+
+      FillTree(kMcCaloLabel);
+    }
   } // end loop on calo cells
   eventextra.fNentries[kCalo] = ncalocells_filled;
 
@@ -862,6 +882,13 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) nphoscells_filled++;
+    if (fTaskMode == kMC) {
+      mccalolabel.fLabel = TMath::Abs(mclabel) + fOffsetLabel;
+      mccalolabel.fLabelMask = 0;
+      if (mclabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
+
+      FillTree(kMcCaloLabel);
+    }
   } // end loop on PHOS cells
   eventextra.fNentries[kCalo] = nphoscells_filled;
 
