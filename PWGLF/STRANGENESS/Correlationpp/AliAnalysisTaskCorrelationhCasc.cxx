@@ -3197,28 +3197,28 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
 	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP ;
 
-	  fTreeVariablePDGCodeAssoc           =    fEvt->fReconstructedSecond[j].cLabelMotherBach      ;
-	  fTreeVariableisPrimaryV0	      =    fEvt->fReconstructedSecond[j].cisPrimCasc           ;
-	  fTreeVariableInvMassLambda	      =    fEvt->fReconstructedSecond[j].cInvMassLambda        ;	 
-	  fTreeVariableInvMassXi	      =    fEvt->fReconstructedSecond[j].cInvMassXi            ;
-	  fTreeVariableInvMassOmega           =    fEvt->fReconstructedSecond[j].cInvMassOmega         ;
-	  fTreeVariableXiCosineOfPointingAngle=    fEvt->fReconstructedSecond[j].cCosPointingAngleXi   ;
-	  fTreeVariableV0CosineOfPointingAngle=    fEvt->fReconstructedSecond[j].cCosPointingAngleV0ToXi;
-	  fTreeVariableDcaXiDaughters         =    fEvt->fReconstructedSecond[j].cDCAXiDaughters       ;
-	  fTreeVariableRapAssoc 	      =    fEvt->fReconstructedSecond[j].cRapCasc              ;
-	  fTreeVariablePtV0     	      =    fEvt->fReconstructedSecond[j].cPt                   ;
-	  fTreeVariablectau       	      =    fEvt->fReconstructedSecond[j].cctau                 ; 
-	  fTreeVariableEtaV0                  =    fEvt->fReconstructedSecond[j].cEta                  ; 
-	  fTreeVariablePhiV0		      =    fEvt->fReconstructedSecond[j].cPhi                  ; 
-	  fTreeVariableChargeAssoc 	      =    fEvt->fReconstructedSecond[j].cCharge               ; 
-	  fTreeVariableSkipAssoc 	      =    fEvt->fReconstructedSecond[j].cAssocOrNot           ; 
+	  fTreeVariablePDGCodeAssoc           =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelMotherBach      ;
+	  fTreeVariableisPrimaryV0	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cisPrimCasc           ;
+	  fTreeVariableInvMassLambda	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassLambda        ;	 
+	  fTreeVariableInvMassXi	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassXi            ;
+	  fTreeVariableInvMassOmega           =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassOmega         ;
+	  fTreeVariableXiCosineOfPointingAngle=    (fEvt+eventNumber)->fReconstructedSecond[j].cCosPointingAngleXi   ;
+	  fTreeVariableV0CosineOfPointingAngle=    (fEvt+eventNumber)->fReconstructedSecond[j].cCosPointingAngleV0ToXi;
+	  fTreeVariableDcaXiDaughters         =    (fEvt+eventNumber)->fReconstructedSecond[j].cDCAXiDaughters       ;
+	  fTreeVariableRapAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cRapCasc              ;
+	  fTreeVariablePtV0     	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cPt                   ;
+	  fTreeVariablectau       	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cctau                 ; 
+	  fTreeVariableEtaV0                  =    (fEvt+eventNumber)->fReconstructedSecond[j].cEta                  ; 
+	  fTreeVariablePhiV0		      =    (fEvt+eventNumber)->fReconstructedSecond[j].cPhi                  ; 
+	  fTreeVariableChargeAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cCharge               ; 
+	  fTreeVariableSkipAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cAssocOrNot           ; 
 
 	  fTreeVariableDeltaEta	       	      =deta;  
 	  fTreeVariableDeltaPhi		      =dphi;
 	  fTreeVariableDeltaTheta             =dtheta;      
 	  fTreeVariableMultiplicity	      = lPercentiles;
 	  fTreeVariableZvertex                = lBestPrimaryVtxPos;
-	  //	  fTreeVariableisPrimaryTrigger       =  fEvt->fReconstructedFirst[i].isP;
+	  //	  fTreeVariableisPrimaryTrigger       =  (fEvt+eventNumber)->fReconstructedFirst[i].isP;
        
 	  fBkgTree->Fill();  
 	  
