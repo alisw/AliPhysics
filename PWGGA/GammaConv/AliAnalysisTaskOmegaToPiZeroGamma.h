@@ -362,12 +362,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Int_t                   fPhotonSelectionMode;                               // mode for the photon selection: 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
     std::set<UInt_t>        dropOutGammas_CALO;                                 // Container to keep track of calo gamma candidates that are already used in a pi0 reco
     std::set<UInt_t>        dropOutGammas_PCM;                                  // Container to keep track of PCM gamma candidates that are already used in a pi0 reco
+    TClonesArray*           fAODMCTrackArray;                                   // storage of track array
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 20);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 21);
 };
 
 #endif
