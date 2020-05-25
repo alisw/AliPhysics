@@ -84,7 +84,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   TProfile *fptvar;
   TProfile *fCovariance;
   Bool_t fmptSet;
-  UInt_t fTriggerType; //! No need to store
+  UInt_t fTriggerType; // Lets store it
   Bool_t fUseRunAveragedWeights; //!
   TList *fWeightList; //!
   AliGFWWeights *fWeights;//! This should be stored in TList
@@ -96,7 +96,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   AliGFWCuts *fFWSelection; //!
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
-  Int_t fGFWMode; //!
+  Int_t fGFWMode;
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t EnableDebug=kFALSE); //Pending implementation: possibility to pass pre-calculated values (e.g. for ref flow)
   Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);

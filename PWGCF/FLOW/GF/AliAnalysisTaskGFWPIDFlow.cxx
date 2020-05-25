@@ -224,6 +224,9 @@ void AliAnalysisTaskGFWPIDFlow::UserCreateOutputObjects(){
     4.0, 4.5, 5.0, 5.5, 6.0,
     7.0, 8.0, 9.0, 10.0};
     fPtAxis = new TAxis(NbinsPtForV2,binsPtForV2);
+    printf("***********************************\n");
+    printf("GFW mode selected: %i\n",fGFWMode);
+    printf("***********************************\n");
     if(fGFWMode==0 || fGFWMode==1 || fGFWMode==4) fWeightList = (TList*)GetInputData(1);
     if(fGFWMode==2 || fGFWMode==3) fWeightList = (TList*)GetInputData(2);// Load ZM weights instead, if required
     if(!fWeightList) AliFatal("Could not fetch weight list!\n");
