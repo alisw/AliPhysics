@@ -52,7 +52,8 @@ public:
     kTOF,
     kMcParticle,
     kMcCollision,
-    kMcLabel,
+    kMcTrackLabel,
+    kMcCaloLabel,
     kBC,
     kTrees
   };
@@ -236,12 +237,19 @@ private:
 
   struct {
     // Track label to find the corresponding MC particle
-    Int_t fLbl = -1;       /// Track label
-    UShort_t fLblMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+    UInt_t fLabel = 0;       /// Track label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                            /// Bit 0-6: mismatch at ITS layer
                            /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
-                           /// Bit 10: TRD, bit 11: TOF
-  } mclabel; //! Track labels
+                           /// Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
+  } mctracklabel; //! Track labels
+  
+  struct {
+    // Calo cluster label to find the corresponding MC particle
+    UInt_t fLabel = 0;       /// Calo label
+    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+                             /// bit 15: negative label sign
+  } mccalolabel; //! Track labels
   
   struct {
     // MC particle

@@ -47,6 +47,7 @@
 // #include "AliTriggerAnalysis.h"
 // #include "AliAODMCHeader.h"
 #include "AliDataFile.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliAnalysisTaskUpcRho0);
 
@@ -63,6 +64,7 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
+	fTOFfile(0),fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
@@ -84,7 +86,8 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   	VtxChi2_T(0),VtxNDF_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
-	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
+	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0),
+	fTOFfile(0), fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
 	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
 	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
@@ -272,6 +275,16 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 		hBCmod4_2D->SetDirectory(0);
 		hBCmod4 = hBCmod4_2D->ProjectionY();
 		fSPDfile->Close();
+	}
+
+	// load TOF effi
+	if (isUsingTOFeff) {
+		if(debugMode) std::cout<<"Using TOF efficiency file: "<<fTOFFileName<<std::endl;
+		if(!fTOFfile)fTOFfile = AliDataFile::OpenOADB(fTOFFileName.Data());
+	    AliOADBContainer* fTOFcont = (AliOADBContainer*)fTOFfile->Get("TOFTriggerEfficiency");
+	    hTOFeff  = (TH2F*)fTOFcont->GetObject(280235,"Default");
+	    hTOFeff->SetDirectory(0);
+	    fTOFfile->Close();
 	}
 
 	if(debugMode) std::cout<<"Post data..."<<std::endl;
@@ -659,9 +672,30 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	ADA = esd->GetHeader()->IsTriggerInputFired("0UBA");
 	ADC = esd->GetHeader()->IsTriggerInputFired("0UBC");
 	// TOF
-	OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
 	OMU = esd->GetHeader()->IsTriggerInputFired("0OMU");
-	  
+
+	// OM2
+	if (isUsingTOFeff) {
+	const AliTOFHeader *tofH = esd->GetTOFHeader();
+	fTOFmask = tofH->GetTriggerMask();
+  
+	Bool_t firedMaxiPhi[36] = {0};
+	Int_t NfiredMaxiPads = 0;
+ 
+	for(Int_t ltm=0;ltm<72;ltm++){
+		Int_t ip = ltm%36;
+		for(Int_t cttm=0;cttm<23;cttm++){
+			if(fTOFmask->IsON(ltm,cttm) && gRandom->Rndm(1.0)<hTOFeff->GetBinContent(ltm+1,cttm+1)){
+				firedMaxiPhi[ip] = kTRUE;
+				NfiredMaxiPads++;
+			}
+		}
+	}
+	if(NfiredMaxiPads >= 2) OM2 = kTRUE; //0OM2 TOF two hits
+
+	}
+	else OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+
 	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
 	if (fOption.Contains("17n")) {
 		if ((fTriggerName.Contains("CCUP2")) && (!V0A && !V0C && SH1 && OM2)) return kTRUE; // CCUP2 in 17n
@@ -673,3 +707,7 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 
 	else return kFALSE;
 } // end of MC trigger
+
+
+
+
