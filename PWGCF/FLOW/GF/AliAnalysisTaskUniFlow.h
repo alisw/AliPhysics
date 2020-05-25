@@ -42,7 +42,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    ColSystem {kPP = 0, kPPb, kPbPb}; // tag for collisional system
       enum    AnalType {kAOD = 0, kESD, kMC}; // tag for analysis type
       enum    CentEst {kRFP = 0, kV0A, kV0C, kV0M, kCL0, kCL1, kZNA, kZNC}; // multiplicity/centrality estimator as AliMultSelection
-      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
       enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kSample, kDim}; // reconstructed candidates dist. dimensions
       enum    SparseWeights {wPhi = 0, wCent, wPt, wEta, wVz, wSpec, wDim}; // multidimensional weights sparse.. w as weights (to avoid redefinition from the previous one)
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
@@ -615,7 +615,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 17);
+      ClassDef(AliAnalysisTaskUniFlow, 18);
 };
 
 #endif
