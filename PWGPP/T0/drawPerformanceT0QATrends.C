@@ -7,7 +7,7 @@ TGraphErrors * MakeGraphSparse(TTree * tree, const Char_t * expr="mean-fdelta:ru
   //
 
   const Int_t entries =  tree->Draw(expr,cut,"goff");
-  if (entries<=0) return;
+  if (entries<=0) return 0x0;
   Double_t *graphX, *graphY, *graphError;
 
   //check whether error argument exists in expr
@@ -90,7 +90,7 @@ TGraphErrors * MakeGraphSparse(TTree * tree, const Char_t * expr="mean-fdelta:ru
 
 }
 //------------------------------------------------------------------------------------------------
-drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runType="pp") {
+void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runType="pp") {
   //
   //
   gROOT->Reset();
@@ -111,13 +111,13 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   cout<<"number of entries   "<<entries<<endl; 
   TH1F *frame = new TH1F();
 
-  //const float norm_runs = 8.0; 
+  float norm_runs = 10.0; 
   if(entries<8)
-    const float norm_runs =10.0;
+    norm_runs =10.0;
   else if(entries>=8&&entries<16)
-    const float norm_runs =20.0;
- else
-   const float norm_runs =50.0;
+    norm_runs =20.0;
+  else
+    norm_runs =50.0;
   int const canvas_width = int(((entries*1.0)/norm_runs)*2000.0);
   if(entries>50){
     gStyle->SetTickLength(0.03*norm_runs/(entries*1.0),"Y");
