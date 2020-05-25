@@ -994,9 +994,13 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 			if( fabs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ) > TPCalonesig ) continue;
 		}
 */
-		if( !( (fPIDResponse->GetTOFMismatchProbability( track ) < 0.01 &&
+		if( !(
+			( fPIDResponse->GetTOFMismatchProbability( track ) < 0.01 &&
 			fabs( fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) ) < TOFsig ) ||
-			fabs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ) < TPCalonesig ) ) continue;
+
+			( fPIDResponse->GetTOFMismatchProbability( track ) > 0.01 &&
+			fabs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ) < TPCalonesig ) )
+		) continue;
 
 		if( track->Pt() < fptcut ) continue;
 		if( fabs( track->Eta() ) > fetacut ) continue;
@@ -1080,36 +1084,11 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				trkid1 = -1;
 				trkid2 = -1;
 
-/*
-				cout << endl << endl << endl;
-				cout << "Scan Started" << endl;
-                                cout << "MC : " << trkl1 << ", " << trkl2 << endl;
-                                for(UInt_t it=0;it<ntracks;it++){
-                                        track = (AliAODTrack*)fEvt->GetTrack(it);
-                                        if( !track ) continue;
-                                        cout << (int)track->GetLabel() << endl;
-					if( (int)track->GetLabel() == trkl1 ||
-					(int)track->GetLabel() == trkl2 ){
-						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
-						if( !trackd1Recon) cout << "FOUND BUT NO RECO TRACK" << endl;
-						else if( trackd1Recon ){
-							cout << "FOUND" << endl;
-							cout << "MOMENTUM : " << trackd1Recon->Px() << ", " << trackd1Recon->Py() << ", " << trackd1Recon->Pz() << endl;
-							cout << "TRUE : " << trackd1->Px() << ", " << trackd1->Py() << ", " << trackd1->Pz() << endl;
-							cout << "TRUE : " << trackd2->Px() << ", " << trackd2->Py() << ", " << trackd2->Pz() << endl;
-						}
-					}
-                                }
-
-
-*/
-
 
 				for(UInt_t it=0;it<ntracks;it++){
 					track = (AliAODTrack*)fEvt->GetTrack(it);
 					if( !track ) continue;
 					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
-//					if( (int)track->GetLabel() == trkl1 || (int)track->GetLabel() == trkl2 ){
 					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
 						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
 						if( trackd1Recon ){
@@ -1119,12 +1098,6 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 					}
 				}
 				if( trkid1 == -1 ){
-//					cout << "MC : " << trkl1 << ", " << trkl2 << endl;
-//					for(UInt_t it=0;it<ntracks;it++){
-//						track = (AliAODTrack*)fEvt->GetTrack(it);
-//						if( !track ) continue;
-//						cout << (int)track->GetLabel() << endl;
-//					}
 					continue;
 				}
 
@@ -1141,30 +1114,8 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 					}
 				}
 				if( trkid2 == -1 ){
-//                                        cout << "MC : " << trkl1 << ", " << trkl2 << endl;
-//                                        for(UInt_t it=0;it<ntracks;it++){
-//                                                track = (AliAODTrack*)fEvt->GetTrack(it);
-//                                                if( !track ) continue;
-//                                                cout << (int)track->GetLabel() << endl;
- //                                       }
                                         continue;
 				}
-
-/*				cout << "MC : " << trkl1 << ", " << trkl2 << endl;
-				for(UInt_t it=0;it<ntracks;it++){
-					track = (AliAODTrack*)fEvt->GetTrack(it);
-					if( !track ) continue;
-					cout << (int)track->GetLabel() << endl;
-				}
-*/
-
-//				if( trk2count == 0 || trk1count == 0 ) continue;
-
-//				AliAODTrack* trackd1Recon = (AliAODTrack*)fEvt->GetTrack( trkid1 );
-//				AliAODTrack* trackd2Recon = (AliAODTrack*)fEvt->GetTrack( trkid2 );
-
-//				if( !trackd1Recon ) continue;
-//				if( !trackd2Recon ) continue;
 
 
 				if( trackd1Recon->Pt() < fptcut ) continue;
@@ -1198,17 +1149,19 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				PIDcut1 = 0;
 				PIDcut2 = 0;
 
-				if( ( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
-//				if( ( fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trackd1Recon) 
+				if( 
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
 				&& fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
-				fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ){
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
+				&& fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
 					PIDcut1=1;
 				}
 
-                                if( ( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
-//				if( ( fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,trackd2Recon) 
+                                if(
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
-                                fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ){
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
+                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut2=1;
                                 }
 
@@ -1232,15 +1185,19 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 PIDcut1 = 0;
                                 PIDcut2 = 0;
 
-                                if( ( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
+                                if(
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
-                                fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ){
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
+                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut1=1;
                                 }
 
-                                if( ( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
+                                if(
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
-                                fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ){
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
+                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut2=1;
                                 }
 
