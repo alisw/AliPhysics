@@ -333,7 +333,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       else if (fMostProbable == 13) {
         if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
           imost = 13;
-        if ((track->P().Mag() < 2) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+        if ((track->P().Mag() < 3) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
           imost = 0;
       }
       else if (fMostProbable == 14) {
@@ -821,17 +821,23 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
   double a3 = -80,   b3 = 190.0;
   double a4 = 0.0,   b4 = 40.0;
 
+  double a5 = 125.0,   b5 = -100.0;
+
   if (mom < 1.1) {
     if (dEdx < a1*mom+b1) return false;
   }
-  else if (mom >= 1.1 || mom < 1.4) {
+  else if (mom < 1.4) {
     if (dEdx < a2*mom+b2) return false;
   }
-  else if (mom >= 1.4 || mom < 2) {
+  else if (mom < 2) {
     if (dEdx < a3*mom+b3) return false;
   }
   else if (mom >= 2) {
     if (dEdx < a4*mom+b4) return false;
+  }
+
+  if (!fNsigmaTPCTOF) {
+    if (dEdx < a5*mom+b5) return false;
   }
   //if (dEdx < a2*mom+b2) return true;
 
