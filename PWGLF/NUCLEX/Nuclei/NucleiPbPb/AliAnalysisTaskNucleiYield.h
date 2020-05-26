@@ -70,7 +70,8 @@ struct RLightNucleus {
     kT0fill = BIT(0),
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
-    kSecondaryWeakDecay = BIT(3)
+    kSecondaryWeakDecay = BIT(3),
+    kHasTOF = BIT(4)
   };
   float pt;
   float eta;
@@ -354,6 +355,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryWeakDecay) ? RLightNucleus::kSecondaryWeakDecay : 0;
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
+      fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
       if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
         fRTree->Fill();
     }
