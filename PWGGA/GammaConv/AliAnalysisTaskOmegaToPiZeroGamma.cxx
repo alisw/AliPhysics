@@ -826,7 +826,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
     }
 
     if(fReconMethod<2){
-      fHistoPhotonPairMatchedInvMassPt[iCut]      = new TH2F("ESD_PhotonPair_Matched_InvMass_Pt","ESD_PhotonPair_Matched_InvMass_Pt",800,0,0.8,200,0.,20.);
+      fHistoPhotonPairMatchedInvMassPt[iCut]      = new TH2F("ESD_PhotonPair_Matched_InvMass_Pt","ESD_PhotonPair_Matched_InvMass_Pt",300,0,0.3,200,0.,20.);
       fHistoPhotonPairMatchedInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2}) matched conv e^{+/-}to cluster");
       fHistoPhotonPairMatchedInvMassPt[iCut]->SetYTitle("p_{T}(GeV/c)");
       fESDList[iCut]->Add(fHistoPhotonPairMatchedInvMassPt[iCut]);
@@ -1121,27 +1121,27 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoMCOmegaDecayChannels[iCut]->GetXaxis()->SetBinLabel(3,"Others");
       fMCList[iCut]->Add(fHistoMCOmegaDecayChannels[iCut]);
 
-      fHistoMCAllOmegaInvMassPt[iCut]                = new TH2F("MC_AllOmega_InvMass_Pt","MC_AllOmega_InvMass_Pt",400,0.4,1.2,nBinsPt, arrPtBinning);
+      fHistoMCAllOmegaInvMassPt[iCut]                = new TH2F("MC_AllOmega_InvMass_Pt","MC_AllOmega_InvMass_Pt",200,0.0,1.6,nBinsPt, arrPtBinning);
       fHistoMCAllOmegaInvMassPt[iCut]->SetXTitle("M_{inv,#omega}(GeV/c^{2})");
       fHistoMCAllOmegaInvMassPt[iCut]->SetYTitle("#omega p_{T}(GeV/c)");
       fMCList[iCut]->Add(fHistoMCAllOmegaInvMassPt[iCut]);
 
-      fHistoMCPi0FromAllOmegaInvMassPt[iCut]                = new TH2F("MC_Pi0FromAllOmega_InvMass_Pt","MC_Pi0FromAllOmega_InvMass_Pt",800,0,0.8,nBinsPt, arrPtBinning);
+      fHistoMCPi0FromAllOmegaInvMassPt[iCut]                = new TH2F("MC_Pi0FromAllOmega_InvMass_Pt","MC_Pi0FromAllOmega_InvMass_Pt",300,0,0.3,nBinsPt, arrPtBinning);
       fHistoMCPi0FromAllOmegaInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0}}(GeV/c^{2})");
       fHistoMCPi0FromAllOmegaInvMassPt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
       fMCList[iCut]->Add(fHistoMCPi0FromAllOmegaInvMassPt[iCut]);
 
-      fHistoMCPi0FromOmegaInAccInvMassPt[iCut]              = new TH2F("MC_Pi0FromOmegaInAcc_InvMass_Pt","MC_Pi0FromOmegaInAcc_InvMass_Pt",800,0,0.8,nBinsPt, arrPtBinning);
+      fHistoMCPi0FromOmegaInAccInvMassPt[iCut]              = new TH2F("MC_Pi0FromOmegaInAcc_InvMass_Pt","MC_Pi0FromOmegaInAcc_InvMass_Pt",300,0,0.3,nBinsPt, arrPtBinning);
       fHistoMCPi0FromOmegaInAccInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0}}(GeV/c^{2})");
       fHistoMCPi0FromOmegaInAccInvMassPt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
       fMCList[iCut]->Add(fHistoMCPi0FromOmegaInAccInvMassPt[iCut]);
 
-      fHistoMCOmegaInvMassPt[iCut] = new TH2F("MC_OmegaInvMass_Pt","MC_OmegaInvMass_Pt",400,0.4,1.2,nBinsPt, arrPtBinning);
+      fHistoMCOmegaInvMassPt[iCut] = new TH2F("MC_OmegaInvMass_Pt","MC_OmegaInvMass_Pt",200,0.0,1.6,nBinsPt, arrPtBinning);
       fHistoMCOmegaInvMassPt[iCut]->SetXTitle("M_{inv,#omega}(GeV/c^{2})");
       fHistoMCOmegaInvMassPt[iCut]->SetYTitle("#omega p_{T}(GeV/c)");
       fMCList[iCut]->Add(fHistoMCOmegaInvMassPt[iCut]);
 
-      fHistoMCOmegaInAccInvMassPt[iCut] = new TH2F("MC_OmegaInAcc_InvMass_Pt","MC_OmegaInAcc_InvMass_Pt",400,0.4,1.2,nBinsPt, arrPtBinning);
+      fHistoMCOmegaInAccInvMassPt[iCut] = new TH2F("MC_OmegaInAcc_InvMass_Pt","MC_OmegaInAcc_InvMass_Pt",200,0.0,1.6,nBinsPt, arrPtBinning);
       fHistoMCOmegaInAccInvMassPt[iCut]->SetXTitle("M_{inv,#omega}(GeV/c^{2})");
       fHistoMCOmegaInAccInvMassPt[iCut]->SetYTitle("#omega p_{T}(GeV/c)");
       fMCList[iCut]->Add(fHistoMCOmegaInAccInvMassPt[iCut]);
@@ -1325,7 +1325,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoTrueOmegaInvMassPt[iCut]->SetYTitle("#omega p_{T}(GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueOmegaInvMassPt[iCut]);
 
-      fHistoTruePi0FromOmegaInvMassPt[iCut]          = new TH2F("True_Pi0FromOmega_InvMass_Pt","True_Pi0FromOmega_InvMass_Pt",800,0,0.8,nBinsPt, arrPtBinning);
+      fHistoTruePi0FromOmegaInvMassPt[iCut]          = new TH2F("True_Pi0FromOmega_InvMass_Pt","True_Pi0FromOmega_InvMass_Pt",300,0,0.3,nBinsPt, arrPtBinning);
       fHistoTruePi0FromOmegaInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0}}(GeV/c^{2})");
       fHistoTruePi0FromOmegaInvMassPt[iCut]->SetYTitle("#omega p_{T}(GeV/c)");
       fTrueList[iCut]->Add(fHistoTruePi0FromOmegaInvMassPt[iCut]);
