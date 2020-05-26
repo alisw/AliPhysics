@@ -60,6 +60,7 @@ private:
   AliAnalysisTaskCharmDecayTracks(const AliAnalysisTaskCharmDecayTracks &source);
   AliAnalysisTaskCharmDecayTracks& operator=(const AliAnalysisTaskCharmDecayTracks& source);
   void MapTrackLabels(AliAODEvent* aod);
+  Bool_t PrepareTreeVars(AliAODMCParticle* partD,TClonesArray *arrayMC);
 
   TList* fOutput;                  //!<! list send on output slot 0
   TH1F*  fHistNEvents;             //!<! histo with number of events
