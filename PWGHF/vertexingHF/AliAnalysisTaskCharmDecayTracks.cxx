@@ -256,14 +256,14 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
   PostData(1,fOutput);
   PostData(2,fTrackTree);
 
+  for(Int_t i=0; i<kMaxLabel; i++) fMapTrLabel[i]=-999;
+  MapTrackLabels(aod);
+  
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
-  for(Int_t i=0; i<kMaxLabel; i++) fMapTrLabel[i]=-999;
-  MapTrackLabels(aod);
-  
   TClonesArray *arrayDcand=arrayD0toKpi;
   if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122) arrayDcand=array3Prong;
   Int_t nCand=arrayDcand->GetEntriesFast();
@@ -297,32 +297,10 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	labD = d->MatchToMC(4122,arrayMC,3,pdgl);
       }
     }
-    Bool_t fillTree=kFALSE;
     if(labD>=0){ 
       AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
       if(!partD) continue;
-      Double_t ptgen=partD->Pt();
-      Double_t phigen=partD->Phi();
-      Double_t ygen=partD->Y();
-      Int_t pdgCode=partD->GetPdgCode();
-      Double_t xori=partD->Xv();
-      Double_t yori=partD->Yv();
-      Double_t zori=partD->Zv();
-      
-      Double_t xdec=-99999.;
-      Double_t ydec=-99999.;
-      Double_t zdec=-99999.;
-      Int_t iDau=partD->GetDaughterFirst();
-      if(iDau>=0){
-	fillTree=kTRUE;
-	AliAODMCParticle *dauD=(AliAODMCParticle*)arrayMC->At(iDau);
-	if(dauD){
-	  xdec=dauD->Xv();
-	  ydec=dauD->Yv();
-	  zdec=dauD->Zv();
-	}else fillTree=kFALSE;
-      }
-    
+      Bool_t fillTree=PrepareTreeVars(partD,arrayMC);    
       for(Int_t jd=0; jd<nDauTr; jd++){
 	AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
 	if(!track) fillTree=kFALSE;
@@ -333,22 +311,13 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	  else if(jd==2) fTrPar3.CopyFromVTrack(track);
 	}
       }
-      printf("fillTree = %d\n",fillTree);
       if(fillTree){
-	fTreeVarInt[0] = pdgCode;
-	fTreeVarFloat[0] = ptgen;
-	fTreeVarFloat[1] = phigen;
-	fTreeVarFloat[2] = ygen;
-	fTreeVarFloat[3] = xori;
-	fTreeVarFloat[4] = yori;
-	fTreeVarFloat[5] = zori;
-	fTreeVarFloat[6] = xdec;
-	fTreeVarFloat[7] = ydec;
-	fTreeVarFloat[8] = zdec;
 	fTrackTree->Fill();
       }
     }
   }
+
+  delete vHF;
   
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -406,4 +375,40 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
     else printf("Label %d exceeds upper limit\n",lab);
   }
   return;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD,TClonesArray *arrayMC){
+  /// fill MC truth info in the tree
+  
+  fTreeVarInt[0] = 0.;
+  for(Int_t j=0; j<kNumOfFloatVar; j++) fTreeVarFloat[j]=-9999.;
+  if(!partD) return kFALSE;
+  Double_t ptgen=partD->Pt();
+  Double_t phigen=partD->Phi();
+  Double_t ygen=partD->Y();
+  Int_t pdgCode=partD->GetPdgCode();
+  Double_t xori=partD->Xv();
+  Double_t yori=partD->Yv();
+  Double_t zori=partD->Zv();
+  
+  Int_t iDau=partD->GetDaughterFirst();
+  if(iDau<0) return kFALSE;
+  AliAODMCParticle *dauD=(AliAODMCParticle*)arrayMC->At(iDau);
+  if(!dauD) return kFALSE;
+  Double_t xdec=dauD->Xv();
+  Double_t ydec=dauD->Yv();
+  Double_t zdec=dauD->Zv();
+  
+  fTreeVarInt[0] = pdgCode;
+  fTreeVarFloat[0] = ptgen;
+  fTreeVarFloat[1] = phigen;
+  fTreeVarFloat[2] = ygen;
+  fTreeVarFloat[3] = xori;
+  fTreeVarFloat[4] = yori;
+  fTreeVarFloat[5] = zori;
+  fTreeVarFloat[6] = xdec;
+  fTreeVarFloat[7] = ydec;
+  fTreeVarFloat[8] = zdec;
+
+  return kTRUE;
 }
