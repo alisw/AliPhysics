@@ -31,7 +31,7 @@ public:
   virtual void AnaTrackMC(Int_t flag = 0);      //called once for every track in DATA event
   virtual void AnaParticleMC(Int_t flag = 0);   //called once for every track in MC event
 
-  static AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies", const char* outfile = 0);
+  static AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies");
   
 private:
   typedef AnalysisHelpers::Hist<THnSparseI> Hist;
@@ -39,7 +39,12 @@ private:
   AliAnalysisTaskCutStudies(const AliAnalysisTaskCutStudies&); // not implemented
   AliAnalysisTaskCutStudies& operator=(const AliAnalysisTaskCutStudies&); // not implemented
         
-  Hist myHist;
+  Hist myHist;    //! chi2 per cluster TPC
+  
+  
+  
+  
+  
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskCutStudies, 1);
   /// \endcond

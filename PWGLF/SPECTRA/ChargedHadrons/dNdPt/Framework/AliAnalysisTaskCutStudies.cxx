@@ -132,47 +132,29 @@ void AliAnalysisTaskCutStudies::AnaParticleMC(Int_t flag)
  * Add task of this kind to a train.
  */
 //****************************************************************************************
-AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const char* name, const char* outfile)
+AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const char* name)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         ::Error("AddTaskCutStudies", "No analysis manager to connect to.");
-        return 0;
+        return nullptr;
     }
 
-    // Check the analysis type using the event handlers connected to the analysis manager.
-    //==============================================================================
     if (!mgr->GetInputEventHandler()) {
         ::Error("AddTaskCutStudies", "This task requires an input event handler");
-        return NULL;
+        return nullptr;
     }
-    
-    // Setup output file
-    //===========================================================================
-    TString fileName = AliAnalysisManager::GetCommonFileName();        
-    fileName += ":";
-    fileName += name;  // create a subfolder in the file
-    if (outfile) { // if a finename is given, use that one
-        fileName = TString(outfile);        
-    }
-    
 
-    // create the task
-    //===========================================================================
     AliAnalysisTaskCutStudies *task = new AliAnalysisTaskCutStudies(name);
-    if (!task) { return 0; }
+    if (!task) { return nullptr; }
     
-    // configure the task
-    //===========================================================================
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
+    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
 //     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-    
-    // attach the task to the manager and configure in and ouput
-    //===========================================================================
+
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root"));
     
   return task;
 }

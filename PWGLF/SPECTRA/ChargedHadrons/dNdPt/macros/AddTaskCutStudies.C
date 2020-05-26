@@ -2,6 +2,6 @@
 #include "AliAnalysisTaskCutStudies.h"
 #endif
 
-AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies", const char* outfile = 0) {
+AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies") {
   return AliAnalysisTaskCutStudies::AddTaskCutStudies(name, outfile);
 }
