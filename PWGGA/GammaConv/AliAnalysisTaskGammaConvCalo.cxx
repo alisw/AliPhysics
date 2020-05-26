@@ -5567,7 +5567,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
     }
 
     //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
-    fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+    if(!fDoJetAnalysis) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
 
     if(isTruePi0 || isTrueEta){// True Pion or Eta
 
@@ -6113,7 +6113,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
   }
 
   //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
-  fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+  if(!fDoJetAnalysis) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
 
