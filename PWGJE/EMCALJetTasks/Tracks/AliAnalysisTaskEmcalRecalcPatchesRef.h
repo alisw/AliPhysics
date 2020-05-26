@@ -82,7 +82,9 @@ protected:
   virtual void CreateUserHistos();
   virtual bool IsUserEventSelected();
   virtual bool Run();
+  virtual void RunChanged(Int_t newrun);
   virtual void UserFillHistosAfterEventSelection();
+  void LoadTriggerThresholdsFromCDB();
   std::vector<const AliEMCALTriggerPatchInfo *> SelectAllPatchesByType(const TClonesArray &patches, EPatchType_t patchtype) const;
   std::vector<const AliEMCALTriggerPatchInfo *> SelectFiredPatchesByTrigger(const TClonesArray &patches, ETriggerThreshold_t trigger) const;
   std::vector<std::string> GetAcceptedTriggerClusters(const char *triggerstring) const;
