@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskSpectraRT_H
-#define AliAnalysisTaskSpectraRT_H
+#ifndef AliAnalysisTaskSpectraMC_H
+#define AliAnalysisTaskSpectraMC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 /* $Id$ */
@@ -42,14 +42,14 @@
 using namespace std;
 
 
-class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
+class AliAnalysisTaskSpectraMC : public AliAnalysisTaskSE
 {
 	public:
 
 
-		AliAnalysisTaskSpectraRT();
-		AliAnalysisTaskSpectraRT(const char *name);
-		virtual ~AliAnalysisTaskSpectraRT();
+		AliAnalysisTaskSpectraMC();
+		AliAnalysisTaskSpectraMC(const char *name);
+		virtual ~AliAnalysisTaskSpectraMC();
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t *option);
@@ -57,6 +57,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		Bool_t   GetAnalysisMC() { return fAnalysisMC; }
 		Double_t GetEtaCut() { return fEtaCut; }
 
+////		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(bool isMC) {fAnalysisMC = isMC;}
 		virtual void  SetMCClosure(bool isMCclos) {fIsMCclosure = isMCclos;}
@@ -78,8 +79,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		void GetMCCorrections();
 		virtual Double_t DeltaPhi(Double_t phi, Double_t lphi,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-		void ProduceArrayTrksESD();
-		void ProduceArrayV0ESD();
+///		void ProduceArrayTrksESD();
 		short   GetPidCode(Int_t pdgCode) const;
 
 		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
@@ -104,7 +104,7 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
 		AliAnalysisFilter* fTrackFilter;
 		AliESDtrackCuts*   fHybridTrackCuts1;                 //  Track cuts for tracks without SPD hit
-		AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
+	        AliESDtrackCuts*   fHybridTrackCuts2;                 //  Track cuts for tracks witout SPD hit or ITS refit
 		AliAnalysisUtils* utils;
 		TString     fAnalysisType;        //  "ESD" or "AOD"
 		bool        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
@@ -142,30 +142,51 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 
 		TList*        fListOfObjects;     //! Output list of objects
 		TH1F*         fEvents;            //! No of accepted events
+		
 
-		TH1F* hNchTSData;
+		// Tracking & Matching efficiencies
+		TH2F* hNchGenVsPtGenIn[4];
+		TH2F* hNchGenVsPtRecIn[4];
+		TH2F* hNchGenVsPtGenPosIn[4];
+		TH2F* hNchGenVsPtRecPosIn[4];
+		TH2F* hNchGenVsPtGenNegIn[4];
+		TH2F* hNchGenVsPtRecNegIn[4];
+		TH2F* hNchGenVsPtRecInTOF[4];
+		TH2F* hNchGenVsPtRecPosInTOF[4];
+		TH2F* hNchGenVsPtRecNegInTOF[4];
+		TH2F* hNchGenVsPtrTPCRecIn[4];
+
+		// To Unfold
+		TH3F* hNchVsPtDataTPC[4][4];
+
+		// For closure
+		TH2F* hNchGenVsPtRec[4][4];
+		TH2F* hNchGenVsPtGenPID[4][4];
+
+		TH1F* hPtRec;
+		TH1F* hPtPri;
+		TH1F* hPtSec;
+		TH2F* fPtLVsNchRec; 
+
+
+		TH1F* hPhiGen[4];
+		TH1F* hPhiRec[4];
+
+		TH1F* hMultTSGen;
+		TH1F* hMultTSRec;
+		TH1F* hNchTSGen;
+		TH1F* hNchTSRec;
+		TH1F* hNchTSGenGTZ;
+		TH1F* hNchTSCont;
+		TH1F* hNchTSRecGTZ;
+
+		// Response matrices
+		TH2F* hNchResponse;
+		TH2F* hPtResponsePID[4];
+
 		TH2F* hPhiTotal;
 		TH2F* hPhiStandard;
 		TH2F* hPhiHybrid1;
-
-		TH2F* hPtVsP[4];
-		TH1F* hPhiData[3];
-//		TH2F* hNchVsPtPos[3];
-//		TH2F* hNchVsPtNeg[3];
-		TH2F* hNchVsPtPosTPC[3];
-		TH2F* hNchVsPtNegTPC[3];
-		TH2F* hNchVsPtPosTOF[3];
-		TH2F* hNchVsPtNegTOF[3];
-
-		TH3F* hNchVsPtDataPosPionTPC[3][4];
-		TH3F* hNchVsPtDataNegPionTPC[3][4];
-		TH3F* hNchVsPtDataPosKaonTPC[3][4];
-		TH3F* hNchVsPtDataNegKaonTPC[3][4];
-		TH3F* hNchVsPtDataPosProtonTPC[3][4];
-		TH3F* hNchVsPtDataNegProtonTPC[3][4];
-
-		TH3F* hNchVsPtDataPosTOF[4][4];
-		TH3F* hNchVsPtDataNegTOF[4][4];
 
 		TF1* fEtaCalibration;
 		TF1* fEtaCalibrationEl;
@@ -173,29 +194,10 @@ class AliAnalysisTaskSpectraRT : public AliAnalysisTaskSE
 		TF1* fcutLow;
 		TF1* fcutHigh;
 
-		// Histos rTPC
+		AliAnalysisTaskSpectraMC(const AliAnalysisTaskSpectraMC&);            // not implemented
+		AliAnalysisTaskSpectraMC& operator=(const AliAnalysisTaskSpectraMC&); // not implemented
 
-		TH2F* hMIPVsEta; 	
-		TProfile* pMIPVsEta;
-		TH2F* hPlateauVsEta; 	
-		TProfile* pPlateauVsEta;
-		TH2F* histEV0[4];
-		TH2F* histPV0[4];
-		TH2F* histPiV0[4];
-		TH2F* hMIPVsEtaV0s;
-		TProfile* pMIPVsEtaV0s;
-		TH2F* histPiTof[4];
-		//		TH2D* hMIPVsPhi[4];
-		//		TProfile* pMIPVsPhi[4];
-		//		TH2D* hPlateauVsPhi[4];
-		//		TProfile* pPlateauVsPhi[4];
-		TH3F* hDeDxVsP[4][4];
-
-
-		AliAnalysisTaskSpectraRT(const AliAnalysisTaskSpectraRT&);            // not implemented
-		AliAnalysisTaskSpectraRT& operator=(const AliAnalysisTaskSpectraRT&); // not implemented
-
-		ClassDef(AliAnalysisTaskSpectraRT, 1);    //Analysis task for high pt analysis
+		ClassDef(AliAnalysisTaskSpectraMC, 1);    //Analysis task for high pt analysis
 };
 
 #endif
