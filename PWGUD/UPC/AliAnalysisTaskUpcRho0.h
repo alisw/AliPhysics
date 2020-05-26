@@ -89,6 +89,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t TrackPy_T[2];
 	Float_t TrackPz_T[2];
 	Bool_t ChipCut_T;
+	Bool_t TriggerTOF_T;
+	Bool_t TriggerSPD_T;
 	Int_t ITSModuleInner_T[2];
 	Int_t ITSModuleOuter_T[2];
 
