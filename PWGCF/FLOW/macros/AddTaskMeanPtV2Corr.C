@@ -2,7 +2,7 @@
 class AliAnalysisDataContainer;
 class TNamed;
 AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t IsMC=kFALSE, TString stage = "weights",
-                                                  TString weightPath = "", TString meanPtPath="")
+                                                  TString weightPath = "", TString meanPtPath="", TString NUAPath="")
 {
   Int_t StageSwitch = 0;
   if(stage.Contains("weights")) StageSwitch=1;
@@ -71,11 +71,22 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       if(meanPtPath.IsNull()) AliFatal("Mean pT path not provided!\n");
       if((!weightPath.Contains("alien:")) && meanPtPath.Contains("alien:")) TGrid::Connect("alien:"); //Only connect if not connected yet
       TFile *tfMPT = TFile::Open(meanPtPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
-      TList *fMPTList = (TList*)tfMPT->Get("MeanPts");
+      TList *fMPTList = (TList*)tfMPT->Get("MPTProfileList");
+      if(!fMPTList) AliFatal("fMPT list from file not fetcehd!");
       AliAnalysisDataContainer *cInMPT = mgr->CreateContainer("InputMeanPt",TList::Class(), AliAnalysisManager::kInputContainer);
       cInMPT->SetData(fMPTList);
       mgr->ConnectInput(task,2,cInMPT);
     };
+    if(!AllContainers->FindObject("AdHocNUA")) {
+      if(NUAPath.IsNull()) AliFatal("AdHoc NUA path not provided!\n");
+      if((!weightPath.Contains("alien:")) && !meanPtPath.Contains("alien:") && NUAPath.Contains("alien:") ) TGrid::Connect("alien:"); //Only connect if not connected yet
+      TFile *tfNUA = TFile::Open(NUAPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
+      TList *fNUAList = (TList*)tfNUA->Get("PIDWeights");
+      AliAnalysisDataContainer *cInNUA = mgr->CreateContainer("AdHocNUA",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInNUA->SetData(fNUAList);
+      mgr->ConnectInput(task,3,cInNUA);
+    };
+
     AliAnalysisDataContainer *cOutputCOV = mgr->CreateContainer("MPTDiff",TProfile::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputCOV);
     AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("FlowCont",AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
