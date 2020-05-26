@@ -92,6 +92,7 @@ set(SRCS
   AliAnalysisTaskCheckHFMCProd.cxx
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
+  AliAnalysisTaskCharmDecayTracks.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
