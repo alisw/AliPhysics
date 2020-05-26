@@ -333,7 +333,6 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	  else if(jd==2) fTrPar3.CopyFromVTrack(track);
 	}
       }
-      printf("fillTree = %d\n",fillTree);
       if(fillTree){
 	fTreeVarInt[0] = pdgCode;
 	fTreeVarFloat[0] = ptgen;
@@ -349,6 +348,8 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
       }
     }
   }
+
+  delete vHF;
   
   PostData(1,fOutput);
   PostData(2,fTrackTree);
