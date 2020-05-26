@@ -175,7 +175,8 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   AddSingleSecondaryLegMCSignal(task);
   AddPrimaryPairMCSignal(task);
   AddSecondaryPairMCSignal(task);
-  AddFourPairMCSignal(task);
+  AddFourPairMCSignal_PrimSec(task);
+  AddFourPairMCSignal_SecSec(task);
   std::vector<bool> PrimaryDielectronsPairNotFromSameMother = AddSinglePrimaryLegMCSignal(task);
   std::vector<bool> SecondaryDielectronsPairNotFromSameMother = AddSingleSecondaryLegMCSignal(task);
   task->AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(PrimaryDielectronsPairNotFromSameMother);

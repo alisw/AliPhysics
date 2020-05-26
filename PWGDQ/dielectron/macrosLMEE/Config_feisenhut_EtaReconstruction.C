@@ -90,7 +90,7 @@ bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = false;
+bool DoMassCut         = true;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 
@@ -1161,10 +1161,9 @@ task->AddSecondaryPairMCSignal(elePair_random_secondary);
 task->AddSecondaryPairMCSignal(elePair_NotSameMother_secondary);
 }
 
-void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
-  //#########################################
-  //########### Unlike Signe Signals ########
-  //#########################################
+
+
+void AddFourPairMCSignal_PrimSec(AliAnalysisTaskEtaReconstruction* task){
   // AliDielectronSignalMC for 4 particles
   // Seperate it into 2 pair MCSignals
   //
@@ -1420,33 +1419,88 @@ void AddFourPairMCSignal(AliAnalysisTaskEtaReconstruction* task){
 
 
 //________________________________________________________
-    task->AddFourPairMCSignal(FourElePair1_FinalState);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_from_Photon);
 
-    task->AddFourPairMCSignal(FourElePair1_FinalState_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_Photon_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_from_Photon_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_FromPion);
-    task->AddFourPairMCSignal(FourElePair2_FromPion);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FromPion);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_FromPion);
 
-    task->AddFourPairMCSignal(FourElePair1_FromPion_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_FromPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FromPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_FromPion_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_FromEta);
-    task->AddFourPairMCSignal(FourElePair2_FromEta);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FromEta);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_FromEta);
 
-    task->AddFourPairMCSignal(FourElePair1_FromEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_FromEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FromEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_FromEta_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_MissMatchPionEta_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchPionEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_MissMatchPionEta_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_MissMatchPionEta_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_MissMatchEtaPion_Dalitz);
-    task->AddFourPairMCSignal(FourElePair2_MissMatchEtaPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_MissMatchEtaPion_Dalitz);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_MissMatchEtaPion_Dalitz);
 
-    task->AddFourPairMCSignal(FourElePair1_FinalState_UndefinedMother);
-    task->AddFourPairMCSignal(FourElePair2_Secondary_from_UndefinedMother);
+    task->AddFourPairMCSignal_PrimSec(FourElePair1_FinalState_UndefinedMother);
+    task->AddFourPairMCSignal_PrimSec(FourElePair2_Secondary_from_UndefinedMother);
 
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair1_FinalState_UndefinedMother);
-    if(UseMCDataSig) task->AddFourPairMCSignal(FourAnyPartPair2_Secondary_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal_PrimSec(FourAnyPartPair1_FinalState_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal_PrimSec(FourAnyPartPair2_Secondary_UndefinedMother);
+}
+
+
+
+
+void AddFourPairMCSignal_SecSec(AliAnalysisTaskEtaReconstruction* task){
+  // AliDielectronSignalMC for 4 particles
+  // Seperate it into 2 pair MCSignals
+  //
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourElePair1_Secondary_from_Photon("FourElePair1_Secondary_from_Photon","FourElePair1_Secondary_from_Photon");
+        FourElePair1_Secondary_from_Photon.SetLegPDGs(11,-11);
+        FourElePair1_Secondary_from_Photon.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair1_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair1_Secondary_from_Photon.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair1_Secondary_from_Photon.SetMotherPDGs(22, 22); //
+
+
+      // Second Pair
+        AliDielectronSignalMC FourElePair2_Secondary_from_Photon("FourElePair2_Secondary_from_Photon","FourElePair2_Secondary_from_Photon");
+        FourElePair2_Secondary_from_Photon.SetLegPDGs(11,-11);
+        FourElePair2_Secondary_from_Photon.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourElePair2_Secondary_from_Photon.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourElePair2_Secondary_from_Photon.SetMothersRelation(AliDielectronSignalMC::kSame);
+        FourElePair2_Secondary_from_Photon.SetMotherPDGs(22, 22); //
+
+  //________________________________________________________
+      // First Pair
+        AliDielectronSignalMC FourAnyPartPair1_Secondary_UndefinedMother("FourAnyPartPair1_Secondary_UndefinedMother","FourAnyPartPair1_Secondary_UndefinedMother");
+        FourAnyPartPair1_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair1_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair1_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair1_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+      // Second Pair
+        AliDielectronSignalMC FourAnyPartPair2_Secondary_UndefinedMother("FourAnyPartPair2_Secondary_UndefinedMother","FourAnyPartPair2_Secondary_UndefinedMother");
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegPDGs(0,0);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+        FourAnyPartPair2_Secondary_UndefinedMother.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+        // mother
+        FourAnyPartPair2_Secondary_UndefinedMother.SetMothersRelation(AliDielectronSignalMC::kUndefined);
+
+
+
+//________________________________________________________
+    task->AddFourPairMCSignal_SecSec(FourElePair1_Secondary_from_Photon);
+    task->AddFourPairMCSignal_SecSec(FourElePair2_Secondary_from_Photon);
+
+    if(UseMCDataSig) task->AddFourPairMCSignal_SecSec(FourAnyPartPair1_Secondary_UndefinedMother);
+    if(UseMCDataSig) task->AddFourPairMCSignal_SecSec(FourAnyPartPair2_Secondary_UndefinedMother);
 }
