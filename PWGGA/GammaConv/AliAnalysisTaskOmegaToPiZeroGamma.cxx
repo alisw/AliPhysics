@@ -449,6 +449,10 @@ AliAnalysisTaskOmegaToPiZeroGamma::~AliAnalysisTaskOmegaToPiZeroGamma()
     delete fmaxfit;
     fmaxfit = 0x0;
   }
+  if(fAODMCTrackArray){
+    delete[] fAODMCTrackArray;
+    fAODMCTrackArray = 0x0;
+  }
 }
 //___________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::InitBack(){
