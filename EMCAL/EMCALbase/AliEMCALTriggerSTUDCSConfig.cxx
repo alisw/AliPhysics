@@ -33,9 +33,6 @@ ClassImp(AliEMCALTriggerSTUDCSConfig) ;
 ClassImp(AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount) ;
 /// \endcond
 
-///
-/// Default constructor.
-//_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject(),
 fGetRawData(1),
 fRegion(0xFFFFFFFF),
@@ -56,9 +53,6 @@ fMedian(0)
   memset(fTRUErrorCounts, 0, sizeof(TClonesArray *) * 68);
 }
 
-///
-/// Copy constructor.
-//_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig(const AliEMCALTriggerSTUDCSConfig &obj) : TObject(),
 fGetRawData(1),
 fRegion(0xFFFFFFFF),
@@ -99,10 +93,6 @@ fMedian(0)
   SetMedianMode(obj.GetMedianMode());
 }
 
-
-///
-/// Destructor.
-//_____________________________________________________________________________
 AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig()
 {
   for(int itru = 0; itru < 68; itru++)
@@ -111,9 +101,6 @@ AliEMCALTriggerSTUDCSConfig::~AliEMCALTriggerSTUDCSConfig()
   }
 }
 
-///
-/// Get Segmentation.
-//_____________________________________________________________________________
 void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const
 {
   v1.Set(1., 1.);
@@ -125,9 +112,6 @@ void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TV
   v4.Set(js, js);
 }
 
-///
-/// Set TRU error counts.
-//_____________________________________________________________________________
 void  AliEMCALTriggerSTUDCSConfig::SetTRUErrorCounts(Int_t itru, Int_t itime, ULong64_t errorcounts)
 {
   if(itru > 67) return;
@@ -148,9 +132,6 @@ void  AliEMCALTriggerSTUDCSConfig::SetTRUErrorCounts(Int_t itru, Int_t itime, UL
   }
 }
 
-///
-/// \return time-dependent error counts for a given TRU.
-//_____________________________________________________________________________
 TClonesArray *AliEMCALTriggerSTUDCSConfig::GetErrorCountsForTRU(Int_t itru) const
 {
   if(itru > 67) return NULL;
