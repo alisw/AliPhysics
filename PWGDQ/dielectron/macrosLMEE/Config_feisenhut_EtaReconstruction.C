@@ -90,7 +90,7 @@ bool DoPairing         = true;
 bool DoFourPairing     = true;
 bool UsePreFilter      = true;
 bool UseSecPreFilter   = true;
-bool DoMassCut         = true;
+bool DoMassCut         = false;
 bool V0OnFlyStatus     = true; // true stands for OnFlyStatus:aktive ; false means deaktivated
 // bool DoULSLS   = true;
 

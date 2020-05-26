@@ -755,10 +755,10 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fHistBeforeSecSecPrefilter->Sumw2();
         fHistAfterPrimSecPrefilter->Sumw2();
         fHistAfterSecSecPrefilter->Sumw2();
-        fVecHistPrefilters.push_back(fHistBeforeSecSecPrefilter);
         fVecHistPrefilters.push_back(fHistBeforePrimSecPrefilter);
-        fVecHistPrefilters.push_back(fHistAfterSecSecPrefilter);
         fVecHistPrefilters.push_back(fHistAfterPrimSecPrefilter);
+        fVecHistPrefilters.push_back(fHistBeforeSecSecPrefilter);
+        fVecHistPrefilters.push_back(fHistAfterSecSecPrefilter);
         fFourPairList->Add(fHistBeforePrimSecPrefilter);
         fFourPairList->Add(fHistAfterPrimSecPrefilter);
         fFourPairList->Add(fHistBeforeSecSecPrefilter);
