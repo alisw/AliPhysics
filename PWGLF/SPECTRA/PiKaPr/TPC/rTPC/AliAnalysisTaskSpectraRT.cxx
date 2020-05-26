@@ -1048,8 +1048,8 @@ double AliAnalysisTaskSpectraRT::DeltaPhi(Double_t phi, Double_t Lphi,
 
 	Double_t dphi = -999;
 	Double_t pi = TMath::Pi();
-//	if(Lphi > 2*pi || Lphi < 0)cout << "Lphi :: " << Lphi << endl;
-//	if(phi  > 2*pi || phi < 0)cout << "phi = " << phi << endl;
+	//	if(Lphi > 2*pi || Lphi < 0)cout << "Lphi :: " << Lphi << endl;
+	//	if(phi  > 2*pi || phi < 0)cout << "phi = " << phi << endl;
 
 	if(phi < 0)          phi += 2*pi;
 	else if(phi > 2*pi)  phi -= 2*pi;
@@ -1202,6 +1202,8 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 		}
 
 		hPtVsP[nh]->Fill(esdTrack->P(),esdTrack->Pt());
+		if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion))<2.0 )
+			histPiTof[nh]->Fill(esdTrack->P(),esdTrack->GetTPCsignal());
 
 		//
 		//_______________________________ TOF PID
@@ -1210,48 +1212,49 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 
 		bool IsTOFout = kFALSE;
 		IsTOFout = TOFPID(esdTrack);
-		if(!IsTOFout) continue;
+		if(IsTOFout){
 
-		double trkLength = esdTrack->GetIntegratedLength();
-		double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
+			double trkLength = esdTrack->GetIntegratedLength();
+			double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
 
-		if(TMath::Abs(DPhi)<pi/3.0){
-			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTOF[0]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataPosTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);
+			if(TMath::Abs(DPhi)<pi/3.0){
+				if(esdTrack->Charge() > 0){
+					hNchVsPtPosTOF[0]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataPosTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);
+				}
+				if(esdTrack->Charge() < 0){
+					hNchVsPtNegTOF[0]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataNegTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);	
+				}
 			}
-			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTOF[0]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataNegTOF[0][nh]->Fill(esdTrack->P(),beta,multTSdata);	
+			else if(TMath::Abs(DPhi-pi)<pi/3.0){
+				if(esdTrack->Charge() > 0){
+					hNchVsPtPosTOF[1]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataPosTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);
+				}
+				if(esdTrack->Charge() < 0){
+					hNchVsPtNegTOF[1]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataNegTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);	
+				}
 			}
-		}
-		else if(TMath::Abs(DPhi-pi)<pi/3.0){
-			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTOF[1]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataPosTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);
+			else{
+				if(esdTrack->Charge() > 0){
+					hNchVsPtPosTOF[2]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataPosTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);
+				}
+				if(esdTrack->Charge() < 0){
+					hNchVsPtNegTOF[2]->Fill(esdTrack->Pt(),multTSdata);
+					hNchVsPtDataNegTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);	
+				}
 			}
-			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTOF[1]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataNegTOF[1][nh]->Fill(esdTrack->P(),beta,multTSdata);	
-			}
-		}
-		else{
-			if(esdTrack->Charge() > 0){
-				hNchVsPtPosTOF[2]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataPosTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);
-			}
-			if(esdTrack->Charge() < 0){
-				hNchVsPtNegTOF[2]->Fill(esdTrack->Pt(),multTSdata);
-				hNchVsPtDataNegTOF[2][nh]->Fill(esdTrack->P(),beta,multTSdata);	
-			}
-		}
 
-		if(esdTrack->Charge() > 0)
-			hNchVsPtDataPosTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);
+			if(esdTrack->Charge() > 0)
+				hNchVsPtDataPosTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);
 
-		if(esdTrack->Charge() < 0)
-			hNchVsPtDataNegTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);	
+			if(esdTrack->Charge() < 0)
+				hNchVsPtDataNegTOF[3][nh]->Fill(esdTrack->P(),beta,multTSdata);	
 
+		}	// TOF 
 
 		//
 		//_______________________________ rTPC PID
@@ -1281,9 +1284,6 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 				}
 			}
 		}
-
-		if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion))<2.0 )
-			histPiTof[nh]->Fill(momentum,dedx);
 
 		/*if( momentum <= 0.6 && momentum >= 0.4  ){
 		  if( dedx < fDeDxMIPMax && dedx > fDeDxMIPMin ){
@@ -1335,7 +1335,6 @@ void AliAnalysisTaskSpectraRT::ProduceArrayV0ESD(){
 	Double_t  lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
 
 	AliAODVertex* myPrimaryVertex = new AliAODVertex(lPrimaryVtxPosition, lPrimaryVtxCov, lPrimaryVtxChi2, NULL, -1, AliAODVertex::kPrimary);
-
 
 	//
 	// LOOP OVER V0s, K0s, L, AL
