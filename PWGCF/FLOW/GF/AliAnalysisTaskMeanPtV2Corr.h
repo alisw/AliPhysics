@@ -28,6 +28,7 @@ class AliVParticle;
 class AliGFWCuts;
 class AliGFWFlowContainer;
 class AliPIDResponse;
+class AliPIDCombined;
 
 class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
  public:
@@ -51,6 +52,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void LoadWeightAndMPT(AliAODEvent*);
   void GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t runno, TString pf="");
   Bool_t WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType);
+  void FillWPCounter(Double_t[5], Double_t, Double_t);
+  void CalculateMptValues(Double_t[4], Double_t[5]);
+  Bool_t LoadMyWeights(Int_t lRunNo = 0);
+  Int_t GetBayesPIDIndex(AliAODTrack*);
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -59,6 +64,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t fStageSwitch;
   Bool_t fIsMC;
   AliPIDResponse *fPIDResponse; //!
+  AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
   TProfile *fmPT; //!
   TProfile *fmPT_pi; //!
@@ -74,6 +80,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliGFWWeights *fWeights_pi;//! This should be stored in TList
   AliGFWWeights *fWeights_ka;//! This should be stored in TList
   AliGFWWeights *fWeights_pr;//! This should be stored in TList
+  TList *fNUAList; //!
+  TH2D **fNUAHist; //!
   Int_t fRunNo; //!
   AliGFWCuts *fMidSelection; //!
   AliGFWCuts *fFWSelection; //!
