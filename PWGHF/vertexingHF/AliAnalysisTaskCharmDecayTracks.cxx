@@ -62,7 +62,7 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fTriggerMask(AliVEvent::kAnyINT),
   fGoUpToQuark(kTRUE),
   fKeepNegID(kFALSE),
-  fMethod(1)
+  fMethod(0)
 {
   /// default constructor
 
