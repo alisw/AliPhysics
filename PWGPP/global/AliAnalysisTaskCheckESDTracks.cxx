@@ -762,16 +762,17 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
-  int nbinsSparseIP[4]={nPtBins4ip,100,nIPBins4ip,3};
-  double xminSparseIP[4]={ptBins4ip[0],-0.25,ipBins4ip[0],-1.5};
-  double xmaxSparseIP[4]={ptBins4ip[nPtBins4ip],0.25,ipBins4ip[nIPBins4ip],1.5};
-  fHistPtDeltaPtTrueImpParXY = new THnSparseF("hPtDeltaPtTrueImpParXY","",4,nbinsSparseIP,xminSparseIP,xmaxSparseIP);
+  int nbinsSparseIP[5]={nPtBins4ip,100,nIPBins4ip,3,3};
+  double xminSparseIP[5]={ptBins4ip[0],-0.25,ipBins4ip[0],-1.5,-1.5};
+  double xmaxSparseIP[5]={ptBins4ip[nPtBins4ip],0.25,ipBins4ip[nIPBins4ip],1.5,1.5};
+  fHistPtDeltaPtTrueImpParXY = new THnSparseF("hPtDeltaPtTrueImpParXY","",5,nbinsSparseIP,xminSparseIP,xmaxSparseIP);
   fHistPtDeltaPtTrueImpParXY->GetAxis(0)->SetTitle(xTit.Data());
   fHistPtDeltaPtTrueImpParXY->GetAxis(0)->Set(nPtBins4ip,ptBins4ip);
   fHistPtDeltaPtTrueImpParXY->GetAxis(1)->SetTitle("p_{T}^{reco}-p_{T}^{true} (GeV/c)");
   fHistPtDeltaPtTrueImpParXY->GetAxis(2)->SetTitle("d_{0}^{xy} (#mum)");
   fHistPtDeltaPtTrueImpParXY->GetAxis(2)->Set(nIPBins4ip,ipBins4ip);
-  fHistPtTPCInwVsPtVsPtTrueTPCsel->GetAxis(3)->SetTitle("IsPrimary");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(3)->SetTitle("IsPrimary");
+  fHistPtDeltaPtTrueImpParXY->GetAxis(4)->SetTitle("Charge");
   fOutput->Add(fHistPtDeltaPtTrueImpParXY);
   
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,25,0.,5.,50,0.,50.);
@@ -1241,7 +1242,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
 	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
 	if(fFillSparses){
-	  double arrayForSparseIP[4]={ptOnX,pttrack-ptgen,impactXY*10000.,(Float_t)isPhysPrim};
+	  double arrayForSparseIP[5]={ptOnX,pttrack-ptgen,impactXY*10000.,(Float_t)isPhysPrim,(Float_t)chtrack};
 	  fHistPtDeltaPtTrueImpParXY->Fill(arrayForSparseIP);
 	}
       }
