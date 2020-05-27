@@ -15,7 +15,6 @@ class TH1F;
 class AliAODTrack;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliRDHFCuts.h"
 
 class AliAnalysisTaskCharmDecayTracks : public AliAnalysisTaskSE
 {
@@ -31,6 +30,9 @@ public:
   virtual void Terminate(Option_t *option);
 
   void SetSelectedHadron(Int_t pdg){fSelSpecies=pdg;}
+  void SetUseCandidatesFromDeltaAOD(){fMethod=1;}
+  void SetUseCharmedHadronsFromKine(){fMethod=0;}
+  
   void SetReadMC(Bool_t read){fReadMC=read;}
   void SetKeepNegIDtracks(Bool_t nid){fKeepNegID=nid;}
   void SetTrackCuts(AliESDtrackCuts* cuts){
@@ -64,6 +66,7 @@ private:
 
   TList* fOutput;                  //!<! list send on output slot 0
   TH1F*  fHistNEvents;             //!<! histo with number of events
+  TH1F*  fHistNCand;               //!<! histo with number of candidates
   TTree* fTrackTree;               //!<! output tree
   Int_t*   fTreeVarInt;            //!<! variables to be written to the tree
   Float_t* fTreeVarFloat;          //!<! variables to be written to the tree
@@ -73,16 +76,17 @@ private:
   Int_t  fSelSpecies;              /// Charmed hadron species to analyse
   UInt_t fFilterMask;              /// FilterMask
   AliESDtrackCuts* fTrCuts;        /// track selection
-  Int_t fMapTrLabel[kMaxLabel];              /// map of track labels
+  Int_t fMapTrLabel[kMaxLabel];    /// map of track labels
   Bool_t fReadMC;                  ///  flag for access to MC
   Bool_t fUsePhysSel;              /// flag use/not use phys sel
   Bool_t fUsePileupCut;            /// flag use/not use phys pileup cut
   Int_t  fTriggerMask;             /// mask used in physics selection
   Bool_t fGoUpToQuark;             /// flag for definition of c,b origin
   Bool_t fKeepNegID;               /// flag to keep also track with negative ID
-
+  Int_t fMethod;                   /// analysis from kine or from deltaAOD
+  
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCharmDecayTracks,1); 
+  ClassDef(AliAnalysisTaskCharmDecayTracks,2);
   /// \endcond
 };
 
