@@ -1,5 +1,5 @@
 AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
-							 Int_t optMeth=0,
+							 TString optMeth="kine",
 							 Int_t filterMask = 16){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -11,8 +11,10 @@ AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
   dTask->SetReadMC(kTRUE);
   dTask->SetFilterMask(filterMask);
   dTask->SetSelectedHadron(pdgCode);
-  if(optMeth==0) dTask->SetUseCharmedHadronsFromKine();
-  else dTask->SetUseCandidatesFromDeltaAOD();
+  optMeth.ToLower();
+  if(optMeth.Contains("cand") || optMeth.Contains("delta")) dTask->SetUseCandidatesFromDeltaAOD();
+  else dTask->SetUseCharmedHadronsFromKine();
+
 
   // Create containers for input/output
   TString baseName="CharmDecayTracks";
