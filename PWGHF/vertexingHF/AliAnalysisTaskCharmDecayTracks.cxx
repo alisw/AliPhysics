@@ -33,6 +33,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliESDtrack.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
 #include "AliAODRecoDecayHF.h"
@@ -50,6 +51,8 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fOutput(0x0),
   fHistNEvents(0x0),
   fHistNCand(0x0),
+  fHistTrLab(0x0),
+  fHistCluTPCSplitTr(0x0),
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
@@ -80,6 +83,8 @@ AliAnalysisTaskCharmDecayTracks::~AliAnalysisTaskCharmDecayTracks()
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNCand;
+    delete fHistTrLab;
+    delete fHistCluTPCSplitTr;
     delete fTrackTree;
   }
 
@@ -127,6 +132,12 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fHistNCand->GetXaxis()->SetBinLabel(13,"Daughter track not selected");
   fHistNCand->GetXaxis()->SetBinLabel(14,"Daughter tracks OK");
   fOutput->Add(fHistNCand);
+  
+  fHistTrLab=new TH1F("hTrLab","",12,-1.5,10.5);
+  fOutput->Add(fHistTrLab);
+
+  fHistCluTPCSplitTr=new TH2F("hCluTPCSplitTr","",10,0.5,10.5,160,-0.5,159.5);
+  fOutput->Add(fHistCluTPCSplitTr);
   
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
@@ -456,9 +467,30 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
     AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
     if(!tr) continue;
     if(tr->GetID()<0) continue;
+    if(tr->GetStatus()&AliESDtrack::kITSpureSA) continue;
+    if(!(tr->GetStatus()&AliESDtrack::kITSin)) continue;
     Int_t lab=TMath::Abs(tr->GetLabel());
-    if(lab<kMaxLabel) fMapTrLabel[lab]=it;
-    else printf("Label %d exceeds upper limit\n",lab);
+    if(lab<kMaxLabel){
+      Int_t countSplit=1;
+      fHistCluTPCSplitTr->Fill(countSplit,tr->GetTPCncls());
+      for(Int_t it2=it+1; it2<nTracks; it2++) {
+	AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(aod->GetTrack(it2));
+	if(!tr2) continue;
+	if(tr2->GetID()<0) continue;
+	if(tr2->GetStatus()&AliESDtrack::kITSpureSA) continue;
+	if(!(tr2->GetStatus()&AliESDtrack::kITSin)) continue;
+	Int_t lab2=TMath::Abs(tr2->GetLabel());
+	if(lab2==lab){
+	  countSplit++;
+	  fHistCluTPCSplitTr->Fill(countSplit,tr2->GetTPCncls());
+	}
+      }
+      fHistTrLab->Fill(countSplit);
+      fMapTrLabel[lab]=it;
+    }else{
+      fHistTrLab->Fill(-1);
+      printf("Label %d exceeds upper limit\n",lab);
+    }
   }
   return;
 }
