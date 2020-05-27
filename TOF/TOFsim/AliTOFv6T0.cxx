@@ -2128,9 +2128,9 @@ void AliTOFv6T0::StepManager()
   //
 
   TLorentzVector mom, pos;
-  Float_t xm[3],pm[3],xpad[3],ppad[3];
-  Float_t hits[14];
-  Int_t   vol[5];
+  Float_t xm[3]={0.},pm[3]={0.},xpad[3]={0.},ppad[3]={0.};
+  Float_t hits[14]={0.};
+  Int_t   vol[5]={0};
   Int_t   sector, plate, padx, padz, strip;
   Int_t   copy, padzid, padxid, stripid, i;
   Int_t   *idtmed = fIdtmed->GetArray()-499;
@@ -2171,7 +2171,8 @@ void AliTOFv6T0::StepManager()
     fMC->TrackPosition(pos);
     fMC->TrackMomentum(mom);
 
-    Double_t normMom=1./mom.Rho();
+    Double_t mrho=mom.Rho();
+    Double_t normMom=(mrho>0)?1./mrho:1.;
 
     //  getting the coordinates in pad ref system
 

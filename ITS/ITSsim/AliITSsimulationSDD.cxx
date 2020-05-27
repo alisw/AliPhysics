@@ -415,7 +415,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Float_t xloc=xL[0];
     Float_t zloc=xL[2]+0.5*dxL[2];
     zAnode=seg->GetAnodeFromLocal(xloc,zloc); // anode number in the range 0.-511.
-    driftSpeed = res->GetDriftSpeedAtAnode(zAnode);
+    driftSpeed = TMath::Abs(res->GetDriftSpeedAtAnode(zAnode));
     driftSpeed+= fDetType->GetResponseSDD()->GetDeltaVDrift(fModule,zAnode>255);
 
     if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
@@ -478,7 +478,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       //      if(avDrft*xloc<0) AliDebug(1,Form("Swap of side xloc_orig=%f  xloc_now=%f",xloc,avDrft));
       iWing = seg->GetSideFromLocalX(avDrft);
     
-      driftSpeed = res->GetDriftSpeedAtAnode(zAnode);	
+      driftSpeed = TMath::Abs(res->GetDriftSpeedAtAnode(zAnode));
       driftSpeed+= fDetType->GetResponseSDD()->GetDeltaVDrift(fModule,zAnode>255);
       driftPath = TMath::Abs(10000.*avDrft);
       driftPath = sddLength-driftPath;

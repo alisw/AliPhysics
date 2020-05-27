@@ -19,9 +19,13 @@ Float_t EtaToTheta(Float_t arg) {
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
 
-void commonConfig(){
+void commonConfig(Bool_t fluka = kFALSE){
   // The logical groups are separated using comment lines
   
+  //=======================================================================
+  // Set modified cuts from
+  gAlice->GetMCApp()-> SetTransPar("$(ALICE_ROOT)/data/falice.cuts");
+
   //=======================================================================
   // Set Random Number seed
   gRandom->SetSeed(sseed);
@@ -153,6 +157,7 @@ void commonConfig(){
   if (iTPC) {
     // TPC parameters
     AliTPC *TPC = new AliTPCv2("TPC", "Default");
+    if (fluka) TPC->SetPrimaryIonisation();
   }
   
   if (iTOF) {

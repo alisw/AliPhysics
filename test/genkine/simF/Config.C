@@ -6,7 +6,7 @@ void Config()
   // magnetic field and generator. The initialization of
   // the random generator seed is also there
 
-  gROOT->Macro("../commonConfig.C");
+  gROOT->Macro("../commonConfig.C\(kTRUE\)");
 
 
   //=======================================================================

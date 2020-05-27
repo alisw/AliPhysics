@@ -1,0 +1,726 @@
+*******************************************
+*                                         *
+* Special Cuts to Opimize Tracking Speed  *
+*                                         *
+*******************************************
+*  ---  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA
+*  ---  ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+
+* ITS
+* ===
+* ITS sensitive Si medium cuts values
+*   Med  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* "SI"
+ITS  1   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD SI CHIP"
+ITS  2   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD SI BUS"
+ITS  3   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "C (M55J)"
+ITS  4   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "AIR" Volumes "ITSV", "ITSD"
+ITS  5   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "GEN AIR"
+ITS  6   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD SI CHIP"
+ITS  7   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD C (M55J)"
+ITS  9   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD AIR"
+ITS  10  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "AL"
+ITS  11  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "WATER"
+ITS  12  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "Freon"
+ITS  13  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "COPPER"
+ITS  14  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "CERAMICS"
+ITS  15  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SSD C (M55J)"
+ITS  20  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SSD AIR"
+ITS  21  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "G10FR4"
+ITS  25  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "GEN C (M55J)"
+ITS  26  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "GEN Air"
+ITS  27  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD SI"
+ITS  51  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD SI CHIP"
+ITS  52  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD SI BUS" Volumes "I123", "I120", "I121", "I122", "I144"
+ITS  53  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD C (M55J)" Volumes "IT12", "I12A", "I10A", "I20A"
+ITS  54  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD AIR"
+ITS  55  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD KAPTON(POLYCH2)"
+ITS  56  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "EPOXY"
+ITS  61  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SILICON"
+ITS  62  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "KAPTONH(POLYCH2)"
+ITS  63  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ALUMINUM"
+ITS  64  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "INOX"
+ITS  65  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ROHACELL"
+ITS  68  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD C AL (M55J)"
+ITS  69  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDDKAPTON (POLYCH2)"
+ITS  70  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ITS SANDW A"
+ITS  71  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ITS SANDW B"
+ITS  72  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ITS SANDW C"
+ITS  73  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "HEAT COND GLUE"
+ITS  74  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "ELASTO SIL"
+ITS  75  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPDBUS(AL+KPT+EPOX)"
+ITS  76  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD X7R capacitors"
+ITS  77  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD ruby sph. Al2O3"
+ITS  78  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD SI insensitive"
+ITS  79  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD HV microcable"
+ITS  80  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD LV+signal cable"
+ITS  81  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD hybrid microcab"
+ITS  82  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD anode microcab"
+ITS  83  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD/SSD rings"
+ITS  84  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "inox/alum"
+ITS  85  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* AIR FMD SDD
+ITS  86  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* AIR FMD SSD
+ITS  87  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* ITS SANDW
+ITS  88  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* ITS SANDW
+ITS  89  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD shield"
+ITS  90  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD End ladder"
+ITS  91  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SPD cone"
+ITS  92  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SDD cone"
+ITS  94  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* "SSD cone"
+ITS  96  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* SPD Services
+ITS  97  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* SD OPTIC
+ITS  98  3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+
+* TPC
+* ===
+
+TPC  0 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.  -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  1 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. 1 1 1 1 1 1 3 1 1 1 1
+TPC  2 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. 1 1 1 1 1 1 3 1 1 1 1
+TPC  3 1e-5 1e-5 1e-3 1e-3 1e-5 1e-5 1e-5 1e-5 1e-5 -1. -1 -1 -1 1 1 1 3 1 1 1 1 
+TPC  20 1e-6 1e-6 1e-3 1e-3 1e-6 1e-6 1e-6 1e-6 1e-6 -1. 1 1 1 1 1 1 3 1 1 1 1
+TPC  4 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  5 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  6 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  7 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  8 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC  9 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 10 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 11 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 12 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 13 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 14 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+TPC 15 -1. -1. -1. -1. -1. -1. -1. -1. -1. -1.   -1 -1 -1 1 1 1 3 1 1 1 1
+
+* Front Absorber ABSO
+* ===================
+* CARBON
+* ^^^^^^
+* unshielded
+*       GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+ABSO  6 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1    -1    -1   -1    1   -1    1   -1   -1   -1   -1   -1
+* shielded
+ABSO 26 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 46 1.e-3 1.e-3 1.e-3 1.e-3
+
+* MAGNESIUM
+* ^^^^^^
+* unshielded
+ABSO  7 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1    -1    -1   -1    1   -1    1   -1   -1   -1   -1   -1
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+ABSO  9 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 29 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 49 1.e-3 1.e-3 1.e-3 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+*ABSO 10 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+*ABSO 20 1.e-3 1.e-3 1.e-3 2.e-3 
+* very shielded
+*ABSO 50 1.e-3 1.e-3 1.e-3 1.e-3
+
+* COPPER
+* ^^^^^^
+* unshielded
+*ABSO 11 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+*ABSO 21 1.e-3 1.e-3 1.e-3 2.e-3 
+* very shielded
+*ABSO 51 1.e-3 1.e-3 1.e-3 1.e-3
+
+* TUNGSTEN
+* ^^^^^^^^
+* unshielded
+ABSO 12 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 32 1.e-3 1.e-3 1.e-3 2.e-3 
+* very shielded
+ABSO 52 1.e-3 1.e-3 1.e-3 1.e-3
+
+* LEAD
+* ^^^^
+* unshielded
+ABSO 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 33 1.e-3 1.e-3 1.e-3 1.e-3 
+* very shielded
+ABSO 53 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^
+* unshielded
+ABSO 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 35 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 55 1.e-3 1.e-3 1.e-3 1.e-3
+
+* VACUUM
+* ^^^^^^
+* unshielded
+ABSO 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 36 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 56 1.e-3 1.e-3 1.e-3 1.e-3
+
+* CONCRETE
+* ^^^^^^^^
+* unshielded
+*       GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+ABSO 17 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4 -1.    -1.   -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1    -1
+* shielded
+ABSO 37 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 57 1.e-3 1.e-3 1.e-3 1.e-3
+
+* POLY CH_2
+* ^^^^^^^^^
+* unshielded
+ABSO 18 1.e-4 1.e-4 1.e-3 2.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 38 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 58 1.e-3 1.e-3 1.e-3 1.e-3
+
+* STEEL
+* ^^^^^
+* unshielded
+ABSO 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 39 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 59 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Ni-W-Cu
+* ^^^^^^^
+* unshielded
+ABSO 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 41 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 61 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Insulation Powder
+* ^^^^^^^^^^^^^^^^^
+* unshielded
+ABSO 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+ABSO 34 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+ABSO 54 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Beam Shield SHIL
+* ================
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+SHIL  9 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 29 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 49 1.e-3 1.e-3 1.e-3 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+SHIL 10 2.e-4 2.e-4 1.e-3 2.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 30 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 50 1.e-3 1.e-3 1.e-3 1.e-3
+
+* COPPER
+* ^^^^^^
+* unshielded
+SHIL 11 2.e-4 2.e-4 1.e-3 2.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 31 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 51 1.e-3 1.e-3 1.e-3 1.e-3
+
+* TUNGSTEN
+* ^^^^^^^^
+* unshielded
+SHIL 12 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 32 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 52 1.e-3 1.e-3 1.e-3 1.e-3
+
+* LEAD
+* ^^^^
+* unshielded
+SHIL 13 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 33 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 53 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^
+* unshielded
+SHIL 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 35 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 55 1.e-3 1.e-3 1.e-3 1.e-3
+* Muon transport region
+SHIL 75  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+
+* VACUUM
+* ^^^^^^
+* unshielded
+SHIL 16 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 36 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 56 1.e-3 1.e-3 1.e-3 1.e-3
+
+* STEEL
+* ^^^^^
+* unshielded
+SHIL 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 39 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 59 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Ni-W-Cu
+* ^^^^^^^
+* unshielded
+SHIL 21 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+SHIL 41 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 61 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Insulation Powder
+* ^^^^^^^^^^^^^^^^^
+* unshielded
+SHIL 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-4 1.e-4 1.e-4
+* shielded
+SHIL 34 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+SHIL 54 1.e-3 1.e-3 1.e-3 1.e-3
+
+
+* L3 Magnet MAG
+* =============
+
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+MAG  9 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+MAG 29 1.e-3 1.e-3 1.e-3 1.e-3
+
+* IRON
+* ^^^^
+* unshielded
+MAG 10 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+MAG 30 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^
+* unshielded
+MAG 15 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+MAG 35 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Dipole DIPO
+* =============
+* ALUMINUM
+* ^^^^^^^^
+* unshielded
+DIPO  9 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 29 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+DIPO 49 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Iron
+* ^^^^^^^^
+* unshielded
+DIPO 10 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 30 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^^^^^^
+* unshielded
+DIPO 15 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 35 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+DIPO 55 1.e-3 1.e-3 1.e-3 1.e-3
+* special muon 
+DIPO 75 1.e-4 1.e-4 1.e-3 1.e-4
+
+* Steel
+* ^^^^^^^^
+* unshielded
+DIPO 19 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 39 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+DIPO 59 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Coil
+* ^^^^^^^^
+* unshielded
+DIPO 14 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 34 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+DIPO 54 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Copper
+* ^^^^^^^^
+* unshielded
+DIPO 17 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
+* shielded
+DIPO 37 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+DIPO 57 1.e-3 1.e-3 2.e-3 1.e-3
+
+
+* Hall HALL
+* =========
+
+* STEEL
+* ^^^^^
+* unshielded
+HALL 10 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+HALL 30 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+HALL 50 1.e-3 1.e-3 1.e-3 1.e-3
+
+* Air
+* ^^^
+* unshielded
+HALL 15 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* shielded
+HALL 35 1.e-3 1.e-3 1.e-3 1.e-3
+* very shielded
+HALL 55 1.e-3 1.e-3 1.e-3 1.e-3
+
+* CONCRETE
+* ^^^^^^^^
+* close
+HALL 17 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+* far
+HALL 37 1.e-3 1.e-3 1.e-3 1.e-3
+* very far
+HALL 57 1.e-3 1.e-3 1.e-3 1.e-3
+
+
+* Beam Pipe PIPE
+* ==============
+*   Med  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* Beryllium
+PIPE  12  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE  32  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* C
+PIPE  13  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE  33  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* ALU
+PIPE  11  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE  31  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Air
+PIPE 15  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 35  1.e-3 1.e-3 2.e-3 1.e-3 
+PIPE 55  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Vacuum
+PIPE 16  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 36  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Steel
+PIPE 19  5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 39  1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* GETTER 
+PIPE 20 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 40 1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* AlBe
+PIPE 21 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 41 1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Polyamid
+PIPE 22 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 42 1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Kapton
+PIPE 23 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 43 1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* Anticorodal
+PIPE 24 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 5.e-5 5.e-5 5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+PIPE 44 1.e-3 1.e-3 5.e-5 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+
+
+* Space Frame (FRAME: 1200-1299)
+* ==============================
+
+* Air
+* ^^^
+FRAME 5 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* Steel
+* ^^^^^
+FRAME 65 5.e-5 5.e-5 5.e-5 5.e-5 1.e-3 1.e-3 1.e-3
+
+* TRD
+* ===
+*
+*    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL  STRA
+* Mylar
+TRD  27  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1     0
+* Gas mixture
+TRD   9  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     3     1     1     1     1     1
+*
+
+* MUON
+* ===
+*
+*    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL 
+* Air 
+MUON  1  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Aluminium
+MUON  4  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Aluminium bis
+MUON  5  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Gas mixture Ar+IsoC4H10 (not used)
+MUON  6  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+* Gaz mixture of the active medium of the trigger chambers
+MUON  7  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+* Bakelite of trigger chambers
+MUON  8  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Gas mixture Ar+C02 active medium of the tracking chambers
+MUON  9  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+* Cooper in the PCBs 
+MUON 11  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* G10 material
+MUON 12  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Carbon
+MUON 13  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Rohacell
+MUON 14  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Nomex
+MUON 15  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Noryl
+MUON 16  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Nomex bulk
+MUON 17  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* Copper bis
+MUON 22  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1
+* FR4 of the chambers
+MUON 23  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* Frame of the chambers
+MUON 24  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* FOAM of St1
+MUON 26  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* Sn+Pb of St1
+MUON 27  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* Plastic
+MUON 28  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* Kapton
+MUON 29  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+* InoxBolts of St1
+MUON 30  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
+
+* PHOS
+* ====
+*
+*    Med GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL STRA
+* Crystal
+PHOS  0   5e-5  1e-4  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
+* Titan cover
+PHOS  5   1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* Aluminium parts
+PHOS  2   1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* PIN diode
+PHOS  6   1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* PIN diode
+PHOS  6   1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  1e-4  -1.   1     1     1     1     1     1     3     1     1     1     1
+* ArCO2
+PHOS  16  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     2     1     1     1     1
+
+* PMD
+* ===
+* PMD sensitive medium cuts values
+*   Med  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* "Pb conv"
+PMD  1   1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* "Al Frame"
+PMD  4   1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* "ArCO2"
+PMD  5   1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* "G10"
+PMD  8   1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* "Cu"
+PMD 15   1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* "SS Support"
+PMD 19   1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 1.e-4 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+
+
+* FMD
+* ===
+* 
+*   Med  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* Si
+FMD  0   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Air
+FMD  1   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Plastic
+FMD  2   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* PCB
+FMD  3   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Si Chip
+FMD  4   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Al
+FMD  5   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Carbon
+FMD  6   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Copper
+FMD  7   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Kapton
+FMD  8   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+* Steel
+FMD  9   3.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 1.e-5 -1.   1    1    1    1   1     1   3     1    1    1   -1   -1
+
+
+* ZDC
+* ===
+* 
+*   Med  GAM   ELEC  NHAD  CHAD  MUON  EBREM MUHAB EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* W alloy
+ZDC  1   1e-3  1e-3  1e-2  1e-2
+* brass
+ZDC  2   1e-3  1e-3  1e-2  1e-2
+* Si02 (I)
+ZDC  3   1e-3  1e-3  1e-3  1e-3  0.01  1e-3  1e-3  -1     -1  -1     0    0    0    0   0     0   1     0    0    0   0
+* Si02 (II)
+ZDC  4   1e-3  1e-3  1e-3  1e-3  0.01  1e-3  1e-3  -1     -1  -1     0    0    0    0   0     0   1     0    0    0   0
+* Pb
+ZDC  5   1e-3  1e-3  1e-2  1e-2
+* Cu (to avoid too detailed showering in TDI)
+ZDC  6   .1  .1  1.  1.
+* Fe with energy loss and high thresholds (beam pipe)
+ZDC  7   .1  .1  1.  1.
+* Fe with energy loss and low threshold (recombination chamber)
+ZDC  8   1e-3  1e-3  1e-2  1e-2
+* Cu (luminometer)
+ZDC  9   1e-3  1e-3  1e-2  1e-2
+* void with field
+ZDC  11  1e-3  1e-3  1e-3  1e-3  0.01  1e-3  1e-3  -1     -1  -1     0    0    0    0   0     0   0     0    0    0   0
+* Graphite
+ZDC  14  .1  .1  1.  1.
+
+
+* EMCAL  
+* ====
+*
+*     Med   GAM   ELEC   NHAD   CHAD   MUON   EBREM  MUHAB   EDEL  MUDEL MUPA  ANNI  BREM  COMP  DCAY  DRAY  HADR  LOSS  MULS  PAIR  PHOT  RAYL STRA
+* Lead
+EMCAL  1   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1    -1
+* Scintillator
+EMCAL  2   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1    -1
+* Aluminium parts
+EMCAL  3   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1    -1
+* Steel parts
+EMCAL  4   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1    -1
+* Paper
+EMCAL  5   1.e-4  1.e-4  1.e-3  1.e-3  1.e-3  1.e-4  1.e-4  1.e-4  1.e-4  -1.   1     1     1     1     1     1     3     1     1     1     1    -1
+
+* HMPID
+* ====
+*
+*      Med GAM   ELEC NHAD   CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL
+* SiO2 Window     (>1000 keV delta-electrons)
+HMPID  3  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    1.e-3 1.e-3 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* C6F14 Radiator  (>  500 keV delta-electrons)
+HMPID  4  1.e-4 1.e-4 1.e-4  -1.   1.e-4 -1.   -1.    5.e-4 5.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Methane Gap     (>  100 keV delta-electrons)
+HMPID  5  5.e-5 1.e-5 1.e-4 -1.   1.e-4 -1.    -1.    1.e-4 1.e-4 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* CSI             (>  50 keV delta-electrons)
+HMPID  6  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Al              (>  50 keV delta-electrons)
+HMPID  7  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* Cu              (>  50 keV delta-electrons)
+HMPID  8  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+* W               (>  50 keV delta-electrons)
+HMPID  9  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1 
+
+* VZERO
+* ====
+*
+*      Med GAM   ELEC NHAD   CHAD  MUON  EBREM MUHAB  EDEL  MUDEL MUPA ANNI BREM COMP DCAY DRAY HADR LOSS MULS PAIR PHOT RAYL STRA
+* V0C Scintillator
+VZERO  4   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
+* V0A Scintillator
+VZERO  5   3.e-5 3.e-5 3.e-5 3.e-5 1.e-3 3.e-5 3.e-5 3.e-5 3.e-5 -1.  -1   -1   -1   -1   1    -1   1    -1   -1   -1   -1   -1
