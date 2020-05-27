@@ -18,6 +18,7 @@ AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
 
   // Create containers for input/output
   TString baseName="CharmDecayTracks";
+  baseName.Append(Form("_%s",optMeth.Data()));
   TString containerStr="";
   if(pdgCode==421) containerStr="Dzero";
   else if(pdgCode==411) containerStr="Dplus";
