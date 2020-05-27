@@ -66,7 +66,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
     AddAxis("MCinfo",4,-0.5,3.5);  // 0=prim, 1=decay 2=material, 3=genprim
     AddAxis("eta","#eta",10,-1.,+1.);
-    AddAxis("phi","#phi",144,0.,2*TMath::Pi());
+    AddAxis("phi","#phi",36,0.,2*TMath::Pi());
     AddAxis("z","Z",60,-30,+30);
     AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistEffCont = CreateHist("fHistEffCont");
@@ -77,7 +77,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("pt");
     AddAxis("Q",3,-1.5,1.5);
     AddAxis("eta","#eta",10,-1.,+1.);
-    AddAxis("phi","#phi",144,0.,2*TMath::Pi());
+    AddAxis("phi","#phi",36,0.,2*TMath::Pi());
     AddAxis("z","Z",60,-30,+30);
     AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
     fHistTrack = CreateHist("fHistTrack");
@@ -116,7 +116,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrackM) return;
     
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEtaInner, fPhiInner, fZInner, fTPCSignalN);
+    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEta, fPhi, fZInner, fTPCSignalN);
 }
 
 //_____________________________________________________________________________
@@ -128,7 +128,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEtaInner, fPhiInner, fZInner, fTPCSignalN);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEta, fPhi, fZInner, fTPCSignalN);
 
 }
 
@@ -184,6 +184,8 @@ AliAnalysisTaskSpectraEtaPhi* AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("tpcitsnogeonogold"));
 //     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetNeedEventMult(kTRUE);
+    task->SetNeedTrackIP(kTRUE);
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================
