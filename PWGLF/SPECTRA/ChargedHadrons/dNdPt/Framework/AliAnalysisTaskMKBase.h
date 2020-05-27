@@ -95,14 +95,24 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
         void                   SetCentralityEstimator(CentralityEstimator const _est) {fCentralityEstimator=_est;}
         CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
+    
+        // setters for switches
+        void                   SetUseBaseOutput(Bool_t _use=kTRUE){fUseBaseOutput=_use;}
+        void                   SetNeedEventVertex(Bool_t _use=kTRUE){fNeedEventVertex=_use;}
+        void                   SetNeedEventCent(Bool_t _use=kTRUE){fNeedEventCent=_use;}
+        void                   SetNeedEventMult(Bool_t _use=kTRUE){fNeedEventMult=_use;}
+        void                   SetNeedEventVZERO(Bool_t _use=kTRUE){fNeedEventVZERO=_use;}
+        void                   SetNeedTrackIP(Bool_t _use=kTRUE){fNeedTrackIP=_use;}
+        void                   SetNeedTrackTPC(Bool_t _use=kTRUE){fNeedTrackTPC=_use;}
+        void                   SetNeedTrackPID(Bool_t _use=kTRUE){fNeedTrackPID=_use;}
     protected:
         
-        virtual void          Log(const char* name) { Log(fLogHist,name); }        
-        virtual void          Err(const char* name) { Log(fLogErr,name); }        
-        virtual void          LogEvent(const char* name) { Log(fLogEvent,name); }
+        virtual void          Log(const char* name) {if(fUseBaseOutput) Log(fLogHist,name); }
+        virtual void          Err(const char* name) {if(fUseBaseOutput) Log(fLogErr,name); }
+        virtual void          LogEvent(const char* name) {if(fUseBaseOutput) Log(fLogEvent,name); }
         
-        virtual void          Log(const char* name, Int_t n)    { Log(fLogHist,name,n); }
-        virtual void          Log(const char* name, Double_t n) { Log(fLogHist,name,n); }
+        virtual void          Log(const char* name, Int_t n)    {if(fUseBaseOutput) Log(fLogHist,name,n); }
+        virtual void          Log(const char* name, Double_t n) {if(fUseBaseOutput) Log(fLogHist,name,n); }
         
         virtual void          Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
         virtual void          Log(TH1D* h, const char* name, Int_t n)    { TString s(name); s+=n; Log(h,s.Data()); }
@@ -338,12 +348,24 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         TH1D*                           fTrigHist;              //->  AliVEvent trigger classes
         TH1D*                           fTrigHistSelected;      //->  AliVEvent trigger classes of selected events    
         CentralityEstimator             fCentralityEstimator;
+    
+        // switches to enable or disable certain loops
+        Bool_t                          fUseBaseOutput;
+        // event level
+        Bool_t                          fNeedEventVertex;
+        Bool_t                          fNeedEventCent;
+        Bool_t                          fNeedEventMult;
+        Bool_t                          fNeedEventVZERO;
+        // track level
+        Bool_t                          fNeedTrackIP;
+        Bool_t                          fNeedTrackTPC;
+        Bool_t                          fNeedTrackPID;
 private:
         AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 6);
+    ClassDef(AliAnalysisTaskMKBase, 7);
     /// \endcond
     
 };

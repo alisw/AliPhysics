@@ -32,6 +32,7 @@ AliAnalysisTaskTPCMatchEff::AliAnalysisTaskTPCMatchEff()
     , fHistDATAMatchEff(0)
 {
     // default contructor
+
 }
 
 //_____________________________________________________________________________
@@ -42,6 +43,7 @@ AliAnalysisTaskTPCMatchEff::AliAnalysisTaskTPCMatchEff(const char* name)
     , fHistDATAMatchEff(0)   
 {
     // constructor
+ 
 }
 
 //_____________________________________________________________________________
@@ -155,7 +157,9 @@ AliAnalysisTaskTPCMatchEff* AliAnalysisTaskTPCMatchEff::AddTaskTPCMatchEff(const
     task->SetESDtrackCuts(2,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefitEta08"));
     task->SetESDtrackCuts(3,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+SPDhitEta08"));
     task->SetESDtrackCuts(4,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefit+SPDhitEta08"));
-    
+    task->SetNeedEventMult(kTRUE);
+    task->SetNeedEventCent(kTRUE);
+    task->SetNeedTrackTPC(kTRUE);
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================
