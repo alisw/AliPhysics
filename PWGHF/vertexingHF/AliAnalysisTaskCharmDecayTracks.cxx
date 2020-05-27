@@ -62,7 +62,7 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fTriggerMask(AliVEvent::kAnyINT),
   fGoUpToQuark(kTRUE),
   fKeepNegID(kFALSE),
-  fMethod(1)
+  fMethod(0)
 {
   /// default constructor
 
@@ -114,12 +114,25 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fHistNCand = new TH1F("hNCand", "Number of candidates",15,-0.5,14.5);
   fHistNCand->GetXaxis()->SetBinLabel(1,"Events with method 0");
   fHistNCand->GetXaxis()->SetBinLabel(2,"Events with method 1");
+  fHistNCand->GetXaxis()->SetBinLabel(3,Form("Pdg %d in kine",fSelSpecies));
+  fHistNCand->GetXaxis()->SetBinLabel(4,"Good decay channel");
+  fHistNCand->GetXaxis()->SetBinLabel(5,"MC truth OK");
+  fHistNCand->GetXaxis()->SetBinLabel(6,"Daughter particle not tracked");
+  fHistNCand->GetXaxis()->SetBinLabel(7,"Daughter track null pointer");
+  fHistNCand->GetXaxis()->SetBinLabel(8,"Daughter track label mismatch");
+  fHistNCand->GetXaxis()->SetBinLabel(9,"Daughter track not selected");
+  fHistNCand->GetXaxis()->SetBinLabel(10,"Daughter tracks OK");
+  fHistNCand->GetXaxis()->SetBinLabel(11,Form("Signal cand %d in AOD",fSelSpecies));
+  fHistNCand->GetXaxis()->SetBinLabel(12,"MC truth OK");
+  fHistNCand->GetXaxis()->SetBinLabel(13,"Daughter track not selected");
+  fHistNCand->GetXaxis()->SetBinLabel(14,"Daughter tracks OK");
   fOutput->Add(fHistNCand);
   
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
   fTreeVarInt = new Int_t[kNumOfIntVar];
   intVarName[0]="pdg"; // PDG code
+  intVarName[1]="origin"; // charm or beauty
   for(Int_t ivar=0; ivar<kNumOfIntVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
@@ -128,12 +141,15 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   floatVarName[0]="ptgenD";
   floatVarName[1]="phigenD";
   floatVarName[2]="ygenD";
-  floatVarName[3]="xprodv";
-  floatVarName[4]="yprodv";
-  floatVarName[5]="zprodv";
-  floatVarName[6]="xdecv";
-  floatVarName[7]="ydecv";
-  floatVarName[8]="zdecv";
+  floatVarName[3]="xcollv";
+  floatVarName[4]="ycollv";
+  floatVarName[5]="zcollv";
+  floatVarName[6]="xprodv";
+  floatVarName[7]="yprodv";
+  floatVarName[8]="zprodv";
+  floatVarName[9]="xdecv";
+  floatVarName[10]="ydecv";
+  floatVarName[11]="zdecv";
   for(Int_t ivar=0; ivar<kNumOfFloatVar; ivar++){
     fTrackTree->Branch(floatVarName[ivar].Data(),&fTreeVarFloat[ivar],Form("%s/F",floatVarName[ivar].Data()));
   }
@@ -287,35 +303,40 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
       else if(fSelSpecies==4122) retCode=AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC,mcPart,arrayDauLabels);
       if(retCode<0 || arrayDauLabels[0]==-1) continue;
       fHistNCand->Fill(3);
-      Bool_t fillTree=PrepareTreeVars(mcPart,arrayMC);
+      Bool_t fillTree=PrepareTreeVars(mcPart,arrayMC,mcHeader);
       if(fillTree) fHistNCand->Fill(4);
       for(Int_t jd=0; jd<nDauTr; jd++){
 	Int_t labTr=arrayDauLabels[jd];
 	Int_t idTr=fMapTrLabel[labTr];
 	if(idTr<0 || idTr>=aod->GetNumberOfTracks()){
+	  if(fillTree) fHistNCand->Fill(5);
 	  fillTree=kFALSE;
 	  continue;
 	}
 	AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(idTr));
 	if(!track){
+	  if(fillTree) fHistNCand->Fill(6);
 	  fillTree=kFALSE;
 	  continue;
 	}
 	if(TMath::Abs(track->GetLabel())!=labTr){
+	  if(fillTree) fHistNCand->Fill(7);
  	  fillTree=kFALSE;
 	  continue;
 	}
-	if(!IsTrackSelected(track)) fillTree=kFALSE;	  
+	if(!IsTrackSelected(track)){
+	  if(fillTree) fHistNCand->Fill(8);
+	  fillTree=kFALSE;
+	}
 	if(jd==0) fTrPar1.CopyFromVTrack(track);
 	else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	else if(jd==2) fTrPar3.CopyFromVTrack(track);
       }
       if(fillTree){
 	fTrackTree->Fill();
-	fHistNCand->Fill(5);
+	fHistNCand->Fill(9);
       }
     }
-    
   }else{
     fHistNCand->Fill(1);
     // vHF object is needed to call the method that refills the missing info of the candidates
@@ -357,16 +378,19 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	}
       }
       if(labD>=0){ 
-	fHistNCand->Fill(6);
+	fHistNCand->Fill(10);
 	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
 	if(!partD) continue;
-	Bool_t fillTree=PrepareTreeVars(partD,arrayMC);    
-	if(fillTree) fHistNCand->Fill(7);
+	Bool_t fillTree=PrepareTreeVars(partD,arrayMC,mcHeader);
+	if(fillTree) fHistNCand->Fill(11);
 	for(Int_t jd=0; jd<nDauTr; jd++){
 	  AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
 	  if(!track) fillTree=kFALSE;
 	  else{
-	    if(!IsTrackSelected(track)) fillTree=kFALSE;	  
+	    if(!IsTrackSelected(track)){
+	      if(fillTree) fHistNCand->Fill(12);
+	      fillTree=kFALSE;
+	    }
 	    if(jd==0) fTrPar1.CopyFromVTrack(track);
 	    else if(jd==1) fTrPar2.CopyFromVTrack(track);
 	    else if(jd==2) fTrPar3.CopyFromVTrack(track);
@@ -374,7 +398,7 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
 	}
 	if(fillTree){
 	  fTrackTree->Fill();
-	  fHistNCand->Fill(8);
+	  fHistNCand->Fill(14);
 	}
       }
     } 
@@ -439,16 +463,17 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
   return;
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD,TClonesArray *arrayMC){
+Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD, TClonesArray* arrayMC, AliAODMCHeader* mcHeader){
   /// fill MC truth info in the tree
   
-  fTreeVarInt[0] = 0.;
+  for(Int_t j=0; j<kNumOfIntVar; j++) fTreeVarInt[0] = 0.;
   for(Int_t j=0; j<kNumOfFloatVar; j++) fTreeVarFloat[j]=-9999.;
   if(!partD) return kFALSE;
+  Int_t pdgCode=partD->GetPdgCode();
+  Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);
   Double_t ptgen=partD->Pt();
   Double_t phigen=partD->Phi();
   Double_t ygen=partD->Y();
-  Int_t pdgCode=partD->GetPdgCode();
   Double_t xori=partD->Xv();
   Double_t yori=partD->Yv();
   Double_t zori=partD->Zv();
@@ -462,15 +487,19 @@ Bool_t AliAnalysisTaskCharmDecayTracks::PrepareTreeVars(AliAODMCParticle* partD,
   Double_t zdec=dauD->Zv();
   
   fTreeVarInt[0] = pdgCode;
+  fTreeVarInt[1] = orig;
   fTreeVarFloat[0] = ptgen;
   fTreeVarFloat[1] = phigen;
   fTreeVarFloat[2] = ygen;
-  fTreeVarFloat[3] = xori;
-  fTreeVarFloat[4] = yori;
-  fTreeVarFloat[5] = zori;
-  fTreeVarFloat[6] = xdec;
-  fTreeVarFloat[7] = ydec;
-  fTreeVarFloat[8] = zdec;
+  fTreeVarFloat[3] = mcHeader->GetVtxX();
+  fTreeVarFloat[4] = mcHeader->GetVtxY();
+  fTreeVarFloat[5] = mcHeader->GetVtxZ();
+  fTreeVarFloat[6] = xori;
+  fTreeVarFloat[7] = yori;
+  fTreeVarFloat[8] = zori;
+  fTreeVarFloat[9] = xdec;
+  fTreeVarFloat[10] = ydec;
+  fTreeVarFloat[11] = zdec;
 
   return kTRUE;
 }

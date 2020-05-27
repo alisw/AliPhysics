@@ -56,13 +56,13 @@ public:
   
 private:
   
-  enum EVarsTree {kNumOfIntVar=1, kNumOfFloatVar=9};
+  enum EVarsTree {kNumOfIntVar=2, kNumOfFloatVar=12};
   enum {kMaxLabel=1000000};
 
   AliAnalysisTaskCharmDecayTracks(const AliAnalysisTaskCharmDecayTracks &source);
   AliAnalysisTaskCharmDecayTracks& operator=(const AliAnalysisTaskCharmDecayTracks& source);
   void MapTrackLabels(AliAODEvent* aod);
-  Bool_t PrepareTreeVars(AliAODMCParticle* partD,TClonesArray *arrayMC);
+  Bool_t PrepareTreeVars(AliAODMCParticle* partD, TClonesArray* arrayMC, AliAODMCHeader* mcHeader);
 
   TList* fOutput;                  //!<! list send on output slot 0
   TH1F*  fHistNEvents;             //!<! histo with number of events
