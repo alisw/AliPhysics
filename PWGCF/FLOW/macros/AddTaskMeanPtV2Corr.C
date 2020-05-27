@@ -87,11 +87,11 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       mgr->ConnectInput(task,3,cInNUA);
     };
 
-    AliAnalysisDataContainer *cOutputCOV = mgr->CreateContainer("MPTDiff",TProfile::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    AliAnalysisDataContainer *cOutputCOV = mgr->CreateContainer("MPTDiff",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputCOV);
     AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("FlowCont",AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,2,cOutputFC);
-    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("Covariance",TProfile::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("Covariance",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,3,cOutputFC);
     return task;
   };

@@ -46,7 +46,9 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMPTList(0),
   fmPT(0),
   fMultiDist(0),
+  fptVarList(0),
   fptvar(0),
+  fCovList(0),
   fCovariance(0),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
@@ -69,7 +71,9 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMPTList(0),
   fmPT(0),
   fMultiDist(0),
+  fptVarList(0),
   fptvar(0),
+  fCovList(0),
   fCovariance(0),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
@@ -95,10 +99,10 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
     DefineInput(1,TList::Class()); //NUE weights; ultimately, should be combined with NUA, but don't want to rerun now
     DefineInput(2,TList::Class()); //Mean Pt, should be rerun with Bayes PID
     DefineInput(3,TList::Class()); //NUA weights from other analysis; quickfix
-    DefineOutput(1,TProfile::Class());
+    DefineOutput(1,TList::Class());
     DefineOutput(2,AliGFWFlowContainer::Class());
-    DefineOutput(3,TProfile::Class());
-    DefineOutput(4,TProfile::Class());
+    DefineOutput(3,TList::Class());
+    // DefineOutput(4,TProfile::Class());
   }
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
@@ -164,8 +168,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     if(!fMPTList) AliFatal("Could not fetch input mean pT list!\n");
     fNUAList = (TList*)GetInputData(3);
     if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
-    fptvar = new TProfile("varpt","varpt",nMultiBins,lMultiBins);
-    PostData(1,fptvar);
+    fptVarList = new TList();
+    fptVarList->SetOwner(kTRUE);
+    fptvar = new TProfile*[4];
+    for(Int_t i=0;i<4;i++) {
+      fptVarList->Add(new TProfile(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),nMultiBins,lMultiBins));
+      fptvar[i] = (TProfile*)fptVarList->At(i);
+    }
+    PostData(1,fptVarList);
     //Setting up the FlowContainer
     TObjArray *oba = new TObjArray();
     oba->Add(new TNamed("ChPos22","ChPos22"));
@@ -196,32 +206,35 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
     fGFW->AddRegion("refP",5,pows,0.4,0.8,1,1);
-    fGFW->AddRegion("chN",3,powsPOI,-0.8,-0.4,1,1);
-    fGFW->AddRegion("chP",3,powsPOI,0.4,0.8,1,1);
-    fGFW->AddRegion("piN",3,powsPOI,-0.8,-0.4,1,1);
-    fGFW->AddRegion("piP",3,powsPOI,0.4,0.8,1,1);
-    fGFW->AddRegion("kaN",3,powsPOI,-0.8,-0.4,1,1);
-    fGFW->AddRegion("kaP",3,powsPOI,0.4,0.8,1,1);
-    fGFW->AddRegion("prN",3,powsPOI,-0.8,-0.4,1,1);
-    fGFW->AddRegion("prP",3,powsPOI,0.4,0.8,1,1);
+    fGFW->AddRegion("chN",3,powsPOI,-0.8,-0.4,1,2);
+    fGFW->AddRegion("chP",3,powsPOI,0.4,0.8,1,2);
+    fGFW->AddRegion("piN",3,powsPOI,-0.8,-0.4,1,4);
+    fGFW->AddRegion("piP",3,powsPOI,0.4,0.8,1,4);
+    fGFW->AddRegion("kaN",3,powsPOI,-0.8,-0.4,1,8);
+    fGFW->AddRegion("kaP",3,powsPOI,0.4,0.8,1,8);
+    fGFW->AddRegion("prN",3,powsPOI,-0.8,-0.4,1,16);
+    fGFW->AddRegion("prP",3,powsPOI,0.4,0.8,1,16);
 
-    fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("refP",5,pows,0.4,0.8,1,1);
-    fGFW->AddRegion("OLchN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("OLchP",5,pows,0.4,0.8,1,1);
-    fGFW->AddRegion("OLpiN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("OLpiP",5,pows,0.4,0.8,1,1);
-    fGFW->AddRegion("OLkaN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("OLkaP",5,pows,0.4,0.8,1,1);
-    fGFW->AddRegion("OLprN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("OLprP",5,pows,0.4,0.8,1,1);
-
-
-
+    fGFW->AddRegion("OLchN",5,pows,-0.8,-0.4,1,32);
+    fGFW->AddRegion("OLchP",5,pows,0.4,0.8,1,32);
+    fGFW->AddRegion("OLpiN",5,pows,-0.8,-0.4,1,64);
+    fGFW->AddRegion("OLpiP",5,pows,0.4,0.8,1,64);
+    fGFW->AddRegion("OLkaN",5,pows,-0.8,-0.4,1,128);
+    fGFW->AddRegion("OLkaP",5,pows,0.4,0.8,1,128);
+    fGFW->AddRegion("OLprN",5,pows,-0.8,-0.4,1,256);
+    fGFW->AddRegion("OLprP",5,pows,0.4,0.8,1,256);
     CreateCorrConfigs();
+
     //Covariance
-    fCovariance = new TProfile("cov","Covariance",nMultiBins,lMultiBins);
-    PostData(3,fCovariance);
+    fCovList = new TList();
+    fCovList->SetOwner(kTRUE);
+    fCovariance = new TProfile*[4];
+    for(Int_t i=0;i<4;i++) {
+      fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),nMultiBins,lMultiBins));
+      fCovariance[i] = (TProfile*)fCovList->At(i);
+      //fCovariance = new TProfile("cov","Covariance",nMultiBins,lMultiBins);
+    };
+    PostData(3,fCovList);
 
   }
   fMidSelection = new AliGFWCuts();
@@ -400,28 +413,63 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   AliAODTrack *lTrack;
   Double_t wp[4][5] = {{0,0,0,0,0}, {0,0,0,0,0},
                        {0,0,0,0,0}, {0,0,0,0,0}}; //Initial values, [species][w*p]
+  Double_t outVals[4][4] = {{0,0,0,0}, {0,0,0,0},
+                            {0,0,0,0}, {0,0,0,0}};
   Double_t trackXYZ[3];
   fGFW->Clear();
+  Int_t nTotNoTracks=0;
+  Double_t ptmins[] = {0.2,0.2,0.3,0.5};
+  Double_t ptmaxs[] = {10.,10.,6.0,6.0};
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     if(!AcceptAODTrack(lTrack,trackXYZ)) continue;
     Double_t p1 = lTrack->Pt();
+    if(TMath::Abs(lTrack->Eta())<0.8 && lTrack->Pt()>0.2 && p1<3)  nTotNoTracks++;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
     Double_t weff = fWeights[PIDIndex]->GetIntegratedEfficiency(p1);
-    Double_t wacc = GetMyWeight(lTrack->Eta(),lTrack->Phi(),PIDIndex);//fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
+    Double_t wacc = GetMyWeight(lTrack->Eta(),lTrack->Phi(),PIDIndex);//POI weight
+    Double_t waccRef = GetMyWeight(lTrack->Eta(),lTrack->Phi(),0);//Nch weight
+    Bool_t WithinRef=(p1>0.2 && p1<5);
+    Bool_t WithinPOI=(p1>ptmins[PIDIndex] && p1<ptmaxs[PIDIndex]);
+    Bool_t WithinNch=(p1>ptmins[0] && p1<ptmaxs[0]); //Within Ncharged (important for e.g. protons)
     if(TMath::Abs(lTrack->Eta())<0.4)  { //for mean pt, only consider -0.4-0.4 region
       if(weff==0) continue;
       Double_t w = 1./weff;
       FillWPCounter(wp[0],w,p1);
       if(PIDIndex) FillWPCounter(wp[PIDIndex],w,p1); //should be different weight here
     } else { //Otherwise, we consider it for vn calculations
-      fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,1); //Fill correct GFW here!
+      if(!WithinPOI && !WithinRef) continue;
+      if(WithinPOI && WithinRef) waccRef = wacc; //If overlapping, override ref weight
+      if(WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),waccRef,1); //Filling ref flow
+      if(WithinPOI && PIDIndex) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,(1<<(1+PIDIndex))); //Filling POI/only identified
+      if(WithinNch) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,2); //always filling for Nch
+      if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,1<<(PIDIndex+5));
+      if(WithinNch && WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,32); //Filling POI flow for ID'ed
     };
   };
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
-
+  //Filling pT varianve
+  for(Int_t i=0;i<4;i++) {
+    if(!wp[i][0]) continue;
+    outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(nTotNoTracks));
+    CalculateMptValues(outVals[i],wp[i]);
+    if(outVals[i][2]!=0)
+      fptvar[i]->Fill(nTotNoTracks,outVals[i][1]/outVals[i][2],outVals[i][2]);
+  };
+  PostData(1,fptVarList);
+  //Filling FCs
+  for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
+    Bool_t filled = FillFCs(corrconfigs.at(l_ind),nTotNoTracks,0);
+  };
+  PostData(2,fFC);
+  for(Int_t i=0;i<4;i++) {
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4+1),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+  };
+  PostData(3,fCovList);
+  //Assuming outArr[0] is preset to meanPt; outArr[1] = variance; outArr[2] = norm; outArr[3] = mpt in this event
  /*//This needs to be disabled now, first fixing the weights
   Double_t l_meanPt = fmPT->GetBinContent(fmPT->FindBin(w1p0)); //l_Cent should be replaced with w1p0 here (->weighted Nch)
   Double_t l_val = (w1p1 - l_meanPt*w1p0) * (w1p1 - l_meanPt*w1p0)
@@ -453,21 +501,40 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(AliGFW::CorrConfig corconf, Double_t
   };
   return kTRUE;
 };
-Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt) {
+Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(TProfile *target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
     if(TMath::Abs(val)<1)
-      fCovariance->Fill(cent,val*d_mpt,dnx*dw_mpt);
+      target->Fill(cent,val*d_mpt,dnx*dw_mpt);
     return kTRUE;
   };
   return kTRUE;
 };
 void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
-  corrconfigs.push_back(GetConf("MidV22","refP {2} refN {-2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV24","refP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChPos22","chP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChNeg22","chN {2} refP {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChPos24","chP refP | OLchP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChNeg24","chN refN | OLchN {2 2} refP {-2 -2}", kFALSE));
+//pi
+  corrconfigs.push_back(GetConf("PiPos22","piP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("PiNeg22","piN {2} refP {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("PiPos24","piP refP | OLpiP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("PiNeg24","piN refN | OLpiN {2 2} refP {-2 -2}", kFALSE));
+//ka
+  corrconfigs.push_back(GetConf("KaPos22","kaP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("KaNeg22","kaN {2} refP {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("KaPos24","kaP refP | OLkaP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("KaNeg24","kaN refN | OLkaN {2 2} refP {-2 -2}", kFALSE));
+//pr
+  corrconfigs.push_back(GetConf("PrPos22","prP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("PrNeg22","prN {2} refP {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("PrPos24","prP refP | OLprP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("PrNeg24","prN refN | OLprN {2 2} refP {-2 -2}", kFALSE));
+
+
 };
 void AliAnalysisTaskMeanPtV2Corr::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {
   // if((*inWeights)) { delete (*inWeights); (*inWeights)=0; };
