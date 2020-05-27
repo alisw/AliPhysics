@@ -72,8 +72,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   // TProfile *fmPT_ka; //!
   // TProfile *fmPT_pr; //!
   TH1D *fMultiDist;
-  TProfile *fptvar;
-  TProfile *fCovariance;
+  TList *fptVarList;
+  TProfile **fptvar; //!
+  TList *fCovList;
+  TProfile **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType; //! No need to store
   TList *fWeightList; //!
@@ -90,7 +92,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
-  Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
+  Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
