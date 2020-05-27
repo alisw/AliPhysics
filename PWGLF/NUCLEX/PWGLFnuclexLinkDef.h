@@ -120,7 +120,7 @@
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class RHyperTriton3O2+;
 #pragma link C++ class SHyperTriton3O2+;
-#pragma link C++ class RHypertriton3+;
+#pragma link C++ class RHypertriton+;
 #pragma link C++ class SHypertriton3+;
 #pragma link C++ class o2::vertexing::DCAFitter2+;
 #pragma link C++ class o2::vertexing::DCAFitter3+;
