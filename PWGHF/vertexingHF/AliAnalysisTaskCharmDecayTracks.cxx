@@ -49,6 +49,7 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   AliAnalysisTaskSE("CharmDecayTracks"),
   fOutput(0x0),
   fHistNEvents(0x0),
+  fHistNCand(0x0),
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
@@ -60,7 +61,8 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fUsePileupCut(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fGoUpToQuark(kTRUE),
-  fKeepNegID(kFALSE)
+  fKeepNegID(kFALSE),
+  fMethod(1)
 {
   /// default constructor
 
@@ -77,6 +79,7 @@ AliAnalysisTaskCharmDecayTracks::~AliAnalysisTaskCharmDecayTracks()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistNCand;
     delete fTrackTree;
   }
 
@@ -107,6 +110,11 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut");
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+
+  fHistNCand = new TH1F("hNCand", "Number of candidates",15,-0.5,14.5);
+  fHistNCand->GetXaxis()->SetBinLabel(1,"Events with method 0");
+  fHistNCand->GetXaxis()->SetBinLabel(2,"Events with method 1");
+  fOutput->Add(fHistNCand);
   
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
@@ -256,72 +264,126 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
   PostData(1,fOutput);
   PostData(2,fTrackTree);
 
-  for(Int_t i=0; i<kMaxLabel; i++) fMapTrLabel[i]=-999;
-  MapTrackLabels(aod);
-  
-  // vHF object is needed to call the method that refills the missing info of the candidates
-  // if they have been deleted in dAOD reconstruction phase
-  // in order to reduce the size of the file
-  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
-
-  TClonesArray *arrayDcand=arrayD0toKpi;
-  if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122) arrayDcand=array3Prong;
-  Int_t nCand=arrayDcand->GetEntriesFast();
-  Int_t pdg0[2]={321,211};
-  Int_t pdgp[3]={321,211,211};
-  Int_t pdgs[3]={321,211,321};
-  Int_t pdgl[3]={2212,321,211};
-
-  for (Int_t iCand = 0; iCand < nCand; iCand++) {
-    AliAODRecoDecayHF *d=(AliAODRecoDecayHF*)arrayDcand->UncheckedAt(iCand);
-    if(!d) continue;
-    Int_t labD=-999;
+  if(fMethod==0){
+    fHistNCand->Fill(0);
+    for(Int_t i=0; i<kMaxLabel; i++) fMapTrLabel[i]=-999;
+    MapTrackLabels(aod);
     Int_t nDauTr=2;
+    if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122) nDauTr=3;
     fTrPar1.Reset();
     fTrPar2.Reset();
     fTrPar3.Reset();
-    if(fSelSpecies==421){
-      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
-      labD = d->MatchToMC(421,arrayMC,2,pdg0);
-    }else if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122){
-      nDauTr=3;
-      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
-      if(fSelSpecies==411){
-	if(!d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue;
-	labD=d->MatchToMC(411,arrayMC,3,pdgp);
-      }else if(fSelSpecies==431){
-	if(!d->HasSelectionBit(AliRDHFCuts::kDsCuts)) continue;
-	labD = d->MatchToMC(431,arrayMC,3,pdgs);
-      }else if(fSelSpecies==4122){
-	if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)) continue;
-	labD = d->MatchToMC(4122,arrayMC,3,pdgl);
-      }
-    }
-    if(labD>=0){ 
-      AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
-      if(!partD) continue;
-      Bool_t fillTree=PrepareTreeVars(partD,arrayMC);    
+    for (Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++) {
+      AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
+      if (!mcPart) continue;
+      Int_t absPdgCode=TMath::Abs(mcPart->GetPdgCode());
+      if(absPdgCode!=fSelSpecies) continue;
+      fHistNCand->Fill(2);
+      Int_t retCode=-1;
+      Int_t arrayDauLabels[4]={-1,-1,-1,-1};
+      if(fSelSpecies==411) retCode=AliVertexingHFUtils::CheckDplusDecay(arrayMC,mcPart,arrayDauLabels);
+      else if(fSelSpecies==421) retCode=AliVertexingHFUtils::CheckD0Decay(arrayMC,mcPart,arrayDauLabels);
+      else if(fSelSpecies==431) retCode=AliVertexingHFUtils::CheckDsDecay(arrayMC,mcPart,arrayDauLabels);
+      else if(fSelSpecies==4122) retCode=AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC,mcPart,arrayDauLabels);
+      if(retCode<0 || arrayDauLabels[0]==-1) continue;
+      fHistNCand->Fill(3);
+      Bool_t fillTree=PrepareTreeVars(mcPart,arrayMC);
+      if(fillTree) fHistNCand->Fill(4);
       for(Int_t jd=0; jd<nDauTr; jd++){
-	AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
-	if(!track) fillTree=kFALSE;
-	else{
-	  if(!IsTrackSelected(track)) fillTree=kFALSE;	  
-	  if(jd==0) fTrPar1.CopyFromVTrack(track);
-	  else if(jd==1) fTrPar2.CopyFromVTrack(track);
-	  else if(jd==2) fTrPar3.CopyFromVTrack(track);
+	Int_t labTr=arrayDauLabels[jd];
+	Int_t idTr=fMapTrLabel[labTr];
+	if(idTr<0 || idTr>=aod->GetNumberOfTracks()){
+	  fillTree=kFALSE;
+	  continue;
 	}
+	AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(idTr));
+	if(!track){
+	  fillTree=kFALSE;
+	  continue;
+	}
+	if(TMath::Abs(track->GetLabel())!=labTr){
+ 	  fillTree=kFALSE;
+	  continue;
+	}
+	if(!IsTrackSelected(track)) fillTree=kFALSE;	  
+	if(jd==0) fTrPar1.CopyFromVTrack(track);
+	else if(jd==1) fTrPar2.CopyFromVTrack(track);
+	else if(jd==2) fTrPar3.CopyFromVTrack(track);
       }
       if(fillTree){
 	fTrackTree->Fill();
+	fHistNCand->Fill(5);
       }
     }
+    
+  }else{
+    fHistNCand->Fill(1);
+    // vHF object is needed to call the method that refills the missing info of the candidates
+    // if they have been deleted in dAOD reconstruction phase
+    // in order to reduce the size of the file
+    AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+    
+    TClonesArray *arrayDcand=arrayD0toKpi;
+    if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122) arrayDcand=array3Prong;
+    Int_t nCand=arrayDcand->GetEntriesFast();
+    Int_t pdg0[2]={321,211};
+    Int_t pdgp[3]={321,211,211};
+    Int_t pdgs[3]={321,211,321};
+    Int_t pdgl[3]={2212,321,211};
+    
+    for (Int_t iCand = 0; iCand < nCand; iCand++) {
+      AliAODRecoDecayHF *d=(AliAODRecoDecayHF*)arrayDcand->UncheckedAt(iCand);
+      if(!d) continue;
+      Int_t labD=-999;
+      Int_t nDauTr=2;
+      fTrPar1.Reset();
+      fTrPar2.Reset();
+      fTrPar3.Reset();
+      if(fSelSpecies==421){
+	if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+	labD = d->MatchToMC(421,arrayMC,2,pdg0);
+      }else if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122){
+	nDauTr=3;
+	if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+	if(fSelSpecies==411){
+	  if(!d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue;
+	  labD=d->MatchToMC(411,arrayMC,3,pdgp);
+	}else if(fSelSpecies==431){
+	  if(!d->HasSelectionBit(AliRDHFCuts::kDsCuts)) continue;
+	  labD = d->MatchToMC(431,arrayMC,3,pdgs);
+	}else if(fSelSpecies==4122){
+	  if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)) continue;
+	  labD = d->MatchToMC(4122,arrayMC,3,pdgl);
+	}
+      }
+      if(labD>=0){ 
+	fHistNCand->Fill(6);
+	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+	if(!partD) continue;
+	Bool_t fillTree=PrepareTreeVars(partD,arrayMC);    
+	if(fillTree) fHistNCand->Fill(7);
+	for(Int_t jd=0; jd<nDauTr; jd++){
+	  AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
+	  if(!track) fillTree=kFALSE;
+	  else{
+	    if(!IsTrackSelected(track)) fillTree=kFALSE;	  
+	    if(jd==0) fTrPar1.CopyFromVTrack(track);
+	    else if(jd==1) fTrPar2.CopyFromVTrack(track);
+	    else if(jd==2) fTrPar3.CopyFromVTrack(track);
+	  }
+	}
+	if(fillTree){
+	  fTrackTree->Fill();
+	  fHistNCand->Fill(8);
+	}
+      }
+    } 
+    delete vHF;
   }
-
-  delete vHF;
   
   PostData(1,fOutput);
   PostData(2,fTrackTree);
-
+    
   return;
 }
 
