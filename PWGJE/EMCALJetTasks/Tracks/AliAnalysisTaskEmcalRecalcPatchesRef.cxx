@@ -122,6 +122,9 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
       fHistos->CreateTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
       fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
       fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+      fHistos->CreateTH1(Form("hPatchADCWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
+      fHistos->CreateTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+      fHistos->CreateTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
     } 
   }
 }
