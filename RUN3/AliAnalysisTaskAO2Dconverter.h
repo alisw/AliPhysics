@@ -36,6 +36,8 @@ public:
 
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
+  virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
+
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
@@ -412,7 +414,10 @@ private:
   Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
   Int_t fOffsetLabel = 0;      ///! Offset of track IDs (used in cascades)
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 8);
+  /// Set truncation
+  Bool_t fTruncate = kFALSE;
+  
+  ClassDef(AliAnalysisTaskAO2Dconverter, 9);
 };
 
 #endif
