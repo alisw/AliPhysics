@@ -174,7 +174,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
   if(reweighMC) {
       printf(" Loading Ntracklet weights...\n");
       TFile* filewgt = TFile::Open(filenameWeights);
-      if(histnameWeights.EqualTo("")) histnameWeights="hNtrUnCorrEvWithCandWeight" 
+      if(histnameWeights.EqualTo("")) histnameWeights="hNtrUnCorrEvWithCandWeight";
       TH1D* hWeight = (TH1D*)filewgt->Get(histnameWeights.Data());
       if(!hWeight) {
           printf("Error! Weights for Ntracklets not correctly loaded!");
