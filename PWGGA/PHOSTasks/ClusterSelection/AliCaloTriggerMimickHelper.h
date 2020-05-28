@@ -31,6 +31,7 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     void SetEventChosenByTrigger( Bool_t flag )     { fEventChosenByTrigger = flag                  ; }
     Bool_t GetEventChosenByTrigger()                { return fEventChosenByTrigger                  ; }
     AliPHOSGeometry*  GetGeomPHOS()                 { return fGeomPHOS                              ; }
+    void SetDebugOutput( Int_t flag )              { fDoDebugOutput = flag                         ; }
 
   private:
     AliCaloTriggerMimickHelper (const AliCaloTriggerMimickHelper&);             // not implemented
@@ -57,6 +58,7 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
     Bool_t                  fIsMC ;                                     //! Is this is MC
     Bool_t                  fEventChosenByTrigger;                      //!
+    Int_t                   fDoDebugOutput;                             //!
 
     ClassDef(AliCaloTriggerMimickHelper, 1);
 };

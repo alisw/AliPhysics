@@ -45,9 +45,9 @@ AliCaloTriggerMimickHelper::AliCaloTriggerMimickHelper(const char *name, Int_t c
     fDoLightOutput(kFALSE),
     fForceRun(kFALSE),
     fIsMC(isMC),
-    fEventChosenByTrigger(kFALSE)
+    fEventChosenByTrigger(kFALSE),
+    fDoDebugOutput(0)
 {
-    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;
     // Default constructor
     DefineInput(0, TChain::Class());
 }
@@ -63,16 +63,16 @@ AliCaloTriggerMimickHelper::AliCaloTriggerMimickHelper(const char *name, Int_t c
     fDoLightOutput(kFALSE),
     fForceRun(kFALSE),
     fIsMC(isMC),
-    fEventChosenByTrigger(kFALSE)
+    fEventChosenByTrigger(kFALSE),
+    fDoDebugOutput(0)
 {
-    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;
     // Default constructor
     DefineInput(0, TChain::Class());
 }
 
 //________________________________________________________________________
 AliCaloTriggerMimickHelper::~AliCaloTriggerMimickHelper(){
-    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;
+    if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;}
     // default deconstructor
 }
 
@@ -83,7 +83,8 @@ void AliCaloTriggerMimickHelper::Terminate(Option_t *){
 
 //________________________________________________________________________
 void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
-  cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;
+  //SetDebugOutput(1);
+  if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
   fNMaxPHOSModules=4;
   nMaxCellsPHOS = (fNMaxPHOSModules*3584); //56*64=3584
   //Prepare PHOS trigger utils if necessary
@@ -99,7 +100,7 @@ void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 void AliCaloTriggerMimickHelper::UserExec(Option_t *){
-    cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec Start, Line: "<<__LINE__<<endl;
+    if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec Start, Line: "<<__LINE__<<endl;}
   // main method of AliCaloTriggerMimickHelper, first initialize and then process event
   if(!fForceRun)
     fRunNumber=fInputEvent->GetRunNumber() ;
@@ -113,12 +114,12 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
       fGeomPHOS = AliPHOSGeometry::GetInstance();
       nModules = fGeomPHOS->GetNModules();
       if ((nModules-1)>fNMaxPHOSModules){
-          cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; nModules("<<nModules<<")>fNMaxPHOSModules("<<fNMaxPHOSModules<<")"<<endl;
+          if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; nModules("<<nModules<<")>fNMaxPHOSModules("<<fNMaxPHOSModules<<")"<<endl;}
           return;
       }
       nCellsPHOS=((nModules-1)*3584); //56*64=3584
       if (nCellsPHOS>nMaxCellsPHOS){
-          cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; nCellsPHOS("<<nCellsPHOS<<")>nMaxCellsPHOS("<<nMaxCellsPHOS<<")"<<endl;
+          if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; nCellsPHOS("<<nCellsPHOS<<")>nMaxCellsPHOS("<<nMaxCellsPHOS<<")"<<endl;}
           return;
       }
       fPHOSTrigUtils->SetEvent(fInputEvent) ;
@@ -128,7 +129,7 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
       if(nclus == 0)  return;
 
       for(Int_t i = 0; i < nclus; i++){
-          //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;
+          if (fDoDebugOutput>=4){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
           if (GetEventChosenByTrigger()){
               break;
           }
@@ -137,7 +138,7 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
           if (!clus) {
             continue;
           }
-          //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;
+          if (fDoDebugOutput>=4){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;}
           cellAbsId = 0;
           isClusterGood =kTRUE;
           for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
@@ -157,21 +158,21 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
           }
       }   
   }
-  cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec End, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;
+  if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec End, Line: "<<__LINE__<<"; fIsMC: "<<fIsMC<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
 }
 
 
 void AliCaloTriggerMimickHelper::SetTriggerDataOrMC(AliVCluster * clu, Bool_t isMCPhoton){
-    //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, SetTriggerDataOrMC Start, Line: "<<__LINE__<<endl;
+    if (fDoDebugOutput>=2){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, SetTriggerDataOrMC Start, Line: "<<__LINE__<<endl;}
     //Mark photons fired trigger
     if(isMCPhoton){
-      //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
+      if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;}
       SetEventChosenByTrigger(fPHOSTrigUtils->IsFiredTriggerMC(clu)&(1<<(fPHOSTrigger))) ;
-      //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
+      if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;}
     } else {
-      //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;
+      if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<endl;}
       SetEventChosenByTrigger(fPHOSTrigUtils->IsFiredTrigger(clu)) ;
-      //cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;
+      if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, Line: "<<__LINE__<<"; GetEventChosenByTrigger(): "<<GetEventChosenByTrigger()<<endl;}
     }
 }
 
