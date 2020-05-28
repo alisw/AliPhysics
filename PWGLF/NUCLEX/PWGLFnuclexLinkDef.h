@@ -115,13 +115,13 @@
 /// Hyp3body Selector
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
+#pragma link C++ class RHyperTriton+;
+#pragma link C++ class SHyperTriton+;
 #pragma link C++ class RHyperTriton3KF+;
 #pragma link C++ class SHyperTriton3KF+;
-#pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class RHyperTriton3O2+;
 #pragma link C++ class SHyperTriton3O2+;
-#pragma link C++ class RHypertriton+;
-#pragma link C++ class SHypertriton3+;
+#pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class o2::vertexing::DCAFitter2+;
 #pragma link C++ class o2::vertexing::DCAFitter3+;
 #pragma link C++ class o2::track::TrackAuxPar+;
