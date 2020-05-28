@@ -8,6 +8,8 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(stage.Contains("weights")) StageSwitch=1;
   if(stage.Contains("meanpt")) StageSwitch=2;
   if(stage.Contains("full")) StageSwitch=3;
+  if(stage.Contains("ALICEMpt")) StageSwitch=4;
+  if(stage.Contains("ALICECov")) StageSwitch=5;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -87,13 +89,32 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       mgr->ConnectInput(task,3,cInNUA);
     };
 
-    AliAnalysisDataContainer *cOutputCOV = mgr->CreateContainer("MPTDiff",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-    mgr->ConnectOutput(task,1,cOutputCOV);
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer("MPTDiff",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
     AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("FlowCont",AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,2,cOutputFC);
-    AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer("Covariance",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-    mgr->ConnectOutput(task,3,cOutputFC);
+    AliAnalysisDataContainer *cOutputCov  = mgr->CreateContainer("Covariance",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,3,cOutputCov);
     return task;
   };
+  if(StageSwitch==4) {
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer("MPTProfileList",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
+  }
+  if(StageSwitch==5) {
+    TObjArray *AllContainers = mgr->GetContainers();
+    if(meanPtPath.IsNull()) AliFatal("Input weights not set\n");
+    if(!AllContainers->FindObject("InputMeanPt")) {
+      if(meanPtPath.Contains("alien:")) TGrid::Connect("alien:"); //Only connect if not connected yet
+      TFile *tfMPT = TFile::Open(meanPtPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
+      TList *fMPTList = (TList*)tfMPT->Get("MPTProfileList");
+      if(!fMPTList) AliFatal("fMPT list from file not fetcehd!");
+      AliAnalysisDataContainer *cInMPT = mgr->CreateContainer("InputMeanPt",TList::Class(), AliAnalysisManager::kInputContainer);
+      cInMPT->SetData(fMPTList);
+      mgr->ConnectInput(task,1,cInMPT);
+    } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputMeanPt"));
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer("OutputList",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
+  }
   return 0;
 }

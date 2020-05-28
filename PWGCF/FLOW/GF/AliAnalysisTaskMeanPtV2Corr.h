@@ -46,6 +46,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPt(AliAODEvent*, Double_t vz, Double_t l_Cent);
   void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -57,6 +59,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t LoadMyWeights(Int_t lRunNo = 0);
   Int_t GetBayesPIDIndex(AliAODTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
+  void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -68,9 +71,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
   TProfile **fmPT; //!
-  // TProfile *fmPT_pi; //!
-  // TProfile *fmPT_ka; //!
-  // TProfile *fmPT_pr; //!
   TH1D *fMultiDist;
   TList *fptVarList;
   TProfile **fptvar; //!
@@ -80,9 +80,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   UInt_t fTriggerType; //! No need to store
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
-  // AliGFWWeights *fWeights_pi;//! This should be stored in TList
-  // AliGFWWeights *fWeights_ka;//! This should be stored in TList
-  // AliGFWWeights *fWeights_pr;//! This should be stored in TList
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
@@ -94,6 +91,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
   Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
+  Bool_t AcceptAODTrackALICEPublished(AliAODTrack *lTr, Double_t*);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
 
