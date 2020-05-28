@@ -423,7 +423,7 @@ if (fAntiLambda->GetIsMonteCarlo()) {
    fAntiLambdaMCList = fAntiLambda->GetMCQAHists();
  } else {
    fAntiLambdaMCList = new TList();
-   fAntiLambdaMCList->SetName("MCAntiLambdaMCCuts");
+   fAntiLambdaMCList->SetName("MCAntiLambdaCuts");
    fAntiLambdaMCList->SetOwner();
  }
  PostData(12, fAntiLambdaMCList);
