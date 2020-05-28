@@ -24,12 +24,13 @@ class AliVCluster ;
 class AliTriggerAnalysis ;
 class TParticle ;
 class AliPHOSTriggerUtils ;
+class AliMCAnalysisUtils;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
 
 public:
   
-  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta } ; 
+  enum mcType{kFullMC, kSingleGamma, kSinglePi0, kSingleEta, kJetJet } ; 
   enum cutType{kDefCut, kLowECut} ;
   enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
   enum trackSelections{kLHC13x,kFAST,kCENTwoSSD,kCENTwSSD} ;
@@ -62,6 +63,8 @@ public:
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
   void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1){ fNonlinA=a; fNonlinB=b; fNonlinC=c;}
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
+  void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
+  void SetJetPthardRatio(Float_t ratio=2.5){fJetPtHardFactor=ratio;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -85,6 +88,7 @@ protected:
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t CalculateSphericity() ;
   Double_t CalculateSpherocity() ;
+  Bool_t AcceptJJevent() ;
   
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
@@ -108,6 +112,8 @@ private:
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;       //!
   AliPHOSTriggerUtils * fPHOSTrigUtils ; //! utils to analyze PHOS trigger
+  AliMCAnalysisUtils * fMCAnalysisUtils;
+  TString          fMCGenerEventHeaderToAccept;    
  
   Int_t   fCentEstimator;       //Centrality estimator: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   Int_t   fNCenBin ;            //NUmber of centrality bins
@@ -123,6 +129,7 @@ private:
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Double_t fRP;           //! Reaction plane orientation
+  Float_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   
   //Fiducial area parameters
   Float_t fZmax ;               //Rectangular
@@ -168,6 +175,6 @@ private:
   TH2F * fhQAIsozpartnBg ;  //!
   TH2F * fhQAIsoxpartnBg ;  //!
       
-  ClassDef(AliAnalysisTaskTaggedPhotons, 6);   // a PHOS photon analysis task 
+  ClassDef(AliAnalysisTaskTaggedPhotons, 7);   // a PHOS photon analysis task 
 };
 #endif // ALIANALYSISTASKTAGGEDPHOTONSLOCAL_H
