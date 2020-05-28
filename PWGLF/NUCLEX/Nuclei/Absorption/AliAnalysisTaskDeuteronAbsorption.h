@@ -62,17 +62,22 @@ private:
   
   // Variables for the tree
   //Double_t tP;
-  Double_t tPt;
-  Double_t tEta;
-  Double_t tPhi;
-  Double_t tnsigTPC;
-  Double_t tnsigTOF;
-  Double_t tmass2;
-  Int_t tnPIDclsTPC;
-  Double_t tTOFsigDx;
-  Double_t tTOFsigDz;
-  Int_t tTOFclsN;
-  Int_t tID;
+  Double_t tPt;           // pt of the track (at inner wall of the TPC)
+  Double_t tEta;          // eta of the track (at inner wall of the TPC)
+  Double_t tPhi;          // phi of the track (at inner wall of the TPC)
+  Double_t tnsigTPC;      // nSigma PID to 3He in the TPC
+  Double_t tnsigTOF;      // nSigma PID to 3He in the TOF
+  Double_t tmass2;        // m^2/z^2 of the track based on the TOF
+  Int_t tnPIDclsTPC;      // number of clusters used for PID in the TPC
+  Double_t tTOFsigDx;     // track-to-hit residual in TOF (x-direction)
+  Double_t tTOFsigDz;     // track-to-hit residual in TOF (z-direction)
+  Double_t tTOFchi2;      // chi2 of the hit in the TOF
+  Int_t tTOFclsN;         // number of cluster candidates in TOF
+  Int_t tTRDclsN;         // number of TRD clusters attached to the track
+  Int_t tTRDntracklets;   // number of TRD tracklets used for tracking
+  Int_t tTRDNchamberdEdx; // number of chambers used to calculate the TRD truncated mean
+  Int_t tID;              // identification number of the track
+  Int_t tPdgCodeMc;       // pdg code of the track if MC information is available
   
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
@@ -97,7 +102,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
 
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 1);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 3);
 };
 
 #endif

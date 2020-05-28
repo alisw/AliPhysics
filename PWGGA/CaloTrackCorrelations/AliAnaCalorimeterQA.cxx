@@ -1077,7 +1077,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // Fill histograms related to single cluster, mc vs data
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
-    if(IsDataMC() && nLabel > 0 && labels) 
+    if ( IsDataMC() && nLabel > 0 && labels && GetMC() ) 
       mcOK = ClusterMCHistograms(matched, labels, 
                                  clus->GetClusterMCEdepFraction(),
                                  nLabel, pdg);
@@ -3029,7 +3029,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   // Monte Carlo Histograms
   //
-  if(IsDataMC())
+  if ( IsDataMC() )
   {    
     TString particleName[] = {
       "Photon",        "Pi0",         "Eta",
@@ -3040,6 +3040,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     for(Int_t iPart = 0; iPart < 4; iPart++)
     {
+      if ( !IsGeneratedParticlesAnalysisOn() ) continue;
+      
       fhGenMCE [iPart]     = new TH1F(Form("hGenMCE_%s",particleName[iPart].Data()) ,
                                       Form("#it{E} of generated %s",particleName[iPart].Data()),
                                       nptbins,ptmin,ptmax);
@@ -3080,10 +3082,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhGenMCAccE     [iPart]);
       outputContainer->Add(fhGenMCAccPt    [iPart]);
       outputContainer->Add(fhGenMCAccEtaPhi[iPart]);
-      
     }    
     
-    if(fFillAllClusterHistograms)
+    if ( fFillAllClusterHistograms )
     {
       for(Int_t iPart = 0; iPart < 7; iPart++)
       {
@@ -3647,7 +3648,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   //Print("");
   
   // Play with the MC stack if available
-  if(IsDataMC()) MCHistograms();
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
+    MCHistograms();
   
   // Correlate Calorimeters and V0 and track Multiplicity
   if(fCorrelate)	Correlate();

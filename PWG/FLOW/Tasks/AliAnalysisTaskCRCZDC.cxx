@@ -601,6 +601,16 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(7,"IncompleteDAQ");
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(8,"GoodVertex2016");
   fOutput->Add(fPileUpMultSelCount);
+  
+  // Add two histograms to record the number of occurance of Negative EZNA and EZNC value (Shi)
+  fRecordNegativeEZNA = new TH1F("fRecordNegativeEZNA", "fRecordNegativeEZNA", 2, 0., 2.);
+  fRecordNegativeEZNA->GetXaxis()->SetBinLabel(1,"Positive EZNA (okay)");
+  fRecordNegativeEZNA->GetXaxis()->SetBinLabel(2,"Negative EZNA (problematic)");
+  fOutput->Add(fRecordNegativeEZNA);
+  fRecordNegativeEZNC = new TH1F("fRecordNegativeEZNC", "fRecordNegativeEZNC", 2, 0., 2.);
+  fRecordNegativeEZNC->GetXaxis()->SetBinLabel(1,"Positive EZNC (okay)");
+  fRecordNegativeEZNC->GetXaxis()->SetBinLabel(2,"Negative EZNC (problematic)");
+  fOutput->Add(fRecordNegativeEZNC);
 
   fMultTOFLowCut = new TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
   fMultTOFLowCut->SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
@@ -1797,6 +1807,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         SumEZNC += EZNC;
 
         // build centroid
+        if (EZNC < 0) {
+			fRecordNegativeEZNC->Fill(1.5);
+			EZNC = 0; // Shi protect negative EZNC value to screw up Power(EZNC, fZDCGainAlpha)
+        } else {
+			fRecordNegativeEZNC->Fill(0.5);
+		}
+        
         wZNC = TMath::Power(EZNC, fZDCGainAlpha);
         numXZNC += x[i]*wZNC;
         numYZNC += y[i]*wZNC;
@@ -1830,6 +1847,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         SumEZNA += EZNA;
 
         // build centroid
+        if (EZNA < 0) {
+			fRecordNegativeEZNA->Fill(1.5);
+			EZNA = 0; // Shi protect negative EZNA value to screw up Power(EZNC, fZDCGainAlpha)
+        } else {
+			fRecordNegativeEZNA->Fill(0.5);
+		}
+        
         wZNA = TMath::Power(EZNA, fZDCGainAlpha);
         numXZNA += x[i]*wZNA;
         numYZNA += y[i]*wZNA;

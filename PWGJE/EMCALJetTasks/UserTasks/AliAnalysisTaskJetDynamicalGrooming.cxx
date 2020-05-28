@@ -273,6 +273,11 @@ void JetSplittings::Print(Option_t* opt) const { Printf("%s", toString().c_str()
 /**
  * Jet constituents.
  */
+// Constant shift to be applied to storing the global index. This ensures that the value is
+// large enough that we're never going to overlap with the MCLabel. It also needs to be large
+// enough such that we'll never overlap with values from the index map. 2000000 allows for 20
+// collections, which should be more than enough.
+const int JetConstituents::fgkGlobalIndexOffset = 2000000;
 
 /**
  * Default constructor.
@@ -281,7 +286,7 @@ JetConstituents::JetConstituents():
   fPt{},
   fEta{},
   fPhi{},
-  fGlobalIndex{}
+  fID{}
 {
   // Nothing more to be done.
 }
@@ -293,7 +298,7 @@ JetConstituents::JetConstituents(const JetConstituents& other)
  : fPt{other.fPt},
   fEta{other.fEta},
   fPhi{other.fPhi},
-  fGlobalIndex{other.fGlobalIndex}
+  fID{other.fID}
 {
   // Nothing more to be done.
 }
@@ -313,21 +318,23 @@ bool JetConstituents::Clear()
   fPt.clear();
   fEta.clear();
   fPhi.clear();
-  fGlobalIndex.clear();
+  fID.clear();
   return true;
 }
 
-void JetConstituents::AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent & part)
+void JetConstituents::AddJetConstituent(const AliVParticle * part, const int & id)
 {
-  fPt.emplace_back(part.Pt());
-  fEta.emplace_back(part.Eta());
-  fPhi.emplace_back(part.Phi());
-  fGlobalIndex.emplace_back(part.GetGlobalIndex());
+  fPt.emplace_back(part->Pt());
+  fEta.emplace_back(part->Eta());
+  fPhi.emplace_back(part->Phi());
+  // NOTE: We don't use the user_index() here because we need to use that for indexing the
+  //       constituents that are contained in each subjet.
+  fID.emplace_back(id);
 }
 
 std::tuple<float, float, float, int> JetConstituents::GetJetConstituent(int i) const
 {
-  return std::make_tuple(fPt.at(i), fEta.at(i), fPhi.at(i), fGlobalIndex.at(i));
+  return std::make_tuple(fPt.at(i), fEta.at(i), fPhi.at(i), fID.at(i));
 }
 
 /**
@@ -344,7 +351,7 @@ std::string JetConstituents::toString() const
   {
     tempSS << "#" << (i + 1) << ": pt = " << fPt.at(i)
         << ", eta = " << fEta.at(i) << ", phi = " << fPhi.at(i)
-        << ", global index = " << fGlobalIndex.at(i) << "\n";
+        << ", ID = " << fID.at(i) << "\n";
   }
   return tempSS.str();
 }
@@ -422,9 +429,9 @@ bool JetSubstructureSplittings::Clear()
  *
  * @param[in] part Constituent to be added.
  */
-void JetSubstructureSplittings::AddJetConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent& part)
+void JetSubstructureSplittings::AddJetConstituent(const AliVParticle * part, const int & id)
 {
-  fJetConstituents.AddJetConstituent(part);
+  fJetConstituents.AddJetConstituent(part, id);
 }
 
 /**
@@ -1075,7 +1082,8 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       fDataJetSplittings.SetJetPt(ptSubtracted);
 
       if (fCutDoubleCounts == kTRUE && fJetShapeType == kDetEmbPartPythia) {
-        if (jet1->MaxTrackPt() > jet3->MaxTrackPt()) {
+        // Cut if the leading hybrid track pt is greater than the leading detector level track pt.
+        if (jet1->MaxTrackPt() > jet2->MaxTrackPt()) {
           continue;
         }
       }
@@ -1128,19 +1136,29 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
   fastjet::PseudoJet pseudoTrack;
-  unsigned int constituentIndex = 0;
-  for (auto part : jet->GetParticleConstituents()) {
-    if (isData == true && fDoTwoTrack == kTRUE && CheckClosePartner(jet, part))
+  for (int constituentIndex = 0; constituentIndex < jet->GetNumberOfTracks(); constituentIndex++) {
+    AliVParticle* part = jet->Track(constituentIndex);
+    if (!part) {
       continue;
-    pseudoTrack.reset(part.Px(), part.Py(), part.Pz(), part.E());
+    }
+    if (isData == true && fDoTwoTrack == kTRUE && CheckClosePartner(jet, part)) {
+      continue;
+    }
+    // Set the PseudoJet and add it to the inputs.
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    // NOTE: This must be the constituent index to allow the subjets to properly determine which constituents are included
+    //       in each subjet.
     pseudoTrack.set_user_index(constituentIndex);
     inputVectors.push_back(pseudoTrack);
 
     // Also store the jet constituents in the output
-    jetSplittings.AddJetConstituent(part);
-
-    // Keep track of the number of constituents.
-    constituentIndex++;
+    // Ensure they are uniquely identified (per type of jet) using the id. We don't use the global index (accessed via
+    // `TrackAt(int)`) because they won't be the same for the subtracted and unsubtracted constituents (they are different
+    // TClonesArrays). Instead, we label the part and det level with the MClabel (ie. for those which have it available),
+    // and for the data (where it always equals -1), we use the global index (offset sufficiently) so it won't overlap with
+    // other values.
+    int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + SubstructureTree::JetConstituents::GetGlobalIndexOffset());
+    jetSplittings.AddJetConstituent(part , id);
   }
 
   try {
@@ -1160,31 +1178,11 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     std::vector<fastjet::PseudoJet> outputJets = cs->inclusive_jets(0);
 
     fastjet::PseudoJet jj;
-    //fastjet::PseudoJet j1;
-    //fastjet::PseudoJet j2;
     jj = outputJets[0];
 
     // Store the jet splittings.
     int splittingNodeIndex = -1;
     ExtractJetSplittings(jetSplittings, jj, splittingNodeIndex, true);
-    /*while (jj.has_parents(j1, j2)) {
-      splittingLabel++;
-      // j1 should always be the harder of the two subjets.
-      if (j1.perp() < j2.perp()) {
-        swap(j1, j2);
-      }
-
-      double z = j2.perp() / (j2.perp() + j1.perp());
-      double delta_R = j1.delta_R(j2);
-      double xkt = j2.perp() * sin(delta_R);
-      std::vector<unsigned int> constituentIndices;
-      for (auto constituent: j1.constituents()) {
-        constituentIndices.emplace_back(constituent.user_index());
-      }
-      jetSplittings.AddSplitting(xkt, delta_R, z, constituentIndices);
-
-      jj = j1;
-    }*/
 
     // Cleanup the allocated cluster sequence.
     delete cs;
@@ -1215,9 +1213,9 @@ void AliAnalysisTaskJetDynamicalGrooming::ExtractJetSplittings(SubstructureTree:
   double xkt = j2.perp() * sin(delta_R);
   // Add the splitting node.
   jetSplittings.AddSplitting(xkt, delta_R, z, splittingNodeIndex);
-  // Increment after storing splitting because the parent is the new one.
-  //splittingNodeIndex++;
-  // -1 because we want to index the parent splitting that was just stored.
+  // Determine which splitting parent the subjets will point to (ie. the one that
+  // we just stored). It's stored at the end of the splittings array. (which we offset
+  // by -1 to stay within the array).
   splittingNodeIndex = jetSplittings.GetNumberOfSplittings() - 1;
   // Store the subjets
   std::vector<unsigned short> j1ConstituentIndices, j2ConstituentIndices;
@@ -1243,9 +1241,13 @@ void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet
   std::vector<fastjet::PseudoJet> inputVectors;
   fastjet::PseudoJet pseudoTrack;
 
-  for (auto part : jet->GetParticleConstituents()) {
-    pseudoTrack.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    pseudoTrack.set_user_index(part.GetGlobalIndex() + 100);
+  for (int constituentIndex = 0; constituentIndex < jet->GetNumberOfTracks(); constituentIndex++) {
+    AliVParticle* part = jet->Track(constituentIndex);
+    if (!part) {
+      continue;
+    }
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    pseudoTrack.set_user_index(jet->TrackAt(constituentIndex) + 100);
     inputVectors.push_back(pseudoTrack);
   }
 
@@ -1256,9 +1258,13 @@ void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet
   std::vector<fastjet::PseudoJet> inputVectorsM;
   fastjet::PseudoJet pseudoTrackM;
 
-  for (auto part : jetM->GetParticleConstituents()) {
-    pseudoTrack.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    pseudoTrack.set_user_index(part.GetGlobalIndex() + 100);
+  for (int constituentIndex = 0; constituentIndex < jetM->GetNumberOfTracks(); constituentIndex++) {
+    AliVParticle* part = jetM->Track(constituentIndex);
+    if (!part) {
+      continue;
+    }
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    pseudoTrack.set_user_index(jetM->TrackAt(constituentIndex) + 100);
     inputVectorsM.push_back(pseudoTrack);
   }
 
@@ -1329,23 +1335,23 @@ void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet
  * @param[in] jet Jet whose constituents are to be checked.
  * @param[in] part1 Particle to check other particles in relation to.
  */
-bool AliAnalysisTaskJetDynamicalGrooming::CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1)
+bool AliAnalysisTaskJetDynamicalGrooming::CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1)
 {
-  auto jetConstituents = jet->GetParticleConstituents();
-  for (auto part2 : jetConstituents) {
+  for (unsigned int i = 0; i < jet->GetNumberOfTracks(); i++) {
+    AliVParticle * part2 = jet->Track(i);
     if (part2 == part1) {
       continue;
     }
-    Double_t phi1 = part1.Phi();
-    Double_t phi2 = part2.Phi();
-    Double_t chg1 = part1.GetParticle()->Charge();
-    Double_t chg2 = part2.GetParticle()->Charge();
-    Double_t ptv1 = part1.Pt();
-    Double_t ptv2 = part2.Pt();
-    Double_t deta = part2.Eta() - part1.Eta();
+    Double_t phi1 = part1->Phi();
+    Double_t phi2 = part2->Phi();
+    Double_t chg1 = part1->Charge();
+    Double_t chg2 = part2->Charge();
+    Double_t ptv1 = part1->Pt();
+    Double_t ptv2 = part2->Pt();
+    Double_t deta = part2->Eta() - part1->Eta();
     const Float_t kLimit = fPhiCutValue * 3;
 
-    if (TMath::Abs(part1.Eta() - part2.Eta()) < fEtaCutValue * 2.5 * 3) {
+    if (TMath::Abs(part1->Eta() - part2->Eta()) < fEtaCutValue * 2.5 * 3) {
       Float_t initdpsinner = (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 0.8 / ptv2) -
                   (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 0.8 / ptv1)));
 
@@ -1769,7 +1775,7 @@ void swap(PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents& first,
   swap(first.fPt, second.fPt);
   swap(first.fEta, second.fEta);
   swap(first.fPhi, second.fPhi);
-  swap(first.fGlobalIndex, second.fGlobalIndex);
+  swap(first.fID, second.fID);
 }
 
 /**

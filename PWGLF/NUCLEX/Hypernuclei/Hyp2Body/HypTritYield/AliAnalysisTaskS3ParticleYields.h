@@ -23,6 +23,7 @@ class AliESDtrack;
 #include <TClonesArray.h>
 #include "AliPID.h"
 #include "AliVertexerTracks.h"
+#include "THnSparse.h"
 
 
 class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
@@ -91,12 +92,16 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   AliStack              *fStack;               //!<! MC stack
   AliESDv0              *fV0;                  //!<! ESD v0 - He4 + pi
   TH2F                  *fHistdEdx;            //<   Histogram of Tpc dEdx for pid qa
+  THnSparseF		*fHistData;
+  THnSparseF		*fHistMC;
   TH2F                  *fHistdEdxV0;          //<   Histogram of Tpc dEdx for pid qa
   TH1F                  *fHistNumEvents;       //<   Histogram of number of events
   TH1F			            *fHistTrigger;	 	//<   Histogram of trigger for all events 
   TH1F			            *fHistV0;	 	//<   Histogram of trigger for all V0s 
   TH1F                  *fHistEvents;
   TTree                 *fTree;                //<   Tree containing reduced events
+  TTree                 *gTree;                //<   Tree containing reduced events
+  TTree                 *hTree;                //<   Tree containing reduced events
   TTree                 *fTreeGen;                //<   Tree containing reduced events
   TList                 *fHistogramList;       //<   List of histograms
   TVector3              fPrimaryVertex;       //!<! Vector of primary vertex of collision
@@ -113,8 +118,8 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Int_t                 fonTheFly;
   Int_t                 frunnumber;
   Float_t fmLambda, fpLambda, fptLambda, fctLambda, fdcaLambda, fcosLambda, fyLambda;
-  Float_t fpy, fhe3y, fpLy, fpiP, fhe3P, fpP, fpLP, fpiy;
-  Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec;
+  Float_t fpy, fhe3y, fpLy, fpiP, fhe3P, fhe3Pt, fpP, fpPt, fpLP, fpiy, fpchi2, fhe3chi2;
+  Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec, fpDcaz, fhe3Dcaz, fhe3Dca;
   Float_t fpiNcls, fhe3Ncls, fpNcls, fpLNcls, fpiNclsITS, fhe3NclsITS, fpNclsITS, fpLNclsITS;
   Float_t fpiDedxSigma, fhe3DedxSigma, fpDedxSigma, fpLDedxSigma, fpiDedx, fhe3Dedx, fpDedx, fpLDedx;
   Float_t farmalpha, farmpt;
@@ -127,9 +132,9 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   Int_t fHe3Charge, fPCharge, fLambdaCharge;
 
   TVector3              fVertexPosition; //< position of primary vertex
-  UShort_t              fNumberV0s;      //< number of v0s in event
+  Int_t              fNumberV0s;      //< number of v0s in event
   Int_t                 fCentrality;     //< centrality of event
-  UShort_t              fTrigger;        //< array of Triggers
+  Int_t              fTrigger;        //< array of Triggers
   TString               fTriggerClasses; //< fired trigger classes
 
   Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;

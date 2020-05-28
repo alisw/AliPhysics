@@ -54,12 +54,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i] = nullptr;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax)
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM, float pTmin, float pTmax, int MultRangeLow, int MultRangeHigh)
     : fpTmin(pTmin),
       fpTmax(pTmax),
       fMinimalBooking(false),
-      fMultRangeLow(27),
-      fMultRangeHigh(55) {
+      fMultRangeLow(MultRangeLow),
+      fMultRangeHigh(MultRangeHigh) {
   TString sName[2] = { "before", "after" };
   float ptmin = 0;
   float ptmax = 6.0;

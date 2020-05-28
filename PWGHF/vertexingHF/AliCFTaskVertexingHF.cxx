@@ -134,17 +134,19 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fIsPP13TeVData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMinLeadPtRT(6.0)
 {
   //
   //Default ctor
   //
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
 }
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
@@ -202,12 +204,14 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fZvtxCorrectedNtrkEstimator(kFALSE),
   fIsPPData(kFALSE),
   fIsPPbData(kFALSE),
+  fIsPP13TeVData(kFALSE),
   fUseAdditionalCuts(kFALSE),
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fFillMinimumSteps(kFALSE),
   fCutOnMomConservation(0.00001),
-  fAODProtection(1)
+  fAODProtection(1),
+  fMinLeadPtRT(6.0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -220,7 +224,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(2,AliCFContainer::Class());
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
 
   fCuts->PrintAll();
@@ -241,7 +245,7 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
     fHistoPtWeight = c.fHistoPtWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
-    for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
+    for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
   }
   return *this;
 }
@@ -302,18 +306,20 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
   fIsPPData(c.fIsPPData),
   fIsPPbData(c.fIsPPbData),
+  fIsPP13TeVData(c.fIsPP13TeVData),
   fUseAdditionalCuts(c.fUseAdditionalCuts),
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fFillMinimumSteps(c.fFillMinimumSteps),
   fCutOnMomConservation(c.fCutOnMomConservation),
-  fAODProtection(c.fAODProtection)
+  fAODProtection(c.fAODProtection),
+  fMinLeadPtRT(c.fMinLeadPtRT)
 
 {
   //
   // Copy Constructor
   //
-  for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
+  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
 }
 
 //___________________________________________________________________________
@@ -331,7 +337,7 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
   if (fHistoPtWeight)       delete fHistoPtWeight;
   if (fHistoMeasNch)        delete fHistoMeasNch;
   if (fHistoMCNch)          delete fHistoMCNch;
-  for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
+  for(Int_t i=0; i<33; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
 }
 
 //_________________________________________________________________________-
@@ -370,6 +376,9 @@ void AliCFTaskVertexingHF::Init()
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
       break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
+      break;
     }
     fPartName="D0";
     fDauNames="K+pi";
@@ -390,6 +399,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
+      break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
       break;
     }
     fPartName="Dstar";
@@ -429,6 +441,9 @@ void AliCFTaskVertexingHF::Init()
       break;
     case kESE:// configuration with variables for ESE analysis (pt,y,centrality,mult,q2)
       fNvar = 6;
+      break;
+    case kRT: // config with variables for RT analysis (pt,y,mult,RT,deltaphi)
+      fNvar = 5;
       break;
     }
     fPartName="Dplus";
@@ -507,10 +522,15 @@ void AliCFTaskVertexingHF::Init()
 
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4];
-  Int_t nProfiles=4;
+  TString period[33];
+  Int_t nProfiles=33;
 
-  if (fIsPPbData) { //if pPb, use only two estimator histos
+  if (fIsPP13TeVData) { //if pp at 13 TeV, use 33 estimator histos
+    period[0] = "LHC16d"; period[1] = "LHC16e"; period[2] = "LHC16g"; period[3] = "LHC16h"; period[4] = "LHC16j"; period[5] = "LHC16k"; period[6] = "LHC16l"; period[7] = "LHC16o"; period[8] = "LHC16p";
+    period[9] = "LHC17c"; period[10] = "LHC17e"; period[11] = "LHC17f"; period[12] = "LHC17h"; period[13] = "LHC17i"; period[14] = "LHC17j"; period[15] = "LHC17k"; period[16] = "LHC17l"; period[17] = "LHC17m"; period[18] = "LHC17o"; period[19] = "LHC17r";       
+    period[20] = "LHC18b"; period[21] = "LHC18d"; period[22] = "LHC18e"; period[23] = "LHC18f"; period[24] = "LHC18g"; period[25] = "LHC18h"; period[26] = "LHC18i"; period[27] = "LHC18k"; period[28] = "LHC18l"; period[29] = "LHC18m"; period[30] = "LHC18n"; period[31] = "LHC18o"; period[32] = "LHC18p";      
+    nProfiles = 33;
+  } else if (fIsPPbData) { //if pPb, use only two estimator histos
     period[0] = "LHC13b"; period[1] = "LHC13c";
     nProfiles = 2;
   } else {        // else assume pp (four histos for LHC10)
@@ -525,7 +545,7 @@ void AliCFTaskVertexingHF::Init()
       fListProfiles->Add(hprof);
     }
   }
-
+  
   // Save also the weight functions or histograms
   if(fFuncWeight) fListProfiles->Add(fFuncWeight);
   if(fHistoPtWeight) fListProfiles->Add(fHistoPtWeight);
@@ -781,11 +801,15 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
   fWeight=1.;
   if(fUseZWeight) fWeight *= GetZWeight(zMCVertex,runnumber);
-  if(fUseNchWeight){
+  if(fUseNchWeight) {
     Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    if(!fUseTrackletsWeight) fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
-    else fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
-    AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
+    if(!fUseTrackletsWeight) {
+    	fWeight *= GetNchWeight(nChargedMCPhysicalPrimary);
+    	AliDebug(2,Form("Using Nch weights, Mult=%d Weight=%f\n",nChargedMCPhysicalPrimary,fWeight));
+    } else {
+    	fWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
+    	AliDebug(2,Form("Using Nch weights (with tracklets), TrklMult=%d Weight=%f\n",nTracklets,fWeight));
+    }
   }
   Double_t eventWeight=fWeight;
 
@@ -877,6 +901,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 
     //set track array in case of kESE configuration
     cfVtxHF->SetTrackArray(aodEvent->GetTracks());
+  }
+  
+  Double_t rtval=-1.;
+  if (fConfiguration==kRT) {
+     //do RT determination if RT analysis
+     rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
+     cfVtxHF->SetRTValue(rtval);
   }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -1416,6 +1447,20 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
       h[2][iC] =   *(cont->ShowProjection(iC,4));
     }
   }
+  else if(fConfiguration == kRT) {
+     nvarToPlot = 4;
+     for (Int_t ih = 0; ih < 3; ih++) {
+        h[ih] = new TH1D[nvarToPlot];
+     }
+     for (Int_t iC=0;iC<nvarToPlot;iC++){
+        //MC-level
+        h[0][iC] = *(cont->ShowProjection(iC,0));
+        //MC-Acceptance level
+        h[1][iC] = *(cont->ShowProjection(iC,1));
+        //Reco-level
+        h[2][iC] = *(cont->ShowProjection(iC,4));
+     }
+  }
   TString* titles;
   //Int_t nvarToPlot = 0;
   if (fConfiguration == kSnail){
@@ -1521,6 +1566,16 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     titles[4]="N_{tracks} (R<0.4)";
     titles[5]="q_{2}";
   }
+  else if(fConfiguration == kRT) {
+     //nvarToPlot =  4;
+     titles = new TString[nvarToPlot];
+     titles[0]="pT_candidate (GeV/c)";
+     titles[1]="rapidity";
+     titles[2]="multiplicity";
+     titles[3]="RT";
+     titles[4]="deltaPhi";
+  }
+  
 
   Int_t markers[16]={20,24,21,25,27,28,
                      20,24,21,25,27,28,
@@ -2159,7 +2214,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
   Double_t pMeas=fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(nch));
   Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
   Double_t weight = pMC>0 ? pMeas/pMC : 0.;
-  if(fUseMultRatioAsWeight)  weight = pMC;
+  if(fUseMultRatioAsWeight)  weight = pMC; //in this case, fHistoMCNch is already the ratio of data/MC!
   return weight;
 }
 //__________________________________________________________________________________________________
@@ -2258,10 +2313,49 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // pp:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  Int_t period = -1;   // pp 7 TeV:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
                        // pPb: 0-LHC13b, 1-LHC13c
+  					   // pp 13 TeV: 0-32, see below
 
-  if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
+  if (fIsPP13TeVData) {    // setting run numbers for LHC16-17-18 at 13 TeV if pp 13 TeV
+  //2016
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378 && runNo<=255469)period = 3;//16h
+    if(runNo>=256146 && runNo<=256420)period = 4;//16j
+    if(runNo>=256504 && runNo<=258537)period = 5;//16k
+    if(runNo>=258883 && runNo<=260187)period = 6;//16l
+    if(runNo>=262395 && runNo<=264035)period = 7;//16o
+    if(runNo>=264076 && runNo<=264347)period = 8;//16p
+  //2017
+    if(runNo>=270531 && runNo<=270667)period = 9;//17c
+    if(runNo>=270822 && runNo<=270830)period = 10;//17e
+    if(runNo>=270854 && runNo<=270865)period = 11;//17f
+    if(runNo>=271868 && runNo<=273103)period = 12;//17h
+    if(runNo>=273591 && runNo<=274442)period = 13;//17i
+    if(runNo>=274593 && runNo<=274671)period = 14;//17j 
+    if(runNo>=274690 && runNo<=276508)period = 15;//17k
+    if(runNo>=276551 && runNo<=278216)period = 16;//17l
+    if(runNo>=278914 && runNo<=280140)period = 17;//17m
+    if(runNo>=280282 && runNo<=281961)period = 18;//17o
+    if(runNo>=282504 && runNo<=282704)period = 19;//17r
+  //2018
+    if(runNo>=284706 && runNo<=285447)period = 20;//18b
+    if(runNo>=285978 && runNo<=286350)period = 21;//18d
+    if(runNo>=286380 && runNo<=286937)period = 22;//18e
+    if(runNo>=287000 && runNo<=287977)period = 23;//18f
+    if(runNo>=288619 && runNo<=288750)period = 24;//18g
+    if(runNo>=288804 && runNo<=288806)period = 25;//18h
+    if(runNo>=288861 && runNo<=288909)period = 26;//18i
+    if(runNo>=289165 && runNo<=289201)period = 27;//18k
+    if(runNo>=289240 && runNo<=289971)period = 28;//18l
+    if(runNo>=290222 && runNo<=292839)period = 29;//18m
+    if(runNo>=293357 && runNo<=293359)period = 30;//18n
+    if(runNo>=293368 && runNo<=293898)period = 31;//18o
+    if(runNo>=294009 && runNo<=294925)period = 32;//18p  
+    if (period<0 || period>32) return 0;
+  } else if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
     if (runNo>195343 && runNo<195484) period = 0;
     if (runNo>195528 && runNo<195678) period = 1;
     if (period<0 || period>1) return 0;
@@ -2310,4 +2404,239 @@ Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mc
 
   return q2;
 }
+Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCHeader *mcHeader, AliCFVertexingHF* cf) 
+{
+   ///! TODO: check MM RT task for MC header version of calc
+   
+   /// Calculate RT value for input event (method ported from AliAnalysisTaskUeSpectraRT)
+   /// also sets phi of leading particle (fPhiLeading)
+   Int_t runNumber = esdEvent->GetRunNumber();
+   Int_t eventId = 0;
+   Double_t trackRTval = -1;
+   if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
+   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
+   AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   trackFilter->AddCuts(esdCutsTPC);
+
+      
+   const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
+   TObjArray *fCTSTracks = new TObjArray();
+   Double_t nRecTracks = 0;
+   AliVParticle* part = 0x0;
+   Double_t eta, pt, LeadingPt = -1; 
+   for (Int_t iT = 0; iT < nESDTracks; iT++) 
+   {
+      part = esdEvent->GetTrack(iT);
+      eta = part->Eta();
+      pt  = part->Pt();
+      if (TMath::Abs(eta) > 1.5) continue; //temporary, hardcoded eta cut to default value
+      if (!(TMath::Abs(pt) > 0.15)) continue;
+      
+      // Default track filter (to be checked)
+      for ( Int_t i = 0; i < 1; i++)
+      {
+         UInt_t selectDebug = 0;
+         if (trackFilter)
+         {
+            selectDebug = trackFilter->IsSelected(part);
+            if (!selectDebug)
+            {
+               continue;
+            }
+            /// fill tracks array
+            fCTSTracks->Add(part);
+            if (!part) continue;
+         }
+      }           
+   }      
+   
+   //find leading object
+   TObjArray *LeadingTrackReco = FindLeading(fCTSTracks);
+   if (LeadingTrackReco) {
+      AliVParticle* LeadingReco = 0;
+      LeadingReco = (AliVParticle*)LeadingTrackReco->At(0);
+      LeadingPt = LeadingReco->Pt();
+      cf->SetPhiLeading(LeadingReco->Phi());
+      if (LeadingPt > fMinLeadPtRT && LeadingPt < 300. ) {// calculate only if leading pt is in acceptable range
+         //Sorting
+         TObjArray *regionSortedParticlesReco = SortRegionsRT((AliVParticle*)LeadingTrackReco->At(0), fCTSTracks);
+         // Transverse regions
+         TObjArray *regionsMinMaxReco = GetMinMaxRegionRT((TList*)regionSortedParticlesReco->At(2),(TList*)regionSortedParticlesReco->At(3));
+         TList *listMax = (TList*)regionsMinMaxReco->At(0);
+         TList *listMin = (TList*)regionsMinMaxReco->At(1);
+         
+         trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
+      }
+      
+   }
+   
+ 
+  return trackRTval; 
+}
+
+
+ULong64_t AliCFTaskVertexingHF::GetEventIdAsLong(AliVHeader* header) 
+{
+//	unique ID for each event
+   return ((ULong64_t)header->GetBunchCrossNumber() +
+           (ULong64_t)header->GetOrbitNumber()*3564 +
+           (ULong64_t)header->GetPeriodNumber()*16777215*3564);
+
+}
+TObjArray *AliCFTaskVertexingHF::FindLeading(TObjArray *array) 
+{
+   if (!array) return 0;
+   Int_t nTracks = array->GetEntriesFast();
+   if (!nTracks) return 0;
+   
+   TObjArray *tracks = new TObjArray(nTracks);
+   for (Int_t ipart = 0; ipart < nTracks; ipart++) {
+      AliVParticle *part = (AliVParticle*)(array->At(ipart));
+      if(!part) continue;
+      tracks->AddLast(part);
+   }
+   QSortTracks(*tracks, 0, tracks->GetEntriesFast());
+   nTracks = tracks->GetEntriesFast();
+   if (!nTracks) return 0;
+   return tracks;
+}
+
+void AliCFTaskVertexingHF::QSortTracks(TObjArray &a, Int_t first, Int_t last)
+{
+   //Sort array by pT
+  static TObject *tmp;
+  static int i;           // "static" to save stack space
+  int j;
+
+  while (last - first > 1) {
+    i = first;
+    j = last;
+    for (;;) {
+      while (++i < last && ((AliVParticle*)a[i])->Pt() > ((AliVParticle*)a[first])->Pt() )
+        ;
+      while (--j > first && ((AliVParticle*)a[j])->Pt() < ((AliVParticle*)a[first])->Pt() )
+        ;
+      if (i >= j)
+        break;
+
+      tmp  = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    if (j == first) {
+      ++first;
+      continue;
+    }
+    tmp = a[first];
+    a[first] = a[j];
+    a[j] = tmp;
+    if (j - first < last - (j + 1)) {
+      QSortTracks(a, first, j);
+      first = j + 1;   
+    } else {
+      QSortTracks(a, j + 1, last);
+      last = j;      
+    }
+  }
+}
+
+
+
+TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObjArray *array)
+{
+   if (!array) return 0;
+   static const Double_t k60rad = 60.*TMath::Pi()/180.;
+   static const Double_t k120rad = 120.*TMath::Pi()/180.;
+   
+   // define output lists of particles
+   TList *toward = new TList();
+   TList *away = new TList();
+   TList *transverse1 = new TList();
+   TList *transverse2 = new TList();
+   TObjArray *regionParticles = new TObjArray;
+   regionParticles->SetOwner();
+   
+   regionParticles->AddLast(toward);
+   regionParticles->AddLast(away);
+   regionParticles->AddLast(transverse1);
+   regionParticles->AddLast(transverse2);
+   if (!leading) return regionParticles;
+   
+   TVector3 leadVect(leading->Px(),leading->Py(),leading->Pz());
+   Int_t nTracks = array->GetEntriesFast();
+   if (!nTracks) return 0;
+
+   //loop over tracks
+   for (Int_t ipart = 0; ipart < nTracks; ipart++) {
+      AliVParticle* part = (AliVParticle*)(array->At(ipart));
+      if(!part) continue;
+      //vector notation for particles
+      TVector3 partVect(part->Px(), part->Py(), part->Pz());
+      Int_t region = 0;
+      Float_t deltaPhi = leadVect.DeltaPhi(partVect);
+      if (deltaPhi <= -TMath::PiOver2()) deltaPhi+= TMath::TwoPi();
+      if (deltaPhi > 3*TMath::PiOver2()) deltaPhi-= TMath::TwoPi();
+      Double_t fUeDeltaPhiMinCut = TMath::DegToRad()*60.;
+      Double_t fUeDeltaPhiMaxCut = TMath::DegToRad()*120.;
+
+      //transverse regions
+
+      if((deltaPhi<-fUeDeltaPhiMinCut) || (deltaPhi >2*fUeDeltaPhiMaxCut))region = -1; //left
+      if((deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi <fUeDeltaPhiMaxCut)) region = 1;   //right
+   
+      if(deltaPhi > -fUeDeltaPhiMinCut && deltaPhi < fUeDeltaPhiMinCut) region = 2;    //forward
+      if(deltaPhi > fUeDeltaPhiMaxCut && deltaPhi < 2*fUeDeltaPhiMaxCut) region = -2;  //backward
+   
+      // skip leading particle   
+      if(leading == part) continue;
+      if(part->Pt() >= leading->Pt()) continue;
+      if(!region)continue;
+   
+      if(region == 1) transverse1->Add(part);
+      if(region == -1) transverse2->Add(part);
+      if(region == 2) toward->Add(part);
+      if(region == -2) away->Add(part);
+   }//end loop on tracks
+
+   return regionParticles;   
+}
+
+
+TObjArray* AliCFTaskVertexingHF::GetMinMaxRegionRT(TList *transv1, TList *transv2)
+{
+// Returns two lists of particles, one for MIN and one for MAX region
+  Double_t sumpT1 = 0.;
+  Double_t sumpT2 = 0.;
+
+  Int_t particles1 = transv1->GetEntries();
+  Int_t particles2 = transv2->GetEntries();
+
+// Loop on transverse region 1
+  for(Int_t i=0; i<particles1; i++){
+   AliVParticle *part = (AliVParticle*)transv1->At(i);
+   sumpT1 +=  part->Pt();
+   }
+
+// Loop on transverse region 2
+  for(Int_t i=0; i<particles2; i++){
+   AliVParticle *part = (AliVParticle*)transv2->At(i);
+   sumpT2 +=  part->Pt();
+   }
+
+  TObjArray *regionParticles = new TObjArray;
+  if(sumpT2 >= sumpT1){
+   regionParticles->AddLast(transv1); // MIN
+   regionParticles->AddLast(transv2); // MAX 
+   }
+  else{
+   regionParticles->AddLast(transv2); // MIN
+   regionParticles->AddLast(transv1); // MAX
+   }
+
+  return regionParticles;
+}
+
+
+
+
 

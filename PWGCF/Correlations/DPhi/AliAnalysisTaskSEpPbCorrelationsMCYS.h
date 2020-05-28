@@ -70,6 +70,7 @@ public:
   virtual void SetMCclosure(Bool_t mode) { fMCclosure = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void Setmcprim(Bool_t mode){fprim=mode;}
+  virtual void SetQAmode(Bool_t mode){fQA=mode;}
   
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }

@@ -56,6 +56,10 @@ public:
     kTrgClusterOnlyCALOFAST,
     kTrgClusterN
   };
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
+  };
   AliAnalysisTaskEmcalJetEnergySpectrum();
   AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
@@ -78,6 +82,8 @@ public:
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
+  void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
@@ -118,6 +124,8 @@ private:
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
+  Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning

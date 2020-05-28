@@ -684,8 +684,10 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	  
   ////User's variable:
   Double_t fSumTPCQn2xNeg=0, fSumTPCQn2yNeg=0, fSumTPCQn2xPos=0, fSumTPCQn2yPos=0;
+  Double_t fSumTPCQn2xNegWhole=0, fSumTPCQn2yNegWhole=0, fSumTPCQn2xPosWhole=0, fSumTPCQn2yPosWhole=0;
   Double_t fSumTPCQn2xNegChNeg=0, fSumTPCQn2yNegChNeg=0, fSumTPCQn2xPosChNeg=0, fSumTPCQn2yPosChNeg=0;
   Double_t fSumWgtEtaNeg=0, fSumWgtEtaPos=0;
+  Double_t fSumWgtEtaNegWhole=0, fSumWgtEtaPosWhole=0;
   Double_t fSumWgtEtaNegChNeg=0, fSumWgtEtaPosChNeg=0;
   Double_t fNumOfPos = 0;
   Double_t fNumOfNeg = 0;
@@ -791,7 +793,23 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
 	if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
 	  {
 	  
+
+
 	if(trkEta < fEtaGapNeg){
+	  fSumTPCQn2xNegWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegWhole  += trkWgt;
+	}
+	else if(trkEta > fEtaGapPos){
+	  fSumTPCQn2xPosWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPosWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPosWhole  += trkWgt;
+	}
+
+
+
+
+  if(trkEta < fEtaGapNeg){
 	  if (trkChrg>0) //added by me for trivial term correction
 	  {
 	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
@@ -1338,10 +1356,10 @@ void AliAnalysisTaskCMW::UserExec(Option_t*) {
   /// Charge All(+-):
 
 
-  Double_t c2WeightChrg     = fSumWgtEtaPos*fSumWgtEtaNeg;
+  Double_t c2WeightChrg     = fSumWgtEtaPosWhole*fSumWgtEtaNegWhole;
   if (c2WeightChrg!=0.0)
     {
-  Double_t c2cumulantChrg   = (fSumTPCQn2xPos*fSumTPCQn2xNeg + fSumTPCQn2yPos*fSumTPCQn2yNeg)/c2WeightChrg;
+  Double_t c2cumulantChrg   = (fSumTPCQn2xPosWhole*fSumTPCQn2xNegWhole + fSumTPCQn2yPosWhole*fSumTPCQn2yNegWhole)/c2WeightChrg;
   fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg);   /// for denominator
     }
   

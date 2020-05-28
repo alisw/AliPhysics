@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef ALIANALYSISTASKGFWFLOW__H
 #define ALIANALYSISTASKGFWFLOW__H
 #include "AliAnalysisTaskSE.h"

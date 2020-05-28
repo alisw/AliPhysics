@@ -56,13 +56,26 @@ sharedParameters:
     removeMCGen2: ""                                # name of generator input to be accepted
 # This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
 # Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
+CellCloneContainer:                                 # Clone the cell branch into a new one
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    clonedCellsBranchName: "emcalCellsClone"        # Name of branch with new cells
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+           - defaultCells                              # This object is defined above in the cells section of the input objects
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
+    disableTempCalib: false                         # Switch off temperature calib completely (this should only be done by experts)
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellSingleChannelCalibration:                       # Cell Single Channel Energy correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
@@ -154,6 +167,7 @@ CellCombineCollections:                             # Utility task to combine tw
                                                     # The combined needs to be done here to enable different cell corrections for the different cell collections (for example, MC may need different corrections than data.)
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    mergeCells: false                               # Merge cells with same absID from signal and background
     externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
     combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
     verifyCombinedCells: false                      # True will have the task confirm that the input cells have been successfully combined together. NOTE: Don't enable this for normal usage - it will reduce performance for little benefit.
@@ -286,6 +300,7 @@ PHOSCorrections:                                    # PHOS recalibration compone
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
 executionOrder:
+    - CellCloneContainer
     - CellEmulateCrosstalk
     - CellEnergy
     - CellEnergyVariation

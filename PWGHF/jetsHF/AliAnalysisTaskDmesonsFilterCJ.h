@@ -21,7 +21,7 @@
 //          C. Bianchin, Utrecht University
 //          X. Zhang, LBNL
 //          S. Aiola, Yale University
-//	        B. Trzeciak, Utrecht University
+//          B. Trzeciak, Utrecht University
 //-----------------------------------------------------------------------
 
 #include "AliAnalysisTaskEmcal.h"
@@ -142,37 +142,37 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void AddMCEventTracks(TClonesArray* coll, AliParticleContainer* mctracks);
   
 
-  Bool_t          fUseMCInfo;               //! Use MC info
-  Bool_t          fBuildRMEff;              //! MC RM or efficiency studies
-  Bool_t          fUsePythia;               //! Use Pythia info only for MC
-  Bool_t          fMultPythiaHeader;        //! Use Pythia info only, with multiple Pythia events per one MB event
-  Int_t           fPythiaEvent;             //! Pythia event to be analysed, for MC with more than one Pythia event
-  Bool_t          fUseHijing;               //! Use only Hijing info for MC
-  Bool_t          fUseRejTracks;            //! Reject tracks for JES systematics
-  Double_t        fTrackIneff;              //! Tracking inefficiency for JES systematics
-  Bool_t          fUseReco;                 //! use reconstructed tracks when running on MC
-  UInt_t          fCandidateType;           //! Dstar or D0
-  TString         fCandidateName;           //! Dstar or D0
-  Int_t           fPDGmother;               //! PDG code of D meson
-  Int_t           fNProngs;                 //! number of prong of the decay channel  
-  Int_t           fPDGdaughters[4];         //! PDG codes of daughters
-  Float_t         fSigmaD0[30];             //! D0 sigma for Dstar
-  TString         fBranchName;              //! AOD branch name
-  AliRDHFCuts    *fCuts;                    //! cuts 
-  Double_t        fMinMass;                 //! mass lower limit histogram
-  Double_t        fMaxMass;                 //! mass upper limit histogram
-  Bool_t          fInhibitTask;             //!
-  Bool_t          fCombineDmesons;          //! create an additional collection with D meson candidates and the rest of the tracks (for jet finding)
-  Bool_t          fMultCand;                //! In case of multiple candidates per event
-  Int_t           fAnalyseCand;             //! Number of the candidate to be analysed
-  Bool_t          fRejectQuarkNotFound;     //! reject D mesons for which the original charm or bottom quark could not be found (MC)
-  Bool_t          fRejectDfromB;            //! reject D mesons coming from a B meson decay (MC)
-  Bool_t          fKeepOnlyDfromB;          //! only accept D mesons coming from a B meson decay (MC)
+  Bool_t          fUseMCInfo;               //  Use MC info
+  Bool_t          fBuildRMEff;              //  MC RM or efficiency studies
+  Bool_t          fUsePythia;               //  Use Pythia info only for MC
+  Bool_t          fMultPythiaHeader;        //  Use Pythia info only, with multiple Pythia events per one MB event
+  Int_t           fPythiaEvent;             //  Pythia event to be analysed, for MC with more than one Pythia event
+  Bool_t          fUseHijing;               //  Use only Hijing info for MC
+  Bool_t          fUseRejTracks;            //  Reject tracks for JES systematics
+  Double_t        fTrackIneff;              //  Tracking inefficiency for JES systematics
+  Bool_t          fUseReco;                 //  use reconstructed tracks when running on MC
+  UInt_t          fCandidateType;           //  Dstar or D0
+  TString         fCandidateName;           //  Dstar or D0
+  Int_t           fPDGmother;               //  PDG code of D meson
+  Int_t           fNProngs;                 //  number of prong of the decay channel  
+  Int_t           fPDGdaughters[4];         //  PDG codes of daughters
+  Float_t         fSigmaD0[30];             //  D0 sigma for Dstar
+  TString         fBranchName;              //  AOD branch name
+  AliRDHFCuts    *fCuts;                    //  cuts 
+  Double_t        fMinMass;                 //  mass lower limit histogram
+  Double_t        fMaxMass;                 //  mass upper limit histogram
+  Bool_t          fInhibitTask;             // 
+  Bool_t          fCombineDmesons;          //  create an additional collection with D meson candidates and the rest of the tracks (for jet finding)
+  Bool_t          fMultCand;                //  In case of multiple candidates per event
+  Int_t           fAnalyseCand;             //  Number of the candidate to be analysed
+  Bool_t          fRejectQuarkNotFound;     //  reject D mesons for which the original charm or bottom quark could not be found (MC)
+  Bool_t          fRejectDfromB;            //  reject D mesons coming from a B meson decay (MC)
+  Bool_t          fKeepOnlyDfromB;          //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;                //!
-  AliAODMCHeader *fMCHeader;                //!
+  AliAODMCHeader *fMCHeader;		        //!
   AliNormalizationCounter *fCounter;        //! AliNormalizationCounter
-  TRandom3	     *fRan;                     //! Random number generator
-  TClonesArray   *fArrayDStartoD0pi;        //! Why not a common array for a D meson going to its own daughters.. e.g. fArrayDmesontoDaughters
+  TRandom3	     *fRan;			            //! Random number generator
+  TClonesArray   *fArrayDmesontoDaughters;  //! Common array for a D meson going to its own daughters
   TClonesArray   *fMCarray;                 //!
   TClonesArray   *fCandidateArray;          //! contains candidates selected by AliRDHFCuts
   TClonesArray   *fSideBandArray;           //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
@@ -217,7 +217,7 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonsFilterCJ(const AliAnalysisTaskDmesonsFilterCJ &source);
   AliAnalysisTaskDmesonsFilterCJ& operator=(const AliAnalysisTaskDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 2); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 3); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif

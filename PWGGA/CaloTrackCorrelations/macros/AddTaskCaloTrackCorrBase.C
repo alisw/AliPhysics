@@ -170,7 +170,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale","FullCalo")
+/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale","FullCalo", "NCellCutEnDep")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param year: The year the data was taken, used to configure time cut and fiducial cut
 /// \param simulation : A bool identifying the data as simulation
@@ -610,6 +610,10 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
 ///       * Strip: Consider also removing LED flashing single strips
+///    *CheckTriggerPeriod: Activate configuration of analysis if trigger existed in a given period
+///    *EmbedMC: Activate recovery of embedded MC signal
+///          * EmbedMCInput: Both MC and Input event from embedded signal, just MC analysis
+///    "NCellCutEnDep": Apply N cell depedent cut on EMCal clusters above 40 GeV
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -652,6 +656,18 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     return NULL;
   }
   
+  // Activate checking of trigger?
+  Bool_t checkTriggerPeriod = kFALSE;
+  if ( cutsString.Contains("CheckTriggerPeriod") )
+  {
+    checkTriggerPeriod = kTRUE;
+    
+    // Remove from string, not relevant for list name
+    cutsString.ReplaceAll("CheckTriggerPeriod_","");
+    cutsString.ReplaceAll("_CheckTriggerPeriod","");
+    cutsString.ReplaceAll("CheckTriggerPeriod" ,"");
+  }
+    
   // Name for containers
   
   TString anaCaloTrackCorrBase = Form("CTC_%s_Trig_%s",calorimeter.Data(),trigger.Data());
@@ -711,20 +727,25 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
+  // If train is tested on a period without a trigger and it runs
+  // on many periods, it can skip a trigger that was expected. Use with care.
   //
-#if defined(__CINT__)
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
-#endif
-
-  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
-  
-  if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
-  
-  if ( !doAnalysis ) 
+  if ( checkTriggerPeriod )
   {
-    maker->SwitchOffProcessEvent();
-    return task;
-  }
+#if defined(__CINT__)
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+#endif
+    
+    Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
+    
+    if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
+    
+    if ( !doAnalysis ) 
+    {
+      maker->SwitchOffProcessEvent();
+      return task;
+    }
+  }  // Check trigger period
   
   // #### Start analysis configuration ####
   // Print settings
@@ -798,11 +819,27 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Set the list name for later recovery in macros 
   maker->GetListOfAnalysisContainers()->SetName(anaCaloTrackCorrBase);
   
+  // Activate recovery of embedded events
+  Bool_t embed = kFALSE;
+  if ( cutsString.Contains("EmbedMC") )
+  {
+    embed = kTRUE; // use trigger masks later
+    maker->GetReader()->UseEmbeddedEvent(kTRUE,kFALSE); // if only first true, remember to get the combined clusters/cells
+    
+    // Both input event and MC event come from embedded signal
+    if ( cutsString.Contains("EmbedMCInput") )
+    {
+      maker->GetReader()->UseEmbeddedEvent(kTRUE,kTRUE); // if only first true, remember to get the combined clusters/cells
+    }
+  }
+ 
   // Select events trigger depending on trigger
   //
   maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
-  if ( !simulation )
+  //printf("xxxx simu %d && embed %d\n",simulation,embed);
+  if ( !simulation || (simulation && embed) )
   {
+    printf("xxxxx Get trigger mask!\n");
 #if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
 #endif
@@ -811,7 +848,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
 
     maker->GetReader()->SetFiredTriggerClassName(caloTriggerString);
-
+    
+    // When analyzing L1 trigger, reject events with L1 and L2 trigger
+    if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") ) 
+      maker->GetReader()->SwitchOnEMCALEventRejectionWith2Thresholds();
+    
     // For mixing with AliAnaParticleHadronCorrelation switch it off
     if ( mixOn )
     {

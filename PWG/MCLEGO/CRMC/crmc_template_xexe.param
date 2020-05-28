@@ -1,0 +1,61 @@
+!!input file for crmc
+!! a line starting with "!" is not read by the program
+
+!switch fusion off      !nuclear effects due to high density (QGP) in EPOS
+                        !more realistic but slow (can be switched off)
+
+!set istmax 1           !include virtual mother particles with EPOS to identify particle source
+
+!set isigma 2           !uncomment to get correct inelastic cross-section for heavy ions with EPOS, QGSJET and DPMJET
+
+!!Set up particle Decays
+!switch decay off     !no decay at all
+
+nodecay  14    !uncomment not to decay mu- (PDG id =  13)
+nodecay -14    !uncomment not to decay mu+ (PDG id = -13)
+nodecay  1120  !uncomment not to decay proton  (PDG id =  2212) (for pythia)
+nodecay -1120  !uncomment not to decay aproton (PDG id = -2212) (for pythia)
+nodecay  1220  !uncomment not to decay neutron  (PDG id =  2112)
+nodecay -1220  !uncomment not to decay aneutron (PDG id = -2112)
+nodecay  120   !uncomment not to decay pi+ (PDG id =  211)
+nodecay -120   !uncomment not to decay pi- (PDG id = -211)
+nodecay  130   !uncomment not to decay k+ (PDG id =  321)
+nodecay -130   !uncomment not to decay k- (PDG id = -321)
+nodecay -20    !uncomment not to decay k0L (PDG id = -130)
+nodecay  17    !uncomment not to decay deuterium
+nodecay -17    !uncomment not to decay antideuterium
+nodecay  18    !uncomment not to decay tritium
+nodecay -18    !uncomment not to decay antitritium
+nodecay  19    !uncomment not to decay alpha
+nodecay -19    !uncomment not to decay antialpha
+!... more possible (with EPOS id (not PDG))
+!for other particles, please ask authors ... or use minimum ctau (cm) :
+
+MinDecayLength  1.    !minimum c.Tau to define stable particles (cm)
+
+fdpmjetpho dat   __CRMC_BASEDIR__/tabs/phojet_fitpar.dat
+fdpmjet dat   __CRMC_BASEDIR__/tabs/dpmjet.dat
+fqgsjet dat   __CRMC_BASEDIR__/tabs/qgsjet.dat
+fqgsjet ncs   __CRMC_BASEDIR__/tabs/qgsjet.ncs
+fqgsjetII03 dat __CRMC_BASEDIR__/tabs/qgsdat-II-03.lzma
+fqgsjetII03 ncs __CRMC_BASEDIR__/tabs/sectnu-II-03
+fqgsjetII dat __CRMC_BASEDIR__/tabs/qgsdat-II-04.lzma
+fqgsjetII ncs __CRMC_BASEDIR__/tabs/sectnu-II-04
+fname check  none
+fname initl  __CRMC_BASEDIR__/tabs/epos.initl
+fname iniev  __CRMC_BASEDIR__/tabs/epos.iniev
+fname inirj  __CRMC_BASEDIR__/tabs/epos.inirj
+fname inics  __CRMC_BASEDIR__/tabs/epos.inics
+fname inihy  __CRMC_BASEDIR__/tabs/epos.inihy
+
+set pytune 350   !possibility to change PYTHIA tune (for PYTHIA only !)
+
+!!ImpactParameter
+!set bminim 0 !works with epos
+!set bmaxim 4
+
+!!Debug Output
+!print * 4
+!printcheck screen
+
+EndEposInput

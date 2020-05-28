@@ -19,6 +19,7 @@
 #include "AliAnalysisManager.h"
 #include "TRandom3.h"
 #include "AliVCaloTrigger.h"
+#include "AliTimeRangeCut.h"
 
 class AliESDEvent;
 class AliAODEvent;
@@ -142,6 +143,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC12P2JJ,       //!< anchored LHC12[a-h] pass 2 - JJ
         kLHC17g5b,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
         kLHC17g5c,        //!< anchored LHC12[a-h] pass 2 - dec gamma JJ
+        kLHC17g5a1,        //!< anchored LHC12[a-h] pass 2 - GJ Geant3
+        kLHC17g5a2,        //!< anchored LHC12[a-h] pass 2 - GJ Geant3
 
         // 2013
         kLHC13bc,         //!< pPb 5.023TeV
@@ -389,6 +392,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetCorrectionTaskSetting(TString setting)                             { fCorrTaskSetting = setting                                ; }
@@ -633,9 +637,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TList*                      fHistograms;                            ///<
       TList*                      fHeaderList;                            ///<
 
-      Int_t                      fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+      Int_t                       fDoLightOutput;                         ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
+      TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
       Int_t                       fDetectorCentrality;                    ///< centrality detecotor V0M or CL1
@@ -666,6 +671,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            ///< period selector
       EnergyVar                   fEnergyEnum;                            ///< energy selector
+      AliTimeRangeCut             fTimeRangeCut;                          //!
 
       TObjString*                 fCutString;                             ///< cut number used for analysis
       TString                     fCutStringRead;                         ///<
@@ -758,7 +764,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,75)
+      ClassDef(AliConvEventCuts,76)
       /// \endcond
 };
 

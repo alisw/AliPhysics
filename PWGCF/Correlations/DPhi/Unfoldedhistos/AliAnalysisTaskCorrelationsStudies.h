@@ -77,7 +77,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
       kNone = 0,                                              ///< no additional analysis with reconstructed tracks
       kRecWithTrue,                                           ///< additional analysis with rec tracks using true values
       kRecTruePrimaries,                                      ///< additional analysis with rec tracks but using only the ones corresponding to true primaries
-      kRecWithNotAccepted                                     ///< additional analysis with rec tracks incorporating the reconstructed which were not accepted
+      kRecWithNotAccepted,                                    ///< additional analysis with rec tracks incorporating the reconstructed which were not accepted
+      kRecTruePrimariesWithTrue                               ///< additional analysis with rec tracks using only the ones corresponding to true primaries and with their true values
     };
 
     /// \enum trackQualityFlags

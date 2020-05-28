@@ -1,0 +1,219 @@
+configurationName: "EMCal correction framework configuration for multiple xTalk and V1 clusters"
+pass: "pass1"
+
+inputObjects:
+    cells:
+        cells:
+            branchName: "usedefault"
+        cells_xTalkOff:
+            branchName: "cells_xTalkOff"
+        cells_xTalk:
+            branchName: "cells_xTalk"
+        cells_xTalkMore:
+            branchName: "cells_xTalkMore"
+        cells_xTalkLess:
+            branchName: "cells_xTalkLess"
+    clusterContainers:
+        baseClusterContainer:
+            branchName: "V1clusters_xTalkOff"
+        baseClusterContainer_xTalk:
+            branchName: "V1clusters_xTalk"
+        baseClusterContainer_xTalkMore:
+            branchName: "V1clusters_xTalkMore"
+        baseClusterContainer_xTalkLess:
+            branchName: "V1clusters_xTalkLess"
+       
+# Clone cells branch
+CellCloneContainer:
+    cellsNames:
+      - cells
+CellCloneContainer_xTalkOff:
+    enabled: true        
+    clonedCellsBranchName: "cells_xTalkOff"
+CellCloneContainer_xTalk:
+    enabled: true        
+    clonedCellsBranchName: "cells_xTalk"
+CellCloneContainer_xTalkMore:
+    enabled: true        
+    clonedCellsBranchName: "cells_xTalkMore"
+CellCloneContainer_xTalkLess:
+    enabled: true        
+    clonedCellsBranchName: "cells_xTalkLess"
+        
+# Cross talk emulation   
+CellEmulateCrosstalk:   
+    createHistos: true
+    inducedTCardMinimum: 0.1           
+CellEmulateCrosstalk_xTalkOff:                 
+    enabled: false                            
+    cellsNames:
+        - cells_xTalkOff
+CellEmulateCrosstalk_xTalk:                  
+    enabled: true                              
+    inducedEnergyLossMinimumFraction:               
+        enabled: true                 
+    cellsNames:
+        - cells_xTalk
+CellEmulateCrosstalk_xTalkMore:                 
+    enabled: true                              
+    inducedEnergyLossMinimumFraction:               
+        enabled: true     
+        values: {0 : [5.2e-3], 1 : [7.5e-3], 2 : [6.8e-3], 3 : [9.0e-3], 4 : [5.2e-3], 5 : [5.2e-3], 6 : [5.2e-3], 7 : [9.0e-3], 8 : [5.2e-3], 9 : [5.2e-3], 10: [7.5e-3], 11: [7.5e-3], 12: [5.2e-3], 13: [5.2e-3], 14: [5.2e-3], 15: [5.2e-3], 16: [5.2e-3], 17: [5.2e-3], 18: [5.2e-3], 19: [5.2e-3], 20: [5.2e-3], 21: [5.2e-3]} 
+    cellsNames:
+        - cells_xTalkMore
+CellEmulateCrosstalk_xTalkLess:                 
+    enabled: true                              
+    inducedEnergyLossMinimumFraction:               
+        enabled: true          
+        values: {0 : [1.75e-3], 1 : [2.5e-3], 2 : [2.35e-3], 3 : [3.0e-3], 4 : [1.75e-3], 5 : [1.75e-3], 6 : [1.75e-3], 7 : [3.0e-3], 8 : [1.75e-3], 9 : [1.75e-3], 10: [2.5e-3], 11: [2.5e-3], 12: [1.75e-3], 13: [1.75e-3], 14: [1.75e-3], 15: [1.75e-3], 16: [1.75e-3], 17: [1.75e-3], 18: [1.75e-3], 19: [1.75e-3], 20: [1.75e-3], 21: [1.75e-3]} 
+    cellsNames:
+        - cells_xTalkLess
+   
+# Cell bad channel
+CellBadChannel:
+    createHistos: true
+CellBadChannel_xTalkOff:
+    enabled: true
+    cellsNames:
+        - cells_xTalkOff
+CellBadChannel_xTalk:
+    enabled: true
+    cellsNames:
+        - cells_xTalk
+CellBadChannel_xTalkMore:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMore
+CellBadChannel_xTalkLess:
+    enabled: true
+    cellsNames:
+        - cells_xTalkLess
+    
+# Cell Energy Calib
+CellEnergy:
+    enabled: false
+
+# Cell Time Calib
+CellTimeCalib:
+    enabled: false        
+
+# Clusterizer
+Clusterizer:
+    createHistos: true
+    clusterizer: kClusterizerv1
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    recalDistToBadChannels: true                    
+    recalShowerShape: false                         
+    setCellMCLabelFromCluster: 0
+    enableFracEMCRecalc: true     # false on old productions
+    remapMcAod: false             # true on old productions
+Clusterizer_xTalkOff:
+    enabled: true
+    cellsNames:
+        - cells_xTalkOff
+    clusterContainersNames:
+        - baseClusterContainer_xTalkOff
+Clusterizer_xTalk:
+    enabled: true
+    cellsNames:
+        - cells_xTalk
+    clusterContainersNames:
+        - baseClusterContainer_xTalk
+Clusterizer_xTalkMore:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMore
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMore
+Clusterizer_xTalkLess:
+    enabled: true
+    cellsNames:
+        - cells_xTalkLess
+    clusterContainersNames:
+        - baseClusterContainer_xTalkLess
+    
+# Non-linearity
+ClusterNonLinearity:
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kTestBeamFinalMC  
+ClusterNonLinearity_xTalkOff:
+    enabled: true
+    cellsNames:
+        - cells_xTalkOff
+    clusterContainersNames:
+        - baseClusterContainer_xTalkOff
+ClusterNonLinearity_xTalk:
+    enabled: true
+    cellsNames:
+        - cells_xTalk
+    clusterContainersNames:
+        - baseClusterContainer_xTalk        
+ClusterNonLinearity_xTalkMore:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMore
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMore
+ClusterNonLinearity_xTalkLess:
+    enabled: true
+    cellsNames:
+        - cells_xTalkLess
+    clusterContainersNames:
+        - baseClusterContainer_xTalkLess
+
+
+# Non-linearity after burner
+ClusterNonLinearityMCAfterburner:
+    afterburnerVersion: kPCM_EMCal
+    setForceClusterE: true
+    createHistos: true
+    setMCPeriod: "kTestBeamFinalMCRun2"
+ClusterNonLinearityMCAfterburner_xTalkOff:
+    enabled: true
+    cellsNames:
+        - cells_xTalkOff
+    clusterContainersNames:
+        - baseClusterContainer_xTalkOff
+ClusterNonLinearityMCAfterburner_xTalk:
+    enabled: true
+    cellsNames:
+        - cells_xTalk
+    clusterContainersNames:
+        - baseClusterContainer_xTalk
+ClusterNonLinearityMCAfterburner_xTalkMore:
+    enabled: true
+    cellsNames:
+        - cells_xTalkMore
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMore
+ClusterNonLinearityMCAfterburner_xTalkLess:
+    enabled: true
+    cellsNames:
+        - cells_xTalkLess
+    clusterContainersNames:
+        - baseClusterContainer_xTalkLess
+    
+# Cluster-track matcher
+ClusterTrackMatcher:
+    createHistos: true
+ClusterTrackMatcher_xTalkOff:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_xTalkOff
+ClusterTrackMatcher_xTalk:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_xTalk
+ClusterTrackMatcher_xTalkMore:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_xTalkMore    
+ClusterTrackMatcher_xTalkLess:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_xTalkLess  

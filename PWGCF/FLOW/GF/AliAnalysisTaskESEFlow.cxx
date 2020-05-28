@@ -89,11 +89,20 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fqSelList(0),
 
     fHistPhiEtaVz(0),
+    fHistPtEtaVz(0),
     fHistPhi(0),
     fHistEta(0),
     fHistPt(0),
     fHistZVertex(0),
     fHistPhiCor(0),
+    fHistPhiCor3D(0),
+    fHistTPCchi2(0),
+    fhQAEventsfMult32vsCentr(0), 
+    fhQAEventsfMult128vsCentr(0),
+    fhQAEventsfMult96vsCentr(0),
+    fhQAEventsfMultTPCvsTOF(0),
+    fhQAEventsfMultTPCvsESD(0),
+
     fSplq2TPC{0},
     fSplq3TPC{0},
     fSplq2V0C{0},
@@ -104,6 +113,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fhV0Calib{nullptr},
     
     fHistPDG{0},
+
+    fFileTrackEff(0),
+    fhTrackNUE(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -187,6 +199,14 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     V0qnBinMin(0.0),
     V0qnBinMax(15.0),
 
+    fPileupCut(500),
+    fCheckChi2TPC(kFALSE),
+    vTPCChi2Bound(4.0),
+    fFillQARej(kFALSE),
+
+    fUseNUEWeights(kFALSE),
+    fNUE(1),
+
 
     fVecCorrTask()
 {}
@@ -225,11 +245,20 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fqSelList(0),
 
     fHistPhiEtaVz(0),
+    fHistPtEtaVz(0),
     fHistPhi(0),
     fHistEta(0),
     fHistPt(0),
     fHistZVertex(0),
     fHistPhiCor(0),
+    fHistPhiCor3D(0),
+    fHistTPCchi2(0),
+    fhQAEventsfMult32vsCentr(0), 
+    fhQAEventsfMult128vsCentr(0),
+    fhQAEventsfMult96vsCentr(0),
+    fhQAEventsfMultTPCvsTOF(0),
+    fhQAEventsfMultTPCvsESD(0),
+
     fSplq2TPC{0},
     fSplq3TPC{0},
     fSplq2V0C{0},
@@ -240,6 +269,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fhV0Calib{nullptr},
 
     fHistPDG{0},
+
+    fFileTrackEff(0),
+    fhTrackNUE(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -323,6 +355,13 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     V0qnBinMin(0.0),
     V0qnBinMax(15.0),
 
+    fPileupCut(500),
+    fCheckChi2TPC(kFALSE),
+    vTPCChi2Bound(4.0),
+    fFillQARej(kFALSE),
+
+    fUseNUEWeights(kFALSE),
+    fNUE(1),
 
     fVecCorrTask()
 {
@@ -450,11 +489,18 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 
     fHistPhiEtaVz = new TH3F("fHistPhiEtaVz", "fHistPhiEtaVz; #phi; #eta; Vz", fNPhiBins, 0.0, TMath::TwoPi(), fNEtaBins, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
     fHistPhiEtaVz->Sumw2();
+    fHistPtEtaVz = new TH3F("fHistPtEtaVz","fHistPtEtaVz; pT; #eta; Vz", 100, 0.0, 10.0, fNEtaBins, -1.0, 1.0, fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
+    fHistPtEtaVz->Sumw2();
     fHistPhi = new TH1F("fHistPhi", ";#phi", fNPhiBins, 0.0, TMath::TwoPi());
     fHistEta = new TH1F("fHistEta", ";#eta", fNEtaBins,-1.0, 1.0);
     fHistPt = new TH1F("fHistPt", ";p_{T}", nPtBin,PtEdges);
     fHistZVertex = new TH1F("fHistZVertex", ";Vtx_{Z}", fVtxZCuts,-10,10);
     fHistPhiCor = new TH1F("fHistPhiCor",";#phiCor", fNPhiBins, 0.0, TMath::TwoPi());
+    fHistPhiCor->Sumw2();
+    fHistPhiCor3D = new TH3F("fHistPhiEtaVz_NUACorr", "fHistPhiEtaVz_NUACorr; #phi; #eta; Vz", fNPhiBins, 0.0, TMath::TwoPi(), fNEtaBins, -1.0, 1.0,fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
+    fHistPhiCor3D->Sumw2();
+    fHistTPCchi2 = new TH1F("fHistChi2TPC","fHistChi2TPC",10,0,10);
+    
     fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{Particles}",100,0,100);
 
     fhV0Multiplicity = new TH2F("fV0Multiplicity","",64,0,64,100,0,1250);
@@ -884,6 +930,32 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
             fSplq3V0A[iSp] = (TSpline3*)fFileSpq3V0A->Get(Form("sp_q3V0A_%i",iSp));
         }
     }*/
+    // Load NUE
+    if(fUseNUEWeights){
+        if(!gGrid) { TGrid::Connect("alien://"); }
+        if(fNUE==1){
+            fFileTrackEff = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_AMPT.root");
+        }
+        if(fNUE==2){
+            fFileTrackEff = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root");
+        }
+
+        if(!fFileTrackEff) { printf("Problem loading NUE file \n"); }
+        
+    }
+
+    if(fFillQARej){
+    fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centr: V0M; TPC Mult (FB32)", 100, 0, 100, 100, 0, 3000);
+    fObservables->Add(fhQAEventsfMult32vsCentr);
+    fhQAEventsfMult96vsCentr = new TH2D("fhQAEventsfMult96vsCentr", "; centr: V0M; TPC Mult (FB96)", 100,0,100,100,0,4000);
+    fObservables->Add(fhQAEventsfMult96vsCentr);
+    fhQAEventsfMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centr: V0M; TPC Mult (FB128)", 100, 0, 100, 100, 0, 5000);
+    fObservables->Add(fhQAEventsfMult128vsCentr);
+    fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 Mult; TOF Mult", 200, 0, 4000, 200, 0, 2000);
+    fObservables->Add(fhQAEventsfMultTPCvsTOF);
+    fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 Mult; TOF Mult)", 200, 0, 7000, 300, -1000, 35000);
+    fObservables->Add(fhQAEventsfMultTPCvsESD);
+    }
     
 
     fEventCuts.AddQAplotsToList(fQAEvents); //QA plots
@@ -894,8 +966,11 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fHistPt);
     fObservables->Add(fHistZVertex);
     fObservables->Add(fHistPhiCor);
+    fObservables->Add(fHistPhiCor3D);
+    fObservables->Add(fHistTPCchi2);
     fObservables->Add(fProfNPar);
     fObservables->Add(fhV0Multiplicity);
+    fObservables->Add(fHistPtEtaVz);
 
     fObservables->Add(fhV0CorrMult);
 
@@ -971,6 +1046,10 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
 
     if(fV0RunByRunCalibration){
         if(!LoadV0Calibration()) { AliFatal("\n \n \n \n \n \n \n \n \n \n V0 Calibration not loaded, terminating! \n \n \n \n \n \n \n \n \n \n "); return; }
+    }
+
+    if(fUseNUEWeights){
+        if(!LoadNUE()) { AliFatal("\n \n \n NUE Weights not loaded properly, terminating! \n \n \n"); return; }
     }
     
 
@@ -1097,6 +1176,8 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
     if(iTracks < 1 ) { return; }
     fHistZVertex->Fill(dVz);
     fProfNPar->Fill(centrality,iTracks);
+
+    
     
 
     for(Int_t i(0); i < iTracks; ++i) 
@@ -1109,13 +1190,21 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         double dPt = track->Pt();
         
         fHistPhiEtaVz->Fill(dPhi, dEta, dVz);
+        fHistPtEtaVz->Fill(dPt, dEta, dVz);
         fHistPhi->Fill(dPhi);
         fHistEta->Fill(dEta);
         fHistPt->Fill(dPt);
 
+        Float_t chi2tpc = track->GetTPCchi2();
+        Float_t ntpccls = track->GetTPCNcls();
+
+        Float_t tpcchi2percls= (ntpccls==0)?0.0:chi2tpc/ntpccls;
+        fHistTPCchi2->Fill(tpcchi2percls);
+        
+
         Double_t dWeight = GetFlowWeight(track, dVz);
-        Double_t dPhiCor = dWeight*track->Phi();
-        fHistPhiCor->Fill(dPhiCor);
+        fHistPhiCor->Fill(dPhi,dWeight);
+        fHistPhiCor3D->Fill(dPhi, dEta, dVz, dWeight);
 
     } // ending track loop
 
@@ -1177,17 +1266,27 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
 
         double dEta = track->Eta();
         double dPhi = track->Phi();
-        //double dPt = track->Pt();
+        double dPt = track->Pt();
 
         Double_t dWeight = GetFlowWeight(track,dVz);
+
+        Double_t dPtWeight = 1.0;
+        if(fUseNUEWeights){
+            if(dPt < 3.0){
+                dPtWeight = GetNUEPtWeight(dPt, dEta, dVz);
+            }
+            if(dPt > 3.0){
+                dPtWeight = GetNUEPtWeight(2.5, dEta, dVz);
+            }
+        }
         
         // no eta gap
         for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm)
         {
             for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
             {
-                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                Double_t dCos = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Sin(iHarm * dPhi);
                 Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
         }
@@ -1199,8 +1298,8 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
             {
                 for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                 {
-                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                    Double_t dCos = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                    Double_t dSin = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Sin(iHarm * dPhi);
                     Qvector10P[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
             }
@@ -1212,8 +1311,8 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
             { 
                 for(Int_t iPower(0); iPower < fNumPowers; ++iPower)
                 {
-                    Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-                    Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                    Double_t dCos = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                    Double_t dSin = TMath::Power(dWeight*dPtWeight,iPower) * TMath::Sin(iHarm * dPhi);
                     Qvector10M[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                 }
             }
@@ -1958,6 +2057,25 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
     
     return kTRUE;
 }
+Bool_t AliAnalysisTaskESEFlow::LoadNUE()
+{
+    if(!fFileTrackEff) { return kFALSE; }
+
+    //fFileTrackEff->ls();
+
+    Int_t runno = fAOD->GetRunNumber();
+
+    if (fNUE == 1){
+        fhTrackNUE = (TH3F*)fFileTrackEff->Get(Form("eff_LHC15o_AMPT_%i",runno));
+    }
+    if (fNUE == 2){
+        fhTrackNUE = (TH3F*)fFileTrackEff->Get(Form("eff_LHC15o_HIJING_%i",runno));
+    }
+    
+    if(!fhTrackNUE) { printf("Problems loading NUE in LoadNUE()! \n"); return kFALSE; }
+
+    return kTRUE;
+}
 Bool_t AliAnalysisTaskESEFlow::LoadV0Calibration()
 {
     TList* listV0CalibRbr = nullptr;
@@ -2027,6 +2145,30 @@ Double_t AliAnalysisTaskESEFlow::GetFlowWeight(const AliAODTrack* track, const f
     }
 
     return dWeight;
+}
+Double_t AliAnalysisTaskESEFlow::GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const
+{
+    Double_t dPtWeight = 1;
+
+    if(!fFileTrackEff) { return dPtWeight; }
+    if(!fhTrackNUE) { return dPtWeight; }
+
+    Double_t binPt = fhTrackNUE->GetXaxis()->FindBin(pt);
+    Double_t binEta = fhTrackNUE->GetYaxis()->FindBin(eta);
+    Double_t binVz = fhTrackNUE->GetZaxis()->FindBin(dVz);
+
+    Double_t eff = fhTrackNUE->GetBinContent(binPt, binEta, binVz);
+    Double_t error = fhTrackNUE->GetBinError(binPt, binEta, binVz);
+
+    if((eff < 0.03) || ((error/eff) > 0.1)) dPtWeight = 1.0;
+    else{
+        TRandom3 r(0);
+        Double_t efficiency = 0.0;
+        efficiency = r.Gaus(eff, error);
+        dPtWeight = 1./efficiency;
+    }
+
+    return dPtWeight;
 }
 Int_t AliAnalysisTaskESEFlow::GetSamplingIndex() const
 {
@@ -2183,6 +2325,16 @@ Bool_t AliAnalysisTaskESEFlow::IsTrackSelected(const AliAODTrack* track) const
   //if(fPtMin > 0 && track->Pt() < fPtMin) { return kFALSE; }
   //if(fPtMax > 0 && track->Pt() > fPtMax) { return kFALSE; }
   if(fAbsEtaMax > 0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
+
+    if(fCheckChi2TPC){
+        Float_t chi2tpc = track->GetTPCchi2();
+        Float_t ntpccls = track->GetTPCNcls();
+
+        Float_t tpcchi2percls= (ntpccls==0)?0.0:chi2tpc/ntpccls;
+
+        if (tpcchi2percls > vTPCChi2Bound) { return kFALSE; }
+    } 
+
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -2205,6 +2357,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTPC32 = 0;
   Int_t multTPC128 = 0;
+  Int_t multTPC96 = 0;
   Int_t multTOF = 0;
   Int_t multTrk = 0;
   Double_t multESDTPCdif = 0.0;
@@ -2223,6 +2376,8 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     }
 
     if(track->TestFilterBit(128)) { multTPC128++; }
+
+    if(track->TestFilterBit(96)) { multTPC96++; }
   }
 
   if(bIs17n)
@@ -2235,7 +2390,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
   if(bIs15o)
   {
     multESDTPCdif = multESD - 3.38*multTPC128;
-    if(multESDTPCdif > 500) { return kTRUE; }
+    if(multESDTPCdif > fPileupCut) { return kTRUE; }
 
     TF1 fMultTOFLowCut = TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
     fMultTOFLowCut.SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
@@ -2253,6 +2408,17 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     fMultCentLowCut.SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
   }
+
+  if(fFillQARej){
+    fhQAEventsfMult32vsCentr->Fill(v0Centr, multTrk);
+    fhQAEventsfMult128vsCentr->Fill(v0Centr, multTPC128);
+    fhQAEventsfMult96vsCentr->Fill(v0Centr, multTPC96);
+    fhQAEventsfMultTPCvsTOF->Fill(multTPC32, multTOF);
+    fhQAEventsfMultTPCvsESD->Fill(multTPC128, multESD);
+  }
+
+
+
   return kFALSE;
 }
 //_____________________________________________________________________

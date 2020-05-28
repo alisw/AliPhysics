@@ -1,3 +1,7 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+*/
 #ifndef AliGFW__H
 #define AliGFW__H
 #include "AliGFWCumulant.h"
@@ -38,6 +42,8 @@ class AliGFW {
     vector<Int_t> Hars {};
     vector<Int_t> Regs2 {};
     vector<Int_t> Hars2 {};
+    Int_t Overlap1=-1;
+    Int_t Overlap2=-1;
     Bool_t pTDif=kFALSE;
     TString Head="";
   };
@@ -49,7 +55,7 @@ class AliGFW {
   void AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
   void AddRegion(TString refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
   Int_t CreateRegions();
-  void Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t mask);
+  void Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t mask, Double_t secondWeight=-1);
   void Clear();// { for(auto ptr = fCumulants.begin(); ptr!=fCumulants.end(); ++ptr) ptr->ResetQs(); };
   AliGFWCumulant GetCumulant(Int_t index) { return fCumulants.at(index); };
   TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);

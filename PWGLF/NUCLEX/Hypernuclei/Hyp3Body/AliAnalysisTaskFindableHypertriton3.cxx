@@ -81,6 +81,10 @@ const AliPID::EParticleType kSpecies[3] = {AliPID::kDeuteron, AliPID::kProton, A
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
   int nDaughters = 0;
+  int thisPDG    = vPart->PdgCode();
+  if(std::abs(thisPDG) == 11){
+    return false;
+  }
 
   int lLabelMother = vPart->GetMother();
   if (lLabelMother < 0 || !mcEvent->IsPhysicalPrimary(lLabelMother)) return false;

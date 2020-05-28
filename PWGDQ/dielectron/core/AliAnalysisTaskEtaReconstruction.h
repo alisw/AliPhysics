@@ -69,7 +69,8 @@ public:
    void   AddSingleSecondaryLegMCSignal(AliDielectronSignalMC signal1)       {fSingleSecondaryLegMCSignal.push_back(signal1);}
    void   AddPrimaryPairMCSignal(AliDielectronSignalMC signal1)              {fPrimaryPairMCSignal.push_back(signal1);}
    void   AddSecondaryPairMCSignal(AliDielectronSignalMC signal1)            {fSecondaryPairMCSignal.push_back(signal1);}
-   void   AddFourPairMCSignal(AliDielectronSignalMC signal1)                 {fFourPairMCSignal.push_back(signal1);}
+   void   AddFourPairMCSignal_PrimSec(AliDielectronSignalMC signal1)                 {fFourPairMCSignal_PrimSec.push_back(signal1);}
+   void   AddFourPairMCSignal_SecSec(AliDielectronSignalMC signal1)                  {fFourPairMCSignal_SecSec.push_back(signal1);}
    void   AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(std::vector<bool> vec)   {fPrimaryDielectronPairNotFromSameMother = vec;}
    void   AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(std::vector<bool> vec) {fSecondaryDielectronPairNotFromSameMother = vec;}
 
@@ -146,24 +147,29 @@ public:
    void SetCocktailWeightingFromAlien(std::string cocktailFilenameFromAlien) { fCocktailFilenameFromAlien = cocktailFilenameFromAlien; }
 
    // Generator related setter
-   void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
-   void   SetMaxPtGen(double ptMax)   {fPtMaxGen = ptMax;};
-   void   SetMinEtaGen(double etaMin) {fEtaMinGen = etaMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
-   void   SetMaxEtaGen(double etaMax) {fEtaMaxGen = etaMax;};
+   void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;} // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
+   void   SetMaxPtGen(double ptMax)   {fPtMaxGen = ptMax;}
+   void   SetMinEtaGen(double etaMin) {fEtaMinGen = etaMin;} // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
+   void   SetMaxEtaGen(double etaMax) {fEtaMaxGen = etaMax;}
 
    // Set mass cuts
-   void   SetLowerMassCutPrimaries(double massCut) {fLowerMassCutPrimaries = massCut;};
-   void   SetUpperMassCutPrimaries(double massCut) {fUpperMassCutPrimaries = massCut;};
-   void   SetMassCutSecondaries(double massCut) {fMassCutSecondaries = massCut;};
-   void   SetUpperPreFilterMass(double prefilterMassCut) {fUpperPreFilterMass = prefilterMassCut;};
-   void   SetLowerPreFilterMass(double prefilterMassCut) {fLowerPreFilterMass = prefilterMassCut;};
-   void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;};
-   void   SetPhotonMass(Double_t photonMass) {fPhotonMass = photonMass;};
+   void   SetLowerMassCutPrimaries(double massCut) {fLowerMassCutPrimaries = massCut;}
+   void   SetUpperMassCutPrimaries(double massCut) {fUpperMassCutPrimaries = massCut;}
+   void   SetMassCutSecondaries(double massCut) {fMassCutSecondaries = massCut;}
+   void   SetUpperPrimSecPreFilterMass(double prefilterMassCut) {fUpperPrimSecPreFilterMass = prefilterMassCut;}
+   void   SetLowerPrimSecPreFilterMass(double prefilterMassCut) {fLowerPrimSecPreFilterMass = prefilterMassCut;}
+   void   SetUpperSecSecPreFilterMass(double prefilterMassCut) {fUpperSecSecPreFilterMass = prefilterMassCut;}
+   void   SetLowerSecSecPreFilterMass(double prefilterMassCut) {fLowerSecSecPreFilterMass = prefilterMassCut;}
+   void   SetMassCut(Bool_t DoMassCut) {fDoMassCut = DoMassCut;}
+   void   SetPhotonMass(Double_t photonMass) {fPhotonMass = photonMass;}
+   void   SetV0FinderStatus(Bool_t status) {fV0OnFlyStatus = status;}
 
 
    // Track cuts setter
-   void   AddTrackCuts_primary_standard  (AliAnalysisFilter* filter)  {fTrackCuts_primary_standard.push_back(filter);}
-   void   AddTrackCuts_primary_PreFilter  (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_primary_PreFilter   (AliAnalysisFilter* filter) {fTrackCuts_primary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_secondary_PreFilter (AliAnalysisFilter* filter) {fTrackCuts_secondary_PreFilter.push_back(filter);}
+   void   AddTrackCuts_primary_standard    (AliAnalysisFilter* filter) {fTrackCuts_primary_standard.push_back(filter);}
+   void   AddTrackCuts_secondary_standard  (AliAnalysisFilter* filter) {fTrackCuts_secondary_standard.push_back(filter);}
 
    // Pair cuts setter
    void   AddPairCuts_primary  (AliAnalysisFilter* filter) {fPairCuts_primary.push_back(filter);}
@@ -213,14 +219,15 @@ public:
   class TwoPair{
   public:
     TwoPair() :
-      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary() {}
+      fPt(-99), fEta(-99), fPhi(-99), fMass(-99), fCharge(-99), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fV0Status(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary() {}
     TwoPair(double pt, double eta, double phi, double mass, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary(){}
+      fPt(pt), fEta(eta), fPhi(phi), fMass(mass), fCharge(charge), fDaughterTrackID_1(0), fDaughterTrackID_2(0),fV0ID(0), fV0Status(0), fMCTwoSignal_acc_prim(), fMCTwoSignal_acc_sec(), fFirstPartIsReconstructed(), fSecondPartIsReconstructed(), isReconstructed_primary(), isReconstructed_secondary(){}
 
     void SetMCTwoSignal_acc_prim (std::vector<Bool_t> vec) {fMCTwoSignal_acc_prim = vec;}
     void SetMCTwoSignal_acc_sec  (std::vector<Bool_t> vec) {fMCTwoSignal_acc_sec = vec;}
-    void SetDautherTrackID(int label1, int label2) {fDaughterTrackID_1 = label1; fDaughterTrackID_2 = label2;}  // first: neg track, second: pos track
+    void SetDaughterTrackID(int label1, int label2) {fDaughterTrackID_1 = label1; fDaughterTrackID_2 = label2;}  // first: neg track, second: pos track
     void SetV0ID(int iV0) {fV0ID=iV0;}
+    void SetV0Status(bool V0Status) {fV0Status=V0Status;}
     void SetDauthersAreReconstructed(std::vector<Bool_t> vec1, std::vector<Bool_t> vec2) {fFirstPartIsReconstructed = vec1, fSecondPartIsReconstructed = vec2;}
 
     std::vector<Bool_t> GetMCTwoSignal_acc_prim () {return fMCTwoSignal_acc_prim;}
@@ -228,6 +235,7 @@ public:
     int GetFirstDaughter() {return fDaughterTrackID_1;}
     int GetSecondDaughter() {return fDaughterTrackID_2;}
     int GetV0ID() {return fV0ID;}
+    int GetV0Status() {return fV0Status;}
 
     double  fPt;
     double  fEta;
@@ -237,6 +245,7 @@ public:
     int fDaughterTrackID_1;
     int fDaughterTrackID_2;
     int fV0ID;
+    bool fV0Status;
     std::vector<Bool_t> fMCTwoSignal_acc_prim;
     std::vector<Bool_t> fMCTwoSignal_acc_sec;
     std::vector<Bool_t> fFirstPartIsReconstructed;
@@ -268,7 +277,7 @@ private:
   void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, Bool_t SmearedPair, double centralityWeight);
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
   void   DoRecTwoPairingV0(std::vector<AliDielectronSignalMC> fPairMCSignal);
-  void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
+  void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, Bool_t PrimSecPairing, double centralityWeight);
   void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
   void   ApplyStandardCutsAndFillHists(std::vector<TwoPair>* fPairVec, std::vector<AliAnalysisFilter*> fTrackCuts, Bool_t TrackCuts, Bool_t PairPrimary, double centralityWeight);
 
@@ -309,9 +318,12 @@ private:
   TList* fGeneratedSmearedPrimaryPairsList;
   TList* fGeneratedSmearedSecondaryPairsList;
   TList* fPairList;
-  TList* fFourPairList;
-  TList* fGeneratedFourPairsList;
-  TList* fGeneratedSmearedFourPairsList;
+  TList* fFourPairList_PrimSec;
+  TList* fFourPairList_SecSec;
+  TList* fGeneratedFourPairsList_PrimSec;
+  TList* fGeneratedFourPairsList_SecSec;
+  TList* fGeneratedSmearedFourPairsList_PrimSec;
+  TList* fGeneratedSmearedFourPairsList_SecSec;
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
@@ -358,15 +370,20 @@ private:
   double fLowerMassCutPrimaries; // Mass cut for primary pair
   double fUpperMassCutPrimaries; // Mass cut for primary pair
   double fMassCutSecondaries; // Mass cut for secondary pair
-  double fUpperPreFilterMass; // Mass cut for primary pair
-  double fLowerPreFilterMass; // Mass cut for primary pair
+  double fUpperPrimSecPreFilterMass; // Prefilter mass cut for four pair with prim and sec pairs
+  double fLowerPrimSecPreFilterMass; // Prefilter mass cut for four pair with prim and sec pairs
+  double fUpperSecSecPreFilterMass;  // Prefilter mass cut for four pair with sec and sec pairs
+  double fLowerSecSecPreFilterMass;  // Prefilter mass cut for four pair with sec and sec pairs
+
+  bool   fV0OnFlyStatus;
 
 
   std::vector<AliDielectronSignalMC> fSinglePrimaryLegMCSignal;
   std::vector<AliDielectronSignalMC> fSingleSecondaryLegMCSignal;
   std::vector<AliDielectronSignalMC> fPrimaryPairMCSignal;
   std::vector<AliDielectronSignalMC> fSecondaryPairMCSignal;
-  std::vector<AliDielectronSignalMC> fFourPairMCSignal;
+  std::vector<AliDielectronSignalMC> fFourPairMCSignal_PrimSec;
+  std::vector<AliDielectronSignalMC> fFourPairMCSignal_SecSec;
   std::vector<bool> fPrimaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   std::vector<bool> fSecondaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
@@ -387,6 +404,8 @@ private:
   Int_t  fTriggerMask;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_PreFilter;
   std::vector<AliAnalysisFilter*> fTrackCuts_primary_standard;
+  std::vector<AliAnalysisFilter*> fTrackCuts_secondary_PreFilter;
+  std::vector<AliAnalysisFilter*> fTrackCuts_secondary_standard;
   std::vector<AliAnalysisFilter*> fPairCuts_primary;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_PreFilter;
   std::vector<AliAnalysisFilter*> fPairCuts_secondary_standard;
@@ -411,8 +430,8 @@ private:
 
   std::vector<TList*> fTrackCutListVecPrim;    // Vector filled with each applied track primary cutsetting
   std::vector<TList*> fTrackCutListVecSec;     // Vector filled with each applied track secondary cutsetting
-  std::vector<TList*> fPairCutListVecSec;     // Vector filled with each applied track secondary cutsetting
-  std::vector<TList*> fFourPairCutListVec;     // Vector filled with each applied track secondary cutsetting
+  std::vector<TList*> fPairCutListVecSec;      // Vector filled with each applied pair secondary cutsetting
+  std::vector<TList*> fFourPairCutListVec;     // Vector filled with each applied four pair cutsetting
 
   std::vector<TH3D*> fHistGenPrimaryPosPart;
   std::vector<TH3D*> fHistGenPrimaryNegPart;
@@ -433,9 +452,14 @@ private:
   std::vector<TH2D*> fHistGenSmearedSecondaryPair;
   std::vector<TH2D*> fHistRecPrimaryPair;
   std::vector<TH2D*> fHistRecSecondaryPair;
-  std::vector<TH2D*> fHistGenFourPair;
-  std::vector<TH2D*> fHistGenSmearedFourPair;
-  std::vector<TH2D*> fHistRecFourPair;
+  std::vector<TH2D*> fHistGenFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenFourPair_SecSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_SecSec;
+  std::vector<TH2D*> fHistRecFourPair_PrimSec;
+  std::vector<TH2D*> fHistRecFourPair_SecSec;
+
+  std::vector<TH2D*> fVecHistPrefilters;
 
 
   bool fWriteLegsFromPair;
@@ -484,8 +508,9 @@ private:
   std::vector<TwoPair>  fGenSmearedPairVec_secondary;
   std::vector<TwoPair>  fRecPairVec_primary;
   std::vector<TwoPair>  fRecPairVec_secondary;
-
   std::vector<TwoPair>  fRecV0Pair;
+
+  std::vector<Int_t> fPreFilter_BadTracksLabel_primary;
 
   bool fDoCocktailWeighting;
   std::string fCocktailFilename;

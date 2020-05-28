@@ -94,6 +94,21 @@ Long64_t AlidNdPtTools::FillHist(Double_t w, THnBase* s, Double_t x0,
 
 //____________________________________________________________________________
 
+/// Function to fill THnSparse or THn with weight
+///
+/// \param weight   weight to be used for Histogram filling
+/// \param s   Pointer to histogram to be filled
+/// \param val vector of values
+///
+/// \return return value of THnBase->Fill(...) or 0 in case of error
+
+Long64_t AlidNdPtTools::FillHistWeighted(THnBase* s, std::vector<double> const& val, double weight) {
+    if(val.size() < 1) return 0;
+    return s->Fill(val.data(), weight);
+}
+
+//____________________________________________________________________________
+
 /// Add an Axis (Dimension) to the THnSparseD
 ///
 /// function to add a user defined axes
@@ -649,7 +664,26 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option, int _cutM
 		cuts->SetMaxChi2TPCConstrainedGlobal(36.);
 		// Geometrical-Length Cut
 		//        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-	} else if (o.EqualTo("tpcitsgeonodcar")) {
+	} else if (o.EqualTo("tpcitsnogeonogold")) {
+        cuts->SetRequireTPCRefit(kTRUE);
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                AliESDtrackCuts::kAny);
+        cuts->SetMaxChi2PerClusterITS(36.);
+        cuts->SetDCAToVertex2D(kFALSE);
+        cuts->SetRequireSigmaToVertex(kFALSE);
+        cuts->SetMaxDCAToVertexZ(2.0);
+        // 7*(0.0026+0.0050/pt^1.01)
+        cuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        // tpcc cut
+//        cuts->SetMaxChi2TPCConstrainedGlobal(36.);
+        // Geometrical-Length Cut
+        //        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+    } else if (o.EqualTo("tpcitsgeonodcar")) {
 		//         cuts = new AliESDtrackCuts("default TPCITS with geo L cut
 		//         without DCAr");
 		cuts->SetRequireTPCRefit(kTRUE);

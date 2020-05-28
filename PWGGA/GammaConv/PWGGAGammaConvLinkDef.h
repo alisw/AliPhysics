@@ -22,6 +22,7 @@
 #pragma link C++ class AliAnalysisTaskOmegaMCStudies+;
 #pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 #pragma link C++ class AliAnalysisTaskHadronicCocktailMC+;
+#pragma link C++ class AliAnalysisTaskConvCaloTree+;
 #pragma link C++ class AliAnalysisTaskQA+;
 
 #pragma link C++ class AliAnaConvIsolation+;
@@ -41,6 +42,8 @@
 #pragma link C++ class AliIdentifiedPrimaryCuts+;
 #pragma link C++ class AliConversionAodSkimTask+;
 #pragma link C++ class AliAnalysisTaskSigmaPlToProtonPiZero+;
+#pragma link C++ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD+;
+#pragma link C++ class AliAnalysisTaskGammaIsoTree+;
 
 
 // Old tasks

@@ -300,8 +300,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    
    //THnSparse notation
    //axes: pt, mass, rtval, candidate phi
-   Double_t phimin = 0.; Double_t phimax = TMath::TwoPi();
-   Int_t nPhibins  = 200;
+   Double_t phimin = -TMath::PiOver2(); Double_t phimax = 3*TMath::PiOver2();
+   Int_t nPhibins  = 100;
    
    static const Int_t sparsendim = 4;
    Double_t sparsemin[sparsendim] = {ptmin, fLowmasslimit, firstRTbin, phimin};
@@ -726,12 +726,14 @@ TClonesArray *arrayMC=0;
          //select phi region and fill appropriate histo
          Double_t phiCand = d->Phi();
          Double_t candDeltaPhi = phiCand - fPhiLeading; //delta-phi wrt leading particle
-         Double_t arrayForSparse[4] = {ptCand, invMass, rtval, candDeltaPhi};  
-         if (fUseNsparse) {fOutNsparse->Fill(arrayForSparse,weight); } 
-        
+
            
          if (candDeltaPhi <= -TMath::PiOver2()) candDeltaPhi += TMath::TwoPi();
          if (candDeltaPhi > 3*TMath::PiOver2()) candDeltaPhi-=TMath::TwoPi();
+         
+         Double_t arrayForSparse[4] = {ptCand, invMass, rtval, candDeltaPhi};  
+         if (fUseNsparse) {fOutNsparse->Fill(arrayForSparse,weight); } 
+        
          Double_t fDeltaPhiMinCut = TMath::DegToRad()*60.;
          Double_t fDeltaPhiMaxCut = TMath::DegToRad()*120.;
          Int_t region = 0;

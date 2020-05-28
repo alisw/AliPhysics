@@ -289,7 +289,14 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
   if(fConfiguration == AliCFTaskVertexingHF::kESE) {
     localmult = ComputeLocalMultiplicity(decay->Eta(), decay->Phi(), 0.4);
   }
-
+  Double_t deltaPhiLeading = 0.;
+  if (fConfiguration == AliCFTaskVertexingHF::kRT) {
+         deltaPhiLeading = fmcPartCandidate->Phi() - fPhiLeading;
+           
+         if (deltaPhiLeading <= -TMath::PiOver2()) deltaPhiLeading += TMath::TwoPi();
+         if (deltaPhiLeading > 3*TMath::PiOver2()) deltaPhiLeading-=TMath::TwoPi();
+         
+     }
   switch (fConfiguration){
   case AliCFTaskVertexingHF::kSnail:
     vectorMC[0] = fmcPartCandidate->Pt();
@@ -333,6 +340,14 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
     vectorMC[4] = localmult;   // local multiplicity (Ntracks in R<0.4)
     vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
+    
+  case AliCFTaskVertexingHF::kRT:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorMC[3] = fRT;   // RT val calculated from TPC tracks
+    vectorMC[4] = deltaPhiLeading; // delta-phi of candidate wrt leading track
+    break;
   }
 
   delete decay;
@@ -372,7 +387,8 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   Double_t phi = cascade->Phi();
   Double_t cosPointingAngleXY = neutrDaugh->CosPointingAngleXY(fPrimVtx);
   Double_t normDecayLengthXY = neutrDaugh->NormalizedDecayLengthXY(fPrimVtx);
-
+  
+  
   Int_t pdgCode = fmcPartCandidate->GetPdgCode();
  
   // UInt_t pdgDaughCascade[2] = { static_cast<UInt_t>(fPDGbachelor),  static_cast<UInt_t>(fPDGneutrDaugh) };    // bachelor is first daughter of cascade
@@ -401,6 +417,14 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   if(fConfiguration == AliCFTaskVertexingHF::kESE) {
     localmult = ComputeLocalMultiplicity(cascade->Eta(), cascade->Phi(), 0.4);
   }
+  Double_t deltaPhiLeading = 0.;
+  if (fConfiguration == AliCFTaskVertexingHF::kRT) {
+         deltaPhiLeading = fmcPartCandidate->Phi() - fPhiLeading;
+           
+         if (deltaPhiLeading <= -TMath::PiOver2()) deltaPhiLeading += TMath::TwoPi();
+         if (deltaPhiLeading > 3*TMath::PiOver2()) deltaPhiLeading-=TMath::TwoPi();
+         
+     }
 
   switch (fConfiguration){
   case AliCFTaskVertexingHF::kSnail:
@@ -444,6 +468,13 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
     vectorReco[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
     vectorReco[4] = localmult;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
     vectorReco[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
+    break;
+  case AliCFTaskVertexingHF::kRT:
+    vectorReco[0] = pt;
+    vectorReco[1] = rapidity;
+    vectorReco[2] = fMultiplicity; // reconstructed multiplicity
+    vectorReco[3] = fRT;           // RT value calculated from TPC tracks
+    vectorReco[4] = deltaPhiLeading; // delta-phi of candidate wrt leading track
     break;
   }
 

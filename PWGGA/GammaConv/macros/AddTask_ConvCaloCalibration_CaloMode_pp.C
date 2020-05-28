@@ -268,13 +268,20 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008d113","411792106f032120000","01631031000000d0"); // EG1 NL 21
     cuts.AddCutCalo("0008d113","411792206f032120000","01631031000000d0"); // EG1 NL 22
 
+  } else if (trainConfig == 26){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411793706f032120000","01631031000000d0"); // INT7 TBNL without fine tuning
+  } else if (trainConfig == 27){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("0008e113","411793706f032120000","01631031000000d0"); // EG2 TBNL without fine tuning
+  } else if (trainConfig == 28){
+    cuts.AddCutCalo("0008d113","411793706f032120000","01631031000000d0"); // EG1 TBNL without fine tuning
+
   } else if (trainConfig == 30){ // pp 13 TeV EMCal + DCal, 0 field configs
     cuts.AddCutCalo("00010113","4117900000032120000","01631031000000d0"); // INT7, No time cut, TM off
     cuts.AddCutCalo("00010113","4117900060032120000","01631031000000d0"); // INT7, No time cut, TM off
   } else if (trainConfig == 31){ // pp 13 TeV EMCal + DCal, 0 field configs
     cuts.AddCutCalo("00010113","4117901000032120000","01631031000000d0"); // INT7 TBNL No time cut, TM off
     cuts.AddCutCalo("00010113","4117901060032120000","01631031000000d0"); // INT7 TBNL No time cut, TM off
-    
+
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

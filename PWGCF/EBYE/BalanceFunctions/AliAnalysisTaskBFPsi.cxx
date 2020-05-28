@@ -3735,7 +3735,29 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
 	}
       }
-      
+   
+      //Exclude resonanses using mother's label
+      Int_t kMotherLabel = -1.;
+
+      if(fExcludeResonancesLabel) {
+  
+      Int_t label = TMath::Abs(aodTrack->GetLabel());
+      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+
+        if (AODmcTrack){
+            Int_t gMotherIndex = AODmcTrack->GetMother();
+            if(gMotherIndex != -1) {
+                AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+                if(motherTrack) {
+                    Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+                    if(TMath::Abs(fMotherPDGCodeToExclude) == TMath::Abs(pdgCodeOfMother))
+                        kMotherLabel = TMath::Abs(motherTrack->GetLabel());
+                    
+                }
+            }
+        }
+      }
+
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -3848,15 +3870,15 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
         if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
             if (fCrossCorr){
                 if (isTrigOrAssoc==kTrig)
-                    tracksAccepted->Add(new AliBFBasicParticle(vYPID[kTrig], vPhi, vPt, vCharge, correction, kTrig, label_pdg));
+                    tracksAccepted->Add(new AliBFBasicParticle(vYPID[kTrig], vPhi, vPt, vCharge, correction, kTrig, label_pdg, kMotherLabel));
                 else if (isTrigOrAssoc==kAssoc)
-                    tracksAccepted->Add(new AliBFBasicParticle(vYPID[kAssoc], vPhi, vPt, vCharge, correction, kAssoc, label_pdg));
+                    tracksAccepted->Add(new AliBFBasicParticle(vYPID[kAssoc], vPhi, vPt, vCharge, correction, kAssoc, label_pdg, kMotherLabel));
             }
             else
-                tracksAccepted->Add(new AliBFBasicParticle(vYPID[kTrig], vPhi, vPt, vCharge, correction, kBoth, label_pdg));
+                tracksAccepted->Add(new AliBFBasicParticle(vYPID[kTrig], vPhi, vPt, vCharge, correction, kBoth, label_pdg, kMotherLabel));
         }
         else{
-            tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, kBoth, label_pdg));
+            tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, kBoth, label_pdg, kMotherLabel));
         }
         
     }//track loop
@@ -4511,29 +4533,31 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 	}
 	
-	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	  
-        if (fCrossCorr){
+	if(fUseRapidity) {// use rapidity instead of pseudorapidity in correlation histograms
+	  if (fCrossCorr){
             if(fExcludeResonancesLabel){
-                if (isTrigOrAssoc==kTrig)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig, -1, kMotherLabel));
-                else if (isTrigOrAssoc==kAssoc)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc, -1, kMotherLabel));
-            }
+	      if (isTrigOrAssoc==kTrig)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig, -1, kMotherLabel));
+	      else if (isTrigOrAssoc==kAssoc)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc, -1, kMotherLabel));
+            }//exclude resonances
             else {
-                if (isTrigOrAssoc==kTrig)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig));
-                else if (isTrigOrAssoc==kAssoc)
-                    tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc));
+	      if (isTrigOrAssoc==kTrig)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kTrig));
+	      else if (isTrigOrAssoc==kAssoc)
+		tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kAssoc));
             }
-        }
-        else {
+	  }//cross correlations
+	  else {
             if(fExcludeResonancesLabel)
-                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
+	      tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth, -1, kMotherLabel));
             else
-                tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth));
-       }
-	}
+	      tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, kBoth));
+	  }//exclude resonances
+	}//rapidity
+	else {
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, kBoth));
+        }
        nAcceptedTracks += 1;
       } //track loop
       

@@ -690,7 +690,8 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   DefineOutput(12, TList::Class());
   DefineOutput(13, TList::Class());
   DefineOutput(14, TList::Class());
-  if(fMC) DefineOutput(15, TList::Class());
+  DefineOutput(15, TList::Class());
+  if(fMC) DefineOutput(16, TList::Class());
 }
 // ============================================================================
 AliAnalysisTaskUniFlow::~AliAnalysisTaskUniFlow()
@@ -738,6 +739,7 @@ const char* AliAnalysisTaskUniFlow::GetSpeciesName(const PartSpecies species) co
     case kPion: name = "Pion"; break;
     case kKaon: name = "Kaon"; break;
     case kProton: name = "Proton"; break;
+    case kCharUnidentified: name = "UnidentifiedCharged"; break;
     case kK0s: name = "K0s"; break;
     case kLambda: name = "Lambda"; break;
     case kPhi: name = "Phi"; break;
@@ -1027,6 +1029,8 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
   fProcessSpec[kRefs] = kTRUE;
   fProcessSpec[kCharged] = kTRUE;
 
+  if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) fProcessSpec[kCharUnidentified] = kTRUE;
+
   // setting processing Kaons if Phi is on
   if(fProcessSpec[kPhi] && !fProcessSpec[kKaon])
   {
@@ -1198,7 +1202,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
       FillQACharged(kBefore,track);
     }
     fhQAChargedMult[0]->Fill(fEvent->GetNumberOfTracks());
-    fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
+    // fhQAChargedMult[1]->Fill(fVector[kCharged]->size());
     fhRefsMult->Fill(fVector[kRefs]->size());
   }
 
@@ -1206,7 +1210,12 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   std::sort(fVector[kCharged]->begin(), fVector[kCharged]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
 
   // Filtering other species
-  if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) { FilterPID(); }
+  if(fProcessSpec[kPion] || fProcessSpec[kKaon] || fProcessSpec[kProton]) {
+    FilterPID();
+  }
+
+
+
   if(fProcessSpec[kK0s] || fProcessSpec[kLambda]) {
       FilterV0s();
       std::sort(fVector[kK0s]->begin(), fVector[kK0s]->end(), [this](const AliVParticle* a, const AliVParticle* b){ return this->sortPt(a, b); });
@@ -1219,8 +1228,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   DumpTObjTable("UserExec: after filtering");
 
-  Bool_t bCorrelations = FillCorrelations();
-  DumpTObjTable("UserExec: after FillCorrelations");
+  // Bool_t bCorrelations = FillCorrelations();
+  // DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -1865,6 +1874,8 @@ void AliAnalysisTaskUniFlow::FilterV0s() const
   Int_t iNumV0s = fEventAOD->GetNumberOfV0s();
   if(iNumV0s < 1) { return; }
 
+  // std::vector<AliAODTrack*> vectorTest[4];
+
   for(Int_t iV0(0); iV0 < iNumV0s; iV0++)
   {
     AliAODv0* v0 = static_cast<AliAODv0*>(fEventAOD->GetV0(iV0));
@@ -1879,6 +1890,10 @@ void AliAnalysisTaskUniFlow::FilterV0s() const
     if(!bIsK0s && iIsLambda == 0) { continue; }
 
     if(fFillQA) { FillQAV0s(kAfter,v0,bIsK0s,iIsLambda); } // QA AFTER selection
+
+    AliAODTrack* daughterPos = (AliAODTrack*) v0->GetDaughter(0);
+    AliAODTrack* daughterNeg = (AliAODTrack*) v0->GetDaughter(1);
+    if(!daughterPos || !daughterNeg) { AliFatal("Daughters track not found!"); return; }
 
     if(bIsK0s)
     {
@@ -1895,6 +1910,12 @@ void AliAnalysisTaskUniFlow::FilterV0s() const
       }
 
       if(!FillFlowWeight(v0, kK0s)) { AliFatal("Flow weight filling failed!"); return; }
+
+      // vectorTest[0].push_back(daughterPos);
+      // vectorTest[0].push_back(daughterNeg);
+      //
+      // if(IsChargedSelected(daughterPos) && IsWithinPOIs(daughterPos)) vectorTest[1].push_back(daughterPos);
+      // if(IsChargedSelected(daughterNeg) && IsWithinPOIs(daughterNeg)) vectorTest[1].push_back(daughterNeg);
     }
 
     if(iIsLambda == 1) // lambda
@@ -1913,6 +1934,13 @@ void AliAnalysisTaskUniFlow::FilterV0s() const
       }
 
       if(!FillFlowWeight(v0, kLambda)) { AliFatal("Flow weight filling failed!"); return; }
+
+      // vectorTest[2].push_back(daughterPos);
+      // vectorTest[2].push_back(daughterNeg);
+      //
+      // if(IsChargedSelected(daughterPos) && IsWithinPOIs(daughterPos)) vectorTest[3].push_back(daughterPos);
+      // if(IsChargedSelected(daughterNeg) && IsWithinPOIs(daughterNeg)) vectorTest[3].push_back(daughterNeg);
+
     }
 
     if(iIsLambda == -1) // anti-lambda
@@ -1931,11 +1959,23 @@ void AliAnalysisTaskUniFlow::FilterV0s() const
       }
 
       if(!FillFlowWeight(v0, kLambda)) { AliFatal("Flow weight filling failed!"); return; }
+
+    //   vectorTest[2].push_back(daughterPos);
+    //   vectorTest[2].push_back(daughterNeg);
+    //
+    //   if(IsChargedSelected(daughterPos) && IsWithinPOIs(daughterPos)) vectorTest[3].push_back(daughterPos);
+    //   if(IsChargedSelected(daughterNeg) && IsWithinPOIs(daughterNeg)) vectorTest[3].push_back(daughterNeg);
     }
 
     if(bIsK0s && iIsLambda != 0) { fhV0sCounter->Fill("K^{0}_{S} && #Lambda/#bar{#Lambda}",1); }
 
   } // end-for {v0}
+
+  // printf("\n\n\n\n TESTING V0 daughters \n\n");
+  // if(vectorTest[0].size() > 0 && (Double_t) vectorTest[1].size()/vectorTest[0].size() > 0.0) printf("K0s: passed criteria for charged / total: %f ... total: %d, passed criteria: %d \n", (Double_t) vectorTest[1].size()/vectorTest[0].size(), vectorTest[0].size(), vectorTest[1].size());
+  // if(vectorTest[2].size() > 2 && (Double_t) vectorTest[3].size()/vectorTest[2].size() > 0.0) printf("Lambda: passed criteria for charged / total: %f ... total: %d, passed criteria: %d \n and that is with # of charged: %d ", (Double_t) vectorTest[3].size()/vectorTest[2].size(), vectorTest[2].size(), vectorTest[3].size(), fVector[kCharged]->size());
+  //
+  // for(Int_t i(0); i < 4; i++) vectorTest[i].clear();
 
   // fill QA multiplicity
   if(fFillQA)
@@ -2742,7 +2782,16 @@ void AliAnalysisTaskUniFlow::FilterPID() const
     PartSpecies species = kUnknown;
     if(fAnalType != kMC) species = IsPIDSelected(track);
     else species = IsPIDSelectedMC(track);
-    if(species != kPion && species != kKaon && species != kProton) { continue; }
+    if(species != kPion && species != kKaon && species != kProton) {
+      // fVector[kCharUnidentified]->push_back(track);
+      species = kCharUnidentified; }
+
+    //check pT ranges
+    if(fFlowPOIsPtBinEdges[species].size() > 0){
+      if(track->Pt() < fFlowPOIsPtBinEdges[species].front() || track->Pt() > fFlowPOIsPtBinEdges[species].back() ) {
+        // fVector[kCharUnidentified]->push_back(track);
+        species = kCharUnidentified; }
+    }
 
     // check if only protons should be used
     if(fCutPIDUseAntiProtonOnly && species == kProton && track->Charge() == 1) { continue; }
@@ -2759,7 +2808,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
       if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
     }
 
-    if(fMC) {
+      if(fMC) {
       fh2MCPtEtaReco[species]->Fill(track->Pt(), track->Eta());
       if(fAnalType != kMC && CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
     }
@@ -3121,7 +3170,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
 
     if(iNumGaps > 2) { AliError("Too many gaps! Not implemented yet!"); return kFALSE; }
     if(iNumGaps == 2 && task->fdGaps[0] != task->fdGaps[1]) { AliError("Different position of the border when using 3 subevents! Not implemented yet!"); return kFALSE; }
-    if(iNumHarm > 12) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
+    if(iNumHarm > 16) { AliError("Too many harmonics! Not implemented yet!"); return kFALSE; }
 
     Double_t dGap = -1.0;
     if(iNumGaps > 0) { dGap = task->fdGaps[0]; }
@@ -3141,6 +3190,8 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
               if(iNumHarm > 6) CalculateCorrelations(fVecCorrTask.at(iTask-3), kRefs);
               if(iNumHarm > 8) CalculateCorrelations(fVecCorrTask.at(iTask-4), kRefs);
               if(iNumHarm > 10) CalculateCorrelations(fVecCorrTask.at(iTask-5), kRefs);
+              if(iNumHarm > 12) CalculateCorrelations(fVecCorrTask.at(iTask-6), kRefs);
+              if(iNumHarm > 14) CalculateCorrelations(fVecCorrTask.at(iTask-7), kRefs);
             }
             continue;
         }
@@ -3766,67 +3817,306 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   Int_t maxHarm = task->fMaxHarm;
   Int_t maxWeightPower = task->fMaxWeightPower;
 
-  // clearing output (global) flow vectors
-  ResetFlowVector(fFlowVecQpos, maxHarm, maxWeightPower);
-  ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower);
-  if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower); }
+  Bool_t usePowVector = task->fbUsePowerVector;
+  std::vector<Int_t> maxPowVec = {0};
+  if(usePowVector) maxPowVec = task->fiMaxPow;
 
-  for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
+  // clearing output (global) flow vectors
+  ResetFlowVector(fFlowVecQpos, maxHarm, maxWeightPower, usePowVector, maxPowVec);
+  ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower, usePowVector, maxPowVec);
+  if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower, usePowVector, maxPowVec); }
+
+  // hotfix/ temporary solution
+  // refs are now made from 4 sub-categories
+  // unID charged, pions, kaons, and protons
+  // TO DO: fill Q vectors and probably other vectors (p,S) when doing PID
+  // then no need to loop of fVectors here
+  // include ResetFlowVector in new structure!!
+
+
+  for (auto part = fVector[kCharUnidentified]->begin(); part != fVector[kCharUnidentified]->end(); part++)
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
+    Double_t dPt = (*part)->Pt();
+
+    if(!IsWithinRefs(*part)) { continue; }
 
     if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kRefs); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kCharUnidentified); }
 
     if(!bHasGap) // no eta gap
     {
-      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+        if(usePowVector) maxWeightPower = maxPowVec[iHarm];
         for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
         {
           Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
           Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
           fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
         }
+      }
     }
     else
     {
       // RFP in positive eta acceptance
       if(dEta > dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
       }
       // RFP in negative eta acceptance
       if(dEta < -dEtaLimit)
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
       }
 
       // RFP in middle (for 3sub) if gap > 0
       if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
       {
-        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++)
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
           {
             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecQmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
+        }
+      }
+
+    } // endif {dEtaGap}
+  } // endfor {tracks} particle loop
+
+  for (auto part = fVector[kPion]->begin(); part != fVector[kPion]->end(); part++)
+  {
+    Double_t dPhi = (*part)->Phi();
+    Double_t dEta = (*part)->Eta();
+    Double_t dPt = (*part)->Pt();
+
+    if(!IsWithinRefs(*part)) { continue; }
+
+    if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
+
+    // loading weights if needed
+    Double_t dWeight = 1.0;
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kPion); }
+
+    if(!bHasGap) // no eta gap
+    {
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+        if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+        {
+          Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+          Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+          fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+        }
+      }
+    }
+    else
+    {
+      // RFP in positive eta acceptance
+      if(dEta > dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+      // RFP in negative eta acceptance
+      if(dEta < -dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+
+      // RFP in middle (for 3sub) if gap > 0
+      if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+
+    } // endif {dEtaGap}
+  } // endfor {tracks} particle loop
+
+  for (auto part = fVector[kKaon]->begin(); part != fVector[kKaon]->end(); part++)
+  {
+    Double_t dPhi = (*part)->Phi();
+    Double_t dEta = (*part)->Eta();
+    Double_t dPt = (*part)->Pt();
+
+    if(!IsWithinRefs(*part)) { continue; }
+
+    if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
+
+    // loading weights if needed
+    Double_t dWeight = 1.0;
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kKaon); }
+
+    if(!bHasGap) // no eta gap
+    {
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+        if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+        {
+          Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+          Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+          fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+        }
+      }
+    }
+    else
+    {
+      // RFP in positive eta acceptance
+      if(dEta > dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+      // RFP in negative eta acceptance
+      if(dEta < -dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+
+      // RFP in middle (for 3sub) if gap > 0
+      if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+
+    } // endif {dEtaGap}
+  } // endfor {tracks} particle loop
+
+  for (auto part = fVector[kProton]->begin(); part != fVector[kProton]->end(); part++)
+  {
+    Double_t dPhi = (*part)->Phi();
+    Double_t dEta = (*part)->Eta();
+    Double_t dPt = (*part)->Pt();
+
+    if(!IsWithinRefs(*part)) { continue; }
+
+    if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
+
+    // loading weights if needed
+    Double_t dWeight = 1.0;
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kProton); }
+
+    if(!bHasGap) // no eta gap
+    {
+      for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+        if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+        for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+        {
+          Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+          Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+          fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+        }
+      }
+    }
+    else
+    {
+      // RFP in positive eta acceptance
+      if(dEta > dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+      // RFP in negative eta acceptance
+      if(dEta < -dEtaLimit)
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
+      }
+
+      // RFP in middle (for 3sub) if gap > 0
+      if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+      {
+        for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+          if(usePowVector) maxWeightPower = maxPowVec[iHarm];
+          for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+          {
+            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecQmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+          }
+        }
       }
 
     } // endif {dEtaGap}
@@ -3904,6 +4194,9 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
     Double_t dWeight = 1.0;
     if(fFlowUseWeights) { dWeight = GetFlowWeight(part, species); }
 
+    // Double_t dWeightRef = 1.0;
+    // if(fFlowUseWeights) { dWeightRef = GetFlowWeight(part, kRefs); }
+
     // check if POI overlaps with RFPs (not for reconstructed)
     Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(part)));
 
@@ -3920,8 +4213,19 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
           // in case of charged, pions, kaons or protons (one witout mass)
           if(bIsWithinRefs)
           {
-            Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-            Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            Double_t dCos = 0.0;
+            Double_t dSin = 0.0;
+            // "mode 2" of GF correction
+            // if(iPower > 1){
+            //   dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+            //   dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+            // }
+            // else{
+            //   dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            //   dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            // }
+            dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+            dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
           }
         }
@@ -3941,8 +4245,18 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
             // possible overlap for <<4'>> with single gap (within the same subevent)
             if(bIsWithinRefs)
             {
-              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              Double_t dCos = 0.0;
+              Double_t dSin = 0.0;
+              // if(iPower > 1){
+              //   dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+              //   dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+              // }
+              // else{
+              //   dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              //   dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              // }
+              dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
               fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
           }
@@ -3959,8 +4273,18 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
              // possible overlap for <<4'>> with single gap (within the same subevent)
              if(bIsWithinRefs)
              {
-               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
-               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               // if(iPower > 1){
+               //   dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+               //   dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               // }
+               // else{
+               //   dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               //   dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               // }
+               dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
@@ -3977,6 +4301,18 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
 
              if(bIsWithinRefs)
              {
+               Double_t dCos = 0.0;
+               Double_t dSin = 0.0;
+               // if(iPower > 1){
+               //   dCos = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Cos(iHarm * dPhi);
+               //   dSin = dWeight * TMath::Power(dWeightRef,iPower-1) * TMath::Sin(iHarm * dPhi);
+               // }
+               // else{
+               //   dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               //   dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               // }
+               dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
                fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
              }
            }
@@ -3990,11 +4326,12 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectors(const AliUniFlowCorrTask* task, co
    return iTracksFilled;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower)
+void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm, Int_t maxWeightPower, Bool_t usePow, std::vector<Int_t> maxPowVec)
 {
   // Reset RFPs (Q) array values to TComplex(0,0,kFALSE) for given array
   // *************************************************************
   for(Int_t iHarm(0); iHarm <= maxHarm; ++iHarm) {
+    if(usePow) maxWeightPower = maxPowVec[iHarm];
     for(Int_t iPower(0); iPower <= maxWeightPower; ++iPower) {
       array[iHarm][iPower](0.0,0.0);
     }
@@ -4111,9 +4448,9 @@ Bool_t AliAnalysisTaskUniFlow::HasTrackPIDTOF(const AliAODTrack* track) const
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs)
+void AliAnalysisTaskUniFlow::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> maxPowVec)
 {
-    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps));
+    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps, maxPowVec));
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::Terminate(Option_t* option)
@@ -5811,6 +6148,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
             case kPion :
             case kKaon :
             case kProton :
+            case kCharUnidentified :
             {
                 if(iNumPtFixBins > 0) {
                     profile = new TProfile2D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c})",GetSpeciesLabel(PartSpecies(iSpec)), corLabel, GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, iNumPtFixBins,dPtFixBinEdges,"");

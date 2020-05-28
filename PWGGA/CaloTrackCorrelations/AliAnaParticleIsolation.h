@@ -151,6 +151,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnNLMHistoFill()                { fFillNLMHistograms = kTRUE ; }
   void         SwitchOffNLMHistoFill()               { fFillNLMHistograms = kFALSE; }
+
+  void         SwitchOnOnlyTH3HistoFill()            { fFillOnlyTH3Histo = kTRUE ; }
+  void         SwitchOffOnlyTH3HistoFill()           { fFillOnlyTH3Histo = kFALSE; }
+
+  void         SwitchOnTH3NonConstantPtBin()         { fTH3PtBinNonConstant = kTRUE ; }
+  void         SwitchOffTH3NonConstantPtBin()        { fTH3PtBinNonConstant = kFALSE; }  
   
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
@@ -230,12 +236,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   /// For histograms in arrays, index in the array, corresponding to any particle origin.
   enum mcTypes     { kmcPhoton   = 0, kmcPrompt     = 1, kmcFragment         = 2,
-                     kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 5,
-                     kmcEta      = 6, kmcEtaDecay   = 7, kmcEtaDecayLostPair = 8,
-                     kmcOtherDecay=9, kmcElectron   =10, kmcHadron           =11  } ;
+                     kmcPi0      = 3, kmcPi0Decay   = 4, kmcPi0DecayLostPair = 10,
+                     kmcEta      = 5, kmcEtaDecay   = 6, kmcEtaDecayLostPair = 11,
+                     kmcOtherDecay=7, kmcElectron   = 8, kmcHadron           = 9  } ;
   
   static const Int_t fgkNmcTypes = 12; ///< Number of MC type particles originating the clusters used in the analysis in the histogram arrays.
 
+  void      SetMaximumNumberOfMCParticleCases(Int_t n) { 
+    if(n > 0 && n < fgkNmcTypes ) fNumberMCParticleCases = n; else fNumberMCParticleCases = fgkNmcTypes; }
+  
  private:
   
   Int_t    fIsoDetector ;                             ///<  Candidate particle for isolation detector.
@@ -258,6 +267,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
+  Bool_t   fFillOnlyTH3Histo;                         ///< Fill only TH3 histograms when duplication
+  Bool_t   fTH3PtBinNonConstant;                      ///< Fill pt bins of TH3 with non constant binning
+  
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
   Bool_t   fCheckLeadingWithNeutralClusters;          ///<  Compare the trigger candidate to Leading pT with the clusters pT, by default only charged.
   Bool_t   fSelectPrimariesInCone;                    ///<  In primary particle isolation studies, select only particles in isolation cone within detector acceptance and E cut.
@@ -275,6 +287,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t  fM02Narrow[2];                             ///<  Long axis signal region
   Float_t  fM02Wide  [2];                             ///<  Long axis background region
+  
+  Int_t    fNumberMCParticleCases;                    ///< Number of histograms per MC particle type, maximum is fgkNmcPrimTypes
   
   //  Analysis data members for multiple cones and pt thresholds
   Int_t    fNCones ;                                  ///<  Number of cone sizes to test. Multiple cones and pt thresholds analysis.
@@ -385,9 +399,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH3F *   fhPtM02SumPtCone;                           //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone
   TH3F *   fhPtM02SumPtConeMC[fgkNmcTypes];            //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle
+ 
+  TH3F *   fhPtM02SumPtConeCharged;                    //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, charged in cone
+  TH3F *   fhPtM02SumPtConeChargedMC[fgkNmcTypes];     //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle, charged in cone
   
   /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
   TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
+  
+  /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone
+  TH3F **  fhPtM02SumPtConeChargedCent;                //![GetNCentrBin()] 
 
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle
@@ -403,6 +423,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Phi of generated photon.
   TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];             //!<! Number of generated photon vs pT.
   TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];             //!<! Number of generated isolated photon vs pT.
+  TH2F *   fhConeSumPtPrimMC[fgkNmcPrimTypes];         //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone.
+  TH2F *   fhConeSumPtChargedPrimMC[fgkNmcPrimTypes];  //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone.
+
   
   TH1F *   fhPtPrimMCPi0DecayPairOutOfCone;            //!<! Pi0 decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance;      //!<! Pi0 decay photons, with decay pair out of detector acceptance.
@@ -830,7 +853,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,46) ;
+  ClassDef(AliAnaParticleIsolation,47) ;
   /// \endcond
 
 } ;

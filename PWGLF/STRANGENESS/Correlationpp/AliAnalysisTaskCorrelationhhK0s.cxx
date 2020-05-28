@@ -2833,7 +2833,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sLabelMotherPos = labelMotherPos;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sLabelPos = labelPos;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sLabelNeg = labelNeg;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].isMCptc       = isaK0s;
+	//	fEvt->fReconstructedSecond[NumberSecondParticle-1].isMCptc       = isaK0s;
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sDcaPosV0     = v0->DcaPosToPrimVertex();
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sDcaNegV0     = v0->DcaNegToPrimVertex();
 	fEvt->fReconstructedSecond[NumberSecondParticle-1].sPtArmV0      = v0->PtArmV0();

@@ -333,7 +333,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       else if (fMostProbable == 13) {
         if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
           imost = 13;
-        if ((track->P().Mag() < 2) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+        if ((track->P().Mag() < 3) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
           imost = 0;
       }
       else if (fMostProbable == 14) {
@@ -814,18 +814,35 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 
 bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
 {
-  double a1 = -250.0,  b1 = 400.0;
-  double a2 = 0.0,      b2 = 75.0;
 
-  if (mom < 1) {
+
+  double a1 = -250.0,  b1 = 400.0;
+  double a2 = -135.0,  b2 = 270.0;
+  double a3 = -80,   b3 = 190.0;
+  double a4 = 0.0,   b4 = 40.0;
+
+  double a5 = 125.0,   b5 = -100.0;
+
+  if (mom < 1.1) {
     if (dEdx < a1*mom+b1) return false;
   }
-  else if (mom >= 1 || mom < 2) {
+  else if (mom < 1.4) {
     if (dEdx < a2*mom+b2) return false;
+  }
+  else if (mom < 2) {
+    if (dEdx < a3*mom+b3) return false;
+  }
+  else if (mom >= 2) {
+    if (dEdx < a4*mom+b4) return false;
+  }
+
+  if (!fNsigmaTPCTOF) {
+    if (dEdx < a5*mom+b5) return false;
   }
   //if (dEdx < a2*mom+b2) return true;
 
   return true;
+
 }
 
 bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
@@ -1092,8 +1109,8 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
     if (mom > 1.0) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
-      //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) ) //&& (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass)
+      //if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) ) //&& (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass)
+      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < 3))
         return true;
     }
     else {
@@ -1208,3 +1225,4 @@ bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float n
   else
      return true;
 }
+

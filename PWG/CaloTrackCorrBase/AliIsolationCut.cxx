@@ -1247,7 +1247,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("IsolationCutBase") ; 
   outputContainer->SetOwner(kFALSE);
-
+  
   Int_t   nptbins       = fHistoRanges->GetHistoPtBins();
   Int_t   nphibins      = fHistoRanges->GetHistoPhiBins();
   Int_t   netabins      = fHistoRanges->GetHistoEtaBins();
@@ -1348,7 +1348,10 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   
   TCustomBinning cenBinning;
   cenBinning.SetMinimum(0.0);
-  cenBinning.AddStep(100, 100/fNCentBins); 
+  if ( fNCentBins > 0 ) 
+    cenBinning.AddStep(100, 100./fNCentBins); 
+  else
+    cenBinning.AddStep(100, 100.); 
   TArrayD cenBinsArray;
   cenBinning.CreateBinEdges(cenBinsArray);
   

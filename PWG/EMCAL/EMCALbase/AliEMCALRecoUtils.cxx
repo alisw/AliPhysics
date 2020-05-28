@@ -55,19 +55,20 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
-  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
-  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fNPars(0),                              fGlobalEventID(NULL),
+  fCellsSingleChannelRecalibrated(kFALSE),fSingleChannelRecalibration(kFALSE),    fEMCALSingleChannelRecalibrationFactors(nullptr),
+  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(nullptr),       fLowGain(kFALSE),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(nullptr),
+  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fGlobalEventID(),
   fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
-  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),                  fUse1Dmap(kFALSE),
+  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(nullptr),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
   fPIDUtils(),                            fAODFilterMask(0),
   fAODHybridTracks(0),                    fAODTPCOnlyTracks(0),
-  fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
-  fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
+  fMatchedTrackIndex(),                   fMatchedClusterIndex(), 
+  fResidualEta(), fResidualPhi(),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
@@ -85,11 +86,6 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   
   for(Int_t j = 0; j <  5;    j++)  fMCGenerToAccept[j] =  "";
   
-  // Track matching arrays init
-  fMatchedTrackIndex     = new TArrayI();
-  fMatchedClusterIndex   = new TArrayI();
-  fResidualPhi           = new TArrayF();
-  fResidualEta           = new TArrayF();
   fPIDUtils              = new AliEMCALPIDUtils();
   
   fBadStatusSelection[0] = kTRUE;
@@ -112,6 +108,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),                   
   fEMCALRecalibrationFactors(NULL),
+  fCellsSingleChannelRecalibrated(reco.fCellsRecalibrated),
+  fSingleChannelRecalibration(reco.fRecalibration),          fEMCALSingleChannelRecalibrationFactors(NULL),
   fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(NULL),
   fLowGain(reco.fLowGain),
@@ -119,7 +117,6 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
   fIsParRun(reco.fIsParRun),
   fCurrentParNumber(reco.fCurrentParNumber),
-  fNPars(reco.fNPars),
   fGlobalEventID(reco.fGlobalEventID),
   fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
@@ -131,10 +128,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
   fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
   fAODHybridTracks(reco.fAODHybridTracks),                   fAODTPCOnlyTracks(reco.fAODTPCOnlyTracks),
-  fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
-  fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
-  fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
-  fResidualPhi(        reco.fResidualPhi?        new TArrayF(*reco.fResidualPhi):0x0),
+  fMatchedTrackIndex(  reco.fMatchedTrackIndex),
+  fMatchedClusterIndex(reco.fMatchedClusterIndex),
+  fResidualEta(        reco.fResidualEta),
+  fResidualPhi(        reco.fResidualPhi),
   fCutEtaPhiSum(reco.fCutEtaPhiSum),                         fCutEtaPhiSeparate(reco.fCutEtaPhiSeparate), 
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
@@ -171,6 +168,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
     for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
   }
 
+  if(reco.fEMCALSingleChannelRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(reco.fEMCALSingleChannelRecalibrationFactors->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALSingleChannelRecalibrationFactors->GetEntries(); ism++) fEMCALSingleChannelRecalibrationFactors->AddAt(reco.fEMCALSingleChannelRecalibrationFactors->At(ism), ism);
+  }
+
+  
   if(reco.fEMCALTimeRecalibrationFactors) {
     // Copy constructor - not taking ownership over calibration histograms
     fEMCALTimeRecalibrationFactors = new TObjArray(reco.fEMCALTimeRecalibrationFactors->GetEntries());
@@ -216,7 +221,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fIsParRun                  = reco.fIsParRun;
   fCurrentParNumber          = reco.fCurrentParNumber;
-  fNPars                     = reco.fNPars;
   fGlobalEventID             = reco.fGlobalEventID;
   
   fDoUseMergedBC             = reco.fDoUseMergedBC;
@@ -279,57 +283,10 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   //
   // Assign or copy construct the different TArrays
   //
-  if (reco.fResidualEta) 
-  {
-    if (fResidualEta) 
-      *fResidualEta = *reco.fResidualEta;
-    else 
-      fResidualEta = new TArrayF(*reco.fResidualEta);
-  } 
-  else 
-  {
-    if (fResidualEta) delete fResidualEta;
-    fResidualEta = 0;
-  }
-  
-  if (reco.fResidualPhi) 
-  {
-    if (fResidualPhi)  
-      *fResidualPhi = *reco.fResidualPhi;
-    else 
-      fResidualPhi = new TArrayF(*reco.fResidualPhi);
-  } 
-  else 
-  {
-    if (fResidualPhi) delete fResidualPhi;
-    fResidualPhi = 0;
-  }
-  
-  if (reco.fMatchedTrackIndex) 
-  {
-    if (fMatchedTrackIndex)  
-      *fMatchedTrackIndex = *reco.fMatchedTrackIndex;
-    else  
-      fMatchedTrackIndex = new TArrayI(*reco.fMatchedTrackIndex);
-  } 
-  else 
-  {
-    if (fMatchedTrackIndex) delete fMatchedTrackIndex;
-    fMatchedTrackIndex = 0;
-  }  
-  
-  if (reco.fMatchedClusterIndex)
-  {
-    if (fMatchedClusterIndex)  
-      *fMatchedClusterIndex = *reco.fMatchedClusterIndex;
-    else 
-      fMatchedClusterIndex = new TArrayI(*reco.fMatchedClusterIndex);
-  } 
-  else 
-  {
-    if (fMatchedClusterIndex) delete fMatchedClusterIndex;
-    fMatchedClusterIndex = 0;
-  }
+  fResidualEta = reco.fResidualEta;
+  fResidualPhi = reco.fResidualPhi;
+  fMatchedTrackIndex = reco.fMatchedTrackIndex;
+  fMatchedClusterIndex = reco.fMatchedClusterIndex;
 
   for (Int_t j = 0; j < 4  ; j++) 
    fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; 
@@ -348,6 +305,14 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     fEMCALRecalibrationFactors = new TObjArray(reco.fEMCALRecalibrationFactors->GetEntries());
     fEMCALRecalibrationFactors->SetOwner(false);
     for(int ism = 0; ism < reco.fEMCALRecalibrationFactors->GetEntries(); ism++) fEMCALRecalibrationFactors->AddAt(reco.fEMCALRecalibrationFactors->At(ism), ism);
+  }
+
+  if(fEMCALSingleChannelRecalibrationFactors) delete fEMCALSingleChannelRecalibrationFactors;
+  if(reco.fEMCALSingleChannelRecalibrationFactors) {
+    // Copy constructor - not taking ownership over calibration histograms
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(reco.fEMCALSingleChannelRecalibrationFactors->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(false);
+    for(int ism = 0; ism < reco.fEMCALSingleChannelRecalibrationFactors->GetEntries(); ism++) fEMCALSingleChannelRecalibrationFactors->AddAt(reco.fEMCALSingleChannelRecalibrationFactors->At(ism), ism);
   }
   
   if(fEMCALTimeRecalibrationFactors) delete fEMCALTimeRecalibrationFactors;
@@ -379,7 +344,12 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
   { 
     delete fEMCALRecalibrationFactors;
   }  
-  
+
+  if (fEMCALSingleChannelRecalibrationFactors) 
+  { 
+    delete fEMCALSingleChannelRecalibrationFactors;
+  }  
+
   if (fEMCALTimeRecalibrationFactors) 
   { 
     delete fEMCALTimeRecalibrationFactors;
@@ -395,16 +365,8 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
     delete fEMCALBadChannelMap;
   }
  
-  delete fMatchedTrackIndex   ; 
-  delete fMatchedClusterIndex ; 
-  delete fResidualEta         ; 
-  delete fResidualPhi         ; 
   delete fPIDUtils            ;
 
-  if (fGlobalEventID){
-    delete fGlobalEventID;
-  }
-  
   InitTrackCuts();
 }
 
@@ -1278,7 +1240,34 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
       break;
     }  
+    case kTestBeamShaper:
+    {
+      // THIS PARAMETRIZATION HAS TO BE USED TOGETHER WITH THE SHAPER NONLINEARITY: 
+      // Final parametrization of testbeam data points, 
+      // includes also points for E>100 GeV and determined on shaper corrected data.
 
+    //  fNonLinearityParams[0] = 1.91897;
+    //  fNonLinearityParams[1] = 0.0264988;
+    //  fNonLinearityParams[2] = 0.965663;
+    //  fNonLinearityParams[3] = -187.501;
+    //  fNonLinearityParams[4] = 2762.51;
+      energy /= ( 1.0505 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+      
+      break;
+    }
+    case kTestBeamFinalMC:
+    {
+      // Final parametrization of testbeam MC points, 
+      // includes also points for E>100 GeV
+
+    //  fNonLinearityParams[0] = 1.09357;
+    //  fNonLinearityParams[1] = 0.0192266;
+    //  fNonLinearityParams[2] = 0.291993;
+    //  fNonLinearityParams[3] = 370.927;
+    //  fNonLinearityParams[4] = 694.656;
+      energy /= ( 1.00 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+      break;
+    }
     
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
@@ -1479,7 +1468,7 @@ if (fNonLinearityFunction == kPCMv1) {
     fNonLinearityParams[4] = 0.;
     fNonLinearityParams[5] = 0.;
     fNonLinearityParams[6] = 0.;
-  }
+}
 
  if (fNonLinearityFunction == kPCMplusBTCv1) {
    // test beam corrected values convoluted with symmetric meson decays values
@@ -1510,6 +1499,21 @@ if (fNonLinearityFunction == kPCMv1) {
    fNonLinearityParams[4] =  1.0;
    fNonLinearityParams[5] =  0.0;
    fNonLinearityParams[6] =  0.0;
+ }
+
+ if (fNonLinearityFunction == kTestBeamShaper) {
+   fNonLinearityParams[0] =  1.91897;
+   fNonLinearityParams[1] =  0.0264988;
+   fNonLinearityParams[2] =  0.965663;
+   fNonLinearityParams[3] =  -187.501;
+   fNonLinearityParams[4] =  2762.51;
+ }
+ if (fNonLinearityFunction == kTestBeamFinalMC) {
+   fNonLinearityParams[0] =  1.09357;
+   fNonLinearityParams[1] =  0.0192266;
+   fNonLinearityParams[2] =  0.291993;
+   fNonLinearityParams[3] =  370.927;
+   fNonLinearityParams[4] =  694.656;
  }
 }
 
@@ -1886,6 +1890,41 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors1D()
 }
 
 ///
+/// Init EMCAL single channel energy calibration factors container
+///
+//_____________________________________________________
+void AliEMCALRecoUtils::InitEMCALSingleChannelRecalibrationFactors()
+{
+  AliDebug(2,"AliCalorimeterUtils::InitEMCALSingleChannelRecalibrationFactors()");
+  
+  // In order to avoid rewriting the same histograms
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  
+  fEMCALSingleChannelRecalibrationFactors = new TObjArray(22);
+  for (int i = 0; i < 22; i++) 
+    fEMCALSingleChannelRecalibrationFactors->Add(new TH2F(Form("EMCALSCCalibMap_Mod%d",i),
+							  Form("EMCALSCCalibMap_Mod%d",i),  48, 0, 48, 24, 0, 24));
+  //Init the histograms with 1
+  for (Int_t sm = 0; sm < 22; sm++) 
+  {
+    for (Int_t i = 0; i < 48; i++) 
+    {
+      for (Int_t j = 0; j < 24; j++) 
+      {
+        SetEMCALSingleChannelRecalibrationFactor(sm,i,j,1.);
+      }
+    }
+  }
+  
+  fEMCALSingleChannelRecalibrationFactors->SetOwner(kTRUE);
+  fEMCALSingleChannelRecalibrationFactors->Compress();
+  
+  // In order to avoid rewriting the same histograms
+  TH1::AddDirectory(oldStatus);    
+}
+
+///
 /// Init EMCAL time calibration shifts container
 ///
 //_________________________________________________________
@@ -2057,6 +2096,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Int_t   absId  =-1;
   Int_t   icol   =-1, irow =-1, imod=1;
   Float_t factor = 1, frac = 0;
+  Float_t factorSC = 1;
   Int_t   absIdMax = -1;
   Float_t emax     = 0;
   
@@ -2084,13 +2124,27 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
       AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
                       imod,icol,irow,frac,factor,cells->GetCellAmplitude(absId)));
       
-    } 
-    
-    energy += cells->GetCellAmplitude(absId)*factor*frac;
-    
-    if (emax < cells->GetCellAmplitude(absId)*factor*frac) 
+    }
+    if (!fCellsSingleChannelRecalibrated && IsSingleChannelRecalibrationOn()) 
     {
-      emax     = cells->GetCellAmplitude(absId)*factor*frac;
+      // Single Channel  
+      Int_t iTower = -1, iIphi = -1, iIeta = -1; 
+      geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+      if (fEMCALSingleChannelRecalibrationFactors->GetEntries() <= imod) 
+        continue;
+      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
+      factorSC = GetEMCALSingleChannelRecalibrationFactor(imod,icol,irow);
+      
+      AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - sinlge channel recalibrate cell: module %d, col %d, row %d, cell fraction %f,recalibration factor %f, cell energy %f\n",
+                      imod,icol,irow,frac,factorSC,cells->GetCellAmplitude(absId)));
+      
+    }
+    
+    energy += cells->GetCellAmplitude(absId)*factor*factorSC*frac;
+    
+    if (emax < cells->GetCellAmplitude(absId)*factor*factorSC*frac) 
+    {
+      emax     = cells->GetCellAmplitude(absId)*factor*factorSC*frac;
       absIdMax = absId;
     }
   }
@@ -2345,12 +2399,13 @@ void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, 
     
   } // mc cell label loop
   
-  //
-  // If no label found, reject cell
-  // It can happen to have this case (4 MC labels per cell is not enough for some cases)
-  // better to remove. To be treated carefully.
-  //
-  if ( nLabels == 0 ) amp = 0;
+//  Commented on 12/05/20, in embedding case, data input cells are removed
+//  Also, it will remove MC noise
+//  // If no label found, reject cell
+//  // It can happen to have this case (4 MC labels per cell is not enough for some cases)
+//  // better to remove. To be treated carefully.
+//  //
+//  if ( nLabels == 0 ) amp = 0;
   
 }
 
@@ -3115,15 +3170,15 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
                                     const AliEMCALGeometry *geom,
                                     AliMCEvent * mc)
 {  
-  fMatchedTrackIndex  ->Reset();
-  fMatchedClusterIndex->Reset();
-  fResidualPhi->Reset();
-  fResidualEta->Reset();
+  fMatchedTrackIndex.Reset();
+  fMatchedClusterIndex.Reset();
+  fResidualPhi.Reset();
+  fResidualEta.Reset();
   
-  fMatchedTrackIndex  ->Set(1000);
-  fMatchedClusterIndex->Set(1000);
-  fResidualPhi->Set(1000);
-  fResidualEta->Set(1000);
+  fMatchedTrackIndex.Set(1000);
+  fMatchedClusterIndex.Set(1000);
+  fResidualPhi.Set(1000);
+  fResidualEta.Set(1000);
   
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
@@ -3322,10 +3377,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     
     if (index>-1) 
     {
-      fMatchedTrackIndex   ->AddAt(itr,matched);
-      fMatchedClusterIndex ->AddAt(index,matched);
-      fResidualEta         ->AddAt(dEta,matched);
-      fResidualPhi         ->AddAt(dPhi,matched);
+      fMatchedTrackIndex[itr] = matched;
+      fMatchedClusterIndex[index] = matched;
+      fResidualEta[dEta] = matched;
+      fResidualPhi[dPhi] = matched;
       matched++;
     }
     
@@ -3341,10 +3396,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   
   AliDebug(2,Form("Number of matched pairs = %d !\n",matched));
   
-  fMatchedTrackIndex   ->Set(matched);
-  fMatchedClusterIndex ->Set(matched);
-  fResidualPhi         ->Set(matched);
-  fResidualEta         ->Set(matched);
+  fMatchedTrackIndex.Set(matched);
+  fMatchedClusterIndex.Set(matched);
+  fResidualPhi.Set(matched);
+  fResidualEta.Set(matched);
 }
 
 ///
@@ -3544,8 +3599,8 @@ void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex,
     return;
   }
   
-  dEta = fResidualEta->At(FindMatchedPosForCluster(clsIndex));
-  dPhi = fResidualPhi->At(FindMatchedPosForCluster(clsIndex));
+  dEta = fResidualEta[FindMatchedPosForCluster(clsIndex)];
+  dPhi = fResidualPhi[FindMatchedPosForCluster(clsIndex)];
 }
 
 ///
@@ -3568,8 +3623,8 @@ void AliEMCALRecoUtils::GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta
     return;
   }
   
-  dEta = fResidualEta->At(FindMatchedPosForTrack(trkIndex));
-  dPhi = fResidualPhi->At(FindMatchedPosForTrack(trkIndex));
+  dEta = fResidualEta[FindMatchedPosForTrack(trkIndex)];
+  dPhi = fResidualPhi[FindMatchedPosForTrack(trkIndex)];
 }
 
 ///
@@ -3582,7 +3637,7 @@ void AliEMCALRecoUtils::GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta
 Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t clsIndex)
 {
   if (IsClusterMatched(clsIndex))
-    return fMatchedTrackIndex->At(FindMatchedPosForCluster(clsIndex));
+    return fMatchedTrackIndex[FindMatchedPosForCluster(clsIndex)];
   else 
     return -1; 
 }
@@ -3597,7 +3652,7 @@ Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t clsIndex)
 Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
 {  
   if (IsTrackMatched(trkIndex))
-    return fMatchedClusterIndex->At(FindMatchedPosForTrack(trkIndex));
+    return fMatchedClusterIndex[FindMatchedPosForTrack(trkIndex)];
   else 
     return -1; 
 }
@@ -3647,17 +3702,17 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForCluster(Int_t clsIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for (Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++) 
+  for (Int_t i=0; i<fMatchedClusterIndex.GetSize(); i++) 
   {
-    if (fMatchedClusterIndex->At(i)==clsIndex) 
+    if (fMatchedClusterIndex[i]==clsIndex) 
     {
-      Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
+      Float_t r = TMath::Sqrt(fResidualEta[i]*fResidualEta[i] + fResidualPhi[i]*fResidualPhi[i]);
       if (r<tmpR) 
       {
         pos=i;
         tmpR=r;
         AliDebug(3,Form("Matched cluster index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
-                        fMatchedClusterIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+                        fMatchedClusterIndex[i],fResidualEta[i],fResidualPhi[i]));
       }
     }
   }
@@ -3677,17 +3732,17 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for (Int_t i=0; i<fMatchedTrackIndex->GetSize(); i++) 
+  for (Int_t i=0; i<fMatchedTrackIndex.GetSize(); i++) 
   {
-    if (fMatchedTrackIndex->At(i)==trkIndex) 
+    if (fMatchedTrackIndex[i]==trkIndex) 
     {
-      Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
+      Float_t r = TMath::Sqrt(fResidualEta[i]*fResidualEta[i] + fResidualPhi[i]*fResidualPhi[i]);
       if (r<tmpR) 
       {
         pos=i;
         tmpR=r;
         AliDebug(3,Form("Matched track index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
-                        fMatchedTrackIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+                        fMatchedTrackIndex[i],fResidualEta[i],fResidualPhi[i]));
       }
     }
   }
@@ -4152,7 +4207,41 @@ TH2F * AliEMCALRecoUtils::GetEMCALChannelRecalibrationFactors(Int_t iSM) const{
     }
     return hist;
   }
+}
 
+/*
+ Setting EMCAL and DCAL single channel calibration factors using a map
+ */
+void AliEMCALRecoUtils::SetEMCALSingleChannelRecalibrationFactors(const TObjArray *map) { 
+  if(fEMCALSingleChannelRecalibrationFactors) fEMCALSingleChannelRecalibrationFactors->Clear();
+  else {
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(map->GetEntries());
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(true);
+  }
+  if(!fEMCALSingleChannelRecalibrationFactors->IsOwner()){
+    // Must claim ownership since the new objects are owend by this instance
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(kTRUE);
+  }
+  for(int i = 0; i < map->GetEntries(); i++){
+    TH2F *hist = dynamic_cast<TH2F *>(map->At(i));
+    if(!hist) continue;
+    this->SetEMCALSingleChannelRecalibrationFactors(i, hist);
+  }
+}
+
+/*
+ Setting EMCAL and DCAL single channel calibration factors using an SM by SM histogram
+ */
+void AliEMCALRecoUtils::SetEMCALSingleChannelRecalibrationFactors(Int_t iSM , const TH2F* h) { 
+  if(!fEMCALSingleChannelRecalibrationFactors){
+    fEMCALSingleChannelRecalibrationFactors = new TObjArray(iSM);
+    fEMCALSingleChannelRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALSingleChannelRecalibrationFactors->GetEntries() <= iSM) fEMCALSingleChannelRecalibrationFactors->Expand(iSM+1);
+  if(fEMCALSingleChannelRecalibrationFactors->At(iSM)) fEMCALSingleChannelRecalibrationFactors->RemoveAt(iSM);
+  TH2F *clone = new TH2F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALSingleChannelRecalibrationFactors->AddAt(clone,iSM); 
 }
 
 void AliEMCALRecoUtils::SetEMCALChannelStatusMap(const TObjArray *map) { 

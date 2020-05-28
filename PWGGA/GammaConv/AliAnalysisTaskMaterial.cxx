@@ -221,7 +221,8 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 
 
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-		if(eventQuality != 0){// Event Not Accepted
+    if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
+    if(eventQuality != 0){// Event Not Accepted
 		return;
 	}
 	fESDEvent = (AliESDEvent*) InputEvent();

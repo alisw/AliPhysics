@@ -18,9 +18,9 @@ Bool_t ConfigLStar_PbPb2018(
 			    Int_t                   aodFilterBit      = 5,
 			    Bool_t                  useTPCCrossedRows = kTRUE,
 			    Int_t                   qualityCut        = AliRsnCutSetDaughterParticle::kQualityStd2011,
-			    Int_t                   pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed,
-			    Float_t                 nsPr              = 3.0,
-			    Float_t                 nsKa              = 3.0,
+			    Int_t                   pidCut            = AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018,
+			    Float_t                 nsPr              = 1.0, // factor wrt. default n-sigma
+			    Float_t                 nsKa              = 1.0, // factor wrt. default n-sigma
 			    Bool_t                  isMC              = kFALSE, 
 			    const char             *suffix            = ""
 			    )

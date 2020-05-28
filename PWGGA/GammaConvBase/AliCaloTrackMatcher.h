@@ -110,35 +110,37 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     TString               fAnalysisTrainMode;      // AnalysisTrainMode: Grid or GSI //Grid by default
     Double_t              fMatchingWindow;         // matching window to prevent unnecessary propagations
     Float_t               fMatchingResidual;       // matching residual below which track <-> cluster associations should be stored
-    Int_t                 fRunNumber;              // current run number
+    Int_t                 fRunNumber;              //! current run number
 
-    AliEMCALGeometry*     fGeomEMCAL;              // pointer to EMCAL geometry
-    AliPHOSGeometry*      fGeomPHOS;               // pointer to PHOS geometry
+    AliEMCALGeometry*     fGeomEMCAL;              //! pointer to EMCAL geometry
+    AliPHOSGeometry*      fGeomPHOS;               //! pointer to PHOS geometry
 
-    multimap<Int_t,Int_t> fMapTrackToCluster;      // connects a given track ID with all associated cluster IDs
-    multimap<Int_t,Int_t> fMapClusterToTrack;      // connects a given cluster ID with all associated track IDs
+    TClonesArray*         fArrClusters;            //! array with clusters
 
-    Int_t                 fNEntries;               // number of current TrackID/ClusterID -> Eta/Phi connections
-    vector<pairFloat>     fVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific TrackID/ClusterID
-    mapT                  fMap_TrID_ClID_ToIndex;  // map tuple of (trackID,clusterID) to index in vector fVectorDeltaEtaDeltaPhi
+    multimap<Int_t,Int_t> fMapTrackToCluster;      //! connects a given track ID with all associated cluster IDs
+    multimap<Int_t,Int_t> fMapClusterToTrack;      //! connects a given cluster ID with all associated track IDs
+
+    Int_t                 fNEntries;               //! number of current TrackID/ClusterID -> Eta/Phi connections
+    vector<pairFloat>     fVectorDeltaEtaDeltaPhi; //! vector of all matching residuals for a specific TrackID/ClusterID
+    mapT                  fMap_TrID_ClID_ToIndex;  //! map tuple of (trackID,clusterID) to index in vector fVectorDeltaEtaDeltaPhi
 
     // for cluster <-> V0-track matching (running with different mass hypthesis)
-    multimap<Int_t,Int_t> fSecMapTrackToCluster;      // connects a given secondary track ID with all associated cluster IDs
-    multimap<Int_t,Int_t> fSecMapClusterToTrack;      // connects a given cluster ID with all associated secondary track IDs
+    multimap<Int_t,Int_t> fSecMapTrackToCluster;      //! connects a given secondary track ID with all associated cluster IDs
+    multimap<Int_t,Int_t> fSecMapClusterToTrack;      //! connects a given cluster ID with all associated secondary track IDs
 
-    Int_t                 fSecNEntries;               // number of current V0-trackIDs/clusterID -> Eta/Phi connections
-    vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific V0-trackIDs/clusterID
-    mapT                  fSecMap_TrID_ClID_ToIndex;  // map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
-    mapT                  fSecMap_TrID_ClID_AlreadyTried;  // map tuple of (V0-trackID,clusterID) to matching outcome, successful or not
+    Int_t                 fSecNEntries;               //! number of current V0-trackIDs/clusterID -> Eta/Phi connections
+    vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; //! vector of all matching residuals for a specific V0-trackIDs/clusterID
+    mapT                  fSecMap_TrID_ClID_ToIndex;  //! map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
+    mapT                  fSecMap_TrID_ClID_AlreadyTried; //! map tuple of (V0-trackID,clusterID) to matching outcome, successful or not
 
     //histos
-    TList*                fListHistos;             // list with histogram(s)
-    TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
-    TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
+    TList*                fListHistos;             //! list with histogram(s)
+    TH2F*                 fHistControlMatches;     //! bookkeeping for processed tracks/clusters and succesful matches
+    TH2F*                 fSecHistControlMatches;  //! bookkeeping for processed V0-tracks/clusters and succesful matches
 
-    Bool_t                fDoLightOutput;       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t                fDoLightOutput;          // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
 
-    ClassDef(AliCaloTrackMatcher,7)
+    ClassDef(AliCaloTrackMatcher,8)
 };
 
 #endif

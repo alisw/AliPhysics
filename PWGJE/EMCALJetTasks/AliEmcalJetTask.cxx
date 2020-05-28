@@ -566,9 +566,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
-      if(fFillConstituents){
-        jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
-      }
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -601,6 +598,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       if (flag == 0 || particlesSubName == "") {
         jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid), nt);
+        if(fFillConstituents){
+          jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
+        }
       }
       else {
         // Get the particle container and array corresponding to the subtracted particles
@@ -611,6 +611,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(dynamic_cast<AliVTrack*>(t));   // SA: probably need to be fixed!!
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
         jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, part_sub_id), nt);
+        if(fFillConstituents){
+          jet->AddParticleConstituent(part_sub, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, part_sub_id));
+        }
       }
 
       ++nt;
@@ -632,8 +635,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
-      Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
-      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;
@@ -653,6 +654,11 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       if (flag == 0 || particlesSubName == "") {
         jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid), nc);
+
+        if(fFillConstituents) {
+          Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+          jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
+        }
       }
       else {
         // Get the cluster container and array corresponding to the subtracted particles
@@ -663,6 +669,16 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(c);
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
         jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, part_sub_id), nc);
+
+        if(fFillConstituents) {
+          // NOTE: The ClusterConstituent constructor won't work here because we're not passing an AliVCluster.
+          //       We don't have an subtracted object. However, we don't want a user to miss this issue, so we raise an exception.
+          // - RE 2020-05-13
+          //clusCont->GetMomentum(nP, part_sub_id);
+          //Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+          //jet->AddClusterConstituent(part_sub, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, part_sub_id));
+          throw std::runtime_error("Subtracted clusters constituents are not implemented.");
+        }
       }
 
       ++nc;

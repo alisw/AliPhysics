@@ -55,6 +55,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
+    void CalculateBackgroundSwapp();
     void CalculateBackgroundRP();
     void ProcessMCParticles();
     void ProcessAODMCParticles();
@@ -402,12 +403,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
+    Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken 
 
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 48);
+    ClassDef(AliAnalysisTaskGammaConvV1, 49);
 };
 
 #endif

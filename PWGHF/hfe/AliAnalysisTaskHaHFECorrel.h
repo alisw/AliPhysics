@@ -128,6 +128,7 @@ public:
     void SetEleVarOpt(Int_t VarOption);
     void SetHadVarOpt(Int_t VarOption);
     void SetPhotVarOpt(Int_t PhotVarOpt);
+    void SetVtxVarOpt(Int_t VtxVarOpt) {fVarZVTXCut=VtxVarOpt;};
     
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
@@ -239,6 +240,7 @@ public:
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
+    Int_t                 fVarZVTXCut;             //
 
     
     Double_t              fMaxElectronEta;          //
@@ -249,6 +251,7 @@ public:
     // HFECuts
     Int_t                 fVarEleOpt;               //
     Bool_t                fElectronkAny;            // True: kAny, False: kBoth
+    Bool_t                fElectronkFirst;          // True: kFirst, False: kBoth
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 

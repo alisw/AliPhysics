@@ -57,7 +57,9 @@ fNZvertBin(0),                fNrpBin(0),
 fNCentrBin(0),                fNmaxMixEv(0),
 fDoOwnMix(0),                 fUseTrackMultBins(0),
 fFillPileUpHistograms(0),     fFillHighMultHistograms(0),
-fMakePlots(kFALSE),
+fFillGenPartHisto(1),         fMakePlots(kFALSE),
+fFillEmbedHistograms(0),      fSelectEmbededSignal(0),
+
 fInputAODBranch(0x0),         fInputAODName(""),
 fOutputAODBranch(0x0),        fNewAOD(kFALSE),
 fOutputAODName(""),           fOutputAODClassName(""),
@@ -871,15 +873,32 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
   printf("Name of reference array      : %s\n", fAODObjArrayName.Data());
   printf("String added histograms name : %s\n", fAddToHistogramsName.Data());
 
-  printf("Min Photon pT       =     %2.2f\n", fMinPt) ;
+  printf("pT/E range          = [%2.2f,%2.2f]\n", fMinPt,fMaxPt) ;
+  printf("Pair time cut       = %2.2f",fPairTimeCut);
   printf("Max Photon pT       =     %3.2f\n", fMaxPt) ;
-  printf("Check PID           =     %d\n",    fCheckCaloPID) ;
+  printf("Calo %s (%d) settings:\n",fCalorimeterString.Data(),fCalorimeter);
+  printf("\t nSM %d, nRCU %d, First SM %d, Last SM %d; first TRD SM %d\n",
+          fNModules,fNRCU,fFirstModule,fLastModule,fTRDSMCovered);
+  printf("\t nMax cols %d, nMax Rows %d; full SM nMax Cols %d, nMax Rows %d; Rows Full SM: Min %d, Max %d\n",
+          fNMaxCols,fNMaxRows,fNMaxColsFull,fNMaxRowsFull,fNMaxRowsFullMin,fNMaxRowsFullMax); 
+  
+  printf("");
+  
+  //printf("Check PID           =     %d\n",    fCheckCaloPID) ;
   printf("Recalculate PID     =     %d\n",    fRecalculateCaloPID) ;
   printf("Check Fiducial cut  =     %d\n",    fCheckFidCut) ;
   printf("Check Real Calo Acc =     %d\n",    fCheckRealCaloAcc) ;
   printf("Check MC labels     =     %d\n",    fDataMC);
   printf("Make plots?         =     %d\n",    fMakePlots);
   printf("Debug Level         =     %d\n",    fDebug);
+  
+  printf("Do mix event        =     %d\n",    fDoOwnMix);
+  printf("\t N: z vert %d, RP %d, Centr %d, Mix event Pool size %d, Use track mult %d\n",
+         fNZvertBin,fNrpBin,fNCentrBin,fNmaxMixEv,fUseTrackMultBins);
+  printf("Fill histo: pile-up %d, high mult %d, embed %d, generated particles %d",
+         fFillPileUpHistograms,fFillHighMultHistograms,fFillEmbedHistograms,fFillGenPartHisto);
+  printf("Select embedded clusters/tracks %d\n",fSelectEmbededSignal);
+        
   
   printf("    \n") ;
 } 

@@ -36,9 +36,11 @@ set(SRCS
   UeSpherocity/AliAnalysisTaskUeRSpherocity.cxx
   UePid/AliAnalysisTaskUePid.cxx
   UeMultDep/AliAnalysisTaskUeMultDep.cxx
+  UeDphi/AliAnalysisTaskUeSpectraDphi.cxx
   UeSpectraRT/AliAnalysisTaskUeSpectraRT.cxx
   UeKNO/AliAnalysisTaskMcKnoUe.cxx
   UeKNO/AliAnalysisTaskMcKno.cxx
+  UeKNO/AliAnalysisTaskGenMcKno.cxx
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx		
   )
@@ -108,4 +110,5 @@ install(FILES ${HDRS} DESTINATION include)
         install(DIRECTORY UeMpi DESTINATION  PWGMM/UE)
 install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)
 install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)
+install(DIRECTORY UeDphi DESTINATION  PWGMM/UE)
 install(DIRECTORY macros DESTINATION  PWGMM/UE)		

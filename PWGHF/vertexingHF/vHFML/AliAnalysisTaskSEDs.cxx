@@ -1494,18 +1494,31 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
             if (orig == 4)
+            {
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
               fnSparseMC[0]->Fill(var4nSparseAcc);
+            }
             else if (orig == 5)
+            {
+              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
               fnSparseMC[1]->Fill(var4nSparseAcc);
+            }
             else { //no quark found
               if(fFillSparseAccWoQuark)
               {
                 if (origWoQuark == 4)
+                {
+                  Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
                   fnSparseMC[5]->Fill(var4nSparseAcc);
+                }
                 else if (origWoQuark == 5)
+                {
+                  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
                   fnSparseMC[6]->Fill(var4nSparseAcc);
+                }
               }
             }
           }
@@ -1537,11 +1550,17 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
-            Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
             if (orig == 4)
+            {
+              Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};
               fnSparseMCDplus[0]->Fill(var4nSparseAcc);
+            }
             if (orig == 5)
+            {
+              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};
               fnSparseMCDplus[1]->Fill(var4nSparseAcc);
+            }
           }
         }
       }
@@ -1680,9 +1699,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
   }
 
-  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20};
-  Double_t xminAcc[knVarForSparseAcc] = {0., -10.};
-  Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10.};
+  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
+  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0.};
+  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., fPtLimits[fNPtBins]};
 
   if (fReadMC)
   {
@@ -1694,18 +1713,22 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     for (Int_t iHist = 0; iHist < 2; iHist++)
     {
       TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
       fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
       fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+      if(iHist==1)
+        fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
       if (fFillSparseDplus)
       {
         titleSparse = Form("MC nSparse D^{+} (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
-        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMCDplus[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMCDplus[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        if(iHist==3)
+            fnSparseMCDplus[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
@@ -1734,9 +1757,11 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       for (Int_t iHist = 5; iHist < 7; iHist++)
       {
         TString titleSparse = Form("MC nSparse w/o quark (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist - 5].Data());
-        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
+        fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), (iHist == 5) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
+        if(iHist==6)
+            fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fOutput->Add(fnSparseMC[iHist]);
       }
     }

@@ -68,6 +68,7 @@ AliRsnMiniAnalysisTask* AddTaskSigmaStar_pp13TeV(
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(lname,isMC);
 
   // trigger
+  task->UseESDTriggerMask(AliVEvent::kMB); // default
   int trigger=EventCuts%10;
   if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
   else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);

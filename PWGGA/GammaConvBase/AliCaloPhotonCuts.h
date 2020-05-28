@@ -131,6 +131,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP8T12P2JJ,
       kPP8T12P2GJLow,
       kPP8T12P2GJHigh,
+      kPP8T12P2GJGeant3,
+      kPP8T12P2GJGeant4,
       // pPb 5 TeV 2013
       kPPb5T13P2DPMJet,
       kPPb5T13P4JJ,
@@ -472,6 +474,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
     TH1S*      fHistoModifyAcc;                         // hisogram for modified acceptance, if leadCellID->1 accept cluster, if leadCellID->0 reject cluster
+    TClonesArray*   fAODMCTrackArray;                   // pointer to track array
 
     Int_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
@@ -698,7 +701,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,104)
+    ClassDef(AliCaloPhotonCuts,105)
 };
 
 #endif

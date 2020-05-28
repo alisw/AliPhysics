@@ -28,6 +28,7 @@ class AliVParticle;
 class AliGFWCuts;
 class AliGFWFlowContainer;
 class AliPIDResponse;
+class AliPIDCombined;
 
 class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
  public:
@@ -48,9 +49,14 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void LoadWeightAndMPT(AliAODEvent*);
-  void GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t runno, TString pf="");
+  void LoadWeightAndMPT();
+  void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   Bool_t WithinSigma(Double_t SigmaCut, AliAODTrack *inTrack, AliPID::EParticleType partType);
+  void FillWPCounter(Double_t[5], Double_t, Double_t);
+  void CalculateMptValues(Double_t[4], Double_t[5]);
+  Bool_t LoadMyWeights(Int_t lRunNo = 0);
+  Int_t GetBayesPIDIndex(AliAODTrack*);
+  Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -59,21 +65,26 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t fStageSwitch;
   Bool_t fIsMC;
   AliPIDResponse *fPIDResponse; //!
+  AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
-  TProfile *fmPT; //!
-  TProfile *fmPT_pi; //!
-  TProfile *fmPT_ka; //!
-  TProfile *fmPT_pr; //!
+  TProfile **fmPT; //!
+  // TProfile *fmPT_pi; //!
+  // TProfile *fmPT_ka; //!
+  // TProfile *fmPT_pr; //!
   TH1D *fMultiDist;
-  TProfile *fptvar;
-  TProfile *fCovariance;
+  TList *fptVarList;
+  TProfile **fptvar; //!
+  TList *fCovList;
+  TProfile **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType; //! No need to store
   TList *fWeightList; //!
-  AliGFWWeights *fWeights;//! This should be stored in TList
-  AliGFWWeights *fWeights_pi;//! This should be stored in TList
-  AliGFWWeights *fWeights_ka;//! This should be stored in TList
-  AliGFWWeights *fWeights_pr;//! This should be stored in TList
+  AliGFWWeights **fWeights;//! This should be stored in TList
+  // AliGFWWeights *fWeights_pi;//! This should be stored in TList
+  // AliGFWWeights *fWeights_ka;//! This should be stored in TList
+  // AliGFWWeights *fWeights_pr;//! This should be stored in TList
+  TList *fNUAList; //!
+  TH2D **fNUAHist; //!
   Int_t fRunNo; //!
   AliGFWCuts *fMidSelection; //!
   AliGFWCuts *fFWSelection; //!
@@ -81,7 +92,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
-  Bool_t FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
+  Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };

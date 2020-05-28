@@ -1,0 +1,32 @@
+inputs:
+    data:
+        filename: /Users/fabrizio/cernbox/ALICE_WORK/Files/Trains/Run2/LHC18qr/LHC18q/AnalysisResults_PID6080_QvecCalibTPC.root
+        dirname: PWGHF_D2H_SystNsigmaPID_PbPb_6080_kINT7
+        listname: coutputPIDhistos_PbPb_6080_kINT7
+    MC:
+        filename: /Users/fabrizio/cernbox/ALICE_WORK/AnalysisResults.root
+        dirname: PWGHF_D2H_SystNsigmaPID_PbPb_3050_kMB
+        listname: coutputPIDhistos_PbPb_3050_kMB
+
+output:
+    dirname: '.'
+
+binning:
+    bins:
+        var4proj: kP # variable for projection of nSigma distributions (kP or kPt)
+        mins: [0.3, 0.5, 0.75, 1., 1.5, 2., 3., 5.]
+        maxs: [0.5, 0.75, 1., 1.5, 2., 3., 5., 10.]
+    absetabins:
+        mins: [0.0]
+        maxs: [0.8]
+
+PIDstudies:
+    enable: 1 # 0: false, 1: true
+    produceQAplots: 1 # 0: false, 1: true
+    PIDefficiency:
+        nSigma: [3, 2, 1] # nSigma cut values to be tested
+        markersEffMC: [20, 21, 33] # marker styles for efficiency histos
+        markersEffData: [24, 25, 27] # marker styles for efficiency histos
+
+TPCTOFmatching:
+    enable: 1 # 0: false, 1: true

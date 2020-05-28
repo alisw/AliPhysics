@@ -874,7 +874,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",400,-20,20,500,0,1000);
     fOutputList->Add(fVtxZ_V0);
     
-    fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",400,-20,20,250,0,500);
+    fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",400,-20,20,500,0,500);
     fOutputList->Add(fVtxZ_SPD);
     
     fV0_SPD = new TH2F("fV0_SPD","SPD multi vs. V0 ;V0; SPD multiplicity",250,0,500,50,0,100);
@@ -1823,19 +1823,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				//emcal
 				if(cphi<3.9){
 					fEtaPhi_emcal->Fill(cphi,ceta);
-					fECluster_pure_emcal->Fill(clust->E());
-                    
-                    if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
-                    if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
-                    if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
-                    if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
-                    if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
-                    
-                    if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
-                    if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
-                    if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
-                    if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
-                    if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
+                    fECluster_pure_emcal->Fill(clust->E());
                     
 				}
 				
@@ -1844,6 +1832,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					fEtaPhi_dcal->Fill(cphi,ceta);
 					fECluster_pure_dcal->Fill(clust->E());
 				}
+                
+                //emcal+dcal
+                if(fSPDMult_corr>0 && fSPDMult_corr < 10)   fECluster_pure_emcal_SPD1->Fill(clust->E());
+                if(fSPDMult_corr>=10 && fSPDMult_corr < 20) fECluster_pure_emcal_SPD2->Fill(clust->E());
+                if(fSPDMult_corr>=20 && fSPDMult_corr < 30) fECluster_pure_emcal_SPD3->Fill(clust->E());
+                if(fSPDMult_corr>=30 && fSPDMult_corr < 40) fECluster_pure_emcal_SPD4->Fill(clust->E());
+                if(fSPDMult_corr>=40 && fSPDMult_corr < 100) fECluster_pure_emcal_SPD5->Fill(clust->E());
+                
+                if(fV0Mult_corr2>0 && fV0Mult_corr2<100)      fECluster_pure_emcal_V01->Fill(clust->E());
+                if(fV0Mult_corr2>=100 && fV0Mult_corr2<200)   fECluster_pure_emcal_V02->Fill(clust->E());
+                if(fV0Mult_corr2>=200 && fV0Mult_corr2<300)  fECluster_pure_emcal_V03->Fill(clust->E());
+                if(fV0Mult_corr2>=300 && fV0Mult_corr2<400)  fECluster_pure_emcal_V04->Fill(clust->E());
+                if(fV0Mult_corr2>=400 && fV0Mult_corr2<800)  fECluster_pure_emcal_V05->Fill(clust->E());
+                
 
 			}
 			

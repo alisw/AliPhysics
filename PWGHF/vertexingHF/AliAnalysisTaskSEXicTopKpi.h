@@ -121,6 +121,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
   void SetFillOnlyTrackSparse(Bool_t fillonlysparse){fCheckOnlyTrackEfficiency=fillonlysparse;}
   void SetIsCdeuteronAnalysis(Bool_t iscd){fIsCdeuteronAnalysis=iscd;}
+  void SetIsKeepOnlyCdeuteronSignal(Bool_t isSig){fIsKeepOnlyCdeuteronSignal=isSig;}
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
   void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
@@ -130,6 +131,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // Sc peak studies in MC
   void SetStudyScPeakMC(Bool_t flag)  {fStudyScPeakMC=flag;}
+
+  // Change the min pT for the soft pion
+  void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
 
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -183,7 +187,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0,Int_t checkorigin=-1,Int_t decay_channel=0);
   void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
-  void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0);
+  void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0, AliAODMCHeader *mcHeader = 0x0);
   Int_t ConvertXicMCinfo(Int_t infoMC);
   AliAODMCParticle* MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
   AliAODMCParticle* MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
@@ -246,6 +250,19 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1F* fDist23Signal; //!<! histo storing variable for debugging (pt integrted)
   TH1F* fDist23All; //!<! histo storing variable for debugging (pt integrted)
   TH1F *fDist23AllFilter;//!<! histo storing variable for debugging (pt integrted)
+  TH2F *fVtxResXPt; //!<! histo for vertex resolution in X vs pT
+  TH2F *fVtxResYPt; //!<! histo for vertex resolution in Y vs pT
+  TH2F *fVtxResZPt; //!<! histo for vertex resolution in Z vs pT
+  TH2F *fVtxResXYPt; //!<! histo for vertex resolution in XY vs pT
+  TH2F *fVtxResXYZPt; //!<! histo for vertex resolution in XYZ vs pT
+  TH2F *fPrimVtxResXPt; //!<! histo for primary vertex resolution in X vs pT
+  TH2F *fPrimVtxResYPt; //!<! histo for primary vertex resolution in Y vs pT
+  TH2F *fPrimVtxResZPt; //!<! histo for primary vertex resolution in Z vs pT
+  TH2F *fDecayLResXPt; //!<! histo for decay length resolution in X vs pT
+  TH2F *fDecayLResYPt; //!<! histo for decay length resolution in Y vs pT
+  TH2F *fDecayLResZPt; //!<! histo for decay length resolution in Z vs pT
+  TH2F *fDecayLResXYPt; //!<! histo for decay length resolution in XY vs pT
+  TH2F *fDecayLResXYZPt; //!<! histo for decay length resolution in XYZ vs pT
   TH2F *fnSigmaPIDtofProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtofPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtofKaon; //!<! histo for monitoring PID performance
@@ -325,6 +342,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fSigmaCfromLcOnTheFly; /// switch to use on-the-fly Lc or filtered Lc from delta file
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
+  Bool_t fIsKeepOnlyCdeuteronSignal;// flag for keeping only c deuteron signal
   Int_t fNRotations;    // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
   Double_t fMinAngleForRot;//
   Double_t fMaxAngleForRot;//
@@ -338,8 +356,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fStudyScPeakMC;
   THnSparseF* fhsparseMC_ScPeak; //!
 
+  // double to change the min pT for the soft pion
+  Double_t fMinPtSoftPion;  // !
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,11); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,13); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

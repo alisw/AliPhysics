@@ -63,11 +63,14 @@ public:
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
+    void FindMotherWboson(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     
     Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
     void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
     
+    Bool_t SetMC_W(Bool_t Wevt) {flagWevt = Wevt;};
+
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -89,6 +92,8 @@ private:
     Bool_t    fDCalDG1;//DCal Threshold DG1
     Bool_t    fDCalDG2;//DCal Threshold DG2
     
+    Bool_t    flagWevt; // MC for W production
+
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
@@ -120,6 +125,7 @@ private:
     TH2F        *fEvPlaneV0A;//! V0A event plane
     TH2F        *fEvPlaneV0C;//! V0C event plane
     TH2F        *fEvPlaneTPC;//! TPC event plane
+    TH2F        *fVtxZ_all;//!Vertex z
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
@@ -196,6 +202,9 @@ private:
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
+    TH1F        *fHistGeneWboson;//!Invmass of LS
+    TH1F        *fHistGeneWboson_pos;//!Invmass of LS
+    TH1F        *fHistGeneWboson_ele;//!Invmass of LS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
     TH2F        *fHistRawNits;//!
     TH2F        *fHistRawNtpc;//!
@@ -222,6 +231,9 @@ private:
  
     TH2F        *fMCcheckPi0decay;    
     TH2F        *fMCcheckEtadecay;    
+
+    TH1F        *fHistWpos;
+    TH1F        *fHistWele;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

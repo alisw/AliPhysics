@@ -22,6 +22,7 @@
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
+#pragma link C++ class AliAnalysisTaskSpectraDPhi+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskBaseWeights+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
@@ -35,6 +36,7 @@
 #pragma link C++ class AliAnalysisTaskSpectraV0M+;
 #pragma link C++ class AliAnalysisTaskFilterEventTPCdEdx+;
 #pragma link C++ class AliAnalysisTaskSpectraTrackCuts+;
+#pragma link C++ class AliAnalysisTaskCutStudies+;
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
@@ -50,6 +52,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsRT+;
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisTaskSpectraRT+;
+#pragma link C++ class AliAnalysisTaskSpectraMC+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;

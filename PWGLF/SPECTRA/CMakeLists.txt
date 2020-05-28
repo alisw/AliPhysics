@@ -70,12 +70,14 @@ set(SRCS
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraTrackCuts.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
   ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraDPhi.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
@@ -85,6 +87,7 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx

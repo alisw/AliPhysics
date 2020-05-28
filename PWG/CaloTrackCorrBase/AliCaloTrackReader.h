@@ -48,6 +48,8 @@ class AliESDtrackCuts;
 class AliEventplane;
 class AliVCluster;
 #include "AliLog.h"
+#include "AliEventCuts.h"
+//#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 // --- CaloTrackCorr / EMCAL ---
 #include "AliFiducialCut.h"
@@ -95,9 +97,33 @@ public:
   
   virtual void    SetInputEvent(AliVEvent* input) ;
   virtual void    SetOutputEvent(AliAODEvent*  aod)        { fOutputEvent = aod            ; }
-  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
+  virtual void    SetMC(AliMCEvent* mc) ;           
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
+  //
+  // Embedded events
+  //
+  /// Reject clusters without MC label (reject background)
+  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
+  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
+  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
+  
+  /// Use as input for the analysis the MCEvent() or the InputEvent() from embedded MC signal.
+  /// \param useMCEvt: recover not the standard MCEvent() but an external MC embedded event
+  /// \param useInputEvt: recover not the standard InputEvent() but an external embedded input event
+  void         UseEmbeddedEvent(Bool_t useMCEvt, Bool_t useInputEvt) { 
+    fEmbeddedEvent[0] = useMCEvt ; fEmbeddedEvent[1] = useInputEvt ; }
+
+  Bool_t        IsEmbeddedMCEventUsed   () { return fEmbeddedEvent[0] ; }
+  Bool_t        IsEmbeddedInputEventUsed() { return fEmbeddedEvent[1] ; }
+  
+//  AliVCaloCells * GetEMCALCellsExternalEvent() { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetEMCALCells() ; }
+//  AliVCluster   * GetCaloClusterExternalEvent(Int_t icluster) { 
+//    return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetCaloCluster(icluster) ; }
+//  Int_t           GetNumberOfCaloClustersExternalEvent() { 
+//     return AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->GetNumberOfCaloClusters() ; }
+//  
   // Delta AODs
   
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
@@ -273,10 +299,6 @@ public:
   void             SwitchOffClusterEScalePerSMCorrection() { fScaleEPerSM = kFALSE         ; }
   void             SetScaleFactorPerSM(Int_t ism, Float_t factor)          
                                                            { if ( ism < 22 && ism >= 0 ) fScaleFactorPerSM[ism] = factor ; }
-   
-  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
-  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
-  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
 
   // Shower shape smearing function
   
@@ -295,8 +317,9 @@ public:
   
   virtual Bool_t   FillInputEvent(Int_t iEntry, const char *currentFileName)  ;
   virtual void     FillInputCTS() ;
+  virtual void     FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack, Bool_t & bc0) ;
   virtual void     FillInputEMCAL() ;
-  virtual void     FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus) ;
+  virtual void     FillInputEMCALSelectCluster(AliVCluster * clus, Int_t iclus) ;
   virtual void     FillInputPHOS() ;
   virtual void     FillInputEMCALCells() ;
   virtual void     FillInputPHOSCells() ;
@@ -376,7 +399,7 @@ public:
   UInt_t           GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
   void             SetMixEventTriggerMask(UInt_t evtTrig = AliVEvent::kAnyINT)
                                                            { fMixEventTriggerMask = evtTrig  ; }
-	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
+  Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
   void             SwitchOffEventTriggerAtSE()             { fEventTriggerAtSE      = kFALSE ; }
 		
@@ -424,19 +447,29 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-	void             SetEventTriggerBit();
-	Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
-	Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
-	Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
-	Bool_t           IsEventEMCALL0()                  const { return fEventTrigEMCALL0        ; }
-	Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
-	Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
-	Bool_t           IsEventEMCALL1Jet1()              const { return fEventTrigEMCALL1Jet1    ; }
-	Bool_t           IsEventEMCALL1Jet2()              const { return fEventTrigEMCALL1Jet2    ; }
-	Bool_t           IsEventEMCALL1Gamma()             const { return (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma2) ; }
-  Bool_t           IsEventEMCALL1Jet()               const { return (fEventTrigEMCALL1Jet1   || fEventTrigEMCALL1Jet2  ) ; }
-	Bool_t           IsEventEMCALL1()                  const { return (IsEventEMCALL1Gamma()   || IsEventEMCALL1Jet()    ) ; }
+  void             SetEventTriggerBit();
+  Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
+  Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
+  Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
 	
+  Bool_t           IsEventEMCALL0()                  const { return fEventTrigEMCALL0        ; }
+  Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
+  Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
+  Bool_t           IsEventEMCALL1Jet1()              const { return fEventTrigEMCALL1Jet1    ; }
+  Bool_t           IsEventEMCALL1Jet2()              const { return fEventTrigEMCALL1Jet2    ; }
+  Bool_t           IsEventEMCALL1Gamma()             const { return (fEventTrigEMCALL1Gamma1 || fEventTrigEMCALL1Gamma2) ; }
+  Bool_t           IsEventEMCALL1Jet()               const { return (fEventTrigEMCALL1Jet1   || fEventTrigEMCALL1Jet2  ) ; }
+  Bool_t           IsEventEMCALL1()                  const { return (IsEventEMCALL1Gamma()   || IsEventEMCALL1Jet()    ) ; }
+  
+  Bool_t           IsEventDCALL0()                   const { return fEventTrigDCALL0        ; }
+  Bool_t           IsEventDCALL1Gamma1()             const { return fEventTrigDCALL1Gamma1  ; }
+  Bool_t           IsEventDCALL1Gamma2()             const { return fEventTrigDCALL1Gamma2  ; }
+  Bool_t           IsEventDCALL1Jet1()               const { return fEventTrigDCALL1Jet1    ; }
+  Bool_t           IsEventDCALL1Jet2()               const { return fEventTrigDCALL1Jet2    ; }
+  Bool_t           IsEventDCALL1Gamma()              const { return (fEventTrigDCALL1Gamma1 || fEventTrigDCALL1Gamma2) ; }
+  Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
+  Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
+  
   void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
   void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
@@ -462,6 +495,9 @@ public:
   void             SwitchOffRejectNoTrackEvents()          { fDoRejectNoTrackEvents = kFALSE ; }
   Bool_t           IsEventWithNoTrackRejectionDone() const { return fDoRejectNoTrackEvents   ; }
 
+  void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
+  AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
+  
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -755,8 +791,6 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
-  
-  
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -874,6 +908,9 @@ public:
   AliAODEvent    * fOutputEvent;                   //!<! pointer to aod output.
   AliMCEvent     * fMC;                            //!<! Monte Carlo Event Handler.  
 
+  Bool_t           fEmbeddedEvent[2];              ///< Data and MC events embedded with AliAnalysisTaskEmcalEmbeddingHelper
+  Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
+
   Bool_t           fFillCTS;                       ///<  Use data from CTS.
   Bool_t           fFillEMCAL;                     ///<  Use data from EMCAL.
   Bool_t           fFillDCAL;                      ///<  Use data from DCAL, not needed in the normal case, use just EMCal array with DCal limits.
@@ -882,7 +919,6 @@ public:
   Bool_t           fFillPHOSCells;                 ///<  Use data from PHOS.
   Bool_t           fRecalculateClusters;           ///<  Correct clusters, recalculate them if recalibration parameters is given.
   Bool_t           fCorrectELinearity;             ///<  Correct cluster linearity, always on.
-  Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
   
   Bool_t           fScaleEPerSM ;                  ///<  Scale cluster energy by a constant factor, depending on SM 
   Float_t          fScaleFactorPerSM[22];          ///<  Scale factor depending on SM number to be applied to cluster energy
@@ -916,11 +952,16 @@ public:
   Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
   Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
   Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
-  Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
-  Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
-  Bool_t           fEventTrigEMCALL1Jet1 ;         ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
-  Bool_t           fEventTrigEMCALL1Jet2 ;         ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
-	
+  Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Jet1 ;         ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigEMCALL1Jet2 ;         ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+	Bool_t           fEventTrigDCALL0 ;              ///<  Event is DCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
+  Bool_t           fEventTrigDCALL1Gamma1 ;        ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigDCALL1Gamma2 ;        ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigDCALL1Jet1 ;          ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
+  Bool_t           fEventTrigDCALL1Jet2 ;          ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  
   Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
   Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
 	
@@ -937,6 +978,9 @@ public:
   AliMixedEvent  * fMixedEvent  ;                  //!<! Mixed event object. This class is not the owner.
   Int_t            fNMixedEvent ;                  ///<  Number of events in mixed event buffer.
   Double_t      ** fVertex      ;                  //!<! Vertex array 3 dim for each mixed event buffer.
+  
+  AliEventCuts     fEventCuts;                     ///< Event selection utility
+  Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
@@ -1046,11 +1090,11 @@ public:
   TArrayI          fAcceptEventsWithBit;           ///<  Accept events if trigger bit is on.
   TArrayI          fRejectEventsWithBit;           ///<  Reject events if trigger bit is on.
 
-  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1.
+  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events L1 high threshold events also triggered by low threshold.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 
-  //handle runs affected by PAR
+  // Handle runs affected by PAR
   Bool_t           fParRun;                        ///<  Flag set true when run affected by PAR
   Short_t          fCurrentParIndex;               //!<! temporal PAR number based on event global to get L1 phase correction in PAR runs
   
@@ -1059,6 +1103,7 @@ public:
   TList *          fOutputContainer;               //!<! Output container with cut control histograms.
   TH2F  *          fhEMCALClusterEtaPhi;           //!<! Control histogram on EMCAL clusters acceptance, before fiducial cuts
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
+  TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
   TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
@@ -1093,7 +1138,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,86) ;
+  ClassDef(AliCaloTrackReader,88) ;
   /// \endcond
 
 } ;

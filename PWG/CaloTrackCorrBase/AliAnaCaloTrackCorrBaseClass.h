@@ -197,10 +197,22 @@ public:
   virtual void           SwitchOnFillPileUpHistograms()          { fFillPileUpHistograms = kTRUE ; }
   virtual void           SwitchOffFillPileUpHistograms()         { fFillPileUpHistograms = kFALSE; }
   
+  virtual Bool_t         IsEmbedingAnalysisOn()            const { return fFillEmbedHistograms   ; }
+  virtual void           SwitchOnFillEmbededSignalHistograms()   { fFillEmbedHistograms = kTRUE  ; }
+  virtual void           SwitchOffFillEmbededSignalHistograms()  { fFillEmbedHistograms = kFALSE ; }
+  
+  virtual Bool_t         SelectEmbededSignal()             const { return fSelectEmbededSignal   ; }
+  virtual void           SwitchOnEmbededSignalSelection()        { fSelectEmbededSignal = kTRUE  ; }
+  virtual void           SwitchOffEmbededSignalSelection()       { fSelectEmbededSignal = kFALSE ; }
+  
   virtual Bool_t         IsHighMultiplicityAnalysisOn()     const { return fFillHighMultHistograms   ; }
   virtual void           SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
   virtual void           SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
-
+  
+  virtual Bool_t         IsGeneratedParticlesAnalysisOn()  const { return fFillGenPartHisto  ; }
+  virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
+  virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
+  
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -415,8 +427,11 @@ private:
   Int_t                      fTrackMultBins[20];   ///< Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
   Bool_t                     fFillPileUpHistograms;   ///< Fill pile-up related histograms.
   Bool_t                     fFillHighMultHistograms; ///< Histograms with centrality and event plane for triggers pT.
+  Bool_t                     fFillGenPartHisto;    ///< Fill primary generated particles histograms
   Bool_t                     fMakePlots   ;        ///< Print plots.
-    
+  Bool_t                     fFillEmbedHistograms ; ///< Fill histograms for embeded signals
+  Bool_t                     fSelectEmbededSignal ; ///< Select clusters/tracks in analysis only from embedded signal
+      
   TClonesArray*              fInputAODBranch ;     //!<! Selected input particles branch.
   TString                    fInputAODName ;       ///<  Name of input AOD branch.
   TClonesArray*              fOutputAODBranch ;    //!<! Selected output particles branch.
@@ -448,7 +463,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,30) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,32) ;
   /// \endcond
 
 } ;

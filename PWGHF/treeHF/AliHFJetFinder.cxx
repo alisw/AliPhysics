@@ -361,6 +361,8 @@ void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet:
   hfjet.fPt=jet.perp();
   hfjet.fEta=jet.pseudorapidity();
   hfjet.fPhi=jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
+  hfjet.fLeadingPt=sorted_constituents[0].perp();
   if (cand) hfjet.fDeltaEta=jet.pseudorapidity()-cand->Eta();
   else hfjet.fDeltaEta=-99;
   if (cand) hfjet.fDeltaPhi=RelativePhi(jet.phi(),cand->Phi());
@@ -368,7 +370,24 @@ void AliHFJetFinder::SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet:
   if (cand) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
   else hfjet.fDeltaR=-99;
   hfjet.fN=constituents.size();
-
+  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
+  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
+  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  Double_t Px_Cand;
+  Double_t Py_Cand;
+  Double_t Pz_Cand;
+  if(cand){
+    Px_Cand=cand->Pt()*TMath::Cos(cand->Phi());
+    Py_Cand=cand->Pt()*TMath::Sin(cand->Phi());
+    Pz_Cand=cand->Pt()*TMath::SinH(cand->Eta());
+  }
+  else{
+    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
+  }
+  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
+  
   if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,constituents);
   
 }
@@ -384,6 +403,8 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
   hfjet.fPt=jet.perp();
   hfjet.fEta=jet.pseudorapidity();
   hfjet.fPhi=jet.phi();
+  std::vector<fastjet::PseudoJet> sorted_constituents=sorted_by_pt(constituents);
+  hfjet.fLeadingPt=sorted_constituents[0].perp();
   if (mcpart) hfjet.fDeltaEta=jet.pseudorapidity()-mcpart->Eta();
   else hfjet.fDeltaEta=-99;
   if (mcpart) hfjet.fDeltaPhi=RelativePhi(jet.phi(),mcpart->Phi());
@@ -391,6 +412,23 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
   if (mcpart) hfjet.fDeltaR=TMath::Sqrt(hfjet.fDeltaEta*hfjet.fDeltaEta + hfjet.fDeltaPhi*hfjet.fDeltaPhi);
   else hfjet.fDeltaR=-99;
   hfjet.fN=constituents.size();
+  Double_t Px_Jet=jet.perp()*TMath::Cos(jet.phi());
+  Double_t Py_Jet=jet.perp()*TMath::Sin(jet.phi());
+  Double_t Pz_Jet=jet.perp()*TMath::SinH(jet.eta());
+  Double_t Px_Cand;
+  Double_t Py_Cand;
+  Double_t Pz_Cand;
+  if(mcpart){
+    Px_Cand=mcpart->Pt()*TMath::Cos(mcpart->Phi());
+    Py_Cand=mcpart->Pt()*TMath::Sin(mcpart->Phi());
+    Pz_Cand=mcpart->Pt()*TMath::SinH(mcpart->Eta());
+  }
+  else{
+    Px_Cand=sorted_constituents[0].perp()*TMath::Cos(sorted_constituents[0].phi());
+    Py_Cand=sorted_constituents[0].perp()*TMath::Sin(sorted_constituents[0].phi());
+    Pz_Cand=sorted_constituents[0].perp()*TMath::SinH(sorted_constituents[0].eta());
+  }
+  hfjet.fZ= (Px_Jet*Px_Cand + Py_Jet*Py_Cand + Pz_Jet*Pz_Cand)/(Px_Jet*Px_Jet + Py_Jet*Py_Jet + Pz_Jet*Pz_Jet);
 
   if (fDoJetSubstructure) SetJetSubstructureVariables(hfjet,constituents);
   
@@ -404,14 +442,15 @@ void AliHFJetFinder::SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastje
 void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents) {
 
   Bool_t softdropped=kFALSE;
-  Float_t zg=0.0;
-  Float_t rg=0.0;
+  Float_t Pt_jet=0.0;
+  Float_t z=0.0;
+  Float_t r=0.0;
   Float_t Nsd=0.0;
-  Float_t Pt_mother=0.0;
-  Float_t k0=0.0, k0_temp=0.0;
-  Float_t k1=0.0, k1_temp=0.0;
-  Float_t k2=0.0, k2_temp=0.0;
-  Float_t kT=0.0, kT_temp=0.0;
+  Float_t Pt_splitting=0.0;
+  Float_t k0=0.0, k0_temp=0.0, Zk0=0.0, Rk0=0.0;
+  Float_t k1=0.0, k1_temp=0.0, Zk1=0.0, Rk1=0.0;
+  Float_t k2=0.0, k2_temp=0.0, Zk2=0.0, Rk2=0.0;
+  Float_t kT=0.0, kT_temp=0.0, ZkT=0.0, RkT=0.0;
 
   if (fSubJetRadius==0.0) fSubJetRadius=fJetRadius*2.5;
 
@@ -427,39 +466,66 @@ void AliHFJetFinder::SetJetSubstructureVariables(AliHFJet& hfjet, const std::vec
     fastjet::PseudoJet daughter_jet = reclustered_jet[0];
     fastjet::PseudoJet parent_subjet_1; 
     fastjet::PseudoJet parent_subjet_2;
+    Pt_jet=daughter_jet.perp();
 
     while(daughter_jet.has_parents(parent_subjet_1,parent_subjet_2)){
       if(parent_subjet_1.perp() < parent_subjet_2.perp()) std::swap(parent_subjet_1,parent_subjet_2);
-      zg=parent_subjet_2.perp()/(parent_subjet_1.perp()+parent_subjet_2.perp());
-      rg=parent_subjet_1.delta_R(parent_subjet_2);
-      Pt_mother=daughter_jet.perp();
+      Pt_splitting=parent_subjet_1.perp()+parent_subjet_2.perp();
+      z=parent_subjet_2.perp()/(Pt_splitting);
+      r=parent_subjet_1.delta_R(parent_subjet_2);
 
-      if (zg >= fSoftDropZCut*TMath::Power(rg/fJetRadius,fSoftDropBeta)){
+      if (z >= fSoftDropZCut*TMath::Power(r/fJetRadius,fSoftDropBeta)){
 	if(!softdropped){
-	  hfjet.fZg = zg;
-	  hfjet.fRg = rg;
-	  hfjet.fPt_mother = Pt_mother;
+	  hfjet.fZg = z;
+	  hfjet.fRg = r;
+	  hfjet.fPt_splitting = Pt_splitting;
 	  softdropped=kTRUE;
 	}
 	Nsd++;
       }
-      k0_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,0.1);
-      k1_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,1);
-      k2_temp=zg*(1-zg)*TMath::Power(rg/fJetRadius,2);
-      kT_temp=zg*Pt_mother*TMath::Sin(rg);
-      if (k0_temp > k0) k0=k0_temp;
-      if (k1_temp > k1) k1=k1_temp;
-      if (k2_temp > k2) k2=k2_temp;
-      if (kT_temp > kT) kT=kT_temp;
+      if (Pt_jet > 0.0){
+	k0_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,0.1);
+	k1_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,1);
+	k2_temp=(1.0/Pt_jet)*z*(1-z)*Pt_splitting*TMath::Power(r/fJetRadius,2);
+	kT_temp=z*Pt_splitting*TMath::Sin(r);
+	if (k0_temp > k0){
+	  k0=k0_temp;
+	  Zk0 = z;
+	  Rk0 = r;
+	}
+	if (k1_temp > k1){
+	  k1=k1_temp;
+	  Zk1 = z;
+	  Rk1 = r;
+	}
+	if (k2_temp > k2){
+	  k2=k2_temp;
+	  Zk2 = z;
+	  Rk2 = r;
+	}
+	if (kT_temp > kT){
+	  kT=kT_temp;
+	  ZkT = z;
+	  RkT = r;
+	}
+      }
       
       daughter_jet=parent_subjet_1;
     }
     if (constituents.size() > 1){
       hfjet.fNsd = Nsd;
       hfjet.fk0=k0;
+      hfjet.fZk0=Zk0;
+      hfjet.fRk0=Rk0;
       hfjet.fk1=k1;
+      hfjet.fZk1=Zk1;
+      hfjet.fRk1=Rk1;
       hfjet.fk2=k2;
+      hfjet.fZk2=Zk2;
+      hfjet.fRk2=Rk2;
       hfjet.fkT=kT;
+      hfjet.fZkT=ZkT;
+      hfjet.fRkT=RkT;
     }
 
          

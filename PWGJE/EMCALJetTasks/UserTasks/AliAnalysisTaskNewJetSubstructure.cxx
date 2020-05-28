@@ -91,7 +91,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
 {
   // Standard constructor.
   for (Int_t i = 0; i < 18; i++) {
-    fShapesVar[i] = 0;
+    fShapesVar[i] = -1;
   }
   fShapesVar[18]  =  -1;
   fShapesVar[19]  =  -1;
@@ -191,7 +191,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fShapesVarNames[9] = "rgMatch";
   fShapesVarNames[10] = "LeadingTrackPt";
   fShapesVarNames[11] = "LeadingTrackPtMatch";
-  if (fDoSubJet) fStoreDetLevelJets = true;
+  //  if (fDoSubJet) fStoreDetLevelJets = true;
   if (fStoreDetLevelJets) {
     fShapesVarNames[12] = "ptJetDet";
     fShapesVarNames[13] = "ktgDet";
@@ -201,8 +201,16 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     fShapesVarNames[17] = "LeadingTrackPtDet";
   }
   if (fDoSubJet){
-    fShapesVarNames[18] = "subjet1";
-    fShapesVarNames[19] = "subjet2";
+    if (fJetShapeType == kDetEmbPartPythia)
+      {
+	fShapesVarNames[18] = "subjet1";
+	fShapesVarNames[19] = "subjet2";
+      }
+    if (fJetShapeType == kPythiaDef)
+      {
+	fShapesVarNames[12] = "subjet1";
+        fShapesVarNames[13] = "subjet2";
+      }
   }
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
@@ -430,7 +438,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
       
-      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet3->MaxTrackPt()) continue;
+      if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet2->MaxTrackPt()) continue;
 
       fastjet::PseudoJet *sub1Hyb=new fastjet::PseudoJet();
       fastjet::PseudoJet *sub2Hyb=new fastjet::PseudoJet();
@@ -472,8 +480,8 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           kMatched = 3;
 
         ptMatch = jet3->Pt();
-        leadTrackMatch = jet3->MaxTrackPt();
-        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Hyb, const2Hyb);
+	leadTrackMatch = jet3->MaxTrackPt();
+        IterativeParentsMCAverage(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Det, const2Det);
         ktgMatch = aver1;
         nsdMatch = aver2;
         zgMatch = aver3;
@@ -524,21 +532,34 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
         fShapesVar[16] = rgDet;
         fShapesVar[17] = leadTrackDet;
       }
+
       if (fDoSubJet)
 	{
-	  if ((nsdDet != 0) && (fShapesVar[2] != 0))
+	  int nSDsub = -1;
+	  if (fJetShapeType == kDetEmbPartPythia) nSDsub = nsdDet;	  	  
+	  else if(fJetShapeType == kPythiaDef) nSDsub = nsdMatch;
+	  if ((nSDsub != 0) && (fShapesVar[2] != 0))
 	    {
 	      if (CompareSubjets(sub1Det, sub1Hyb, const1Det, const1Hyb)) sub1 = 1;
 	      else if (CompareSubjets(sub1Det, sub2Hyb, const1Det, const2Hyb)) sub1 = 2;
 	      else sub1 = 3;
-	      if (CompareSubjets(sub2Det, sub1Hyb, const2Det, const1Hyb)) sub2 = 1;
-	      else if (CompareSubjets(sub2Det, sub2Hyb, const2Det, const2Hyb)) sub2 = 2;
+	      if (CompareSubjets(sub2Det, sub2Hyb, const2Det, const2Hyb)) sub2 = 2;
+	      else if (CompareSubjets(sub2Det, sub1Hyb, const2Det, const1Hyb)) sub2 = 1;
 	      else sub2 = 3;
 	    }
 	  else if (fShapesVar[2]  != 0) {sub1 = 0; sub2 = 0;}	      
-	  fShapesVar[18] = sub1;
-	  fShapesVar[19] = sub2;
+	  if (fJetShapeType == kDetEmbPartPythia) 
+	    {
+	      fShapesVar[18] = sub1;
+	      fShapesVar[19] = sub2;
+	    }
+	  else if(fJetShapeType == kPythiaDef)
+	    {
+	      fShapesVar[12] = sub1;
+              fShapesVar[13] = sub2;
+	    }   
 	}
+
 
       fTreeSubstructure->Fill();
       delete sub1Det;
@@ -634,28 +655,27 @@ Double_t AliAnalysisTaskNewJetSubstructure::RelativePhi(Double_t mphi,
 //_________________________________________________________________________                                                                               
 Bool_t AliAnalysisTaskNewJetSubstructure::CompareSubjets(fastjet::PseudoJet *subDet,  fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb)
 {
-  float pT_det = subDet->pt();
-  float sumpT = 0;
-  float delta =  0.001;
+  double pT_det = subDet->pt();
+  double sumpT = 0;
+  double delta =  0.01;
 
   for (int i = 0; i < constDet->size(); i++)
       {
-	float eta_det = constDet->at(i).eta();
-	float phi_det = constDet->at(i).phi();
+	double eta_det = constDet->at(i).eta();
+	double phi_det = constDet->at(i).phi();
 	for (int j  = 0; j < constHyb->size(); j++)
 	  {
-	    float eta_hyb = constHyb->at(j).eta();
-	    float phi_hyb = constHyb->at(j).phi();
-	    float deta = eta_hyb - eta_det;
+	    double eta_hyb = constHyb->at(j).eta();
+	    double phi_hyb = constHyb->at(j).phi();
+	    double deta = eta_hyb - eta_det;
 	    deta = std::sqrt(deta*deta);
 	    if (deta > delta) continue;
-	    float dphi = phi_hyb - phi_det;
+	    double dphi = phi_hyb - phi_det;
 	    dphi = std::sqrt(dphi*dphi);
 	    if (dphi > delta) continue;
 	    sumpT+=constDet->at(i).pt();
 	  }
       }
-
   if (sumpT/pT_det > 0.5) return true;
   else return false;
 }
@@ -778,14 +798,22 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
-  unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
-    if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part))
-      continue;
-    PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+ 
+
+   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+
+  if (fTrackCont)
+    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;
+
+      //if (fDoTwoTrack == kTRUE && CheckClosePartner(fJet, part)) continue;
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
+    
+   
     fInputVectors.push_back(PseudoTracks);
-    constituentIndex++;
+   
   }
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
   fastjet::JetDefinition fJetDef(jetalgo, 1.,
@@ -884,12 +912,28 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet PseudoTracks;
-  unsigned int constituentIndex = 0;
-  for (auto part: fJet->GetParticleConstituents()) {
-    PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
-    PseudoTracks.set_user_index(constituentIndex);
+
+     AliParticleContainer *fTrackCont = jetCont->GetParticleContainer();
+
+  if (fTrackCont)
+    for (Int_t i = 0; i < fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue;
+
+    
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(), fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i) + 100);
+    
+   
     fInputVectors.push_back(PseudoTracks);
+   
   }
+
+
+
+
+
+  
   fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
   fastjet::JetDefinition fJetDef(jetalgo, 1.,
