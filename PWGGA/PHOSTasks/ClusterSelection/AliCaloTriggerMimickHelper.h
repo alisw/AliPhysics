@@ -4,7 +4,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "TChain.h"
 #include "AliPHOSGeometry.h"
-#include "../PHOSTasks/ClusterSelection/AliPHOSTriggerUtils.h"
+#include "AliPHOSTriggerUtils.h"
 #include <iostream>
 
 class AliPHOSTriggerUtils;

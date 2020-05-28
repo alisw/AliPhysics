@@ -23,7 +23,6 @@
 #pragma link C++ class AliDalitzElectronCuts+;
 #pragma link C++ class AliDalitzElectronSelector+;
 #pragma link C++ class AliCaloTrackMatcher+;
-#pragma link C++ class AliCaloTriggerMimickHelper+;
 #pragma link C++ class AliPhotonIsolation+;
 
 

@@ -70,6 +70,7 @@ set(SRCS
     CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
     CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
+    ClusterSelection/AliCaloTriggerMimickHelper.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx

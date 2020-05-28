@@ -44,7 +44,6 @@ set(SRCS
     AliAODConversionPhoton.cxx
     AliCaloPhotonCuts.cxx
     AliCaloTrackMatcher.cxx
-    AliCaloTriggerMimickHelper.cxx
     AliConversionAODBGHandlerRP.cxx
     AliConversionCuts.cxx
     AliConversionMesonCuts.cxx

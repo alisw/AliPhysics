@@ -202,7 +202,6 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameHistoReweightingMultMC(""),
   hReweightMultData(NULL),
   hReweightMultMC(NULL),
-  fPHOSTrigUtils(0x0),
   fPHOSTrigger(kPHOSAny),
   fDebugLevel(0)
 {
@@ -338,7 +337,6 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameHistoReweightingMultMC(ref.fNameHistoReweightingMultMC),
   hReweightMultData(ref.hReweightMultData),
   hReweightMultMC(ref.hReweightMultMC),
-  fPHOSTrigUtils(0x0),
   fPHOSTrigger(kPHOSAny),
   fDebugLevel(ref.fDebugLevel)
 {

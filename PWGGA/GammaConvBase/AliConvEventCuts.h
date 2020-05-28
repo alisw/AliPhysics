@@ -33,6 +33,7 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
+class AliCaloTriggerMimickHelper;
 
 /**
  * @class AliConvEventCuts
@@ -765,7 +766,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingMultMC;            ///< Histogram name for reweighting Eta
       TH1D*                       hReweightMultData;                      ///< histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
-      AliPHOSTriggerUtils *       fPHOSTrigUtils ;                        //! utils to analyze PHOS trigger
       phosTriggerType             fPHOSTrigger;                           // Kind of PHOS trigger: L0,L1
       Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:

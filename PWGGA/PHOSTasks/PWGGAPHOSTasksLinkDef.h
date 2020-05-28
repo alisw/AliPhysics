@@ -6,6 +6,7 @@
 
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
+#pragma link C++ class AliCaloTriggerMimickHelper+;
 
 // CorrectionFW
 #pragma link C++ class AliPHOSCorrectionFW+;
