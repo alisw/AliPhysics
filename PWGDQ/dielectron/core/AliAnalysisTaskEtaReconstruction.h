@@ -320,8 +320,10 @@ private:
   TList* fPairList;
   TList* fFourPairList_PrimSec;
   TList* fFourPairList_SecSec;
-  TList* fGeneratedFourPairsList;
-  TList* fGeneratedSmearedFourPairsList;
+  TList* fGeneratedFourPairsList_PrimSec;
+  TList* fGeneratedFourPairsList_SecSec;
+  TList* fGeneratedSmearedFourPairsList_PrimSec;
+  TList* fGeneratedSmearedFourPairsList_SecSec;
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
@@ -450,8 +452,10 @@ private:
   std::vector<TH2D*> fHistGenSmearedSecondaryPair;
   std::vector<TH2D*> fHistRecPrimaryPair;
   std::vector<TH2D*> fHistRecSecondaryPair;
-  std::vector<TH2D*> fHistGenFourPair;
-  std::vector<TH2D*> fHistGenSmearedFourPair;
+  std::vector<TH2D*> fHistGenFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenFourPair_SecSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_SecSec;
   std::vector<TH2D*> fHistRecFourPair_PrimSec;
   std::vector<TH2D*> fHistRecFourPair_SecSec;
 

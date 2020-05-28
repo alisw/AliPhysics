@@ -84,7 +84,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fdebug(false), run1analysis()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fGeneratedPrimaryList(0x0), fGeneratedSecondaryList(0x0), fGeneratedSmearedPrimaryList(0x0), fGeneratedSmearedSecondaryList(0x0), fRecPrimaryList(0x0), fRecSecondaryList(0x0)
-                                                                              , fGeneratedPrimaryPairsList(0x0), fGeneratedSecondaryPairsList(0x0), fGeneratedSmearedPrimaryPairsList(0x0), fGeneratedSmearedSecondaryPairsList(0x0), fPairList(0x0), fFourPairList_PrimSec(0x0), fFourPairList_SecSec(0x0), fGeneratedFourPairsList(0x0), fGeneratedSmearedFourPairsList(0x0), fResolutionList(0x0)
+                                                                              , fGeneratedPrimaryPairsList(0x0), fGeneratedSecondaryPairsList(0x0), fGeneratedSmearedPrimaryPairsList(0x0), fGeneratedSmearedSecondaryPairsList(0x0), fPairList(0x0), fFourPairList_PrimSec(0x0), fFourPairList_SecSec(0x0), fGeneratedFourPairsList_PrimSec(0x0), fGeneratedFourPairsList_SecSec(0x0), fGeneratedSmearedFourPairsList_PrimSec(0x0), fGeneratedSmearedFourPairsList_SecSec(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
                                                                               , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
@@ -102,7 +102,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(): AliAnalysi
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0), fTrackCutListVecPrim(), fTrackCutListVecSec(), fPairCutListVecSec(), fFourPairCutListVec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair_PrimSec(), fHistGenFourPair_SecSec(), fHistGenSmearedFourPair_PrimSec(), fHistGenSmearedFourPair_SecSec(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
                                                                               , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
@@ -120,7 +120,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fdebug(false), run1analysis()
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fGeneratedPrimaryList(0x0), fGeneratedSecondaryList(0x0), fGeneratedSmearedPrimaryList(0x0), fGeneratedSmearedSecondaryList(0x0), fRecPrimaryList(0x0), fRecSecondaryList(0x0)
-                                                                              , fGeneratedPrimaryPairsList(0x0), fGeneratedSecondaryPairsList(0x0), fGeneratedSmearedPrimaryPairsList(0x0), fGeneratedSmearedSecondaryPairsList(0x0), fPairList(0x0), fFourPairList_PrimSec(0x0), fFourPairList_SecSec(0x0), fGeneratedFourPairsList(0x0), fGeneratedSmearedFourPairsList(0x0), fResolutionList(0x0)
+                                                                              , fGeneratedPrimaryPairsList(0x0), fGeneratedSecondaryPairsList(0x0), fGeneratedSmearedPrimaryPairsList(0x0), fGeneratedSmearedSecondaryPairsList(0x0), fPairList(0x0), fFourPairList_PrimSec(0x0), fFourPairList_SecSec(0x0), fGeneratedFourPairsList_PrimSec(0x0), fGeneratedFourPairsList_SecSec(0x0), fGeneratedSmearedFourPairsList_PrimSec(0x0), fGeneratedSmearedFourPairsList_SecSec(0x0), fResolutionList(0x0)
                                                                               , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
                                                                               , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
@@ -138,7 +138,7 @@ AliAnalysisTaskEtaReconstruction::AliAnalysisTaskEtaReconstruction(const char * 
                                                                               , fMinCentrality(0.), fMaxCentrality(100), fCentralityFile(0x0), fCentralityFilename(""), fHistCentralityCorrection(0x0)
                                                                               , fOutputListSupportHistos(0x0), fTrackCutListVecPrim(), fTrackCutListVecSec(), fPairCutListVecSec(), fFourPairCutListVec()
                                                                               , fHistGenPrimaryPosPart(), fHistGenPrimaryNegPart(), fHistGenSecondaryPosPart(), fHistGenSecondaryNegPart(), fHistGenSmearedPrimaryPosPart(), fHistGenSmearedPrimaryNegPart(), fHistGenSmearedSecondaryPosPart(), fHistGenSmearedSecondaryNegPart(), fHistRecPrimaryPosPart(), fHistRecPrimaryNegPart(), fHistRecSecondaryPosPart(), fHistRecSecondaryNegPart()
-                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair(), fHistGenSmearedFourPair(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
+                                                                              , fHistGenPrimaryPair(), fHistGenSecondaryPair(), fHistGenSmearedPrimaryPair(), fHistGenSmearedSecondaryPair(), fHistRecPrimaryPair(), fHistRecSecondaryPair(), fHistGenFourPair_PrimSec(), fHistGenFourPair_SecSec(), fHistGenSmearedFourPair_PrimSec(), fHistGenSmearedFourPair_SecSec(), fHistRecFourPair_PrimSec(), fHistRecFourPair_SecSec(), fVecHistPrefilters()
                                                                               , fWriteLegsFromPair(false), fPtMinLegsFromPair(-99.), fPtMaxLegsFromPair(-99.), fEtaMinLegsFromPair(-99.), fEtaMaxLegsFromPair(-99.), fPhiMinLegsFromPair(-99.), fPhiMaxLegsFromPair(-99.), fOpAngleMinLegsFromPair(-99.), fOpAngleMaxLegsFromPair(-99.), fPtNBinsLegsFromPair(-99), fEtaNBinsLegsFromPair(-99), fPhiNBinsLegsFromPair(-99), fOpAngleNBinsLegsFromPair(-99), fTHnSparseGenSmearedLegsFromPrimaryPair(), fTHnSparseGenSmearedLegsFromSecondaryPair(), fTHnSparseRecLegsFromPrimaryPair(), fTHnSparseRecLegsFromSecondaryPair()
                                                                               , fDoPairing(false), fDoFourPairing(false), fUsePreFilter(false), fUseSecPreFilter(false), fDoMassCut(), fPhotonMass()
                                                                               , fGenNegPart_primary(), fGenPosPart_primary(), fGenNegPart_secondary(), fGenPosPart_secondary(), fGenSmearedNegPart_primary(), fGenSmearedPosPart_primary(), fGenSmearedNegPart_secondary(), fGenSmearedPosPart_secondary(), fRecNegPart_primary(), fRecPosPart_primary(), fRecNegPart_secondary(), fRecPosPart_secondary(), fGenPairVec_primary(), fGenPairVec_secondary(), fGenSmearedPairVec_primary(), fGenSmearedPairVec_secondary(), fRecPairVec_primary(), fRecPairVec_secondary(), fRecV0Pair(), fPreFilter_BadTracksLabel_primary()
@@ -708,34 +708,30 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fFourPairList_PrimSec = new TList();
         fFourPairList_PrimSec->SetName("4Pairs_PrimSec");
         fFourPairList_PrimSec->SetOwner();
-
-        fFourPairList_SecSec = new TList();
-        fFourPairList_SecSec->SetName("4Pairs_SecSec");
-        fFourPairList_SecSec->SetOwner();
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
-        fGeneratedFourPairsList = new TList();
-        fGeneratedFourPairsList->SetName("Generated");
-        fGeneratedFourPairsList->SetOwner();
+        fGeneratedFourPairsList_PrimSec = new TList();
+        fGeneratedFourPairsList_PrimSec->SetName("Generated");
+        fGeneratedFourPairsList_PrimSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); /*i++*/ i+=2){
           TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
-          fHistGenFourPair.push_back(th2_tmp);
-          fGeneratedFourPairsList->Add(th2_tmp);
+          fHistGenFourPair_PrimSec.push_back(th2_tmp);
+          fGeneratedFourPairsList_PrimSec->Add(th2_tmp);
         }
-        fFourPairList_PrimSec->Add(fGeneratedFourPairsList);
+        fFourPairList_PrimSec->Add(fGeneratedFourPairsList_PrimSec);
 
-        fGeneratedSmearedFourPairsList = new TList();
-        fGeneratedSmearedFourPairsList->SetName("GeneratedSmeared");
-        fGeneratedSmearedFourPairsList->SetOwner();
+        fGeneratedSmearedFourPairsList_PrimSec = new TList();
+        fGeneratedSmearedFourPairsList_PrimSec->SetName("GeneratedSmeared");
+        fGeneratedSmearedFourPairsList_PrimSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
          th2_tmp->Sumw2();
-         fHistGenSmearedFourPair.push_back(th2_tmp);
-         fGeneratedSmearedFourPairsList->Add(th2_tmp);
+         fHistGenSmearedFourPair_PrimSec.push_back(th2_tmp);
+         fGeneratedSmearedFourPairsList_PrimSec->Add(th2_tmp);
         }
 
-        fFourPairList_PrimSec->Add(fGeneratedSmearedFourPairsList);
+        fFourPairList_PrimSec->Add(fGeneratedSmearedFourPairsList_PrimSec);
 
         // Generated reconstructed lists for every cutsetting one list and every MCsignal 1 histogram
         for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
@@ -769,6 +765,33 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fFourPairList_PrimSec->Add(fHistBeforeSecSecPrefilter);
         fFourPairList_PrimSec->Add(fHistAfterSecSecPrefilter);
 
+
+
+        fFourPairList_SecSec = new TList();
+        fFourPairList_SecSec->SetName("4Pairs_SecSec");
+        fFourPairList_SecSec->SetOwner();
+
+        fGeneratedFourPairsList_SecSec = new TList();
+        fGeneratedFourPairsList_SecSec->SetName("Generated");
+        fGeneratedFourPairsList_SecSec->SetOwner();
+        for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); /*i++*/ i+=2){
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          th2_tmp->Sumw2();
+          fHistGenFourPair_SecSec.push_back(th2_tmp);
+          fGeneratedFourPairsList_SecSec->Add(th2_tmp);
+        }
+        fFourPairList_SecSec->Add(fGeneratedFourPairsList_SecSec);
+
+        fGeneratedSmearedFourPairsList_SecSec = new TList();
+        fGeneratedSmearedFourPairsList_SecSec->SetName("GeneratedSmeared");
+        fGeneratedSmearedFourPairsList_SecSec->SetOwner();
+        for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
+         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+         th2_tmp->Sumw2();
+         fHistGenSmearedFourPair_SecSec.push_back(th2_tmp);
+         fGeneratedSmearedFourPairsList_SecSec->Add(th2_tmp);
+        }
+        fFourPairList_SecSec->Add(fGeneratedSmearedFourPairsList_SecSec);
 
         for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
           TList* list = new TList();
@@ -1458,10 +1481,12 @@ void AliAnalysisTaskEtaReconstruction::UserExec(Option_t* option){
     // #############################################
                                                                                 // if (fdebug) std::cout << "Do generated four pairing" << std::endl;
     DoFourPairing(fGenPairVec_primary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, PrimSecPairing, centralityWeight);
+    DoFourPairing(fGenPairVec_secondary, fGenPairVec_secondary, !ReconstructedPair, !SmearedPair, !PrimSecPairing, centralityWeight);
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
     if(fArrResoPt){
       // if (fdebug) std::cout << "Do generated smeared four pairing" << std::endl;
       DoFourPairing(fGenSmearedPairVec_primary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, PrimSecPairing, centralityWeight);
+      DoFourPairing(fGenSmearedPairVec_secondary, fGenSmearedPairVec_secondary, !ReconstructedPair, SmearedPair, !PrimSecPairing, centralityWeight);
     }
                                                                                 // if(fdebug) std::cout << __LINE__ << " DEBUG_AnalysisTask: Line cout " << std::endl;
 
@@ -3699,7 +3724,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
       // if (fPairVec_secondary[sec_i].fMCTwoSignal_acc_sec[0] == false) continue;
 
       Int_t fSize_mcSignal_acc = 0;
-      Int_t fSize_FourPairMCSignal = 0;
+      unsigned int fSize_FourPairMCSignal = 0;
       if (PrimSecPairing == kTRUE)  fSize_FourPairMCSignal = fFourPairMCSignal_PrimSec.size();
       if (PrimSecPairing == kFALSE) fSize_FourPairMCSignal = fFourPairMCSignal_SecSec.size();
 
@@ -3718,11 +3743,10 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
 
         // Apply MC signals
         // Check MCSignal based on particles (not fully implemented! Check AliDielectronMC & AliDielectronSignalMC)
-        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal_PrimSec.size()/2 && j < fFourPairMCSignal_PrimSec.size(); ++i, j+=2){
-          mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal_PrimSec[j]), &(fFourPairMCSignal_PrimSec[j+1]));
+        for (unsigned int i = 0, j = 0 ; i < fSize_FourPairMCSignal/2 && j < fSize_FourPairMCSignal; ++i, j+=2){
+          if (PrimSecPairing == kTRUE)  mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal_PrimSec[j]), &(fFourPairMCSignal_PrimSec[j+1]));
+          if (PrimSecPairing == kFALSE) mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(track1, track2, track3, track4, &(fFourPairMCSignal_SecSec[j]) , &(fFourPairMCSignal_SecSec[j+1]));
         }
-
-
         // check if at least one mc signal is true
         if (CheckIfOneIsTrue(mcSignal_acc) == kFALSE) continue;
       }
@@ -3764,7 +3788,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         secondpair.SetKFUsage(false);
         firstpair.SetTracks(static_cast<AliVTrack*>(track1), 11, static_cast<AliVTrack*>(track2), -11);
         secondpair.SetTracks(static_cast<AliVTrack*>(track3), 11, static_cast<AliVTrack*>(track4), -11);
-        for (unsigned int i = 0, j = 0 ; i < fFourPairMCSignal_PrimSec.size()/2 && j < fFourPairMCSignal_PrimSec.size(); ++i, j+=2){
+        for (unsigned int i = 0, j = 0 ; i < fSize_FourPairMCSignal/2 && j < fSize_FourPairMCSignal; ++i, j+=2){
           if (PrimSecPairing == kTRUE)  mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(&firstpair, &secondpair, &(fFourPairMCSignal_PrimSec[j]), &(fFourPairMCSignal_PrimSec[j+1]));
           if (PrimSecPairing == kFALSE) mcSignal_acc[i] = AliDielectronMC::Instance()->IsMCTruth(&firstpair, &secondpair, &(fFourPairMCSignal_SecSec[j]) , &(fFourPairMCSignal_SecSec[j+1]));
         }
@@ -3900,14 +3924,16 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         if (CaseSmearing == kFALSE) {
           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
-              fHistGenFourPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+              if (PrimSecPairing == kTRUE) fHistGenFourPair_PrimSec.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+              else if (PrimSecPairing == kFALSE) fHistGenFourPair_SecSec.at(i)->Fill(mass, pairpt, weight * centralityWeight);
             }
           } // end of loop over all MCsignals
         }
         if (CaseSmearing == kTRUE) {
           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
-              fHistGenSmearedFourPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+              if (PrimSecPairing == kTRUE) fHistGenSmearedFourPair_PrimSec.at(i)->Fill(mass, pairpt, weight * centralityWeight);
+              else if (PrimSecPairing == kFALSE) fHistGenSmearedFourPair_SecSec.at(i)->Fill(mass, pairpt, weight * centralityWeight);
             }
           } // end of loop over all MCsignals
         }
