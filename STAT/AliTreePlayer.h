@@ -112,7 +112,7 @@ public:
 		   Int_t maxEntries=100000000);
   static TTree *  LoadTrees(const char *inputDataList, const char *  chRegExp, const char * chNotReg,  TString  inputFileSelection, TString axisAlias,  TString axisTitle, Int_t verbose=1);
   THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
-  TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0, Bool_t fullMatch=kFALSE);
+  static TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0, Bool_t fullMatch=kFALSE);
 
   /// TODO -
   /// Metadata query from the TStatToolkit (GetMetadata, AddMetadata)
