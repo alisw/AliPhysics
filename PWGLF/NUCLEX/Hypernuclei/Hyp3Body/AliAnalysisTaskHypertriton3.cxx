@@ -687,7 +687,7 @@ AliAnalysisTaskHypertriton3 *AliAnalysisTaskHypertriton3::AddTask(bool isMC, TSt
 
   AliAnalysisDataContainer *coutput2 =
       mgr->CreateContainer(Form("HyperTritonTree%s", suffix.Data()), TTree::Class(),
-                           AliAnalysisManager::kOutputContainer, Form("HyperTritonTree3.root:%s", suffix.Data()));
+                           AliAnalysisManager::kOutputContainer, Form("HyperTritonTree.root:%s", suffix.Data()));
   coutput2->SetSpecialOutput();
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
