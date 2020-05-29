@@ -29,8 +29,6 @@
 #include "AliOADBContainer.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
-#include "AliCentrality.h"
-#include "AliMultSelection.h"
 
 // my headers
 #include "AliAnalysisTaskLumiStabi.h"
@@ -137,8 +135,8 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
   fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
 //  fTrgInputV0M = event->GetHeader()->IsTriggerInputFired("0V0M");
   UInt_t fL0inputs = event->GetHeader()->GetL0TriggerInputs();
-  Int_t inputV0M = 7; //V0M in Pb-Pb
-//  Int_t inputV0M = 13; //V0M in Xe-Xe
+//  Int_t inputV0M = 7; //V0M in Pb-Pb
+  Int_t inputV0M = 13; //V0M in Xe-Xe
   fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
 
   fCentrality = (AliMultSelection * ) event->FindListObject("MultSelection");

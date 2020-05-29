@@ -3,8 +3,6 @@
 /* $Id$ */
 
 #ifndef ALIANALYSISTASKLUMISTABI_H
-const Int_t NTRIGGERINPUTS = 1;
-const Int_t NTRIGGERS = 1;
 const Int_t STARTRUN = 240000;
 const Int_t ENDRUN = 300000;
 #define ALIANALYSISTASKLUMISTABI_H
@@ -17,6 +15,7 @@ class TFile;
 class TBits;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliMultSelection.h"
 
 class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
  public:
