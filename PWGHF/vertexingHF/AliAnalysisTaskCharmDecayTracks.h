@@ -69,6 +69,8 @@ private:
   TH1F*  fHistNCand;               //!<! histo with number of candidates
   TH1F*  fHistTrLab;               //!<! histo for tracks with same label
   TH2F*  fHistCluTPCSplitTr;       //!<! histo of TPC clusters for split tracks
+  TH2F*  fHistCluTPCSplitTrCorrel; //!<! histo of TPC clusters for split tracks
+  TH2F*  fHistCluITSSplitTrCorrel; //!<! histo of TPC clusters for split tracks
   TTree* fTrackTree;               //!<! output tree
   Int_t*   fTreeVarInt;            //!<! variables to be written to the tree
   Float_t* fTreeVarFloat;          //!<! variables to be written to the tree

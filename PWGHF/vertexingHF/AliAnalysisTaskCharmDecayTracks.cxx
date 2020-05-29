@@ -53,6 +53,8 @@ AliAnalysisTaskCharmDecayTracks::AliAnalysisTaskCharmDecayTracks():
   fHistNCand(0x0),
   fHistTrLab(0x0),
   fHistCluTPCSplitTr(0x0),
+  fHistCluTPCSplitTrCorrel(0x0),
+  fHistCluITSSplitTrCorrel(0x0),
   fTrackTree(0x0),
   fTreeVarInt(0x0),
   fTreeVarFloat(0x0),
@@ -85,6 +87,8 @@ AliAnalysisTaskCharmDecayTracks::~AliAnalysisTaskCharmDecayTracks()
     delete fHistNCand;
     delete fHistTrLab;
     delete fHistCluTPCSplitTr;
+    delete fHistCluTPCSplitTrCorrel;
+    delete fHistCluITSSplitTrCorrel;
     delete fTrackTree;
   }
 
@@ -138,6 +142,12 @@ void AliAnalysisTaskCharmDecayTracks::UserCreateOutputObjects()
 
   fHistCluTPCSplitTr=new TH2F("hCluTPCSplitTr","",10,0.5,10.5,160,-0.5,159.5);
   fOutput->Add(fHistCluTPCSplitTr);
+  
+  fHistCluTPCSplitTrCorrel=new TH2F("hCluTPCSplitTrCorrel","",160,-0.5,159.5,160,-0.5,159.5);
+  fOutput->Add(fHistCluTPCSplitTrCorrel);
+
+  fHistCluITSSplitTrCorrel=new TH2F("hCluITSSplitTrCorrel","",7,-0.5,6.5,7,-0.5,6.5);
+  fOutput->Add(fHistCluITSSplitTrCorrel);
   
   fTrackTree = new TTree("trackTree", "Tree for analysis");
   TString intVarName[kNumOfIntVar];
@@ -473,6 +483,8 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
     if(lab<kMaxLabel){
       Int_t countSplit=1;
       fHistCluTPCSplitTr->Fill(countSplit,tr->GetTPCncls());
+      Int_t ntpclu=tr->GetTPCncls();
+      Int_t nitsclu=tr->GetITSNcls();
       for(Int_t it2=it+1; it2<nTracks; it2++) {
 	AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(aod->GetTrack(it2));
 	if(!tr2) continue;
@@ -480,9 +492,14 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
 	if(tr2->GetStatus()&AliESDtrack::kITSpureSA) continue;
 	if(!(tr2->GetStatus()&AliESDtrack::kITSin)) continue;
 	Int_t lab2=TMath::Abs(tr2->GetLabel());
+	Int_t ntpclu2=tr2->GetTPCncls();
+	Int_t nitsclu2=tr2->GetITSNcls();
 	if(lab2==lab){
 	  countSplit++;
-	  fHistCluTPCSplitTr->Fill(countSplit,tr2->GetTPCncls());
+	  fHistCluTPCSplitTr->Fill(countSplit,ntpclu2);
+	  fHistCluTPCSplitTrCorrel->Fill(ntpclu,ntpclu2);
+	  if(ntpclu2>=ntpclu) fHistCluITSSplitTrCorrel->Fill(nitsclu,nitsclu2);
+	  else fHistCluITSSplitTrCorrel->Fill(nitsclu2,nitsclu);
 	}
       }
       fHistTrLab->Fill(countSplit);
