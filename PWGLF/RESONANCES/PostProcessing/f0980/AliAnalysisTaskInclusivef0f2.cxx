@@ -998,8 +998,8 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 			( fPIDResponse->GetTOFMismatchProbability( track ) < 0.01 &&
 			fabs( fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) ) < TOFsig ) ||
 
-			( fPIDResponse->GetTOFMismatchProbability( track ) > 0.01 &&
-			fabs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ) < TPCalonesig ) )
+//			( fPIDResponse->GetTOFMismatchProbability( track ) > 0.01 &&
+			( fabs( fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion) ) < TPCalonesig ) )
 		) continue;
 
 		if( track->Pt() < fptcut ) continue;
@@ -1152,16 +1152,18 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				if( 
 				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
 				&& fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
-				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
-				&& fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
+//				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
+//				&&
+				( fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
 					PIDcut1=1;
 				}
 
                                 if(
 				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
-				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
-                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
+//				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
+//                                &&
+				( fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut2=1;
                                 }
 
@@ -1188,16 +1190,18 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 if(
 				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
-				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
-                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
+//				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
+//                                &&
+				( fabs( fPIDResponse->NumberOfSigmasTPC(trackd1Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut1=1;
                                 }
 
                                 if(
 				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
-				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
-                                && fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
+//				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
+  //                              &&
+				( fabs( fPIDResponse->NumberOfSigmasTPC(trackd2Recon, AliPID::kPion) ) < TPCalonesig ) ){
                                         PIDcut2=1;
                                 }
 
