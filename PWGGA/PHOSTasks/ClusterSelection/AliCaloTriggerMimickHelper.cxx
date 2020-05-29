@@ -93,6 +93,7 @@ void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
     printf("Force run %d \n", fRunNumber) ;
     fPHOSTrigUtils->ForseUsingRun(fRunNumber) ;
   }
+  if (fDoDebugOutput>=1){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
   if(fDoLightOutput) return;
   return;
 }
