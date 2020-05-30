@@ -80,21 +80,21 @@ class AliJFJTask : public AliAnalysisTaskSE {
         AliJCatalystTask *fJCatalystTask;  //!
         TString           fJCatalystTaskName; //! Name for JCatalyst task
         vector<double> fcentralityBins; //!
-        double fjetCone; //!
-        double fktJetCone; //!
-        int  fktScheme; //!
-        int  fantiktScheme; //!
-        Bool_t fusePionMass; //!
-        Bool_t fuseDeltaPhiBGSubtr; //!
-        double fparticleEtaCut; //!
-        double fparticlePtCut; //!
-        double fleadingJetCut; //!
-        double fsubleadingJetCut; //!
-        double fMinJetPt; //!
-        double fconstituentCut; //!
-        double fdeltaPhiCut; //!
-        double fmatchingR; //!
-        double ftrackingIneff; //!
+        double fjetCone; //
+        double fktJetCone; //
+        int  fktScheme; //
+        int  fantiktScheme; //
+        Bool_t fusePionMass; //
+        Bool_t fuseDeltaPhiBGSubtr; //
+        double fparticleEtaCut; //
+        double fparticlePtCut; //
+        double fleadingJetCut; //
+        double fsubleadingJetCut; //
+        double fMinJetPt; //
+        double fconstituentCut; //
+        double fdeltaPhiCut; //
+        double fmatchingR; //
+        double ftrackingIneff; //
         AliJCDijetHistos *fhistos; //!
         AliJCDijetAna *fana; //!
         int fCBin; //!
