@@ -679,18 +679,17 @@ Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName,
   }
   TString optionString = printOption;
   optionString.ToLower();
-  TFile * f = TFile::Open(fileName);
-  if (f== nullptr || objectName== nullptr) {
+  TFile * fin = TFile::Open(fileName);
+  if (fin== nullptr || objectName== nullptr) {
     ::Error("AliOCDBtoolkit::DumpOCDBFile","File %s does not exist or invalid object name",fileName);
     return 1;  // return error code one  - file not found
   }
-  AliCDBEntry *entry = (AliCDBEntry*)f->Get(TString(objectName).ReplaceAll("/","*").Data());
+  AliCDBEntry *entry = (AliCDBEntry*)fin->Get(TString(objectName).ReplaceAll("/","*").Data());
   if (entry== nullptr){
     ::Error("AliOCDBtoolkit::DumpOCDBFile","Object %s does not exist in File %s",objectName, fileName);
     return 1;  // return error code one  - file not found
   }
   TObject *obj = entry->GetObject();
-  TFile * fout = TFile::Open(foutput,"new");
   // print opt ion indicated ()
 
   if (optionString.Contains("pocdb")){
@@ -713,10 +712,14 @@ Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName,
     return 0;
   }
   if (optionString.Contains("xml")){
-    TFile * f = TFile::Open(TString::Format("%s",foutput).Data(),"recreate");
+    ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
+    TFile * fout = TFile::Open(foutput,"recreate");
+    fout->cd();
     if (dumpMetaData) entry->Write("AliCDBEntry");
-    else obj->Write("AliCDBEntry");
-    f->Close();
+    obj->Dump();
+    obj->Write("AliCDBEntry");
+    fout->Close();
+    ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
     return 0;
   }
   ::Error("AliOCDBtoolkit::DumpOCDBFile","Not recognized option %s", optionString.Data());
