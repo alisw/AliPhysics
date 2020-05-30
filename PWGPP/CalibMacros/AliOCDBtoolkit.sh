@@ -231,11 +231,21 @@ HELP_USAGE
     fi;
 
     tmpscript=$(mktemp)
-    cat > ${tmpscript} <<HEREDOC
+
+    if [ $fobject == "object" ] ; then
+        cat > ${tmpscript} <<HEREDOC
         {
             AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,"${ftype}");
         }
 HEREDOC
+    else
+        cat > ${tmpscript} <<HEREDOC
+        {
+            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${fobject}","${outFile}",0,"${ftype}");
+        }
+HEREDOC
+    fi
+
     root.exe -l -q -b ${tmpscript}
     sleep 60 && rm ${tmpscript} &
     alilog_success "dumpObject ${inFile} ${fobject} ${ftype} ${outFile}"
