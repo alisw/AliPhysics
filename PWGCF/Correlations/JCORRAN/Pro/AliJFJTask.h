@@ -74,12 +74,12 @@ class AliJFJTask : public AliAnalysisTaskSE {
         void AddFlags(UInt_t nflags){flags |= nflags;}
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
-
+        
     private:
 
         AliJCatalystTask *fJCatalystTask;  //!
         TString           fJCatalystTaskName; //! Name for JCatalyst task
-        vector<double> fcentralityBins; //!
+        vector<double> fcentralityBins; //
         double fjetCone; //
         double fktJetCone; //
         int  fktScheme; //

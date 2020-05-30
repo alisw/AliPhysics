@@ -218,7 +218,6 @@ void AliJFJTask::UserCreateOutputObjects()
         cout << "Warning: Using pion mass for jets but not using E_scheme!" << endl;
         cout << endl;
     }
-
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     fana->SetSettings(fDebug,
                       fparticleEtaCut,
@@ -237,7 +236,6 @@ void AliJFJTask::UserCreateOutputObjects()
                       fmatchingR,
                       0.0); //Tracking ineff only for det level.
 #endif
-
     // Load Custom Configuration and parameters
     // override values with parameters
     PostData(1, fOutput);
@@ -254,11 +252,13 @@ void AliJFJTask::UserExec(Option_t* /*option*/)
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
     if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
     fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
-    if( !fJCatalystTask->GetIsGoodEvent() ) return;
+    //if( !fJCatalystTask->GetIsGoodEvent() ) return;
     fhistos->fh_eventSel->Fill("catalyst ok",1.0);
 
     fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
     fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
+    if(fDebug ==4) cout << "fCbin = "<< fCBin << endl;
+
     if(fCBin == -1) return;
 
     fhistos->fh_eventSel->Fill("events",1.0);
@@ -268,11 +268,10 @@ void AliJFJTask::UserExec(Option_t* /*option*/)
     TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-    //cout << "Next true level calculations:" << endl;
+    if(fDebug ==4) cout << "Next true level calculations:" << endl;
     fana->CalculateJets(fInputList, fhistos, fCBin);
     fana->FillJetsDijets(fhistos, fCBin);
 #endif
-
 }
 
 //______________________________________________________________________________
@@ -289,4 +288,3 @@ void AliJFJTask::Terminate(Option_t *)
     // Processing when the event loop is ended
     cout<<"AliJFJTask Analysis DONE !!"<<endl; 
 }
-
