@@ -20,6 +20,7 @@
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliJCDijetTask+;
+#pragma link C++ class AliJFJTask+;
 #pragma link C++ class AliJCDijetHistos+;
 #pragma link C++ class AliJCDijetAna+;
 #endif
