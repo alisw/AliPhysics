@@ -980,6 +980,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
          AliAODMCParticle * parent = prim;
          Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
          while((r2 > rcut*rcut) && (iparent>-1)){
+           if(parent->GetMother()<0)
+               break;
            iparent=parent->GetMother();
            parent=(AliAODMCParticle*)fStack->At(iparent);
            r2=parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() ;
@@ -2329,7 +2331,7 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   //Classify parent at vertex
   //Introduce for eta and pi0 weights   
     
-  if(fMCType==kFullMC){
+  if(fMCType==kFullMC || fMCType==kJetJet){
     return 1.; //For full MC scan
   }
   Int_t mother = particle->GetMother() ;
