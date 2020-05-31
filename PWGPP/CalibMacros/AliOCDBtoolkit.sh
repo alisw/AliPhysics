@@ -204,6 +204,8 @@ dumpObject(){
             dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "POCDB"  Run0_999999999_v0_s2.pocdb
             dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail1.0crosstalk0.0/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail1.0crosstalk0.0.xml
             dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail0.8crosstalk0.2/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail0.8crosstalk0.2.xml
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail1.0crosstalk0.0/OCDBsim.root "TPC*Calib*GainFactorDedx" "pocdb all" iontail1.0crosstalk0.0.GainFactorDedx.print
+            dumpObject alien:///alice/data/2018/LHC18r/000297479/pass3/OCDB.root  "TPC*Calib*GainFactorDedx" "pocdb all" LHC18r.pass3.GainFactorDedx.print
 
 HELP_USAGE
     [[ $# -ne 4 ]] && return
