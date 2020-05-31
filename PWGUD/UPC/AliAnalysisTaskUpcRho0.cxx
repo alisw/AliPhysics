@@ -668,7 +668,6 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	//0SH1 2017 - Two hits on inner and outer layer
 	if (nInner >= 2 && nOuter >= 2) {
 		SH1 = kTRUE;
-		TriggerSPD_T = kTRUE;
 	}
 
 	// V0
@@ -699,11 +698,14 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	}
 	if(NfiredMaxiPads >= 2) {
 		OM2 = kTRUE; //0OM2 TOF two hits
-		TriggerTOF_T = kTRUE;
 	}
 
 	}
 	else OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+
+	// save spd and tof trigger decisions to tree
+	TriggerSPD_T = SH1;
+	TriggerTOF_T = OM2;
 
 	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
 	if (fOption.Contains("17n")) {
