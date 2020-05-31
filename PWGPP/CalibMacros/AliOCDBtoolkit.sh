@@ -202,6 +202,9 @@ dumpObject(){
             dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "MI"  Run0_999999999_v0_s2.mi
             dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "POCDB"  Run0_999999999_v0_s2.pocdb
             dumpObject  alien:///alice/cern.ch/user/p/pwg_pp/JIRA/ALIROOT-8240/TPC/Calib/RecoParam/Run0_999999999_v0_s2.root    "object" "POCDB"  Run0_999999999_v0_s2.pocdb
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail1.0crosstalk0.0/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail1.0crosstalk0.0.xml
+            dumpObject alien:///alice/sim/2020/LHC120c1/OCDB/297479/iontail0.8crosstalk0.2/OCDBsim.root "TPC*Calib*RecoParam" "XML" iontail0.8crosstalk0.2.xml
+
 HELP_USAGE
     [[ $# -ne 4 ]] && return
     alilog_info "dumpObject BEGIN $1 $2 $3 $4"
