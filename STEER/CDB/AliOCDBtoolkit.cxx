@@ -664,12 +664,12 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
 /// \param fileName         - OCDB snapshot file name .e.g OCDBsim.root or OCDBrec.root
 /// \param objectName       - OCDB entry name  e.g TPC/Calib/recoParam
 /// \param foutput          - output file name - e.g TPC_Calib_RecoParam.xml
-/// \param dumpMetaData     - switch dump also metadata
+/// \param dumpMetaData     - switch dump al
 /// \param printOption      - MI, xml, docdb (obejct dump) , pocdb (object print)
 /// Example usage:
 /// AliOCDBtoolkit::DumpOCDBFile("/lustre/nyx/alice/users/miranov/NOTESData/alice-tpc-notes/JIRA/ALIROOT-7077/test1211_PbPb_MCTail_2_2/OCDB/OCDBrec.root", "TPC/Calib/RecoParam", "TPC_Calib_RecoParamReco.xml",1,"XML")
 ///
-Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName, const char *foutput, Bool_t dumpMetaData, TString  printOption){
+Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName, const char *foutput, Int_t dumpMetaData, TString  printOption){
   if (TString(fileName).Contains("alien://") && gGrid==0){
     TGrid *myGrid = TGrid::Connect("alien://");            //Oddly this will return also a pointer if connection fails
     if(myGrid->GetPort()==0){                       //if connection fails port 0 is saved, using this to check for successful connection
@@ -715,8 +715,8 @@ Int_t  AliOCDBtoolkit::DumpOCDBFile(const char *fileName, const char*objectName,
     ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
     TFile * fout = TFile::Open(foutput,"recreate");
     fout->cd();
-    if (dumpMetaData) entry->Write("AliCDBEntry");
-    obj->Dump();
+    if (dumpMetaData&0x1) entry->Write("AliCDBEntry");
+    if (dumpMetaData&0x2) obj->Dump();
     obj->Write("AliCDBEntry");
     fout->Close();
     ::Info("AliOCDBtoolkit::DumpOCDBFile",foutput);
