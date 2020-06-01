@@ -36,7 +36,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 {
     public:
 
-    enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
+    enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kLctopK0S}; //more particles can be added
     enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO}; //Event plane to be calculated in the task
     enum FlowMethod{kEP,kSP,kEvShapeEP,kEvShapeSP,kEPVsMass,kEvShapeEPVsMass}; // Event Plane, Scalar Product or Event Shape Engeneering methods
     enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // qn for Event Shape to be calculated in the task
