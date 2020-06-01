@@ -1129,7 +1129,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropResponse::MakeSoftdrop(const Ali
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
-  fastjet::contrib::SoftDrop softdropAlgorithm(fBeta, fZcut);
+  fastjet::contrib::SoftDrop softdropAlgorithm(fBeta, fZcut, jetradius);
   softdropAlgorithm.set_verbose_structure(kTRUE);
   fastjet::JetAlgorithm reclusterizingAlgorithm;
   switch (fReclusterizer)
