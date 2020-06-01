@@ -15,7 +15,7 @@ class TFile;
 class TBits;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
+class AliMultSelection;
 
 class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
  public:
