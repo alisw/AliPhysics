@@ -61,6 +61,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   fCentralityRange(-999., 999.),
   fUseRecalcPatches(false),
   fRequestCentrality(false),
+  fFillTHnSparse(true),
   fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -76,6 +77,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const
   fCentralityRange(-999., 999.),
   fUseRecalcPatches(false),
   fRequestCentrality(false),
+  fFillTHnSparse(true),
   fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -120,11 +122,13 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
     // distinction between trigger clusters
     for(const auto &kc : kNamesTriggerClusters){
       fHistos->CreateTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
       fHistos->CreateTH1(Form("hPatchADCWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Patch ADC spectra for %c%s patches in %s events (cluster %s)", detector, patchtype, kt.data(), kc.data()), 2000, 0., 2000., fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
-      fHistos->CreateTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+      if(fFillTHnSparse) {
+        fHistos->CreateTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 5, firedpatchbinning, fEnableSumw2 ? "s" : "");
+        fHistos->CreateTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
+      }
     } 
   }
 }
@@ -301,15 +305,19 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
         for(const auto &kc : selclusters) {
           fHistos->FillTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp());
           fHistos->FillTH1(Form("hPatchADCWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp(), triggerweight);
-          fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
-          fHistos->FillTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+          if(fFillTHnSparse){
+            fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+            fHistos->FillTHnSparse(Form("hAllPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+          }
         }
       }
-      for(auto p : firedpatches) {
-        double point[5] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
-        for(const auto &kc : selclusters) {
-          fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
-          fHistos->FillTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+      if(fFillTHnSparse) {
+        for(auto p : firedpatches) {
+          double point[5] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(p->GetColStart()), static_cast<double>(p->GetRowStart()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
+          for(const auto &kc : selclusters) {
+            fHistos->FillTHnSparse(Form("hFiredPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
+            fHistos->FillTHnSparse(Form("hFiredPatchesWeighted%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point, triggerweight);
+          }
         }
       }
     }
