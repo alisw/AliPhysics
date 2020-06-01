@@ -24,6 +24,7 @@
 #include <AliJCatalystTask.h>
 #include "AliJCDijetHistos.h"
 #include "AliJCDijetAna.h"
+#include "AliJJetQAAna.h"
 
 
 
@@ -32,6 +33,7 @@ using namespace std;
 class TClonesArray;
 class AliJCDijetHistos;
 class AliJCDijetAna;
+class AliJJetQAAna;
 
 class AliJFJTask : public AliAnalysisTaskSE {
 
@@ -101,6 +103,7 @@ class AliJFJTask : public AliAnalysisTaskSE {
         TDirectory     *fOutput; //! Output directory
         UInt_t flags; //!
         AliAnalysisUtils *fUtils; //! 
+        AliJJetQAAna     * fJJetQAAna;    //!
 
         ClassDef(AliJFJTask, 1); 
 };
