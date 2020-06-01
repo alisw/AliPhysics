@@ -33,6 +33,7 @@
 #include "AliNormalizationCounter.h"
 #include "AliAODMCParticle.h"
 #include "AliVertexerTracks.h"
+#include "AliAODMCHeader.h"
 
 class AliAODEvent;
 class AliESDtrackCuts;
@@ -121,6 +122,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
   void SetFillOnlyTrackSparse(Bool_t fillonlysparse){fCheckOnlyTrackEfficiency=fillonlysparse;}
   void SetIsCdeuteronAnalysis(Bool_t iscd){fIsCdeuteronAnalysis=iscd;}
+  void SetIsXicUpgradeAnalysis(Bool_t flag){fIsXicUpgradeAnalysis=flag;}
+  void SetKeepOnlySigXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlySigXicUpgradeAnalysis=flag;}
+  void SetKeepOnlyBkgXicUpgradeAnalysis(Bool_t flag){fIsKeepOnlyBkgXicUpgradeAnalysis=flag;}
   void SetIsKeepOnlyCdeuteronSignal(Bool_t isSig){fIsKeepOnlyCdeuteronSignal=isSig;}
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
@@ -343,6 +347,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Bool_t fCheckOnlyTrackEfficiency;// flag for filling only the single-track sparse and return
   Bool_t fIsCdeuteronAnalysis;// flag for doing the c deuteron analysis (inv mass)
   Bool_t fIsKeepOnlyCdeuteronSignal;// flag for keeping only c deuteron signal
+  Bool_t fIsXicUpgradeAnalysis; // flag for ITS2-3 studies for Xic
+  Bool_t fIsKeepOnlySigXicUpgradeAnalysis; // flag for keeping only Xic signal
+  Bool_t fIsKeepOnlyBkgXicUpgradeAnalysis; // flag for keeping only Xic bkg
   Int_t fNRotations;    // number of rotations performed on soft pion, to study SigmaC background shape; 0 = no rotations, 1 -> single rotations by fMinAngleForRot, 2 -> fNRotations from fMinAngleForRot to fMaxAngleForRot
   Double_t fMinAngleForRot;//
   Double_t fMaxAngleForRot;//
@@ -360,7 +367,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fMinPtSoftPion;  // !
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,13); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,14); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

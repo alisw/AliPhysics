@@ -180,6 +180,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE),
   fIsKeepOnlyCdeuteronSignal(kFALSE),
+  fIsXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -287,6 +290,9 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fCheckOnlyTrackEfficiency(kFALSE),
   fIsCdeuteronAnalysis(kFALSE),
   fIsKeepOnlyCdeuteronSignal(kFALSE),
+  fIsXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlySigXicUpgradeAnalysis(kFALSE),
+  fIsKeepOnlyBkgXicUpgradeAnalysis(kFALSE),
   fNRotations(0),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -1168,7 +1174,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  continue;	  
 	}
 
-
 	Int_t isTrueLambdaCorXic=0,checkOrigin=-1, decay_channel=0;   // decay channel info is 0 in data
   Int_t arrayDauLabReco[3];
 	AliAODMCParticle *part=0x0;
@@ -1201,9 +1206,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     // if the candidate is matched, retrieve info about decay channel
     else{
       Int_t pdgcode = part->GetPdgCode();
+      if(fIsXicUpgradeAnalysis) printf("===> |PDG code| = %d\n",TMath::Abs(pdgcode));
       if(TMath::Abs(pdgcode)==4122)       decay_channel = AliVertexingHFUtils::CheckLcpKpiDecay(fmcArray, part, arrayDauLabReco);
       else if(TMath::Abs(pdgcode)==4232)  decay_channel = CheckXicpKpiDecay(fmcArray, part, arrayDauLabReco);
-      if(TMath::Abs(pdgcode)==2010010020) { // c deuteron
+      if((fIsCdeuteronAnalysis && (TMath::Abs(pdgcode)==2010010020)) || (fIsXicUpgradeAnalysis && TMath::Abs(pdgcode)==4232)) { // c deuteron and Xic upgrade analyses
+
+        if((fIsXicUpgradeAnalysis && TMath::Abs(pdgcode)==4232))  printf("... Xic\n");
 
         // vertex information
         Double_t secVtx[3] = {0};
@@ -1218,6 +1226,9 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           AliAODMCParticle *daugh = (AliAODMCParticle*)fmcArray->At(daughLabel);
           daugh->XvYvZv(secVtxMC);
         }
+        else{
+          printf("WARNING: daughLabel = %d\n",daughLabel);
+        }
 
         fVtxResXPt->Fill(secVtx[0]-secVtxMC[0], io3Prong->Pt());
         fVtxResYPt->Fill(secVtx[1]-secVtxMC[1], io3Prong->Pt());
@@ -1231,7 +1242,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
         fprimVtx->GetXYZ(primVtx);
 
         // get origin of MC particle for true primary vertex (?)
-        part->XvYvZv(primVtxMC);
+        if(fIsXicUpgradeAnalysis) mcHeader->GetVertex(primVtxMC); // *** maybe we shall use mcHeader->GetVertex(primVtxMC); for Xic, to avoid problems with FD ***
+        if(fIsCdeuteronAnalysis)  part->XvYvZv(primVtxMC);
 
         fPrimVtxResXPt->Fill(primVtx[0]-primVtxMC[0], io3Prong->Pt());
         fPrimVtxResYPt->Fill(primVtx[1]-primVtxMC[1], io3Prong->Pt());
@@ -1255,7 +1267,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       }
     }
   }
-      
+
 	//if(fReadMC && isTrueLambdaCorXic==1){
 	// MAYBE WE'LL CAHNGE IT !!!     
 	Bool_t isFromSigmaC=kFALSE;
@@ -1519,7 +1531,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      point[0]=part->Pt();
 	      fhSparseAnalysis->Fill(point);
 	    }
-	    if(!fReadMC)  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -1530,7 +1542,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 			  point[0]=part->Pt();
 			  fhSparseAnalysis->Fill(point);
 			}
-			if(!fReadMC)  fhSparseAnalysis->Fill(point);
+			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 		      }
 	      }
 	    }	    	   
@@ -1548,7 +1560,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      point[0]=part->Pt();
 	      fhSparseAnalysis->Fill(point);
 	    }
-	    if(!fReadMC)  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -1559,7 +1571,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		    point[0]=part->Pt();
 		    fhSparseAnalysis->Fill(point);
 		  }
-		  if(!fReadMC)  fhSparseAnalysis->Fill(point);
+		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 		}
 	      }
 	    }	  
@@ -1577,8 +1589,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird,mcpartMum,(Double_t)checkOrigin,(Double_t)decay_channel);
 	  }
 	}
-	
-	
 	
 	// NOW DELETE VTX AND CANDIDATE
 	if(recPrimVtx)fCutsXic->CleanOwnPrimaryVtx(io3Prong,aod,origownvtx);	    
@@ -2294,9 +2304,8 @@ AliESDtrack* AliAnalysisTaskSEXicTopKpi::SelectTrack(AliAODTrack *aodtr, Int_t &
     delete esdTrack;
     return 0x0;
   }
-  
-  AliESDtrackCuts::ITSClusterRequirement spdreq=esdTrCutsAll->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
 
+  AliESDtrackCuts::ITSClusterRequirement spdreq=esdTrCutsAll->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
   if(fApplykFirst){
     if(aodtr->Pt()<fMaxPtTrackkFirst){
       esdTrCutsAll->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
@@ -2780,6 +2789,23 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
         if(fIsKeepOnlyCdeuteronSignal) continue;
         Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(track,mcHeader,mcArray);
         if(isBkgTrackInjected) continue;
+      }
+    }
+    if(fIsXicUpgradeAnalysis && fReadMC) {
+      Bool_t isTrackXic = AliVertexingHFUtils::IsTrackFromHadronDecay(4232, track, mcArray);
+      //std::cout << "isTrackXic: " << isTrackXic << std::endl;
+      // remove track if only keeping signal, or if it is injected
+      if(!isTrackXic) {
+        if(fIsKeepOnlySigXicUpgradeAnalysis) continue;
+        Bool_t isBkgTrackInjected = AliVertexingHFUtils::IsTrackInjected(track,mcHeader,mcArray);
+        if(isBkgTrackInjected) continue;
+
+        // if looking at bkg, keep only a small percentage of available tracks (5%)
+        Double_t pt_track = track->Pt();
+        if( TMath::Abs(pt_track-int(pt_track))>0.05 ) continue;
+      }
+      else{ // it means that the track comes from a true Xic
+        if(fIsKeepOnlyBkgXicUpgradeAnalysis)  continue; // skip the track if we want to study pure combinatorial bkg without keeping tracks of true Xic's
       }
     }
 
