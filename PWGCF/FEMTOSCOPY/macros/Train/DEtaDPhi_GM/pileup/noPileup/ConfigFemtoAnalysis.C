@@ -297,7 +297,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					// dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2); //tylko przy default
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
 					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
