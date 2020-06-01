@@ -59,7 +59,7 @@ public:
 
   void SetEnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
   void SetOnlineThreshold(ETriggerThreshold_t trigger, Int_t value) { fOnlineThresholds[static_cast<int>(trigger)] = value; }
-
+  void SetFillTHnSparse(bool doFill) { fFillTHnSparse = doFill; }
   void SetSwapPatches(Bool_t doSwap) { fSwapPatches = doSwap; }
 
   void AddRequiredTriggerOverlap(const char *trigger);
@@ -101,6 +101,7 @@ private:
   AliCutValueRange<double> fCentralityRange;  ///< Range of accepted event centralities
   Bool_t                fUseRecalcPatches;    ///< Switch between offline (FEE) and recalc (L1) patches
   Bool_t                fRequestCentrality;   ///< Switch for request of centrality selection
+  Bool_t                fFillTHnSparse;       ///< Switch for filling THnSparse
   Double_t              fEventCentrality;     //!<! Event centrality
 
   AliAnalysisTaskEmcalRecalcPatchesRef(const AliAnalysisTaskEmcalRecalcPatchesRef &);
