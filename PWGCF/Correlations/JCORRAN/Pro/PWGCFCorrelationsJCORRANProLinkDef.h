@@ -10,6 +10,8 @@
 #pragma link C++ class AliJDiJetAnalysis+;
 #pragma link C++ class AliJJetCORRTask+;
 #pragma link C++ class AliJJetCORRAnalysis+;
+#pragma link C++ class AliJJetQATask+;
+#pragma link C++ class AliJJetQAAna+;
 #pragma link C++ class AliJJetJtTask+;
 #pragma link C++ class AliJJetJtAnalysis+;
 #pragma link C++ class AliJJetAnalysis+;
