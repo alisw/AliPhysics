@@ -26,11 +26,13 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/UPC
 include_directories(${ROOT_INCLUDE_DIRS}
 		    ${AliPhysics_SOURCE_DIR}/PWGUD/base
 		    ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                    )
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskLumiStabi.cxx
     AliAnalysisTaskUpcEtaC.cxx
     AliAnalysisTaskUpcFilter.cxx
     AliAnalysisTaskUpcK0sK0s.cxx
