@@ -671,6 +671,16 @@ tQAEvent->Add(fhEventCentAfterPilp);
   TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
   tQAEvent->Add(fhEventAf);
 
+
+
+//---------------------------------------------
+TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+	tQAEvent->Add(fHistV0Multiplicity);
+//----------------------------------------------
+    
+
+
+
   fOutput2->Add(tQAEvent);
 }
 
@@ -1535,14 +1545,13 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
   */
     Short_t binVertex = Short_t((lPVz+10.)/2);
 
-    //-----------------------------------Centrality definition------------------------------------
-   /* AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
-    if(!aodHeader) AliFatal("Not a standard AOD");
-    if(!aodHeader) return;*/
 
-    //float lCent = fEventCuts->GetCentrality(); // Centrality calculated with the default estimator (V0M for LHC15o) 
-    //if ((lCent < fCentMin)||(lCent > fCentMax)) return;
-  //  float lCent = 0.; // Centrality calculated with the default estimator (V0M for LHC15o) 
+
+
+
+ Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+
+ ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 
  //===========  Multiplicity definition===========
 Float_t lPercentile = 300; 
@@ -2059,9 +2068,9 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 // reject bunch-off pile-up
-  if(!fAnalysisMC){      
+ // if(!fAnalysisMC){      
  if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
-     } 
+    // } 
   
   
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){

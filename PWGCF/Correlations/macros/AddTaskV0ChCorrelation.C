@@ -38,8 +38,8 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
-  task->SetMixingTracks(10000);
-    task->SetPoolSize(50); 
+  task->SetMixingTracks(30000);
+    task->SetPoolSize(500); 
  //--------------------------------Variable--------------------------------
   task->SetVtxCut(7.);
    task->SetCentMin(0);
