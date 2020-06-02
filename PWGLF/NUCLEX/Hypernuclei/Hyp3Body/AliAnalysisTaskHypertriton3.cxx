@@ -213,11 +213,14 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
     }
   }
   else {
-    if (fKF)
+    if (fKF) {
       fRecHyp = new RHyperTriton3KF;
-    else
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3KF*>(fRecHyp));
+    }
+    else {
       fRecHyp = new RHyperTriton3O2;
-    fTreeHyp3->Branch("RHyperTriton", fRecHyp);
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3O2*>(fRecHyp));
+    }
   }
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
   if (fCosPAsplineFile)
