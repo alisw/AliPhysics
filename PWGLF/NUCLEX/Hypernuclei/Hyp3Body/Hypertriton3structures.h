@@ -4,6 +4,7 @@
 #include <Rtypes.h>
 
 struct RHyperTriton {
+  virtual ~RHyperTriton() = default;
   float centrality = -1.;
   float pt = -999.f;
   float phi = -999.f;
@@ -36,27 +37,33 @@ struct RHyperTriton {
   bool hasTOF_pr = false;
   bool hasTOF_pi = false;
   bool positive = false;
+  ClassDef(RHyperTriton, 1)
 };
 
 struct RHyperTriton3O2 : public RHyperTriton {
   RHyperTriton3O2() : RHyperTriton{} {}
+  virtual ~RHyperTriton3O2() = default;
   Double32_t dca_de_sv = -4.0; //[0.0,8.0,8]
   Double32_t dca_pr_sv = -4.0; //[0.0,8.0,8]
   Double32_t dca_pi_sv = -4.0; //[0.0,8.0,8]
   Double32_t chi2 = -1.f;      //[0.0,16.,16]
+  ClassDef(RHyperTriton3O2,1)
 };
 
 struct RHyperTriton3KF : public RHyperTriton {
   RHyperTriton3KF() : RHyperTriton{} {}
+  virtual ~RHyperTriton3KF() = default;
   float chi2_deuprot = -1.f;
   float chi2_3prongs = -1.f;
   float chi2_topology = -1.f;
+  ClassDef(RHyperTriton3KF,1)
 };
 
 template<class Hyper>
 struct SHyperTriton : public Hyper {
   SHyperTriton() : Hyper{} {}
   SHyperTriton(const Hyper& other) : Hyper{other} {}
+  virtual ~SHyperTriton() = default;
   float gPt = -999.f;
   float gPhi = -999.f;
   float gPz = -999.f;
@@ -64,6 +71,7 @@ struct SHyperTriton : public Hyper {
   float gT = -1.f;
   bool  gPositive = false;
   bool  gReconstructed = false;
+  ClassDef(SHyperTriton,1)
 };
 
 using SHyperTriton3KF = SHyperTriton<RHyperTriton3KF>;

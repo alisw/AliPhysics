@@ -116,21 +116,20 @@
 #ifdef __CLING__
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class RHyperTriton+;
-#pragma link C++ class SHyperTriton+;
 #pragma link C++ class RHyperTriton3KF+;
-#pragma link C++ class SHyperTriton3KF+;
 #pragma link C++ class RHyperTriton3O2+;
-#pragma link C++ class SHyperTriton3O2+;
+#pragma link C++ class SHyperTriton<RHyperTriton3KF>+;
+#pragma link C++ class SHyperTriton<RHyperTriton3O2>+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
-#pragma link C++ class o2::vertexing::DCAFitter2+;
-#pragma link C++ class o2::vertexing::DCAFitter3+;
 #pragma link C++ class o2::track::TrackAuxPar+;
 #pragma link C++ class o2::track::CrossInfo+;
 #pragma link C++ class o2::utils::CircleXY+;
 #pragma link C++ class o2::vertexing::TrackDeriv;
 #pragma link C++ class o2::vertexing::TrackCovI;
 #pragma link C++ class o2::track::TrackParCov;
-#pragma link C++ class o2::track::IntervalXY;
+#pragma link C++ class o2::utils::IntervalXY;
+#pragma link C++ class o2::vertexing::DCAFitter2+;
+#pragma link C++ class o2::vertexing::DCAFitter3+;
 #endif
 
 /// * VertexerHyp3Body
