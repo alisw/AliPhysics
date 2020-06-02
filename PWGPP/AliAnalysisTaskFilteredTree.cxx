@@ -342,6 +342,9 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       AliInfo("ToFix: MC stack not available. Prefered MCEvent() will return 0");
     }
   }
+  Float_t cms = fESD->GetESDRun()->GetBeamEnergy();
+  if (cms>0) fSqrtS=2*cms;
+
 
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
@@ -1512,6 +1515,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           (*fTreeSRedirector)<<"highPt"<<
 	    "downscaleCounter="<<downscaleCounter<<
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
+	    "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
 	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
 	    "selectionPtMaskMC="<<selectionPtMaskMC<<       // high pt trigger mask based on MC if available
 	    "selectionPIDMask="<<selectionPIDMask<<         // selection PIDmask
