@@ -3095,25 +3095,15 @@ void AddTask_GammaCalo_pp(
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
-    cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
     TString EventCutPos = cuts.GetEventCut(i);
-    cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<"; EventCutPos: "<<EventCutPos.Data()<<endl;
     EventCutPos = EventCutPos(3,2);
-    cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<"; EventCutPos: "<<EventCutPos.Data()<<endl;
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
-    cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
     if( (!(AliCaloTriggerMimickHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!EventCutPos.CompareTo("62")) ){
-      cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<"; caloCutPos.Atoi(): "<<caloCutPos.Atoi()<<endl;
       AliCaloTriggerMimickHelper* fMimickHelper = new AliCaloTriggerMimickHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
-      cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
       fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimickHelper::kPHOSL0) ;
-      cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
       mgr->AddTask(fMimickHelper);
-      cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
       mgr->ConnectInput(fMimickHelper,0,cinput);
-      cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
     }
-    cout<<"Debug Output, AddTask_GammaCalo_pp.C, Line: "<<__LINE__<<endl;
 
     analysisEventCuts[i] = new AliConvEventCuts();
 
