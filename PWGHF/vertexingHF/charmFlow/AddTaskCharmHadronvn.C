@@ -87,7 +87,7 @@ AliAnalysisTaskSECharmHadronvn *AddTaskCharmHadronvn(TString tenderTaskName = "H
         if(stdcuts) {
          analysiscuts = new AliRDHFCutsLctoV0();
          analysiscuts->SetStandardCutsPbPb2011();
-        }else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutsobjname);
+        } else analysiscuts = (AliRDHFCutsLctoV0*)filecuts->Get(cutsobjname);
         suffix.Prepend("Lc2V0");
         pdgmes=4122;
     }

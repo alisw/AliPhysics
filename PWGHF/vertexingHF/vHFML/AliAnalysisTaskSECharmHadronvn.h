@@ -161,7 +161,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
     double fMLOutputMin;                    /// minimum value of ML ouptut in thnsparse axis
     double fMLOutputMax;                    /// maximum value of ML ouptut in thnsparse axis
 
-    ClassDef(AliAnalysisTaskSECharmHadronvn,5); // AliAnalysisTaskSE for the HF vn analysis
+    ClassDef(AliAnalysisTaskSECharmHadronvn,6); // AliAnalysisTaskSE for the HF vn analysis
 };
 
 #endif

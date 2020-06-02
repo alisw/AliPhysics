@@ -40,7 +40,7 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
-#include "AliRDHFCutsLc2V0bachelor.h"
+#include "AliRDHFCutsLctoV0.h"
 
 #include "AliMultSelection.h"
 #include "AliVertexingHFUtils.h"
@@ -204,7 +204,8 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
             DefineOutput(2,AliRDHFCutsDstoKKpi::Class());      //Cut object for Ds
         break;
         case kLctopK0S:
-            DefineOutput(2,AliRDHFCutsLc2V0bachelor::Class()); //Cut object for Lc->pK0S
+            DefineOutput(2,AliRDHFCutsLctoV0::Class());        //Cut object for Lc->pK0S
+        break;
     }
 }
 
@@ -292,7 +293,7 @@ void AliAnalysisTaskSECharmHadronvn::LocalInit()
         break;
         case kLctopK0S:
             {
-               AliRDHFCutsLc2V0bachelor* copycut = new AliRDHFCutsLc2V0bachelor(*(static_cast<AliRDHFCutsLc2V0bachelor*>(fRDCuts)));
+               AliRDHFCutsLctoV0* copycut = new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fRDCuts)));
                PostData(2,copycut);
             }
         break;
@@ -550,7 +551,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     // Post the data already here
     PostData(1,fOutput);
 
-    TClonesArray *arrayProng = nullptr, *arrayD0toKpi = nullptr; *arrayV0daugh = nullptr;
+    TClonesArray *arrayProng = nullptr, *arrayD0toKpi = nullptr;
     int absPdgMom=0;
     int nDau=0;
     if(!fAOD && AODEvent() && IsStandardAOD()) {
@@ -591,8 +592,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
                     absPdgMom=4122;
                     nDau=3;
                     arrayProng = (TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
-                    array
-                    break;
+                break;
             }
         }
     }
@@ -621,7 +621,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             break;
             case kLctopK0S:
                 absPdgMom=4122;
-                nDau=3; //!TODO check if 3 is correct here or if array of V0daughters needed
+                nDau=3; 
                 arrayProng=(TClonesArray*)fAOD->GetList()->FindObject("CascadesHF");
             break;
         }
@@ -744,7 +744,6 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
     AliAODRecoDecayHF *d = nullptr;
     AliAODRecoDecayHF2Prong *dD0 = nullptr;
-    AliAODv0 *dV0 = nullptr;
     int nCand = arrayProng->GetEntriesFast();
     bool alreadyLooped = false;
     vector<int> isSelByPrevLoop;
@@ -779,11 +778,8 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
                         else
                             dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
                     }
-                    if(fDecChannel==kLctopK0S) {
-                            dV0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
-                    }
                     double modelPred[2] = {-1., -1.};
-                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, dV0, modelPred);
+                    int isSel = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0,  modelPred);
                     isSelByPrevLoop.push_back(isSel);
                     MLPred[0].push_back(modelPred[0]);
                     MLPred[1].push_back(modelPred[1]);
@@ -903,7 +899,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             modelPred[1] = MLPred[1][iCand];
         }
         else {
-            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0, dV0, modelPred);
+            isSelected = IsCandidateSelected(d, nDau, absPdgMom, vHF, dD0,  modelPred);
         }
         if(!isSelected) continue;
 
@@ -1013,7 +1009,9 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             }
             case kLctopK0S:
             {
-                //!TODO check selection value
+               double sparsearray[10] = {invMass[0], ptD, vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn,modelPred[0]};
+               fHistMassPtPhiqnCentr->Fill(sparsearray);
+               break;
             }
         }
     }
@@ -1156,7 +1154,7 @@ void AliAnalysisTaskSECharmHadronvn::CalculateInvMasses(AliAODRecoDecayHF* d,flo
             }
         break;
         case kLctopK0S:
-            {  //!TODO: check inv mass calculations
+            {  
                 nmasses=1; 
                 masses = new float[nmasses];
                 masses[0]=((AliAODRecoCascadeHF*)d)->InvMassLctoK0sP();
@@ -1341,9 +1339,9 @@ void AliAnalysisTaskSECharmHadronvn::GetDaughterTracksToRemove(AliAODRecoDecayHF
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, AliAODv0 *dV0, double modelPred[2]) {
+int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, int nDau, int absPdgMom, AliAnalysisVertexingHF *vHF, AliAODRecoDecayHF2Prong *dD0, double modelPred[2]) {
 
-    if(!d || !vHF || (fDecChannel==kDstartoKpipi && !dD0) || (fDecChannel==kLctopK0S && !dV0)) return false;
+    if(!d || !vHF || (fDecChannel==kDstartoKpipi && !dD0) ) return false;
  
     //Preselection to speed up task
     TObjArray arrDauTracks(nDau);
@@ -1358,12 +1356,9 @@ int AliAnalysisTaskSECharmHadronvn::IsCandidateSelected(AliAODRecoDecayHF *&d, i
             arrDauTracks.AddAt(track,iDau);
         }
     } else if (fDecChannel == kLctopK0S) {
-         for(int iDau=0; iDau<nDau; iDau++) {
-            if(iDau == 0)
-               track = vHF->GetProng(fAOD,d,iDau); //bachelor
-            else
-               track = vHF->GetProng(fAOD,dV0,iDau-1);   //K0S daughters
-            arrDauTracks.AddAt(track,iDau);
+         for(int iDau=0; iDau<nDau-1; iDau++) {  //nDau==3 for daughter subtraction; RDHFcuts preselect for Lc2V0 stops at V0 level
+               track = vHF->GetProng(fAOD,d,iDau);  
+               arrDauTracks.AddAt(track,iDau);
          }
     } else {
         for(int iDau=0; iDau<nDau; iDau++){
