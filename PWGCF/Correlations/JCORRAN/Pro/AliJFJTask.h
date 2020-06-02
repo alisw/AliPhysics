@@ -76,6 +76,7 @@ class AliJFJTask : public AliAnalysisTaskSE {
         void AddFlags(UInt_t nflags){flags |= nflags;}
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+        AliJCDijetAna * GetJCDijetAna() { return fana ; }
         
     private:
 
