@@ -183,6 +183,12 @@ class AliAnalysisTaskCMW : public AliAnalysisTaskSE {
   TProfile     *fHistv2AchKaonNeg[2][10]; //!
   TProfile     *fHistv2AchProtNeg[2][10]; //!
 
+  TProfile     *fHistv2AchChrgPosChrgNeg[2][10];
+  TProfile     *fHistv2AchPionPosPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgNegChrgPos[2][10];
+  TProfile     *fHistv2AchPionNegPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
+    
+
 
   ///Used For NUA Corrections:
   TH3F          *fHCorrectNUAposChrg[5];   //! [5] = centrality bins
