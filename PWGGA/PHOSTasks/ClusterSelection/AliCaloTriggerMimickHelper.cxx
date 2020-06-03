@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. 	*
  *																			*
- * Author: Daniel Mühlheim													*
+ * Author: Jens Lühder  													*
  * Version 1.0																*
  *																			*
  * Permission to use, copy, modify and distribute this software and its	 	*
