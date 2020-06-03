@@ -37,7 +37,7 @@ class AliAnalysisTaskFilterEventTPCdEdx : public AliAnalysisTaskMKBase
         static AliAnalysisTaskFilterEventTPCdEdx* AddTaskFilterEventTPCdEdx(const char* name = "TaskFilterEventTPCdEdx", const char* treefile = 0, const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistdEdx;                  //-> dedx hist
+        THnSparseF*             fHistdEdx;                  //-> dedx hist
         TTree*                  fesdTreeFiltered;           //! the tree with filtered esd events
         
     private:
