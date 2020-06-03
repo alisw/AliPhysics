@@ -826,30 +826,32 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         }
         if(!untaggedDet && !untaggedPart) {
           // Fill residuals
-          fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
-          fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
-          fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
-          fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH2("hZgResidualsRg", pointRg[kIndSDPart], resZg);
-          fHistManager.FillTH2("hRgResidualsRg", pointRg[kIndSDPart], resRg);
-          fHistManager.FillTH2("hThetagResidualsRg", pointRg[kIndSDPart], resThetag);
-          fHistManager.FillTH2("hNsdResidualsRg", pointRg[kIndSDPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsRgNormalized", pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsRgNormalized", pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsRgNormalized", pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsRgNormalized", pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
-          fHistManager.FillTH2("hZgResidualsThetag", pointThetag[kIndSDPart], resZg);
-          fHistManager.FillTH2("hRgResidualsThetag", pointThetag[kIndSDPart], resRg);
-          fHistManager.FillTH2("hThetagResidualsThetag", pointThetag[kIndSDPart], resThetag);
-          fHistManager.FillTH2("hNsdResidualsThetag", pointThetag[kIndSDPart], resNsd);
-          fHistManager.FillTH2("hZgResidualsThetagNormalized", pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
-          fHistManager.FillTH2("hRgResidualsThetagNormalized", pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
-          fHistManager.FillTH2("hThetagResidualsThetagNormalized", pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
-          fHistManager.FillTH2("hNsdResidualsThetagNormalized", pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          if(fFillPlotsResiduals) {
+            fHistManager.FillTH2("hZgResiduals", pointZg[kIndPtPart], resZg);
+            fHistManager.FillTH2("hRgResiduals", pointRg[kIndPtPart], resRg);
+            fHistManager.FillTH2("hThetagResiduals",  pointThetag[kIndPtPart], resThetag);
+            fHistManager.FillTH2("hNsdResiduals",  pointNsd[kIndPtPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsNormalized", pointZg[kIndPtPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsNormalized", pointRg[kIndPtPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsNormalized", pointThetag[kIndPtPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsNormalized", pointNsd[kIndPtPart], resNsd/pointNsd[kIndSDPart]);
+            fHistManager.FillTH2("hZgResidualsRg", pointRg[kIndSDPart], resZg);
+            fHistManager.FillTH2("hRgResidualsRg", pointRg[kIndSDPart], resRg);
+            fHistManager.FillTH2("hThetagResidualsRg", pointRg[kIndSDPart], resThetag);
+            fHistManager.FillTH2("hNsdResidualsRg", pointRg[kIndSDPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsRgNormalized", pointRg[kIndSDPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsRgNormalized", pointRg[kIndSDPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsRgNormalized", pointRg[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsRgNormalized", pointRg[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+            fHistManager.FillTH2("hZgResidualsThetag", pointThetag[kIndSDPart], resZg);
+            fHistManager.FillTH2("hRgResidualsThetag", pointThetag[kIndSDPart], resRg);
+            fHistManager.FillTH2("hThetagResidualsThetag", pointThetag[kIndSDPart], resThetag);
+            fHistManager.FillTH2("hNsdResidualsThetag", pointThetag[kIndSDPart], resNsd);
+            fHistManager.FillTH2("hZgResidualsThetagNormalized", pointThetag[kIndSDPart], resZg/pointZg[kIndSDPart]);
+            fHistManager.FillTH2("hRgResidualsThetagNormalized", pointThetag[kIndSDPart], resRg/pointRg[kIndSDPart]);
+            fHistManager.FillTH2("hThetagResidualsThetagNormalized", pointThetag[kIndSDPart], resThetag/pointThetag[kIndSDPart]);
+            fHistManager.FillTH2("hNsdResidualsThetagNormalized", pointThetag[kIndSDPart], resNsd/pointNsd[kIndSDPart]);
+          }
         }
       }
       if (detjet->Pt() >= ptmindet && detjet->Pt() <= ptmaxdet)
