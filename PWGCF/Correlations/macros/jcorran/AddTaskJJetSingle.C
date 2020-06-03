@@ -33,9 +33,8 @@ AliJJetTask* AddTaskJJetSingle(
   //-------------------------------------------------------
   TString name(taskname);
   // isMC 0:1 
-  TString tracksName[2]        = {"usedefault","usedefault"};//"mcparticles"};
+  TString tracksName[2]        = {"usedefault","mcparticles"};//"mcparticles"};
   TString clustersCorrName[2]  = {"usedefault","mcparticles"};
-  TString DataClassName[2]  = {"AliAODCaloCluster","AliAODMCParticle"};
   TString rhoName              = "rho";
   //-------------------------------------------------------
   // LOAD EMCALJetTasks and Variables
@@ -53,6 +52,26 @@ AliJJetTask* AddTaskJJetSingle(
   jtTask->Setnkt( 1 ) ; // Set information about if kt algorithm reconstruction was done or not.
   jtTask->SetDebug( debug );
   jtTask->SelectCollisionCandidates( trigger ); // WARNING: default is AliVEvent::kEMCEJE. Double check it!
+
+
+  // AliMCParticleContainer or AliParticleContainer
+  if(isMC) {
+    AliMCParticleContainer *trackCont;
+    trackCont = jtTask->AddMCParticleContainer(tracksName[isMC]);
+    trackCont->SelectPhysicalPrimaries(kTRUE);
+    trackCont->SetClassName("AliAODMCParticle");
+  } else {
+    AliParticleContainer *trackCont;
+    AliClusterContainer *clusterCont;
+    AliTrackContainer* partCont = new AliTrackContainer(tracksName[isMC]);
+    partCont->SetFilterHybridTracks(kFALSE);
+    trackCont = partCont;
+    trackCont->SetClassName("AliVTrack");
+    //AliParticleContainer *trackCont  = jtTask->AddParticleContainer( tracksName );
+    if (trackCont) jtTask->AdoptParticleContainer(trackCont);
+    clusterCont = jtTask->AddClusterContainer( clustersCorrName[isMC] );
+    clusterCont->SetClassName("AliAODCaloCluster");
+  }
 
   //EMCAL jets
   AliEmcalJetTask *jetFinderTask;
@@ -73,20 +92,34 @@ AliJJetTask* AddTaskJJetSingle(
   //== JetFinderTask, JetContainer
   jetFinderTask = AddTaskEmcalJet( tracksName[isMC], clustersCorrName[isMC], AliJetContainer::antikt_algorithm, consize, jettype, 0.15, 0.300, 0.005, reco, "Jet", 0.15 ); // anti-kt
   jetFinderTask->SelectCollisionCandidates(trigger);
-  jtTask->SetTrackOrMCParticle( isMC, isMC ? AliJJetTask::kJMCParticle : AliJJetTask::kJRecoTrack );  //check with AliJJet??
+  jtTask->SetTrackOrMCParticle( isMC, isMC ? AliJJetTask::kJMCParticle : AliJJetTask::kJRecoTrack );  
   jtTask->SetConeSize(0 , consize );
   cout << jetFinderTask->GetName() << endl;
   jetCont = jtTask->AddJetContainer( jetFinderTask->GetName(), type, consize ); 
+  if( jetCont ) {
+      jetCont->SetRhoName( rhoName );
+      jetCont->ConnectParticleContainer( trackCont );
+      if ( type == "EMCALfid" ) jetCont->ConnectClusterContainer( clusterCont );
+      jetCont->SetZLeadingCut( 0.98, 0.98 ); // FIXME: Comments me and others
+      jetCont->SetPercAreaCut( 0.6 );
+      jetCont->SetJetPtCut( 5 );
+      jetCont->SetLeadingHadronType( 0 );
+  }
   
 //-------------------------------------------------------
   // kt-algorithm
   //-------------------------------------------------------
   ktFinderTask = AddTaskEmcalJet( tracksName[isMC], clustersCorrName[isMC], AliJetContainer::kt_algorithm, ktConeSize, jettype, 0.15, 0.300, 0.005, reco, "Jet", 0.15 ); // kt
   ktFinderTask->SelectCollisionCandidates(trigger);
-  jtTask->SetTrackOrMCParticle(isMC, isMC ? AliJJetTask::kJMCParticle : AliJJetTask::kJRecoTrack ); // CHECK!!!
+  jtTask->SetTrackOrMCParticle(isMC, isMC ? AliJJetTask::kJMCParticle : AliJJetTask::kJRecoTrack ); 
   jtTask->SetConeSize( 1, ktConeSize );
   cout << ktFinderTask->GetName() << endl;
   ktCont = jtTask->AddJetContainer( ktFinderTask->GetName(), jettype, ktConeSize );
+  if( ktCont ) {
+     ktCont->SetRhoName( rhoName );
+     ktCont->ConnectParticleContainer( trackCont );
+      if ( ktType == "EMCALfid" ) ktCont->ConnectClusterContainer( clusterCont );
+  }
   
 
   //------------

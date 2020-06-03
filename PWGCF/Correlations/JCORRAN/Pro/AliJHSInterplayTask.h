@@ -1,31 +1,16 @@
 #ifndef AliJHSInterplay_cxx
 #define AliJHSInterplay_cxx
 
-#include <TVector.h>
-#include <TRandom.h>
-#include <TString.h>
-#include <TPRegexp.h>
 #include "AliAnalysisTaskSE.h"
-#include "AliGenEventHeader.h"
-#include "AliAnalysisUtils.h"
-#include "AliJEfficiency.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliMCParticle.h"
+#include "AliJHistos.h"
+#include "AliJCard.h"
 #include "AliJJetTask.h"
+#include "AliJFJTask.h"
+#include "AliJCatalystTask.h"
 
+const int kNESE = 6;
 //#include <fstream>
-
-class AliESDEvent;
-class AliMCEvent;
-class AliESDtrackCuts;
-class AliESDVertex;
-class TClonesArray;
-class AliJCard;
-class AliJHistos;
-class AliJBaseTrack;
-class AliJEfficiency;
-class AliJRunTable;
-class AliJFFlucAnalysis;
 
 class AliJHSInterplayTask : public AliAnalysisTaskSE {
 
@@ -42,61 +27,49 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		virtual void   Terminate(Option_t *);
 		virtual Bool_t UserNotify();
 
-		bool IsGoodEvent(AliVEvent *event);
 		void SetDebugMode( int debug) { fDebugMode = debug; };
 		AliJCard *GetCard() { return fCard; }
 		void SetCard( AliJCard *c ) { fCard = c; }
-		void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Settint IsMC = " << ismc << endl; };
-		double GetCentralityFromImpactPar(double ip);
-		double GetImpactParFromCentrality(double cent);
-		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
-		Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
-		void SetKineOnly (Bool_t iskineonly) {IsKinematicOnly = iskineonly;};
-		void RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt);
+		void RegisterList(TClonesArray* listToFill, TObjArray* listFromToFill,double lpt, double hpt);
 		void SetPtHardMin( double pthardmin ){fPtHardMin = pthardmin; };
 		void SetPtHardMax( double pthardmax ){fPtHardMax = pthardmax; };
 		void SetDiJetAsymMin( double min ){fDiJetAsymMin = min; };
 		void SetJetTaskName(TString name){ fJetTaskName=name; }
 		void SetJetSel(int iS){ fJetSel=iS; }
+		 // Methods specific for this class
+  		void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
+ 		void SetJFFlucAnalysis(AliJFFlucAnalysis *ana){ fFFlucAna=ana; } // Setter for analysis
+ 		void SetJFJTaskName(TString name){ fJFJTaskName=name; } 
+ 		void Setjettask_tagging(int ijettask) { jettask_tagging=ijettask; }
+ 		void ESETagging(int itask, int iESE, double lpPT);
+
 
 	private:
 		TDirectory           *fOutput;     // Output
-
-		AliAnalysisUtils *fAnaUtils;
+		AliJCatalystTask *fJCatalystTask;  // 
+ 		TString           fJCatalystTaskName; // Name for JCatalyst task
 		AliJFFlucAnalysis *fFFlucAna;
 		AliJJetTask           * fJetTask;
 		TString fJetTaskName;
 		int fJetSel;
+		AliJFJTask			  *fJFJTask;
+		TString fJFJTaskName;
 		AliJCard * fCard;
 		AliJHistos *fHistos;
-
-		AliJEfficiency *fEfficiency;
-		int fHadronSelectionCut;
-
-		TF1 *pfOutlierLowCut, *pfOutlierHighCut;
-		
-		TClonesArray * fInputList;
 		TClonesArray * fInputListSpectra;
-		int fVnMethod; // 0; RunFlow 1 : JFluc
-		int fESMethod; // 0; all pt 1 : leading pt
 		TClonesArray * fInputListFlow;
-
-		Bool_t fFirstEvent; //
+		int fVnMethod; // 0; RunFlow 1 : JFluc
+		int jettask_tagging;
+		int fESMethod; // 0; all pt 1 : leading pt
 		int cBin;
 		int zBin;
 		double zVert;
 		Int_t fevt; // event number
 		int fDebugMode;
-		Int_t trkfilterBit;
-		AliJRunTable *fRunTable; // 
-
-		TRandom *fRandom;
-		Bool_t IsMC;
-		Bool_t IsKinematicOnly;
 		double fPtHardMin;
 		double fPtHardMax;
 		double fDiJetAsymMin;
-		Bool_t TagThisEvent;
+		Bool_t TagThisEvent[kNESE];
 
 		ClassDef(AliJHSInterplayTask, 1); // example of analysis
 };
