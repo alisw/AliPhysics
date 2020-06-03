@@ -25,13 +25,8 @@
 #include <iostream>
 #include <sstream>
 
-/// \cond CLASSIMP
 ClassImp(AliEMCALTriggerSTUDCSConfig) ;
-/// \endcond
-
-/// \cond CLASSIMP
 ClassImp(AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount) ;
-/// \endcond
 
 AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject(),
 fGetRawData(1),
@@ -139,9 +134,6 @@ TClonesArray *AliEMCALTriggerSTUDCSConfig::GetErrorCountsForTRU(Int_t itru) cons
   return fTRUErrorCounts[itru];
 }
 
-///
-/// Checks for equalness according to the time stamp.
-//_____________________________________________________________________________
 Bool_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::IsEqual(const TObject *o) const
 {
   const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);
@@ -151,9 +143,6 @@ Bool_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::IsEqual(con
   return test->fTime == fTime;
 }
 
-//
-// Compare time-dependent error counts based on the time information.
-//_____________________________________________________________________________
 Int_t AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUTRUErrorCount::Compare(const TObject *o) const
 {
   const AliEMCALTriggerSTUTRUErrorCount *test = dynamic_cast<const AliEMCALTriggerSTUTRUErrorCount *>(o);

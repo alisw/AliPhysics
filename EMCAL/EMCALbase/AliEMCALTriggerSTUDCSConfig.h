@@ -10,57 +10,102 @@
 class TVector2;
 class TClonesArray;
 
-//________________________________________________
-/// \class AliEMCALTriggerSTUDCSConfig
-/// \ingroup EMCALbase
-/// \brief EMCal trigger STU DCS Config
-///
-///  EMCAL STU DCS parameters to be stored in OCDB
-///  Add more comment
-///
-/// \author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-//________________________________________________
-
+/**
+ * @class AliEMCALTriggerSTUDCSConfig
+ * @brief TRU configuration in OCDB
+ * @ingroup EMCALbase
+ * @author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+ * 
+ * This object is the OCDB object containing the 
+ * STU configuration for a single STU (EMCAL or DCAL) 
+ * provided by the Preprocessor. Configuration values are
+ * - L1 thresholds (Gamma/Jet), V0-dependent
+ * - STU region (Mask of TRUs used by the STU)
+ * - Scale factors for PHOS regions
+ * - Modes (median, raw data)
+ * - Jet patchsize
+ * - Error counters
+ * - Firmware version
+ * 
+ * The OCDB object provides also streamer versions
+ * to ASCII file and to JSON strings.
+ */
 class AliEMCALTriggerSTUDCSConfig : public TObject 
 {
 
 public:
 
-  //________________________________________________
-  /// \class AliEMCALTriggerSTUTRUErrorCount
-  /// \ingroup EMCALbase
-  /// \brief EMCal trigger STU  error count handling
-  ///
-  ///  EMCAL STU error count error count handling
-  ///  Add more comment
-  ///
-  /// \author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-  //________________________________________________
-
+  /**
+   * @class AliEMCALTriggerSTUTRUErrorCount
+   * @brief Time series of EMCAL STU-TRU communication error counters
+   * @ingroup EMCALbase
+   * @author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+   * 
+   * Helper class storing the time series of STU-TRU error counts.
+   * Error counts can be obtained for a certain time interval, 
+   * where the time stamp is connected to the global ALICE time
+   * stamp.
+   */
   class AliEMCALTriggerSTUTRUErrorCount : public TObject 
   {
     
   public:
     
+    /**
+     * @brief Dummy constructor
+     */
     AliEMCALTriggerSTUTRUErrorCount(): TObject(), fTime(0), fErrorCount(0) {}
+
+    /**
+     * @brief Constructor, setting also data point
+     * @param time Time stamp
+     * @param errorCount STU-TRU error counts
+     */
     AliEMCALTriggerSTUTRUErrorCount(Int_t time, ULong64_t errorCount) : TObject(), fTime(time), fErrorCount(errorCount) {}
+
+    /**
+     * @brief Destructor
+     */
     ~AliEMCALTriggerSTUTRUErrorCount() {}
     
+    /**
+     * @brief Comparison for equalness according to time stamp
+     * @param o Object to compare to
+     * @return True if the objects are the same (same time stamp), false otherwise
+     */
     virtual Bool_t  IsEqual(const TObject *o) const;
+    
+    /**
+     * @brief Comparison to other error counter according to toime stamp
+     * @param o Object to compare to
+     * @return 1 if this object has a larger time, -1 if the other object has a larger time, 0 if time stamps are the same
+     */
     virtual Int_t   Compare(const TObject *o) const;
     
+    /**
+     * @brief Set time stamp and error counters
+     * @param time Time stamp
+     * @param errorcount Number of STU-TRU communication errors
+     */
     void            SetValue(Int_t time, ULong64_t errorcount){ fTime = time; fErrorCount = errorcount; }
+
+    /**
+     * @brief Get time stamp
+     * @return Time stamp
+     */
     Int_t           GetTime()       const { return fTime       ; }
+
+    /**
+     * @brief Get the number of STU-TRU communication errors for this time stamp
+     * @return Error counter
+     */
     ULong64_t       GetErrorCount() const { return fErrorCount ; }
     
   private:
     Int_t                     fTime;        ///< Time
     ULong_t                   fErrorCount;  ///< Error count
     
-    /// \cond CLASSIMP
     ClassDef(AliEMCALTriggerSTUTRUErrorCount, 1) ;
-    /// \endcond
-    
   };
 
   /**
@@ -267,10 +312,7 @@ private:
   Int_t                   fMedian;                    ///< 1 in case of using EMCAL/DCAL for estimating the median
   TClonesArray            *fTRUErrorCounts[68];       ///< TRU error counts
   
-  /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerSTUDCSConfig,5) ;
-  /// \endcond
-  
 };
 
 #endif // ALIEMCALTRIGGERSTUDCSCONFIG_H
