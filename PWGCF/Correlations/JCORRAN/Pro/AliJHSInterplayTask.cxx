@@ -207,11 +207,16 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 			pT_max = ptt;
 		}
 	}
-	// find out the event tagging for selected jettask
+	/*
+	for(int iE=0;iE<kNESE;iE++) TagThisEvent[iE]=kFALSE; // init for every events
 	for(int iE=0;iE<kNESE;iE++) ESETagging(jettask_tagging, iE, pT_max);
 	for(int iE=0;iE<kNESE;iE++) cout << TagThisEvent[iE]<<":";
 		cout << "LP pt="<< pT_max << endl;
-
+	*/
+	// Now only for selected one
+    TagThisEvent[fESMethod]=kFALSE; // init for every events
+    ESETagging(jettask_tagging, fESMethod, pT_max); // event tagging
+    if(fDebugMode) cout << fESMethod <<"\t" << TagThisEvent[fESMethod] << endl;
 	if(TagThisEvent[fESMethod]) {
 		fHistos->fhiCentr->Fill(cBin);
 		fHistos->fhCentr->Fill(fcent);
@@ -259,7 +264,6 @@ void AliJHSInterplayTask::ESETagging(int itask, int iESE, double pT_max) {
 	double minSubLeadingJetPt = 5.0;
 	double asym = -999;
 	double InvM = -999;
-
     if(itask==1) {
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         AliJCDijetAna *fJFJAna = (AliJCDijetAna*)fJFJTask->GetJCDijetAna();
@@ -280,7 +284,7 @@ void AliJHSInterplayTask::ESETagging(int itask, int iESE, double pT_max) {
 		subLjetpt = pssubLjet.pt();
 		asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
 		InvM = ( psLjet + pssubLjet).m();
-		
+		if(fDebugMode) cout << Form("LPpt=%.1f:LPjet=%.1f:subJet=%.1f:DiJetAsym=%.1f",pT_max,Ljetpt,subLjetpt,asym) << endl;
 		switch(iESE) {
 		  case 0: // Leading particle
 				TagThisEvent[iESE] = kTRUE;
