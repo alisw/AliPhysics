@@ -63,7 +63,8 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("nAcc","mult6kcoarse");
     AddAxis("MCpT","pt");
     AddAxis("MCQ",3,-1.5,1.5);
-    AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
+//    AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
+    AddAxis("ESDTrackCut", 9, -1.5,7.5);//default, nogeo, nogeonogold, geoCut116, geoCut117, geoCut118 geoCut119, tpconlyminimal
     AddAxis("MCinfo",4,-0.5,3.5);  // 0=prim, 1=decay 2=material, 3=genprim
     AddAxis("eta","#eta",10,-1.,+1.);
     AddAxis("phi","#phi",36,0.,2*TMath::Pi());
@@ -80,6 +81,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput()
     AddAxis("phi","#phi",36,0.,2*TMath::Pi());
     AddAxis("z","Z",60,-30,+30);
     AddAxis("NClusterPID", "N_{Cluster, PID}", 201, -0.5, 200.5);
+    AddAxis("ESDTrackCut", 9, -1.5,7.5);//default, nogeo, nogeonogold, geoCut116, geoCut117, geoCut118 geoCut119, tpconlyminimal
     fHistTrack = CreateHist("fHistTrack");
     fOutputList->Add(fHistTrack);
         
@@ -114,21 +116,26 @@ void AliAnalysisTaskSpectraEtaPhi::AnaEvent()
 
 void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag)
 {
-    if (!fAcceptTrackM) return;
-    
-    FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEta, fPhi, fZInner, fTPCSignalN);
+//    if (!fAcceptTrackM) return;
+    for(int i=0; i<8;++i){
+        if(fAcceptTrack[i])
+            FillHist(fHistTrack, fMultPercentileV0M, fNTracksAcc, fPt, fChargeSign, fEta, fPhi, fZInner, fTPCSignalN, i);
+    }
 }
 
 //_____________________________________________________________________________
 
 void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag)
 {
-    if (!fAcceptTrackM) return;
+//    if (!fAcceptTrackM) return;
      
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType, fEta, fPhi, fZInner, fTPCSignalN);
+    for(int i=0; i<8;++i){
+        if(fAcceptTrack[i])
+            FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, i, fMCProdcutionType, fEta, fPhi, fZInner, fTPCSignalN);
+    }
 
 }
 
@@ -143,7 +150,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3, fEtaInner, fPhiInner, fTPCSignalN);
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, -1, 3, fEta, fPhi, fZInner, fTPCSignalN);
 
 }
 
@@ -182,8 +189,16 @@ AliAnalysisTaskSpectraEtaPhi* AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("tpcitsnogeonogold"));
-//     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    //default, nogeo, nogeonogold, geoCut116, geoCut117, geoCut118 geoCut119, tpconlyminimal
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("tpcitsnogeoEta08"));
+    task->SetESDtrackCuts(2,AlidNdPtTools::CreateESDtrackCuts("tpcitsnogeonogoldEta08"));
+    task->SetESDtrackCuts(3,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 116));
+    task->SetESDtrackCuts(4,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 117));
+    task->SetESDtrackCuts(5,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 118));
+    task->SetESDtrackCuts(6,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 119));
+    task->SetESDtrackCuts(7,AlidNdPtTools::CreateESDtrackCuts("tpconlyminimalEta08"));
     task->SetNeedEventMult(kTRUE);
     task->SetNeedTrackIP(kTRUE);
     

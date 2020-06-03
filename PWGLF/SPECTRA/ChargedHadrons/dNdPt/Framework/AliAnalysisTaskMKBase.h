@@ -77,8 +77,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliESDtrackCuts*       GetESDtrackCutsM() { return fESDtrackCutsM; }
         AliESDtrackCuts*       GetESDtrackCuts(Int_t i) { return (i < 10) ? fESDtrackCuts[i] : 0; }
         
-        static Long64_t        FillHist(THnSparseD* s, Double_t x1, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0, Double_t x12 =0) { return AlidNdPtTools::FillHist(s, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12); }
-        static Long64_t        FillHistWeighted(THnSparseD* s, std::vector<double> const& val, double weight) {return AlidNdPtTools::FillHistWeighted(s, val, weight);}
+        static Long64_t        FillHist(THnSparseF* s, Double_t x1, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0, Double_t x12 =0) { return AlidNdPtTools::FillHist(s, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12); }
+        static Long64_t        FillHistWeighted(THnSparseF* s, std::vector<double> const& val, double weight) {return AlidNdPtTools::FillHistWeighted(s, val, weight);}
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0) { return AlidNdPtTools::AddAxis(label, nbins, xmin, xmax, option); }
         static Int_t           AddAxis(const char* label, const char* title, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0) { return AlidNdPtTools::AddAxis(label, title, nbins, xmin, xmax, option); }
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t* xbins, const char* option = 0) { return AlidNdPtTools::AddAxis(label, nbins, xbins, option); }
@@ -86,7 +86,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         static Int_t           AddAxis(const char* label, const char* title, const char* option) { return AlidNdPtTools::AddAxis(label, title, option); }
         static Int_t           AddAxis(const char* label, const char* option) { return AlidNdPtTools::AddAxis(label, option); }
         static Int_t           AddAxis(const char* option) { return AlidNdPtTools::AddAxis(option); }                 
-        static THnSparseD*     CreateHist(const char* name) { return AlidNdPtTools::CreateHist(name); }
+        static THnSparseF*     CreateHist(const char* name) { return AlidNdPtTools::CreateHist(name); }
         static void            ResetHist() { AlidNdPtTools::ResetHist(); }
         static TH1D*           CreateLogHist(const char* name, const char* title) { return AlidNdPtTools::CreateLogHist(name, title); }
         static TH1D*           CreateLogHist(const char* name) { return AlidNdPtTools::CreateLogHist(name); }

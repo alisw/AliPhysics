@@ -1,4 +1,4 @@
-/// \class AliAnalysisTaskUEStudy
+PWGLF/SPECTRA/ChargedHadrons/dNdPt/Framework/AliAnalysisTaskUEStudy.hPWGLF/SPECTRA/ChargedHadrons/dNdPt/Framework/AlidNdPtTools.h/// \class AliAnalysisTaskUEStudy
 /// \brief Task to study efficiency and contamination in MC
 ///
 /// Fills THnSparse to study pt vs. nch in underlying event
@@ -49,11 +49,11 @@ class AliAnalysisTaskUEStudy : public AliAnalysisTaskMKBase
         Int_t                   fMCNChTowards;              //!<! MC nCH in towards region
         Int_t                   fMCNChTransverse;           //!<! MC nCH in transvers region
         Int_t                   fMCNChAway;                 //!<! MC nCH in away region                   
-        THnSparseD*             fHistUETracks;              //-> underlying event histogram in data
-        THnSparseD*             fHistUE;                    //-> underlying event histogram in data
-        THnSparseD*             fHistUETracksMC;            //-> underlying event histogram in mc        
-        THnSparseD*             fHistUEMC;                  //-> underlying event histogram in mc        
-        THnSparseD*             fHistUEPhiRes;              //-> underlying event resolution phi
+        THnSparseF*             fHistUETracks;              //-> underlying event histogram in data
+        THnSparseF*             fHistUE;                    //-> underlying event histogram in data
+        THnSparseF*             fHistUETracksMC;            //-> underlying event histogram in mc
+        THnSparseF*             fHistUEMC;                  //-> underlying event histogram in mc
+        THnSparseF*             fHistUEPhiRes;              //-> underlying event resolution phi
         
 
         

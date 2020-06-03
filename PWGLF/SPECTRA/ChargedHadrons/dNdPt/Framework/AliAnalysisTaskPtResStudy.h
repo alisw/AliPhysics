@@ -37,10 +37,10 @@ class AliAnalysisTaskPtResStudy : public AliAnalysisTaskMKBase
         static AliAnalysisTaskPtResStudy* AddTaskPtResStudy(const char* name = "TaskPtResStudy", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistPtResCov;        //-> pt resolution from covariance matrix
-        THnSparseD*             fHistPtResCovHighPt;  //-> pt resolution from covariance matrix smaller binning for highest pt
-        THnSparseD*             fHistPtResMC;         //-> pt resolution from mc
-        THnSparseD*             fHistPtRes;           //-> pt resolution, combination of covariance and track fit
+        THnSparseF*             fHistPtResCov;        //-> pt resolution from covariance matrix
+        THnSparseF*             fHistPtResCovHighPt;  //-> pt resolution from covariance matrix smaller binning for highest pt
+        THnSparseF*             fHistPtResMC;         //-> pt resolution from mc
+        THnSparseF*             fHistPtRes;           //-> pt resolution, combination of covariance and track fit
         
     private:
         AliAnalysisTaskPtResStudy(const AliAnalysisTaskPtResStudy&); // not implemented
