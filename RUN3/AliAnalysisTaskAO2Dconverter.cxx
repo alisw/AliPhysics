@@ -104,6 +104,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     , mucls()
     , zdc()
     , vzero()
+    , fdd()
     , v0s()
     , cascs()
 {
@@ -121,9 +122,9 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "Run2v0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "Run2 V0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "BC info" };
 
 const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
 
@@ -363,6 +364,19 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   }
   PostTree(kRun2V0);
 
+  // Associate branches for FDD (AD)
+  TTree* tFDD = CreateTree(kFDD);
+  tFDD->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kFDD]) {
+    tFDD->Branch("fBCsID", &fdd.fBCsID, "fBCsID/I");
+    tFDD->Branch("fAmplitude", fdd.fAmplitude, "fAmplitude[8]/F");
+    tFDD->Branch("fTimeA", &fdd.fTimeA, "fTimeA/F");
+    tFDD->Branch("fTimeC", &fdd.fTimeC, "fTimeC/F");
+    tFDD->Branch("fBCSignal", &fdd.fBCSignal, "fBCSignal/b");
+  }
+  PostTree(kFDD);
+
+  
   // Associuate branches for V0s
   TTree* tV0s = CreateTree(kV0s);
   tV0s->SetAutoFlush(fNumberOfEventsPerCluster);
@@ -592,9 +606,12 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
   }
   TString title=pvtx->GetTitle();
-  if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
-  if(pvtx->GetNContributors()<2) return;
-
+  
+  // bypass vertex selection for muon UPC triggers with at least one muon track
+  if (!(fESD->GetFiredTriggerClasses().Contains("CMUP") && fESD->GetNumberOfMuonTracks()>0)) {
+    if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
+    if(pvtx->GetNContributors()<2) return;
+  }
   Int_t eventID = fEventCount++;
 
   //---------------------------------------------------------------------------
@@ -668,6 +685,16 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   bc.fGlobalBC = evtid;
   
   bc.fTriggerMask = fESD->GetTriggerMask();
+  TString firedClasses = fESD->GetFiredTriggerClasses();
+  if (firedClasses.Contains("CINT7-B-NOPF-CENTNOTRD")) bc.fTriggerMask |= 1ull << 50;
+  if (firedClasses.Contains("CCUP8-B-NOPF-CENTNOTRD")) bc.fTriggerMask |= 1ull << 51;
+  if (firedClasses.Contains("CCUP9-B-NOPF-CENTNOTRD")) bc.fTriggerMask |= 1ull << 52;
+  if (firedClasses.Contains("CMUP10-B-NOPF-MUFAST"))   bc.fTriggerMask |= 1ull << 53;
+  if (firedClasses.Contains("CMUP11-B-NOPF-MUFAST"))   bc.fTriggerMask |= 1ull << 54;
+  if (firedClasses.Contains("CINT7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 55;
+  if (firedClasses.Contains("CMSL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 56;
+  if (firedClasses.Contains("CMLL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 57;
+  if (firedClasses.Contains("CMUL7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 58;
   
   FillTree(kBC);
   
@@ -1100,6 +1127,15 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   FillTree(kRun2V0);
   if (fTreeStatus[kRun2V0]) eventextra.fNentries[kRun2V0] = 1;
 
+  //---------------------------------------------------------------------------
+  // AD (FDD)
+  AliESDAD* esdad = fESD->GetADData();
+  fdd.fBCsID = eventID;
+  fdd.fTimeA = esdad->GetADATime();
+  fdd.fTimeC = esdad->GetADCTime();
+  FillTree(kFDD);
+  if (fTreeStatus[kFDD]) eventextra.fNentries[kFDD] = 1;
+  
   //---------------------------------------------------------------------------
   // V0s (Lambda and KS)
   Int_t nv0 = fESD->GetNumberOfV0s();
