@@ -72,7 +72,7 @@ AliCaloTriggerMimickHelper::AliCaloTriggerMimickHelper(const char *name, Int_t c
 
 //________________________________________________________________________
 AliCaloTriggerMimickHelper::~AliCaloTriggerMimickHelper(){
-    if (fDoDebugOutput>=2){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;}
+    if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, AliCaloTriggerMimickHelper Line: "<<__LINE__<<endl;}
     // default deconstructor
 }
 
@@ -84,7 +84,7 @@ void AliCaloTriggerMimickHelper::Terminate(Option_t *){
 //________________________________________________________________________
 void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
   //SetDebugOutput(2);
-  if (fDoDebugOutput>=2){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
+  if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
   fNMaxPHOSModules=4;
   nMaxCellsPHOS = (fNMaxPHOSModules*3584); //56*64=3584
   //Prepare PHOS trigger utils if necessary
@@ -93,7 +93,7 @@ void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
     printf("Force run %d \n", fRunNumber) ;
     fPHOSTrigUtils->ForseUsingRun(fRunNumber) ;
   }
-  if (fDoDebugOutput>=2){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
+  if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
   if(fDoLightOutput) return;
   return;
 }
@@ -101,7 +101,7 @@ void AliCaloTriggerMimickHelper::UserCreateOutputObjects(){
 
 //________________________________________________________________________
 void AliCaloTriggerMimickHelper::UserExec(Option_t *){
-    if (fDoDebugOutput>=2){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec Start, Line: "<<__LINE__<<"; GetPHOSTrigger: "<<GetPHOSTrigger()<<"; fRunNumber: "<<fRunNumber<<endl;}
+    if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec Start, Line: "<<__LINE__<<"; GetPHOSTrigger: "<<GetPHOSTrigger()<<"; fRunNumber: "<<fRunNumber<<endl;}
   // main method of AliCaloTriggerMimickHelper, first initialize and then process event
   if(!fForceRun)
     fRunNumber=fInputEvent->GetRunNumber() ;
@@ -140,7 +140,7 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
             continue;
           }
           if (fDoDebugOutput>=5){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<endl;}
-          else if ((fDoDebugOutput>=2)&&(clus->E()>=3.0)){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
+
           cellAbsId = 0;
           isClusterGood =kTRUE;
           for (Int_t iDig=0; iDig< clus->GetNCells(); iDig++){
@@ -156,7 +156,10 @@ void AliCaloTriggerMimickHelper::UserExec(Option_t *){
                 }
           }
           if (isClusterGood){
+              if ((fDoDebugOutput>=2)&&(clus->E()>=5.0)){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; cluster E:"<<clus->E()<<"; ClusterLoop i="<<i<<"; (nclus=="<<nclus<<")"<<endl;}
               SetTriggerDataOrMC(clus, fIsMC);
+          } else {
+              if ((fDoDebugOutput>=3)&&(clus->E()>=5.0)){cout<<"Debug Output; AliCaloTriggerMimickHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
           }
       }   
   }
