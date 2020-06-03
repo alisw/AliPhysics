@@ -13,7 +13,6 @@ using namespace std;
 class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
   public:
-    AliCaloTriggerMimicHelper(const char *name="AliCaloTriggerMimicHelper", Int_t clusterType = 0, Bool_t isMC=kFALSE);
     AliCaloTriggerMimicHelper(const char *name="AliCaloTriggerMimicHelper", Int_t clusterType = 0, Int_t isMC=0);
     enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
     //Uncopyable & operator=(const Uncopyable&);

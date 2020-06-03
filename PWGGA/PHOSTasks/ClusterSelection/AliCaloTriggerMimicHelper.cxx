@@ -35,26 +35,6 @@ using namespace std;
 ClassImp(AliCaloTriggerMimicHelper)
 
 //________________________________________________________________________
-AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clusterType, Bool_t isMC) : AliAnalysisTaskSE(name),
-    fClusterType(clusterType),
-    fRunNumber(-1),
-    nModules(4),
-    fNMaxPHOSModules(0),
-    nMaxCellsPHOS(0),
-    fPHOSTrigger(kPHOSAny),
-    fPHOSTrigUtils(0x0),
-    fGeomPHOS(NULL),
-    fDoLightOutput(kFALSE),
-    fForceRun(kFALSE),
-    fIsMC(isMC),
-    fEventChosenByTrigger(kFALSE),
-    fDoDebugOutput(0)
-{
-    // Default constructor
-    DefineInput(0, TChain::Class());
-}
-
-//________________________________________________________________________
 AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clusterType, Int_t isMC) : AliAnalysisTaskSE(name),
     fClusterType(clusterType),
     fRunNumber(-1),
