@@ -3625,7 +3625,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             weight = weightsBins[pthardbin-1];
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
-                
+
         } else if ( fPeriodEnum == kLHC16c3a ){ // ALIROOT-5901
           Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
           Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03};
@@ -4193,7 +4193,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
               if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
             }
         }
-      
+
       } else if ( fPeriodEnum == kLHC17g5a1 || fPeriodEnum == kLHC17g5a2 ){
         Double_t ptHardBinRanges[7]  = { 5,  11,  21, 36, 57,
                                             84, 1000000};
@@ -5043,14 +5043,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     }
     return kFALSE;
   }
-
-  if (fSpecialTrigger == 6){
-    AliCaloTriggerMimicHelper* tempMimickHelper = 0x0;
-    tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
-    if (tempMimickHelper){
-      return tempMimickHelper->GetEventChosenByTrigger();
+  if(fMimicTrigger == 3){
+    if (fSpecialTrigger == 6){
+      AliCaloTriggerMimicHelper* tempMimickHelper = 0x0;
+      tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
+      if (tempMimickHelper){
+        return tempMimickHelper->GetEventChosenByTrigger();
+      } else {
+        AliFatal(Form("AliCaloTriggerMimicHelper tempMimickHelper was not found for fSpecialTrigger == %d and fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));
+      }
     } else {
-      return kFALSE;
+        AliFatal(Form("fSpecialTrigger == %d was not implemented in MimicTrigger case fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));
     }
   }
 
@@ -6571,14 +6574,14 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       weight = functionResultData/functionResultMC;
       if ( kCaseGen == 3){   // never true ?
         if (PDGCode ==  111){
-	  if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-	    weight = 1.;
-	  }
+      if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+        weight = 1.;
+      }
         }
         if (PDGCode ==  221){
-	  if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
-	    weight = 1.;
-	  }
+      if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+        weight = 1.;
+      }
         }
       }
       if (!isfinite(functionResultData)) weight = 1.;
@@ -7957,9 +7960,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   //pp 13 TeV anchored to LHC18
   } else if ( periodName.CompareTo("LHC18P1Pyt8NomB") == 0 ||
               periodName.CompareTo("LHC18g4") ==0 || periodName.CompareTo("LHC18g5") ==0  || periodName.CompareTo("LHC18g6") == 0 ||
-	      periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  ||
-	      periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 ||
-	      periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
+          periodName.CompareTo("LHC18h2") ==0 || periodName.CompareTo("LHC18h4") ==0  ||
+          periodName.CompareTo("LHC18j1") ==0 || periodName.CompareTo("LHC18j4") == 0 ||
+          periodName.CompareTo("LHC18k1") ==0 || periodName.CompareTo("LHC18k2") == 0 || periodName.CompareTo("LHC18k3") == 0
   ){
     fPeriodEnum = kLHC18P1Pyt8NomB;
     fEnergyEnum = k13TeV;
