@@ -128,7 +128,7 @@ int ComputeTPCCalibrations(int period = kLHC18q, TString infilename = "$HOME/Dow
         }
     }
 
-    TFile outfile(Form("calibTPCRun2%sVtx10", periodSuffix.Data()), "recreate");
+    TFile outfile(Form("calibTPCRun2%sVtx10.root", periodSuffix.Data()), "recreate");
     for (int iCent = 0; iCent < 9; iCent++)
     {
         OADBcontPosEta[iCent]->Write();
