@@ -276,6 +276,16 @@ class AliHFTreeHandler : public TObject
     float fNTracksGenJet;  //number of tracks in the gen jet
     float fZJet; // fragmentation function in jet
     float fZGenJet; //fragmentation function in gen jet
+    float fAngularityk1B1Jet; // Angularity with kappa = 1 and beta =1 in jet
+    float fAngularityk1B1GenJet; // Angularity with kappa = 1 and beta =1 in gen jet  
+    float fpTDispersionJet; // pT dispersion in jet
+    float fpTDispersionGenJet; // pT dispersion in gen jet
+    float fChargek03Jet; // jet charge with kappa = 0.3 in jet
+    float fChargek03GenJet; // jet charge with kappa = 0.3 in gen jet
+    float fChargek05Jet; // jet charge with kappa = 0.5 in jet
+    float fChargek05GenJet; // jet charge with kappa = 0.5 in gen jet
+    float fChargek07Jet; // jet charge with kappa = 0.7 in jet
+    float fChargek07GenJet; // jet charge with kappa = 0.7 in gen jet
     float fZgJet; //zg
     float fZgGenJet; //gen zg
     float fRgJet; //Rg

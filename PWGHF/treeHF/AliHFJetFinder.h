@@ -65,7 +65,7 @@ class AliHFJetFinder : public TObject
   #if !defined(__CINT__) && !defined(__MAKECINT__)
   void SetJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODRecoDecayHF *cand=nullptr);
   void SetMCJetVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents, const fastjet::PseudoJet& jet, Int_t jetID, AliAODMCParticle *mcpart=nullptr);
-  void SetJetSubstructureVariables(AliHFJet& hfjet, const std::vector<fastjet::PseudoJet>& constituents);
+  void SetJetSubstructureVariables(AliHFJet& hfjet, const fastjet::PseudoJet& jet, const std::vector<fastjet::PseudoJet>& constituents);
   fastjet::JetFinder JetAlgorithm(Int_t jetalgo);
   fastjet::RecombinationScheme RecombinationScheme(Int_t recombscheme);
   fastjet::AreaType AreaType(Int_t area);
@@ -129,6 +129,7 @@ class AliHFJetFinder : public TObject
   
   Bool_t                   fDoJetSubstructure;
   AliFJWrapper            *fFastJetWrapper;
+  std::vector<std::pair<Int_t,Double_t>>   fConstituentCharge;
 
 
 
