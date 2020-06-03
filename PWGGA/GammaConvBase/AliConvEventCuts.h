@@ -32,6 +32,7 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
+class AliCaloTriggerMimicHelper;
 
 /**
  * @class AliConvEventCuts
@@ -366,6 +367,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       };
 
+      enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
+
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
@@ -400,6 +403,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ;
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
+      void    SetPHOSTrigger(phosTriggerType t=kPHOSL0)                             { fPHOSTrigger=t                                            ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
 
@@ -531,6 +535,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
+      phosTriggerType GetPHOSTrigger()                                              { return fPHOSTrigger                                       ; }
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
@@ -760,11 +765,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingMultMC;            ///< Histogram name for reweighting Eta
       TH1D*                       hReweightMultData;                      ///< histogram input for reweighting Eta
       TH1D*                       hReweightMultMC;                        ///< histogram input for reweighting Pi0
+      phosTriggerType             fPHOSTrigger;                           // Kind of PHOS trigger: L0,L1
       Int_t                       fDebugLevel;                            ///< debug level for interactive debugging
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,76)
+      ClassDef(AliConvEventCuts,77)
       /// \endcond
 };
 
