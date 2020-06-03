@@ -53,12 +53,13 @@ public:
     void SetTrackCutsAntiXion2(    AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
     // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
     float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
-    float CalculateInvMassLambda(TVector3 momPosDaughter, TVector3 momNegDaughter);
+    float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
     float CalculateInvMassXi(TVector3 momBach, TVector3 momPosDaughter, TVector3 momNegDaughter);
-    // void MixChildParticles(std::vector<AliFemtoDreamBasePart> XiVector, 
-    //                        std::vector<AliFemtoDreamBasePart> LambdaVector, 
-    //                        TList *outputLists,
-    //                        bool checkSameParticleMixing = true);
+    
+    void MixChildParticles(std::vector<AliFemtoDreamBasePart> *XiVector, 
+                           std::vector<AliFemtoDreamBasePart> *LambdaVector, 
+                           TList                              *outputLists,
+                           bool                                checkSameParticleMixing = true);
 
     // void Setv0Cuts_rec(            AliFemtoDreamv0Cuts      *v0Cuts_rec        )  { fLambdaV0Cuts_rec        =   v0Cuts_rec;        };
     // void SetAntiv0Cuts_rec(        AliFemtoDreamv0Cuts      *v0AntiCuts_rec        )  { fAntiLambdaV0Cuts_rec        =   v0AntiCuts_rec;        };
@@ -120,7 +121,8 @@ public:
     // TList                              *tlAntiProtonMC;        //!
     TList                              *tlLambdaMC;                         //!
     TList                              *tlAntiLambdaMC;                     //!
-    TList                              *tlRecombination;                    //!      Recombinations Lists and histos
+    TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
+    TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     TH1F                               *hInvMassLambda_total;               //!
     TH1F                               *hInvMassLambda_shared_pion;         //!
     TH1F                               *hInvMassLambda_shared_proton;       //!
@@ -132,12 +134,19 @@ public:
     TH1F                               *hInvMassLambda_sanityCheck;         //!
     TH1                                *hInvMassXi_sanityCheck;             //!
     TH1F                               *fEvtCounter;                        //!
-    AliFemtoDreamv0                    *fv0_recomb;                         //!
-    TList                              *tlLambdaList_rec;                   //!
-    TList                              *tlAntiLambdaList_rec;               //!
-
+    // AliFemtoDreamv0                    *fv0_recomb;                         //!
+    // TList                              *tlLambdaList_rec;                   //!
+    // TList                              *tlAntiLambdaList_rec;               //!
+    TH1F                               *hInvMassLambda_Pi_bach_Xi;          //!
+    TH1F                               *hInvMassLambda_Pi_daugh_Xi;         //!
+    TH1F                               *hInvMassLambda_Prot_Xi;         //!
+    TH1F                               *hInvMassXi_Lamda_pi_prot;              //! 
+    TH1F                               *hInvMassXi_Lamda_pi;            //!
+    TH1F                               *hInvMassXi_Lamda_prot;          //!
+    TH1F                               *hInvMassXi_Lamda_pi_bach;              //! 
+    TH1F                               *hInvMassXi_Lamda_pi_bach_prot;      //!
   
-    ClassDef(AliAnalysisTaskPOmegaPenne,21)
+    ClassDef(AliAnalysisTaskPOmegaPenne,22)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
