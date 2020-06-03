@@ -1481,16 +1481,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt, GetEventWeight());}
     }
     
-    if(IsDataMC())
+    if ( IsDataMC() )
     {
       // Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
       
-      if(label >= 0)
+      if ( label >= 0 )
       {
         AliVParticle * mom = GetMC()->GetTrack(label);
-        mompdg =TMath::Abs(mom->PdgCode());
+        if ( mom ) mompdg =TMath::Abs(mom->PdgCode());
+        else       AliInfo(Form("Mother particle for label %d not found",label));
       }
       
       Int_t mcType = kmcUnknown;
