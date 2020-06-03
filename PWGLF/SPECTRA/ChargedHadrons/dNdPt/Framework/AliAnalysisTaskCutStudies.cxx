@@ -19,8 +19,6 @@
 #include "AliAnalysisTaskMKBase.h"
 #include "AliAnalysisTaskCutStudies.h"
 
-class AliAnalysisTaskCutStudies;
-
 using namespace std;
 
 /// \cond CLASSIMP
@@ -65,7 +63,7 @@ void AliAnalysisTaskCutStudies::AddOutput()
 {
   myHist.AddAxis("axis1", "title1", 100, 0, 100);
   myHist.AddAxis("axis2", "title2", 100, 0, 100);
-  fOutputList->Add(myHist.GenerateHist("myHist"));
+  fOutputList->Add(myHist.GenerateHist("myHistABC"));
 }
 
 //****************************************************************************************
@@ -75,7 +73,8 @@ void AliAnalysisTaskCutStudies::AddOutput()
 //****************************************************************************************
 Bool_t AliAnalysisTaskCutStudies::IsEventSelected()
 {
-    return fIsAcceptedAliEventCuts;
+  return true; //TEMP
+  //return fIsAcceptedAliEventCuts;
 }
 
 //****************************************************************************************
@@ -87,20 +86,17 @@ void AliAnalysisTaskCutStudies::AnaEvent()
 {
    LoopOverAllTracks();
    if (fIsMC) LoopOverAllParticles();
-
-
 }
 
 //****************************************************************************************
 /**
- * Analyze the track..
+ * Analyze the track.
  */
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 {
-    if (!fAcceptTrackM) return;
-
-  myHist.Fill({1.,2.});
+  if (!fAcceptTrackM) return;
+  myHist.Fill(10., 20.);
 }
 
 //****************************************************************************************
@@ -134,27 +130,26 @@ void AliAnalysisTaskCutStudies::AnaParticleMC(Int_t flag)
 //****************************************************************************************
 AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const char* name)
 {
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        ::Error("AddTaskCutStudies", "No analysis manager to connect to.");
-        return nullptr;
-    }
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+      ::Error("AddTaskCutStudies", "No analysis manager to connect to.");
+      return nullptr;
+  }
 
-    if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskCutStudies", "This task requires an input event handler");
-        return nullptr;
-    }
+  if (!mgr->GetInputEventHandler()) {
+      ::Error("AddTaskCutStudies", "This task requires an input event handler.");
+      return nullptr;
+  }
 
-    AliAnalysisTaskCutStudies *task = new AliAnalysisTaskCutStudies(name);
-    if (!task) { return nullptr; }
-    
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
-//     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+  AliAnalysisTaskCutStudies *task = new AliAnalysisTaskCutStudies(name);
+  if (!task) { return nullptr; }
 
-    mgr->AddTask(task);
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root"));
-    
+  task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+
+  mgr->AddTask(task);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root"));
+
   return task;
 }
