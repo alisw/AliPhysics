@@ -59,23 +59,31 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
     fCentralityRange(-999., 999.),
+    fCellTimeRange(-1., 1.),
+    fOfflineTriggerData(),
+    fMinNumberFastors(0),
     fEnableSumw2(false),
     fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name):
     AliAnalysisTaskEmcalTriggerBase(name),
     fCentralityRange(-999., 999.),
+    fCellTimeRange(-1., 1.),
+    fOfflineTriggerData(),
+    fMinNumberFastors(0),
     fEnableSumw2(false),
     fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
@@ -102,6 +110,10 @@ void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
       }
     }
   }
+
+  // creating trigger data grid
+  fOfflineTriggerData.Allocate(48, 104);
+
   AliDebugStream(1) << "Histograms done" << std::endl;
 }
 
@@ -130,6 +142,7 @@ bool AliAnalysisTaskEmcalPatchesRef::IsUserEventSelected(){
 
 bool AliAnalysisTaskEmcalPatchesRef::Run(){
   AliDebugStream(1) << GetName() << ": Start function" << std::endl;
+  FillDataGrid();
 
   AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
 
@@ -138,6 +151,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
   for(auto patchIter : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
+    if(GetNumberOfFastORs(patch) < fMinNumberFastors) continue;
 
     bool isDCAL         = patch->IsDCalPHOS(),
         isSingleShower  = SelectSingleShowerPatch(patch),
@@ -244,6 +258,31 @@ bool AliAnalysisTaskEmcalPatchesRef::SelectJetPatch(const AliEMCALTriggerPatchIn
   }
 }
 
+void AliAnalysisTaskEmcalPatchesRef::FillDataGrid(){
+  fOfflineTriggerData.Reset();
+  Short_t cellID;
+  Double_t cellamplitude, celltime, efrac;
+  Int_t mclabel, fastorID, row, col;
+  for(int icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++) {
+    fCaloCells->GetCell(icell, cellID, cellamplitude, celltime, mclabel, efrac);
+    if(!fCellTimeRange.IsInRange(celltime)) continue;
+    if(cellamplitude > 0.) {
+      fGeom->GetFastORIndexFromCellIndex(cellID, fastorID);
+      fGeom->GetPositionInEMCALFromAbsFastORIndex(fastorID, col, row);
+      fOfflineTriggerData(col, row) += cellamplitude;
+    } 
+  }
+}
+
+Int_t AliAnalysisTaskEmcalPatchesRef::GetNumberOfFastORs(const AliEMCALTriggerPatchInfo *patch) const {
+  Int_t nfastor = 0;
+  for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
+    for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
+      if(fOfflineTriggerData(icol, irow) > 0) nfastor++;
+    }
+  }
+  return nfastor;
+}
 AliAnalysisTaskEmcalPatchesRef::EnergyBinning::EnergyBinning():
     TCustomBinning()
 {
