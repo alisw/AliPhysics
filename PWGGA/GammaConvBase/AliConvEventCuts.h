@@ -32,7 +32,7 @@ class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
-class AliCaloTriggerMimickHelper;
+class AliCaloTriggerMimicHelper;
 
 /**
  * @class AliConvEventCuts

@@ -1,5 +1,5 @@
-#ifndef AliCaloTriggerMimickHelper_H
-#define AliCaloTriggerMimickHelper_H
+#ifndef AliCaloTriggerMimicHelper_H
+#define AliCaloTriggerMimicHelper_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TChain.h"
@@ -10,15 +10,15 @@
 class AliPHOSTriggerUtils;
 using namespace std;
 
-class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
+class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
   public:
-    AliCaloTriggerMimickHelper(const char *name="AliCaloTriggerMimickHelper", Int_t clusterType = 0, Bool_t isMC=kFALSE);
-    AliCaloTriggerMimickHelper(const char *name="AliCaloTriggerMimickHelper", Int_t clusterType = 0, Int_t isMC=0);
+    AliCaloTriggerMimicHelper(const char *name="AliCaloTriggerMimicHelper", Int_t clusterType = 0, Bool_t isMC=kFALSE);
+    AliCaloTriggerMimicHelper(const char *name="AliCaloTriggerMimicHelper", Int_t clusterType = 0, Int_t isMC=0);
     enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
     //Uncopyable & operator=(const Uncopyable&);
 
-    virtual ~AliCaloTriggerMimickHelper();                            //virtual destructor
+    virtual ~AliCaloTriggerMimicHelper();                            //virtual destructor
     void UserCreateOutputObjects();
 
     virtual void UserExec(Option_t *option);
@@ -34,8 +34,8 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     void SetDebugOutput( Int_t flag )              { fDoDebugOutput = flag                         ; }
 
   private:
-    AliCaloTriggerMimickHelper (const AliCaloTriggerMimickHelper&);             // not implemented
-    AliCaloTriggerMimickHelper & operator=(const AliCaloTriggerMimickHelper&);  // not implemented
+    AliCaloTriggerMimicHelper (const AliCaloTriggerMimicHelper&);             // not implemented
+    AliCaloTriggerMimicHelper & operator=(const AliCaloTriggerMimicHelper&);  // not implemented
 
     // private methods
     void SetClusterType(Int_t iClusterType)     { fClusterType = iClusterType                 ; }
@@ -60,7 +60,7 @@ class AliCaloTriggerMimickHelper : public AliAnalysisTaskSE {
     Bool_t                  fEventChosenByTrigger;                      //!
     Int_t                   fDoDebugOutput;                             //!
 
-    ClassDef(AliCaloTriggerMimickHelper, 1);
+    ClassDef(AliCaloTriggerMimicHelper, 1);
 };
 
 #endif

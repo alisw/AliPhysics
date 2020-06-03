@@ -53,7 +53,7 @@
 #include "AliVCaloCells.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
-#include "AliCaloTriggerMimickHelper.h"
+#include "AliCaloTriggerMimicHelper.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 
@@ -5045,8 +5045,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   }
 
   if (fSpecialTrigger == 6){
-    AliCaloTriggerMimickHelper* tempMimickHelper = 0x0;
-    tempMimickHelper = (AliCaloTriggerMimickHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
+    AliCaloTriggerMimicHelper* tempMimickHelper = 0x0;
+    tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
     if (tempMimickHelper){
       return tempMimickHelper->GetEventChosenByTrigger();
     } else {
