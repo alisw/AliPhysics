@@ -257,6 +257,8 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
     sprintf(name,"amplPMT%d:run",ipmt);
     TString cutamp = Form("amplPMT%i>0",ipmt);
     gr = MakeGraphSparse(tree,name,cutamp.Data());
+    if (!gr)
+      continue;
     //gr = MakeGraphSparse(tree,name,"");
     gr->SetMarkerStyle(20);
     gr->SetMarkerSize(1.0);
@@ -293,8 +295,8 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
     //regular run
     int nRuns = gr->GetN();
     double *y =  gr->GetY();
-	double min = y[0];
-	double max = y[0];
+    double min = y[0];
+    double max = y[0];
     for(int irun =1; irun<nRuns;irun++){
       if(min > y[irun] && y[irun]>0) min = y[irun];
       if(max < y[irun]) max = y[irun];
@@ -308,7 +310,7 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
     //  }
     
     //  timeMin = min - 2; 
-    //   timeMax = max + 2; 
+    //   timeMax = max + 2;
 
     gr->SetMarkerStyle(20);
     gr->SetMarkerSize(1.0);
@@ -329,54 +331,56 @@ void drawPerformanceT0QATrends(const char* inFile = "trending.root", const char*
     leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(3);
     leg->AddEntry(gr,"mean time","p"); 
     //leg->AddEntry(grDelay,"Time Delay OCDB","p"); 
-    leg->Draw(); 
- 
+    leg->Draw();
+
     c1->SaveAs(Form("meanTimePMT%d_vs_run.png",ipmt));
   }
-//   TGraphErrors *grEfficiencySPD = MakeGraphSparse(tree,"efficiencySPD:run","");
-//   grEfficiencySPD->SetMarkerStyle(25);
-//   grEfficiencySPD->SetMarkerSize(1.0);
-//   grEfficiencySPD->SetMarkerColor(1);
-//   grEfficiencySPD->GetXaxis()->LabelsOption("v");
-//   grEfficiencySPD->SetTitle("T0 to SPD ratio;run;Nevts_{T0}/Nevts_{SPD}");
-//   grEfficiencySPD->Draw("AP");
-  //c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
-  cout<<" before "<<endl;
+  //   TGraphErrors *grEfficiencySPD =
+  //   MakeGraphSparse(tree,"efficiencySPD:run","");
+  //   grEfficiencySPD->SetMarkerStyle(25);
+  //   grEfficiencySPD->SetMarkerSize(1.0);
+  //   grEfficiencySPD->SetMarkerColor(1);
+  //   grEfficiencySPD->GetXaxis()->LabelsOption("v");
+  //   grEfficiencySPD->SetTitle("T0 to SPD ratio;run;Nevts_{T0}/Nevts_{SPD}");
+  //   grEfficiencySPD->Draw("AP");
+  // c1->SaveAs("efficiencyT0toSPD_vs_run.gif");
   if ( tree->GetBranch("efficiency0TVX_CINT7")) {
-  TGraphErrors *grEfficiency0TVX_CINT7 = MakeGraphSparse(tree,"efficiency0TVX_CINT7:run","");
-  cout<<" grEfficiency0TVX_CINT7"<<grEfficiency0TVX_CINT7<<endl;
-  if (grEfficiency0TVX_CINT7) {
-    grEfficiency0TVX_CINT7->GetYaxis()->SetRangeUser(0.,1.);
-    grEfficiency0TVX_CINT7->SetMarkerStyle(25);
-    grEfficiency0TVX_CINT7->SetMarkerSize(1.0);
-    grEfficiency0TVX_CINT7->SetMarkerColor(1);
-    grEfficiency0TVX_CINT7->GetXaxis()->LabelsOption("v");
-    grEfficiency0TVX_CINT7->SetTitle("T0 to V0 ratio;run;0TVX/CINT7");
-    grEfficiency0TVX_CINT7->Draw("AP");
-    c1->SaveAs("efficiencyT0toV0_vs_run.png");
-  }
+    TGraphErrors *grEfficiency0TVX_CINT7 =
+        MakeGraphSparse(tree, "efficiency0TVX_CINT7:run", "");
+    if (grEfficiency0TVX_CINT7) {
+      grEfficiency0TVX_CINT7->GetYaxis()->SetRangeUser(0., 1.);
+      grEfficiency0TVX_CINT7->SetMarkerStyle(25);
+      grEfficiency0TVX_CINT7->SetMarkerSize(1.0);
+      grEfficiency0TVX_CINT7->SetMarkerColor(1);
+      grEfficiency0TVX_CINT7->GetXaxis()->LabelsOption("v");
+      grEfficiency0TVX_CINT7->SetTitle("T0 to V0 ratio;run;0TVX/CINT7");
+      grEfficiency0TVX_CINT7->Draw("AP");
+      c1->SaveAs("efficiencyT0toV0_vs_run.png");
+    }
   }
   if ( tree->GetBranch("efficiency0TVX_CADAND")) {
-  TGraphErrors *grEfficiency0TVX_CADAND = MakeGraphSparse(tree,"efficiency0TVX_CADAND:run","");
-  if (grEfficiency0TVX_CADAND ){
-    grEfficiency0TVX_CADAND->GetYaxis()->SetRangeUser(0.,1.);
-    grEfficiency0TVX_CADAND->SetMarkerStyle(22);
-    grEfficiency0TVX_CADAND->SetMarkerSize(1.0);
-    grEfficiency0TVX_CADAND->SetMarkerColor(2);
-    grEfficiency0TVX_CADAND->GetXaxis()->LabelsOption("v");
-    grEfficiency0TVX_CADAND->SetTitle("T0 to AD ratio;run;0TVX/CADAND");
-    grEfficiency0TVX_CADAND->Draw("AP");
-    c1->SaveAs("efficiencyT0toAD_vs_run.png");
-  }  
-  }  
-  //leg->Clear();
-//   TLegend *leg = new TLegend(0.1,0.8,0.3,0.95," ","efficiency");
-//   leg->SetFillStyle(0); leg->SetBorderSize(0); leg->SetTextSize(0.05);leg->SetNColumns(1);//leg->SetColumnSeparation(1);
-//   leg->AddEntry(grEfficiency0TVX_CINT7,"T0 to V0 ratio","p"); 
-//   leg->AddEntry(grEfficiency0TVX_CADAND,"T0 to AD ratio","p"); 
-  //leg->AddEntry(grSum,"(ORA+ORC)/2","p"); 
-  //leg->Draw(); 
-  //c1->SaveAs("efficiency_vs_run.gif");
+    TGraphErrors *grEfficiency0TVX_CADAND =
+        MakeGraphSparse(tree, "efficiency0TVX_CADAND:run", "");
+    if (grEfficiency0TVX_CADAND) {
+      grEfficiency0TVX_CADAND->GetYaxis()->SetRangeUser(0., 1.);
+      grEfficiency0TVX_CADAND->SetMarkerStyle(22);
+      grEfficiency0TVX_CADAND->SetMarkerSize(1.0);
+      grEfficiency0TVX_CADAND->SetMarkerColor(2);
+      grEfficiency0TVX_CADAND->GetXaxis()->LabelsOption("v");
+      grEfficiency0TVX_CADAND->SetTitle("T0 to AD ratio;run;0TVX/CADAND");
+      grEfficiency0TVX_CADAND->Draw("AP");
+      c1->SaveAs("efficiencyT0toAD_vs_run.png");
+    }
+  }
+  // leg->Clear();
+  //   TLegend *leg = new TLegend(0.1,0.8,0.3,0.95," ","efficiency");
+  //   leg->SetFillStyle(0); leg->SetBorderSize(0);
+  //   leg->SetTextSize(0.05);leg->SetNColumns(1);//leg->SetColumnSeparation(1);
+  //   leg->AddEntry(grEfficiency0TVX_CINT7,"T0 to V0 ratio","p");
+  //   leg->AddEntry(grEfficiency0TVX_CADAND,"T0 to AD ratio","p");
+  // leg->AddEntry(grSum,"(ORA+ORC)/2","p");
+  // leg->Draw();
+  // c1->SaveAs("efficiency_vs_run.gif");
   
   //-----> draw your new trending plot here
   c1->Close();
