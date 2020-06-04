@@ -14,7 +14,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
 									 bool isMC = false,				                        //2
 									 int fFilterBit = 128,			                      //3
 									 TString triggerData = "kInt7",	                  //4
-                   const char *mixmethod = "0") {                   //5
+                   float SidebandLow = 1.08,                        //5
+                   float SidebandUp = 1.103,                         //6
+                   const char *mixmethod = "0") {                   //7
 
   TString suffix = TString::Format("%s", mixmethod);
 
@@ -50,7 +52,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   //Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   //Extending the range of invariant mass cuts for V0
-  v0Cuts->SetCutInvMass(0.04);
+//  v0Cuts->SetCutInvMass(0.04);
+  v0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -60,7 +63,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoDimi(bool fullBlastQA = false,//1
   v0Cuts->SetPDGCodev0(3122);  //Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  Antiv0Cuts->SetCutInvMass(0.04);
+//  Antiv0Cuts->SetCutInvMass(0.04);
+  Antiv0Cuts->SetCutWindow(SidebandLow,SidebandUp);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug =
