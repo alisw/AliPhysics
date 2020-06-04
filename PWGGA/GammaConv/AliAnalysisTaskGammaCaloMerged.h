@@ -137,8 +137,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TList*                  fMesonCutArray;                                     // List with Meson Cuts
     AliConversionMesonCuts* fMesonCuts;                                         // MesonCutObject
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
-    TClonesArray*           fAODMCTrackArray;                                   // AOD trak array
-    TClonesArray*           farrClustersProcess;                                // Cluser array
+    TClonesArray*           fAODMCTrackArray;                                   // MC track array
+    TClonesArray*           farrClustersProcess;                                // Cluster array
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
