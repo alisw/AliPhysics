@@ -1220,6 +1220,8 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         // all runs
         fCRCQVecPhiHist->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiHistCh[cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        fCRCQVecPhiRbRHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        fCRCQVecPhiRbRHistCh[cw][fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         for (Int_t h=0;h<6;h++) {
           fCRCQVecHarCosProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Cos((h+1.)*dPhi),wPhiEta);
           fCRCQVecHarSinProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Sin((h+1.)*dPhi),wPhiEta);
@@ -5158,10 +5160,11 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   for(Int_t r=0;r<fCRCnRun;r++) {
     fCRCQVecListRun[r] = NULL;
     fFlowQCVtxList[r] = NULL;
-    //    fCRCQVecPhiRbRHist[r] = NULL;
-    //    for(Int_t h=0;h<2;h++) {
-    //      fCRCQVecPhiRbRHistCh[r][h] = NULL;
-    //    }
+    // @Shi uncommented to save RbR phi eta dis
+        fCRCQVecPhiRbRHist[r] = NULL;
+        for(Int_t h=0;h<2;h++) {
+          fCRCQVecPhiRbRHistCh[r][h] = NULL;
+        }
     for(Int_t i=0; i<fkFlowQCRbRnHar; i++) {
       if(r==0) {
         for(Int_t k=0; k<fkFlowQCRbRnVar; k++) {
@@ -14551,6 +14554,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
   fCRCFlags->Fill(14.5,(Int_t)fCalculateFlowZDC);
   fCRCFlags->Fill(15.5,(Int_t)fCalculateFlowVZ);
   fCRCFlags->Fill(16.5,(Int_t)fUsePhiEtaCuts);
+  fCRCFlags->Fill(17.5,(Int_t)fCalculateCME);   @Shi
 
 } // end of void AliFlowAnalysisCRC::StoreCRCFlags()
 
@@ -15961,6 +15965,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
     fCalculateFlowZDC = (Bool_t)fCRCFlags->GetBinContent(15);
     fCalculateFlowVZ = (Bool_t)fCRCFlags->GetBinContent(16);
     fUsePhiEtaCuts = (Bool_t)fCRCFlags->GetBinContent(17);
+    fCalculateCME = (Bool_t)fCRCFlags->GetBinContent(18);                    // @Shi missing flag added
   } else {
     cout<<"WARNING: CRCFlags is NULL in AFAWQC::GPFCRC() !!!!"<<endl;
     fHarmonic = kFALSE;
@@ -15980,6 +15985,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
     fCalculateFlowZDC = kFALSE;
     fCalculateFlowVZ = kFALSE;
     fUsePhiEtaCuts = kFALSE;
+    fCalculateCME = kFALSE;
   }
 
   if(!fCalculateCRCInt){return;}
@@ -17361,7 +17367,8 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
   fCRCFlags->GetXaxis()->SetBinLabel(14,"CalculateFlowQC");
   fCRCFlags->GetXaxis()->SetBinLabel(15,"CalculateFlowZDC");
   fCRCFlags->GetXaxis()->SetBinLabel(16,"CalculateFlowVZ");
-  fCRCFlags->GetXaxis()->SetBinLabel(17,"CalculateEbEFlow");
+  fCRCFlags->GetXaxis()->SetBinLabel(17,"UsePhiEtaCuts"); //@Shi should be "UsePhiEtaCuts"?!
+  fCRCFlags->GetXaxis()->SetBinLabel(18,"CalculateCME");  //@Shi add this missing flag
   fCRCList->Add(fCRCFlags);
 
   // EbE quantities
@@ -17825,14 +17832,15 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     fCRCQVecListRun[r]->SetOwner(kTRUE);
     fCRCQVecList->Add(fCRCQVecListRun[r]);
 
-//    fCRCQVecPhiRbRHist[r] = new TH3D(Form("fCRCQVecPhiRbRHist[%d]",fRunList[r]),Form("fCRCQVecPhiRbRHist[%d]",fRunList[r]),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
-//    fCRCQVecPhiRbRHist[r]->Sumw2();
-//    fCRCQVecListRun[r]->Add(fCRCQVecPhiRbRHist[r]);
-//    for(Int_t k=0;k<2;k++) {
-//      fCRCQVecPhiRbRHistCh[r][k] = new TH3D(Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunList[r],k),Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunList[r],k),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
-//      fCRCQVecPhiRbRHistCh[r][k]->Sumw2();
-//      fCRCQVecListRun[r]->Add(fCRCQVecPhiRbRHistCh[r][k]);
-//    }
+    // @shi uncomment following lines for generating RbRphi eta weight
+    fCRCQVecPhiRbRHist[r] = new TH3D(Form("fCRCQVecPhiRbRHist[%d]",fRunList[r]),Form("fCRCQVecPhiRbRHist[%d]",fRunList[r]),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
+    fCRCQVecPhiRbRHist[r]->Sumw2();
+    fCRCQVecListRun[r]->Add(fCRCQVecPhiRbRHist[r]);
+    for(Int_t k=0;k<2;k++) {
+      fCRCQVecPhiRbRHistCh[r][k] = new TH3D(Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunList[r],k),Form("fCRCQVecPhiRbRHistCh[%d][%d]",fRunList[r],k),10,cenbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
+      fCRCQVecPhiRbRHistCh[r][k]->Sumw2();
+      fCRCQVecListRun[r]->Add(fCRCQVecPhiRbRHistCh[r][k]);
+    }
 
    if(fStoreZDCQVecVtxPos) {
     fFlowQCVtxList[r] = new TList();
