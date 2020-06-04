@@ -49,6 +49,7 @@ public:
     kMuonCls,
     kZdc,
     kRun2V0,
+    kFDD,
     kV0s,
     kCascades,
     kTOF,
@@ -393,6 +394,17 @@ private:
     ULong64_t fBBFlag = 0ul;         ///  BB Flags from Online V0 Electronics
     ULong64_t fBGFlag = 0ul;         ///  BG Flags from Online V0 Electronics
   } vzero;                     //! structure to keep VZERO information
+
+  struct {
+    /// FDD (AD)  
+
+    Int_t fBCsID = 0u;              /// Index to BC table
+
+    Float_t fAmplitude[8] = {0.f};  ///  adc for each channel (not filled)
+    Float_t fTimeA = 0.f;           ///  average A-side time
+    Float_t fTimeC = 0.f;           ///  average C-side time
+    uint8_t fBCSignal = 0;          ///  trigger info (not filled)
+  } fdd;                            //! structure to keep FDD (AD) information
 
   struct {
     /// V0s (Ks, Lambda)
