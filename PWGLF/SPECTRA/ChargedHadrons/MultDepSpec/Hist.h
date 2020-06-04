@@ -65,7 +65,7 @@ public:
 
   RootHist_t* GenerateHist(std::string name, bool hasWeights = false)
   {
-    const std::size_t MAX_DIM = 6;
+    const std::size_t MAX_DIM = 10;
     const std::size_t nAxes = fAxes.size();
     if(nAxes == 0 || nAxes > MAX_DIM) return nullptr;
 
