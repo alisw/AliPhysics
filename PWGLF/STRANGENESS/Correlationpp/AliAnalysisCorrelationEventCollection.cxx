@@ -145,12 +145,11 @@ AliReconstructedSecondC::AliReconstructedSecondC() :
   sInvMassAntiLambda(0),
   sCosPointingAngle(0),
   sDcaV0ToPV(0),
-  sMultiplicity(0),
-  sZvertex(0),
   sctau(0), 
   sLabelMotherPos(0),
   sLabelPos(0),
   sLabelNeg(0),
+  sAssocOrNot(0),
 
 //variables used for cascades as associated particles
   cLabelMotherBach(0),
