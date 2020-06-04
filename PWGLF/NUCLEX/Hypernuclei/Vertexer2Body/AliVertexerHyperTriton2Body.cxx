@@ -29,6 +29,7 @@ ClassImp(AliVertexerHyperTriton2Body)
       fMinXforXYtest(-3.0),
       fV0VertexerSels{},
       fMassRange{2.9, 3.1},
+      fMaxCt{45},
       fMagneticField{0.},
       fPrimaryVertexX{0.},
       fPrimaryVertexY{0.},
@@ -204,7 +205,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
         Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
         Double_t ct = 2.99131 * TMath::Sqrt(deltaPos2 / momV02);
-        if (ct > 45)
+        if (ct > fMaxCt)
             return;
 
         double cpa = (deltaPos[0] * momV0[0] +
