@@ -3,5 +3,5 @@
 #endif
 
 AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies") {
-  return AliAnalysisTaskCutStudies::AddTaskCutStudies(name, outfile);
+  return AliAnalysisTaskCutStudies::AddTaskCutStudies(name);
 }

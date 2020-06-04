@@ -34,12 +34,11 @@ public:
   static AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies");
   
 private:
-  typedef AnalysisHelpers::Hist<THnSparseI> Hist;
   
   AliAnalysisTaskCutStudies(const AliAnalysisTaskCutStudies&); // not implemented
   AliAnalysisTaskCutStudies& operator=(const AliAnalysisTaskCutStudies&); // not implemented
         
-  Hist myHist;    //! chi2 per cluster TPC
+  AnalysisHelpers::Hist<THnSparseI> myHist;    //! chi2 per cluster TPC
   
   
   
