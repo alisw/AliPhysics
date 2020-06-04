@@ -55,6 +55,8 @@ public:
   //  TTree interface for interactive queries
   static Bool_t SetFilteredTree(TTree * filteredTree); /// set variable address in filtered trees
   static Bool_t SetFilteredTreeV0(TTree * filteredTreeV0); /// set variable address in filtered trees
+  //static Bool_t SetPileUpProperties(const TVectorF * tpcVertex, const TVectorF *itsMult, AliTPCPIDResponse *pidTPC);
+  static Bool_t SetPileUpProperties(const TVectorF & tpcVertexInfo, const TVectorF &itsClustersPerLayer, Int_t primMult, AliTPCPIDResponse *pidTPC);
   //
   static TTree *       fFilteredTree;  /// pointer to filteredTree
   static TTree *       fFilteredTreeV0;  /// pointer to filteredTree V0
