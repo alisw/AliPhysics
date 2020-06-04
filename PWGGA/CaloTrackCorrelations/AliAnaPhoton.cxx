@@ -103,8 +103,10 @@ fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyPerCentrality(0),
+fhEmbeddedPhotonFractionEnergy(0),
 fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),
 fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),
+fhEmbeddedPi0FractionEnergy(0),
 fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),
 fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0),
 
@@ -1917,9 +1919,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       
       AliDebug(1,Form("Energy fraction of embedded signal %2.3f, Energy %2.3f", fraction, clusterE));
       
-      fhEmbeddedSignalFractionEnergy->Fill(clusterE, fraction, GetEventWeight()*weightPt);
+      fhEmbeddedSignalFractionEnergy->Fill(energy, fraction, GetEventWeight()*weightPt);
       if ( IsHighMultiplicityAnalysisOn() )
-        fhEmbeddedSignalFractionEnergyPerCentrality->Fill(clusterE, fraction, GetEventCentrality(), GetEventWeight()*weightPt);
+        fhEmbeddedSignalFractionEnergyPerCentrality->Fill(energy, fraction, GetEventCentrality(), GetEventWeight()*weightPt);
 
     }  // embedded fraction
       
@@ -1938,6 +1940,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       // Fill histograms to check shape of embedded clusters
       if ( IsEmbedingAnalysisOn() )
       {
+        fhEmbeddedPhotonFractionEnergy->Fill(energy, fraction, GetEventWeight()*weightPt);
+
         if     (fraction > 0.9)
         {
           fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
@@ -1968,6 +1972,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       // Fill histograms to check shape of embedded clusters
       if ( IsEmbedingAnalysisOn() )
       {
+        fhEmbeddedPi0FractionEnergy->Fill(energy, fraction, GetEventWeight()*weightPt);
+
         if     (fraction > 0.9)
         {
           fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
@@ -3995,7 +4001,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbeddedSignalFractionEnergy  = new TH2F("hEmbeddedSignal_FractionEnergy",
                                                    "Energy Fraction of embedded signal versus cluster energy",
                                                    nptbins,ptmin,ptmax,100,0.,1.);
-        fhEmbeddedSignalFractionEnergy->SetYTitle("Fraction");
+        fhEmbeddedSignalFractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
         fhEmbeddedSignalFractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedSignalFractionEnergy) ;
         
@@ -4004,11 +4010,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhEmbeddedSignalFractionEnergyPerCentrality  = new TH3F("hEmbeddedSignal_FractionEnergy_PerCentrality",
                                                      "Energy Fraction of embedded signal versus cluster energy and centrality",
                                                      nptbins,ptmin,ptmax,20,0.,1.,20,0,100);
-          fhEmbeddedSignalFractionEnergyPerCentrality->SetYTitle("Fraction");
+          fhEmbeddedSignalFractionEnergyPerCentrality->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
           fhEmbeddedSignalFractionEnergyPerCentrality->SetXTitle("#it{E} (GeV)");
           fhEmbeddedSignalFractionEnergyPerCentrality->SetZTitle("Centrality (%)");
           outputContainer->Add(fhEmbeddedSignalFractionEnergyPerCentrality) ;
         }
+        
+        fhEmbeddedPhotonFractionEnergy  = new TH2F("hEmbeddedPhoton_FractionEnergy",
+                                                   "Energy Fraction of embedded photons versus cluster energy",
+                                                   nptbins,ptmin,ptmax,100,0.,1.);
+        fhEmbeddedPhotonFractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+        fhEmbeddedPhotonFractionEnergy->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhEmbeddedPhotonFractionEnergy) ;
         
         fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
                                                     "cluster from Photon embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
@@ -4037,6 +4050,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPhotonELambda0FullBkg->SetYTitle("#sigma^{2}_{long}");
         fhEmbedPhotonELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ;
+        
+        fhEmbeddedPi0FractionEnergy  = new TH2F("hEmbeddedPi0_FractionEnergy",
+                                                   "Energy Fraction of embedded #pi^{0} versus cluster energy",
+                                                   nptbins,ptmin,ptmax,100,0.,1.);
+        fhEmbeddedPi0FractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+        fhEmbeddedPi0FractionEnergy->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhEmbeddedPi0FractionEnergy) ;
         
         fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
                                                  "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
