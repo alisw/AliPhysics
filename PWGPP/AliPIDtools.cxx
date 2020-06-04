@@ -79,6 +79,8 @@ Int_t AliPIDtools::LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t
   AliESDEvent ev;
   AliPIDResponse *pid = new AliPIDResponse(isMC);
   pid->SetUseTPCMultiplicityCorrection();
+  pid->SetUseTPCEtaCorrection();
+  pid->SetUseTPCPileupCorrection();
   pid->SetOADBPath("$ALICE_PHYSICS/OADB");
   pid->InitialiseEvent(&ev,passNumber, recoPass, run);
   AliTPCPIDResponse &tpcpid=pid->GetTPCResponse();
