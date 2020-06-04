@@ -14554,7 +14554,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
   fCRCFlags->Fill(14.5,(Int_t)fCalculateFlowZDC);
   fCRCFlags->Fill(15.5,(Int_t)fCalculateFlowVZ);
   fCRCFlags->Fill(16.5,(Int_t)fUsePhiEtaCuts);
-  fCRCFlags->Fill(17.5,(Int_t)fCalculateCME);   @Shi
+  fCRCFlags->Fill(17.5,(Int_t)fCalculateCME);   //@Shi
 
 } // end of void AliFlowAnalysisCRC::StoreCRCFlags()
 
