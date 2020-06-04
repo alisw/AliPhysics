@@ -36,7 +36,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
                                                             return                                                                                        ;
                                                           }
     void SetIsHeavyIon(Int_t flag)                        { fIsHeavyIon                 = flag                                                            ; }
-    
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting)        { fCorrTaskSetting = setting                                                                    ; }
     // base functions for selecting photon and meson candidates in reconstructed data
@@ -137,6 +137,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TList*                  fMesonCutArray;                                     // List with Meson Cuts
     AliConversionMesonCuts* fMesonCuts;                                         // MesonCutObject
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
+    TClonesArray*           fAODMCTrackArray;                                   // AOD trak array
+    TClonesArray*           farrClustersProcess;                                // Cluser array
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -320,7 +322,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 36);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 37);
 };
 
 #endif
