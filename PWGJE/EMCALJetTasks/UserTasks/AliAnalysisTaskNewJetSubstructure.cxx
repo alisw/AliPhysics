@@ -445,7 +445,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fastjet::PseudoJet *sub2Hyb=new fastjet::PseudoJet();
       std::vector<fastjet::PseudoJet>* const1Hyb = new std::vector<fastjet::PseudoJet>();
       std::vector<fastjet::PseudoJet>* const2Hyb = new std::vector<fastjet::PseudoJet>();
-      if ((fJetShapeType == kMCTrue) || (fJetShapeType == kPythiaDef)) IterativeParentsPP(jet1, jetCont, sub1Hyb, sub2Hyb, const1Hyb, const2Hyb);
+      if ((fJetShapeType == kData && fCentSelectOn == false) || (fJetShapeType == kMCTrue) || (fJetShapeType == kPythiaDef)) IterativeParentsPP(jet1, jetCont, sub1Hyb, sub2Hyb, const1Hyb, const2Hyb);
       else IterativeParents(jet1, jetCont, sub1Hyb, sub2Hyb, const1Hyb, const2Hyb);
     
       Float_t ptMatch = 0.;
