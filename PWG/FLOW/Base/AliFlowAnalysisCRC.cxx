@@ -1221,7 +1221,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         fCRCQVecPhiHist->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiHistCh[cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiRbRHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-        fCRCQVecPhiRbRHistCh[cw][fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
+        fCRCQVecPhiRbRHistCh[fRunBin][cw]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         for (Int_t h=0;h<6;h++) {
           fCRCQVecHarCosProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Cos((h+1.)*dPhi),wPhiEta);
           fCRCQVecHarSinProCh[cw]->Fill(fCentralityEBE,(Double_t)h+0.5,dEta,TMath::Sin((h+1.)*dPhi),wPhiEta);
