@@ -4294,7 +4294,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
     return;
   }
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, fEnableSortForClusMC);
 
   // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
   if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
@@ -5286,7 +5286,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
           }
 
-          if (fDoMesonQA == 5 && fIsMC == 0 && ((pi0cand->M() > 0.05 && pi0cand->M() < 0.17) || (pi0cand->Pt() > 15. && pi0cand->M() > 0.45 && pi0cand->M() < 0.65 ))){
+          if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2 && (fDoMesonQA == 5 && fIsMC == 0 && ((pi0cand->M() > 0.05 && pi0cand->M() < 0.17) || (pi0cand->Pt() > 15. && pi0cand->M() > 0.45 && pi0cand->M() < 0.65 )))
+                || ((((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 4 || ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1 || ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 3) && fDoMesonQA == 5 && fIsMC == 0 && (pi0cand->M() > 0.0 && pi0cand->M() < 0.3) ) ) {
 
             TClonesArray * arrClustersProcess = NULL;
             arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));

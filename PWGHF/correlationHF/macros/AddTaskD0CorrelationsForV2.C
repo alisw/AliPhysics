@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, TString finDirname="Output", Int_t speed=AliAnalysisTaskSED0Correlations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Double_t ptAssocLim=4., Double_t minDPt=2., TString multSelEstimator="V0M", Float_t multmin=0., Float_t multmax=0., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Bool_t puritystudies=kFALSE, Bool_t equalizeTracklets = kFALSE, Double_t refmult = 12.524, TString sample = "pp13TeV", TString fileprofiles2016="", TString fileprofiles2017="", TString fileprofiles2018="", Bool_t reweighMC=kFALSE, TString filenameWeights="")
+AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, TString finDirname="Output", Int_t speed=AliAnalysisTaskSED0Correlations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Double_t ptAssocLim=4., Double_t minDPt=2., TString multSelEstimator="V0M", Float_t multmin=0., Float_t multmax=0., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Bool_t puritystudies=kFALSE, Bool_t equalizeTracklets = kFALSE, Double_t refmult = 12.524, TString sample = "pp13TeV", TString fileprofiles2016="", TString fileprofiles2017="", TString fileprofiles2018="", Bool_t reweighMC=kFALSE, TString filenameWeights="", TString histnameWeights="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -174,7 +174,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0CorrelationsForV2(Bool_t readMC=kFALSE
   if(reweighMC) {
       printf(" Loading Ntracklet weights...\n");
       TFile* filewgt = TFile::Open(filenameWeights);
-      TH1D* hWeight = (TH1D*)filewgt->Get("hNtrUnCorrEvWithCandWeight");
+      if(histnameWeights.EqualTo("")) histnameWeights="hNtrUnCorrEvWithCandWeight";
+      TH1D* hWeight = (TH1D*)filewgt->Get(histnameWeights.Data());
       if(!hWeight) {
           printf("Error! Weights for Ntracklets not correctly loaded!");
           return;

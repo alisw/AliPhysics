@@ -56,10 +56,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fExtraClusterInfoBackground(),
   fDataEvtHeader(),
   fMCEvtHeader(),
-  fConvIsoInfo(0),
-  fCaloIsoInfo(0),
-  //fConvChargedTrackISORaw(0),
-  //fEMCalClusterChargedTrackISORaw(0),
+  fConvIsoInfo(),
+  fCaloIsoInfo(),
   fGeomEMCAL(NULL),
   fCorrTaskSetting(""),
   fEventCuts(NULL),
@@ -82,6 +80,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fTrackIsolationR(),
   fDoNeutralIsolation(kFALSE),
   fNeutralIsolationR(),
+  fDoCellIsolation(kTRUE),
+  fDoTagging(kFALSE),
   fPi0TaggingWindow(),
   fEtaTaggingWindow(),
   fSaveConversions(kTRUE),
@@ -92,7 +92,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fHistoNEventsWOWeight(NULL),
   fHistoChargedIso(NULL),
   fRhoOutName("Rho"),
-  fTreeBuffSize(100000),
+  fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0)
 {
   fDataEvtHeader.pVtxX = -9999;
@@ -137,10 +137,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fExtraClusterInfoBackground(),
   fDataEvtHeader(),
   fMCEvtHeader(),
-  fConvIsoInfo(0),
-  fCaloIsoInfo(0),
-  //fConvChargedTrackISORaw(0),
-  //fEMCalClusterChargedTrackISORaw(0),
+  fConvIsoInfo(),
+  fCaloIsoInfo(),
   fGeomEMCAL(NULL),
   fCorrTaskSetting(""),
   fEventCuts(NULL),
@@ -163,6 +161,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fTrackIsolationR(),
   fDoNeutralIsolation(kFALSE),
   fNeutralIsolationR(),
+  fDoCellIsolation(kTRUE),
+  fDoTagging(kFALSE),
   fPi0TaggingWindow(),
   fEtaTaggingWindow(),
   fSaveConversions(kTRUE),
@@ -173,7 +173,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fHistoNEventsWOWeight(NULL),
   fHistoChargedIso(NULL),
   fRhoOutName("Rho"),
-  fTreeBuffSize(100000),
+  fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0)
 {
   DefineInput(0, TChain::Class());
@@ -285,21 +285,35 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   }
   PostData(1, fOutputList);
 
-  fAnalysisTree = new TTree("AnalysisTree","AnalysisTree");
-  fAnalysisTree->Branch("fDataEvtHeader",&fDataEvtHeader,"pVtxX/D:pVtxY/D:pVtxZ/D:runnumber/I:numberESDtracks/I:rho/D");
-  fAnalysisTree->Branch("fConversionCandidates","vector<AliAODConversionPhoton*>",&fConversionCandidates,101);
-  fAnalysisTree->Branch("fClusterEMCalCandidates","vector<AliAODCaloCluster*>",&fClusterEMCalCandidates,101);
-  fAnalysisTree->Branch("fClusterPHOSCandidates","vector<AliAODCaloCluster*>",&fClusterPHOSCandidates,101);
-  fAnalysisTree->Branch("fTracks","vector<AliAODTrack*>",&fTracks,101);
-  fAnalysisTree->Branch("fExtraClusterInfo","vector<extraClusterInfo>",&fExtraClusterInfo,101);
-  fAnalysisTree->Branch("fConvIsoInfo","vector<isoInfo>",&fConvIsoInfo,101);
-  fAnalysisTree->Branch("fCaloIsoInfo","vector<isoInfo>",&fCaloIsoInfo,101);
-  if(fIsMC>0){
-    fAnalysisTree->Branch("fMCParticles","vector<AliAODMCParticle*>",&fMCParticles,101);
-    fAnalysisTree->Branch("fMCEvtHeader",&fMCEvtHeader,"pVtxX/D:pVtxY/D:pVtxZ/D:runnumber/I:numberESDtracks/I:weightJJ/F:rho/D");
-  }
-
   OpenFile(2);
+  fConversionCandidates = new TClonesArray("AliAODConversionPhoton");  
+  fClusterEMCalCandidates = new TClonesArray("AliAODCaloCluster");   
+  fClusterEMCalCandidatesBackground = new TClonesArray("AliAODCaloCluster");  
+  fClusterPHOSCandidates = new TClonesArray("AliAODCaloCluster");  
+  fTracks = new TClonesArray("AliAODTrack");   
+  fMCParticles = new TClonesArray("AliAODMCParticle");  
+
+  fExtraClusterInfo = new TClonesArray("extraClusterInfo");
+  fExtraClusterInfoBackground = new TClonesArray("extraClusterInfo");
+  fConvIsoInfo = new TClonesArray("isoInfo");
+  fCaloIsoInfo = new TClonesArray("isoInfo");
+  
+  fAnalysisTree = new TTree("AnalysisTree","AnalysisTree");
+  
+  Int_t split = 1;
+  fAnalysisTree->Branch("fDataEvtHeader",&fDataEvtHeader,"pVtxX/d:pVtxY/d:pVtxZ/d:runnumber/I:numberESDtracks/I:rho/D",256000);
+  fAnalysisTree->Branch("fConversionCandidates",&fConversionCandidates,256000,split);
+  fAnalysisTree->Branch("fClusterEMCalCandidates",&fClusterEMCalCandidates,256000,split);
+  fAnalysisTree->Branch("fClusterPHOSCandidates",&fClusterPHOSCandidates,256000,split);
+  fAnalysisTree->Branch("fTracks",&fTracks,256000,split);
+  fAnalysisTree->Branch("fExtraClusterInfo",&fExtraClusterInfo,256000,split);
+  
+  fAnalysisTree->Branch("fConvIsoInfo",&fConvIsoInfo,256000,split);
+  fAnalysisTree->Branch("fCaloIsoInfo",&fCaloIsoInfo,256000,split);
+  if(fIsMC>0){
+    fAnalysisTree->Branch("fMCParticles",&fMCParticles,256000,split);
+    fAnalysisTree->Branch("fMCEvtHeader",&fMCEvtHeader,"pVtxX/d:pVtxY/d:pVtxZ/d:runnumber/I:numberESDtracks/I:weightJJ/F:rho/D",256000);
+  }
   PostData(2,fAnalysisTree);
 }
 //_____________________________________________________________________________
@@ -408,12 +422,13 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // do not fill these in tree if user wants it
   // processing was needed anyways because of track matching
   // and isolation
-  if(!fSaveTracks) fTracks.clear();
-  if(!fSaveEMCClusters) fClusterEMCalCandidates.clear();
-  if(!fSavePHOSClusters) fClusterPHOSCandidates.clear();
+  if(!fSaveTracks) fTracks->Clear();
+  if(!fSaveEMCClusters) fClusterEMCalCandidates->Clear();
+  if(!fSavePHOSClusters) fClusterPHOSCandidates->Clear();
 
   // fill output
   fAnalysisTree->Fill();
+  PostData(2, fAnalysisTree);
   ResetBuffer();
   PostData(1,fOutputList);
 }
@@ -422,34 +437,21 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
 void AliAnalysisTaskGammaIsoTree::Terminate(Option_t *){
 
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   // for vectors of pointers, memory needs to be freed manually
-  for (auto p : fConversionCandidates){ delete p;} 
-  fConversionCandidates.clear();
-  for (auto p : fClusterEMCalCandidates){ delete p;} 
-  fClusterEMCalCandidates.clear();
-  for (auto p : fClusterEMCalCandidatesBackground){ delete p;} 
-  fClusterEMCalCandidatesBackground.clear();
-  for (auto p : fClusterPHOSCandidates){ delete p;} 
-  fClusterPHOSCandidates.clear();
-  for (auto p : fTracks){ delete p;} 
-  fTracks.clear();
-  for (auto p : fMCParticles){ delete p;} 
-  fMCParticles.clear();
-  fExtraClusterInfo.clear();
-  fExtraClusterInfoBackground.clear();
-  fConvIsoInfo.clear();
-  fCaloIsoInfo.clear();
+  fConversionCandidates->Clear();
+  fClusterEMCalCandidates->Clear();
+  fClusterEMCalCandidatesBackground->Clear();
+  fClusterPHOSCandidates->Clear();
+  fTracks->Clear();
+  fMCParticles->Clear();
+  fExtraClusterInfo->Clear();
+  fExtraClusterInfoBackground->Clear();
+  fConvIsoInfo->Clear();
+  fCaloIsoInfo->Clear();
 
-  fConversionCandidates.resize(0);
-  fClusterEMCalCandidates.resize(0);
-  fClusterPHOSCandidates.resize(0);
-  fTracks.resize(0);
-  fMCParticles.resize(0);
-  fExtraClusterInfo.resize(0);
-  fConvIsoInfo.resize(0);
-  fCaloIsoInfo.resize(0);
 
   fDataEvtHeader.pVtxX = -9999;
   fDataEvtHeader.pVtxY = -9999;
@@ -466,6 +468,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
 //________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
    fReaderGammas    = fV0Reader->GetReconstructedGammas();
+   Int_t pos = 0;
    if(fIsMC > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
      RelabelAODPhotonCandidates(kTRUE);    // In case of AODMC relabeling MC
      fV0Reader->RelabelAODs(kTRUE);
@@ -474,16 +477,20 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!PhotonCandidate) continue;
     if(!((AliConversionPhotonCuts*)fConvCuts)->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
-    fConversionCandidates.push_back(new AliAODConversionPhoton(*PhotonCandidate));
+    new((*fConversionCandidates)[pos]) AliAODConversionPhoton(*PhotonCandidate);
+
     
-    if(fDoTrackIsolation){
-      isoInfo convIso;
-      ProcessChargedIsolation(PhotonCandidate,convIso.isoRawCharged);
-      ProcessNeutralIsolation(PhotonCandidate,convIso.isoRawNeutral);
-      ProcessCellIsolation(PhotonCandidate,convIso.isoCell);
-      convIso.isTagged = ProcessTagging(PhotonCandidate); 
-      fConvIsoInfo.push_back(convIso);
-    }
+    Double32_t tmp_isoCharged[2] = {0,0};
+    Double32_t tmp_isoNeutral[2] = {0,0};
+    Double32_t tmp_isoCell[2] = {0,0};
+    Int_t      tmp_tag= 0;
+    if(fDoTrackIsolation) ProcessChargedIsolation(PhotonCandidate,tmp_isoCharged);
+    if(fDoNeutralIsolation) ProcessNeutralIsolation(PhotonCandidate,tmp_isoNeutral);
+    if(fDoCellIsolation) ProcessCellIsolation(PhotonCandidate,tmp_isoCell);
+    if(fDoTagging) tmp_tag = ProcessTagging(PhotonCandidate);  // TODO
+    new((*fConvIsoInfo)[pos])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+
+    pos++;
     
     if(fMCEvent){
     }
@@ -494,6 +501,10 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
 void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
    Int_t nclus                         = 0;
    Int_t nclusCorr                     = 0;
+
+   Int_t posEMC = 0;
+   Int_t posEMCBck = 0;
+   Int_t posPHOS = 0;
    TClonesArray * arrClustersProcess   = NULL;
    if(!fCorrTaskSetting.CompareTo("")){
      nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -534,13 +545,9 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
         Float_t eFrac = GetExoticEnergyFraction(clus,fInputEvent);
         if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
           
-          extraClusterInfo clusInfo;  
-          clusInfo.nLM = nLM;
-          clusInfo.matchedTrackIndex = matchIndex;
-          clusInfo.exoticEFrac = eFrac;
-          
-          fExtraClusterInfoBackground.push_back(clusInfo);
-          fClusterEMCalCandidatesBackground.push_back(new AliAODCaloCluster(*clus));
+          new((*fExtraClusterInfoBackground)[posEMCBck]) extraClusterInfo(nLM,matchIndex,eFrac);
+          new((*fClusterEMCalCandidatesBackground)[posEMCBck]) AliAODCaloCluster(*clus);
+          posEMCBck++;
         }
 
         // check if given EMC cuts are fulfilled
@@ -548,22 +555,19 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
           delete clus;
           continue;
         }
-        // get and set nLM  
-        extraClusterInfo clusInfo;  
-        clusInfo.nLM = nLM;
-        clusInfo.matchedTrackIndex = matchIndex;
-        clusInfo.exoticEFrac = eFrac;
-
-        fExtraClusterInfo.push_back(clusInfo);
-        fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
-        if(fDoTrackIsolation){
-          isoInfo caloIso;
-          ProcessChargedIsolation(clus,caloIso.isoRawCharged);
-          ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
-          ProcessCellIsolation(clus,caloIso.isoCell);
-          caloIso.isTagged = ProcessTagging(clus);  // TODO
-          fCaloIsoInfo.push_back(caloIso);
-        }
+        new((*fExtraClusterInfo)[posEMC]) extraClusterInfo(nLM,matchIndex,eFrac);
+        new((*fClusterEMCalCandidates)[posEMC])AliAODCaloCluster(*clus);
+        
+        Double32_t tmp_isoCharged[2] = {0,0};
+        Double32_t tmp_isoNeutral[2] = {0,0};
+        Double32_t tmp_isoCell[2] = {0,0};
+        Int_t      tmp_tag= 0;
+        if(fDoTrackIsolation) ProcessChargedIsolation(clus,tmp_isoCharged);
+        if(fDoNeutralIsolation) ProcessNeutralIsolation(clus,tmp_isoNeutral);
+        if(fDoCellIsolation) ProcessCellIsolation(clus,tmp_isoCell);
+        if(fDoTagging) tmp_tag = ProcessTagging(clus);  // TODO
+        new((*fCaloIsoInfo)[posEMC])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+        posEMC++;
         delete clus;
       }
   }
@@ -581,39 +585,41 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
       Short_t matchIndex = ProcessTrackMatching(clus,fTracks);
       Float_t eFrac = GetExoticEnergyFraction(clus,fInputEvent);
 
-      extraClusterInfo clusInfo;  
-      clusInfo.nLM = nLM;
-      clusInfo.matchedTrackIndex = matchIndex;
-      clusInfo.exoticEFrac = eFrac;
       if(((AliCaloPhotonCuts*)fClusterCutsBackgroundEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         
-        fExtraClusterInfoBackground.push_back(clusInfo);
-        fClusterEMCalCandidatesBackground.push_back(new AliAODCaloCluster(*clus));
+        new((*fExtraClusterInfoBackground)[posEMCBck]) extraClusterInfo(nLM,matchIndex,eFrac);
+        new((*fClusterEMCalCandidatesBackground)[posEMCBck]) AliAODCaloCluster(*clus);
+        posEMCBck++;
       }
       if(!((AliCaloPhotonCuts*)fClusterCutsEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         delete clus;
         continue;
       }
-      fExtraClusterInfo.push_back(clusInfo);
-      fClusterEMCalCandidates.push_back(new AliAODCaloCluster(*clus));
-      if(fDoTrackIsolation){
-          isoInfo caloIso;
-          ProcessChargedIsolation(clus,caloIso.isoRawCharged);
-          ProcessNeutralIsolation(clus,caloIso.isoRawNeutral);
-          ProcessCellIsolation(clus,caloIso.isoCell);
-          caloIso.isTagged = ProcessTagging(clus);  // TODO
-          fCaloIsoInfo.push_back(caloIso);
-      }
+      new((*fExtraClusterInfo)[posEMC]) extraClusterInfo(nLM,matchIndex,eFrac);
+      new((*fClusterEMCalCandidates)[posEMC]) AliAODCaloCluster(*clus);
+
+      Double32_t tmp_isoCharged[2] = {0.,0.};
+      Double32_t tmp_isoNeutral[2] = {0.,0.};
+      Double32_t tmp_isoCell[2] = {0.,0.};
+      Int_t      tmp_tag= 0;
+      if(fDoTrackIsolation) ProcessChargedIsolation(clus,tmp_isoCharged);
+      if(fDoNeutralIsolation) ProcessNeutralIsolation(clus,tmp_isoNeutral);
+      if(fDoCellIsolation) ProcessCellIsolation(clus,tmp_isoCell);
+      if(fDoTagging) tmp_tag = ProcessTagging(clus);  // TODO
+      new((*fCaloIsoInfo)[posEMC])isoInfo(tmp_isoCharged,tmp_isoNeutral,tmp_isoCell,tmp_tag);
+      posEMC++;
+      
       delete clus;
       continue;
     }
-    if(clus->IsPHOS()){
+    if(clus->IsPHOS() && fSavePHOSClusters){
     // if(clus->GetType() == AliVCluster::kPHOSNeutral){
       if(!((AliCaloPhotonCuts*)fClusterCutsPHOS)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
         delete clus;
         continue;
       }
-      fClusterPHOSCandidates.push_back(new AliAODCaloCluster(*clus));
+      if(!fSavePHOSClusters) new((*fClusterPHOSCandidates)[posPHOS]) AliAODCaloCluster(*clus);
+      posPHOS++;
       delete clus;
       continue;
     }
@@ -651,11 +657,13 @@ Bool_t AliAnalysisTaskGammaIsoTree::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
+  Int_t pos = 0;
   for(Int_t t=0;t<fInputEvent->GetNumberOfTracks();t++){
       AliAODTrack *fCurrentTrack = dynamic_cast<AliAODTrack*> (fInputEvent->GetTrack(t));
       if(!TrackIsSelectedAOD(fCurrentTrack)) continue;
 
-      fTracks.push_back(new AliAODTrack(*fCurrentTrack));
+      new((*fTracks)[pos]) AliAODTrack(*fCurrentTrack);
+      pos++;
   }
 }
 
@@ -663,28 +671,31 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
 void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
   // Loop over all primary MC particle
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-
+  Int_t pos = 0;
   if (AODMCTrackArray){
     for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
       AliAODMCParticle* particle =  static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
       if(TMath::Abs(particle->Y())< fYMCCut){
-        fMCParticles.push_back(new AliAODMCParticle(*particle));
+        new((*fMCParticles)[pos]) AliAODMCParticle(*particle);
+        pos++;
+
       } else
       {
-        fMCParticles.push_back(new AliAODMCParticle());
+        new((*fMCParticles)[pos]) AliAODMCParticle();
+        pos++;
       }
     }
   }
 }
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskGammaIsoTree::ProcessTrackMatching(AliAODCaloCluster* clus, std::vector<AliAODTrack*> tracks){
+Int_t AliAnalysisTaskGammaIsoTree::ProcessTrackMatching(AliAODCaloCluster* clus, TClonesArray* tracks){
      Int_t nModules = fGeomEMCAL->GetNumberOfSuperModules();
      Int_t highestMatchIndex = -1;
-     for (UInt_t t = 0; t < tracks.size(); t++)
+     for (Int_t t = 0; t < tracks->GetEntriesFast(); t++)
      {
       AliExternalTrackParam *trackParam = 0;
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(tracks.at(t));
+      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(tracks->At(t));
         if(!aodt) continue;
         if(!TrackIsSelectedAOD(aodt)) continue;
 
@@ -733,7 +744,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTrackMatching(AliAODCaloCluster* clus,
         if(highestMatchIndex == -1){ // this is the first match
            highestMatchIndex = t;
         } else{
-           if(aodt->P()>tracks.at(highestMatchIndex)->P()){
+           if(aodt->P()>((AliAODTrack*)tracks->At(highestMatchIndex))->P()){
              highestMatchIndex = t;
            }
         }
@@ -841,15 +852,15 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODConversionPhoton
     arrIso[1] = 0.;
   
     v4photon->SetPxPyPzE(photon->Px(),photon->Py(),photon->Pz(),photon->E());
-    for (UInt_t c = 0; c < fClusterEMCalCandidatesBackground.size(); c++)
+    for (Int_t c = 0; c < fClusterEMCalCandidatesBackground->GetEntriesFast(); c++)
     {
-        AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground.at(c);
+        AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground->At(c);
         if(!clusterE) continue;
 
-        extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
+        extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
         // check if cluster is neutral
         if(fDoBackgroundTrackMatching){
-           if(clusInfo.matchedTrackIndex != -1) continue;
+           if(clusInfo->isMatched()) continue;
         }
      
     
@@ -1016,14 +1027,14 @@ void AliAnalysisTaskGammaIsoTree::ProcessNeutralIsolation(AliAODCaloCluster* clu
     cluster->GetMomentum(tmp,vertex);
     
     TLorentzVector* v4thiscluster = new TLorentzVector(tmp);
-    for (UInt_t c = 0; c < fClusterEMCalCandidatesBackground.size(); c++)
+    for (Int_t c = 0; c < fClusterEMCalCandidatesBackground->GetEntriesFast(); c++)
     {
-        AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground.at(c);
+        AliAODCaloCluster* clusterE = (AliAODCaloCluster*) fClusterEMCalCandidatesBackground->At(c);
         if(!clusterE) continue;
         if(clusterE->GetID() == cluster->GetID()) continue;
-        extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
+        extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
         if(fDoBackgroundTrackMatching){
-           if(clusInfo.matchedTrackIndex != -1) continue;
+           if(clusInfo->isMatched()) continue;
         }
  
         TLorentzVector v4othercluster;
@@ -1056,7 +1067,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
   fReaderGammas    = fV0Reader->GetReconstructedGammas();
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* otherPhoton = (AliAODConversionPhoton*) fReaderGammas->At(i);
-    if(!otherPhoton) continue; // bla
+    if(!otherPhoton) continue; 
     if(!((AliConversionPhotonCuts*)fConvCuts)->PhotonIsSelected(otherPhoton,fInputEvent)) continue;
     
     pi0cand = new AliAODConversionMother(photon,otherPhoton);
@@ -1078,15 +1089,15 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  for (UInt_t c = 0; c < fClusterEMCalCandidatesBackground.size(); c++)
+  for (Int_t c = 0; c < fClusterEMCalCandidatesBackground->GetEntriesFast(); c++)
   {
-    extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
+    extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
     if(fDoBackgroundTrackMatching){
-       if(clusInfo.matchedTrackIndex != -1) continue;
+       if(clusInfo->isMatched()) continue;
     }
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
-    fClusterEMCalCandidatesBackground.at(c)->GetMomentum(clusterVector,vertex);
+    ((AliAODCaloCluster*)fClusterEMCalCandidatesBackground->At(c))->GetMomentum(clusterVector,vertex);
 
     TLorentzVector* tmpvec = new TLorentzVector();
     tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
@@ -1142,7 +1153,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
   
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* otherPhoton = (AliAODConversionPhoton*) fReaderGammas->At(i);
-    if(!otherPhoton) continue; // bla
+    if(!otherPhoton) continue; 
     if(!((AliConversionPhotonCuts*)fConvCuts)->PhotonIsSelected(otherPhoton,fInputEvent)) continue;
     
     pi0cand = new AliAODConversionMother(ThisPhotonCluster,otherPhoton);
@@ -1162,18 +1173,18 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
   }
 
 
-  for (UInt_t c = 0; c < fClusterEMCalCandidatesBackground.size(); c++)
+  for (Int_t c = 0; c < fClusterEMCalCandidatesBackground->GetEntriesFast(); c++)
   {
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     
-    if(fClusterEMCalCandidatesBackground.at(c)->GetID() == cluster->GetID()) continue;
+    if(((AliAODCaloCluster*)fClusterEMCalCandidatesBackground->At(c))->GetID() == cluster->GetID()) continue;
     
-    extraClusterInfo clusInfo = fExtraClusterInfoBackground.at(c);
+    extraClusterInfo* clusInfo = (extraClusterInfo*) fExtraClusterInfoBackground->At(c);
     if(fDoBackgroundTrackMatching){
-       if(clusInfo.matchedTrackIndex != -1) continue;
+       if(clusInfo->isMatched()) continue;
     }
-    fClusterEMCalCandidatesBackground.at(c)->GetMomentum(clusterVector,vertex);
+    ((AliAODCaloCluster*)fClusterEMCalCandidatesBackground->At(c))->GetMomentum(clusterVector,vertex);
 
     TLorentzVector* tmpvec = new TLorentzVector();
     tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
@@ -1210,13 +1221,13 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
 
 // delete covariance matrix etc. to save space
 void AliAnalysisTaskGammaIsoTree::ReduceTrackInfo(){
-    for (UInt_t i = 0; i < fTracks.size(); i++)
+    for (Int_t i = 0; i < fTracks->GetEntriesFast(); i++)
     {
       // fTracks.at(i)->SetTOFchi2(0);
       // fTracks.at(i)->SetTOFLabel(NULL);
       // fTracks.at(i)->SetTOFsignalDx(0);
       // fTracks.at(i)->SetTOFsignalDz(0);
-      fTracks.at(i)->Clear();
+      ((AliAODTrack*)fTracks->At(i))->Clear();
     }
 }
 
@@ -1314,4 +1325,5 @@ Float_t AliAnalysisTaskGammaIsoTree::GetExoticEnergyFraction(AliVCluster *cluste
     return exoticEnergyFrac;
 
 }
+
 

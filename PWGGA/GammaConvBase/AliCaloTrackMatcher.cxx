@@ -59,6 +59,7 @@ AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType, In
   fRunNumber(-1),
   fGeomEMCAL(NULL),
   fGeomPHOS(NULL),
+  fArrClusters(NULL),
   fMapTrackToCluster(),
   fMapClusterToTrack(),
   fNEntries(1),
@@ -212,13 +213,13 @@ void AliCaloTrackMatcher::UserExec(Option_t *){
 //________________________________________________________________________
 void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
   Int_t nClus = 0;
-  TClonesArray * arrClusters = NULL;
+
   if(!fCorrTaskSetting.CompareTo("")){
     nClus = event->GetNumberOfCaloClusters();
   } else {
-    arrClusters = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-    if(arrClusters){
-      nClus = arrClusters->GetEntries();
+    if(!fArrClusters) fArrClusters = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(fArrClusters){
+      nClus = fArrClusters->GetEntries();
     }else{
       AliError(Form("Could not find %sClustersBranch despite correction framework being used!",fCorrTaskSetting.Data()));
       return;
@@ -436,19 +437,19 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     Int_t nClusterMatchesToTrack = 0;
     for(Int_t iclus=0;iclus < nClus;iclus++){
       AliVCluster* cluster = NULL;
-      if(arrClusters){
+      if(fArrClusters){
         if(esdev){
-          if(arrClusters)
-            cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClusters->At(iclus));
+          if(fArrClusters)
+            cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)fArrClusters->At(iclus));
         } else if(aodev){
-          if(arrClusters)
-            cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClusters->At(iclus));
+          if(fArrClusters)
+            cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)fArrClusters->At(iclus));
         }
       }
       else
         cluster = event->GetCaloCluster(iclus);
       if (!cluster){
-        if(arrClusters) delete cluster;
+        if(fArrClusters) delete cluster;
         continue;
       }
       // cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
@@ -456,29 +457,29 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
       //cout << "dR: " << dR << endl;
       if (dR > fMatchingWindow){
-        if(arrClusters) delete cluster;
+        if(fArrClusters) delete cluster;
         continue;
       }
       Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
       if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         if (!cluster->IsEMCAL()){
-          if(arrClusters) delete cluster;
+          if(fArrClusters) delete cluster;
           continue;
         }
         if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){
           FillfHistControlMatches(4.,inTrack->Pt());
-          if(arrClusters) delete cluster;
+          if(fArrClusters) delete cluster;
           continue;
         }
       }else if(fClusterType == 2){
         if (!cluster->IsPHOS()){
-          if(arrClusters) delete cluster;
+          if(fArrClusters) delete cluster;
           continue;
         }
         if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)){
           FillfHistControlMatches(4.,inTrack->Pt());
-          if(arrClusters) delete cluster;
+          if(fArrClusters) delete cluster;
           continue;
         }
         Double_t trkPos[3] = {0,0,0};
@@ -493,7 +494,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 
       //cout << dEta << " - " << dPhi << " - " << dR2 << endl;
       if(dR2 > fMatchingResidual){
-        if(arrClusters) delete cluster;
+        if(fArrClusters) delete cluster;
         continue;
       }
       nClusterMatchesToTrack++;
@@ -507,7 +508,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       fVectorDeltaEtaDeltaPhi.push_back(make_pair(dEta,dPhi));
       fMap_TrID_ClID_ToIndex[make_pair(inTrack->GetID(),cluster->GetID())] = fNEntries++;
       if( (Int_t)fVectorDeltaEtaDeltaPhi.size() != (fNEntries-1)) AliFatal("Fatal error in AliCaloTrackMatcher, vector and map are not in sync!");
-      if(arrClusters) delete cluster;
+      if(fArrClusters) delete cluster;
     }
     if(nClusterMatchesToTrack == 0) FillfHistControlMatches(5.,inTrack->Pt());
     else FillfHistControlMatches(6.,inTrack->Pt());

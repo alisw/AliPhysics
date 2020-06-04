@@ -1665,7 +1665,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   if(fV0=="Xi") ParticleType =0;
   else  if(fV0=="Omega") ParticleType=1;
   else {
-    cout << " the particle type selected is not valid " << endl;
+    //    cout << " the particle type selected is not valid " << endl;
     return;
   }
 
@@ -2076,7 +2076,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     return;
   }
  
-  cout <<  "labelPrimOrSec before " <<  PdgCodeTrackPtMax << endl;
+  //  cout <<  "labelPrimOrSec before " <<  PdgCodeTrackPtMax << endl;
   //************Filling selected histograms for trigger particle efficiency calculation  ***************
   //only the highest pT trigger particle in each event is used, since this is the definition of trigger particle used in the angular correlation
   //! The selected histograms are filled also by trigger particles with pT< fminPtj, a cut on pT is therefore required in post processing phase
@@ -2088,7 +2088,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     }
   }
   //***********************************************************************************************************
-  cout <<  "labelPrimOrSec after" << labelPrimOrSec << endl; 
+  //  cout <<  "labelPrimOrSec after" << labelPrimOrSec << endl; 
 
   if(NumberFirstParticleAll==0){   
     PostData(1, fOutputList);
@@ -2452,15 +2452,15 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     ULong_t bachStatus = bachTrackXi->GetStatus();
 
     if ((pStatus&AliAODTrack::kTPCrefit)    == 0) {
-      AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!");
+      //      AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!");
       continue;
     }
     if ((nStatus&AliAODTrack::kTPCrefit)    == 0) {
-      AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!");
+      //      AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!");
       continue;
     }
     if ((bachStatus&AliAODTrack::kTPCrefit) == 0) {
-      AliWarning("Pb / Bach.   track has no TPCrefit ... continue!");
+      //      AliWarning("Pb / Bach.   track has no TPCrefit ... continue!");
       continue;
     }
     fHistEventV0->Fill(5);
@@ -2866,7 +2866,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     }
     
     //save second particle information (V0)
-    cout << "isprimary casc " << isPrimaryCasc << "labelPrimOrSecV0" << labelPrimOrSecV0 << endl; 
+    //    cout << "isprimary casc " << isPrimaryCasc << "labelPrimOrSecV0" << labelPrimOrSecV0 << endl; 
     //cout << "save second particle information (V0) "<< endl;
     if((fReadMCTruth && isEfficiency) || (!fReadMCTruth)){
       fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelMotherBach       = lVariablePDGCode;
@@ -3197,28 +3197,28 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariablePDGCodeTrigger         = fEvt->fReconstructedFirst[i].fPDGcode ;
 	  fTreeVariableisPrimaryTrigger       = fEvt->fReconstructedFirst[i].isP ;
 
-	  fTreeVariablePDGCodeAssoc           =    fEvt->fReconstructedSecond[j].cLabelMotherBach      ;
-	  fTreeVariableisPrimaryV0	      =    fEvt->fReconstructedSecond[j].cisPrimCasc           ;
-	  fTreeVariableInvMassLambda	      =    fEvt->fReconstructedSecond[j].cInvMassLambda        ;	 
-	  fTreeVariableInvMassXi	      =    fEvt->fReconstructedSecond[j].cInvMassXi            ;
-	  fTreeVariableInvMassOmega           =    fEvt->fReconstructedSecond[j].cInvMassOmega         ;
-	  fTreeVariableXiCosineOfPointingAngle=    fEvt->fReconstructedSecond[j].cCosPointingAngleXi   ;
-	  fTreeVariableV0CosineOfPointingAngle=    fEvt->fReconstructedSecond[j].cCosPointingAngleV0ToXi;
-	  fTreeVariableDcaXiDaughters         =    fEvt->fReconstructedSecond[j].cDCAXiDaughters       ;
-	  fTreeVariableRapAssoc 	      =    fEvt->fReconstructedSecond[j].cRapCasc              ;
-	  fTreeVariablePtV0     	      =    fEvt->fReconstructedSecond[j].cPt                   ;
-	  fTreeVariablectau       	      =    fEvt->fReconstructedSecond[j].cctau                 ; 
-	  fTreeVariableEtaV0                  =    fEvt->fReconstructedSecond[j].cEta                  ; 
-	  fTreeVariablePhiV0		      =    fEvt->fReconstructedSecond[j].cPhi                  ; 
-	  fTreeVariableChargeAssoc 	      =    fEvt->fReconstructedSecond[j].cCharge               ; 
-	  fTreeVariableSkipAssoc 	      =    fEvt->fReconstructedSecond[j].cAssocOrNot           ; 
+	  fTreeVariablePDGCodeAssoc           =    (fEvt+eventNumber)->fReconstructedSecond[j].cLabelMotherBach      ;
+	  fTreeVariableisPrimaryV0	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cisPrimCasc           ;
+	  fTreeVariableInvMassLambda	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassLambda        ;	 
+	  fTreeVariableInvMassXi	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassXi            ;
+	  fTreeVariableInvMassOmega           =    (fEvt+eventNumber)->fReconstructedSecond[j].cInvMassOmega         ;
+	  fTreeVariableXiCosineOfPointingAngle=    (fEvt+eventNumber)->fReconstructedSecond[j].cCosPointingAngleXi   ;
+	  fTreeVariableV0CosineOfPointingAngle=    (fEvt+eventNumber)->fReconstructedSecond[j].cCosPointingAngleV0ToXi;
+	  fTreeVariableDcaXiDaughters         =    (fEvt+eventNumber)->fReconstructedSecond[j].cDCAXiDaughters       ;
+	  fTreeVariableRapAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cRapCasc              ;
+	  fTreeVariablePtV0     	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cPt                   ;
+	  fTreeVariablectau       	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cctau                 ; 
+	  fTreeVariableEtaV0                  =    (fEvt+eventNumber)->fReconstructedSecond[j].cEta                  ; 
+	  fTreeVariablePhiV0		      =    (fEvt+eventNumber)->fReconstructedSecond[j].cPhi                  ; 
+	  fTreeVariableChargeAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cCharge               ; 
+	  fTreeVariableSkipAssoc 	      =    (fEvt+eventNumber)->fReconstructedSecond[j].cAssocOrNot           ; 
 
 	  fTreeVariableDeltaEta	       	      =deta;  
 	  fTreeVariableDeltaPhi		      =dphi;
 	  fTreeVariableDeltaTheta             =dtheta;      
 	  fTreeVariableMultiplicity	      = lPercentiles;
 	  fTreeVariableZvertex                = lBestPrimaryVtxPos;
-	  //	  fTreeVariableisPrimaryTrigger       =  fEvt->fReconstructedFirst[i].isP;
+	  //	  fTreeVariableisPrimaryTrigger       =  (fEvt+eventNumber)->fReconstructedFirst[i].isP;
        
 	  fBkgTree->Fill();  
 	  

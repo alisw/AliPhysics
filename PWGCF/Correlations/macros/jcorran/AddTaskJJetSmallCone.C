@@ -4,7 +4,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 AliJJetTask* AddTaskJJetSmallCone(
     Int_t       trigger           = AliVEvent::kEMCEJE,
-    const char *taskname          = "AliJJetTask",
+    const char *taskname          = "AliJJetTaskSmallCone",
     int         debug             = 1,
     int         doRecoMCPartleJet = 0,  // if do Jet Reconstruction with MC Particle. only for MC
     int         doRecoTrackJet    = 1,  // if do Jet Reconstruction with Reconstructed track. both of MC,Data

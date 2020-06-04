@@ -17,6 +17,27 @@ class Polarization : public AliAnalysisTaskSE
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
+        
+        
+        
+        //these are implemented using simone's methode
+        Double_t            CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi);
+        Double_t            CosThetaCollinsSoper( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi);
+        Double_t            CosPhiHelicityFrame( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi );
+        Double_t            CosPhiCollinsSoper( TLorentzVector muonPositive,
+                                                       TLorentzVector muonNegative,
+                                                       TLorentzVector possibleJPsi );
+                                                       
+                                                       
+    
+                                                       
+        
 
     private:
         AliAODEvent*            fAOD;  //! input event

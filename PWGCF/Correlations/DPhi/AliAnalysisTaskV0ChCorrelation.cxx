@@ -689,6 +689,15 @@ void AliAnalysisTaskV0ChCorrelation::UserCreateOutputObjects()
   TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
   tQAEvent->Add(fhEventAf);
 
+
+
+//---------------------------------------------
+TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+	tQAEvent->Add(fHistV0Multiplicity);
+//----------------------------------------------
+    
+
+
   fOutput->Add(tQAEvent);
 }
 
@@ -1445,6 +1454,19 @@ void AliAnalysisTaskV0ChCorrelation::UserExec(Option_t *)
   
     Short_t binVertex = Short_t((lPVz+7.)/2.);
 
+
+
+
+ Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+
+ ((TH1D*)((AliDirList*)fOutput->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
+//----------------
+
+
+
+
+
+
     //-----------------------------------Centrality definition------------------------------------
     AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     if(!aodHeader) AliFatal("Not a standard AOD");
@@ -1796,7 +1818,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if(!(IsGoodPrimaryTrack(tr))) continue;
 
    //Bunch rejection trk by trk
- //  if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
 
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
@@ -1929,14 +1951,14 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 
-/*
+
 
 // reject bunch-off pile-up
-  if(!fAnalysisMC){      
+ // if(!fAnalysisMC){      
  if (!(((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout))&&((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout)))) continue;
-     } 
+    // } 
   
- */
+ 
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       }

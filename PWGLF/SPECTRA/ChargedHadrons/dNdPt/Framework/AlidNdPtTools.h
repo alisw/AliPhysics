@@ -38,7 +38,7 @@ class AlidNdPtTools : public TObject
         static Int_t           AddAxis(const char* label, const char* title, const char* option);                                          // options: pt
         static Int_t           AddAxis(const char* label, const char* option);                                          // options: pt
         static Int_t           AddAxis(const char* option);                                                             // options: pt
-        static THnSparseD*     CreateHist(const char* name);
+        static THnSparseF*     CreateHist(const char* name);
         static void            ResetHist() { if (fSparseTmp) { delete fSparseTmp; fSparseTmp=0; } }
         static TH1D*           CreateLogHist(const char* name, const char* title);
         static TH1D*           CreateLogHist(const char* name);
@@ -56,7 +56,7 @@ class AlidNdPtTools : public TObject
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option, int _cutMode=100, bool _SaveHistos=false); // options
 
     private:
-        static THnSparseD*      fSparseTmp;    //! temporary histogram for internal use only
+        static THnSparseF*      fSparseTmp;    //! temporary histogram for internal use only
         static TGraph*          fGsscale;       // graph with scaling factors (nominal)
         static TGraph*          fGsscale1;      // graph with scaling factors (syst up)
         static TGraph*          fGsscale2;      // graph with scaling factors (syst down)

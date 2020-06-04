@@ -12,6 +12,7 @@
 
 /* $Id$ */
 
+#include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCuts.h"
 
 class AliRDHFCutsKFP : public AliRDHFCuts
@@ -42,7 +43,12 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   EPIDStrategy GetPIDStrategy() const {return fPIDStrategy;}
   void SetCombinedPIDThreshold(Double_t a){fCombinedPIDThreshold=a;}
   void SetUseXic0PID(Bool_t a){fUseXic0PID=a;}
+  void SetUseLcPID(Bool_t a){fUseLcPID=a;}
   Double_t GetCombinedPIDThreshold(){return fCombinedPIDThreshold;}
+  void SetPidDaughter(AliAODPidHF* pid) {
+      if(fPidObjDau) delete fPidObjDau;
+      fPidObjDau = new AliAODPidHF(*pid);
+      }
   void SetPidPiFromXic0(AliAODPidHF* pidPion) {
       if(fPidObjPiFromXic0) delete fPidObjPiFromXic0;
       fPidObjPiFromXic0 = new AliAODPidHF(*pidPion);
@@ -68,6 +74,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
       fPidObjPrFromV0=new AliAODPidHF(*pidProton);
       }
 
+  AliAODPidHF* GetPidDaughter() const {return fPidObjDau;}
   AliAODPidHF* GetPidPiFromXic0() const {return fPidObjPiFromXic0;}
   AliAODPidHF* GetPidPiFromXi() const {return fPidObjPiFromXi;}
   AliAODPidHF* GetPidKaFromOmega() const {return fPidObjKaFromOmega;}
@@ -85,14 +92,18 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Bool_t PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk);
   Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert, Bool_t anaOmegaZero);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1);
+  Bool_t PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0);
 
+  void SetPtMinLc(Double_t a){fPtMinLc=a;}
+  void SetPtMinPrFromLc(Double_t a){fPtMinPrFromLc=a;}
   void SetPtMinXic0(Double_t a){fPtMinXic0=a;}
   void SetPtMinPiFromXic0(Double_t a){fPtMinPiFromXic0=a;}
   void SetPtMinPiFromXi(Double_t a){fPtMinPiFromXi=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
+  void SetProdMassTolLc(Double_t a){fProdMassTolLc=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
-  void SetProdMassTolK0S(Double_t a){fProdMassTolK0S=a;}
+  void SetProdMassTolKs0(Double_t a){fProdMassTolKs0=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
   void SetProdMassTolXic0(Double_t a){fProdMassTolXic0=a;}
   void SetProdMassTolOmega(Double_t a){fProdMassTolOmega=a;}
@@ -116,6 +127,10 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
   void SetProdChi2TPCV0PrMax(Double_t a) {fProdChi2TPCV0PrMax=a;}
   void SetProdChi2TPCV0PiMax(Double_t a) {fProdChi2TPCV0PiMax=a;}
+  void SetKFPKs0_Chi2geoMax(Double_t a) {fKFPKs0_Chi2geoMax=a;}
+  void SetKFPKs0_lDeltalMin(Double_t a) {fKFPKs0_lDeltalMin=a;}
+  void SetKFPKs0_Chi2topoMax(Double_t a) {fKFPKs0_Chi2topoMax=a;}
+  void SetKFPLc_Chi2geoMax(Double_t a) {fKFPLc_Chi2geoMax=a;}
   void SetKFPLam_Chi2geoMax(Double_t a) {fKFPLam_Chi2geoMax=a;}
   void SetKFPLam_Chi2topoMax(Double_t a) {fKFPLam_Chi2topoMax=a;}
   void SetKFPLam_lDeltalMin(Double_t a) {fKFPLam_lDeltalMin=a;}
@@ -129,13 +144,16 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetPriTrackChi2perNDFMax(Double_t a) {fPriTrackChi2perNDFMax=a;}
   void SetPriTrackITSNclsMin(Int_t a) {fPriTrackITSNclsMin=a;}
 
+  Double_t GetPtMinLc(){return fPtMinLc;}
+  Double_t GetPtMinPrFromLc(){return fPtMinPrFromLc;}
   Double_t GetPtMinXic0(){return fPtMinXic0;}
   Double_t GetPtMinPiFromXic0(){return fPtMinPiFromXic0;}
   Double_t GetPtMinPiFromXi(){return fPtMinPiFromXi;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
+  Double_t GetProdMassTolLc(){return fProdMassTolLc;}
   Double_t GetProdMassTolLambda(){return fProdMassTolLambda;}
-  Double_t GetProdMassTolK0S(){return fProdMassTolK0S;}
+  Double_t GetProdMassTolKs0(){return fProdMassTolKs0;}
   Double_t GetProdMassTolXi(){return fProdMassTolXi;}
   Double_t GetProdMassTolXic0(){return fProdMassTolXic0;}
   Double_t GetProdMassTolOmega(){return fProdMassTolOmega;}
@@ -159,6 +177,10 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
   Double_t GetProdChi2TPCV0PrMax() {return fProdChi2TPCV0PrMax;}
   Double_t GetProdChi2TPCV0PiMax() {return fProdChi2TPCV0PiMax;}
+  Double_t GetKFPKs0_Chi2geoMax() {return fKFPKs0_Chi2geoMax;}
+  Double_t GetKFPKs0_lDeltalMin() {return fKFPKs0_lDeltalMin;}
+  Double_t GetKFPKs0_Chi2topoMax() {return fKFPKs0_Chi2topoMax;}
+  Double_t GetKFPLc_Chi2geoMax() {return fKFPLc_Chi2geoMax;}
   Double_t GetKFPLam_Chi2geoMax() {return fKFPLam_Chi2geoMax;}
   Double_t GetKFPLam_Chi2topoMax() {return fKFPLam_Chi2topoMax;}
   Double_t GetKFPLam_lDeltalMin() {return fKFPLam_lDeltalMin;}
@@ -179,20 +201,25 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
   EPIDStrategy fPIDStrategy;        /// PID Strategy
   Double_t fCombinedPIDThreshold;   /// PID threshold used in IsSelectedCombinedPID
-  Bool_t fUseXic0PID;                   /// Use PID or not
+  Bool_t fUseXic0PID;                   /// Use PID or not for Xic0
+  Bool_t fUseLcPID;                   /// Use PID or not for Lc
+  AliAODPidHF *fPidObjDau;              /// PID object for all daughter tracks
   AliAODPidHF *fPidObjPiFromXic0;       /// PID object for Xic0-pion
   AliAODPidHF *fPidObjPiFromXi;         /// PID object for cascade-pion
   AliAODPidHF *fPidObjKaFromOmega;      /// PID object for cascade-kaon
   AliAODPidHF *fPidObjPrFromV0;         /// PID object for V0-proton
   AliAODPidHF *fPidObjPiFromV0;         /// PID object for V0-pion
 
+  Double_t fPtMinLc;                 /// Minimum pT of Lc
+  Double_t fPtMinPrFromLc;           /// Minimum pT of proton from Lc decay
   Double_t fPtMinXic0;               /// Minimum pT of Xic0
   Double_t fPtMinPiFromXic0;         /// Minimum Bachelor pT of pion from Xic0 decay
   Double_t fPtMinPiFromXi;         /// Minimum Bachelor pT of pion from Xi decay
   Double_t fProdTrackEtaRange;      /// Bachelor Eta range
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
+  Double_t fProdMassTolLc;          /// Tolerance of Lc mass from PDG value
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
-  Double_t fProdMassTolK0S;         /// Tolerance of K0S mass from PDG value
+  Double_t fProdMassTolKs0;         /// Tolerance of Ks0 mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassTolXic0;          /// Tolerance of Xic0 mass from PDG value
   Double_t fProdMassTolOmega;          /// Tolerance of Omega mass from PDG value
@@ -222,17 +249,21 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fPriTrackChi2perNDFMax; /// Max. chi2/NDF of momentum fit
   Int_t    fPriTrackITSNclsMin; /// Min. number of points in ITS
 
-  Double_t fKFPLam_Chi2geoMax;          /// chi2/ndf cut of lambda reconstruction from KFParticle
-  Double_t fKFPLam_Chi2topoMax;          /// chi2/ndf cut of lambda reconstruction from KFParticle
-  Double_t fKFPLam_lDeltalMin;          /// l/Deltal cut of lambda reconstruction from KFParticle
-  Double_t fKFPXi_Chi2geoMax;         /// chi2/ndf cut of Xi- reconstruction from KFParticle
-  Double_t fKFPXi_Chi2topoMax;         /// chi2/ndf cut of Xi- reconstruction from KFParticle
-  Double_t fKFPXi_lDeltalMin;          /// l/Deltal cut of lambda reconstruction from KFParticle
-  Double_t fKFPXic0_Chi2geoMax;         /// chi2/ndf cut of Xic0 reconstruction from KFParticle
+  Double_t fKFPKs0_Chi2geoMax;  /// chi2/ndf(geo) cut of Ks0 reconstruction from KFParticle
+  Double_t fKFPKs0_lDeltalMin;  /// l/Deltal cut of Ks0 reconstruction from KFParticle
+  Double_t fKFPKs0_Chi2topoMax; /// chi2/ndf(topo) of Ks0 reconstruction from KFParticle
+  Double_t fKFPLc_Chi2geoMax;   /// chi2/ndf(geo) cut of Lc reconstruction from KFParticle
+  Double_t fKFPLam_Chi2geoMax;  /// chi2/ndf(geo) cut of lambda reconstruction from KFParticle
+  Double_t fKFPLam_Chi2topoMax; /// chi2/ndf(topo) cut of lambda reconstruction from KFParticle
+  Double_t fKFPLam_lDeltalMin;  /// l/Deltal cut of lambda reconstruction from KFParticle
+  Double_t fKFPXi_Chi2geoMax;   /// chi2/ndf(geo) cut of Xi- reconstruction from KFParticle
+  Double_t fKFPXi_Chi2topoMax;  /// chi2/ndf(topo) cut of Xi- reconstruction from KFParticle
+  Double_t fKFPXi_lDeltalMin;   /// l/Deltal cut of lambda reconstruction from KFParticle
+  Double_t fKFPXic0_Chi2geoMax; /// chi2/ndf(geo) cut of Xic0 reconstruction from KFParticle
 
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 3);
+  ClassDef(AliRDHFCutsKFP, 4);
   /// \endcond
 };
 

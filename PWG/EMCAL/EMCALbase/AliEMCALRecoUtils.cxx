@@ -55,20 +55,20 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
-  fCellsSingleChannelRecalibrated(kFALSE),fSingleChannelRecalibration(kFALSE),    fEMCALSingleChannelRecalibrationFactors(),
-  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
-  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
-  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fNPars(0),                              fGlobalEventID(NULL),
+  fCellsSingleChannelRecalibrated(kFALSE),fSingleChannelRecalibration(kFALSE),    fEMCALSingleChannelRecalibrationFactors(nullptr),
+  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(nullptr),       fLowGain(kFALSE),
+  fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(nullptr),
+  fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fGlobalEventID(),
   fDoUseMergedBC(kFALSE),
   fUseRunCorrectionFactors(kFALSE),       
-  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),                  fUse1Dmap(kFALSE),
+  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(nullptr),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
   fPIDUtils(),                            fAODFilterMask(0),
   fAODHybridTracks(0),                    fAODTPCOnlyTracks(0),
-  fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
-  fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
+  fMatchedTrackIndex(),                   fMatchedClusterIndex(), 
+  fResidualEta(), fResidualPhi(),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE), 
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
@@ -86,11 +86,6 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   
   for(Int_t j = 0; j <  5;    j++)  fMCGenerToAccept[j] =  "";
   
-  // Track matching arrays init
-  fMatchedTrackIndex     = new TArrayI();
-  fMatchedClusterIndex   = new TArrayI();
-  fResidualPhi           = new TArrayF();
-  fResidualEta           = new TArrayF();
   fPIDUtils              = new AliEMCALPIDUtils();
   
   fBadStatusSelection[0] = kTRUE;
@@ -122,7 +117,6 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
   fIsParRun(reco.fIsParRun),
   fCurrentParNumber(reco.fCurrentParNumber),
-  fNPars(reco.fNPars),
   fGlobalEventID(reco.fGlobalEventID),
   fDoUseMergedBC(reco.fDoUseMergedBC),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
@@ -134,10 +128,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
   fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
   fAODHybridTracks(reco.fAODHybridTracks),                   fAODTPCOnlyTracks(reco.fAODTPCOnlyTracks),
-  fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
-  fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
-  fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
-  fResidualPhi(        reco.fResidualPhi?        new TArrayF(*reco.fResidualPhi):0x0),
+  fMatchedTrackIndex(  reco.fMatchedTrackIndex),
+  fMatchedClusterIndex(reco.fMatchedClusterIndex),
+  fResidualEta(        reco.fResidualEta),
+  fResidualPhi(        reco.fResidualPhi),
   fCutEtaPhiSum(reco.fCutEtaPhiSum),                         fCutEtaPhiSeparate(reco.fCutEtaPhiSeparate), 
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
@@ -227,7 +221,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   fIsParRun                  = reco.fIsParRun;
   fCurrentParNumber          = reco.fCurrentParNumber;
-  fNPars                     = reco.fNPars;
   fGlobalEventID             = reco.fGlobalEventID;
   
   fDoUseMergedBC             = reco.fDoUseMergedBC;
@@ -290,57 +283,10 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   //
   // Assign or copy construct the different TArrays
   //
-  if (reco.fResidualEta) 
-  {
-    if (fResidualEta) 
-      *fResidualEta = *reco.fResidualEta;
-    else 
-      fResidualEta = new TArrayF(*reco.fResidualEta);
-  } 
-  else 
-  {
-    if (fResidualEta) delete fResidualEta;
-    fResidualEta = 0;
-  }
-  
-  if (reco.fResidualPhi) 
-  {
-    if (fResidualPhi)  
-      *fResidualPhi = *reco.fResidualPhi;
-    else 
-      fResidualPhi = new TArrayF(*reco.fResidualPhi);
-  } 
-  else 
-  {
-    if (fResidualPhi) delete fResidualPhi;
-    fResidualPhi = 0;
-  }
-  
-  if (reco.fMatchedTrackIndex) 
-  {
-    if (fMatchedTrackIndex)  
-      *fMatchedTrackIndex = *reco.fMatchedTrackIndex;
-    else  
-      fMatchedTrackIndex = new TArrayI(*reco.fMatchedTrackIndex);
-  } 
-  else 
-  {
-    if (fMatchedTrackIndex) delete fMatchedTrackIndex;
-    fMatchedTrackIndex = 0;
-  }  
-  
-  if (reco.fMatchedClusterIndex)
-  {
-    if (fMatchedClusterIndex)  
-      *fMatchedClusterIndex = *reco.fMatchedClusterIndex;
-    else 
-      fMatchedClusterIndex = new TArrayI(*reco.fMatchedClusterIndex);
-  } 
-  else 
-  {
-    if (fMatchedClusterIndex) delete fMatchedClusterIndex;
-    fMatchedClusterIndex = 0;
-  }
+  fResidualEta = reco.fResidualEta;
+  fResidualPhi = reco.fResidualPhi;
+  fMatchedTrackIndex = reco.fMatchedTrackIndex;
+  fMatchedClusterIndex = reco.fMatchedClusterIndex;
 
   for (Int_t j = 0; j < 4  ; j++) 
    fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; 
@@ -419,16 +365,8 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
     delete fEMCALBadChannelMap;
   }
  
-  delete fMatchedTrackIndex   ; 
-  delete fMatchedClusterIndex ; 
-  delete fResidualEta         ; 
-  delete fResidualPhi         ; 
   delete fPIDUtils            ;
 
-  if (fGlobalEventID){
-    delete fGlobalEventID;
-  }
-  
   InitTrackCuts();
 }
 
@@ -3232,15 +3170,15 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
                                     const AliEMCALGeometry *geom,
                                     AliMCEvent * mc)
 {  
-  fMatchedTrackIndex  ->Reset();
-  fMatchedClusterIndex->Reset();
-  fResidualPhi->Reset();
-  fResidualEta->Reset();
+  fMatchedTrackIndex.Reset();
+  fMatchedClusterIndex.Reset();
+  fResidualPhi.Reset();
+  fResidualEta.Reset();
   
-  fMatchedTrackIndex  ->Set(1000);
-  fMatchedClusterIndex->Set(1000);
-  fResidualPhi->Set(1000);
-  fResidualEta->Set(1000);
+  fMatchedTrackIndex.Set(1000);
+  fMatchedClusterIndex.Set(1000);
+  fResidualPhi.Set(1000);
+  fResidualEta.Set(1000);
   
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
@@ -3439,10 +3377,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     
     if (index>-1) 
     {
-      fMatchedTrackIndex   ->AddAt(itr,matched);
-      fMatchedClusterIndex ->AddAt(index,matched);
-      fResidualEta         ->AddAt(dEta,matched);
-      fResidualPhi         ->AddAt(dPhi,matched);
+      fMatchedTrackIndex[itr] = matched;
+      fMatchedClusterIndex[index] = matched;
+      fResidualEta[dEta] = matched;
+      fResidualPhi[dPhi] = matched;
       matched++;
     }
     
@@ -3458,10 +3396,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   
   AliDebug(2,Form("Number of matched pairs = %d !\n",matched));
   
-  fMatchedTrackIndex   ->Set(matched);
-  fMatchedClusterIndex ->Set(matched);
-  fResidualPhi         ->Set(matched);
-  fResidualEta         ->Set(matched);
+  fMatchedTrackIndex.Set(matched);
+  fMatchedClusterIndex.Set(matched);
+  fResidualPhi.Set(matched);
+  fResidualEta.Set(matched);
 }
 
 ///
@@ -3661,8 +3599,8 @@ void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex,
     return;
   }
   
-  dEta = fResidualEta->At(FindMatchedPosForCluster(clsIndex));
-  dPhi = fResidualPhi->At(FindMatchedPosForCluster(clsIndex));
+  dEta = fResidualEta[FindMatchedPosForCluster(clsIndex)];
+  dPhi = fResidualPhi[FindMatchedPosForCluster(clsIndex)];
 }
 
 ///
@@ -3685,8 +3623,8 @@ void AliEMCALRecoUtils::GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta
     return;
   }
   
-  dEta = fResidualEta->At(FindMatchedPosForTrack(trkIndex));
-  dPhi = fResidualPhi->At(FindMatchedPosForTrack(trkIndex));
+  dEta = fResidualEta[FindMatchedPosForTrack(trkIndex)];
+  dPhi = fResidualPhi[FindMatchedPosForTrack(trkIndex)];
 }
 
 ///
@@ -3699,7 +3637,7 @@ void AliEMCALRecoUtils::GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta
 Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t clsIndex)
 {
   if (IsClusterMatched(clsIndex))
-    return fMatchedTrackIndex->At(FindMatchedPosForCluster(clsIndex));
+    return fMatchedTrackIndex[FindMatchedPosForCluster(clsIndex)];
   else 
     return -1; 
 }
@@ -3714,7 +3652,7 @@ Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t clsIndex)
 Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
 {  
   if (IsTrackMatched(trkIndex))
-    return fMatchedClusterIndex->At(FindMatchedPosForTrack(trkIndex));
+    return fMatchedClusterIndex[FindMatchedPosForTrack(trkIndex)];
   else 
     return -1; 
 }
@@ -3764,17 +3702,17 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForCluster(Int_t clsIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for (Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++) 
+  for (Int_t i=0; i<fMatchedClusterIndex.GetSize(); i++) 
   {
-    if (fMatchedClusterIndex->At(i)==clsIndex) 
+    if (fMatchedClusterIndex[i]==clsIndex) 
     {
-      Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
+      Float_t r = TMath::Sqrt(fResidualEta[i]*fResidualEta[i] + fResidualPhi[i]*fResidualPhi[i]);
       if (r<tmpR) 
       {
         pos=i;
         tmpR=r;
         AliDebug(3,Form("Matched cluster index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
-                        fMatchedClusterIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+                        fMatchedClusterIndex[i],fResidualEta[i],fResidualPhi[i]));
       }
     }
   }
@@ -3794,17 +3732,17 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
-  for (Int_t i=0; i<fMatchedTrackIndex->GetSize(); i++) 
+  for (Int_t i=0; i<fMatchedTrackIndex.GetSize(); i++) 
   {
-    if (fMatchedTrackIndex->At(i)==trkIndex) 
+    if (fMatchedTrackIndex[i]==trkIndex) 
     {
-      Float_t r = TMath::Sqrt(fResidualEta->At(i)*fResidualEta->At(i) + fResidualPhi->At(i)*fResidualPhi->At(i));
+      Float_t r = TMath::Sqrt(fResidualEta[i]*fResidualEta[i] + fResidualPhi[i]*fResidualPhi[i]);
       if (r<tmpR) 
       {
         pos=i;
         tmpR=r;
         AliDebug(3,Form("Matched track index: index: %d, dEta: %2.4f, dPhi: %2.4f.\n",
-                        fMatchedTrackIndex->At(i),fResidualEta->At(i),fResidualPhi->At(i)));
+                        fMatchedTrackIndex[i],fResidualEta[i],fResidualPhi[i]));
       }
     }
   }

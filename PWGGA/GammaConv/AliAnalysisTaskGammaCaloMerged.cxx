@@ -2359,7 +2359,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
   }
 
   // Setting all MC Flags (IsMerged, etc)
-  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC, kTRUE,cluster);
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(AODMCTrackArray, fEnableSortForClusMC, kTRUE,cluster);
 
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut && fDoMesonQA > 1){
     // cout << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;

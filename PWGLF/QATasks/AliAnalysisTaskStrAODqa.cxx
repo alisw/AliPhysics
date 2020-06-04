@@ -196,10 +196,8 @@ void AliAnalysisTaskStrAODqa::UserCreateOutputObjects()
     fHistos_V0->CreateTH1("V0DCAPosToPV", "", 50, 0., 1.);
     fHistos_V0->CreateTH1("V0DCAV0Daughters",  "", 50, 0., 2.);
 
-    fHistos_V0->CreateTH2("ResponsePionFromLambda", "", 500, 0., 5., 400, -20., 20.);
-    fHistos_V0->CreateTH2("ResponseProtonFromLambda", "", 500, 0., 5., 400, -20., 20.);
-    fHistos_V0->CreateTH2("dEdxSignalPionFromLambda", "", 500, 0., 5., 8000, 0., 800.);
-    fHistos_V0->CreateTH2("dEdxSignalProtonFromLambda", "", 500, 0., 5., 8000, 0., 800.);
+    fHistos_V0->CreateTH2("ResponsePionFromLambda", "", 80, 0., 10., 80, -4., 4.);
+    fHistos_V0->CreateTH2("ResponseProtonFromLambda", "", 80, 0., 10., 80, -4., 4.);
 
     fHistos_V0->CreateTH2("ImassK0S", "", 100, 0., 10., 200, 0.4, 0.6);
     fHistos_V0->CreateTH2("ImassLam", "", 100, 0., 10., 200, 1.07, 1.17);
@@ -456,14 +454,12 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
         fHistos_V0->FillTH1("V0DCAV0Daughters",fV0_DcaV0Daught);
         if(ApplyCuts(0,0,0)){
           fHistos_V0->FillTH2("ImassK0S", fV0_Pt, fV0_InvMassK0s);
-	  if (isK0s)      fHistos_V0->FillTH2("ImassK0STrue", fV0_Pt, fV0_InvMassK0s);
+	        if (isK0s)      fHistos_V0->FillTH2("ImassK0STrue", fV0_Pt, fV0_InvMassK0s);
         }
         if(ApplyCuts(1,0,0)){
           fHistos_V0->FillTH2("ImassLam", fV0_Pt, fV0_InvMassLam);
-	  if (isLambda)      fHistos_V0->FillTH2("ImassLamTrue", fV0_Pt, fV0_InvMassLam);
-          if(TMath::Abs(fV0_InvMassK0s-0.497614) > 0.012 && TMath::Abs(fV0_InvMassALam-1.115683) > 0.08 && TMath::Abs(fV0_InvMassLam-1.115683) < 0.002){ 
-            fHistos_V0->FillTH2("dEdxSignalPionFromLambda", fV0_Pt, nTrack->GetTPCsignal());
-            fHistos_V0->FillTH2("dEdxSignalProtonFromLambda", fV0_Pt, pTrack->GetTPCsignal());
+	        if (isLambda)      fHistos_V0->FillTH2("ImassLamTrue", fV0_Pt, fV0_InvMassLam);
+          if(fV0_DcaV0Daught < 1.0 && fV0_V0CosPA > 0.999 && TMath::Abs(fV0_InvMassK0s-0.497614) > 0.012 && TMath::Abs(fV0_InvMassALam-1.115683) > 0.08 && TMath::Abs(fV0_InvMassLam-1.115683) < 0.002){ 
             fHistos_V0->FillTH2("ResponsePionFromLambda", fV0_Pt, fV0_NSigNegPion);
             fHistos_V0->FillTH2("ResponseProtonFromLambda", fV0_Pt, fV0_NSigPosProton);
           }
@@ -472,7 +468,7 @@ void AliAnalysisTaskStrAODqa::UserExec(Option_t *)
 	  fHistos_V0->FillTH2("ImassALam", fV0_Pt, fV0_InvMassALam);      
 	  if (isAntiLambda)      fHistos_V0->FillTH2("ImassALamTrue", fV0_Pt, fV0_InvMassALam);
     }  
-    } // end of V0 loop
+  } // end of V0 loop
 
     // start of cascades part
     //-----------------------
@@ -776,12 +772,12 @@ bool AliAnalysisTaskStrAODqa::ApplyCuts(int part, Bool_t isXi, Bool_t isOmega)
 	//reject Lambda candidates when considering K0s
         if( part == 0 && TMath::Abs(fV0_InvMassLam)<0.005 ) return kFALSE;
         // check PID for all daughters (particle hypothesis' dependent)
-        if( (part==0) && (fV0_NSigPosPion>3 || fV0_NSigNegPion>3) ) return kFALSE;
-        if( (part==1) && (fV0_NSigPosProton>3 || fV0_NSigNegPion>3) ) return kFALSE;
-        if( (part==2) && (fV0_NSigNegProton>3 || fV0_NSigPosPion>3) ) return kFALSE;
+        if( (part==0) && (TMath::Abs(fV0_NSigPosPion)>3 || TMath::Abs(fV0_NSigNegPion)>3) ) return kFALSE;
+        if( (part==1) && (TMath::Abs(fV0_NSigPosProton)>3 || TMath::Abs(fV0_NSigNegPion)>3) ) return kFALSE;
+        if( (part==2) && (TMath::Abs(fV0_NSigNegProton)>3 || TMath::Abs(fV0_NSigPosPion)>3) ) return kFALSE;
         // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
         if( (part==0) && (0.497*fV0_DistOverTotP >20) ) return kFALSE;
-	if( (part>0) && (1.115683*fV0_DistOverTotP >30) ) return kFALSE;
+	      if( (part>0) && (1.115683*fV0_DistOverTotP >30) ) return kFALSE;
 
     }
 
@@ -885,10 +881,10 @@ bool AliAnalysisTaskStrAODqa::ApplyCuts(int part, Bool_t isXi, Bool_t isOmega)
       if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",17, fCasc_charge);
 
       // check PID for all daughters (particle hypothesis' dependent)
-      if( (part==3) && (fCasc_NSigPosPion>3 || fCasc_NSigNegProton>3 || fCasc_NSigBacPion>3) ) return kFALSE;
-      if( (part==4) && (fCasc_NSigNegPion>3 || fCasc_NSigPosProton>3 || fCasc_NSigBacPion>3) ) return kFALSE;
-      if( (part==5) && (fCasc_NSigPosPion>3 || fCasc_NSigNegProton>3 || fCasc_NSigBacKaon>3) ) return kFALSE;
-      if( (part==6) && (fCasc_NSigNegPion>3 || fCasc_NSigPosProton>3 || fCasc_NSigBacKaon>3) ) return kFALSE;
+      if( (part==3) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
+      if( (part==4) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
+      if( (part==5) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
+      if( (part==6) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
       if (isXi && part<5)          fHistos_Casc->FillTH1("XiProgSelections"   ,18, fCasc_charge);
       if (isOmega && part>=5)       fHistos_Casc->FillTH1("OmegaProgSelections",18, fCasc_charge);
     }
@@ -897,17 +893,16 @@ bool AliAnalysisTaskStrAODqa::ApplyCuts(int part, Bool_t isXi, Bool_t isOmega)
 
 }
 
-
 //________________________________________________________________________
 bool AliAnalysisTaskStrAODqa::ApplyCutsNSigmaTPC(int part)
 {
-  if( (part==0) && (fV0_NSigPosPion>3 || fV0_NSigNegPion>3) ) return kFALSE;
-  if( (part==1) && (fV0_NSigPosProton>3 || fV0_NSigNegPion>3) ) return kFALSE;
-  if( (part==2) && (fV0_NSigNegProton>3 || fV0_NSigPosPion>3) ) return kFALSE;
-  if( (part==3) && (fCasc_NSigPosPion>3 || fCasc_NSigNegProton>3 || fCasc_NSigBacPion>3) ) return kFALSE;
-  if( (part==4) && (fCasc_NSigNegPion>3 || fCasc_NSigPosProton>3 || fCasc_NSigBacPion>3) ) return kFALSE;
-  if( (part==5) && (fCasc_NSigPosPion>3 || fCasc_NSigNegProton>3 || fCasc_NSigBacKaon>3) ) return kFALSE;
-  if( (part==6) && (fCasc_NSigNegPion>3 || fCasc_NSigPosProton>3 || fCasc_NSigBacKaon>3) ) return kFALSE;
+  if( (part==0) && (TMath::Abs(fV0_NSigPosPion)>3 || TMath::Abs(fV0_NSigNegPion)>3) ) return kFALSE;
+  if( (part==1) && (TMath::Abs(fV0_NSigPosProton)>3 || TMath::Abs(fV0_NSigNegPion)>3) ) return kFALSE;
+  if( (part==2) && (TMath::Abs(fV0_NSigNegProton)>3 || TMath::Abs(fV0_NSigPosPion)>3) ) return kFALSE;
+  if( (part==3) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
+  if( (part==4) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacPion)>3) ) return kFALSE;
+  if( (part==5) && (TMath::Abs(fCasc_NSigPosPion)>3 || TMath::Abs(fCasc_NSigNegProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
+  if( (part==6) && (TMath::Abs(fCasc_NSigNegPion)>3 || TMath::Abs(fCasc_NSigPosProton)>3 || TMath::Abs(fCasc_NSigBacKaon)>3) ) return kFALSE;
 
   return kTRUE;
 }

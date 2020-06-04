@@ -785,6 +785,8 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhEtaMCPart[imcPart]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhEtaMCPart[imcPart]);
       
+      if ( !IsGeneratedParticlesAnalysisOn() ) continue;
+      
       fhPtMCPrimPart[imcPart]  = new TH1F (Form("hPtMCPrimary%s",histoName[imcPart].Data()),
                                            Form("generated #it{p}_{T} distribution from %s",titleName[imcPart].Data()),
                                            nptbins,ptmin,ptmax);
@@ -1393,7 +1395,8 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 //________________________________________________________
 void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
 {
-  if(IsDataMC()) FillPrimaryHistograms();
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
+    FillPrimaryHistograms();
   
   // Loop on stored AODParticles
   Int_t naod = GetOutputAODBranch()->GetEntriesFast();
@@ -1478,16 +1481,17 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) {fhPtPileUp[6]->Fill(pt, GetEventWeight());}
     }
     
-    if(IsDataMC())
+    if ( IsDataMC() )
     {
       // Play with the MC stack if available
       Int_t mompdg = -1;
       Int_t label  = track->GetLabel();
       
-      if(label >= 0)
+      if ( label >= 0 )
       {
         AliVParticle * mom = GetMC()->GetTrack(label);
-        mompdg =TMath::Abs(mom->PdgCode());
+        if ( mom ) mompdg =TMath::Abs(mom->PdgCode());
+        else       AliInfo(Form("Mother particle for label %d not found",label));
       }
       
       Int_t mcType = kmcUnknown;

@@ -1891,7 +1891,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
 
           if (!trackV || !jetrec)            continue;
-          if (fIsPythia&&!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour))   continue;
+          if(fIsPythia){
+            if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
+          }
+          else{
+            if(!IsTrackAccepted((AliAODTrack*)trackV,-1)) continue;
+          }
 
           if(fApplyV0Rej!=V0RejNo) isV0=IsV0Daughter(trackV);
 

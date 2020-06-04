@@ -17,7 +17,7 @@ ClassImp(AlidNdPtTools)
 
 	//____________________________________________________________________________
 
-	THnSparseD* AlidNdPtTools::fSparseTmp = 0;
+	THnSparseF* AlidNdPtTools::fSparseTmp = 0;
 	TGraph* AlidNdPtTools::fGsscale = 0;
 	TGraph* AlidNdPtTools::fGsscale1 = 0;
 	TGraph* AlidNdPtTools::fGsscale2 = 0;
@@ -109,7 +109,7 @@ Long64_t AlidNdPtTools::FillHistWeighted(THnBase* s, std::vector<double> const& 
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined axes
 /// with normal (linear) binning
@@ -147,7 +147,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 	min[n - 1] = xmin;
 	max[n - 1] = xmax;
 	s += label;
-	THnSparseD* h = new THnSparseD("fSparseTmp", s.Data(), n, bin.GetArray(),
+	THnSparseF* h = new THnSparseF("fSparseTmp", s.Data(), n, bin.GetArray(),
 			min.GetArray(), max.GetArray());
 	for (int i = 0; i < n - 1; i++) {
 		if (fSparseTmp->GetAxis(i)->GetXbins() &&
@@ -168,7 +168,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined axes
 /// with normal (linear) binning
@@ -191,7 +191,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t xmin,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined binning with
 /// the option of variable bin size
@@ -216,7 +216,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add a user defined binning with
 /// the option of variable bin size
@@ -238,7 +238,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t* xbins,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -393,7 +393,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title,
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -421,7 +421,7 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* option) {
 
 //____________________________________________________________________________
 
-/// Add an Axis (Dimension) to the THnSparseD
+/// Add an Axis (Dimension) to the THnSparseF
 ///
 /// function to add from a series of pre-defined options
 /// option supplied in not case-senstitiv
@@ -477,19 +477,19 @@ Int_t AlidNdPtTools::AddAxis(const char* option) {
 
 //____________________________________________________________________________
 
-/// Create a THnSparseD histogram
+/// Create a THnSparseF histogram
 ///
 /// Before this function actually creates a histogram
 /// axis have to be added using the various AddAxis() functions
 ///
 /// \param name  name of the histogram
 ///
-/// \return newly created THnSparseD histogram or 0 in case fo error
+/// \return newly created THnSparseF histogram or 0 in case fo error
 
-THnSparseD* AlidNdPtTools::CreateHist(const char* name) {
+THnSparseF* AlidNdPtTools::CreateHist(const char* name) {
 	if (!fSparseTmp)
 		return 0;
-	THnSparseD* h = fSparseTmp;
+	THnSparseF* h = fSparseTmp;
 	h->SetName(name);
 	fSparseTmp = 0;
 	return h;

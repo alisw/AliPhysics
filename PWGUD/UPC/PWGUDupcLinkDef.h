@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskLumiStabi+;
 #pragma link C++ class AliAnalysisTaskUpcEtaC+;
 #pragma link C++ class AliAnalysisTaskUpcPsi2s+;
 #pragma link C++ class AliAnalysisTaskUpcK0sK0s+;
@@ -32,4 +33,5 @@
 #pragma link C++ class AliAnalysisTaskTOFTrigger+;
 #pragma link C++ class AliAnalysisTaskZDCTree+;
 #pragma link C++ class AliAnalysisTaskUPCPhiTest+;
+#pragma link C++ class Polarization+;
 #endif

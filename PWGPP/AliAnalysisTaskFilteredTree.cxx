@@ -118,8 +118,8 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fLowPtV0DownscaligF(0)
   , fFriendDownscaling(-3.)
   , fSqrtS(5020)
-  , fChargedEffectiveMass(0.2)
-  , fV0EffectiveMass(0.9)
+  , fChargedEffectiveMass(0.0)
+  , fV0EffectiveMass(0.0)
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
   , fProcessITSTPCmatchOut(kFALSE)  // swittch to process ITS/TPC standalone tracks
@@ -154,6 +154,9 @@ ClassImp(AliAnalysisTaskFilteredTree)
   DefineOutput(5, TTree::Class());
   DefineOutput(6, TTree::Class());
   DefineOutput(7, TList::Class());
+  DefineOutput(7, TList::Class());
+  fChargedEffectiveMass=TDatabasePDG::Instance()->GetParticle(kProton)->Mass();  // use proton
+  fV0EffectiveMass=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();       // use Lambda mass
 }
 
 //_____________________________________________________________________________
@@ -342,6 +345,9 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
       AliInfo("ToFix: MC stack not available. Prefered MCEvent() will return 0");
     }
   }
+  Float_t cms = fESD->GetESDRun()->GetBeamEnergy();
+  if (cms>0) fSqrtS=2*cms;
+
 
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
@@ -1512,6 +1518,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           (*fTreeSRedirector)<<"highPt"<<
 	    "downscaleCounter="<<downscaleCounter<<
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
+	    "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
+	    "tsallisMass="<<fChargedEffectiveMass<<        // mass used for Tsallis scaling
 	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
 	    "selectionPtMaskMC="<<selectionPtMaskMC<<       // high pt trigger mask based on MC if available
 	    "selectionPIDMask="<<selectionPIDMask<<         // selection PIDmask
@@ -2163,6 +2171,8 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
         "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
+        "sqrtS="<<fSqrtS<<                             // sqrt s as used for downsampling
+        "tsallisMass="<<fV0EffectiveMass<<        // mass used for Tsallis scaling
         "selectionPtMask="<<selectionPtMask<< // selection pt mask
         "downscaleCounter="<<downscaleCounter<< // downscaleCounter
 //        "isDownscaled="<<isDownscaled<<       //

@@ -82,6 +82,11 @@ public:
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
 
+  // Switches for histogram groups
+  void SetFillPlotsResiduals(Bool_t doFill) { fFillPlotsResiduals = doFill; }
+  void SetFillPlotsQAGeneral(Bool_t doFill) { fFillPlotsQAGeneral = doFill; }
+  void SetFillPlotsQAConstituents(Bool_t doFill) { fFillPlotsQAConstituents = doFill; }
+
   static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
 
 protected:
@@ -118,7 +123,11 @@ private:
   TRandom                       *fSampleTrimmer;            ///< Sample trimmer
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
-  Bool_t                        fIsEmbeddedEvent;           ///<true if the event is an embedded event       
+  Bool_t                        fIsEmbeddedEvent;           ///< true if the event is an embedded event       
+  Bool_t                        fFillPlotsResiduals;        ///< Fill residuals plots
+  Bool_t                        fFillPlotsQAGeneral;        ///< Fill general QA plots
+  Bool_t                        fFillPlotsQAConstituents;   ///< Fill constituent QA plots
+  Bool_t                        fFillPlotsQAOutliers;       ///< Fill outlier QA plots
   TString                       fNamePartLevelJetContainer; ///< Name of the particle level jet container  
   TString                       fNameDetLevelJetContainer;  ///< Name of the detector (or hybrid if embedding)  level jet container  
   TString                       fNameUnSubLevelJetContainer;///< Name of the unsubtracted hybrid level jet container

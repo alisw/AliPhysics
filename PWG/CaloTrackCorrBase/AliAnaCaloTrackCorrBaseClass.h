@@ -209,6 +209,10 @@ public:
   virtual void           SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
   virtual void           SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
   
+  virtual Bool_t         IsGeneratedParticlesAnalysisOn()  const { return fFillGenPartHisto  ; }
+  virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
+  virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
+  
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -423,6 +427,7 @@ private:
   Int_t                      fTrackMultBins[20];   ///< Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
   Bool_t                     fFillPileUpHistograms;   ///< Fill pile-up related histograms.
   Bool_t                     fFillHighMultHistograms; ///< Histograms with centrality and event plane for triggers pT.
+  Bool_t                     fFillGenPartHisto;    ///< Fill primary generated particles histograms
   Bool_t                     fMakePlots   ;        ///< Print plots.
   Bool_t                     fFillEmbedHistograms ; ///< Fill histograms for embeded signals
   Bool_t                     fSelectEmbededSignal ; ///< Select clusters/tracks in analysis only from embedded signal
@@ -458,7 +463,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,31) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,32) ;
   /// \endcond
 
 } ;

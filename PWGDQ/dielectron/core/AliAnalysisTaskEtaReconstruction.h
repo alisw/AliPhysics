@@ -69,7 +69,8 @@ public:
    void   AddSingleSecondaryLegMCSignal(AliDielectronSignalMC signal1)       {fSingleSecondaryLegMCSignal.push_back(signal1);}
    void   AddPrimaryPairMCSignal(AliDielectronSignalMC signal1)              {fPrimaryPairMCSignal.push_back(signal1);}
    void   AddSecondaryPairMCSignal(AliDielectronSignalMC signal1)            {fSecondaryPairMCSignal.push_back(signal1);}
-   void   AddFourPairMCSignal(AliDielectronSignalMC signal1)                 {fFourPairMCSignal.push_back(signal1);}
+   void   AddFourPairMCSignal_PrimSec(AliDielectronSignalMC signal1)                 {fFourPairMCSignal_PrimSec.push_back(signal1);}
+   void   AddFourPairMCSignal_SecSec(AliDielectronSignalMC signal1)                  {fFourPairMCSignal_SecSec.push_back(signal1);}
    void   AddMCSignalsWherePrimaryDielectronPairNotFromSameMother(std::vector<bool> vec)   {fPrimaryDielectronPairNotFromSameMother = vec;}
    void   AddMCSignalsWhereSecondaryDielectronPairNotFromSameMother(std::vector<bool> vec) {fSecondaryDielectronPairNotFromSameMother = vec;}
 
@@ -276,7 +277,7 @@ private:
   void   DoGenAndGenSmearTwoPairing(std::vector<Particle>* vec_negParticle, std::vector<Particle>* vec_posParticle, Bool_t PartPrimary, Bool_t SmearedPair, double centralityWeight);
   void   DoRecTwoPairing(std::vector<Particle> fRecNegPart, std::vector<Particle> fRecPosPart, std::vector<AliDielectronSignalMC> fPairMCSignal, Bool_t PartPrimary, double centralityWeight);
   void   DoRecTwoPairingV0(std::vector<AliDielectronSignalMC> fPairMCSignal);
-  void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, double centralityWeight);
+  void   DoFourPairing(std::vector<TwoPair> fPairVec_primary, std::vector<TwoPair> fPairVec_secondary, Bool_t ReconstructedPair, Bool_t SmearedPair, Bool_t PrimSecPairing, double centralityWeight);
   void   DoFourPreFilter(std::vector<TwoPair>* fPairVec_primary, std::vector<TwoPair>* fPairVec_secondary);
   void   ApplyStandardCutsAndFillHists(std::vector<TwoPair>* fPairVec, std::vector<AliAnalysisFilter*> fTrackCuts, Bool_t TrackCuts, Bool_t PairPrimary, double centralityWeight);
 
@@ -317,9 +318,12 @@ private:
   TList* fGeneratedSmearedPrimaryPairsList;
   TList* fGeneratedSmearedSecondaryPairsList;
   TList* fPairList;
-  TList* fFourPairList;
-  TList* fGeneratedFourPairsList;
-  TList* fGeneratedSmearedFourPairsList;
+  TList* fFourPairList_PrimSec;
+  TList* fFourPairList_SecSec;
+  TList* fGeneratedFourPairsList_PrimSec;
+  TList* fGeneratedFourPairsList_SecSec;
+  TList* fGeneratedSmearedFourPairsList_PrimSec;
+  TList* fGeneratedSmearedFourPairsList_SecSec;
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
@@ -378,7 +382,8 @@ private:
   std::vector<AliDielectronSignalMC> fSingleSecondaryLegMCSignal;
   std::vector<AliDielectronSignalMC> fPrimaryPairMCSignal;
   std::vector<AliDielectronSignalMC> fSecondaryPairMCSignal;
-  std::vector<AliDielectronSignalMC> fFourPairMCSignal;
+  std::vector<AliDielectronSignalMC> fFourPairMCSignal_PrimSec;
+  std::vector<AliDielectronSignalMC> fFourPairMCSignal_SecSec;
   std::vector<bool> fPrimaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   std::vector<bool> fSecondaryDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
@@ -447,9 +452,12 @@ private:
   std::vector<TH2D*> fHistGenSmearedSecondaryPair;
   std::vector<TH2D*> fHistRecPrimaryPair;
   std::vector<TH2D*> fHistRecSecondaryPair;
-  std::vector<TH2D*> fHistGenFourPair;
-  std::vector<TH2D*> fHistGenSmearedFourPair;
-  std::vector<TH2D*> fHistRecFourPair;
+  std::vector<TH2D*> fHistGenFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenFourPair_SecSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_PrimSec;
+  std::vector<TH2D*> fHistGenSmearedFourPair_SecSec;
+  std::vector<TH2D*> fHistRecFourPair_PrimSec;
+  std::vector<TH2D*> fHistRecFourPair_SecSec;
 
   std::vector<TH2D*> fVecHistPrefilters;
 

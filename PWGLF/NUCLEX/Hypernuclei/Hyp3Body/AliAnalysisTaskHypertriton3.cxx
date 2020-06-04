@@ -49,11 +49,10 @@ namespace
 
   struct HelperParticle
   {
-    ~HelperParticle() { if (particle) delete particle; }
     o2::track::TrackParCov *track = nullptr;
     float nSigmaTPC = -1.f;
     float nSigmaTOF = -1.f;
-    KFParticle* particle = nullptr;
+    KFParticle particle;
   };
 
   constexpr float kDeuMass{1.87561};
@@ -214,11 +213,14 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
     }
   }
   else {
-    if (fKF)
+    if (fKF) {
       fRecHyp = new RHyperTriton3KF;
-    else
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3KF*>(fRecHyp));
+    }
+    else {
       fRecHyp = new RHyperTriton3O2;
-    fTreeHyp3->Branch("RHyperTriton", fRecHyp);
+      fTreeHyp3->Branch("RHyperTriton", static_cast<RHyperTriton3O2*>(fRecHyp));
+    }
   }
   fCosPAsplineFile = TFile::Open(AliDataFile::GetFileName(fCosPAsplineName).data());
   if (fCosPAsplineFile)
@@ -305,7 +307,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     track->GetImpactParameters(dca[0], dca[1]);
     double dcaNorm = std::hypot(dca[0], dca[1]);
 
-    if (!fVertexer.getUseAbsDCA())
+    if (fUseCovarianceCut)
     {
       float cyy = track->GetSigmaY2(), czz = track->GetSigmaZ2(), cyz = track->GetSigmaZY();
       float detYZ = cyy * czz - cyz * cyz;
@@ -340,10 +342,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             track->GetXYZ(posmom);
             track->GetPxPyPz(posmom + 3);
             track->GetCovarianceXYZPxPyPz(cov);
-            helper.particle = new KFParticle;
-            helper.particle->Create(posmom, cov, track->Charge(), kMasses[iT]);
-            helper.particle->Chi2() = track->GetTPCchi2();
-            helper.particle->NDF() = track->GetNumberOfTPCClusters() * 2;
+            helper.particle.Create(posmom, cov, track->Charge(), kMasses[iT]);
+            helper.particle.Chi2() = track->GetTPCchi2();
+            helper.particle.NDF() = track->GetNumberOfTPCClusters() * 2;
           }
           helpers[iT][chargeIndex].push_back(helper);
         }
@@ -379,8 +380,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       KFParticle oneCandidate;
       if (fKF)
       {
-        oneCandidate.Q() = deu.particle->GetQ();
-        oneCandidate.AddDaughter(*deu.particle);
+        oneCandidate.Q() = deu.particle.GetQ();
+        oneCandidate.AddDaughter(deu.particle);
       }
       for (const auto &p : helpers[kProton][indices[idx][1]])
       {
@@ -390,7 +391,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         KFParticle twoCandidate{oneCandidate};
         if (fKF)
         {
-          twoCandidate.AddDaughter(*p.particle);
+          twoCandidate.AddDaughter(p.particle);
           kfRecHyp.chi2_deuprot = twoCandidate.GetChi2() / twoCandidate.GetNDF();
           if (kfRecHyp.chi2_deuprot > fMaxKFchi2[0] || kfRecHyp.chi2_deuprot < 0.)
             continue;
@@ -458,7 +459,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           else
           {
             KFParticle kfHyperTriton{twoCandidate};
-            kfHyperTriton.AddDaughter(*pi.particle);
+            kfHyperTriton.AddDaughter(pi.particle);
             kfRecHyp.chi2_3prongs = kfHyperTriton.GetChi2() / kfHyperTriton.GetNDF();
             if (kfRecHyp.chi2_3prongs > fMaxKFchi2[1] || kfRecHyp.chi2_3prongs < 0.)
               continue;
@@ -499,8 +500,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
             continue;
           }
           fRecHyp->r = decayVtx.Rho();
-          float hSign = deu.track->Charge() > 0 ? 1. : -1;
-          fRecHyp->pt = hSign * hypertriton.pt();
+          fRecHyp->positive = deu.track->Charge() > 0;
+          fRecHyp->pt = hypertriton.pt();
           fRecHyp->phi = hypertriton.phi();
           fRecHyp->pz = hypertriton.pz();
           fRecHyp->m = mass;

@@ -900,7 +900,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
   Double_t upedgesAccLcFromSc[nbinsAccLcFromSc] = {50, 19.5, 5.5, 1, 50, 2};
   fhistMCSpectrumAccLcFromSc = new THnSparseF("fhistMCSpectrumAccLcFromSc", "fhistMCSpectrumAccLcFromSc; ptLc; codeLc; Qorigin; yLc; ptSc; ySc", nbinsAccLcFromSc, binsAccLcFromSc, lowedgesAccLcFromSc, upedgesAccLcFromSc); // 
   
-  Int_t nbinsSparseSigma[10] = {25, 400, 400, 20, 25, 2, 1, 200, 2, 2};
+  Int_t nbinsSparseSigma[10] = {250, 400, 400, 20, 250, 2, 1, 200, 2, 2};
   Double_t lowEdgesSigma[10] = {0, 0.130, 2.100, -1, 0, 3.5, 0.5, -1, 0, 0};
   Double_t upEdgesSigma[10] = {25, 0.330, 2.500, 1, 25, 5.5, 1.5, 1, 2, 2};
   if(!fFillTree)  fhSparseAnalysisSigma = new THnSparseF("fhSparseAnalysisSigma", "fhSparseAnalysis; pt; deltamass; LcMass; CosThetaStarSoftPion; ptsigmac; checkorigin; isRotated; bdtresp; softPiITSrefit; isSigmacMC", 10, nbinsSparseSigma, lowEdgesSigma, upEdgesSigma);
@@ -2370,7 +2370,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		  AliAODTrack *trkd = (AliAODTrack*)part->GetDaughter(0); // Daughter(0) of Cascade is always a proton
 		  AliAODMCParticle* pProt = (AliAODMCParticle*)mcArray->At(TMath::Abs(trkd->GetLabel()));
 		  if(TMath::Abs(pProt->GetPdgCode()) == 2212){
-		    pointSigma[5] = ptsigmacMC;
+		    pointSigma[4] = ptsigmacMC;
 		    pointSigma[0] = ptlambdacMC;
 		    fhSparseAnalysisSigma->Fill(pointSigma);
 		    //fhistMCSpectrumAccSc->Fill(ptsigmacMC, kRecoPID, checkOrigin);	      

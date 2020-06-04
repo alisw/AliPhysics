@@ -392,6 +392,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetL0TriggerInput(L0TriggerInput);
   fAliLMREvent->SetPhysicsSelectionMask(physicsSelectionMask);
   fAliLMREvent->SetIsPileupFromSPD(fAOD->IsPileupFromSPD(fminContributorsPileUp));
+  fAliLMREvent->SetIsPileupFromSPDInMultBins(fAOD->IsPileupFromSPDInMultBins());
   Int_t nmu=0;
   if(fAOD->GetNumberOfTracks())
      nmu= fAOD->GetNumberOfMuonTracks();

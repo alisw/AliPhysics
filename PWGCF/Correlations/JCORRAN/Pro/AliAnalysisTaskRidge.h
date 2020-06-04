@@ -10,6 +10,22 @@
 #ifndef ALIANALYSISTASKRIDGE_H
 #define ALIANALYSISTASKRIDGE_H
 
+using namespace std;
+
+class AliMultSelection;
+class AliVMultiplicity;
+class TClonesArray;
+class AliJJetTask;
+class AliDirList;
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
+class AliEmcalTrackSelection;
+class AliAnalysisUtils;
+class AliCalorimeterUtils;
+class AliMultSelection;
+class TLorentzVector;
+
 #include "TFile.h"
 #include <TSystem.h>
 #include <TGrid.h>
@@ -33,23 +49,7 @@
 #include <TLorentzVector.h>
 #include "AliJJetTask.h"
 #include "AliAnalysisTaskEmcalJet.h"
-
-using namespace std;
-
-class AliMultSelection;
-class AliVMultiplicity;
-class TClonesArray;
-class AliJJetTask;
-class AliDirList;
-class AliJetContainer;
-class AliParticleContainer;
-class AliClusterContainer;
-class AliEmcalTrackSelection;
-class AliAnalysisUtils;
-class AliCalorimeterUtils;
-class AliMultSelection;
-class TLorentzVector;
-
+#include "AliJetContainer.h"
 
 class AliAnalysisTaskRidgeRunTable {
     public:
@@ -72,8 +72,6 @@ class AliAnalysisTaskRidgeRunTable {
 };
 
 
-//class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
-//class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet, public AliAnalysisTaskSE {
 class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
     public:
       typedef std::vector<Bool_t> Bool_1d;
@@ -154,9 +152,12 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 		Int_t IsTrackRecon;
 	};
 
+	void RhoSparse(AliJetContainer *ktContainer, AliJetContainer *aktContainer, Int_t numberofexcludingjets);
+
     protected:
 	void MeasureBgDensity(AliJetContainer* ktContainer);
-
+	Bool_t isOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
+	
     private:
         typedef std::vector<AliVTrack*> tracklist;
         typedef std::deque<tracklist>  eventpool;
@@ -190,8 +191,6 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Double_t                        fZ;
 	Double_t			fZ_gen;
  
-        TObjArray 			*fjets; //!
-
         std::vector < UInt_t >          goodtrackindices; //!
         std::vector < UInt_t >          goodtrackindicesMCALICE; //!
 	std::vector < UInt_t >          goodtrackindicesMCCMS; //!
@@ -236,7 +235,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	Double_t			fLT_pT_MCALICE;
 	Double_t			fLT_pT_MCCMS;
 	Double_t			fJetPt;
-
+	Double_t			fJetPtMC;
 
 	Bool_t                          fsetmixing = kTRUE;
         Bool_t                          IsDGV0=kFALSE;
@@ -278,6 +277,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 
 	Double_t RHO;
 	Double_t RHOM;
+
 
     ClassDef(AliAnalysisTaskRidge, 1);
 };

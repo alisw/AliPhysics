@@ -238,14 +238,20 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
     }
     else{
-      if(fRun>=265015 && fRun<=267166){ //LHC16qrst
+      if((fRun>=265015 && fRun<=267166)//LHC16qrst
+        ||(fRun>=252603 && fRun<=264347) //16e (252603) to 16p (264347), using LHC16qrst parametrization
+        ){
         Int_t ddl = WhichDDL(mod, ix) ;  
         Double_t rdm =gRandom->Uniform() ; 
         if(rdm<TriggerProbabilityLHC16qrst(clu->E(),ddl)) result=1 ; 
         if(rdm<TriggerL1ProbabilityLHC16qrst(clu->E(),ddl)) result|=(1<<1) ; //L1 
       }
       else{  
-        if(fRun>=282008 && fRun<=282441){ //LHC17pq
+        if((fRun>=282008 && fRun<=282441) //LHC17pq
+          ||(fRun>=270531 && fRun<=281961) //17c (270531) to 17o (281961), using LHC17p parametrization
+          ||(fRun>=282504 && fRun<=282704) //17p (282504) to 17p (282704), using LHC17p parametrization
+          ||(fRun>=284891 && fRun<=294925) //18b (284891) to 18p (294925), using LHC17p parametrization
+          ){
           Int_t ddl = WhichDDL(mod, ix) ;  
           Double_t rdm =gRandom->Uniform() ; 
           if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
@@ -368,7 +374,9 @@ Double_t AliPHOSTriggerUtils::TriggerL1ProbabilityLHC16qrst(Double_t x, Int_t dd
 
   if(ddl<8 || ddl>19) return 0.;
   
-  if(fRun>=265015 && fRun<=267166){ //LHC16qrst
+  if((fRun>=265015 && fRun<=267166) //LHC16qrst
+    ||(fRun>=252603 && fRun<=264347) //16e (252603) to 16p (264347), using LHC16qrst parametrization
+    ){
     switch(ddl){  
         case 8 : return 9.882274e-01/(TMath::Exp((3.722347e+00-x)/3.297609e-01)+1.)+(1.-9.882274e-01)/(TMath::Exp((7.667186e+00-x)/3.297609e-01)+1.) ;
         case 9 : return 9.775161e-01/(TMath::Exp((3.674492e+00-x)/3.955892e-01)+1.)+(1.-9.775161e-01)/(TMath::Exp((7.506361e+00-x)/3.955892e-01)+1.) ;
@@ -395,7 +403,9 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16qrst(Double_t x, Int_t ddl)
 
   if(ddl<8 || ddl>19) return 0.;
   
-  if(fRun>=265015 && fRun<=267166){ //LHC16qrst
+  if((fRun>=265015 && fRun<=267166) //LHC16qrst
+    ||(fRun>=252603 && fRun<=264347) //16e (252603) to 16p (264347), using LHC16qrst parametrization
+    ){
     switch(ddl){  
     case 8 : return  9.573766e-01/(TMath::Exp((3.871535e+00-x)/2.876473e-01)+1.)+(1.-9.573766e-01)/(TMath::Exp((7.153766e+00-x)/2.876473e-01)+1.) ;
     case 9 : return  9.228485e-01/(TMath::Exp((3.798753e+00-x)/2.889749e-01)+1.)+(1.-9.228485e-01)/(TMath::Exp((8.212820e+00-x)/2.889749e-01)+1.) ;
@@ -422,7 +432,11 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
 
   if(ddl<8 || ddl>19) return 0.;
     
-  if(fRun>=282008 && fRun<=282343){ //LHC17p
+  if((fRun>=282008 && fRun<=282343) //LHC17p
+    ||(fRun>=270531 && fRun<=281961) //17c (270531) to 17o (281961), using LHC17p parametrization
+    ||(fRun>=282504 && fRun<=282704) //17p (282504) to 17p (282704), using LHC17p parametrization
+    ||(fRun>=284891 && fRun<=294925) //18b (284891) to 18p (294925), using LHC17p parametrization
+    ){
     switch(ddl){  
     case 8 : return 7.944762e-01/(TMath::Exp((3.641718e+00-x)/2.650322e-01)+1.)+(1.-7.944762e-01)/(TMath::Exp((4.694861e+00-x)/2.650322e-01)+1.) ;
     case 9 : return 9.166827e-01/(TMath::Exp((3.517378e+00-x)/2.592677e-01)+1.)+(1.-9.166827e-01)/(TMath::Exp((6.836709e+00-x)/2.592677e-01)+1.) ;

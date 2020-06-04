@@ -3109,7 +3109,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   } // Correlation with neutral hadrons
   
   // If data is MC, fill more histograms, depending on origin
-  if ( IsDataMC() )
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
   {
     for(Int_t i= fMCGenTypeMin; i <= fMCGenTypeMax; i++)
     {
@@ -4283,7 +4283,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     Int_t mcIndex = -1;
     Int_t mcTag   = particle->GetTag();
     Bool_t lostDecayPair = kFALSE;
-    if ( IsDataMC() )
+    if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
     {
       mcIndex = GetMCTagHistogramIndex(mcTag);
       lostDecayPair = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost);

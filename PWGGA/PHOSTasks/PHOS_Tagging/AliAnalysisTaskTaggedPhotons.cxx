@@ -60,6 +60,8 @@
 #include "AliOADBContainer.h"
 #include "AliAODMCHeader.h"
 #include "AliMultSelection.h"
+#include "AliMCAnalysisUtils.h"
+#include "AliGenPythiaEventHeader.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
 //______________________________________________________________________________
@@ -74,6 +76,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fTriggerAnalysis(0x0),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -86,6 +89,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(0.),
   fZmin(0.),
   fPhimax(0.),
@@ -135,6 +139,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -147,6 +152,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -191,6 +197,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fTriggerAnalysis(new AliTriggerAnalysis),
   fUtils(0x0),
   fPHOSTrigUtils(0x0),
+  fMCGenerEventHeaderToAccept(""),
   fCentEstimator(1),
   fNCenBin(5),   
   fCentrality(0),
@@ -203,6 +210,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fIsMC(0),
   fIsFastMC(0),
   fRP(0.),
+  fJetPtHardFactor(2.5),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
@@ -653,6 +661,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     }
   } 
    
+  if(fMCType==kJetJet){
+    fMCAnalysisUtils = new AliMCAnalysisUtils() ; 
+  }
   
   PostData(1, fOutputContainer);
 
@@ -772,6 +783,15 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   }
   FillHistogram("hSelEvents",3) ;
   
+  if(fMCType==kJetJet){
+    //reject events with too hard jets compared to ptHardBin  
+    if(!AcceptJJevent()){
+      FillHistogram("hSelEvents",13) ;
+      PostData(1, fOutputContainer);
+      return;   
+    }
+  }
+  
   
 
   if(!SelectCentrality(event)){
@@ -872,10 +892,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         
     }
     if(fCutType ==kLowECut){
-      if(clu->E()>1. && clu->GetNCells()<3)
+      if(clu->E()>2. && clu->GetNCells()<3)
         continue ;          
     
-      if(clu->E()>1 && clu->GetM02()<0.1) 
+      if(clu->E()>2. && clu->GetM02()<0.1) 
         continue ;          
     }
     
@@ -960,6 +980,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
          AliAODMCParticle * parent = prim;
          Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
          while((r2 > rcut*rcut) && (iparent>-1)){
+           if(parent->GetMother()<0)
+               break;
            iparent=parent->GetMother();
            parent=(AliAODMCParticle*)fStack->At(iparent);
            r2=parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() ;
@@ -2309,7 +2331,7 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
   //Classify parent at vertex
   //Introduce for eta and pi0 weights   
     
-  if(fMCType==kFullMC){
+  if(fMCType==kFullMC || fMCType==kJetJet){
     return 1.; //For full MC scan
   }
   Int_t mother = particle->GetMother() ;
@@ -2985,3 +3007,46 @@ Double_t AliAnalysisTaskTaggedPhotons::CalculateSpherocity(){
   return retval;
 
 }
+Bool_t AliAnalysisTaskTaggedPhotons::AcceptJJevent(){
+  //Accept JJ event only if Jet pt is smaller than fJetPtHardFactor * ptHardBin
+  //to avoid fluctuations.
+    
+    // Pythia header
+    TString pyGenName       = ""; 
+    TString pyProcessName   = "";  
+    Int_t   pyProcess       = 0;
+    Int_t   pyFirstGenPart  = 0; 
+    Int_t   pythiaVersion   = 0;
+    
+    // Init it first to 0 to tell the method to recover it.
+    AliGenPythiaEventHeader * genPythiaEventHeader = 
+    fMCAnalysisUtils->GetPythiaEventHeader(MCEvent(),fMCGenerEventHeaderToAccept,
+                                           pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);    
+    if ( genPythiaEventHeader )
+  {      
+    Int_t nTriggerJets =  genPythiaEventHeader->NTriggerJets();
+    Float_t ptHard = genPythiaEventHeader->GetPtHard();
+    TParticle * jet =  0;    
+    Float_t tmpjet[]={0,0,0,0};
+    for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
+    {
+      genPythiaEventHeader->TriggerJet(ijet, tmpjet);
+      jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+      
+      //Compare jet pT and pt Hard
+      if(jet->Pt() > fJetPtHardFactor * ptHard)
+      {
+        return kFALSE;
+      }
+    } // jet loop
+    
+    if(jet) delete jet;
+  } // pythia header
+  
+  return kTRUE ;
+}
+
+
+
+
+

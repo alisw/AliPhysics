@@ -18,12 +18,10 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 		bool AnalysisMC = kFALSE,
 		bool MCClosure  = kFALSE,
 		const char* Period  = "l",
-		const double MeanMultTSdata = 7.266,
-		const double MeanMultTSMCgen = 7.266,
-		const double MeanMultTSMCrec = 7.266,
-		const double MinPt = 7.266,
 		bool IsTPCOnlyTrkCuts = kTRUE,
-		const char* Container = "TPCOnly"		
+		const char* Container = "TPCOnly",
+		bool SelectHybridTrks = kTRUE,
+		bool isdEdxCalibrated = kFALSE	
 		)   
 {
 
@@ -40,9 +38,9 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 		return 0x0;
 	}
 
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
+///	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
+//	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+//	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 
 	// by default, a file is open for writing. here, we get the filename
@@ -57,16 +55,15 @@ AliAnalysisTaskSpectraRT* AddTaskSpectraRT(
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetMCClosure(MCClosure);
 	task->SetPeriod(Period);
-	task->SetMeanMultTSdata(MeanMultTSdata);
-	task->SetMeanMultTSMCGen(MeanMultTSMCgen);
-	task->SetMeanMultTSMCRec(MeanMultTSMCrec);
-	task->SetMinPt(MinPt);
+///	task->SetMinPt(MinPt);
  	task->SetTrackCutsType(IsTPCOnlyTrkCuts);
+	task->SetHybridTracks(SelectHybridTrks);
+	task->SetdEdxCalibration(isdEdxCalibrated);
 
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-	task->SetTrackFilterGolden(trackFilterGolden);
+////	task->SetTrackFilterGolden(trackFilterGolden);
 
 	// add your task to the manager
 	mgr->AddTask(task);

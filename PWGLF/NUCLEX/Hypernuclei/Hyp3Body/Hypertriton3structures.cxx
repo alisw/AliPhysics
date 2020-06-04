@@ -1,5 +1,11 @@
 #include "Hypertriton3structures.h"
 
+ClassImp(RHyperTriton)
+ClassImp(RHyperTriton3O2)
+ClassImp(RHyperTriton3KF)
+ClassImp(SHyperTriton<RHyperTriton3KF>)
+ClassImp(SHyperTriton<RHyperTriton3O2>)
+
 SHyperTriton3O2 __dummy_instanceO2__()
 {
   SHyperTriton3O2 a;

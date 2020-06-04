@@ -65,15 +65,15 @@ ClassImp(AliAnalysisTaskMKBase)
       fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
       fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
       fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-      fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
-      fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE), fMCisSecDecay(kFALSE),
-      fMCisSecMat(kFALSE), fMCPrimSec(-1),
+      fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0),
+      fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
+      fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
       fMCParticleType(AlidNdPtTools::kUndefined),
       fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
       fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
-      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0), fZInner(0),
-      fPtInnerTPC(0), fEtaInnerTPC(0),
-      fPhiInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
+      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0),
+      fZInner(0), fPtInnerTPC(0), fEtaInnerTPC(0),
+      fPhiInnerTPC(0),fZInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
       fDCAzTPC(0), fEventCuts(0), fUseEventCuts(kFALSE), fESDtrackCutsM(0),
       fAcceptTrackM(kFALSE), fESDtrackCuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fAcceptTrack{kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
@@ -82,7 +82,10 @@ ClassImp(AliAnalysisTaskMKBase)
       fTriggerMaskRejected(0), fInternalLoop(kTRUE), fOutputList(0),
       fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
       fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
-      fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M) {
+      fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
+      fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
+      fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
+      fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE) {
     // default constructor for root
 }
 
@@ -118,15 +121,15 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
       fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
       fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
       fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-      fChargeSign(0),fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0), fMCEta(0),
-      fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE), fMCisSecDecay(kFALSE),
-      fMCisSecMat(kFALSE), fMCPrimSec(-1),
+      fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0),
+      fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
+      fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
       fMCParticleType(AlidNdPtTools::kUndefined),
       fMCProdcutionType(AlidNdPtTools::kUnknown), fMCPDGCode(0),
       fMCCharge(-9999), fMCQ(-9999), fMCIsCharged(kFALSE), fMCChargeSign(-9999),
-      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0), fZInner(0),
-      fPtInnerTPC(0), fEtaInnerTPC(0),
-      fPhiInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
+      fInnerP(0), fTPCinnerP(0), fPtInner(0), fEtaInner(0), fPhiInner(0),
+      fZInner(0), fPtInnerTPC(0), fEtaInnerTPC(0),
+      fPhiInnerTPC(0),fZInnerTPC(0), fDCATPC{0, 0}, fDCACovTPC{0, 0, 0}, fDCArTPC(0),
       fDCAzTPC(0), fEventCuts(0), fUseEventCuts(kFALSE), fESDtrackCutsM(0),
       fAcceptTrackM(kFALSE), fESDtrackCuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fAcceptTrack{kFALSE, kFALSE, kFALSE, kFALSE, kFALSE,
@@ -135,7 +138,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
       fTriggerMaskRejected(0), fInternalLoop(kTRUE), fOutputList(0),
       fLogHist(0), fLogErr(0), fLogEvent(0), fRunHist(0), fRunHistSelected(0),
       fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
-      fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M) {
+      fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
+      fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
+      fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
+      fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE) {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -153,6 +159,9 @@ AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase() {
 //_____________________________________________________________________________
 void AliAnalysisTaskMKBase::BaseAddOutput() {
     // create default event histograms
+
+    if (!fUseBaseOutput)
+        return;
 
     fLogHist = CreateLogHist("fLogHist");
     fOutputList->Add(fLogHist);
@@ -190,7 +199,8 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects() {
     fOutputList->SetOwner(kTRUE);
 
     // add default histograms
-    BaseAddOutput();
+    if (fUseBaseOutput)
+        BaseAddOutput();
 
     // add user histograms
     AddOutput();
@@ -333,6 +343,9 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent() {
     if (fESD) {
         LogEvent("ESD");
     }
+    if (fAOD) {
+        LogEvent("AOD");
+    }
 
     // read the mc event and set all mc related properties
     ReadMCEvent();
@@ -450,11 +463,15 @@ Bool_t AliAnalysisTaskMKBase::InitEvent() {
         fNTracksAcc = fNTracksESD;
         Log("noAliESDTrackCutsM");
     }
-    InitEventVertex();
-    InitEventCent();
-    InitEventMult();
+    if (fNeedEventVertex)
+        InitEventVertex();
+    if (fNeedEventCent)
+        InitEventCent();
+    if (fNeedEventMult)
+        InitEventMult();
     InitEventChecks();
-    InitEventVZERO();
+    if (fNeedEventVZERO)
+        InitEventVZERO();
     return kTRUE;
 }
 
@@ -463,6 +480,8 @@ Bool_t AliAnalysisTaskMKBase::InitEvent() {
 /// function to check all triggers and log into trigger histogram
 
 void AliAnalysisTaskMKBase::FillTrigHist(TH1D* h) {
+    if (!fUseBaseOutput)
+        return;
     if (fEventSelected & AliVEvent::kMB) {
         Log(h, "kMB");
     } // Minimum bias trigger in PbPb 2010-11
@@ -829,9 +848,12 @@ Bool_t AliAnalysisTaskMKBase::InitTrack() {
     f1Pt = TMath::Abs(fSigned1Pt);
 
     InitTrackCuts();
-    InitTrackIP();
-    InitTrackTPC();
-    InitTrackPID();
+    if (fNeedTrackIP)
+        InitTrackIP();
+    if (fNeedTrackTPC)
+        InitTrackTPC();
+    if (fNeedTrackPID)
+        InitTrackPID();
 
     if (fIsMC) {
         InitMCTrack();
@@ -883,6 +905,7 @@ Bool_t AliAnalysisTaskMKBase::InitMCTrack() {
     InitMCParticle();
     if (fMCPrimSec == -1) {
         Err("TrackNOTprimORsec");
+        return kFALSE;
     }
     return kTRUE;
 }
@@ -1116,7 +1139,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult() {
         }
         fMultPercentileV0M =
             fMultSelection->GetMultiplicityPercentile(_Estimator.Data());
-
+        LogEvent(Form("fMultPercentile_%s", _Estimator.Data()));
         if (fMultPercentileV0M < 0.) {
             LogEvent("fMultPercentileV0M<0");
         }
@@ -1223,6 +1246,8 @@ void AliAnalysisTaskMKBase::UserExec(Option_t*) {
 /// in the derived class
 
 void AliAnalysisTaskMKBase::FillDefaultHistograms(Int_t step) {
+    if (!fUseBaseOutput)
+        return;
     if (step == 0) {
         Log(fTrigInfo, fFiredTriggerClasses.Data());
         FillTrigHist(fTrigHist);

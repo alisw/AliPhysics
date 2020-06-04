@@ -41,7 +41,7 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		//		void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
 		//      	void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
-		//　　　　　　　Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+		//			Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
 		void SetTenderTaskName(TString name) {fTenderTaskName = name;}
 
 		void SetHarmonic(int harmonic)       {fHarmonic = harmonic;}
@@ -235,6 +235,10 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
 		TH2F* fDCAxy_Pt_ele;
 		TH2F* fDCAxy_Pt_had;
+		TH2F* fDCAxy_Pt_Inplane_ele;
+		TH2F* fDCAxy_Pt_Outplane_ele;
+		TH2F* fDCAxy_Pt_Inplane_hfe;
+		TH2F* fDCAxy_Pt_Outplane_hfe;
 		TH2F* fDCAxy_Pt_LS;
 		TH2F* fDCAxy_Pt_ULS;
 
