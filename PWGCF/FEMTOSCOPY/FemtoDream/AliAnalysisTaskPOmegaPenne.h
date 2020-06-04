@@ -54,16 +54,9 @@ public:
     // void SetCollectionConfig2(     AliFemtoDreamCollConfig  *config         )  { fConfig2               =   config;         };
     float CalculateInvMassHere(AliFemtoDreamv0 *v0, int PDGPosDaug, int PDGNegDaug);        // copied from AliFemtoDreamv0Cuts
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
-    float CalculateInvMassXi(TVector3 momBach, TVector3 momPosDaughter, TVector3 momNegDaughter);
+    float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter);
     
-    void MixChildParticles(std::vector<AliFemtoDreamBasePart> *XiVector, 
-                           std::vector<AliFemtoDreamBasePart> *LambdaVector, 
-                           TList                              *outputLists,
-                           bool                                checkSameParticleMixing = true);
-
-    // void Setv0Cuts_rec(            AliFemtoDreamv0Cuts      *v0Cuts_rec        )  { fLambdaV0Cuts_rec        =   v0Cuts_rec;        };
-    // void SetAntiv0Cuts_rec(        AliFemtoDreamv0Cuts      *v0AntiCuts_rec        )  { fAntiLambdaV0Cuts_rec        =   v0AntiCuts_rec;        };
-
+    
  private:
     void ResetGlobalTrackReference();
     void StoreGlobalTrackReference(AliVTrack *track);
@@ -145,8 +138,18 @@ public:
     TH1F                               *hInvMassXi_Lamda_prot;          //!
     TH1F                               *hInvMassXi_Lamda_pi_bach;              //! 
     TH1F                               *hInvMassXi_Lamda_pi_bach_prot;      //!
-  
-    ClassDef(AliAnalysisTaskPOmegaPenne,22)
+
+    TH1F                               *hInvMassAntiLambda_sanityCheck;              //!
+    TH1F                               *hInvMassAntiLambda_Pi_bach_Xi;               //!
+    TH1F                               *hInvMassAntiLambda_Pi_daugh_Xi;              //!
+    TH1F                               *hInvMassAntiLambda_Prot_Xi;              //!
+    TH1F                               *hInvMassAntiXi_sanityCheck;              //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_pi_prot;                //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_pi;             //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_prot;               //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_pi_bach;                //!
+    TH1F                               *hInvMassAntiXi_AntiLamda_pi_bach_prot;               //!
+    ClassDef(AliAnalysisTaskPOmegaPenne,23)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_POMEGA_PENNE_H_ */
