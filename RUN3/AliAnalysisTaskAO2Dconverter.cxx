@@ -531,6 +531,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   UInt_t mMuonCl = 0xFFFFFFFF; // Position and charge
   UInt_t mMuonClErr = 0xFFFFFFFF;
 
+  UInt_t mADTime = 0xFFFFFFFF;
+  
   // No compression for ZDC and Run2 VZERO for the moment
 
   if (fTruncate) {
@@ -565,6 +567,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     mMuonCl = 0xFFFFFF00; // 15 bits
     mMuonClErr = 0xFFFF0000; // 7 bits
+    
+    mADTime = 0xFFFFF000; // 11 bits
   }
   
   // Initialisation
@@ -1131,8 +1135,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   // AD (FDD)
   AliESDAD* esdad = fESD->GetADData();
   fdd.fBCsID = eventID;
-  fdd.fTimeA = esdad->GetADATime();
-  fdd.fTimeC = esdad->GetADCTime();
+  fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(),mADTime);
+  fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(),mADTime);
   FillTree(kFDD);
   if (fTreeStatus[kFDD]) eventextra.fNentries[kFDD] = 1;
   
