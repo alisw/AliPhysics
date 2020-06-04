@@ -19,6 +19,7 @@
 #include <TClonesArray.h>
 #include <TObjString.h>
 #include "TDatabasePDG.h"
+#include <TCustomBinning.h>
 
 // --- AliRoot/Analysis system ---
 #include "AliVParticle.h"
@@ -103,12 +104,8 @@ fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyPerCentrality(0),
-fhEmbeddedPhotonFractionEnergy(0),
-fhEmbedPhotonELambda0FullSignal(0),   fhEmbedPhotonELambda0MostlySignal(0),
-fhEmbedPhotonELambda0MostlyBkg(0),    fhEmbedPhotonELambda0FullBkg(0),
-fhEmbeddedPi0FractionEnergy(0),
-fhEmbedPi0ELambda0FullSignal(0),      fhEmbedPi0ELambda0MostlySignal(0),
-fhEmbedPi0ELambda0MostlyBkg(0),       fhEmbedPi0ELambda0FullBkg(0),
+fhEmbeddedPhotonFractionEnergy(0),    fhEmbeddedPhotonFractionEnergyM02(0),
+fhEmbeddedPi0FractionEnergy(0),       fhEmbeddedPi0FractionEnergyM02(0),
 
 fhTimePtPhotonNoCut(0),               fhTimePtPhotonSPD(0),
 fhTimeNPileUpVertSPD(0),              fhTimeNPileUpVertTrack(0),
@@ -1940,24 +1937,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       // Fill histograms to check shape of embedded clusters
       if ( IsEmbedingAnalysisOn() )
       {
-        fhEmbeddedPhotonFractionEnergy->Fill(energy, fraction, GetEventWeight()*weightPt);
-
-        if     (fraction > 0.9)
-        {
-          fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else if(fraction > 0.5)
-        {
-          fhEmbedPhotonELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else if(fraction > 0.1)
-        {
-          fhEmbedPhotonELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else
-        {
-          fhEmbedPhotonELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
+        fhEmbeddedPhotonFractionEnergy   ->Fill(energy, fraction,          GetEventWeight()*weightPt);
+        fhEmbeddedPhotonFractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
       } // embedded
     } // photon no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))
@@ -1972,24 +1953,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       // Fill histograms to check shape of embedded clusters
       if ( IsEmbedingAnalysisOn() )
       {
-        fhEmbeddedPi0FractionEnergy->Fill(energy, fraction, GetEventWeight()*weightPt);
-
-        if     (fraction > 0.9)
-        {
-          fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else if(fraction > 0.5)
-        {
-          fhEmbedPi0ELambda0MostlySignal ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else if(fraction > 0.1)
-        {
-          fhEmbedPi0ELambda0MostlyBkg    ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
-        else
-        {
-          fhEmbedPi0ELambda0FullBkg      ->Fill(energy, lambda0, GetEventWeight()*weightPt);
-        }
+        fhEmbeddedPi0FractionEnergy   ->Fill(energy, fraction,          GetEventWeight()*weightPt);
+        fhEmbeddedPi0FractionEnergyM02->Fill(energy, fraction, lambda0, GetEventWeight()*weightPt);
       } // embedded
       
     }//pi0
@@ -3998,96 +3963,103 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       if ( IsEmbedingAnalysisOn() )
       {
-        fhEmbeddedSignalFractionEnergy  = new TH2F("hEmbeddedSignal_FractionEnergy",
-                                                   "Energy Fraction of embedded signal versus cluster energy",
-                                                   nptbins,ptmin,ptmax,100,0.,1.);
+        TCustomBinning ptBinning;
+        ptBinning.SetMinimum(GetMinPt());
+        ptBinning.AddStep(12,1);                            // 2 From 10
+        if ( GetMaxPt() > 12 ) ptBinning.AddStep( 20, 2.0); // 4
+        if ( GetMaxPt() > 20 ) ptBinning.AddStep( 50, 5.0); // 6
+        if ( GetMaxPt() > 50 ) ptBinning.AddStep(100,10.0); // 5 
+        if ( GetMaxPt() > 100) ptBinning.AddStep(300,20.0); // 10
+        
+        TArrayD ptBinsArray;
+        ptBinning.CreateBinEdges(ptBinsArray);
+        
+        TCustomBinning ssBinning;
+        ssBinning.SetMinimum(-0.01);
+        ssBinning.AddStep(0.50,0.01);  // 51 
+        ssBinning.AddStep(1.00,0.05);  // 10
+        ssBinning.AddStep(3.00,0.1);   // 20
+        ssBinning.AddStep(5.00,0.25);  // 20
+        TArrayD ssBinsArray;
+        ssBinning.CreateBinEdges(ssBinsArray);
+    
+        TCustomBinning frBinning;
+        frBinning.SetMinimum(0);
+        frBinning.AddStep(1, 0.02); 
+        TArrayD frBinsArray;
+        frBinning.CreateBinEdges(frBinsArray);
+        
+        fhEmbeddedSignalFractionEnergy  = new TH2F
+        ("hEmbeddedSignal_FractionEnergy",
+         "Energy Fraction of embedded signal versus cluster energy",
+         nptbins,ptmin,ptmax,100,0.,1.);
         fhEmbeddedSignalFractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
         fhEmbeddedSignalFractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedSignalFractionEnergy) ;
         
         if ( IsHighMultiplicityAnalysisOn() )
         {
-          fhEmbeddedSignalFractionEnergyPerCentrality  = new TH3F("hEmbeddedSignal_FractionEnergy_PerCentrality",
-                                                     "Energy Fraction of embedded signal versus cluster energy and centrality",
-                                                     nptbins,ptmin,ptmax,20,0.,1.,20,0,100);
+          TCustomBinning cenBinning;
+          cenBinning.SetMinimum(0.0);
+          if ( GetNCentrBin() > 0 ) 
+            cenBinning.AddStep(100, 100./GetNCentrBin()); 
+          else 
+            cenBinning.AddStep(100, 100.); 
+          
+          TArrayD cenBinsArray;
+          cenBinning.CreateBinEdges(cenBinsArray);
+          
+          fhEmbeddedSignalFractionEnergyPerCentrality  = new TH3F
+          ("hEmbeddedSignal_FractionEnergy_PerCentrality",
+           "Energy Fraction of embedded signal versus cluster energy and centrality",
+            ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+            frBinsArray.GetSize() - 1,   frBinsArray.GetArray(), 
+           cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
           fhEmbeddedSignalFractionEnergyPerCentrality->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
           fhEmbeddedSignalFractionEnergyPerCentrality->SetXTitle("#it{E} (GeV)");
           fhEmbeddedSignalFractionEnergyPerCentrality->SetZTitle("Centrality (%)");
           outputContainer->Add(fhEmbeddedSignalFractionEnergyPerCentrality) ;
         }
         
-        fhEmbeddedPhotonFractionEnergy  = new TH2F("hEmbeddedPhoton_FractionEnergy",
-                                                   "Energy Fraction of embedded photons versus cluster energy",
-                                                   nptbins,ptmin,ptmax,100,0.,1.);
+        fhEmbeddedPhotonFractionEnergy  = new TH2F
+        ("hEmbeddedPhoton_FractionEnergy",
+         "Energy Fraction of embedded photons versus cluster energy",
+         nptbins,ptmin,ptmax,100,0.,1.);
         fhEmbeddedPhotonFractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
         fhEmbeddedPhotonFractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedPhotonFractionEnergy) ;
         
-        fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
-                                                    "cluster from Photon embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
-                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0FullSignal->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPhotonELambda0FullSignal->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPhotonELambda0FullSignal) ;
+        fhEmbeddedPhotonFractionEnergyM02  = new TH3F
+        ("hEmbeddedPhoton_FractionEnergy_M02",
+         "Energy Fraction of embedded photons versus cluster energy and #sigma_{long}^{2}",
+         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         frBinsArray.GetSize() - 1,  frBinsArray.GetArray(), 
+         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
+        fhEmbeddedPhotonFractionEnergyM02->SetZTitle("#sigma_{long}^{2}");
+        fhEmbeddedPhotonFractionEnergyM02->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+        fhEmbeddedPhotonFractionEnergyM02->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhEmbeddedPhotonFractionEnergyM02) ;
         
-        fhEmbedPhotonELambda0MostlySignal  = new TH2F("hELambda0_EmbedPhoton_MostlySignal",
-                                                      "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #sigma^{2}_{long}",
-                                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0MostlySignal->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPhotonELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPhotonELambda0MostlySignal) ;
-        
-        fhEmbedPhotonELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPhoton_MostlyBkg",
-                                                   "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #sigma^{2}_{long}",
-                                                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPhotonELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPhotonELambda0MostlyBkg) ;
-        
-        fhEmbedPhotonELambda0FullBkg  = new TH2F("hELambda0_EmbedPhoton_FullBkg",
-                                                 "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #sigma^{2}_{long}",
-                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPhotonELambda0FullBkg->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPhotonELambda0FullBkg->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ;
-        
-        fhEmbeddedPi0FractionEnergy  = new TH2F("hEmbeddedPi0_FractionEnergy",
-                                                   "Energy Fraction of embedded #pi^{0} versus cluster energy",
-                                                   nptbins,ptmin,ptmax,100,0.,1.);
+        fhEmbeddedPi0FractionEnergy  = new TH2F
+        ("hEmbeddedPi0_FractionEnergy",
+         "Energy Fraction of embedded #pi^{0} versus cluster energy",
+         nptbins,ptmin,ptmax,100,0.,1.);
         fhEmbeddedPi0FractionEnergy->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
         fhEmbeddedPi0FractionEnergy->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbeddedPi0FractionEnergy) ;
         
-        fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
-                                                 "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #sigma^{2}_{long}",
-                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0FullSignal->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPi0ELambda0FullSignal->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPi0ELambda0FullSignal) ;
-        
-        fhEmbedPi0ELambda0MostlySignal  = new TH2F("hELambda0_EmbedPi0_MostlySignal",
-                                                   "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #sigma^{2}_{long}",
-                                                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0MostlySignal->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPi0ELambda0MostlySignal->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPi0ELambda0MostlySignal) ;
-        
-        fhEmbedPi0ELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPi0_MostlyBkg",
-                                                "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #sigma^{2}_{long}",
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0MostlyBkg->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPi0ELambda0MostlyBkg->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPi0ELambda0MostlyBkg) ;
-        
-        fhEmbedPi0ELambda0FullBkg  = new TH2F("hELambda0_EmbedPi0_FullBkg",
-                                              "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #sigma^{2}_{long}",
-                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-        fhEmbedPi0ELambda0FullBkg->SetYTitle("#sigma^{2}_{long}");
-        fhEmbedPi0ELambda0FullBkg->SetXTitle("#it{E} (GeV)");
-        outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ;
+        fhEmbeddedPi0FractionEnergyM02  = new TH3F
+        ("hEmbeddedPi0_FractionEnergy_M02",
+         "Energy Fraction of embedded #pi^{0} versus cluster energy and #sigma_{long}^{2}",
+         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         frBinsArray.GetSize() - 1,  frBinsArray.GetArray(), 
+         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
+        fhEmbeddedPi0FractionEnergyM02->SetZTitle("#sigma_{long}^{2}");
+        fhEmbeddedPi0FractionEnergyM02->SetYTitle("#it{E}_{MC} / #it{E}_{MC+BKG}");
+        fhEmbeddedPi0FractionEnergyM02->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhEmbeddedPi0FractionEnergyM02) ;
       }// embedded histograms
     }// Fill SS MC histograms
-    
     
     if ( fFillConversionVertexHisto )
     {
