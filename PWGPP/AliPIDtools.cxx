@@ -9,6 +9,8 @@
 std::map<Int_t, AliTPCPIDResponse *> AliPIDtools::pidTPC;     /// we should use better hash map
 std::map<Int_t, AliPIDResponse *> AliPIDtools::pidAll;        /// we should use better hash map
 AliESDtrack  AliPIDtools::dummyTrack;/// dummy value to save CPU - unfortunately PID object use AliVtrack - for the moment create global variable t avoid object constructions
+TTree *       AliPIDtools::fFilteredTree = NULL;
+TTree *       AliPIDtools::fFilteredTreeV0 = NULL;
 
 AliPIDResponse* AliPIDtools::GetPID(Int_t hash ) {return pidAll[hash];}
 AliTPCPIDResponse& AliPIDtools::GetTPCPID(Int_t hash ) {return pidAll[hash]->GetTPCResponse();}
@@ -100,3 +102,89 @@ Double_t AliPIDtools::GetExpectedTOFSignal(Int_t hash, const AliVTrack *track, I
   return tofPID.GetExpectedSignal(track, (AliPID::EParticleType)type);
 }
 
+///  SetFiltered tree
+Bool_t AliPIDtools::SetFilteredTree(TTree * filteredTree){
+  if (filteredTree==NULL) return kFALSE;
+  TBranch * branch = filteredTree->GetBranch("esdTrack.");
+  if (branch==NULL) {
+    ::Error("AliPIDtools::SetFilteredTreeV0","Invalid tree. Branch esdTrack does not exist");
+    return kFALSE;
+  }
+  fFilteredTree=filteredTree;
+  return kTRUE;
+}
+
+///  SetFiltered tree
+Bool_t AliPIDtools::SetFilteredTreeV0(TTree * filteredTreeV0){
+  if (filteredTreeV0==NULL) return kFALSE;
+  TBranch * branch = filteredTreeV0->GetBranch("v0.");
+  if (branch==NULL) {
+    ::Error("AliPIDtools::SetFilteredTreeV0","Invalid tree. Branch v0 does not exist");
+    return kFALSE;
+  }
+  fFilteredTreeV0=filteredTreeV0;
+  return kTRUE;
+}
+
+
+
+
+/// GetExpected TPC signal for current track
+/// \param hash                 - PID hash
+/// \param particleType         - assumed particle type
+/// \param corrMask             - corr mask
+///                                 0x1 - eta correction
+///                                 0x2 - multiplicity correction
+///                                 0x4 - pile0up correction
+/// \param index                - track index
+/// \return                     - expected dEdx signal
+Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index){
+  //
+  AliTPCPIDResponse *tpcPID=pidTPC[hash];
+  Double_t dEdx=0;
+  AliESDtrack **pptrack=0;
+  if (index==0 && fFilteredTree){  // data from filtered trees
+    Int_t entry = fFilteredTree->GetReadEntry();
+    static  TBranch * branch = NULL;
+    static  Int_t treeNumber=-1;
+    fFilteredTree->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+    if (treeNumber!=fFilteredTree->GetTreeNumber()){
+      branch=fFilteredTree->GetTree()->GetBranch("esdTrack.");
+      treeNumber=fFilteredTree->GetTreeNumber();
+    }
+    pptrack = (AliESDtrack **)(branch->GetAddress());
+    if (corrMask==-1) return entry;
+    if (corrMask==-2) return (*pptrack)->Pt();
+    if (corrMask==-3) return treeNumber;
+  }
+
+  if (pptrack==0) return 0;
+  dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
+  return dEdx;
+}
+
+Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int_t corrMask, Int_t index){
+  //
+  AliTPCPIDResponse *tpcPID=pidTPC[hash];
+  Double_t dEdx=0;
+  AliESDtrack **pptrack=0;
+  if (fFilteredTreeV0){  // data from filtered trees
+    Int_t entry = fFilteredTreeV0->GetReadEntry();
+    static  TBranch * branch0, *branch1 = NULL;
+    static  Int_t treeNumber=-1;
+    fFilteredTreeV0->GetEntry(entry);   // load full tree - branch GetEntry is loading only for fit file in TChain  //TODO fix
+    if (treeNumber!=fFilteredTreeV0->GetTreeNumber()){
+      branch0=fFilteredTreeV0->GetTree()->GetBranch("track0.");
+      branch1=fFilteredTreeV0->GetTree()->GetBranch("track1.");
+      treeNumber=fFilteredTreeV0->GetTreeNumber();
+    }
+    pptrack = (index==0) ? (AliESDtrack **)(branch0->GetAddress()):(AliESDtrack **)(branch1->GetAddress());
+    if (corrMask==-1) return entry;
+    if (corrMask==-2) return (*pptrack)->Pt();
+    if (corrMask==-3) return treeNumber;
+  }
+
+  if (pptrack==0) return 0;
+  dEdx = tpcPID->GetExpectedSignal(*pptrack, (AliPID::EParticleType) particleType, AliTPCPIDResponse::kdEdxDefault, corrMask & 0x1, corrMask & 0x2, corrMask & 0x4);
+  return dEdx;
+}
