@@ -1220,6 +1220,12 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     RefMinSPD=8.32;
     RefMaxSPD=11.33;
     RefMeanSPD=11.07;
+
+    if (fUseEPOS) {
+      RefMaxSPD=11.69;
+      RefMinSPD=8.11;
+      RefMeanSPD=10.76;
+    }
   }
   else {
     RefMinSPD=8.28;
@@ -1246,7 +1252,6 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     TObjString *obj = (TObjString*)  fSPDConfigProfiles.GetXaxis()->GetLabels()->FindObject(Form("%i", fSPDConfig));
     if (obj) SPDConfigProfBin= (Int_t)obj->GetUniqueID();
     else  SPDConfigProfBin=1;// select first bin if configuration does not exist
-
     // cout << "fSPDCOnfigProfiles " << &fSPDConfigProfiles << endl;
     // cout << SPDConfigProfBin << endl;
     fSPDConfigProfiles.GetXaxis()->SetRange(SPDConfigProfBin, SPDConfigProfBin);
@@ -1263,6 +1268,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
     if (Configuration!=0) {
       fSPDnTrAvg = (TProfile*) Configuration->ProfileX(Form("Prof_%i_%s", fSPDConfig, GetName()), 2, 1000); // neglecting 0 bin
+      RefMaxSPD = fSPDnTrAvg->GetMaximum();
+      // cout << "RefMaxSPD " << RefMaxSPD << endl;
       delete Configuration;
     }
     else{
@@ -2061,6 +2068,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   
   // HFE Electron
   Int_t    NBinsElectron =30;
+  Double_t XBinElectronArray[31];
+  for (Int_t BinE=0; BinE<=NBinsElectron;BinE++) {
+    XBinElectronArray[BinE]=0.25+BinE*0.125;
+    cout << XBinElectronArray[BinE] << endl;
+  }
   Double_t XminElectron=0.25;
   Double_t XmaxElectron=4.;
   const Int_t    NBinsElectronRed = 19;
@@ -2691,7 +2703,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   */
 
   if (fIsMC) {
-     fTagEffInclMult = new TH2F("fTagEffInclMult", "fTagEffInclMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    Int_t NPDGBG = 7;
+    Double_t XPDGBG[]={-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
+    // 0 others, KC 1, KOL 2  K0S 3, w 4, rho 5,  phi 6
+    
+    fTagEffInclMult = new TH2F("fTagEffInclMult", "fTagEffInclMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagEffInclMult);
 
     fTagEffULSMult = new TH2F("fTagEffULSMult", "fTagEffULSMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
@@ -2700,10 +2716,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fTagTruePairsMult = new TH2F("fTagTruePairsMult", "fTagTruePairsMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagTruePairsMult);
 
-    fTagEffInclBGMult = new TH2F("fTagEffInclBGMult", "fTagEffInclBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffInclBGMult = new TH3F("fTagEffInclBGMult", "fTagEffInclBGMult; pt; mult;pdg", NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffInclBGMult);
 
-    fTagEffULSBGMult = new TH2F("fTagEffULSBGMult", "fTagEffULSBGMult; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffULSBGMult = new TH3F("fTagEffULSBGMult", "fTagEffULSBGMult; pt; mult; pdg",  NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffULSBGMult);
 
     // woW for MCClosure
@@ -2716,10 +2732,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fTagTruePairsMultWoW = new TH2F("fTagTruePairsMultWoW", "fTagTruePairsMultWoW; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagTruePairsMultWoW);
 
-    fTagEffInclBGMultWoW = new TH2F("fTagEffInclBGMultWoW", "fTagEffInclBGMultWoW; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffInclBGMultWoW = new TH3F("fTagEffInclBGMultWoW", "fTagEffInclBGMultWoW; pt; mult",  NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffInclBGMultWoW);
 
-    fTagEffULSBGMultWoW = new TH2F("fTagEffULSBGMultWoW", "fTagEffULSBGMultWoW; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffULSBGMultWoW = new TH3F("fTagEffULSBGMultWoW", "fTagEffULSBGMultWoW; pt; mult",  NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffULSBGMultWoW);
 
 
@@ -2733,10 +2749,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fTagTruePairsMultWoWS = new TH2F("fTagTruePairsMultWoWS", "fTagTruePairsMultWoWS; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
     fOutputListMain->Add(fTagTruePairsMultWoWS);
 
-    fTagEffInclBGMultWoWS = new TH2F("fTagEffInclBGMultWoWS", "fTagEffInclBGMultWoWS; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffInclBGMultWoWS = new TH3F("fTagEffInclBGMultWoWS", "fTagEffInclBGMultWoWS; pt; mult",  NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffInclBGMultWoWS);
 
-    fTagEffULSBGMultWoWS = new TH2F("fTagEffULSBGMultWoWS", "fTagEffULSBGMultWoWS; pt; mult", NBinsElectron, XminElectron, XmaxElectron, NMultBins, XMultBins);
+    fTagEffULSBGMultWoWS = new TH3F("fTagEffULSBGMultWoWS", "fTagEffULSBGMultWoWS; pt; mult", NBinsElectron, XBinElectronArray, NMultBins, XMultBins, NPDGBG, XPDGBG);
     fOutputListMain->Add(fTagEffULSBGMultWoWS);
     
   }
@@ -5791,6 +5807,31 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
     }
 
     // Reduced TagEff for MultMeasurement
+    Double_t PDGBG=0;
+    if (PDGCodeMother ==22) {
+      if (PDGCodeGrandMother == 113) PDGBG=5; // rho
+      else if (PDGCodeGrandMother == 223) PDGBG=4; // omega
+      else if (PDGCodeGrandMother == 333) PDGBG=6; // phi
+      else if (PDGCodeGrandMother == 130) PDGBG=2; // K0L
+      else if (PDGCodeGrandMother == 310) PDGBG=3; // K0S
+      else if (PDGCodeGrandMother == 321) PDGBG=1; // K+-
+    }
+    else {
+      if (PDGCodeMother == 113) PDGBG=5; // rho
+      else if (PDGCodeMother == 223) PDGBG=4; // omega
+      else if (PDGCodeMother == 333) PDGBG=6; // phi
+      else if (PDGCodeMother == 130) PDGBG=2; // K0L
+      else if (PDGCodeMother == 310) PDGBG=3; // K0S
+      else if (PDGCodeMother == 321) PDGBG=1; // K+-
+    }
+
+
+
+
+
+
+
+
     Double_t pt=Vtrack->Pt(); 
     if (PDGCode==11 && IsPrimary) {     
       if (PDGCodeMother==111 || PDGCodeMother==221) {
@@ -5808,9 +5849,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
       }
       else if ((MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4)  && ((PDGCodeMother>100) || (PDGCodeMother==22 && PDGCodeGrandMother>100))) {
-	fTagEffInclBGMult->Fill(pt, mult, PtMotherWeight*EventWeight/recEffE);
-	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, -1.*PtMotherWeight*EventWeight/recEffE);
-	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PtMotherWeight*EventWeight/recEffE);
+	fTagEffInclBGMult->Fill(pt, mult, PDGBG, PtMotherWeight*EventWeight/recEffE);
+	for (int j=0; j<LSPartner; j++)  fTagEffULSBGMult->Fill(pt,mult, PDGBG, -1.*PtMotherWeight*EventWeight/recEffE);
+	for (int j=0; j<ULSPartner; j++) fTagEffULSBGMult->Fill(pt,mult, PDGBG, PtMotherWeight*EventWeight/recEffE);
       }
       else {
 	//	cout << "primary, but neither photonic or default bg" << PDGCodeMother <<  endl; // usually heavy particles
@@ -5838,9 +5879,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
 	}
 	else if ((MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4)  && ((PDGCodeMother>100) || (PDGCodeMother==22 && PDGCodeGrandMother>100))) {
-	  fTagEffInclBGMultWoW->Fill(pt, mult, EventWeight/recEffE);
-	  for (int j=0; j<LSPartner; j++)  fTagEffULSBGMultWoW->Fill(pt,mult, -1.*EventWeight/recEffE);
-	  for (int j=0; j<ULSPartner; j++) fTagEffULSBGMultWoW->Fill(pt,mult, EventWeight/recEffE);
+	  fTagEffInclBGMultWoW->Fill(pt, mult, PDGBG, EventWeight/recEffE);
+	  for (int j=0; j<LSPartner; j++)  fTagEffULSBGMultWoW->Fill(pt,mult, PDGBG, -1.*EventWeight/recEffE);
+	  for (int j=0; j<ULSPartner; j++) fTagEffULSBGMultWoW->Fill(pt,mult, PDGBG, EventWeight/recEffE);
 	}
 	else {
 	  //	cout << "primary, but neither photonic or default bg" << PDGCodeMother <<  endl; // usually heavy particles
@@ -5868,9 +5909,9 @@ void AliAnalysisTaskHaHFECorrel::EvaluateTaggingEfficiency(AliVTrack * Vtrack, I
 	  if (trueULSPartner && !(LSPartner>0 || ULSPartner>0)) cout << "ERROR ULSLS" << endl;
 	}
 	else if ((MotherIsHeavy<4 &&  GrandMotherIsHeavy<4 && GGMotherIsHeavy<4)  && ((PDGCodeMother>100) || (PDGCodeMother==22 && PDGCodeGrandMother>100))) {
-	  fTagEffInclBGMultWoWS->Fill(pt, mult, EventWeight/recEffE);
-	  for (int j=0; j<LSPartner; j++)  fTagEffULSBGMultWoWS->Fill(pt,mult, -1.*EventWeight/recEffE);
-	  for (int j=0; j<ULSPartner; j++) fTagEffULSBGMultWoWS->Fill(pt,mult, EventWeight/recEffE);
+	  fTagEffInclBGMultWoWS->Fill(pt, mult, PDGBG, EventWeight/recEffE);
+	  for (int j=0; j<LSPartner; j++)  fTagEffULSBGMultWoWS->Fill(pt,mult, PDGBG, -1.*EventWeight/recEffE);
+	  for (int j=0; j<ULSPartner; j++) fTagEffULSBGMultWoWS->Fill(pt,mult, PDGBG, EventWeight/recEffE);
 	}
 	else {
 	  //	cout << "primary, but neither photonic or default bg" << PDGCodeMother <<  endl; // usually heavy particles
@@ -7319,6 +7360,12 @@ void AliAnalysisTaskHaHFECorrel::SetPhotVarOpt(Int_t VarOpt) {
     break;
   case 13:
     fPhotCorrCase = 4;
+    break;
+  case 14: // Tilted up weights
+    return;
+    break;
+  case 15: // Tilted down weights
+    return;
     break;
   }
 }
