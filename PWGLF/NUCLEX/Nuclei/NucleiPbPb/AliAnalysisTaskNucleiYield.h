@@ -152,6 +152,7 @@ public:
   void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
+  void SetTOFminPtTrees(float pt) { fTOFminPtTrees = 100; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliVTrack *t, AliPIDResponse* pid);
@@ -260,6 +261,7 @@ private:
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
   Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
+  Float_t               fTOFminPtTrees;         ///<  Pt after which the TOF pid is required to save the tree
   RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
   SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
 
@@ -359,7 +361,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecNucleus.flag |= (fSimNucleus.flag == SLightNucleus::kSecondaryMaterial) ? RLightNucleus::kSecondaryMaterial : 0;
       }
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
-      if (std::abs(fRecNucleus.tpcNsigma) < 6.4)
+      if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();
     }
   }

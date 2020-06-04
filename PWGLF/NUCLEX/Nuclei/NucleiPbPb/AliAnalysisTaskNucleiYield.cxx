@@ -171,6 +171,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fEstimator{0}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
+   ,fTOFminPtTrees{100}
    ,fRecNucleus{0.,0.,0.,0.,0.,0.,0,0,0}
    ,fSimNucleus{0.,0.,0,0,0}
    ,fParticle{AliPID::kUnknown}
