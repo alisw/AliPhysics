@@ -42,7 +42,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
 
     // basic variables/objects
-    Int_t                   fClusterType;                               //! EMCal(1), PHOS(2) or not running (0)
+    Int_t                   fClusterType;                               // EMCal(1), PHOS(2) or not running (0)
     Int_t                   fRunNumber;                                 // current run number
     Int_t                   nModules;
     Int_t                   fNMaxPHOSModules;
@@ -55,11 +55,11 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     Bool_t                  fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
-    Bool_t                  fIsMC ;                                     //! Is this is MC
+    Bool_t                  fIsMC ;                                     // Is this is MC
     Bool_t                  fEventChosenByTrigger;                      //!
-    Int_t                   fDoDebugOutput;                             //!
+    Int_t                   fDoDebugOutput;                             //
 
-    ClassDef(AliCaloTriggerMimicHelper, 1);
+    ClassDef(AliCaloTriggerMimicHelper, 2);
 };
 
 #endif
