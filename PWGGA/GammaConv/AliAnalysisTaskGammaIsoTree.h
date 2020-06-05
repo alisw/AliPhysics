@@ -23,6 +23,7 @@
 #include "AliTrackerBase.h"
 #include "TLorentzVector.h"
 #include "AliRhoParameter.h"
+#include "AliCaloTrackMatcher.h"
 
 #ifndef AliAnalysisTaskGammaIsoTree_cxx
 #define AliAnalysisTaskGammaIsoTree_cxx
@@ -157,6 +158,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }                                                                                                                                                                        
     void SetYCutMC(Double_t y) {fYMCCut = y;}
+
     void SetEtaMatching(Double_t p0,Double_t p1=0.,Double_t p2 =0){
         fMatchingParamsEta[0] = p0;
         fMatchingParamsEta[1] = p1;
@@ -170,6 +172,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     void SetEOverP(Double_t p0){ fMatchingEOverP = p0;}
     void SetDoBackgroundTrackMatching(Bool_t p){ fDoBackgroundTrackMatching = p;}
+    void SetDoOwnTrackMatching(Bool_t p){ fDoOwnTrackMatching = p;}
 
     void SetDoTrackIso(Bool_t p0){ fDoTrackIsolation = p0;}
     void SetTrackIsoR(Float_t r1, Float_t r2){ fTrackIsolationR[0] = r1; fTrackIsolationR[1] = r2;}
@@ -201,6 +204,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetSaveTracks(Bool_t b){
         fSavePHOSClusters = b;
     }
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
   protected:
     AliVEvent*                  fInputEvent;                //!<!
@@ -250,6 +254,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fMatchingParamsEta[3];//
     Double_t                    fMatchingEOverP; //
     Bool_t                      fDoBackgroundTrackMatching; // should track matching be applied for background clusters (tagging and iso)
+    Bool_t                      fDoOwnTrackMatching; // flag to enable own track matching instead of track matching provided by AliCaloPhotonCuts
 
     Bool_t                      fDoTrackIsolation; //
     Float_t                     fTrackIsolationR[2];  //
@@ -277,6 +282,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
 
+    Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
   private:
     ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void CountTracks                ();
@@ -298,10 +304,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void ReduceTrackInfo();
     void RelabelAODPhotonCandidates(Bool_t mode);
     Float_t GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event);
-
+    Bool_t IsMatchedWithConv(AliAODCaloCluster* clus, AliCaloPhotonCuts* cuts);
+    Bool_t IsSameTrack(Int_t id1, Int_t id2); // check if GetID() of both tracks points to same base track
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 9);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 10);
 };
 
 #endif

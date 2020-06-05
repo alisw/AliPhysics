@@ -15,7 +15,7 @@ void AddTask_GammaIsoTree(
   Bool_t    storePHOSCluster              = kTRUE,
   Bool_t    storeConversions              = kTRUE,
   Bool_t    doIsolation                   = kTRUE,
-  Bool_t    doTrackMatching               = kFALSE
+  Bool_t    doOwnTrackMatching            = kFALSE
   ){
 
   //
@@ -24,18 +24,19 @@ void AddTask_GammaIsoTree(
 
   // Default
   TString   TaskEventCutnumber                = "00010113";
-  TString   TaskClusterCutnumberEMC           = "1111100010022700000";
-  TString   TaskClusterCutnumberBackgroundEMC = "1111100010022700000";
+  TString   TaskClusterCutnumberEMC           = "111110001f022700000";
+  TString   TaskClusterCutnumberBackgroundEMC = "111110001f022700000";
   TString   TaskClusterCutnumberPHOS          = "2444411044013300000";
   TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
 
   Float_t trackIsoR[2] = {0.2,0.4};
   Float_t neutralIsoR[2] = {0.2,0.4};
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Bool_t backgroundTrackMatching = kTRUE;
-  Bool_t doNeutralIso = kTRUE;
-  Bool_t doChargedIso = kTRUE;
-  Bool_t doCellIso = kTRUE;
-  Bool_t doTagging = kTRUE;
+  Bool_t doNeutralIso            = kTRUE;
+  Bool_t doChargedIso            = kTRUE;
+  Bool_t doCellIso               = kTRUE;
+  Bool_t doTagging               = kTRUE;
   
   // pp 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
@@ -60,15 +61,15 @@ void AddTask_GammaIsoTree(
 
   } else if(trainConfig == 4){  // min bias loose cluster cuts
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "1111132000002000000";
-      TaskClusterCutnumberBackgroundEMC = "1111132060022700000";
+      TaskClusterCutnumberEMC           = "111113200f002000000";
+      TaskClusterCutnumberBackgroundEMC = "111113206f022700000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
       backgroundTrackMatching = kTRUE;
-      doNeutralIso = kFALSE;
-      doChargedIso = kFALSE;
-      doTagging = kFALSE;
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
       doCellIso = kTRUE;
 
   // pPb 8 TeV
@@ -154,6 +155,41 @@ void AddTask_GammaIsoTree(
       fMaxPtHardSet        = kTRUE;
     }
   }
+
+  // add track matcher if do own trackmatching is enabled
+
+  TString TrackMatcherNameSignal = Form("CaloTrackMatcher_Signal_%s_%i",TaskClusterCutnumberEMC.Data(),trackMatcherRunningMode);
+  TString TrackMatcherNameBackground = Form("CaloTrackMatcher_Background_%s_%i",TaskClusterCutnumberBackgroundEMC.Data(),trackMatcherRunningMode);
+  
+  if(!doOwnTrackMatching){
+    
+    // matching for signal clusters
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherNameSignal = TrackMatcherNameSignal+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameSignal.Data() << endl;
+    }
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameSignal.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcherSignal = new AliCaloTrackMatcher(TrackMatcherNameSignal.Data(),1,trackMatcherRunningMode);
+      fTrackMatcherSignal->SetV0ReaderName(V0ReaderName);
+      fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
+      mgr->AddTask(fTrackMatcherSignal);
+      mgr->ConnectInput(fTrackMatcherSignal,0,cinput);
+    }
+
+    // matching for background clusters
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherNameBackground = TrackMatcherNameBackground+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameBackground.Data() << endl;
+    }
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameBackground.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcherBackground = new AliCaloTrackMatcher(TrackMatcherNameBackground.Data(),1,trackMatcherRunningMode);
+      fTrackMatcherBackground->SetV0ReaderName(V0ReaderName);
+      fTrackMatcherBackground->SetCorrectionTaskSetting(corrTaskSetting);
+      mgr->AddTask(fTrackMatcherBackground);
+      mgr->ConnectInput(fTrackMatcherBackground,0,cinput);
+    }
+  }
+
   // Create Event Cuts
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
@@ -174,16 +210,17 @@ void AddTask_GammaIsoTree(
   AliCaloPhotonCuts *analysisClusterCutsEMC = new AliCaloPhotonCuts(isMC,"analysisClusterCutsEMC","analysisClusterCutsEMC");
   analysisClusterCutsEMC->SetV0ReaderName(V0ReaderName);
   analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
-  // analysisClusterCutsEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
+  analysisClusterCutsEMC->SetCaloTrackMatcherName(TrackMatcherNameSignal);
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumberEMC.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
+
 
   // EMC background cluster cuts (used to calculate iso and tagging)
   AliCaloPhotonCuts *analysisClusterCutsBackgroundEMC = new AliCaloPhotonCuts(isMC,"analysisClusterCutsBackgroundEMC","analysisClusterCutsBackgroundEMC");
   analysisClusterCutsBackgroundEMC->SetV0ReaderName(V0ReaderName);
   analysisClusterCutsBackgroundEMC->SetCorrectionTaskSetting(corrTaskSetting);
-  // analysisClusterCutsBackgroundEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
+  analysisClusterCutsBackgroundEMC->SetCaloTrackMatcherName(TrackMatcherNameBackground);
   analysisClusterCutsBackgroundEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsBackgroundEMC->InitializeCutsFromCutString(TaskClusterCutnumberBackgroundEMC.Data());
   analysisClusterCutsBackgroundEMC->SetFillCutHistograms("");
@@ -220,6 +257,8 @@ void AddTask_GammaIsoTree(
   fQA->SetSavePHOSClusters(storePHOSCluster);
   fQA->SetSaveTracks(storeTracks);
   fQA->SetBuffSize(60*1024*1024);
+  fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  fQA->SetDoOwnTrackMatching(doOwnTrackMatching);
   
   mgr->AddTask(fQA);
 
