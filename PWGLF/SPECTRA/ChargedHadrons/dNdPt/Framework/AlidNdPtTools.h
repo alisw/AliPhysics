@@ -10,6 +10,7 @@
 #ifndef AlidNdPtTools_H
 #define AlidNdPtTools_H
 
+#include "TH1.h"
 #include "THnSparse.h"
 #include <vector>
 
@@ -42,7 +43,7 @@ class AlidNdPtTools : public TObject
         static void            ResetHist() { if (fSparseTmp) { delete fSparseTmp; fSparseTmp=0; } }
         static TH1D*           CreateLogHist(const char* name, const char* title);
         static TH1D*           CreateLogHist(const char* name);
-        static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
+        static void            Log(TH1* h, const char* name) { if (h) h->Fill(name,1); }
         static Double_t        MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt);          // this is a temp solution, to be replace by MCSpectraWeights
                                //quick and dirty hard coded solution to be replaced
                                //periodindex 0: pp 13 TeV, LHC18b  -- this is the (new) default
