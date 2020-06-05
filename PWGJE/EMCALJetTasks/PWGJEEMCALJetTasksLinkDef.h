@@ -272,6 +272,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt+;
 #pragma link C++ class AliAnalysisTaskHardestBranch+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;

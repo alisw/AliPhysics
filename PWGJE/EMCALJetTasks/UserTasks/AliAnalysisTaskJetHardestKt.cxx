@@ -1,8 +1,8 @@
 /**
- * Dynamical grooming jet substructure task. Adapted from AliAnalysisTaskJetDynamicalGrooming
+ * Hardest kt jet substructure task. Adapted from AliAnalysisTaskJetHardestKt
  */
 
-#include "AliAnalysisTaskJetDynamicalGrooming.h"
+#include "AliAnalysisTaskJetHardestKt.h"
 
 #include <cmath>
 
@@ -45,505 +45,47 @@
 #include "AliRhoParameter.h"
 
 /// \cond CLASSIMP
-ClassImp(PWGJE::EMCALJetTasks::SubstructureTree::Subjets);
-/// \endcond
-
-/// \cond CLASSIMP
-ClassImp(PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings);
-/// \endcond
-
-/// \cond CLASSIMP
-ClassImp(PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents);
-/// \endcond
-
-/// \cond CLASSIMP
-ClassImp(PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings);
-/// \endcond
-
-/// \cond CLASSIMP
-ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming);
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt);
 /// \endcond
 
 namespace PWGJE
 {
 namespace EMCALJetTasks
 {
-namespace SubstructureTree
-{
 
 /**
- * Subjets
+ * Hardest kt grooming analysis task.
  */
-
-/**
- * Default constructor
- */
-Subjets::Subjets():
-  fSplittingNodeIndex{},
-  fPartOfIterativeSplitting{},
-  fConstituentIndices{}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Copy constructor
- */
-Subjets::Subjets(const Subjets& other)
- : fSplittingNodeIndex{other.fSplittingNodeIndex},
-  fPartOfIterativeSplitting{other.fPartOfIterativeSplitting},
-  fConstituentIndices{other.fConstituentIndices}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Assignment operator. Note that we pass by _value_, so a copy is created and it is
- * fine to swap the values with the created object!
- */
-Subjets& Subjets::operator=(Subjets other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-bool Subjets::Clear()
-{
-  fSplittingNodeIndex.clear();
-  fPartOfIterativeSplitting.clear();
-  fConstituentIndices.clear();
-  return true;
-}
-
-std::tuple<unsigned short, bool, const std::vector<unsigned short>> Subjets::GetSubjet(int i) const
-{
-  return std::make_tuple(fSplittingNodeIndex.at(i), fPartOfIterativeSplitting.at(i), fConstituentIndices.at(i));
-}
-
-void Subjets::AddSubjet(const unsigned short splittingNodeIndex, const bool partOfIterativeSplitting, const std::vector<unsigned short> & constituentIndices)
-{
-  fSplittingNodeIndex.emplace_back(splittingNodeIndex);
-  // NOTE: emplace_back isn't supported for std::vector<bool> until c++14.
-  fPartOfIterativeSplitting.push_back(partOfIterativeSplitting);
-  // Originally, we stored the constituent indices and their jagged indices separately to try to coax ROOT
-  // into storing the nested vectors in a columnar format. However, even with that design, uproot can't
-  // recreate the nested jagged array without a slow python loop. So we just store the indices directly
-  // and wait for uproot 4. See: https://stackoverflow.com/q/60250877/12907985
-  fConstituentIndices.emplace_back(constituentIndices);
-}
-
-/**
- * Prints information about the task.
- *
- * @return std::string containing information about the task.
- */
-std::string Subjets::toString() const
-{
-  std::stringstream tempSS;
-  tempSS << std::boolalpha;
-  tempSS << "Subjets:\n";
-  for (std::size_t i = 0; i < fSplittingNodeIndex.size(); i++)
-  {
-    tempSS << "#" << (i + 1) << ": Splitting Node: " << fSplittingNodeIndex.at(i)
-        << ", part of iterative splitting = " << fPartOfIterativeSplitting.at(i)
-        << ", number of jet constituents = " << fConstituentIndices.at(i).size() << "\n";
-  }
-  return tempSS.str();
-}
-
-/**
- * Print task information on an output stream using the string representation provided by
- * Subjets::toString. Used by operator<<
- * @param in output stream stream
- * @return reference to the output stream
- */
-std::ostream& Subjets::Print(std::ostream& in) const
-{
-  in << toString();
-  return in;
-}
-
-/**
- * Print task information using the string representation provided by
- * Subjets::toString
- *
- * @param[in] opt Unused
- */
-void Subjets::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
-
-/**
- * Jet splittings
- */
-
-/**
- * Default constructor.
- */
-JetSplittings::JetSplittings():
-  fKt{},
-  fDeltaR{},
-  fZ{},
-  fParentIndex{}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Copy constructor
- */
-JetSplittings::JetSplittings(const JetSplittings& other)
- : fKt{other.fKt},
-  fDeltaR{other.fDeltaR},
-  fZ{other.fZ},
-  fParentIndex{other.fParentIndex}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Assignment operator. Note that we pass by _value_, so a copy is created and it is
- * fine to swap the values with the created object!
- */
-JetSplittings& JetSplittings::operator=(JetSplittings other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-bool JetSplittings::Clear()
-{
-  fKt.clear();
-  fDeltaR.clear();
-  fZ.clear();
-  fParentIndex.clear();
-  return true;
-}
-
-void JetSplittings::AddSplitting(float kt, float deltaR, float z, short i)
-{
-  fKt.emplace_back(kt);
-  fDeltaR.emplace_back(deltaR);
-  fZ.emplace_back(z);
-  fParentIndex.emplace_back(i);
-}
-
-std::tuple<float, float, float, short> JetSplittings::GetSplitting(int i) const
-{
-  return std::make_tuple(fKt.at(i), fDeltaR.at(i), fZ.at(i), fParentIndex.at(i));
-}
-
-/**
- * Prints information about the task.
- *
- * @return std::string containing information about the task.
- */
-std::string JetSplittings::toString() const
-{
-  std::stringstream tempSS;
-  tempSS << std::boolalpha;
-  tempSS << "Jet splittings:\n";
-  for (std::size_t i = 0; i < fKt.size(); i++)
-  {
-    tempSS << "#" << (i + 1) << ": kT = " << fKt.at(i)
-        << ", deltaR = " << fDeltaR.at(i) << ", z = " << fZ.at(i)
-        << ", parent = " << fParentIndex.at(i) << "\n";
-  }
-  return tempSS.str();
-}
-
-/**
- * Print task information on an output stream using the string representation provided by
- * JetSplittings::toString. Used by operator<<
- * @param in output stream stream
- * @return reference to the output stream
- */
-std::ostream& JetSplittings::Print(std::ostream& in) const
-{
-  in << toString();
-  return in;
-}
-
-/**
- * Print task information using the string representation provided by
- * JetSplittings::toString
- *
- * @param[in] opt Unused
- */
-void JetSplittings::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
-
-/**
- * Jet constituents.
- */
-// Constant shift to be applied to storing the global index. This ensures that the value is
-// large enough that we're never going to overlap with the MCLabel. It also needs to be large
-// enough such that we'll never overlap with values from the index map. 2000000 allows for 20
-// collections, which should be more than enough.
-const int JetConstituents::fgkGlobalIndexOffset = 2000000;
-
-/**
- * Default constructor.
- */
-JetConstituents::JetConstituents():
-  fPt{},
-  fEta{},
-  fPhi{},
-  fID{}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Copy constructor
- */
-JetConstituents::JetConstituents(const JetConstituents& other)
- : fPt{other.fPt},
-  fEta{other.fEta},
-  fPhi{other.fPhi},
-  fID{other.fID}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Assignment operator. Note that we pass by _value_, so a copy is created and it is
- * fine to swap the values with the created object!
- */
-JetConstituents& JetConstituents::operator=(JetConstituents other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-bool JetConstituents::Clear()
-{
-  fPt.clear();
-  fEta.clear();
-  fPhi.clear();
-  fID.clear();
-  return true;
-}
-
-void JetConstituents::AddJetConstituent(const AliVParticle * part, const int & id)
-{
-  fPt.emplace_back(part->Pt());
-  fEta.emplace_back(part->Eta());
-  fPhi.emplace_back(part->Phi());
-  // NOTE: We don't use the user_index() here because we need to use that for indexing the
-  //       constituents that are contained in each subjet.
-  fID.emplace_back(id);
-}
-
-std::tuple<float, float, float, int> JetConstituents::GetJetConstituent(int i) const
-{
-  return std::make_tuple(fPt.at(i), fEta.at(i), fPhi.at(i), fID.at(i));
-}
-
-/**
- * Prints information about the task.
- *
- * @return std::string containing information about the task.
- */
-std::string JetConstituents::toString() const
-{
-  std::stringstream tempSS;
-  tempSS << std::boolalpha;
-  tempSS << "Jet constituents:\n";
-  for (std::size_t i = 0; i < fPt.size(); i++)
-  {
-    tempSS << "#" << (i + 1) << ": pt = " << fPt.at(i)
-        << ", eta = " << fEta.at(i) << ", phi = " << fPhi.at(i)
-        << ", ID = " << fID.at(i) << "\n";
-  }
-  return tempSS.str();
-}
-
-/**
- * Print task information on an output stream using the string representation provided by
- * JetConstituents::toString. Used by operator<<
- * @param in output stream stream
- * @return reference to the output stream
- */
-std::ostream& JetConstituents::Print(std::ostream& in) const
-{
-  in << toString();
-  return in;
-}
-
-/**
- * Print task information using the string representation provided by
- * JetConstituents::toString
- *
- * @param[in] opt Unused
- */
-void JetConstituents::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
-
-/**
- * Jet substructure splittings container.
- */
-
-/**
- * Default constructor.
- */
-JetSubstructureSplittings::JetSubstructureSplittings():
-  fJetPt{0},
-  fJetConstituents{},
-  fJetSplittings{},
-  fSubjets{}
-{
-  // Nothing more to be done.
-}
-
-/**
- * Copy constructor
- */
-JetSubstructureSplittings::JetSubstructureSplittings(
- const JetSubstructureSplittings& other)
- : fJetPt{other.fJetPt},
-  fJetConstituents{other.fJetConstituents},
-  fJetSplittings{other.fJetSplittings},
-  fSubjets{other.fSubjets}
-{
-}
-
-/**
- * Assignment operator. Note that we pass by _value_, so a copy is created and it is
- * fine to swap the values with the created object!
- */
-JetSubstructureSplittings& JetSubstructureSplittings::operator=(
- JetSubstructureSplittings other)
-{
-  swap(*this, other);
-  return *this;
-}
-
-bool JetSubstructureSplittings::Clear()
-{
-  fJetPt = 0;
-  fJetConstituents.Clear();
-  fJetSplittings.Clear();
-  fSubjets.Clear();
-  return true;
-}
-
-/**
- * Add a jet constituent to the object.
- *
- * @param[in] part Constituent to be added.
- */
-void JetSubstructureSplittings::AddJetConstituent(const AliVParticle * part, const int & id)
-{
-  fJetConstituents.AddJetConstituent(part, id);
-}
-
-/**
- * Add a jet splitting to the object.
- *
- * @param[in] kt Kt of the splitting.
- * @param[in] deltaR Delta R between the subjets.
- * @param[in] z Momentum sharing between the subjets.
- */
-void JetSubstructureSplittings::AddSplitting(float kt, float deltaR, float z, short parentIndex)
-{
-  fJetSplittings.AddSplitting(kt, deltaR, z, parentIndex);
-}
-
-/**
- * Add a subjet to the object.
- *
- * @param[in] part Constituent to be added.
- */
-void JetSubstructureSplittings::AddSubjet(const unsigned short splittingNodeIndex, const bool partOfIterativeSplitting,
-                     const std::vector<unsigned short>& constituentIndices)
-{
-  return fSubjets.AddSubjet(splittingNodeIndex, partOfIterativeSplitting, constituentIndices);
-}
-
-std::tuple<float, float, float, int> JetSubstructureSplittings::GetJetConstituent(int i) const
-{
-  return fJetConstituents.GetJetConstituent(i);
-}
-
-std::tuple<float, float, float, short> JetSubstructureSplittings::GetSplitting(int i) const
-{
-  return fJetSplittings.GetSplitting(i);
-}
-
-std::tuple<unsigned short, bool, const std::vector<unsigned short>> JetSubstructureSplittings::GetSubjet(int i) const
-{
-  return fSubjets.GetSubjet(i);
-}
-
-/**
- * Prints information about the task.
- *
- * @return std::string containing information about the task.
- */
-std::string JetSubstructureSplittings::toString() const
-{
-  std::stringstream tempSS;
-  tempSS << std::boolalpha;
-  tempSS << "Splitting information: ";
-  tempSS << "Jet pt = " << fJetPt << "\n";
-  tempSS << fSubjets;
-  tempSS << fJetSplittings;
-  tempSS << fJetConstituents;
-  return tempSS.str();
-}
-
-/**
- * Print task information on an output stream using the string representation provided by
- * JetSubstructureSplittings::toString. Used by operator<<
- * @param in output stream stream
- * @return reference to the output stream
- */
-std::ostream& JetSubstructureSplittings::Print(std::ostream& in) const
-{
-  in << toString();
-  return in;
-}
-
-/**
- * Print task information using the string representation provided by
- * JetSubstructureSplittings::toString
- *
- * @param[in] opt Unused
- */
-void JetSubstructureSplittings::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
-
-} /* namespace SubstructureTree */
-
-/**
- * Dynamical grooming analysis task.
- */
-const std::map<std::string, AliAnalysisTaskJetDynamicalGrooming::JetShapeType_t> AliAnalysisTaskJetDynamicalGrooming::fgkJetShapeTypeMap = {
-  { "kMCTrue", AliAnalysisTaskJetDynamicalGrooming::kMCTrue },
-  { "kTrueDet", AliAnalysisTaskJetDynamicalGrooming::kTrueDet },
-  { "kData", AliAnalysisTaskJetDynamicalGrooming::kData },
-  { "kDetEmb", AliAnalysisTaskJetDynamicalGrooming::kDetEmb },
-  { "kDetEmbPart", AliAnalysisTaskJetDynamicalGrooming::kDetEmbPart },
-  { "kPythiaDef", AliAnalysisTaskJetDynamicalGrooming::kPythiaDef },
-  { "kDetEmbPartPythia", AliAnalysisTaskJetDynamicalGrooming::kDetEmbPartPythia },
-  { "kGenOnTheFly", AliAnalysisTaskJetDynamicalGrooming::kGenOnTheFly }
+const std::map<std::string, AliAnalysisTaskJetHardestKt::JetShapeType_t> AliAnalysisTaskJetHardestKt::fgkJetShapeTypeMap = {
+  { "kMCTrue", AliAnalysisTaskJetHardestKt::kMCTrue },
+  { "kTrueDet", AliAnalysisTaskJetHardestKt::kTrueDet },
+  { "kData", AliAnalysisTaskJetHardestKt::kData },
+  { "kDetEmb", AliAnalysisTaskJetHardestKt::kDetEmb },
+  { "kDetEmbPart", AliAnalysisTaskJetHardestKt::kDetEmbPart },
+  { "kPythiaDef", AliAnalysisTaskJetHardestKt::kPythiaDef },
+  { "kDetEmbPartPythia", AliAnalysisTaskJetHardestKt::kDetEmbPartPythia },
+  { "kGenOnTheFly", AliAnalysisTaskJetHardestKt::kGenOnTheFly }
 };
-const std::map<std::string, AliAnalysisTaskJetDynamicalGrooming::JetShapeSub_t> AliAnalysisTaskJetDynamicalGrooming::fgkJetShapeSubMap = {
-  { "kNoSub", AliAnalysisTaskJetDynamicalGrooming::kNoSub },
-  { "kConstSub", AliAnalysisTaskJetDynamicalGrooming::kConstSub },
-  { "kDerivSub", AliAnalysisTaskJetDynamicalGrooming::kDerivSub },
-  { "kEventSub", AliAnalysisTaskJetDynamicalGrooming::kEventSub }
+const std::map<std::string, AliAnalysisTaskJetHardestKt::JetShapeSub_t> AliAnalysisTaskJetHardestKt::fgkJetShapeSubMap = {
+  { "kNoSub", AliAnalysisTaskJetHardestKt::kNoSub },
+  { "kConstSub", AliAnalysisTaskJetHardestKt::kConstSub },
+  { "kDerivSub", AliAnalysisTaskJetHardestKt::kDerivSub },
+  { "kEventSub", AliAnalysisTaskJetHardestKt::kEventSub }
 };
-const std::map<std::string, AliAnalysisTaskJetDynamicalGrooming::JetSelectionType_t> AliAnalysisTaskJetDynamicalGrooming::fgkJetSelectionMap = {
-  { "kInclusive", AliAnalysisTaskJetDynamicalGrooming::kInclusive },
-  { "kRecoil", AliAnalysisTaskJetDynamicalGrooming::kRecoil }
+const std::map<std::string, AliAnalysisTaskJetHardestKt::JetSelectionType_t> AliAnalysisTaskJetHardestKt::fgkJetSelectionMap = {
+  { "kInclusive", AliAnalysisTaskJetHardestKt::kInclusive },
+  { "kRecoil", AliAnalysisTaskJetHardestKt::kRecoil }
 };
-const std::map<std::string, AliAnalysisTaskJetDynamicalGrooming::DerivSubtrOrder_t> AliAnalysisTaskJetDynamicalGrooming::fgkDerivSubtrOrderMap = {
-  { "kSecondOrder", AliAnalysisTaskJetDynamicalGrooming::kSecondOrder },
-  { "kFirstOrder", AliAnalysisTaskJetDynamicalGrooming::kFirstOrder }
+const std::map<std::string, AliAnalysisTaskJetHardestKt::DerivSubtrOrder_t> AliAnalysisTaskJetHardestKt::fgkDerivSubtrOrderMap = {
+  { "kSecondOrder", AliAnalysisTaskJetHardestKt::kSecondOrder },
+  { "kFirstOrder", AliAnalysisTaskJetHardestKt::kFirstOrder }
 };
 
 /**
  * Default constructor.
  */
-AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming()
- : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetDynamicalGrooming", kTRUE),
+AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt()
+ : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetHardestKt", kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
   fMinFractionShared(0),
@@ -566,10 +108,8 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming()
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
-  fStoreRecursiveSplittings(false),
-  fDataJetSplittings(),
-  fMatchedJetSplittings(),
-  fDetLevelJetSplittings(),
+  fEnableSubjetMatching(false),
+  fSubstructureVariables(),
   fPtJet(nullptr),
   fHCheckResolutionSubjets(nullptr),
   fTreeSubstructure(nullptr)
@@ -582,7 +122,7 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming()
 /**
  * Standard constructor.
  */
-AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(const char* name)
+AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(const char* name)
  : AliAnalysisTaskEmcalJet(name, kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized(false),
@@ -606,10 +146,8 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(const c
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
-  fStoreRecursiveSplittings(false),
-  fDataJetSplittings(),
-  fMatchedJetSplittings(),
-  fDetLevelJetSplittings(),
+  fEnableSubjetMatching(false),
+  fSubstructureVariables(),
   fPtJet(nullptr),
   fHCheckResolutionSubjets(nullptr),
   fTreeSubstructure(nullptr)
@@ -627,8 +165,8 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(const c
  * Copying this task will not copy the splittings objects or output hists and trees.
  * It is up to the user to create this objects use `UserCreateOutputObjects(...)`.
  */
-AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(
- const AliAnalysisTaskJetDynamicalGrooming& other)
+AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(
+ const AliAnalysisTaskJetHardestKt& other)
  : fYAMLConfig(other.fYAMLConfig), fConfigurationInitialized(other.fConfigurationInitialized),
   fMinFractionShared(other.fMinFractionShared),
   fJetShapeType(other.fJetShapeType),
@@ -650,10 +188,8 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(
   fMagFieldPolarity(other.fMagFieldPolarity),
   fDerivSubtrOrder(other.fDerivSubtrOrder),
   fStoreDetLevelJets(other.fStoreDetLevelJets),
-  fStoreRecursiveSplittings(other.fStoreRecursiveSplittings),
-  fDataJetSplittings(),
-  fMatchedJetSplittings(),
-  fDetLevelJetSplittings(),
+  fEnableSubjetMatching(other.fEnableSubjetMatching),
+  fSubstructureVariables(other.fSubstructureVariables),
   fPtJet(nullptr),
   fHCheckResolutionSubjets(nullptr),
   fTreeSubstructure(nullptr)
@@ -664,8 +200,8 @@ AliAnalysisTaskJetDynamicalGrooming::AliAnalysisTaskJetDynamicalGrooming(
  * Assignment operator. Note that we pass by _value_, so a copy is created and it is
  * fine to swap the values with the created object!
  */
-AliAnalysisTaskJetDynamicalGrooming& AliAnalysisTaskJetDynamicalGrooming::operator=(
- AliAnalysisTaskJetDynamicalGrooming other)
+AliAnalysisTaskJetHardestKt& AliAnalysisTaskJetHardestKt::operator=(
+ AliAnalysisTaskJetHardestKt other)
 {
   swap(*this, other);
   return *this;
@@ -674,7 +210,7 @@ AliAnalysisTaskJetDynamicalGrooming& AliAnalysisTaskJetDynamicalGrooming::operat
 /**
  * Retrieve task properties from the YAML configuration.
  */
-void AliAnalysisTaskJetDynamicalGrooming::RetrieveAndSetTaskPropertiesFromYAMLConfig()
+void AliAnalysisTaskJetHardestKt::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Same ordering as in the constructor (for consistency)
   std::string baseName = "jetSelection";
@@ -730,13 +266,13 @@ void AliAnalysisTaskJetDynamicalGrooming::RetrieveAndSetTaskPropertiesFromYAMLCo
     fDerivSubtrOrder = fgkDerivSubtrOrderMap.at(tempStr);
   }
   fYAMLConfig.GetProperty({baseName, "storeDetLevelJets"}, fStoreDetLevelJets, false);
-  fYAMLConfig.GetProperty({baseName, "storeRecursiveSplittings"}, fStoreRecursiveSplittings, false);
+  fYAMLConfig.GetProperty({baseName, "subjetMatching"}, fEnableSubjetMatching, false);
 }
 
 /**
  * Initialize task.
  */
-bool AliAnalysisTaskJetDynamicalGrooming::Initialize()
+bool AliAnalysisTaskJetHardestKt::Initialize()
 {
   fConfigurationInitialized = false;
 
@@ -765,6 +301,35 @@ bool AliAnalysisTaskJetDynamicalGrooming::Initialize()
   return fConfigurationInitialized;
 }
 
+std::string AliAnalysisTaskJetHardestKt::GroomingMethodName() const
+{
+  std::string groomingMethod = "leading_kt";
+  if (fHardCutoff > 0) {
+    // Includes leading zero
+    groomingMethod += "_z_cut_0";
+    // Assumes that fHardCutoff is between 0 and 1.
+    groomingMethod += std::to_string(static_cast<int>(fHardCutoff * 10));
+  }
+  return groomingMethod;
+}
+
+void AliAnalysisTaskJetHardestKt::AddSubstructureVariablesToMap(const std::string & prefix)
+{
+  std::string groomingMethod = GroomingMethodName();
+  fSubstructureVariables[prefix + "_jet_pt"] = -1;
+  fSubstructureVariables[prefix + "_leading_track_pt"] = -1;
+  if (prefix == "data" && fJetShapeType == kDetEmbPartPythia) {
+    fSubstructureVariables[prefix + "_leading_track_pt_sub"] = -1;
+  }
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_zg"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_rg"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_to_split"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_groomed_to_split"] = -1;
+  // Equivalent to nsd
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_passed_grooming"] = -1;
+}
+
 /**
  * Setup output tree.
  *
@@ -773,30 +338,49 @@ bool AliAnalysisTaskJetDynamicalGrooming::Initialize()
  * NOTE: This tree uses a number of more subtle ROOT tree functions. It relies heavily on information from
  * the ROOT users guide: https://root.cern.ch/root/htmldoc/guides/users-guide/Trees.html
  */
-void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
+void AliAnalysisTaskJetHardestKt::SetupTree()
 {
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
-  // Ensure that splitting the object members into their own branches. It doesn't hurt to pass a higher
-  // number to a object that doesn't need to split, so we pass the same to everything.
-  int splitLevel = 4;
-  // Buffer size for storing the branch until it is saved to file.
-  // To quote ROOT, "A recommended buffer size is 32000 bytes if you have less than 50 branches."
-  int bufferSize = 32000;
-  // Including the "." ensures that the identically named members in the splitting functions are stored
-  // with unique names. This will simplify analysis later.
-  fTreeSubstructure->Branch("data.", &fDataJetSplittings, bufferSize, splitLevel);
 
+  // Define substructure variables in our map, which will then be used to define tree branches.
+  // Data is always included.
+  AddSubstructureVariablesToMap("data");
+
+  // Matched and det level are only relevant for pythia or embedded pythia.
   if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
-    fTreeSubstructure->Branch("matched.", &fMatchedJetSplittings, bufferSize, splitLevel);
+    AddSubstructureVariablesToMap("matched");
     if (fStoreDetLevelJets) {
-      fTreeSubstructure->Branch("detLevel.", &fDetLevelJetSplittings, bufferSize, splitLevel);
+      AddSubstructureVariablesToMap("det_level");
     }
+  }
 
-    // Also add the unsubtracted leading kt (which is what we actually want to use for the double counting cut)
+  // Add appropriate subjet matching fields.
+  std::string groomingMethod = GroomingMethodName();
+  if (fEnableSubjetMatching) {
     if (fJetShapeType == kDetEmbPartPythia) {
-      fTreeSubstructure->Branch("data_leading_track_pt", &fDataLeadingTrackPtUnsub);
+      // Hybrid-det level matching (hybrid will be labeled as "data" usually, but we specialize here because we already have to specialize
+      // to get the matching arguments correct).
+      std::string name = groomingMethod;
+      name += "_hybrid_det_level_matching_";
+      fSubstructureVariables[name + "leading"];
+      fSubstructureVariables[name + "subleading"];
     }
+    if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
+      // det level-true level matching (true level will be labeled as "matched" usually, but we specialize here because we already have to specialize
+      // to get the matching arguments correct).
+      std::string name = groomingMethod;
+      name += "_det_level_true_matching_";
+      fSubstructureVariables[name + "leading"];
+      fSubstructureVariables[name + "subleading"];
+    }
+  }
+
+  // Add all of the substructure variables that we've created into the tree, defining the branches.
+  for (auto const & p : fSubstructureVariables) {
+    // NOTE: We access the value via the map (even though we have access in the iterator) to ensure
+    //       we get the right memory address (instead of the iterator memory address).
+    fTreeSubstructure->Branch(p.first.c_str(), &fSubstructureVariables[p.first], TString::Format("%s/F", p.first.c_str()));
   }
 
   if (fIsPythia) {
@@ -804,12 +388,18 @@ void AliAnalysisTaskJetDynamicalGrooming::SetupTree()
     fTreeSubstructure->Branch("ptHardBin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
     fTreeSubstructure->Branch("ptHard", &fPtHard);
   }
+
+  // Print out substructure variables that were added. This is generally for debugging, but is also good for logging purposes.
+  std::cout << "Post tree creation.\n";
+  std::cout << *this;
+  std::cout << "Jet substructure tree:\n";
+  fTreeSubstructure->Print();
 }
 
 /**
  * Create output objects.
  */
-void AliAnalysisTaskJetDynamicalGrooming::UserCreateOutputObjects()
+void AliAnalysisTaskJetHardestKt::UserCreateOutputObjects()
 {
   // First call the base class
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
@@ -857,7 +447,7 @@ void AliAnalysisTaskJetDynamicalGrooming::UserCreateOutputObjects()
   PostData(2, fTreeSubstructure);
 }
 
-Bool_t AliAnalysisTaskJetDynamicalGrooming::Run()
+Bool_t AliAnalysisTaskJetHardestKt::Run()
 {
   // Run analysis code here, if needed. It will be executed before
   // FillHistograms().
@@ -865,7 +455,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::Run()
   return kTRUE;
 }
 
-double AliAnalysisTaskJetDynamicalGrooming::DynamicalGrooming(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::DynamicalGrooming(const fastjet::PseudoJet& subjet1,
                                const fastjet::PseudoJet& subjet2,
                                const fastjet::PseudoJet& parent, const double R,
                                const double a) const
@@ -875,28 +465,28 @@ double AliAnalysisTaskJetDynamicalGrooming::DynamicalGrooming(const fastjet::Pse
   return z * (1 - z) * parent.pt() * std::pow(deltaR / R, a);
 }
 
-double AliAnalysisTaskJetDynamicalGrooming::CalculateZDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateZDrop(const fastjet::PseudoJet& subjet1,
                               const fastjet::PseudoJet& subjet2,
                               const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 0.1);
 }
 
-double AliAnalysisTaskJetDynamicalGrooming::CalculateKtDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateKtDrop(const fastjet::PseudoJet& subjet1,
                               const fastjet::PseudoJet& subjet2,
                               const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 1);
 }
 
-double AliAnalysisTaskJetDynamicalGrooming::CalculateTimeDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateTimeDrop(const fastjet::PseudoJet& subjet1,
                                const fastjet::PseudoJet& subjet2,
                                const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 2);
 }
 
-Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
+Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
 {
   AliJetContainer* jetCont = GetJetContainer(0);
   // container zero is always the base container: the data container, the
@@ -909,6 +499,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
     }
   }
 
+  std::string groomingMethod = GroomingMethodName();
   if (jetCont) {
     for (auto jet1 : jetCont->accepted()) {
       if (!jet1) {
@@ -921,11 +512,11 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
       Int_t ifound = 0, jfound = 0;
       Int_t ilab = -1, jlab = -1;
 
-      // Clear out previously stored values
-      fDataJetSplittings.Clear();
-      fDataLeadingTrackPtUnsub = 0;
-      fMatchedJetSplittings.Clear();
-      fDetLevelJetSplittings.Clear();
+      // Clear out previously stored values. I suspect that the tree would clear this out, but
+      // it is safer to ensure that is the case by doing it ourselves.
+      for (const auto & p : fSubstructureVariables) {
+        fSubstructureVariables[p.first] = -1;
+      }
 
       // The embedding mode
       // the matching is done between unsubtracted embedded jets and detector
@@ -1085,49 +676,64 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         continue;
       }
 
-      fDataJetSplittings.SetJetPt(ptSubtracted);
+      fSubstructureVariables["data_jet_pt"] = ptSubtracted;
 
       // The double counting cut should be applied to the unsubtracted hybrid max track pt. Confusingly,
-      // MaxTrackPt() called on the constituent subtracted jet returns the _unsubtracted_ jet pt. Since we store
-      // all jet constituents, we can already find the max subtracted constituent pt offline. However, we also need
-      // the unsubtracted max track pt. So we store it explicitly alongside the rest of the information.
-      // That way, we'll be able to apply the double counting cut offline, regardless of the whether we want to
-      // use the subtracted or unsubtracted case.
+      // MaxTrackPt() called on the constituent subtracted jet returns the _unsubtracted_ jet pt. Here, we
+      // store the unsubtracted max track pt. Then, during setup for declustering, we'll store the leading subtracted
+      // constituent. That way, we'll be able to apply the double counting cut offline, regardless of the
+      // whether we want to use the subtracted or unsubtracted case.
       //
       // We also maintain the ability to apply the double counting cut during analysis.
-      if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kData) {
-        fDataLeadingTrackPtUnsub = jet1->MaxTrackPt();
-      }
-      if (fJetShapeType == kDetEmbPartPythia) {
+      fSubstructureVariables["data_leading_track_pt"] = jet1->MaxTrackPt();
+      if (fCutDoubleCounts == kTRUE && fJetShapeType == kDetEmbPartPythia) {
         // Cut if the leading hybrid track pt is greater than the leading detector level track pt.
-        if (fCutDoubleCounts == kTRUE && (jet1->MaxTrackPt() > jet2->MaxTrackPt())) {
+        if (jet1->MaxTrackPt() > jet2->MaxTrackPt()) {
           continue;
         }
       }
 
       // Determine the splittings of the main (data) jet.
-      IterativeParents(jet1, fDataJetSplittings, true);
+      std::shared_ptr<SelectedSubjets> dataSubjets = IterativeParents(jet1, "data", true);
 
       // If appropriate, then fill the matched and/or detector level jets.
+      std::shared_ptr<SelectedSubjets> matchedSubjets = nullptr;
+      std::shared_ptr<SelectedSubjets> detLevelSubjets = nullptr;
       if (fJetShapeType == kPythiaDef) {
-        /*kMatched = 1;
-        if (fJetShapeSub == kConstSub)
-          kMatched = 3;*/
-
-        fMatchedJetSplittings.SetJetPt(jet3->Pt());
-        IterativeParents(jet3, fMatchedJetSplittings, false);
+        fSubstructureVariables["matched_jet_pt"] = jet3->Pt();
+        // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
+        //       the jet pt is constituent subtracted.
+        fSubstructureVariables["matched_leading_track_pt"] = jet3->MaxTrackPt();
+        matchedSubjets = IterativeParents(jet3, "matched", false);
       }
 
       if (fJetShapeType == kDetEmbPartPythia) {
-        /*if (fJetShapeSub == kConstSub)
-          kMatched = 3;
-        if (fJetShapeSub == kDerivSub)
-          kMatched = 2;*/
-        fMatchedJetSplittings.SetJetPt(jet3->Pt());
-        IterativeParents(jet3, fMatchedJetSplittings, false);
+        fSubstructureVariables["matched_jet_pt"] = jet3->Pt();
+        // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
+        //       the jet pt is constituent subtracted.
+        fSubstructureVariables["matched_leading_track_pt"] = jet3->MaxTrackPt();
+        matchedSubjets = IterativeParents(jet3, "matched", false);
         if (fStoreDetLevelJets) {
-          fDetLevelJetSplittings.SetJetPt(jet2->Pt());
-          IterativeParents(jet2, fDetLevelJetSplittings, false);
+          fSubstructureVariables["det_level_jet_pt"] = jet2->Pt();
+          // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
+          //       the jet pt is constituent subtracted.
+          fSubstructureVariables["det_level_leading_track_pt"] = jet2->MaxTrackPt();
+          detLevelSubjets = IterativeParents(jet2, "det_level", false);
+        }
+      }
+
+      // Perform subjet matching if you're found splittings.
+      if (fEnableSubjetMatching) {
+        if (fJetShapeType == kDetEmbPartPythia) {
+          // Hybrid-det level matching
+          StoreSubjetMatching(detLevelSubjets, dataSubjets, true, "hybrid_det_level_matching");
+          // det level-part matching
+          StoreSubjetMatching(matchedSubjets, detLevelSubjets, false, "det_level_true_matching");
+        }
+
+        if (fJetShapeType == kPythiaDef) {
+          // det level-part matching
+          StoreSubjetMatching(matchedSubjets, dataSubjets, false, "det_level_true_matching");
         }
       }
 
@@ -1138,21 +744,111 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
   return kTRUE;
 }
 
+void AliAnalysisTaskJetHardestKt::StoreSubjetMatching(const std::shared_ptr<SelectedSubjets> & generatorLikeSubjets, const std::shared_ptr<SelectedSubjets> & measuredLikeSubjets, bool matchUsingDistance, std::string matchingPrefix)
+{
+  int leadingSubjetStatus = -1, subleadingSubjetStatus = -1;
+  // We need subjets from both det level and hybrid to perform the matching. If both are missing, it defaults to -1.
+  if (generatorLikeSubjets && measuredLikeSubjets) {
+    if (CompareSubjets(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
+      leadingSubjetStatus = 1;
+    }
+    else if (CompareSubjets(generatorLikeSubjets->leading, generatorLikeSubjets->leadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
+      leadingSubjetStatus = 2;
+    }
+    else {
+      leadingSubjetStatus = 3;
+    }
+    if (CompareSubjets(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->subleading, measuredLikeSubjets->subleadingConstituents, matchUsingDistance)) {
+      subleadingSubjetStatus = 1;
+    }
+    else if (CompareSubjets(generatorLikeSubjets->subleading, generatorLikeSubjets->subleadingConstituents, measuredLikeSubjets->leading, measuredLikeSubjets->leadingConstituents, matchUsingDistance)) {
+      subleadingSubjetStatus = 2;
+    }
+    else {
+      subleadingSubjetStatus = 3;
+    }
+  }
+  else {
+    if (measuredLikeSubjets) {
+      leadingSubjetStatus = 0;
+      subleadingSubjetStatus = 0;
+    }
+  }
+  std::cout << "Leading status=" << leadingSubjetStatus << "\n";
+
+  // Store the results.
+  std::string groomingMethod = GroomingMethodName();
+  fSubstructureVariables[groomingMethod + "_" + matchingPrefix + "_leading"] = leadingSubjetStatus;
+  fSubstructureVariables[groomingMethod + "_" + matchingPrefix + "_subleading"] = subleadingSubjetStatus;
+}
+
+/**
+ * Perform subjet matching between measured-like and generator-like jets.
+ *
+ * Using embedding as an example, we can have two possible combinations:
+ * - measured-like is hybrid, generator-like is detector level.
+ * - generator-like is detector level, generator-like is part level.
+ *
+ * @param[in] generatorLikeSubjet The generator-like subjet.
+ * @param[in] generatorLikeSubjetConstituents Generator-like subjet constituents.
+ * @param[in] measuredLikeSubjet The measured-like subjet. Currently unused.
+ * @param[in] measuredLikeSubjetConstituents Measured-like subjet constituents.
+ * @param[in] matchUsingDistance If true, matching using distance. If false, we match using `user_index()`.
+ *
+ * @returns True if the subjets match (meaning more than 50% of the generator-like constituents pt is in the measured-like subjet).
+ */
+bool AliAnalysisTaskJetHardestKt::CompareSubjets(const fastjet::PseudoJet & generatorLikeSubjet, const std::vector<fastjet::PseudoJet> & generatorLikeSubjetConstituents,
+                         const fastjet::PseudoJet & measuredLikeSubjet, const std::vector<fastjet::PseudoJet> & measuredLikeSubjetConstituents,
+                         bool matchUsingDistance)
+{
+  double sumPt = 0;
+  double delta = 0.01;
+
+  for (const auto & generatorLikeConstituent : generatorLikeSubjetConstituents) {
+    double generatorLikeEta = generatorLikeConstituent.eta();
+    double generatorLikePhi = generatorLikeConstituent.phi();
+    int generatorLikeIndex = generatorLikeConstituent.user_index();
+    for (const auto & measuredLikeConstituent : measuredLikeSubjetConstituents) {
+      if (matchUsingDistance) {
+        double dEta = std::abs(measuredLikeConstituent.eta() - generatorLikeEta);
+        if (dEta > delta) {
+          continue;
+        }
+        double dPhi = std::abs(measuredLikeConstituent.phi() - generatorLikePhi);
+        if (dPhi > delta) {
+          continue;
+        }
+      }
+      else {
+        // Match using user_index()
+        if (measuredLikeConstituent.user_index() != generatorLikeIndex) {
+          continue;
+        }
+      }
+      sumPt += generatorLikeConstituent.pt();
+    }
+  }
+
+  std::cout << "fraction=" << sumPt / generatorLikeSubjet.pt() << "\n";
+  if ((sumPt / generatorLikeSubjet.pt()) > 0.5)
+    return true;
+  return false;
+}
+
 /**
  * Determine and iterate through jet splittings for a given jet. The output is stored in the given
  * jet substructure output container.
  *
  * @param[in] jet Jet to be declustered.
- * @param[in, out] jetSplittings Jet substructure output object which will be used to store the splittings.
+ * @param[in] prefix Prefix under which the jet splitting properties will be stored.
  * @param[in] isData If True, treat the splitting as coming from data. This means that ghosts are utilized and track resolution may be considered.
  */
-void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
-                              SubstructureTree::JetSubstructureSplittings & jetSplittings,
-                              bool isData)
+std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData)
 {
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
   fastjet::PseudoJet pseudoTrack;
+  double maxLeadingTrackPt = 0;
   for (int constituentIndex = 0; constituentIndex < jet->GetNumberOfTracks(); constituentIndex++) {
     AliVParticle* part = jet->Track(constituentIndex);
     if (!part) {
@@ -1163,21 +859,37 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     }
     // Set the PseudoJet and add it to the inputs.
     pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
-    // NOTE: This must be the constituent index to allow the subjets to properly determine which constituents are included
-    //       in each subjet.
-    pseudoTrack.set_user_index(constituentIndex);
-    inputVectors.push_back(pseudoTrack);
-
-    // Also store the jet constituents in the output
     // Ensure they are uniquely identified (per type of jet) using the id. We don't use the global index (accessed via
     // `TrackAt(int)`) because they won't be the same for the subtracted and unsubtracted constituents (they are different
     // TClonesArrays). Instead, we label the part and det level with the MClabel (ie. for those which have it available),
     // and for the data (where it always equals -1), we use the global index (offset sufficiently) so it won't overlap with
     // other values.
-    int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + SubstructureTree::JetConstituents::GetGlobalIndexOffset());
-    jetSplittings.AddJetConstituent(part , id);
+    // NOTE: We don't have the same restrictions in setting this value as for the general substructure extraction because
+    //       we don't use this for matching subjets to constituents.
+    // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
+    //       depend on that task, so we just define it here locally.
+    int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
+    pseudoTrack.set_user_index(id);
+    inputVectors.push_back(pseudoTrack);
+
+    if (part->Pt() > maxLeadingTrackPt) {
+      maxLeadingTrackPt = part->Pt();
+    }
+  }
+  // Store the max subtracted leading track pt. This doesn't have to be equal to the leading track pt for PbPb data or hybrid in the embedded case.
+  if (isData && (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kData)) {
+    fSubstructureVariables[prefix + "_leading_track_pt_sub"] = maxLeadingTrackPt;
   }
 
+  // Define substructure variables.
+  float kt = -1;
+  float zg = -1;
+  float rg = -1;
+  int nToSplit = -1;
+  int nGroomedToSplit = -1;
+  int nPassedGrooming = -1;
+
+  std::shared_ptr<SelectedSubjets> selectedSubjets;
   try {
     fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
     fastjet::JetDefinition jetDef(jetalgo, 1., fastjet::RecombinationScheme::E_scheme, fastjet::BestFJ30);
@@ -1197,9 +909,49 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     fastjet::PseudoJet jj;
     jj = outputJets[0];
 
-    // Store the jet splittings.
-    int splittingNodeIndex = -1;
-    ExtractJetSplittings(jetSplittings, jj, splittingNodeIndex, true);
+    // Determine the substructure properties by performing the grooming.
+    int nSplit = 0;
+    // Setup
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;
+    fastjet::PseudoJet leadingSelectedSubjet;
+    fastjet::PseudoJet subleadingSelectedSubjet;
+    while (jj.has_parents(j1, j2)) {
+      // Setup
+      nSplit += 1;
+      if (j1.perp() < j2.perp()) {
+        swap(j1, j2);
+      }
+
+      // Calculate the splitting properties.
+      double xz = j2.perp() / (j2.perp() + j1.perp());
+      double xdeltaR = j1.delta_R(j2);
+      double xkt = j2.perp() * sin(xdeltaR);
+
+      if (xz > fHardCutoff) {
+        nPassedGrooming += 1;
+        // Update all of the properties if selected.
+        if (xkt > kt) {
+          zg = xz;
+          rg = xdeltaR;
+          kt = xkt;
+          nToSplit = nSplit;
+          nGroomedToSplit = nPassedGrooming;
+          // Store the subjets so we can do matching later.
+          leadingSelectedSubjet = j1;
+          subleadingSelectedSubjet = j2;
+        }
+      }
+
+      // Follow the iterative (hardest) splitting.
+      jj = j1;
+    }
+
+    // Store the selected subjets and their constituents to return them.
+    if (kt > 0) {
+      selectedSubjets = std::shared_ptr<SelectedSubjets>(new SelectedSubjets{leadingSelectedSubjet, leadingSelectedSubjet.constituents(),
+                         subleadingSelectedSubjet, subleadingSelectedSubjet.constituents()});
+    }
 
     // Cleanup the allocated cluster sequence.
     delete cs;
@@ -1207,52 +959,20 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     AliError(" [w] FJ Exception caught.");
   }
 
-  return;
+  // Store the extracted variables into the tree.
+  std::string groomingMethod = GroomingMethodName();
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = kt;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_zg"] = zg;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_rg"] = rg;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_to_split"] = nToSplit;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_groomed_to_split"] = nGroomedToSplit;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_n_passed_grooming"] = nPassedGrooming;
+
+  return selectedSubjets;
 }
 
-void AliAnalysisTaskJetDynamicalGrooming::ExtractJetSplittings(SubstructureTree::JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int splittingNodeIndex, bool followingIterativeSplitting)
-{
-  fastjet::PseudoJet j1;
-  fastjet::PseudoJet j2;
-  if (inputJet.has_parents(j1, j2) == false) {
-    // No parents, so we're done - just return.
-    return;
-  }
 
-  // j1 should always be the harder of the two subjets.
-  if (j1.perp() < j2.perp()) {
-    swap(j1, j2);
-  }
-
-  // We have a splitting. Record the properties.
-  double z = j2.perp() / (j2.perp() + j1.perp());
-  double delta_R = j1.delta_R(j2);
-  double xkt = j2.perp() * sin(delta_R);
-  // Add the splitting node.
-  jetSplittings.AddSplitting(xkt, delta_R, z, splittingNodeIndex);
-  // Determine which splitting parent the subjets will point to (ie. the one that
-  // we just stored). It's stored at the end of the splittings array. (which we offset
-  // by -1 to stay within the array).
-  splittingNodeIndex = jetSplittings.GetNumberOfSplittings() - 1;
-  // Store the subjets
-  std::vector<unsigned short> j1ConstituentIndices, j2ConstituentIndices;
-  for (auto constituent: j1.constituents()) {
-    j1ConstituentIndices.emplace_back(constituent.user_index());
-  }
-  for (auto constituent: j2.constituents()) {
-    j2ConstituentIndices.emplace_back(constituent.user_index());
-  }
-  jetSplittings.AddSubjet(splittingNodeIndex, followingIterativeSplitting, j1ConstituentIndices);
-  jetSplittings.AddSubjet(splittingNodeIndex, false, j2ConstituentIndices);
-
-  // Recurse as necessary to get the rest of the splittings.
-  ExtractJetSplittings(jetSplittings, j1, splittingNodeIndex, followingIterativeSplitting);
-  if (fStoreRecursiveSplittings == true) {
-    ExtractJetSplittings(jetSplittings, j2, splittingNodeIndex, false);
-  }
-}
-
-void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet, AliEmcalJet* jetM)
+void AliAnalysisTaskJetHardestKt::CheckSubjetResolution(AliEmcalJet* jet, AliEmcalJet* jetM)
 {
   // Setup for jet
   std::vector<fastjet::PseudoJet> inputVectors;
@@ -1352,7 +1072,7 @@ void AliAnalysisTaskJetDynamicalGrooming::CheckSubjetResolution(AliEmcalJet* jet
  * @param[in] jet Jet whose constituents are to be checked.
  * @param[in] part1 Particle to check other particles in relation to.
  */
-bool AliAnalysisTaskJetDynamicalGrooming::CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1)
+bool AliAnalysisTaskJetHardestKt::CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1)
 {
   for (unsigned int i = 0; i < jet->GetNumberOfTracks(); i++) {
     AliVParticle * part2 = jet->Track(i);
@@ -1397,7 +1117,7 @@ bool AliAnalysisTaskJetDynamicalGrooming::CheckClosePartner(const AliEmcalJet* j
   return kFALSE;
 }
 
-Bool_t AliAnalysisTaskJetDynamicalGrooming::RetrieveEventObjects()
+Bool_t AliAnalysisTaskJetHardestKt::RetrieveEventObjects()
 {
   //
   // retrieve event objects
@@ -1413,15 +1133,15 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::RetrieveEventObjects()
  *
  * @param[in] suffix Suffix string to attach to the task name
  */
-AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTaskJetDynamicalGrooming(
+AliAnalysisTaskJetHardestKt* AliAnalysisTaskJetHardestKt::AddTaskJetHardestKt(
  const char* njetsBase, const char* njetsUS, const char* njetsTrue, const char* njetsPartLevel, const Double_t R,
  const char* nrhoBase, const char* ntracks, const char* ntracksUS, const char* ntracksPartLevel, const char* nclusters,
  const char* ntracksTrue, const char* type, const char* CentEst, Int_t pSel,
- AliAnalysisTaskJetDynamicalGrooming::JetShapeType_t jetShapeType,
- AliAnalysisTaskJetDynamicalGrooming::JetShapeSub_t jetShapeSub,
- AliAnalysisTaskJetDynamicalGrooming::JetSelectionType_t jetSelection,
+ AliAnalysisTaskJetHardestKt::JetShapeType_t jetShapeType,
+ AliAnalysisTaskJetHardestKt::JetShapeSub_t jetShapeSub,
+ AliAnalysisTaskJetHardestKt::JetSelectionType_t jetSelection,
  Float_t minpTHTrigger, Float_t maxpTHTrigger, Float_t acut,
- AliAnalysisTaskJetDynamicalGrooming::DerivSubtrOrder_t derivSubtrOrder,
+ AliAnalysisTaskJetHardestKt::DerivSubtrOrder_t derivSubtrOrder,
  const std::string& suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -1433,7 +1153,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   }
 
   // Setup task name
-  std::string taskName = "AliAnalysisTaskJetDynamicalGrooming";
+  std::string taskName = "AliAnalysisTaskJetHardestKt";
   taskName += "_";
   taskName += njetsBase;
   std::string suffixName(suffix);
@@ -1443,7 +1163,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   }
 
   // Create task and configure as desired.
-  AliAnalysisTaskJetDynamicalGrooming* task = new AliAnalysisTaskJetDynamicalGrooming(taskName.c_str());
+  AliAnalysisTaskJetHardestKt* task = new AliAnalysisTaskJetHardestKt(taskName.c_str());
   // Set a few general default.
   task->SetNCentBins(5);
   task->SetJetShapeType(jetShapeType);
@@ -1453,11 +1173,11 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
 
   AliParticleContainer* trackCont = nullptr; // = task->AddTrackContainer(ntracks);
 
-  if ((jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub ||
-     jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kEventSub) &&
-    ((jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kData) ||
-     (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kDetEmbPartPythia) ||
-     (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kPythiaDef))) {
+  if ((jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub ||
+     jetShapeSub == AliAnalysisTaskJetHardestKt::kEventSub) &&
+    ((jetShapeType == AliAnalysisTaskJetHardestKt::kData) ||
+     (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia) ||
+     (jetShapeType == AliAnalysisTaskJetHardestKt::kPythiaDef))) {
     trackCont = task->AddParticleContainer(ntracks);
   } else
     trackCont = task->AddTrackContainer(ntracks);
@@ -1467,17 +1187,17 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   // Printf("tracksUS() = %s", ntracksUS);
   AliParticleContainer* trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   // Printf("ntracksTrue() = %s, trackContTrue=%p ", ntracksTrue, trackContTrue);
-  if (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kDetEmbPartPythia)
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia)
     trackContTrue->SetIsEmbedding(true);
   AliParticleContainer* trackContPartLevel = 0;
 
-  if ((jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub) &&
-    ((jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kMCTrue) ||
-     (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kPythiaDef))) {
+  if ((jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub) &&
+    ((jetShapeType == AliAnalysisTaskJetHardestKt::kMCTrue) ||
+     (jetShapeType == AliAnalysisTaskJetHardestKt::kPythiaDef))) {
     trackContPartLevel = task->AddParticleContainer(ntracksPartLevel);
   } else
     trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
-  if (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kDetEmbPartPythia)
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia)
     trackContPartLevel->SetIsEmbedding(true);
   // Printf("ntracksPartLevel() = %s, trackContPartLevel=%p ", ntracksPartLevel, trackContPartLevel);
 
@@ -1489,8 +1209,8 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   AliJetContainer* jetContPart = nullptr;
   TString strType(type);
 
-  if ((jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kMCTrue ||
-     (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kGenOnTheFly))) {
+  if ((jetShapeType == AliAnalysisTaskJetHardestKt::kMCTrue ||
+     (jetShapeType == AliAnalysisTaskJetHardestKt::kGenOnTheFly))) {
     jetContBase = task->AddJetContainer(njetsBase, strType, R);
     if (jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
@@ -1500,19 +1220,19 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
     }
   }
 
-  if (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kData) {
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kData) {
     jetContBase = task->AddJetContainer(njetsBase, strType, R);
     if (jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(acut);
-      if (jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub)
+      if (jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub)
         jetContBase->SetAreaEmcCut(-2);
     }
   }
 
-  if (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kDetEmbPartPythia) {
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia) {
     jetContBase = task->AddJetContainer(njetsBase, strType, R);
     if (jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
@@ -1520,7 +1240,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
       jetContBase->ConnectClusterContainer(clusterCont);
       jetContBase->SetPercAreaCut(acut);
 
-      if (jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub)
+      if (jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub)
         jetContBase->SetAreaEmcCut(-2);
     }
 
@@ -1532,8 +1252,8 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
       jetContTrue->SetPercAreaCut(acut);
     }
 
-    if (jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub ||
-      jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kEventSub) {
+    if (jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub ||
+      jetShapeSub == AliAnalysisTaskJetHardestKt::kEventSub) {
       jetContUS = task->AddJetContainer(njetsUS, strType, R);
       if (jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
@@ -1550,7 +1270,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
     }
   }
 
-  if (jetShapeType == AliAnalysisTaskJetDynamicalGrooming::kPythiaDef) {
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kPythiaDef) {
     jetContBase = task->AddJetContainer(njetsBase, strType, R);
     if (jetContBase) {
       jetContBase->ConnectParticleContainer(trackCont);
@@ -1566,7 +1286,7 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
       jetContTrue->SetPercAreaCut(acut);
     }
 
-    if (jetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub) {
+    if (jetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub) {
       jetContUS = task->AddJetContainer(njetsUS, strType, R);
       if (jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
@@ -1607,23 +1327,23 @@ AliAnalysisTaskJetDynamicalGrooming* AliAnalysisTaskJetDynamicalGrooming::AddTas
   return task;
 }
 
-std::string AliAnalysisTaskJetDynamicalGrooming::DetermineOutputContainerName(std::string containerName) const
+std::string AliAnalysisTaskJetHardestKt::DetermineOutputContainerName(std::string containerName) const
 {
-  if (fJetShapeType == AliAnalysisTaskJetDynamicalGrooming::kMCTrue)
+  if (fJetShapeType == AliAnalysisTaskJetHardestKt::kMCTrue)
     containerName += "_MCTrue";
-  if (fJetShapeType == AliAnalysisTaskJetDynamicalGrooming::kData)
+  if (fJetShapeType == AliAnalysisTaskJetHardestKt::kData)
     containerName += "_Data";
-  if (fJetShapeType == AliAnalysisTaskJetDynamicalGrooming::kPythiaDef)
+  if (fJetShapeType == AliAnalysisTaskJetHardestKt::kPythiaDef)
     containerName += "_PythiaDef";
-  if (fJetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kNoSub)
+  if (fJetShapeSub == AliAnalysisTaskJetHardestKt::kNoSub)
     containerName += "_NoSub";
-  if (fJetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kConstSub)
+  if (fJetShapeSub == AliAnalysisTaskJetHardestKt::kConstSub)
     containerName += "_ConstSub";
-  if (fJetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kEventSub)
+  if (fJetShapeSub == AliAnalysisTaskJetHardestKt::kEventSub)
     containerName += "_EventSub";
-  if (fJetShapeSub == AliAnalysisTaskJetDynamicalGrooming::kDerivSub)
+  if (fJetShapeSub == AliAnalysisTaskJetHardestKt::kDerivSub)
     containerName += "_DerivSub";
-  if (fJetSelection == AliAnalysisTaskJetDynamicalGrooming::kInclusive)
+  if (fJetSelection == AliAnalysisTaskJetHardestKt::kInclusive)
     containerName += "_Incl";
 
   return containerName;
@@ -1634,7 +1354,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::DetermineOutputContainerName(st
  *
  * @return std::string containing information about the task.
  */
-std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
+std::string AliAnalysisTaskJetHardestKt::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
@@ -1667,11 +1387,14 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
-  tempSS << "\tStore recursive jet splittings (instead of just iterative): " << fStoreRecursiveSplittings << "\n";
+  // Substructure variables:
+  tempSS << "Substructure variables:\n";
+  for (const auto & p : fSubstructureVariables) {
+    tempSS << "\t" << p.first << "\n";
+  }
   // Jet containers
   tempSS << "Attached jet containers:\n";
-  for (int i = 0; i < fJetCollArray.GetEntries(); i++)
-  {
+  for (int i = 0; i < fJetCollArray.GetEntries(); i++) {
     tempSS << "\t" << GetJetContainer(i)->GetName() << "\n";
   }
   return tempSS.str();
@@ -1679,11 +1402,11 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
 
 /**
  * Print task information on an output stream using the string representation provided by
- * AliAnalysisTaskJetDynamicalGrooming::toString. Used by operator<<
+ * AliAnalysisTaskJetHardestKt::toString. Used by operator<<
  * @param in output stream stream
  * @return reference to the output stream
  */
-std::ostream& AliAnalysisTaskJetDynamicalGrooming::Print(std::ostream& in) const
+std::ostream& AliAnalysisTaskJetHardestKt::Print(std::ostream& in) const
 {
   in << toString();
   return in;
@@ -1691,154 +1414,27 @@ std::ostream& AliAnalysisTaskJetDynamicalGrooming::Print(std::ostream& in) const
 
 /**
  * Print task information using the string representation provided by
- * AliAnalysisTaskJetDynamicalGrooming::toString
+ * AliAnalysisTaskJetHardestKt::toString
  *
  * @param[in] opt Unused
  */
-void AliAnalysisTaskJetDynamicalGrooming::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
+void AliAnalysisTaskJetHardestKt::Print(Option_t* opt) const { Printf("%s", toString().c_str()); }
 
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
 
 /**
- * Subjets
+ * Hardest kt analysis task.
  */
 
 /**
- * Implementation of the output stream operator for SubstructureTree::Subjets. Printing
+ * Implementation of the output stream operator for AliAnalysisTaskJetHardestKt. Printing
  * basic task information provided by function toString
  * @param in output stream
  * @param myTask Task which will be printed
  * @return Reference to the output stream
  */
-std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::SubstructureTree::Subjets& myTask)
-{
-  std::ostream& result = myTask.Print(in);
-  return result;
-}
-
-/**
- * Swap function. Created using guide described here: https://stackoverflow.com/a/3279550.
- */
-void swap(PWGJE::EMCALJetTasks::SubstructureTree::Subjets& first,
-     PWGJE::EMCALJetTasks::SubstructureTree::Subjets& second)
-{
-  using std::swap;
-
-  // Same ordering as in the constructors (for consistency)
-  swap(first.fSplittingNodeIndex, second.fSplittingNodeIndex);
-  swap(first.fPartOfIterativeSplitting, second.fPartOfIterativeSplitting);
-  swap(first.fConstituentIndices, second.fConstituentIndices);
-}
-
-/**
- * JetSplittings
- */
-
-/**
- * Implementation of the output stream operator for SubstructureTree::JetSplittings. Printing
- * basic task information provided by function toString
- * @param in output stream
- * @param myTask Task which will be printed
- * @return Reference to the output stream
- */
-std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings& myTask)
-{
-  std::ostream& result = myTask.Print(in);
-  return result;
-}
-
-/**
- * Swap function. Created using guide described here: https://stackoverflow.com/a/3279550.
- */
-void swap(PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings& first,
-     PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings& second)
-{
-  using std::swap;
-
-  // Same ordering as in the constructors (for consistency)
-  swap(first.fKt, second.fKt);
-  swap(first.fDeltaR, second.fDeltaR);
-  swap(first.fZ, second.fZ);
-  swap(first.fParentIndex, second.fParentIndex);
-}
-
-/**
- * JetConstituents
- */
-
-/**
- * Implementation of the output stream operator for SubstructureTree::JetConstituents. Printing
- * basic task information provided by function toString
- * @param in output stream
- * @param myTask Task which will be printed
- * @return Reference to the output stream
- */
-std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents& myTask)
-{
-  std::ostream& result = myTask.Print(in);
-  return result;
-}
-
-/**
- * Swap function. Created using guide described here: https://stackoverflow.com/a/3279550.
- */
-void swap(PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents& first,
-     PWGJE::EMCALJetTasks::SubstructureTree::JetConstituents& second)
-{
-  using std::swap;
-
-  // Same ordering as in the constructors (for consistency)
-  swap(first.fPt, second.fPt);
-  swap(first.fEta, second.fEta);
-  swap(first.fPhi, second.fPhi);
-  swap(first.fID, second.fID);
-}
-
-/**
- * Jet substructure splittings
- */
-
-/**
- * Implementation of the output stream operator for JetSubstructureSplittings. Printing
- * basic task information provided by function toString
- * @param in output stream
- * @param myTask Task which will be printed
- * @return Reference to the output stream
- */
-std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings& myTask)
-{
-  std::ostream& result = myTask.Print(in);
-  return result;
-}
-
-/**
- * Swap function. Created using guide described here: https://stackoverflow.com/a/3279550.
- */
-void swap(PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings& first,
-     PWGJE::EMCALJetTasks::SubstructureTree::JetSubstructureSplittings& second)
-{
-  using std::swap;
-
-  // Same ordering as in the constructors (for consistency)
-  swap(first.fJetPt, second.fJetPt);
-  swap(first.fJetConstituents, second.fJetConstituents);
-  swap(first.fJetSplittings, second.fJetSplittings);
-  swap(first.fSubjets, second.fSubjets);
-}
-
-/**
- * Dynamical grooming analysis task.
- */
-
-/**
- * Implementation of the output stream operator for AliAnalysisTaskJetDynamicalGrooming. Printing
- * basic task information provided by function toString
- * @param in output stream
- * @param myTask Task which will be printed
- * @return Reference to the output stream
- */
-std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& myTask)
+std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& myTask)
 {
   std::ostream& result = myTask.Print(in);
   return result;
@@ -1849,8 +1445,8 @@ std::ostream& operator<<(std::ostream& in, const PWGJE::EMCALJetTasks::AliAnalys
  *
  * NOTE: We don't swap the base class values because the base class doesn't implement swap.
  */
-void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& first,
-     PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& second)
+void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& first,
+     PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& second)
 {
   using std::swap;
 
@@ -1877,10 +1473,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetDynamicalGrooming& first,
   swap(first.fMagFieldPolarity, second.fMagFieldPolarity);
   swap(first.fDerivSubtrOrder, second.fDerivSubtrOrder);
   swap(first.fStoreDetLevelJets, second.fStoreDetLevelJets);
-  swap(first.fStoreRecursiveSplittings, second.fStoreRecursiveSplittings);
-  swap(first.fDataJetSplittings, second.fDataJetSplittings);
-  swap(first.fMatchedJetSplittings, second.fMatchedJetSplittings);
-  swap(first.fDetLevelJetSplittings, second.fDetLevelJetSplittings);
+  swap(first.fSubstructureVariables, second.fSubstructureVariables);
   swap(first.fPtJet, second.fPtJet);
   swap(first.fHCheckResolutionSubjets, second.fHCheckResolutionSubjets);
   swap(first.fTreeSubstructure, second.fTreeSubstructure);
