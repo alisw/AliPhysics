@@ -470,7 +470,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedPrimaryPairsList->SetName("Generated_Primary");
         fGeneratedPrimaryPairsList->SetOwner();
         for (unsigned int i = 0; i < fPrimaryPairMCSignal.size(); ++i){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenPrimaryPair.push_back(th2_tmp);
           fGeneratedPrimaryPairsList->Add(th2_tmp);
@@ -480,7 +480,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSecondaryPairsList->SetName("Generated_Secondary");
         fGeneratedSecondaryPairsList->SetOwner();
         for (unsigned int i = 0; i < fSecondaryPairMCSignal.size(); ++i){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenSecondaryPair.push_back(th2_tmp);
           fGeneratedSecondaryPairsList->Add(th2_tmp);
@@ -491,7 +491,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSmearedPrimaryPairsList->SetName("GeneratedSmeared_Primary");
         fGeneratedSmearedPrimaryPairsList->SetOwner();
         for (unsigned int i = 0; i < fPrimaryPairMCSignal.size(); ++i){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenSmearedPrimaryPair.push_back(th2_tmp);
           fGeneratedSmearedPrimaryPairsList->Add(th2_tmp);
@@ -515,7 +515,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSmearedSecondaryPairsList->SetName("GeneratedSmeared_Secondary");
         fGeneratedSmearedSecondaryPairsList->SetOwner();
         for (unsigned int i = 0; i < fSecondaryPairMCSignal.size(); ++i){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenSmearedSecondaryPair.push_back(th2_tmp);
           fGeneratedSmearedSecondaryPairsList->Add(th2_tmp);
@@ -547,7 +547,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           list->SetOwner();
 
           for (unsigned int i = 0; i < fPrimaryPairMCSignal.size(); ++i){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fPrimaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
             th2_tmp->Sumw2();
             fHistRecPrimaryPair.push_back(th2_tmp);
             list->Add(th2_tmp);
@@ -578,7 +578,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           list1->SetOwner();
 
           for (unsigned int i = 0; i < fSecondaryPairMCSignal.size(); ++i){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fSecondaryPairMCSignal.at(i).GetName()),";m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
             th2_tmp->Sumw2();
             fHistRecSecondaryPair.push_back(th2_tmp);
             list1->Add(th2_tmp);
@@ -714,7 +714,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedFourPairsList_PrimSec->SetName("Generated");
         fGeneratedFourPairsList_PrimSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); /*i++*/ i+=2){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenFourPair_PrimSec.push_back(th2_tmp);
           fGeneratedFourPairsList_PrimSec->Add(th2_tmp);
@@ -725,7 +725,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSmearedFourPairsList_PrimSec->SetName("GeneratedSmeared");
         fGeneratedSmearedFourPairsList_PrimSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
-         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
          th2_tmp->Sumw2();
          fHistGenSmearedFourPair_PrimSec.push_back(th2_tmp);
          fGeneratedSmearedFourPairsList_PrimSec->Add(th2_tmp);
@@ -740,7 +740,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           list->SetOwner();
 
           for (unsigned int i = 0; i < fFourPairMCSignal_PrimSec.size(); i+=2){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_PrimSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
             th2_tmp->Sumw2();
             fHistRecFourPair_PrimSec.push_back(th2_tmp);
             list->Add(th2_tmp);
@@ -748,10 +748,10 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
           fFourPairList_PrimSec->Add(list);
         }
 
-        TH2D* fHistBeforePrimSecPrefilter = new TH2D ("HistBeforePrimSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistBeforeSecSecPrefilter = new TH2D ("HistBeforeSecSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistAfterPrimSecPrefilter = new TH2D ("HistAfterPrimSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-        TH2D* fHistAfterSecSecPrefilter = new TH2D ("HistAfterSecSecPrefilter",";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        TH2D* fHistBeforePrimSecPrefilter = new TH2D ("HistBeforePrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        TH2D* fHistBeforeSecSecPrefilter = new TH2D ("HistBeforeSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        TH2D* fHistAfterPrimSecPrefilter = new TH2D ("HistAfterPrimSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+        TH2D* fHistAfterSecSecPrefilter = new TH2D ("HistAfterSecSecPrefilter",";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
         fHistBeforePrimSecPrefilter->Sumw2();
         fHistBeforeSecSecPrefilter->Sumw2();
         fHistAfterPrimSecPrefilter->Sumw2();
@@ -775,7 +775,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedFourPairsList_SecSec->SetName("Generated");
         fGeneratedFourPairsList_SecSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); /*i++*/ i+=2){
-          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+          TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
           th2_tmp->Sumw2();
           fHistGenFourPair_SecSec.push_back(th2_tmp);
           fGeneratedFourPairsList_SecSec->Add(th2_tmp);
@@ -786,7 +786,7 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
         fGeneratedSmearedFourPairsList_SecSec->SetName("GeneratedSmeared");
         fGeneratedSmearedFourPairsList_SecSec->SetOwner();
         for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
-         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+         TH2D* th2_tmp = new TH2D(Form("Ngen_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
          th2_tmp->Sumw2();
          fHistGenSmearedFourPair_SecSec.push_back(th2_tmp);
          fGeneratedSmearedFourPairsList_SecSec->Add(th2_tmp);
@@ -795,11 +795,11 @@ void AliAnalysisTaskEtaReconstruction::UserCreateOutputObjects(){
 
         for (unsigned int list_i = 0; list_i < fTrackCuts_primary_standard.size(); ++list_i){
           TList* list = new TList();
-          list->SetName(fTrackCuts_secondary_standard.at(list_i)->GetName());
+          list->SetName(fPairCuts_secondary_standard.at(list_i)->GetName());
           list->SetOwner();
 
           for (unsigned int i = 0; i < fFourPairMCSignal_SecSec.size(); i+=2){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee};p_{T,eeee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fFourPairMCSignal_SecSec.at(i).GetName()),";m_{eeee} (GeV/c^{2});p_{T,eeee} (GeV/c)",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
             th2_tmp->Sumw2();
             fHistRecFourPair_SecSec.push_back(th2_tmp);
             list->Add(th2_tmp);
@@ -1867,7 +1867,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
       list_temp->SetOwner();
 
       // Track variables
-      TH1D* hPt_prim     = new TH1D("Pt","Pt ;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
+      TH1D* hPt_prim     = new TH1D("Pt","Pt ;Pt [GeV/c];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
 
       // PID
       TH2D* hITSnSigmaEle_P_prim = new TH2D("ITSnSigmaPrimEle_P","ITS number of sigmas, primary electrons ;P [GeV/c];ITS number of sigmas ", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
@@ -1894,7 +1894,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
       TH1D* hTPCsignalN_prim = new TH1D("TPCsignalN","Number of PID Clusters TPC ;N_{d#it{E}/d#it{x} points}^{TPC};#tracks",160,-0.5,159.5);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
       TH2D* hTPCcrossedRows_TPCnCls_prim = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters, primary electrons ;TPC number clusters;TPC crossed rows;#tracks",
                                                160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
-      TH2D* hTPCcrossedRows_Pt_prim = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, primary electrons ;Pt [GeV];TPC crossed rows",
+      TH2D* hTPCcrossedRows_Pt_prim = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, primary electrons ;Pt [GeV/c];TPC crossed rows",
                                           160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
 
       TH1D* hPDGCode_prim = new TH1D("PDGCode","PDGCode ;PDG Code",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
@@ -1912,7 +1912,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
       // TH1D* hLegDist_prim = new TH1D("LegDist","Leg Distance ;Leg Distance;#tracks",200, -0.5, 5.); // kLegDist
       // TH1D* hR_prim = new TH1D("R","Distance to the origin ;r;#tracks",200, -0.5, 5.); // kR
       // TH1D* hPsiPair_prim = new TH1D("PsiPair","phi in mother's rest frame in Collins-Soper picture ;PsiPair;#tracks",200, -5., 5.); // kPsiPair
-      // TH1D* hArmPt_prim = new TH1D("ArmPt","Armenteros-Podolanski pt ;Pt [GeV];#tracks",160,0.,1.); // kArmPt
+      // TH1D* hArmPt_prim = new TH1D("ArmPt","Armenteros-Podolanski pt ;Pt [GeV/c];#tracks",160,0.,1.); // kArmPt
       // TH1D* hArmAlpha_prim = new TH1D("ArmAlpha","Armenteros-Podolanski alpha ;alpha;#tracks",200, -1., 1.); // kArmAlpha
 
       list_temp->AddAt(hPt_prim,     0);
@@ -1979,7 +1979,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
       list_nSigmaTOF->SetName("TOF_nSigmas");
       list_nSigmaTOF->SetOwner();
 
-    TH1D* hPt_sec      = new TH1D("Pt" ,"Pt ;Pt [GeV];#tracks",640,0.,8.);//,AliDielectronVarManager::kPt);
+    TH1D* hPt_sec      = new TH1D("Pt" ,"Pt ;Pt [GeV/c];#tracks",640,0.,8.);//,AliDielectronVarManager::kPt);
     TH2D* hITSnSigmaEle_P_sec  = new TH2D("ITSnSigmaSecEle_P","ITS number of sigmas, secondary particles ;P [GeV/c];ITS number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
     TH2D* hTPCnSigmaEle_P_sec = new TH2D("TPCnSigmaEle_P","TPC number of sigmas, secondary particles ;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
     TH2D* hTOFnSigmaEle_P_sec = new TH2D("TOFnSigmaEle_P","TOF number of sigmas, secondary particles ;P [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
@@ -2000,7 +2000,7 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
     TH1D* hTPCsignalN_sec = new TH1D("TPCsignalN","Number of PID Clusters TPC ;N_{d#it{E}/d#it{x} points}^{TPC};#tracks",160,-0.5,159.5);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
     TH2D* hTPCcrossedRows_TPCnCls_sec = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters, secondary electrons ;TPC number clusters;TPC crossed rows",
                                              160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
-    TH2D* hTPCcrossedRows_Pt_sec = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, secondary electrons ;Pt [GeV];TPC crossed rows",
+    TH2D* hTPCcrossedRows_Pt_sec = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt, secondary electrons ;Pt [GeV/c];TPC crossed rows",
                                         160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
     TH1D* hPDGCode_sec = new TH1D("PDGCode","PDGCode ;PDG Code;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
     TH1D* hPDGCodeMother_sec = new TH1D("PDGCodeMother","PDGCodeMother ;Mother PDG Code;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
@@ -2257,16 +2257,16 @@ void AliAnalysisTaskEtaReconstruction::CreateSupportHistos()
       list_mcSig->SetOwner();
 
     // pair variable histos
-    TH1D* hCosPointingAngle_sec = new TH1D("CosPointingAngle","Cosine of the pointing angle;#tracks",200, 0.8, 1.); // kCosPointingAngle
-    TH1D* hChi2NDF_sec = new TH1D("Chi2NDF","Chi^2/NDF ;Chi^2/NDF;#tracks",2000, 0., 12.); // kChi2NDF (NDF = number degree of freedom)
+    TH1D* hCosPointingAngle_sec = new TH1D("CosPointingAngle","Cosine of the pointing angle;Cos(#theta);#tracks",200, 0.8, 1.); // kCosPointingAngle
+    TH1D* hChi2NDF_sec = new TH1D("Chi2NDF","Chi^{2}/NDF ;Chi^{2}/NDF;#tracks",2000, 0., 12.); // kChi2NDF (NDF = number degree of freedom)
     TH1D* hLegDist_sec = new TH1D("LegDist","Leg Distance ;Leg Distance;#tracks",1000, 0., 4.); // kLegDist
-    TH1D* hR_sec = new TH1D("R","Distance to the origin ;r;#tracks",1500, 0., 150.); // kR
+    TH1D* hR_sec = new TH1D("R","Distance to the origin ;r (cm);#tracks",1500, 0., 150.); // kR
     TH1D* hPsiPair_sec = new TH1D("PsiPair","phi in mother's rest frame in Collins-Soper picture ;PsiPair;#tracks",200, 0., 2.); // kPsiPair
-    TH1D* hM_pair_sec = new TH1D("PairMass","pair Mass ;mass ;#tracks",200, 0., 1.); // kM
-    TH1D* hArmPt_sec = new TH1D("ArmPt","Armenteros-Podolanski pt ;Pt [GeV];#tracks",160,0.,1.); // kArmPt
-    TH1D* hArmAlpha_sec = new TH1D("ArmAlpha","Armenteros-Podolanski alpha ;alpha;#tracks",200, -3., 3.); // kArmAlpha
-    TH1D* hPairPt_sec = new TH1D("PairPt","Pt of pair ; Pt [GeV];#tracks",640, 0., 8.); // kArmAlpha
-    TH2D* hArmAlpha_ArmPt_sec = new TH2D("Armenteros Podolanski Plot","Armenteros Podolanski Plot, secondary electrons ; ArmAlpha; ArmPt", 100, -1, 1, 320, 0, 0.1);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
+    TH1D* hM_pair_sec = new TH1D("PairMass","pair Mass ;mass (GeV/c^{2});#tracks",200, 0., 1.); // kM
+    TH1D* hArmPt_sec = new TH1D("ArmPt","Armenteros-Podolanski p_{T} ;p^{Arm}_{T} [GeV/c];#tracks",160,0.,1.); // kArmPt
+    TH1D* hArmAlpha_sec = new TH1D("ArmAlpha","Armenteros-Podolanski alpha;#alpha^{Arm};#tracks",200, -3., 3.); // kArmAlpha
+    TH1D* hPairPt_sec = new TH1D("PairPt","p_{T} of pair ; p_{T} [GeV/c];#tracks",640, 0., 8.); // kArmAlpha
+    TH2D* hArmAlpha_ArmPt_sec = new TH2D("Armenteros Podolanski Plot","Armenteros Podolanski Plot, secondary electrons;#alpha^{Arm};p^{Arm}_{T}", 100, -1, 1, 320, 0, 0.1);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
     // pair support histos
     list_mcSig->AddAt(hCosPointingAngle_sec,0);
