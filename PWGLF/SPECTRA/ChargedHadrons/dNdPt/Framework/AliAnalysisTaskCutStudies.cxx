@@ -1,25 +1,7 @@
 #include <iostream>
-#include "TChain.h"
-#include "TH1F.h"
-#include "TList.h"
-#include "TRandom.h"
-#include "TRandom3.h"
-#include "TGeoGlobalMagField.h"
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDtrack.h"
-#include "AliAODEvent.h"
-#include "AliHeader.h"
-#include "AliMCEvent.h"
-#include "AliGenEventHeader.h"
-#include "AliESDtrackCuts.h"
 #include "AlidNdPtTools.h"
-#include "AliAnalysisTaskMKBase.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskCutStudies.h"
-
-using namespace std;
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskCutStudies)
@@ -31,7 +13,7 @@ ClassImp(AliAnalysisTaskCutStudies)
  */
 //****************************************************************************************
 AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies()
-    : AliAnalysisTaskMKBase(), myHist{}
+: AliAnalysisTaskMKBase(), myHist{}
 {
 }
 
@@ -41,7 +23,7 @@ AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies()
  */
 //****************************************************************************************
 AliAnalysisTaskCutStudies::AliAnalysisTaskCutStudies(const char* name)
-    : AliAnalysisTaskMKBase(name), myHist{}
+: AliAnalysisTaskMKBase(name), myHist{}
 {
 }
 
@@ -73,13 +55,12 @@ void AliAnalysisTaskCutStudies::AddOutput()
 //****************************************************************************************
 Bool_t AliAnalysisTaskCutStudies::IsEventSelected()
 {
-  return true; //TEMP
-  //return fIsAcceptedAliEventCuts;
+  return fIsAcceptedAliEventCuts;
 }
 
 //****************************************************************************************
 /**
- * Analyze the event.
+ * Analyse the event.
  */
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaEvent()
@@ -90,7 +71,7 @@ void AliAnalysisTaskCutStudies::AnaEvent()
 
 //****************************************************************************************
 /**
- * Analyze the track.
+ * Analyse the track.
  */
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
@@ -101,7 +82,7 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 
 //****************************************************************************************
 /**
- * Analyze the MC track.
+ * Analyse the MC track.
  */
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaTrackMC(Int_t flag)
@@ -112,7 +93,7 @@ void AliAnalysisTaskCutStudies::AnaTrackMC(Int_t flag)
 
 //****************************************************************************************
 /**
- * Analyze the MC particle.
+ * Analyse the MC particle.
  */
 //****************************************************************************************
 void AliAnalysisTaskCutStudies::AnaParticleMC(Int_t flag)

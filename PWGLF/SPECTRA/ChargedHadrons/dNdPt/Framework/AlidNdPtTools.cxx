@@ -3,7 +3,6 @@
 #include "AliMCParticle.h"
 #include "AlidNdPtTools.h"
 #include "TGraph.h"
-#include "TH1.h"
 #include "THnSparse.h"
 #include "TPDGCode.h"
 
