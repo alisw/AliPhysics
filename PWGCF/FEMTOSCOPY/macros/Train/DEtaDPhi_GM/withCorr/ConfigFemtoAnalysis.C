@@ -21,7 +21,6 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
-#include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
@@ -83,7 +82,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	char *parameter[21];
 	if(strlen(params)!=0)
 	  {
-			parameter[0] = strtok(par, ","); // Splits spaces between words in params
+		parameter[0] = strtok(par, ","); // Splits spaces between words in params
 	    cout<<"Parameter [0] (filterbit):"<<parameter[0]<<endl; // Writes first parameter
 	    parameter[1] = strtok(NULL, ",");
 	    cout<<"Parameter [1] (ktdep):"<<parameter[1]<<" "<<endl;
@@ -233,7 +232,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	// AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
@@ -652,11 +650,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
 					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
 					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
-                 sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-                 sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-                 sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
-                 sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
-								 sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
+          sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
+          sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+          sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+          sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+					sqpcetaphitpc[aniter]->SetPhiStarMin(kFALSE);
 					// sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 					// sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
