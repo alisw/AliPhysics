@@ -322,8 +322,8 @@ void AliAnalysisTaskJetHardestKt::AddSubstructureVariablesToMap(const std::strin
     fSubstructureVariables[prefix + "_leading_track_pt_sub"] = -1;
   }
   fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = -1;
-  fSubstructureVariables[groomingMethod + "_" + prefix + "_zg"] = -1;
-  fSubstructureVariables[groomingMethod + "_" + prefix + "_rg"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_z"] = -1;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_delta_R"] = -1;
   fSubstructureVariables[groomingMethod + "_" + prefix + "_n_to_split"] = -1;
   fSubstructureVariables[groomingMethod + "_" + prefix + "_n_groomed_to_split"] = -1;
   // Equivalent to nsd
@@ -883,12 +883,12 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
   }
 
   // Define substructure variables.
-  float kt = -1;
-  float zg = -1;
-  float rg = -1;
-  int nToSplit = -1;
-  int nGroomedToSplit = -1;
-  int nPassedGrooming = -1;
+  float kt = -0.005;
+  float zg = -0.005;
+  float rg = -0.005;
+  int nToSplit = -0.005;
+  int nGroomedToSplit = -0.005;
+  int nPassedGrooming = -0.005;
 
   std::shared_ptr<SelectedSubjets> selectedSubjets;
   try {
@@ -963,8 +963,8 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
   // Store the extracted variables into the tree.
   std::string groomingMethod = GroomingMethodName();
   fSubstructureVariables[groomingMethod + "_" + prefix + "_kt"] = kt;
-  fSubstructureVariables[groomingMethod + "_" + prefix + "_zg"] = zg;
-  fSubstructureVariables[groomingMethod + "_" + prefix + "_rg"] = rg;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_z"] = zg;
+  fSubstructureVariables[groomingMethod + "_" + prefix + "_delta_R"] = rg;
   fSubstructureVariables[groomingMethod + "_" + prefix + "_n_to_split"] = nToSplit;
   fSubstructureVariables[groomingMethod + "_" + prefix + "_n_groomed_to_split"] = nGroomedToSplit;
   fSubstructureVariables[groomingMethod + "_" + prefix + "_n_passed_grooming"] = nPassedGrooming;
