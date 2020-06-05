@@ -161,7 +161,7 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     if (treeNumber!=fFilteredTree->GetTreeNumber()){
       branch=fFilteredTree->GetTree()->GetBranch("esdTrack.");
       if (fFilteredTree->GetFriend("E")) {
-        branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfo.");
+        branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
         branchITS = fFilteredTreeV0->GetFriend("E")->GetBranch("itsClustersPerLayer.");
         leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
       }
@@ -177,6 +177,9 @@ Double_t AliPIDtools::GetExpectedTPCSignal(Int_t hash, Int_t particleType, Int_t
     if (corrMask==-2) return (*pptrack)->Pt();
     if (corrMask==-3) return treeNumber;
     if (corrMask==-4 && pptpcVertexInfo) return (*(*pptpcVertexInfo))[0];
+    //if (corrMask==-100) return tpcPID->GetPileUpProperties(0);   - wait until new AliRoot distributed
+    //if (corrMask==-101) return tpcPID->GetPileUpProperties(1);
+    //if (corrMask==-102) return tpcPID->GetPileUpProperties(2);
 
   }
   if (pptrack==0) return 0;
@@ -214,7 +217,7 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
       branch0=fFilteredTreeV0->GetTree()->GetBranch("track0.");
       branch1=fFilteredTreeV0->GetTree()->GetBranch("track1.");
       if (fFilteredTree->GetFriend("E")) {
-          branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfo.");
+          branchVertex = fFilteredTreeV0->GetFriend("E")->GetBranch("tpcVertexInfoESD.");
           leafPrim = fFilteredTreeV0->GetFriend("E")->GetLeaf("primMult");
       }
       treeNumber=fFilteredTreeV0->GetTreeNumber();
@@ -237,13 +240,15 @@ Double_t AliPIDtools::GetExpectedTPCSignalV0(Int_t hash, Int_t particleType, Int
   return dEdx;
 }
 Bool_t AliPIDtools::SetPileUpProperties(const TVectorF & tpcVertexInfo, const TVectorF &itsClustersPerLayer, Int_t primMult, AliTPCPIDResponse *pidTPC){
+  const Float_t  itsToTPC=2.38;        // conversion from SDD+SSD to TPC multiplicity
+  const Float_t  multFraction=0.05;   //
   // ===| calculate derived variables |=========================================
   const Double_t shiftM = 0.5 * (tpcVertexInfo[1] + tpcVertexInfo[0]) - 25.;
   const Double_t multSSD = itsClustersPerLayer[4] + itsClustersPerLayer[5];
   const Double_t multSDD = itsClustersPerLayer[2] + itsClustersPerLayer[3];
-  const Double_t pileUp1DITS = (multSSD + multSDD) / 2.38;
-  const Double_t nPileUpSumCorr = (tpcVertexInfo[3] + tpcVertexInfo[4]) - 0.05 * pileUp1DITS;
-  const Double_t nPileUpPrim = nPileUpSumCorr / (1 - TMath::Abs(shiftM / 210.));
+  const Double_t multITSTPC = (multSSD + multSDD) / itsToTPC;
+  const Double_t nPileUpSumCorr = (tpcVertexInfo[3] + tpcVertexInfo[4]) - multFraction * multITSTPC;
+  const Double_t nPileUpPrim = nPileUpSumCorr / (1. - TMath::Abs(shiftM / 210.));
   // ===| set pileup event properties |=========================================
   pidTPC->SetEventPileupProperties(shiftM,nPileUpPrim,primMult);
 }
