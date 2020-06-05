@@ -774,7 +774,7 @@ void AliAnalysisTaskJetHardestKt::StoreSubjetMatching(const std::shared_ptr<Sele
       subleadingSubjetStatus = 0;
     }
   }
-  std::cout << "Leading status=" << leadingSubjetStatus << "\n";
+  //std::cout << "Leading status=" << leadingSubjetStatus << "\n";
 
   // Store the results.
   std::string groomingMethod = GroomingMethodName();
@@ -829,7 +829,8 @@ bool AliAnalysisTaskJetHardestKt::CompareSubjets(const fastjet::PseudoJet & gene
     }
   }
 
-  std::cout << "fraction=" << sumPt / generatorLikeSubjet.pt() << "\n";
+  //std::cout << "fraction=" << sumPt / generatorLikeSubjet.pt() << "\n";
+
   if ((sumPt / generatorLikeSubjet.pt()) > 0.5)
     return true;
   return false;
