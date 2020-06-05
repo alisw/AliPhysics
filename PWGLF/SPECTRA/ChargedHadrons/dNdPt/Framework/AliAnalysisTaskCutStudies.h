@@ -16,6 +16,7 @@ class AliHeader;
 class AliGenEventHeader;
 class AliESDtrack;
 class AliMCParticle;
+
 using namespace AnalysisHelpers; // TODO: remove this at some point to avoid polluting the global namespace!!
 
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
@@ -70,13 +71,6 @@ private:
   Hist<RootHist_t> fHist_tpcCrossedRows;                        //!<!  crossed rows in TPC
   Hist<RootHist_t> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
   Hist<RootHist_t> fHist_tpcChi2PerCluster;                     //!<!  chi2 per cluster TPC
-
-  // array of esd track cuts -> fill values before cuts, passing after cut a, after cut b
-
-  // either make this additional dimension in all histograms, or need one histogram per cut situation
-
-  // recycle this to make o2 studies!!
-  // first 1d then if necessary add more dimensions
   
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskCutStudies, 1);
