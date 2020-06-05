@@ -1,5 +1,5 @@
 
-AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
+AliAnalysisTask* AddTask_hdegenhardt_eeCorrMC(
 			char *name = 			"Output"
 			,char *period = 		"17"
 			,Bool_t recabPID = 		kTRUE
@@ -22,12 +22,12 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 		if (!mgr) {
-			::Error("AliAnalysisTaskeeCorr", "No analysis manager to connect to.");
+			::Error("AliAnalysisTaskeeCor", "No analysis manager to connect to.");
 			return NULL;
 		}
 
 		if (!mgr->GetInputEventHandler()) {
-			::Error("AliAnalysisTaskeeCorr", "This task requires an input event handler");
+			::Error("AliAnalysisTaskeeCor", "This task requires an input event handler");
 			return NULL;
 		}
 		
@@ -124,7 +124,9 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		tasklmee->SetProtTPCrej(-4.+TOFv,4.-TPCv);
 		tasklmee->SetKaonTPCrej(-4.+TOFv,4.-TPCv);
 
-		//------------------- NON - DEPENDENT OF THE CONFIG ------------------------
+		//------------------- INDEPENDENT OF THE CONFIG --------------------
+		if (period[1] == '6') tasklmee->SetPyHeader(1); //Set position of the header to find information about CC/BB production
+		else tasklmee->SetPyHeader(0);
 
 		//----- PID Recalibration ------------------------------------------
 		tasklmee->SetRecabPID(recabPID);

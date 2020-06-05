@@ -44,6 +44,7 @@ AliAnalysisTaskeeCor::AliAnalysisTaskeeCor()
 ,fOutputListGenBB(0)
 ,fOutputListRecBB(0)
 ,fEventStat(0)
+,fPyHeader(0)
 ,fMotherPDGCC(0)
 ,fHistEleGenPt(0)
 ,fHistPosGenPt(0)
@@ -268,6 +269,7 @@ AliAnalysisTaskeeCor::AliAnalysisTaskeeCor(const char* name)
 ,fOutputListGenBB(0)
 ,fOutputListRecBB(0)
 ,fEventStat(0)
+,fPyHeader(0)
 ,fMotherPDGCC(0)
 ,fHistEleGenPt(0)
 ,fHistPosGenPt(0)
@@ -1341,41 +1343,41 @@ void AliAnalysisTaskeeCor::UserExec(Option_t *)
 
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     if (!man) {
-        // Printf("no analysis manager!\n");
+        printf("no analysis manager!\n");
         return;
     }
 
     AliMCEventHandler *mcHandler = (AliMCEventHandler*)man->GetMCtruthEventHandler();
     if (!mcHandler) {
-        // Printf("no MC handler!\n");
+        printf("no MC handler!\n");
         return;
     }
 
     AliAODInputHandler* aodHandler=(AliAODInputHandler*)man->GetInputEventHandler();
     if (!aodHandler) {
-        // Printf("ERROR: AOD handler not available\n");
+        printf("ERROR: AOD handler not available\n");
         return;
     }
 
     mcEvent = aodHandler->MCEvent();
     if (!mcEvent) {
-        // Printf("ERROR: mcEvent not available\n");
+        printf("ERROR: mcEvent not available\n");
         return;
     }
 
     aodEvent = aodHandler->GetEvent();
     if (!aodEvent){
-        Printf("ERROR: aodEvent not available\n");
+        printf("ERROR: aodEvent not available\n");
         return;
     }
 
     //get generator header
     TList *l = (TList*)mcEvent->GetCocktailList();
-    // Printf("GetCocktailList entries = %i", l->GetEntries());
-    AliGenEventHeader* gh=(AliGenEventHeader*)l->At(0);
+    //printf("GetCocktailList entries = %i", l->GetEntries());
+    AliGenEventHeader* gh=(AliGenEventHeader*)l->At(fPyHeader); //2016: At(1), 2017&2018: At(0)
     TString genname=gh->GetName();
-
-    // Printf("Genname: %s\n",genname.Data());
+    
+    //printf("Genname: %s\n",genname.Data());
     Bool_t pythiaCCfile = kFALSE;
     Bool_t pythiaBBfile = kFALSE;
     Bool_t pythiaBfile = kFALSE;
@@ -1525,11 +1527,11 @@ void AliAnalysisTaskeeCor::UserExec(Option_t *)
 		}
 		else if (fDCASmearingByMaps){
 			pointRes = GetDCASmr(lmeeLeg.genPt); //cm
-			if (fDCASmrFromMC) pointRes*100;
+			if (fDCASmrFromMC) pointRes = pointRes*100;
 		}
 		else if (fDCASmearingByPars){
 			pointRes = GetDCASmrByPar(lmeeLeg.genPt); //cm
-			if (fDCASmrFromMC) pointRes*100;
+			if (fDCASmrFromMC) pointRes = pointRes*100;
 		}
 		
 		if (pointRes > 0.) rndm = gRandom->Gaus(DCAxyGen,pointRes);
@@ -2098,6 +2100,30 @@ Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
 	if (pdg != 11) return kFALSE;
 
 	Bool_t motherD = 0;
+
+	AliMCParticle *mother = (AliMCParticle*)(mcEvent->GetTrack(part->GetMother()));
+	if (!mother) return kFALSE;
+	Int_t mpdg = TMath::Abs(mother->PdgCode());
+	if ((mpdg > 410 && mpdg < 436) || (mpdg > 4113 && mpdg < 4445)) motherD = 1;
+	else if ((mpdg > 500 && mpdg < 600) || (mpdg > 5000 && mpdg < 6000)) return kTRUE;
+	else return kFALSE;
+
+	AliMCParticle *gmother = (AliMCParticle*)(mcEvent->GetTrack(mother->GetMother()));
+	if (!gmother) return kFALSE;
+	Int_t gmpdg = TMath::Abs(gmother->PdgCode());
+	if ((gmpdg > 500 && gmpdg < 600) || (gmpdg > 5000 && gmpdg < 6000)) return kTRUE;
+	else if (gmpdg == 5) return kTRUE;
+	
+	return kFALSE;
+}
+
+/*Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
+	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
+	if (!part)  return kFALSE;
+	Int_t pdg = TMath::Abs(part->PdgCode());
+	if (pdg != 11) return kFALSE;
+
+	Bool_t motherD = 0;
 	Bool_t motherB = 0;
 	Bool_t gmotherB = 0;
 	Bool_t ggmotherB = 0;
@@ -2130,7 +2156,7 @@ Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
 	if (gggmpdg != 5) return kFALSE;
 
 	return kTRUE;
-}
+}*/
 
 void AliAnalysisTaskeeCor::GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF){
 	*meanTPC = 0.;
@@ -2232,10 +2258,11 @@ Double_t AliAnalysisTaskeeCor::GetDCASmrByPar(Double_t pt){
 		do {
 			rndm = gRandom->Gaus(center,sigma);
 		} while (rndm <= minResAcc);
+		return rndm;
 	}
     else{
 		//return center;
-		if (maximum > 0) return maximum;
+		if (maximum > 0.) return maximum;
 		else return -1.;
 	}
 }
