@@ -19,7 +19,7 @@ public:
   Hist() : fAxes{}, fRawHist{nullptr}{}
   Hist(const Hist&) = delete; // non construction-copyable
   Hist& operator=(const Hist&) = delete; // non copyable
-  
+
   void AddAxis(const std::string& name, const std::string& title, const int& nBins, const double& lowerEdge, const double& upperEdge)
   {
     fAxes.push_back({name, title, {lowerEdge, upperEdge}, nBins});
@@ -30,7 +30,7 @@ public:
   }
 
   // use SFINAE instead of 'if constexpr' since we are restricted to cpp11
-  
+
   template<typename T = RootHist_t, typename std::enable_if<std::is_base_of<TH3, T>::value>::type* dummy = nullptr>
   RootHist_t* HistFactory (const std::string& name, const std::string& title, const int& nDim, const int nBins[], const double lowerBounds[], const double upperBounds[])
   {
@@ -74,7 +74,7 @@ public:
     double upperBounds[MAX_DIM] = {0.0};
 
     // first figure out number of bins and dimensions
-    std::string title = name + " [";
+    std::string title = "[";
     for(std::size_t i = 0; i < nAxes; i++){
       nBins[i] = (fAxes[i].nBins) ? fAxes[i].nBins : fAxes[i].binEdges.size()-1;
       lowerBounds[i] = fAxes[i].binEdges[0];
@@ -82,7 +82,7 @@ public:
       title += fAxes[i].name;
       if(i < nAxes-1) title += " : "; else title += "]";
     }
-    
+
     // create histogram
     if(fRawHist) delete fRawHist;
     fRawHist = HistFactory(name, title, nAxes, nBins, lowerBounds, upperBounds);
@@ -109,8 +109,8 @@ public:
     fAxes.clear();
     return fRawHist;
   }
-  
-  
+
+
   template<typename T = RootHist_t, typename... Ts,
   typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
   inline void Fill (const Ts&... position)
@@ -131,7 +131,7 @@ public:
   {
     fRawHist->Fill(static_cast<double>(position)...);
   }
-  
+
   template<typename T = RootHist_t, typename... Ts,
   typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
   inline void FillWeight (const T& weight, const Ts&... position)
@@ -154,7 +154,7 @@ public:
     fRawHist->Fill(static_cast<double>(position)..., static_cast<double>(weight));
   }
 
-  
+
 private:
   typedef struct{
     std::string name;
