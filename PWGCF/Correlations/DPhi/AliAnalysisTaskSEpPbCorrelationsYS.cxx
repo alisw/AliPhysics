@@ -184,6 +184,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fHistCentzvertex(0),
       fHistCentV0vsTracklets(0),
       fHistCentV0vsTrackletsbefore(0),
+      fHistTraksvsVz(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
@@ -409,6 +410,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fHistCentzvertex(0),
       fHistCentV0vsTracklets(0),
       fHistCentV0vsTrackletsbefore(0),
+      fHistTraksvsVz(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
@@ -703,6 +705,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistCentV0vsTracklets=new TH2F("fHistCentV0vsTracklets","fHistCentV0vsTracklets",fmaxcent,0,fmaxcent,nspdtracks,0,nspdtracks);
    if(fAnaMode!="FMDFMD") fOutputList->Add(fHistCentV0vsTracklets);
 
+   fHistTraksvsVz=new TH2F("fHistTraksvsVz","fHistTraksvsVz",50,-10,10,nspdtracks,0,nspdtracks);
+   fOutputList->Add(fHistTraksvsVz);
 
    
    //   fHistCentV0vsTrackletsbefore=new TH2F("fHistCentV0vsTrackletsbefore","fHistCentV0vsTrackletsbefore",100,0,100,nspdtracks,0,nspdtracks);
@@ -2519,6 +2523,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        //    else  nTracks= fEvent->GetNumberOfTracks();
        fHistCentV0vsTracklets->Fill(lCentrality,nTracks);
        fHistV0vsTracks->Fill(nV0C_hits+nV0A_hits,nTracks);
+       fHistTraksvsVz->Fill(fPrimaryZVtx,nTracks);
      }
      
      DumpTObjTable("End of TPC/ITS track fill");
