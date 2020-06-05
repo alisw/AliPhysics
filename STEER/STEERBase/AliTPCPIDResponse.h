@@ -245,7 +245,7 @@ public:
 
   //===| Pileup correction |====================================================
   void SetEventPileupProperties(Double_t shift, Double_t pileup, Double_t mult) { fEventPileupProperties[0] = shift; fEventPileupProperties[1] = pileup; fEventPileupProperties[2] = mult; }
-
+  Float_t GetPileUpProperties(UInt_t i ) {return fEventPileupProperties[i%3];}
   void SetPileupCorrectionStrategy(ETPCPileupCorrectionStrategy strategy) { fPileupCorrectionStrategy = strategy; }
 
   void SetPileupCorrectionObject(AliNDLocalRegression* correction) { fPileupCorrection = correction; }
