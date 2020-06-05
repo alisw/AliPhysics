@@ -88,7 +88,8 @@ fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
 fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
-fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE) {
+fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE)
+{
 }
 
 //****************************************************************************************
@@ -159,9 +160,7 @@ fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE)
 //****************************************************************************************
 AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase()
 {
-  if (fOutputList) {
-    delete fOutputList;
-  }
+  if (fOutputList) delete fOutputList;
 }
 
 //****************************************************************************************
@@ -171,9 +170,6 @@ AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase()
 //****************************************************************************************
 void AliAnalysisTaskMKBase::BaseAddOutput()
 {
-  if (!fUseBaseOutput)
-    return;
-  
   fLogHist = CreateLogHist("fLogHist");
   fOutputList->Add(fLogHist);
   
@@ -214,8 +210,7 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
   fOutputList->SetOwner(kTRUE);
   
   // add default histograms
-  if (fUseBaseOutput)
-    BaseAddOutput();
+  if (fUseBaseOutput) BaseAddOutput();
   
   // add user histograms
   AddOutput();
@@ -382,8 +377,10 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::ReadMCEvent()
 {
+  // FIXME: no need to determine if it is mc for each and every event!!
   fIsMC = kFALSE;
   fMC = MCEvent();
+  // FIXME: remove useless logging
   if (!fMC) {
     LogEvent("noMC");
     return kFALSE;
@@ -393,13 +390,14 @@ Bool_t AliAnalysisTaskMKBase::ReadMCEvent()
   
   fIsMC = kTRUE;
   
+  // FIXME: using mc stack is outdated and not recommended!
   fMCStack = fMC->Stack();
   if (!fMCStack) {
     Err("noMCstack");
     fIsMC = kFALSE;
   }
   
-  fMCGenHeader = 0;
+  fMCGenHeader = nullptr;
   fMCHeader = fMC->Header();
   if (!fMCHeader) {
     Err("noMCHeader");
@@ -429,9 +427,6 @@ Bool_t AliAnalysisTaskMKBase::ReadMCEvent()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitEvent()
 {
-  if (!fESD) {
-    return kFALSE;
-  } // protection
   fEventSpecie = fESD->GetEventSpecie();
   
   fRunNumber = fESD->GetRunNumber();
@@ -441,8 +436,8 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   fTimeStamp = fESD->GetTimeStamp();
   fEventNumberInFile = fESD->GetEventNumberInFile();
   
-  // this is needed for some esd track cuts, to be on the save side we call it
-  // here
+  // FIXME: check if this is outdated!
+  // this is needed for some esd track cuts, to be on the save side we call it here
   if (!TGeoGlobalMagField::Instance()->GetField()) {
     fESD->InitMagneticField();
   }
@@ -495,8 +490,6 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
 //****************************************************************************************
 void AliAnalysisTaskMKBase::FillTrigHist(TH1D* h)
 {
-  if (!fUseBaseOutput)
-    return;
   if (fEventSelected & AliVEvent::kMB) {
     Log(h, "kMB");
   } // Minimum bias trigger in PbPb 2010-11
@@ -717,15 +710,14 @@ void AliAnalysisTaskMKBase::BaseAnaTrack(Int_t flag) {
 
 //****************************************************************************************
 /**
- * Base function for analysing MC events.
+ * Function for initializing MC events.
  */
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitMCEvent()
 {
+  // FIXME: this is almost never needed and should be optional!
   InitMCEventType();
-  
-  if (!fIsMC)
-    return kFALSE;
+
   TArrayF vtxMC(3);
   // mc vertex
   fMCGenHeader->PrimaryVertex(vtxMC);
@@ -865,9 +857,6 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitTrack()
 {
-  if (!fESDTrack) {
-    return kFALSE;
-  }
   fPt = fESDTrack->Pt();
   fEta = fESDTrack->Eta();
   fPhi = fESDTrack->Phi();
@@ -878,7 +867,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   fDCAz = fDCA[1];
   fSigma1Pt2 = fESDTrack->GetSigma1Pt2();
   fTPCSignalN = fESDTrack->GetTPCsignalN();
-  if (fSigma1Pt2 < 0) {
+  if(fSigma1Pt2 < 0) {
     Err("Sigma1Pt2<0");
   }
   fSigma1Pt = TMath::Sqrt(fSigma1Pt2);
@@ -886,17 +875,15 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   f1Pt = TMath::Abs(fSigned1Pt);
   
   InitTrackCuts();
-  if (fNeedTrackIP)
+  if(fNeedTrackIP)
     InitTrackIP();
-  if (fNeedTrackTPC)
+  if(fNeedTrackTPC)
     InitTrackTPC();
-  if (fNeedTrackPID)
+  if(fNeedTrackPID)
     InitTrackPID();
   
-  if (fIsMC) {
-    InitMCTrack();
-  }
-  
+  if(fIsMC) InitMCTrack();
+
   return kTRUE;
 }
 
@@ -924,7 +911,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrackCuts()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitTrackPID()
 {
-  // TODO: implement track pid information
+  // TODO: implement track PID information
   return kTRUE;
 }
 
@@ -935,13 +922,11 @@ Bool_t AliAnalysisTaskMKBase::InitTrackPID()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitMCTrack()
 {
-  if (!fIsMC)
-    return kFALSE;
   fMCPrimSec = -1;
-  if (!fESDTrack)
-    return kFALSE;
-  if (!fMC)
-    return kFALSE;
+  
+  // FIXME: remove thes obsolete checks!
+  if (!fESDTrack) return kFALSE;
+  if (!fMC) return kFALSE;
   
   fMCLabel = TMath::Abs(fESDTrack->GetLabel());
   if (fMCLabel < 0) {
@@ -967,9 +952,6 @@ Bool_t AliAnalysisTaskMKBase::InitMCTrack()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitMCParticle()
 {
-  if (!fIsMC) return kFALSE;
-  
-  // set all mc particle related properties
   fMCPt = fMCParticle->Pt();
   fMCEta = fMCParticle->Eta();
   fMCPhi = fMCParticle->Phi();
@@ -1283,10 +1265,11 @@ void AliAnalysisTaskMKBase::UserExec(Option_t*)
     return;
   }
   // we analyse only events that could be properly read
-  FillDefaultHistograms(0);
+  if (fUseBaseOutput) FillDefaultHistograms(0);
   fIsEventAccepted = IsEventSelected();
-  if (fIsEventAccepted) {
-    FillDefaultHistograms(1);
+  if (fIsEventAccepted)
+  {
+    if (fUseBaseOutput) FillDefaultHistograms(1);
     // call user analysis of the event
     AnaEvent();
     // call mc and data anlayses
@@ -1308,8 +1291,6 @@ void AliAnalysisTaskMKBase::UserExec(Option_t*)
 //****************************************************************************************
 void AliAnalysisTaskMKBase::FillDefaultHistograms(Int_t step)
 {
-  if (!fUseBaseOutput)
-    return;
   if (step == 0) {
     Log(fTrigInfo, fFiredTriggerClasses.Data());
     FillTrigHist(fTrigHist);
@@ -1350,8 +1331,6 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks(Int_t flag)
 //****************************************************************************************
 void AliAnalysisTaskMKBase::LoopOverAllParticles(Int_t flag)
 {
-  if (!fIsMC)
-    return;
   fMCnTracks = fMC->GetNumberOfTracks();
   for (Int_t i = 0; i < fMCnTracks; i++) {
     fMCParticle = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
