@@ -1800,7 +1800,8 @@ Double_t AliTPCPIDResponse::GetPileupCorrectionValue(const AliVTrack* track) con
     return 0.;
   }
 
-  const Double_t trackTgl = TMath::Abs(TMath::SinH(track->GetTPCTgl()));
+  //const Double_t trackTgl = TMath::Abs(TMath::SinH(track->GetTPCTgl()));
+  const Double_t trackTgl = TMath::Abs(track->GetTgl());
   Double_t corrVals[4] = {fEventPileupProperties[0], fEventPileupProperties[1], fEventPileupProperties[2], trackTgl};
   const Double_t corrPileup = fPileupCorrection->Eval(corrVals) * 50;
 
