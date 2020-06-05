@@ -151,6 +151,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     virtual Bool_t          InitMCEventType(); // load information about mc event type sd,nd,dd etc. works for dpmjet and pythia only
 
     virtual Bool_t          InitTrack();   //initializes track related quantities
+    virtual Bool_t          InitTrackQA();   //initializes track related quantities needed for QA
     virtual Bool_t          InitTrackCuts(); //check all track cuts and set corresponding variables
     virtual Bool_t          InitTrackIP();  //initialize inner params
     virtual Bool_t          InitTrackTPC();  //initialize inner params tpc
@@ -292,6 +293,29 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Double_t                        f1Pt;                       //!<!  1/pT                                                              --InitTrack()
     Short_t                         fChargeSign;                //!<!  sign of the track charge                                          --InitTrack()
     UShort_t                        fTPCSignalN;                //!<!  number of clusters for PID                            --InitTrack()
+
+//BEGIN NEW
+    Double_t                        fX;                         //!<! x at dca (radial distance to vertex)
+    Double_t                        fY;                         //!<! local Y-coordinate of track at dca  (cm)
+    Double_t                        fZ;                         //!<! local Z-coordinate of track at dca  (cm)
+    Double_t                        fAlpha;                     //!<! local to global angle
+
+    Double_t                        fSnp;                       //!<! local sine of the track momentum azimuthal angle
+    Double_t                        fTgl;                       //!<! tangent of the track momentum dip angle
+    ULong_t                         fFlags;                     //!<! flags assigned to the track
+  
+    Double_t                        fITSFoundClusters;          //!<! found clusters ITS
+    Double_t                        fITSChi2PerCluster;         //!<! chi2 per cluster ITS
+    UChar_t                         fITSClusterMap;             //!<! hitmap ITS
+
+    Double_t                        fTPCFindableClusters;       //!<! findable clusters TPC
+    Double_t                        fTPCFoundClusters;          //!<! found clusters TPC
+    Double_t                        fTPCSharedClusters;         //!<! shared clusters TPC
+    Double_t                        fTPCFractionSharedClusters; //!<! fraction of shared clusters TPC
+    Double_t                        fTPCCrossedRows;            //!<! crossed rows in TPC
+    Double_t                        fTPCCrossedRowsOverFindableClusters;            //!<! crossed rows over findable clusters in TPC
+    Double_t                        fTPCChi2PerCluster;            //!<! chi2 per cluster TPC
+//END NEW
 
     AliMCParticle*                  fMCParticle;                //!<!  mc particle                                                       --
     Int_t                           fMCLabel;                   //!<!  mc label                                                          --

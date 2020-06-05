@@ -149,32 +149,38 @@ void AliAnalysisTaskCutStudies::AnaEvent()
 void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
 {
   // track related properties
-  fHist_x.Fill(0.);
-  fHist_y.Fill(0.);
-  fHist_z.Fill(0.);
-  fHist_alpha.Fill(0.);
+  fHist_x.Fill(fX);
+  fHist_y.Fill(fY);
+  fHist_z.Fill(fZ);
+  fHist_alpha.Fill(fAlpha);
   fHist_signed1Pt.Fill(fSigned1Pt);
-  fHist_snp.Fill(0.);
-  fHist_tgl.Fill(0.);
+  fHist_snp.Fill(fSnp);
+  fHist_tgl.Fill(fTgl);
   fHist_dcaxy.Fill(fDCAr);
   fHist_dcaz.Fill(fDCAz);
-  fHist_flag.Fill(0.);
+  for(unsigned int i = 0; i < 64; i++) {
+    if(fFlags & (1 << i))
+      fHist_flag.Fill(i);
+  }
   fHist_pt.Fill(fPt);
   fHist_eta.Fill(fEta);
   fHist_phi.Fill(fPhi);
   
   // its related properties
-  fHist_itsFoundClusters.Fill(0.);
-  fHist_itsHits.Fill(0.);
+  fHist_itsFoundClusters.Fill(fITSFoundClusters);
+  for(unsigned int i = 0; i < 6; i++) {
+    if(fITSClusterMap & (1 << i))
+      fHist_itsHits.Fill(i);
+  }
 
   // tpc related properties
-  fHist_tpcFindableClusters.Fill(10.);
-  fHist_tpcFoundClusters.Fill(10.);
-  fHist_tpcSharedClusters.Fill(10.);
-  fHist_tpcFractionSharedClusters.Fill(10.);
-  fHist_tpcCrossedRows.Fill(10.);
-  fHist_tpcCrossedRowsOverFindableClusters.Fill(10.);
-  fHist_tpcChi2PerCluster.Fill(10.);
+  fHist_tpcFindableClusters.Fill(fTPCFindableClusters);
+  fHist_tpcFoundClusters.Fill(fTPCFoundClusters);
+  fHist_tpcSharedClusters.Fill(fTPCSharedClusters);
+  fHist_tpcFractionSharedClusters.Fill(fTPCFractionSharedClusters);
+  fHist_tpcCrossedRows.Fill(fTPCCrossedRows);
+  fHist_tpcCrossedRowsOverFindableClusters.Fill(fTPCCrossedRowsOverFindableClusters);
+  fHist_tpcChi2PerCluster.Fill(fTPCChi2PerCluster);
 
 
   //if (!fAcceptTrackM) return;

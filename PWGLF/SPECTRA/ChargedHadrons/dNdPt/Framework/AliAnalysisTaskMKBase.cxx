@@ -68,7 +68,13 @@ fIsPileUpSPD(kFALSE), fIsVertexRejected2013pA(kFALSE),
 fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0),
+fChargeSign(0), fTPCSignalN(0),
+
+fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
+fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
+fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
+
+fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
 fMCParticleType(AlidNdPtTools::kUndefined),
@@ -127,7 +133,13 @@ fIsPileUpSPD(kFALSE), fIsVertexRejected2013pA(kFALSE),
 fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
-fChargeSign(0), fTPCSignalN(0), fMCParticle(0), fMCLabel(0), fMCPt(0),
+fChargeSign(0), fTPCSignalN(0),
+
+fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
+fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
+fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
+
+fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
 fMCParticleType(AlidNdPtTools::kUndefined),
@@ -874,6 +886,8 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   fSigned1Pt = fESDTrack->GetSigned1Pt();
   f1Pt = TMath::Abs(fSigned1Pt);
   
+  InitTrackQA(); // TODO: add toggle to switch that off
+  
   InitTrackCuts();
   if(fNeedTrackIP)
     InitTrackIP();
@@ -887,6 +901,35 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   return kTRUE;
 }
 
+//****************************************************************************************
+/**
+ * Initialize track qa related variables.
+ */
+//****************************************************************************************
+Bool_t AliAnalysisTaskMKBase::InitTrackQA()
+{
+  //TODO: add to init list
+  fX = fESDTrack->GetX();
+  fY = fESDTrack->GetY();
+  fZ = fESDTrack->GetZ();
+  fAlpha = fESDTrack->GetAlpha();
+  fSnp = fESDTrack->GetSnp();
+  fTgl = fESDTrack->GetTgl();
+  fITSFoundClusters = fESDTrack->GetITSclusters(0);
+  fITSChi2PerCluster = (fITSFoundClusters>0) ? (fESDTrack->GetITSchi2()/fITSFoundClusters) : -1;
+
+  fITSClusterMap = fESDTrack->GetITSClusterMap();
+  fFlags = fESDTrack->GetStatus();
+  
+  fTPCFindableClusters = fESDTrack->GetTPCNclsF();
+  fTPCFoundClusters = fESDTrack->GetTPCclusters(0);
+  fTPCChi2PerCluster = (fTPCFoundClusters>0) ? fESDTrack->GetTPCchi2()/fTPCFoundClusters : -1;
+  fTPCSharedClusters = fESDTrack->GetTPCnclsS();
+  fTPCCrossedRows = fESDTrack->GetTPCCrossedRows();
+  fTPCCrossedRowsOverFindableClusters = (fTPCFindableClusters>0) ? fTPCCrossedRows/fTPCFindableClusters : -1;
+  fTPCFractionSharedClusters = (fTPCFoundClusters>0) ? fTPCSharedClusters/fTPCFoundClusters : -1;
+  return kTRUE;
+}
 //****************************************************************************************
 /**
  * Initialize track cuts.
