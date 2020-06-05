@@ -271,6 +271,13 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title,
 			2.0, 5.0, 10.0, 20.0, 50.0, 200.0};
 		return AddAxis(label, title, nbins, xbins);
 	}
+    if (o.Contains("ptfewpatrick")) {
+        const Int_t nbins = 21;
+        Double_t xbins[22] = {0.0, 0.1, 0.2,  0.3,  0.4,  0.5,  0.6, 0.7,
+            0.8, 0.9, 1.0,  1.1,  1.2,  1.3,  1.4, 1.5,
+            2.0, 3.5, 5.0, 7.5, 10.0, 20.0};
+        return AddAxis(label, title, nbins, xbins);
+    }
 	if (o.Contains("ptveryfew")) {
 		const Int_t nbins = 8;
 		Double_t xbins[9] = {0.0, 0.15, 0.5, 1.0, 2.0, 5.0, 10, 25.0, 200.0};
