@@ -43,7 +43,7 @@ private:
 
   using RootHist_t = TH1D;
   
-  // track property histograms
+  // track related properties
   Hist<RootHist_t> fHist_x;                                     //!<!  x at dca (radial distance to vertex)
   Hist<RootHist_t> fHist_y;                                     //!<!  local Y-coordinate of track at dca  (cm)
   Hist<RootHist_t> fHist_z;                                     //!<!  local Z-coordinate of track at dca  (cm)
