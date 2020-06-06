@@ -38,6 +38,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AlidNdPtTools.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 #include <vector>
 
@@ -95,7 +96,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     static TH1D*           CreateLogHist(const char* name) { return AlidNdPtTools::CreateLogHist(name); }
 
     static AliAnalysisTaskMKBase* AddTaskMKBase(const char* name = "TaskMKBase", const char* outfile = 0);
-    enum CentralityEstimator {kV0M=0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
+    enum CentralityEstimator {kV0M = 0, kCL0, kCL1, kV0Mplus05, kV0Mplus10, kV0Mminus05, kV0Mminus10, kSPDClustersCorr, kSPDTracklets};
     void                   SetCentralityEstimator(CentralityEstimator const _est) {fCentralityEstimator=_est;}
     CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
 
@@ -109,6 +110,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     void                   SetNeedTrackTPC    (Bool_t use = kTRUE)   {fNeedTrackTPC = use;}
     void                   SetNeedTrackPID    (Bool_t use = kTRUE)   {fNeedTrackPID = use;}
     void                   SetNeedTrackQA     (Bool_t use = kTRUE)    {fNeedTrackQA = use;}
+    void                   SetSkipMCtruth     (Bool_t use = kTRUE)    {fSkipMCtruth = use;}
   protected:
 
     virtual void          Log(const char* name) {if(fUseBaseOutput) Log(fLogHist,name); }
@@ -299,7 +301,6 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Double_t                        fY;                         //!<! local Y-coordinate of track at dca  (cm)         --InitTrackQA()
     Double_t                        fZ;                         //!<! local Z-coordinate of track at dca  (cm)         --InitTrackQA()
     Double_t                        fAlpha;                     //!<! local to global angle                                        --InitTrackQA()
-
     Double_t                        fSnp;                       //!<! local sine of the track momentum azimuthal angle   --InitTrackQA()
     Double_t                        fTgl;                       //!<! tangent of the track momentum dip angle                  --InitTrackQA()
     ULong_t                         fFlags;                     //!<! flags assigned to the track                                          --InitTrackQA()
@@ -315,6 +316,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Double_t                        fTPCCrossedRows;            //!<! crossed rows in TPC                                                          --InitTrackQA()
     Double_t                        fTPCCrossedRowsOverFindableClusters;            //!<! crossed rows over findable clusters in TPC         --InitTrackQA()
     Double_t                        fTPCChi2PerCluster;            //!<! chi2 per cluster TPC                                                      --InitTrackQA()
+    Double_t                        fTPCGoldenChi2;                //!<! golden chi2 between global and TPC constrained track                                                     --InitTrackQA()
+    Double_t                        fTPCGeomLength;             //!<! track length in active volume of the TPC                                                      --InitTrackQA()
 
     AliMCParticle*                  fMCParticle;                //!<!  mc particle                                                       --
     Int_t                           fMCLabel;                   //!<!  mc label                                                          --
@@ -388,7 +391,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fNeedTrackTPC;          ///<
     Bool_t                          fNeedTrackPID;          ///<
     Bool_t                          fNeedTrackQA;           ///<
-
+    Bool_t                          fSkipMCtruth;           ///<
+  
   private:
     AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
     AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
