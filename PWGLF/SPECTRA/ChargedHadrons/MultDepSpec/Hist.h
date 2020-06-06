@@ -74,13 +74,13 @@ public:
     double upperBounds[MAX_DIM] = {0.0};
 
     // first figure out number of bins and dimensions
-    std::string title = "[";
+    std::string title = "[ ";
     for(std::size_t i = 0; i < nAxes; i++){
       nBins[i] = (fAxes[i].nBins) ? fAxes[i].nBins : fAxes[i].binEdges.size()-1;
       lowerBounds[i] = fAxes[i].binEdges[0];
       upperBounds[i] = fAxes[i].binEdges[fAxes[i].binEdges.size()-1];
       title += fAxes[i].name;
-      if(i < nAxes-1) title += " : "; else title += "]";
+      if(i < nAxes-1) title += " : "; else title += " ]";
     }
 
     // create histogram
@@ -99,8 +99,8 @@ public:
       TAxis* axis = GetAxis(i);
       if(axis)
       {
-        axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
         axis->SetTitle(fAxes[i].title.c_str());
+        if(std::is_base_of<THnBase, RootHist_t>::value) axis->SetName((std::to_string(i) + "-" + fAxes[i].name).c_str());
         // move bin edges in case variable binnining was requested
         if(!fAxes[i].nBins) axis->Set(nBins[i], fAxes[i].binEdges.data());
       }

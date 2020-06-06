@@ -118,6 +118,11 @@ void AliAnalysisTaskCutStudies::AddOutput()
 
   fHist_tpcChi2PerCluster.AddAxis("chi2PerClusterTPC", "chi2 / cluster TPC", 100, 0, 10);
   fOutputList->Add(fHist_tpcChi2PerCluster.GenerateHist("tpc-chi2PerCluster"));
+
+  fHist_tpcNClustersPID.AddAxis("nClustersPIDTPC", "# clusters PID TPC", 165, -0.5, 164.5);
+  fOutputList->Add(fHist_tpcNClustersPID.GenerateHist("tpc-nClustersPID"));
+
+  
 }
 
 //****************************************************************************************
@@ -182,6 +187,7 @@ void AliAnalysisTaskCutStudies::AnaTrack(Int_t flag)
   fHist_tpcCrossedRowsOverFindableClusters.Fill(fTPCCrossedRowsOverFindableClusters);
   fHist_tpcChi2PerCluster.Fill(fTPCChi2PerCluster);
 
+  fHist_tpcNClustersPID.Fill(fTPCSignalN);
 
   //if (!fAcceptTrackM) return;
   
@@ -243,6 +249,8 @@ AliAnalysisTaskCutStudies* AliAnalysisTaskCutStudies::AddTaskCutStudies(const ch
   if (!task) { return nullptr; }
 
   task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  
+  task->SetNeedTrackQA();
   task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
 
   mgr->AddTask(task);

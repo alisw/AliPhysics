@@ -69,11 +69,9 @@ fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
 fChargeSign(0), fTPCSignalN(0),
-
 fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
 fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
-
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
@@ -94,7 +92,7 @@ fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
 fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
-fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE)
+fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE)
 {
 }
 
@@ -134,11 +132,9 @@ fIsPileupFromSPD508(kFALSE), fIsEventAccepted(kFALSE), fESDTrack(0),
 fPt(0), fP(0), fEta(0), fPhi(0), fDCA{0, 0}, fDCACov{0, 0, 0}, fDCAr(0),
 fDCAz(0), fSigma1Pt2(0), fSigma1Pt(0), fSigned1Pt(0), f1Pt(0),
 fChargeSign(0), fTPCSignalN(0),
-
 fX(0.), fY(0.), fZ(0.), fAlpha(0.), fSnp(0.), fTgl(0.), fFlags(0), fITSFoundClusters(0.), fITSChi2PerCluster(0.), fITSClusterMap(0),
 fTPCFindableClusters(0.), fTPCFoundClusters(0.), fTPCSharedClusters(0.), fTPCFractionSharedClusters(0.), fTPCCrossedRows(0.),
 fTPCCrossedRowsOverFindableClusters(0.), fTPCChi2PerCluster(0.),
-
 fMCParticle(0), fMCLabel(0), fMCPt(0),
 fMCEta(0), fMCPhi(0), fMCisPrim(kFALSE), fMCisSec(kFALSE),
 fMCisSecDecay(kFALSE), fMCisSecMat(kFALSE), fMCPrimSec(-1),
@@ -159,7 +155,7 @@ fTrigInfo(0), fTrigInfoSelected(0), fTrigHist(0), fTrigHistSelected(0),
 fCentralityEstimator(AliAnalysisTaskMKBase::CentralityEstimator::kV0M),
 fUseBaseOutput(kFALSE), fNeedEventVertex(kFALSE), fNeedEventCent(kFALSE),
 fNeedEventMult(kFALSE), fNeedEventVZERO(kFALSE), fNeedTrackIP(kFALSE),
-fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE)
+fNeedTrackTPC(kFALSE), fNeedTrackPID(kFALSE), fNeedTrackQA(kFALSE)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -886,16 +882,11 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
   fSigned1Pt = fESDTrack->GetSigned1Pt();
   f1Pt = TMath::Abs(fSigned1Pt);
   
-  InitTrackQA(); // TODO: add toggle to switch that off
-  
   InitTrackCuts();
-  if(fNeedTrackIP)
-    InitTrackIP();
-  if(fNeedTrackTPC)
-    InitTrackTPC();
-  if(fNeedTrackPID)
-    InitTrackPID();
-  
+  if(fNeedTrackQA)  InitTrackQA();
+  if(fNeedTrackIP)  InitTrackIP();
+  if(fNeedTrackTPC) InitTrackTPC();
+  if(fNeedTrackPID) InitTrackPID();
   if(fIsMC) InitMCTrack();
 
   return kTRUE;
@@ -908,7 +899,6 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
 //****************************************************************************************
 Bool_t AliAnalysisTaskMKBase::InitTrackQA()
 {
-  //TODO: add to init list
   fX = fESDTrack->GetX();
   fY = fESDTrack->GetY();
   fZ = fESDTrack->GetZ();
@@ -917,10 +907,8 @@ Bool_t AliAnalysisTaskMKBase::InitTrackQA()
   fTgl = fESDTrack->GetTgl();
   fITSFoundClusters = fESDTrack->GetITSclusters(0);
   fITSChi2PerCluster = (fITSFoundClusters>0) ? (fESDTrack->GetITSchi2()/fITSFoundClusters) : -1;
-
   fITSClusterMap = fESDTrack->GetITSClusterMap();
   fFlags = fESDTrack->GetStatus();
-  
   fTPCFindableClusters = fESDTrack->GetTPCNclsF();
   fTPCFoundClusters = fESDTrack->GetTPCclusters(0);
   fTPCChi2PerCluster = (fTPCFoundClusters>0) ? fESDTrack->GetTPCchi2()/fTPCFoundClusters : -1;
@@ -1193,40 +1181,40 @@ Bool_t AliAnalysisTaskMKBase::InitEventMult()
     LogEvent("noMultSelection");
     return kFALSE;
   } else {
-    TString _Estimator{"V0M"};
+    std::string estimator{"V0M"};
     switch (fCentralityEstimator) {
       case kV0M:
-        _Estimator = "V0M";
+        estimator = "V0M";
         break;
       case kCL0:
-        _Estimator = "CL0";
+        estimator = "CL0";
         break;
       case kCL1:
-        _Estimator = "CL1";
+        estimator = "CL1";
         break;
       case kV0Mplus05:
-        _Estimator = "V0Mplus05";
+        estimator = "V0Mplus05";
         break;
       case kV0Mplus10:
-        _Estimator = "V0Mplus10";
+        estimator = "V0Mplus10";
         break;
       case kV0Mminus05:
-        _Estimator = "V0Mminus05";
+        estimator = "V0Mminus05";
         break;
       case kV0Mminus10:
-        _Estimator = "V0Mminus10";
+        estimator = "V0Mminus10";
         break;
       case kSPDClustersCorr:
-        _Estimator = "SPDClustersCorr";
+        estimator = "SPDClustersCorr";
         break;
       case kSPDTracklets:
-        _Estimator = "SPDTracklets";
+        estimator = "SPDTracklets";
         break;
       default:
         break;
     }
-    fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(_Estimator.Data());
-    LogEvent(Form("fMultPercentile_%s", _Estimator.Data()));
+    fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile(estimator.data());
+    LogEvent(Form("fMultPercentile_%s", estimator.data()));
     if (fMultPercentileV0M < 0.) {
       LogEvent("fMultPercentileV0M<0");
     }

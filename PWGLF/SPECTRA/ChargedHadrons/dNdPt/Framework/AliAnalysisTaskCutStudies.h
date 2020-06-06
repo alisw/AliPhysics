@@ -72,6 +72,8 @@ private:
   Hist<RootHist_t> fHist_tpcCrossedRowsOverFindableClusters;    //!<!  crossed rows over findable clusters in TPC
   Hist<RootHist_t> fHist_tpcChi2PerCluster;                     //!<!  chi2 per cluster TPC
   
+  Hist<RootHist_t> fHist_tpcNClustersPID;                       //!<!  number of clusters used for PID in TPC
+  
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskCutStudies, 1);
   /// \endcond

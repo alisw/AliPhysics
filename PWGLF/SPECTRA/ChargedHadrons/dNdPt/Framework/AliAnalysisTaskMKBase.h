@@ -100,14 +100,15 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     CentralityEstimator    GetCentralityEstimator() const {return fCentralityEstimator;}
 
     // setters for switches
-    void                   SetUseBaseOutput(Bool_t _use=kTRUE){fUseBaseOutput=_use;}
-    void                   SetNeedEventVertex(Bool_t _use=kTRUE){fNeedEventVertex=_use;}
-    void                   SetNeedEventCent(Bool_t _use=kTRUE){fNeedEventCent=_use;}
-    void                   SetNeedEventMult(Bool_t _use=kTRUE){fNeedEventMult=_use;}
-    void                   SetNeedEventVZERO(Bool_t _use=kTRUE){fNeedEventVZERO=_use;}
-    void                   SetNeedTrackIP(Bool_t _use=kTRUE){fNeedTrackIP=_use;}
-    void                   SetNeedTrackTPC(Bool_t _use=kTRUE){fNeedTrackTPC=_use;}
-    void                   SetNeedTrackPID(Bool_t _use=kTRUE){fNeedTrackPID=_use;}
+    void                   SetUseBaseOutput   (Bool_t use = kTRUE)  {fUseBaseOutput = use;}
+    void                   SetNeedEventVertex (Bool_t use = kTRUE){fNeedEventVertex = use;}
+    void                   SetNeedEventCent   (Bool_t use = kTRUE)  {fNeedEventCent = use;}
+    void                   SetNeedEventMult   (Bool_t use = kTRUE)  {fNeedEventMult = use;}
+    void                   SetNeedEventVZERO  (Bool_t use = kTRUE) {fNeedEventVZERO = use;}
+    void                   SetNeedTrackIP     (Bool_t use = kTRUE)    {fNeedTrackIP = use;}
+    void                   SetNeedTrackTPC    (Bool_t use = kTRUE)   {fNeedTrackTPC = use;}
+    void                   SetNeedTrackPID    (Bool_t use = kTRUE)   {fNeedTrackPID = use;}
+    void                   SetNeedTrackQA     (Bool_t use = kTRUE)    {fNeedTrackQA = use;}
   protected:
 
     virtual void          Log(const char* name) {if(fUseBaseOutput) Log(fLogHist,name); }
@@ -294,28 +295,26 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Short_t                         fChargeSign;                //!<!  sign of the track charge                                          --InitTrack()
     UShort_t                        fTPCSignalN;                //!<!  number of clusters for PID                            --InitTrack()
 
-//BEGIN NEW
-    Double_t                        fX;                         //!<! x at dca (radial distance to vertex)
-    Double_t                        fY;                         //!<! local Y-coordinate of track at dca  (cm)
-    Double_t                        fZ;                         //!<! local Z-coordinate of track at dca  (cm)
-    Double_t                        fAlpha;                     //!<! local to global angle
+    Double_t                        fX;                         //!<! x at dca (radial distance to vertex)               --InitTrackQA()
+    Double_t                        fY;                         //!<! local Y-coordinate of track at dca  (cm)         --InitTrackQA()
+    Double_t                        fZ;                         //!<! local Z-coordinate of track at dca  (cm)         --InitTrackQA()
+    Double_t                        fAlpha;                     //!<! local to global angle                                        --InitTrackQA()
 
-    Double_t                        fSnp;                       //!<! local sine of the track momentum azimuthal angle
-    Double_t                        fTgl;                       //!<! tangent of the track momentum dip angle
-    ULong_t                         fFlags;                     //!<! flags assigned to the track
+    Double_t                        fSnp;                       //!<! local sine of the track momentum azimuthal angle   --InitTrackQA()
+    Double_t                        fTgl;                       //!<! tangent of the track momentum dip angle                  --InitTrackQA()
+    ULong_t                         fFlags;                     //!<! flags assigned to the track                                          --InitTrackQA()
   
-    Double_t                        fITSFoundClusters;          //!<! found clusters ITS
-    Double_t                        fITSChi2PerCluster;         //!<! chi2 per cluster ITS
-    UChar_t                         fITSClusterMap;             //!<! hitmap ITS
+    Double_t                        fITSFoundClusters;          //!<! found clusters ITS                                                         --InitTrackQA()
+    Double_t                        fITSChi2PerCluster;         //!<! chi2 per cluster ITS                                                       --InitTrackQA()
+    UChar_t                         fITSClusterMap;             //!<! hitmap ITS                                                                     --InitTrackQA()
 
-    Double_t                        fTPCFindableClusters;       //!<! findable clusters TPC
-    Double_t                        fTPCFoundClusters;          //!<! found clusters TPC
-    Double_t                        fTPCSharedClusters;         //!<! shared clusters TPC
-    Double_t                        fTPCFractionSharedClusters; //!<! fraction of shared clusters TPC
-    Double_t                        fTPCCrossedRows;            //!<! crossed rows in TPC
-    Double_t                        fTPCCrossedRowsOverFindableClusters;            //!<! crossed rows over findable clusters in TPC
-    Double_t                        fTPCChi2PerCluster;            //!<! chi2 per cluster TPC
-//END NEW
+    Double_t                        fTPCFindableClusters;       //!<! findable clusters TPC                                                      --InitTrackQA()
+    Double_t                        fTPCFoundClusters;          //!<! found clusters TPC                                                          --InitTrackQA()
+    Double_t                        fTPCSharedClusters;         //!<! shared clusters TPC                                                         --InitTrackQA()
+    Double_t                        fTPCFractionSharedClusters; //!<! fraction of shared clusters TPC                                        --InitTrackQA()
+    Double_t                        fTPCCrossedRows;            //!<! crossed rows in TPC                                                          --InitTrackQA()
+    Double_t                        fTPCCrossedRowsOverFindableClusters;            //!<! crossed rows over findable clusters in TPC         --InitTrackQA()
+    Double_t                        fTPCChi2PerCluster;            //!<! chi2 per cluster TPC                                                      --InitTrackQA()
 
     AliMCParticle*                  fMCParticle;                //!<!  mc particle                                                       --
     Int_t                           fMCLabel;                   //!<!  mc label                                                          --
@@ -388,6 +387,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fNeedTrackIP;           ///<
     Bool_t                          fNeedTrackTPC;          ///<
     Bool_t                          fNeedTrackPID;          ///<
+    Bool_t                          fNeedTrackQA;           ///<
 
   private:
     AliAnalysisTaskMKBase(const AliAnalysisTaskMKBase&); // not implemented
