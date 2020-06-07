@@ -93,7 +93,7 @@ TTree* AliHFTreeHandlerApplyDstoKKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApplyDstoKKpi::SetVariables(int runnumber, unsigned int eventID, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo)
+bool AliHFTreeHandlerApplyDstoKKpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo)
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -101,6 +101,8 @@ bool AliHFTreeHandlerApplyDstoKKpi::SetVariables(int runnumber, unsigned int eve
   }
   fRunNumber=runnumber;
   fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   fPtGen=ptgen;
   fMLProb=mlprob;
   
