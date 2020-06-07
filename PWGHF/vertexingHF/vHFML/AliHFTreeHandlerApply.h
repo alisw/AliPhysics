@@ -70,11 +70,11 @@ public:
   
   //core methods --> implemented in each derived class
   virtual TTree* BuildTree(TString name, TString title) = 0;
-  virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
 
   //for MC gen --> common implementation
   TTree* BuildTreeMCGen(TString name, TString title);
-  bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
+  bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
 
   //to be called for each candidate
   void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
@@ -215,7 +215,9 @@ protected:
   bool fIsMCGenTree;                                                   /// flag to know if is a tree for MC generated particles
   bool fDauInAcceptance;                                               /// flag to know if the daughter are in acceptance in case of MC gen
   
-  unsigned int fEvID;                                                  /// event ID corresponding to the one set in fTreeEvChar
+  int fEvID;                                                           /// event ID corresponding to the one set in fTreeEvChar, first 32 bit of fEvIDLong
+  int fEvIDExt;                                                        /// event ID corresponding to the one set in fTreeEvChar, second 32 bit of fEvIDLong
+  Long64_t fEvIDLong;                                                  /// event ID corresponding to the one set in fTreeEvChar, full fEvIDLong
   int fRunNumber;                                                      /// run number
   int fRunNumberPrevCand;                                              /// run number of previous candidate
 
@@ -233,7 +235,7 @@ protected:
   int fNEtabinsNsigmaTPCDataCorr;                                      /// number of eta bins for data-driven NsigmaTPC correction
   
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApply,1); ///
+  ClassDef(AliHFTreeHandlerApply,2); ///
   /// \endcond
 };
 #endif
